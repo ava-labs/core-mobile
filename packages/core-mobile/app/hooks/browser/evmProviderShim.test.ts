@@ -112,17 +112,20 @@ describe('buildEvmProviderShim', () => {
       shim = buildEvmProviderShim(defaultParams)
     })
 
+    it.each(['eth_chainId', 'eth_accounts', 'net_version', 'eth_coinbase'])(
+      'handles %s locally (sync cache)',
+      method => {
+        expect(shim).toContain(`method === '${method}'`)
+      }
+    )
+
     it.each([
-      'eth_chainId',
-      'eth_accounts',
-      'net_version',
-      'eth_coinbase',
       'eth_requestAccounts',
       'wallet_requestPermissions',
       'wallet_getPermissions',
       'wallet_revokePermissions'
-    ])('handles %s locally', method => {
-      expect(shim).toContain(`method === '${method}'`)
+    ])('round-trips %s to native (no inpage implementation)', method => {
+      expect(shim).not.toContain(`method === '${method}'`)
     })
   })
 

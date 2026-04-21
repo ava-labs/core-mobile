@@ -1,5 +1,7 @@
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Networks } from 'store/network/types'
+import type { Account } from 'store/account'
 import { createInjectedProviderRouter } from './router'
 import { BrowserNetwork, RouterDeps } from './types'
 
@@ -34,13 +36,23 @@ type MockDeps = {
   trackPendingOrigin: jest.Mock
   setBrowserNetworkSpy: jest.Mock
   currentNetwork: { value: BrowserNetwork }
+  hasPermission: jest.Mock
+  grantPermission: jest.Mock
+  revokePermission: jest.Mock
+  requestConnectApproval: jest.Mock
+  activeAccount: { value: Account | undefined }
 }
+
+const MOCK_ADDR = '0xTestAddress1234567890'
+const MOCK_ACCOUNT = { addressC: MOCK_ADDR } as Account
 
 function makeDeps(overrides?: {
   browserNetwork?: BrowserNetwork
   allNetworks?: Networks
   nativeOrigin?: string | undefined
   tabId?: string
+  activeAccount?: Account | undefined
+  hasPermission?: boolean
 }): MockDeps {
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
@@ -67,6 +79,16 @@ function makeDeps(overrides?: {
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
     currentNetwork.value = net
   })
+  const hasPermission = jest.fn(() => overrides?.hasPermission ?? false)
+  const grantPermission = jest.fn()
+  const revokePermission = jest.fn()
+  const requestConnectApproval = jest.fn()
+  const activeAccount = {
+    value:
+      overrides && 'activeAccount' in overrides
+        ? overrides.activeAccount
+        : MOCK_ACCOUNT
+  }
 
   const deps: RouterDeps = {
     getBrowserNetwork: () => currentNetwork.value,
@@ -87,7 +109,12 @@ function makeDeps(overrides?: {
       description: '',
       url: 'https://example.com',
       icons: []
-    })
+    }),
+    getActiveAccount: () => activeAccount.value,
+    hasPermission,
+    grantPermission,
+    revokePermission,
+    requestConnectApproval
   }
 
   return {
@@ -97,6 +124,11 @@ function makeDeps(overrides?: {
     requestSigning,
     dispatch,
     trackPendingOrigin,
+    hasPermission,
+    grantPermission,
+    revokePermission,
+    requestConnectApproval,
+    activeAccount,
     setBrowserNetworkSpy,
     currentNetwork
   }
@@ -309,18 +341,187 @@ describe('createInjectedProviderRouter', () => {
   })
 
   describe('wallet_revokePermissions', () => {
-    it('emits accountsChanged([]) and responds null — does NOT emit disconnect', () => {
-      const { deps, sendResponse, emitEvent } = makeDeps()
+    it('revokes the grant for the origin, emits accountsChanged([]), responds null, does NOT emit disconnect', () => {
+      const { deps, sendResponse, emitEvent, revokePermission } = makeDeps()
       const router = createInjectedProviderRouter(deps)
 
       send(router, 1, 'wallet_revokePermissions')
 
+      expect(revokePermission).toHaveBeenCalledWith({
+        domain: 'https://example.com'
+      })
       expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [])
       expect(emitEvent).not.toHaveBeenCalledWith(
         'disconnect',
         expect.anything()
       )
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
+    })
+
+    it('skips the slice write when origin is unknown, still emits accountsChanged', () => {
+      const { deps, emitEvent, revokePermission } = makeDeps({
+        nativeOrigin: undefined
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_revokePermissions')
+
+      expect(revokePermission).not.toHaveBeenCalled()
+      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [])
+    })
+  })
+
+  describe('eth_requestAccounts', () => {
+    it('returns the active address without prompting when already granted', async () => {
+      const { deps, sendResponse, requestConnectApproval, grantPermission } =
+        makeDeps({ hasPermission: true })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).not.toHaveBeenCalled()
+      expect(grantPermission).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
+    })
+
+    it('opens approval when not granted, grants, and returns selected accounts', async () => {
+      const { deps, sendResponse, requestConnectApproval, grantPermission, emitEvent } =
+        makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://example.com' })
+      )
+      expect(grantPermission).toHaveBeenCalledWith({
+        domain: 'https://example.com',
+        address: MOCK_ADDR,
+        vmType: NetworkVMType.EVM
+      })
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
+      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [MOCK_ADDR])
+    })
+
+    it('propagates user rejection from the approval', async () => {
+      const { deps, sendResponse, requestConnectApproval } = makeDeps()
+      const rejection = { code: 4001, message: 'User rejected the request.' }
+      requestConnectApproval.mockRejectedValueOnce(rejection)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(1, rejection, undefined)
+    })
+
+    it('rejects with unauthorized (4100) when there is no active account', async () => {
+      const { deps, sendResponse } = makeDeps({ activeAccount: undefined })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('rejects with unauthorized (4100) when origin is missing', async () => {
+      const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+  })
+
+  describe('wallet_requestPermissions', () => {
+    it('returns EIP-2255 permission object when already granted', async () => {
+      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        null,
+        expect.arrayContaining([
+          expect.objectContaining({
+            parentCapability: 'eth_accounts',
+            caveats: expect.arrayContaining([
+              expect.objectContaining({
+                type: 'restrictReturnedAccounts',
+                value: [MOCK_ADDR]
+              })
+            ])
+          })
+        ])
+      )
+    })
+
+    it('opens approval and returns EIP-2255 permission object on approval', async () => {
+      const { deps, sendResponse, requestConnectApproval, grantPermission } =
+        makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalledTimes(1)
+      expect(grantPermission).toHaveBeenCalledTimes(1)
+      const [[, , result]] = sendResponse.mock.calls
+      expect(result).toEqual([
+        expect.objectContaining({ parentCapability: 'eth_accounts' })
+      ])
+    })
+  })
+
+  describe('wallet_getPermissions', () => {
+    it('returns an EIP-2255 permission list when the active account is granted', () => {
+      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_getPermissions')
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        null,
+        expect.arrayContaining([
+          expect.objectContaining({ parentCapability: 'eth_accounts' })
+        ])
+      )
+    })
+
+    it('returns an empty array when the active account is not granted', () => {
+      const { deps, sendResponse } = makeDeps({ hasPermission: false })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_getPermissions')
+
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+    })
+
+    it('returns an empty array when origin is missing', () => {
+      const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'wallet_getPermissions')
+
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
     })
   })
 

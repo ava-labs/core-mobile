@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { selectTabChainId } from 'store/browser/slices/tabs'
@@ -10,6 +10,15 @@ import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { PeerMeta } from 'store/rpc/types'
 import { serializeError } from '@metamask/rpc-errors'
+import { router as appRouter } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import {
+  grantPermission as grantPermissionAction,
+  revokePermission as revokePermissionAction,
+  selectHasPermission
+} from 'store/permissions/slice'
+import type { RootState } from 'store/types'
+import type { Account } from 'store/account'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 import { createInjectedProviderRouter } from './injectedProvider/router'
@@ -20,6 +29,12 @@ import {
 } from './injectedProvider/types'
 
 export const MAX_MESSAGE_SIZE = ROUTER_MAX_MESSAGE_SIZE
+
+// If the connect-approval screen never mounts or never resolves (e.g. Metro
+// hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
+// parked promise after this interval so the dApp can surface an error and
+// the user isn't stuck with a spinning button.
+const CONNECT_APPROVAL_TIMEOUT_MS = 90_000
 
 function getOriginFromUrl(url: string): string | undefined {
   if (!url) return undefined
@@ -165,11 +180,78 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
+  const store = useStore<RootState>()
+  const activeAccountRef = useRef(activeAccount)
+  useEffect(() => {
+    activeAccountRef.current = activeAccount
+  }, [activeAccount])
+
+  // Tracks the reject fn of an in-flight connect approval so a later request
+  // (or an unmount) can unstick it. Writes and clears happen only inside
+  // requestConnectApproval.
+  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
+    null
+  )
+
   const router = useMemo(() => {
     // requestSigning closes over dispatch; keep its construction inside the
     // memo so it always uses the latest dispatch and re-builds when dispatch
     // changes (gated via the dep array below).
     const requestSigning = createInAppRequest(dispatch)
+
+    const requestConnectApproval = (peerMeta: PeerMeta): Promise<Account[]> => {
+      // If a prior connect is still parked (screen never mounted, or a second
+      // request arrived before the first resolved), reject it so its dApp can
+      // unstick. Then replace the cache entry with our own settled-guarded
+      // callbacks.
+      prevInflightConnectReject.current?.({
+        code: 4001,
+        message: 'User rejected the request.'
+      })
+      prevInflightConnectReject.current = null
+
+      return new Promise<Account[]>((resolve, reject) => {
+        let settled = false
+        const safeResolve = (selected: Account[]): void => {
+          if (settled) return
+          settled = true
+          if (prevInflightConnectReject.current === reject) {
+            prevInflightConnectReject.current = null
+          }
+          resolve(selected)
+        }
+        const safeReject = (err: unknown): void => {
+          if (settled) return
+          settled = true
+          if (prevInflightConnectReject.current === reject) {
+            prevInflightConnectReject.current = null
+          }
+          reject(err)
+        }
+        prevInflightConnectReject.current = safeReject
+
+        walletConnectCache.injectedAuthParams.set({
+          peerMeta,
+          onApprove: safeResolve,
+          onReject: () =>
+            safeReject({
+              code: 4001,
+              message: 'User rejected the request.'
+            })
+        })
+        appRouter.navigate('/authorizeInjectedDapp')
+
+        // Safety net: if the screen never mounts or calls back within 90s,
+        // reject so the dApp can surface an error instead of hanging.
+        setTimeout(() => {
+          safeReject({
+            code: -32603,
+            message: 'Connect prompt timed out'
+          })
+        }, CONNECT_APPROVAL_TIMEOUT_MS)
+      })
+    }
+
     return createInjectedProviderRouter({
       getBrowserNetwork: () => browserNetworkRef.current,
       setBrowserNetwork: net => {
@@ -185,9 +267,19 @@ export function useEvmInjectedProvider(
       trackPendingOrigin: (id, origin) => {
         pendingOrigins.current.set(id, origin)
       },
-      getPeerMeta
+      getPeerMeta,
+      getActiveAccount: () => activeAccountRef.current,
+      hasPermission: ({ domain, address, vmType }) =>
+        selectHasPermission({ domain, address, vmType })(store.getState()),
+      grantPermission: ({ domain, address, vmType }) =>
+        dispatch(grantPermissionAction({ domain, address, vmType })),
+      revokePermission: ({ domain, address, vmType }) =>
+        dispatch(
+          revokePermissionAction({ domain, address, vmType })
+        ),
+      requestConnectApproval
     })
-  }, [dispatch, tabId, sendResponse, emitEvent, getPeerMeta])
+  }, [dispatch, tabId, sendResponse, emitEvent, getPeerMeta, store])
 
   const handleProviderMessage = useCallback(
     (payload: string) => router.handleProviderMessage(payload),

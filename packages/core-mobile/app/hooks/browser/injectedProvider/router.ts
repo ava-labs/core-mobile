@@ -1,4 +1,5 @@
-import { rpcErrors } from '@metamask/rpc-errors'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
@@ -44,11 +45,31 @@ const SIGNING_METHODS: Record<string, RpcMethod> = {
 const ALLOWED_METHODS = new Set([
   ...READ_ONLY_METHODS,
   ...Object.keys(SIGNING_METHODS),
+  'eth_requestAccounts',
+  'wallet_requestPermissions',
+  'wallet_getPermissions',
+  'wallet_revokePermissions',
   'wallet_switchEthereumChain',
   'wallet_addEthereumChain',
-  'wallet_revokePermissions',
   'wallet_watchAsset'
 ])
+
+// EIP-2255 — only eth_accounts is supported; no other restricted methods today.
+function buildAccountsPermission(addresses: string[]): unknown[] {
+  if (addresses.length === 0) return []
+  return [
+    {
+      parentCapability: 'eth_accounts',
+      date: Date.now(),
+      caveats: [
+        {
+          type: 'restrictReturnedAccounts',
+          value: addresses
+        }
+      ]
+    }
+  ]
+}
 
 function validateProviderRequest(data: unknown): data is ProviderRequest {
   if (typeof data !== 'object' || data === null) return false
@@ -119,7 +140,12 @@ export function createInjectedProviderRouter(
     emitEvent,
     getNativeOrigin,
     trackPendingOrigin,
-    getPeerMeta
+    getPeerMeta,
+    getActiveAccount,
+    hasPermission,
+    grantPermission,
+    revokePermission,
+    requestConnectApproval
   } = deps
 
   const proxyToRpc = async (
@@ -280,7 +306,161 @@ export function createInjectedProviderRouter(
     }
   }
 
+  // EIP-2255: resolve permissions for the current origin against the active
+  // EVM account. Today only `eth_accounts` is supported — there is no notion
+  // of a restricted method beyond account access.
+  const resolveActiveAccountAddresses = (origin: string): string[] => {
+    const active = getActiveAccount()
+    if (!active?.addressC) return []
+    const granted = hasPermission({
+      domain: origin,
+      address: active.addressC,
+      vmType: NetworkVMType.EVM
+    })
+    return granted ? [active.addressC] : []
+  }
+
+  const handleRequestAccounts = async (id: number): Promise<void> => {
+    const origin = getNativeOrigin()
+    if (!origin) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable — cannot connect'),
+        undefined
+      )
+      return
+    }
+    const active = getActiveAccount()
+    if (!active?.addressC) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('No active account'),
+        undefined
+      )
+      return
+    }
+
+    // Already connected: return without prompting.
+    if (
+      hasPermission({
+        domain: origin,
+        address: active.addressC,
+        vmType: NetworkVMType.EVM
+      })
+    ) {
+      sendResponse(id, null, [active.addressC])
+      return
+    }
+
+    try {
+      const peerMeta = getPeerMeta() ?? { name: origin, description: '', url: origin, icons: [] }
+      const selected = await requestConnectApproval(peerMeta)
+      const addresses: string[] = []
+      for (const account of selected) {
+        if (!account.addressC) continue
+        grantPermission({
+          domain: origin,
+          address: account.addressC,
+          vmType: NetworkVMType.EVM
+        })
+        addresses.push(account.addressC)
+      }
+      if (addresses.length === 0) {
+        sendResponse(id, providerErrors.userRejectedRequest(), undefined)
+        return
+      }
+      // Emit accountsChanged before resolving the Promise — matches
+      // MetaMask/Rabby ordering so wagmi listeners see the event alongside
+      // the resolution rather than one render later.
+      emitEvent('accountsChanged', addresses)
+      sendResponse(id, null, addresses)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    }
+  }
+
+  // EIP-2255: `wallet_requestPermissions` is user-visible permissions gate.
+  // Behaves identically to `eth_requestAccounts` in our scope (only capability
+  // is `eth_accounts`); response shape differs (array of Permission objects).
+  const handleRequestPermissions = async (id: number): Promise<void> => {
+    const origin = getNativeOrigin()
+    if (!origin) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable — cannot connect'),
+        undefined
+      )
+      return
+    }
+    const active = getActiveAccount()
+    if (!active?.addressC) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('No active account'),
+        undefined
+      )
+      return
+    }
+
+    const alreadyGranted = hasPermission({
+      domain: origin,
+      address: active.addressC,
+      vmType: NetworkVMType.EVM
+    })
+
+    if (alreadyGranted) {
+      sendResponse(id, null, buildAccountsPermission([active.addressC]))
+      return
+    }
+
+    try {
+      const peerMeta = getPeerMeta() ?? { name: origin, description: '', url: origin, icons: [] }
+      const selected = await requestConnectApproval(peerMeta)
+      const addresses: string[] = []
+      for (const account of selected) {
+        if (!account.addressC) continue
+        grantPermission({
+          domain: origin,
+          address: account.addressC,
+          vmType: NetworkVMType.EVM
+        })
+        addresses.push(account.addressC)
+      }
+      if (addresses.length === 0) {
+        sendResponse(id, providerErrors.userRejectedRequest(), undefined)
+        return
+      }
+      // Emit accountsChanged before resolving the Promise (see handleRequestAccounts).
+      emitEvent('accountsChanged', addresses)
+      sendResponse(id, null, buildAccountsPermission(addresses))
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    }
+  }
+
+  const handleGetPermissions = (id: number): void => {
+    const origin = getNativeOrigin()
+    if (!origin) {
+      sendResponse(id, null, [])
+      return
+    }
+    sendResponse(
+      id,
+      null,
+      buildAccountsPermission(resolveActiveAccountAddresses(origin))
+    )
+  }
+
   const handleRevokePermissions = (id: number): void => {
+    const origin = getNativeOrigin()
+    if (origin) {
+      // Whole-domain revoke (address omitted) — drops grants for every
+      // address previously approved at this origin, not just the active
+      // one. Matches MetaMask's "Disconnect this site" UX. When multi-
+      // account selection is introduced, revisit whether a narrower revoke
+      // is warranted.
+      revokePermission({ domain: origin })
+    }
     // Only emit accountsChanged([]) — NOT disconnect. Per EIP-1193,
     // 'disconnect' means the provider lost network connectivity, not
     // that the user revoked access. Emitting disconnect causes wagmi
@@ -359,7 +539,13 @@ export function createInjectedProviderRouter(
     // params (some dApps send { type, options } instead of [{ type, options }]);
     // its handler normalizes internally.
     const safeParams = Array.isArray(params) ? params : []
-    if (method === 'wallet_switchEthereumChain') {
+    if (method === 'eth_requestAccounts') {
+      handleRequestAccounts(id)
+    } else if (method === 'wallet_requestPermissions') {
+      handleRequestPermissions(id)
+    } else if (method === 'wallet_getPermissions') {
+      handleGetPermissions(id)
+    } else if (method === 'wallet_switchEthereumChain') {
       handleSwitchEthereumChain(id, safeParams)
     } else if (method === 'wallet_addEthereumChain') {
       handleAddEthereumChain(id, safeParams)

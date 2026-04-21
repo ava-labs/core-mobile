@@ -94,6 +94,8 @@ export function buildEvmProviderShim({
   var _listeners = {};
   var _pendingInteractive = {};
   var INTERACTIVE_METHODS = {
+    'eth_requestAccounts': true,
+    'wallet_requestPermissions': true,
     'wallet_addEthereumChain': true,
     'wallet_watchAsset': true
   };
@@ -168,40 +170,10 @@ export function buildEvmProviderShim({
       if (method === 'eth_coinbase') {
         return Promise.resolve(_accounts.length > 0 ? _accounts[0] : null);
       }
-      if (method === 'eth_requestAccounts') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() {
-          emit('accountsChanged', _accounts);
-        }, 0);
-        return Promise.resolve([_address]);
-      }
-      if (method === 'wallet_requestPermissions') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() { emit('accountsChanged', _accounts); }, 0);
-        return Promise.resolve([{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
-        }]);
-      }
-      if (method === 'wallet_getPermissions') {
-        var perms = _accounts.length > 0 ? [{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_accounts[0]] }]
-        }] : [];
-        return Promise.resolve(perms);
-      }
-      if (method === 'wallet_revokePermissions') {
-        _accounts = [];
-        provider.selectedAddress = null;
-        setTimeout(function() { emit('accountsChanged', []); }, 0);
-        return Promise.resolve(null);
-      }
+      // Connect + permission methods round-trip to native so the user is prompted
+      // (eth_requestAccounts, wallet_requestPermissions) or the permissions slice
+      // is consulted (wallet_getPermissions, wallet_revokePermissions). The shim
+      // keeps _accounts in sync via __coreProviderEmit on 'accountsChanged'.
 
       // wallet_switchEthereumChain: optimistically update local chain state
       // SYNCHRONOUSLY before the bridge round-trip.  This fires chainChanged

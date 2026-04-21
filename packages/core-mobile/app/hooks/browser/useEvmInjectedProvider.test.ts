@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, useStore } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
@@ -14,7 +14,8 @@ import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
-  useDispatch: jest.fn()
+  useDispatch: jest.fn(),
+  useStore: jest.fn()
 }))
 
 jest.mock('store/network/slice', () => ({
@@ -78,6 +79,13 @@ const mockAllNetworks = {
 
 const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>
 const mockUseDispatch = useDispatch as jest.MockedFunction<typeof useDispatch>
+const mockUseStore = useStore as jest.MockedFunction<typeof useStore>
+
+const mockStore = {
+  getState: () => ({ permissions: { grants: {} } }),
+  dispatch: jest.fn(),
+  subscribe: jest.fn(() => () => undefined)
+} as unknown as ReturnType<typeof useStore>
 
 function setupMocks(
   overrides: {
@@ -114,6 +122,7 @@ describe('useEvmInjectedProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseDispatch.mockReturnValue(mockDispatch)
+    mockUseStore.mockReturnValue(mockStore)
     setupMocks()
   })
 

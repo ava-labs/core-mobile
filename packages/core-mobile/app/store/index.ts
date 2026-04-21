@@ -18,6 +18,7 @@ import { customTokenReducer as customToken } from './customToken/slice'
 import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
+import { permissionsReducer as permissions } from './permissions/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
 import { transactionApi } from './transaction'
@@ -30,7 +31,7 @@ import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
 
-const VERSION = 27
+const VERSION = 28
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
@@ -43,6 +44,7 @@ const combinedReducer = combineReducers({
   account,
   notifications,
   addressBook,
+  permissions,
   bridge,
   unifiedBridge,
   customToken,

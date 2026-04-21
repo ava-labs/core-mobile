@@ -527,5 +527,12 @@ export const migrations = {
         collectibleUnprocessableVisibility: true
       }
     }
+  },
+  28: (state: any) => {
+    // Introduce permissions slice for the injected provider connect flow.
+    return {
+      ...state,
+      permissions: state.permissions ?? { grants: {} }
+    }
   }
 }
