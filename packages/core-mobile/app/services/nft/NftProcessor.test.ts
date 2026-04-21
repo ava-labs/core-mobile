@@ -7,7 +7,7 @@ const MP4_MAGIC = new Uint8Array([
 ])
 
 const mockFetchResponse = (body: Uint8Array, ok = true): Response =>
-  new Response(body, { status: ok ? 206 : 504 })
+  new Response(body.buffer as ArrayBuffer, { status: ok ? 206 : 504 })
 
 describe('NftProcessor.fetchImage', () => {
   const fetchSpy = jest.spyOn(global, 'fetch')
