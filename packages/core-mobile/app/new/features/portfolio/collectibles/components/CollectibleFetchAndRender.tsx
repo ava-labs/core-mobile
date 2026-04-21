@@ -4,6 +4,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import GlacierService from 'services/glacier/GlacierService'
 import NftProcessor from 'services/nft/NftProcessor'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
+import { isUnreachableNftIndexStatus } from 'services/nft/indexStatus'
 import { getNftLocalId } from 'services/nft/utils'
 import { CardContainer } from './CardContainer'
 import { CollectibleRenderer } from './CollectibleRenderer'
@@ -64,36 +65,43 @@ export const CollectibleFetchAndRender = memo(
             tokenId
           })
           if (result) {
-            const processedMetadata = await NftProcessor.fetchMetadata(
-              result.tokenUri
-            )
-            const imageData = await NftProcessor.fetchImageAndAspect(
-              processedMetadata.image ||
-                processedMetadata.animation_url ||
-                processedMetadata.external_url
-            )
-            const chainId = Number(tx.chainId)
+            if (isUnreachableNftIndexStatus(result.metadata?.indexStatus)) {
+              setCollectible({
+                ...initialCollectible,
+                status: NftLocalStatus.Unprocessable
+              })
+            } else {
+              const processedMetadata = await NftProcessor.fetchMetadata(
+                result.tokenUri
+              )
+              const imageData = await NftProcessor.fetchImage(
+                processedMetadata.image ||
+                  processedMetadata.animation_url ||
+                  processedMetadata.external_url
+              )
+              const chainId = Number(tx.chainId)
 
-            setCollectible({
-              ...result,
-              imageData,
-              processedMetadata,
-              localId,
-              tokenId,
-              type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
-              name: token.name,
-              address: tx.to.toString(),
-              status: NftLocalStatus.Processed,
-              balance: BigInt(0),
-              balanceDisplayValue: '',
-              description: '',
-              logoUri: '',
-              logoSmall: '',
-              collectionName: '',
-              networkChainId: chainId,
-              chainId,
-              symbol: ''
-            })
+              setCollectible({
+                ...result,
+                imageData,
+                processedMetadata,
+                localId,
+                tokenId,
+                type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
+                name: token.name,
+                address: tx.to.toString(),
+                status: NftLocalStatus.Processed,
+                balance: BigInt(0),
+                balanceDisplayValue: '',
+                description: '',
+                logoUri: '',
+                logoSmall: '',
+                collectionName: '',
+                networkChainId: chainId,
+                chainId,
+                symbol: ''
+              })
+            }
           }
         } catch (error) {
           setCollectible({
