@@ -48,11 +48,20 @@ export function attachQuotesToMarkets({
   })
 }
 
+// TODO: Remove seededRandom, generateHistory and tickerToSeed once the SDK
+// returns real historical market series. They only exist to fake sparkline
+// data for the EventDetails UI.
+// Numerical Recipes LCG constants.
+const LCG_MULTIPLIER = 1664525
+const LCG_INCREMENT = 1013904223
+const LCG_MODULUS_MASK = 0xffffffff
+const LCG_NORMALIZER = 0x100000000
+
 export function seededRandom(seed: number): () => number {
   let s = seed
   return () => {
-    s = (s * 1664525 + 1013904223) & 0xffffffff
-    return (s >>> 0) / 0x100000000
+    s = (s * LCG_MULTIPLIER + LCG_INCREMENT) & LCG_MODULUS_MASK
+    return (s >>> 0) / LCG_NORMALIZER
   }
 }
 

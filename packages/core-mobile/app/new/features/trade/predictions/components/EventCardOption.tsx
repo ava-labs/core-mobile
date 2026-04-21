@@ -30,15 +30,11 @@ export const EventCardOption = ({
       <View
         style={{
           paddingRight: 8,
-          // paddingLeft: market?.imageUrl ? 4 : 8,
           flexDirection: 'row',
           alignItems: 'center',
           height: '100%',
           gap: 4
         }}>
-        {/* {option?.imageUrl ? (
-          <TradeThumbnail url={option?.imageUrl} variant="small" />
-        ) : null} */}
         <Text
           variant="caption"
           style={{ flex: 1, fontFamily: 'Inter-Medium' }}

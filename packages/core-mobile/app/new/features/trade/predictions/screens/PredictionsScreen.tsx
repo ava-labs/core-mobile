@@ -60,6 +60,8 @@ export const PredictionsScreen = ({
     const cats = series
       .map(s => s.category)
       .filter((c, i, arr) => arr.indexOf(c) === i)
+    // TODO: Replace the hardcoded chips with categories returned by the
+    // prediction-market-sdk once it exposes them.
     return [
       TRENDING_CHIP,
       'Live',

@@ -37,9 +37,6 @@ export function EventCard({ event, onPress }: EventCardProps): JSX.Element {
           gap: 6,
           marginBottom: 8
         }}>
-        {/* {event.markets?.[0]?.imageUrl ? (
-          <TradeThumbnail url={event.markets?.[0]?.imageUrl} />
-        ) : null} */}
         {isLive ? (
           <View
             sx={{
