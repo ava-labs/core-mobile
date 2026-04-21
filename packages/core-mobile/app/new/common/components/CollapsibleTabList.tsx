@@ -1,3 +1,4 @@
+import { ActivityIndicator, useTheme } from '@avalabs/k2-alpine'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import React, { useMemo } from 'react'
 import { Platform, RefreshControlProps, View, ViewStyle } from 'react-native'
@@ -79,11 +80,19 @@ type CollapsibleTabListProps<T> = {
    */
   maintainVisibleContentPosition?: FlashListProps<T>['maintainVisibleContentPosition']
   /**
+   * Callback when the list reaches the end
+   */
+  onEndReached?: () => void
+  /**
+   * Whether a next-page fetch is currently in flight. When true, the footer
+   * spinner is rendered; otherwise the footer is empty.
+   */
+  isFetchingNextPage?: boolean
+  /**
    * Pre-computed column assignments for masonry layouts.
    * Each inner array is a column containing { item, index } tuples where
    * index is the item's position in the original data array.
-   * When provided, renders a ScrollView with manually laid-out columns
-   * instead of relying on FlashList masonry internals.
+   * When provided, renders a ScrollView with manually laid-out columns instead of relying on FlashList masonry internals.
    */
   columnItems?: { item: T; index: number }[][]
 }
@@ -113,14 +122,26 @@ export function CollapsibleTabList<T>({
   nestedScrollEnabled,
   removeClippedSubviews,
   maintainVisibleContentPosition,
+  onEndReached,
+  isFetchingNextPage = false,
   columnItems
 }: CollapsibleTabListProps<T>): JSX.Element {
   const header = useHeaderMeasurements()
+  const { theme } = useTheme()
   const collapsibleHeaderHeight = header?.height ?? 0
 
   // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
   // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
   const shouldUseScrollView = data.length === 0
+
+  const ListFooterComponent = useMemo(() => {
+    if (!isFetchingNextPage) return undefined
+    return (
+      <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+        <ActivityIndicator color={theme.colors.$textPrimary} />
+      </View>
+    )
+  }, [isFetchingNextPage, theme.colors.$textPrimary])
 
   const refreshControl = useMemo(() => {
     if (!onRefresh) return undefined
@@ -212,6 +233,9 @@ export function CollapsibleTabList<T>({
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={nestedScrollEnabled}
       removeClippedSubviews={removeClippedSubviews}
+      ListFooterComponent={ListFooterComponent}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
     />
   )
 }

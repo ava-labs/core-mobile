@@ -198,6 +198,8 @@ const styles = StyleSheet.create({
   tabsContainer: {
     shadowOpacity: 0,
     elevation: 0,
-    overflow: 'visible'
+    overflow: 'visible',
+    backgroundColor: 'transparent',
+    zIndex: 1
   }
 })
