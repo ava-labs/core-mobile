@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useCallback, useRef } from 'react'
+import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { Alert } from 'react-native'
@@ -10,15 +10,14 @@ import {
   PublicKeyInfo
 } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
-import { WalletType } from 'services/wallet/types'
-import { onWalletImported } from 'store/app/slice'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
+import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
-  onNavigateToComplete: () => void
+  onNavigateToComplete: (walletId?: string) => void
   showConnectionToasts: boolean
   showCancelOnComplete: boolean
 }
@@ -30,9 +29,14 @@ export const AppConnectionOnboardingScreen = ({
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
+  const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
   const { canGoBack, back } = useRouter()
-  const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  // useRef instead of useState: the ref flips synchronously, so a second tap
+  // cannot enter handleComplete before the first invocation finishes. useState
+  // is async — rapid taps could race past the isUpdatingWallet guard before
+  // React re-renders with the updated value.
+  const isHandlingCompleteRef = useRef(false)
 
   const {
     connectedDeviceId,
@@ -52,6 +56,9 @@ export const AppConnectionOnboardingScreen = ({
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      if (isHandlingCompleteRef.current) return
+      isHandlingCompleteRef.current = true
+
       // Account 0's keys are at index 0 in the multi-index map.
       // Additional indices hold xpubs/pubkeys that will be used for
       // background discovery after onboarding completes.
@@ -72,6 +79,19 @@ export const AppConnectionOnboardingScreen = ({
       const derivationPath =
         selectedDerivationPath ?? LedgerDerivationPathType.BIP44
 
+      // If the wallet was already imported (e.g. user went back from naming
+      // screen and tapped Complete setup again), just navigate forward.
+      if (
+        connectedDeviceId &&
+        checkIfLedgerWalletExists(connectedDeviceId, derivationPath)
+      ) {
+        Logger.info('Ledger wallet already exists, skipping duplicate import')
+        LedgerService.stopAppPolling()
+        isHandlingCompleteRef.current = false
+        onNavigateToComplete()
+        return
+      }
+
       if (
         !index0Current?.avalancheKeys ||
         !connectedDeviceId ||
@@ -83,6 +103,7 @@ export const AppConnectionOnboardingScreen = ({
           hasSelectedDerivationPath: !!selectedDerivationPath,
           isUpdatingWallet
         })
+        isHandlingCompleteRef.current = false
         Alert.alert(
           'Wallet setup failed',
           'Unable to complete Ledger wallet setup. Please restart the setup process.',
@@ -131,18 +152,7 @@ export const AppConnectionOnboardingScreen = ({
         })
 
         LedgerService.stopAppPolling()
-        onNavigateToComplete()
-
-        // Trigger background discovery for accounts 1-9.
-        // This runs after navigation — the user doesn't wait.
-        const walletType =
-          derivationPath === LedgerDerivationPathType.BIP44
-            ? WalletType.LEDGER
-            : WalletType.LEDGER_LIVE
-
-        setTimeout(() => {
-          dispatch(onWalletImported({ walletId, walletType }))
-        }, 1500)
+        onNavigateToComplete(walletId)
       } catch (error) {
         Logger.error('Wallet creation failed', error)
         Alert.alert(
@@ -154,6 +164,7 @@ export const AppConnectionOnboardingScreen = ({
         )
       } finally {
         setIsUpdatingWallet(false)
+        isHandlingCompleteRef.current = false
       }
     },
     [
@@ -167,7 +178,7 @@ export const AppConnectionOnboardingScreen = ({
       isDeveloperMode,
       onNavigateToComplete,
       handleCancel,
-      dispatch
+      checkIfLedgerWalletExists
     ]
   )
 
