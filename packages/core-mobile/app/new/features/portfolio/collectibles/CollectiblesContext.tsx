@@ -143,7 +143,10 @@ export const CollectiblesProvider = ({
       if (tokenUri)
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
-            processImageData(localId, result.image)
+            processImageData(
+              localId,
+              result.image || result.animation_url || ''
+            )
             setProcessedMetadata(prevData => ({
               ...prevData,
               [localId]: result
@@ -175,14 +178,15 @@ export const CollectiblesProvider = ({
           continue
         }
         // if logoUri is present, no need to fetch metadata
-        if (!item.logoUri) {
+        if (item.logoUri) {
+          processImageData(item.localId, item.logoUri)
+        } else {
           processMetadata({
             localId: item.localId,
             tokenId: item.tokenId,
             tokenUri: item.tokenUri
           })
         }
-        processImageData(item.localId, item.logoUri)
       }
     },
     [processImageData, processMetadata]
