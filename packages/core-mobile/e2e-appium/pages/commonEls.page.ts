@@ -290,9 +290,6 @@ class CommonElsPage {
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
   ) {
-    if (!(await actions.getVisible(filterDropdown))) {
-      await this.pullToRefresh(this.accountOne)
-    }
     await actions.click(filterDropdown)
     await this.selectDropdownItem(item)
   }
