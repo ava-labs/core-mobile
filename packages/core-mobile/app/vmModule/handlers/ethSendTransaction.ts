@@ -52,11 +52,27 @@ export const ethSendTransaction = async ({
     })
 
     // If onSigned is provided (gasless flow), call it after signing
-    // but before broadcasting. If it returns false (funding failed),
-    // don't broadcast — the caller handles the error UI.
+    // but before broadcasting. If it returns false or throws (funding
+    // failed), don't broadcast — the caller handles the error UI.
     if (onSigned) {
-      const shouldBroadcast = await onSigned()
-      if (!shouldBroadcast) return
+      try {
+        const shouldBroadcast = await onSigned()
+        if (!shouldBroadcast) return
+      } catch (error) {
+        Logger.error(
+          `[ethSendTransaction] onSigned FAILED: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          error
+        )
+        resolve({
+          error: rpcErrors.internal({
+            message: 'Failed to complete gasless transaction funding',
+            data: { cause: error }
+          })
+        })
+        return
+      }
     }
 
     resolve({
