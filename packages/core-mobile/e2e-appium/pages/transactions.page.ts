@@ -207,8 +207,10 @@ class TransactionsPage {
 
   async selectToken(tokenName: string, network?: string) {
     const networkBtn = selectors.getById(`network_selector__${network}`)
-    if (network && !(await actions.getVisible(networkBtn))) {
-      await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
+    if (network) {
+      if (!(await actions.getVisible(networkBtn))) {
+        await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
+      }
       await actions.tap(networkBtn)
     }
     await actions.type(this.searchBar, tokenName)
