@@ -8,9 +8,10 @@ import { getChainIdFromCaip2, isSvmChainId } from 'utils/caip2ChainIds'
 import { selectActiveAccount } from 'store/account'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
+import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
@@ -43,16 +44,17 @@ export const useSwapTokens = (
   caip2Id: string,
   searchText?: string
 ): UseSwapTokensResult => {
-  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeAccount = useSelector(selectActiveAccount)
+  const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
 
   const isSolanaBlocked = useMemo(
-    () => isSvmChainId(caip2Id) && isSolanaSwapBlocked,
-    [caip2Id, isSolanaSwapBlocked]
+    () => isSvmChainId(caip2Id) && (!hasSolanaAddress || isSolanaSwapBlocked),
+    [caip2Id, hasSolanaAddress, isSolanaSwapBlocked]
   )
 
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
-  const activeAccount = useSelector(selectActiveAccount)
 
   const { tokens: balances } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
