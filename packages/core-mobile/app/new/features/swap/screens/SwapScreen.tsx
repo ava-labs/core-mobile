@@ -16,6 +16,7 @@ import {
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
+import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -51,7 +52,10 @@ import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
-import { fusionTransfersStore } from '../hooks/useZustandStore'
+import {
+  fusionTransfersStore,
+  useFusionServiceInitError
+} from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
@@ -79,6 +83,7 @@ export const SwapScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
+  const [fusionInitError] = useFusionServiceInitError()
 
   const {
     initialTokenIdFrom: rawTokenIdFrom,
@@ -942,6 +947,27 @@ export const SwapScreen = (): JSX.Element => {
 
   const decimals =
     fromToken && 'decimals' in fromToken ? fromToken.decimals : 18
+
+  if (fusionInitError) {
+    return (
+      <ScrollScreen
+        title="Swap"
+        isModal
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+        <ErrorState
+          sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          title="Swap Unavailable"
+          description={
+            'Swap services failed to initialize.\nPlease try again later.'
+          }
+          button={{
+            title: 'Go back',
+            onPress: () => navigation.goBack()
+          }}
+        />
+      </ScrollScreen>
+    )
+  }
 
   return (
     <ScrollScreen
