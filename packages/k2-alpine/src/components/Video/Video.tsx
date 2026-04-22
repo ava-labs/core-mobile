@@ -10,6 +10,7 @@ import { colors } from '../../theme/tokens/colors'
 
 export interface VideoProps extends Omit<VideoViewProps, 'player'> {
   source?: string
+  thumbnail?: string
   hideControls?: boolean
   muted?: boolean
   autoPlay?: boolean
@@ -19,6 +20,7 @@ export interface VideoProps extends Omit<VideoViewProps, 'player'> {
 
 export const Video = ({
   source,
+  thumbnail,
   hideControls,
   onLoadEnd,
   autoPlay,
@@ -82,7 +84,7 @@ export const Video = ({
         contentFit="cover"
         nativeControls={false}
         player={player}
-        fullscreenOptions={{ enable: false }}
+        allowsFullscreen={false}
         allowsPictureInPicture={false}
         allowsVideoFrameAnalysis={false}
         renderToHardwareTextureAndroid={false}

@@ -346,7 +346,8 @@ export const migrations = {
       ...state,
       portfolio: {
         ...state.portfolio,
-        collectibleVisibility
+        collectibleVisibility,
+        collectibleUnprocessableVisibility: false
       }
     }
     delete newState.nft
@@ -516,15 +517,6 @@ export const migrations = {
       account: {
         ...state.account,
         accounts: migratedAccounts
-      }
-    }
-  },
-  27: (state: any) => {
-    return {
-      ...state,
-      portfolio: {
-        ...state.portfolio,
-        collectibleUnprocessableVisibility: true
       }
     }
   }

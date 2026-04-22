@@ -4,7 +4,8 @@ import React from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { NftContentType, NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftContentType } from 'store/nft'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -26,7 +27,7 @@ export const CollectibleDetailsFooter = ({
   const isSupportedAvatar =
     collectible?.imageData?.type !== NftContentType.MP4 &&
     collectible?.imageData?.type !== NftContentType.Unknown &&
-    collectible?.imageData?.uri !== undefined
+    collectible?.imageData?.image !== undefined
 
   return (
     <LinearGradientBottomWrapper>

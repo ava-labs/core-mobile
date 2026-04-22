@@ -1,11 +1,19 @@
 import { Icons, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
 import { useIsFocused } from '@react-navigation/native'
 import { Image, ImageErrorEventData } from 'expo-image'
-import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
+import React, {
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { NftContentType, NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 
 export interface CollectibleRendererProps {
   collectible: NftItem
@@ -79,11 +87,7 @@ export const CollectibleRenderer = memo(
     }, [collectible?.status, colors.$textPrimary, error, iconSize, isLoading])
 
     const renderContent = useCallback(() => {
-      const { uri, type } = collectible?.imageData ?? {}
-
-      if (!uri) return null
-
-      if (type === NftContentType.MP4)
+      if (collectible?.imageData?.video)
         return (
           <Animated.View
             style={[
@@ -95,7 +99,8 @@ export const CollectibleRenderer = memo(
             ]}>
             {isFocused ? (
               <Video
-                source={uri}
+                source={collectible?.imageData?.video}
+                thumbnail={collectible?.imageData?.image}
                 onLoadEnd={onLoadEnd}
                 onError={onVideoError}
                 {...videoProps}
@@ -104,29 +109,36 @@ export const CollectibleRenderer = memo(
           </Animated.View>
         )
 
-      return (
-        <Animated.View
-          style={[
-            {
-              width: '100%',
-              height: '100%',
-              zIndex: 1
-            }
-          ]}>
-          <Image
-            source={{ uri }}
-            onLoad={onLoadEnd}
-            onError={onImageError}
-            renderToHardwareTextureAndroid={false}
-            style={{
-              width: '100%',
-              flex: 1
-            }}
-          />
-        </Animated.View>
-      )
+      if (collectible?.imageData?.image) {
+        return (
+          <Animated.View
+            style={[
+              {
+                width: '100%',
+                height: '100%',
+                zIndex: 1
+              }
+            ]}>
+            <Image
+              source={{
+                uri: collectible?.imageData?.image
+              }}
+              onLoad={onLoadEnd}
+              onError={onImageError}
+              renderToHardwareTextureAndroid={false}
+              style={{
+                width: '100%',
+                flex: 1
+              }}
+            />
+          </Animated.View>
+        )
+      }
+
+      return null
     }, [
-      collectible?.imageData,
+      collectible?.imageData?.image,
+      collectible?.imageData?.video,
       isFocused,
       onImageError,
       onLoadEnd,
@@ -173,6 +185,18 @@ const CollectibleSkeleton = (): ReactNode => {
   } = useTheme()
   const [layout, setLayout] = useState({ width: 0, height: 0 })
 
+  const contentRef = useRef<View>(null)
+
+  useLayoutEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.measure(
+        (x: number, y: number, width: number, height: number) => {
+          setLayout({ width, height })
+        }
+      )
+    }
+  }, [])
+
   const onLayout = (event: LayoutChangeEvent): void => {
     const { width, height } = event.nativeEvent.layout
     setLayout({ width, height })
@@ -180,6 +204,7 @@ const CollectibleSkeleton = (): ReactNode => {
 
   return (
     <View
+      ref={contentRef}
       onLayout={onLayout}
       style={{
         width: '100%',

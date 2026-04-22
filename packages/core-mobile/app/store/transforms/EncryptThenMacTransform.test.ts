@@ -166,6 +166,6 @@ const initialState = {
   portfolio: {
     tokenVisibility: {},
     collectibleVisibility: {},
-    collectibleUnprocessableVisibility: true
+    collectibleUnprocessableVisibility: false
   } as PortfolioState
 } as RootState

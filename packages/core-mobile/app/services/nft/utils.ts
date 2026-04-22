@@ -57,7 +57,7 @@ export const getNftTitle = (nftItem: NftItem): string => {
 }
 
 export const getNftImage = (nftItem: NftItem): string | undefined => {
-  return nftItem.imageData?.uri
+  return nftItem.imageData?.image
 }
 
 export const sortNftsByDateUpdated = (a: NftItem, b: NftItem): number => {

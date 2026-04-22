@@ -46,8 +46,8 @@ export const CollectibleDetailsContent = forwardRef<
   const { saveExternalAvatar } = useAvatar()
 
   const handleSaveAvatar = (): void => {
-    if (!collectible?.imageData?.uri) return
-    saveExternalAvatar(collectible.localId, collectible.imageData.uri)
+    if (!collectible?.imageData?.image) return
+    saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
   }
   const [_, setSelectedToken] = useSendSelectedToken()
