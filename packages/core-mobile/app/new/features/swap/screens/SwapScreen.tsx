@@ -46,6 +46,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -173,12 +174,14 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
 
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
     [
       cChainNetwork?.chainId,
-      hasSolanaAddress ? solanaNetwork?.chainId : undefined
+      showSolanaSwap ? solanaNetwork?.chainId : undefined
     ].filter(chainId => chainId !== undefined) as number[]
   )
 

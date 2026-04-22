@@ -11,6 +11,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
@@ -46,10 +47,11 @@ export const useSwapTokens = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
 
   const isSolanaBlocked = useMemo(
-    () => isSvmChainId(caip2Id) && !hasSolanaAddress,
-    [caip2Id, hasSolanaAddress]
+    () => isSvmChainId(caip2Id) && (!hasSolanaAddress || isSolanaSwapBlocked),
+    [caip2Id, hasSolanaAddress, isSolanaSwapBlocked]
   )
 
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])

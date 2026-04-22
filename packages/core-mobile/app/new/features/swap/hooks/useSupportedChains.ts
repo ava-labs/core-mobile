@@ -10,6 +10,7 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { useIsFusionServiceReady } from './useZustandStore'
@@ -69,7 +70,8 @@ export function useSupportedChains(sourceChainId?: number): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
-  const hideSolana = !hasSolanaAddress
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const hideSolana = !hasSolanaAddress || isSolanaSwapBlocked
 
   // Fetch supported chains Map from Fusion Service
   const {
