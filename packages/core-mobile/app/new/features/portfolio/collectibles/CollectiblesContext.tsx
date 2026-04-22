@@ -17,7 +17,6 @@ import {
   NftLocalStatus,
   UnprocessedNftItem
 } from 'services/nft/types'
-import { isUnreachableNftIndexStatus } from 'services/nft/indexStatus'
 import { getTokenUri } from 'services/nft/utils'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import Logger from 'utils/Logger'
@@ -174,14 +173,6 @@ export const CollectiblesProvider = ({
   const process = useCallback(
     (items: UnprocessedNftItem[]): void => {
       for (const item of items) {
-        if (isUnreachableNftIndexStatus(item.metadata?.indexStatus)) {
-          setStatusData(prevData => ({
-            ...prevData,
-            [item.localId]: NftLocalStatus.Unprocessable
-          }))
-          continue
-        }
-        // if logoUri is present, no need to fetch metadata
         if (item.logoUri) {
           processImageData(item.localId, item.logoUri)
         } else {
