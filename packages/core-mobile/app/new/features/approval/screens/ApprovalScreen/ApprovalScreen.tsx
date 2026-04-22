@@ -2,8 +2,6 @@ import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { validateFee } from 'common/hooks/send/utils/evm/validate'
-import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
@@ -37,6 +35,7 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
   overrideContractItem,
@@ -211,28 +210,13 @@ const ApprovalScreen = ({
       return
     }
 
-    const ethSendTx = signingData.data
-
-    try {
-      const gasLimitToValidate = gasLimit ? BigInt(gasLimit) : 0n
-      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
-
-      validateFee({
-        gasLimit: gasLimitToValidate,
-        maxFee: maxFeePerGas || 0n,
-        amount,
-        nativeToken,
-        token: nativeToken
-      })
-
-      setAmountError(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        setAmountError(err.message)
-      } else {
-        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
-      }
-    }
+    const error = getEthSendTxValidationError({
+      gasLimit,
+      maxFeePerGas,
+      sendValue: signingData.data.value,
+      nativeToken
+    })
+    setAmountError(error)
   }, [
     signingData,
     network?.networkToken,
