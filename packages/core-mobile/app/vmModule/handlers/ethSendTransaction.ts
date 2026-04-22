@@ -6,6 +6,7 @@ import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
 import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
+import { buildEvmTransaction } from 'vmModule/utils/buildEvmTransaction'
 
 export const ethSendTransaction = async ({
   transactionRequest,
@@ -17,6 +18,7 @@ export const ethSendTransaction = async ({
   maxPriorityFeePerGas,
   gasLimit,
   overrideData,
+  onSigned,
   resolve
 }: {
   transactionRequest: TransactionRequest
@@ -28,30 +30,17 @@ export const ethSendTransaction = async ({
   maxPriorityFeePerGas: bigint | undefined
   gasLimit: number | undefined
   overrideData: string | undefined
+  onSigned?: () => Promise<boolean>
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
-  const {
-    gasLimit: defaultGasLimit,
-    type,
-    nonce,
-    data,
-    from,
-    to,
-    value
-  } = transactionRequest
-
-  const transaction = {
-    nonce,
-    type,
+  const transaction = buildEvmTransaction({
+    transactionRequest,
     chainId: network.chainId,
     maxFeePerGas,
     maxPriorityFeePerGas,
-    gasLimit: gasLimit ? BigInt(gasLimit) : defaultGasLimit,
-    data: overrideData ?? data,
-    from,
-    to,
-    value
-  }
+    gasLimit,
+    overrideData
+  })
 
   try {
     const signedTx = await WalletService.sign({
@@ -61,6 +50,14 @@ export const ethSendTransaction = async ({
       accountIndex: account.index,
       network
     })
+
+    // If onSigned is provided (gasless flow), call it after signing
+    // but before broadcasting. If it returns false (funding failed),
+    // don't broadcast — the caller handles the error UI.
+    if (onSigned) {
+      const shouldBroadcast = await onSigned()
+      if (!shouldBroadcast) return
+    }
 
     resolve({
       signedData: signedTx

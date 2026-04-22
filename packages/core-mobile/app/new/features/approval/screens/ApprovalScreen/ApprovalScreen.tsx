@@ -74,6 +74,10 @@ const ApprovalScreen = ({
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
   >()
+
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
+
   const {
     gaslessEnabled,
     setGaslessEnabled,
@@ -83,6 +87,9 @@ const ApprovalScreen = ({
   } = useGasless({
     signingData,
     maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    overrideData: hashedCustomSpend,
     caip2ChainId
   })
 
@@ -93,9 +100,6 @@ const ApprovalScreen = ({
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
     submitting ||
     amountError !== undefined
-
-  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals)
 
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
@@ -133,37 +137,11 @@ const ApprovalScreen = ({
     onReject()
   }, [cancelLedger, isLedger, onReject])
 
-  const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
-    if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
-
-    if (!account) return false
-    const txHash = await handleGaslessTx(account.addressC)
-    if (!txHash) return false
-
-    // flag VM-module retry via request context instead of mutating tx data
-    request.context = {
-      ...request.context,
-      [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
-    }
-    return true
-  }, [
-    shouldShowGaslessSwitch,
-    gaslessEnabled,
-    handleGaslessTx,
-    account,
-    request,
-    isGaslessInstantBlocked
-  ])
-
   const handleApprove = useCallback(async (): Promise<void> => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    const canProceed = await handleGaslessPreApprove()
-    if (!canProceed) {
-      setSubmitting(false)
-      return
-    }
+    const isGasless = shouldShowGaslessSwitch && gaslessEnabled
 
     try {
       await onApprove({
@@ -174,7 +152,21 @@ const ApprovalScreen = ({
         maxFeePerGas,
         maxPriorityFeePerGas,
         gasLimit,
-        overrideData: hashedCustomSpend
+        overrideData: hashedCustomSpend,
+        // For gasless: fund after signing but before broadcasting.
+        // This ensures the gas station is only called once we have
+        // a signed tx, preventing wasted funding on rejected signs.
+        onSigned: isGasless
+          ? async () => {
+              if (!account) return false
+              request.context = {
+                ...request.context,
+                [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
+              }
+              const txHash = await handleGaslessTx(account.addressC)
+              return !!txHash
+            }
+          : undefined
       })
       // For Ledger, the controller sets the store and navigation is handled
       // by ApprovalController.handleGoBackIfNeeded after signing completes
@@ -188,7 +180,8 @@ const ApprovalScreen = ({
     }
   }, [
     approveDisabled,
-    handleGaslessPreApprove,
+    shouldShowGaslessSwitch,
+    gaslessEnabled,
     onApprove,
     activeWallet.id,
     activeWallet.type,
@@ -198,6 +191,9 @@ const ApprovalScreen = ({
     maxPriorityFeePerGas,
     gasLimit,
     hashedCustomSpend,
+    isGaslessInstantBlocked,
+    handleGaslessTx,
+    request,
     isLedger
   ])
 
