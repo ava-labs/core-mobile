@@ -664,6 +664,16 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectSlippageDetails
   ])
 
+  // Prefer popping the parent stack; fall back to dismissing the whole modal
+  // when this screen is the root of a modal stack (no back history).
+  const dismissOrGoBack = useCallback((): void => {
+    if (navigation.getParent()?.canGoBack()) {
+      navigation.getParent()?.goBack()
+    } else {
+      dismissAll()
+    }
+  }, [navigation, dismissAll])
+
   useEffect(() => {
     if (swapStatus === SwapStatus.Success) {
       if (successTransferId) {
@@ -681,13 +691,9 @@ export const SwapScreen = (): JSX.Element => {
           return
         }
       }
-      if (navigation.getParent()?.canGoBack()) {
-        navigation.getParent()?.goBack()
-      } else {
-        dismissAll()
-      }
+      dismissOrGoBack()
     }
-  }, [navigation, dismissAll, push, swapStatus, successTransferId])
+  }, [dismissAll, push, swapStatus, successTransferId, dismissOrGoBack])
 
   // Trigger quote fetch when debounced amount settles, skip if below minimum
   const syncDebouncedAmount = useCallback(() => {
@@ -962,7 +968,7 @@ export const SwapScreen = (): JSX.Element => {
           }
           button={{
             title: 'Go back',
-            onPress: () => navigation.goBack()
+            onPress: dismissOrGoBack
           }}
         />
       </ScrollScreen>
