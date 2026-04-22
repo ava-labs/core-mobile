@@ -1,8 +1,8 @@
+import { useNetInfo } from '@react-native-community/netinfo'
 import { showNoInternetToast } from 'common/utils/toast'
 import { useSegments } from 'expo-router'
 import { useEffect, useRef } from 'react'
 import { uuid } from 'utils/uuid'
-import { useOnlineStatus } from './useOnlineStatus'
 
 /**
  * Shows a persistent "No internet connection" toast when offline.
@@ -22,19 +22,25 @@ export const useNoInternetToast = (): void => {
     })
   }
 
-  const isOnline = useOnlineStatus()
+  const { isConnected, isInternetReachable } = useNetInfo()
 
-  // Show/hide toast based on connectivity state.
+  // Single NetInfo listener handles both show and hide.
+  // isInternetReachable !== false treats null as online to avoid false flash on mount.
   useEffect(() => {
-    if (isOnline && !isConnectedRef.current) {
+    // Wait until NetInfo has a confirmed reading
+    if (isConnected === null) return
+
+    const online = isConnected === true && isInternetReachable !== false
+
+    if (online && !isConnectedRef.current) {
       isConnectedRef.current = true
       isDismissedRef.current = false
       global.toast?.hideAll()
-    } else if (!isOnline && isConnectedRef.current) {
+    } else if (!online && isConnectedRef.current) {
       isConnectedRef.current = false
       triggerToast()
     }
-  }, [isOnline])
+  }, [isConnected, isInternetReachable])
 
   // Re-show on tab switch or seedless onboarding screen change if offline + dismissed
   useEffect(() => {

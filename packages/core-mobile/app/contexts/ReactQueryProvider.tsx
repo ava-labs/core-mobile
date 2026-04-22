@@ -71,42 +71,20 @@ const onAppStateChange = (status: AppStateStatus): void => {
   focusManager.setFocused(status === 'active')
 }
 
-// Track confirmed reachability so we can detect the first online
-// confirmation (null → true) and offline → online transitions.
-//
-// NOTE: Testing connectivity changes on iOS Simulator is unreliable.
-// There is a known Apple bug (rdar://29913522, since iOS 10) where
-// SCNetworkReachability callbacks never fire when transitioning from
-// offline to online. Use a real iOS device for connectivity testing.
-let lastReachable: boolean | null = null
-
-// NetInfo event listener: uses isInternetReachable as primary signal,
-// with isConnected as fast fallback for disconnect detection.
-onlineManager.setEventListener(setOnline => {
-  const unsub = NetInfo.addEventListener(state => {
-    if (state.isInternetReachable !== null) {
-      const wasReachable = lastReachable
-      lastReachable = state.isInternetReachable
-
-      setOnline(state.isInternetReachable)
-
-      // When internet becomes reachable from any non-confirmed state
-      // (null = cold start, false = was offline), invalidate all queries
-      // so active observers refetch fresh data.
-      if (state.isInternetReachable && wasReachable !== true) {
-        queryClient.invalidateQueries()
-      }
-    } else if (state.isConnected === false) {
-      lastReachable = false
-      setOnline(false)
-    }
-  })
-  return () => unsub()
-})
-
 export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   children
 }) => {
+  // manage online status
+  useEffect(() => {
+    return NetInfo.addEventListener(state => {
+      // Use only isConnected — isInternetReachable can be false on working
+      // networks when the reachability check host is blocked (VPN, captive portals).
+      const online = state.isConnected !== false
+
+      onlineManager.setOnline(online)
+    })
+  }, [])
+
   // manage app focus status
   useEffect(() => {
     const sub = AppState.addEventListener('change', onAppStateChange)

@@ -361,16 +361,6 @@ export class BalanceService {
 
     filteredOutChainIds.forEach(chainId => failedChainIds.add(chainId))
 
-    // Detect networks that were included in the streaming request but whose
-    // response was silently omitted (e.g. server-side timeout or indexer
-    // outage after reconnecting from offline). Route them through the
-    // VM module fallback so they still get balances.
-    for (const network of supportedNetworks) {
-      if (!finalResults.has(network.chainId)) {
-        failedChainIds.add(network.chainId)
-      }
-    }
-
     // If the balance API threw, we want to retry for all networks.
     // Otherwise, we only retry failed networks.
     const networksToRetry = balanceApiThrew
@@ -561,18 +551,6 @@ export class BalanceService {
 
     // Add filtered out chain IDs to failed chains for retry
     filteredOutChainIds.forEach(chainId => failedChainIds.add(chainId))
-
-    // Detect networks silently omitted from the streaming response
-    // and route them through the VM module fallback.
-    for (const network of supportedNetworks) {
-      const isNetworkMissing = accounts.every(account => {
-        const accountBalances = finalResults[account.id] ?? []
-        return !accountBalances.some(b => b.chainId === network.chainId)
-      })
-      if (isNetworkMissing) {
-        failedChainIds.add(network.chainId)
-      }
-    }
 
     // If the balance API threw, we want to retry for all networks.
     // Otherwise, we only retry failed networks.
