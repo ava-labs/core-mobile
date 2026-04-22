@@ -10,7 +10,7 @@ import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hook
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
-import { selectHasSolanaAddress } from 'store/account'
+import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
@@ -45,7 +45,7 @@ export const useSwapTokens = (
 ): UseSwapTokensResult => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
-  const hasSolanaAddress = useSelector(selectHasSolanaAddress)
+  const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
 
   const isSolanaBlocked = useMemo(
     () => isSvmChainId(caip2Id) && !hasSolanaAddress,

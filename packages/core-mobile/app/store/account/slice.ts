@@ -166,7 +166,7 @@ export const selectAccountsCount = createSelector(
   (accounts): number => Object.keys(accounts).length
 )
 
-export const selectHasSolanaAddress = createSelector(
+export const selectActiveAccountHasSolanaAddress = createSelector(
   [selectActiveAccount, selectIsSolanaSupportBlocked],
   (activeAccount, isSolanaSupportBlocked) => {
     if (isSolanaSupportBlocked) return false

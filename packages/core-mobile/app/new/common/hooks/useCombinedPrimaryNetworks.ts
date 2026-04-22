@@ -8,7 +8,7 @@ import {
   TEST_PRIMARY_NETWORKS
 } from 'services/network/consts'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectHasSolanaAddress } from 'store/account'
+import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
@@ -26,7 +26,7 @@ export function useCombinedPrimaryNetworks({
 } {
   const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const hasSolanaAddress = useSelector(selectHasSolanaAddress)
+  const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
 
   const hideSolana = hideEmptySolana ? !hasSolanaAddress : false
 

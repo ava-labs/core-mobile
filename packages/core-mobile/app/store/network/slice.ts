@@ -13,7 +13,7 @@ import {
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { selectHasSolanaAddress } from 'store/account'
+import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
@@ -206,7 +206,7 @@ export const selectEnabledNetworks = createSelector(
     selectEnabledChainIds,
     selectIsDeveloperMode,
     selectNetworks,
-    selectHasSolanaAddress
+    selectActiveAccountHasSolanaAddress
   ],
   // eslint-disable-next-line max-params
   (enabledChainIds, isDeveloperMode, networks, hasSolanaAddress) => {
@@ -231,7 +231,7 @@ export const selectEnabledNetworksMap = createSelector(
     selectEnabledChainIds,
     selectIsDeveloperMode,
     selectNetworks,
-    selectHasSolanaAddress
+    selectActiveAccountHasSolanaAddress
   ],
   // eslint-disable-next-line max-params
   (enabledChainIds, isDeveloperMode, networks, hasSolanaAddress) => {
@@ -255,7 +255,7 @@ export const selectEnabledNetworksByTestnet =
   (isTestnet: boolean) => (state: RootState) => {
     const networks = selectNetworks(state)
     const enabledChainIds = selectEnabledChainIds(state)
-    const hasSolanaAddress = selectHasSolanaAddress(state)
+    const hasSolanaAddress = selectActiveAccountHasSolanaAddress(state)
 
     const results: Network[] = []
     for (const chainId of enabledChainIds) {
