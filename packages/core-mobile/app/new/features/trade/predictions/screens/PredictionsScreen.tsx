@@ -1,15 +1,18 @@
 import { ActivityIndicator, useTheme, View } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { EventResponse } from '@avalabs/prediction-market-sdk'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { TradeFilterChip, TradeFilters } from 'common/components/TradeFilters'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
+import {
+  TradeFilterChip,
+  TradeFilters
+} from 'features/trade/components/TradeFilters'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { EventCard } from '../components/EventCard'
 import { useMarketSeries } from '../hooks/useMarketSeries'
 import {
