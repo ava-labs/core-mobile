@@ -37,6 +37,7 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getHasBalanceChange,
   getInitialGasLimit,
   overrideContractItem,
   removeWebsiteItemIfNecessary
@@ -116,9 +117,7 @@ const ApprovalScreen = ({
   }, [displayData.details, request])
 
   const balanceChange = displayData.balanceChange
-  const hasBalanceChange =
-    balanceChange &&
-    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+  const hasBalanceChange = getHasBalanceChange(balanceChange)
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -384,7 +383,7 @@ const ApprovalScreen = ({
   }, [filteredSections, symbol])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
-    if (!hasBalanceChange) return null
+    if (!hasBalanceChange || !balanceChange) return null
 
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])

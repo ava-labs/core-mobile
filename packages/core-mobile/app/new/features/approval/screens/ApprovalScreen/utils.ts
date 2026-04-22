@@ -3,7 +3,8 @@ import {
   DetailItem,
   RpcMethod,
   DetailItemType,
-  SigningData
+  SigningData,
+  BalanceChange
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
@@ -78,4 +79,13 @@ export const getInitialGasLimit = (data: SigningData): number | undefined => {
     return Number(data.data.gasLimit || 0)
   }
   return undefined
+}
+
+export const getHasBalanceChange = (
+  balanceChange: BalanceChange | undefined
+): boolean => {
+  return (
+    !!balanceChange &&
+    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+  )
 }
