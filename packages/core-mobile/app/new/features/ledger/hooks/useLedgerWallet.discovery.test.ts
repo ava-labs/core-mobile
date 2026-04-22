@@ -40,7 +40,8 @@ jest.mock('store/account', () => ({
     type: 'account/setActiveAccountId',
     payload: id
   })),
-  selectActiveAccount: jest.fn(() => undefined)
+  selectActiveAccount: jest.fn(() => undefined),
+  selectHasSolanaAddress: jest.fn(() => false)
 }))
 
 jest.mock('utils/uuid', () => ({

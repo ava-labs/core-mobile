@@ -45,6 +45,7 @@ import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
+import { selectHasSolanaAddress } from 'store/account'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -171,11 +172,14 @@ export const SwapScreen = (): JSX.Element => {
     setToToken
   })
 
+  const hasSolanaAddress = useSelector(selectHasSolanaAddress)
+
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
-    [cChainNetwork?.chainId, solanaNetwork?.chainId].filter(
-      chainId => chainId !== undefined
-    ) as number[]
+    [
+      cChainNetwork?.chainId,
+      hasSolanaAddress ? solanaNetwork?.chainId : undefined
+    ].filter(chainId => chainId !== undefined) as number[]
   )
 
   const { getNetwork } = useNetworks()
