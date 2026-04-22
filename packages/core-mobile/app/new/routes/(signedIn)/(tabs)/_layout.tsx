@@ -143,8 +143,8 @@ export default function TabLayout(): JSX.Element {
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
           //TODO: uncomment when predictions is ready
-          // tabBarItemHidden: isPredictionsBlocked
-          tabBarItemHidden: true
+          // tabBarItemHidden: isPredictionsBlocked,
+          tabBarItemHidden: false
         }}
       />
       <BottomTabs.Screen
