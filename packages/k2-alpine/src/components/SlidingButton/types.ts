@@ -2,7 +2,7 @@ import type React from 'react'
 import type { StyleProp, ViewStyle } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 
-export type SlideState = 'idle' | 'confirming' | 'success' | 'error'
+export type SlideState = 'idle' | 'confirming' | 'error'
 
 export type CommonProps = {
   disabled?: boolean

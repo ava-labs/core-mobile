@@ -34,9 +34,6 @@ export const useSlidingCommit = (
     async (side: 'left' | 'right'): Promise<void> => {
       if (inFlightRef.current) return
       inFlightRef.current = true
-      // Haptic failure on devices without a haptic engine must not influence
-      // the commit lifecycle — swallow rejections (done inside the helper).
-      await fireSuccessHaptic()
       setState('confirming')
       try {
         const current = propsRef.current
@@ -47,6 +44,11 @@ export const useSlidingCommit = (
         } else {
           await current.onConfirmRight()
         }
+        // Success haptic fires only after the caller's confirm resolves, so a
+        // rejected promise doesn't produce a success buzz followed by an error
+        // buzz. Haptic failures are swallowed inside the helper so they can't
+        // influence the commit lifecycle.
+        await fireSuccessHaptic()
         if (isMountedRef.current) {
           translateX.value = withTiming(0, ANIMATED.TIMING_CONFIG)
           setState('idle')

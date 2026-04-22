@@ -142,14 +142,20 @@ const buildAccessibility = (
 } => {
   const disabled = !!props.disabled
   const busy = state === 'confirming'
+  // Gate accessibility-driven commits on the same conditions as the gesture —
+  // `disabled` and non-idle state. `accessibilityState.disabled` is advisory
+  // and screen readers may still forward custom actions; the in-flight ref in
+  // `handleCommit` catches the race but surfacing the guard here is clearer.
+  const inert = disabled || state !== 'idle'
   if (props.mode === 'single') {
     return {
       accessibilityRole: 'button',
       accessibilityLabel: props.label,
-      accessibilityHint: 'Swipe right to confirm',
+      accessibilityHint: 'Activates to confirm',
       accessibilityState: { disabled, busy },
       accessibilityActions: [{ name: ACTIVATE_ACTION, label: props.label }],
       onAccessibilityAction: event => {
+        if (inert) return
         if (event.nativeEvent.actionName === ACTIVATE_ACTION) {
           handleCommit('right')
         }
@@ -159,13 +165,14 @@ const buildAccessibility = (
   return {
     accessibilityRole: 'button',
     accessibilityLabel: `${props.leftLabel} or ${props.rightLabel}`,
-    accessibilityHint: `Swipe left for ${props.leftLabel}, right for ${props.rightLabel}`,
+    accessibilityHint: `Available actions: ${props.leftLabel}, ${props.rightLabel}`,
     accessibilityState: { disabled, busy },
     accessibilityActions: [
       { name: 'left', label: props.leftLabel },
       { name: 'right', label: props.rightLabel }
     ],
     onAccessibilityAction: event => {
+      if (inert) return
       const { actionName } = event.nativeEvent
       if (actionName === 'left') handleCommit('left')
       else if (actionName === 'right') handleCommit('right')
