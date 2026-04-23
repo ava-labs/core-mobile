@@ -3,6 +3,7 @@ import {
   Button,
   GroupList,
   Icons,
+  LeverageGauge,
   Text,
   useTheme,
   View
@@ -31,6 +32,8 @@ const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
+  const [leverage, setLeverage] = useState(2)
+  const [leverageDecimal, setLeverageDecimal] = useState(2)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const { event } = useGetEventDetail(tickerId)
@@ -129,6 +132,32 @@ const EventDetailsScreen = (): JSX.Element => {
           ) : (
             <MultipleOutcomes markets={allOptions} />
           )}
+        </View>
+
+        <View style={{ paddingTop: 24, gap: 8 }}>
+          <Text variant="heading3">Add leverage</Text>
+          <LeverageGauge
+            value={leverage}
+            onChange={setLeverage}
+            min={1}
+            max={40}
+            step={0.2}
+            integersOnly={true}
+            enableManualInput
+          />
+        </View>
+
+        <View style={{ paddingTop: 24, gap: 8 }}>
+          <Text variant="heading3">Add leverage (decimals)</Text>
+          <LeverageGauge
+            value={leverageDecimal}
+            onChange={setLeverageDecimal}
+            min={1}
+            max={40}
+            step={0.2}
+            integersOnly={false}
+            enableManualInput
+          />
         </View>
 
         <View

@@ -1,0 +1,108 @@
+import React, { useState } from 'react'
+import { ScrollView } from 'react-native'
+import { Text } from '../Primitives'
+import { LeverageGauge } from './LeverageGauge'
+
+export default { title: 'LeverageGauge' }
+
+export const Default = (): JSX.Element => {
+  const [value, setValue] = useState(2)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>Default — Min / Max only</Text>
+      <LeverageGauge value={value} onChange={setValue} min={1} max={40} />
+    </ScrollView>
+  )
+}
+
+export const WithNumericPresets = (): JSX.Element => {
+  const [value, setValue] = useState(5)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>Presets: min, 2, 5, 10, max</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        presets={['min', 2, 5, 10, 'max']}
+      />
+    </ScrollView>
+  )
+}
+
+export const ManualInput = (): JSX.Element => {
+  const [value, setValue] = useState(5)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>Tap the large value to edit manually</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        step={0.2}
+        enableManualInput
+      />
+    </ScrollView>
+  )
+}
+
+export const CustomFormat = (): JSX.Element => {
+  const [value, setValue] = useState(3)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>Custom formatValue</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={10}
+        formatValue={v => `×${v.toFixed(1)}`}
+        step={0.5}
+      />
+    </ScrollView>
+  )
+}
+
+export const TinyRange = (): JSX.Element => {
+  const [value, setValue] = useState(2)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>min=1, max=3 — sparse ticks</Text>
+      <LeverageGauge value={value} onChange={setValue} min={1} max={3} />
+    </ScrollView>
+  )
+}
+
+export const HugeRange = (): JSX.Element => {
+  const [value, setValue] = useState(50)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>min=1, max=1000 — virtualization smoke test</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={1000}
+        step={1}
+      />
+    </ScrollView>
+  )
+}
+
+export const NoHaptics = (): JSX.Element => {
+  const [value, setValue] = useState(2)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>Haptics disabled</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        onHapticTick={false}
+      />
+    </ScrollView>
+  )
+}

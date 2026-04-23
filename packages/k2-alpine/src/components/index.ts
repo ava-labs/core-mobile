@@ -64,3 +64,8 @@ export type {
 export * from './AutoSizeTextInput/AutoSizeTextInput'
 export * from './LoadingContent/LoadingContent'
 export * from './BlurViewWithFallback/BlurViewWithFallback'
+export * from './LeverageGauge/LeverageGauge'
+export type {
+  LeverageGaugeProps,
+  Preset as LeverageGaugePreset
+} from './LeverageGauge/types'
