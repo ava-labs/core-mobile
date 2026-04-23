@@ -141,9 +141,8 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     toToken,
     setToToken,
-    bestQuote,
     userQuote,
-    autoAdvancedQuote,
+    activeQuote,
     allQuotes,
     isQuoteLoading,
     setDestination,
@@ -193,10 +192,6 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  // Precedence: explicit user pick > auto-advanced (pre-swap fallback) >
-  // best quote from the stream. autoAdvancedQuote is kept distinct so it
-  // doesn't flip the flow into manual-selection mode.
-  const activeQuote = userQuote ?? autoAdvancedQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
   const {

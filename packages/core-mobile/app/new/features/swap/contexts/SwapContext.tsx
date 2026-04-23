@@ -64,12 +64,13 @@ interface SwapContextState {
   bestQuote: Quote | null
   userQuote: Quote | null
   /**
-   * Quote promoted by pre-swap auto-advance when the best quote fails fee
-   * validation with a provider-specific error. Distinct from userQuote so
-   * swap-time retry (`!userQuote` gate) and analytics (`quoteSelectionMode`)
-   * aren't affected by an automatic promotion.
+   * Effective quote after precedence: userQuote > autoAdvancedQuote >
+   * bestQuote. Single source of truth — consumers should prefer this over
+   * recomputing the chain. autoAdvancedQuote is deliberately kept internal
+   * so the pre-swap auto-advance can't mis-tag analytics or disable
+   * swap-time retry.
    */
-  autoAdvancedQuote: Quote | null
+  activeQuote: Quote | null
   allQuotes: Quote[]
   isQuoteLoading: boolean
   quoteError: Error | null
@@ -134,12 +135,17 @@ export const SwapContextProvider = ({
   // default even if a provider's serviceType+aggregatorId happens to match.
   useEffect(() => {
     setAutoAdvancedQuoteIds(null)
-  }, [fromToken?.internalId, toToken?.internalId, setAutoAdvancedQuoteIds])
+  }, [fromToken?.localId, toToken?.localId, setAutoAdvancedQuoteIds])
 
   const autoAdvancedQuote = useMemo(
     () => matchQuoteByIdentifiers(autoAdvancedQuoteIds, allQuotes),
     [autoAdvancedQuoteIds, allQuotes]
   )
+
+  // Precedence: user manual pick > auto-advanced promotion > stream best.
+  // Centralised so all consumer screens (SwapScreen, pricing/slippage
+  // modals) agree on which quote is currently in use.
+  const activeQuote = userQuote ?? autoAdvancedQuote ?? bestQuote
 
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
@@ -456,7 +462,7 @@ export const SwapContextProvider = ({
     setToToken,
     bestQuote,
     userQuote,
-    autoAdvancedQuote,
+    activeQuote,
     allQuotes,
     isQuoteLoading,
     quoteError,
