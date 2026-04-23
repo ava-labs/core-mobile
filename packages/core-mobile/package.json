@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@avalabs/avalanche-module": "3.7.1",
-    "@avalabs/avalanchejs": "5.1.0-alpha.2",
+    "@avalabs/avalanchejs": "5.1.0-alpha.3",
     "@avalabs/bitcoin-module": "3.7.1",
     "@avalabs/bridge-unified": "4.4.1",
     "@avalabs/core-bridge-sdk": "3.1.0-alpha.85",
