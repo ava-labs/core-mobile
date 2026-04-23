@@ -28,7 +28,7 @@ export const useSendTransactionCallbacks = (): {
       onDismiss: () => void
     }): void => {
       selectedToken &&
-        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+        AnalyticsService.capture('SendTransactionSucceeded', {
           encrypted: {
             chainId: selectedToken.networkChainId,
             txHash

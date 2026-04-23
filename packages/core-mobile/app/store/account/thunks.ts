@@ -125,7 +125,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     if (isDeveloperMode === false) {
       const allAccountsByWalletId = [...Object.values(accountsByWalletId), acc]
 
-      AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+      AnalyticsService.capture('AccountAddressesUpdated', {
         encrypted: {
           addresses: allAccountsByWalletId.map(account => ({
             address: account.addressC,

@@ -233,7 +233,7 @@ const captureSwapAnalytics = (
   }
 
   if (isCompletedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapSuccessful', {
+    AnalyticsService.capture('SwapSuccessful', {
       encrypted: {
         ...addresses,
         sourceTxHash: concludedTransfer.source.txHash,
@@ -242,7 +242,7 @@ const captureSwapAnalytics = (
     })
   } else if (isFailedTransfer(concludedTransfer)) {
     // source is optional on FailedTransfer — tx may not have been submitted
-    AnalyticsService.captureWithEncryption('SwapFailed', {
+    AnalyticsService.capture('SwapFailed', {
       encrypted: {
         ...addresses,
         sourceTxHash: concludedTransfer.source?.txHash,
@@ -252,7 +252,7 @@ const captureSwapAnalytics = (
       }
     })
   } else if (isRefundedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapRefunded', {
+    AnalyticsService.capture('SwapRefunded', {
       encrypted: {
         ...addresses,
         sourceTxHash: concludedTransfer.source.txHash,

@@ -295,10 +295,31 @@ type WithEncrypted<
 > = T
 
 /**
- * Events sent through `captureWithEncryption`. The `encrypted` object is
- * JSON-stringified and encrypted before transport; any sibling fields are
- * sent alongside the encrypted payload as plaintext properties (e.g. for
- * PostHog dashboard filtering).
+ * Ensures `AnalyticsEvents` payloads never declare an `encrypted` field.
+ * The runtime path in `AnalyticsService.capture` dispatches to the encrypt
+ * flow whenever `'encrypted' in properties`; allowing plain events to own
+ * that key would misroute them into the encryption path. A plain event
+ * that grows sensitive data should move to `AnalyticsEncryptedEvents`.
+ *
+ * Exported so the compiler keeps checking this invariant; not intended
+ * for external consumption.
+ */
+type AssertNoEncryptedKey<T> = {
+  [K in keyof T]: T[K] extends undefined
+    ? undefined
+    : 'encrypted' extends keyof NonNullable<T[K]>
+    ? never
+    : T[K]
+}
+export type _AssertAnalyticsEventsHaveNoEncryptedKey =
+  AnalyticsEvents extends AssertNoEncryptedKey<AnalyticsEvents> ? true : never
+
+/**
+ * Events whose payloads contain an `encrypted` object. When a call to
+ * `AnalyticsService.capture` carries one of these events, the `encrypted`
+ * object is JSON-stringified and encrypted before transport; any sibling
+ * fields are sent alongside the encrypted payload as plaintext properties
+ * (e.g. for PostHog dashboard filtering).
  *
  * Rule: put any sensitive field inside `encrypted`. Only add siblings when
  * the field is explicitly meant to be plaintext.

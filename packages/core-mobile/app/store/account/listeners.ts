@@ -191,7 +191,7 @@ const initAccounts = async (
   }
 
   if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+    AnalyticsService.capture('AccountAddressesUpdated', {
       encrypted: {
         addresses: accountValues.map(account => ({
           address: account.addressC,

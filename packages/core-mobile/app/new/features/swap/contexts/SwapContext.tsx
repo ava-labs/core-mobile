@@ -225,7 +225,7 @@ export const SwapContextProvider = ({
         autoRetryAttempt
       } = params
       audioFeedback(Audios.Send)
-      AnalyticsService.captureWithEncryption('SwapConfirmed', {
+      AnalyticsService.capture('SwapConfirmed', {
         encrypted: {
           sourceAddress: address,
           targetAddress,

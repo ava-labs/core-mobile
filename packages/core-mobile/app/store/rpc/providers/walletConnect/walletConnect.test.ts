@@ -89,7 +89,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_success',
           {
             encrypted: {
@@ -114,7 +114,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
             encrypted: expect.objectContaining({
@@ -138,7 +138,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
             encrypted: expect.objectContaining({
@@ -160,7 +160,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
             encrypted: expect.objectContaining({
@@ -182,7 +182,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
           {
             encrypted: expect.objectContaining({
@@ -206,7 +206,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
           {
             encrypted: expect.objectContaining({
@@ -230,7 +230,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics when result is an empty string', async () => {
@@ -245,7 +245,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
     })
 
@@ -262,7 +262,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signTransaction_approved',
           {
             encrypted: {
@@ -286,7 +286,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics for personal_sign', async () => {
@@ -298,7 +298,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics for eth_signTypedData_v4', async () => {
@@ -313,7 +313,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
     })
 

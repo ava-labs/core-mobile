@@ -46,7 +46,7 @@ export const SendScreen = (): JSX.Element => {
   const handleSuccess = useCallback(
     (txHash: string): void => {
       network &&
-        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+        AnalyticsService.capture('SendTransactionSucceeded', {
           encrypted: {
             chainId: network.chainId,
             txHash

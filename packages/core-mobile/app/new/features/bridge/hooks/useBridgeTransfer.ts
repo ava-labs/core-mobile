@@ -72,7 +72,7 @@ export const useBridgeTransfer = ({
       targetChainId: targetNetwork.chainId
     })
 
-    AnalyticsService.captureWithEncryption('BridgeTransactionStarted', {
+    AnalyticsService.capture('BridgeTransactionStarted', {
       encrypted: {
         chainId: sourceNetwork.chainId,
         sourceTxHash: pendingTransfer.sourceTxHash,
