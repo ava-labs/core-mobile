@@ -7,10 +7,10 @@ export type CaptureEventProperties<E extends AnalyticsEventName> =
     ? [AnalyticsEvents[E]?]
     : [AnalyticsEvents[E]]
 
-export type PlaintextProperties<E extends AnalyticsEventName> =
+export type PlaintextArgs<E extends AnalyticsEventName> =
   E extends keyof AnalyticsPlaintextEvents
-    ? AnalyticsPlaintextEvents[E]
-    : undefined
+    ? [AnalyticsPlaintextEvents[E]]
+    : []
 
 export interface AnalyticsServiceInterface {
   setEnabled(isEnabled: boolean): void
@@ -21,6 +21,6 @@ export interface AnalyticsServiceInterface {
   captureWithEncryption<E extends AnalyticsEventName>(
     eventName: E,
     properties: AnalyticsEvents[E],
-    plaintextProperties?: PlaintextProperties<E>
+    ...plaintextProperties: PlaintextArgs<E>
   ): Promise<void>
 }

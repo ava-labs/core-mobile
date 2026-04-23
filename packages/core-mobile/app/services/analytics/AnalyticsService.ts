@@ -8,7 +8,7 @@ import {
   AnalyticsEventName,
   AnalyticsServiceInterface,
   CaptureEventProperties,
-  PlaintextProperties
+  PlaintextArgs
 } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
@@ -49,7 +49,7 @@ class AnalyticsService implements AnalyticsServiceInterface {
   async captureWithEncryption<E extends AnalyticsEventName>(
     eventName: E,
     properties: AnalyticsEvents[E],
-    plaintextProperties?: PlaintextProperties<E>
+    ...plaintextProperties: PlaintextArgs<E>
   ): Promise<void> {
     if (!this.isEnabled) {
       return
@@ -67,7 +67,7 @@ class AnalyticsService implements AnalyticsServiceInterface {
         data: encrypted,
         enc,
         keyID: keyID,
-        ...plaintextProperties
+        ...(plaintextProperties[0] as Record<string, unknown>)
       })
     } catch (error) {
       Logger.error(
