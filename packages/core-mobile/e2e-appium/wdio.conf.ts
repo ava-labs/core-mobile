@@ -69,7 +69,7 @@ const allCaps = [
     ...(chromedriverExecutableDir
       ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
       : {}),
-    'appium:appWaitActivity': '*',
+    'appium:appWaitDuration': 60000,
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
