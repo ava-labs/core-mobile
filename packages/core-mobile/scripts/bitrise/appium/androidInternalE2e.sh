@@ -36,6 +36,21 @@ fi
 # Verify installation
 "$APPIUM_BIN" driver list || true
 
+echo "=== Checking app installation ==="
+adb shell pm list packages | grep com.avaxwallet.internal
+
+echo "=== Launching app manually to verify startup ==="
+adb shell am force-stop com.avaxwallet.internal
+adb logcat -c
+adb shell am start -W com.avaxwallet.internal/com.avaxwallet.MainActivity
+
+sleep 3
+echo "=== Current top activity ==="
+adb shell dumpsys activity activities | grep -E "mResumedActivity|topResumedActivity"
+
+echo "=== Crash / ANR / Splash logs ==="
+adb logcat -d | grep -E "AndroidRuntime|ANR|FATAL EXCEPTION|com.avaxwallet.internal|Splash|ReactNativeJS|AppRegistry" | tail -30
+
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running ANDROID SMOKE tests"
   yarn appium:smokeAndroid
