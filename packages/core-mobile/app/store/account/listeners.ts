@@ -199,7 +199,7 @@ const initAccounts = async (
           addressAVM: account.addressAVM ?? '',
           addressPVM: account.addressPVM ?? '',
           addressCoreEth: account.addressCoreEth ?? '',
-          addressSVM: acc.addressSVM ?? ''
+          addressSVM: account.addressSVM ?? ''
         }))
       }
     })
