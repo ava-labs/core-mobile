@@ -240,26 +240,32 @@ const captureSwapAnalytics = (
   }
 
   if (isCompletedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapSuccessful', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source.txHash,
-      targetTxHash: concludedTransfer.target?.txHash
+    AnalyticsService.capture('SwapSuccessful', {
+      encrypted: {
+        ...addresses,
+        sourceTxHash: concludedTransfer.source.txHash,
+        targetTxHash: concludedTransfer.target?.txHash
+      }
     })
   } else if (isFailedTransfer(concludedTransfer)) {
     // source is optional on FailedTransfer — tx may not have been submitted
-    AnalyticsService.captureWithEncryption('SwapFailed', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source?.txHash,
-      targetTxHash: concludedTransfer.target?.txHash,
-      errorCode: concludedTransfer.errorCode?.toString(),
-      errorReason: concludedTransfer.errorReason ?? undefined
+    AnalyticsService.capture('SwapFailed', {
+      encrypted: {
+        ...addresses,
+        sourceTxHash: concludedTransfer.source?.txHash,
+        targetTxHash: concludedTransfer.target?.txHash,
+        errorCode: concludedTransfer.errorCode?.toString(),
+        errorReason: concludedTransfer.errorReason ?? undefined
+      }
     })
   } else if (isRefundedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapRefunded', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source.txHash,
-      targetTxHash: concludedTransfer.target?.txHash,
-      refundTxHash: concludedTransfer.refund.txHash ?? undefined
+    AnalyticsService.capture('SwapRefunded', {
+      encrypted: {
+        ...addresses,
+        sourceTxHash: concludedTransfer.source.txHash,
+        targetTxHash: concludedTransfer.target?.txHash,
+        refundTxHash: concludedTransfer.refund.txHash ?? undefined
+      }
     })
   }
 }

@@ -3,8 +3,12 @@ import {
   DetailItem,
   RpcMethod,
   DetailItemType,
-  SigningData
+  SigningData,
+  BalanceChange,
+  NetworkTokenWithBalance
 } from '@avalabs/vm-module-types'
+import { validateFee } from 'common/hooks/send/utils/evm/validate'
+import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
@@ -78,4 +82,45 @@ export const getInitialGasLimit = (data: SigningData): number | undefined => {
     return Number(data.data.gasLimit || 0)
   }
   return undefined
+}
+
+export const getHasBalanceChange = (
+  balanceChange: BalanceChange | undefined
+): boolean => {
+  return (
+    !!balanceChange &&
+    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+  )
+}
+
+export const getEthSendTxValidationError = ({
+  gasLimit,
+  maxFeePerGas,
+  sendValue,
+  nativeToken
+}: {
+  gasLimit: number | undefined
+  maxFeePerGas: bigint | undefined
+  sendValue?: string | number | bigint | null
+  nativeToken: NetworkTokenWithBalance
+}): string | undefined => {
+  try {
+    const gasLimitToValidate = gasLimit ? BigInt(gasLimit) : 0n
+    const amount = sendValue ? BigInt(sendValue) : 0n
+
+    validateFee({
+      gasLimit: gasLimitToValidate,
+      maxFee: maxFeePerGas || 0n,
+      amount,
+      nativeToken,
+      token: nativeToken
+    })
+
+    return undefined
+  } catch (err) {
+    if (err instanceof Error) {
+      return err.message
+    }
+    return SendErrorMessage.UNKNOWN_ERROR
+  }
 }

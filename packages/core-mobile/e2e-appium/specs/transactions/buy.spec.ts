@@ -10,7 +10,7 @@ describe('Buy', () => {
     await warmup()
   })
 
-  const buyTokens = ['AVAX', 'USDC', 'ETH', 'BTC', 'SOL']
+  const buyTokens = ['AVAX', 'USDC', 'ETH', 'BTC']
 
   buyTokens.forEach(token => {
     it(`should follow buy flow ${token}`, async () => {

@@ -16,6 +16,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Params = {
   maxFeePerGas: bigint | undefined
+  maxPriorityFeePerGas: bigint | undefined
+  gasLimit: number | undefined
+  overrideData: string | undefined
   signingData: SigningData
   caip2ChainId: string
 }
@@ -31,6 +34,9 @@ type Return = {
 export const useGasless = ({
   signingData,
   maxFeePerGas,
+  maxPriorityFeePerGas,
+  gasLimit,
+  overrideData,
   caip2ChainId
 }: Params): Return => {
   const { getNetwork } = useNetworks()
@@ -91,7 +97,7 @@ export const useGasless = ({
     let attempts = 0
     const MAX_ATTEMPTS = 1
 
-    if (!network) {
+    if (!network || !chainId) {
       showGaslessError()
       return undefined
     }
@@ -106,7 +112,11 @@ export const useGasless = ({
         GaslessService.fundTx({
           signingData,
           addressFrom,
+          chainId,
           maxFeePerGas,
+          maxPriorityFeePerGas,
+          gasLimit,
+          overrideData,
           provider,
           waitForConfirmation: isGaslessInstantBlocked
         })

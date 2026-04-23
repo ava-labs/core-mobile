@@ -24,6 +24,7 @@ export const onApprove = async ({
   maxPriorityFeePerGas,
   gasLimit,
   overrideData,
+  onSigned,
   signingData,
   resolve
 }: OnApproveParams & {
@@ -67,6 +68,7 @@ export const onApprove = async ({
         maxPriorityFeePerGas,
         gasLimit,
         overrideData,
+        onSigned,
         resolve
       })
       break
