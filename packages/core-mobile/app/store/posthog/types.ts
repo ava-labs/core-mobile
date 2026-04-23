@@ -60,7 +60,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]: false,
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
   [FeatureGates.LEGACY_BRIDGE]: false,
-  [FeatureGates.INJECTED_PROVIDER]: false
+  [FeatureGates.INJECTED_PROVIDER]: false,
+  [FeatureGates.PREDICTIONS]: false
 }
 
 export const initialState = {

@@ -144,6 +144,10 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
+              name="(modals)/marketDetail"
+              options={stackNavigatorScreenOptions}
+            />
+            <Stack.Screen
               name="(modals)/collectibleManagement"
               options={modalScreensOptions}
             />

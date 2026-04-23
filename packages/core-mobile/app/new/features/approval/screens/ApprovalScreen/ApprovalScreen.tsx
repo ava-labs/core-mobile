@@ -2,8 +2,6 @@ import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { validateFee } from 'common/hooks/send/utils/evm/validate'
-import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
@@ -37,6 +35,8 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getEthSendTxValidationError,
+  getHasBalanceChange,
   getInitialGasLimit,
   overrideContractItem,
   removeWebsiteItemIfNecessary
@@ -74,6 +74,10 @@ const ApprovalScreen = ({
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
   >()
+
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
+
   const {
     gaslessEnabled,
     setGaslessEnabled,
@@ -83,6 +87,9 @@ const ApprovalScreen = ({
   } = useGasless({
     signingData,
     maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    overrideData: hashedCustomSpend,
     caip2ChainId
   })
 
@@ -93,9 +100,6 @@ const ApprovalScreen = ({
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
     submitting ||
     amountError !== undefined
-
-  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals)
 
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
@@ -112,9 +116,7 @@ const ApprovalScreen = ({
   }, [displayData.details, request])
 
   const balanceChange = displayData.balanceChange
-  const hasBalanceChange =
-    balanceChange &&
-    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+  const hasBalanceChange = getHasBalanceChange(balanceChange)
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -133,37 +135,11 @@ const ApprovalScreen = ({
     onReject()
   }, [cancelLedger, isLedger, onReject])
 
-  const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
-    if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
-
-    if (!account) return false
-    const txHash = await handleGaslessTx(account.addressC)
-    if (!txHash) return false
-
-    // flag VM-module retry via request context instead of mutating tx data
-    request.context = {
-      ...request.context,
-      [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
-    }
-    return true
-  }, [
-    shouldShowGaslessSwitch,
-    gaslessEnabled,
-    handleGaslessTx,
-    account,
-    request,
-    isGaslessInstantBlocked
-  ])
-
   const handleApprove = useCallback(async (): Promise<void> => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    const canProceed = await handleGaslessPreApprove()
-    if (!canProceed) {
-      setSubmitting(false)
-      return
-    }
+    const isGasless = shouldShowGaslessSwitch && gaslessEnabled
 
     try {
       await onApprove({
@@ -174,7 +150,21 @@ const ApprovalScreen = ({
         maxFeePerGas,
         maxPriorityFeePerGas,
         gasLimit,
-        overrideData: hashedCustomSpend
+        overrideData: hashedCustomSpend,
+        // For gasless: fund after signing but before broadcasting.
+        // This ensures the gas station is only called once we have
+        // a signed tx, preventing wasted funding on rejected signs.
+        onSigned: isGasless
+          ? async () => {
+              if (!account) return false
+              request.context = {
+                ...request.context,
+                [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
+              }
+              const txHash = await handleGaslessTx(account.addressC)
+              return !!txHash
+            }
+          : undefined
       })
       // For Ledger, the controller sets the store and navigation is handled
       // by ApprovalController.handleGoBackIfNeeded after signing completes
@@ -188,7 +178,8 @@ const ApprovalScreen = ({
     }
   }, [
     approveDisabled,
-    handleGaslessPreApprove,
+    shouldShowGaslessSwitch,
+    gaslessEnabled,
     onApprove,
     activeWallet.id,
     activeWallet.type,
@@ -198,6 +189,9 @@ const ApprovalScreen = ({
     maxPriorityFeePerGas,
     gasLimit,
     hashedCustomSpend,
+    isGaslessInstantBlocked,
+    handleGaslessTx,
+    request,
     isLedger
   ])
 
@@ -216,28 +210,13 @@ const ApprovalScreen = ({
       return
     }
 
-    const ethSendTx = signingData.data
-
-    try {
-      const gasLimitToValidate = gasLimit ? BigInt(gasLimit) : 0n
-      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
-
-      validateFee({
-        gasLimit: gasLimitToValidate,
-        maxFee: maxFeePerGas || 0n,
-        amount,
-        nativeToken,
-        token: nativeToken
-      })
-
-      setAmountError(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        setAmountError(err.message)
-      } else {
-        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
-      }
-    }
+    const error = getEthSendTxValidationError({
+      gasLimit,
+      maxFeePerGas,
+      sendValue: signingData.data.value,
+      nativeToken
+    })
+    setAmountError(error)
   }, [
     signingData,
     network?.networkToken,
@@ -388,7 +367,7 @@ const ApprovalScreen = ({
   }, [filteredSections, symbol])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
-    if (!hasBalanceChange) return null
+    if (!hasBalanceChange || !balanceChange) return null
 
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])

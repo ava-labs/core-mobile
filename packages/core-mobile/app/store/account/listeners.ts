@@ -191,15 +191,17 @@ const initAccounts = async (
   }
 
   if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: accountValues.map(account => ({
-        address: account.addressC,
-        addressBtc: account.addressBTC,
-        addressAVM: account.addressAVM ?? '',
-        addressPVM: account.addressPVM ?? '',
-        addressCoreEth: account.addressCoreEth ?? '',
-        addressSVM: acc.addressSVM ?? ''
-      }))
+    AnalyticsService.capture('AccountAddressesUpdated', {
+      encrypted: {
+        addresses: accountValues.map(account => ({
+          address: account.addressC,
+          addressBtc: account.addressBTC,
+          addressAVM: account.addressAVM ?? '',
+          addressPVM: account.addressPVM ?? '',
+          addressCoreEth: account.addressCoreEth ?? '',
+          addressSVM: account.addressSVM ?? ''
+        }))
+      }
     })
   }
 
@@ -297,11 +299,19 @@ const migrateSolanaAddressesIfNeeded = async (
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
+  const seedlessWallet = selectSeedlessWallet(state)
+  const hasAccountsWithoutSVM = entries.some(account =>
+    isAddressMissing(account.addressSVM)
+  )
+  const hasSeedlessAccountsWithoutSVM = entries.some(
+    account =>
+      isAddressMissing(account.addressSVM) &&
+      account.walletId === seedlessWallet?.id
+  )
 
   // Only migrate Solana addresses if Solana support is enabled
-  if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
-    const seedlessWallet = selectSeedlessWallet(state)
-    if (seedlessWallet) {
+  if (!isSolanaSupportBlocked && hasAccountsWithoutSVM) {
+    if (seedlessWallet && hasSeedlessAccountsWithoutSVM) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses

@@ -316,7 +316,9 @@ export const CollectiblesScreen = ({
         onRefresh={pullToRefresh}
         numColumns={columns}
         extraData={{ view, sort, filter }}
-        listKey={`collectibles-list-${listType}`}
+        listKey={`collectibles-list-${listType}-${sort.selected}-${(
+          filter.selected ?? []
+        ).join('-')}`}
         columnItems={columnItems}
         nestedScrollEnabled
         removeClippedSubviews={Platform.OS === 'android'}

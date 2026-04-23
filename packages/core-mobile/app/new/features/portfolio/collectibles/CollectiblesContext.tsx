@@ -100,31 +100,38 @@ export const CollectiblesProvider = ({
   )
 
   const processImageData = useCallback(
-    (localId: NftLocalId, logoUri: string): void => {
-      if (logoUri)
-        NftProcessor.fetchImageAndAspect(logoUri)
-          .then(result => {
-            setImageData(prevData => ({
-              ...prevData,
-              [localId]: result
-            }))
-            setStatusData(prevData => ({
-              ...prevData,
-              [localId]: NftLocalStatus.Processed
-            }))
-          })
-          .catch(e => {
-            setStatusData(prevData => ({
-              ...prevData,
-              [localId]: NftLocalStatus.Unprocessable
-            }))
-            Logger.error(e)
-          })
-      else
+    (localId: NftLocalId, uri: string | undefined): void => {
+      if (!uri) {
+        setImageData(prevData => {
+          if (!(localId in prevData)) return prevData
+          const { [localId]: _removed, ...rest } = prevData
+          return rest
+        })
         setStatusData(prevData => ({
           ...prevData,
           [localId]: NftLocalStatus.Unprocessable
         }))
+        return
+      }
+
+      NftProcessor.fetchImage(uri)
+        .then(result => {
+          setImageData(prevData => ({
+            ...prevData,
+            [localId]: result
+          }))
+          setStatusData(prevData => ({
+            ...prevData,
+            [localId]: NftLocalStatus.Processed
+          }))
+        })
+        .catch(e => {
+          setStatusData(prevData => ({
+            ...prevData,
+            [localId]: NftLocalStatus.Unprocessable
+          }))
+          Logger.error(e)
+        })
     },
     []
   )
@@ -142,7 +149,7 @@ export const CollectiblesProvider = ({
       if (tokenUri)
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
-            processImageData(localId, result.image)
+            processImageData(localId, result.image || result.animation_url)
             setProcessedMetadata(prevData => ({
               ...prevData,
               [localId]: result
@@ -166,85 +173,87 @@ export const CollectiblesProvider = ({
   const process = useCallback(
     (items: UnprocessedNftItem[]): void => {
       for (const item of items) {
-        // if logoUri is present, no need to fetch metadata
-        if (!item.logoUri) {
+        if (item.logoUri) {
+          processImageData(item.localId, item.logoUri)
+        } else {
           processMetadata({
             localId: item.localId,
             tokenId: item.tokenId,
             tokenUri: item.tokenUri
           })
         }
-        processImageData(item.localId, item.logoUri)
       }
     },
     [processImageData, processMetadata]
   )
 
-  const refreshMetadata = async (
-    nft: NftItem,
-    chainId: number
-  ): Promise<void> => {
-    setIsRefreshing(prevData => ({
-      ...prevData,
-      [nft.localId]: true
-    }))
-
-    try {
-      const newMetadata = await GlacierNftProvider.reindexNft(
-        nft.address,
-        chainId,
-        nft.tokenId
-      )
-
-      newMetadata.imageUri &&
-        processImageData(nft.localId, newMetadata.imageUri)
-
-      const updatedTimestamp = newMetadata.metadataLastUpdatedTimestamp
-
-      if (isPositiveNumber(updatedTimestamp)) {
-        setLastUpdatedTimestamp(prevData => ({
-          ...prevData,
-          [nft.localId]: updatedTimestamp
-        }))
-      }
-
-      setProcessedMetadata(prevData => {
-        const existingMetaData = prevData[nft.localId]
-
-        if (!existingMetaData) return prevData
-
-        return {
-          ...prevData,
-          [nft.localId]: {
-            ...existingMetaData,
-            ...(newMetadata.description && {
-              description: newMetadata.description
-            }),
-            ...(newMetadata.name && { name: newMetadata.name }),
-            ...(newMetadata.imageUri && { image: newMetadata.imageUri }),
-            ...(newMetadata.externalUrl && {
-              external_url: newMetadata.externalUrl
-            }),
-            ...(newMetadata.animationUri && {
-              animation_url: newMetadata.animationUri
-            })
-          }
-        }
-      })
-
-      showSnackbar('NFT refreshed successfully')
-    } catch (e) {
-      Logger.error('Failed to refresh nft', e)
-      showSnackbar(
-        'This is taking longer than expected. Please try again later.'
-      )
-    } finally {
+  const refreshMetadata = useCallback(
+    async (nft: NftItem, chainId: number): Promise<void> => {
       setIsRefreshing(prevData => ({
         ...prevData,
-        [nft.localId]: false
+        [nft.localId]: true
       }))
-    }
-  }
+
+      try {
+        const newMetadata = await GlacierNftProvider.reindexNft(
+          nft.address,
+          chainId,
+          nft.tokenId
+        )
+
+        processImageData(
+          nft.localId,
+          newMetadata.imageUri || newMetadata.animationUri
+        )
+
+        const updatedTimestamp = newMetadata.metadataLastUpdatedTimestamp
+
+        if (isPositiveNumber(updatedTimestamp)) {
+          setLastUpdatedTimestamp(prevData => ({
+            ...prevData,
+            [nft.localId]: updatedTimestamp
+          }))
+        }
+
+        setProcessedMetadata(prevData => {
+          const existingMetaData = prevData[nft.localId]
+
+          if (!existingMetaData) return prevData
+
+          return {
+            ...prevData,
+            [nft.localId]: {
+              ...existingMetaData,
+              ...(newMetadata.description && {
+                description: newMetadata.description
+              }),
+              ...(newMetadata.name && { name: newMetadata.name }),
+              ...(newMetadata.imageUri && { image: newMetadata.imageUri }),
+              ...(newMetadata.externalUrl && {
+                external_url: newMetadata.externalUrl
+              }),
+              ...(newMetadata.animationUri && {
+                animation_url: newMetadata.animationUri
+              })
+            }
+          }
+        })
+
+        showSnackbar('NFT refreshed successfully')
+      } catch (e) {
+        Logger.error('Failed to refresh nft', e)
+        showSnackbar(
+          'This is taking longer than expected. Please try again later.'
+        )
+      } finally {
+        setIsRefreshing(prevData => ({
+          ...prevData,
+          [nft.localId]: false
+        }))
+      }
+    },
+    [processImageData]
+  )
 
   const isCollectibleRefreshing = useCallback(
     (localId: NftLocalId) => {

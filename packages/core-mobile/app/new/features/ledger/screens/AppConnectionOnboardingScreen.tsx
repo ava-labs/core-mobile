@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { Alert } from 'react-native'
@@ -10,8 +10,6 @@ import {
   PublicKeyInfo
 } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
-import { WalletType } from 'services/wallet/types'
-import { onWalletImported } from 'store/app/slice'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
@@ -19,7 +17,7 @@ import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExi
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
-  onNavigateToComplete: () => void
+  onNavigateToComplete: (walletId?: string) => void
   showConnectionToasts: boolean
   showCancelOnComplete: boolean
 }
@@ -33,7 +31,6 @@ export const AppConnectionOnboardingScreen = ({
   const { setLedgerAddress } = useSetLedgerAddress()
   const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
   const { canGoBack, back } = useRouter()
-  const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   // useRef instead of useState: the ref flips synchronously, so a second tap
   // cannot enter handleComplete before the first invocation finishes. useState
@@ -155,18 +152,7 @@ export const AppConnectionOnboardingScreen = ({
         })
 
         LedgerService.stopAppPolling()
-        onNavigateToComplete()
-
-        // Trigger background discovery for accounts 1-9.
-        // This runs after navigation — the user doesn't wait.
-        const walletType =
-          derivationPath === LedgerDerivationPathType.BIP44
-            ? WalletType.LEDGER
-            : WalletType.LEDGER_LIVE
-
-        setTimeout(() => {
-          dispatch(onWalletImported({ walletId, walletType }))
-        }, 1500)
+        onNavigateToComplete(walletId)
       } catch (error) {
         Logger.error('Wallet creation failed', error)
         Alert.alert(
@@ -192,7 +178,6 @@ export const AppConnectionOnboardingScreen = ({
       isDeveloperMode,
       onNavigateToComplete,
       handleCancel,
-      dispatch,
       checkIfLedgerWalletExists
     ]
   )
