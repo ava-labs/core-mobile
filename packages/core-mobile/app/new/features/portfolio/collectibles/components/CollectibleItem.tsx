@@ -8,7 +8,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
 import { NftItem } from 'services/nft/types'
@@ -59,7 +58,6 @@ export const CollectibleItem = memo(
         index={index}
         onPress={onPress}
         onLoaded={onLoaded}
-        entering={getListItemEnteringAnimation(index)}
         rendererProps={{
           videoProps: {
             muted: true,
