@@ -505,10 +505,28 @@ export function createInjectedProviderRouter(
     const { method, params } = rpc
 
     const nativeOrigin = getNativeOrigin()
+
+    // Origin mismatch — the shim-reported origin disagrees with the origin
+    // tracked by the WebView's navigation state. Either a race during
+    // cross-origin navigation (rare) or a sign the page is trying to spoof
+    // its origin (hostile). Either way, refuse the request.
+    //
+    // Note: if the shim provides `pageOrigin` but `nativeOrigin` is missing
+    // (e.g., first RPC arrives before onNavigationStateChange has fired),
+    // we deliberately fall through to the `!nativeOrigin` gate below. We
+    // can't verify the shim's claim without a native anchor, so 4100
+    // "unauthorized" is the right response — not "invalidRequest," since
+    // the payload itself is well-formed.
     if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
       Logger.warn(
-        `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
+        `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
+      sendResponse(
+        id,
+        rpcErrors.invalidRequest('Origin mismatch'),
+        undefined
+      )
+      return
     }
 
     Logger.trace(`[InjectedProvider] ${method}`, params)
@@ -522,17 +540,20 @@ export function createInjectedProviderRouter(
       return
     }
 
-    if (nativeOrigin) {
-      trackPendingOrigin(id, nativeOrigin)
-    } else if (method in SIGNING_METHODS) {
-      // Signing methods require a verified page origin — reject without one.
+    // Every method requires a known native origin. Requests that arrive
+    // before the WebView has reported its first URL, or from an iframe or
+    // about:blank context, have no authoritative origin to gate on — reject
+    // rather than silently treat them as unscoped.
+    if (!nativeOrigin) {
       sendResponse(
         id,
-        rpcErrors.internal('Origin unavailable — cannot sign'),
+        providerErrors.unauthorized('Origin unavailable'),
         undefined
       )
       return
     }
+
+    trackPendingOrigin(id, nativeOrigin)
 
     // Ensure params is always an array for handlers that expect one.
     // wallet_watchAsset is the only method that legitimately accepts object-form
