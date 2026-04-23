@@ -828,15 +828,14 @@ function extractFirstDescribeTitle(src) {
  * @param {string | null} outerDescribe
  */
 function collectItAndDescribeTitles(content, outerDescribe) {
-  const out = []
-  const re = /\b(?:it|describe)\s*\(\s*['"]([^'"]+)['"]/g
-  let m
-  while ((m = re.exec(content)) !== null) {
-    if (outerDescribe == null || m[1] !== outerDescribe) {
-      out.push(m[1])
-    }
+  const fromIt = extractStaticItTitles(content)
+  const fromDesc = extractAllStaticDescribeTitles(content)
+  const merged = [...fromDesc, ...fromIt]
+  if (outerDescribe != null) {
+    const idx = merged.indexOf(outerDescribe)
+    if (idx >= 0) merged.splice(idx, 1)
   }
-  return out
+  return merged
 }
 
 /** @type {Record<string, (relLower: string, text: string) => boolean>} */
@@ -1008,7 +1007,7 @@ function computeE2eFeatureBreadth(specEntries, foldersInScope) {
     const matchedPrimary = inferMatchedFeatureFolders(
       foldersInScope,
       primaryCorpus,
-      { minTokenLen: 4 }
+      { minTokenLen: 3 }
     )
     const looseTitles = collectItAndDescribeTitles(content, describeTitle)
     const matchedLoose = inferMatchedFeatureFolders(
@@ -1157,6 +1156,25 @@ function extractStaticItTitles(src) {
   const titles = []
   const re =
     /\b(?:it|test)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
+  let m
+  while ((m = re.exec(src)) !== null) {
+    const q = m[1]
+    const inner = unescapeJsString(m[2])
+    if (q === '`' && inner.includes('${')) continue
+    titles.push(inner)
+  }
+  return titles
+}
+
+/**
+ * Static `describe` / `describe.skip` / `describe.only` / `context` titles (breadth loose corpus).
+ * @param {string} src
+ * @returns {string[]}
+ */
+function extractAllStaticDescribeTitles(src) {
+  const titles = []
+  const re =
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
   let m
   while ((m = re.exec(src)) !== null) {
     const q = m[1]
