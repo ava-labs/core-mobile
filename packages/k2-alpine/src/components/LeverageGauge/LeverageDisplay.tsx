@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import React, { FC, memo, useEffect, useRef, useState } from 'react'
 import { Pressable, TextInput, TextStyle } from 'react-native'
 import {
   Canvas,
@@ -43,7 +43,7 @@ type LeverageDisplayProps = {
   onManualCommit: (v: number) => void
 }
 
-export const LeverageDisplay: FC<LeverageDisplayProps> = ({
+const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   value,
   currentValue,
   isActive,
@@ -325,6 +325,11 @@ export const LeverageDisplay: FC<LeverageDisplayProps> = ({
   )
 }
 
+// Memoized — wheel swipes cause the parent to re-render frequently, and
+// LeverageDisplay hosts a Skia canvas + many derived values. Bailing on
+// identical-props renders keeps JS-thread cost flat during fast swipes.
+export const LeverageDisplay = memo(LeverageDisplayInner)
+
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 /**
@@ -375,6 +380,12 @@ const AnimatedNumber: FC<{
     const w = font.measureText(widest + '×').width
     return Math.ceil(w) + 4
   }, [font, max, decimals])
+  // × glyph width is stable for a given font — cache it so the UI-thread
+  // layout derived value doesn't call measureText per frame.
+  const xGlyphWidth = React.useMemo(
+    () => (font ? font.measureText('×').width : 0),
+    [font]
+  )
 
   const layout = useDerivedValue(() => {
     const raw = currentValue.value
@@ -418,8 +429,7 @@ const AnimatedNumber: FC<{
       widths.push(w)
       numberWidth += w
     }
-    const xWidth = font ? font.measureText('×').width : 0
-    const totalWidth = numberWidth + X_GAP + xWidth
+    const totalWidth = numberWidth + X_GAP + xGlyphWidth
     const startX = (canvasWidth - totalWidth) / 2
     const xs: number[] = []
     let cursor = startX

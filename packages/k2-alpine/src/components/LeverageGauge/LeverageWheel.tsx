@@ -8,7 +8,7 @@ import {
   useFont,
   vec
 } from '@shopify/react-native-skia'
-import React, { FC, useMemo } from 'react'
+import React, { FC, memo, useMemo } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import {
   Easing,
@@ -85,7 +85,7 @@ type TickDescriptor = {
   isMajor: boolean
 }
 
-export const LeverageWheel: FC<LeverageWheelProps> = ({
+const LeverageWheelInner: FC<LeverageWheelProps> = ({
   currentValue,
   isActive,
   isProgrammatic,
@@ -418,6 +418,12 @@ export const LeverageWheel: FC<LeverageWheelProps> = ({
     </GestureDetector>
   )
 }
+
+// Memoized — callers MUST pass stable onChange/onCommit refs (see
+// LeverageGauge's stableOnChange/stableOnCommit) or the bail-out doesn't
+// help. Skips reconciling the whole Skia canvas + 196 TickMarks when the
+// parent re-renders for unrelated reasons.
+export const LeverageWheel = memo(LeverageWheelInner)
 
 /**
  * Single tick on the ruler. Height animates with currentValue — the tick at

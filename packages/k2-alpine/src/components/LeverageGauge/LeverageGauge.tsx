@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AccessibilityInfo } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Easing, useSharedValue, withTiming } from 'react-native-reanimated'
@@ -12,6 +12,10 @@ import type { LeverageGaugeProps, Preset } from './types'
 
 const DEFAULT_PRESETS: Preset[] = ['min', 'max']
 const noop = (): void => undefined
+// Hoisted so the default `formatValue` has a stable reference across
+// renders — otherwise the LeverageDisplay memo bailout breaks whenever
+// the consumer doesn't pass their own formatValue.
+const DEFAULT_FORMAT_VALUE = (v: number): string => `${v}×`
 
 export const LeverageGauge: FC<LeverageGaugeProps> = ({
   value,
@@ -21,7 +25,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   step = 1,
   presets = DEFAULT_PRESETS,
   enableManualInput = false,
-  formatValue = v => `${v}×`,
+  formatValue = DEFAULT_FORMAT_VALUE,
   subtitle,
   decimals,
   integersOnly = false,
@@ -29,6 +33,22 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   onCommit = noop,
   testID
 }) => {
+  // Stabilize `onChange` / `onCommit` behind refs so downstream memoized
+  // components (LeverageWheel / LeverageDisplay) can bail out of re-renders
+  // even when the consumer passes fresh callbacks every parent render. The
+  // refs themselves are stable; the actual functions inside them are
+  // refreshed in an effect so closures remain up-to-date.
+  const onChangeRef = useRef(onChange)
+  const onCommitRef = useRef(onCommit)
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+  useEffect(() => {
+    onCommitRef.current = onCommit
+  }, [onCommit])
+  const stableOnChange = useCallback((v: number) => onChangeRef.current(v), [])
+  const stableOnCommit = useCallback((v: number) => onCommitRef.current(v), [])
+
   // When integersOnly, force the snap step to at least 1 so the wheel
   // locks to integer positions regardless of the caller-supplied step.
   const effectiveStep = integersOnly ? Math.max(1, Math.round(step)) : step
@@ -97,8 +117,8 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
           isActive.value = false
           isProgrammatic.value = false
           if (finished) {
-            scheduleOnRN(onChange, snapped)
-            scheduleOnRN(onCommit, snapped)
+            scheduleOnRN(stableOnChange, snapped)
+            scheduleOnRN(stableOnCommit, snapped)
           }
         }
       )
@@ -107,8 +127,8 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
       currentValue,
       isActive,
       isProgrammatic,
-      onChange,
-      onCommit,
+      stableOnChange,
+      stableOnCommit,
       vMin,
       vMax,
       vStep
@@ -119,10 +139,10 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     (v: number) => {
       const snapped = snapToStep(clamp(v, vMin, vMax), vMin, vStep)
       currentValue.value = snapped
-      onChange(snapped)
-      onCommit(snapped)
+      stableOnChange(snapped)
+      stableOnCommit(snapped)
     },
-    [currentValue, onChange, onCommit, vMin, vMax, vStep]
+    [currentValue, stableOnChange, stableOnCommit, vMin, vMax, vStep]
   )
 
   const handleAccessibilityAction = useCallback(
@@ -131,11 +151,11 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
       if (action !== 'increment' && action !== 'decrement') return
       const delta = action === 'increment' ? vStep : -vStep
       const next = snapToStep(clamp(value + delta, vMin, vMax), vMin, vStep)
-      onChange(next)
-      onCommit(next)
+      stableOnChange(next)
+      stableOnCommit(next)
       AccessibilityInfo.announceForAccessibility(formatValue(next))
     },
-    [value, vMin, vMax, vStep, onChange, onCommit, formatValue]
+    [value, vMin, vMax, vStep, stableOnChange, stableOnCommit, formatValue]
   )
 
   if (!isValid) {
@@ -202,8 +222,8 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
           max={vMax}
           step={vStep}
           integersOnly={integersOnly}
-          onChange={onChange}
-          onCommit={onCommit}
+          onChange={stableOnChange}
+          onCommit={stableOnCommit}
           onHapticTick={onHapticTick}
         />
       </View>
