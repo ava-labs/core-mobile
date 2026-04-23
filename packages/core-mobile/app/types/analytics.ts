@@ -366,6 +366,6 @@ export type AnalyticsEvents = {
 }
 
 export type AnalyticsPlaintextEvents = {
-  SendTransactionSucceeded: { chainId: string }
-  SwapConfirmed: { sourceChainId: string; targetChainId: string }
+  SendTransactionSucceeded: { caip2ChainId: string }
+  SwapConfirmed: { caip2SourceChainId: string; caip2TargetChainId: string }
 }
