@@ -8,10 +8,10 @@ import {
 } from '@shopify/react-native-skia'
 import Animated, {
   Easing,
-  FadeIn,
   SharedValue,
   useAnimatedProps,
   useAnimatedReaction,
+  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withTiming
@@ -354,6 +354,27 @@ const AnimatedNumber: FC<{
     NUMBER_FONT_SIZE
   )
 
+  // Canvas opacity starts at 0 and fades in once Skia is actually ready
+  // to paint — font resolved plus two RAFs confirming React has committed
+  // and the native Canvas has ticked a first frame.
+  const canvasOpacity = useSharedValue(0)
+  const canvasStyle = useAnimatedStyle(() => ({
+    opacity: canvasOpacity.value
+  }))
+  useEffect(() => {
+    if (!font) return
+    const cancelIds: { raf2?: number } = {}
+    const raf1 = requestAnimationFrame(() => {
+      cancelIds.raf2 = requestAnimationFrame(() => {
+        canvasOpacity.value = withTiming(1, { duration: 300 })
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      if (cancelIds.raf2 !== undefined) cancelAnimationFrame(cancelIds.raf2)
+    }
+  }, [font, canvasOpacity])
+
   // How many digit slots we need to cover the widest possible number (× is
   // rendered separately so it can slide smoothly).
   const slotCount = React.useMemo(() => {
@@ -461,12 +482,9 @@ const AnimatedNumber: FC<{
   if (!font) return null
 
   return (
-    // Extra fade on the number Canvas: Skia's glyph atlas is per-Canvas,
-    // so the 60pt digits must be rasterized into this surface's own atlas
-    // on first paint — meaningfully slower than the wheel's 11pt labels.
-    // A later delay here masks that residual lag while the wheel can come
-    // in earlier under the outer fade.
-    <Animated.View entering={FadeIn.delay(600).duration(350)}>
+    // Canvas opacity is driven by readiness: fades in only once the font
+    // is resolved and two RAFs have confirmed a first paint.
+    <Animated.View style={canvasStyle}>
       <Canvas
         pointerEvents="none"
         style={{

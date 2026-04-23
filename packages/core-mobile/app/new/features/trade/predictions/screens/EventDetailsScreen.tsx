@@ -33,6 +33,7 @@ const EventDetailsScreen = (): JSX.Element => {
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
   const [leverage, setLeverage] = useState(2)
+  const [decimalLeverage, setDecimalLeverage] = useState(2)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const { event } = useGetEventDetail(tickerId)
@@ -73,6 +74,17 @@ const EventDetailsScreen = (): JSX.Element => {
           max={40}
           step={0.2}
           integersOnly
+          enableManualInput
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Add leverage (decimals)</Text>
+        <LeverageGauge
+          value={decimalLeverage}
+          onChange={setDecimalLeverage}
+          min={1}
+          max={40}
+          step={0.2}
           enableManualInput
         />
       </View>

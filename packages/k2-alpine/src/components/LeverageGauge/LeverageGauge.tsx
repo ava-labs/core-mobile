@@ -194,11 +194,10 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   return (
     <GestureHandlerRootView style={{ flexShrink: 1 }}>
       <Animated.View
-        // Fades the gauge in on mount to mask Skia's cold-start blank frame.
-        // SkiaPreload at the app root warms the typeface + glyph atlases
-        // ahead of time, so this only needs to cover the per-Canvas native
-        // bringup — a short delay plus fade is enough.
-        entering={FadeIn.delay(400).duration(300)}
+        // Short fade on the chrome (card, Min/Max buttons, subtitle). The
+        // Skia canvases inside (wheel + number) have their own opacity
+        // animations driven by actual paint-readiness, not timing guesses.
+        entering={FadeIn.duration(200)}
         style={{ alignSelf: 'stretch', gap: 4 }}
         testID={testID}
         accessible

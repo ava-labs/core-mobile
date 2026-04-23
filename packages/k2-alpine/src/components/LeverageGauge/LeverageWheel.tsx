@@ -8,14 +8,14 @@ import {
   useFont,
   vec
 } from '@shopify/react-native-skia'
-import React, { FC, memo, useMemo, useState } from 'react'
+import React, { FC, memo, useEffect, useMemo, useState } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
-  FadeIn,
   interpolateColor,
   SharedValue,
   useAnimatedReaction,
+  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withDecay,
@@ -102,6 +102,27 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   // read the current width without triggering re-renders per frame.
   const [wheelWidth, setWheelWidth] = useState(0)
   const wheelWidthSv = useSharedValue(0)
+
+  // Canvas opacity starts at 0 and fades in once Skia is actually ready
+  // to paint — font resolved, width measured, and two RAFs confirming
+  // React has committed and the native Canvas has ticked a first frame.
+  const canvasOpacity = useSharedValue(0)
+  const canvasStyle = useAnimatedStyle(() => ({
+    opacity: canvasOpacity.value
+  }))
+  useEffect(() => {
+    if (!labelFont || wheelWidth <= 0) return
+    const cancelIds: { raf2?: number } = {}
+    const raf1 = requestAnimationFrame(() => {
+      cancelIds.raf2 = requestAnimationFrame(() => {
+        canvasOpacity.value = withTiming(1, { duration: 300 })
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      if (cancelIds.raf2 !== undefined) cancelAnimationFrame(cancelIds.raf2)
+    }
+  }, [labelFont, wheelWidth, canvasOpacity])
 
   const ticks: TickDescriptor[] = useMemo(() => {
     const out: TickDescriptor[] = []
@@ -338,7 +359,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
           setWheelWidth(w)
           wheelWidthSv.value = w
         }}>
-        <Animated.View entering={FadeIn.delay(650).duration(550)}>
+        <Animated.View style={canvasStyle}>
           <Canvas style={{ width: wheelWidth, height: CANVAS_HEIGHT }}>
             <Group transform={groupTransform}>
               {ticks.map(t => (
