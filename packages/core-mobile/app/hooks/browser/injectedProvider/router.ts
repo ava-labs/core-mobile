@@ -9,6 +9,7 @@ import {
   ProviderRequest,
   RouterDeps
 } from './types'
+import { resolveGrantedAccounts } from './resolveGrantedAccounts'
 
 const READ_ONLY_METHODS = new Set([
   'eth_blockNumber',
@@ -154,7 +155,7 @@ export function createInjectedProviderRouter(
     trackPendingOrigin,
     getPeerMeta,
     getActiveAccount,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
@@ -343,19 +344,18 @@ export function createInjectedProviderRouter(
     }
   }
 
-  // EIP-2255: resolve permissions for the current origin against the active
-  // EVM account. Today only `eth_accounts` is supported — there is no notion
-  // of a restricted method beyond account access.
-  const resolveActiveAccountAddresses = (origin: string): string[] => {
-    const active = getActiveAccount()
-    if (!active?.addressC) return []
-    const granted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-    return granted ? [active.addressC] : []
-  }
+  // EIP-2255: resolve the EVM-granted addresses for the current origin. All
+  // granted addresses are returned — not just the active account — so that
+  // switching wallets doesn't force the dApp to re-prompt. If the active
+  // account is among the granted set, it's sorted first so the dApp's
+  // "primary" address view matches the wallet's active selection. The
+  // ordering rule lives in a shared helper so the hook's `handleDomainMetadata`
+  // prime path produces exactly the same list.
+  const resolveGrantedAddresses = (origin: string): string[] =>
+    resolveGrantedAccounts(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }),
+      getActiveAccount()?.addressC
+    )
 
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
@@ -377,15 +377,13 @@ export function createInjectedProviderRouter(
       return
     }
 
-    // Already connected: return without prompting.
-    if (
-      hasPermission({
-        domain: origin,
-        address: active.addressC,
-        vmType: NetworkVMType.EVM
-      })
-    ) {
-      sendResponse(id, null, [active.addressC])
+    // Already connected to any address at this origin: return without
+    // prompting. The granted-address list may include addresses other than
+    // the currently-active one — that's intentional, per the multi-account
+    // design in §6.2 (Phase 3 Stage C).
+    const alreadyGranted = resolveGrantedAddresses(origin)
+    if (alreadyGranted.length > 0) {
+      sendResponse(id, null, alreadyGranted)
       return
     }
 
@@ -439,14 +437,9 @@ export function createInjectedProviderRouter(
       return
     }
 
-    const alreadyGranted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-
-    if (alreadyGranted) {
-      sendResponse(id, null, buildAccountsPermission([active.addressC]))
+    const alreadyGranted = resolveGrantedAddresses(origin)
+    if (alreadyGranted.length > 0) {
+      sendResponse(id, null, buildAccountsPermission(alreadyGranted))
       return
     }
 
@@ -484,7 +477,7 @@ export function createInjectedProviderRouter(
     sendResponse(
       id,
       null,
-      buildAccountsPermission(resolveActiveAccountAddresses(origin))
+      buildAccountsPermission(resolveGrantedAddresses(origin))
     )
   }
 

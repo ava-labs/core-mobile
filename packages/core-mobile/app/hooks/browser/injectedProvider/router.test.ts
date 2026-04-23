@@ -36,7 +36,7 @@ type MockDeps = {
   trackPendingOrigin: jest.Mock
   setBrowserNetworkSpy: jest.Mock
   currentNetwork: { value: BrowserNetwork }
-  hasPermission: jest.Mock
+  getGrantedAddresses: jest.Mock
   grantPermission: jest.Mock
   revokePermission: jest.Mock
   requestConnectApproval: jest.Mock
@@ -53,6 +53,7 @@ function makeDeps(overrides?: {
   tabId?: string
   activeAccount?: Account | undefined
   hasPermission?: boolean
+  grantedAddresses?: string[]
 }): MockDeps {
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
@@ -79,7 +80,13 @@ function makeDeps(overrides?: {
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
     currentNetwork.value = net
   })
-  const hasPermission = jest.fn(() => overrides?.hasPermission ?? false)
+  // `hasPermission: true` is kept as a shorthand for "grant exists for the
+  // active account" — it maps to `grantedAddresses = [MOCK_ADDR]` under the
+  // hood. Callers can pass `grantedAddresses` explicitly for finer control.
+  const defaultGranted =
+    overrides?.grantedAddresses ??
+    (overrides?.hasPermission ? [MOCK_ADDR] : [])
+  const getGrantedAddresses = jest.fn(() => defaultGranted)
   const grantPermission = jest.fn()
   const revokePermission = jest.fn()
   const requestConnectApproval = jest.fn()
@@ -111,7 +118,7 @@ function makeDeps(overrides?: {
       icons: []
     }),
     getActiveAccount: () => activeAccount.value,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
@@ -124,7 +131,7 @@ function makeDeps(overrides?: {
     requestSigning,
     dispatch,
     trackPendingOrigin,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval,
@@ -463,6 +470,41 @@ describe('createInjectedProviderRouter', () => {
       await new Promise(r => setImmediate(r))
 
       expect(sendResponse).toHaveBeenCalledWith(1, rejection, undefined)
+    })
+
+    it('returns ALL granted addresses (active sorted first) even when the active account is a different one', async () => {
+      // Scenario: grant was made for address X; user later switched active
+      // account to Y. Prior behavior: re-prompt (since Y is not granted).
+      // Phase 3 Stage C: return [X] — no prompt, no re-auth.
+      const OTHER_GRANTED = '0xSomePreviouslyGrantedAddr'
+      const { deps, sendResponse, requestConnectApproval } = makeDeps({
+        activeAccount: { addressC: MOCK_ADDR } as Account,
+        grantedAddresses: [OTHER_GRANTED] // active addr NOT in granted list
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [OTHER_GRANTED])
+    })
+
+    it('sorts the active address first when it is among the granted set', async () => {
+      const { deps, sendResponse } = makeDeps({
+        activeAccount: { addressC: MOCK_ADDR } as Account,
+        grantedAddresses: ['0xOtherGranted', MOCK_ADDR, '0xAnotherGranted']
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 1, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [
+        MOCK_ADDR,
+        '0xOtherGranted',
+        '0xAnotherGranted'
+      ])
     })
 
     it('rejects with unauthorized (4100) when there is no active account', async () => {

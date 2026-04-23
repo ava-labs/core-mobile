@@ -16,7 +16,7 @@ import { approvalController } from 'vmModule/ApprovalController/ApprovalControll
 import {
   grantPermission as grantPermissionAction,
   revokePermission as revokePermissionAction,
-  selectHasPermission
+  selectGrantedAddressesForDomain
 } from 'store/permissions/slice'
 import type { RootState } from 'store/types'
 import type { Account } from 'store/account'
@@ -26,6 +26,7 @@ import {
   createInjectedProviderRouter,
   InjectedProviderRouter
 } from './injectedProvider/router'
+import { resolveGrantedAccounts } from './injectedProvider/resolveGrantedAccounts'
 import {
   BrowserNetwork,
   DomainMetadata,
@@ -292,8 +293,8 @@ export function useEvmInjectedProvider(
       },
       getPeerMeta,
       getActiveAccount: () => activeAccountRef.current,
-      hasPermission: ({ domain, address, vmType }) =>
-        selectHasPermission({ domain, address, vmType })(store.getState()),
+      getGrantedAddresses: ({ domain, vmType }) =>
+        selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
       grantPermission: ({ domain, address, vmType }) =>
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
@@ -322,21 +323,21 @@ export function useEvmInjectedProvider(
         Logger.error('[InjectedProvider] Invalid domain_metadata payload')
       }
 
-      // Prime the shim's _accounts cache on page load: if the current origin
-      // already has an EVM grant for the active account, emit accountsChanged
-      // so dApps with auto-reconnect (wagmi autoConnect, etc.) see the
-      // connection immediately without prompting. If no grant exists, emit
-      // an empty array to keep the shim in sync (e.g. after the user revoked
-      // the grant from Connected Sites while the tab was open).
+      // Prime the shim's _accounts cache on page load. Emit the full list
+      // of EVM-granted addresses for this origin (active sorted first if
+      // present) so dApps auto-reconnect against whatever was previously
+      // approved — even when the user has since switched the wallet's
+      // active account to a different one. If the grant set is empty, emit
+      // [] to keep the shim in sync (e.g. after the user revoked the grant
+      // via Connected Sites while the tab was open).
       const origin = getOriginFromUrl(currentUrlRef.current)
       const active = activeAccountRef.current
       if (!origin || !active?.addressC) return
-      const granted = selectHasPermission({
+      const granted = selectGrantedAddressesForDomain({
         domain: origin,
-        address: active.addressC,
         vmType: NetworkVMType.EVM
       })(store.getState())
-      const accounts = granted ? [active.addressC] : []
+      const accounts = resolveGrantedAccounts(granted, active.addressC)
       webViewRef.current?.injectJavaScript(
         `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
           accounts

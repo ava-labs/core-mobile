@@ -192,7 +192,11 @@ describe('createInAppRequest', () => {
     const err = { code: 4001, message: 'user rejected' }
     mockListenerEffects.forEach(effect =>
       effect(
-        onInAppRequestFailed({ requestId: FIXED_REQUEST_ID, error: err })
+        onInAppRequestFailed({
+          requestId: FIXED_REQUEST_ID,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: err as any
+        })
       )
     )
 

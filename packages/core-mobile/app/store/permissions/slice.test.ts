@@ -7,6 +7,7 @@ import {
   revokePermission,
   selectAddressesForDomain,
   selectConnectedDomains,
+  selectGrantedAddressesForDomain,
   selectGrantsForDomain,
   selectHasPermission
 } from './slice'
@@ -275,6 +276,54 @@ describe('permissions slice', () => {
     it('selectAddressesForDomain returns that domain\'s address keys', () => {
       expect(selectAddressesForDomain(DOMAIN_UNI)(state)).toEqual([ADDR_A])
       expect(selectAddressesForDomain('https://nope.test')(state)).toEqual([])
+    })
+
+    describe('selectGrantedAddressesForDomain', () => {
+      const multiVmState = buildRootState({
+        grants: {
+          [DOMAIN_UNI]: {
+            [ADDR_A]: [NetworkVMType.EVM, NetworkVMType.SVM],
+            [ADDR_B]: [NetworkVMType.SVM] // EVM-granted only for A
+          },
+          [DOMAIN_OS]: {
+            [ADDR_A]: [NetworkVMType.EVM],
+            [ADDR_B]: [NetworkVMType.EVM]
+          }
+        }
+      })
+
+      it('filters to only addresses granted for the requested vmType', () => {
+        expect(
+          selectGrantedAddressesForDomain({
+            domain: DOMAIN_UNI,
+            vmType: NetworkVMType.EVM
+          })(multiVmState)
+        ).toEqual([ADDR_A])
+      })
+
+      it('returns multiple addresses when several are granted for the vm', () => {
+        expect(
+          selectGrantedAddressesForDomain({
+            domain: DOMAIN_OS,
+            vmType: NetworkVMType.EVM
+          })(multiVmState)
+        ).toEqual(expect.arrayContaining([ADDR_A, ADDR_B]))
+      })
+
+      it('returns empty for unknown domain or un-granted vmType', () => {
+        expect(
+          selectGrantedAddressesForDomain({
+            domain: 'https://none.test',
+            vmType: NetworkVMType.EVM
+          })(multiVmState)
+        ).toEqual([])
+        expect(
+          selectGrantedAddressesForDomain({
+            domain: DOMAIN_OS,
+            vmType: NetworkVMType.SVM
+          })(multiVmState)
+        ).toEqual([])
+      })
     })
   })
 })

@@ -1315,6 +1315,23 @@ describe('useEvmInjectedProvider', () => {
           subscribe: jest.fn(() => () => undefined)
         } as unknown as ReturnType<typeof useStore>)
 
+      const withPermissions = (
+        addresses: string[]
+      ): ReturnType<typeof useStore> =>
+        ({
+          getState: () => ({
+            permissions: {
+              grants: {
+                'https://opensea.io': Object.fromEntries(
+                  addresses.map(a => [a, ['EVM']])
+                )
+              }
+            }
+          }),
+          dispatch: jest.fn(),
+          subscribe: jest.fn(() => () => undefined)
+        } as unknown as ReturnType<typeof useStore>)
+
       it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
         mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
         const { result } = renderProvider()
@@ -1380,6 +1397,52 @@ describe('useEvmInjectedProvider', () => {
 
         expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
           expect.stringContaining("__coreProviderEmit('accountsChanged'")
+        )
+      })
+
+      it('emits all granted addresses (active sorted first) — multi-account aware', () => {
+        // Grant exists for both active and another address; active is second
+        // in insertion order but should be first in the emitted list.
+        const OTHER = '0xOtherGranted111'
+        mockUseStore.mockReturnValue(
+          withPermissions([OTHER, mockActiveAccount.addressC])
+        )
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}","${OTHER}"])`
+          )
+        )
+      })
+
+      it('emits granted addresses unchanged when active account is NOT in the granted set', () => {
+        // User switched wallet to account Y; only X was previously granted.
+        // Emit [X] so the dApp keeps the connection it already had.
+        const ONLY_OTHER = '0xOnlyOtherAddr'
+        mockUseStore.mockReturnValue(withPermissions([ONLY_OTHER]))
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `__coreProviderEmit('accountsChanged', ["${ONLY_OTHER}"])`
+          )
         )
       })
     })
