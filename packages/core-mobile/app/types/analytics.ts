@@ -15,6 +15,19 @@ type DappTxEventPayload = {
   txHash: string
 }
 
+/**
+ * All analytics event payloads.
+ *
+ * Events with an `encrypted` field are automatically encrypted by
+ * `AnalyticsService.capture` at transport time — the `encrypted` object is
+ * JSON-stringified and encrypted via HPKE before being sent to PostHog.
+ * Any sibling fields at the same level are forwarded as plaintext properties
+ * (e.g. CAIP-2 chain IDs used for PostHog dashboard filtering).
+ *
+ * Rule for encrypted events: put sensitive data (addresses, tx hashes, chain
+ * IDs) inside `encrypted`. Only add plaintext siblings when the field is
+ * explicitly intended to be readable on the dashboard.
+ */
 export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   ExplorerLinkClicked: undefined
@@ -46,6 +59,14 @@ export type AnalyticsEvents = {
     bridgeType: string
     activeChainId: number
     targetChainId: number
+  }
+  BridgeTransactionStarted: {
+    encrypted: {
+      sourceTxHash: string
+      chainId: number
+      fromAddress?: string
+      toAddress?: string
+    }
   }
 
   HallidayBuyClicked: undefined
@@ -85,6 +106,10 @@ export type AnalyticsEvents = {
   ReceivePageVisited: undefined
   RecoveryPhraseClicked: undefined
   SendTransactionFailed: { errorMessage: string; chainId: number }
+  SendTransactionSucceeded: {
+    encrypted: { txHash: string; chainId: number }
+    caip2ChainId: string
+  }
   SeedlessAddMfa: { type: string }
   SeedlessMfaAdded: undefined
   SeedlessExportCancelled: undefined
@@ -107,9 +132,58 @@ export type AnalyticsEvents = {
   StakeIssueDelegation: undefined
   StakeOpened: undefined
   StakeOpenDurationSelect: undefined
+  StakeTransactionStarted: {
+    encrypted: { txHash: string; chainId: number }
+  }
   SwapReviewOrder: {
     provider: string
     slippage: number
+  }
+  SwapConfirmed: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash?: string
+      quoteSelectionMode: 'manual' | 'auto'
+      autoRetryAttempt?: number
+    }
+    caip2SourceChainId: string
+    caip2TargetChainId: string
+  }
+  SwapSuccessful: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash: string
+      targetTxHash?: string
+    }
+  }
+  SwapFailed: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash?: string
+      targetTxHash?: string
+      errorCode?: string
+      errorReason?: string
+    }
+  }
+  SwapRefunded: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash: string
+      targetTxHash?: string
+      refundTxHash?: string
+    }
   }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
@@ -282,99 +356,6 @@ export type AnalyticsEvents = {
   PredictionsSearched: { query: string; resultCount: number }
   PredictionsClicked: undefined
   PerpsClicked: undefined
-}
-
-/**
- * Constrains an event map so every entry MUST have an `encrypted` object
- * whose value is a plain keyed object (not an array/function). If a new
- * entry in `AnalyticsEncryptedEvents` is missing `encrypted` or provides
- * a non-keyed value, the compiler fails right at the definition.
- */
-type WithEncrypted<
-  T extends Record<string, { encrypted: Record<string, unknown> }>
-> = T
-
-/**
- * Ensures `AnalyticsEvents` payloads never declare an `encrypted` field.
- * The runtime path in `AnalyticsService.capture` dispatches to the encrypt
- * flow whenever `'encrypted' in properties`; allowing plain events to own
- * that key would misroute them into the encryption path. A plain event
- * that grows sensitive data should move to `AnalyticsEncryptedEvents`.
- *
- * Exported so the compiler keeps checking this invariant; not intended
- * for external consumption.
- */
-type AssertNoEncryptedKey<T> = {
-  [K in keyof T]: T[K] extends undefined
-    ? undefined
-    : 'encrypted' extends keyof NonNullable<T[K]>
-    ? never
-    : T[K]
-}
-export type _AssertAnalyticsEventsHaveNoEncryptedKey =
-  AnalyticsEvents extends AssertNoEncryptedKey<AnalyticsEvents> ? true : never
-
-/**
- * Events whose payloads contain an `encrypted` object. When a call to
- * `AnalyticsService.capture` carries one of these events, the `encrypted`
- * object is JSON-stringified and encrypted before transport; any sibling
- * fields are sent alongside the encrypted payload as plaintext properties
- * (e.g. for PostHog dashboard filtering).
- *
- * Rule: put any sensitive field inside `encrypted`. Only add siblings when
- * the field is explicitly meant to be plaintext.
- */
-export type AnalyticsEncryptedEvents = WithEncrypted<{
-  SendTransactionSucceeded: {
-    encrypted: { txHash: string; chainId: number }
-    caip2ChainId: string
-  }
-  SwapConfirmed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      quoteSelectionMode: 'manual' | 'auto'
-      autoRetryAttempt?: number
-    }
-    caip2SourceChainId: string
-    caip2TargetChainId: string
-  }
-  SwapSuccessful: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-    }
-  }
-  SwapFailed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      targetTxHash?: string
-      errorCode?: string
-      errorReason?: string
-    }
-  }
-  SwapRefunded: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-      refundTxHash?: string
-    }
-  }
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
@@ -387,18 +368,6 @@ export type AnalyticsEncryptedEvents = WithEncrypted<{
         addressCoreEth: string
         addressSVM: string
       }[]
-    }
-  }
-
-  StakeTransactionStarted: {
-    encrypted: { txHash: string; chainId: number }
-  }
-  BridgeTransactionStarted: {
-    encrypted: {
-      sourceTxHash: string
-      chainId: number
-      fromAddress?: string
-      toAddress?: string
     }
   }
 
@@ -433,4 +402,4 @@ export type AnalyticsEncryptedEvents = WithEncrypted<{
       timestamp: number
     }
   }
-}>
+}
