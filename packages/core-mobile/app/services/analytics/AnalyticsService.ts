@@ -7,7 +7,8 @@ import { AnalyticsServiceNoop } from 'services/analytics/AnalyticsServiceNoop'
 import {
   AnalyticsEventName,
   AnalyticsServiceInterface,
-  CaptureEventProperties
+  CaptureEventProperties,
+  PlaintextProperties
 } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
@@ -47,7 +48,8 @@ class AnalyticsService implements AnalyticsServiceInterface {
 
   async captureWithEncryption<E extends AnalyticsEventName>(
     eventName: E,
-    properties: AnalyticsEvents[E]
+    properties: AnalyticsEvents[E],
+    plaintextProperties?: PlaintextProperties<E>
   ): Promise<void> {
     if (!this.isEnabled) {
       return
@@ -64,7 +66,8 @@ class AnalyticsService implements AnalyticsServiceInterface {
       return PostHogService.capture(eventName, {
         data: encrypted,
         enc,
-        keyID: keyID
+        keyID: keyID,
+        ...plaintextProperties
       })
     } catch (error) {
       Logger.error(

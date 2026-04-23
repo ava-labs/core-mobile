@@ -114,8 +114,6 @@ export type AnalyticsEvents = {
   SwapConfirmed: {
     sourceAddress: string
     targetAddress: string
-    sourceChainId: string
-    targetChainId: string
     sourceTxHash?: string
     quoteSelectionMode: 'manual' | 'auto'
     autoRetryAttempt?: number
@@ -206,7 +204,7 @@ export type AnalyticsEvents = {
       addressSVM: string
     }[]
   }
-  SendTransactionSucceeded: { txHash: string; chainId: number }
+  SendTransactionSucceeded: { txHash: string }
 
   StakeTransactionStarted: { txHash: string; chainId: number }
   BridgeTransactionStarted: {
@@ -365,4 +363,9 @@ export type AnalyticsEvents = {
   PredictionsSearched: { query: string; resultCount: number }
   PredictionsClicked: undefined
   PerpsClicked: undefined
+}
+
+export type AnalyticsPlaintextEvents = {
+  SendTransactionSucceeded: { chainId: string }
+  SwapConfirmed: { sourceChainId: string; targetChainId: string }
 }
