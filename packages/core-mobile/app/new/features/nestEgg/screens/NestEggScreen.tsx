@@ -56,7 +56,9 @@ function NestEggScreen(): JSX.Element {
 
   useEffect(() => {
     AnalyticsService.captureWithEncryption('NestEggCampaignModalViewed', {
-      addressC: currentAccount?.addressC ?? ''
+      encrypted: {
+        addressC: currentAccount?.addressC ?? ''
+      }
     })
     return () => {
       dispatch(setHasSeenCampaign(true))

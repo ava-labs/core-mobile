@@ -170,10 +170,12 @@ class WalletConnectProvider implements AgnosticRpcProvider {
           chainId
         )
         AnalyticsService.captureWithEncryption(`${request.method}_success`, {
-          dAppUrl: request.peerMeta.url,
-          address,
-          chainId,
-          txHash: result
+          encrypted: {
+            dAppUrl: request.peerMeta.url,
+            address,
+            chainId,
+            txHash: result
+          }
         })
       }
 
@@ -192,9 +194,11 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         AnalyticsService.captureWithEncryption(
           'solana_signTransaction_approved',
           {
-            dAppUrl: request.peerMeta.url,
-            address,
-            chainId
+            encrypted: {
+              dAppUrl: request.peerMeta.url,
+              address,
+              chainId
+            }
           }
         )
       }

@@ -92,10 +92,12 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'eth_sendTransaction_success',
           {
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressC,
-            chainId: 'eip155:1',
-            txHash: '0xdeadbeef'
+            encrypted: {
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressC,
+              chainId: 'eip155:1',
+              txHash: '0xdeadbeef'
+            }
           }
         )
       })
@@ -114,11 +116,13 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressC,
-            txHash: '0xcafebabe'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressC,
+              txHash: '0xcafebabe'
+            })
+          }
         )
       })
 
@@ -136,9 +140,11 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            address: mockActiveAccount.addressPVM
-          })
+          {
+            encrypted: expect.objectContaining({
+              address: mockActiveAccount.addressPVM
+            })
+          }
         )
       })
 
@@ -156,9 +162,11 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            address: mockActiveAccount.addressAVM
-          })
+          {
+            encrypted: expect.objectContaining({
+              address: mockActiveAccount.addressAVM
+            })
+          }
         )
       })
 
@@ -176,11 +184,13 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressBTC,
-            txHash: 'btctxhash123'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressBTC,
+              txHash: 'btctxhash123'
+            })
+          }
         )
       })
 
@@ -198,11 +208,13 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressSVM,
-            txHash: 'solanatxhash456'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressSVM,
+              txHash: 'solanatxhash456'
+            })
+          }
         )
       })
 
@@ -253,9 +265,11 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'solana_signTransaction_approved',
           {
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressSVM,
-            chainId: SolanaCaip2ChainId.MAINNET
+            encrypted: {
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressSVM,
+              chainId: SolanaCaip2ChainId.MAINNET
+            }
           }
         )
       })

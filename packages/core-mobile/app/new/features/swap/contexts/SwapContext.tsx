@@ -225,9 +225,8 @@ export const SwapContextProvider = ({
         autoRetryAttempt
       } = params
       audioFeedback(Audios.Send)
-      AnalyticsService.captureWithEncryption(
-        'SwapConfirmed',
-        {
+      AnalyticsService.captureWithEncryption('SwapConfirmed', {
+        encrypted: {
           sourceAddress: address,
           targetAddress,
           sourceChainId: quote.sourceChain.chainId,
@@ -236,11 +235,9 @@ export const SwapContextProvider = ({
           quoteSelectionMode,
           autoRetryAttempt
         },
-        {
-          caip2SourceChainId: quote.sourceChain.chainId,
-          caip2TargetChainId: quote.targetChain.chainId
-        }
-      )
+        caip2SourceChainId: quote.sourceChain.chainId,
+        caip2TargetChainId: quote.targetChain.chainId
+      })
 
       Logger.info('[SwapContext] transfer executed', {
         transfer

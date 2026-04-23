@@ -46,16 +46,13 @@ export const SendScreen = (): JSX.Element => {
   const handleSuccess = useCallback(
     (txHash: string): void => {
       network &&
-        AnalyticsService.captureWithEncryption(
-          'SendTransactionSucceeded',
-          {
+        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+          encrypted: {
             chainId: network.chainId,
             txHash
           },
-          {
-            caip2ChainId: getCaip2ChainId(network.chainId)
-          }
-        )
+          caip2ChainId: getCaip2ChainId(network.chainId)
+        })
       audioFeedback(Audios.Send)
       resetAmount()
       setSelectedToken(undefined)

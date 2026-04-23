@@ -28,16 +28,13 @@ export const useSendTransactionCallbacks = (): {
       onDismiss: () => void
     }): void => {
       selectedToken &&
-        AnalyticsService.captureWithEncryption(
-          'SendTransactionSucceeded',
-          {
+        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
+          encrypted: {
             chainId: selectedToken.networkChainId,
             txHash
           },
-          {
-            caip2ChainId: getCaip2ChainId(selectedToken.networkChainId)
-          }
-        )
+          caip2ChainId: getCaip2ChainId(selectedToken.networkChainId)
+        })
       audioFeedback(Audios.Send)
       setSelectedToken(undefined)
 

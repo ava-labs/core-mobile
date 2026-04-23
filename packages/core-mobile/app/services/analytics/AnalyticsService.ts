@@ -1,14 +1,14 @@
 import PostHogService from 'services/posthog/PostHogService'
-import { AnalyticsEvents } from 'types/analytics'
+import { AnalyticsEncryptedEvents } from 'types/analytics'
 import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
 import Logger from 'utils/Logger'
 import { AnalyticsServiceNoop } from 'services/analytics/AnalyticsServiceNoop'
 import {
+  AnalyticsEncryptedEventName,
   AnalyticsEventName,
   AnalyticsServiceInterface,
-  CaptureEventProperties,
-  PlaintextProperties
+  CaptureEventProperties
 } from './types'
 
 if (!Config.ANALYTICS_ENCRYPTION_KEY) {
@@ -46,17 +46,18 @@ class AnalyticsService implements AnalyticsServiceInterface {
     return PostHogService.capture(eventName, properties[0])
   }
 
-  async captureWithEncryption<E extends AnalyticsEventName>(
+  async captureWithEncryption<E extends AnalyticsEncryptedEventName>(
     eventName: E,
-    properties: AnalyticsEvents[E],
-    plaintextProperties?: PlaintextProperties<E>
+    properties: AnalyticsEncryptedEvents[E]
   ): Promise<void> {
     if (!this.isEnabled) {
       return
     }
 
+    const { encrypted: toEncrypt, ...plaintext } = properties
+
     try {
-      const stringifiedProperties = JSON.stringify(properties)
+      const stringifiedProperties = JSON.stringify(toEncrypt)
       const { encrypted, enc, keyID } = await encrypt(
         stringifiedProperties,
         this.analyticsEncryptionKey,
@@ -66,8 +67,8 @@ class AnalyticsService implements AnalyticsServiceInterface {
       return PostHogService.capture(eventName, {
         data: encrypted,
         enc,
-        keyID: keyID,
-        ...plaintextProperties
+        keyID,
+        ...plaintext
       })
     } catch (error) {
       Logger.error(

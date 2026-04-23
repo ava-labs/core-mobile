@@ -1,16 +1,12 @@
-import { AnalyticsEvents, AnalyticsPlaintextEvents } from 'types/analytics'
+import { AnalyticsEncryptedEvents, AnalyticsEvents } from 'types/analytics'
 
 export type AnalyticsEventName = keyof AnalyticsEvents
+export type AnalyticsEncryptedEventName = keyof AnalyticsEncryptedEvents
 
 export type CaptureEventProperties<E extends AnalyticsEventName> =
   undefined extends AnalyticsEvents[E]
     ? [AnalyticsEvents[E]?]
     : [AnalyticsEvents[E]]
-
-export type PlaintextProperties<E extends AnalyticsEventName> =
-  E extends keyof AnalyticsPlaintextEvents
-    ? AnalyticsPlaintextEvents[E]
-    : undefined
 
 export interface AnalyticsServiceInterface {
   setEnabled(isEnabled: boolean): void
@@ -18,9 +14,8 @@ export interface AnalyticsServiceInterface {
     eventName: E,
     ...properties: CaptureEventProperties<E>
   ): Promise<void>
-  captureWithEncryption<E extends AnalyticsEventName>(
+  captureWithEncryption<E extends AnalyticsEncryptedEventName>(
     eventName: E,
-    properties: AnalyticsEvents[E],
-    plaintextProperties?: PlaintextProperties<E>
+    properties: AnalyticsEncryptedEvents[E]
   ): Promise<void>
 }

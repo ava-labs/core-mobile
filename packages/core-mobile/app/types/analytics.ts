@@ -111,42 +111,6 @@ export type AnalyticsEvents = {
     provider: string
     slippage: number
   }
-  SwapConfirmed: {
-    sourceAddress: string
-    targetAddress: string
-    sourceChainId: string
-    targetChainId: string
-    sourceTxHash?: string
-    quoteSelectionMode: 'manual' | 'auto'
-    autoRetryAttempt?: number
-  }
-  SwapSuccessful: {
-    sourceAddress: string
-    targetAddress: string
-    sourceChainId: string
-    targetChainId: string
-    sourceTxHash: string
-    targetTxHash?: string
-  }
-  SwapFailed: {
-    sourceAddress: string
-    targetAddress: string
-    sourceChainId: string
-    targetChainId: string
-    sourceTxHash?: string
-    targetTxHash?: string
-    errorCode?: string
-    errorReason?: string
-  }
-  SwapRefunded: {
-    sourceAddress: string
-    targetAddress: string
-    sourceChainId: string
-    targetChainId: string
-    sourceTxHash: string
-    targetTxHash?: string
-    refundTxHash?: string
-  }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
   WalletConnectSessionApprovedV2: {
@@ -181,40 +145,6 @@ export type AnalyticsEvents = {
   BrowserHistoryTapped: { url: string }
   WalletConnectedToDapp: { dAppUrl: string }
   TxSubmittedToDapp: undefined
-  eth_sendTransaction_success: DappTxEventPayload
-  avalanche_sendTransaction_success: DappTxEventPayload
-  bitcoin_sendTransaction_success: DappTxEventPayload
-  solana_signAndSendTransaction_success: DappTxEventPayload
-  eth_sendTransaction_confirmed: DappTxEventPayload
-  avalanche_sendTransaction_confirmed: DappTxEventPayload
-  bitcoin_sendTransaction_confirmed: DappTxEventPayload
-  solana_signAndSendTransaction_confirmed: DappTxEventPayload
-  eth_sendTransaction_failed: DappTxEventPayload
-  avalanche_sendTransaction_failed: DappTxEventPayload
-  bitcoin_sendTransaction_failed: DappTxEventPayload
-  solana_signAndSendTransaction_failed: DappTxEventPayload
-  solana_signTransaction_approved: Omit<DappTxEventPayload, 'txHash'>
-
-  // CP-7989 - Address and Tx Hash Analytics Collection
-  AccountAddressesUpdated: {
-    addresses: {
-      address: string
-      addressBtc: string
-      addressAVM: string
-      addressPVM: string
-      addressCoreEth: string
-      addressSVM: string
-    }[]
-  }
-  SendTransactionSucceeded: { txHash: string; chainId: number }
-
-  StakeTransactionStarted: { txHash: string; chainId: number }
-  BridgeTransactionStarted: {
-    sourceTxHash: string
-    chainId: number
-    fromAddress?: string
-    toAddress?: string
-  }
 
   //Gasless
   GaslessFundSuccessful: { fundTxHash: string }
@@ -311,19 +241,6 @@ export type AnalyticsEvents = {
   }
   LedgerAccountDiscoveryFailed: undefined
 
-  // NEST EGG CAMPAIGN
-  NestEggCampaignModalViewed: { addressC: string }
-  NestEggSuccessModalViewed: { addressC: string }
-  NestEggQualified: {
-    addressC: string
-    txHash: string
-    chainId: number
-    fromTokenSymbol: string
-    toTokenSymbol: string
-    fromAmountUsd: number
-    timestamp: number
-  }
-
   // PREDICTIONS
   PredictionsBetStarted: {
     tickerId: string
@@ -367,7 +284,129 @@ export type AnalyticsEvents = {
   PerpsClicked: undefined
 }
 
-export type AnalyticsPlaintextEvents = {
-  SendTransactionSucceeded: { caip2ChainId: string }
-  SwapConfirmed: { caip2SourceChainId: string; caip2TargetChainId: string }
-}
+/**
+ * Constrains an event map so every entry MUST have an `encrypted` object.
+ * If a new entry in `AnalyticsEncryptedEvents` is missing `encrypted`,
+ * the compiler fails right at the definition.
+ */
+type WithEncrypted<T extends Record<string, { encrypted: object }>> = T
+
+/**
+ * Events sent through `captureWithEncryption`. The `encrypted` object is
+ * JSON-stringified and encrypted before transport; any sibling fields are
+ * sent alongside the encrypted payload as plaintext properties (e.g. for
+ * PostHog dashboard filtering).
+ *
+ * Rule: put any sensitive field inside `encrypted`. Only add siblings when
+ * the field is explicitly meant to be plaintext.
+ */
+export type AnalyticsEncryptedEvents = WithEncrypted<{
+  SendTransactionSucceeded: {
+    encrypted: { txHash: string; chainId: number }
+    caip2ChainId: string
+  }
+  SwapConfirmed: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash?: string
+      quoteSelectionMode: 'manual' | 'auto'
+      autoRetryAttempt?: number
+    }
+    caip2SourceChainId: string
+    caip2TargetChainId: string
+  }
+  SwapSuccessful: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash: string
+      targetTxHash?: string
+    }
+  }
+  SwapFailed: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash?: string
+      targetTxHash?: string
+      errorCode?: string
+      errorReason?: string
+    }
+  }
+  SwapRefunded: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash: string
+      targetTxHash?: string
+      refundTxHash?: string
+    }
+  }
+
+  // CP-7989 - Address and Tx Hash Analytics Collection
+  AccountAddressesUpdated: {
+    encrypted: {
+      addresses: {
+        address: string
+        addressBtc: string
+        addressAVM: string
+        addressPVM: string
+        addressCoreEth: string
+        addressSVM: string
+      }[]
+    }
+  }
+
+  StakeTransactionStarted: {
+    encrypted: { txHash: string; chainId: number }
+  }
+  BridgeTransactionStarted: {
+    encrypted: {
+      sourceTxHash: string
+      chainId: number
+      fromAddress?: string
+      toAddress?: string
+    }
+  }
+
+  // dApp transaction lifecycle
+  eth_sendTransaction_success: { encrypted: DappTxEventPayload }
+  avalanche_sendTransaction_success: { encrypted: DappTxEventPayload }
+  bitcoin_sendTransaction_success: { encrypted: DappTxEventPayload }
+  solana_signAndSendTransaction_success: { encrypted: DappTxEventPayload }
+  eth_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
+  avalanche_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
+  bitcoin_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
+  solana_signAndSendTransaction_confirmed: { encrypted: DappTxEventPayload }
+  eth_sendTransaction_failed: { encrypted: DappTxEventPayload }
+  avalanche_sendTransaction_failed: { encrypted: DappTxEventPayload }
+  bitcoin_sendTransaction_failed: { encrypted: DappTxEventPayload }
+  solana_signAndSendTransaction_failed: { encrypted: DappTxEventPayload }
+  solana_signTransaction_approved: {
+    encrypted: Omit<DappTxEventPayload, 'txHash'>
+  }
+
+  // NEST EGG CAMPAIGN
+  NestEggCampaignModalViewed: { encrypted: { addressC: string } }
+  NestEggSuccessModalViewed: { encrypted: { addressC: string } }
+  NestEggQualified: {
+    encrypted: {
+      addressC: string
+      txHash: string
+      chainId: number
+      fromTokenSymbol: string
+      toTokenSymbol: string
+      fromAmountUsd: number
+      timestamp: number
+    }
+  }
+}>
