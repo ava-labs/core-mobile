@@ -12,6 +12,7 @@ import { PeerMeta } from 'store/rpc/types'
 import { serializeError } from '@metamask/rpc-errors'
 import { router as appRouter } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import { approvalController } from 'vmModule/ApprovalController/ApprovalController'
 import {
   grantPermission as grantPermissionAction,
   revokePermission as revokePermissionAction,
@@ -21,7 +22,10 @@ import type { RootState } from 'store/types'
 import type { Account } from 'store/account'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
-import { createInjectedProviderRouter } from './injectedProvider/router'
+import {
+  createInjectedProviderRouter,
+  InjectedProviderRouter
+} from './injectedProvider/router'
 import {
   CONNECT_PROMPT_TIMED_OUT_MESSAGE,
   EIP1193_USER_REJECTED_CODE,
@@ -103,8 +107,34 @@ export function useEvmInjectedProvider(
     )
   }, [activeNetwork, tabChainId, webViewRef])
 
+  // Router is assigned below (after useMemo). setCurrentUrl may fire before
+  // the router is constructed on first render, so we route through a ref.
+  const routerRef = useRef<InjectedProviderRouter | null>(null)
+
+  // Tracks the reject fn of an in-flight connect approval so a later request
+  // or an origin change can unstick it. Also used by requestConnectApproval
+  // in the memo below.
+  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
+    null
+  )
+
   const setCurrentUrl = useCallback((url: string) => {
+    const prevOrigin = getOriginFromUrl(currentUrlRef.current)
     currentUrlRef.current = url
+    const newOrigin = getOriginFromUrl(url)
+
+    // Only cancel on actual origin change — within-origin SPA nav (nav_change
+    // messages firing on pushState/replaceState) keeps the tab connected to
+    // the same dApp, so stale approvals remain legitimate.
+    if (prevOrigin && prevOrigin !== newOrigin) {
+      routerRef.current?.cancelByOrigin(newOrigin)
+      prevInflightConnectReject.current?.({
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+      prevInflightConnectReject.current = null
+      approvalController.handleGoBackIfNeeded()
+    }
   }, [])
 
   const chainIdHex = useMemo(() => {
@@ -227,13 +257,6 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
-  // Tracks the reject fn of an in-flight connect approval so a later request
-  // (or an unmount) can unstick it. Writes and clears happen only inside
-  // requestConnectApproval.
-  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
-    null
-  )
-
   const requestConnectApproval = useCallback(
     (peerMeta: PeerMeta): Promise<Account[]> => {
       // If a prior connect is still parked (screen never mounted, or a second
@@ -341,6 +364,10 @@ export function useEvmInjectedProvider(
     getPeerMeta,
     requestConnectApproval
   ])
+
+  // Publish the router to the ref so setCurrentUrl (defined above, fires
+  // on nav events) can call cancelByOrigin without restructuring the memo.
+  routerRef.current = router
 
   const handleProviderMessage = useCallback(
     (payload: string) => router.handleProviderMessage(payload),

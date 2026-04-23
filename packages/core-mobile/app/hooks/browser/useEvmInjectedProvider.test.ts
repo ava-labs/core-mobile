@@ -61,6 +61,20 @@ jest.mock('./evmProviderShim', () => ({
   )
 }))
 
+jest.mock('expo-router', () => ({
+  router: {
+    canGoBack: jest.fn(() => false),
+    back: jest.fn(),
+    navigate: jest.fn()
+  }
+}))
+
+jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
+  approvalController: {
+    handleGoBackIfNeeded: jest.fn()
+  }
+}))
+
 jest.mock('./getInjectedProviderUuid', () => ({
   getInjectedProviderUuid: () => 'test-uuid-1234'
 }))
@@ -733,14 +747,17 @@ describe('useEvmInjectedProvider', () => {
             mockDispatch,
             expect.any(Function)
           )
-          expect(mockRequest).toHaveBeenCalledWith({
-            method: rpcMethod,
-            params: ['param1', 'param2'],
-            chainId: 'eip155:43114',
-            peerMeta: expect.objectContaining({
-              url: 'https://example.com'
+          expect(mockRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+              method: rpcMethod,
+              params: ['param1', 'param2'],
+              chainId: 'eip155:43114',
+              peerMeta: expect.objectContaining({
+                url: 'https://example.com'
+              }),
+              signal: expect.any(AbortSignal)
             })
-          })
+          )
         }
       )
 
@@ -1303,6 +1320,69 @@ describe('useEvmInjectedProvider', () => {
         call[0].includes("__coreProviderEmit('chainChanged'")
       )
       expect(chainChangedCalls).toHaveLength(0)
+    })
+  })
+
+  describe('setCurrentUrl origin-change cleanup', () => {
+    it('aborts in-flight signing request when navigating cross-origin', async () => {
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
+      ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
+
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+      const { result } = renderProvider('https://uniswap.org')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      expect(capturedSignal?.aborted).toBe(false)
+
+      act(() => {
+        result.current.setCurrentUrl('https://opensea.io')
+      })
+
+      expect(capturedSignal?.aborted).toBe(true)
+      expect(mockApprovalController.handleGoBackIfNeeded).toHaveBeenCalled()
+    })
+
+    it('does NOT abort in-flight request on same-origin navigation (SPA route change)', async () => {
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+      const { result } = renderProvider('https://uniswap.org/swap')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      act(() => {
+        // Same origin, different path — mimics a SPA nav_change message
+        result.current.setCurrentUrl('https://uniswap.org/pool')
+      })
+
+      expect(capturedSignal?.aborted).toBe(false)
     })
   })
 
