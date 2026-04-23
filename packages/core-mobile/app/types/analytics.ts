@@ -15,6 +15,40 @@ type DappTxEventPayload = {
   txHash: string
 }
 
+/**
+ * Events sent via captureWithEncryption that also carry plaintext properties.
+ * Define the full shape here — both `encrypted` (goes into the encrypted blob)
+ * and `plaintext` (sent unencrypted, queryable in PostHog) — so the complete
+ * event schema is visible in one place.
+ *
+ * AnalyticsEvents and AnalyticsPlaintextEvents are derived automatically.
+ */
+export type EncryptedEventDefinitions = {
+  SendTransactionSucceeded: {
+    encrypted: { txHash: string; chainId: number }
+    plaintext: { caip2ChainId: string }
+  }
+  SwapConfirmed: {
+    encrypted: {
+      sourceAddress: string
+      targetAddress: string
+      sourceChainId: string
+      targetChainId: string
+      sourceTxHash?: string
+      quoteSelectionMode: 'manual' | 'auto'
+      autoRetryAttempt?: number
+    }
+    plaintext: {
+      caip2SourceChainId: string
+      caip2TargetChainId: string
+    }
+  }
+}
+
+export type AnalyticsPlaintextEvents = {
+  [K in keyof EncryptedEventDefinitions]: EncryptedEventDefinitions[K]['plaintext']
+}
+
 export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   ExplorerLinkClicked: undefined
@@ -111,15 +145,7 @@ export type AnalyticsEvents = {
     provider: string
     slippage: number
   }
-  SwapConfirmed: {
-    sourceAddress: string
-    targetAddress: string
-    sourceChainId: string
-    targetChainId: string
-    sourceTxHash?: string
-    quoteSelectionMode: 'manual' | 'auto'
-    autoRetryAttempt?: number
-  }
+  SwapConfirmed: EncryptedEventDefinitions['SwapConfirmed']['encrypted']
   SwapSuccessful: {
     sourceAddress: string
     targetAddress: string
@@ -206,7 +232,7 @@ export type AnalyticsEvents = {
       addressSVM: string
     }[]
   }
-  SendTransactionSucceeded: { txHash: string; chainId: number }
+  SendTransactionSucceeded: EncryptedEventDefinitions['SendTransactionSucceeded']['encrypted']
 
   StakeTransactionStarted: { txHash: string; chainId: number }
   BridgeTransactionStarted: {
@@ -365,9 +391,4 @@ export type AnalyticsEvents = {
   PredictionsSearched: { query: string; resultCount: number }
   PredictionsClicked: undefined
   PerpsClicked: undefined
-}
-
-export type AnalyticsPlaintextEvents = {
-  SendTransactionSucceeded: { caip2ChainId: string }
-  SwapConfirmed: { caip2SourceChainId: string; caip2TargetChainId: string }
 }
