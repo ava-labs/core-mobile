@@ -52,7 +52,7 @@ export const SendScreen = (): JSX.Element => {
             txHash
           },
           {
-            chainId: getCaip2ChainId(network.chainId)
+            caip2ChainId: getCaip2ChainId(network.chainId)
           }
         )
       audioFeedback(Audios.Send)

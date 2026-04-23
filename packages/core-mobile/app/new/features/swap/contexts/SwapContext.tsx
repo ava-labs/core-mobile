@@ -235,8 +235,8 @@ export const SwapContextProvider = ({
           autoRetryAttempt
         },
         {
-          sourceChainId: quote.sourceChain.chainId,
-          targetChainId: quote.targetChain.chainId
+          caip2SourceChainId: quote.sourceChain.chainId,
+          caip2TargetChainId: quote.targetChain.chainId
         }
       )
 

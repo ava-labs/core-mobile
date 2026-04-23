@@ -34,7 +34,7 @@ export const useSendTransactionCallbacks = (): {
             txHash
           },
           {
-            chainId: getCaip2ChainId(selectedToken.networkChainId)
+            caip2ChainId: getCaip2ChainId(selectedToken.networkChainId)
           }
         )
       audioFeedback(Audios.Send)
