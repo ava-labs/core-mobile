@@ -1,3 +1,4 @@
+import { EstimateNativeFeeError, ErrorCode } from '@avalabs/fusion-sdk'
 import {
   fusionErrors,
   isGasOnlyNetworkFeeError,
@@ -178,15 +179,26 @@ describe('isGasEstimationError', () => {
     ).toBe(true)
   })
 
-  it('should return true for EstimateNativeFeeError instances via the SDK type guard', () => {
+  it('should return true for real SDK EstimateNativeFeeError instances via the type guard', () => {
+    // Real SDK instance — the type guard uses instanceof and matches this.
+    const err = new EstimateNativeFeeError({
+      errorCode: ErrorCode.VIEM_ERROR,
+      tx: '0xtx'
+    })
+    expect(isGasEstimationError(err)).toBe(true)
+  })
+
+  it('should return false for duck-typed EstimateNativeFeeError without a matching substring', () => {
+    // The SDK's isEstimateNativeFeeError uses instanceof on its own class,
+    // so an error that merely has the same `name` property is not matched
+    // by the type guard. Without a "gas estimation" / "estimate gas"
+    // substring in the message, the substring fallback also misses —
+    // documenting that cross-realm / fake instances require SDK-wrapped
+    // errors or a recognisable message to be classified.
     class FakeEstimateNativeFeeError extends Error {
       override name = 'EstimateNativeFeeError'
     }
-    // The SDK's isEstimateNativeFeeError uses instanceof on its own class, so
-    // this test covers the substring fallback path for duck-typed errors.
     const err = new FakeEstimateNativeFeeError('opaque message with no hint')
-    // Fallback path: no "estimate gas" substring, so without a real SDK
-    // instance the matcher returns false — this documents that behavior.
     expect(isGasEstimationError(err)).toBe(false)
   })
 
