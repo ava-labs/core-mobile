@@ -65,10 +65,10 @@ class AnalyticsService implements AnalyticsServiceInterface {
       )
 
       return PostHogService.capture(eventName, {
+        ...plaintext,
         data: encrypted,
         enc,
-        keyID,
-        ...plaintext
+        keyID
       })
     } catch (error) {
       Logger.error(

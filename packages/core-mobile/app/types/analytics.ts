@@ -285,11 +285,14 @@ export type AnalyticsEvents = {
 }
 
 /**
- * Constrains an event map so every entry MUST have an `encrypted` object.
- * If a new entry in `AnalyticsEncryptedEvents` is missing `encrypted`,
- * the compiler fails right at the definition.
+ * Constrains an event map so every entry MUST have an `encrypted` object
+ * whose value is a plain keyed object (not an array/function). If a new
+ * entry in `AnalyticsEncryptedEvents` is missing `encrypted` or provides
+ * a non-keyed value, the compiler fails right at the definition.
  */
-type WithEncrypted<T extends Record<string, { encrypted: object }>> = T
+type WithEncrypted<
+  T extends Record<string, { encrypted: Record<string, unknown> }>
+> = T
 
 /**
  * Events sent through `captureWithEncryption`. The `encrypted` object is
