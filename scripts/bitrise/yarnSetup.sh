@@ -10,8 +10,9 @@ corepack enable
 
 if ! cat /etc/issue 2>/dev/null
 then
+export APP_ENV=ci
 yarn install --immutable && yarn setup
-else 
+else
   stack=$( cat /etc/issue )
 fi
 
@@ -19,8 +20,9 @@ if [[ $stack == *Ubuntu* ]]; then
     # on ubuntu, yarn setup command will fail
     # as patch-package doesn't have write access to the node_modules folder
     # thus, we need to set write permission manually and rerun yarn
-    # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?page=1
+    # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?pc=1
     sudo chown root .
 
+    export APP_ENV=ci
     yarn install --immutable && yarn setup
 fi
