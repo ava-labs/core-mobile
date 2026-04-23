@@ -10,7 +10,12 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 import { View } from '../Primitives'
-import { clamp, snapToStep, validateRange } from './helpers'
+import {
+  clamp,
+  getStepDecimals,
+  snapToStep,
+  validateRange
+} from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
 import type { LeverageGaugeProps, Preset } from './types'
@@ -72,11 +77,12 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   )
 
   // Decimal places to show. integersOnly forces 0; explicit prop wins next;
-  // otherwise inferred from step.
+  // otherwise derived from the step's natural precision (handles non-power
+  // -of-10 steps like 0.25 → 2 correctly, unlike plain -log10).
   const vDecimals = useMemo(() => {
     if (integersOnly) return 0
     if (typeof decimals === 'number') return Math.max(0, Math.floor(decimals))
-    return vStep < 1 ? Math.ceil(-Math.log10(vStep)) : 0
+    return getStepDecimals(vStep)
   }, [integersOnly, decimals, vStep])
 
   // Filter out-of-range numeric presets; warn once per change.
@@ -123,12 +129,15 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
         snapped,
         { duration: 900, easing: Easing.out(Easing.cubic) },
         finished => {
+          // If cancelled (e.g. by a new gesture), leave the flags alone —
+          // the interrupting gesture is now responsible for managing them.
+          // Clearing them here would re-enable prop sync / haptics
+          // mid-gesture.
+          if (!finished) return
           isActive.value = false
           isProgrammatic.value = false
-          if (finished) {
-            scheduleOnRN(stableOnChange, snapped)
-            scheduleOnRN(stableOnCommit, snapped)
-          }
+          scheduleOnRN(stableOnChange, snapped)
+          scheduleOnRN(stableOnCommit, snapped)
         }
       )
     },
@@ -203,6 +212,10 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
         accessible
         accessibilityRole="adjustable"
         accessibilityValue={{
+          // min/max/now must be integers — the native accessibility bridge
+          // converts them to int64 and throws on non-integer floats. The
+          // precise fractional value is communicated via `text`, which
+          // VoiceOver/TalkBack prefer anyway.
           min: Math.round(vMin),
           max: Math.round(vMax),
           now: Math.round(value),

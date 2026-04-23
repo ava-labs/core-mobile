@@ -192,7 +192,6 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
 
       const settleTo = (snapped: number): void => {
         'worklet'
-        scheduleOnRN(onChange, snapped)
         currentValue.value = withTiming(
           snapped,
           { duration: 900, easing: Easing.out(Easing.cubic) },

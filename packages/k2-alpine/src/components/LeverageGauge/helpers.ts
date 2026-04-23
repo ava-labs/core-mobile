@@ -7,12 +7,30 @@ export const clamp = (v: number, min: number, max: number): number => {
   return v
 }
 
+/**
+ * Number of decimal digits required to express `step` exactly, derived by
+ * scaling until the value is integer (±epsilon). Works for non-power-of-10
+ * steps (e.g. 0.25 → 2), unlike `-log10(step)` which only handles 10⁻ⁿ.
+ */
+export const getStepDecimals = (step: number): number => {
+  'worklet'
+  if (!Number.isFinite(step) || step <= 0 || step >= 1) return 0
+  const epsilon = 1e-8
+  let decimals = 0
+  let scaled = step
+  while (decimals < 10 && Math.abs(scaled - Math.round(scaled)) > epsilon) {
+    scaled *= 10
+    decimals += 1
+  }
+  return decimals
+}
+
 export const snapToStep = (v: number, min: number, step: number): number => {
   'worklet'
   const offset = v - min
   const snapped = Math.round(offset / step) * step
-  // Avoid floating-point drift for common step sizes
-  const decimals = step < 1 ? Math.ceil(-Math.log10(step)) : 0
+  // Avoid floating-point drift by rounding to the step's natural precision.
+  const decimals = getStepDecimals(step)
   return min + Number(snapped.toFixed(decimals))
 }
 

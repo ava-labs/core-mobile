@@ -2,6 +2,7 @@ import {
   clamp,
   commitDraftText,
   formatNumber,
+  getStepDecimals,
   isMajorTick,
   resolvePreset,
   sanitizeTypedText,
@@ -34,6 +35,40 @@ describe('snapToStep', () => {
   })
   it('rounds halves up', () => {
     expect(snapToStep(1.5, 1, 1)).toBe(2)
+  })
+  it('handles non-power-of-10 steps (0.25) without rounding drift', () => {
+    expect(snapToStep(1.25, 1, 0.25)).toBe(1.25)
+    expect(snapToStep(1.37, 1, 0.25)).toBe(1.25)
+    expect(snapToStep(1.39, 1, 0.25)).toBe(1.5)
+  })
+  it('handles 0.125 step precision', () => {
+    expect(snapToStep(1.125, 1, 0.125)).toBe(1.125)
+    expect(snapToStep(1.2, 1, 0.125)).toBe(1.25)
+  })
+})
+
+describe('getStepDecimals', () => {
+  it('returns 0 for integer steps', () => {
+    expect(getStepDecimals(1)).toBe(0)
+    expect(getStepDecimals(2)).toBe(0)
+    expect(getStepDecimals(10)).toBe(0)
+  })
+  it('returns decimals for power-of-10 fractional steps', () => {
+    expect(getStepDecimals(0.1)).toBe(1)
+    expect(getStepDecimals(0.01)).toBe(2)
+    expect(getStepDecimals(0.001)).toBe(3)
+  })
+  it('returns decimals for non-power-of-10 fractional steps', () => {
+    expect(getStepDecimals(0.2)).toBe(1)
+    expect(getStepDecimals(0.25)).toBe(2)
+    expect(getStepDecimals(0.125)).toBe(3)
+    expect(getStepDecimals(0.0625)).toBe(4)
+  })
+  it('guards against bad inputs', () => {
+    expect(getStepDecimals(0)).toBe(0)
+    expect(getStepDecimals(-1)).toBe(0)
+    expect(getStepDecimals(Number.NaN)).toBe(0)
+    expect(getStepDecimals(Number.POSITIVE_INFINITY)).toBe(0)
   })
 })
 

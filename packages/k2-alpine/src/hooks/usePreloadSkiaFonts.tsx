@@ -19,6 +19,12 @@ const SMALL_FONT_SIZE = 11
 // Characters any LeverageGauge-style Skia component might render — digits,
 // decimal point, and the "×" multiplier glyph.
 const WARMUP_CHARS = '0123456789.x'
+// Canvas must be large enough to actually contain the drawn glyphs;
+// otherwise Skia clips outside the viewport and most glyphs never hit the
+// rasterization atlas. The Canvas is positioned off-screen (negative top)
+// so it's never visible while still being part of the layout tree.
+const WARMUP_CANVAS_WIDTH = 800
+const WARMUP_CANVAS_HEIGHT = 100
 
 export const SkiaPreload = React.memo(function SkiaPreload() {
   const bigFont = useFont(
@@ -35,18 +41,26 @@ export const SkiaPreload = React.memo(function SkiaPreload() {
       pointerEvents="none"
       style={{
         position: 'absolute',
-        width: 1,
-        height: 1,
+        top: -WARMUP_CANVAS_HEIGHT * 2,
+        left: 0,
+        width: WARMUP_CANVAS_WIDTH,
+        height: WARMUP_CANVAS_HEIGHT,
         opacity: 0
       }}>
       {bigFont && (
-        <SkText text={WARMUP_CHARS} x={0} y={0} font={bigFont} color="black" />
+        <SkText
+          text={WARMUP_CHARS}
+          x={0}
+          y={BIG_FONT_SIZE}
+          font={bigFont}
+          color="black"
+        />
       )}
       {smallFont && (
         <SkText
           text={WARMUP_CHARS}
           x={0}
-          y={0}
+          y={BIG_FONT_SIZE + SMALL_FONT_SIZE + 4}
           font={smallFont}
           color="black"
         />
