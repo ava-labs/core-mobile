@@ -1,10 +1,8 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import GlacierService from 'services/glacier/GlacierService'
-import NftProcessor from 'services/nft/NftProcessor'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
-import { getNftLocalId, getTokenUri } from 'services/nft/utils'
+import { fetchNftData, getNftLocalId, isNftTokenType } from 'services/nft/utils'
 import { CardContainer } from './CardContainer'
 import { CollectibleRenderer } from './CollectibleRenderer'
 
@@ -21,8 +19,7 @@ export const CollectibleFetchAndRender = memo(
     const token = tx.tokens[0]
     const [isLoading, setIsLoading] = useState(true)
 
-    const contractAddress =
-      token && 'address' in token ? token.address : tx.to.toString()
+    const contractAddress = token && 'address' in token ? token.address : ''
     const tokenId = token?.collectableTokenId?.toString() || ''
     const localId = getNftLocalId({
       address: contractAddress,
@@ -58,35 +55,21 @@ export const CollectibleFetchAndRender = memo(
       if (!isLoading) return
       if (!contractAddress || !tokenId) return
 
+      const tokenType = token?.type
+      if (!isNftTokenType(tokenType)) return
+
       try {
-        const result = await GlacierService.getTokenDetails({
-          address: contractAddress,
-          chainId: tx.chainId,
-          tokenId
-        })
-        if (!result) return
+        const data = await fetchNftData(contractAddress, tokenId, tx.chainId)
+        if (!data) return
 
-        const resolvedTokenUri = getTokenUri({
-          tokenUri: result.tokenUri,
-          tokenId
-        })
-        const processedMetadata = await NftProcessor.fetchMetadata(
-          resolvedTokenUri
-        )
-        const imageData = await NftProcessor.fetchImage(
-          processedMetadata.image ||
-            processedMetadata.animation_url ||
-            processedMetadata.external_url
-        )
         const chainId = Number(tx.chainId)
-
         setCollectible({
-          ...result,
-          imageData,
-          processedMetadata,
+          ...data.result,
+          imageData: data.imageData,
+          processedMetadata: data.processedMetadata,
           localId,
           tokenId,
-          type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
+          type: tokenType,
           name: token?.name ?? '',
           address: contractAddress,
           status: NftLocalStatus.Processed,
@@ -105,6 +88,7 @@ export const CollectibleFetchAndRender = memo(
           ...initialCollectible,
           status: NftLocalStatus.Unprocessable
         })
+        setIsLoading(false)
       }
     }, [
       contractAddress,
