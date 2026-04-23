@@ -31,6 +31,7 @@ export const useSendTransactionCallbacks = (): {
         AnalyticsService.captureWithEncryption(
           'SendTransactionSucceeded',
           {
+            chainId: selectedToken.networkChainId,
             txHash
           },
           {

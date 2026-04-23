@@ -49,6 +49,7 @@ export const SendScreen = (): JSX.Element => {
         AnalyticsService.captureWithEncryption(
           'SendTransactionSucceeded',
           {
+            chainId: network.chainId,
             txHash
           },
           {

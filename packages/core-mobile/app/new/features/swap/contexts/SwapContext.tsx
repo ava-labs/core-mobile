@@ -230,6 +230,8 @@ export const SwapContextProvider = ({
         {
           sourceAddress: address,
           targetAddress,
+          sourceChainId: quote.sourceChain.chainId,
+          targetChainId: quote.targetChain.chainId,
           sourceTxHash: transfer.source?.txHash,
           quoteSelectionMode,
           autoRetryAttempt
