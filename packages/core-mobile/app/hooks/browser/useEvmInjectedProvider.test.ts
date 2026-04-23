@@ -134,7 +134,7 @@ function setupMocks(
 
 // Wraps renderHook and seeds a native origin by default. Tests that explicitly
 // want the no-origin path pass an empty string: `renderProvider('')`.
-function renderProvider(url: string = 'https://example.com') {
+function renderProvider(url = 'https://example.com') {
   const hookReturn = renderHook(() =>
     useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
   )
@@ -145,6 +145,26 @@ function renderProvider(url: string = 'https://example.com') {
   }
   return hookReturn
 }
+
+// Shared helper used by prime / propagation tests — returns a mock useStore
+// whose state has an EVM permissions grant for each of `addresses` at
+// opensea.io.
+const makeOpenSeaStore = (
+  addresses: string[]
+): ReturnType<typeof useStore> =>
+  ({
+    getState: () => ({
+      permissions: {
+        grants: {
+          'https://opensea.io': Object.fromEntries(
+            addresses.map(a => [a, ['EVM']])
+          )
+        }
+      }
+    }),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(() => () => undefined)
+  } as unknown as ReturnType<typeof useStore>)
 
 describe('useEvmInjectedProvider', () => {
   beforeEach(() => {
@@ -1202,10 +1222,97 @@ describe('useEvmInjectedProvider', () => {
     })
   })
 
+  describe('active account switch propagation', () => {
+    const NEW_ACTIVE = '0xSecondAccountAddress'
+
+    it('emits accountsChanged with the new active first when it is in the granted set', () => {
+      mockUseStore.mockReturnValue(
+        makeOpenSeaStore([mockActiveAccount.addressC, NEW_ACTIVE])
+      )
+      setupMocks({ account: mockActiveAccount })
+      const { result, rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      act(() => {
+        result.current.setCurrentUrl('https://opensea.io/')
+      })
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: { addressC: NEW_ACTIVE } })
+      rerender()
+
+      const accountsChangedCalls = mockInjectJavaScript.mock.calls.filter(
+        call => call[0].includes("__coreProviderEmit('accountsChanged'")
+      )
+      expect(accountsChangedCalls.length).toBeGreaterThan(0)
+      expect(accountsChangedCalls[0][0]).toContain(
+        `["${NEW_ACTIVE}","${mockActiveAccount.addressC}"]`
+      )
+    })
+
+    it('does NOT emit accountsChanged when the new active is not in the granted set', () => {
+      mockUseStore.mockReturnValue(
+        makeOpenSeaStore([mockActiveAccount.addressC]) // only the original
+      )
+      setupMocks({ account: mockActiveAccount })
+      const { result, rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      act(() => {
+        result.current.setCurrentUrl('https://opensea.io/')
+      })
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: { addressC: NEW_ACTIVE } })
+      rerender()
+
+      const accountsChangedCalls = mockInjectJavaScript.mock.calls.filter(
+        call => call[0].includes("__coreProviderEmit('accountsChanged'")
+      )
+      expect(accountsChangedCalls).toHaveLength(0)
+    })
+
+    it('does NOT emit on first render before setCurrentUrl has been called', () => {
+      mockUseStore.mockReturnValue(
+        makeOpenSeaStore([mockActiveAccount.addressC])
+      )
+      setupMocks({ account: mockActiveAccount })
+      mockInjectJavaScript.mockClear()
+
+      renderProvider('')
+
+      const accountsChangedCalls = mockInjectJavaScript.mock.calls.filter(
+        call => call[0].includes("__coreProviderEmit('accountsChanged'")
+      )
+      expect(accountsChangedCalls).toHaveLength(0)
+    })
+
+    it('does NOT emit when there is no grant for the current domain', () => {
+      mockUseStore.mockReturnValue(makeOpenSeaStore([])) // empty grants
+      setupMocks({ account: mockActiveAccount })
+      const { result, rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      act(() => {
+        result.current.setCurrentUrl('https://opensea.io/')
+      })
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: { addressC: NEW_ACTIVE } })
+      rerender()
+
+      const accountsChangedCalls = mockInjectJavaScript.mock.calls.filter(
+        call => call[0].includes("__coreProviderEmit('accountsChanged'")
+      )
+      expect(accountsChangedCalls).toHaveLength(0)
+    })
+  })
+
   describe('setCurrentUrl origin-change cleanup', () => {
     it('aborts in-flight signing request when navigating cross-origin', async () => {
-      const { approvalController: mockApprovalController } =
-        jest.requireMock('vmModule/ApprovalController/ApprovalController')
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
       ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
 
       let capturedSignal: AbortSignal | undefined
@@ -1315,23 +1422,6 @@ describe('useEvmInjectedProvider', () => {
           subscribe: jest.fn(() => () => undefined)
         } as unknown as ReturnType<typeof useStore>)
 
-      const withPermissions = (
-        addresses: string[]
-      ): ReturnType<typeof useStore> =>
-        ({
-          getState: () => ({
-            permissions: {
-              grants: {
-                'https://opensea.io': Object.fromEntries(
-                  addresses.map(a => [a, ['EVM']])
-                )
-              }
-            }
-          }),
-          dispatch: jest.fn(),
-          subscribe: jest.fn(() => () => undefined)
-        } as unknown as ReturnType<typeof useStore>)
-
       it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
         mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
         const { result } = renderProvider()
@@ -1363,9 +1453,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining(
-            "__coreProviderEmit('accountsChanged', [])"
-          )
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
         )
       })
 
@@ -1405,7 +1493,7 @@ describe('useEvmInjectedProvider', () => {
         // in insertion order but should be first in the emitted list.
         const OTHER = '0xOtherGranted111'
         mockUseStore.mockReturnValue(
-          withPermissions([OTHER, mockActiveAccount.addressC])
+          makeOpenSeaStore([OTHER, mockActiveAccount.addressC])
         )
         const { result } = renderProvider()
         act(() => {
@@ -1428,7 +1516,7 @@ describe('useEvmInjectedProvider', () => {
         // User switched wallet to account Y; only X was previously granted.
         // Emit [X] so the dApp keeps the connection it already had.
         const ONLY_OTHER = '0xOnlyOtherAddr'
-        mockUseStore.mockReturnValue(withPermissions([ONLY_OTHER]))
+        mockUseStore.mockReturnValue(makeOpenSeaStore([ONLY_OTHER]))
         const { result } = renderProvider()
         act(() => {
           result.current.setCurrentUrl('https://opensea.io/')

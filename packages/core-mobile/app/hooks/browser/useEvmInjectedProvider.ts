@@ -217,6 +217,36 @@ export function useEvmInjectedProvider(
     activeAccountRef.current = activeAccount
   }, [activeAccount])
 
+  // Propagate wallet active-account switches to the dApp. MetaMask users
+  // expect the wallet's account selector to flip the dApp's connected
+  // account — dApps typically have no account-picker UI of their own. We
+  // only re-order / emit when the new active account is already in the
+  // granted list for this tab's origin; switching to an ungranted account
+  // leaves the dApp's last-known state alone (user has to go through a
+  // fresh connect to add that account).
+  const lastEmittedActiveRef = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    const newActive = activeAccount?.addressC
+    if (!newActive) return
+    const origin = getOriginFromUrl(currentUrlRef.current)
+    if (!origin) return
+    const granted = selectGrantedAddressesForDomain({
+      domain: origin,
+      vmType: NetworkVMType.EVM
+    })(store.getState())
+    if (granted.length === 0) return
+    if (!granted.includes(newActive)) return
+    if (lastEmittedActiveRef.current === newActive) return
+
+    const accounts = resolveGrantedAccounts(granted, newActive)
+    lastEmittedActiveRef.current = newActive
+    webViewRef.current?.injectJavaScript(
+      `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
+        accounts
+      )}); true;`
+    )
+  }, [activeAccount, store, webViewRef])
+
   const router = useMemo(() => {
     // requestSigning closes over dispatch; keep its construction inside the
     // memo so it always uses the latest dispatch and re-builds when dispatch
@@ -298,9 +328,7 @@ export function useEvmInjectedProvider(
       grantPermission: ({ domain, address, vmType }) =>
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
-        dispatch(
-          revokePermissionAction({ domain, address, vmType })
-        ),
+        dispatch(revokePermissionAction({ domain, address, vmType })),
       requestConnectApproval
     })
   }, [dispatch, tabId, sendResponse, emitEvent, getPeerMeta, store])
