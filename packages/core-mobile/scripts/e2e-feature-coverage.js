@@ -592,6 +592,15 @@ function coalesceFiniteNonNegativeWeight(rawVal, defaultVal) {
 }
 
 /**
+ * @param {object} w
+ * @param {string} key
+ */
+function rawWeightValueIsInvalid(w, key) {
+  const v = w?.[key]
+  return v != null && (!Number.isFinite(Number(v)) || Number(v) < 0)
+}
+
+/**
  * @returns {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number }, impliedUncertaintyPercentagePoints: number, definition?: string, configPath: string }}
  */
 function loadCoverageModelConfig() {
@@ -615,10 +624,7 @@ function loadCoverageModelConfig() {
       'requiredScenariosPercent',
       'featureFolderWalletSlotPercent'
     ]
-    const hadInvalidWeight = weightKeys.some(
-      k =>
-        w?.[k] != null && (!Number.isFinite(Number(w[k])) || Number(w[k]) < 0)
-    )
+    const hadInvalidWeight = weightKeys.some(k => rawWeightValueIsInvalid(w, k))
     if (hadInvalidWeight) {
       console.warn(
         'e2e-feature-coverage: coverage-model.config.json weights contained non-finite or negative values; defaults used for those entries.'
@@ -746,7 +752,7 @@ function loadRequiredScenariosConfig() {
  */
 function featureDirMatchTokens(dirName) {
   const normalized = dirName.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
-  const words = normalized.split(/[\s-_]+/).filter(w => w.length > 0)
+  const words = normalized.split(/[\s_-]+/).filter(w => w.length > 0)
   const tokens = new Set([dirName.toLowerCase(), ...words])
   if (words.length > 1) {
     tokens.add(words.join(''))
