@@ -2,7 +2,10 @@ import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import { CoreAccountType } from '@avalabs/types'
-import { selectIsLedgerSupportBlocked } from 'store/posthog'
+import {
+  selectIsLedgerSupportBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog'
 import {
   Account,
   AccountsState,
@@ -161,6 +164,17 @@ export const selectImportedAccounts = createSelector(
 export const selectAccountsCount = createSelector(
   [selectAccounts],
   (accounts): number => Object.keys(accounts).length
+)
+
+export const selectActiveAccountHasSolanaAddress = createSelector(
+  [selectActiveAccount, selectIsSolanaSupportBlocked],
+  (activeAccount, isSolanaSupportBlocked) => {
+    if (isSolanaSupportBlocked) return false
+    return (
+      activeAccount?.addressSVM !== undefined &&
+      activeAccount.addressSVM.length > 0
+    )
+  }
 )
 
 // actions
