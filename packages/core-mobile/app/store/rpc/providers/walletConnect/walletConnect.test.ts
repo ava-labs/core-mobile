@@ -89,13 +89,15 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_success',
           {
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressC,
-            chainId: 'eip155:1',
-            txHash: '0xdeadbeef'
+            encrypted: {
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressC,
+              chainId: 'eip155:1',
+              txHash: '0xdeadbeef'
+            }
           }
         )
       })
@@ -112,13 +114,15 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressC,
-            txHash: '0xcafebabe'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressC,
+              txHash: '0xcafebabe'
+            })
+          }
         )
       })
 
@@ -134,11 +138,13 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            address: mockActiveAccount.addressPVM
-          })
+          {
+            encrypted: expect.objectContaining({
+              address: mockActiveAccount.addressPVM
+            })
+          }
         )
       })
 
@@ -154,11 +160,13 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          expect.objectContaining({
-            address: mockActiveAccount.addressAVM
-          })
+          {
+            encrypted: expect.objectContaining({
+              address: mockActiveAccount.addressAVM
+            })
+          }
         )
       })
 
@@ -174,13 +182,15 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressBTC,
-            txHash: 'btctxhash123'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressBTC,
+              txHash: 'btctxhash123'
+            })
+          }
         )
       })
 
@@ -196,13 +206,15 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
-          expect.objectContaining({
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressSVM,
-            txHash: 'solanatxhash456'
-          })
+          {
+            encrypted: expect.objectContaining({
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressSVM,
+              txHash: 'solanatxhash456'
+            })
+          }
         )
       })
 
@@ -218,7 +230,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics when result is an empty string', async () => {
@@ -233,7 +245,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
     })
 
@@ -250,12 +262,14 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signTransaction_approved',
           {
-            dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressSVM,
-            chainId: SolanaCaip2ChainId.MAINNET
+            encrypted: {
+              dAppUrl: 'https://test.dapp.com',
+              address: mockActiveAccount.addressSVM,
+              chainId: SolanaCaip2ChainId.MAINNET
+            }
           }
         )
       })
@@ -272,7 +286,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics for personal_sign', async () => {
@@ -284,7 +298,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('does not fire analytics for eth_signTypedData_v4', async () => {
@@ -299,7 +313,7 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
     })
 

@@ -99,11 +99,13 @@ class ApprovalController implements VmModuleApprovalController {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
-      AnalyticsService.captureWithEncryption(eventName, {
-        dAppUrl: request.dappInfo.url,
-        address,
-        chainId: request.chainId,
-        txHash
+      AnalyticsService.capture(eventName, {
+        encrypted: {
+          dAppUrl: request.dappInfo.url,
+          address,
+          chainId: request.chainId,
+          txHash
+        }
       })
     }
 
@@ -143,11 +145,13 @@ class ApprovalController implements VmModuleApprovalController {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
-      AnalyticsService.captureWithEncryption(eventName, {
-        dAppUrl: request.dappInfo.url,
-        address,
-        chainId: request.chainId,
-        txHash
+      AnalyticsService.capture(eventName, {
+        encrypted: {
+          dAppUrl: request.dappInfo.url,
+          address,
+          chainId: request.chainId,
+          txHash
+        }
       })
     }
   }
