@@ -264,10 +264,9 @@ export const useCollectiblesFilterAndSort = (
 
   const isEveryCollectibleHidden = useMemo(
     () =>
-      filteredAndSorted.every(collectible =>
-        isCollectibleVisible(collectiblesVisibility, collectible)
-      ) && collectibles?.length > 0,
-    [collectibles?.length, collectiblesVisibility, filteredAndSorted]
+      collectibles.length > 0 &&
+      collectibles.every(c => !isCollectibleVisible(collectiblesVisibility, c)),
+    [collectibles, collectiblesVisibility]
   )
 
   const isHiddenVisible = filter.selected[1] !== CollectibleStatus.Hidden
