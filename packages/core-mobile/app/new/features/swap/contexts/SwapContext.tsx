@@ -16,7 +16,7 @@ import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { transactionSnackbar } from 'common/utils/toast'
+import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import {
   selectMarkrSwapMaxRetries,
@@ -41,6 +41,7 @@ import {
   getSwapErrorMessage
 } from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
+import { findNextQuote } from '../utils/findNextQuote'
 import { logSdkError } from '../utils/fusionLogger'
 
 const DEFAULT_SLIPPAGE = 0.2
@@ -381,16 +382,20 @@ export const SwapContextProvider = ({
           allQuotes.length > 1 &&
           shouldRetryWithNextQuote(error)
         ) {
-          const currentIndex = allQuotes.findIndex(q => q.id === quoteToUse.id)
-          const nextQuote = allQuotes[currentIndex + 1]
+          const nextQuote = findNextQuote(allQuotes, quoteToUse.id)
 
           if (nextQuote) {
-            Logger.info('[SwapContext] retrying with next quote:', {
+            Logger.error('[SwapContext] retrying with next quote', {
               failed: quoteToUse.aggregator.name,
+              failedId: quoteToUse.id,
               retrying: nextQuote.aggregator.name,
+              retryingId: nextQuote.id,
               attempt: retries + 1,
-              maxRetries
+              maxRetries,
+              errorMessage:
+                error instanceof Error ? error.message : String(error)
             })
+            showSnackbar('Swap failed, trying next available quote')
             // Recursive retry
             return swap(nextQuote, retries + 1)
           }

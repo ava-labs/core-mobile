@@ -46,7 +46,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import {
+  selectIsSolanaSwapBlocked,
+  selectMarkrSwapMaxRetries
+} from 'store/posthog'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -72,6 +75,7 @@ import {
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
+import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 
 export const SwapScreen = (): JSX.Element => {
@@ -147,7 +151,8 @@ export const SwapScreen = (): JSX.Element => {
     setAmount,
     quoteError,
     swapStatus,
-    successTransferId
+    successTransferId,
+    selectQuoteById
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -235,6 +240,16 @@ export const SwapScreen = (): JSX.Element => {
     nativeTokenBalance: nativeFromToken?.balance,
     amount: debouncedFromTokenValue,
     quote: activeQuote
+  })
+
+  const maxQuoteAdvances = useSelector(selectMarkrSwapMaxRetries)
+
+  useAutoAdvanceOnFeeValidationError({
+    feeValidationError,
+    activeQuote,
+    allQuotes,
+    selectQuoteById,
+    maxAdvances: maxQuoteAdvances
   })
 
   const activeError = validationError ?? quoteError
