@@ -143,6 +143,7 @@ export const SwapScreen = (): JSX.Element => {
     setToToken,
     bestQuote,
     userQuote,
+    autoAdvancedQuote,
     allQuotes,
     isQuoteLoading,
     setDestination,
@@ -152,7 +153,7 @@ export const SwapScreen = (): JSX.Element => {
     quoteError,
     swapStatus,
     successTransferId,
-    selectQuoteById
+    advanceBestQuote
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -192,8 +193,10 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  // userQuote takes precedence over bestQuote
-  const activeQuote = userQuote ?? bestQuote
+  // Precedence: explicit user pick > auto-advanced (pre-swap fallback) >
+  // best quote from the stream. autoAdvancedQuote is kept distinct so it
+  // doesn't flip the flow into manual-selection mode.
+  const activeQuote = userQuote ?? autoAdvancedQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
   const {
@@ -248,7 +251,8 @@ export const SwapScreen = (): JSX.Element => {
     feeValidationError,
     activeQuote,
     allQuotes,
-    selectQuoteById,
+    userQuote,
+    advanceBestQuote,
     maxAdvances: maxQuoteAdvances
   })
 
@@ -376,14 +380,15 @@ export const SwapScreen = (): JSX.Element => {
     activeQuote?.serviceType === ServiceType.LOMBARD_BTCB_TO_BTC
 
   const handleSwap = useCallback(() => {
+    if (!activeQuote) return
     AnalyticsService.capture('SwapReviewOrder', {
-      provider: activeQuote?.aggregator.name ?? 'Unknown',
+      provider: activeQuote.aggregator.name,
       slippage
     })
 
     dismissKeyboardIfNeeded()
 
-    swap()
+    swap(activeQuote)
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
