@@ -124,6 +124,18 @@ function parseProviderPayload(
 
 export type InjectedProviderRouter = {
   handleProviderMessage: (payload: string) => void
+  /**
+   * Aborts every in-flight abortable request whose origin does not match
+   * `currentOrigin`. Call when the WebView navigates to a new origin so stale
+   * signing / add-chain / watch-asset flows tied to the prior page cannot
+   * complete or broadcast.
+   */
+  cancelByOrigin: (currentOrigin: string | undefined) => void
+}
+
+type InFlightRequest = {
+  origin: string
+  controller: AbortController
 }
 
 export function createInjectedProviderRouter(
@@ -147,6 +159,21 @@ export function createInjectedProviderRouter(
     revokePermission,
     requestConnectApproval
   } = deps
+
+  const inFlightRequests = new Map<number, InFlightRequest>()
+
+  const registerInFlight = (
+    id: number,
+    origin: string
+  ): AbortController => {
+    const controller = new AbortController()
+    inFlightRequests.set(id, { origin, controller })
+    return controller
+  }
+
+  const clearInFlight = (id: number): void => {
+    inFlightRequests.delete(id)
+  }
 
   const proxyToRpc = async (
     id: number,
@@ -206,17 +233,22 @@ export function createInjectedProviderRouter(
     }
 
     const caip2ChainId = getEvmCaip2ChainId(getBrowserNetwork().chainId)
+    const origin = getNativeOrigin() ?? ''
+    const controller = registerInFlight(id, origin)
 
     try {
       const result = await requestSigning({
         method: rpcMethod,
         params,
         chainId: caip2ChainId,
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id)
     }
   }
 
@@ -280,12 +312,15 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
+    const origin = getNativeOrigin() ?? ''
+    const controller = registerInFlight(id, origin)
     try {
       await requestSigning({
         method: 'wallet_addEthereumChain' as unknown as RpcMethod,
         params,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       // User approved — switch browser chain to the new network and notify dApp
       if (addHexChainId) {
@@ -303,6 +338,8 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, null)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id)
     }
   }
 
@@ -475,12 +512,15 @@ export function createInjectedProviderRouter(
   ): Promise<void> => {
     // Normalize: some dApps send object form { type, options } instead of array
     const normalizedParams = Array.isArray(params) ? params : [params]
+    const origin = getNativeOrigin() ?? ''
+    const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({
         method: 'wallet_watchAsset' as unknown as RpcMethod,
         params: normalizedParams,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
@@ -491,6 +531,8 @@ export function createInjectedProviderRouter(
       } else {
         sendResponse(id, e, undefined)
       }
+    } finally {
+      clearInFlight(id)
     }
   }
 
@@ -581,5 +623,15 @@ export function createInjectedProviderRouter(
     }
   }
 
-  return { handleProviderMessage }
+  const cancelByOrigin = (currentOrigin: string | undefined): void => {
+    if (inFlightRequests.size === 0) return
+    for (const [id, entry] of inFlightRequests.entries()) {
+      if (entry.origin !== currentOrigin) {
+        entry.controller.abort()
+        inFlightRequests.delete(id)
+      }
+    }
+  }
+
+  return { handleProviderMessage, cancelByOrigin }
 }
