@@ -34,6 +34,7 @@ export type OnApproveParams = {
   maxPriorityFeePerGas?: bigint
   gasLimit?: number
   overrideData?: string
+  onSigned?: () => Promise<boolean>
 }
 
 export type ApprovalParams = {

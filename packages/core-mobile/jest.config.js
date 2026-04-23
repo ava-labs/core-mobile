@@ -34,6 +34,7 @@ module.exports = {
     '<rootDir>/e2e-appium/'
   ],
   setupFilesAfterEnv: [
+    '<rootDir>/tests/jestSetup/posthog.js',
     '<rootDir>/tests/msw/jestSetup.js',
     '<rootDir>/tests/jestSetup/firebase.js',
     '<rootDir>/tests/jestSetup/toast.js',
