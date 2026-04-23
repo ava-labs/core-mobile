@@ -1,67 +1,62 @@
-import { QueryObserverResult } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { skipToken, useQuery } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
-import { selectAccountsByWalletId, selectImportedAccounts } from 'store/account'
-import { RootState } from 'store/types'
-import { Wallet } from 'store/wallet/types'
-import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'new/features/wallets/consts'
-import { useAllBalances } from './useAllBalances'
+import {
+  AdjustedNormalizedBalancesForAccount,
+  AdjustedNormalizedBalancesForAccounts
+} from 'services/balance/types'
+import { selectEnabledNetworks } from 'store/network/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { balancesKey } from './useAccountsBalances'
+
+const emptyBalances: AdjustedNormalizedBalancesForAccount[] = []
 
 /**
- * Fetches balances for all accounts within the specified wallet across all enabled networks
- * (C-Chain, X-Chain, P-Chain, EVMs, BTC, SOL, etc.).
+ * Observes the shared balances cache and returns only the data
+ * for the given account IDs. Uses React Query `select` so the
+ * component only re-renders when its own slice of data changes.
  *
- * 🔁 Uses one React Query request per account.
+ * Does NOT fetch — relies on useAllBalances() being active elsewhere.
  */
-export const useWalletBalances = (
-  wallet?: Wallet
-): {
+export function useWalletBalances(accountIds: string[]): {
   data: AdjustedNormalizedBalancesForAccounts
-  isLoading: boolean
-  isFetching: boolean
   isError: boolean
-  error: Error | null
-  refetch: () => Promise<
-    QueryObserverResult<AdjustedNormalizedBalancesForAccounts, Error>
-  >
-} => {
-  const isVirtualImportedWallet =
-    wallet?.id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID
+} {
+  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const currency = useSelector(selectSelectedCurrency)
 
-  // For the virtual "Imported" wallet, imported accounts have their own
-  // real walletId — not the virtual ID — so selectAccountsByWalletId
-  // would return an empty array. Fall back to selectImportedAccounts.
-  const accountsByWalletId = useSelector((state: RootState) =>
-    selectAccountsByWalletId(state, wallet?.id ?? '')
+  const enabledChainIdsKey = useMemo(
+    () =>
+      enabledNetworks
+        .map(n => n.chainId)
+        .sort((a, b) => a - b)
+        .join(','),
+    [enabledNetworks]
   )
-  const importedAccounts = useSelector(selectImportedAccounts)
-  const accounts = isVirtualImportedWallet
-    ? importedAccounts
-    : accountsByWalletId
 
-  const {
-    data: allAccountsBalances,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch
-  } = useAllBalances()
+  const queryKey = useMemo(
+    () => balancesKey({ currency, enabledChainIdsKey }),
+    [currency, enabledChainIdsKey]
+  )
 
-  const balances = useMemo(() => {
-    return accounts.reduce((acc, account) => {
-      acc[account.id] = allAccountsBalances?.[account.id] ?? []
-      return acc
-    }, {} as AdjustedNormalizedBalancesForAccounts)
-  }, [allAccountsBalances, accounts])
+  const select = useCallback(
+    (
+      allData: AdjustedNormalizedBalancesForAccounts
+    ): AdjustedNormalizedBalancesForAccounts => {
+      const result: AdjustedNormalizedBalancesForAccounts = {}
+      for (const id of accountIds) {
+        result[id] = allData[id] ?? emptyBalances
+      }
+      return result
+    },
+    [accountIds]
+  )
 
-  return {
-    data: balances,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch
-  }
+  const { data, isError } = useQuery({
+    queryKey,
+    queryFn: skipToken,
+    select
+  })
+
+  return { data: data ?? {}, isError }
 }

@@ -2,15 +2,14 @@ import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
 import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen, ListScreenRef } from 'common/components/ListScreen'
+import { ListScreenV2, ListScreenRef } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
-import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
-import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -38,8 +37,12 @@ export const WalletsScreen = (): JSX.Element => {
   const activeAccountId = activeAccount?.id
   const activeAccountWalletId = activeAccount?.walletId
   const activeAccountType = activeAccount?.type
-  const { isLoading, refetch } = useAllBalances()
-  const isBalanceAccurate = useIsAllBalancesAccurate()
+  const { data: allBalancesData, isLoading, refetch } = useAllBalances()
+  const isBalanceAccurate = useMemo(() => {
+    if (!allBalancesData) return false
+    const allEntries = Object.values(allBalancesData).flat()
+    return allEntries.every(balance => balance.dataAccurate)
+  }, [allBalancesData])
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -47,6 +50,9 @@ export const WalletsScreen = (): JSX.Element => {
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
   >({})
+
+  const expandedWalletsRef = useRef(expandedWallets)
+  expandedWalletsRef.current = expandedWallets
 
   const errorMessage = useMemo(() => {
     if (!isLoading && !isBalanceAccurate) return 'Unable to load all balances'
@@ -154,9 +160,7 @@ export const WalletsScreen = (): JSX.Element => {
           wallet,
           account,
           isActive,
-          hideSeparator,
-          onPress: () => handleSetActiveAccount(account.id),
-          onPressDetails: () => gotoAccountDetails(account.id)
+          hideSeparator
         }
       })
 
@@ -165,16 +169,9 @@ export const WalletsScreen = (): JSX.Element => {
         accounts: accountDataForWallet
       } as WalletDisplayData
     })
-  }, [
-    primaryWallets,
-    allAccountsArray,
-    activeAccountId,
-    handleSetActiveAccount,
-    gotoAccountDetails
-  ])
+  }, [primaryWallets, allAccountsArray, activeAccountId])
 
   const importedWalletsDisplayData = useMemo(() => {
-    // Get all accounts from private key wallets
     const allPrivateKeyAccounts = importedWallets.flatMap(wallet =>
       allAccountsArray.filter(account => account.walletId === wallet.id)
     )
@@ -183,8 +180,6 @@ export const WalletsScreen = (): JSX.Element => {
       return null
     }
 
-    // Create virtual "Private Key Accounts" wallet if there are any imported wallets
-    // Only add the virtual wallet if there are matching accounts (respects search)
     const privateKeyAccountData = allPrivateKeyAccounts.map(
       (account, index) => {
         const isActive = account.id === activeAccountId
@@ -198,45 +193,32 @@ export const WalletsScreen = (): JSX.Element => {
           wallet: importedWallets.find(w => w.id === account.walletId),
           account,
           isActive,
-          hideSeparator,
-          onPress: () => handleSetActiveAccount(account.id),
-          onPressDetails: () => gotoAccountDetails(account.id)
+          hideSeparator
         }
       }
     )
 
-    // Create virtual wallet for private key accounts
     return {
-      id: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID, // Virtual ID
+      id: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
       name: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME,
       type: WalletType.PRIVATE_KEY,
       accounts: privateKeyAccountData
     } as WalletDisplayData
-  }, [
-    importedWallets,
-    allAccountsArray,
-    activeAccountId,
-    handleSetActiveAccount,
-    gotoAccountDetails
-  ])
+  }, [importedWallets, allAccountsArray, activeAccountId])
 
   const walletsDisplayData = useMemo((): WalletDisplayData[] => {
-    // Filter out null values from primary wallets
     const validPrimaryWallets = primaryWalletsDisplayData.filter(
       (wallet): wallet is WalletDisplayData => wallet !== null
     )
 
-    // Combine all wallets (primary + imported)
     const combinedWallets: WalletDisplayData[] = importedWalletsDisplayData
       ? [...validPrimaryWallets, importedWalletsDisplayData]
       : validPrimaryWallets
 
-    // Find the active wallet (could be primary or imported)
     const activeWallet = combinedWallets.find(wallet =>
       isActiveWalletId(wallet.id)
     )
 
-    // If active wallet is found, move it to the beginning
     if (activeWallet) {
       const otherWallets = combinedWallets.filter(
         wallet => wallet.id !== activeWallet.id
@@ -244,7 +226,6 @@ export const WalletsScreen = (): JSX.Element => {
       return [activeWallet, ...otherWallets]
     }
 
-    // If no active wallet found, return in default order
     return combinedWallets
   }, [primaryWalletsDisplayData, importedWalletsDisplayData, isActiveWalletId])
 
@@ -288,12 +269,23 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [colors.$textDanger, errorMessage])
 
+  const cardStyle = useMemo(
+    () => ({
+      marginHorizontal: 16,
+      marginVertical: 5,
+      backgroundColor: colors.$surfacePrimary,
+      borderColor: colors.$borderPrimary,
+      borderWidth: 1
+    }),
+    [colors.$surfacePrimary, colors.$borderPrimary]
+  )
+
   const renderItem = useCallback(
     ({ item }: { item: WalletDisplayData }) => {
       if (!item) {
         return null
       }
-      const isExpanded = expandedWallets[item.id] ?? false
+      const isExpanded = expandedWalletsRef.current[item.id] ?? false
       const isActive = isActiveWalletId(item.id)
 
       return (
@@ -302,24 +294,20 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
-          onToggleExpansion={() => toggleWalletExpansion(item.id)}
-          style={{
-            marginHorizontal: 16,
-            marginVertical: 5,
-            backgroundColor: colors.$surfacePrimary,
-            borderColor: colors.$borderPrimary,
-            borderWidth: 1
-          }}
+          onToggleExpansion={toggleWalletExpansion}
+          onSetActiveAccount={handleSetActiveAccount}
+          onAccountDetails={gotoAccountDetails}
+          style={cardStyle}
         />
       )
     },
     [
-      colors.$borderPrimary,
-      colors.$surfacePrimary,
-      expandedWallets,
       isActiveWalletId,
       isRefreshing,
-      toggleWalletExpansion
+      toggleWalletExpansion,
+      handleSetActiveAccount,
+      gotoAccountDetails,
+      cardStyle
     ]
   )
 
@@ -341,11 +329,12 @@ export const WalletsScreen = (): JSX.Element => {
   }, [refetch])
 
   return (
-    <ListScreen
-      flatListRef={listRef as RefObject<ListScreenRef<WalletDisplayData>>}
+    <ListScreenV2
+      flatListRef={listRef}
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
       data={walletsDisplayData}
+      extraData={expandedWallets}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
       refreshControl={

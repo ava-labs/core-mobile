@@ -1,5 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
+import { Alert, AppState, AppStateStatus } from 'react-native'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -13,11 +14,12 @@ import {
   getLedgerAppInfo
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
+import { getAddress } from 'ethers'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Alert } from 'react-native'
 import {
+  DERIVATION_PATHS,
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
@@ -43,6 +45,9 @@ import {
 } from './types'
 import {
   isLedgerBluetoothError,
+  isLedgerConnectionFailed,
+  LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+  LEDGER_SCAN_FAILED_TITLE,
   ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
@@ -76,6 +81,19 @@ class LedgerService {
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
+
+  constructor() {
+    // Auto-disconnect BLE when app goes to background so other devices can connect
+    AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (
+        (nextState === 'background' || nextState === 'inactive') &&
+        this.isConnected()
+      ) {
+        Logger.info('App backgrounded — disconnecting Ledger BLE')
+        this.disconnect().catch(Logger.error)
+      }
+    })
+  }
 
   // Device scanning state
   private scanSubscription: { unsubscribe: () => void } | null = null
@@ -196,7 +214,7 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
-      if (isLedgerBluetoothError(error)) {
+      if (isLedgerBluetoothError(error) || isLedgerConnectionFailed(error)) {
         throw error
       }
       throw new Error(
@@ -314,6 +332,14 @@ class LedgerService {
       setTimeout(() => {
         Logger.info('Scan timeout reached, stopping...')
         this.stopDeviceScanning()
+
+        if (!this.currentDevices || this.currentDevices.length === 0) {
+          Alert.alert(
+            LEDGER_SCAN_FAILED_TITLE,
+            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+            [{ text: 'OK' }]
+          )
+        }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       Logger.error('Failed to start device scanning:', error)
@@ -461,78 +487,141 @@ class LedgerService {
     return false
   }
 
-  // Wait for specific app to be open (Promise-based, works with polling)
+  // Wait for specific app to be open (Promise-based, works with polling).
+  // Accepts an optional AbortSignal so callers can cancel the wait — e.g.
+  // when the user taps "Skip Solana" during onboarding.
   async waitForApp(
     appType: LedgerAppType,
-    timeoutMs: number = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+    timeoutMs: number = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT,
+    signal?: AbortSignal
+  ): Promise<void> {
+    // If the signal is already aborted before we start, reject immediately
+    // so no APDU traffic is sent to the Ledger device.
+    if (signal?.aborted) {
+      return Promise.reject(new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
+    }
+
+    // Check if app is already available — resolve before entering the
+    // Promise constructor so no abort listener is registered unnecessarily.
+    if (this.isAppCompatible(this.currentAppType, appType)) {
+      Logger.info(`${appType} app is ready (detected: ${this.currentAppType})`)
+      return Promise.resolve()
+    }
+
+    return this.pollForApp(appType, timeoutMs, signal)
+  }
+
+  // Poll the Ledger device until the requested app is open, the timeout
+  // expires, or the operation is cancelled via signal/disconnect.
+  private pollForApp(
+    appType: LedgerAppType,
+    timeoutMs: number,
+    signal?: AbortSignal
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
+      // Wrapped in an object so pollTick's closure captures the mutable
+      // reference rather than a frozen primitive boolean value.
+      const state = { settled: false }
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
-
-      // Check if app is already available
-      if (this.isAppCompatible(this.currentAppType, appType)) {
-        Logger.info(
-          `${appType} app is ready (detected: ${this.currentAppType})`
-        )
-        resolve()
-        return
-      }
 
       let checkInterval: ReturnType<typeof setInterval> | null = null
 
-      const cleanup = (): void => {
+      // Settle helper — prevents double resolve/reject after cleanup races.
+      const settle = (outcome: 'resolve' | 'reject', error?: Error): void => {
+        if (state.settled) return
+        state.settled = true
         if (checkInterval) {
           clearInterval(checkInterval)
           checkInterval = null
         }
+        // Stop listening for abort once settled to prevent leaks.
+        if (signal) {
+          signal.removeEventListener('abort', onAbort)
+        }
+        if (outcome === 'resolve') {
+          resolve()
+        } else {
+          reject(error)
+        }
       }
 
-      // Do immediate check
+      // Abort listener — fires immediately when the signal is aborted,
+      // so cancellation doesn't have to wait for the next polling tick.
+      const onAbort = (): void => {
+        Logger.info('Aborting waitForApp via AbortSignal')
+        settle('reject', new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
+      }
+
+      if (signal) {
+        signal.addEventListener('abort', onAbort)
+      }
+
+      // Do immediate check, then start polling interval if not found.
       this.checkApp(appType)
         .then(appFound => {
           if (appFound) {
-            cleanup()
-            resolve()
+            settle('resolve')
             return
           }
-
-          // Set up polling interval
-          checkInterval = setInterval(async () => {
-            const elapsed = Date.now() - startTime
-            if (elapsed >= timeoutMs) {
-              cleanup()
-              Logger.error(
-                `Timeout waiting for ${appType} app after ${timeoutMs}ms`
-              )
-              reject(
-                new Error(
-                  `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
-                )
-              )
-              return
-            }
-
-            // Check if disconnect was called - abort waiting
-            if (this.isDisconnected) {
-              cleanup()
-              Logger.info('Aborting waitForApp due to disconnect')
-              reject(new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
-            }
-
-            const isFound = await this.checkApp(appType)
-            if (isFound) {
-              cleanup()
-              resolve()
-            }
-          }, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+          // Guard: if abort fired while checkApp was in-flight, settle()
+          // already ran — don't start an interval that would never be cleared.
+          if (state.settled) return
+          checkInterval = setInterval(
+            () => this.pollTick(appType, timeoutMs, startTime, state, settle),
+            LEDGER_TIMEOUTS.APP_CHECK_DELAY
+          )
         })
         .catch(error => {
-          cleanup()
           Logger.error('Error checking app:', error)
-          reject(error)
+          settle('reject', error)
         })
     })
+  }
+
+  // Single polling tick: check timeout, disconnect, and app status.
+  private async pollTick(
+    appType: LedgerAppType,
+    timeoutMs: number,
+    startTime: number,
+    state: { settled: boolean },
+    settle: (outcome: 'resolve' | 'reject', error?: Error) => void
+  ): Promise<void> {
+    if (state.settled) return
+
+    const elapsed = Date.now() - startTime
+    if (elapsed >= timeoutMs) {
+      Logger.error(`Timeout waiting for ${appType} app after ${timeoutMs}ms`)
+      settle(
+        'reject',
+        new Error(
+          `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
+        )
+      )
+      return
+    }
+
+    // Check if disconnect was called — abort waiting.
+    // The return ensures we don't fall through to checkApp below,
+    // which would send another APDU to the device. (Fixes CP-13966)
+    if (this.isDisconnected) {
+      Logger.info('Aborting waitForApp due to disconnect')
+      settle('reject', new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
+      return
+    }
+
+    try {
+      const isFound = await this.checkApp(appType)
+      if (isFound) {
+        settle('resolve')
+      }
+    } catch (error) {
+      Logger.error(`Error while polling for ${appType} app`, error)
+      settle(
+        'reject',
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
   }
 
   // Check if specific app is currently open
@@ -566,8 +655,32 @@ class LedgerService {
     }
   }
 
+  /**
+   * Get the correct EVM derivation path for a given account index.
+   *
+   * BIP44:      m/44'/60'/0'/0/{accountIndex}  (shared account, varying address index)
+   * LedgerLive: m/44'/60'/{accountIndex}'/0/0  (per-account, fixed address index)
+   */
+  private getEvmDerivationPath(
+    accountIndex: number,
+    derivationPathType?: LedgerDerivationPathType
+  ): string {
+    const sdkDerivationPathType =
+      derivationPathType === LedgerDerivationPathType.LedgerLive
+        ? 'ledger_live'
+        : 'bip44'
+    return getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.EVM,
+      derivationPathType: sdkDerivationPathType
+    })
+  }
+
   // Get extended public keys for BIP44 derivation
-  async getExtendedPublicKeys(accountIndex: number): Promise<{
+  async getExtendedPublicKeys(
+    accountIndex: number,
+    derivationPathType?: LedgerDerivationPathType
+  ): Promise<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
@@ -585,10 +698,13 @@ class LedgerService {
     try {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')
-      const evmPath = getAddressDerivationPath({
-        accountIndex,
-        vmType: NetworkVMType.EVM
-      }).replace('/0/0', '')
+      const evmPath =
+        derivationPathType === LedgerDerivationPathType.BIP44
+          ? DERIVATION_PATHS.EXTENDED.EVM(0)
+          : getAddressDerivationPath({
+              accountIndex,
+              vmType: NetworkVMType.EVM
+            }).replace('/0/0', '')
       Logger.info('EVM derivation path:', evmPath)
 
       const evmXpubResponse = await avalancheApp.getExtendedPubKey(
@@ -886,7 +1002,8 @@ class LedgerService {
   async getAllAddresses(
     startIndex: number,
     count: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPathType?: LedgerDerivationPathType
   ): Promise<AddressInfo[]> {
     // Connect to Avalanche app
     await this.openApp(LedgerAppType.AVALANCHE)
@@ -902,10 +1019,7 @@ class LedgerService {
       // Derive addresses for each chain
       for (let i = startIndex; i < startIndex + count; i++) {
         // EVM addresses (Ethereum/Avalanche C-Chain) - get from device
-        const evmPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.EVM
-        })
+        const evmPath = this.getEvmDerivationPath(i, derivationPathType)
         const evmAddressResponse = await avalancheApp.getETHAddress(
           evmPath,
           false // don't display on device
@@ -913,7 +1027,7 @@ class LedgerService {
         addresses.push({
           id: `${LedgerAddressType.EVM}-${i}`,
           type: LedgerAddressType.EVM,
-          address: evmAddressResponse.address,
+          address: getAddress(evmAddressResponse.address),
           derivationPath: evmPath
         })
 
@@ -940,7 +1054,11 @@ class LedgerService {
         // xp addresses - get from device
         const avalancheChainPath = getAddressDerivationPath({
           accountIndex: i,
-          vmType: NetworkVMType.AVM
+          vmType: NetworkVMType.AVM,
+          derivationPathType:
+            derivationPathType === LedgerDerivationPathType.LedgerLive
+              ? 'ledger_live'
+              : 'bip44'
         })
         const avalancheChainAddressResponse =
           await avalancheApp.getAddressAndPubKey(
@@ -997,7 +1115,8 @@ class LedgerService {
   async getAllAddressesWithSolana(
     startIndex: number,
     count: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPathType?: LedgerDerivationPathType
   ): Promise<AddressInfo[]> {
     const addresses: AddressInfo[] = []
 
@@ -1006,7 +1125,8 @@ class LedgerService {
       const avalancheAddresses = await this.getAllAddresses(
         startIndex,
         count,
-        isTestnet
+        isTestnet,
+        derivationPathType
       )
       addresses.push(...avalancheAddresses)
 
@@ -1025,11 +1145,24 @@ class LedgerService {
   async disconnect(): Promise<void> {
     this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
-      await this.#transport.close()
+      // Capture transport before nulling so we can still call close() below.
+      const transport = this.#transport
+      const deviceId = transport.id
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
-      this.stopAppPolling() // Stop polling on disconnect
+      this.stopAppPolling()
+      // disconnectDevice() immediately drops the physical BLE link so other
+      // devices can connect without the ~5 s delay that transport.close() imposes.
+      try {
+        await TransportBLE.disconnectDevice(deviceId)
+      } catch (error) {
+        Logger.error('Failed to disconnect Ledger BLE device', error)
+      }
+      // Fire-and-forget close() for SDK-side cleanup (cancels pending exchanges,
+      // removes internal BLE listeners, resets transport state). The BLE link is
+      // already down at this point so the delay inside close() has no effect.
+      transport.close().catch(Logger.error)
     }
   }
 
@@ -1054,13 +1187,33 @@ class LedgerService {
   // ============================================================================
 
   /**
-   * Get Solana keys from the connected Ledger device
+   * Get Solana keys from the connected Ledger device.
+   * @param accountIndex - BIP44 account index to derive
+   * @param signal - Optional AbortSignal to cancel the operation mid-flight
+   *                 (e.g. when the user taps "Skip Solana" during onboarding)
    * @returns Array of Solana keys with derivation paths
    */
-  async getSolanaKeys(accountIndex: number): Promise<PublicKeyInfo[]> {
+  async getSolanaKeys(
+    accountIndex: number,
+    signal?: AbortSignal
+  ): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
     await this.openApp(LedgerAppType.SOLANA)
-    await this.waitForApp(LedgerAppType.SOLANA)
+
+    // Pass the signal to waitForApp so cancellation stops the polling loop
+    // before it sends further APDU queries to the Ledger device.
+    await this.waitForApp(
+      LedgerAppType.SOLANA,
+      LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT,
+      signal
+    )
+
+    // Check if the operation was cancelled while we were waiting for the app.
+    // This prevents sending a getAddress APDU after the user has already
+    // chosen to skip Solana.
+    if (signal?.aborted) {
+      throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+    }
 
     // Get address directly from Solana app
     const transport = await this.getTransport()
@@ -1101,7 +1254,12 @@ class LedgerService {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
-    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
+    const addresses = await this.getAllAddresses(
+      accountIndex,
+      1,
+      isTestnet,
+      derivationPath
+    )
 
     const findAddress = (type: LedgerAddressType): string =>
       addresses.find(addr => addr.type === type)?.address || ''
@@ -1129,7 +1287,10 @@ class LedgerService {
 
     if (derivationPath === LedgerDerivationPathType.BIP44) {
       // BIP44: fetch account-level xpubs and derive address-level public keys
-      const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
+      const extendedKeys = await this.getExtendedPublicKeys(
+        accountIndex,
+        derivationPath
+      )
 
       const evmXpub = extendedPublicKeyToXpub(
         extendedKeys.evm.key,
@@ -1249,18 +1410,45 @@ class LedgerService {
    * Derive Solana keys for a range of account indices.
    * Returns an array where each element is the PublicKeyInfo[] for that index,
    * or null if derivation failed.
+   *
+   * @param count - Number of indices to derive
+   * @param startIndex - First account index
+   * @param signal - Optional AbortSignal to cancel iteration early
+   *                 (e.g. when the user taps "Skip Solana" during onboarding).
+   *                 When aborted, the loop stops and returns only the keys
+   *                 that were successfully retrieved before cancellation.
    */
   async getSolanaKeysForRange(
     count: number,
-    startIndex = 0
+    startIndex = 0,
+    signal?: AbortSignal
   ): Promise<(PublicKeyInfo[] | null)[]> {
     const results: (PublicKeyInfo[] | null)[] = []
 
     for (let i = startIndex; i < startIndex + count; i++) {
+      // Stop iterating if the caller cancelled the operation.
+      // This prevents sending additional APDU requests to the Ledger
+      // device after the user chose to skip Solana onboarding.
+      if (signal?.aborted) {
+        Logger.info(
+          `getSolanaKeysForRange: aborting before index ${i} (pre-iteration)`
+        )
+        break
+      }
+
       try {
-        const keys = await this.getSolanaKeys(i)
+        const keys = await this.getSolanaKeys(i, signal)
         results.push(keys)
       } catch (error) {
+        // If the abort signal fired during getSolanaKeys, stop the loop
+        // instead of logging the cancellation as a derivation failure.
+        if (signal?.aborted) {
+          Logger.info(
+            `getSolanaKeysForRange: aborting at index ${i} (post-error)`
+          )
+          break
+        }
+
         Logger.error(
           `Failed to derive Solana keys for index ${i}, skipping`,
           error
@@ -1291,7 +1479,10 @@ class LedgerService {
 
     for (let i = startIndex; i < startIndex + count; i++) {
       try {
-        const xpubs = await this.getExtendedPublicKeys(i)
+        const xpubs = await this.getExtendedPublicKeys(
+          i,
+          LedgerDerivationPathType.BIP44
+        )
         results.push(xpubs)
       } catch (error) {
         Logger.error(

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LedgerMultiIndexKeys } from 'services/ledger/types'
@@ -25,11 +25,21 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const accounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, walletId)
   )
+  // Capture the account index once so it stays stable when Redux state
+  // updates mid-flow (e.g. after setAccount dispatch in handleComplete).
+  const accountIndexRef = useRef(accounts?.length ?? 0)
+  const accountIndex = accountIndexRef.current
   const { getLedgerInfoByWalletId } = useLedgerWalletMap()
 
   const { device, derivationPathType } = useMemo(() => {
     return getLedgerInfoByWalletId(walletId)
   }, [getLedgerInfoByWalletId, walletId])
+
+  // useRef instead of useState: the ref flips synchronously, so a second tap
+  // cannot enter handleComplete before the first invocation finishes. useState
+  // is async — rapid taps could race past the isUpdatingWallet guard before
+  // React re-renders with the updated value.
+  const isHandlingCompleteRef = useRef(false)
 
   const {
     resetSetup,
@@ -47,8 +57,9 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
-      // When adding a single account, the keys are stored at the account index
-      const accountIndex = accounts?.length ?? 0
+      if (isHandlingCompleteRef.current) return
+      isHandlingCompleteRef.current = true
+
       const keys = {
         mainnet: multiIndexKeys.mainnet[accountIndex],
         testnet: multiIndexKeys.testnet[accountIndex]
@@ -102,6 +113,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           setIsUpdatingWallet(false)
+          isHandlingCompleteRef.current = false
           resetSetup()
           dismiss()
         }
@@ -116,11 +128,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             isUpdatingWallet
           }
         )
+        isHandlingCompleteRef.current = false
         resetSetup()
         dismiss()
       }
     },
     [
+      accountIndex,
       device,
       wallet,
       accounts?.length,
@@ -145,7 +159,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       deviceName={device?.name ?? 'Ledger'}
       handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
-      accountIndex={accounts?.length ?? 0}
+      accountIndex={accountIndex}
       showCancelOnComplete={true}
       showConnectionToasts={true}
     />
