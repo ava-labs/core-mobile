@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  Canvas,
-  Text as SkText,
-  useFont
-} from '@shopify/react-native-skia'
+import { Canvas, Text as SkText, useFont } from '@shopify/react-native-skia'
 
 /**
  * Warms Skia's typeface cache AND the glyph rasterization cache at app
@@ -22,7 +18,7 @@ const BIG_FONT_SIZE = 60
 const SMALL_FONT_SIZE = 11
 // Characters any LeverageGauge-style Skia component might render — digits,
 // decimal point, and the "×" multiplier glyph.
-const WARMUP_CHARS = '0123456789.×'
+const WARMUP_CHARS = '0123456789.x'
 
 export const SkiaPreload = React.memo(function SkiaPreload() {
   const bigFont = useFont(
