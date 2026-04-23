@@ -1,5 +1,5 @@
 import React, { FC, memo, useEffect, useRef, useState } from 'react'
-import { Pressable, TextInput, TextStyle } from 'react-native'
+import { Platform, Pressable, TextInput, TextStyle } from 'react-native'
 import {
   Canvas,
   Group,
@@ -8,6 +8,7 @@ import {
 } from '@shopify/react-native-skia'
 import Animated, {
   Easing,
+  FadeIn,
   SharedValue,
   useAnimatedProps,
   useAnimatedReaction,
@@ -19,7 +20,13 @@ import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { Button } from '../Button/Button'
-import { clamp, resolvePreset, snapToStep } from './helpers'
+import {
+  commitDraftText,
+  formatNumber,
+  resolvePreset,
+  sanitizeTypedText,
+  snapToStep
+} from './helpers'
 import type { Preset } from './types'
 
 type LeverageDisplayProps = {
@@ -63,8 +70,8 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     theme: { colors }
   } = useTheme()
 
-  // Draft is null when not editing (display syncs from liveValue). Non-null
-  // while the TextInput is focused so user keystrokes aren't clobbered.
+  // Draft is null when not editing; non-null while the TextInput is focused
+  // so user keystrokes aren't clobbered by wheel-driven sync.
   const [draft, setDraft] = useState<string | null>(null)
   // When non-null, forces the TextInput's cursor to this selection. Used to
   // pin the caret to the end when a wheel swipe overwrites the draft.
@@ -84,10 +91,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     liveValueRef.current = value
   }, [value])
 
-  // Consistent display formatting — matches what Skia renders.
-  const formatNumber = (v: number): string =>
-    decimals > 0 ? v.toFixed(decimals) : `${v}`
-
   const maxStepIndex = Math.round((max - min) / step)
 
   // Keeps JS state (draft) in sync with the wheel position while editing —
@@ -98,7 +101,7 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     liveValueRef.current = snapped
     if (!swept) return
     if (!inputRef.current?.isFocused()) return
-    const next = formatNumber(snapped)
+    const next = formatNumber(snapped, decimals)
     setDraft(next)
     setForcedSelection({ start: next.length, end: next.length })
   }
@@ -123,38 +126,29 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     // User is typing — release any caret pin from a prior wheel swipe so the
     // cursor position is free again.
     setForcedSelection(null)
-    // If integersOnly, strip out any non-digit characters (e.g. decimals
-    // from paste, accidental "."). Some Android keyboards still expose "."
-    // even on number-pad; this guarantees the input stays integer.
-    let next = integersOnly ? text.replace(/[^\d]/g, '') : text
-    const parsed = Number(next)
-    // Cap at max while typing so the field can't display an out-of-range
-    // number. We don't clamp to min here — the user may be typing digits
-    // one at a time on the way to a valid value (e.g. "1" → "15").
-    if (Number.isFinite(parsed) && parsed > max) {
-      next = String(max)
-    }
+    const next = sanitizeTypedText(text, { integersOnly, max })
     setDraft(next)
     // Live-move the wheel as the user types, so the gauge tracks the input.
     if (next === '' || next === '-' || next === '.') return
     const val = Number(next)
     if (!Number.isFinite(val)) return
-    const clamped = clamp(val, min, max)
-    currentValue.value = withTiming(clamped, { duration: 200 })
+    currentValue.value = withTiming(Math.min(Math.max(val, min), max), {
+      duration: 200
+    })
   }
 
   const handleFocus = (): void => {
-    setDraft(formatNumber(liveValueRef.current))
+    const next = formatNumber(liveValueRef.current, decimals)
+    setDraft(next)
+    // Pin the caret at the end of the text so pressing into edit mode
+    // doesn't select-all; the user can just keep typing to append.
+    setForcedSelection({ start: next.length, end: next.length })
   }
 
   const handleBlur = (): void => {
     if (draft !== null) {
-      const parsed = Number(draft)
-      if (Number.isFinite(parsed)) {
-        const clamped = clamp(parsed, min, max)
-        const snapped = snapToStep(clamped, min, step)
-        onManualCommit(snapped)
-      }
+      const committed = commitDraftText(draft, { min, max, step })
+      if (committed !== null) onManualCommit(committed)
     }
     setDraft(null)
     setForcedSelection(null)
@@ -162,7 +156,7 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
 
   const startEdit = (): void => {
     if (!enableManualInput) return
-    setDraft(formatNumber(liveValueRef.current))
+    setDraft(formatNumber(liveValueRef.current, decimals))
     // Focus request runs after re-render has swapped in the TextInput.
     requestAnimationFrame(() => inputRef.current?.focus())
   }
@@ -170,7 +164,7 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   const bigTextStyle: TextStyle = {
     fontFamily: 'Aeonik-Medium',
     fontSize: 60,
-    lineHeight: 66,
+    lineHeight: 62,
     color: colors.$textPrimary
   }
 
@@ -197,16 +191,8 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   return (
     <View
       style={{
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        borderBottomLeftRadius: 4,
-        borderBottomRightRadius: 4,
-        paddingVertical: 16,
-        paddingHorizontal: 40,
-        height: 150,
         alignItems: 'center',
-        flexDirection: 'row',
-        backgroundColor: colors.$surfaceSecondary
+        flexDirection: 'row'
       }}>
       <Button
         type="secondary"
@@ -237,7 +223,8 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
             flexDirection: 'row',
             alignItems: 'baseline',
             justifyContent: 'center',
-            position: 'relative'
+            position: 'relative',
+            minHeight: 80
           }}>
           {/* Skia display — always rendered in flow so its derived values
               and animated states persist, and its Canvas keeps painting
@@ -246,7 +233,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
           <Pressable
             onPress={startEdit}
             disabled={!enableManualInput || isEditing}
-            style={{ transform: [{ scale: 0.89 }] }}
             testID="leverage-gauge-value">
             <AnimatedNumber
               currentValue={currentValue}
@@ -265,8 +251,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
                 left: 0,
                 right: 0,
                 bottom: 0,
+                paddingTop: 19,
                 flexDirection: 'row',
-                alignItems: 'baseline',
+                alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: colors.$surfaceSecondary
               }}>
@@ -281,21 +268,23 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
                 editable={enableManualInput}
                 keyboardType={integersOnly ? 'number-pad' : 'decimal-pad'}
                 selection={forcedSelection ?? undefined}
-                selectTextOnFocus
+                allowFontScaling={false}
+                cursorColor={colors.$textPrimary}
+                selectionHandleColor={colors.$textPrimary}
                 style={{
                   ...bigTextStyle,
+                  letterSpacing: Platform.OS === 'ios' ? -1 : -3,
                   padding: 0,
-                  marginTop: 15,
                   textAlign: 'center'
                 }}
                 testID="leverage-gauge-value-input"
               />
               <Text
+                allowFontScaling={false}
                 style={{
                   ...bigTextStyle,
-                  transform: [{ scale: 0.89 }],
-                  marginLeft: 1,
-                  bottom: 0
+                  bottom: Platform.OS === 'ios' ? 4.25 : 0.7,
+                  left: Platform.OS === 'ios' ? 0.4 : 1.5
                 }}>
                 ×
               </Text>
@@ -343,7 +332,7 @@ const NUMBER_FONT_SIZE = 60
 const NUMBER_BASELINE_Y = 64
 // The × glyph sits optically higher than numerals in Aeonik — nudge it
 // down so it visually aligns with the digit baseline.
-const X_VERTICAL_OFFSET = 4.5
+const X_VERTICAL_OFFSET = 0
 // Pre-compute each slot's character and x position on the UI thread. The
 // layout is centered such that [number + × + gap] sits as one group.
 const X_GAP = 2.2
@@ -472,31 +461,38 @@ const AnimatedNumber: FC<{
   if (!font) return null
 
   return (
-    <Canvas
-      pointerEvents="none"
-      style={{
-        width: canvasWidth,
-        height: NUMBER_CANVAS_HEIGHT,
-        marginRight: 4
-      }}>
-      {Array.from({ length: slotCount }).map((_, i) => (
-        <DigitSlot
-          key={i}
-          index={i}
-          layout={layout}
+    // Extra fade on the number Canvas: Skia's glyph atlas is per-Canvas,
+    // so the 60pt digits must be rasterized into this surface's own atlas
+    // on first paint — meaningfully slower than the wheel's 11pt labels.
+    // A later delay here masks that residual lag while the wheel can come
+    // in earlier under the outer fade.
+    <Animated.View entering={FadeIn.delay(600).duration(350)}>
+      <Canvas
+        pointerEvents="none"
+        style={{
+          width: canvasWidth,
+          height: NUMBER_CANVAS_HEIGHT,
+          marginRight: 4
+        }}>
+        {Array.from({ length: slotCount }).map((_, i) => (
+          <DigitSlot
+            key={i}
+            index={i}
+            layout={layout}
+            font={font}
+            color={colors.$textPrimary}
+            integersOnly={integersOnly}
+          />
+        ))}
+        <SkText
+          text="×"
+          x={xSymbolX}
+          y={NUMBER_BASELINE_Y + X_VERTICAL_OFFSET}
           font={font}
           color={colors.$textPrimary}
-          integersOnly={integersOnly}
         />
-      ))}
-      <SkText
-        text="×"
-        x={xSymbolX}
-        y={NUMBER_BASELINE_Y + X_VERTICAL_OFFSET}
-        font={font}
-        color={colors.$textPrimary}
-      />
-    </Canvas>
+      </Canvas>
+    </Animated.View>
   )
 }
 

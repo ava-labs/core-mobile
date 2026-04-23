@@ -8,10 +8,11 @@ import {
   useFont,
   vec
 } from '@shopify/react-native-skia'
-import React, { FC, memo, useMemo } from 'react'
+import React, { FC, memo, useMemo, useState } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import {
+import Animated, {
   Easing,
+  FadeIn,
   interpolateColor,
   SharedValue,
   useAnimatedReaction,
@@ -41,25 +42,13 @@ type LeverageWheelProps = {
   onChange: (value: number) => void
   onCommit: (value: number) => void
   onHapticTick: boolean
+  /** Multiplier on finger release velocity — see LeverageGaugeProps. */
+  velocityPower: number
+  /** Coast-phase deceleration (0 < d < 1) — see LeverageGaugeProps. */
+  coastDeceleration: number
 }
 
-const WHEEL_WIDTH = 280
 const PX_PER_UNIT = 50
-// Multiplier applied to the finger's release velocity. Higher = more
-// powerful flicks (longer coast from the same swipe speed); lower = more
-// controlled / shorter coast. 1 = raw velocity.
-//   ~0.5  → dampened, controlled, short-ranged
-//   1     → raw finger velocity
-//   2-3   → fast swipes can span the full range from one edge to the other
-//   4+    → very aggressive, gentle flicks go a long way
-const VELOCITY_POWER = 1
-// How much friction slows the coast. Range: just-under-1.
-//   0.9999  → very long, nearly frictionless coast
-//   0.998   → iOS-scrollview default
-//   0.99    → short, decisive coast
-// Combined with VELOCITY_POWER, lets you tune "power" (peak speed) and
-// "reach" (coast distance) independently.
-const COAST_DECELERATION = 0.9991
 // Ticks align at a common bottom baseline; majors reach higher than minors.
 const MAJOR_TICK_HEIGHT = 50
 const MINOR_TICK_HEIGHT = 20
@@ -95,7 +84,9 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   integersOnly,
   onChange,
   onCommit,
-  onHapticTick
+  onHapticTick,
+  velocityPower,
+  coastDeceleration
 }) => {
   const {
     theme: { colors }
@@ -106,9 +97,16 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     LABEL_FONT_SIZE
   )
 
+  // Width fills the parent container. Measured via onLayout and mirrored to
+  // a shared value so UI-thread worklets (groupTransform, activeTickX) can
+  // read the current width without triggering re-renders per frame.
+  const [wheelWidth, setWheelWidth] = useState(0)
+  const wheelWidthSv = useSharedValue(0)
+
   const ticks: TickDescriptor[] = useMemo(() => {
     const out: TickDescriptor[] = []
-    const centerX = WHEEL_WIDTH / 2
+    if (wheelWidth <= 0) return out
+    const centerX = wheelWidth / 2
     const totalVisualSteps = Math.round((max - min) / VISUAL_TICK_STEP)
 
     for (let i = 0; i <= totalVisualSteps; i++) {
@@ -118,7 +116,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       out.push({ value, x: absoluteX, isMajor })
     }
     return out
-  }, [min, max])
+  }, [min, max, wheelWidth])
 
   const majorLabels = useMemo(() => {
     if (!labelFont) return []
@@ -169,7 +167,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       isDragging.value = false
       // Keep isActive=true through the release animation so that prop-sync in
       // useLeverageValue doesn't interrupt when the parent re-renders.
-      const valueVelocity = (-event.velocityX / PX_PER_UNIT) * VELOCITY_POWER
+      const valueVelocity = (-event.velocityX / PX_PER_UNIT) * velocityPower
 
       const settleTo = (snapped: number): void => {
         'worklet'
@@ -222,7 +220,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       currentValue.value = withDecay(
         {
           velocity: valueVelocity,
-          deceleration: COAST_DECELERATION,
+          deceleration: coastDeceleration,
           clamp: [min, max],
           rubberBandEffect: false
         },
@@ -321,7 +319,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   )
   const activeTickX = useDerivedValue(() => {
     const v = currentValue.value
-    const center = WHEEL_WIDTH / 2
+    const center = wheelWidthSv.value / 2
     let x = center
     if (v < min) x = center + (min - v) * PX_PER_UNIT
     else if (v > max) x = center - (v - max) * PX_PER_UNIT
@@ -334,86 +332,84 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   return (
     <GestureDetector gesture={panGesture}>
       <View
-        style={{
-          borderTopLeftRadius: 4,
-          borderTopRightRadius: 4,
-          borderBottomLeftRadius: 12,
-          borderBottomRightRadius: 12,
-          height: 110,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: colors.$surfaceSecondary
+        onLayout={e => {
+          const w = e.nativeEvent.layout.width
+          if (w === wheelWidth) return
+          setWheelWidth(w)
+          wheelWidthSv.value = w
         }}>
-        <Canvas style={{ width: WHEEL_WIDTH, height: CANVAS_HEIGHT }}>
-          <Group transform={groupTransform}>
-            {ticks.map(t => (
-              <TickMark
-                key={`tick-${t.value}`}
-                tick={t}
-                currentValue={currentValue}
-                min={min}
-                max={max}
-                dimColor={tickColor}
-                activeColor={colors.$textPrimary}
-                animatable={!integersOnly || t.isMajor}
-                // In integersOnly mode, the "neighbor" of an integer tick is
-                // the next integer (1 unit away), not the adjacent minor —
-                // so fade over the full integer span for progressive scale.
-                fadeSpan={integersOnly ? 1 : VISUAL_TICK_STEP}
-              />
-            ))}
-            {labelFont &&
-              majorLabels.map(l => (
-                <SkText
-                  key={`label-${l.value}`}
-                  x={l.x + 1}
-                  y={LABEL_BASELINE_Y}
-                  text={l.text}
-                  font={labelFont}
-                  color={labelColor}
+        <Animated.View entering={FadeIn.delay(650).duration(550)}>
+          <Canvas style={{ width: wheelWidth, height: CANVAS_HEIGHT }}>
+            <Group transform={groupTransform}>
+              {ticks.map(t => (
+                <TickMark
+                  key={`tick-${t.value}`}
+                  tick={t}
+                  currentValue={currentValue}
+                  min={min}
+                  max={max}
+                  dimColor={tickColor}
+                  activeColor={colors.$textPrimary}
+                  animatable={!integersOnly || t.isMajor}
+                  // In integersOnly mode, the "neighbor" of an integer tick is
+                  // the next integer (1 unit away), not the adjacent minor —
+                  // so fade over the full integer span for progressive scale.
+                  fadeSpan={integersOnly ? 1 : VISUAL_TICK_STEP}
                 />
               ))}
-          </Group>
+              {labelFont &&
+                majorLabels.map(l => (
+                  <SkText
+                    key={`label-${l.value}`}
+                    x={l.x + 1}
+                    y={LABEL_BASELINE_Y}
+                    text={l.text}
+                    font={labelFont}
+                    color={labelColor}
+                  />
+                ))}
+            </Group>
 
-          {/* Left fade */}
-          <Rect x={0} y={0} width={EDGE_FADE_WIDTH} height={CANVAS_HEIGHT}>
-            <LinearGradient
-              start={vec(0, 0)}
-              end={vec(EDGE_FADE_WIDTH, 0)}
-              colors={[
-                colors.$surfaceSecondary,
-                alpha(colors.$surfaceSecondary, 0)
-              ]}
-            />
-          </Rect>
+            {/* Left fade */}
+            <Rect x={0} y={0} width={EDGE_FADE_WIDTH} height={CANVAS_HEIGHT}>
+              <LinearGradient
+                start={vec(0, 0)}
+                end={vec(EDGE_FADE_WIDTH, 0)}
+                colors={[
+                  colors.$surfaceSecondary,
+                  alpha(colors.$surfaceSecondary, 0)
+                ]}
+              />
+            </Rect>
 
-          {/* Right fade */}
-          <Rect
-            x={WHEEL_WIDTH - EDGE_FADE_WIDTH}
-            y={0}
-            width={EDGE_FADE_WIDTH}
-            height={CANVAS_HEIGHT}>
-            <LinearGradient
-              start={vec(WHEEL_WIDTH - EDGE_FADE_WIDTH, 0)}
-              end={vec(WHEEL_WIDTH, 0)}
-              colors={[
-                alpha(colors.$surfaceSecondary, 0),
-                colors.$surfaceSecondary
-              ]}
-            />
-          </Rect>
+            {/* Right fade */}
+            <Rect
+              x={wheelWidth - EDGE_FADE_WIDTH}
+              y={0}
+              width={EDGE_FADE_WIDTH}
+              height={CANVAS_HEIGHT}>
+              <LinearGradient
+                start={vec(wheelWidth - EDGE_FADE_WIDTH, 0)}
+                end={vec(wheelWidth, 0)}
+                colors={[
+                  alpha(colors.$surfaceSecondary, 0),
+                  colors.$surfaceSecondary
+                ]}
+              />
+            </Rect>
 
-          {/* Active-line marker — hidden; per-tick bloom carries the visual
+            {/* Active-line marker — hidden; per-tick bloom carries the visual
               for now. Logic kept intact so it's easy to re-enable. */}
-          <RoundedRect
-            x={activeTickX}
-            y={activeTickY}
-            width={TICK_WIDTH}
-            height={activeTickHeight}
-            r={TICK_WIDTH}
-            color="transparent"
-          />
-        </Canvas>
+            <RoundedRect
+              x={activeTickX}
+              y={activeTickY}
+              width={TICK_WIDTH}
+              height={activeTickHeight}
+              r={TICK_WIDTH}
+              color="transparent"
+            />
+          </Canvas>
+        </Animated.View>
       </View>
     </GestureDetector>
   )

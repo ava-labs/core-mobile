@@ -32,6 +32,21 @@ export type LeverageGaugeProps = {
   onHapticTick?: boolean
   onCommit?: (value: number) => void
 
+  // Optional — release physics (defaults chosen for a calm, iOS-like feel)
+  /**
+   * Multiplier applied to the finger's release velocity. Higher = more
+   * powerful flicks for the same swipe speed (longer coast). Default: 1.
+   */
+  velocityPower?: number
+  /**
+   * How much friction slows the coast. Range just-under-1:
+   *   0.9999 → very long, nearly frictionless coast
+   *   0.998  → iOS ScrollView default
+   *   0.99   → short, decisive coast
+   * Default: 0.9991.
+   */
+  coastDeceleration?: number
+
   // Testing
   testID?: string
 }

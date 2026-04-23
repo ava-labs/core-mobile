@@ -1,14 +1,20 @@
 import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AccessibilityInfo } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { Easing, useSharedValue, withTiming } from 'react-native-reanimated'
+import Animated, {
+  Easing,
+  FadeIn,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
+import { useTheme } from '../../hooks'
 import { View } from '../Primitives'
 import { clamp, snapToStep, validateRange } from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
-import { useLeverageValue } from './useLeverageValue'
 import type { LeverageGaugeProps, Preset } from './types'
+import { useLeverageValue } from './useLeverageValue'
 
 const DEFAULT_PRESETS: Preset[] = ['min', 'max']
 const noop = (): void => undefined
@@ -31,8 +37,11 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   integersOnly = false,
   onHapticTick = true,
   onCommit = noop,
+  velocityPower = 1,
+  coastDeceleration = 0.9991,
   testID
 }) => {
+  const { theme } = useTheme()
   // Stabilize `onChange` / `onCommit` behind refs so downstream memoized
   // components (LeverageWheel / LeverageDisplay) can bail out of re-renders
   // even when the consumer passes fresh callbacks every parent render. The
@@ -184,8 +193,13 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
 
   return (
     <GestureHandlerRootView style={{ flexShrink: 1 }}>
-      <View
-        style={{ alignSelf: 'stretch' }}
+      <Animated.View
+        // Fades the gauge in on mount to mask Skia's cold-start blank frame.
+        // SkiaPreload at the app root warms the typeface + glyph atlases
+        // ahead of time, so this only needs to cover the per-Canvas native
+        // bringup — a short delay plus fade is enough.
+        entering={FadeIn.delay(400).duration(300)}
+        style={{ alignSelf: 'stretch', gap: 4 }}
         testID={testID}
         accessible
         accessibilityRole="adjustable"
@@ -197,36 +211,61 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
         }}
         onAccessibilityAction={handleAccessibilityAction}
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}>
-        <LeverageDisplay
-          value={value}
-          currentValue={currentValue}
-          isActive={isActive}
-          min={vMin}
-          max={vMax}
-          step={vStep}
-          decimals={vDecimals}
-          integersOnly={integersOnly}
-          presets={filteredPresets}
-          subtitle={resolvedSubtitle}
-          formatValue={formatValue}
-          enableManualInput={enableManualInput}
-          onPresetPress={handlePresetPress}
-          onManualCommit={handleManualCommit}
-        />
-        <View style={{ height: 4 }} />
-        <LeverageWheel
-          currentValue={currentValue}
-          isActive={isActive}
-          isProgrammatic={isProgrammatic}
-          min={vMin}
-          max={vMax}
-          step={vStep}
-          integersOnly={integersOnly}
-          onChange={stableOnChange}
-          onCommit={stableOnCommit}
-          onHapticTick={onHapticTick}
-        />
-      </View>
+        <View
+          style={{
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
+            paddingVertical: 16,
+            paddingHorizontal: 40,
+            height: 150,
+            backgroundColor: theme.colors.$surfaceSecondary
+          }}>
+          <LeverageDisplay
+            value={value}
+            currentValue={currentValue}
+            isActive={isActive}
+            min={vMin}
+            max={vMax}
+            step={vStep}
+            decimals={vDecimals}
+            integersOnly={integersOnly}
+            presets={filteredPresets}
+            subtitle={resolvedSubtitle}
+            formatValue={formatValue}
+            enableManualInput={enableManualInput}
+            onPresetPress={handlePresetPress}
+            onManualCommit={handleManualCommit}
+          />
+        </View>
+        <View
+          style={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            height: 110,
+            justifyContent: 'center',
+            paddingHorizontal: 36
+          }}>
+          <LeverageWheel
+            currentValue={currentValue}
+            isActive={isActive}
+            isProgrammatic={isProgrammatic}
+            min={vMin}
+            max={vMax}
+            step={vStep}
+            integersOnly={integersOnly}
+            onChange={stableOnChange}
+            onCommit={stableOnCommit}
+            onHapticTick={onHapticTick}
+            velocityPower={velocityPower}
+            coastDeceleration={coastDeceleration}
+          />
+        </View>
+      </Animated.View>
     </GestureHandlerRootView>
   )
 }

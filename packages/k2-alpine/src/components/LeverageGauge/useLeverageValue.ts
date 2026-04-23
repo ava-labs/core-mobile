@@ -4,7 +4,7 @@ import {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { clamp } from './helpers'
+import { clamp, shouldSyncExternalValue } from './helpers'
 
 type UseLeverageValueArgs = {
   value: number
@@ -30,19 +30,16 @@ export const useLeverageValue = ({
   const isActive = useSharedValue(false)
 
   useEffect(() => {
-    // Skip sync while user is dragging — drag wins.
-    if (isActive.value) return
-
-    const next = clamp(value, min, max)
-    const diff = Math.abs(currentValue.value - next)
-
-    // Skip if within a full step (inclusive) — the incoming value is almost
-    // certainly an echo of our own onChange, including stale ones queued via
-    // scheduleOnRN that arrive after the settle completed. A real programmatic
-    // change (preset button, external update) will land > step away.
-    if (diff <= step) return
-
-    currentValue.value = withTiming(next, { duration: 150 })
+    const decision = shouldSyncExternalValue({
+      value,
+      currentValue: currentValue.value,
+      min,
+      max,
+      step,
+      isActive: isActive.value
+    })
+    if (!decision.sync) return
+    currentValue.value = withTiming(decision.target, { duration: 150 })
   }, [value, min, max, step, currentValue, isActive])
 
   return { currentValue, isActive }

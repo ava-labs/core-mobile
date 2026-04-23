@@ -106,3 +106,77 @@ export const NoHaptics = (): JSX.Element => {
     </ScrollView>
   )
 }
+
+export const IntegersOnly = (): JSX.Element => {
+  const [value, setValue] = useState(5)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>integersOnly — snaps to integers, sub-step ticks stay static</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        step={0.2}
+        integersOnly
+        enableManualInput
+      />
+    </ScrollView>
+  )
+}
+
+export const ForcedZeroDecimals = (): JSX.Element => {
+  const [value, setValue] = useState(5)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>decimals=0 with sub-step snap — integer display, 0.2 snaps</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        step={0.2}
+        decimals={0}
+        enableManualInput
+      />
+    </ScrollView>
+  )
+}
+
+export const TwoDecimals = (): JSX.Element => {
+  const [value, setValue] = useState(1.5)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>decimals=2 — e.g. 1.50×, 1.75×, 2.00×</Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={5}
+        step={0.25}
+        decimals={2}
+        enableManualInput
+      />
+    </ScrollView>
+  )
+}
+
+export const CustomPhysics = (): JSX.Element => {
+  const [value, setValue] = useState(10)
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
+      <Text>
+        velocityPower + coastDeceleration — longer, more powerful coast
+      </Text>
+      <LeverageGauge
+        value={value}
+        onChange={setValue}
+        min={1}
+        max={40}
+        step={1}
+        velocityPower={2}
+        coastDeceleration={0.9996}
+      />
+    </ScrollView>
+  )
+}

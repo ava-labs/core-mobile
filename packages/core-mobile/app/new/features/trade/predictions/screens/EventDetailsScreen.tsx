@@ -33,7 +33,6 @@ const EventDetailsScreen = (): JSX.Element => {
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
   const [leverage, setLeverage] = useState(2)
-  const [leverageDecimal, setLeverageDecimal] = useState(2)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const { event } = useGetEventDetail(tickerId)
@@ -65,6 +64,18 @@ const EventDetailsScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen navigationTitle={event?.title ?? ''}>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Add leverage</Text>
+        <LeverageGauge
+          value={leverage}
+          onChange={setLeverage}
+          min={1}
+          max={40}
+          step={0.2}
+          integersOnly
+          enableManualInput
+        />
+      </View>
       <View style={{ gap: 10, paddingTop: 16 }}>
         <View style={{ gap: 10, paddingHorizontal: 16 }}>
           <TradeThumbnail url={event?.imageUrl} />
@@ -132,32 +143,6 @@ const EventDetailsScreen = (): JSX.Element => {
           ) : (
             <MultipleOutcomes markets={allOptions} />
           )}
-        </View>
-
-        <View style={{ paddingTop: 24, gap: 8 }}>
-          <Text variant="heading3">Add leverage</Text>
-          <LeverageGauge
-            value={leverage}
-            onChange={setLeverage}
-            min={1}
-            max={40}
-            step={0.2}
-            integersOnly={true}
-            enableManualInput
-          />
-        </View>
-
-        <View style={{ paddingTop: 24, gap: 8 }}>
-          <Text variant="heading3">Add leverage (decimals)</Text>
-          <LeverageGauge
-            value={leverageDecimal}
-            onChange={setLeverageDecimal}
-            min={1}
-            max={40}
-            step={0.2}
-            integersOnly={false}
-            enableManualInput
-          />
         </View>
 
         <View
