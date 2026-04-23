@@ -13,6 +13,8 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import { validateCustomRpcUrl } from 'services/network/utils/validateCustomRpcUrl'
+import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -56,6 +58,18 @@ class WalletAddEthereumChainHandler
       return {
         success: false,
         error: rpcErrors.invalidParams('RPC url is missing')
+      }
+    }
+
+    // Synchronous safety checks on the URL (HTTPS, no localhost, no private
+    // IPs). The async chainId probe is deferred until after user approval
+    // because dApps like Aave time out waiting for an approval modal if we
+    // block on a network call here.
+    const urlCheck = validateCustomRpcUrl(rpcUrl)
+    if (!urlCheck.ok) {
+      return {
+        success: false,
+        error: rpcErrors.invalidParams(urlCheck.reason)
       }
     }
 
@@ -130,6 +144,20 @@ class WalletAddEthereumChainHandler
     }
 
     const data = result.data
+
+    // Probe the RPC URL once the user has approved — rejects if the URL
+    // fails to respond to eth_chainId or reports a different chainId than
+    // the dApp claimed. Closes the attack where a malicious site lists a
+    // trusted chainId but points at attacker-controlled infra.
+    const probeOk = await isValidRPCUrl(data.network.chainId, data.network.rpcUrl)
+    if (!probeOk) {
+      return {
+        success: false,
+        error: rpcErrors.invalidParams(
+          `RPC URL did not report chainId ${data.network.chainId}`
+        )
+      }
+    }
 
     dispatch(addCustomNetwork(data.network))
     dispatch(toggleEnabledChainId(data.network.chainId))
