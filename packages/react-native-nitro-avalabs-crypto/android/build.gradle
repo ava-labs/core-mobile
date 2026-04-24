@@ -274,7 +274,7 @@ tasks.register('fetchSecp256k1') {
 
 // Per-ABI configure/build (incremental)
 
-def abis = ['armeabi-v7a','arm64-v8a']
+def abis = ['armeabi-v7a','arm64-v8a','x86_64']
 
 abis.each { abi ->
   def meta        = abiMatrix[abi]
