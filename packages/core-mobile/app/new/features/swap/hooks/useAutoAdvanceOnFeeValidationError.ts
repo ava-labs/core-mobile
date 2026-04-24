@@ -81,7 +81,7 @@ export const useAutoAdvanceOnFeeValidationError = ({
     )
 
     advanceBestQuote(nextQuote.id)
-    showSnackbar('Quote failed fee validation, trying next available quote')
+    showSnackbar('Quote failed, trying next available')
   }, [
     feeValidationError,
     activeQuote,

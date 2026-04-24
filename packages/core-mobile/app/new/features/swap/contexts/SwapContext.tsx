@@ -430,7 +430,7 @@ export const SwapContextProvider = ({
               errorMessage:
                 error instanceof Error ? error.message : String(error)
             })
-            showSnackbar('Swap failed, trying next available quote')
+            showSnackbar('Swap failed, trying next available')
             // Recursive retry — pass the original `quote` through unchanged
             return swap(quote, nextQuote, retries + 1)
           }
