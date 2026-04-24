@@ -1,9 +1,13 @@
 import React, { FC } from 'react'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
+import { selectWallets } from 'store/wallet/slice'
 import {
   AppNotification,
   isBalanceChangeNotification,
   BalanceChangeEventSchema
 } from '../types'
+import { getAccountLabel } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
 
@@ -72,10 +76,18 @@ const BalanceChangeItem: FC<BalanceChangeItemProps> = ({
   accessoryType,
   testID
 }) => {
+  const accounts = useSelector(selectAccounts)
+  const wallets = useSelector(selectWallets)
+  const accountLabel = getAccountLabel(notification, accounts, wallets)
+  const baseSubtitle = getSubtitle(notification)
+  const subtitle = accountLabel
+    ? `${accountLabel} · ${baseSubtitle}`
+    : baseSubtitle
+
   return (
     <NotificationListItem
       title={getTitle(notification)}
-      subtitle={getSubtitle(notification)}
+      subtitle={subtitle}
       icon={<NotificationIcon notification={notification} />}
       timestamp={notification.timestamp}
       showSeparator={showSeparator}

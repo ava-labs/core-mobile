@@ -6,12 +6,14 @@ import {
   UseQueryResult,
   UseMutationResult
 } from '@tanstack/react-query'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import { useDeviceArn } from 'common/hooks/useDeviceArn'
 import NotificationCenterService from '../services/NotificationCenterService'
 import { AppNotification, BackendNotification, NotificationTab } from '../types'
-import { filterByTab } from '../utils'
+import { filterByOwnedAddresses, filterByTab } from '../utils'
 
 /**
  * Hook to fetch notifications from backend
@@ -34,6 +36,23 @@ export function useBackendNotifications(): UseQueryResult<
 }
 
 /**
+ * Set of lowercased EVM addresses currently owned by the user's wallets. Used
+ * to drop balance-change notifications for wallets that were imported and then
+ * deleted (CP-14129) before the backend has caught up.
+ */
+function useOwnedAddresses(): Set<string> {
+  const accounts = useSelector(selectAccounts)
+
+  return useMemo(
+    () =>
+      new Set(
+        Object.values(accounts).map(account => account.addressC.toLowerCase())
+      ),
+    [accounts]
+  )
+}
+
+/**
  * Hook to get notifications with tab filtering.
  * All notifications returned by the API are unread.
  */
@@ -42,14 +61,19 @@ export function useNotifications(tab: NotificationTab = NotificationTab.ALL): {
   isLoading: boolean
 } {
   const { data: backendNotifications, isLoading } = useBackendNotifications()
+  const ownedAddresses = useOwnedAddresses()
 
   const notifications = useMemo(() => {
-    const sorted: AppNotification[] = [...(backendNotifications ?? [])].sort(
+    const owned = filterByOwnedAddresses(
+      backendNotifications ?? [],
+      ownedAddresses
+    )
+    const sorted: AppNotification[] = [...owned].sort(
       (a, b) => b.timestamp - a.timestamp
     )
 
     return filterByTab(sorted, tab)
-  }, [backendNotifications, tab])
+  }, [backendNotifications, ownedAddresses, tab])
 
   return {
     notifications,
@@ -63,8 +87,13 @@ export function useNotifications(tab: NotificationTab = NotificationTab.ALL): {
  */
 export function useUnreadCount(): number {
   const { data: backendNotifications } = useBackendNotifications()
+  const ownedAddresses = useOwnedAddresses()
 
-  return backendNotifications?.length ?? 0
+  return useMemo(
+    () =>
+      filterByOwnedAddresses(backendNotifications ?? [], ownedAddresses).length,
+    [backendNotifications, ownedAddresses]
+  )
 }
 
 /**

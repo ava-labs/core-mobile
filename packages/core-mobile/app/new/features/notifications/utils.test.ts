@@ -6,7 +6,9 @@ import {
   NotificationTab
 } from './types'
 import {
+  filterByOwnedAddresses,
   filterByTab,
+  getAccountLabel,
   isSwapTerminal,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
@@ -125,6 +127,159 @@ describe('filterByTab', () => {
 
   it('returns empty array when input is empty', () => {
     expect(filterByTab([], NotificationTab.ALL)).toEqual([])
+  })
+})
+
+// ─── filterByOwnedAddresses ───────────────────────────────────────────────────
+
+describe('filterByOwnedAddresses', () => {
+  const ownedAddr = '0x1111111111111111111111111111111111111111'
+  const orphanAddr = '0x2222222222222222222222222222222222222222'
+
+  const ownedBalanceChange = makeNotification({
+    id: 'owned-bc',
+    type: 'BALANCE_CHANGES',
+    category: NotificationCategory.TRANSACTION,
+    data: { accountAddress: ownedAddr }
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+
+  const orphanBalanceChange = makeNotification({
+    id: 'orphan-bc',
+    type: 'BALANCE_CHANGES',
+    category: NotificationCategory.TRANSACTION,
+    data: { accountAddress: orphanAddr }
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+
+  it('drops balance-change notifications whose address is not owned', () => {
+    const owned = new Set([ownedAddr.toLowerCase()])
+    const result = filterByOwnedAddresses(
+      [ownedBalanceChange, orphanBalanceChange],
+      owned
+    )
+    expect(result).toEqual([ownedBalanceChange])
+  })
+
+  it('matches addresses case-insensitively', () => {
+    const owned = new Set([ownedAddr.toLowerCase()])
+    const mixedCase = makeNotification({
+      id: 'mixed',
+      type: 'BALANCE_CHANGES',
+      category: NotificationCategory.TRANSACTION,
+      data: { accountAddress: ownedAddr.toUpperCase() }
+    } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+    expect(filterByOwnedAddresses([mixedCase], owned)).toEqual([mixedCase])
+  })
+
+  it('keeps non-balance-change notifications regardless of ownership', () => {
+    const owned = new Set<string>()
+    expect(filterByOwnedAddresses([priceAlert, news], owned)).toEqual([
+      priceAlert,
+      news
+    ])
+  })
+
+  it('keeps balance-change notifications without an accountAddress', () => {
+    const owned = new Set<string>()
+    expect(filterByOwnedAddresses([balanceChange], owned)).toEqual([
+      balanceChange
+    ])
+  })
+})
+
+// ─── getAccountLabel ──────────────────────────────────────────────────────────
+
+describe('getAccountLabel', () => {
+  const accountAddr = '0x1111111111111111111111111111111111111111'
+
+  const makeAccounts = (
+    entries: { id: string; addressC: string; name: string; walletId: string }[]
+  ): Parameters<typeof getAccountLabel>[1] =>
+    Object.fromEntries(
+      entries.map(e => [
+        e.id,
+        {
+          id: e.id,
+          addressC: e.addressC,
+          name: e.name,
+          walletId: e.walletId,
+          addressBTC: '',
+          index: 0
+        }
+      ])
+    ) as Parameters<typeof getAccountLabel>[1]
+
+  const makeWallets = (
+    entries: { id: string; name: string }[]
+  ): Parameters<typeof getAccountLabel>[2] =>
+    Object.fromEntries(
+      entries.map(e => [e.id, { id: e.id, name: e.name, type: 'MNEMONIC' }])
+    ) as Parameters<typeof getAccountLabel>[2]
+
+  const ownedBalanceChange = makeNotification({
+    id: 'owned-bc',
+    type: 'BALANCE_CHANGES',
+    category: NotificationCategory.TRANSACTION,
+    data: { accountAddress: accountAddr }
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+
+  it('returns just the account name when the user has one wallet', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: accountAddr, name: 'Account 2', walletId: 'w1' }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
+      'Account 2'
+    )
+  })
+
+  it('prefixes the wallet name when the user has multiple wallets', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: accountAddr, name: 'Account 2', walletId: 'w2' }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Wallet A' },
+      { id: 'w2', name: 'Wallet B' }
+    ])
+
+    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
+      'Wallet B · Account 2'
+    )
+  })
+
+  it('matches addresses case-insensitively', () => {
+    const accounts = makeAccounts([
+      {
+        id: 'a1',
+        addressC: accountAddr.toUpperCase(),
+        name: 'Account 2',
+        walletId: 'w1'
+      }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
+      'Account 2'
+    )
+  })
+
+  it('returns null for non-balance-change notifications', () => {
+    expect(getAccountLabel(priceAlert, {}, {})).toBeNull()
+    expect(getAccountLabel(news, {}, {})).toBeNull()
+  })
+
+  it('returns null when the address is not owned', () => {
+    const accounts = makeAccounts([
+      {
+        id: 'a1',
+        addressC: '0x9999999999999999999999999999999999999999',
+        name: 'Account 1',
+        walletId: 'w1'
+      }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBeNull()
   })
 })
 

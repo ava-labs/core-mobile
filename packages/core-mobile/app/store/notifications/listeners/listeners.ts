@@ -1,6 +1,11 @@
 import { AppStartListening } from 'store/types'
 import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
-import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
+import {
+  removeAccount,
+  setAccount,
+  setAccounts,
+  setNonActiveAccounts
+} from 'store/account'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
@@ -92,6 +97,7 @@ export const addNotificationsListeners = (
       setAccounts,
       setNonActiveAccounts,
       setAccount,
+      removeAccount,
       onFcmTokenChange,
       turnOnAllNotifications,
       onNotificationsTurnedOnForBalanceChange

@@ -1,6 +1,9 @@
 import { Transfer } from 'features/swap/types'
+import { AccountCollection } from 'store/account/types'
+import { Wallet } from 'store/wallet/types'
 import {
   AppNotification,
+  isBalanceChangeNotification,
   NotificationCategory,
   NotificationTab,
   NotificationType,
@@ -97,6 +100,56 @@ export function mapTypeToCategory(
     default:
       return NotificationCategory.NEWS
   }
+}
+
+/**
+ * Drop balance-change notifications whose target address is no longer owned by
+ * the user (wallet/account was removed). Non-balance-change notifications pass
+ * through unchanged. The backend still returns these until its own cleanup
+ * runs, so we filter client-side to avoid surfacing stranger-wallet activity in
+ * the Notification Center — see CP-14129.
+ */
+export function filterByOwnedAddresses(
+  notifications: AppNotification[],
+  ownedAddresses: Set<string>
+): AppNotification[] {
+  return notifications.filter(n => {
+    if (n.type !== 'BALANCE_CHANGES') return true
+    const addr = n.data?.accountAddress?.toLowerCase()
+    if (!addr) return true
+    return ownedAddresses.has(addr)
+  })
+}
+
+/**
+ * Returns a short label identifying which wallet/account a balance-change
+ * notification is for, so users with multiple imported wallets can tell them
+ * apart. Returns null for non-balance-change notifications or when the
+ * address is not owned by the user (e.g. backend lag after deletion).
+ *
+ * Single-wallet users see just the account name; multi-wallet users see
+ * "{walletName} · {accountName}".
+ */
+export function getAccountLabel(
+  notification: AppNotification,
+  accounts: AccountCollection,
+  wallets: { [id: string]: Wallet }
+): string | null {
+  if (!isBalanceChangeNotification(notification)) return null
+  const addr = notification.data?.accountAddress?.toLowerCase()
+  if (!addr) return null
+
+  const account = Object.values(accounts).find(
+    a => a.addressC.toLowerCase() === addr
+  )
+  if (!account) return null
+
+  const walletCount = Object.keys(wallets).length
+  if (walletCount > 1) {
+    const wallet = wallets[account.walletId]
+    if (wallet) return `${wallet.name} · ${account.name}`
+  }
+  return account.name
 }
 
 /**
