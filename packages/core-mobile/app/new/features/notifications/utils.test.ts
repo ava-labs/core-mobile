@@ -6,7 +6,6 @@ import {
   NotificationTab
 } from './types'
 import {
-  filterByOwnedAddresses,
   filterByTab,
   getAccountLabel,
   isSwapTerminal,
@@ -127,62 +126,6 @@ describe('filterByTab', () => {
 
   it('returns empty array when input is empty', () => {
     expect(filterByTab([], NotificationTab.ALL)).toEqual([])
-  })
-})
-
-// ─── filterByOwnedAddresses ───────────────────────────────────────────────────
-
-describe('filterByOwnedAddresses', () => {
-  const ownedAddr = '0x1111111111111111111111111111111111111111'
-  const orphanAddr = '0x2222222222222222222222222222222222222222'
-
-  const ownedBalanceChange = makeNotification({
-    id: 'owned-bc',
-    type: 'BALANCE_CHANGES',
-    category: NotificationCategory.TRANSACTION,
-    data: { accountAddress: ownedAddr }
-  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
-
-  const orphanBalanceChange = makeNotification({
-    id: 'orphan-bc',
-    type: 'BALANCE_CHANGES',
-    category: NotificationCategory.TRANSACTION,
-    data: { accountAddress: orphanAddr }
-  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
-
-  it('drops balance-change notifications whose address is not owned', () => {
-    const owned = new Set([ownedAddr.toLowerCase()])
-    const result = filterByOwnedAddresses(
-      [ownedBalanceChange, orphanBalanceChange],
-      owned
-    )
-    expect(result).toEqual([ownedBalanceChange])
-  })
-
-  it('matches addresses case-insensitively', () => {
-    const owned = new Set([ownedAddr.toLowerCase()])
-    const mixedCase = makeNotification({
-      id: 'mixed',
-      type: 'BALANCE_CHANGES',
-      category: NotificationCategory.TRANSACTION,
-      data: { accountAddress: ownedAddr.toUpperCase() }
-    } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
-    expect(filterByOwnedAddresses([mixedCase], owned)).toEqual([mixedCase])
-  })
-
-  it('keeps non-balance-change notifications regardless of ownership', () => {
-    const owned = new Set<string>()
-    expect(filterByOwnedAddresses([priceAlert, news], owned)).toEqual([
-      priceAlert,
-      news
-    ])
-  })
-
-  it('keeps balance-change notifications without an accountAddress', () => {
-    const owned = new Set<string>()
-    expect(filterByOwnedAddresses([balanceChange], owned)).toEqual([
-      balanceChange
-    ])
   })
 })
 

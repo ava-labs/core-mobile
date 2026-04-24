@@ -103,25 +103,6 @@ export function mapTypeToCategory(
 }
 
 /**
- * Drop balance-change notifications whose target address is no longer owned by
- * the user (wallet/account was removed). Non-balance-change notifications pass
- * through unchanged. The backend still returns these until its own cleanup
- * runs, so we filter client-side to avoid surfacing stranger-wallet activity in
- * the Notification Center — see CP-14129.
- */
-export function filterByOwnedAddresses(
-  notifications: AppNotification[],
-  ownedAddresses: Set<string>
-): AppNotification[] {
-  return notifications.filter(n => {
-    if (n.type !== 'BALANCE_CHANGES') return true
-    const addr = n.data?.accountAddress?.toLowerCase()
-    if (!addr) return true
-    return ownedAddresses.has(addr)
-  })
-}
-
-/**
  * Returns a short label identifying which wallet/account a balance-change
  * notification is for, so users with multiple imported wallets can tell them
  * apart. Returns null for non-balance-change notifications or when the
