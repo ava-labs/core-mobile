@@ -486,7 +486,6 @@ android {
   namespace "com.margelo.nitro.nitroavalabscrypto"
 
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
-  ndkVersion "27.1.12297006"
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")

@@ -8,9 +8,11 @@ set -o pipefail
 # enable corepack
 corepack enable
 
+# yarn setup runs codegen.js which fetches OpenAPI schemas; production URLs are stable, dev URLs can 502 on CI
+export APP_ENV=ci
+
 if ! cat /etc/issue 2>/dev/null
 then
-export APP_ENV=ci
 yarn install --immutable && yarn setup
 else
   stack=$( cat /etc/issue )
@@ -23,6 +25,5 @@ if [[ $stack == *Ubuntu* ]]; then
     # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?pc=1
     sudo chown root .
 
-    export APP_ENV=ci
     yarn install --immutable && yarn setup
 fi
