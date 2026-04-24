@@ -294,6 +294,41 @@ workflows:
         - variables: |-
             BITRISE_IPA_PATH=$BITRISE_IPA_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
+  _build-ios-external-for-testing:
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletExternal
+      opts:
+        is_expand: false
+    - XCODE_EXPORT: ad-hoc
+      opts:
+        is_expand: false
+    before_run:
+    - _build-ios
+    steps:
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_IPA_PATH:BITRISE_IPA_PATH
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            BITRISE_IPA_PATH=$BITRISE_IPA_PATH
+            IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
   _build-ios-simulator:
     steps:
     - brew-install@1:
@@ -765,11 +800,11 @@ workflows:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
             IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  ios-internal-e2e-aws-regression-run:
+  ios-external-e2e-aws-regression-run:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios-internal-for-testing
+    - _build-ios-external-for-testing
     after_run:
     - _send-test-result-notification-slack
     envs:
@@ -779,7 +814,7 @@ workflows:
     - PLATFORM: iOS
       opts:
         is_expand: false
-    - APP_TITLE: Core Mobile Internal
+    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"
@@ -788,7 +823,7 @@ workflows:
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
-    - IS_INTERNAL_BUILD: "true"
+    - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
     - IS_DEVICEFARM_RUN: "true"
@@ -804,7 +839,7 @@ workflows:
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
             IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
   # Pipeline stage 2+: pull signed IPA from stage 1 (deploy-to-bitrise-io intermediate files).
-  ios-internal-e2e-aws-regression-from-pipeline:
+  ios-external-e2e-aws-regression-from-pipeline:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -817,7 +852,7 @@ workflows:
     - PLATFORM: iOS
       opts:
         is_expand: false
-    - APP_TITLE: Core Mobile Internal
+    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"
@@ -826,7 +861,7 @@ workflows:
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
-    - IS_INTERNAL_BUILD: "true"
+    - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
     - IS_DEVICEFARM_RUN: "true"
