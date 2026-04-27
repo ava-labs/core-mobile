@@ -8,12 +8,10 @@ export default (): JSX.Element => {
     selectQuoteById,
     allQuotes,
     userQuote,
+    activeQuote,
     fromToken,
     toToken
   } = useSwapContext()
-
-  // userQuote takes precedence over bestQuote
-  const selectedQuote = userQuote ?? bestQuote
 
   return (
     <SwapPricingDetailsScreen
@@ -21,7 +19,7 @@ export default (): JSX.Element => {
       toToken={toToken}
       bestQuote={bestQuote}
       userQuote={userQuote}
-      selectedQuote={selectedQuote}
+      selectedQuote={activeQuote}
       allQuotes={allQuotes}
       selectQuoteById={selectQuoteById}
     />
