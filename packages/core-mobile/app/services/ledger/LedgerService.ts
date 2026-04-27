@@ -82,15 +82,34 @@ class LedgerService {
   private appPollingEnabled = false
   private isDisconnected = false
 
+  // Reconnection state
+  private connectedDeviceId: string | null = null
+  private isAttemptingReconnect = false
+  private connectionStateListeners: Set<(connected: boolean) => void> =
+    new Set()
+
   constructor() {
-    // Auto-disconnect BLE when app goes to background so other devices can connect
     AppState.addEventListener('change', (nextState: AppStateStatus) => {
       if (
         (nextState === 'background' || nextState === 'inactive') &&
         this.isConnected()
       ) {
+        // Auto-disconnect BLE when app goes to background so other
+        // devices can connect. connectedDeviceId is preserved so
+        // we can auto-reconnect when the app returns to foreground.
         Logger.info('App backgrounded — disconnecting Ledger BLE')
         this.disconnect().catch(Logger.error)
+      } else if (
+        nextState === 'active' &&
+        this.connectedDeviceId &&
+        !this.isConnected() &&
+        !this.isAttemptingReconnect
+      ) {
+        // Auto-reconnect when the app returns to foreground after a
+        // background disconnect (or after Ledger went to sleep while
+        // the app was in the background).
+        Logger.info('App foregrounded — attempting Ledger BLE reconnect')
+        this.attemptReconnect().catch(Logger.error)
       }
     })
   }
@@ -178,6 +197,7 @@ class LedgerService {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       await this.assertBluetoothAvailable()
       this.isDisconnected = false // Reset disconnect flag on new connection
+      this.connectedDeviceId = deviceId // Store for auto-reconnect
       // Use a longer timeout for connection
       await TransportBLE.disconnectDevice(deviceId)
 
@@ -187,10 +207,20 @@ class LedgerService {
       )
       Logger.info('BLE transport connected successfully')
 
+      // Listen for unexpected BLE disconnects (e.g. Ledger auto-sleep)
+      // so we can attempt auto-reconnect instead of silently going stale.
+      this.#transport?.on('disconnect', () => {
+        Logger.info('Transport disconnect event received')
+        this.handleTransportDisconnect()
+      })
+
       // Wrap the transport's exchange method to automatically handle busy state
       this.wrapTransportExchange()
 
       this.currentAppType = LedgerAppType.UNKNOWN
+
+      // Notify listeners that the connection is up
+      this.notifyConnectionStateListeners(true)
 
       // Start passive app detection
       Logger.info('Starting app polling...')
@@ -225,6 +255,92 @@ class LedgerService {
     }
   }
 
+  // Handle an unexpected BLE transport disconnect (e.g. Ledger auto-sleep).
+  // Cleans up stale state and kicks off an auto-reconnect attempt when
+  // the disconnect was not initiated by our own disconnect() method.
+  private handleTransportDisconnect(): void {
+    // Clean up transport state if not already cleaned up by disconnect()
+    if (this.#transport) {
+      this.#transport = null
+      this.currentAppType = LedgerAppType.UNKNOWN
+      this.currentAppVersion = ''
+      this.stopAppPolling()
+    }
+
+    this.notifyConnectionStateListeners(false)
+
+    // Auto-reconnect only when the disconnect was unexpected (not from
+    // our own disconnect() call) and we aren't already reconnecting.
+    if (
+      !this.isDisconnected &&
+      !this.isAttemptingReconnect &&
+      this.connectedDeviceId
+    ) {
+      Logger.info('Unexpected disconnect, attempting auto-reconnect...')
+      this.attemptReconnect().catch(Logger.error)
+    }
+  }
+
+  // Auto-reconnect with exponential backoff. Gives the Ledger device
+  // time to finish waking from sleep before each retry.
+  private async attemptReconnect(): Promise<void> {
+    if (this.isAttemptingReconnect || !this.connectedDeviceId) return
+
+    this.isAttemptingReconnect = true
+    const deviceId = this.connectedDeviceId
+
+    try {
+      for (
+        let attempt = 1;
+        attempt <= LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES;
+        attempt++
+      ) {
+        try {
+          Logger.info(
+            `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} for device ${deviceId}`
+          )
+          await this.connect(deviceId)
+          Logger.info(`Reconnection succeeded on attempt ${attempt}`)
+          this.notifyConnectionStateListeners(true)
+          return
+        } catch (error) {
+          Logger.error(
+            `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} failed:`,
+            error
+          )
+          if (attempt < LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES) {
+            const delay =
+              LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2 ** (attempt - 1)
+            await new Promise(res => setTimeout(res, delay))
+          }
+        }
+      }
+      Logger.error('All reconnection attempts failed')
+      this.notifyConnectionStateListeners(false)
+    } finally {
+      this.isAttemptingReconnect = false
+    }
+  }
+
+  // Allow UI components to subscribe to connection state changes so
+  // they can react immediately instead of waiting for the next poll.
+  addConnectionStateListener(
+    callback: (connected: boolean) => void
+  ): () => void {
+    this.connectionStateListeners.add(callback)
+    return () => this.connectionStateListeners.delete(callback)
+  }
+
+  private notifyConnectionStateListeners(connected: boolean): void {
+    this.connectionStateListeners.forEach(callback => {
+      try {
+        callback(connected)
+      } catch (error) {
+        Logger.error('Error in connection state listener:', error)
+      }
+    })
+  }
+
   // Start passive app detection polling
   private startAppPolling(): void {
     if (this.appPollingEnabled) {
@@ -236,6 +352,18 @@ class LedgerService {
       try {
         if (!this.#transport || !this.#transport.isConnected) {
           this.stopAppPolling()
+
+          // Safety net: if the transport disconnect event did not fire,
+          // trigger a reconnect attempt from here instead of just
+          // silently stopping.
+          if (
+            !this.isDisconnected &&
+            !this.isAttemptingReconnect &&
+            this.connectedDeviceId
+          ) {
+            Logger.info('Polling detected disconnect, attempting reconnect...')
+            this.attemptReconnect().catch(Logger.error)
+          }
           return
         }
 
@@ -1148,7 +1276,10 @@ class LedgerService {
     }
   }
 
-  // Disconnect from Ledger device
+  // Disconnect from Ledger device.
+  // connectedDeviceId is intentionally preserved so that the foreground
+  // AppState handler (and manual reconnect) can reconnect to the same
+  // device without requiring a fresh scan.
   async disconnect(): Promise<void> {
     this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
@@ -1159,6 +1290,7 @@ class LedgerService {
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
       this.stopAppPolling()
+      this.notifyConnectionStateListeners(false)
       // disconnectDevice() immediately drops the physical BLE link so other
       // devices can connect without the ~5 s delay that transport.close() imposes.
       try {
@@ -1171,6 +1303,13 @@ class LedgerService {
       // already down at this point so the delay inside close() has no effect.
       transport.close().catch(Logger.error)
     }
+  }
+
+  // Explicitly clear the remembered device ID. Call this when the user
+  // switches away from a Ledger wallet so we don't attempt stale
+  // auto-reconnects.
+  clearConnectedDevice(): void {
+    this.connectedDeviceId = null
   }
 
   // Check if transport is available and connected

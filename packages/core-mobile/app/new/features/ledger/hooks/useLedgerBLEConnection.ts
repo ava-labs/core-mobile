@@ -50,6 +50,26 @@ export const useLedgerBLEConnection = ({
     }
   }, [])
 
+  // Subscribe to LedgerService connection state changes for immediate
+  // UI feedback when the BLE link drops or is restored (e.g. after
+  // Ledger auto-sleep / wake or app foreground resume).
+  useEffect(() => {
+    if (!isLedger) return
+
+    const unsubscribe = LedgerService.addConnectionStateListener(
+      (connected: boolean) => {
+        if (!isMountedRef.current) return
+        setIsLedgerConnected(connected)
+        if (!connected) {
+          setIsAvalancheAppOpen(false)
+          setIsUnsupportedBtcVersion(false)
+          setCurrentBtcVersion('')
+        }
+      }
+    )
+    return unsubscribe
+  }, [isLedger])
+
   const activeWalletId = useSelector(selectActiveWalletId)
   const { getLedgerInfoByWalletId } = useLedgerWalletMap()
   const deviceForWallet = useMemo(
