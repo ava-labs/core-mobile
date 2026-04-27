@@ -48,8 +48,10 @@ const resolveUserIsRecipient = ({
 }
 
 // Picks a NATIVE/ERC20 leg matching the user's direction (payment leaves the
-// user on a buy, lands at the user on a sell). Falls back to any payment
-// token if address-based matching fails.
+// user on a buy, lands at the user on a sell). When direction-based matching
+// fails (some Glacier responses omit `from`/`to`), only fall back if there is
+// a single unambiguous payment token — multiple payment legs without
+// direction info could mislead (e.g. royalty/fee legs vs. seller payout).
 const findPaymentToken = (
   tokens: TxToken[],
   userIsRecipient: boolean,
@@ -62,22 +64,27 @@ const findPaymentToken = (
     return Boolean(addr) && addr === userAddressLower
   }
 
-  return (
-    tokens.find(t => isPaymentTokenType(t) && matchesUserDirection(t)) ??
-    tokens.find(isPaymentTokenType)
+  const directional = tokens.find(
+    t => isPaymentTokenType(t) && matchesUserDirection(t)
   )
+  if (directional) return directional
+
+  const payments = tokens.filter(isPaymentTokenType)
+  return payments.length === 1 ? payments[0] : undefined
 }
 
-// Composes a human-readable label for the NFT in the title. ERC1155 entries
-// rarely carry meaningful name/symbol, so always show "NFT". For ERC721 we
-// fall back to "NFT" when the name is missing, and omit the symbol if empty.
+// Composes a human-readable label for the NFT in the title. Uses whichever
+// of `name`/`symbol` are populated and falls back to "NFT" when both are
+// missing. Applies to both ERC721 and ERC1155 — ERC1155 collections like
+// game assets often carry meaningful names worth surfacing.
 const getNftLabel = (nftToken: TxToken | undefined): string => {
-  if (!nftToken || nftToken.type === TokenType.ERC1155 || !nftToken.name) {
-    return 'NFT'
-  }
-  return nftToken.symbol
-    ? `${nftToken.name} (${nftToken.symbol})`
-    : nftToken.name
+  const name = nftToken?.name?.trim()
+  const symbol = nftToken?.symbol?.trim()
+
+  if (name && symbol) return `${name} (${symbol})`
+  if (name) return name
+  if (symbol) return symbol
+  return 'NFT'
 }
 
 export const TokenActivityListItemTitle = ({

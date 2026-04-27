@@ -139,15 +139,9 @@ export function isCollectibleTransaction(
   // get reclassified as collectibles.
   if (tx.txType === TransactionType.SWAP) return false
 
-  // Legacy paired-NFT pattern (NFT at index 0, paired NFT entry with
-  // `collectableTokenId` at index 1).
-  if (
-    isNftTokenType(tx.tokens[0]) &&
-    Boolean(tx.tokens[1]?.collectableTokenId)
-  ) {
-    return true
-  }
-
+  // Covers both single-NFT transfers and the legacy paired-NFT pattern
+  // (an NFT entry with `collectableTokenId` will be picked regardless of
+  // its index in `tokens[]`).
   return Boolean(findNftToken(tx))
 }
 
