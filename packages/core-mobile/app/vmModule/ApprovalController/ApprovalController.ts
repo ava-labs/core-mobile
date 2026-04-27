@@ -36,6 +36,7 @@ import {
   isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
+import { isOptimisticConfirmationEnabled } from '../utils/isOptimisticConfirmationEnabled'
 import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
@@ -60,7 +61,7 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending = ({
+  onTransactionPending = async ({
     txHash: _txHash,
     request,
     explorerLink: _explorerLink
@@ -68,10 +69,14 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     request: RpcRequest
     explorerLink?: string
-  }): void => {
+  }): Promise<void> => {
     if (!isTxFeedbackEnabled(request)) return
 
-    if (isInAppAvalancheRequest(request)) {
+    const showSuccessOptimistically =
+      isInAppAvalancheRequest(request) &&
+      (await isOptimisticConfirmationEnabled(request))
+
+    if (showSuccessOptimistically) {
       transactionSnackbar.success({
         message: 'Transaction sent'
       })
@@ -86,7 +91,7 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionConfirmed = ({
+  onTransactionConfirmed = async ({
     txHash,
     explorerLink,
     request
@@ -94,7 +99,7 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     explorerLink: string
     request: RpcRequest
-  }): void => {
+  }): Promise<void> => {
     if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
@@ -118,8 +123,16 @@ class ApprovalController implements VmModuleApprovalController {
       }, CONFETTI_DURATION_MS + 200)
     }
 
-    if (isInAppAvalancheRequest(request)) {
-      return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
+    // For in-app Avalanche requests pre-Helicon, the success toast/confetti
+    // was already shown in onTransactionPending - skip to avoid duplicating
+    // it. The util shares a single in-flight upgrade-info fetch across calls
+    // for the same network, so this returns the same value that drove the
+    // decision in onTransactionPending.
+    if (
+      isInAppAvalancheRequest(request) &&
+      (await isOptimisticConfirmationEnabled(request))
+    ) {
+      return
     }
 
     if (isSuccessToastEnabled(request)) {

@@ -19,6 +19,7 @@ import {
   isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
+import { isOptimisticConfirmationEnabled } from '../utils/isOptimisticConfirmationEnabled'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { approvalController } from './ApprovalController'
@@ -33,6 +34,10 @@ jest.mock('../utils/requestContext', () => ({
   isSuccessToastEnabled: jest.fn(() => true),
   isImmediateSentToast: jest.fn(() => false),
   showConfetti: jest.fn()
+}))
+
+jest.mock('../utils/isOptimisticConfirmationEnabled', () => ({
+  isOptimisticConfirmationEnabled: jest.fn()
 }))
 
 jest.mock('store/rpc/utils/isInAppRequest', () => ({
@@ -99,6 +104,8 @@ const mockIsSuccessToastEnabled = isSuccessToastEnabled as jest.Mock
 const mockIsImmediateSentToast = isImmediateSentToast as jest.Mock
 const mockShowConfetti = showConfetti as jest.Mock
 const mockIsInAppRequest = isInAppRequest as jest.Mock
+const mockIsOptimisticConfirmationEnabled =
+  isOptimisticConfirmationEnabled as jest.Mock
 const mockOnApprove = onApprove as jest.Mock
 const mockOnReject = onReject as jest.Mock
 const mockRouter = router as jest.Mocked<typeof router>
@@ -190,6 +197,9 @@ describe('ApprovalController', () => {
     mockIsSuccessToastEnabled.mockReturnValue(true)
     mockIsImmediateSentToast.mockReturnValue(false)
     mockIsInAppRequest.mockReturnValue(false)
+    // Default to post-Helicon (no optimistic UI), matching the steady state
+    // this codepath will live in. Tests for the pre-Helicon path opt in.
+    mockIsOptimisticConfirmationEnabled.mockResolvedValue(false)
   })
 
   // ── onTransactionPending ──────────────────────────────────────────────────
@@ -201,20 +211,21 @@ describe('ApprovalController', () => {
       explorerLink: 'https://example.com'
     })
 
-    it('does nothing when SUPPRESS_TX_FEEDBACK is set', () => {
+    it('does nothing when SUPPRESS_TX_FEEDBACK is set', async () => {
       mockIsTxFeedbackEnabled.mockReturnValue(false)
 
-      approvalController.onTransactionPending(pendingArgs(makeRequest()))
+      await approvalController.onTransactionPending(pendingArgs(makeRequest()))
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
       expect(transactionSnackbar.pending).not.toHaveBeenCalled()
       expect(mockShowConfetti).not.toHaveBeenCalled()
     })
 
-    it('shows success toast and confetti for in-app Avalanche requests', () => {
+    it('shows success toast and confetti for in-app Avalanche requests before Helicon is enabled', async () => {
       mockIsInAppAvalancheRequest.mockReturnValue(true)
+      mockIsOptimisticConfirmationEnabled.mockResolvedValue(true)
 
-      approvalController.onTransactionPending(pendingArgs(makeRequest()))
+      await approvalController.onTransactionPending(pendingArgs(makeRequest()))
 
       expect(transactionSnackbar.success).toHaveBeenCalledWith({
         message: 'Transaction sent'
@@ -223,20 +234,35 @@ describe('ApprovalController', () => {
       expect(transactionSnackbar.pending).not.toHaveBeenCalled()
     })
 
-    it('skips confetti when confetti is disabled for in-app Avalanche requests', () => {
+    it('shows pending toast for in-app Avalanche requests after Helicon is enabled', async () => {
+      mockIsInAppAvalancheRequest.mockReturnValue(true)
+      mockIsOptimisticConfirmationEnabled.mockResolvedValue(false)
+      const request = makeRequest()
+
+      await approvalController.onTransactionPending(pendingArgs(request))
+
+      expect(transactionSnackbar.pending).toHaveBeenCalledWith({
+        toastId: request.requestId
+      })
+      expect(transactionSnackbar.success).not.toHaveBeenCalled()
+      expect(mockShowConfetti).not.toHaveBeenCalled()
+    })
+
+    it('skips confetti when confetti is disabled for in-app Avalanche requests', async () => {
       mockIsInAppAvalancheRequest.mockReturnValue(true)
       mockIsConfettiEnabled.mockReturnValue(false)
+      mockIsOptimisticConfirmationEnabled.mockResolvedValue(true)
 
-      approvalController.onTransactionPending(pendingArgs(makeRequest()))
+      await approvalController.onTransactionPending(pendingArgs(makeRequest()))
 
       expect(transactionSnackbar.success).toHaveBeenCalled()
       expect(mockShowConfetti).not.toHaveBeenCalled()
     })
 
-    it('shows pending toast for non-Avalanche / non-in-app requests', () => {
+    it('shows pending toast for non-Avalanche / non-in-app requests', async () => {
       const request = makeRequest()
 
-      approvalController.onTransactionPending(pendingArgs(request))
+      await approvalController.onTransactionPending(pendingArgs(request))
 
       expect(transactionSnackbar.pending).toHaveBeenCalledWith({
         toastId: request.requestId
@@ -244,10 +270,10 @@ describe('ApprovalController', () => {
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
     })
 
-    it('shows "Transaction sent" immediately when IMMEDIATE_SENT_TOAST is set (e.g. Fusion same-chain swap)', () => {
+    it('shows "Transaction sent" immediately when IMMEDIATE_SENT_TOAST is set (e.g. Fusion same-chain swap)', async () => {
       mockIsImmediateSentToast.mockReturnValue(true)
 
-      approvalController.onTransactionPending(pendingArgs(makeRequest()))
+      await approvalController.onTransactionPending(pendingArgs(makeRequest()))
 
       expect(transactionSnackbar.success).toHaveBeenCalledWith({
         message: 'Transaction sent'
@@ -268,10 +294,12 @@ describe('ApprovalController', () => {
       request
     })
 
-    it('skips all feedback when SUPPRESS_TX_FEEDBACK is set', () => {
+    it('skips all feedback when SUPPRESS_TX_FEEDBACK is set', async () => {
       mockIsTxFeedbackEnabled.mockReturnValue(false)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
       expect(mockShowConfetti).not.toHaveBeenCalled()
@@ -297,10 +325,12 @@ describe('ApprovalController', () => {
       )
     })
 
-    it('schedules app-review prompt when isInAppReview is true', () => {
+    it('schedules app-review prompt when isInAppReview is true', async () => {
       mockIsInAppReview.mockReturnValue(true)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       jest.runAllTimers()
 
@@ -309,29 +339,54 @@ describe('ApprovalController', () => {
       ).toHaveBeenCalledTimes(1)
     })
 
-    it('does not show success toast for in-app Avalanche requests (already shown in pending)', () => {
+    it('does not show success toast for in-app Avalanche requests before Helicon is enabled (already shown in pending)', async () => {
       mockIsInAppAvalancheRequest.mockReturnValue(true)
+      mockIsOptimisticConfirmationEnabled.mockResolvedValue(true)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
     })
 
-    it('skips only the success toast when SUCCESS_TOAST_DISABLED is set (confetti controlled separately)', () => {
+    it('shows success toast and confetti for in-app Avalanche requests after Helicon is enabled', async () => {
+      mockIsInAppAvalancheRequest.mockReturnValue(true)
+      mockIsInAppRequest.mockReturnValue(true)
+      mockIsOptimisticConfirmationEnabled.mockResolvedValue(false)
+      const request = makeRequest()
+      const explorerLink = 'https://explorer.example.com'
+
+      await approvalController.onTransactionConfirmed({
+        txHash: '0xabc',
+        explorerLink,
+        request
+      })
+
+      expect(transactionSnackbar.success).toHaveBeenCalledWith({
+        explorerLink,
+        toastId: request.requestId
+      })
+      expect(mockShowConfetti).toHaveBeenCalledTimes(1)
+    })
+
+    it('skips only the success toast when SUCCESS_TOAST_DISABLED is set (confetti controlled separately)', async () => {
       mockIsSuccessToastEnabled.mockReturnValue(false)
       mockIsInAppRequest.mockReturnValue(true)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
       expect(mockShowConfetti).toHaveBeenCalledTimes(1)
     })
 
-    it('shows success toast with explorerLink for non-Avalanche requests', () => {
+    it('shows success toast with explorerLink for non-Avalanche requests', async () => {
       const request = makeRequest()
       const explorerLink = 'https://explorer.example.com'
 
-      approvalController.onTransactionConfirmed({
+      await approvalController.onTransactionConfirmed({
         txHash: '0xabc',
         explorerLink,
         request
@@ -343,27 +398,33 @@ describe('ApprovalController', () => {
       })
     })
 
-    it('shows confetti for in-app non-Avalanche requests when confetti is enabled', () => {
+    it('shows confetti for in-app non-Avalanche requests when confetti is enabled', async () => {
       mockIsInAppRequest.mockReturnValue(true)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(mockShowConfetti).toHaveBeenCalledTimes(1)
     })
 
-    it('skips confetti when confetti is disabled', () => {
+    it('skips confetti when confetti is disabled', async () => {
       mockIsInAppRequest.mockReturnValue(true)
       mockIsConfettiEnabled.mockReturnValue(false)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(mockShowConfetti).not.toHaveBeenCalled()
     })
 
-    it('skips confetti for non-in-app requests', () => {
+    it('skips confetti for non-in-app requests', async () => {
       mockIsInAppRequest.mockReturnValue(false)
 
-      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+      await approvalController.onTransactionConfirmed(
+        confirmedArgs(makeRequest())
+      )
 
       expect(mockShowConfetti).not.toHaveBeenCalled()
     })
