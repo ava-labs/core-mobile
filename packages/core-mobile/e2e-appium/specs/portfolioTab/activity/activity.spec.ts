@@ -17,21 +17,21 @@ describe('Activity history', () => {
     await txPage.verifySuccessToast()
   })
 
-  it('should verify the send history on activity tab', async () => {
+  it('[C-Chain Send] should verify the send history on activity tab', async () => {
     await portfolioPage.verifyTxOnActivityTab(
       '0.01 AVAX sent',
       '0.0001 AVAX sent'
     )
   })
 
-  it('should verify the send history on the token detail activity', async () => {
+  it('[C-Chain Send] should verify the send history on the token detail activity', async () => {
     await portfolioPage.verifyTxOnTokenDetail(
       '0.01 AVAX sent',
       '0.0001 AVAX sent'
     )
   })
 
-  it('should verify the receive history on activity tab', async () => {
+  it('[C-Chain Receive] should verify the receive history on activity tab', async () => {
     await settingsPage.switchAccount(settings.account2)
     await portfolioPage.verifyTxOnActivityTab(
       '0.01 AVAX received',
@@ -39,7 +39,7 @@ describe('Activity history', () => {
     )
   })
 
-  it('should verify the receive history on the token detail activity', async () => {
+  it('[C-Chain Receive] should verify the receive history on the token detail activity', async () => {
     await portfolioPage.verifyTxOnTokenDetail(
       '0.01 AVAX received',
       '0.0001 AVAX received'
