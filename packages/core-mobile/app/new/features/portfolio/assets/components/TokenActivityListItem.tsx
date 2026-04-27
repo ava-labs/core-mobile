@@ -73,8 +73,15 @@ export const TokenActivityListItem: FC<Props> = ({
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
       const nftToken = findNftToken(tx) ?? tx.tokens[0]
-      const tokenId = nftToken?.collectableTokenId ?? '?'
-      return `#${tokenId} - ${nftToken?.type ?? 'NFT'}`
+      const tokenId = nftToken?.collectableTokenId
+      const type = nftToken?.type
+
+      // Avoid showing "#?"-style placeholders when fields are missing — drop
+      // the subtitle entirely instead of surfacing meaningless data.
+      if (tokenId && type) return `#${tokenId} - ${type}`
+      if (tokenId) return `#${tokenId}`
+      if (type) return type
+      return null
     }
 
     if (tx.txType === TransactionType.TRANSFER) {

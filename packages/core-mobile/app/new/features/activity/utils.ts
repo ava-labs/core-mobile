@@ -1,10 +1,11 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
+import { TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { isNftTokenType } from 'services/nft/utils'
 import { Transaction } from 'store/transaction'
 
 export type ActivityListItem =
@@ -107,9 +108,6 @@ export function buildGroupedData(
   return flatData
 }
 
-const isNftTokenType = (token: TxToken | undefined): boolean =>
-  token?.type === TokenType.ERC721 || token?.type === TokenType.ERC1155
-
 // Returns an ERC721/ERC1155 token from the transaction, regardless of its
 // position in `tokens[]`. NFT purchases through marketplaces typically place
 // the paid token (NATIVE/ERC20) at index 0 and the NFT at index 1, so we
@@ -122,7 +120,7 @@ export function findNftToken(
 ): TxToken | undefined {
   let firstNft: TxToken | undefined
   for (const token of tx.tokens) {
-    if (!isNftTokenType(token)) continue
+    if (!isNftTokenType(token.type)) continue
     if (token.collectableTokenId) return token
     firstNft = firstNft ?? token
   }
