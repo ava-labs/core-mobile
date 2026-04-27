@@ -209,6 +209,34 @@ describe('isCollectibleTransaction', () => {
 
     expect(isCollectibleTransaction(tx)).toBe(false)
   })
+
+  it('respects explicit SWAP txType even when an NFT leg is present', () => {
+    // Defensive guard: if the backend confidently classified the tx as a
+    // swap, we should not reclassify it as a collectible just because a
+    // routing leg happens to include an NFT token entry.
+    const tx = makeTx({
+      isContractCall: true,
+      txType: TransactionType.SWAP,
+      tokens: [
+        {
+          type: TokenType.NATIVE,
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          amount: '1'
+        },
+        {
+          type: TokenType.ERC721,
+          address: NFT_CONTRACT,
+          name: 'Cool NFT',
+          symbol: 'COOL',
+          amount: '1',
+          collectableTokenId: TOKEN_ID
+        }
+      ]
+    })
+
+    expect(isCollectibleTransaction(tx)).toBe(false)
+  })
 })
 
 describe('isNftTransaction', () => {

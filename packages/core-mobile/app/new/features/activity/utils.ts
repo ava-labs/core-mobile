@@ -107,6 +107,9 @@ export function buildGroupedData(
   return flatData
 }
 
+const isNftTokenType = (token: TxToken | undefined): boolean =>
+  token?.type === TokenType.ERC721 || token?.type === TokenType.ERC1155
+
 // Returns an ERC721/ERC1155 token from the transaction, regardless of its
 // position in `tokens[]`. NFT purchases through marketplaces typically place
 // the paid token (NATIVE/ERC20) at index 0 and the NFT at index 1, so we
@@ -117,26 +120,35 @@ export function buildGroupedData(
 export function findNftToken(
   tx: TokenActivityTransaction
 ): TxToken | undefined {
-  const isNftType = (token: TxToken | undefined): boolean =>
-    token?.type === TokenType.ERC721 || token?.type === TokenType.ERC1155
-
-  return (
-    tx.tokens.find(
-      token => isNftType(token) && Boolean(token?.collectableTokenId)
-    ) ?? tx.tokens.find(isNftType)
-  )
+  let firstNft: TxToken | undefined
+  for (const token of tx.tokens) {
+    if (!isNftTokenType(token)) continue
+    if (token.collectableTokenId) return token
+    firstNft = firstNft ?? token
+  }
+  return firstNft
 }
 
 export function isCollectibleTransaction(
   tx: TokenActivityTransaction
 ): boolean {
-  return (
-    ((tx.tokens[0]?.type === TokenType.ERC1155 ||
-      tx.tokens[0]?.type === TokenType.ERC721) &&
-      Boolean(tx.tokens[1]?.collectableTokenId)) ||
-    isNftTransaction(tx) ||
-    Boolean(findNftToken(tx))
-  )
+  if (isNftTransaction(tx)) return true
+
+  // Respect explicit non-NFT classifications from the backend so that swaps
+  // routed through pools that incidentally include an NFT leg (rare) do not
+  // get reclassified as collectibles.
+  if (tx.txType === TransactionType.SWAP) return false
+
+  // Legacy paired-NFT pattern (NFT at index 0, paired NFT entry with
+  // `collectableTokenId` at index 1).
+  if (
+    isNftTokenType(tx.tokens[0]) &&
+    Boolean(tx.tokens[1]?.collectableTokenId)
+  ) {
+    return true
+  }
+
+  return Boolean(findNftToken(tx))
 }
 
 export function isNftTransaction(tx: TokenActivityTransaction): boolean {

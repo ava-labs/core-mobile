@@ -12,12 +12,73 @@ import {
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
 import { TokenActivityTransaction } from './TokenActivityListItem'
+
+const isPaymentTokenType = (token: TxToken | undefined): boolean =>
+  token?.type === TokenType.NATIVE || token?.type === TokenType.ERC20
+
+// Determines whether the active user ended up holding the NFT after the tx.
+// Prefers NFT-leg from/to addresses; falls back to top-level tx flags when
+// the NFT entry omits them (some Glacier responses do).
+const resolveUserIsRecipient = ({
+  nftToken,
+  userAddressLower,
+  transaction,
+  account
+}: {
+  nftToken: TxToken | undefined
+  userAddressLower: string | undefined
+  transaction: TokenActivityTransaction
+  account: Account | undefined
+}): boolean => {
+  const nftFromLower = nftToken?.from?.address?.toLowerCase()
+  const nftToLower = nftToken?.to?.address?.toLowerCase()
+
+  if (nftToLower && nftToLower === userAddressLower) return true
+  if (nftFromLower && nftFromLower === userAddressLower) return false
+
+  return !(
+    transaction.isSender || isTxSentFromAccount(transaction.from, account)
+  )
+}
+
+// Picks a NATIVE/ERC20 leg matching the user's direction (payment leaves the
+// user on a buy, lands at the user on a sell). Falls back to any payment
+// token if address-based matching fails.
+const findPaymentToken = (
+  tokens: TxToken[],
+  userIsRecipient: boolean,
+  userAddressLower: string | undefined
+): TxToken | undefined => {
+  const matchesUserDirection = (token: TxToken): boolean => {
+    const addr = (
+      userIsRecipient ? token.from?.address : token.to?.address
+    )?.toLowerCase()
+    return Boolean(addr) && addr === userAddressLower
+  }
+
+  return (
+    tokens.find(t => isPaymentTokenType(t) && matchesUserDirection(t)) ??
+    tokens.find(isPaymentTokenType)
+  )
+}
+
+// Composes a human-readable label for the NFT in the title. ERC1155 entries
+// rarely carry meaningful name/symbol, so always show "NFT". For ERC721 we
+// fall back to "NFT" when the name is missing, and omit the symbol if empty.
+const getNftLabel = (nftToken: TxToken | undefined): string => {
+  if (!nftToken || nftToken.type === TokenType.ERC1155 || !nftToken.name) {
+    return 'NFT'
+  }
+  return nftToken.symbol
+    ? `${nftToken.name} (${nftToken.symbol})`
+    : nftToken.name
+}
 
 export const TokenActivityListItemTitle = ({
   tx
@@ -177,55 +238,27 @@ export const TokenActivityListItemTitle = ({
   // purchases/sales (NFT + NATIVE/ERC20 leg) from plain transfers, and
   // includes the payment amount when present.
   const getCollectibleTitle = useCallback(
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     (transaction: TokenActivityTransaction): ReactNode[] => {
       const nftToken = findNftToken(transaction) ?? transaction.tokens[0]
-
       const network = getNetwork(Number(transaction.chainId))
       const userAddress =
         network && activeAccount
           ? getAddressByNetwork(activeAccount, network)
           : transaction.from
       const userAddressLower = userAddress?.toLowerCase()
-      const nftFromLower = nftToken?.from?.address?.toLowerCase()
-      const nftToLower = nftToken?.to?.address?.toLowerCase()
 
-      let userIsRecipient: boolean
-      if (nftToLower && nftToLower === userAddressLower) {
-        userIsRecipient = true
-      } else if (nftFromLower && nftFromLower === userAddressLower) {
-        userIsRecipient = false
-      } else {
-        userIsRecipient = !(
-          transaction.isSender ||
-          isTxSentFromAccount(transaction.from, activeAccount)
-        )
-      }
-
-      // Pick a payment leg matching the user's direction. For a purchase the
-      // payment originates from the user; for a sale it lands at the user.
-      // Falls back to any NATIVE/ERC20 token if address-based matching fails
-      // (some Glacier responses omit `from`/`to` on token entries).
-      const isPaymentToken = (t: TxToken | undefined): boolean =>
-        t?.type === TokenType.NATIVE || t?.type === TokenType.ERC20
-
-      const matchesUserDirection = (t: TxToken): boolean => {
-        const tFromLower = t.from?.address?.toLowerCase()
-        const tToLower = t.to?.address?.toLowerCase()
-        return userIsRecipient
-          ? tFromLower === userAddressLower
-          : tToLower === userAddressLower
-      }
-
-      const paymentToken =
-        transaction.tokens.find(
-          t => isPaymentToken(t) && matchesUserDirection(t)
-        ) ?? transaction.tokens.find(isPaymentToken)
-
-      const isErc1155 = nftToken?.type === TokenType.ERC1155
-      const nftLabel = isErc1155
-        ? 'NFT'
-        : `${nftToken?.name} (${nftToken?.symbol})`
+      const userIsRecipient = resolveUserIsRecipient({
+        nftToken,
+        userAddressLower,
+        transaction,
+        account: activeAccount
+      })
+      const paymentToken = findPaymentToken(
+        transaction.tokens,
+        userIsRecipient,
+        userAddressLower
+      )
+      const nftLabel = getNftLabel(nftToken)
 
       if (paymentToken) {
         const action = userIsRecipient ? 'bought' : 'sold'

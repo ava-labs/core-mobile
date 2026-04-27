@@ -73,11 +73,8 @@ export const TokenActivityListItem: FC<Props> = ({
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
       const nftToken = findNftToken(tx) ?? tx.tokens[0]
-      return `#${
-        nftToken?.collectableTokenId ||
-        tx.tokens[0]?.collectableTokenId ||
-        tx.tokens[1]?.collectableTokenId
-      } - ${nftToken?.type}`
+      const tokenId = nftToken?.collectableTokenId ?? '?'
+      return `#${tokenId} - ${nftToken?.type ?? 'NFT'}`
     }
 
     if (tx.txType === TransactionType.TRANSFER) {
