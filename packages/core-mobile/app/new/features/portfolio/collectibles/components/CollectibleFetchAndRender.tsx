@@ -1,10 +1,16 @@
-import { TokenType } from '@avalabs/vm-module-types'
+import { TokenType, TxToken } from '@avalabs/vm-module-types'
+import { findNftToken } from 'features/activity/utils'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { fetchNftData, getNftLocalId, isNftTokenType } from 'services/nft/utils'
 import { CardContainer } from './CardContainer'
 import { CollectibleRenderer } from './CollectibleRenderer'
+
+// NFT can be at any index (e.g. marketplace purchase puts NATIVE at 0).
+const getDisplayToken = (tx: TokenActivityTransaction): TxToken | undefined => {
+  return findNftToken(tx) ?? tx.tokens[0]
+}
 
 export const CollectibleFetchAndRender = memo(
   ({
@@ -16,7 +22,7 @@ export const CollectibleFetchAndRender = memo(
     size: number
     iconSize: number
   }): JSX.Element => {
-    const token = tx.tokens[0]
+    const token = getDisplayToken(tx)
     const [isLoading, setIsLoading] = useState(true)
 
     const contractAddress = token && 'address' in token ? token.address : ''

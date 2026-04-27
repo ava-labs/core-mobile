@@ -1,10 +1,11 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenType, TransactionType } from '@avalabs/vm-module-types'
+import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import {
+  findNftToken,
   isCollectibleTransaction,
   isPotentiallySwap
 } from 'features/activity/utils'
@@ -172,6 +173,76 @@ export const TokenActivityListItemTitle = ({
     ]
   )
 
+  // Title for NFT-related transactions. Distinguishes marketplace
+  // purchases/sales (NFT + NATIVE/ERC20 leg) from plain transfers, and
+  // includes the payment amount when present.
+  const getCollectibleTitle = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    (transaction: TokenActivityTransaction): ReactNode[] => {
+      const nftToken = findNftToken(transaction) ?? transaction.tokens[0]
+
+      const network = getNetwork(Number(transaction.chainId))
+      const userAddress =
+        network && activeAccount
+          ? getAddressByNetwork(activeAccount, network)
+          : transaction.from
+      const userAddressLower = userAddress?.toLowerCase()
+      const nftFromLower = nftToken?.from?.address?.toLowerCase()
+      const nftToLower = nftToken?.to?.address?.toLowerCase()
+
+      let userIsRecipient: boolean
+      if (nftToLower && nftToLower === userAddressLower) {
+        userIsRecipient = true
+      } else if (nftFromLower && nftFromLower === userAddressLower) {
+        userIsRecipient = false
+      } else {
+        userIsRecipient = !(
+          transaction.isSender ||
+          isTxSentFromAccount(transaction.from, activeAccount)
+        )
+      }
+
+      // Pick a payment leg matching the user's direction. For a purchase the
+      // payment originates from the user; for a sale it lands at the user.
+      // Falls back to any NATIVE/ERC20 token if address-based matching fails
+      // (some Glacier responses omit `from`/`to` on token entries).
+      const isPaymentToken = (t: TxToken | undefined): boolean =>
+        t?.type === TokenType.NATIVE || t?.type === TokenType.ERC20
+
+      const matchesUserDirection = (t: TxToken): boolean => {
+        const tFromLower = t.from?.address?.toLowerCase()
+        const tToLower = t.to?.address?.toLowerCase()
+        return userIsRecipient
+          ? tFromLower === userAddressLower
+          : tToLower === userAddressLower
+      }
+
+      const paymentToken =
+        transaction.tokens.find(
+          t => isPaymentToken(t) && matchesUserDirection(t)
+        ) ?? transaction.tokens.find(isPaymentToken)
+
+      const isErc1155 = nftToken?.type === TokenType.ERC1155
+      const nftLabel = isErc1155
+        ? 'NFT'
+        : `${nftToken?.name} (${nftToken?.symbol})`
+
+      if (paymentToken) {
+        const action = userIsRecipient ? 'bought' : 'sold'
+        return [
+          `${nftLabel} ${action} for `,
+          renderAmount(paymentToken.amount),
+          ' ',
+          paymentToken.symbol
+        ]
+      }
+
+      const action = userIsRecipient ? 'received' : 'sent'
+      return [`${nftLabel} ${action}`]
+    },
+    [activeAccount, getNetwork, renderAmount]
+  )
+
   // Build an array of nodes: strings and React elements
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const nodes = useMemo<ReactNode[]>(() => {
@@ -204,15 +275,7 @@ export const TokenActivityListItemTitle = ({
 
       default: {
         if (isCollectibleTransaction(tx)) {
-          if (tx.tokens[0]?.type === TokenType.ERC1155) {
-            return [`NFT ${tx.isSender || isFromAccount ? 'sent' : 'received'}`]
-          }
-
-          return [
-            `${tx.tokens[0]?.name} (${tx?.tokens[0]?.symbol}) ${
-              tx.isSender || isFromAccount ? 'sent' : 'received'
-            }`
-          ]
+          return getCollectibleTitle(tx)
         }
         if (tx.isContractCall) {
           // if the tx has 3 tokens, it means we funded the gas
@@ -268,6 +331,7 @@ export const TokenActivityListItemTitle = ({
     getIOTokenAmountAndSymbol,
     tx,
     getSwapTitle,
+    getCollectibleTitle,
     renderAmount,
     sourceBlockchain,
     targetBlockchain,

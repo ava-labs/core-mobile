@@ -1,6 +1,6 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { TokenType, TransactionType } from '@avalabs/vm-module-types'
+import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -107,6 +107,26 @@ export function buildGroupedData(
   return flatData
 }
 
+// Returns an ERC721/ERC1155 token from the transaction, regardless of its
+// position in `tokens[]`. NFT purchases through marketplaces typically place
+// the paid token (NATIVE/ERC20) at index 0 and the NFT at index 1, so we
+// cannot rely on `tokens[0]` alone. When multiple NFT entries are present
+// (some Glacier responses include both a transfer log and a token entry),
+// prefer the one that carries `collectableTokenId` so callers can fetch
+// metadata correctly.
+export function findNftToken(
+  tx: TokenActivityTransaction
+): TxToken | undefined {
+  const isNftType = (token: TxToken | undefined): boolean =>
+    token?.type === TokenType.ERC721 || token?.type === TokenType.ERC1155
+
+  return (
+    tx.tokens.find(
+      token => isNftType(token) && Boolean(token?.collectableTokenId)
+    ) ?? tx.tokens.find(isNftType)
+  )
+}
+
 export function isCollectibleTransaction(
   tx: TokenActivityTransaction
 ): boolean {
@@ -114,7 +134,8 @@ export function isCollectibleTransaction(
     ((tx.tokens[0]?.type === TokenType.ERC1155 ||
       tx.tokens[0]?.type === TokenType.ERC721) &&
       Boolean(tx.tokens[1]?.collectableTokenId)) ||
-    isNftTransaction(tx)
+    isNftTransaction(tx) ||
+    Boolean(findNftToken(tx))
   )
 }
 
