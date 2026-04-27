@@ -94,6 +94,7 @@ export const addNotificationsListeners = (
   startListening({
     matcher: isAnyOf(
       onRehydrationComplete,
+      onAppUnlocked,
       setAccounts,
       setNonActiveAccounts,
       setAccount,
