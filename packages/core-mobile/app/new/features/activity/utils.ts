@@ -127,6 +127,16 @@ export function findNftToken(
   return firstNft
 }
 
+// Picks the token to represent an NFT activity row. Prefers a real
+// ERC721/ERC1155 entry via `findNftToken`, falling back to `tokens[0]` when
+// no NFT entry is available so callers keep a non-empty token to render
+// (title, subtitle, and collectible thumbnail all share this choice).
+export function getDisplayNftToken(
+  tx: TokenActivityTransaction
+): TxToken | undefined {
+  return findNftToken(tx) ?? tx.tokens[0]
+}
+
 export function isCollectibleTransaction(
   tx: TokenActivityTransaction
 ): boolean {

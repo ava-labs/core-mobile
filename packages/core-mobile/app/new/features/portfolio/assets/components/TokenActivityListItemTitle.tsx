@@ -5,7 +5,7 @@ import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import {
-  findNftToken,
+  getDisplayNftToken,
   isCollectibleTransaction,
   isPotentiallySwap
 } from 'features/activity/utils'
@@ -251,7 +251,7 @@ export const TokenActivityListItemTitle = ({
   // includes the payment amount when present.
   const getCollectibleTitle = useCallback(
     (transaction: TokenActivityTransaction): ReactNode[] => {
-      const nftToken = findNftToken(transaction) ?? transaction.tokens[0]
+      const nftToken = getDisplayNftToken(transaction)
       const network = getNetwork(Number(transaction.chainId))
       const userAddress =
         network && activeAccount

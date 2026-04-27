@@ -2,7 +2,7 @@ import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
-  findNftToken,
+  getDisplayNftToken,
   isCollectibleTransaction,
   isPotentiallySwap
 } from 'features/activity/utils'
@@ -72,7 +72,7 @@ export const TokenActivityListItem: FC<Props> = ({
 
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
-      const nftToken = findNftToken(tx) ?? tx.tokens[0]
+      const nftToken = getDisplayNftToken(tx)
       const tokenId = nftToken?.collectableTokenId
       const type = nftToken?.type
 
