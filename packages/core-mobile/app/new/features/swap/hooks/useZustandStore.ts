@@ -35,7 +35,14 @@ export type SelectedQuoteIdentifiers = {
   aggregatorId: string
 } | null
 
-export const useUserSelectedQuote =
+export const useUserSelectedQuoteIds =
+  createZustandStore<SelectedQuoteIdentifiers>(null)
+// Ids for the quote promoted by pre-swap auto-advance when the best quote
+// fails fee validation with a provider-specific error. Kept distinct from
+// useUserSelectedQuoteIds so it doesn't flip the flow into manual-selection
+// mode (which would disable swap-time retry and mis-tag analytics as
+// 'manual').
+export const useAutoAdvancedQuoteIds =
   createZustandStore<SelectedQuoteIdentifiers>(null)
 export const useAllQuotes = createZustandStore<Quote[]>([])
 
