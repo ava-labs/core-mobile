@@ -14,6 +14,7 @@ import Logger from 'utils/Logger'
 import FusionService from '../services/FusionService'
 import {
   useIsFusionServiceReady,
+  useFusionServiceInitError,
   updateFusionTransfer,
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
@@ -88,6 +89,10 @@ jest.mock('../hooks/useZustandStore', () => ({
     getState: jest.fn(),
     setState: jest.fn()
   },
+  useFusionServiceInitError: {
+    getState: jest.fn(),
+    setState: jest.fn()
+  },
   updateFusionTransfer: jest.fn(),
   getPendingFusionTransfers: jest.fn()
 }))
@@ -118,6 +123,7 @@ const mockSelectFusionDisableCrossChainSwaps =
   selectFusionDisableCrossChainSwaps as jest.Mock
 const mockGetPendingFusionTransfers = getPendingFusionTransfers as jest.Mock
 const mockUseIsFusionServiceReady = useIsFusionServiceReady as any
+const mockUseFusionServiceInitError = useFusionServiceInitError as any
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -299,6 +305,63 @@ describe('Fusion listeners', () => {
       await cleanupFusionService({}, {} as any)
 
       expect(mockUseIsFusionServiceReady.setState).toHaveBeenCalledWith(false)
+    })
+
+    it('should clear the init error', async () => {
+      await cleanupFusionService({}, {} as any)
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('Fusion init error state', () => {
+    it('should clear the init error before starting initialization', async () => {
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+
+    it('should clear the init error when Fusion is disabled', async () => {
+      mockSelectIsFusionEnabled.mockReturnValue(false)
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+
+    it('should not set an init error on successful initialization', async () => {
+      await initFusionService({}, makeListenerApi())
+
+      // Only the "clear" call — no error instance is ever passed in the success path
+      const calls = mockUseFusionServiceInitError.setState.mock.calls
+      expect(calls.every((args: unknown[]) => args[0] === null)).toBe(true)
+    })
+
+    it('should set the init error when initialization throws an Error', async () => {
+      const error = new Error('SDK init failed')
+      ;(FusionService.initWithFeatureFlags as jest.Mock).mockRejectedValue(
+        error
+      )
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(error)
+    })
+
+    it('should coerce a non-Error throw value into an Error instance', async () => {
+      ;(FusionService.initWithFeatureFlags as jest.Mock).mockRejectedValue(
+        'boom'
+      )
+
+      await initFusionService({}, makeListenerApi())
+
+      const errorCall = mockUseFusionServiceInitError.setState.mock.calls.find(
+        (args: unknown[]) => args[0] instanceof Error
+      )
+      expect(errorCall).toBeDefined()
+      expect(errorCall[0]).toBeInstanceOf(Error)
+      expect(errorCall[0].message).toBe('boom')
     })
   })
 

@@ -42,6 +42,11 @@ export const useAllQuotes = createZustandStore<Quote[]>([])
 // Fusion service state
 export const useIsFusionServiceReady = createZustandStore<boolean>(false)
 
+// Non-null when the Fusion SDK failed to initialize (e.g. no services could start).
+// Used to render a full-screen error state on the swap screen, matching the
+// extension's behaviour when `transferManagerError` is set.
+export const useFusionServiceInitError = createZustandStore<Error | null>(null)
+
 // Persist storage for FusionTransfers.
 // stringifyTransfer/parseTransfer handle bigint serialization via {__type:'bigint'} tagging.
 type SerializedFusionTransfer = Omit<FusionTransfer, 'transfer'> & {
