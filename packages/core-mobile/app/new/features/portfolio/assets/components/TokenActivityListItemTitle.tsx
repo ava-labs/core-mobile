@@ -81,7 +81,12 @@ const getNftLabel = (nftToken: TxToken | undefined): string => {
   const name = nftToken?.name?.trim()
   const symbol = nftToken?.symbol?.trim()
 
-  if (name && symbol) return `${name} (${symbol})`
+  // Avoid redundant "Name (SYMBOL)" when name and symbol are effectively
+  // identical (case-insensitive) — common for ERC1155 game assets where
+  // both fields carry the same string.
+  if (name && symbol && name.toLowerCase() !== symbol.toLowerCase()) {
+    return `${name} (${symbol})`
+  }
   if (name) return name
   if (symbol) return symbol
   return 'NFT'
