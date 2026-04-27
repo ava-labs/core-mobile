@@ -163,6 +163,10 @@ async function discoverFromXpubs(
     } catch (error) {
       Logger.error(`Failed to derive addresses for index ${index}`, error)
     }
+
+    // Yield the JS thread between iterations so UI events and BLE
+    // callbacks can be processed while discovery runs (CP-14062).
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
   }
 
   return buildDiscoveredAccounts({
@@ -248,6 +252,10 @@ async function discoverFromPublicKeys(
         error
       )
     }
+
+    // Yield the JS thread between iterations so UI events and BLE
+    // callbacks can be processed while discovery runs (CP-14062).
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
   }
 
   return buildDiscoveredAccounts({
