@@ -1,5 +1,4 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ANIMATED, Image, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -57,7 +56,7 @@ export const ActivityScreen = ({
   const isLoadingBalances = useIsLoadingBalancesForAccount(account)
 
   const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
+    (pendingBridge: BridgeTransfer): void => {
       navigate({
         pathname: '/bridgeStatus',
         params: {

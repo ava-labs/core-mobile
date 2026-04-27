@@ -3,7 +3,6 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
@@ -31,7 +30,6 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
@@ -47,7 +45,6 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { UI, isUIDisabledForNetwork } from 'utils/isUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -64,19 +61,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AVAX_P_ID } from 'services/balance/const'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
 import {
-  selectIsLegacyBridgeEnabled,
-  selectIsBridgeBtcBlocked,
-  selectIsBridgeEthBlocked,
   selectIsFusionEnabled,
   selectIsMeldOfframpBlocked
 } from 'store/posthog'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
@@ -103,9 +95,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   >()
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
-  const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
-  const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
@@ -181,39 +170,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [token]
   )
 
-  const isBridgeUIDisabledForNetwork = isUIDisabledForNetwork(
-    UI.Bridge,
-    token?.networkChainId
-  )
-  const isSwapUIDisabledForNetwork = isUIDisabledForNetwork(
-    UI.Swap,
-    token?.networkChainId
-  )
-  const isBridgeDisabled = useMemo(() => {
-    if (!isLegacyBridgeEnabled || isBridgeUIDisabledForNetwork) {
-      return true
-    }
-    if (isBridgeBtcBlocked && token?.networkChainId) {
-      return isBitcoinChainId(token.networkChainId)
-    }
-    if (isBridgeEthBlocked && token?.networkChainId) {
-      return isEthereumChainId(token.networkChainId)
-    }
-    return false
-  }, [
-    token?.networkChainId,
-    isBridgeUIDisabledForNetwork,
-    isLegacyBridgeEnabled,
-    isBridgeBtcBlocked,
-    isBridgeEthBlocked
-  ])
-  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
-  const isTokenBridgeable = Boolean(
-    assetsWithBalances &&
-      assetsWithBalances.some(
-        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
-      )
-  )
+  const isSwapUIDisabledForNetwork = useMemo(() => {
+    // Swap is not supported on X/P chains
+    return (
+      token?.networkChainId === ChainId.AVALANCHE_X ||
+      token?.networkChainId === ChainId.AVALANCHE_TEST_X ||
+      token?.networkChainId === ChainId.AVALANCHE_P ||
+      token?.networkChainId === ChainId.AVALANCHE_TEST_P
+    )
+  }, [token?.networkChainId])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
@@ -223,19 +188,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       params: { vmName: getNetwork(token?.networkChainId)?.vmName }
     })
   }, [getNetwork, navigate, setSelectedToken, token])
-
-  const handleBridge = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/bridge',
-      params: token
-        ? {
-            initialSourceNetworkChainId: token.networkChainId,
-            initialTokenSymbol: token.symbol
-          }
-        : undefined
-    })
-  }, [navigate, token])
 
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
@@ -271,14 +223,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    if (!isBridgeDisabled && isTokenBridgeable) {
-      buttons.push({
-        title: ActionButtonTitle.Bridge,
-        icon: 'bridge',
-        onPress: handleBridge
-      })
-    }
-
     if (token && isWithdrawable(token) && !isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -297,9 +241,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isWithdrawable,
     isFusionEnabled,
     isMeldOfframpBlocked,
-    isBridgeDisabled,
-    isTokenBridgeable,
-    handleBridge,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
@@ -344,7 +285,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   )
 
   const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
+    (pendingBridge: BridgeTransfer): void => {
       navigate({
         pathname: '/bridgeStatus',
         params: {

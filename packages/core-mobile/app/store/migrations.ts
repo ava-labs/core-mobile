@@ -527,5 +527,12 @@ export const migrations = {
         collectibleUnprocessableVisibility: true
       }
     }
+  },
+  28: (state: any) => {
+    // Drop the persisted legacy `bridge` slice (CP-14118).
+    // Legacy Bridge has been removed; this migration purges the orphaned
+    // key from existing installs so it doesn't sit on device forever.
+    const { bridge: _bridge, ...rest } = state
+    return rest
   }
 }

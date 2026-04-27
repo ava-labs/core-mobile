@@ -1,5 +1,4 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { DropdownSelection } from 'common/types'
@@ -292,7 +291,7 @@ function filterTransactionBySearch(tx: Transaction, search: string): boolean {
 }
 
 function filterPendingBridgeBySearch(
-  tx: BridgeTransaction | BridgeTransfer,
+  tx: BridgeTransfer,
   search: string
 ): boolean {
   const searchLower = search.toLowerCase()

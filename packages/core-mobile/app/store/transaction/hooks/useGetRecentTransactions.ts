@@ -6,12 +6,12 @@ import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectIsLocked } from 'store/app/slice'
-import { popBridgeTransaction } from 'store/bridge/slice'
 import { addAppListener } from 'store/middleware/listener'
+import { removePendingTransfer } from 'store/unifiedBridge/slice'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
-const REFETCH_EVENTS = isAnyOf(popBridgeTransaction)
+const REFETCH_EVENTS = isAnyOf(removePendingTransfer)
 
 const POLLING_INTERVAL_IN_MS = 15000
 

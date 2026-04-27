@@ -3,7 +3,6 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
@@ -34,9 +33,7 @@ export const ActivityList = ({
   xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
   overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
-  handlePendingBridge?: (
-    transaction: BridgeTransaction | BridgeTransfer
-  ) => void
+  handlePendingBridge?: (transaction: BridgeTransfer) => void
   handleExplorerLink: (explorerLink: string) => void
   refresh: () => void
   renderHeader: () => React.ReactNode

@@ -1,13 +1,11 @@
 import React, { FC, useMemo } from 'react'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { isUnifiedBridgeTransfer } from 'common/utils/bridgeUtils'
 import ActivityListItem from './ActivityListItem'
 
 interface PendingBridgeTransactionItemProps {
-  item: BridgeTransaction | BridgeTransfer
+  item: BridgeTransfer
   onPress: () => void
   showSeparator: boolean
 }
@@ -18,17 +16,12 @@ export const PendingBridgeTransactionItem: FC<
   const {
     theme: { colors }
   } = useTheme()
-  const amount = useMemo(() => {
-    if (isUnifiedBridgeTransfer(item)) {
-      return bigintToBig(item.amount, item.asset.decimals).toString()
-    }
+  const amount = useMemo(
+    () => bigintToBig(item.amount, item.asset.decimals).toString(),
+    [item]
+  )
 
-    return undefined
-  }, [item])
-
-  const symbol = isUnifiedBridgeTransfer(item)
-    ? item?.asset.symbol
-    : item?.symbol
+  const symbol = item.asset.symbol
 
   return (
     <ActivityListItem

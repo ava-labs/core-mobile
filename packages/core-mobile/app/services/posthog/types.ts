@@ -3,8 +3,6 @@ import { JsonMap } from 'store/posthog'
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
-  BRIDGE_BTC = 'bridge-feature-btc',
-  BRIDGE_ETH = 'bridge-feature-eth',
   EARN = 'earn-feature',
   BUY_COINBASE_PAY = 'buy-feature-coinbase',
   SEEDLESS_ONBOARDING = 'seedless-onboarding',
@@ -14,11 +12,6 @@ export enum FeatureGates {
   SEEDLESS_MFA_PASSKEY = 'seedless-mfa-passkey',
   SEEDLESS_MFA_AUTHENTICATOR = 'seedless-mfa-authenticator',
   SEEDLESS_SIGNING = 'seedless-signing',
-  UNIFIED_BRIDGE_CCTP = 'unified-bridge-cctp',
-  UNIFIED_BRIDGE_ICTT = 'unified-bridge-ictt',
-  UNIFIED_BRIDGE_AB_EVM = 'unified-bridge-ab-evm',
-  UNIFIED_BRIDGE_AB_AVA_TO_BTC = 'unified-bridge-ab-ava-to-btc',
-  UNIFIED_BRIDGE_AB_BTC_TO_AVA = 'unified-bridge-ab-btc-to-ava',
   LOG_ERRORS_TO_SENTRY = 'log-errors-to-sentry',
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
   ALL_NOTIFICATIONS = 'all-notifications',
@@ -48,7 +41,6 @@ export enum FeatureGates {
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
   FUSION_DISABLE_CROSS_CHAIN_SWAPS = 'fusion-disable-cross-chain-swaps',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
-  LEGACY_BRIDGE = 'legacy-bridge',
   INJECTED_PROVIDER = 'injected-provider',
   PREDICTIONS = 'predictions'
 }

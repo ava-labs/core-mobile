@@ -1,5 +1,4 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Image } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
@@ -48,7 +47,7 @@ interface Props {
     hash?: string,
     hashType?: 'account' | 'tx'
   ) => void
-  handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
+  handlePendingBridge: (transaction: BridgeTransfer) => void
 }
 
 const TransactionHistory: FC<Props> = ({

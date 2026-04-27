@@ -1,5 +1,4 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import {
@@ -17,16 +16,15 @@ import {
 import { NetworkLogo } from 'common/components/NetworkLogo'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import {
-  getNativeTokenSymbol,
-  getSourceChainId,
-  getTargetChainId,
-  isUnifiedBridgeTransfer
-} from 'common/utils/bridgeUtils'
+import { getSourceChainId, getTargetChainId } from 'common/utils/bridgeUtils'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
 import { useSimplePrices } from 'hooks/useSimplePrices'
+import {
+  AVAX_COINGECKO_ID,
+  BITCOIN_COINGECKO_ID,
+  ETHEREUM_COINGECKO_ID
+} from 'consts/coingecko'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   FadeIn,
@@ -42,6 +40,12 @@ import { useBridgeNetworkPrice } from '../hooks/useBridgeNetworkPrice'
 import { useBridgeTransferStatus } from '../hooks/useBridgeTransferStatus'
 import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
 
+const SYMBOL_TO_COINGECKO_ID: Record<string, string> = {
+  AVAX: AVAX_COINGECKO_ID,
+  BTC: BITCOIN_COINGECKO_ID,
+  ETH: ETHEREUM_COINGECKO_ID
+}
+
 export const BridgeStatusScreen = (): JSX.Element => {
   const {
     theme: { colors }
@@ -51,9 +55,7 @@ export const BridgeStatusScreen = (): JSX.Element => {
     chainId: string
   }>()
 
-  const [bridgeTransaction, setBridgeTransaction] = useState<
-    BridgeTransaction | BridgeTransfer
-  >()
+  const [bridgeTransaction, setBridgeTransaction] = useState<BridgeTransfer>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const bridgeTransactions = usePendingBridgeTransactions(Number(chainId))
@@ -63,11 +65,9 @@ export const BridgeStatusScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { back } = useRouter()
 
-  const symbol = isUnifiedBridgeTransfer(bridgeTransaction)
-    ? bridgeTransaction?.asset.symbol
-    : bridgeTransaction?.symbol
+  const symbol = bridgeTransaction?.asset.symbol
 
-  const coingeckoId = useCoinGeckoId(symbol)
+  const coingeckoId = symbol ? SYMBOL_TO_COINGECKO_ID[symbol] : undefined
 
   const { data: assetPrices } = useSimplePrices(
     coingeckoId ? [coingeckoId] : [],
@@ -131,7 +131,7 @@ export const BridgeStatusScreen = (): JSX.Element => {
           <View style={{ alignItems: 'flex-end' }}>
             <Text variant="body1" sx={{ color: '$textSecondary' }}>
               {sourceNetworkFee.toNumber().toFixed(6)}{' '}
-              {getNativeTokenSymbol(bridgeTransaction.sourceChain)}
+              {bridgeTransaction.sourceChain.networkToken.symbol}
             </Text>
             <Text variant="caption" sx={{ color: '$textSecondary' }}>
               {formatCurrency({
