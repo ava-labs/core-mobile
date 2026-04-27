@@ -1,5 +1,5 @@
 import { TokenType } from '@avalabs/vm-module-types'
-import { getDisplayNftToken } from 'features/activity/utils'
+import { findNftToken } from 'features/activity/utils'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
@@ -17,7 +17,11 @@ export const CollectibleFetchAndRender = memo(
     size: number
     iconSize: number
   }): JSX.Element => {
-    const token = getDisplayNftToken(tx)
+    // When the tx has no ERC721/ERC1155 leg (rare backend inconsistency for
+    // NFT_* txTypes), `token` is undefined; the metadata fetch below short-
+    // circuits on missing contractAddress/tokenId so we fall back to an
+    // unprocessed placeholder card instead of fetching the wrong asset.
+    const token = findNftToken(tx)
     const [isLoading, setIsLoading] = useState(true)
 
     const contractAddress = token && 'address' in token ? token.address : ''

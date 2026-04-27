@@ -1,11 +1,17 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { TokenType, TransactionType } from '@avalabs/vm-module-types'
+import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
+import { Account } from 'store/account'
 import { Transaction } from 'store/transaction'
 import {
   findNftToken,
+  findPaymentToken,
+  getNftLabel,
   isCollectibleTransaction,
   isNftTransaction,
-  isPotentiallySwap
+  isPaymentTokenType,
+  isPotentiallySwap,
+  resolvePaymentSymbol,
+  resolveUserIsRecipient
 } from './utils'
 
 const USER_ADDRESS = '0xUser'
@@ -296,5 +302,249 @@ describe('isPotentiallySwap', () => {
     })
 
     expect(isPotentiallySwap(tx)).toBe(false)
+  })
+})
+
+describe('isPaymentTokenType', () => {
+  it('accepts NATIVE and ERC20 as payment legs', () => {
+    expect(isPaymentTokenType({ type: TokenType.NATIVE } as TxToken)).toBe(true)
+    expect(isPaymentTokenType({ type: TokenType.ERC20 } as TxToken)).toBe(true)
+  })
+
+  it('rejects ERC721/ERC1155 and undefined', () => {
+    expect(isPaymentTokenType({ type: TokenType.ERC721 } as TxToken)).toBe(
+      false
+    )
+    expect(isPaymentTokenType({ type: TokenType.ERC1155 } as TxToken)).toBe(
+      false
+    )
+    expect(isPaymentTokenType(undefined)).toBe(false)
+  })
+})
+
+describe('resolvePaymentSymbol', () => {
+  it('returns the token symbol when present', () => {
+    const token = {
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      name: 'USDC',
+      amount: '5'
+    } as TxToken
+    expect(resolvePaymentSymbol(token, 'AVAX')).toBe('USDC')
+  })
+
+  it('falls back to the network token symbol for NATIVE legs without a symbol', () => {
+    const token = {
+      type: TokenType.NATIVE,
+      symbol: '',
+      name: '',
+      amount: '1'
+    } as TxToken
+    expect(resolvePaymentSymbol(token, 'AVAX')).toBe('AVAX')
+  })
+
+  it('falls back to the token type as a last resort', () => {
+    const token = {
+      type: TokenType.ERC20,
+      symbol: '',
+      name: '',
+      amount: '1'
+    } as TxToken
+    expect(resolvePaymentSymbol(token, undefined)).toBe(TokenType.ERC20)
+  })
+})
+
+const buildAccount = (overrides: Partial<Account> = {}): Account =>
+  ({
+    addressC: USER_ADDRESS,
+    addressBTC: '',
+    addressAVM: '',
+    addressPVM: '',
+    addressSVM: '',
+    ...overrides
+  } as unknown as Account)
+
+describe('resolveUserIsRecipient', () => {
+  it('returns true when the NFT lands at the user address', () => {
+    const nftToken = {
+      type: TokenType.ERC721,
+      from: { address: MARKETPLACE },
+      to: { address: USER_ADDRESS }
+    } as TxToken
+    const tx = makeTx({ tokens: [nftToken] })
+
+    expect(
+      resolveUserIsRecipient({
+        nftToken,
+        userAddressLower: USER_ADDRESS.toLowerCase(),
+        transaction: tx,
+        account: buildAccount()
+      })
+    ).toBe(true)
+  })
+
+  it('returns false when the NFT leaves the user address', () => {
+    const nftToken = {
+      type: TokenType.ERC721,
+      from: { address: USER_ADDRESS },
+      to: { address: MARKETPLACE }
+    } as TxToken
+    const tx = makeTx({ tokens: [nftToken] })
+
+    expect(
+      resolveUserIsRecipient({
+        nftToken,
+        userAddressLower: USER_ADDRESS.toLowerCase(),
+        transaction: tx,
+        account: buildAccount()
+      })
+    ).toBe(false)
+  })
+
+  it('falls back to tx-level isSender flag when the NFT leg has no addresses', () => {
+    const nftToken = { type: TokenType.ERC721 } as TxToken
+    const tx = makeTx({ tokens: [nftToken], isSender: true })
+
+    expect(
+      resolveUserIsRecipient({
+        nftToken,
+        userAddressLower: USER_ADDRESS.toLowerCase(),
+        transaction: tx,
+        account: buildAccount()
+      })
+    ).toBe(false)
+  })
+
+  it('falls back to account-derived sender check when nftToken is undefined', () => {
+    const tx = makeTx({ tokens: [], from: USER_ADDRESS })
+
+    expect(
+      resolveUserIsRecipient({
+        nftToken: undefined,
+        userAddressLower: USER_ADDRESS.toLowerCase(),
+        transaction: tx,
+        account: buildAccount({ addressC: USER_ADDRESS })
+      })
+    ).toBe(false)
+  })
+})
+
+describe('findPaymentToken', () => {
+  const userLower = USER_ADDRESS.toLowerCase()
+
+  it('returns the directional payment token when the user is the buyer', () => {
+    const payment = {
+      type: TokenType.NATIVE,
+      symbol: 'AVAX',
+      amount: '0.075',
+      from: { address: USER_ADDRESS },
+      to: { address: MARKETPLACE }
+    } as TxToken
+    const nft = {
+      type: TokenType.ERC721,
+      from: { address: MARKETPLACE },
+      to: { address: USER_ADDRESS }
+    } as TxToken
+
+    expect(findPaymentToken([payment, nft], true, userLower)).toBe(payment)
+  })
+
+  it('returns the directional payment token when the user is the seller', () => {
+    const payment = {
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      amount: '20',
+      from: { address: MARKETPLACE },
+      to: { address: USER_ADDRESS }
+    } as TxToken
+    const nft = {
+      type: TokenType.ERC721,
+      from: { address: USER_ADDRESS },
+      to: { address: MARKETPLACE }
+    } as TxToken
+
+    expect(findPaymentToken([payment, nft], false, userLower)).toBe(payment)
+  })
+
+  it('falls back to a single payment token when direction info is missing', () => {
+    const payment = {
+      type: TokenType.NATIVE,
+      symbol: 'AVAX',
+      amount: '1'
+    } as TxToken
+    const nft = { type: TokenType.ERC721 } as TxToken
+
+    expect(findPaymentToken([payment, nft], true, userLower)).toBe(payment)
+  })
+
+  it('does NOT fall back when multiple payment legs are ambiguous', () => {
+    const payment1 = {
+      type: TokenType.NATIVE,
+      symbol: 'AVAX',
+      amount: '1'
+    } as TxToken
+    const payment2 = {
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      amount: '10'
+    } as TxToken
+
+    expect(
+      findPaymentToken([payment1, payment2], true, userLower)
+    ).toBeUndefined()
+  })
+
+  it('returns undefined when no NATIVE/ERC20 leg exists', () => {
+    const nft = { type: TokenType.ERC721 } as TxToken
+    expect(findPaymentToken([nft], true, userLower)).toBeUndefined()
+  })
+})
+
+describe('getNftLabel', () => {
+  it('combines name and symbol when distinct', () => {
+    expect(
+      getNftLabel({
+        type: TokenType.ERC721,
+        name: 'Cool NFT',
+        symbol: 'COOL'
+      } as TxToken)
+    ).toBe('Cool NFT (COOL)')
+  })
+
+  it('avoids redundant "Name (SYMBOL)" when they match (case-insensitive)', () => {
+    expect(
+      getNftLabel({
+        type: TokenType.ERC1155,
+        name: 'AvaxApes',
+        symbol: 'avaxapes'
+      } as TxToken)
+    ).toBe('AvaxApes')
+  })
+
+  it('returns the symbol alone when name is missing', () => {
+    expect(
+      getNftLabel({
+        type: TokenType.ERC721,
+        name: '',
+        symbol: 'COOL'
+      } as TxToken)
+    ).toBe('COOL')
+  })
+
+  it('returns the name alone when symbol is missing', () => {
+    expect(
+      getNftLabel({
+        type: TokenType.ERC721,
+        name: 'Cool NFT',
+        symbol: ''
+      } as TxToken)
+    ).toBe('Cool NFT')
+  })
+
+  it('falls back to "NFT" when both name and symbol are missing', () => {
+    expect(
+      getNftLabel({ type: TokenType.ERC721, name: '', symbol: '' } as TxToken)
+    ).toBe('NFT')
+    expect(getNftLabel(undefined)).toBe('NFT')
   })
 })

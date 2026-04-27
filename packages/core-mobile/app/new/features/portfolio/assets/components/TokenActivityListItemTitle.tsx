@@ -1,96 +1,27 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import {
-  getDisplayNftToken,
+  findNftToken,
+  findPaymentToken,
+  getNftLabel,
   isCollectibleTransaction,
-  isPotentiallySwap
+  isPotentiallySwap,
+  resolvePaymentSymbol,
+  resolveUserIsRecipient
 } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Account, selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
 import { TokenActivityTransaction } from './TokenActivityListItem'
-
-const isPaymentTokenType = (token: TxToken | undefined): boolean =>
-  token?.type === TokenType.NATIVE || token?.type === TokenType.ERC20
-
-// Determines whether the active user ended up holding the NFT after the tx.
-// Prefers NFT-leg from/to addresses; falls back to top-level tx flags when
-// the NFT entry omits them (some Glacier responses do).
-const resolveUserIsRecipient = ({
-  nftToken,
-  userAddressLower,
-  transaction,
-  account
-}: {
-  nftToken: TxToken | undefined
-  userAddressLower: string | undefined
-  transaction: TokenActivityTransaction
-  account: Account | undefined
-}): boolean => {
-  const nftFromLower = nftToken?.from?.address?.toLowerCase()
-  const nftToLower = nftToken?.to?.address?.toLowerCase()
-
-  if (nftToLower && nftToLower === userAddressLower) return true
-  if (nftFromLower && nftFromLower === userAddressLower) return false
-
-  return !(
-    transaction.isSender || isTxSentFromAccount(transaction.from, account)
-  )
-}
-
-// Picks a NATIVE/ERC20 leg matching the user's direction (payment leaves the
-// user on a buy, lands at the user on a sell). When direction-based matching
-// fails (some Glacier responses omit `from`/`to`), only fall back if there is
-// a single unambiguous payment token — multiple payment legs without
-// direction info could mislead (e.g. royalty/fee legs vs. seller payout).
-const findPaymentToken = (
-  tokens: TxToken[],
-  userIsRecipient: boolean,
-  userAddressLower: string | undefined
-): TxToken | undefined => {
-  const matchesUserDirection = (token: TxToken): boolean => {
-    const addr = (
-      userIsRecipient ? token.from?.address : token.to?.address
-    )?.toLowerCase()
-    return Boolean(addr) && addr === userAddressLower
-  }
-
-  const directional = tokens.find(
-    t => isPaymentTokenType(t) && matchesUserDirection(t)
-  )
-  if (directional) return directional
-
-  const payments = tokens.filter(isPaymentTokenType)
-  return payments.length === 1 ? payments[0] : undefined
-}
-
-// Composes a human-readable label for the NFT in the title. Uses whichever
-// of `name`/`symbol` are populated and falls back to "NFT" when both are
-// missing. Applies to both ERC721 and ERC1155 — ERC1155 collections like
-// game assets often carry meaningful names worth surfacing.
-const getNftLabel = (nftToken: TxToken | undefined): string => {
-  const name = nftToken?.name?.trim()
-  const symbol = nftToken?.symbol?.trim()
-
-  // Avoid redundant "Name (SYMBOL)" when name and symbol are effectively
-  // identical (case-insensitive) — common for ERC1155 game assets where
-  // both fields carry the same string.
-  if (name && symbol && name.toLowerCase() !== symbol.toLowerCase()) {
-    return `${name} (${symbol})`
-  }
-  if (name) return name
-  if (symbol) return symbol
-  return 'NFT'
-}
 
 export const TokenActivityListItemTitle = ({
   tx
@@ -251,7 +182,10 @@ export const TokenActivityListItemTitle = ({
   // includes the payment amount when present.
   const getCollectibleTitle = useCallback(
     (transaction: TokenActivityTransaction): ReactNode[] => {
-      const nftToken = getDisplayNftToken(transaction)
+      // `nftToken` may be undefined when an NFT_* tx lacks an ERC721/ERC1155
+      // leg; downstream helpers (`getNftLabel`, `resolveUserIsRecipient`)
+      // tolerate undefined and we render the generic "NFT" label.
+      const nftToken = findNftToken(transaction)
       const network = getNetwork(Number(transaction.chainId))
       const userAddress =
         network && activeAccount
@@ -274,11 +208,15 @@ export const TokenActivityListItemTitle = ({
 
       if (paymentToken) {
         const action = userIsRecipient ? 'bought' : 'sold'
+        const paymentSymbol = resolvePaymentSymbol(
+          paymentToken,
+          network?.networkToken.symbol
+        )
         return [
           `${nftLabel} ${action} for `,
           renderAmount(paymentToken.amount),
           ' ',
-          paymentToken.symbol
+          paymentSymbol
         ]
       }
 
