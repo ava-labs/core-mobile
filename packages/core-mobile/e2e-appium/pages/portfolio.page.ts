@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
@@ -537,12 +538,31 @@ class PortfolioPage {
     await actions.tap(this.bridgeButton)
   }
 
-  async verifyActivityItem(
+  async verifyTxOnTokenDetail(
+    title: string,
+    notExpected: string,
     from = commonEls.accountOneAddress,
     to = commonEls.accountTwoAddress
   ) {
+    await this.tapAssetsTab()
+    await commonElsPage.filter(commonEls.cChain_2)
+    await this.tapToken('Avalanche')
     await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
-    console.log(`Verified the transaction activity: tx__from_${from}_to_${to}`)
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+    await actions.isNotVisible(selectors.getById(`tx__title__${notExpected}`))
+    await commonElsPage.goBack()
+  }
+
+  async verifyTxOnActivityTab(
+    title: string,
+    notExpected: string,
+    from = commonEls.accountOneAddress,
+    to = commonEls.accountTwoAddress
+  ) {
+    await this.tapActivityTab()
+    await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+    await actions.isNotVisible(selectors.getById(`tx__title__${notExpected}`))
   }
 
   async selectView(viewType = 'List view') {

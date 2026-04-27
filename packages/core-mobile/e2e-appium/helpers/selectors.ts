@@ -57,7 +57,7 @@ function getByXpath(xpath: string) {
 function getBySomeText(text: string) {
   return withPlatform(
     `-ios predicate string:name CONTAINS "${text}" AND accessible == true`,
-    `//*[contains(@text, '${text}')]`
+    `//*[contains(@text, '${text}') or contains(@content-desc, '${text}')]`
   )
 }
 
