@@ -16,6 +16,7 @@ import {
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
+import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -46,12 +47,18 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import {
+  selectIsSolanaSwapBlocked,
+  selectMarkrSwapMaxRetries
+} from 'store/posthog'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
-import { fusionTransfersStore } from '../hooks/useZustandStore'
+import {
+  fusionTransfersStore,
+  useFusionServiceInitError
+} from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
@@ -72,6 +79,7 @@ import {
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
+import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 
 export const SwapScreen = (): JSX.Element => {
@@ -79,6 +87,7 @@ export const SwapScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
+  const [fusionInitError] = useFusionServiceInitError()
 
   const {
     initialTokenIdFrom: rawTokenIdFrom,
@@ -137,8 +146,8 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     toToken,
     setToToken,
-    bestQuote,
     userQuote,
+    activeQuote,
     allQuotes,
     isQuoteLoading,
     setDestination,
@@ -147,7 +156,8 @@ export const SwapScreen = (): JSX.Element => {
     setAmount,
     quoteError,
     swapStatus,
-    successTransferId
+    successTransferId,
+    advanceBestQuote
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -187,8 +197,6 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  // userQuote takes precedence over bestQuote
-  const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
   const {
@@ -235,6 +243,17 @@ export const SwapScreen = (): JSX.Element => {
     nativeTokenBalance: nativeFromToken?.balance,
     amount: debouncedFromTokenValue,
     quote: activeQuote
+  })
+
+  const maxQuoteAdvances = useSelector(selectMarkrSwapMaxRetries)
+
+  useAutoAdvanceOnFeeValidationError({
+    feeValidationError,
+    activeQuote,
+    allQuotes,
+    userQuote,
+    advanceBestQuote,
+    maxAdvances: maxQuoteAdvances
   })
 
   const activeError = validationError ?? quoteError
@@ -361,14 +380,15 @@ export const SwapScreen = (): JSX.Element => {
     activeQuote?.serviceType === ServiceType.LOMBARD_BTCB_TO_BTC
 
   const handleSwap = useCallback(() => {
+    if (!activeQuote) return
     AnalyticsService.capture('SwapReviewOrder', {
-      provider: activeQuote?.aggregator.name ?? 'Unknown',
+      provider: activeQuote.aggregator.name,
       slippage
     })
 
     dismissKeyboardIfNeeded()
 
-    swap()
+    swap(activeQuote)
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
@@ -659,6 +679,16 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectSlippageDetails
   ])
 
+  // Prefer popping the parent stack; fall back to dismissing the whole modal
+  // when this screen is the root of a modal stack (no back history).
+  const dismissOrGoBack = useCallback((): void => {
+    if (navigation.getParent()?.canGoBack()) {
+      navigation.getParent()?.goBack()
+    } else {
+      dismissAll()
+    }
+  }, [navigation, dismissAll])
+
   useEffect(() => {
     if (swapStatus === SwapStatus.Success) {
       if (successTransferId) {
@@ -676,13 +706,9 @@ export const SwapScreen = (): JSX.Element => {
           return
         }
       }
-      if (navigation.getParent()?.canGoBack()) {
-        navigation.getParent()?.goBack()
-      } else {
-        dismissAll()
-      }
+      dismissOrGoBack()
     }
-  }, [navigation, dismissAll, push, swapStatus, successTransferId])
+  }, [dismissAll, push, swapStatus, successTransferId, dismissOrGoBack])
 
   // Trigger quote fetch when debounced amount settles, skip if below minimum
   const syncDebouncedAmount = useCallback(() => {
@@ -942,6 +968,27 @@ export const SwapScreen = (): JSX.Element => {
 
   const decimals =
     fromToken && 'decimals' in fromToken ? fromToken.decimals : 18
+
+  if (fusionInitError) {
+    return (
+      <ScrollScreen
+        title="Swap"
+        isModal
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+        <ErrorState
+          sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          title="Swap Unavailable"
+          description={
+            'Swap services failed to initialize.\nPlease try again later.'
+          }
+          button={{
+            title: 'Go back',
+            onPress: dismissOrGoBack
+          }}
+        />
+      </ScrollScreen>
+    )
+  }
 
   return (
     <ScrollScreen
