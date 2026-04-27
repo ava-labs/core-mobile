@@ -1,5 +1,8 @@
 #include "CryptoHybrid.hpp"
+#include "address_derivation.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
+#include <NitroModules/Promise.hpp>
+#include <NitroModules/ThreadPool.hpp>
 #include <algorithm>
 #include <cctype>
 #include <stdexcept>
@@ -410,6 +413,43 @@ namespace margelo::nitro::nitroavalabscrypto {
 
         return ExtendedPublicKey(headAB, prefixAB, scalarStr, pointBytesAB);
 #endif // OPENSSL_NOT_AVAILABLE
+    }
+
+/* -------------------- Batch Address Derivation (async) -------------------- */
+
+    std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>>
+    CryptoHybrid::deriveAddressesFromXpubs(
+            const std::string &evmXpub,
+            const std::string &avalancheXpub,
+            bool isTestnet,
+            const std::vector<double> &accountIndices) {
+
+        return Promise<std::vector<DerivedSecp256k1Addresses>>::async(
+            [this, evmXpub, avalancheXpub, isTestnet, accountIndices]() {
+
+            auto evm_parsed = parse_xpub(evmXpub);
+            auto avax_parsed = parse_xpub(avalancheXpub);
+
+            std::vector<DerivedSecp256k1Addresses> results;
+            results.reserve(accountIndices.size());
+
+            for (double idx : accountIndices) {
+                auto index = static_cast<uint32_t>(idx);
+                auto addrs = derive_addresses_for_index(
+                    ctx(), evm_parsed, avax_parsed, isTestnet, index);
+
+                results.push_back(DerivedSecp256k1Addresses(
+                    idx,
+                    std::move(addrs.evm),
+                    std::move(addrs.btc),
+                    std::move(addrs.avm),
+                    std::move(addrs.pvm),
+                    std::move(addrs.coreEth)
+                ));
+            }
+
+            return results;
+        });
     }
 
 } // namespace margelo::nitro::nitroavalabscrypto

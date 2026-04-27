@@ -1,9 +1,16 @@
 /* eslint-disable no-bitwise */
 import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
-import type { Crypto, ExtendedPublicKeyResult } from './specs/Crypto.nitro'
+import type {
+  Crypto,
+  DerivedSecp256k1Addresses,
+  ExtendedPublicKeyResult
+} from './specs/Crypto.nitro'
 
-export type { ExtendedPublicKeyResult } from './specs/Crypto.nitro'
+export type {
+  DerivedSecp256k1Addresses,
+  ExtendedPublicKeyResult
+} from './specs/Crypto.nitro'
 
 // Native hybrid object
 const NativeCrypto = NitroModules.createHybridObject<Crypto>('Crypto')
@@ -361,4 +368,28 @@ export function getExtendedPublicKey(
     point: { toRawBytes: () => pointBytes },
     pointBytes: pointBytes
   }
+}
+
+/**
+ * Batch-derive secp256k1 chain addresses from BIP32 extended public keys.
+ * Runs entirely on a native background thread — the JS thread stays free.
+ *
+ * @param evmXpub       base58 xpub (e.g. at m/44'/60'/0')
+ * @param avalancheXpub base58 xpub (e.g. at m/44'/9000'/{account}')
+ * @param isTestnet     true → fuji HRP + tb1 BTC; false → avax HRP + bc1
+ * @param accountIndices BIP32 address indices to derive
+ * @returns one DerivedSecp256k1Addresses per index
+ */
+export function deriveAddressesFromXpubs(
+  evmXpub: string,
+  avalancheXpub: string,
+  isTestnet: boolean,
+  accountIndices: number[]
+): Promise<DerivedSecp256k1Addresses[]> {
+  return NativeCrypto.deriveAddressesFromXpubs(
+    evmXpub,
+    avalancheXpub,
+    isTestnet,
+    accountIndices
+  )
 }

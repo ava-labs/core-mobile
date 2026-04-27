@@ -12,6 +12,8 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { secp256k1, utils, networkIDs } from '@avalabs/avalanchejs'
 import { networks } from 'bitcoinjs-lib'
+import { deriveAddressesFromXpubs as nativeDeriveAddresses } from 'react-native-nitro-avalabs-crypto'
+import Logger from 'utils/Logger'
 import { derivePublicKey } from 'utils/bip32'
 
 export interface DerivedAddresses {
@@ -110,5 +112,55 @@ export function deriveAddressesFromPublicKeys(
     avm: `X-${avaxBech32}`,
     pvm: `P-${avaxBech32}`,
     coreEth: `C-${coreEthBech32}`
+  }
+}
+
+/**
+ * Batch-derive addresses for multiple account indices using the native
+ * Nitro module. Runs entirely on a native background thread so the JS
+ * thread stays free for UI and BLE events.
+ *
+ * Falls back to the JS implementation on error (e.g. in test environments
+ * where the native module is unavailable).
+ */
+export async function deriveAddressesBatch(
+  evmXpub: string,
+  avalancheXpub: string,
+  isTestnet: boolean,
+  accountIndices: number[]
+): Promise<Map<number, DerivedAddresses>> {
+  try {
+    const results = await nativeDeriveAddresses(
+      evmXpub,
+      avalancheXpub,
+      isTestnet,
+      accountIndices
+    )
+
+    const map = new Map<number, DerivedAddresses>()
+    for (const r of results) {
+      map.set(r.accountIndex, {
+        evm: r.evm,
+        btc: r.btc,
+        avm: r.avm,
+        pvm: r.pvm,
+        coreEth: r.coreEth
+      })
+    }
+    return map
+  } catch (error) {
+    Logger.error(
+      'Native deriveAddressesFromXpubs failed, falling back to JS',
+      error
+    )
+    // Fallback: derive one at a time using the JS implementation
+    const map = new Map<number, DerivedAddresses>()
+    for (const index of accountIndices) {
+      map.set(
+        index,
+        deriveAddressesFromXpub(evmXpub, avalancheXpub, isTestnet, index)
+      )
+    }
+    return map
   }
 }

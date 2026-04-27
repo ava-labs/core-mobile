@@ -32,6 +32,19 @@ export interface ExtendedPublicKeyResult {
   pointBytes: Uint8Array
 }
 
+/**
+ * Batch-derived addresses for one account index (secp256k1 chains).
+ * Returned by deriveAddressesFromXpubs.
+ */
+export interface DerivedSecp256k1Addresses {
+  accountIndex: number
+  evm: string // 0x-prefixed EIP-55 checksummed address
+  btc: string // bech32 P2WPKH (bc1… / tb1…)
+  avm: string // X-{bech32}
+  pvm: string // P-{bech32}
+  coreEth: string // C-{bech32}
+}
+
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // existing methods
   getPublicKeyFromString(secretKey: string, isCompressed?: boolean): ArrayBuffer
@@ -102,4 +115,21 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
    * @returns Extended public key object with all components
    */
   getExtendedPublicKey(secretKey: HexLike): ExtendedPublicKey
+
+  /**
+   * Batch-derive addresses for secp256k1 chains from BIP32 extended public keys.
+   * Runs entirely on a native background thread so the JS thread stays free.
+   *
+   * @param evmXpub      base58-encoded xpub (e.g. at m/44'/60'/0')
+   * @param avalancheXpub base58-encoded xpub (e.g. at m/44'/9000'/{account}')
+   * @param isTestnet    true → fuji HRP + tb1 BTC prefix; false → avax HRP + bc1
+   * @param accountIndices BIP32 address indices to derive (e.g. [0,1,2,…,9])
+   * @returns one DerivedSecp256k1Addresses per index
+   */
+  deriveAddressesFromXpubs(
+    evmXpub: string,
+    avalancheXpub: string,
+    isTestnet: boolean,
+    accountIndices: number[]
+  ): Promise<DerivedSecp256k1Addresses[]>
 }

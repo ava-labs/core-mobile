@@ -67,6 +67,12 @@ namespace margelo::nitro::nitroavalabscrypto {
         ExtendedPublicKey getExtendedPublicKey(
                 const BufferOrString &secretKey) override;
 
+        std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>>
+        deriveAddressesFromXpubs(
+                const std::string &evmXpub,
+                const std::string &avalancheXpub,
+                bool isTestnet,
+                const std::vector<double> &accountIndices) override;
 
     protected:
         // If your nitrogen requires it, you can override loadHybridMethods(),

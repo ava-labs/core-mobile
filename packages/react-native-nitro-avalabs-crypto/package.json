@@ -2,9 +2,9 @@
   "name": "react-native-nitro-avalabs-crypto",
   "version": "0.0.1",
   "description": "react-native-nitro-avalabs-crypto",
-  "main": "lib/index",
-  "module": "lib/index",
-  "types": "lib/index.d.ts",
+  "main": "lib/src/index",
+  "module": "lib/src/index",
+  "types": "lib/src/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
   "files": [

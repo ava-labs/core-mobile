@@ -16,7 +16,7 @@ import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import {
-  deriveAddressesFromXpub,
+  deriveAddressesBatch,
   deriveAddressesFromPublicKeys,
   DerivedAddresses
 } from 'services/ledger/deriveAddressesOffline'
@@ -133,23 +133,33 @@ async function discoverFromXpubs(
     { mainnet: DerivedAddresses; testnet: DerivedAddresses }
   >()
 
+  // Derive addresses on the native thread via the Nitro module.
+  // Each Ledger BIP44 account has its own Avalanche xpub, so we call
+  // the native batch function per-account (still benefits from running
+  // on the native thread instead of blocking JS).
   for (const index of additionalIndices) {
     const accountXpubs = xpubs[index]
     if (!accountXpubs?.avalanche) continue
 
     try {
-      const mainnet = deriveAddressesFromXpub(
-        evmAccountXpub,
-        accountXpubs.avalanche,
-        false,
-        index
-      )
-      const testnet = deriveAddressesFromXpub(
-        evmAccountXpub,
-        accountXpubs.avalanche,
-        true,
-        index
-      )
+      const [mainnetBatch, testnetBatch] = await Promise.all([
+        deriveAddressesBatch(
+          evmAccountXpub,
+          accountXpubs.avalanche,
+          false,
+          [index]
+        ),
+        deriveAddressesBatch(
+          evmAccountXpub,
+          accountXpubs.avalanche,
+          true,
+          [index]
+        )
+      ])
+
+      const mainnet = mainnetBatch.get(index)
+      const testnet = testnetBatch.get(index)
+      if (!mainnet || !testnet) continue
 
       addressesByIndex.set(index, { mainnet, testnet })
 
@@ -163,10 +173,6 @@ async function discoverFromXpubs(
     } catch (error) {
       Logger.error(`Failed to derive addresses for index ${index}`, error)
     }
-
-    // Yield the JS thread between iterations so UI events and BLE
-    // callbacks can be processed while discovery runs (CP-14062).
-    await new Promise<void>(resolve => setTimeout(resolve, 0))
   }
 
   return buildDiscoveredAccounts({

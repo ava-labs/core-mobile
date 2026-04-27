@@ -1,0 +1,164 @@
+#pragma once
+
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <openssl/sha.h>
+
+namespace margelo::nitro::nitroavalabscrypto {
+
+    // Bitcoin Base58 alphabet
+    static constexpr const char *BASE58_ALPHABET =
+            "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+    // Reverse lookup table: ASCII value -> base58 digit (0-57), or -1 if invalid
+    inline const int8_t *base58_map() {
+        static int8_t table[256];
+        static bool initialized = false;
+        if (!initialized) {
+            for (int i = 0; i < 256; ++i) {
+                table[i] = -1;
+            }
+            for (int i = 0; i < 58; ++i) {
+                table[static_cast<uint8_t>(BASE58_ALPHABET[i])] = static_cast<int8_t>(i);
+            }
+            initialized = true;
+        }
+        return table;
+    }
+
+    // ---------------------------------------------------------------------------
+    // base58_decode
+    //
+    // Decodes a Base58-encoded string into raw bytes.
+    //   - Leading '1' characters map to leading 0x00 bytes.
+    //   - Throws std::invalid_argument on invalid characters.
+    // ---------------------------------------------------------------------------
+    inline std::vector<uint8_t> base58_decode(const std::string &encoded) {
+        const int8_t *map = base58_map();
+
+        // Count leading '1' characters (each represents a leading 0x00 byte)
+        size_t leading_zeros = 0;
+        while (leading_zeros < encoded.size() && encoded[leading_zeros] == '1') {
+            ++leading_zeros;
+        }
+
+        // Allocate enough space for the result.
+        // log(58) / log(256) ~= 0.733, so decoded length <= encoded.size() * 733/1000 + 1
+        size_t max_size = (encoded.size() - leading_zeros) * 733 / 1000 + 1;
+        std::vector<uint8_t> result(max_size, 0);
+
+        // Process each Base58 character
+        for (size_t i = leading_zeros; i < encoded.size(); ++i) {
+            int8_t digit = map[static_cast<uint8_t>(encoded[i])];
+            if (digit < 0) {
+                throw std::invalid_argument(
+                        "base58_decode: invalid character '" +
+                        std::string(1, encoded[i]) + "'");
+            }
+
+            // Multiply the existing result by 58 and add the new digit
+            int carry = digit;
+            for (auto it = result.rbegin(); it != result.rend(); ++it) {
+                carry += 58 * static_cast<int>(*it);
+                *it = static_cast<uint8_t>(carry % 256);
+                carry /= 256;
+            }
+        }
+
+        // Skip leading zeros in the computed result
+        auto it = result.begin();
+        while (it != result.end() && *it == 0) {
+            ++it;
+        }
+
+        // Prepend the leading zero bytes, then append the significant bytes
+        std::vector<uint8_t> decoded;
+        decoded.reserve(leading_zeros + static_cast<size_t>(result.end() - it));
+        decoded.assign(leading_zeros, 0x00);
+        decoded.insert(decoded.end(), it, result.end());
+
+        return decoded;
+    }
+
+    // ---------------------------------------------------------------------------
+    // base58check_decode
+    //
+    // Decodes a Base58Check-encoded string. Verifies the trailing 4-byte
+    // double-SHA-256 checksum and returns the payload without the checksum.
+    //   - Throws std::invalid_argument if the data is too short or the checksum
+    //     does not match.
+    // ---------------------------------------------------------------------------
+    inline std::vector<uint8_t> base58check_decode(const std::string &encoded) {
+        std::vector<uint8_t> data = base58_decode(encoded);
+
+        if (data.size() < 4) {
+            throw std::invalid_argument(
+                    "base58check_decode: input too short for checksum");
+        }
+
+        // Split into payload and checksum
+        size_t payload_len = data.size() - 4;
+        const uint8_t *payload_ptr = data.data();
+        const uint8_t *checksum_ptr = data.data() + payload_len;
+
+        // Compute double SHA-256 of the payload
+        uint8_t hash1[SHA256_DIGEST_LENGTH];
+        SHA256(payload_ptr, payload_len, hash1);
+
+        uint8_t hash2[SHA256_DIGEST_LENGTH];
+        SHA256(hash1, SHA256_DIGEST_LENGTH, hash2);
+
+        // Compare first 4 bytes of the double hash with the checksum
+        if (hash2[0] != checksum_ptr[0] ||
+            hash2[1] != checksum_ptr[1] ||
+            hash2[2] != checksum_ptr[2] ||
+            hash2[3] != checksum_ptr[3]) {
+            throw std::invalid_argument(
+                    "base58check_decode: checksum verification failed");
+        }
+
+        return std::vector<uint8_t>(payload_ptr, payload_ptr + payload_len);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Xpub
+    //
+    // Holds the parsed fields from a BIP-32 extended public key.
+    // ---------------------------------------------------------------------------
+    struct Xpub {
+        std::vector<uint8_t> public_key;  // 33 bytes (compressed SEC1)
+        std::vector<uint8_t> chain_code;  // 32 bytes
+    };
+
+    // ---------------------------------------------------------------------------
+    // parse_xpub
+    //
+    // Parses a Base58Check-encoded extended public key string (e.g. "xpub...").
+    // The 78-byte serialised format (BIP-32) is:
+    //   [ 4 version | 1 depth | 4 fingerprint | 4 child-number |
+    //     32 chain-code | 33 key ]
+    //
+    // Extracts:
+    //   chain_code  = bytes [13..45)
+    //   public_key  = bytes [45..78)
+    // ---------------------------------------------------------------------------
+    inline Xpub parse_xpub(const std::string &xpub_base58) {
+        std::vector<uint8_t> payload = base58check_decode(xpub_base58);
+
+        if (payload.size() != 78) {
+            throw std::invalid_argument(
+                    "parse_xpub: expected 78-byte payload, got " +
+                    std::to_string(payload.size()));
+        }
+
+        Xpub result;
+        result.chain_code.assign(payload.begin() + 13, payload.begin() + 45);
+        result.public_key.assign(payload.begin() + 45, payload.begin() + 78);
+
+        return result;
+    }
+
+} // namespace margelo::nitro::nitroavalabscrypto
