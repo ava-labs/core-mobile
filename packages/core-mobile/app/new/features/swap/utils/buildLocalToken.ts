@@ -73,7 +73,8 @@ export const buildLocalToken = ({
       internalId: balanceData?.internalId ?? tokenInfo.internalId,
       logoUri: balanceData?.logoUri ?? tokenInfo.meta?.logoUri ?? null,
       networkCaip2Id: caip2Id,
-      top250Rank: null
+      top250Rank: null,
+      contractType: null
     },
     chainId,
     balanceData
