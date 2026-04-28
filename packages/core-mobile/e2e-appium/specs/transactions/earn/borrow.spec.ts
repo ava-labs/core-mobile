@@ -3,7 +3,7 @@ import earnPage from '../../../pages/earn.page'
 import commonPage from '../../../pages/commonEls.page'
 
 describe('Earn', () => {
-  it('[Smoke] should borrow AVAX', async () => {
+  it('should borrow AVAX', async () => {
     await warmup()
     await earnPage.deposit('aave', 'AVAX', '0.0001')
     await earnPage.borrow()
@@ -15,7 +15,7 @@ describe('Earn', () => {
     await commonPage.goBack()
   })
 
-  it('[Smoke] should repay max amount', async () => {
+  it('should repay max amount', async () => {
     await earnPage.repay()
   })
 })
