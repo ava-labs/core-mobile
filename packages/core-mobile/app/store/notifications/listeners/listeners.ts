@@ -93,7 +93,6 @@ export const addNotificationsListeners = (
 
   startListening({
     matcher: isAnyOf(
-      onRehydrationComplete,
       onAppUnlocked,
       setAccounts,
       setNonActiveAccounts,
@@ -104,6 +103,11 @@ export const addNotificationsListeners = (
       onNotificationsTurnedOnForBalanceChange
     ),
     effect: async (_, listenerApi) => {
+      // removeWallet dispatches removeAccount once per account synchronously,
+      // so coalesce bursts to avoid an out-of-order subscribe re-adding an
+      // address we just removed (the backend reconciles to the posted set).
+      listenerApi.cancelActiveListeners()
+      await listenerApi.delay(100)
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
         Logger.error(
           `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`
