@@ -29,7 +29,7 @@ export type LeverageGaugeProps = {
   subtitle?: string
 
   // Optional — feedback
-  onHapticTick?: boolean
+  hapticsEnabled?: boolean
   onCommit?: (value: number) => void
 
   // Optional — release physics (defaults chosen for a calm, iOS-like feel)

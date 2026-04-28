@@ -18,7 +18,7 @@ const BIG_FONT_SIZE = 60
 const SMALL_FONT_SIZE = 11
 // Characters any LeverageGauge-style Skia component might render — digits,
 // decimal point, and the "×" multiplier glyph.
-const WARMUP_CHARS = '0123456789.x'
+const WARMUP_CHARS = '0123456789.×'
 // Canvas must be large enough to actually contain the drawn glyphs;
 // otherwise Skia clips outside the viewport and most glyphs never hit the
 // rasterization atlas. The Canvas is positioned off-screen (negative top)

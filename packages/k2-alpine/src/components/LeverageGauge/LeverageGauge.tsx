@@ -10,12 +10,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 import { View } from '../Primitives'
-import {
-  clamp,
-  getStepDecimals,
-  snapToStep,
-  validateRange
-} from './helpers'
+import { clamp, getStepDecimals, snapToStep, validateRange } from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
 import type { LeverageGaugeProps, Preset } from './types'
@@ -40,7 +35,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   subtitle,
   decimals,
   integersOnly = false,
-  onHapticTick = true,
+  hapticsEnabled = true,
   onCommit = noop,
   velocityPower = 1,
   coastDeceleration = 0.9991,
@@ -272,7 +267,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
             integersOnly={integersOnly}
             onChange={stableOnChange}
             onCommit={stableOnCommit}
-            onHapticTick={onHapticTick}
+            hapticsEnabled={hapticsEnabled}
             velocityPower={velocityPower}
             coastDeceleration={coastDeceleration}
           />

@@ -41,7 +41,7 @@ type LeverageWheelProps = {
   integersOnly: boolean
   onChange: (value: number) => void
   onCommit: (value: number) => void
-  onHapticTick: boolean
+  hapticsEnabled: boolean
   /** Multiplier on finger release velocity — see LeverageGaugeProps. */
   velocityPower: number
   /** Coast-phase deceleration (0 < d < 1) — see LeverageGaugeProps. */
@@ -84,7 +84,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   integersOnly,
   onChange,
   onCommit,
-  onHapticTick,
+  hapticsEnabled,
   velocityPower,
   coastDeceleration
 }) => {
@@ -161,6 +161,9 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     .onStart(() => {
       isActive.value = true
       isDragging.value = true
+      // Clear isProgrammatic in case this gesture is interrupting a preset
+      // animation — otherwise haptics stay suppressed for the whole drag.
+      isProgrammatic.value = false
       gestureStartValue.value = currentValue.value
     })
     .onUpdate(event => {
@@ -297,7 +300,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       // passive animations (typing → isActive=false) and programmatic ones
       // (preset press → isActive=true but isProgrammatic=true).
       if (
-        onHapticTick &&
+        hapticsEnabled &&
         isActive.value &&
         !isProgrammatic.value &&
         stepIndex !== lastStepIndex.value

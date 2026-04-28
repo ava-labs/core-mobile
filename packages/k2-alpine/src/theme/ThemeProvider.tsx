@@ -1,7 +1,6 @@
 import React, { PropsWithChildren, type FC } from 'react'
 import { DripsyProvider } from 'dripsy'
 import { ColorSchemeName } from 'react-native'
-import { SkiaPreload } from '../hooks/usePreloadSkiaFonts'
 import { darkTheme, lightTheme } from './theme'
 
 export const K2AlpineThemeProvider: FC<
@@ -9,7 +8,6 @@ export const K2AlpineThemeProvider: FC<
 > = ({ colorScheme, children }) => {
   return (
     <DripsyProvider theme={colorScheme === 'dark' ? darkTheme : lightTheme}>
-      <SkiaPreload />
       {children}
     </DripsyProvider>
   )

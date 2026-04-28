@@ -101,7 +101,7 @@ export const NoHaptics = (): JSX.Element => {
         onChange={setValue}
         min={1}
         max={40}
-        onHapticTick={false}
+        hapticsEnabled={false}
       />
     </ScrollView>
   )
