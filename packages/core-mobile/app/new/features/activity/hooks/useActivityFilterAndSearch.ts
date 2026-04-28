@@ -18,6 +18,10 @@ import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { DropdownGroup } from 'common/components/DropdownMenu'
+import {
+  LIMITED_MODE_ALLOWED_CHAIN_IDS,
+  isLimitedMode
+} from 'utils/limitedMode'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
 import { isSupportedNftChainId } from '../utils'
@@ -57,7 +61,10 @@ export const useActivityFilterAndSearch = ({
   })
 
   const networkFilters: ActivityNetworkFilter[] = useMemo(() => {
-    return enabledNetworks.map(network => ({
+    const visibleNetworks = isLimitedMode
+      ? enabledNetworks.filter(n => LIMITED_MODE_ALLOWED_CHAIN_IDS.has(n.chainId))
+      : enabledNetworks
+    return visibleNetworks.map(network => ({
       filterName: isAvalancheNetwork(network)
         ? `Avalanche C-Chain ${
             network.chainId === ChainId.AVALANCHE_TESTNET_ID ? 'Testnet' : ''
@@ -156,14 +163,18 @@ export const useActivityFilterAndSearch = ({
           id: TokenDetailFilter.Swap,
           title: TokenDetailFilter.Swap
         })
-        newFilters.push({
-          id: TokenDetailFilter.Bridge,
-          title: TokenDetailFilter.Bridge
-        })
+        // Bridge is fully disabled in limited mode
+        if (!isLimitedMode) {
+          newFilters.push({
+            id: TokenDetailFilter.Bridge,
+            title: TokenDetailFilter.Bridge
+          })
+        }
       }
 
-      // Only Avalanche C-Chain and Ethereum are supported for NFTs
-      if (isSupportedNftChainId(selectedNetwork?.chainId)) {
+      // Only Avalanche C-Chain and Ethereum are supported for NFTs.
+      // Collectibles UI is hidden in limited mode, so skip the NFT filter too.
+      if (!isLimitedMode && isSupportedNftChainId(selectedNetwork?.chainId)) {
         newFilters.push({
           id: TokenDetailFilter.NFT,
           title: TokenDetailFilter.NFT

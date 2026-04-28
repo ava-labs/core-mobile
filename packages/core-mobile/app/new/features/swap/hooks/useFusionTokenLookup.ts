@@ -9,6 +9,7 @@ import type {
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { EvmChainId } from '@avalabs/fusion-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
+import { isAllowedLimitedSwapToken, isLimitedMode } from 'utils/limitedMode'
 import { buildLocalToken } from '../utils/buildLocalToken'
 
 type InitialTokenInfo = {
@@ -179,22 +180,20 @@ export function useFusionTokenLookup({
     // so we don't commit to undefined tokens or zero balances and block retries.
     if (isTokensLoading) return
 
-    setFromToken(
-      initialTokenIdFrom
-        ? resolveInitialToken({
-            tokenId: initialTokenIdFrom,
-            caip2Id: tokenInfo.initialFromCaip2Id,
-            chainId: fromTokenChainId,
-            accountTokens,
-            tokens
-          })
-        : undefined
-    )
+    const resolvedFrom = initialTokenIdFrom
+      ? resolveInitialToken({
+          tokenId: initialTokenIdFrom,
+          caip2Id: tokenInfo.initialFromCaip2Id,
+          chainId: fromTokenChainId,
+          accountTokens,
+          tokens
+        })
+      : undefined
 
     // In testnet (developer mode), skip preselecting a "to" token.
     // Initial to-token IDs (e.g. USDC) are mainnet-specific and no services
     // support them in testnet, which would lead to a broken no-quotes state.
-    setToToken(
+    const resolvedTo =
       initialTokenIdTo && !isDeveloperMode
         ? resolveInitialToken({
             tokenId: initialTokenIdTo,
@@ -204,6 +203,17 @@ export function useFusionTokenLookup({
             tokens
           })
         : undefined
+
+    // Limited mode: drop disallowed defaults so the picker stays consistent.
+    setFromToken(
+      isLimitedMode && resolvedFrom && !isAllowedLimitedSwapToken(resolvedFrom)
+        ? undefined
+        : resolvedFrom
+    )
+    setToToken(
+      isLimitedMode && resolvedTo && !isAllowedLimitedSwapToken(resolvedTo)
+        ? undefined
+        : resolvedTo
     )
 
     initialized.current = true

@@ -18,6 +18,7 @@ import {
   selectActiveAccount,
   setActiveAccount
 } from 'store/account'
+import { selectIsAddWalletBlocked } from 'store/posthog'
 import { selectWallets } from 'store/wallet/slice'
 import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
@@ -34,6 +35,7 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
+  const isAddWalletBlocked = useSelector(selectIsAddWalletBlocked)
   const activeAccountId = activeAccount?.id
   const activeAccountWalletId = activeAccount?.walletId
   const activeAccountType = activeAccount?.type
@@ -241,12 +243,15 @@ export const WalletsScreen = (): JSX.Element => {
   }, [navigate])
 
   const renderHeaderRight = useCallback(() => {
+    if (isAddWalletBlocked) {
+      return null
+    }
     return (
       <NavigationBarButton testID="add_wallet_btn" onPress={handleAddAccount}>
         <Icons.Content.Add width={32} height={32} color={colors.$textPrimary} />
       </NavigationBarButton>
     )
-  }, [colors.$textPrimary, handleAddAccount])
+  }, [colors.$textPrimary, handleAddAccount, isAddWalletBlocked])
 
   const renderHeader = useCallback(() => {
     return (

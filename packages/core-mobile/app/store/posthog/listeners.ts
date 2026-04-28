@@ -13,6 +13,8 @@ import {
 import PostHogService from 'services/posthog/PostHogService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
+import { isLimitedMode } from 'utils/limitedMode'
+import { DefaultFeatureFlagConfig } from 'store/posthog/types'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 30000 // 30 seconds
 
@@ -20,6 +22,8 @@ const fetchFeatureFlagsPeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  // Limited mode: env overrides PostHog inside the reducer, so polling is wasted work.
+  if (isLimitedMode) return
   const { condition, dispatch } = listenerApi
 
   const distinctId = selectDistinctID(listenerApi.getState())
@@ -72,6 +76,19 @@ const onSetFeatureFlags = async (
   Logger.setShouldLogErrorToSentry(!isLogErrorsWithSentryBlocked)
 }
 
+// Limited mode: env overrides PostHog and polling is skipped, so persisted
+// flag values from prior sessions are irrelevant. Reset to
+// `applyLimitedModeOverrides(DefaultFeatureFlagConfig)` after rehydrate so
+// the limited-mode contract is enforced regardless of what was saved on disk.
+// This also self-heals when LIMITED_MODE_FORCED_* maps change between releases.
+const reapplyOverridesAfterRehydrate = async (
+  _: Action,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  if (!isLimitedMode) return
+  listenerApi.dispatch(setFeatureFlags(DefaultFeatureFlagConfig))
+}
+
 export const addPosthogListeners = (
   startListening: AppStartListening
 ): void => {
@@ -105,5 +122,10 @@ export const addPosthogListeners = (
   startListening({
     actionCreator: setFeatureFlags,
     effect: onSetFeatureFlags
+  })
+
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: reapplyOverridesAfterRehydrate
   })
 }

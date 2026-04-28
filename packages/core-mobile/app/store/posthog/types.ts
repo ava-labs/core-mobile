@@ -1,6 +1,7 @@
 import { DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS } from 'features/stake/consts'
 import { FeatureFlags, FeatureGates, FeatureVars } from 'services/posthog/types'
 import { uuid } from 'utils/uuid'
+import { applyLimitedModeOverrides } from 'utils/limitedMode'
 
 export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
@@ -61,14 +62,21 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
   [FeatureGates.LEGACY_BRIDGE]: false,
   [FeatureGates.INJECTED_PROVIDER]: false,
-  [FeatureGates.PREDICTIONS]: false
+  [FeatureGates.PREDICTIONS]: false,
+  [FeatureGates.MNEMONIC_ONBOARDING]: true,
+  [FeatureGates.HARDWARE_WALLET_ONBOARDING]: true,
+  [FeatureGates.ADD_WALLET]: true,
+  [FeatureGates.WALLET_CONNECT]: true,
+  [FeatureGates.ACCOUNT_SWITCHER]: true,
+  [FeatureGates.SETTINGS_ADVANCED]: true,
+  [FeatureGates.IMPORT_EXISTING_WALLET]: true
 }
 
 export const initialState = {
   userID: uuid(),
   distinctID: uuid(),
   isAnalyticsEnabled: false,
-  featureFlags: DefaultFeatureFlagConfig
+  featureFlags: applyLimitedModeOverrides(DefaultFeatureFlagConfig)
 } as PosthogState
 
 export type PosthogState = {

@@ -8,6 +8,7 @@ import {
   setViewOnce
 } from 'store/viewOnce'
 import Logger from 'utils/Logger'
+import { isLimitedMode } from 'utils/limitedMode'
 import { addDefaultWatchlistFavorites } from './slice'
 
 const addDefaultFavorites = (
@@ -32,6 +33,9 @@ const addDefaultFavorites = (
 export const addWatchlistListeners = (
   startListening: AppStartListening
 ): void => {
+  // Limited mode: watchlist UI is gone — skip the defaults seeder.
+  if (isLimitedMode) return
+
   startListening({
     actionCreator: onLogIn,
     effect: addDefaultFavorites

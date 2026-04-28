@@ -19,6 +19,17 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
+import { isLimitedMode } from 'utils/limitedMode'
+
+// In limited mode, bridges, NFT collectibles, and Ledger BLE are all disabled.
+// Skip mounting their context providers so the SDKs (bridge state machine,
+// Glacier NFT indexer, Ledger BLE stack) never initialize on the JS thread.
+const Passthrough = ({ children }: { children: React.ReactNode }): JSX.Element => (
+  <>{children}</>
+)
+const MaybeBridgeProvider = isLimitedMode ? Passthrough : BridgeProvider
+const MaybeCollectiblesProvider = isLimitedMode ? Passthrough : CollectiblesProvider
+const MaybeLedgerSetupProvider = isLimitedMode ? Passthrough : LedgerSetupProvider
 
 // Note: React.lazy() is not supported in React Native with Metro bundler since 0.81.0.
 // This polyfill needs to be available early anyway to ensure crypto operations work.
@@ -44,9 +55,9 @@ export default function WalletLayout(): JSX.Element {
   useTriggerAfterLoginFlows()
 
   return (
-    <BridgeProvider>
-      <CollectiblesProvider>
-        <LedgerSetupProvider>
+    <MaybeBridgeProvider>
+      <MaybeCollectiblesProvider>
+        <MaybeLedgerSetupProvider>
           <Stack
             screenOptions={{ headerShown: false }}
             screenListeners={{
@@ -302,8 +313,8 @@ export default function WalletLayout(): JSX.Element {
           </Stack>
           <PolyfillCrypto />
           <LastTransactedNetworks />
-        </LedgerSetupProvider>
-      </CollectiblesProvider>
-    </BridgeProvider>
+        </MaybeLedgerSetupProvider>
+      </MaybeCollectiblesProvider>
+    </MaybeBridgeProvider>
   )
 }

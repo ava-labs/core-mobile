@@ -1,9 +1,12 @@
 import { GroupList, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useRouter } from 'expo-router'
+import { Redirect, useRouter } from 'expo-router'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsLedgerSupportBlocked } from 'store/posthog'
+import {
+  selectIsAddWalletBlocked,
+  selectIsLedgerSupportBlocked
+} from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const ITEM_HEIGHT = 70
@@ -15,6 +18,7 @@ const ImportWalletScreen = (): JSX.Element => {
   } = useTheme()
 
   const isLedgerSupportBlocked = useSelector(selectIsLedgerSupportBlocked)
+  const isAddWalletBlocked = useSelector(selectIsAddWalletBlocked)
 
   const data = useMemo(() => {
     const handleTypeRecoveryPhrase = (): void => {
@@ -101,6 +105,10 @@ const ImportWalletScreen = (): JSX.Element => {
 
     return baseData
   }, [navigate, colors, isLedgerSupportBlocked])
+
+  if (isAddWalletBlocked) {
+    return <Redirect href="/portfolio" />
+  }
 
   return (
     <ScrollScreen

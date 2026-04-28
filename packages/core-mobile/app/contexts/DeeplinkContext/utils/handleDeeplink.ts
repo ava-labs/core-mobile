@@ -10,6 +10,7 @@ import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/meld/utils'
 import { offrampSend } from 'store/meld/slice'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
+import { isLimitedMode } from 'utils/limitedMode'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 import { DEEPLINK_WHITELIST } from '../consts'
 
@@ -40,6 +41,7 @@ export const handleDeeplink = ({
   const protocol = url.protocol.replace(':', '')
   switch (protocol) {
     case PROTOCOLS.WC: {
+      if (isLimitedMode) return
       const uri = url.href
       const { version } = parseUri(uri)
       dispatchWalletConnectSession(version, uri, dispatch)
@@ -49,11 +51,13 @@ export const handleDeeplink = ({
       if (CORE_UNIVERSAL_LINK_HOSTS.includes(url.hostname)) {
         const action = url.pathname.split('/')[1]
         if (action === ACTIONS.WC) {
+          if (isLimitedMode) return
           startWalletConnectSession({ url, dispatch, deeplink })
           break
         }
       }
 
+      if (isLimitedMode) return
       // if not a wc link, just open the url in the browser tab
       openUrl({
         url: deeplink.url,
@@ -64,6 +68,7 @@ export const handleDeeplink = ({
     case PROTOCOLS.CORE: {
       const { host: action, pathname, searchParams } = url
       if (action === ACTIONS.WC) {
+        if (isLimitedMode) return
         startWalletConnectSession({ url, dispatch, deeplink })
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return

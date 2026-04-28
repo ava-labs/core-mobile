@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { TokenList } from 'features/meld/components/TokenList'
 import { useMeldToken } from 'features/meld/store'
+import { isAllowedLimitedBuyCrypto, isLimitedMode } from 'utils/limitedMode'
 import { useSearchCryptoCurrencies } from '../../hooks/useSearchCryptoCurrencies'
 import { ServiceProviderCategories } from '../../consts'
 import { useBuy } from '../../hooks/useBuy'
@@ -16,6 +17,12 @@ export const OnrampTokenListScreen = (): React.JSX.Element => {
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
 
+  // Limited mode: restrict the onramp picker to the six-token allowlist.
+  const filteredCryptoCurrencies = useMemo(() => {
+    if (!isLimitedMode) return cryptoCurrencies
+    return (cryptoCurrencies ?? []).filter(isAllowedLimitedBuyCrypto)
+  }, [cryptoCurrencies])
+
   return (
     <TokenList
       category={ServiceProviderCategories.CRYPTO_ONRAMP}
@@ -24,7 +31,7 @@ export const OnrampTokenListScreen = (): React.JSX.Element => {
         navigateToBuyAmountWithToken(token)
       }}
       selectedToken={selectedToken}
-      cryptoCurrencies={cryptoCurrencies}
+      cryptoCurrencies={filteredCryptoCurrencies}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
     />
   )

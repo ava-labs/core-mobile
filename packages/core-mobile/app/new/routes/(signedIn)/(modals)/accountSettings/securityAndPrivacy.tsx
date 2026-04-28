@@ -24,6 +24,7 @@ import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { selectIsSettingsAdvancedBlocked } from 'store/posthog'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -32,6 +33,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const lockWalletWithPIN = useSelector(selectLockWalletWithPIN)
+  const isSettingsAdvancedBlocked = useSelector(selectIsSettingsAdvancedBlocked)
   const { allApprovedDapps } = useConnectedDapps()
   const wallet = useActiveWallet()
   const {
@@ -145,8 +147,10 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   )
 
   const recoveryData = useMemo(() => {
-    const data = [
-      {
+    const data: GroupListItem[] = []
+
+    if (!isSettingsAdvancedBlocked) {
+      data.push({
         title: 'Show recovery phrase',
         onPress: () => {
           if (wallet.type === WalletType.SEEDLESS) {
@@ -155,8 +159,8 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
           }
           navigate('/accountSettings/recoveryPhraseVerifyPin')
         }
-      }
-    ]
+      })
+    }
 
     if (wallet.type === WalletType.SEEDLESS) {
       data.push({
@@ -167,7 +171,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       })
     }
     return data
-  }, [navigate, wallet.type])
+  }, [isSettingsAdvancedBlocked, navigate, wallet.type])
 
   const handleToggleCoreAnalyticsConsent = useCallback(
     (value: boolean): void => {
@@ -206,16 +210,20 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       isModal
       contentContainerStyle={{ padding: 16 }}>
       <Space y={24} />
-      <GroupList
-        data={connectedSitesData}
-        titleSx={{
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: 'Inter-Regular'
-        }}
-        valueSx={{ fontSize: 16, lineHeight: 22 }}
-      />
-      <Space y={24} />
+      {!isSettingsAdvancedBlocked && (
+        <>
+          <GroupList
+            data={connectedSitesData}
+            titleSx={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontFamily: 'Inter-Regular'
+            }}
+            valueSx={{ fontSize: 16, lineHeight: 22 }}
+          />
+          <Space y={24} />
+        </>
+      )}
 
       <GroupList
         data={pinAndBiometricData}
@@ -226,7 +234,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         }}
         separatorMarginRight={16}
       />
-      {!shouldHideRecoveryData && (
+      {!shouldHideRecoveryData && recoveryData.length > 0 && (
         <>
           <Space y={12} />
           <GroupList
@@ -240,23 +248,27 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
           />
         </>
       )}
-      <Space y={24} />
-      <GroupList
-        data={coreAnalyticsData}
-        titleSx={{
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: 'Inter-Regular'
-        }}
-      />
-      <Space y={8} />
-      <Text
-        variant="caption"
-        sx={{ color: colors.$textSecondary, marginRight: 64 }}>
-        Core Analytics will collect anonymous interaction data. Core is
-        committed to protecting your privacy. We will never sell or share your
-        data
-      </Text>
+      {!isSettingsAdvancedBlocked && (
+        <>
+          <Space y={24} />
+          <GroupList
+            data={coreAnalyticsData}
+            titleSx={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontFamily: 'Inter-Regular'
+            }}
+          />
+          <Space y={8} />
+          <Text
+            variant="caption"
+            sx={{ color: colors.$textSecondary, marginRight: 64 }}>
+            Core Analytics will collect anonymous interaction data. Core is
+            committed to protecting your privacy. We will never sell or share
+            your data
+          </Text>
+        </>
+      )}
     </ScrollScreen>
   )
 }

@@ -28,6 +28,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { selectNetworks } from 'store/network/slice'
 import { RequestContext } from 'store/rpc/types'
+import { isLimitedMode } from 'utils/limitedMode'
 import {
   removePendingTransfer,
   selectPendingTransfers,
@@ -188,6 +189,9 @@ export const checkTransferStatus = async (
 export const addUnifiedBridgeListeners = (
   startListening: AppStartListening
 ): void => {
+  // Limited mode: bridges fully disabled — skip SDK init and pending-transfer tracking.
+  if (isLimitedMode) return
+
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode, setFeatureFlags),
     effect: initUnifiedBridgeService

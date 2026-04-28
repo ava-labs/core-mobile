@@ -2,6 +2,8 @@ import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
+  selectIsImportExistingWalletBlocked,
+  selectIsMnemonicOnboardingBlocked,
   selectIsSeedlessOnboardingAppleBlocked,
   selectIsSeedlessOnboardingBlocked,
   selectIsSeedlessOnboardingGoogleBlocked
@@ -24,6 +26,12 @@ export default function Signup(): JSX.Element {
     useRecoveryMethodContext()
   const isSeedlessOnboardingBlocked = useSelector(
     selectIsSeedlessOnboardingBlocked
+  )
+  const isMnemonicOnboardingBlocked = useSelector(
+    selectIsMnemonicOnboardingBlocked
+  )
+  const isImportExistingWalletBlocked = useSelector(
+    selectIsImportExistingWalletBlocked
   )
 
   const { register, isRegistering } = useSeedlessRegister()
@@ -82,13 +90,15 @@ export default function Signup(): JSX.Element {
           onPress={handleSignupWithMnemonic}>
           Manually create new wallet
         </Button>
-        <Button
-          testID="accessExistingWallet"
-          type="tertiary"
-          size="large"
-          onPress={handleAccessExistingWallet}>
-          Access existing wallet
-        </Button>
+        {!isImportExistingWalletBlocked && (
+          <Button
+            testID="accessExistingWallet"
+            type="tertiary"
+            size="large"
+            onPress={handleAccessExistingWallet}>
+            Access existing wallet
+          </Button>
+        )}
       </View>
     )
   }
@@ -167,9 +177,9 @@ export default function Signup(): JSX.Element {
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
       </View>
-      <View sx={{ padding: 16, gap: 88 }}>
+      <View sx={{ padding: 16, gap: 16 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}
-        {renderMnemonicOnboarding()}
+        {!isMnemonicOnboardingBlocked && renderMnemonicOnboarding()}
       </View>
     </SafeAreaView>
   )

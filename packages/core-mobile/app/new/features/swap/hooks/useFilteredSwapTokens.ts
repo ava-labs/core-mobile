@@ -4,6 +4,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { isTokenVisible } from 'store/balance/utils'
 import { selectEnabledChainIds } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
+import { isAllowedLimitedSwapToken, isLimitedMode } from 'utils/limitedMode'
 
 export const useFilteredSwapTokens = ({
   tokens,
@@ -31,6 +32,11 @@ export const useFilteredSwapTokens = ({
     // Filter by balance if hideZeroBalance is true
     if (hideZeroBalance) {
       filteredTokens = filteredTokens.filter(token => token.balance > 0n)
+    }
+
+    // Limited mode: only allow the six-token swap allowlist
+    if (isLimitedMode) {
+      filteredTokens = filteredTokens.filter(isAllowedLimitedSwapToken)
     }
 
     // Sort by balance in currency (highest first)

@@ -11,6 +11,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getUnixTime } from 'date-fns'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isLimitedMode } from 'utils/limitedMode'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -33,6 +34,9 @@ export const scheduleNotificationsForActiveStakesPeriodically = async (
 ): Promise<never> => {
   // only allow one instance of this listener to run at a time
   listenerApi.unsubscribe()
+
+  // Limited mode: earn/stake disabled — skip the 3-minute polling loop entirely.
+  if (isLimitedMode) return undefined as never
 
   const { getState, condition } = listenerApi
 

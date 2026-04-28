@@ -50,7 +50,14 @@ export enum FeatureGates {
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   LEGACY_BRIDGE = 'legacy-bridge',
   INJECTED_PROVIDER = 'injected-provider',
-  PREDICTIONS = 'predictions'
+  PREDICTIONS = 'predictions',
+  MNEMONIC_ONBOARDING = 'mnemonic-onboarding',
+  HARDWARE_WALLET_ONBOARDING = 'hardware-wallet-onboarding',
+  ADD_WALLET = 'add-wallet',
+  WALLET_CONNECT = 'wallet-connect',
+  ACCOUNT_SWITCHER = 'account-switcher',
+  SETTINGS_ADVANCED = 'settings-advanced',
+  IMPORT_EXISTING_WALLET = 'import-existing-wallet'
 }
 
 export enum FeatureVars {

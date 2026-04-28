@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldOnrampBlocked } from 'store/posthog'
 import { useMemo } from 'react'
+import { isAllowedLimitedSwapToken, isLimitedMode } from 'utils/limitedMode'
 import { useMeldToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
@@ -39,7 +40,11 @@ export const useBuy = (): {
 
   const isBuyable = useCallback(
     (token?: LocalTokenWithBalance, address?: string) => {
-      return getTradableCryptoCurrency(token, address) !== undefined
+      if (getTradableCryptoCurrency(token, address) === undefined) return false
+      // Limited mode: gate by the swap allowlist (Buy uses the same six tokens).
+      if (isLimitedMode && token && !isAllowedLimitedSwapToken(token))
+        return false
+      return true
     },
     [getTradableCryptoCurrency]
   )

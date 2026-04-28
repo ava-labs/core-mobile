@@ -6,17 +6,21 @@ export const UserPreferences = ({
   selectNotificationPreferences
 }: {
   selectSecurityPrivacy: () => void
-  selectNotificationPreferences: () => void
+  selectNotificationPreferences?: () => void
 }): React.JSX.Element => {
   const data = [
     {
       title: 'Security & privacy',
       onPress: selectSecurityPrivacy
     },
-    {
-      title: 'Notification preferences',
-      onPress: selectNotificationPreferences
-    }
+    ...(selectNotificationPreferences
+      ? [
+          {
+            title: 'Notification preferences',
+            onPress: selectNotificationPreferences
+          }
+        ]
+      : [])
   ]
 
   return (

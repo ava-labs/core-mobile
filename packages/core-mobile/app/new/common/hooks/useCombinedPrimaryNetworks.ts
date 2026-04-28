@@ -9,6 +9,7 @@ import {
 } from 'services/network/consts'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
@@ -27,8 +28,10 @@ export function useCombinedPrimaryNetworks({
   const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
-  const hideSolana = hideEmptySolana ? !hasSolanaAddress : false
+  const hideSolana =
+    isSolanaSupportBlocked || (hideEmptySolana ? !hasSolanaAddress : false)
 
   const networks = useMemo(() => {
     // Test networks

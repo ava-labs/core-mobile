@@ -12,6 +12,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { isAllowedLimitedSwapToken, isLimitedMode } from 'utils/limitedMode'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
@@ -121,11 +122,16 @@ export const useSwapTokens = (
       }
     })
 
-    return allApiTokens.map(apiToken => {
+    const mapped = allApiTokens.map(apiToken => {
       const localId = getLocalTokenIdFromApi(apiToken)
       const balanceData = balanceMap.get(localId.toLowerCase())
       return mapApiTokenToLocal(apiToken, chainId, balanceData)
     })
+
+    // Limited mode: restrict the To-token list to the six-token allowlist
+    return isLimitedMode
+      ? mapped.filter(isAllowedLimitedSwapToken)
+      : mapped
   }, [query.data, balances, chainId])
 
   return {

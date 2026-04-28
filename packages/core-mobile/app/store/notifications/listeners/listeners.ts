@@ -32,10 +32,15 @@ import { unsubscribeAllNotifications } from './unsubscribeAllNotifications'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 import { subscribeNewsNotifications } from './subscribeNewsNotifications'
 import { handleAfterLoginFlows } from './handleAfterLoginFlows'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ): void => {
+  // Limited mode: all notifications disabled — skip every subscription
+  // (balance change, news, price alerts, stake completion).
+  if (isLimitedMode) return
+
   startListening({
     actionCreator: afterLoginFlowsRequested,
     effect: handleAfterLoginFlows

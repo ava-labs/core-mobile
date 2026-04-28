@@ -21,6 +21,7 @@ import {
   selectIsInAppDefiBorrowBlocked
   // selectIsPredictionsBlocked
 } from 'store/posthog'
+import { isLimitedMode } from 'utils/limitedMode'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -101,7 +102,8 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'track_tab',
           title: 'Track',
           tabBarIcon: () => trackIcon,
-          freezeOnBlur
+          freezeOnBlur,
+          tabBarItemHidden: isLimitedMode
         }}
       />
       {hasXpAddresses && (
@@ -111,7 +113,8 @@ export default function TabLayout(): JSX.Element {
             tabBarButtonTestID: 'stake_tab',
             title: stakeTabTitle,
             tabBarIcon: () => stakeIcon,
-            freezeOnBlur
+            freezeOnBlur,
+            tabBarItemHidden: isLimitedMode
           }}
         />
       )}
@@ -123,7 +126,7 @@ export default function TabLayout(): JSX.Element {
           tabBarIcon: () => earnPngIcon,
           freezeOnBlur,
           // Hide when borrow feature is disabled
-          tabBarItemHidden: isInAppDefiBorrowBlocked
+          tabBarItemHidden: isInAppDefiBorrowBlocked || isLimitedMode
         }}
       />
       <BottomTabs.Screen
@@ -132,7 +135,8 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon,
-          freezeOnBlur
+          freezeOnBlur,
+          tabBarItemHidden: isLimitedMode
         }}
       />
       <BottomTabs.Screen
@@ -155,7 +159,7 @@ export default function TabLayout(): JSX.Element {
           tabBarIcon: () => activityIcon,
           freezeOnBlur,
           // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
-          tabBarItemHidden: !isInAppDefiBorrowBlocked
+          tabBarItemHidden: !isInAppDefiBorrowBlocked || isLimitedMode
         }}
       />
     </BottomTabs>
@@ -166,10 +170,11 @@ const TabBar = ({
   state,
   descriptors,
   navigation
-}: BottomTabBarProps): JSX.Element => {
+}: BottomTabBarProps): JSX.Element | null => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
+
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -177,6 +182,10 @@ const TabBar = ({
         : theme.colors.$surfacePrimary
       : alpha(theme.colors.$surfacePrimary, isIOS ? 0.8 : 1)
   }, [theme.colors.$surfacePrimary, theme.isDark])
+
+  if (isLimitedMode) {
+    return null
+  }
 
   return (
     <BlurViewWithFallback

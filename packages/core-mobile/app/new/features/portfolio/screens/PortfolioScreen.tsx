@@ -65,6 +65,9 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWalletsCount } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { isLimitedMode } from 'utils/limitedMode'
+
+const SEGMENT_ITEMS_LIMITED = [{ title: 'Assets' }, { title: 'Activity' }]
 
 const SEGMENT_ITEMS_DEFAULT = [
   { title: 'Assets' },
@@ -86,6 +89,11 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   3: 'PortfolioActivityClicked'
 }
 
+const SEGMENT_EVENT_MAP_LIMITED: Record<number, AnalyticsEventName> = {
+  0: 'PortfolioAssetsClicked',
+  1: 'PortfolioActivityClicked'
+}
+
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
@@ -95,7 +103,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
   // When borrow feature is enabled, Activity moves to Portfolio sub-tab
-  const segmentItems = isInAppDefiBorrowBlocked
+  const segmentItems = isLimitedMode
+    ? SEGMENT_ITEMS_LIMITED
+    : isInAppDefiBorrowBlocked
     ? SEGMENT_ITEMS_DEFAULT
     : SEGMENT_ITEMS_WITH_ACTIVITY
 
@@ -238,6 +248,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }))
 
   const actionButtons = useMemo(() => {
+    if (isLimitedMode) {
+      return [
+        { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
+        {
+          title: ActionButtonTitle.Swap,
+          icon: 'swap',
+          onPress: () => navigateToSwap()
+        },
+        {
+          title: ActionButtonTitle.Buy,
+          icon: 'buy',
+          onPress: navigateToBuy
+        },
+        {
+          title: ActionButtonTitle.Receive,
+          icon: 'receive',
+          onPress: handleReceive
+        },
+        {
+          title: ActionButtonTitle.Withdraw,
+          icon: 'withdraw',
+          onPress: navigateToWithdraw
+        }
+      ] as ActionButton[]
+    }
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
@@ -405,7 +440,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
-      const eventName = SEGMENT_EVENT_MAP[index]
+      const eventName = isLimitedMode
+        ? SEGMENT_EVENT_MAP_LIMITED[index]
+        : SEGMENT_EVENT_MAP[index]
 
       if (eventName) {
         AnalyticsService.capture(eventName)
@@ -508,6 +545,28 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [segmentedControlLayout?.height, tabHeight])
 
   const tabs = useMemo(() => {
+    if (isLimitedMode) {
+      return [
+        {
+          tabName: 'Assets',
+          component: (
+            <AssetsScreen
+              goToTokenDetail={handleGoToTokenDetail}
+              goToTokenManagement={handleGoToTokenManagement}
+              goToBuy={navigateToBuy}
+              onScrollResync={handleScrollResync}
+              onScrollToTop={scrollToTop}
+              containerStyle={contentContainerStyle}
+            />
+          )
+        },
+        {
+          tabName: 'Activity',
+          component: <ActivityScreen containerStyle={contentContainerStyle} />
+        }
+      ]
+    }
+
     const baseTabs = [
       {
         tabName: 'Assets',

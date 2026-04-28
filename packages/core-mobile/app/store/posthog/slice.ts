@@ -5,6 +5,7 @@ import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
+import { applyLimitedModeOverrides } from 'utils/limitedMode'
 import { initialState, DefaultFeatureFlagConfig } from './types'
 
 const reducerName = 'posthog'
@@ -21,7 +22,7 @@ export const posthogSlice = createSlice({
       state.isAnalyticsEnabled = value
     },
     setFeatureFlags: (state, action: PayloadAction<FeatureFlags>) => {
-      state.featureFlags = action.payload
+      state.featureFlags = applyLimitedModeOverrides(action.payload)
     }
   }
 })
@@ -623,6 +624,68 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.PREDICTIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsMnemonicOnboardingBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.MNEMONIC_ONBOARDING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsHardwareWalletOnboardingBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.HARDWARE_WALLET_ONBOARDING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsAddWalletBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ADD_WALLET] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsWalletConnectBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.WALLET_CONNECT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsAccountSwitcherBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ACCOUNT_SWITCHER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSettingsAdvancedBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SETTINGS_ADVANCED] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsImportExistingWalletBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IMPORT_EXISTING_WALLET] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

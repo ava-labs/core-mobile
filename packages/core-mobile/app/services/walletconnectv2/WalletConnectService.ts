@@ -15,6 +15,7 @@ import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { isLimitedMode } from 'utils/limitedMode'
 import { Account } from 'store/account'
 import {
   CLIENT_METADATA,
@@ -454,6 +455,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
   }
 }
 
-export default Config.WALLET_CONNECT_PROJECT_ID
+export default !isLimitedMode && Config.WALLET_CONNECT_PROJECT_ID
   ? new WalletConnectService(Config.WALLET_CONNECT_PROJECT_ID)
   : new WalletConnectServiceNoop()

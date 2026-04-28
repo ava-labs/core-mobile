@@ -2,10 +2,11 @@ import { GroupList, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
 import Keystone from 'assets/icons/keystone.svg'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useRouter } from 'expo-router'
+import { Redirect, useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
+  selectIsImportExistingWalletBlocked,
   selectIsKeystoneBlocked,
   selectIsLedgerSupportBlocked
 } from 'store/posthog'
@@ -16,6 +17,9 @@ const AccessWalletScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const isKeystoneBlocked = useSelector(selectIsKeystoneBlocked)
   const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
+  const isImportExistingWalletBlocked = useSelector(
+    selectIsImportExistingWalletBlocked
+  )
 
   const handleEnterRecoveryPhrase = useCallback((): void => {
     navigate({
@@ -79,6 +83,10 @@ const AccessWalletScreen = (): JSX.Element => {
     isLedgerBlocked,
     theme.colors
   ])
+
+  if (isImportExistingWalletBlocked) {
+    return <Redirect href="/signup" />
+  }
 
   return (
     <ScrollScreen

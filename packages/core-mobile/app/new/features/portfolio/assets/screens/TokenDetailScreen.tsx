@@ -78,6 +78,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -237,7 +238,50 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, token])
 
+  const handleReceive = useCallback((): void => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/receive'
+    })
+  }, [navigate])
+
   const actionButtons: ActionButton[] = useMemo(() => {
+    if (isLimitedMode) {
+      const fromTokenId = token?.internalId ?? token?.localId
+      const fromCaip2Id = getNetwork(token?.networkChainId)?.caip2ChainId
+      const toCaip2Id = fromCaip2Id
+      const buttons: ActionButton[] = [
+        { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
+        {
+          title: ActionButtonTitle.Swap,
+          icon: 'swap',
+          onPress: () => navigateToSwap({ fromTokenId, fromCaip2Id, toCaip2Id })
+        }
+      ]
+      // Buy: gated by allowlist via tightened isBuyable
+      if (token && isBuyable(token)) {
+        buttons.push({
+          title: ActionButtonTitle.Buy,
+          icon: 'buy',
+          onPress: () => navigateToBuy({ token })
+        })
+      }
+      buttons.push({
+        title: ActionButtonTitle.Receive,
+        icon: 'receive',
+        onPress: handleReceive
+      })
+      // Sell: unrestricted in limited mode (any held Meld-supported token)
+      if (token && isWithdrawable(token)) {
+        buttons.push({
+          title: ActionButtonTitle.Withdraw,
+          icon: 'withdraw',
+          onPress: () => navigateToWithdraw({ token })
+        })
+      }
+      return buttons
+    }
+
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
@@ -290,6 +334,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return buttons
   }, [
     handleSend,
+    handleReceive,
     token,
     isBuyable,
     isTokenStakable,

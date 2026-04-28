@@ -11,6 +11,7 @@ import {
 } from 'store/nestEgg'
 import { selectIsNestEggEligible } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import { isLimitedMode } from 'utils/limitedMode'
 import { MINIMUM_SWAP_AMOUNT_USD } from './types'
 
 // Action dispatched when a swap completes successfully
@@ -104,6 +105,9 @@ const checkPendingNestEggSuccess = async (
 export const addNestEggListeners = (
   startListening: AppStartListening
 ): void => {
+  // Limited mode: Nest Egg campaign is fully disabled — skip the swap listener.
+  if (isLimitedMode) return
+
   // Listen for swap completions
   startListening({
     actionCreator: swapCompleted,

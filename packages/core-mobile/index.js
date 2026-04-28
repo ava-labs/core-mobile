@@ -12,6 +12,7 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
+import { isLimitedMode } from './app/utils/limitedMode'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 import { setupDeBankCaching } from './app/utils/setupDeBankCaching'
@@ -67,7 +68,11 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 }
 
 AppCheckService.init()
-FCMService.listenForMessagesBackground()
+// Limited mode: notifications are fully disabled — skip the FCM background
+// listener registration so Android doesn't wake the JS scheduler for it.
+if (!isLimitedMode) {
+  FCMService.listenForMessagesBackground()
+}
 
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 

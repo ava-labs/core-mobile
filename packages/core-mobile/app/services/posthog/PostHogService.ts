@@ -4,6 +4,7 @@ import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'utils/caip2ChainIds'
 import { PostHogServiceNoop } from 'services/posthog/PostHogServiceNoop'
+import { isLimitedMode } from 'utils/limitedMode'
 import { sanitizeFeatureFlags } from './sanitizeFeatureFlags'
 import {
   FeatureGates,
@@ -66,7 +67,8 @@ class PostHogService implements PostHogServiceInterface {
         properties: {
           ...deviceInfo,
           ...properties,
-          $user_id: this.userId
+          $user_id: this.userId,
+          limited_mode: isLimitedMode
         }
       })
     }
@@ -95,7 +97,8 @@ class PostHogService implements PostHogServiceInterface {
         ip: '',
         distinct_id: distinctId,
         $set: {
-          $app_version: DeviceInfoService.getAppVersion()
+          $app_version: DeviceInfoService.getAppVersion(),
+          limited_mode: isLimitedMode
         }
       })
     }

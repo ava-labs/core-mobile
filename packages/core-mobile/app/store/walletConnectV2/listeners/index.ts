@@ -3,6 +3,7 @@ import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import { AppStartListening } from 'store/types'
 import { setActive } from 'store/network/slice'
 import { setAccounts, setActiveAccountId } from 'store/account/slice'
+import { isLimitedMode } from 'utils/limitedMode'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import {
   handleAccountChange,
@@ -16,6 +17,10 @@ import {
 } from './sessions'
 
 export const addWCListeners = (startListening: AppStartListening): void => {
+  // Limited mode: WalletConnect is fully disabled (service is a noop, deeplinks
+  // are blocked, scan icon hidden). Skip listener registration entirely.
+  if (isLimitedMode) return
+
   startListening({
     matcher: isAnyOf(onRehydrationComplete, onLogIn),
     effect: initWalletConnect
