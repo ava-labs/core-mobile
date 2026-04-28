@@ -45,6 +45,15 @@ export interface DerivedSecp256k1Addresses {
   coreEth: string // C-{bech32}
 }
 
+/**
+ * Batch-derived Solana address for one account index.
+ * Returned by deriveSolanaAddressesFromSeed.
+ */
+export interface DerivedSolanaAddress {
+  accountIndex: number
+  address: string // base58-encoded 32-byte Ed25519 public key
+}
+
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // existing methods
   getPublicKeyFromString(secretKey: string, isCompressed?: boolean): ArrayBuffer
@@ -132,4 +141,19 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
     isTestnet: boolean,
     accountIndices: number[]
   ): Promise<DerivedSecp256k1Addresses[]>
+
+  /**
+   * Batch-derive Solana addresses from a BIP39 seed using SLIP-0010 Ed25519
+   * hardened derivation.  Runs entirely on a native background thread.
+   *
+   * Derivation path per index: m/44'/501'/{accountIndex}'/0'
+   *
+   * @param seed       64-byte BIP39 seed (ArrayBuffer)
+   * @param accountIndices account indices to derive
+   * @returns one DerivedSolanaAddress per index
+   */
+  deriveSolanaAddressesFromSeed(
+    seed: ArrayBuffer,
+    accountIndices: number[]
+  ): Promise<DerivedSolanaAddress[]>
 }

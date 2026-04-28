@@ -1,5 +1,6 @@
 #include "CryptoHybrid.hpp"
 #include "address_derivation.hpp"
+#include "slip0010.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/ThreadPool.hpp>
@@ -446,6 +447,40 @@ namespace margelo::nitro::nitroavalabscrypto {
                     std::move(addrs.pvm),
                     std::move(addrs.coreEth)
                 ));
+            }
+
+            return results;
+        });
+    }
+
+/* --------------- Batch Solana Address Derivation (async) --------------- */
+
+    std::shared_ptr<Promise<std::vector<DerivedSolanaAddress>>>
+    CryptoHybrid::deriveSolanaAddressesFromSeed(
+            const std::shared_ptr<ArrayBuffer> &seed,
+            const std::vector<double> &accountIndices) {
+
+        if (!seed || seed->size() != 64) {
+            throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
+        }
+
+        // Copy seed bytes so the lambda owns them (the ArrayBuffer may be
+        // invalidated before the background thread runs).
+        std::vector<uint8_t> seedBytes(64);
+        std::memcpy(seedBytes.data(), seed->data(), 64);
+
+        return Promise<std::vector<DerivedSolanaAddress>>::async(
+            [seedBytes = std::move(seedBytes), accountIndices]() {
+
+            std::vector<DerivedSolanaAddress> results;
+            results.reserve(accountIndices.size());
+
+            for (double idx : accountIndices) {
+                auto index = static_cast<uint32_t>(idx);
+                auto address = solana_address_from_seed(
+                    seedBytes.data(), seedBytes.size(), index);
+
+                results.push_back(DerivedSolanaAddress(idx, std::move(address)));
             }
 
             return results;

@@ -161,4 +161,43 @@ namespace margelo::nitro::nitroavalabscrypto {
         return result;
     }
 
+    // ---------------------------------------------------------------------------
+    // base58_encode
+    //
+    // Encodes raw bytes into a Base58 string (Bitcoin alphabet).
+    // Used for Solana addresses (plain Base58, not Base58Check).
+    // ---------------------------------------------------------------------------
+    inline std::string base58_encode(const std::vector<uint8_t> &data) {
+        // Count leading zeros
+        size_t leading_zeros = 0;
+        while (leading_zeros < data.size() && data[leading_zeros] == 0) {
+            ++leading_zeros;
+        }
+
+        // Allocate enough space: log(256) / log(58) ~= 1.366
+        size_t max_size = (data.size() - leading_zeros) * 138 / 100 + 1;
+        std::vector<uint8_t> digits(max_size, 0);
+
+        for (size_t i = leading_zeros; i < data.size(); ++i) {
+            int carry = data[i];
+            for (auto it = digits.rbegin(); it != digits.rend(); ++it) {
+                carry += 256 * static_cast<int>(*it);
+                *it = static_cast<uint8_t>(carry % 58);
+                carry /= 58;
+            }
+        }
+
+        // Skip leading zeros in digits
+        auto it = digits.begin();
+        while (it != digits.end() && *it == 0) ++it;
+
+        // Build result: leading '1's + encoded digits
+        std::string result(leading_zeros, '1');
+        for (; it != digits.end(); ++it) {
+            result += BASE58_ALPHABET[*it];
+        }
+
+        return result;
+    }
+
 } // namespace margelo::nitro::nitroavalabscrypto
