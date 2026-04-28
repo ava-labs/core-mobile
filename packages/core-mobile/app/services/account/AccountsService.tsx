@@ -38,6 +38,11 @@ import { SentryTag } from 'services/sentry/types'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import WalletService from 'services/wallet/WalletService'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { bip32 } from 'utils/bip32'
+import { mnemonicToSeed } from 'bip39'
+import { deriveAddressesBatch } from 'services/ledger/deriveAddressesOffline'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import {
   AvalancheXpGetBalancesRequestItem,
@@ -620,6 +625,27 @@ class AccountsService {
       pvm: mapToVmNetwork(NETWORK_P)
     }
 
+    // For mnemonic wallets, derive the BIP32 root and EVM xpub once so
+    // the per-account task can use the native Nitro module for secp256k1
+    // address derivation (runs on a native background thread, freeing
+    // the JS thread for UI and BLE events — CP-14062).
+    let bip32Root: ReturnType<typeof bip32.fromSeed> | undefined
+    let evmXpub: string | undefined
+    if (walletType === WalletType.MNEMONIC) {
+      try {
+        const secret = await BiometricsSDK.loadWalletSecret(walletId)
+        if (secret.success) {
+          const seed = await mnemonicToSeed(secret.value)
+          bip32Root = bip32.fromSeed(seed)
+          evmXpub = bip32Root.derivePath("m/44'/60'/0'").toBase58()
+        }
+      } catch (error) {
+        Logger.error('Failed to derive xpubs for native path, using JS fallback', error)
+      }
+    }
+
+    const secretId = JSON.stringify({ walletId, walletType })
+
     while (i < startIndex + maxScan) {
       const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
       const windowSize = windowEnd - i
@@ -630,6 +656,40 @@ class AccountsService {
         concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
         task: async accountIndex => {
           try {
+            // Native path for mnemonic wallets: derive secp256k1 addresses
+            // (EVM, BTC, AVM, PVM, CoreEth) on the native thread, then
+            // only derive Solana via JS.
+            if (bip32Root && evmXpub) {
+              const avaxXpub = bip32Root
+                .derivePath(`m/44'/9000'/${accountIndex}'`)
+                .toBase58()
+
+              const [batch, svmResult] = await Promise.all([
+                deriveAddressesBatch(evmXpub, avaxXpub, false, [accountIndex]),
+                solanaModule.deriveAddress({
+                  secretId,
+                  accountIndex,
+                  network,
+                  derivationPathType: DerivationPath.BIP44
+                })
+              ])
+
+              const secp = batch.get(accountIndex)
+
+              return {
+                status: 'fulfilled',
+                value: {
+                  [NetworkVMType.EVM]: secp?.evm ?? '',
+                  [NetworkVMType.BITCOIN]: secp?.btc ?? '',
+                  [NetworkVMType.AVM]: secp?.avm ?? '',
+                  [NetworkVMType.PVM]: secp?.pvm ?? '',
+                  [NetworkVMType.CoreEth]: secp?.coreEth ?? '',
+                  ...svmResult
+                }
+              } as PromiseSettledResult<Record<NetworkVMType, string>>
+            }
+
+            // Fallback: all-JS derivation (Keystone, or if xpub setup failed)
             return {
               status: 'fulfilled',
               value: await ModuleManager.deriveAddresses({

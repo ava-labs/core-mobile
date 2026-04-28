@@ -19,7 +19,11 @@ import {
 } from 'store/account'
 import { removeAccount, selectImportedAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
-import { selectRemovableWallets, setWalletName } from 'store/wallet/slice'
+import {
+  selectIsMigratingActiveAccounts,
+  selectRemovableWallets,
+  setWalletName
+} from 'store/wallet/slice'
 import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
@@ -41,6 +45,7 @@ export const useManageWallet = (): {
   const importedAccounts = useSelector(selectImportedAccounts)
   const removableWallets = useSelector(selectRemovableWallets)
   const accounts = useSelector(selectAccounts)
+  const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const walletsWithAccountsCount = useMemo(() => {
     const walletIds = new Set(
@@ -258,7 +263,8 @@ export const useManageWallet = (): {
       ) {
         baseItems.push({
           id: 'add_account',
-          title: 'Add account to this wallet'
+          title: 'Add account to this wallet',
+          disabled: isMigratingActiveAccounts
         })
       }
 
@@ -280,7 +286,7 @@ export const useManageWallet = (): {
 
       return baseItems
     },
-    [canRemoveWallet]
+    [canRemoveWallet, isMigratingActiveAccounts]
   )
 
   const handleWalletMenuAction = useCallback(
