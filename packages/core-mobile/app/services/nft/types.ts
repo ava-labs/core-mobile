@@ -1,13 +1,18 @@
 import { NftTokenWithBalance } from '@avalabs/vm-module-types'
-import { NftContentType } from 'store/nft'
+
+export enum NftContentType {
+  Unknown = 'unknown',
+  MP4 = 'video/mp4',
+  JPG = 'image/jpeg',
+  PNG = 'image/png',
+  GIF = 'image/gif',
+  SVG = 'image/svg+xml'
+}
 
 export type NftLocalId = string
 
 export type NftImageData = {
-  aspect: number
-  isSvg: boolean
-  image: string
-  video?: string
+  uri: string
   type: NftContentType
 }
 
@@ -35,7 +40,7 @@ export type NftItemExternalData = {
   attributes: NftItemExternalDataAttribute[]
   description: string
   external_url: string
-  animation_url: string | null
+  animation_url: string | undefined
 }
 
 export type NftItemExternalDataAttribute = {

@@ -173,6 +173,7 @@ workflows:
         - build_type: apk
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
+        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -216,6 +217,7 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
+            $BITRISE_DEPLOY_DIR/AvaxWalletInternal.ipa:BITRISE_IPA_PATH
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -257,6 +259,41 @@ workflows:
         - distribution_method: $XCODE_EXPORT
         - upload_bitcode: "no"
         - automatic_code_signing: api-key
+  _build-ios-external-for-testing:
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletExternal
+      opts:
+        is_expand: false
+    - XCODE_EXPORT: ad-hoc
+      opts:
+        is_expand: false
+    before_run:
+    - _build-ios
+    steps:
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_IPA_PATH:BITRISE_IPA_PATH
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            BITRISE_IPA_PATH=$BITRISE_IPA_PATH
+            IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
   _build-ios-simulator:
     steps:
     - brew-install@1:
@@ -714,6 +751,82 @@ workflows:
       opts:
         is_expand: false
     - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+  ios-external-e2e-aws-regression-run:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-external-for-testing
+    after_run:
+    - _send-test-result-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+  # Pipeline stage 2+: pull signed IPA from stage 1 (deploy-to-bitrise-io intermediate files).
+  ios-external-e2e-aws-regression-from-pipeline:
+    before_run:
+    - _install-and-set-env
+    - _pull_app_files
+    after_run:
+    - _send-test-result-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
     - IS_DEVICEFARM_RUN: "true"

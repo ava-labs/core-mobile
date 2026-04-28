@@ -2,7 +2,7 @@ import warmup from '../../helpers/warmup'
 import cl from '../../locators/commonEls.loc'
 import txPage from '../../pages/transactions.page'
 
-describe('[Smoke] Receive', () => {
+describe('Receive', () => {
   before(async () => {
     await warmup()
     await txPage.tapReceive()

@@ -1,3 +1,4 @@
+import { Erc1155Token, Erc721Token } from '@avalabs/glacier-sdk'
 import { ipfsResolver } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import {
@@ -5,7 +6,9 @@ import {
   TokenType,
   TokenWithBalance
 } from '@avalabs/vm-module-types'
-import { NftItem, NftLocalId } from './types'
+import GlacierService from 'services/glacier/GlacierService'
+import { NftImageData, NftItem, NftItemExternalData, NftLocalId } from './types'
+import NftProcessor from './NftProcessor'
 
 const CLOUDFLARE_IPFS_URL = 'https://ipfs.io'
 
@@ -18,7 +21,9 @@ export const convertIPFSResolver = (url: string): string => {
   }
 }
 
-const isNftTokenType = (type: TokenType): boolean => {
+export const isNftTokenType = (
+  type: TokenType | undefined
+): type is TokenType.ERC721 | TokenType.ERC1155 => {
   return type === TokenType.ERC721 || type === TokenType.ERC1155
 }
 
@@ -57,7 +62,33 @@ export const getNftTitle = (nftItem: NftItem): string => {
 }
 
 export const getNftImage = (nftItem: NftItem): string | undefined => {
-  return nftItem.imageData?.image
+  return nftItem.imageData?.uri
+}
+
+export async function fetchNftData(
+  contractAddress: string,
+  tokenId: string,
+  chainId: string
+): Promise<{
+  result: Erc721Token | Erc1155Token
+  processedMetadata: NftItemExternalData
+  imageData: NftImageData
+} | null> {
+  const result = await GlacierService.getTokenDetails({
+    address: contractAddress,
+    chainId,
+    tokenId
+  })
+  if (!result) return null
+
+  const resolvedTokenUri = getTokenUri({ tokenUri: result.tokenUri, tokenId })
+  const processedMetadata = await NftProcessor.fetchMetadata(resolvedTokenUri)
+  const imageData = await NftProcessor.fetchImage(
+    processedMetadata.image ||
+      processedMetadata.animation_url ||
+      processedMetadata.external_url
+  )
+  return { result, processedMetadata, imageData }
 }
 
 export const sortNftsByDateUpdated = (a: NftItem, b: NftItem): number => {

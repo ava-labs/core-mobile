@@ -1,9 +1,9 @@
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftContentType, NftItem, NftLocalStatus } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   COLLECTIBLE_FILTERS,
@@ -15,12 +15,10 @@ import {
   CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
-import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
   selectCollectibleUnprocessableVisibility,
-  selectCollectibleVisibility,
-  toggleCollectibleUnprocessableVisibility
+  selectCollectibleVisibility
 } from 'store/portfolio'
 import { sortNftsByDateUpdated } from 'services/nft/utils'
 import { useCollectiblesView } from 'features/portfolio/store'
@@ -157,6 +155,7 @@ export const useCollectiblesFilterAndSort = (
       if (nfts?.length === 0) return []
 
       const [network, contentType] = filter.selected
+      const isShowingHidden = contentType === CollectibleStatus.Hidden
 
       const availableNetworks = [
         AssetNetworkFilter.AvalancheCChain,
@@ -171,15 +170,19 @@ export const useCollectiblesFilterAndSort = (
 
       let tempNfts = [...(nfts ?? [])]
 
-      if (isUnprocessableHidden)
+      // In "Show hidden" mode we intentionally bypass the unprocessable filter
+      // so that explicitly-hidden unprocessable items also appear in the list.
+      if (isUnprocessableHidden && !isShowingHidden)
         tempNfts = tempNfts.filter((nft: NftItem) => {
           return nft.status === NftLocalStatus.Processed
         })
 
-      if (contentType !== CollectibleStatus.Hidden)
-        tempNfts = tempNfts.filter((nft: NftItem) => {
-          return isCollectibleVisible(collectiblesVisibility, nft)
-        })
+      // "Show hidden" mode: show only items the user has hidden.
+      // Normal mode: show only visible items.
+      tempNfts = tempNfts.filter((nft: NftItem) => {
+        const visible = isCollectibleVisible(collectiblesVisibility, nft)
+        return isShowingHidden ? !visible : visible
+      })
 
       if (availableNetworks.includes(network as AssetNetworkFilter))
         tempNfts = tempNfts.filter((nft: NftItem) => {
@@ -219,25 +222,31 @@ export const useCollectiblesFilterAndSort = (
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
-      if (sort.selected === CollectibleSort.NameAToZ)
-        return filtered.sort((a, b) =>
-          getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
-        )
+      const compareByStatus = (a: NftItem, b: NftItem): number => {
+        const aUnprocessable = a.status === NftLocalStatus.Unprocessable ? 1 : 0
+        const bUnprocessable = b.status === NftLocalStatus.Unprocessable ? 1 : 0
+        return aUnprocessable - bUnprocessable
+      }
 
-      if (sort.selected === CollectibleSort.NameZToA)
-        return filtered.sort((a, b) =>
-          getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
-        )
+      const compareBySelected = (a: NftItem, b: NftItem): number => {
+        switch (sort.selected) {
+          case CollectibleSort.NameAToZ:
+            return getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
+          case CollectibleSort.NameZToA:
+            return getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
+          case CollectibleSort.DateAdded:
+            return sortNftsByDateUpdated(a, b)
+          default:
+            return 0
+        }
+      }
 
-      if (sort.selected === CollectibleSort.DateAdded)
-        return filtered.sort(sortNftsByDateUpdated)
-
-      return filtered
+      return [...filtered].sort(
+        (a, b) => compareByStatus(a, b) || compareBySelected(a, b)
+      )
     },
     [sort.selected]
   )
-
-  const dispatch = useDispatch()
 
   const onResetFilter = (): void => {
     setSelectedNetworkFilter(AssetNetworkFilter.AllNetworks)
@@ -246,9 +255,6 @@ export const useCollectiblesFilterAndSort = (
 
   const onShowHidden = (): void => {
     setSelectedContentTypeFilter(CollectibleStatus.Hidden)
-    if (isUnprocessableHidden && isEveryCollectibleHidden) {
-      dispatch(toggleCollectibleUnprocessableVisibility())
-    }
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -258,10 +264,9 @@ export const useCollectiblesFilterAndSort = (
 
   const isEveryCollectibleHidden = useMemo(
     () =>
-      filteredAndSorted.every(collectible =>
-        isCollectibleVisible(collectiblesVisibility, collectible)
-      ) && collectibles?.length > 0,
-    [collectibles?.length, collectiblesVisibility, filteredAndSorted]
+      collectibles.length > 0 &&
+      collectibles.every(c => !isCollectibleVisible(collectiblesVisibility, c)),
+    [collectibles, collectiblesVisibility]
   )
 
   const isHiddenVisible = filter.selected[1] !== CollectibleStatus.Hidden
