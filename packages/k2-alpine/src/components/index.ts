@@ -64,3 +64,4 @@ export type {
 export * from './AutoSizeTextInput/AutoSizeTextInput'
 export * from './LoadingContent/LoadingContent'
 export * from './BlurViewWithFallback/BlurViewWithFallback'
+export * from './SlidingButton/SlidingButton'
