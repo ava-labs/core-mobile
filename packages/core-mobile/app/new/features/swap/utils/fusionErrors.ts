@@ -1,8 +1,9 @@
-import { isSdkError } from '@avalabs/fusion-sdk'
+import { isEstimateNativeFeeError, isSdkError } from '@avalabs/fusion-sdk'
 import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
 
 export type FusionQuoteErrorKind =
   | 'network-fee-only' // gas alone exceeds balance; no bridge fee involved
+  | 'provider-specific' // error is specific to this quote's provider and may not repeat on another quote
   | 'other'
 
 export class FusionQuoteError extends Error {
@@ -163,14 +164,17 @@ export const fusionErrors = {
         'Insufficient token funds to estimate the fee'
       )
     }
-    return new FusionQuoteError('Insufficient funds to estimate the fee')
+    return new FusionQuoteError('Insufficient funds to estimate the fee', {
+      kind: 'provider-specific'
+    })
   },
   gasEstimationFailed(): FusionQuoteError {
     return new FusionQuoteError('Unable to estimate gas', { isWarning: true })
   },
   swapAmountTooSmall(): FusionQuoteError {
     return new FusionQuoteError(
-      'Swap amount is too small for this token pair.\nTry a larger amount.'
+      'Swap amount is too small for this token pair.\nTry a larger amount.',
+      { kind: 'provider-specific' }
     )
   }
 }
@@ -194,13 +198,19 @@ export function isUserRejectionError(error: unknown): boolean {
   return error.message.toLowerCase().includes('user rejected')
 }
 
+// The SDK has updated its error phrasing across versions, so the checkers
+// below match both legacy and current substrings to keep the retry/advance
+// logic firing.
+
 /**
  * Check if error is gas estimation failure
  * These are retryable with next quote (auto mode only)
  */
 export function isGasEstimationError(error: unknown): boolean {
+  if (isEstimateNativeFeeError(error)) return true
   if (!(error instanceof Error)) return false
-  return error.message.toLowerCase().includes('gas estimation')
+  const message = error.message.toLowerCase()
+  return message.includes('gas estimation') || message.includes('estimate gas')
 }
 
 /**

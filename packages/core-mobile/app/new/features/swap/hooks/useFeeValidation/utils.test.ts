@@ -309,25 +309,26 @@ describe('getFeeEstimationError', () => {
       const error = makeEstimateError(undefined)
       const result = getFeeEstimationError(error)
       expect(result?.message).toBe('Insufficient funds to estimate the fee')
-      expect(result?.kind).toBe('other')
+      expect(result?.kind).toBe('provider-specific')
     })
 
     it('returns generic insufficientFundsForFee when cause is a non-InsufficientFundsError', () => {
       const error = makeEstimateError(new Error('rpc timeout'))
       const result = getFeeEstimationError(error)
       expect(result?.message).toBe('Insufficient funds to estimate the fee')
-      expect(result?.kind).toBe('other')
+      expect(result?.kind).toBe('provider-specific')
     })
   })
 
   describe('SdkError with arithmetic underflow message', () => {
-    it('returns swapAmountTooSmall', () => {
+    it('returns swapAmountTooSmall tagged as provider-specific', () => {
       const error = new SdkError(
         'arithmetic underflow or overflow',
         ErrorCode.UNKNOWN
       )
       const result = getFeeEstimationError(error)
       expect(result?.message).toContain('too small')
+      expect(result?.kind).toBe('provider-specific')
     })
   })
 

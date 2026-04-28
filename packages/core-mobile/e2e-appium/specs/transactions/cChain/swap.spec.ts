@@ -10,7 +10,7 @@ describe('Swap on C-Chain', () => {
     await txPage.verifySuccessToast()
   })
 
-  it('[Smoke] Should swap ERC20 to AVAX', async () => {
+  it('Should swap ERC20 to AVAX', async () => {
     await txPage.swap('USDC', 'AVAX', '0.1')
     await txPage.verifySuccessToast()
   })

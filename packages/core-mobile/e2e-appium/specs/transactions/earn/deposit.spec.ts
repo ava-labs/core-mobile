@@ -5,7 +5,7 @@ import commonPage from '../../../pages/commonEls.page'
 describe('Earn', () => {
   const randomPool = Math.random() < 0.5 ? 'aave' : 'benqi'
 
-  it('[Smoke] should deposit AVAX', async () => {
+  it('should deposit AVAX', async () => {
     await warmup()
     await earnPage.deposit(randomPool, 'AVAX', '0.0001')
   })

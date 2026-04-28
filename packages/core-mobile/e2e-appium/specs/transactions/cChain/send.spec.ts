@@ -2,8 +2,8 @@ import warmup from '../../../helpers/warmup'
 import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
-describe('[Smoke] Send transaction', () => {
-  it('should send AVAX on C-Chain', async () => {
+describe('Send transaction', () => {
+  it('[Smoke] should send AVAX on C-Chain', async () => {
     // login & create account
     await warmup()
     // Send
