@@ -529,10 +529,12 @@ export const migrations = {
     }
   },
   28: (state: any) => {
-    // Drop the persisted legacy `bridge` slice (CP-14118).
-    // Legacy Bridge has been removed; this migration purges the orphaned
-    // key from existing installs so it doesn't sit on device forever.
-    const { bridge: _bridge, ...rest } = state
+    // Drop the persisted `bridge` and `unifiedBridge` slices (CP-14118).
+    // Legacy Bridge has been removed; the legacy `bridge` slice is gone
+    // and the `unifiedBridge` slice was only ever populated by the legacy
+    // Bridge UI. Strip both keys from existing installs so they don't sit
+    // on device forever.
+    const { bridge: _bridge, unifiedBridge: _unifiedBridge, ...rest } = state
     return rest
   }
 }

@@ -147,10 +147,6 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
-            name="(modals)/bridgeStatus"
-            options={modalScreensOptions}
-          />
-          <Stack.Screen
             name="(modals)/addStake"
             options={modalScreensOptions}
           />

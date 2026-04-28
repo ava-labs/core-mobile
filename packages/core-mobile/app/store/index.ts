@@ -1,7 +1,6 @@
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
-import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
@@ -41,7 +40,6 @@ const combinedReducer = combineReducers({
   account,
   notifications,
   addressBook,
-  unifiedBridge,
   customToken,
   posthog,
   wallet,

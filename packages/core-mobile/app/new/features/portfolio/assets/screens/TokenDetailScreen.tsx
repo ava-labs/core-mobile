@@ -2,7 +2,6 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
@@ -27,7 +26,6 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
@@ -69,13 +67,11 @@ import {
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const hasXpAddresses = useHasXpAddresses()
   const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
@@ -284,19 +280,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [openUrl]
   )
 
-  const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransfer): void => {
-      navigate({
-        pathname: '/bridgeStatus',
-        params: {
-          txHash: pendingBridge.sourceTxHash,
-          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
-        }
-      })
-    },
-    [navigate, isDeveloperMode]
-  )
-
   const handleSelectSegment = useCallback(
     (index: number): void => {
       selectedSegmentIndex.value = index
@@ -402,7 +385,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         <TransactionHistory
           token={token}
           handleExplorerLink={handleExplorerLink}
-          handlePendingBridge={handlePendingBridge}
           containerStyle={contentContainerStyle}
         />
       )
@@ -417,13 +399,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [
-    token,
-    handleExplorerLink,
-    handlePendingBridge,
-    contentContainerStyle,
-    isXpToken
-  ])
+  }, [token, handleExplorerLink, contentContainerStyle, isXpToken])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (

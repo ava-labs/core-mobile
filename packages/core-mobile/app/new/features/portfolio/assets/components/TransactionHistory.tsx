@@ -1,13 +1,10 @@
-import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { Image } from '@avalabs/k2-alpine'
-import { TransactionType } from '@avalabs/vm-module-types'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import { ActivityList } from 'features/activity/components/ActivityList'
 import { useLowValueFilteredActivityTransactions } from 'features/activity/hooks/useLowValueFilteredActivityTransactions'
 import {
@@ -16,7 +13,6 @@ import {
   isCollectibleTransaction,
   isSupportedNftChainId
 } from 'features/activity/utils'
-import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
@@ -27,7 +23,7 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
 import { LocalTokenWithBalance } from 'store/balance'
-import { Transaction, useGetRecentTransactions } from 'store/transaction'
+import { useGetRecentTransactions } from 'store/transaction'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import {
@@ -47,13 +43,11 @@ interface Props {
     hash?: string,
     hashType?: 'account' | 'tx'
   ) => void
-  handlePendingBridge: (transaction: BridgeTransfer) => void
 }
 
 const TransactionHistory: FC<Props> = ({
   token,
   handleExplorerLink,
-  handlePendingBridge,
   containerStyle
 }): React.JSX.Element => {
   const header = useHeaderMeasurements()
@@ -70,41 +64,23 @@ const TransactionHistory: FC<Props> = ({
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
-  const pendingBridgeTxs = usePendingBridgeTransactions(token?.networkChainId)
-  const isPendingBridge = useCallback(
-    (tx: Transaction) => {
-      return (
-        tx.txType === TransactionType.BRIDGE &&
-        pendingBridgeTxs.some(
-          bridge =>
-            (bridge.sourceTxHash === tx.hash ||
-              (!!bridge.targetTxHash && bridge.targetTxHash === tx.hash)) &&
-            Boolean(bridge.completedAt) === false
-        )
-      )
-    },
-    [pendingBridgeTxs]
-  )
-
   const transactionsBySymbol = useMemo(() => {
-    return transactions
-      .filter(tx => {
-        // Filter collectible transactions that support collectible transactions
-        if (
-          isCollectibleTransaction(tx) &&
-          isTokenCollectibleSupported(Number(tx.chainId), token?.symbol ?? '')
-        ) {
-          return true
-        }
+    return transactions.filter(tx => {
+      // Filter collectible transactions that support collectible transactions
+      if (
+        isCollectibleTransaction(tx) &&
+        isTokenCollectibleSupported(Number(tx.chainId), token?.symbol ?? '')
+      ) {
+        return true
+      }
 
-        return (
-          !token?.symbol ||
-          (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol) ||
-          (tx.tokens[1]?.symbol && token.symbol === tx.tokens[1].symbol)
-        )
-      })
-      .filter(tx => !isPendingBridge(tx))
-  }, [token, transactions, isPendingBridge])
+      return (
+        !token?.symbol ||
+        (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol) ||
+        (tx.tokens[1]?.symbol && token.symbol === tx.tokens[1].symbol)
+      )
+    })
+  }, [token, transactions])
 
   const lowValueFilteredTransactions = useLowValueFilteredActivityTransactions(
     transactionsBySymbol,
@@ -150,13 +126,9 @@ const TransactionHistory: FC<Props> = ({
   })
 
   const combinedData = useMemo(() => {
-    const filteredPendingBridgeTxs = pendingBridgeTxs
-      .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
-      .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
-
     const { todayTxs, monthGroups } = getDateGroups(data)
-    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
-  }, [data, pendingBridgeTxs, token?.symbol])
+    return buildGroupedData(todayTxs, monthGroups)
+  }, [data])
 
   const renderEmptyComponent = useCallback(() => {
     if (isLoading) {
@@ -249,7 +221,6 @@ const TransactionHistory: FC<Props> = ({
       <ActivityList
         data={combinedData}
         xpToken={token}
-        handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
         overrideProps={overrideProps}
         renderHeader={renderHeader}
