@@ -1,21 +1,17 @@
-import {
-  ActivityIndicator,
-  alpha,
-  Chip,
-  Icons,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { ActivityIndicator, useTheme, View } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { EventResponse } from '@avalabs/prediction-market-sdk'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
+import {
+  TradeFilterChip,
+  TradeFilters
+} from 'features/trade/components/TradeFilters'
 import React, { useCallback, useMemo } from 'react'
-import { ScrollView, ViewStyle } from 'react-native'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { EventCard } from '../components/EventCard'
 import { useMarketSeries } from '../hooks/useMarketSeries'
@@ -56,13 +52,13 @@ export const PredictionsScreen = ({
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
-  const chips = useMemo(() => {
+  const chips = useMemo<TradeFilterChip[]>(() => {
     const cats = series
       .map(s => s.category)
       .filter((c, i, arr) => arr.indexOf(c) === i)
     // TODO: Replace the hardcoded chips with categories returned by the
     // prediction-market-sdk once it exposes them.
-    return Array.from(
+    const labels = Array.from(
       new Set([
         TRENDING_CHIP,
         'Live',
@@ -73,101 +69,41 @@ export const PredictionsScreen = ({
         ...cats
       ])
     )
+    return labels.map(label =>
+      label === 'Live'
+        ? {
+            label,
+            renderLeft: () => (
+              <View
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: colors.$accentRed
+                }}
+              />
+            )
+          }
+        : label
+    )
   }, [series])
 
   const renderHeader = useCallback(
     () => (
       <View
         sx={{
+          marginHorizontal: -9,
           paddingBottom: 14,
           backgroundColor: theme.colors.$surfacePrimary
         }}>
-        <View
-          style={{
-            gap: 10,
-            flexDirection: 'row',
-            marginHorizontal: -9,
-            paddingRight: 16
-          }}>
-          <View sx={{ flex: 1 }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                flexDirection: 'row',
-                gap: 8,
-                paddingLeft: 16
-              }}>
-              {chips.map(chip => (
-                <Chip
-                  key={chip}
-                  size="large"
-                  variant={chip === selectedChip ? 'dark' : 'light'}
-                  onPress={() => selectChip(chip)}>
-                  {chip}
-                </Chip>
-              ))}
-            </ScrollView>
-
-            <LinearGradient
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 42,
-                pointerEvents: 'none'
-              }}
-              colors={[
-                theme.colors.$surfacePrimary,
-                alpha(theme.colors.$surfacePrimary, 0)
-              ]}
-              start={{
-                x: 1,
-                y: 0
-              }}
-              end={{
-                x: 0,
-                y: 0
-              }}
-            />
-          </View>
-
-          <View
-            sx={{
-              backgroundColor: theme.colors.$surfaceSecondary,
-              borderRadius: 20,
-              height: 27,
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 6,
-              paddingLeft: 10,
-              paddingRight: 18
-            }}>
-            <Icons.Custom.Search
-              fill={theme.colors.$textPrimary}
-              width={14}
-              height={14}
-            />
-            <Text
-              variant="buttonSmall"
-              sx={{ color: theme.colors.$textSecondary }}>
-              Search
-            </Text>
-          </View>
-        </View>
+        <TradeFilters
+          chips={chips}
+          selectedChip={selectedChip}
+          onSelectChip={selectChip}
+        />
       </View>
     ),
-    [
-      theme.colors.$surfacePrimary,
-      theme.colors.$surfaceSecondary,
-      theme.colors.$textPrimary,
-      theme.colors.$textSecondary,
-      chips,
-      selectedChip,
-      selectChip
-    ]
+    [theme.colors.$surfacePrimary, chips, selectedChip, selectChip]
   )
 
   const renderItem = useCallback(

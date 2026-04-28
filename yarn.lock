@@ -976,6 +976,7 @@ __metadata:
     expo-blur: 15.0.8
     expo-constants: 18.0.13
     expo-font: 14.0.11
+    expo-haptics: 15.0.8
     expo-image: 3.0.11
     expo-linear-gradient: 15.0.8
     expo-splash-screen: 31.0.13
@@ -1005,6 +1006,7 @@ __metadata:
     "@react-native-masked-view/masked-view": 0.3.2
     "@shopify/react-native-skia": 2.2.12
     expo-blur: 15.0.8
+    expo-haptics: 15.0.8
     expo-image: 3.0.11
     expo-linear-gradient: 15.0.8
     react: 19.1.0
@@ -37013,7 +37015,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 

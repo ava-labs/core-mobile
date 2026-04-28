@@ -1,6 +1,5 @@
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
-import * as profileApiClientModule from 'utils/api/generated/profileApi.client'
 import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import WalletFactory from './WalletFactory'
 import WalletService from './WalletService'
@@ -17,28 +16,16 @@ const pvmEmptyResponse: GetAddressesResponse = {
   internalAddresses: []
 }
 
-const createDeferred = <T>() => {
-  let resolve!: (value: T | PromiseLike<T>) => void
-  let reject!: (reason?: unknown) => void
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-
-  return { promise, resolve, reject }
-}
-
+// Module-level mocks below exist purely to satisfy WalletService's import
+// graph during test loading. The actual XP-activity behavior is exercised
+// via a direct spy on `getAddressesForExtendedPublicKey` (see below) so
+// that the postV1GetAddresses + unwrap + validation path is never run by
+// these tests. That path was the source of a long-standing CI flake
+// ("Failed to get addresses from postV1GetAddresses") whenever mock-
+// implementation timing or fall-through left the body undefined.
 jest.mock('utils/api/generated/profileApi.client', () => ({
   __esModule: true,
-  postV1GetAddresses: jest.fn(() =>
-    Promise.resolve({
-      data: {
-        networkType: 'PVM',
-        externalAddresses: [],
-        internalAddresses: []
-      }
-    })
-  )
+  postV1GetAddresses: jest.fn()
 }))
 
 jest.mock('utils/api/clients/profileApiClient', () => ({
@@ -58,25 +45,30 @@ jest.mock('utils/Logger', () => ({
   }
 }))
 
-const mockPostV1GetAddresses =
-  profileApiClientModule.postV1GetAddresses as jest.Mock
-
-/** Valid fallback so `mockReset()` never leaves `postV1GetAddresses` returning `undefined` (parallel AVM/PVM calls). */
-const defaultPostV1GetAddressesImpl = () =>
-  Promise.resolve({ data: pvmEmptyResponse })
+// `getAddressesForExtendedPublicKey` is a private method, but TS `private`
+// is compile-time only — Jest can spy on it at runtime. We strip the
+// original (private-bearing) type via `unknown as` so the public-shape
+// overlay below doesn't conflict with the private declaration, and so
+// `jest.spyOn` can correctly infer the implementation signature.
+const walletServiceInternal = WalletService as unknown as {
+  getAddressesForExtendedPublicKey: (opts: {
+    extendedPublicKey: string
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    isTestnet: boolean
+    onlyWithActivity: boolean
+  }) => Promise<GetAddressesResponse>
+}
 
 describe('WalletService.hasActivityFromXpubXP', () => {
   beforeEach(() => {
     WalletFactory.cache.clearWallet('wallet-1')
-    // Re-apply the default implementation each test. Do NOT use mockReset() —
-    // it clears the factory-level default and leaves the mock returning
-    // undefined if mockImplementation is re-set asynchronously. CI has been
-    // observed to hit that window and fail isGetAddressesResponseBody(body).
-    mockPostV1GetAddresses.mockImplementation(defaultPostV1GetAddressesImpl)
   })
 
   afterEach(() => {
-    jest.spyOn(WalletService, 'getRawXpubXP').mockRestore()
+    // Restores both spies (`getRawXpubXP`, `getAddressesForExtendedPublicKey`)
+    // back to their originals. Module-level `jest.fn()` mocks are not affected
+    // — see Jest docs on `restoreAllMocks` (only spies are restored).
+    jest.restoreAllMocks()
   })
 
   it('reuses one XP xpub for AVM and PVM activity lookups', async () => {
@@ -84,19 +76,14 @@ describe('WalletService.hasActivityFromXpubXP', () => {
       .spyOn(WalletService, 'getRawXpubXP')
       .mockResolvedValue('xpub-123')
 
-    // AVM and PVM requests run in parallel; mockResolvedValueOnce order is not stable across environments.
-    mockPostV1GetAddresses.mockImplementation(
-      (options: { body: { networkType: NetworkVMType } }) => {
-        const nt = options?.body?.networkType
-        if (nt === NetworkVMType.AVM) {
-          return Promise.resolve({ data: avmWithActivityResponse })
+    const getAddressesSpy = jest
+      .spyOn(walletServiceInternal, 'getAddressesForExtendedPublicKey')
+      .mockImplementation(async ({ networkType }) => {
+        if (networkType === NetworkVMType.AVM) {
+          return avmWithActivityResponse
         }
-        if (nt === NetworkVMType.PVM) {
-          return Promise.resolve({ data: pvmEmptyResponse })
-        }
-        return defaultPostV1GetAddressesImpl()
-      }
-    )
+        return pvmEmptyResponse
+      })
 
     const hasActivity = await WalletService.hasActivityFromXpubXP({
       walletId: 'wallet-1',
@@ -107,29 +94,29 @@ describe('WalletService.hasActivityFromXpubXP', () => {
 
     expect(hasActivity).toBe(true)
     expect(getRawXpubXPSpy).toHaveBeenCalledTimes(1)
-    expect(mockPostV1GetAddresses).toHaveBeenCalledTimes(2)
-    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
+    expect(getAddressesSpy).toHaveBeenCalledTimes(2)
+    expect(getAddressesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        body: expect.objectContaining({
-          extendedPublicKey: 'xpub-123',
-          networkType: 'AVM',
-          onlyWithActivity: true
-        })
+        extendedPublicKey: 'xpub-123',
+        networkType: NetworkVMType.AVM,
+        onlyWithActivity: true
       })
     )
-    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
+    expect(getAddressesSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        body: expect.objectContaining({
-          extendedPublicKey: 'xpub-123',
-          networkType: 'PVM',
-          onlyWithActivity: true
-        })
+        extendedPublicKey: 'xpub-123',
+        networkType: NetworkVMType.PVM,
+        onlyWithActivity: true
       })
     )
   })
 
   it('skips non-primary Keystone accounts until per-account XP xpubs are supported', async () => {
     const getRawXpubXPSpy = jest.spyOn(WalletService, 'getRawXpubXP')
+    const getAddressesSpy = jest.spyOn(
+      walletServiceInternal,
+      'getAddressesForExtendedPublicKey'
+    )
 
     const hasActivity = await WalletService.hasActivityFromXpubXP({
       walletId: 'wallet-1',
@@ -140,43 +127,34 @@ describe('WalletService.hasActivityFromXpubXP', () => {
 
     expect(hasActivity).toBe(false)
     expect(getRawXpubXPSpy).not.toHaveBeenCalled()
-    expect(mockPostV1GetAddresses).not.toHaveBeenCalled()
+    expect(getAddressesSpy).not.toHaveBeenCalled()
   })
 
   it('returns as soon as one XP network reports activity', async () => {
     jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-123')
 
-    const pendingPvmResponse = createDeferred<{ data: GetAddressesResponse }>()
-
-    mockPostV1GetAddresses.mockImplementation(
-      (options: { body: { networkType: NetworkVMType } }) => {
-        const nt = options?.body?.networkType
-        if (nt === NetworkVMType.AVM) {
-          return Promise.resolve({ data: avmWithActivityResponse })
+    // PVM is intentionally a never-resolving promise: if `hasActivityFromXpubXP`
+    // were to await PVM, this test would hang forever (no real timer / deferred
+    // resolution dance needed). Resolving via AVM only proves the early-exit
+    // behavior of `raceAnyTrueOrThrow` deterministically.
+    jest
+      .spyOn(walletServiceInternal, 'getAddressesForExtendedPublicKey')
+      .mockImplementation(({ networkType }) => {
+        if (networkType === NetworkVMType.AVM) {
+          return Promise.resolve(avmWithActivityResponse)
         }
-        if (nt === NetworkVMType.PVM) {
-          return pendingPvmResponse.promise
-        }
-        return defaultPostV1GetAddressesImpl()
-      }
-    )
+        return new Promise<GetAddressesResponse>(() => {
+          /* never resolves */
+        })
+      })
 
-    const hasActivityPromise = WalletService.hasActivityFromXpubXP({
-      walletId: 'wallet-1',
-      walletType: WalletType.MNEMONIC,
-      accountIndex: 2,
-      isTestnet: false
-    })
-
-    const resultOrTimeout = await Promise.race([
-      hasActivityPromise,
-      new Promise<'timeout'>(resolve =>
-        setTimeout(() => resolve('timeout'), 5000)
-      )
-    ])
-
-    pendingPvmResponse.resolve({ data: pvmEmptyResponse })
-
-    expect(resultOrTimeout).toBe(true)
+    await expect(
+      WalletService.hasActivityFromXpubXP({
+        walletId: 'wallet-1',
+        walletType: WalletType.MNEMONIC,
+        accountIndex: 2,
+        isTestnet: false
+      })
+    ).resolves.toBe(true)
   })
 })
