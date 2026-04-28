@@ -12,8 +12,8 @@ describe('Activity history', () => {
     await commonPage.filter(common.pChain)
     await portfolio.tapToken()
     // Send
-    // await txPage.send(undefined, '0.01')
-    // await txPage.verifySuccessToast()
+    await txPage.send(undefined, '0.01')
+    await txPage.verifySuccessToast()
   })
 
   it('[P-Chain Send] verify send history on the token detail', async () => {

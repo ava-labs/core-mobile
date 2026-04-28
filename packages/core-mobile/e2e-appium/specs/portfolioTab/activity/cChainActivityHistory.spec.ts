@@ -12,15 +12,15 @@ describe('Activity history', () => {
     await warmup()
     // 0.0001 AVAX is below the C-Chain low-value filter threshold (0.001 AVAX / $0.01 USD)
     // — should be filtered out and NOT appear in activity
-    // await txPage.send(txLoc.avaxToken, '0.0001')
-    // await txPage.verifySuccessToast()
-    // // 0.01 AVAX is above the threshold — should appear in activity
-    // await txPage.send(txLoc.avaxToken, '0.01')
-    // await txPage.verifySuccessToast()
+    await txPage.send(txLoc.avaxToken, '0.0001')
+    await txPage.verifySuccessToast()
+    // 0.01 AVAX is above the threshold — should appear in activity
+    await txPage.send(txLoc.avaxToken, '0.01')
+    await txPage.verifySuccessToast()
 
-    // await txPage.tapSwap()
-    // await txPage.quickSwap('0.02')
-    // await txPage.verifySuccessToast()
+    await txPage.tapSwap()
+    await txPage.quickSwap('0.02')
+    await txPage.verifySuccessToast()
   })
 
   it('[C-Chain Send] verify send history on activity tab', async () => {

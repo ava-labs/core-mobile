@@ -10,11 +10,11 @@ import common from '../../../locators/commonEls.loc'
 describe('Activity history', () => {
   before(async () => {
     await warmup()
-    // await txPage.send(txLoc.solToken, '0.002')
-    // await txPage.verifySuccessToast()
+    await txPage.send(txLoc.solToken, '0.002')
+    await txPage.verifySuccessToast()
 
-    // await txPage.swap('SOL', 'JUP', '0.002', txLoc.solana)
-    // await txPage.verifySuccessToast()
+    await txPage.swap('SOL', 'JUP', '0.002', txLoc.solana)
+    await txPage.verifySuccessToast()
   })
 
   it('[Solana Send] verify send history on activity tab', async () => {
