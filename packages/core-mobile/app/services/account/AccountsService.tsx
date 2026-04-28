@@ -654,9 +654,7 @@ class AccountsService {
       // Native path for mnemonic wallets: derive the entire window in one
       // native call (single Promise round-trip, single seed copy) instead of
       // per-account calls that underutilize the batching (CP-14062).
-      let addressResults: PromiseSettledResult<
-        Record<NetworkVMType, string>
-      >[]
+      let addressResults: PromiseSettledResult<Record<NetworkVMType, string>>[]
 
       if (seedBuffer) {
         try {
