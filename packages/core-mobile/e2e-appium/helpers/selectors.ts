@@ -61,12 +61,20 @@ function getBySomeText(text: string) {
   )
 }
 
+function getBySomeTextV2(text: string) {
+  return withPlatform(
+    `-ios predicate string:name CONTAINS "${text}"`,
+    `//*[contains(@text, '${text}') or contains(@content-desc, '${text}')]`
+  )
+}
+
 export const selectors = {
   getByText,
   getById,
   getByIdWithIndex,
   getByTextWithIndex,
   getBySomeText,
+  getBySomeTextV2,
   getByXpath,
   getBySmartText
 }
