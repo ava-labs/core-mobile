@@ -515,7 +515,7 @@ describe('account/utils', () => {
       )
     })
 
-    it('dispatches each account individually for mnemonic wallets', async () => {
+    it('dispatches accounts in batches for mnemonic wallets', async () => {
       mockFetchRemainingActiveAccounts.mockImplementation(
         async ({ onAccountCreated }) => {
           Object.values(mockAccounts).forEach(account => {
@@ -532,17 +532,11 @@ describe('account/utils', () => {
         startIndex: 1
       })
 
-      // Each account dispatched individually via onAccountCreated
+      // Accounts batched and dispatched together (CP-14062)
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'account/setNonActiveAccounts',
-          payload: { 'acc-1': mockAccounts['acc-1'] }
-        })
-      )
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'account/setNonActiveAccounts',
-          payload: { 'acc-2': mockAccounts['acc-2'] }
+          payload: mockAccounts
         })
       )
     })
@@ -581,7 +575,11 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return { accounts: mockAccounts, completedCleanly: true }
+          return {
+            accounts: mockAccounts,
+            accountIds: Object.keys(mockAccounts),
+            completedCleanly: true
+          }
         }
       )
 
@@ -592,9 +590,10 @@ describe('account/utils', () => {
         startIndex: 1
       })
 
-      // Each account added individually via onAccountCreated
-      expect(mockAddRecentAccounts).toHaveBeenCalledWith(['acc-1'])
-      expect(mockAddRecentAccounts).toHaveBeenCalledWith(['acc-2'])
+      // Called exactly once from the final setAccounts block, not from
+      // batch flushes, to avoid duplicates (addRecentAccounts does not deduplicate).
+      expect(mockAddRecentAccounts).toHaveBeenCalledTimes(1)
+      expect(mockAddRecentAccounts).toHaveBeenCalledWith(['acc-1', 'acc-2'])
     })
 
     it('does not dispatch account actions when none found', async () => {
@@ -646,11 +645,12 @@ describe('account/utils', () => {
       )
     })
 
-    it('stops dispatching if wallet becomes inactive mid-discovery', async () => {
+    it('skips batch flush if wallet becomes inactive mid-discovery', async () => {
+      // Return ACTIVE for the initial guard, then INACTIVE for the batch flush
       let callCount = 0
       mockGetState.mockImplementation(() => {
         callCount++
-        if (callCount <= 2) return createMockState(WalletState.ACTIVE)
+        if (callCount <= 1) return createMockState(WalletState.ACTIVE)
         return createMockState(WalletState.INACTIVE)
       })
 
@@ -672,9 +672,11 @@ describe('account/utils', () => {
 
       const accountDispatches = mockDispatch.mock.calls.filter(
         ([action]: [{ type: string }]) =>
-          action.type === 'account/setNonActiveAccounts'
+          action.type === 'account/setNonActiveAccounts' ||
+          action.type === 'account/setAccounts'
       )
-      expect(accountDispatches).toHaveLength(1)
+      // Batch flush skipped because wallet became inactive
+      expect(accountDispatches).toHaveLength(0)
       expect(Logger.error).toHaveBeenCalledWith(
         'Wallet became inactive during discovery, skipping dispatch'
       )

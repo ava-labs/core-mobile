@@ -191,35 +191,45 @@ export const migrateRemainingActiveAccounts = async ({
       return
     }
 
-    // For seedless wallets, batch all accounts at once since XP balance
-    // fetching iterates over all accounts — dispatching one at a time
-    // would trigger redundant balance updates.
-    const isSeedless = walletType === WalletType.SEEDLESS
+    // Batch discovered accounts and dispatch in chunks to avoid a
+    // re-render cascade from individual Redux dispatches (CP-14062).
+    const DISPATCH_BATCH_SIZE = 5
+    let pendingAccounts: AccountCollection = {}
+    let pendingAccountIds: string[] = []
+
+    const flushPendingAccounts = (): void => {
+      if (pendingAccountIds.length === 0) return
+
+      const currentWalletState = selectWalletState(getState())
+      if (currentWalletState !== WalletState.ACTIVE) {
+        Logger.error(
+          'Wallet became inactive during discovery, skipping dispatch'
+        )
+        return
+      }
+
+      dispatch(setNonActiveAccounts(pendingAccounts))
+      pendingAccounts = {}
+      pendingAccountIds = []
+    }
 
     const { accounts, accountIds } = await discoverRemainingActiveAccounts({
       walletId,
       walletType,
       startIndex,
       scanWindow,
-      onAccountCreated: isSeedless
-        ? undefined
-        : account => {
-            // Re-check wallet state before each dispatch to handle
-            // the case where wallet becomes inactive mid-discovery.
-            const currentWalletState = selectWalletState(getState())
-            if (currentWalletState !== WalletState.ACTIVE) {
-              Logger.error(
-                'Wallet became inactive during discovery, skipping dispatch'
-              )
-              return
-            }
-            // Dispatch each account to Redux as it's created so it
-            // appears in the UI immediately rather than waiting for
-            // all accounts to finish.
-            dispatch(setNonActiveAccounts({ [account.id]: account }))
-            recentAccountsStore.getState().addRecentAccounts([account.id])
-          }
+      onAccountCreated: account => {
+        pendingAccounts[account.id] = account
+        pendingAccountIds.push(account.id)
+
+        if (pendingAccountIds.length >= DISPATCH_BATCH_SIZE) {
+          flushPendingAccounts()
+        }
+      }
     })
+
+    // Flush any remaining accounts that didn't fill a complete batch.
+    flushPendingAccounts()
 
     const state = getState()
     const walletState = selectWalletState(state)
@@ -231,8 +241,12 @@ export const migrateRemainingActiveAccounts = async ({
       return
     }
 
-    if (isSeedless && accountIds.length > 0) {
+    if (accountIds.length > 0) {
+      // Final setAccounts dispatch ensures listeners that react specifically
+      // to setAccounts (balance, WalletConnect) fire once with all accounts.
       dispatch(setAccounts(accounts))
+      // addRecentAccounts is called here (not in the batch flushes) so that
+      // all IDs are added exactly once — addRecentAccounts does not deduplicate.
       recentAccountsStore.getState().addRecentAccounts(accountIds)
     }
   } finally {

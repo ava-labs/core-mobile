@@ -291,11 +291,10 @@ const migrateActiveAccountsIfNeeded = async (
 }
 
 const migrateSolanaAddressesIfNeeded = async (
-  _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { getState } = listenerApi
-  const state = getState()
+  // Re-read state to see accounts created by Phase 1.
+  const state = listenerApi.getState()
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
@@ -315,7 +314,7 @@ const migrateSolanaAddressesIfNeeded = async (
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
-    await reloadAccounts(_action, listenerApi)
+    await reloadAccounts(undefined, listenerApi)
   }
 }
 
@@ -335,13 +334,13 @@ const handleInitAccountsIfNeeded = async (
   }
 
   // if there are accounts, we need to migrate them
-  migrateActiveAccountsIfNeeded(_action, listenerApi)
+  await migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
 const rederiveAvmPvmAddressesIfNeeded = async (
-  _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  // Re-read state to see accounts created/updated by earlier phases.
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
@@ -386,6 +385,50 @@ const rederiveAvmPvmAddressesIfNeeded = async (
         Object.keys(updatedAccounts).length
       } account(s)`
     )
+  }
+}
+
+/**
+ * Single orchestrator that runs all post-unlock account tasks in sequence.
+ * Previously these fired as 3 independent listeners on onAppUnlocked,
+ * competing for the JS thread simultaneously (CP-14062).
+ *
+ * Phase 1 — Init / migrate accounts (creates accounts the later phases need)
+ * Phase 2 — Migrate missing Solana addresses (calls reloadAccounts which
+ *           refreshes all addresses; may fill in AVM/PVM too)
+ * Phase 3 — Re-derive missing AVM/PVM addresses (skips accounts already
+ *           fixed by Phase 2's reload)
+ */
+const onAppUnlockedOrchestrator = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  // Each phase is wrapped in try-catch so a failure in one phase does not
+  // prevent later phases from running.  The previous independent-listener
+  // architecture was resilient to individual failures; we preserve that.
+
+  // Phase 1: Initialise accounts or migrate existing ones
+  try {
+    Logger.info('[onAppUnlocked] Phase 1: init/migrate accounts')
+    await handleInitAccountsIfNeeded(_action, listenerApi)
+  } catch (error) {
+    Logger.error('[onAppUnlocked] Phase 1 failed', error)
+  }
+
+  // Phase 2: Derive missing Solana addresses and reload
+  try {
+    Logger.info('[onAppUnlocked] Phase 2: migrate Solana addresses')
+    await migrateSolanaAddressesIfNeeded(listenerApi)
+  } catch (error) {
+    Logger.error('[onAppUnlocked] Phase 2 failed', error)
+  }
+
+  // Phase 3: Re-derive missing AVM/PVM addresses
+  try {
+    Logger.info('[onAppUnlocked] Phase 3: rederive AVM/PVM addresses')
+    await rederiveAvmPvmAddressesIfNeeded(listenerApi)
+  } catch (error) {
+    Logger.error('[onAppUnlocked] Phase 3 failed', error)
   }
 }
 
@@ -497,17 +540,7 @@ export const addAccountListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: handleInitAccountsIfNeeded
-  })
-
-  startListening({
-    actionCreator: onAppUnlocked,
-    effect: migrateSolanaAddressesIfNeeded
-  })
-
-  startListening({
-    actionCreator: onAppUnlocked,
-    effect: rederiveAvmPvmAddressesIfNeeded
+    effect: onAppUnlockedOrchestrator
   })
 
   startListening({
