@@ -1,8 +1,7 @@
 # Native Batch Address Derivation
 
 **Ticket:** CP-14062  
-**Date:** 2026-04-27  
-**Status:** Draft
+**Status:** Implemented
 
 ## Problem
 
@@ -12,7 +11,11 @@ The repro is: log in with a mnemonic wallet, and while the "Adding accounts..." 
 
 ## Solution
 
-Add two async Nitro Module functions to the existing `react-native-nitro-avalabs-crypto` package that perform all per-account address derivation on a native background thread, freeing the JS thread entirely.
+Add three async Nitro Module functions to the existing `react-native-nitro-avalabs-crypto` package that perform all per-account address derivation on a native background thread, freeing the JS thread entirely.
+
+1. **`deriveAddressesFromXpubs`** — secp256k1 addresses from BIP32 extended public keys (used by Ledger offline discovery)
+2. **`deriveSolanaAddressesFromSeed`** — Solana addresses via SLIP-0010 Ed25519 from BIP39 seed (standalone Solana derivation)
+3. **`deriveAllAddressesFromSeed`** — all addresses (secp256k1 + Ed25519) from BIP39 seed in a single native call (primary function for mnemonic discovery)
 
 ## API Design
 
@@ -53,7 +56,7 @@ interface DerivedSecp256k1Addresses {
 6. Avalanche bech32 (AVM, PVM): SHA-256(Avalanche pubkey) → RIPEMD-160 → bech32 with `avax`/`fuji` HRP
 7. CoreEth bech32: SHA-256(EVM pubkey) → RIPEMD-160 → bech32 with `avax`/`fuji` HRP
 
-**Used by:** Both Ledger offline discovery and mnemonic account discovery.
+**Used by:** Ledger offline discovery (where xpubs are already available from the device).
 
 ### Function 2: `deriveSolanaAddressesFromSeed`
 
@@ -82,37 +85,78 @@ interface DerivedSolanaAddress {
 3. Ed25519 scalar-to-point: secret → public key (32 bytes)
 4. Base58 encode public key → Solana address string
 
-**Used by:** Mnemonic account discovery only. Ledger gets Solana addresses directly from the device via APDU.
+**Used by:** Available as standalone for callers that only need Solana addresses. Ledger gets Solana addresses directly from the device via APDU.
+
+### Function 3: `deriveAllAddressesFromSeed`
+
+Derives ALL addresses (secp256k1 + Ed25519) for multiple account indices from a BIP39 seed in a single native call. This is the primary function for mnemonic wallet discovery — the JS thread does zero crypto work.
+
+```typescript
+async deriveAllAddressesFromSeed(
+  seed: ArrayBuffer,
+  accountIndices: number[],
+  isTestnet: boolean
+): Promise<DerivedAllAddresses[]>
+
+interface DerivedAllAddresses {
+  accountIndex: number
+  evm: string       // 0x-prefixed EIP-55 checksummed address
+  btc: string       // bech32 P2WPKH address (bc1... or tb1...)
+  avm: string       // X-{bech32} with avax/fuji HRP
+  pvm: string       // P-{bech32} with avax/fuji HRP
+  coreEth: string   // C-{bech32} with avax/fuji HRP
+  solana: string    // base58-encoded Ed25519 public key
+}
+```
+
+**Inputs:**
+- `seed`: 64-byte BIP39 seed (ArrayBuffer)
+- `accountIndices`: account indices to derive
+- `isTestnet`: true → fuji/tb1; false → avax/bc1
+
+**Internal derivation (all in C++, single native call):**
+1. BIP32 master from seed: HMAC-SHA512(`"Bitcoin seed"`, seed) → master private key + chain code (once)
+2. EVM xpub at `m/44'/60'/0'`: hardened derivation from master → public key extraction (once, shared across all accounts)
+3. SLIP-0010 master from seed: HMAC-SHA512(`"ed25519 seed"`, seed) → Ed25519 master (once, shared across all accounts)
+4. Per account index:
+   - Avalanche xpub at `m/44'/9000'/{accountIndex}'`: hardened derivation from BIP32 master
+   - All secp256k1 addresses from EVM + Avalanche xpubs (same logic as `deriveAddressesFromXpubs`)
+   - Solana address via SLIP-0010 `m/44'/501'/{accountIndex}'/0'` from pre-computed Ed25519 master
+5. All seed and private key material zeroed with `OPENSSL_cleanse` after use
+
+**Used by:** Mnemonic account discovery and `reloadAccounts` for mnemonic wallets.
 
 ## C++ Implementation
 
-### New code in `react-native-nitro-avalabs-crypto`
+### Code in `react-native-nitro-avalabs-crypto`
 
-**Files to create/modify:**
+All crypto helpers are implemented as header-only `.hpp` files for simplicity (inline functions, no separate compilation units).
+
+**Files:**
 
 | File | Purpose |
 |---|---|
-| `cpp/CryptoHybrid.cpp` | Add `deriveAddressesFromXpubs` and `deriveSolanaAddressesFromSeed` method implementations |
-| `cpp/bip32.h` / `cpp/bip32.cpp` | BIP32 public child derivation + xpub base58 parsing |
-| `cpp/slip0010.h` / `cpp/slip0010.cpp` | SLIP-0010 Ed25519 hardened derivation |
-| `cpp/address.h` / `cpp/address.cpp` | Address encoding: EVM (Keccak + EIP-55), BTC (P2WPKH bech32), Avalanche (bech32 with HRP) |
-| `cpp/keccak256.h` / `cpp/keccak256.cpp` | Standalone Keccak-256 implementation (~200 LOC) |
-| `cpp/bech32.h` / `cpp/bech32.cpp` | Bech32/bech32m encoding (~100 LOC, from BIP-173 reference) |
-| `cpp/base58.h` / `cpp/base58.cpp` | Base58 + Base58Check encode/decode (~80 LOC) |
-| `src/specs/Crypto.nitro.ts` | Add new method signatures to the Nitro spec |
-| `src/Crypto.ts` | Add JS wrapper functions |
+| `cpp/CryptoHybrid.cpp` | `deriveAddressesFromXpubs`, `deriveSolanaAddressesFromSeed`, and `deriveAllAddressesFromSeed` method implementations |
+| `cpp/CryptoHybrid.hpp` | Class declaration with Nitro spec overrides |
+| `cpp/address_derivation.hpp` | BIP32 public + hardened private child derivation, xpub parsing (via base58), secp256k1 address encoding (EVM, BTC, Avalanche), full seed-to-addresses pipeline |
+| `cpp/slip0010.hpp` | SLIP-0010 Ed25519 hardened derivation + Solana address encoding |
+| `cpp/keccak256.hpp` | Standalone Keccak-256 (Ethereum variant, NOT SHA3-256) |
+| `cpp/bech32.hpp` | BIP-173 bech32 encoding for BTC P2WPKH + Avalanche addresses |
+| `cpp/base58.hpp` | Base58Check decode (xpub parsing) + Base58 encode (Solana addresses) |
+| `src/specs/Crypto.nitro.ts` | Nitro spec with all three method signatures + result types |
+| `src/Crypto.ts` | JS wrapper functions |
 
-### Dependencies (all already available or trivially addable)
+### Dependencies (all already available)
 
 | Library | Status | Used for |
 |---|---|---|
-| libsecp256k1 | Already included | `secp256k1_ec_pubkey_tweak_add`, `secp256k1_ec_pubkey_parse`, `secp256k1_ec_pubkey_serialize` |
-| OpenSSL | Already included | HMAC-SHA512, SHA-256, RIPEMD-160, Ed25519 point derivation |
-| Keccak-256 | Add standalone | EVM address derivation (NOT SHA3-256; Ethereum uses pre-NIST Keccak) |
-| Bech32 | Add standalone | BTC P2WPKH + Avalanche addresses |
-| Base58 | Add standalone | xpub parsing, Solana address encoding |
+| libsecp256k1 | Already included | `secp256k1_ec_pubkey_tweak_add`, `secp256k1_ec_pubkey_parse`, `secp256k1_ec_pubkey_serialize`, `secp256k1_ec_seckey_tweak_add` (hardened derivation) |
+| OpenSSL | Already included | HMAC-SHA512, SHA-256, RIPEMD-160, Ed25519 point derivation, `RAND_bytes` (context randomization), `OPENSSL_cleanse` (key zeroing) |
+| Keccak-256 | Standalone header | EVM address derivation (NOT SHA3-256; Ethereum uses pre-NIST Keccak) |
+| Bech32 | Standalone header | BTC P2WPKH + Avalanche addresses |
+| Base58 | Standalone header | xpub parsing, Solana address encoding |
 
-### Nitro spec changes
+### Nitro spec
 
 ```typescript
 // Added to existing Crypto interface in Crypto.nitro.ts
@@ -131,6 +175,12 @@ interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
     seed: ArrayBuffer,
     accountIndices: number[]
   ): Promise<DerivedSolanaAddress[]>
+
+  deriveAllAddressesFromSeed(
+    seed: ArrayBuffer,
+    accountIndices: number[],
+    isTestnet: boolean
+  ): Promise<DerivedAllAddresses[]>
 }
 
 interface DerivedSecp256k1Addresses {
@@ -146,9 +196,42 @@ interface DerivedSolanaAddress {
   accountIndex: number
   address: string
 }
+
+interface DerivedAllAddresses {
+  accountIndex: number
+  evm: string
+  btc: string
+  avm: string
+  pvm: string
+  coreEth: string
+  solana: string
+}
 ```
 
 After updating the spec, run `yarn specs` to regenerate the Nitrogen bindings.
+
+## Security
+
+### Key material handling
+
+- The BIP39 seed crosses into native memory within the same process (no new trust boundary).
+- `OPENSSL_cleanse` zeroes all seed and private key copies after use:
+  - `deriveAllAddressesFromSeed`: seed bytes, BIP32 master key, EVM private key, SLIP-0010 master secret + chain code
+  - `deriveSolanaAddressesFromSeed`: seed bytes
+  - `bip32_master_from_seed`: HMAC output `I`
+  - `bip32_derive_hardened_child`: HMAC output `I`, intermediate key `IL`, `data` buffer (contains parent private key)
+  - `derive_all_addresses_for_index`: Avalanche private key after public key extraction
+  - `slip0010_master_key` / `slip0010_derive_hardened`: HMAC outputs, `data` buffers containing secret material
+  - `solana_address_from_master` / `solana_address_from_seed`: derived secrets, master key material
+
+### Side-channel protection
+
+- secp256k1 context randomized with `RAND_bytes()` (OpenSSL CSPRNG) on first use, seed cleansed after. Protects against timing/power side-channel attacks on EC operations.
+
+### Robustness
+
+- `sha256()` and `ripemd160()` check `EVP_MD_CTX_new()` for null and verify all `EVP_Digest*` return values, freeing the context on every error path. Prevents silent incorrect hash outputs (which would produce wrong wallet addresses).
+- `base58_map()` uses C++11 thread-safe static local initialization (lambda-initialized `std::array`) instead of a manual `bool` flag pattern that had a data race.
 
 ## Integration Points
 
@@ -191,28 +274,15 @@ Replace the `for` loop over `additionalIndices` (calling `deriveAddressesFromXpu
 
 **File:** `packages/core-mobile/app/services/account/AccountsService.tsx`
 
-In `discoverSeedBasedActiveAccounts()`, replace the per-account `ModuleManager.deriveAddresses()` call with:
-1. Derive xpubs once from the wallet seed (BIP32 hardened — still in JS, but only 2 derivations)
-2. Call `deriveAddressesBatch(evmXpub, avalancheXpub, isTestnet, windowIndices)` for the entire window
-3. Call `deriveSolanaAddressesBatch(seed, windowIndices)` for Solana addresses
-4. Merge results into the existing address map format
+In `discoverSeedBasedActiveAccounts()`, replace the per-account `ModuleManager.deriveAddresses()` call with a single `deriveAllAddressesFromSeed(seed, windowIndices, isTestnet)` call. This derives all addresses (EVM, BTC, AVM, PVM, CoreEth, Solana) for the entire window in one native call — no JS-side xpub derivation or separate Solana call needed.
 
 This replaces `ModuleManager.deriveAddresses()` for the discovery use case only. Normal single-address derivation (e.g., for transaction signing) continues to use the VM modules.
 
-### 4. Mnemonic xpub derivation helper
+### 4. Mnemonic `reloadAccounts`
 
-**File:** `packages/core-mobile/app/services/account/AccountsService.tsx` (or new utility)
+**File:** `packages/core-mobile/app/store/account/listeners.ts`
 
-Add a helper that derives account-level xpubs from the wallet seed:
-
-```typescript
-async function deriveXpubsForDiscovery(
-  walletId: string,
-  walletType: WalletType
-): Promise<{ evmXpub: string; avalancheXpub: string; seed: ArrayBuffer }>
-```
-
-This calls the existing `WalletService` to get the mnemonic, derives the seed (BIP39), then derives the two account-level xpubs using the existing `bip32` utility. This is done once per discovery run (not per account).
+`reloadAccounts` (Phase 2 of the `onAppUnlockedOrchestrator`) batches all account indices into a single `deriveAllAddressesFromSeed` native call for mnemonic wallets, instead of looping through `ModuleManager.deriveAddresses` per account on the JS thread.
 
 ## Testing
 
@@ -220,6 +290,7 @@ This calls the existing `WalletService` to get the mnemonic, derives the seed (B
 
 - Derive addresses from known xpubs and verify against expected addresses (use test vectors from BIP32/BIP44 specs)
 - Derive Solana addresses from known seeds and verify against expected base58 addresses
+- Derive all addresses from seed and verify all 6 address types match expected values
 - Test with both mainnet and testnet parameters
 - Test with empty and large account index arrays
 - Test with invalid xpub strings (should throw, not crash)
@@ -228,6 +299,7 @@ This calls the existing `WalletService` to get the mnemonic, derives the seed (B
 
 - Verify that `deriveAddressesBatch` produces identical results to the existing `deriveAddressesFromXpub` for the same inputs
 - Verify that `deriveSolanaAddressesBatch` produces identical results to the existing JS Solana derivation
+- Verify that `deriveAllAddressesFromSeed` produces identical results to calling `deriveAddressesBatch` + `deriveSolanaAddressesBatch` separately
 - Run mnemonic account discovery with the native path and verify same accounts are discovered
 
 ### Performance validation
@@ -241,13 +313,13 @@ This calls the existing `WalletService` to get the mnemonic, derives the seed (B
 The native functions are additive — existing JS implementations remain as fallback. Integration points are updated one at a time:
 1. First: Ledger offline derivation (simplest, self-contained)
 2. Second: Ledger discovery loop
-3. Third: Mnemonic discovery (most impactful, requires xpub derivation helper)
+3. Third: Mnemonic discovery via `deriveAllAddressesFromSeed` (most impactful, single native call)
+4. Fourth: `reloadAccounts` native path for mnemonic wallets
 
 Each step can be verified independently before moving to the next.
 
 ## Out of Scope
 
 - Moving BIP39 mnemonic-to-seed derivation (PBKDF2) to native — done once, cached, not a bottleneck
-- Moving BIP32 hardened derivation from seed to xpubs to native — only 2 derivations per wallet, not per-account
 - Changing VM module `deriveAddress()` — these are external packages; we bypass them for discovery only
 - Solana derivation for Ledger wallets — Ledger provides Solana addresses via APDU
