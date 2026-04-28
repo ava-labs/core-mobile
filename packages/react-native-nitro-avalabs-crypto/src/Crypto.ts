@@ -3,12 +3,14 @@ import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
 import type {
   Crypto,
+  DerivedAllAddresses,
   DerivedSecp256k1Addresses,
   DerivedSolanaAddress,
   ExtendedPublicKeyResult
 } from './specs/Crypto.nitro'
 
 export type {
+  DerivedAllAddresses,
   DerivedSecp256k1Addresses,
   DerivedSolanaAddress,
   ExtendedPublicKeyResult
@@ -409,4 +411,21 @@ export function deriveSolanaAddressesFromSeed(
   accountIndices: number[]
 ): Promise<DerivedSolanaAddress[]> {
   return NativeCrypto.deriveSolanaAddressesFromSeed(seed, accountIndices)
+}
+
+/**
+ * Derive ALL addresses (secp256k1 + Ed25519) from a BIP39 seed in one
+ * native call.  The JS thread does zero crypto work.
+ *
+ * @param seed           64-byte BIP39 seed (ArrayBuffer)
+ * @param accountIndices account indices to derive
+ * @param isTestnet      true → fuji/tb1; false → avax/bc1
+ * @returns one DerivedAllAddresses per index
+ */
+export function deriveAllAddressesFromSeed(
+  seed: ArrayBuffer,
+  accountIndices: number[],
+  isTestnet: boolean
+): Promise<DerivedAllAddresses[]> {
+  return NativeCrypto.deriveAllAddressesFromSeed(seed, accountIndices, isTestnet)
 }

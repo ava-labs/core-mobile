@@ -39,10 +39,8 @@ import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import WalletService from 'services/wallet/WalletService'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { bip32 } from 'utils/bip32'
 import { mnemonicToSeed } from 'bip39'
-import { deriveAddressesBatch } from 'services/ledger/deriveAddressesOffline'
-import { deriveSolanaAddressesFromSeed } from 'react-native-nitro-avalabs-crypto'
+import { deriveAllAddressesFromSeed } from 'react-native-nitro-avalabs-crypto'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import {
   AvalancheXpGetBalancesRequestItem,
@@ -625,21 +623,15 @@ class AccountsService {
       pvm: mapToVmNetwork(NETWORK_P)
     }
 
-    // For mnemonic wallets, derive the BIP32 root and EVM xpub once so
-    // the per-account task can use the native Nitro module for both
-    // secp256k1 and Ed25519 address derivation (runs on native background
-    // threads, freeing the JS thread for UI and BLE events — CP-14062).
-    let bip32Root: ReturnType<typeof bip32.fromSeed> | undefined
-    let evmXpub: string | undefined
+    // For mnemonic wallets, cache the seed so the per-account task can use
+    // a single native call (deriveAllAddressesFromSeed) that does ALL crypto
+    // on a native background thread — zero JS thread crypto work (CP-14062).
     let seedBuffer: ArrayBuffer | undefined
     if (walletType === WalletType.MNEMONIC) {
       try {
         const secret = await BiometricsSDK.loadWalletSecret(walletId)
         if (secret.success) {
           const seed = await mnemonicToSeed(secret.value)
-          bip32Root = bip32.fromSeed(seed)
-          evmXpub = bip32Root.derivePath("m/44'/60'/0'").toBase58()
-          // Cache the seed as ArrayBuffer for native Solana derivation.
           seedBuffer = seed.buffer.slice(
             seed.byteOffset,
             seed.byteOffset + seed.byteLength
@@ -647,7 +639,7 @@ class AccountsService {
         }
       } catch (error) {
         Logger.error(
-          'Failed to derive xpubs for native path, using JS fallback',
+          'Failed to load seed for native path, using JS fallback',
           error
         )
       }
@@ -663,31 +655,26 @@ class AccountsService {
         concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
         task: async accountIndex => {
           try {
-            // Native path for mnemonic wallets: derive ALL addresses on
-            // native background threads (secp256k1 + Ed25519), freeing
-            // the JS thread entirely (CP-14062).
-            if (bip32Root && evmXpub && seedBuffer) {
-              const avaxXpub = bip32Root
-                .derivePath(`m/44'/9000'/${accountIndex}'`)
-                .toBase58()
-
-              const [batch, solanaBatch] = await Promise.all([
-                deriveAddressesBatch(evmXpub, avaxXpub, false, [accountIndex]),
-                deriveSolanaAddressesFromSeed(seedBuffer, [accountIndex])
-              ])
-
-              const secp = batch.get(accountIndex)
-              const solAddr = solanaBatch[0]?.address ?? ''
+            // Native path for mnemonic wallets: single native call derives
+            // ALL addresses (secp256k1 + Ed25519) on a background thread.
+            // Zero JS thread crypto work (CP-14062).
+            if (seedBuffer) {
+              const all = await deriveAllAddressesFromSeed(
+                seedBuffer,
+                [accountIndex],
+                false
+              )
+              const r = all[0]
 
               return {
                 status: 'fulfilled',
                 value: {
-                  [NetworkVMType.EVM]: secp?.evm ?? '',
-                  [NetworkVMType.BITCOIN]: secp?.btc ?? '',
-                  [NetworkVMType.AVM]: secp?.avm ?? '',
-                  [NetworkVMType.PVM]: secp?.pvm ?? '',
-                  [NetworkVMType.CoreEth]: secp?.coreEth ?? '',
-                  [NetworkVMType.SVM]: solAddr
+                  [NetworkVMType.EVM]: r?.evm ?? '',
+                  [NetworkVMType.BITCOIN]: r?.btc ?? '',
+                  [NetworkVMType.AVM]: r?.avm ?? '',
+                  [NetworkVMType.PVM]: r?.pvm ?? '',
+                  [NetworkVMType.CoreEth]: r?.coreEth ?? '',
+                  [NetworkVMType.SVM]: r?.solana ?? ''
                 }
               } as PromiseSettledResult<Record<NetworkVMType, string>>
             }

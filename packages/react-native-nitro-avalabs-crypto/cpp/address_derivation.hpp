@@ -125,6 +125,110 @@ inline BIP32PublicKey bip32_derive_path(
 }
 
 // ---------------------------------------------------------------------------
+// BIP32 private (hardened) child derivation
+//
+// Required for deriving account-level xpubs from the BIP39 seed, where the
+// path contains hardened segments (e.g. m/44'/60'/0', m/44'/9000'/{i}').
+// ---------------------------------------------------------------------------
+
+struct BIP32PrivateKey {
+    std::vector<uint8_t> key;        // 32 bytes private key
+    std::vector<uint8_t> chain_code; // 32 bytes
+};
+
+// Master key from BIP39 seed: HMAC-SHA512("Bitcoin seed", seed)
+inline BIP32PrivateKey bip32_master_from_seed(const uint8_t *seed, size_t seed_len) {
+    auto I = hmac_sha512(
+        reinterpret_cast<const uint8_t *>("Bitcoin seed"), 12,
+        seed, seed_len);
+    return {
+        std::vector<uint8_t>(I.begin(), I.begin() + 32),
+        std::vector<uint8_t>(I.begin() + 32, I.end())
+    };
+}
+
+// Derive a hardened child private key.
+// data = 0x00 || ser256(parent_key) || ser32(index | 0x80000000)
+inline BIP32PrivateKey bip32_derive_hardened_child(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &parent,
+        uint32_t index) {
+
+    std::vector<uint8_t> data(37);
+    data[0] = 0x00;
+    std::memcpy(data.data() + 1, parent.key.data(), 32);
+    uint32_t hardened = index | 0x80000000u;
+    data[33] = static_cast<uint8_t>((hardened >> 24) & 0xFF);
+    data[34] = static_cast<uint8_t>((hardened >> 16) & 0xFF);
+    data[35] = static_cast<uint8_t>((hardened >> 8) & 0xFF);
+    data[36] = static_cast<uint8_t>(hardened & 0xFF);
+
+    auto I = hmac_sha512(parent.chain_code.data(), parent.chain_code.size(),
+                          data.data(), data.size());
+
+    std::vector<uint8_t> IL(I.begin(), I.begin() + 32);
+    std::vector<uint8_t> IR(I.begin() + 32, I.end());
+
+    // child_key = parse256(IL) + parent_key (mod n)
+    // secp256k1_ec_seckey_tweak_add does: key = key + tweak mod n
+    std::vector<uint8_t> child_key = IL;
+    if (secp256k1_ec_seckey_tweak_add(ctx, child_key.data(), parent.key.data()) != 1) {
+        throw std::runtime_error("BIP32 hardened derivation failed (invalid key)");
+    }
+
+    return {child_key, IR};
+}
+
+// Derive a hardened path (e.g. [44, 60, 0] for m/44'/60'/0')
+inline BIP32PrivateKey bip32_derive_hardened_path(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &master,
+        const std::vector<uint32_t> &indices) {
+    BIP32PrivateKey current = master;
+    for (uint32_t idx : indices) {
+        current = bip32_derive_hardened_child(ctx, current, idx);
+    }
+    return current;
+}
+
+// Convert a private key to its corresponding BIP32PublicKey (for public child derivation)
+inline BIP32PublicKey bip32_private_to_public(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &priv) {
+    secp256k1_pubkey pk;
+    if (secp256k1_ec_pubkey_create(ctx, &pk, priv.key.data()) != 1) {
+        throw std::runtime_error("Failed to create public key from private key");
+    }
+    std::vector<uint8_t> compressed(33);
+    size_t out_len = 33;
+    secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &out_len,
+                                  &pk, SECP256K1_EC_COMPRESSED);
+    return {compressed, priv.chain_code};
+}
+
+// ---------------------------------------------------------------------------
+// Full address derivation from seed for one account index
+// ---------------------------------------------------------------------------
+
+inline AddressSet derive_all_addresses_for_index(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &bip32_master,
+        const BIP32PublicKey &evm_xpub,  // pre-derived m/44'/60'/0'
+        const uint8_t *seed, size_t seed_len,
+        bool is_testnet,
+        uint32_t account_index) {
+
+    // Avalanche xpub: m/44'/9000'/{accountIndex}' (hardened from master)
+    auto avax_priv = bip32_derive_hardened_path(ctx, bip32_master, {44, 9000, account_index});
+    auto avax_xpub = bip32_private_to_public(ctx, avax_priv);
+
+    // Derive secp256k1 addresses from both xpubs
+    auto addrs = derive_addresses_for_index(ctx, evm_xpub, avax_xpub, is_testnet, account_index);
+
+    return addrs;
+}
+
+// ---------------------------------------------------------------------------
 // Address derivation from compressed public key
 // ---------------------------------------------------------------------------
 

@@ -79,6 +79,12 @@ namespace margelo::nitro::nitroavalabscrypto {
                 const std::shared_ptr<ArrayBuffer> &seed,
                 const std::vector<double> &accountIndices) override;
 
+        std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>
+        deriveAllAddressesFromSeed(
+                const std::shared_ptr<ArrayBuffer> &seed,
+                const std::vector<double> &accountIndices,
+                bool isTestnet) override;
+
     protected:
         // If your nitrogen requires it, you can override loadHybridMethods(),
         // but the base already wires methods based on the spec.

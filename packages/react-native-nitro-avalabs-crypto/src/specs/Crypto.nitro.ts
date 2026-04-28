@@ -54,6 +54,20 @@ export interface DerivedSolanaAddress {
   address: string // base58-encoded 32-byte Ed25519 public key
 }
 
+/**
+ * All addresses for one account index derived from BIP39 seed.
+ * Returned by deriveAllAddressesFromSeed.
+ */
+export interface DerivedAllAddresses {
+  accountIndex: number
+  evm: string // 0x-prefixed EIP-55 checksummed address
+  btc: string // bech32 P2WPKH (bc1… / tb1…)
+  avm: string // X-{bech32}
+  pvm: string // P-{bech32}
+  coreEth: string // C-{bech32}
+  solana: string // base58-encoded Ed25519 public key
+}
+
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // existing methods
   getPublicKeyFromString(secretKey: string, isCompressed?: boolean): ArrayBuffer
@@ -156,4 +170,28 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
     seed: ArrayBuffer,
     accountIndices: number[]
   ): Promise<DerivedSolanaAddress[]>
+
+  /**
+   * Derive ALL addresses (secp256k1 + Ed25519) for multiple account indices
+   * from a BIP39 seed in a single native call.  Runs entirely on a native
+   * background thread — the JS thread does zero crypto work.
+   *
+   * Internally performs:
+   * - BIP32 root from seed (HMAC-SHA512, once)
+   * - EVM xpub at m/44'/60'/0' (hardened, once)
+   * - Per account: Avalanche xpub at m/44'/9000'/{i}' (hardened)
+   * - Per account: all secp256k1 addresses from xpubs
+   * - Per account: Solana via SLIP-0010 m/44'/501'/{i}'/0'
+   * - Seed bytes zeroed with OPENSSL_cleanse after use
+   *
+   * @param seed           64-byte BIP39 seed (ArrayBuffer)
+   * @param accountIndices account indices to derive
+   * @param isTestnet      true → fuji/tb1; false → avax/bc1
+   * @returns one DerivedAllAddresses per index
+   */
+  deriveAllAddressesFromSeed(
+    seed: ArrayBuffer,
+    accountIndices: number[],
+    isTestnet: boolean
+  ): Promise<DerivedAllAddresses[]>
 }

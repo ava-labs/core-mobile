@@ -19,6 +19,8 @@ namespace margelo::nitro::nitroavalabscrypto { struct ExtendedPublicKey; }
 namespace margelo::nitro::nitroavalabscrypto { struct DerivedSecp256k1Addresses; }
 // Forward declaration of `DerivedSolanaAddress` to properly resolve imports.
 namespace margelo::nitro::nitroavalabscrypto { struct DerivedSolanaAddress; }
+// Forward declaration of `DerivedAllAddresses` to properly resolve imports.
+namespace margelo::nitro::nitroavalabscrypto { struct DerivedAllAddresses; }
 
 #include <NitroModules/ArrayBuffer.hpp>
 #include <string>
@@ -29,6 +31,7 @@ namespace margelo::nitro::nitroavalabscrypto { struct DerivedSolanaAddress; }
 #include <vector>
 #include <NitroModules/Promise.hpp>
 #include "DerivedSolanaAddress.hpp"
+#include "DerivedAllAddresses.hpp"
 
 namespace margelo::nitro::nitroavalabscrypto {
 
@@ -71,6 +74,7 @@ namespace margelo::nitro::nitroavalabscrypto {
       virtual ExtendedPublicKey getExtendedPublicKey(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& secretKey) = 0;
       virtual std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>> deriveAddressesFromXpubs(const std::string& evmXpub, const std::string& avalancheXpub, bool isTestnet, const std::vector<double>& accountIndices) = 0;
       virtual std::shared_ptr<Promise<std::vector<DerivedSolanaAddress>>> deriveSolanaAddressesFromSeed(const std::shared_ptr<ArrayBuffer>& seed, const std::vector<double>& accountIndices) = 0;
+      virtual std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>> deriveAllAddressesFromSeed(const std::shared_ptr<ArrayBuffer>& seed, const std::vector<double>& accountIndices, bool isTestnet) = 0;
 
     protected:
       // Hybrid Setup

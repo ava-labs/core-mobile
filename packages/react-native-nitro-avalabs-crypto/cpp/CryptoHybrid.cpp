@@ -470,7 +470,7 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::memcpy(seedBytes.data(), seed->data(), 64);
 
         return Promise<std::vector<DerivedSolanaAddress>>::async(
-            [seedBytes = std::move(seedBytes), accountIndices]() {
+            [seedBytes = std::move(seedBytes), accountIndices]() mutable {
 
             std::vector<DerivedSolanaAddress> results;
             results.reserve(accountIndices.size());
@@ -482,6 +482,71 @@ namespace margelo::nitro::nitroavalabscrypto {
 
                 results.push_back(DerivedSolanaAddress(idx, std::move(address)));
             }
+
+            // Zero seed material so it doesn't linger in freed memory.
+            OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
+
+            return results;
+        });
+    }
+
+/* ---------- All Addresses From Seed (secp256k1 + Ed25519, async) --------- */
+
+    std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>
+    CryptoHybrid::deriveAllAddressesFromSeed(
+            const std::shared_ptr<ArrayBuffer> &seed,
+            const std::vector<double> &accountIndices,
+            bool isTestnet) {
+
+        if (!seed || seed->size() != 64) {
+            throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
+        }
+
+        std::vector<uint8_t> seedBytes(64);
+        std::memcpy(seedBytes.data(), seed->data(), 64);
+
+        return Promise<std::vector<DerivedAllAddresses>>::async(
+            [this, seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
+
+            // BIP32 master from seed (once)
+            auto master = bip32_master_from_seed(seedBytes.data(), seedBytes.size());
+
+            // EVM xpub at m/44'/60'/0' (once — shared across all accounts)
+            auto evm_priv = bip32_derive_hardened_path(ctx(), master, {44, 60, 0});
+            auto evm_xpub = bip32_private_to_public(ctx(), evm_priv);
+            // Zero the EVM private key — only the public key is needed from here.
+            OPENSSL_cleanse(evm_priv.key.data(), evm_priv.key.size());
+
+            std::vector<DerivedAllAddresses> results;
+            results.reserve(accountIndices.size());
+
+            for (double idx : accountIndices) {
+                auto index = static_cast<uint32_t>(idx);
+
+                // secp256k1 addresses (EVM, BTC, AVM, PVM, CoreEth)
+                auto addrs = derive_all_addresses_for_index(
+                    ctx(), master, evm_xpub,
+                    seedBytes.data(), seedBytes.size(),
+                    isTestnet, index);
+
+                // Solana address (SLIP-0010 Ed25519)
+                auto solana = solana_address_from_seed(
+                    seedBytes.data(), seedBytes.size(), index);
+
+                results.push_back(DerivedAllAddresses(
+                    idx,
+                    std::move(addrs.evm),
+                    std::move(addrs.btc),
+                    std::move(addrs.avm),
+                    std::move(addrs.pvm),
+                    std::move(addrs.coreEth),
+                    std::move(solana)
+                ));
+            }
+
+            // Zero all seed and private key material.
+            OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
+            OPENSSL_cleanse(master.key.data(), master.key.size());
 
             return results;
         });
