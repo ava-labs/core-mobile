@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -13,20 +14,19 @@ namespace margelo::nitro::nitroavalabscrypto {
     static constexpr const char *BASE58_ALPHABET =
             "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-    // Reverse lookup table: ASCII value -> base58 digit (0-57), or -1 if invalid
+    // Reverse lookup table: ASCII value -> base58 digit (0-57), or -1 if invalid.
+    // Uses a lambda-initialized static local for thread-safe one-time initialization
+    // (C++11 guarantee: concurrent callers block until initialization completes).
     inline const int8_t *base58_map() {
-        static int8_t table[256];
-        static bool initialized = false;
-        if (!initialized) {
-            for (int i = 0; i < 256; ++i) {
-                table[i] = -1;
-            }
+        static const auto table = []() {
+            std::array<int8_t, 256> t;
+            t.fill(-1);
             for (int i = 0; i < 58; ++i) {
-                table[static_cast<uint8_t>(BASE58_ALPHABET[i])] = static_cast<int8_t>(i);
+                t[static_cast<uint8_t>(BASE58_ALPHABET[i])] = static_cast<int8_t>(i);
             }
-            initialized = true;
-        }
-        return table;
+            return t;
+        }();
+        return table.data();
     }
 
     // ---------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <secp256k1.h>
+#include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 
@@ -24,10 +25,19 @@ namespace margelo::nitro::nitroavalabscrypto {
 inline std::vector<uint8_t> sha256(const uint8_t *data, size_t len) {
     std::vector<uint8_t> out(32);
     EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr);
-    EVP_DigestUpdate(mdctx, data, len);
+    if (!mdctx) {
+        throw std::runtime_error("sha256: EVP_MD_CTX_new failed");
+    }
+    if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) != 1 ||
+        EVP_DigestUpdate(mdctx, data, len) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        throw std::runtime_error("sha256: digest computation failed");
+    }
     unsigned int md_len = 0;
-    EVP_DigestFinal_ex(mdctx, out.data(), &md_len);
+    if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        throw std::runtime_error("sha256: digest finalization failed");
+    }
     EVP_MD_CTX_free(mdctx);
     return out;
 }
@@ -35,10 +45,19 @@ inline std::vector<uint8_t> sha256(const uint8_t *data, size_t len) {
 inline std::vector<uint8_t> ripemd160(const uint8_t *data, size_t len) {
     std::vector<uint8_t> out(20);
     EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
-    EVP_DigestInit_ex(mdctx, EVP_ripemd160(), nullptr);
-    EVP_DigestUpdate(mdctx, data, len);
+    if (!mdctx) {
+        throw std::runtime_error("ripemd160: EVP_MD_CTX_new failed");
+    }
+    if (EVP_DigestInit_ex(mdctx, EVP_ripemd160(), nullptr) != 1 ||
+        EVP_DigestUpdate(mdctx, data, len) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        throw std::runtime_error("ripemd160: digest computation failed");
+    }
     unsigned int md_len = 0;
-    EVP_DigestFinal_ex(mdctx, out.data(), &md_len);
+    if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        throw std::runtime_error("ripemd160: digest finalization failed");
+    }
     EVP_MD_CTX_free(mdctx);
     return out;
 }
@@ -141,10 +160,12 @@ inline BIP32PrivateKey bip32_master_from_seed(const uint8_t *seed, size_t seed_l
     auto I = hmac_sha512(
         reinterpret_cast<const uint8_t *>("Bitcoin seed"), 12,
         seed, seed_len);
-    return {
+    BIP32PrivateKey result{
         std::vector<uint8_t>(I.begin(), I.begin() + 32),
         std::vector<uint8_t>(I.begin() + 32, I.end())
     };
+    OPENSSL_cleanse(I.data(), I.size());
+    return result;
 }
 
 // Derive a hardened child private key.
@@ -168,13 +189,18 @@ inline BIP32PrivateKey bip32_derive_hardened_child(
 
     std::vector<uint8_t> IL(I.begin(), I.begin() + 32);
     std::vector<uint8_t> IR(I.begin() + 32, I.end());
+    OPENSSL_cleanse(I.data(), I.size());
 
     // child_key = parse256(IL) + parent_key (mod n)
     // secp256k1_ec_seckey_tweak_add does: key = key + tweak mod n
     std::vector<uint8_t> child_key = IL;
     if (secp256k1_ec_seckey_tweak_add(ctx, child_key.data(), parent.key.data()) != 1) {
+        OPENSSL_cleanse(IL.data(), IL.size());
+        OPENSSL_cleanse(data.data(), data.size());
         throw std::runtime_error("BIP32 hardened derivation failed (invalid key)");
     }
+    OPENSSL_cleanse(IL.data(), IL.size());
+    OPENSSL_cleanse(data.data(), data.size());
 
     return {child_key, IR};
 }
@@ -204,28 +230,6 @@ inline BIP32PublicKey bip32_private_to_public(
     secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &out_len,
                                   &pk, SECP256K1_EC_COMPRESSED);
     return {compressed, priv.chain_code};
-}
-
-// ---------------------------------------------------------------------------
-// Full address derivation from seed for one account index
-// ---------------------------------------------------------------------------
-
-inline AddressSet derive_all_addresses_for_index(
-        secp256k1_context *ctx,
-        const BIP32PrivateKey &bip32_master,
-        const BIP32PublicKey &evm_xpub,  // pre-derived m/44'/60'/0'
-        const uint8_t *seed, size_t seed_len,
-        bool is_testnet,
-        uint32_t account_index) {
-
-    // Avalanche xpub: m/44'/9000'/{accountIndex}' (hardened from master)
-    auto avax_priv = bip32_derive_hardened_path(ctx, bip32_master, {44, 9000, account_index});
-    auto avax_xpub = bip32_private_to_public(ctx, avax_priv);
-
-    // Derive secp256k1 addresses from both xpubs
-    auto addrs = derive_addresses_for_index(ctx, evm_xpub, avax_xpub, is_testnet, account_index);
-
-    return addrs;
 }
 
 // ---------------------------------------------------------------------------
@@ -346,6 +350,29 @@ inline AddressSet derive_addresses_for_index(
     result.coreEth = "C-" + core_eth_bech32;
 
     return result;
+}
+
+// ---------------------------------------------------------------------------
+// Full address derivation from seed for one account index
+// ---------------------------------------------------------------------------
+
+inline AddressSet derive_all_addresses_for_index(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &bip32_master,
+        const BIP32PublicKey &evm_xpub,  // pre-derived m/44'/60'/0'
+        bool is_testnet,
+        uint32_t account_index) {
+
+    // Avalanche xpub: m/44'/9000'/{accountIndex}' (hardened from master)
+    auto avax_priv = bip32_derive_hardened_path(ctx, bip32_master, {44, 9000, account_index});
+    auto avax_xpub = bip32_private_to_public(ctx, avax_priv);
+    OPENSSL_cleanse(avax_priv.key.data(), avax_priv.key.size());
+
+    // Convert BIP32PublicKey to Xpub for derive_addresses_for_index
+    Xpub evm_xpub_converted{evm_xpub.key, evm_xpub.chain_code};
+    Xpub avax_xpub_converted{avax_xpub.key, avax_xpub.chain_code};
+
+    return derive_addresses_for_index(ctx, evm_xpub_converted, avax_xpub_converted, is_testnet, account_index);
 }
 
 } // namespace margelo::nitro::nitroavalabscrypto

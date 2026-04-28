@@ -11,6 +11,7 @@
 #ifndef OPENSSL_NOT_AVAILABLE
 
 #include <openssl/evp.h>
+#include <openssl/rand.h>
 
 #endif
 #ifdef __ANDROID__
@@ -21,17 +22,6 @@
 #else
 #define LOGI(...)
 #endif
-
-static std::string toHex(const uint8_t *p, size_t n) {
-    static const char *k = "0123456789abcdef";
-    std::string s;
-    s.resize(n * 2);
-    for (size_t i = 0; i < n; i++) {
-        s[2 * i] = k[p[i] >> 4];
-        s[2 * i + 1] = k[p[i] & 0xF];
-    }
-    return s;
-}
 
 namespace margelo::nitro::nitroavalabscrypto {
 
@@ -50,9 +40,20 @@ namespace margelo::nitro::nitroavalabscrypto {
     secp256k1_context *CryptoHybrid::ctx() {
         std::call_once(g_once, [] {
             g_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
-            // optional randomization (not strictly required)
-            unsigned char seed[32] = {0};
+            // Randomize the context to protect against side-channel attacks.
+            unsigned char seed[32];
+#ifndef OPENSSL_NOT_AVAILABLE
+            if (RAND_bytes(seed, sizeof(seed)) != 1) {
+                // Fall back to unrandomized context if RNG fails — still functional,
+                // just without side-channel blinding.
+                return;
+            }
+#else
+            // Without OpenSSL, leave unrandomized.
+            return;
+#endif
             (void) secp256k1_context_randomize(g_ctx, seed);
+            OPENSSL_cleanse(seed, sizeof(seed));
         });
         return g_ctx;
     }
@@ -255,33 +256,6 @@ namespace margelo::nitro::nitroavalabscrypto {
         if (secp256k1_keypair_create(ctx(), &keypair, sk.data()) != 1)
             throw std::runtime_error("keypair_create failed");
 
-        // --- DEBUG: log x-only and compressed pubkeys ---
-        {
-            // X-only pubkey (BIP340)
-            secp256k1_xonly_pubkey xpk{};
-            int parity = 0;
-            if (secp256k1_keypair_xonly_pub(ctx(), &xpk, &parity, &keypair) == 1) {
-                unsigned char x32[32];
-                secp256k1_xonly_pubkey_serialize(ctx(), x32, &xpk);
-            } else {
-                LOGI("signSchnorr xonly.pk FAILED");
-            }
-
-            // Full compressed pubkey (33 bytes)
-            secp256k1_pubkey full{};
-            if (secp256k1_ec_pubkey_create(ctx(), &full, sk.data()) == 1) {
-                unsigned char comp33[33];
-                size_t compLen = 33;
-                if (secp256k1_ec_pubkey_serialize(ctx(), comp33, &compLen, &full,
-                                                  SECP256K1_EC_COMPRESSED) == 1) {
-                } else {
-                    LOGI("signSchnorr pubkey serialize FAILED");
-                }
-            } else {
-                LOGI("signSchnorr ec_pubkey_create FAILED");
-            }
-        }
-
         std::array<unsigned char, 64> sig64{};
         if (secp256k1_schnorrsig_sign32(ctx(), sig64.data(), msg32.data(), &keypair,
                                         aux32.data()) != 1)
@@ -402,7 +376,7 @@ namespace margelo::nitro::nitroavalabscrypto {
         // This hybrid approach ensures web wallet compatibility
         std::array<uint8_t, 32> headBE{};
         std::reverse_copy(head.begin(), head.end(), headBE.begin());
-        std::string scalarStr = "0x" + toHex(headBE.data(), 32);
+        std::string scalarStr = "0x" + to_hex(headBE.data(), 32);
         
         // Step 5: Return empty pointBytes - point derivation happens in TypeScript
         // C++ only does the expensive SHA-512 hash and clamping
@@ -426,7 +400,7 @@ namespace margelo::nitro::nitroavalabscrypto {
             const std::vector<double> &accountIndices) {
 
         return Promise<std::vector<DerivedSecp256k1Addresses>>::async(
-            [this, evmXpub, avalancheXpub, isTestnet, accountIndices]() {
+            [evmXpub, avalancheXpub, isTestnet, accountIndices]() {
 
             auto evm_parsed = parse_xpub(evmXpub);
             auto avax_parsed = parse_xpub(avalancheXpub);
@@ -437,7 +411,7 @@ namespace margelo::nitro::nitroavalabscrypto {
             for (double idx : accountIndices) {
                 auto index = static_cast<uint32_t>(idx);
                 auto addrs = derive_addresses_for_index(
-                    ctx(), evm_parsed, avax_parsed, isTestnet, index);
+                    CryptoHybrid::ctx(), evm_parsed, avax_parsed, isTestnet, index);
 
                 results.push_back(DerivedSecp256k1Addresses(
                     idx,
@@ -506,16 +480,21 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::memcpy(seedBytes.data(), seed->data(), 64);
 
         return Promise<std::vector<DerivedAllAddresses>>::async(
-            [this, seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
+            [seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
+
+            auto *sctx = CryptoHybrid::ctx();
 
             // BIP32 master from seed (once)
             auto master = bip32_master_from_seed(seedBytes.data(), seedBytes.size());
 
             // EVM xpub at m/44'/60'/0' (once — shared across all accounts)
-            auto evm_priv = bip32_derive_hardened_path(ctx(), master, {44, 60, 0});
-            auto evm_xpub = bip32_private_to_public(ctx(), evm_priv);
+            auto evm_priv = bip32_derive_hardened_path(sctx, master, {44, 60, 0});
+            auto evm_xpub = bip32_private_to_public(sctx, evm_priv);
             // Zero the EVM private key — only the public key is needed from here.
             OPENSSL_cleanse(evm_priv.key.data(), evm_priv.key.size());
+
+            // SLIP-0010 master for Solana (once — shared across all accounts)
+            auto sol_master = slip0010_master_key(seedBytes.data(), seedBytes.size());
 
             std::vector<DerivedAllAddresses> results;
             results.reserve(accountIndices.size());
@@ -525,13 +504,11 @@ namespace margelo::nitro::nitroavalabscrypto {
 
                 // secp256k1 addresses (EVM, BTC, AVM, PVM, CoreEth)
                 auto addrs = derive_all_addresses_for_index(
-                    ctx(), master, evm_xpub,
-                    seedBytes.data(), seedBytes.size(),
+                    sctx, master, evm_xpub,
                     isTestnet, index);
 
-                // Solana address (SLIP-0010 Ed25519)
-                auto solana = solana_address_from_seed(
-                    seedBytes.data(), seedBytes.size(), index);
+                // Solana address (SLIP-0010 Ed25519) — uses pre-computed master
+                auto solana = solana_address_from_master(sol_master, index);
 
                 results.push_back(DerivedAllAddresses(
                     idx,
@@ -547,6 +524,8 @@ namespace margelo::nitro::nitroavalabscrypto {
             // Zero all seed and private key material.
             OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
             OPENSSL_cleanse(master.key.data(), master.key.size());
+            OPENSSL_cleanse(sol_master.secret.data(), sol_master.secret.size());
+            OPENSSL_cleanse(sol_master.chain_code.data(), sol_master.chain_code.size());
 
             return results;
         });

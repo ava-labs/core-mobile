@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 
@@ -49,6 +50,7 @@ inline SLIP0010Key slip0010_master_key(const uint8_t *seed, size_t seed_len) {
     SLIP0010Key key{};
     std::copy(I.begin(), I.begin() + 32, key.secret.begin());
     std::copy(I.begin() + 32, I.end(), key.chain_code.begin());
+    OPENSSL_cleanse(I.data(), I.size());
     return key;
 }
 
@@ -71,6 +73,8 @@ inline SLIP0010Key slip0010_derive_hardened(const SLIP0010Key &parent, uint32_t 
     SLIP0010Key child{};
     std::copy(I.begin(), I.begin() + 32, child.secret.begin());
     std::copy(I.begin() + 32, I.end(), child.chain_code.begin());
+    OPENSSL_cleanse(I.data(), I.size());
+    OPENSSL_cleanse(data.data(), data.size());
     return child;
 }
 
@@ -116,18 +120,30 @@ inline std::array<uint8_t, 32> ed25519_public_key(const std::array<uint8_t, 32> 
 // Result: base58-encoded 32-byte Ed25519 public key
 // ---------------------------------------------------------------------------
 
-inline std::string solana_address_from_seed(
-        const uint8_t *seed, size_t seed_len,
+// Derive Solana address from a pre-computed SLIP-0010 master key.
+// Use this when deriving multiple accounts to avoid recomputing the master.
+inline std::string solana_address_from_master(
+        const SLIP0010Key &master,
         uint32_t account_index) {
-
-    auto master = slip0010_master_key(seed, seed_len);
 
     // m/44'/501'/{accountIndex}'/0'
     auto derived = slip0010_derive_path(master, {44, 501, account_index, 0});
 
     auto pub_key = ed25519_public_key(derived.secret);
+    OPENSSL_cleanse(derived.secret.data(), derived.secret.size());
 
     return base58_encode(std::vector<uint8_t>(pub_key.begin(), pub_key.end()));
+}
+
+inline std::string solana_address_from_seed(
+        const uint8_t *seed, size_t seed_len,
+        uint32_t account_index) {
+
+    auto master = slip0010_master_key(seed, seed_len);
+    auto result = solana_address_from_master(master, account_index);
+    OPENSSL_cleanse(master.secret.data(), master.secret.size());
+    OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
+    return result;
 }
 
 } // namespace margelo::nitro::nitroavalabscrypto
