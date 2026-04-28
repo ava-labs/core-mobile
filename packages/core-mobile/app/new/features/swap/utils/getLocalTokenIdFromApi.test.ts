@@ -13,7 +13,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'avax-native',
         logoUri: 'https://example.com/avax.png',
         networkCaip2Id: 'eip155:43114',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX')
@@ -29,7 +30,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'sol-native',
         logoUri: 'https://example.com/sol.png',
         networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-SOL')
@@ -45,7 +47,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'btc-native',
         logoUri: 'https://example.com/btc.png',
         networkCaip2Id: 'bip122:000000000019d6689c085ae165831e93',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-BTC')
@@ -61,7 +64,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'eth-native',
         logoUri: 'https://example.com/eth.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-ETH')
@@ -79,7 +83,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'usdc-avax-c',
         logoUri: 'https://example.com/usdc.png',
         networkCaip2Id: 'eip155:43114',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -97,7 +102,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'usdc-solana',
         logoUri: 'https://example.com/usdc.png',
         networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -115,7 +121,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'dai-ethereum',
         logoUri: 'https://example.com/dai.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -133,7 +140,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'weth-ethereum',
         logoUri: 'https://example.com/weth.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -151,7 +159,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'usdt-ethereum',
         logoUri: 'https://example.com/usdt.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -171,7 +180,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'token-1',
         logoUri: 'https://example.com/token.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       const token2: ApiToken = {
@@ -183,7 +193,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'token-2',
         logoUri: 'https://example.com/token.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       // Both should return the same localId (lowercase)
@@ -206,7 +217,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'avax',
         logoUri: 'https://example.com/avax.png',
         networkCaip2Id: 'eip155:43114',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX')
@@ -222,7 +234,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'avax-bridged',
         logoUri: 'https://example.com/avax.png',
         networkCaip2Id: 'eip155:43114',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX.e')
@@ -238,7 +251,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'btc2',
         logoUri: 'https://example.com/btc.png',
         networkCaip2Id: 'bip122:000000000019d6689c085ae165831e93',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-BTC2.0')
@@ -255,7 +269,8 @@ describe('getLocalTokenIdFromApi', () => {
         internalId: 'long-token',
         logoUri: 'https://example.com/long.png',
         networkCaip2Id: 'eip155:1',
-        top250Rank: null
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(longAddress.toLowerCase())
