@@ -103,11 +103,15 @@ export const addNotificationsListeners = (
       onNotificationsTurnedOnForBalanceChange
     ),
     effect: async (_, listenerApi) => {
-      // removeWallet dispatches removeAccount once per account synchronously,
-      // so coalesce bursts to avoid an out-of-order subscribe re-adding an
-      // address we just removed (the backend reconciles to the posted set).
-      // The signal is also threaded into the fetch so a superseded request is
-      // aborted on the wire, not just at the listener boundary.
+      // Coalesce bursts so only the latest invocation posts to the backend
+      // (the subscribe endpoint reconciles to the *current* address set, so
+      // an out-of-order older POST could re-add an address we just removed).
+      // Bursts happen for any matched action — most notably `removeWallet`,
+      // which dispatches `removeAccount` once per account in the same tick —
+      // but also rapid imports, sign-in flows, etc.
+      // `cancelActiveListeners()` aborts the listener task and the threaded
+      // `listenerApi.signal` aborts any in-flight subscribe fetch, so the
+      // last invocation wins both at the listener boundary and on the wire.
       listenerApi.cancelActiveListeners()
       try {
         await listenerApi.delay(100)
