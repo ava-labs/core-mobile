@@ -35,6 +35,7 @@ import { createBtcSigner } from '../services/signers/BtcSigner'
 import { createSvmSigner } from '../services/signers/SvmSigner'
 import {
   useIsFusionServiceReady,
+  useFusionServiceInitError,
   updateFusionTransfer,
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
@@ -154,13 +155,15 @@ export const initFusionService = async (
     if (!featureStates.isFusionEnabled) {
       Logger.info('Fusion is disabled, skipping initialization')
       useIsFusionServiceReady.setState(false)
+      useFusionServiceInitError.setState(null)
       return
     }
 
     Logger.info('Initializing Fusion service', featureStates)
 
-    // Mark as not ready at start
+    // Mark as not ready at start and clear any prior init error
     useIsFusionServiceReady.setState(false)
+    useFusionServiceInitError.setState(null)
 
     // Create signers
     const evmSigner = createEvmSigner(request)
@@ -209,6 +212,9 @@ export const initFusionService = async (
       error
     )
     useIsFusionServiceReady.setState(false)
+    useFusionServiceInitError.setState(
+      error instanceof Error ? error : new Error(String(error))
+    )
   } finally {
     isFusionInitializing = false
   }
@@ -220,6 +226,7 @@ export const cleanupFusionService = async (
 ): Promise<void> => {
   FusionService.cleanup()
   useIsFusionServiceReady.setState(false)
+  useFusionServiceInitError.setState(null)
 }
 
 const captureSwapAnalytics = (

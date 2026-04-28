@@ -1,5 +1,11 @@
-import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import SlideToConfirm from 'common/components/SlideToConfirm'
+import {
+  Button,
+  Icons,
+  SlidingButton,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback } from 'react'
 import { Keyboard } from 'react-native'
@@ -68,7 +74,11 @@ export const ForgotPinComponent = ({
             paddingBottom: insets.bottom + 16
           }}>
           <View sx={{ gap: 20 }}>
-            <SlideToConfirm onConfirm={onConfirm} text={'Slide to confirm'} />
+            <SlidingButton
+              mode="single"
+              label="Slide to confirm"
+              onConfirm={onConfirm}
+            />
             <Button
               testID="cancel_btn"
               type="tertiary"

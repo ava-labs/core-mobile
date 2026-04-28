@@ -106,6 +106,7 @@ import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
 import SolanaLogo from '../../assets/icons/solana_logo.svg'
 import IconPrediction from '../../assets/icons/prediction.svg'
 import IconTrade from '../../assets/icons/trade.svg'
+import IconUnfold from '../../assets/icons/unfold.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -261,7 +262,8 @@ export const Icons = {
     Earn: IconEarn,
     Browser: IconBrowser,
     Track: IconTrack,
-    Trade: IconTrade
+    Trade: IconTrade,
+    Unfold: IconUnfold
   },
   Notification: {
     Sync: IconSync,

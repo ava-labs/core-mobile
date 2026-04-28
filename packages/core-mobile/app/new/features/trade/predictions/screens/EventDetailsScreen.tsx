@@ -9,9 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { LinearGradient } from 'expo-linear-gradient'
-import { useLocalSearchParams } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { LinearGradient } from 'expo-linear-gradient'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
@@ -25,8 +25,8 @@ import {
   ProbabilityChart
 } from '../components/ProbabilityChart'
 import { useGetEventDetail } from '../hooks/useGetEventDetail'
-import { generateHistory, tickerToSeed } from '../utils'
 import { MarketWithQuotes } from '../types'
+import { generateHistory, tickerToSeed } from '../utils'
 
 const COLLAPSED_COUNT = 5
 const TIME_RANGES = ['1H', '1D', '1W', '1M', 'ALL'] as const
@@ -45,6 +45,7 @@ const EventDetailsScreen = (): JSX.Element => {
   const avaxPrice = useAvaxPrice()
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
+  const router = useRouter()
   const { event } = useGetEventDetail(tickerId)
 
   const chartSeries: OutcomeSeries[] = useMemo(() => {
@@ -231,6 +232,14 @@ const EventDetailsScreen = (): JSX.Element => {
             ]}
           />
         </View>
+      </View>
+      <View sx={{ padding: 16, paddingTop: 24 }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={() => router.push('/placeBet')}>
+          Place Bet
+        </Button>
       </View>
     </ScrollScreen>
   )
