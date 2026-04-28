@@ -14,7 +14,7 @@ import {
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
-import { selectAccounts } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
@@ -137,9 +137,10 @@ export const NotificationsScreen = (): JSX.Element => {
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const accounts = useSelector(selectAccounts)
   const wallets = useSelector(selectWallets)
+  const activeAccount = useSelector(selectActiveAccount)
   const accountLabelMap = useMemo(
-    () => buildAccountLabelMap(accounts, wallets),
-    [accounts, wallets]
+    () => buildAccountLabelMap(accounts, wallets, activeAccount?.id),
+    [accounts, wallets, activeAccount?.id]
   )
   const selectedTabIndex = useSharedValue(0)
   const [selectedTabState, setSelectedTabState] = useState(0)

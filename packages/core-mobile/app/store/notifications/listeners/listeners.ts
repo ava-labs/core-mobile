@@ -106,8 +106,14 @@ export const addNotificationsListeners = (
       // removeWallet dispatches removeAccount once per account synchronously,
       // so coalesce bursts to avoid an out-of-order subscribe re-adding an
       // address we just removed (the backend reconciles to the posted set).
+      // The signal is also threaded into the fetch so a superseded request is
+      // aborted on the wire, not just at the listener boundary.
       listenerApi.cancelActiveListeners()
-      await listenerApi.delay(100)
+      try {
+        await listenerApi.delay(100)
+      } catch {
+        return
+      }
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
         Logger.error(
           `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`

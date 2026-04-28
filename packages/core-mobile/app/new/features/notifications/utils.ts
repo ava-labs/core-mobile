@@ -108,19 +108,36 @@ export function mapTypeToCategory(
  * correct wallet without each list row re-subscribing to Redux.
  *
  * Single-wallet users see just the account name; multi-wallet users see
- * "{walletName} · {accountName}".
+ * "{walletName} · {accountName}". When the same EVM address is owned by
+ * accounts in multiple wallets (e.g. a private-key wallet importing a key
+ * already derived inside a mnemonic wallet), the active account wins so
+ * the user sees the wallet they currently consider canonical for that
+ * address.
  */
 export function buildAccountLabelMap(
   accounts: AccountCollection,
-  wallets: { [id: string]: Wallet }
+  wallets: { [id: string]: Wallet },
+  activeAccountId?: string | null
 ): Map<string, string> {
   const multiWallet = Object.keys(wallets).length > 1
   const map = new Map<string, string>()
 
-  for (const account of Object.values(accounts)) {
+  // Process the active account first so its label wins on collisions; the
+  // remaining accounts only fill in addresses that are not already covered.
+  const activeAccount = activeAccountId ? accounts[activeAccountId] : undefined
+  const ordered = activeAccount
+    ? [
+        activeAccount,
+        ...Object.values(accounts).filter(a => a.id !== activeAccount.id)
+      ]
+    : Object.values(accounts)
+
+  for (const account of ordered) {
+    const key = account.addressC.toLowerCase()
+    if (map.has(key)) continue
     const wallet = multiWallet ? wallets[account.walletId] : undefined
     const label = wallet ? `${wallet.name} · ${account.name}` : account.name
-    map.set(account.addressC.toLowerCase(), label)
+    map.set(key, label)
   }
 
   return map

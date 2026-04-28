@@ -212,6 +212,37 @@ describe('buildAccountLabelMap', () => {
   it('returns an empty map when there are no accounts', () => {
     expect(buildAccountLabelMap({}, {}).size).toBe(0)
   })
+
+  it('lets the active account win when an address collides across wallets', () => {
+    // e.g. a private-key wallet imports a key already derived in a mnemonic
+    // wallet — both accounts legitimately own the same EVM address.
+    const accounts = makeAccounts([
+      {
+        id: 'mnemonic-acct',
+        addressC: addr,
+        name: 'Account 5',
+        walletId: 'w1'
+      },
+      {
+        id: 'private-key-acct',
+        addressC: addr,
+        name: 'Imported',
+        walletId: 'w2'
+      }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Mnemonic Wallet' },
+      { id: 'w2', name: 'Private Key Wallet' }
+    ])
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'private-key-acct').get(addr)
+    ).toBe('Private Key Wallet · Imported')
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'mnemonic-acct').get(addr)
+    ).toBe('Mnemonic Wallet · Account 5')
+  })
 })
 
 // ─── mapTransferToSwapStatus ──────────────────────────────────────────────────
