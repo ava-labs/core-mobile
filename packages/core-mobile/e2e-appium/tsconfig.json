@@ -31,6 +31,6 @@
     "wdio.conf.ts",
     "scripts/**/*.js",
     "wdio.devicefarm.conf.ts"
-, "specs/portfolioTab/activity/pChainActivityHistory.spec.ts"  ],
+  ],
   "exclude": ["node_modules"]
 }
