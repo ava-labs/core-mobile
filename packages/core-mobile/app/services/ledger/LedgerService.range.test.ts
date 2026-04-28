@@ -10,20 +10,28 @@ jest.mock('utils/Logger', () => ({
 
 const mockGetAvalancheKeys = jest.fn()
 const mockGetSolanaKeys = jest.fn()
+const mockOpenApp = jest.fn().mockResolvedValue(undefined)
+const mockWaitForApp = jest.fn().mockResolvedValue(undefined)
 
 const originalGetAvalancheKeys =
   LedgerService.getAvalancheKeys.bind(LedgerService)
 const originalGetSolanaKeys = LedgerService.getSolanaKeys.bind(LedgerService)
+const originalOpenApp = (LedgerService as any).openApp.bind(LedgerService)
+const originalWaitForApp = LedgerService.waitForApp.bind(LedgerService)
 
 beforeEach(() => {
   jest.clearAllMocks()
   LedgerService.getAvalancheKeys = mockGetAvalancheKeys
   LedgerService.getSolanaKeys = mockGetSolanaKeys
+  ;(LedgerService as any).openApp = mockOpenApp
+  LedgerService.waitForApp = mockWaitForApp
 })
 
 afterEach(() => {
   LedgerService.getAvalancheKeys = originalGetAvalancheKeys
   LedgerService.getSolanaKeys = originalGetSolanaKeys
+  ;(LedgerService as any).openApp = originalOpenApp
+  LedgerService.waitForApp = originalWaitForApp
 })
 
 const makeMockAvalancheKey = (index: number): AvalancheKey => ({
@@ -134,8 +142,12 @@ describe('getSolanaKeysForRange', () => {
     ])
     const result = await LedgerService.getSolanaKeysForRange(2, 3)
     expect(mockGetSolanaKeys).toHaveBeenCalledTimes(2)
-    expect(mockGetSolanaKeys).toHaveBeenCalledWith(3, undefined)
-    expect(mockGetSolanaKeys).toHaveBeenCalledWith(4, undefined)
+    expect(mockGetSolanaKeys).toHaveBeenCalledWith(3, undefined, {
+      skipAppCheck: true
+    })
+    expect(mockGetSolanaKeys).toHaveBeenCalledWith(4, undefined, {
+      skipAppCheck: true
+    })
     expect(result).toHaveLength(2)
     expect(result[0]?.[0]?.key).toBe('sol3')
     expect(result[1]?.[0]?.key).toBe('sol4')

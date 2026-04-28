@@ -1023,6 +1023,15 @@ describe('LedgerService', () => {
     it('should stop iterating when signal is aborted', async () => {
       const controller = new AbortController()
 
+      // Mock openApp and waitForApp so the range function can proceed
+      // without a real BLE transport (CP-14062 hoisted these before the loop).
+      const openAppSpy = jest
+        .spyOn(LedgerService, 'openApp')
+        .mockResolvedValue(undefined)
+      const waitForAppSpy = jest
+        .spyOn(LedgerService, 'waitForApp')
+        .mockResolvedValue(undefined)
+
       // Mock getSolanaKeys to abort the controller on the second call,
       // simulating the user tapping "Skip" while keys are being retrieved.
       const getSolanaKeysSpy = jest
@@ -1059,6 +1068,8 @@ describe('LedgerService', () => {
       expect(getSolanaKeysSpy).toHaveBeenCalledTimes(2)
 
       getSolanaKeysSpy.mockRestore()
+      openAppSpy.mockRestore()
+      waitForAppSpy.mockRestore()
     })
   })
 

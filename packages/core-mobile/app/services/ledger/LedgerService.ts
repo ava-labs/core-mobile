@@ -743,18 +743,28 @@ class LedgerService {
     })
   }
 
-  // Get extended public keys for BIP44 derivation
+  // Get extended public keys for BIP44 derivation.
+  // When skipAppCheck is true the caller has already verified the Avalanche
+  // app is open — this avoids a redundant waitForApp APDU inside loops
+  // (CP-14062).
   async getExtendedPublicKeys(
     accountIndex: number,
-    derivationPathType?: LedgerDerivationPathType
+    derivationPathType?: LedgerDerivationPathType,
+    { skipAppCheck = false }: { skipAppCheck?: boolean } = {}
   ): Promise<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
-    await this.ensureAppReady(LedgerAppType.AVALANCHE)
+    if (!skipAppCheck) {
+      // Connect to Avalanche app
+      Logger.info('Waiting for Avalanche app...')
+      await this.ensureAppReady(LedgerAppType.AVALANCHE)
+    }
 
     return this.withTransport(async transport => {
       const avalancheApp = new AppAvalanche(transport)
+
+      Logger.info('Avalanche app detected, creating app instance...')
 
       const evmPath =
         derivationPathType === LedgerDerivationPathType.BIP44
@@ -997,15 +1007,20 @@ class LedgerService {
    * @param accountIndex - BIP44 account index to derive
    * @param signal - Optional AbortSignal to cancel the operation mid-flight
    *                 (e.g. when the user taps "Skip Solana" during onboarding)
+   * @param skipAppCheck - When true, skip openApp + waitForApp because the
+   *                       caller (getSolanaKeysForRange) already ensured the
+   *                       Solana app is open (CP-14062).
    * @returns Array of Solana keys with derivation paths
    */
   async getSolanaKeys(
     accountIndex: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    { skipAppCheck = false }: { skipAppCheck?: boolean } = {}
   ): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
-    await this.ensureAppReady(LedgerAppType.SOLANA, signal)
-
+    if (!skipAppCheck) {
+      await this.ensureAppReady(LedgerAppType.SOLANA, signal)
+    }
     // Check if the operation was cancelled while we were waiting for the app.
     // This prevents sending a getAddress APDU after the user has already
     // chosen to skip Solana.
@@ -1223,6 +1238,15 @@ class LedgerService {
     startIndex = 0,
     signal?: AbortSignal
   ): Promise<(PublicKeyInfo[] | null)[]> {
+    // Open and wait for the Solana app once before the loop instead of
+    // on every iteration — the app stays open between APDUs (CP-14062).
+    await this.openApp(LedgerAppType.SOLANA)
+    await this.waitForApp(
+      LedgerAppType.SOLANA,
+      LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT,
+      signal
+    )
+
     const results: (PublicKeyInfo[] | null)[] = []
 
     for (let i = startIndex; i < startIndex + count; i++) {
@@ -1237,7 +1261,9 @@ class LedgerService {
       }
 
       try {
-        const keys = await this.getSolanaKeys(i, signal)
+        const keys = await this.getSolanaKeys(i, signal, {
+          skipAppCheck: true
+        })
         results.push(keys)
       } catch (error) {
         // If the abort signal fired during getSolanaKeys, stop the loop
@@ -1272,6 +1298,10 @@ class LedgerService {
   ): Promise<
     Array<{ evm: ExtendedPublicKey; avalanche: ExtendedPublicKey } | null>
   > {
+    // Wait for Avalanche app once before the loop instead of on every
+    // iteration — the app stays open between APDU commands (CP-14062).
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+
     const results: Array<{
       evm: ExtendedPublicKey
       avalanche: ExtendedPublicKey
@@ -1281,7 +1311,8 @@ class LedgerService {
       try {
         const xpubs = await this.getExtendedPublicKeys(
           i,
-          LedgerDerivationPathType.BIP44
+          LedgerDerivationPathType.BIP44,
+          { skipAppCheck: true }
         )
         results.push(xpubs)
       } catch (error) {
