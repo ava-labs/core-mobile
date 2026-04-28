@@ -4,6 +4,7 @@ import { RpcRequest } from '@avalabs/vm-module-types'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import Logger from 'utils/Logger'
+import { RequestContext } from 'store/rpc/types'
 
 const AVALANCHE_TESTNET_CHAIN_IDS = [
   ChainId.AVALANCHE_TESTNET_ID,
@@ -83,10 +84,22 @@ const getOptimisticGate = (
 // fetch so onTransactionPending and onTransactionConfirmed see the same gate
 // value (and resolve in call order via Promise microtask scheduling).
 //
+// The `sae-override` PostHog flag (snapshotted onto request.context by
+// createInAppRequest) supersedes the InfoAPI check when set to 'enabled' or
+// 'disabled' — used by QA to test the post-Helicon path before activation and
+// as a runtime escape hatch if the new flow misbehaves post-launch. Mirrors
+// core-extension PR 900.
+//
 // TODO: Remove this util and its callers once Helicon is enabled on all networks.
 export async function isOptimisticConfirmationEnabled(
   request: RpcRequest
 ): Promise<boolean> {
+  const override = request.context?.[RequestContext.SAE_OVERRIDE]
+  // 'enabled' means SAE/post-Helicon behavior is forced on -> no optimistic UI.
+  if (override === 'enabled') return false
+  // 'disabled' means SAE/post-Helicon behavior is forced off -> keep optimistic UI.
+  if (override === 'disabled') return true
+
   const numericChainId = getChainIdFromCaip2(request.chainId)
 
   if (numericChainId === undefined || !isAvalancheChainId(numericChainId)) {

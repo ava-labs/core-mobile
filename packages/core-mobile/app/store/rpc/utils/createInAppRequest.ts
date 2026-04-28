@@ -1,12 +1,14 @@
 import { Dispatch, isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
+import { FeatureVars } from 'services/posthog/types'
+import { RootState } from 'store/types'
 import {
   onInAppRequestFailed,
   onInAppRequestSucceeded,
   onRequest
 } from '../slice'
-import { PeerMeta, RpcMethod } from '../types'
+import { PeerMeta, RequestContext, RpcMethod } from '../types'
 import { generateInAppRequestPayload } from './generateInAppRequestPayload'
 
 const EVENTS_TO_SUBSCRIBE = isAnyOf(
@@ -31,9 +33,14 @@ export type Request = ({
 /**
  * A function to create the request function to execute in-app rpc request and wait for the response.
  *
+ * `getState` is used to snapshot redux-derived values (currently the
+ * `sae-override` feature flag) into the request's context at creation time,
+ * so non-React/non-redux consumers like ApprovalController and the gate util
+ * can read them off the request without needing their own redux access.
+ *
  * Example Usage:
  *
- * const request = createInAppRequest(dispatch)
+ * const request = createInAppRequest(dispatch, getState)
  *
  * const txParams = [
  *  {
@@ -50,15 +57,30 @@ export type Request = ({
  *    chainId: '43114'
  * })
  */
-export const createInAppRequest = (dispatch: Dispatch): Request => {
+export const createInAppRequest = (
+  dispatch: Dispatch,
+  getState: () => RootState
+): Request => {
   return ({ method, params, chainId, context, peerMeta }) => {
     return new Promise((resolve, reject) => {
+      // Snapshot the SAE override flag into context so downstream consumers
+      // (gate util, ApprovalController) don't need to reach into redux from
+      // outside React. Mirrors core-extension PR 900's `sae-override` flag.
+      const saeOverride =
+        getState().posthog.featureFlags[FeatureVars.SAE_OVERRIDE]
+      const enrichedContext = {
+        ...context,
+        ...(saeOverride !== undefined && {
+          [RequestContext.SAE_OVERRIDE]: saeOverride
+        })
+      }
+
       // create and dispatch the request
       const inAppRequest = generateInAppRequestPayload({
         method: method as unknown as RpcMethod,
         params,
         chainId,
-        context,
+        context: enrichedContext,
         peerMeta
       })
       dispatch(onRequest(inAppRequest))

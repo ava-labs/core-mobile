@@ -71,6 +71,8 @@ const initUnifiedBridgeService = async (
 
   if (walletState !== WalletState.ACTIVE) return
 
+  const request = createInAppRequest(listenerApi.dispatch, listenerApi.getState)
+
   if (UnifiedBridgeService.isInitialized()) {
     const prevState = listenerApi.getOriginalState()
     if (!shouldReinitializeBridge(prevState, state)) return

@@ -4,6 +4,7 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId
 } from '@avalabs/core-chains-sdk'
+import { RequestContext } from 'store/rpc/types'
 import {
   isOptimisticConfirmationEnabled,
   __resetOptimisticGateCacheForTests
@@ -28,7 +29,10 @@ const mockGetMainnetProvider = Avalanche.JsonRpcProvider
 const mockGetFujiProvider = Avalanche.JsonRpcProvider
   .getDefaultFujiProvider as jest.Mock
 
-const makeRequest = (chainId: string): RpcRequest =>
+const makeRequest = (
+  chainId: string,
+  context: Record<string, unknown> = {}
+): RpcRequest =>
   ({
     requestId: 'req-1',
     sessionId: 'session-1',
@@ -36,7 +40,7 @@ const makeRequest = (chainId: string): RpcRequest =>
     chainId,
     params: {},
     dappInfo: { name: 'Test', url: 'https://test.com', icon: '' },
-    context: {}
+    context
   } as unknown as RpcRequest)
 
 const farFuture = (): string =>
@@ -161,6 +165,54 @@ describe('isOptimisticConfirmationEnabled', () => {
     expect(resultA).toBe(true)
     expect(resultB).toBe(true)
     expect(mockGetUpgradesInfo).toHaveBeenCalledTimes(1)
+  })
+
+  describe('sae-override flag', () => {
+    it("returns false when override is 'enabled' (forces post-Helicon flow)", async () => {
+      const request = makeRequest(AvalancheCaip2ChainId.C, {
+        [RequestContext.SAE_OVERRIDE]: 'enabled'
+      })
+
+      const result = await isOptimisticConfirmationEnabled(request)
+
+      expect(result).toBe(false)
+      expect(mockGetUpgradesInfo).not.toHaveBeenCalled()
+    })
+
+    it("returns true when override is 'disabled' (forces optimistic flow)", async () => {
+      const request = makeRequest(AvalancheCaip2ChainId.C, {
+        [RequestContext.SAE_OVERRIDE]: 'disabled'
+      })
+
+      const result = await isOptimisticConfirmationEnabled(request)
+
+      expect(result).toBe(true)
+      expect(mockGetUpgradesInfo).not.toHaveBeenCalled()
+    })
+
+    it("falls through to InfoAPI check when override is 'auto'", async () => {
+      mockGetUpgradesInfo.mockResolvedValue({ heliconTime: farFuture() })
+      const request = makeRequest(AvalancheCaip2ChainId.C, {
+        [RequestContext.SAE_OVERRIDE]: 'auto'
+      })
+
+      const result = await isOptimisticConfirmationEnabled(request)
+
+      expect(result).toBe(true)
+      expect(mockGetUpgradesInfo).toHaveBeenCalled()
+    })
+
+    it("forces optimistic flow even on non-Avalanche networks when override is 'disabled'", async () => {
+      // The override is meant to be a blunt instrument; if QA flips it on a
+      // non-Avalanche tx, respect it rather than silently ignoring.
+      const request = makeRequest(BitcoinCaip2ChainId.MAINNET, {
+        [RequestContext.SAE_OVERRIDE]: 'disabled'
+      })
+
+      const result = await isOptimisticConfirmationEnabled(request)
+
+      expect(result).toBe(true)
+    })
   })
 
   it('separates the cache between mainnet and fuji', async () => {
