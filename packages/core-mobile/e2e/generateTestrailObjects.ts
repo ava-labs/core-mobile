@@ -13,7 +13,7 @@ const password = String(process.env.TESTRAIL_API_KEY)
 
 export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
-  user: 'mobiledevs@avalabs.org',
+  user: 'md.cuenta@avalabs.org',
   password: password
 })
 

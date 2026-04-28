@@ -23,7 +23,7 @@ const axios = require('axios')
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
-  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
+  process.env.TESTRAIL_USERNAME || 'md.cuenta@avalabs.org'
 const TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
 const TESTRAIL_PROJECT_ID = 4
 const TESTRAIL_SUITE_ID =

@@ -361,7 +361,7 @@ function parseEnvInt(raw, defaultVal, bounds = {}) {
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
-  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
+  process.env.TESTRAIL_USERNAME || 'md.cuenta@avalabs.org'
 const TESTRAIL_PROJECT_ID = parseEnvInt(process.env.TESTRAIL_PROJECT_ID, 3, {
   min: 1
 })
@@ -630,7 +630,7 @@ function loadCoverageModelConfig() {
         'e2e-feature-coverage: coverage-model.config.json weights contained non-finite or negative values; defaults used for those entries.'
       )
     }
-    const weights = {
+    let weights = {
       e2eFeatureCoveragePercent: coalesceFiniteNonNegativeWeight(
         w?.e2eFeatureCoveragePercent,
         defaults.weights.e2eFeatureCoveragePercent
@@ -644,10 +644,20 @@ function loadCoverageModelConfig() {
         defaults.weights.featureFolderWalletSlotPercent
       )
     }
-    const sum =
+    let sum =
       weights.e2eFeatureCoveragePercent +
       weights.requiredScenariosPercent +
       weights.featureFolderWalletSlotPercent
+    if (!Number.isFinite(sum) || sum <= 0) {
+      console.warn(
+        'e2e-feature-coverage: coverage-model.config.json weights sum to zero or are invalid; using default weights.'
+      )
+      weights = { ...defaults.weights }
+      sum =
+        weights.e2eFeatureCoveragePercent +
+        weights.requiredScenariosPercent +
+        weights.featureFolderWalletSlotPercent
+    }
     if (Number.isFinite(sum) && sum > 0 && Math.abs(sum - 1) > 0.02) {
       weights.e2eFeatureCoveragePercent /= sum
       weights.requiredScenariosPercent /= sum
@@ -675,9 +685,69 @@ function loadCoverageModelConfig() {
         typeof raw.definition === 'string' ? raw.definition : undefined,
       configPath
     }
-  } catch {
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.warn(
+      `e2e-feature-coverage: could not read or parse ${configPath}: ${msg}; using default coverage model.`
+    )
     return { ...defaults, definition: undefined, configPath }
   }
+}
+
+/**
+ * @param {object} raw
+ * @param {{ flows: string[], walletModes: string[] }} defaults
+ */
+function walletModesFromRequiredScenariosRaw(raw, defaults) {
+  const rawModes =
+    Array.isArray(raw.walletModes) && raw.walletModes.length
+      ? raw.walletModes.map(m => String(m).trim())
+      : defaults.walletModes
+  if (rawModes.includes('ledger')) {
+    console.warn(
+      'e2e-feature-coverage: walletMode "ledger" is ignored in required-scenarios (not automatable in Appium).'
+    )
+  }
+  const unsupported = rawModes.filter(
+    m => m !== 'ledger' && !SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+  )
+  if (unsupported.length) {
+    console.warn(
+      `e2e-feature-coverage: required-scenarios walletModes ignored (no detection logic): ${unsupported.join(
+        ', '
+      )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(
+        ', '
+      )}.`
+    )
+  }
+  return rawModes.filter(
+    m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+  )
+}
+
+/**
+ * @param {object} raw
+ * @param {{ flows: string[], walletModes: string[] }} defaults
+ */
+function flowsFromRequiredScenariosRaw(raw, defaults) {
+  const rawFlows =
+    Array.isArray(raw.flows) && raw.flows.length
+      ? raw.flows.map(f => String(f).trim())
+      : defaults.flows
+  const unknownFlows = rawFlows.filter(
+    f => !Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+  )
+  if (unknownFlows.length) {
+    console.warn(
+      `e2e-feature-coverage: required-scenarios flows ignored (no heuristic in SPEC_COVERS_FLOW_MOBILE): ${unknownFlows.join(
+        ', '
+      )}`
+    )
+  }
+  const flows = rawFlows.filter(f =>
+    Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+  )
+  return flows.length ? flows : defaults.flows
 }
 
 /**
@@ -694,55 +764,20 @@ function loadRequiredScenariosConfig() {
   }
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-    const rawModes =
-      Array.isArray(raw.walletModes) && raw.walletModes.length
-        ? raw.walletModes.map(m => String(m).trim())
-        : defaults.walletModes
-    if (rawModes.includes('ledger')) {
-      console.warn(
-        'e2e-feature-coverage: walletMode "ledger" is ignored in required-scenarios (not automatable in Appium).'
-      )
-    }
-    const unsupported = rawModes.filter(
-      m => m !== 'ledger' && !SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
-    )
-    if (unsupported.length) {
-      console.warn(
-        `e2e-feature-coverage: required-scenarios walletModes ignored (no detection logic): ${unsupported.join(
-          ', '
-        )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(
-          ', '
-        )}.`
-      )
-    }
-    const walletModes = rawModes.filter(
-      m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
-    )
-    const rawFlows =
-      Array.isArray(raw.flows) && raw.flows.length
-        ? raw.flows.map(f => String(f).trim())
-        : defaults.flows
-    const unknownFlows = rawFlows.filter(
-      f => !Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
-    )
-    if (unknownFlows.length) {
-      console.warn(
-        `e2e-feature-coverage: required-scenarios flows ignored (no heuristic in SPEC_COVERS_FLOW_MOBILE): ${unknownFlows.join(
-          ', '
-        )}`
-      )
-    }
-    const flows = rawFlows.filter(f =>
-      Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
-    )
+    const walletModes = walletModesFromRequiredScenariosRaw(raw, defaults)
+    const flows = flowsFromRequiredScenariosRaw(raw, defaults)
     return {
-      flows: flows.length ? flows : defaults.flows,
+      flows,
       walletModes: walletModes.length ? walletModes : defaults.walletModes,
       definition:
         typeof raw.definition === 'string' ? raw.definition : undefined,
       configPath
     }
-  } catch {
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.warn(
+      `e2e-feature-coverage: could not read or parse ${configPath}: ${msg}; using default required-scenarios config.`
+    )
     return { ...defaults, definition: undefined, configPath }
   }
 }
@@ -1879,19 +1914,33 @@ function loadAppiumSpecFiles() {
 
 /**
  * Single `readFileSync` per spec; reuse for literals/corpus, breadth, scenarios, feature matching, TestRail map.
+ * Specs that cannot be read are omitted from metrics that depend on file contents (and listed in a warning).
  * @param {{ rel: string, abs: string }[]} testFiles
  * @returns {{ rel: string, abs: string, relLower: string, text: string }[]}
  */
 function buildAppiumSpecEntries(testFiles) {
-  return testFiles.map(({ rel, abs }) => {
-    let text = ''
+  /** @type {{ rel: string, abs: string, relLower: string, text: string }[]} */
+  const entries = []
+  /** @type {string[]} */
+  const skippedRel = []
+  for (const { rel, abs } of testFiles) {
     try {
-      text = fs.readFileSync(abs, 'utf8')
+      const text = fs.readFileSync(abs, 'utf8')
+      entries.push({ rel, abs, relLower: rel.toLowerCase(), text })
     } catch {
-      text = ''
+      skippedRel.push(rel)
     }
-    return { rel, abs, relLower: rel.toLowerCase(), text }
-  })
+  }
+  if (skippedRel.length > 0) {
+    console.warn(
+      `e2e-feature-coverage: skipped ${
+        skippedRel.length
+      } Appium spec(s) (unreadable); excluded from content-based metrics: ${skippedRel.join(
+        ', '
+      )}`
+    )
+  }
+  return entries
 }
 
 /**
@@ -2137,6 +2186,7 @@ function computeModalPercents(modalCoverage, modalsInScope, modals) {
 function printJsonReport(ctx) {
   const {
     testFiles,
+    appiumSpecsReadable,
     featureNames,
     featureStats,
     testToFeatures,
@@ -2183,7 +2233,9 @@ function printJsonReport(ctx) {
       {
         summary: {
           e2eSource: 'e2e-appium',
-          appiumSpecFiles: testFiles.length,
+          appiumSpecPathsDiscovered: testFiles.length,
+          appiumSpecFilesLoadedForMetrics: appiumSpecsReadable,
+          appiumSpecFiles: appiumSpecsReadable,
           testIdsDeclaredTotal: totalDeclaredTestIds,
           testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
           testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
@@ -2293,6 +2345,7 @@ function featureListSortKey(a, b, featureStats) {
  */
 function printTextReportHeader(ctx) {
   const {
+    appiumSpecsReadable,
     excludedFeatureList,
     totalCoveragePercent,
     coveredEither,
@@ -2377,7 +2430,13 @@ function printTextReportHeader(ctx) {
     `                   (${modals.length} modal routes; ${modalsOmittedCount} omitted — no path hit and linked feature excluded from metrics)`
   )
   console.log(
-    `Appium: ${testFiles.length} spec files scanned for paths + testID text`
+    (() => {
+      const skipped = testFiles.length - appiumSpecsReadable
+      const base = `Appium: ${appiumSpecsReadable} spec file(s) read for paths + testID text`
+      return skipped > 0
+        ? `${base} (${skipped} path(s) under e2e-appium unreadable — skipped from content metrics; see warning above)`
+        : base
+    })()
   )
   printTestrailRegressionSummary(ctx)
   console.log('')
@@ -2905,6 +2964,7 @@ async function main() {
   if (json) {
     printJsonReport({
       testFiles,
+      appiumSpecsReadable: specEntries.length,
       featureNames,
       featureStats,
       testToFeatures,
@@ -2920,6 +2980,7 @@ async function main() {
     ...counts,
     excludedFeatureList,
     testFiles,
+    appiumSpecsReadable: specEntries.length,
     modals,
     modalsInScope
   })

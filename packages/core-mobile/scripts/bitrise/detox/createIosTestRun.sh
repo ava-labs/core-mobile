@@ -26,7 +26,7 @@ JSON_DATA=$(jq -n --arg test_name "$TEST_RUN_NAME" \
 
 # Create a new test run and store the details in TEST_RUN_DETAILS
 TEST_RUN_DETAILS=$(curl -H "Content-Type: application/json" \
--u "mobiledevs@avalabs.org:$TESTRAIL_API_KEY" \
+-u "md.cuenta@avalabs.org:$TESTRAIL_API_KEY" \
 -d "${JSON_DATA}" \
 -X POST "https://avalabs.testrail.net/index.php?/api/v2/add_run/3")
 
