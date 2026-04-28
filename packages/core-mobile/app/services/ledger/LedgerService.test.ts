@@ -811,4 +811,308 @@ describe('LedgerService', () => {
       getSolanaKeysSpy.mockRestore()
     })
   })
+
+  describe('auto-reconnect', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
+    let disconnectHandler: (() => void) | null = null
+    let mockTransport: {
+      id: string
+      exchange: jest.Mock
+      isConnected: boolean
+      close: jest.Mock
+      on: jest.Mock
+      exchangeBusyPromise: null
+    }
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+
+      disconnectHandler = null
+      mockTransport = {
+        id: DEVICE_ID,
+        exchange: jest
+          .fn()
+          .mockRejectedValue(new Error('No app info') as never),
+        isConnected: true,
+        close: jest.fn().mockResolvedValue(undefined as never),
+        on: jest.fn((_event: string, callback: () => void) => {
+          disconnectHandler = callback
+        }),
+        exchangeBusyPromise: null
+      }
+
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.clearConnectedDevice()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    /** Connect the device then clear mocks so assertions only cover
+     *  reconnect-related calls. Stops polling to avoid timer interference. */
+    async function connectAndReset(): Promise<void> {
+      await LedgerService.connect(DEVICE_ID)
+      LedgerService.stopAppPolling()
+      transportBLEMock.open.mockClear()
+      transportBLEMock.disconnectDevice.mockClear()
+    }
+
+    it('notifies listeners and triggers reconnect on unexpected BLE disconnect', async () => {
+      await connectAndReset()
+
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      // Simulate the BLE transport firing a disconnect event
+      expect(disconnectHandler).not.toBeNull()
+      disconnectHandler!()
+
+      // Listener should be notified of disconnection immediately
+      expect(listener).toHaveBeenCalledWith(false)
+
+      // Flush microtasks so the async reconnect attempt starts
+      await jest.advanceTimersByTimeAsync(0)
+
+      // connect() should have been called for the first reconnect attempt
+      expect(transportBLEMock.open).toHaveBeenCalledWith(
+        DEVICE_ID,
+        expect.any(Number)
+      )
+
+      unsubscribe()
+    })
+
+    it('ignores late-firing disconnect event when transport is already null', async () => {
+      await connectAndReset()
+      const savedHandler = disconnectHandler
+
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      // Programmatic disconnect clears #transport before the event fires
+      await LedgerService.disconnect({ manual: false })
+      listener.mockClear()
+      transportBLEMock.open.mockClear()
+
+      // Late-firing event from old transport object — should be a no-op
+      savedHandler?.()
+      await jest.advanceTimersByTimeAsync(0)
+
+      // Listener should NOT be notified again
+      expect(listener).not.toHaveBeenCalled()
+
+      unsubscribe()
+    })
+
+    it('does not auto-reconnect after manual disconnect', async () => {
+      await connectAndReset()
+
+      // manual = true sets autoReconnectDisabled
+      await LedgerService.disconnect({ manual: true })
+      transportBLEMock.open.mockClear()
+
+      LedgerService.scheduleReconnect('test-trigger')
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(transportBLEMock.open).not.toHaveBeenCalled()
+    })
+
+    it('does not auto-reconnect when connectedDeviceId has been cleared', async () => {
+      await connectAndReset()
+
+      // Simulates wallet switch clearing the device reference
+      LedgerService.clearConnectedDevice()
+
+      LedgerService.scheduleReconnect('test-trigger')
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(transportBLEMock.open).not.toHaveBeenCalled()
+    })
+
+    it('does not start a second reconnect loop while one is in progress', async () => {
+      await connectAndReset()
+
+      // All reconnect attempts fail so the loop stays busy
+      transportBLEMock.open.mockRejectedValue(
+        new Error('Connection failed') as never
+      )
+
+      LedgerService.scheduleReconnect('first-trigger')
+      // First attempt fires and fails
+      await jest.advanceTimersByTimeAsync(0)
+      const callsAfterFirst = transportBLEMock.open.mock.calls.length
+
+      // Second trigger while the first loop is still running
+      LedgerService.scheduleReconnect('second-trigger')
+      await jest.advanceTimersByTimeAsync(0)
+
+      // No additional connect calls from the second trigger
+      expect(transportBLEMock.open.mock.calls.length).toBe(callsAfterFirst)
+    })
+
+    it('succeeds on a later retry attempt and stops retrying', async () => {
+      await connectAndReset()
+
+      // First reconnect attempt fails, second succeeds
+      transportBLEMock.open
+        .mockRejectedValueOnce(new Error('Connection failed') as never)
+        .mockResolvedValueOnce(mockTransport as never)
+
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      LedgerService.scheduleReconnect('test-trigger')
+
+      // Attempt 1 fires and fails
+      await jest.advanceTimersByTimeAsync(0)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+
+      // Wait for backoff: 1000 * 2^0 = 1000ms
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
+
+      // Attempt 2 succeeds
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+      expect(listener).toHaveBeenCalledWith(true)
+
+      unsubscribe()
+    })
+
+    it('notifies listeners of failure after all retries are exhausted', async () => {
+      await connectAndReset()
+
+      transportBLEMock.open.mockRejectedValue(
+        new Error('Connection failed') as never
+      )
+
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      LedgerService.scheduleReconnect('test-trigger')
+
+      // Attempt 1 → fails → 1000ms delay
+      await jest.advanceTimersByTimeAsync(0)
+      // Attempt 2 → fails → 2000ms delay
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
+      // Attempt 3 → fails → no delay (last attempt)
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2
+      )
+      // Let the final promise chain settle
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(
+        LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES
+      )
+      // Final notification indicates failure
+      expect(listener).toHaveBeenLastCalledWith(false)
+
+      unsubscribe()
+    })
+
+    it('applies exponential backoff between retry attempts', async () => {
+      await connectAndReset()
+
+      transportBLEMock.open.mockRejectedValue(
+        new Error('Connection failed') as never
+      )
+
+      LedgerService.scheduleReconnect('test-trigger')
+
+      // Attempt 1 fires immediately
+      await jest.advanceTimersByTimeAsync(0)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+
+      // Backoff after attempt 1: 1000 * 2^0 = 1000ms
+      // 999ms is not enough
+      await jest.advanceTimersByTimeAsync(999)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+
+      // At exactly 1000ms: attempt 2 fires
+      await jest.advanceTimersByTimeAsync(1)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+
+      // Backoff after attempt 2: 1000 * 2^1 = 2000ms
+      // 1999ms is not enough
+      await jest.advanceTimersByTimeAsync(1999)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+
+      // At exactly 2000ms: attempt 3 fires
+      await jest.advanceTimersByTimeAsync(1)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(3)
+    })
+
+    it('allows a new reconnect loop after the previous one finishes', async () => {
+      await connectAndReset()
+
+      // First loop: all attempts fail
+      transportBLEMock.open.mockRejectedValue(
+        new Error('Connection failed') as never
+      )
+
+      LedgerService.scheduleReconnect('first-loop')
+
+      // Exhaust all retries
+      await jest.advanceTimersByTimeAsync(0)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2
+      )
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(
+        LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES
+      )
+
+      // isAttemptingReconnect should be reset — a fresh loop can start
+      transportBLEMock.open.mockReset()
+      transportBLEMock.open.mockResolvedValueOnce(mockTransport as never)
+
+      LedgerService.scheduleReconnect('second-loop')
+      await jest.advanceTimersByTimeAsync(0)
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+    })
+  })
 })

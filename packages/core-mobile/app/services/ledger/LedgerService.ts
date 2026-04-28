@@ -71,6 +71,10 @@ class LedgerService {
   private connectedDeviceId: string | null = null
   private isAttemptingReconnect = false
   private autoReconnectDisabled = false
+  // Mutex: serializes all connect() calls so concurrent callers
+  // (manual reconnect, auto-reconnect, onboarding) don't race on
+  // TransportBLE.open().
+  private connectInFlight: Promise<void> | null = null
   private connectionStateListeners: Set<(connected: boolean) => void> =
     new Set()
 
@@ -146,12 +150,33 @@ class LedgerService {
     }
   }
 
-  // Connect to Ledger device (transport only, no apps)
+  // Serializing wrapper: ensures only one TransportBLE.open() is in
+  // flight at a time. Concurrent callers await the same promise, so
+  // the second caller gets the result (or error) of the first.
   async connect(deviceId: string): Promise<void> {
+    if (this.connectInFlight) {
+      Logger.info('connect() already in flight — joining existing attempt')
+      return this.connectInFlight
+    }
+
+    this.connectInFlight = this.connectInternal(deviceId).finally(() => {
+      this.connectInFlight = null
+    })
+
+    return this.connectInFlight
+  }
+
+  // Connect to Ledger device (transport only, no apps)
+  private async connectInternal(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       await this.assertBluetoothAvailable()
-      this.autoReconnectDisabled = false // Reset policy on manual connect
+      // Only reset auto-reconnect policy on user-initiated connects,
+      // not when called from the auto-reconnect loop — otherwise an
+      // in-flight reconnect can undo a clearConnectedDevice() call.
+      if (!this.isAttemptingReconnect) {
+        this.autoReconnectDisabled = false
+      }
       this.connectedDeviceId = deviceId // Store for auto-reconnect
 
       await TransportBLE.disconnectDevice(deviceId).catch(Logger.error)
@@ -236,6 +261,24 @@ class LedgerService {
     this.attemptReconnect().catch(Logger.error)
   }
 
+  // Returns true when the reconnect loop should bail out — either because
+  // auto-reconnect was disabled (e.g. clearConnectedDevice during wallet
+  // switch) or because a different device connected in the meantime.
+  private shouldCancelReconnect(originalDeviceId: string): boolean {
+    if (this.autoReconnectDisabled) {
+      Logger.info('Reconnect cancelled: auto-reconnect disabled')
+      return true
+    }
+    if (this.connectedDeviceId !== originalDeviceId) {
+      Logger.info(
+        'Reconnect cancelled: connectedDeviceId changed ' +
+          `(was ${originalDeviceId}, now ${this.connectedDeviceId})`
+      )
+      return true
+    }
+    return false
+  }
+
   // Auto-reconnect with exponential backoff. Gives the Ledger device
   // time to finish waking from sleep before each retry.
   private async attemptReconnect(): Promise<void> {
@@ -250,11 +293,21 @@ class LedgerService {
         attempt <= LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES;
         attempt++
       ) {
+        if (this.shouldCancelReconnect(deviceId)) return
+
         try {
           Logger.info(
             `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} for device ${deviceId}`
           )
           await this.connect(deviceId)
+
+          // If clearConnectedDevice() was called while connect() was
+          // in flight, tear down the connection we just established.
+          if (this.shouldCancelReconnect(deviceId)) {
+            await this.disconnect({ manual: true })
+            return
+          }
+
           Logger.info(`Reconnection succeeded on attempt ${attempt}`)
           return
         } catch (error) {
@@ -262,11 +315,15 @@ class LedgerService {
             `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} failed:`,
             error
           )
-          if (attempt < LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES) {
-            const delay =
-              LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2 ** (attempt - 1)
-            await new Promise(res => setTimeout(res, delay))
-          }
+          if (attempt >= LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES) continue
+
+          const delay =
+            LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2 ** (attempt - 1)
+          await new Promise(res => setTimeout(res, delay))
+
+          // Re-check after the delay — clearConnectedDevice() may have
+          // been called while we were sleeping.
+          if (this.shouldCancelReconnect(deviceId)) return
         }
       }
       Logger.error('All reconnection attempts failed')
@@ -867,6 +924,7 @@ class LedgerService {
   // auto-reconnects.
   clearConnectedDevice(): void {
     this.connectedDeviceId = null
+    this.autoReconnectDisabled = true
   }
 
   // Check if transport is available and connected
