@@ -14,6 +14,8 @@ import {
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
+import { selectAccounts } from 'store/account'
+import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
@@ -35,7 +37,7 @@ import {
   isPriceAlertNotification,
   isBalanceChangeNotification
 } from '../types'
-import { isSwapTerminal } from '../utils'
+import { buildAccountLabelMap, isSwapTerminal } from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
@@ -100,14 +102,25 @@ const renderNotificationItem = (
     accessoryType: 'chevron' | 'none'
     index: number
     testID: string
-  }
+  },
+  accountLabelMap: Map<string, string>
 ): React.JSX.Element => {
   if (isPriceAlertWithData(item)) {
     return <PriceAlertItem notification={item} {...props} />
   }
 
   if (isBalanceChangeWithData(item)) {
-    return <BalanceChangeItem notification={item} {...props} />
+    const addr = isBalanceChangeNotification(item)
+      ? item.data?.accountAddress?.toLowerCase()
+      : undefined
+    const accountLabel = addr ? accountLabelMap.get(addr) ?? null : null
+    return (
+      <BalanceChangeItem
+        notification={item}
+        accountLabel={accountLabel}
+        {...props}
+      />
+    )
   }
 
   return <GenericNotificationItem notification={item} {...props} />
@@ -122,6 +135,12 @@ export const NotificationsScreen = (): JSX.Element => {
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
+  const accounts = useSelector(selectAccounts)
+  const wallets = useSelector(selectWallets)
+  const accountLabelMap = useMemo(
+    () => buildAccountLabelMap(accounts, wallets),
+    [accounts, wallets]
+  )
   const selectedTabIndex = useSharedValue(0)
   const [selectedTabState, setSelectedTabState] = useState(0)
   const selectedTab = TAB_ITEMS[selectedTabState]?.value ?? NotificationTab.ALL
@@ -331,12 +350,18 @@ export const NotificationsScreen = (): JSX.Element => {
               : () => handleNotificationPress(notification)
           }
           enabled={!isClearingAll}>
-          {renderNotificationItem(notification, {
-            showSeparator: !isLast,
-            accessoryType: hasActionableUrl(notification) ? 'chevron' : 'none',
-            index,
-            testID: `notification-item-${notification.id}`
-          })}
+          {renderNotificationItem(
+            notification,
+            {
+              showSeparator: !isLast,
+              accessoryType: hasActionableUrl(notification)
+                ? 'chevron'
+                : 'none',
+              index,
+              testID: `notification-item-${notification.id}`
+            },
+            accountLabelMap
+          )}
         </SwipeableRow>
       )
     },
@@ -346,7 +371,8 @@ export const NotificationsScreen = (): JSX.Element => {
       removeTransfer,
       handleSwapActivityPress,
       dismissNotification,
-      handleNotificationPress
+      handleNotificationPress,
+      accountLabelMap
     ]
   )
 

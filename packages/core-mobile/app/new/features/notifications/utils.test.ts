@@ -6,8 +6,8 @@ import {
   NotificationTab
 } from './types'
 import {
+  buildAccountLabelMap,
   filterByTab,
-  getAccountLabel,
   isSwapTerminal,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
@@ -129,14 +129,15 @@ describe('filterByTab', () => {
   })
 })
 
-// ─── getAccountLabel ──────────────────────────────────────────────────────────
+// ─── buildAccountLabelMap ─────────────────────────────────────────────────────
 
-describe('getAccountLabel', () => {
-  const accountAddr = '0x1111111111111111111111111111111111111111'
+describe('buildAccountLabelMap', () => {
+  const addr = '0x1111111111111111111111111111111111111111'
+  const otherAddr = '0x2222222222222222222222222222222222222222'
 
   const makeAccounts = (
     entries: { id: string; addressC: string; name: string; walletId: string }[]
-  ): Parameters<typeof getAccountLabel>[1] =>
+  ): Parameters<typeof buildAccountLabelMap>[0] =>
     Object.fromEntries(
       entries.map(e => [
         e.id,
@@ -149,80 +150,67 @@ describe('getAccountLabel', () => {
           index: 0
         }
       ])
-    ) as Parameters<typeof getAccountLabel>[1]
+    ) as Parameters<typeof buildAccountLabelMap>[0]
 
   const makeWallets = (
     entries: { id: string; name: string }[]
-  ): Parameters<typeof getAccountLabel>[2] =>
+  ): Parameters<typeof buildAccountLabelMap>[1] =>
     Object.fromEntries(
       entries.map(e => [e.id, { id: e.id, name: e.name, type: 'MNEMONIC' }])
-    ) as Parameters<typeof getAccountLabel>[2]
+    ) as Parameters<typeof buildAccountLabelMap>[1]
 
-  const ownedBalanceChange = makeNotification({
-    id: 'owned-bc',
-    type: 'BALANCE_CHANGES',
-    category: NotificationCategory.TRANSACTION,
-    data: { accountAddress: accountAddr }
-  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
-
-  it('returns just the account name when the user has one wallet', () => {
+  it('uses just the account name when the user has one wallet', () => {
     const accounts = makeAccounts([
-      { id: 'a1', addressC: accountAddr, name: 'Account 2', walletId: 'w1' }
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w1' }
     ])
     const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
 
-    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
-      'Account 2'
-    )
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe('Account 2')
   })
 
   it('prefixes the wallet name when the user has multiple wallets', () => {
     const accounts = makeAccounts([
-      { id: 'a1', addressC: accountAddr, name: 'Account 2', walletId: 'w2' }
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w2' }
     ])
     const wallets = makeWallets([
       { id: 'w1', name: 'Wallet A' },
       { id: 'w2', name: 'Wallet B' }
     ])
 
-    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe(
       'Wallet B · Account 2'
     )
   })
 
-  it('matches addresses case-insensitively', () => {
+  it('keys the map by lowercased address regardless of input casing', () => {
     const accounts = makeAccounts([
       {
         id: 'a1',
-        addressC: accountAddr.toUpperCase(),
+        addressC: addr.toUpperCase(),
         name: 'Account 2',
         walletId: 'w1'
       }
     ])
     const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
 
-    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBe(
-      'Account 2'
-    )
+    const map = buildAccountLabelMap(accounts, wallets)
+    expect(map.get(addr)).toBe('Account 2')
+    expect(map.get(addr.toUpperCase())).toBeUndefined()
   })
 
-  it('returns null for non-balance-change notifications', () => {
-    expect(getAccountLabel(priceAlert, {}, {})).toBeNull()
-    expect(getAccountLabel(news, {}, {})).toBeNull()
-  })
-
-  it('returns null when the address is not owned', () => {
+  it('omits addresses for accounts the user does not own', () => {
     const accounts = makeAccounts([
-      {
-        id: 'a1',
-        addressC: '0x9999999999999999999999999999999999999999',
-        name: 'Account 1',
-        walletId: 'w1'
-      }
+      { id: 'a1', addressC: addr, name: 'Account 1', walletId: 'w1' }
     ])
     const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
 
-    expect(getAccountLabel(ownedBalanceChange, accounts, wallets)).toBeNull()
+    expect(
+      buildAccountLabelMap(accounts, wallets).get(otherAddr)
+    ).toBeUndefined()
+  })
+
+  it('returns an empty map when there are no accounts', () => {
+    expect(buildAccountLabelMap({}, {}).size).toBe(0)
   })
 })
 

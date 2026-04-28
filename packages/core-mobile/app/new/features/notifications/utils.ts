@@ -3,7 +3,6 @@ import { AccountCollection } from 'store/account/types'
 import { Wallet } from 'store/wallet/types'
 import {
   AppNotification,
-  isBalanceChangeNotification,
   NotificationCategory,
   NotificationTab,
   NotificationType,
@@ -103,34 +102,28 @@ export function mapTypeToCategory(
 }
 
 /**
- * Returns a short label identifying which wallet/account a balance-change
- * notification is for, so users with multiple imported wallets can tell them
- * apart. Returns null for non-balance-change notifications or when the
- * address is not owned by the user (e.g. backend lag after deletion).
+ * Builds a lookup map from lowercase EVM address to a short
+ * "wallet/account" label for every owned account, so balance-change
+ * notifications in the Notification Center can be attributed to the
+ * correct wallet without each list row re-subscribing to Redux.
  *
  * Single-wallet users see just the account name; multi-wallet users see
  * "{walletName} · {accountName}".
  */
-export function getAccountLabel(
-  notification: AppNotification,
+export function buildAccountLabelMap(
   accounts: AccountCollection,
   wallets: { [id: string]: Wallet }
-): string | null {
-  if (!isBalanceChangeNotification(notification)) return null
-  const addr = notification.data?.accountAddress?.toLowerCase()
-  if (!addr) return null
+): Map<string, string> {
+  const multiWallet = Object.keys(wallets).length > 1
+  const map = new Map<string, string>()
 
-  const account = Object.values(accounts).find(
-    a => a.addressC.toLowerCase() === addr
-  )
-  if (!account) return null
-
-  const walletCount = Object.keys(wallets).length
-  if (walletCount > 1) {
-    const wallet = wallets[account.walletId]
-    if (wallet) return `${wallet.name} · ${account.name}`
+  for (const account of Object.values(accounts)) {
+    const wallet = multiWallet ? wallets[account.walletId] : undefined
+    const label = wallet ? `${wallet.name} · ${account.name}` : account.name
+    map.set(account.addressC.toLowerCase(), label)
   }
-  return account.name
+
+  return map
 }
 
 /**

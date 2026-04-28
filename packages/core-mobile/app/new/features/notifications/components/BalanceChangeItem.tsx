@@ -1,13 +1,9 @@
 import React, { FC } from 'react'
-import { useSelector } from 'react-redux'
-import { selectAccounts } from 'store/account'
-import { selectWallets } from 'store/wallet/slice'
 import {
   AppNotification,
   isBalanceChangeNotification,
   BalanceChangeEventSchema
 } from '../types'
-import { getAccountLabel } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
 
@@ -15,6 +11,12 @@ type BalanceChangeItemProps = {
   notification: AppNotification
   showSeparator: boolean
   accessoryType: 'chevron' | 'none'
+  /**
+   * Optional "{wallet} · {account}" label resolved by the parent screen.
+   * Prepended to the subtitle so multi-wallet users can tell which wallet a
+   * balance-change notification belongs to.
+   */
+  accountLabel?: string | null
   testID?: string
 }
 
@@ -74,11 +76,9 @@ const BalanceChangeItem: FC<BalanceChangeItemProps> = ({
   notification,
   showSeparator,
   accessoryType,
+  accountLabel,
   testID
 }) => {
-  const accounts = useSelector(selectAccounts)
-  const wallets = useSelector(selectWallets)
-  const accountLabel = getAccountLabel(notification, accounts, wallets)
   const baseSubtitle = getSubtitle(notification)
   const subtitle = accountLabel
     ? `${accountLabel} · ${baseSubtitle}`
