@@ -867,8 +867,8 @@ describe('LedgerService', () => {
           .mockRejectedValue(new Error('No app info') as never),
         isConnected: true,
         close: jest.fn().mockResolvedValue(undefined as never),
-        on: jest.fn((_event: string, callback: () => void) => {
-          disconnectHandler = callback
+        on: jest.fn((_event, callback) => {
+          disconnectHandler = callback as () => void
         }),
         exchangeBusyPromise: null
       }

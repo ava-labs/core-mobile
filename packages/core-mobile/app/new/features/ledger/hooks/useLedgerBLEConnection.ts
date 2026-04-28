@@ -74,6 +74,10 @@ export const useLedgerBLEConnection = ({
     [getLedgerInfoByWalletId, activeWalletId]
   )
 
+  // Track whether we've already attempted to open the app in this
+  // connecting phase so we don't spam the open-app APDU every poll tick.
+  const openAppAttemptedRef = useRef(false)
+
   // Reset connection state when a new connecting phase begins
   useEffect(() => {
     if (isConnecting) {
@@ -81,6 +85,7 @@ export const useLedgerBLEConnection = ({
       setIsAvalancheAppOpen(false)
       setIsUnsupportedBtcVersion(false)
       setCurrentBtcVersion('')
+      openAppAttemptedRef.current = false
     }
   }, [isConnecting])
 
@@ -117,46 +122,56 @@ export const useLedgerBLEConnection = ({
     handleReconnect()
   }, [isLedger, isConnecting, deviceForWallet, handleReconnect])
 
+  // Check device connection and required app status.
+  // Extracted from useEffect to reduce nesting depth.
+  const checkDeviceReady = useCallback(async (): Promise<void> => {
+    try {
+      const connected = LedgerService.isConnected()
+      setIsLedgerConnected(connected)
+      if (!connected) {
+        setIsAvalancheAppOpen(false)
+        setIsUnsupportedBtcVersion(false)
+        setCurrentBtcVersion('')
+        return
+      }
+      const currentAppType = LedgerService.getCurrentAppType()
+      if (appType !== LedgerAppType.BITCOIN) {
+        const isCorrectApp = currentAppType === appType
+        setIsAvalancheAppOpen(isCorrectApp)
+        setIsUnsupportedBtcVersion(false)
+        setCurrentBtcVersion('')
+
+        // Proactively quit the current app and open the required one.
+        // openApp handles quit→open internally and is best-effort.
+        if (!isCorrectApp && !openAppAttemptedRef.current) {
+          openAppAttemptedRef.current = true
+          LedgerService.openApp(appType).catch(() => undefined)
+        }
+        return
+      }
+      const version = LedgerService.getCurrentAppVersion()
+      if (!version) {
+        // Version not yet populated; wait for the next poll
+        setIsAvalancheAppOpen(false)
+        setIsUnsupportedBtcVersion(false)
+        setCurrentBtcVersion('')
+        return
+      }
+      const compatible = isBitcoinCompatibleApp(currentAppType, version)
+      const unsupported =
+        currentAppType === LedgerAppType.BITCOIN && !compatible
+      setIsAvalancheAppOpen(compatible)
+      setIsUnsupportedBtcVersion(unsupported)
+      setCurrentBtcVersion(unsupported ? version : '')
+    } catch {
+      setIsLedgerConnected(false)
+      setIsAvalancheAppOpen(false)
+    }
+  }, [appType])
+
   // Poll for device connection and required app status
   useEffect(() => {
     if (!isLedger || !isConnecting) return
-
-    const checkDeviceReady = async (): Promise<void> => {
-      try {
-        const connected = LedgerService.isConnected()
-        setIsLedgerConnected(connected)
-        if (!connected) {
-          setIsAvalancheAppOpen(false)
-          setIsUnsupportedBtcVersion(false)
-          setCurrentBtcVersion('')
-          return
-        }
-        const currentAppType = LedgerService.getCurrentAppType()
-        if (appType !== LedgerAppType.BITCOIN) {
-          setIsAvalancheAppOpen(currentAppType === appType)
-          setIsUnsupportedBtcVersion(false)
-          setCurrentBtcVersion('')
-          return
-        }
-        const version = LedgerService.getCurrentAppVersion()
-        if (!version) {
-          // Version not yet populated; wait for the next poll
-          setIsAvalancheAppOpen(false)
-          setIsUnsupportedBtcVersion(false)
-          setCurrentBtcVersion('')
-          return
-        }
-        const compatible = isBitcoinCompatibleApp(currentAppType, version)
-        const unsupported =
-          currentAppType === LedgerAppType.BITCOIN && !compatible
-        setIsAvalancheAppOpen(compatible)
-        setIsUnsupportedBtcVersion(unsupported)
-        setCurrentBtcVersion(unsupported ? version : '')
-      } catch {
-        setIsLedgerConnected(false)
-        setIsAvalancheAppOpen(false)
-      }
-    }
 
     checkDeviceReady()
     const pollInterval = setInterval(
@@ -164,7 +179,7 @@ export const useLedgerBLEConnection = ({
       LEDGER_DEVICE_BRIEF_DELAY_MS
     )
     return () => clearInterval(pollInterval)
-  }, [isLedger, isConnecting, appType])
+  }, [isLedger, isConnecting, checkDeviceReady])
 
   const connectionStatus = useMemo((): string => {
     if (!isLedgerConnected) {

@@ -1366,6 +1366,18 @@ class LedgerService {
       return
     }
 
+    // Always quit the current app before opening a new one. Opening an app
+    // while another third-party app is running triggers a BLE disconnect on
+    // some devices; quitting first avoids this. We quit unconditionally
+    // because currentAppType can be UNKNOWN even when an app is running
+    // (e.g. after a reconnect where the initial app-info check failed).
+    // Sending the quit APDU from the dashboard is a harmless no-op.
+    if (this.isConnected()) {
+      await this.quitLedgerApp()
+      // Brief delay to let the device settle on the dashboard
+      await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+    }
+
     try {
       const apdu = this.buildOpenAppApdu(app)
       const response = await this.transport.exchange(apdu)
@@ -1392,6 +1404,20 @@ class LedgerService {
       // Do not throw error, just log it, we can't reliably force-switch apps on a Ledger
       // from one third‑party app to another, so this is just a best-effort attempt.
       Logger.info(`Failed to open ${app} app:`, error)
+    }
+  }
+
+  /**
+   * Quit the current ledger app and return to the dashboard.
+   * @see https://developers.ledger.com/docs/transport/open-close-info-on-apps/#quit-application
+   */
+  async quitLedgerApp(): Promise<void> {
+    try {
+      await this.transport.send(0xb0, 0xa7, 0x00, 0x00)
+      this.currentAppType = LedgerAppType.UNKNOWN
+      Logger.info('Successfully quit current Ledger app')
+    } catch (error) {
+      Logger.info('Failed to quit Ledger app:', error)
     }
   }
 }
