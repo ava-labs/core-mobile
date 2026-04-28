@@ -674,7 +674,8 @@ class AccountsService {
                 [NetworkVMType.AVM]: r?.avm ?? '',
                 [NetworkVMType.PVM]: r?.pvm ?? '',
                 [NetworkVMType.CoreEth]: r?.coreEth ?? '',
-                [NetworkVMType.SVM]: r?.solana ?? ''
+                [NetworkVMType.SVM]: r?.solana ?? '',
+                [NetworkVMType.HVM]: ''
               }
             }
           })
