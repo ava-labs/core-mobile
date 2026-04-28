@@ -13,6 +13,7 @@ import {
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { LedgerSetupProvider } from 'features/ledger'
+import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
 import React, { useEffect } from 'react'
@@ -41,6 +42,10 @@ export default function WalletLayout(): JSX.Element {
       LedgerService.clearConnectedDevice()
     }
   }, [isLedgerWallet])
+
+  // Manage Ledger BLE lifecycle: auto-disconnect on background,
+  // auto-reconnect on foreground.
+  useLedgerAppStateListener(isLedgerWallet)
 
   const { modalScreensOptions, secondaryModalScreensOptions } =
     useModalScreensOptions()

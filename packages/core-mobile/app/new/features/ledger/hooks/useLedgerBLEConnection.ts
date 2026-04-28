@@ -56,18 +56,15 @@ export const useLedgerBLEConnection = ({
   useEffect(() => {
     if (!isLedger) return
 
-    const unsubscribe = LedgerService.addConnectionStateListener(
-      (connected: boolean) => {
-        if (!isMountedRef.current) return
-        setIsLedgerConnected(connected)
-        if (!connected) {
-          setIsAvalancheAppOpen(false)
-          setIsUnsupportedBtcVersion(false)
-          setCurrentBtcVersion('')
-        }
+    return LedgerService.addConnectionStateListener((connected: boolean) => {
+      if (!isMountedRef.current) return
+      setIsLedgerConnected(connected)
+      if (!connected) {
+        setIsAvalancheAppOpen(false)
+        setIsUnsupportedBtcVersion(false)
+        setCurrentBtcVersion('')
       }
-    )
-    return unsubscribe
+    })
   }, [isLedger])
 
   const activeWalletId = useSelector(selectActiveWalletId)
@@ -91,7 +88,7 @@ export const useLedgerBLEConnection = ({
     if (!deviceForWallet || !isMountedRef.current) return
     setIsReconnecting(true)
     try {
-      await LedgerService.ensureConnection(deviceForWallet.id)
+      await LedgerService.connect(deviceForWallet.id)
       if (!isMountedRef.current) return
       setIsLedgerConnected(true)
     } catch (err) {

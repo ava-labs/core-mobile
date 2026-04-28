@@ -360,7 +360,8 @@ describe('LedgerService', () => {
     const mockTransport = {
       exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
       isConnected: true,
-      close: jest.fn()
+      close: jest.fn(),
+      on: jest.fn()
     }
 
     const originalPlatformOS = Platform.OS
@@ -432,7 +433,7 @@ describe('LedgerService', () => {
     })
 
     it('requests permissions when establishing a connection', async () => {
-      await LedgerService.ensureConnection('device-id')
+      await LedgerService.connect('device-id')
 
       expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
         bluetoothPermissions.length
@@ -449,7 +450,7 @@ describe('LedgerService', () => {
     it('does not reopen permission prompts when permissions are already granted', async () => {
       ;(PermissionsAndroid.check as jest.Mock).mockResolvedValue(true as never)
 
-      await LedgerService.ensureConnection('device-id')
+      await LedgerService.connect('device-id')
 
       expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
       expect(transportBLEMock.open).toHaveBeenCalledWith(
@@ -464,8 +465,8 @@ describe('LedgerService', () => {
       )
 
       try {
-        await LedgerService.ensureConnection('device-id')
-        throw new Error('Expected ensureConnection to fail')
+        await LedgerService.connect('device-id')
+        throw new Error('Expected connect to fail')
       } catch (error) {
         expect(error).toBeInstanceOf(Error)
         expect((error as Error).message).toBe(

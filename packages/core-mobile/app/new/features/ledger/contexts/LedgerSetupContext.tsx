@@ -67,7 +67,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     async (deviceId: string, deviceName?: string) => {
       setIsConnecting(true)
       try {
-        await LedgerService.ensureConnection(deviceId)
+        await LedgerService.connect(deviceId)
         handleSetConnectedDevice(deviceId, deviceName || 'Ledger')
       } finally {
         setIsConnecting(false)
