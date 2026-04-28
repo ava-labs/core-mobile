@@ -3,6 +3,7 @@ import {
   Button,
   GroupList,
   Icons,
+  LeverageGauge,
   Text,
   useTheme,
   View
@@ -31,6 +32,8 @@ const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
+  const [leverage, setLeverage] = useState(2)
+  const [decimalLeverage, setDecimalLeverage] = useState(2)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const router = useRouter()
@@ -63,6 +66,29 @@ const EventDetailsScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen navigationTitle={event?.title ?? ''}>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Add leverage</Text>
+        <LeverageGauge
+          value={leverage}
+          onChange={setLeverage}
+          min={1}
+          max={40}
+          step={0.2}
+          integersOnly
+          enableManualInput
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Add leverage (decimals)</Text>
+        <LeverageGauge
+          value={decimalLeverage}
+          onChange={setDecimalLeverage}
+          min={1}
+          max={40}
+          step={0.2}
+          enableManualInput
+        />
+      </View>
       <View style={{ gap: 10, paddingTop: 16 }}>
         <View style={{ gap: 10, paddingHorizontal: 16 }}>
           <TradeThumbnail url={event?.imageUrl} />
