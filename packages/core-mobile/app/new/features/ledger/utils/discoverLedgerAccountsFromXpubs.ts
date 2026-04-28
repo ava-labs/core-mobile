@@ -143,18 +143,12 @@ async function discoverFromXpubs(
 
     try {
       const [mainnetBatch, testnetBatch] = await Promise.all([
-        deriveAddressesBatch(
-          evmAccountXpub,
-          accountXpubs.avalanche,
-          false,
-          [index]
-        ),
-        deriveAddressesBatch(
-          evmAccountXpub,
-          accountXpubs.avalanche,
-          true,
-          [index]
-        )
+        deriveAddressesBatch(evmAccountXpub, accountXpubs.avalanche, false, [
+          index
+        ]),
+        deriveAddressesBatch(evmAccountXpub, accountXpubs.avalanche, true, [
+          index
+        ])
       ])
 
       const mainnet = mainnetBatch.get(index)
