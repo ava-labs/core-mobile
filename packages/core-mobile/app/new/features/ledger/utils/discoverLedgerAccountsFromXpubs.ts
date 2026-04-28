@@ -127,30 +127,51 @@ async function discoverFromXpubs(
     `Discovering Ledger accounts from ${additionalIndices.length} stored xpubs`
   )
 
+  // Build aligned arrays: only include indices that have an Avalanche xpub.
+  const validIndices: number[] = []
+  const avalancheXpubsForBatch: string[] = []
+  for (const index of additionalIndices) {
+    const accountXpubs = xpubs[index]
+    if (!accountXpubs?.avalanche) continue
+    validIndices.push(index)
+    avalancheXpubsForBatch.push(accountXpubs.avalanche)
+  }
+
   const derivedAccounts: LedgerDerivedAccount[] = []
   const addressesByIndex = new Map<
     number,
     { mainnet: DerivedAddresses; testnet: DerivedAddresses }
   >()
 
-  // Derive addresses on the native thread via the Nitro module.
-  // Each Ledger BIP44 account has its own Avalanche xpub, so we call
-  // the native batch function per-account (still benefits from running
-  // on the native thread instead of blocking JS).
-  for (const index of additionalIndices) {
-    const accountXpubs = xpubs[index]
-    if (!accountXpubs?.avalanche) continue
+  if (validIndices.length === 0) {
+    return buildDiscoveredAccounts({
+      walletId,
+      derivedAccounts,
+      addressesByIndex,
+      solanaAddresses
+    })
+  }
 
-    try {
-      const [mainnetBatch, testnetBatch] = await Promise.all([
-        deriveAddressesBatch(evmAccountXpub, accountXpubs.avalanche, false, [
-          index
-        ]),
-        deriveAddressesBatch(evmAccountXpub, accountXpubs.avalanche, true, [
-          index
-        ])
-      ])
+  // Derive all accounts in a single native call per network.
+  // avalancheXpubs is aligned 1-to-1 with validIndices.
+  try {
+    const [mainnetBatch, testnetBatch] = await Promise.all([
+      deriveAddressesBatch(
+        evmAccountXpub,
+        avalancheXpubsForBatch,
+        false,
+        validIndices
+      ),
+      deriveAddressesBatch(
+        evmAccountXpub,
+        avalancheXpubsForBatch,
+        true,
+        validIndices
+      )
+    ])
 
+    for (let i = 0; i < validIndices.length; i++) {
+      const index = validIndices[i]!
       const mainnet = mainnetBatch.get(index)
       const testnet = testnetBatch.get(index)
       if (!mainnet || !testnet) continue
@@ -161,12 +182,12 @@ async function discoverFromXpubs(
         index,
         addressC: mainnet.evm,
         addressBTC: mainnet.btc,
-        xpubXP: accountXpubs.avalanche,
+        xpubXP: avalancheXpubsForBatch[i]!,
         addressSVM: solanaAddresses[index] ?? undefined
       })
-    } catch (error) {
-      Logger.error(`Failed to derive addresses for index ${index}`, error)
     }
+  } catch (error) {
+    Logger.error('Failed to batch-derive Ledger addresses', error)
   }
 
   return buildDiscoveredAccounts({

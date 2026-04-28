@@ -6,6 +6,7 @@
 #include <NitroModules/ThreadPool.hpp>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <stdexcept>
 
 #ifndef OPENSSL_NOT_AVAILABLE
@@ -28,6 +29,35 @@ namespace margelo::nitro::nitroavalabscrypto {
     namespace {
         std::once_flag g_once;
         secp256k1_context *g_ctx = nullptr;
+
+        // RAII scope guard — invokes a cleanup lambda on destruction (normal
+        // exit *or* exception unwind), ensuring sensitive buffers are always
+        // zeroed regardless of the control-flow path taken.
+        template<typename F>
+        struct ScopeGuard {
+            F fn;
+            explicit ScopeGuard(F f) : fn(std::move(f)) {}
+            ~ScopeGuard() { fn(); }
+            ScopeGuard(const ScopeGuard &) = delete;
+            ScopeGuard &operator=(const ScopeGuard &) = delete;
+        };
+
+        // Validate that every element of a JS number[] (bridged as
+        // vector<double>) is a finite, non-negative integer within uint32
+        // range.  Called before any cast to uint32_t so that NaN, Infinity,
+        // negative values, and fractional values are rejected with a clear
+        // error instead of silently producing incorrect derivation indices.
+        inline void validateAccountIndices(const std::vector<double> &indices) {
+            for (size_t i = 0; i < indices.size(); ++i) {
+                double v = indices[i];
+                if (!std::isfinite(v) || v < 0 || v != std::floor(v) ||
+                    v > static_cast<double>(UINT32_MAX)) {
+                    throw std::invalid_argument(
+                        "accountIndices[" + std::to_string(i) +
+                        "] is invalid: must be a finite integer in [0, 2^32-1]");
+                }
+            }
+        }
 
         inline uint8_t hexNibble(char c) {
             if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
@@ -395,26 +425,32 @@ namespace margelo::nitro::nitroavalabscrypto {
     std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>>
     CryptoHybrid::deriveAddressesFromXpubs(
             const std::string &evmXpub,
-            const std::string &avalancheXpub,
+            const std::vector<std::string> &avalancheXpubs,
             bool isTestnet,
             const std::vector<double> &accountIndices) {
 
+        if (avalancheXpubs.size() != accountIndices.size()) {
+            throw std::invalid_argument(
+                "avalancheXpubs and accountIndices must have the same length");
+        }
+        validateAccountIndices(accountIndices);
+
         return Promise<std::vector<DerivedSecp256k1Addresses>>::async(
-            [evmXpub, avalancheXpub, isTestnet, accountIndices]() {
+            [evmXpub, avalancheXpubs, isTestnet, accountIndices]() {
 
             auto evm_parsed = parse_xpub(evmXpub);
-            auto avax_parsed = parse_xpub(avalancheXpub);
 
             std::vector<DerivedSecp256k1Addresses> results;
             results.reserve(accountIndices.size());
 
-            for (double idx : accountIndices) {
-                auto index = static_cast<uint32_t>(idx);
+            for (size_t i = 0; i < accountIndices.size(); ++i) {
+                auto index = static_cast<uint32_t>(accountIndices[i]);
+                auto avax_parsed = parse_xpub(avalancheXpubs[i]);
                 auto addrs = derive_addresses_for_index(
                     CryptoHybrid::ctx(), evm_parsed, avax_parsed, isTestnet, index);
 
                 results.push_back(DerivedSecp256k1Addresses(
-                    idx,
+                    accountIndices[i],
                     std::move(addrs.evm),
                     std::move(addrs.btc),
                     std::move(addrs.avm),
@@ -437,6 +473,7 @@ namespace margelo::nitro::nitroavalabscrypto {
         if (!seed || seed->size() != 64) {
             throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
         }
+        validateAccountIndices(accountIndices);
 
         // Copy seed bytes so the lambda owns them (the ArrayBuffer may be
         // invalidated before the background thread runs).
@@ -445,6 +482,12 @@ namespace margelo::nitro::nitroavalabscrypto {
 
         return Promise<std::vector<DerivedSolanaAddress>>::async(
             [seedBytes = std::move(seedBytes), accountIndices]() mutable {
+
+            // Scope guard: zero seed bytes on *any* exit path, including
+            // exceptions thrown during the derivation loop.
+            ScopeGuard cleanup([&] {
+                OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
+            });
 
             std::vector<DerivedSolanaAddress> results;
             results.reserve(accountIndices.size());
@@ -456,9 +499,6 @@ namespace margelo::nitro::nitroavalabscrypto {
 
                 results.push_back(DerivedSolanaAddress(idx, std::move(address)));
             }
-
-            // Zero seed material so it doesn't linger in freed memory.
-            OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
 
             return results;
         });
@@ -475,6 +515,7 @@ namespace margelo::nitro::nitroavalabscrypto {
         if (!seed || seed->size() != 64) {
             throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
         }
+        validateAccountIndices(accountIndices);
 
         std::vector<uint8_t> seedBytes(64);
         std::memcpy(seedBytes.data(), seed->data(), 64);
@@ -482,19 +523,35 @@ namespace margelo::nitro::nitroavalabscrypto {
         return Promise<std::vector<DerivedAllAddresses>>::async(
             [seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
 
+            // Protect seedBytes immediately — every subsequent derivation
+            // step has its own guard so sensitive material is zeroed even if
+            // an earlier step throws.
+            ScopeGuard cleanupSeed([&] {
+                OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
+            });
+
             auto *sctx = CryptoHybrid::ctx();
 
             // BIP32 master from seed (once)
             auto master = bip32_master_from_seed(seedBytes.data(), seedBytes.size());
+            ScopeGuard cleanupMaster([&] {
+                OPENSSL_cleanse(master.key.data(), master.key.size());
+                OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
+            });
 
             // EVM xpub at m/44'/60'/0' (once — shared across all accounts)
             auto evm_priv = bip32_derive_hardened_path(sctx, master, {44, 60, 0});
             auto evm_xpub = bip32_private_to_public(sctx, evm_priv);
             // Zero the EVM private key — only the public key is needed from here.
             OPENSSL_cleanse(evm_priv.key.data(), evm_priv.key.size());
+            OPENSSL_cleanse(evm_priv.chain_code.data(), evm_priv.chain_code.size());
 
             // SLIP-0010 master for Solana (once — shared across all accounts)
             auto sol_master = slip0010_master_key(seedBytes.data(), seedBytes.size());
+            ScopeGuard cleanupSolana([&] {
+                OPENSSL_cleanse(sol_master.secret.data(), sol_master.secret.size());
+                OPENSSL_cleanse(sol_master.chain_code.data(), sol_master.chain_code.size());
+            });
 
             std::vector<DerivedAllAddresses> results;
             results.reserve(accountIndices.size());
@@ -520,12 +577,6 @@ namespace margelo::nitro::nitroavalabscrypto {
                     std::move(solana)
                 ));
             }
-
-            // Zero all seed and private key material.
-            OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
-            OPENSSL_cleanse(master.key.data(), master.key.size());
-            OPENSSL_cleanse(sol_master.secret.data(), sol_master.secret.size());
-            OPENSSL_cleanse(sol_master.chain_code.data(), sol_master.chain_code.size());
 
             return results;
         });

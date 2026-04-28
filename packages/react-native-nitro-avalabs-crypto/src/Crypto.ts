@@ -378,21 +378,21 @@ export function getExtendedPublicKey(
  * Batch-derive secp256k1 chain addresses from BIP32 extended public keys.
  * Runs entirely on a native background thread — the JS thread stays free.
  *
- * @param evmXpub       base58 xpub (e.g. at m/44'/60'/0')
- * @param avalancheXpub base58 xpub (e.g. at m/44'/9000'/{account}')
- * @param isTestnet     true → fuji HRP + tb1 BTC; false → avax HRP + bc1
+ * @param evmXpub        base58 shared xpub at m/44'/60'/0'
+ * @param avalancheXpubs base58 per-account xpubs, aligned with accountIndices
+ * @param isTestnet      true → fuji HRP + tb1 BTC; false → avax HRP + bc1
  * @param accountIndices BIP32 address indices to derive
  * @returns one DerivedSecp256k1Addresses per index
  */
 export function deriveAddressesFromXpubs(
   evmXpub: string,
-  avalancheXpub: string,
+  avalancheXpubs: string[],
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<DerivedSecp256k1Addresses[]> {
   return NativeCrypto.deriveAddressesFromXpubs(
     evmXpub,
-    avalancheXpub,
+    avalancheXpubs,
     isTestnet,
     accountIndices
   )

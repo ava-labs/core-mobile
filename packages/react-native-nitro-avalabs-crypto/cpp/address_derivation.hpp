@@ -212,7 +212,13 @@ inline BIP32PrivateKey bip32_derive_hardened_path(
         const std::vector<uint32_t> &indices) {
     BIP32PrivateKey current = master;
     for (uint32_t idx : indices) {
-        current = bip32_derive_hardened_child(ctx, current, idx);
+        auto child = bip32_derive_hardened_child(ctx, current, idx);
+        // Zero the outgoing intermediate key.  On the first iteration this
+        // cleanses a *copy* of master (harmless); on later iterations it
+        // cleanses a genuine intermediate private key.
+        OPENSSL_cleanse(current.key.data(), current.key.size());
+        OPENSSL_cleanse(current.chain_code.data(), current.chain_code.size());
+        current = std::move(child);
     }
     return current;
 }
@@ -367,6 +373,7 @@ inline AddressSet derive_all_addresses_for_index(
     auto avax_priv = bip32_derive_hardened_path(ctx, bip32_master, {44, 9000, account_index});
     auto avax_xpub = bip32_private_to_public(ctx, avax_priv);
     OPENSSL_cleanse(avax_priv.key.data(), avax_priv.key.size());
+    OPENSSL_cleanse(avax_priv.chain_code.data(), avax_priv.chain_code.size());
 
     // Convert BIP32PublicKey to Xpub for derive_addresses_for_index
     Xpub evm_xpub_converted{evm_xpub.key, evm_xpub.chain_code};

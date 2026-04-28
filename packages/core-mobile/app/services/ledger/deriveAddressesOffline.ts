@@ -120,19 +120,23 @@ export function deriveAddressesFromPublicKeys(
  * Nitro module. Runs entirely on a native background thread so the JS
  * thread stays free for UI and BLE events.
  *
+ * `avalancheXpubs` must be aligned 1-to-1 with `accountIndices` because
+ * each Avalanche xpub is per-account (m/44'/9000'/{account}') while the
+ * EVM xpub is shared across all accounts.
+ *
  * Falls back to the JS implementation on error (e.g. in test environments
  * where the native module is unavailable).
  */
 export async function deriveAddressesBatch(
   evmXpub: string,
-  avalancheXpub: string,
+  avalancheXpubs: string[],
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<Map<number, DerivedAddresses>> {
   try {
     const results = await nativeDeriveAddresses(
       evmXpub,
-      avalancheXpub,
+      avalancheXpubs,
       isTestnet,
       accountIndices
     )
@@ -155,10 +159,15 @@ export async function deriveAddressesBatch(
     )
     // Fallback: derive one at a time using the JS implementation
     const map = new Map<number, DerivedAddresses>()
-    for (const index of accountIndices) {
+    for (let i = 0; i < accountIndices.length; i++) {
       map.set(
-        index,
-        deriveAddressesFromXpub(evmXpub, avalancheXpub, isTestnet, index)
+        accountIndices[i]!,
+        deriveAddressesFromXpub(
+          evmXpub,
+          avalancheXpubs[i]!,
+          isTestnet,
+          accountIndices[i]!
+        )
       )
     }
     return map

@@ -72,7 +72,7 @@ namespace margelo::nitro::nitroavalabscrypto {
       virtual std::shared_ptr<ArrayBuffer> signSchnorr(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& secretKey, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& messageHash, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& auxRand) = 0;
       virtual bool verifySchnorr(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& publicKey, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& messageHash, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& signature) = 0;
       virtual ExtendedPublicKey getExtendedPublicKey(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& secretKey) = 0;
-      virtual std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>> deriveAddressesFromXpubs(const std::string& evmXpub, const std::string& avalancheXpub, bool isTestnet, const std::vector<double>& accountIndices) = 0;
+      virtual std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>> deriveAddressesFromXpubs(const std::string& evmXpub, const std::vector<std::string>& avalancheXpubs, bool isTestnet, const std::vector<double>& accountIndices) = 0;
       virtual std::shared_ptr<Promise<std::vector<DerivedSolanaAddress>>> deriveSolanaAddressesFromSeed(const std::shared_ptr<ArrayBuffer>& seed, const std::vector<double>& accountIndices) = 0;
       virtual std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>> deriveAllAddressesFromSeed(const std::shared_ptr<ArrayBuffer>& seed, const std::vector<double>& accountIndices, bool isTestnet) = 0;
 

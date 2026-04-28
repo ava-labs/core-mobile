@@ -33,7 +33,9 @@ static constexpr int ROTATION[5][5] = {
 };
 
 inline uint64_t rotl64(uint64_t x, int n) {
-    return (x << n) | (x >> (64 - n));
+    // Guard n == 0: shifting a 64-bit value by 64 is undefined behavior.
+    // The ROTATION table contains 0 at [0][0].
+    return n == 0 ? x : (x << n) | (x >> (64 - n));
 }
 
 inline void keccak_f1600(uint64_t state[25]) {
@@ -76,6 +78,8 @@ inline void keccak_f1600(uint64_t state[25]) {
 } // namespace detail
 
 inline std::vector<uint8_t> keccak256(const uint8_t* data, size_t len) {
+    static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
+        "Keccak lane loads assume little-endian byte order");
     uint64_t state[25] = {};
 
     // Absorb phase

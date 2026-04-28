@@ -84,7 +84,10 @@ inline SLIP0010Key slip0010_derive_path(const SLIP0010Key &master,
                                          const std::vector<uint32_t> &path) {
     SLIP0010Key current = master;
     for (uint32_t index : path) {
-        current = slip0010_derive_hardened(current, index);
+        auto child = slip0010_derive_hardened(current, index);
+        OPENSSL_cleanse(current.secret.data(), current.secret.size());
+        OPENSSL_cleanse(current.chain_code.data(), current.chain_code.size());
+        current = child;
     }
     return current;
 }
@@ -131,6 +134,7 @@ inline std::string solana_address_from_master(
 
     auto pub_key = ed25519_public_key(derived.secret);
     OPENSSL_cleanse(derived.secret.data(), derived.secret.size());
+    OPENSSL_cleanse(derived.chain_code.data(), derived.chain_code.size());
 
     return base58_encode(std::vector<uint8_t>(pub_key.begin(), pub_key.end()));
 }

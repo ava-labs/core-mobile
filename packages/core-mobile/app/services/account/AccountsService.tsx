@@ -649,54 +649,70 @@ class AccountsService {
       const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
       const windowSize = windowEnd - i
 
-      // Bound derivation fan-out so discovery does not saturate the JS thread on mobile.
-      const addressResults = await runWithConcurrency({
-        items: Array.from({ length: windowSize }, (_, k) => i + k),
-        concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
-        task: async accountIndex => {
-          try {
-            // Native path for mnemonic wallets: single native call derives
-            // ALL addresses (secp256k1 + Ed25519) on a background thread.
-            // Zero JS thread crypto work (CP-14062).
-            if (seedBuffer) {
-              const all = await deriveAllAddressesFromSeed(
-                seedBuffer,
-                [accountIndex],
-                false
-              )
-              const r = all[0]
+      const windowIndices = Array.from({ length: windowSize }, (_, k) => i + k)
 
+      // Native path for mnemonic wallets: derive the entire window in one
+      // native call (single Promise round-trip, single seed copy) instead of
+      // per-account calls that underutilize the batching (CP-14062).
+      let addressResults: PromiseSettledResult<
+        Record<NetworkVMType, string>
+      >[]
+
+      if (seedBuffer) {
+        try {
+          const nativeResults = await deriveAllAddressesFromSeed(
+            seedBuffer,
+            windowIndices,
+            false
+          )
+
+          addressResults = windowIndices.map((_, k) => {
+            const r = nativeResults[k]
+            return {
+              status: 'fulfilled' as const,
+              value: {
+                [NetworkVMType.EVM]: r?.evm ?? '',
+                [NetworkVMType.BITCOIN]: r?.btc ?? '',
+                [NetworkVMType.AVM]: r?.avm ?? '',
+                [NetworkVMType.PVM]: r?.pvm ?? '',
+                [NetworkVMType.CoreEth]: r?.coreEth ?? '',
+                [NetworkVMType.SVM]: r?.solana ?? ''
+              }
+            }
+          })
+        } catch (reason) {
+          // If the batch call fails, mark all indices as rejected so the
+          // activity check logic treats them as "unknown" and stops.
+          addressResults = windowIndices.map(() => ({
+            status: 'rejected' as const,
+            reason
+          }))
+        }
+      } else {
+        // Fallback: all-JS derivation (Keystone, or if seed loading failed).
+        addressResults = await runWithConcurrency({
+          items: windowIndices,
+          concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
+          task: async accountIndex => {
+            try {
               return {
                 status: 'fulfilled',
-                value: {
-                  [NetworkVMType.EVM]: r?.evm ?? '',
-                  [NetworkVMType.BITCOIN]: r?.btc ?? '',
-                  [NetworkVMType.AVM]: r?.avm ?? '',
-                  [NetworkVMType.PVM]: r?.pvm ?? '',
-                  [NetworkVMType.CoreEth]: r?.coreEth ?? '',
-                  [NetworkVMType.SVM]: r?.solana ?? ''
-                }
+                value: await ModuleManager.deriveAddresses({
+                  walletId,
+                  walletType,
+                  accountIndex,
+                  network
+                })
+              } as PromiseSettledResult<Record<NetworkVMType, string>>
+            } catch (reason) {
+              return {
+                status: 'rejected',
+                reason
               } as PromiseSettledResult<Record<NetworkVMType, string>>
             }
-
-            // Fallback: all-JS derivation (Keystone, or if xpub setup failed)
-            return {
-              status: 'fulfilled',
-              value: await ModuleManager.deriveAddresses({
-                walletId,
-                walletType,
-                accountIndex,
-                network
-              })
-            } as PromiseSettledResult<Record<NetworkVMType, string>>
-          } catch (reason) {
-            return {
-              status: 'rejected',
-              reason
-            } as PromiseSettledResult<Record<NetworkVMType, string>>
           }
-        }
-      })
+        })
+      }
 
       const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
         if (result.status !== 'fulfilled') {

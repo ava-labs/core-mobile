@@ -70,7 +70,7 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>>
         deriveAddressesFromXpubs(
                 const std::string &evmXpub,
-                const std::string &avalancheXpub,
+                const std::vector<std::string> &avalancheXpubs,
                 bool isTestnet,
                 const std::vector<double> &accountIndices) override;
 

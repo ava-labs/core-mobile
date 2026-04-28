@@ -143,15 +143,22 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
    * Batch-derive addresses for secp256k1 chains from BIP32 extended public keys.
    * Runs entirely on a native background thread so the JS thread stays free.
    *
-   * @param evmXpub      base58-encoded xpub (e.g. at m/44'/60'/0')
-   * @param avalancheXpub base58-encoded xpub (e.g. at m/44'/9000'/{account}')
-   * @param isTestnet    true → fuji HRP + tb1 BTC prefix; false → avax HRP + bc1
-   * @param accountIndices BIP32 address indices to derive (e.g. [0,1,2,…,9])
+   * The EVM xpub is shared across accounts (m/44'/60'/0'); each account index
+   * derives a different child at 0/{index}.
+   *
+   * Avalanche xpubs are per-account (m/44'/9000'/{account}'); the address is
+   * always at child 0/0 within each xpub.  Therefore `avalancheXpubs` must be
+   * the same length as `accountIndices` — one xpub per index.
+   *
+   * @param evmXpub         base58-encoded shared xpub at m/44'/60'/0'
+   * @param avalancheXpubs  base58-encoded per-account xpubs, aligned with accountIndices
+   * @param isTestnet       true → fuji HRP + tb1 BTC prefix; false → avax HRP + bc1
+   * @param accountIndices  BIP32 address indices to derive (e.g. [0,1,2,…,9])
    * @returns one DerivedSecp256k1Addresses per index
    */
   deriveAddressesFromXpubs(
     evmXpub: string,
-    avalancheXpub: string,
+    avalancheXpubs: string[],
     isTestnet: boolean,
     accountIndices: number[]
   ): Promise<DerivedSecp256k1Addresses[]>
