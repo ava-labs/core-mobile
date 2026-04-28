@@ -157,7 +157,11 @@ class OnboardingPage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
+    if (driver.isAndroid) {
+      await actions.type(this.recoveryPhraseInput, recoveryPhrase)
+    } else {
+      await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
+    }
     await actions.tap(this.enterRecoveryPhraseTitle)
   }
 

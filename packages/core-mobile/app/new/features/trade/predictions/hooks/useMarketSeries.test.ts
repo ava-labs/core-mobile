@@ -39,7 +39,7 @@ const mockSeries = [
 
 beforeEach(() => {
   jest.clearAllMocks()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   mockUseQuery.mockReturnValue({
     data: undefined,
     isLoading: false,
@@ -79,7 +79,6 @@ describe('useMarketSeries', () => {
   })
 
   it('returns series array when data is available', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseQuery.mockReturnValue({
       data: mockSeries,
       isLoading: false,
@@ -91,7 +90,6 @@ describe('useMarketSeries', () => {
   })
 
   it('forwards isLoading from useQuery', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,

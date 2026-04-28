@@ -69,3 +69,4 @@ export type {
   LeverageGaugeProps,
   Preset as LeverageGaugePreset
 } from './LeverageGauge/types'
+export * from './SlidingButton/SlidingButton'

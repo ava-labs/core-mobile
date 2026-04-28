@@ -311,9 +311,11 @@ class EarnService {
       network: avaxXPNetwork
     })
 
-    AnalyticsService.captureWithEncryption('StakeTransactionStarted', {
-      txHash: txID,
-      chainId: avaxXPNetwork.chainId
+    AnalyticsService.capture('StakeTransactionStarted', {
+      encrypted: {
+        txHash: txID,
+        chainId: avaxXPNetwork.chainId
+      }
     })
     Logger.trace('txID', txID)
 

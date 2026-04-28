@@ -10,7 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
@@ -36,6 +36,7 @@ const EventDetailsScreen = (): JSX.Element => {
   const [decimalLeverage, setDecimalLeverage] = useState(2)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
+  const router = useRouter()
   const { event } = useGetEventDetail(tickerId)
 
   const chartSeries: OutcomeSeries[] = useMemo(() => {
@@ -201,6 +202,14 @@ const EventDetailsScreen = (): JSX.Element => {
             ]}
           />
         </View>
+      </View>
+      <View sx={{ padding: 16, paddingTop: 24 }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={() => router.push('/placeBet')}>
+          Place Bet
+        </Button>
       </View>
     </ScrollScreen>
   )

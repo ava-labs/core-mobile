@@ -291,9 +291,9 @@ describe('ApprovalController', () => {
         request
       })
 
-      expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_confirmed',
-        expect.objectContaining({ txHash: TX_HASH })
+        { encrypted: expect.objectContaining({ txHash: TX_HASH }) }
       )
     })
 
@@ -369,7 +369,7 @@ describe('ApprovalController', () => {
     })
 
     describe('dapp analytics', () => {
-      it('fires captureWithEncryption with _confirmed event for dapp requests', async () => {
+      it('fires capture with _confirmed event for dapp requests', async () => {
         const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
         await populateSigningAddressCache(request)
 
@@ -379,13 +379,15 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
           {
-            dAppUrl: DAPP_URL,
-            address: EVM_ADDRESS,
-            chainId: 'eip155:1',
-            txHash: TX_HASH
+            encrypted: {
+              dAppUrl: DAPP_URL,
+              address: EVM_ADDRESS,
+              chainId: 'eip155:1',
+              txHash: TX_HASH
+            }
           }
         )
       })
@@ -403,9 +405,9 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          expect.objectContaining({ txHash: TX_HASH })
+          { encrypted: expect.objectContaining({ txHash: TX_HASH }) }
         )
       })
 
@@ -422,12 +424,14 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          expect.objectContaining({
-            chainId: AvalancheCaip2ChainId.C,
-            txHash: TX_HASH
-          })
+          {
+            encrypted: expect.objectContaining({
+              chainId: AvalancheCaip2ChainId.C,
+              txHash: TX_HASH
+            })
+          }
         )
       })
 
@@ -440,7 +444,7 @@ describe('ApprovalController', () => {
           request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('uses getAddressForChainId to resolve the signing address', async () => {
@@ -460,9 +464,9 @@ describe('ApprovalController', () => {
           'eip155:137',
           mockAccount
         )
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: '0xBBBB' })
+          { encrypted: expect.objectContaining({ address: '0xBBBB' }) }
         )
       })
 
@@ -473,9 +477,9 @@ describe('ApprovalController', () => {
           request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: '' })
+          { encrypted: expect.objectContaining({ address: '' }) }
         )
       })
 
@@ -490,22 +494,22 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: EVM_ADDRESS })
+          { encrypted: expect.objectContaining({ address: EVM_ADDRESS }) }
         )
 
         // Second call should get empty string (cache was cleaned up)
-        ;(AnalyticsService.captureWithEncryption as jest.Mock).mockClear()
+        ;(AnalyticsService.capture as jest.Mock).mockClear()
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: '' })
+          { encrypted: expect.objectContaining({ address: '' }) }
         )
       })
 
@@ -575,7 +579,7 @@ describe('ApprovalController', () => {
     })
 
     describe('dapp analytics', () => {
-      it('fires captureWithEncryption with _failed event including txHash for dapp requests', async () => {
+      it('fires capture with _failed event including txHash for dapp requests', async () => {
         const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
         await populateSigningAddressCache(request)
 
@@ -584,13 +588,15 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_failed',
           {
-            dAppUrl: DAPP_URL,
-            address: EVM_ADDRESS,
-            chainId: 'eip155:1',
-            txHash: TX_HASH
+            encrypted: {
+              dAppUrl: DAPP_URL,
+              address: EVM_ADDRESS,
+              chainId: 'eip155:1',
+              txHash: TX_HASH
+            }
           }
         )
       })
@@ -608,12 +614,14 @@ describe('ApprovalController', () => {
           request
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_failed',
-          expect.objectContaining({
-            address: btcAddress,
-            txHash: 'btctxhash'
-          })
+          {
+            encrypted: expect.objectContaining({
+              address: btcAddress,
+              txHash: 'btctxhash'
+            })
+          }
         )
       })
 
@@ -625,7 +633,7 @@ describe('ApprovalController', () => {
           request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
       })
 
       it('always includes txHash in _failed payload (matches Extension behavior)', async () => {
@@ -640,9 +648,8 @@ describe('ApprovalController', () => {
           request
         })
 
-        const call = (AnalyticsService.captureWithEncryption as jest.Mock).mock
-          .calls[0]
-        expect(call[1]).toHaveProperty('txHash', '0xrevertedtx')
+        const call = (AnalyticsService.capture as jest.Mock).mock.calls[0]
+        expect(call[1]).toHaveProperty('encrypted.txHash', '0xrevertedtx')
       })
     })
   })

@@ -1,7 +1,6 @@
 import { NftItem } from 'services/nft/types'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { humanize } from 'utils/string/humanize'
-
 export function getCollectibleAttributes(
   collectible: NftItem | undefined
 ): { title: string; value: string }[] {
