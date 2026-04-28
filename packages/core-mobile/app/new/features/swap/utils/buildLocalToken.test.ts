@@ -359,6 +359,81 @@ describe('buildLocalToken', () => {
     })
   })
 
+  describe('contractType resolution', () => {
+    // The lookup API doesn't return contractType, so buildLocalToken passes
+    // null to mapApiTokenToLocal, which derives the token type from the
+    // caip2Id namespace.
+    it('resolves to SPL for a non-native token on a Solana caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [SOL_CAIP2]: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+        },
+        meta: { logoUri: null, decimals: { [SOL_CAIP2]: 6 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: SOL_CAIP2,
+        chainId: ChainId.SOLANA_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.SPL)
+    })
+
+    it('resolves to ERC20 for a non-native token on an Avalanche caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [AVAX_CAIP2]: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
+        },
+        meta: { logoUri: null, decimals: { [AVAX_CAIP2]: 6 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: AVAX_CAIP2,
+        chainId: ChainId.AVALANCHE_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+
+    it('resolves to ERC20 for a non-native token on an Ethereum caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [ETH_CAIP2]: '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+        },
+        meta: { logoUri: null, decimals: { [ETH_CAIP2]: 18 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: ETH_CAIP2,
+        chainId: ChainId.ETHEREUM_HOMESTEAD
+      })
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+
+    it('resolves to NATIVE for a native token regardless of caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.SOL,
+        isNative: true
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: SOL_CAIP2,
+        chainId: ChainId.SOLANA_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.NATIVE)
+    })
+  })
+
   describe('balance data integration', () => {
     it('merges balance from matching accountToken', () => {
       const tokenInfo = makeTokenInfo({
