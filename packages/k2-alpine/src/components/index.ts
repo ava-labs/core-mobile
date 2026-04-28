@@ -67,6 +67,5 @@ export * from './BlurViewWithFallback/BlurViewWithFallback'
 export * from './CircularDial/CircularDial'
 export type {
   CircularDialProps,
-  DialTone as CircularDialTone,
   PresetButton as CircularDialPresetButton
 } from './CircularDial/types'

@@ -11,13 +11,7 @@ export const Default = (): JSX.Element => {
   const [value, setValue] = useState(25)
   return (
     <View style={{ padding: 16 }}>
-      <CircularDial
-        value={value}
-        onChange={setValue}
-        min={0}
-        max={100}
-        step={0.01}
-      />
+      <CircularDial value={value} onChange={setValue} max={100} step={0.01} />
     </View>
   )
 }
@@ -34,7 +28,6 @@ export const WithReceiveLabel = (): JSX.Element => {
       <CircularDial
         value={value}
         onChange={setValue}
-        min={0}
         max={10}
         step={0.01}
         label="Receive"
@@ -51,7 +44,6 @@ export const LargerRange = (): JSX.Element => {
       <CircularDial
         value={value}
         onChange={setValue}
-        min={0}
         max={1000}
         step={1}
         label="USD"
@@ -64,13 +56,7 @@ export const IntegerRange = (): JSX.Element => {
   const [value, setValue] = useState(5)
   return (
     <View style={{ padding: 16 }}>
-      <CircularDial
-        value={value}
-        onChange={setValue}
-        min={0}
-        max={20}
-        step={1}
-      />
+      <CircularDial value={value} onChange={setValue} max={20} step={1} />
     </View>
   )
 }
@@ -82,7 +68,6 @@ export const NoHaptics = (): JSX.Element => {
       <CircularDial
         value={value}
         onChange={setValue}
-        min={0}
         max={100}
         step={0.01}
         hapticsEnabled={false}
@@ -91,51 +76,17 @@ export const NoHaptics = (): JSX.Element => {
   )
 }
 
-export const DangerTone = (): JSX.Element => {
-  const [value, setValue] = useState(1.5)
-  return (
-    <View style={{ padding: 16 }}>
-      <CircularDial
-        value={value}
-        onChange={setValue}
-        min={0}
-        max={10}
-        step={0.01}
-        label="Loss"
-        tone="danger"
-      />
-    </View>
-  )
-}
-
-export const NeutralTone = (): JSX.Element => {
-  const [value, setValue] = useState(5)
-  return (
-    <View style={{ padding: 16 }}>
-      <CircularDial
-        value={value}
-        onChange={setValue}
-        min={0}
-        max={10}
-        step={0.01}
-        tone="neutral"
-      />
-    </View>
-  )
-}
-
-export const WithReferenceTick = (): JSX.Element => {
+export const WithMinThreshold = (): JSX.Element => {
   const [value, setValue] = useState(3)
   return (
     <View style={{ padding: 16 }}>
       <CircularDial
         value={value}
         onChange={setValue}
-        min={0}
+        min={2}
         max={10}
         step={0.01}
         label="Price"
-        referenceValue={2}
       />
     </View>
   )
@@ -148,7 +99,6 @@ export const ManualInput = (): JSX.Element => {
       <CircularDial
         value={value}
         onChange={setValue}
-        min={0}
         max={10}
         step={0.01}
         label="Amount"

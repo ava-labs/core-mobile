@@ -1,7 +1,6 @@
 import {
   clamp,
   commitDraftText,
-  formatNumberForInput,
   getStepDecimals,
   progressToPoint,
   sanitizeDecimalInput,
@@ -45,31 +44,32 @@ describe('getStepDecimals', () => {
 })
 
 describe('snapToStep', () => {
-  it('snaps to nearest step from min', () => {
-    expect(snapToStep(5.03, 0, 0.01)).toBeCloseTo(5.03, 2)
-    expect(snapToStep(5.034, 0, 0.01)).toBeCloseTo(5.03, 2)
-    expect(snapToStep(5.036, 0, 0.01)).toBeCloseTo(5.04, 2)
+  it('snaps to nearest step', () => {
+    expect(snapToStep(5.03, 0.01)).toBeCloseTo(5.03, 2)
+    expect(snapToStep(5.034, 0.01)).toBeCloseTo(5.03, 2)
+    expect(snapToStep(5.036, 0.01)).toBeCloseTo(5.04, 2)
   })
   it('handles non-power-of-10 steps without rounding drift', () => {
-    expect(snapToStep(1.25, 1, 0.25)).toBe(1.25)
-    expect(snapToStep(1.37, 1, 0.25)).toBe(1.25)
-    expect(snapToStep(1.39, 1, 0.25)).toBe(1.5)
+    expect(snapToStep(0.25, 0.25)).toBe(0.25)
+    expect(snapToStep(0.37, 0.25)).toBe(0.25)
+    expect(snapToStep(0.39, 0.25)).toBe(0.5)
   })
 })
 
 describe('progressToPoint', () => {
+  const arc = { cx: 100, cy: 100, radius: 50 }
   it('returns the left end at progress 0', () => {
-    const { x, y } = progressToPoint(0, 100, 100, 50)
+    const { x, y } = progressToPoint({ ...arc, progress: 0 })
     expect(x).toBeCloseTo(50)
     expect(y).toBeCloseTo(100)
   })
   it('returns the top at progress 0.5', () => {
-    const { x, y } = progressToPoint(0.5, 100, 100, 50)
+    const { x, y } = progressToPoint({ ...arc, progress: 0.5 })
     expect(x).toBeCloseTo(100)
     expect(y).toBeCloseTo(50)
   })
   it('returns the right end at progress 1', () => {
-    const { x, y } = progressToPoint(1, 100, 100, 50)
+    const { x, y } = progressToPoint({ ...arc, progress: 1 })
     expect(x).toBeCloseTo(150)
     expect(y).toBeCloseTo(100)
   })
@@ -77,16 +77,16 @@ describe('progressToPoint', () => {
 
 describe('valueToProgress', () => {
   it('maps value to progress linearly', () => {
-    expect(valueToProgress(0, 0, 100)).toBe(0)
-    expect(valueToProgress(50, 0, 100)).toBe(0.5)
-    expect(valueToProgress(100, 0, 100)).toBe(1)
+    expect(valueToProgress(0, 100)).toBe(0)
+    expect(valueToProgress(50, 100)).toBe(0.5)
+    expect(valueToProgress(100, 100)).toBe(1)
   })
   it('clamps out-of-range values', () => {
-    expect(valueToProgress(-10, 0, 100)).toBe(0)
-    expect(valueToProgress(110, 0, 100)).toBe(1)
+    expect(valueToProgress(-10, 100)).toBe(0)
+    expect(valueToProgress(110, 100)).toBe(1)
   })
-  it('returns 0 when range is degenerate', () => {
-    expect(valueToProgress(5, 10, 10)).toBe(0)
+  it('returns 0 for non-positive max', () => {
+    expect(valueToProgress(5, 0)).toBe(0)
   })
 })
 
@@ -101,29 +101,26 @@ describe('validateRange', () => {
   })
 
   it('accepts a well-formed range unchanged', () => {
-    expect(validateRange({ min: 0, max: 100, step: 0.01 })).toEqual({
-      min: 0,
+    expect(validateRange({ max: 100, step: 0.01 })).toEqual({
       max: 100,
       step: 0.01,
       isValid: true
     })
   })
-  it('flags invalid when min >= max', () => {
-    const r = validateRange({ min: 100, max: 0, step: 1 })
-    expect(r.isValid).toBe(false)
+  it('flags invalid when max <= 0', () => {
+    expect(validateRange({ max: 0, step: 1 }).isValid).toBe(false)
+    expect(validateRange({ max: -5, step: 1 }).isValid).toBe(false)
   })
   it('normalizes a non-positive step to 0.01', () => {
-    const r = validateRange({ min: 0, max: 100, step: 0 })
-    expect(r.step).toBe(0.01)
+    expect(validateRange({ max: 100, step: 0 }).step).toBe(0.01)
   })
-  it('normalizes a step larger than range to 0.01', () => {
-    const r = validateRange({ min: 0, max: 5, step: 10 })
-    expect(r.step).toBe(0.01)
+  it('normalizes a step larger than max to 0.01', () => {
+    expect(validateRange({ max: 5, step: 10 }).step).toBe(0.01)
   })
 })
 
 describe('shouldSyncExternalValue', () => {
-  const base = { min: 0, max: 100, step: 1 }
+  const base = { max: 100, step: 1 }
   it('skips when active', () => {
     const r = shouldSyncExternalValue({
       ...base,
@@ -151,7 +148,7 @@ describe('shouldSyncExternalValue', () => {
     })
     expect(r).toEqual({ sync: true, target: 80 })
   })
-  it('clamps the target into [min, max]', () => {
+  it('clamps the target into [0, max]', () => {
     const r = shouldSyncExternalValue({
       ...base,
       value: 500,
@@ -159,17 +156,6 @@ describe('shouldSyncExternalValue', () => {
       isActive: false
     })
     expect(r).toEqual({ sync: true, target: 100 })
-  })
-})
-
-describe('formatNumberForInput', () => {
-  it('formats with the given decimal count', () => {
-    expect(formatNumberForInput(4.5, 2)).toBe('4.50')
-    expect(formatNumberForInput(4.567, 2)).toBe('4.57')
-  })
-  it('returns a rounded integer when decimals is 0', () => {
-    expect(formatNumberForInput(4.6, 0)).toBe('5')
-    expect(formatNumberForInput(4.4, 0)).toBe('4')
   })
 })
 
@@ -194,19 +180,18 @@ describe('sanitizeDecimalInput', () => {
 })
 
 describe('commitDraftText', () => {
-  const base = { min: 0, max: 100 }
   it('returns null for empty draft', () => {
-    expect(commitDraftText('', base)).toBeNull()
+    expect(commitDraftText('', 100)).toBeNull()
   })
   it('returns null for non-numeric drafts', () => {
-    expect(commitDraftText('abc', base)).toBeNull()
-    expect(commitDraftText('.', base)).toBeNull()
+    expect(commitDraftText('abc', 100)).toBeNull()
+    expect(commitDraftText('.', 100)).toBeNull()
   })
-  it('clamps to range without snapping to step', () => {
-    expect(commitDraftText('-50', base)).toBe(0)
-    expect(commitDraftText('500', base)).toBe(100)
+  it('clamps to [0, max] without snapping to step', () => {
+    expect(commitDraftText('-50', 100)).toBe(0)
+    expect(commitDraftText('500', 100)).toBe(100)
     // Manual input preserves the typed precision regardless of step.
-    expect(commitDraftText('4.567', base)).toBe(4.567)
-    expect(commitDraftText('9999.42', { min: 0, max: 10000 })).toBe(9999.42)
+    expect(commitDraftText('4.567', 100)).toBe(4.567)
+    expect(commitDraftText('9999.42', 10000)).toBe(9999.42)
   })
 })

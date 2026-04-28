@@ -5,11 +5,8 @@ export const clamp = (v: number, min: number, max: number): number => {
   return v
 }
 
-/**
- * Number of decimal digits required to express `step` exactly, derived by
- * scaling until the value is integer (±epsilon). Works for non-power-of-10
- * steps (e.g. 0.25 → 2), unlike `-log10(step)` which only handles 10⁻ⁿ.
- */
+// Works for non-power-of-10 steps (e.g. 0.25 → 2), unlike `-log10(step)`
+// which would lose precision.
 export const getStepDecimals = (step: number): number => {
   'worklet'
   if (!Number.isFinite(step) || step <= 0 || step >= 1) return 0
@@ -23,24 +20,26 @@ export const getStepDecimals = (step: number): number => {
   return decimals
 }
 
-export const snapToStep = (v: number, min: number, step: number): number => {
+export const snapToStep = (v: number, step: number): number => {
   'worklet'
-  const offset = v - min
-  const snapped = Math.round(offset / step) * step
+  const snapped = Math.round(v / step) * step
   const decimals = getStepDecimals(step)
-  return min + Number(snapped.toFixed(decimals))
+  return Number(snapped.toFixed(decimals))
 }
 
-/**
- * Position on the arc for a given progress. Uses the same sweep convention
- * as `touchToProgress` — 180° at progress=0, 360° at progress=1.
- */
-export const progressToPoint = (
-  progress: number,
-  cx: number,
-  cy: number,
+// Sweep convention: 180° (9 o'clock) at progress=0, 270° (12 o'clock)
+// at 0.5, 360° (3 o'clock) at progress=1.
+export const progressToPoint = ({
+  progress,
+  cx,
+  cy,
+  radius
+}: {
+  progress: number
+  cx: number
+  cy: number
   radius: number
-): { x: number; y: number } => {
+}): { x: number; y: number } => {
   'worklet'
   const angleDeg = 180 + clamp(progress, 0, 1) * 180
   const angleRad = (angleDeg * Math.PI) / 180
@@ -50,32 +49,14 @@ export const progressToPoint = (
   }
 }
 
-export const valueToProgress = (
-  value: number,
-  min: number,
-  max: number
-): number => {
+export const valueToProgress = (value: number, max: number): number => {
   'worklet'
-  if (max === min) return 0
-  return clamp((value - min) / (max - min), 0, 1)
+  if (max <= 0) return 0
+  return clamp(value / max, 0, 1)
 }
 
-/**
- * Format a number for display in the manual-input TextInput — matches the
- * step's natural decimal precision so the text stays consistent with how
- * values actually snap.
- */
-export const formatNumberForInput = (v: number, decimals: number): string =>
-  decimals > 0 ? v.toFixed(decimals) : `${Math.round(v)}`
-
-/**
- * Clean a keystroke-level input string for the dial:
- *   - strip anything except digits and `.`
- *   - collapse multiple dots to the first one
- *   - cap the parsed value at `max`
- * Never clamps to `min` — users may still be typing their way toward a
- * valid value (`"0.0…"`, etc.).
- */
+// Never clamps the lower bound — users may still be typing their way
+// toward a valid value (e.g. `"0.0…"`).
 export const sanitizeDecimalInput = (text: string, max: number): string => {
   const stripped = text.replace(/[^\d.]/g, '')
   const firstDot = stripped.indexOf('.')
@@ -90,79 +71,63 @@ export const sanitizeDecimalInput = (text: string, max: number): string => {
   return collapsed
 }
 
-/**
- * Commit a draft string on blur/submit — parse and clamp into [min, max].
- * Does NOT snap to step: manual input is the precision escape hatch and
- * should preserve whatever the user typed (e.g. typing `9999.42` with
- * step=10 should commit `9999.42`, not snap up to `10000`). Slides still
- * snap to step via the gesture's `onEnd`. Returns null for empty /
- * partial / invalid drafts so the caller can skip committing.
- */
-export const commitDraftText = (
-  draft: string,
-  { min, max }: { min: number; max: number; step?: number }
-): number | null => {
+// Manual input is the precision escape hatch — does NOT snap to step,
+// so `9999.42` with step=10 commits as `9999.42`, not `10000`. Slides
+// snap separately via the gesture's `onEnd`.
+export const commitDraftText = (draft: string, max: number): number | null => {
   const parsed = Number(draft)
   if (!Number.isFinite(parsed) || draft.trim() === '') return null
-  return clamp(parsed, min, max)
+  return clamp(parsed, 0, max)
 }
 
 type ValidatedRange = {
-  min: number
   max: number
   step: number
   isValid: boolean
 }
 
 export const validateRange = ({
-  min,
   max,
   step
 }: {
-  min: number
   max: number
   step: number
 }): ValidatedRange => {
   let isValid = true
   let normalizedStep = step
-  if (min >= max) {
+  if (max <= 0) {
     // eslint-disable-next-line no-console
-    console.warn(`[CircularDial] min (${min}) must be less than max (${max}).`)
+    console.warn(`[CircularDial] max (${max}) must be > 0.`)
     isValid = false
   }
-  if (step <= 0 || step > max - min) {
+  if (step <= 0 || step > max) {
     // eslint-disable-next-line no-console
     console.warn(
-      `[CircularDial] step (${step}) must be > 0 and <= (max - min). Falling back to step=0.01.`
+      `[CircularDial] step (${step}) must be > 0 and <= max. Falling back to step=0.01.`
     )
     normalizedStep = 0.01
   }
-  return { min, max, step: normalizedStep, isValid }
+  return { max, step: normalizedStep, isValid }
 }
 
-/**
- * Decides whether an incoming external `value` prop should overwrite the
- * dial's current internal position. Skips while a gesture/animation owns
- * the dial (`isActive`), and when the difference is within one step
- * (likely an echo of our own onChange bubbling back as controlled state).
- */
+// Skips syncing while a gesture / animation owns the dial, and dampens
+// echoes — when the diff is within one step, the incoming value is
+// likely our own onChange bubbling back as controlled state.
 export const shouldSyncExternalValue = ({
   value,
   currentValue,
-  min,
   max,
   step,
   isActive
 }: {
   value: number
   currentValue: number
-  min: number
   max: number
   step: number
   isActive: boolean
 }): { sync: false } | { sync: true; target: number } => {
   if (isActive) return { sync: false }
-  const target = clamp(value, min, max)
+  const target = clamp(value, 0, max)
   const diff = Math.abs(currentValue - target)
   if (diff <= step) return { sync: false }
   return { sync: true, target }

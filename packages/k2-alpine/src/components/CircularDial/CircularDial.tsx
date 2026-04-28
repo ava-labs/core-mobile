@@ -27,7 +27,9 @@ const noop = (): void => undefined
 export const CircularDial: FC<CircularDialProps> = ({
   value,
   onChange,
-  min,
+  // The track always spans 0..max. `min` is the threshold below which
+  // values flip to the danger colour and a reference tick is rendered.
+  min: minThreshold = 0,
   max,
   step,
   decimals,
@@ -36,10 +38,7 @@ export const CircularDial: FC<CircularDialProps> = ({
   placeholder,
   caption,
   presets = DEFAULT_PRESETS,
-  tone = 'success',
-  referenceValue,
   enableManualInput = false,
-  gestureSensitivity = 1,
   onCommit = noop,
   hapticsEnabled = true,
   testID
@@ -48,8 +47,8 @@ export const CircularDial: FC<CircularDialProps> = ({
     theme: { colors }
   } = useTheme()
 
-  // Stabilize callbacks behind refs so downstream sub-components bail on
-  // re-renders even when consumers pass fresh callbacks every render.
+  // Refs so downstream sub-components bail on re-renders even when
+  // consumers pass fresh callbacks every render.
   const onChangeRef = useRef(onChange)
   const onCommitRef = useRef(onCommit)
   useEffect(() => {
@@ -61,28 +60,27 @@ export const CircularDial: FC<CircularDialProps> = ({
   const stableOnChange = useCallback((v: number) => onChangeRef.current(v), [])
   const stableOnCommit = useCallback((v: number) => onCommitRef.current(v), [])
 
-  // Default step derived from `max` so the dial always offers ~1000
-  // stops across the available range, regardless of magnitude:
-  //   max 10000 → step 10, max 1000 → step 1, max <100 → step 0.1.
-  // Consumer-provided `step` always wins.
   const effectiveStep = useMemo(() => {
     if (typeof step === 'number') return step
     return Math.max(0.1, max / 1000)
   }, [step, max])
 
   const {
-    min: vMin,
     max: vMax,
     step: vStep,
     isValid
   } = useMemo(
-    () => validateRange({ min, max, step: effectiveStep }),
-    [min, max, effectiveStep]
+    () => validateRange({ max, step: effectiveStep }),
+    [max, effectiveStep]
   )
 
+  // Public `min` doubles as the reference-tick value when > 0; below
+  // that, values are invalid (danger colour + tick on the track).
+  const referenceValue = minThreshold > 0 ? minThreshold : undefined
+
   const stepCount = useMemo(
-    () => Math.max(1, Math.round((vMax - vMin) / vStep)),
-    [vMin, vMax, vStep]
+    () => Math.max(1, Math.round(vMax / vStep)),
+    [vMax, vStep]
   )
 
   const vDecimals = useMemo(() => {
@@ -90,7 +88,6 @@ export const CircularDial: FC<CircularDialProps> = ({
     return getStepDecimals(vStep)
   }, [decimals, vStep])
 
-  // Precompute haptic/preset buckets in percent [0, 100].
   const presetBuckets = useMemo(
     () => presets.map(p => Math.round(clamp(p.fraction, 0, 1) * 100)),
     [presets]
@@ -98,26 +95,20 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const { progressSv, isActive } = useDialValue({
     value,
-    min: vMin,
     max: vMax,
     step: vStep
   })
   const isDragging = useSharedValue(false)
 
-  // Progress captured at gesture start — we track translation deltas from
-  // here instead of mapping absolute touch to progress, so tapping
-  // anywhere doesn't snap the knob. The knob moves only with the
-  // finger's motion after first touch.
+  // Track translation deltas from this anchor so tapping anywhere
+  // doesn't snap the knob — the knob only moves with finger motion
+  // after the first touch.
   const gestureStartProgress = useSharedValue(0)
 
-  // --- Gesture ---
-
-  // Small movement threshold so quick taps don't register as pans; this
-  // also lets the tap gesture (below) recognise first for short presses.
+  // Lets quick taps recognise first as a tap (below `maxDistance`)
+  // before promoting to a pan.
   const TAP_SLOP = 10
 
-  // Imperative handle to the readout — lets the gestures open / cancel
-  // the TextInput without coupling their state together.
   const readoutRef = useRef<DialReadoutHandle>(null)
 
   const panGesture = Gesture.Pan()
@@ -131,11 +122,8 @@ export const CircularDial: FC<CircularDialProps> = ({
     })
     .onUpdate(event => {
       'worklet'
-      // Base mapping: 2×ARC_RADIUS pixels covers the full 0→1 sweep.
-      // `gestureSensitivity` scales that — values below 1 require a
-      // longer swipe for the same change, useful for huge ranges.
-      const deltaProgress =
-        (event.translationX * gestureSensitivity) / (2 * ARC_RADIUS)
+      // 2×ARC_RADIUS pixels of translation = full 0→1 sweep.
+      const deltaProgress = event.translationX / (2 * ARC_RADIUS)
       const target = gestureStartProgress.value + deltaProgress
       progressSv.value = target < 0 ? 0 : target > 1 ? 1 : target
     })
@@ -143,20 +131,13 @@ export const CircularDial: FC<CircularDialProps> = ({
       'worklet'
       isDragging.value = false
       isActive.value = false
-      const raw = vMin + progressSv.value * (vMax - vMin)
-      const snapped = snapToStep(
-        raw < vMin ? vMin : raw > vMax ? vMax : raw,
-        vMin,
-        vStep
-      )
-      progressSv.value = (snapped - vMin) / (vMax - vMin)
+      const raw = progressSv.value * vMax
+      const snapped = snapToStep(clamp(raw, 0, vMax), vStep)
+      progressSv.value = snapped / vMax
       scheduleOnRN(stableOnChange, snapped)
       scheduleOnRN(stableOnCommit, snapped)
     })
 
-  // Tap → open manual input. Races with pan so a short release without
-  // movement opens editing, while any drag past `maxDistance` cancels
-  // the tap and hands control to pan.
   const handleTap = useCallback(() => {
     readoutRef.current?.startEdit()
   }, [])
@@ -169,24 +150,22 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const combinedGesture = Gesture.Race(tapGesture, panGesture)
 
-  // --- onChange emission on step crossings while dragging ---
-
+  // Emit onChange on every step crossing while dragging.
   useAnimatedReaction(
     () => {
-      const raw = vMin + progressSv.value * (vMax - vMin)
-      const idx = Math.round((raw - vMin) / vStep)
+      const raw = progressSv.value * vMax
+      const idx = Math.round(raw / vStep)
       return idx < 0 ? 0 : idx > stepCount ? stepCount : idx
     },
     (stepIdx, prev) => {
       if (prev === null || stepIdx === prev) return
       if (!isDragging.value) return
-      const snapped = vMin + stepIdx * vStep
+      const snapped = stepIdx * vStep
       scheduleOnRN(stableOnChange, snapped)
     }
   )
 
-  // --- Haptics at 1% bucket crossings ---
-
+  // Haptics at 1% bucket crossings.
   useAnimatedReaction(
     () => Math.round(progressSv.value * 100),
     (bucket, prev) => {
@@ -200,24 +179,17 @@ export const CircularDial: FC<CircularDialProps> = ({
     }
   )
 
-  // --- Preset press ---
-
   const handlePresetPress = useCallback(
     (fraction: number) => {
-      const targetValue = vMin + clamp(fraction, 0, 1) * (vMax - vMin)
-      const snapped = snapToStep(
-        targetValue < vMin ? vMin : targetValue > vMax ? vMax : targetValue,
-        vMin,
-        vStep
-      )
-      const targetProgress = (snapped - vMin) / (vMax - vMin)
+      const targetValue = clamp(fraction, 0, 1) * vMax
+      const snapped = snapToStep(clamp(targetValue, 0, vMax), vStep)
       isActive.value = true
       progressSv.value = withTiming(
-        targetProgress,
+        snapped / vMax,
         { duration: 600, easing: Easing.out(Easing.cubic) },
         finished => {
-          // Early-return on cancellation so an interrupting gesture keeps
-          // ownership of the active flag.
+          // Bail on cancellation so an interrupting gesture keeps
+          // ownership of `isActive`.
           if (!finished) return
           isActive.value = false
           scheduleOnRN(stableOnChange, snapped)
@@ -225,7 +197,7 @@ export const CircularDial: FC<CircularDialProps> = ({
         }
       )
     },
-    [isActive, progressSv, stableOnChange, stableOnCommit, vMin, vMax, vStep]
+    [isActive, progressSv, stableOnChange, stableOnCommit, vMax, vStep]
   )
 
   if (!isValid) {
@@ -272,16 +244,13 @@ export const CircularDial: FC<CircularDialProps> = ({
         <DialArc
           gesture={combinedGesture}
           progressSv={progressSv}
-          min={vMin}
           max={vMax}
           value={value}
-          tone={tone}
           referenceValue={referenceValue}
         />
         <DialReadout
           ref={readoutRef}
           value={value}
-          min={vMin}
           max={vMax}
           step={vStep}
           decimals={vDecimals}
@@ -300,7 +269,6 @@ export const CircularDial: FC<CircularDialProps> = ({
       <DialPresets
         presets={presets}
         value={value}
-        min={vMin}
         max={vMax}
         step={vStep}
         onPresetPress={handlePresetPress}
@@ -308,8 +276,6 @@ export const CircularDial: FC<CircularDialProps> = ({
     </View>
   )
 }
-
-// --- Haptic callbacks (JS-thread) ---
 
 const fireMinorHaptic = (): void => {
   impactAsync(ImpactFeedbackStyle.Light).catch(() => undefined)

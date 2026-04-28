@@ -26,72 +26,59 @@ import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
 import { progressToPoint, valueToProgress } from './helpers'
-import type { DialTone } from './types'
 
-// Geometry — fixed so the knob fits cleanly inside the Canvas at both arc
-// endpoints and the top of the sweep. Canvas is wider/taller than the
-// arc's bounding box to give the knob's BoxShadow (blur 13 + dy 6) room
-// to render at the endpoints without being clipped by the canvas edge.
+// Canvas is wider/taller than the arc bounding box so the knob's
+// BoxShadow (blur 13 + dy 6) can render fully at the endpoints without
+// being clipped at the canvas edge.
 const CANVAS_WIDTH = 280
 const CANVAS_HEIGHT = 161
 const STROKE_WIDTH = 6
 const KNOB_RADIUS = 11
-// Reference tick — 6x6 per Figma, so radius 3.
 const REFERENCE_TICK_RADIUS = 3
 export const ARC_RADIUS = 110
-const ARC_CX = CANVAS_WIDTH / 2 // 140
-// Bottom margin for shadow at progress 0/1 endpoints: KNOB_RADIUS + dy +
-// blur ≈ 30. 35px below `ARC_CY` keeps the shadow fully on-canvas while
-// keeping the bottom of the card visually compact.
-const ARC_CY = CANVAS_HEIGHT - 35 // 126
+const ARC_CX = CANVAS_WIDTH / 2
+const ARC_CY = CANVAS_HEIGHT - 35
 
-// Path-fraction gap carved out of the track on either side of the tick.
-// ~7% of the sweep ≈ 12.6° → clear negative-space halo around the dot.
+// ~7% of the sweep ≈ 12.6° — the negative-space halo around the tick.
 const TICK_GAP = 0.07
-
-// How quickly track & fill cross-fade when the knob crosses a zone edge.
 const ZONE_CROSSFADE_MS = 120
 
 type DialArcProps = {
   gesture: ComposedGesture | GestureType
   progressSv: SharedValue<number>
-  min: number
   max: number
   value: number
-  tone: DialTone
   referenceValue: number | undefined
 }
 
-/**
- * Skia-rendered arc: track, filled segments (with reference-tick zone
- * split when present), reference tick dot, and the knob. Wrapped in a
- * `GestureDetector` whose gesture view stretches across the full parent
- * width so touches in the side padding still control the dial.
- */
+// `GestureDetector` view stretches the full parent width so touches in
+// the side padding still control the dial.
 export const DialArc: FC<DialArcProps> = ({
   gesture,
   progressSv,
-  min,
   max,
   value,
-  tone,
   referenceValue
 }) => {
   const {
     theme: { colors }
   } = useTheme()
 
-  // Reference tick — position on the arc + zone boundaries derived from it.
   const referenceTickProgress = useMemo(() => {
     if (referenceValue === undefined) return null
-    if (referenceValue < min || referenceValue > max) return null
-    return valueToProgress(referenceValue, min, max)
-  }, [referenceValue, min, max])
+    if (referenceValue < 0 || referenceValue > max) return null
+    return valueToProgress(referenceValue, max)
+  }, [referenceValue, max])
   const hasReferenceTick = referenceTickProgress !== null
 
   const referenceTickPoint = useMemo(() => {
     if (referenceTickProgress === null) return null
-    return progressToPoint(referenceTickProgress, ARC_CX, ARC_CY, ARC_RADIUS)
+    return progressToPoint({
+      progress: referenceTickProgress,
+      cx: ARC_CX,
+      cy: ARC_CY,
+      radius: ARC_RADIUS
+    })
   }, [referenceTickProgress])
 
   const tickLeftEdge =
@@ -99,12 +86,9 @@ export const DialArc: FC<DialArcProps> = ({
   const tickRightEdge =
     referenceTickProgress !== null ? referenceTickProgress + TICK_GAP / 2 : 0
 
-  // Zone state — smoothly animates between 0 and 1 based on which side of
-  // the tick the knob is on. Track uses the inverse so track & fill
-  // cross-fade instead of snapping when the zone changes.
-  const initialProgress = hasReferenceTick
-    ? valueToProgress(value, min, max)
-    : 0
+  // Zone opacities cross-fade with their inverse track opacities so
+  // colour swaps are smooth as the knob crosses the tick.
+  const initialProgress = hasReferenceTick ? valueToProgress(value, max) : 0
   const initialDangerActive = hasReferenceTick && initialProgress < tickLeftEdge
   const initialSuccessActive =
     hasReferenceTick && initialProgress > tickRightEdge
@@ -141,10 +125,9 @@ export const DialArc: FC<DialArcProps> = ({
   const leftTrackOpacity = useDerivedValue(() => 1 - dangerZoneOpacity.value)
   const rightTrackOpacity = useDerivedValue(() => 1 - successZoneOpacity.value)
 
-  // Fill endpoints clamped so fills never extend into the tick gap. When
-  // the knob leaves a zone, endpoints lock to the zone's outer edge
-  // (fadedEnd = tickLeft for danger, etc.) so the fill sits at "fully
-  // faded" while the zone's opacity animates down to 0.
+  // Fill endpoints clamp at the tick edges. When the knob leaves a
+  // zone, endpoints lock to that zone's outer edge so the fill stays
+  // fully extended while the zone's opacity animates to 0.
   const dangerFadedEnd = useDerivedValue(() => {
     if (!hasReferenceTick) return 0
     const p = progressSv.value
@@ -169,7 +152,6 @@ export const DialArc: FC<DialArcProps> = ({
     return p > tickRightEdge ? p : tickRightEdge
   }, [hasReferenceTick, tickRightEdge])
 
-  // Skia path: 180° arc from 9 o'clock through 12 o'clock to 3 o'clock.
   const trackPath = useMemo(() => {
     const p = Skia.Path.Make()
     p.addArc(
@@ -185,14 +167,14 @@ export const DialArc: FC<DialArcProps> = ({
     return p
   }, [])
 
-  // Knob: a rrect approximating a circle so we can stack two BoxShadows.
+  // rrect (not Circle) so we can stack BoxShadows on the knob.
   const knobBox = useDerivedValue(() => {
-    const { x, y } = progressToPoint(
-      progressSv.value,
-      ARC_CX,
-      ARC_CY,
-      ARC_RADIUS
-    )
+    const { x, y } = progressToPoint({
+      progress: progressSv.value,
+      cx: ARC_CX,
+      cy: ARC_CY,
+      radius: ARC_RADIUS
+    })
     return rrect(
       rect(x - KNOB_RADIUS, y - KNOB_RADIUS, KNOB_RADIUS * 2, KNOB_RADIUS * 2),
       KNOB_RADIUS,
@@ -200,9 +182,8 @@ export const DialArc: FC<DialArcProps> = ({
     )
   })
 
-  // Track colour per Figma: `color/neutral/850 10%` — mode-adaptive.
   const trackColor = alpha(colors.$textPrimary, 0.1)
-  const toneFillColor = resolveFillColor(tone, colors)
+  const fillColor = colors.$textSuccess
 
   return (
     <GestureDetector gesture={gesture}>
@@ -210,7 +191,7 @@ export const DialArc: FC<DialArcProps> = ({
         style={{
           alignSelf: 'stretch',
           height: CANVAS_HEIGHT,
-          alignItems: 'center',
+          alignItems: 'center'
         }}>
         <Canvas
           pointerEvents="none"
@@ -294,7 +275,7 @@ export const DialArc: FC<DialArcProps> = ({
                 style="stroke"
                 strokeWidth={STROKE_WIDTH}
                 strokeCap="round"
-                color={toneFillColor}
+                color={fillColor}
                 start={0}
                 end={progressSv}
               />
@@ -316,23 +297,4 @@ export const DialArc: FC<DialArcProps> = ({
       </View>
     </GestureDetector>
   )
-}
-
-const resolveFillColor = (
-  tone: DialTone,
-  colors: {
-    $textSuccess: string
-    $textDanger: string
-    $textPrimary: string
-  }
-): string => {
-  switch (tone) {
-    case 'danger':
-      return colors.$textDanger
-    case 'neutral':
-      return colors.$textPrimary
-    case 'success':
-    default:
-      return colors.$textSuccess
-  }
 }

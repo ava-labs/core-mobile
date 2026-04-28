@@ -11,6 +11,8 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useLocalSearchParams } from 'expo-router'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
@@ -34,10 +36,13 @@ const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
+  const [dialDefault, setDialDefault] = useState(25)
   const [dialAmount, setDialAmount] = useState(2.32)
   const [dialLoss, setDialLoss] = useState(1.5)
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { formatCurrency } = useFormatCurrency()
+  const avaxPrice = useAvaxPrice()
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const { event } = useGetEventDetail(tickerId)
@@ -72,10 +77,20 @@ const EventDetailsScreen = (): JSX.Element => {
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
         <Text variant="heading3">Default</Text>
         <CircularDial
+          value={dialDefault}
+          onChange={setDialDefault}
+          max={100}
+          enableManualInput
+          label={selectedCurrency}
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Larger range</Text>
+        <CircularDial
           value={dialAmount}
           onChange={setDialAmount}
-          min={0}
-          max={10000}
+          min={100000}
+          max={1000000}
           enableManualInput
           label={selectedCurrency}
           presets={[
@@ -90,14 +105,12 @@ const EventDetailsScreen = (): JSX.Element => {
         <CircularDial
           value={dialLoss}
           onChange={setDialLoss}
-          min={0}
-          max={10000000}
+          min={2}
+          max={10}
           maxDecimals={2}
-          tone="danger"
-          referenceValue={2}
           enableManualInput
-          label={selectedCurrency}
-          caption={`$${(dialLoss * 18.93).toFixed(2)} USD`}
+          label="AVAX"
+          caption={formatCurrency({ amount: dialLoss * avaxPrice })}
           presets={[
             { label: '25%', fraction: 0.25 },
             { label: '50%', fraction: 0.5 },
