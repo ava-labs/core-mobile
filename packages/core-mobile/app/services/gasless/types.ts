@@ -5,6 +5,10 @@ export interface FundTxParams {
   signingData: SigningData
   addressFrom: string
   provider: JsonRpcBatchInternal
+  chainId: number
   maxFeePerGas?: bigint
+  maxPriorityFeePerGas?: bigint
+  gasLimit?: number
+  overrideData?: string
   waitForConfirmation: boolean
 }

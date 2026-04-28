@@ -3,6 +3,10 @@ import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import { CoreAccountType } from '@avalabs/types'
 import {
+  selectIsLedgerSupportBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog'
+import {
   Account,
   AccountsState,
   AccountCollection,
@@ -77,7 +81,7 @@ export const selectAccounts = (state: RootState): AccountCollection =>
 
 export const selectLedgerAddresses = (
   state: RootState
-): LedgerAddressesCollection => state.account.ledgerAddresses
+): LedgerAddressesCollection => state.account.ledgerAddresses ?? {}
 
 export const selectAccountByAddress =
   (address: string) =>
@@ -118,8 +122,14 @@ export const selectAccountsByWalletId = createSelector(
 )
 
 export const selectLedgerAddressesByWalletId = createSelector(
-  [selectLedgerAddresses, (_: RootState, walletId: string) => walletId],
-  (accounts, walletId) => {
+  [
+    selectLedgerAddresses,
+    (_: RootState, walletId: string) => walletId,
+    selectIsLedgerSupportBlocked
+  ],
+  (accounts, walletId, isLedgerBlocked) => {
+    if (isLedgerBlocked) return []
+
     return Object.values(accounts)
       .filter(account => account.walletId === walletId)
       .sort((a, b) => a.index - b.index)
@@ -154,6 +164,17 @@ export const selectImportedAccounts = createSelector(
 export const selectAccountsCount = createSelector(
   [selectAccounts],
   (accounts): number => Object.keys(accounts).length
+)
+
+export const selectActiveAccountHasSolanaAddress = createSelector(
+  [selectActiveAccount, selectIsSolanaSupportBlocked],
+  (activeAccount, isSolanaSupportBlocked) => {
+    if (isSolanaSupportBlocked) return false
+    return (
+      activeAccount?.addressSVM !== undefined &&
+      activeAccount.addressSVM.length > 0
+    )
+  }
 )
 
 // actions

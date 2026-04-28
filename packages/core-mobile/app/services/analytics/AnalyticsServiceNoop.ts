@@ -8,8 +8,4 @@ export class AnalyticsServiceNoop implements AnalyticsServiceInterface {
   async capture(): Promise<void> {
     //noop
   }
-
-  async captureWithEncryption(): Promise<void> {
-    //noop
-  }
 }

@@ -2,6 +2,7 @@ import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
+  findNftToken,
   isCollectibleTransaction,
   isPotentiallySwap
 } from 'features/activity/utils'
@@ -71,9 +72,19 @@ export const TokenActivityListItem: FC<Props> = ({
 
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
-      return `#${
-        tx.tokens[0]?.collectableTokenId || tx.tokens[1]?.collectableTokenId
-      } - ${tx?.tokens[0]?.type}`
+      // No fallback to tokens[0] — when the tx is NFT-classified but lacks an
+      // NFT leg, surfacing a NATIVE/ERC20 token's type (e.g. "NATIVE") as the
+      // subtitle would be misleading. Drop the subtitle instead.
+      const nftToken = findNftToken(tx)
+      const tokenId = nftToken?.collectableTokenId
+      const type = nftToken?.type
+
+      // Avoid showing "#?"-style placeholders when fields are missing — drop
+      // the subtitle entirely instead of surfacing meaningless data.
+      if (tokenId && type) return `#${tokenId} - ${type}`
+      if (tokenId) return `#${tokenId}`
+      if (type) return type
+      return null
     }
 
     if (tx.txType === TransactionType.TRANSFER) {

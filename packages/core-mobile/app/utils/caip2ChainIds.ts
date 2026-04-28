@@ -24,15 +24,19 @@ export const SOLANA_LEGACY_CHAIN_ID = 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ'
  * @param properties
  */
 export function applyTempChainIdConversion(properties?: JsonMap): void {
-  if (properties?.chainId) {
+  if (properties?.chainId && !isCaip2Format(properties.chainId)) {
     properties.chainId = updateChainIdIfNeeded(Number(properties.chainId))
   }
 
-  if (properties?.networkChainId) {
+  if (properties?.networkChainId && !isCaip2Format(properties.networkChainId)) {
     properties.networkChainId = updateChainIdIfNeeded(
       Number(properties.networkChainId)
     )
   }
+}
+
+function isCaip2Format(value: unknown): boolean {
+  return typeof value === 'string' && value.includes(':')
 }
 
 function updateChainIdIfNeeded(original: number): string {

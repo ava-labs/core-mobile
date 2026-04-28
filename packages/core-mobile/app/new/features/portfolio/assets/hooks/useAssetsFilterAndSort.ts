@@ -16,8 +16,6 @@ import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
 import { usePortfolioView } from 'features/portfolio/store'
-import { selectActiveAccount } from 'store/account'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -29,23 +27,10 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
   isLoading: boolean
 } => {
-  const account = useSelector(selectActiveAccount)
   const { selectedView, setSelectedView } = usePortfolioView()
 
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
-
-  // remove solana network from the list if account has no SVM address
-  const filteredEnabledNetworks = useMemo(() => {
-    const accountHasSvmAddress =
-      account?.addressSVM !== undefined && account?.addressSVM.length > 0
-    if (accountHasSvmAddress) {
-      return enabledNetworks
-    }
-    return enabledNetworks.filter(
-      network => network.vmName !== NetworkVMType.SVM
-    )
-  }, [account?.addressSVM, enabledNetworks])
 
   const { filteredTokenList, refetch, isRefetching, isLoading } =
     useSearchableTokenList({
@@ -53,7 +38,7 @@ export const useAssetsFilterAndSort = (): {
     })
 
   const networkFilters = useMemo(() => {
-    const enabledNetworksFilter = filteredEnabledNetworks.map(network => {
+    const enabledNetworksFilter = enabledNetworks.map(network => {
       return { filterName: network.chainName, chainId: network.chainId }
     })
     return [
@@ -63,7 +48,7 @@ export const useAssetsFilterAndSort = (): {
       },
       ...enabledNetworksFilter
     ]
-  }, [filteredEnabledNetworks])
+  }, [enabledNetworks])
 
   const [selectedNetworkFilters, setSelectedNetworkFilters] =
     useState<ActivityNetworkFilter[]>(networkFilters)

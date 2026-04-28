@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   useMemo
@@ -16,7 +17,7 @@ import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { transactionSnackbar } from 'common/utils/toast'
+import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import {
   selectMarkrSwapMaxRetries,
@@ -29,7 +30,8 @@ import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken,
   useBestQuote,
-  useUserSelectedQuote,
+  useUserSelectedQuoteIds,
+  useAutoAdvancedQuoteIds,
   useAllQuotes,
   useFusionTransfers
 } from '../hooks/useZustandStore'
@@ -41,7 +43,9 @@ import {
   getSwapErrorMessage
 } from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
+import { findNextQuote } from '../utils/findNextQuote'
 import { logSdkError } from '../utils/fusionLogger'
+import { matchQuoteByIdentifiers } from '../utils/matchQuoteByIdentifiers'
 
 const DEFAULT_SLIPPAGE = 0.2
 
@@ -59,11 +63,21 @@ interface SwapContextState {
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
   bestQuote: Quote | null
   userQuote: Quote | null
+  /**
+   * Effective quote after precedence: userQuote > autoAdvancedQuote >
+   * bestQuote. Single source of truth — consumers should prefer this over
+   * recomputing the chain. autoAdvancedQuote is deliberately kept internal
+   * so the pre-swap auto-advance can't mis-tag analytics or disable
+   * swap-time retry.
+   */
+  activeQuote: Quote | null
   allQuotes: Quote[]
   isQuoteLoading: boolean
   quoteError: Error | null
   selectQuoteById: (quoteId: string | null) => void
-  swap(): Promise<void>
+  /** Promote a quote to the active position without marking it as a user pick. */
+  advanceBestQuote: (quoteId: string) => void
+  swap(quote: Quote): Promise<void>
   slippage: number
   setSlippage: Dispatch<number>
   autoSlippage: boolean
@@ -100,33 +114,38 @@ export const SwapContextProvider = ({
 
   // Get quotes
   const [bestQuote] = useBestQuote()
-  const [selectedQuote, setSelectedQuote] = useUserSelectedQuote()
+  const [userSelectedQuoteIds, setUserSelectedQuoteIds] =
+    useUserSelectedQuoteIds()
+  const [autoAdvancedQuoteIds, setAutoAdvancedQuoteIds] =
+    useAutoAdvancedQuoteIds()
   const [allQuotes] = useAllQuotes()
 
   // Transfer storage
   const { setTransfers } = useFusionTransfers()
 
-  // Derive the actual selected quote from allQuotes with fallback matching
-  // Strategy:
-  // 1. Try to match by exact quoteId (preferred - same quote after refresh)
-  // 2. Fallback to serviceType + aggregatorId (same provider after refresh)
-  // This ensures quote selection persists across quote updates (slippage/expiry)
-  const userQuote = useMemo(() => {
-    if (!selectedQuote) return null
+  // Resolve identifiers → Quote with fallback matching, so both manual and
+  // auto-advanced selections stay sticky across quote refreshes.
+  const userQuote = useMemo(
+    () => matchQuoteByIdentifiers(userSelectedQuoteIds, allQuotes),
+    [userSelectedQuoteIds, allQuotes]
+  )
 
-    // Try exact match first
-    const exactMatch = allQuotes.find(q => q.id === selectedQuote.quoteId)
-    if (exactMatch) return exactMatch
+  // When the token pair changes, drop any stale auto-advanced identifier —
+  // the previous pair's provider selection shouldn't influence the new pair's
+  // default even if a provider's serviceType+aggregatorId happens to match.
+  useEffect(() => {
+    setAutoAdvancedQuoteIds(null)
+  }, [fromToken?.localId, toToken?.localId, setAutoAdvancedQuoteIds])
 
-    // Fallback: match by serviceType + aggregatorId
-    const fallbackMatch = allQuotes.find(
-      q =>
-        q.serviceType === selectedQuote.serviceType &&
-        q.aggregator.id === selectedQuote.aggregatorId
-    )
+  const autoAdvancedQuote = useMemo(
+    () => matchQuoteByIdentifiers(autoAdvancedQuoteIds, allQuotes),
+    [autoAdvancedQuoteIds, allQuotes]
+  )
 
-    return fallbackMatch ?? null
-  }, [selectedQuote, allQuotes])
+  // Precedence: user manual pick > auto-advanced promotion > stream best.
+  // Centralised so all consumer screens (SwapScreen, pricing/slippage
+  // modals) agree on which quote is currently in use.
+  const activeQuote = userQuote ?? autoAdvancedQuote ?? bestQuote
 
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
@@ -176,30 +195,51 @@ export const SwapContextProvider = ({
     onNoQuotesError
   })
 
-  // Method to select a specific quote or auto mode
+  // Method to select a specific quote or auto mode. Also clears any
+  // auto-advanced selection so the user's explicit choice (or their return
+  // to Auto mode) takes full control.
   const selectQuoteById = useCallback(
     (quoteId: string | null) => {
+      setAutoAdvancedQuoteIds(null)
+
       if (quoteId === null) {
         // Clear selection (Auto mode)
-        setSelectedQuote(null)
+        setUserSelectedQuoteIds(null)
         return
       }
 
       // Find the quote to extract serviceType and aggregatorId
       const quote = allQuotes.find(q => q.id === quoteId)
       if (!quote) {
-        setSelectedQuote(null)
+        setUserSelectedQuoteIds(null)
         return
       }
 
       // Store all identifiers for fallback matching
-      setSelectedQuote({
+      setUserSelectedQuoteIds({
         quoteId: quote.id,
         serviceType: quote.serviceType,
         aggregatorId: quote.aggregator.id
       })
     },
-    [allQuotes, setSelectedQuote]
+    [allQuotes, setUserSelectedQuoteIds, setAutoAdvancedQuoteIds]
+  )
+
+  // Promote a quote to the active position without marking it as a user pick.
+  // Used by the pre-swap auto-advance so swap-time retry (!userQuote gate) and
+  // analytics (quoteSelectionMode) remain correctly classified as 'auto'.
+  const advanceBestQuote = useCallback(
+    (quoteId: string) => {
+      const quote = allQuotes.find(q => q.id === quoteId)
+      if (!quote) return
+
+      setAutoAdvancedQuoteIds({
+        quoteId: quote.id,
+        serviceType: quote.serviceType,
+        aggregatorId: quote.aggregator.id
+      })
+    },
+    [allQuotes, setAutoAdvancedQuoteIds]
   )
 
   // Handle swap success: logging, storage, and analytics
@@ -225,14 +265,18 @@ export const SwapContextProvider = ({
         autoRetryAttempt
       } = params
       audioFeedback(Audios.Send)
-      AnalyticsService.captureWithEncryption('SwapConfirmed', {
-        sourceAddress: address,
-        targetAddress,
-        sourceChainId: quote.sourceChain.chainId,
-        targetChainId: quote.targetChain.chainId,
-        sourceTxHash: transfer.source?.txHash,
-        quoteSelectionMode,
-        autoRetryAttempt
+      AnalyticsService.capture('SwapConfirmed', {
+        encrypted: {
+          sourceAddress: address,
+          targetAddress,
+          sourceChainId: quote.sourceChain.chainId,
+          targetChainId: quote.targetChain.chainId,
+          sourceTxHash: transfer.source?.txHash,
+          quoteSelectionMode,
+          autoRetryAttempt
+        },
+        caip2SourceChainId: quote.sourceChain.chainId,
+        caip2TargetChainId: quote.targetChain.chainId
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -311,16 +355,12 @@ export const SwapContextProvider = ({
   // Swap execution with retry logic
   const swap = useCallback(
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    async (retryQuote?: Quote, retries = 0) => {
+    async (quote: Quote, retryQuote?: Quote, retries = 0) => {
       // Guard against concurrent swap executions on initial call (ref is synchronous, unlike state)
       if (retries === 0 && isSwappingRef.current) return
 
       // Determine which quote to use (retry or normal flow)
-      const quoteToUse = retryQuote ?? userQuote ?? bestQuote
-
-      if (!quoteToUse) {
-        throw new Error('No quote available')
-      }
+      const quoteToUse = retryQuote ?? quote
 
       if (!fromToken || !toToken) {
         throw new Error('Tokens not selected')
@@ -377,18 +417,22 @@ export const SwapContextProvider = ({
           allQuotes.length > 1 &&
           shouldRetryWithNextQuote(error)
         ) {
-          const currentIndex = allQuotes.findIndex(q => q.id === quoteToUse.id)
-          const nextQuote = allQuotes[currentIndex + 1]
+          const nextQuote = findNextQuote(allQuotes, quoteToUse.id)
 
           if (nextQuote) {
-            Logger.info('[SwapContext] retrying with next quote:', {
+            Logger.error('[SwapContext] retrying with next quote', {
               failed: quoteToUse.aggregator.name,
+              failedId: quoteToUse.id,
               retrying: nextQuote.aggregator.name,
+              retryingId: nextQuote.id,
               attempt: retries + 1,
-              maxRetries
+              maxRetries,
+              errorMessage:
+                error instanceof Error ? error.message : String(error)
             })
-            // Recursive retry
-            return swap(nextQuote, retries + 1)
+            showSnackbar('Swap failed, trying next available')
+            // Recursive retry — pass the original `quote` through unchanged
+            return swap(quote, nextQuote, retries + 1)
           }
         }
 
@@ -403,7 +447,6 @@ export const SwapContextProvider = ({
       fromAddress,
       toAddress,
       userQuote,
-      bestQuote,
       allQuotes,
       maxRetries,
       transferGasMarginBps,
@@ -419,10 +462,12 @@ export const SwapContextProvider = ({
     setToToken,
     bestQuote,
     userQuote,
+    activeQuote,
     allQuotes,
     isQuoteLoading,
     quoteError,
     selectQuoteById,
+    advanceBestQuote,
     swap,
     slippage,
     setSlippage,
