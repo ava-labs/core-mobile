@@ -12,6 +12,7 @@ import { addNotificationsListeners } from 'store/notifications/listeners/listene
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addAppearanceListeners } from 'store/settings/appearance/listeners'
+import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { AppAddListener, AppStartListening } from 'store/types'
 import { addCurrencyListeners } from 'store/settings/currency/listeners'
 import { addMeldListeners } from 'store/meld/listeners'
@@ -35,6 +36,8 @@ addBalanceListeners(startListening)
 addAccountListeners(startListening)
 
 addNetworkListeners(startListening)
+
+addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
 
