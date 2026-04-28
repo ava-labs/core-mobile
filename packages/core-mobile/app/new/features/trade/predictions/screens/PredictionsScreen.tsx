@@ -10,7 +10,7 @@ import {
   TradeFilterChip,
   TradeFilters
 } from 'features/trade/components/TradeFilters'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { EventCard } from '../components/EventCard'
@@ -45,6 +45,12 @@ export const PredictionsScreen = ({
     () => ({ ...containerStyle, paddingHorizontal: 9 }),
     [containerStyle]
   )
+
+  // Persists the filter strip's horizontal scroll across CollapsibleTabList's
+  // empty/non-empty switch — the underlying list swaps from FlashList to
+  // ScrollView when results disappear, which would otherwise unmount the
+  // header (and `TradeFilters` with it) and reset the strip to scrollX=0.
+  const filterScrollOffsetRef = useRef(0)
 
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -100,6 +106,7 @@ export const PredictionsScreen = ({
           chips={chips}
           selectedChip={selectedChip}
           onSelectChip={selectChip}
+          scrollOffsetRef={filterScrollOffsetRef}
         />
       </View>
     ),

@@ -8,8 +8,15 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { ScrollView, StyleProp, ViewStyle } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  StyleProp,
+  ViewStyle
+} from 'react-native'
 
 export type TradeFilterChip =
   | string
@@ -19,6 +26,14 @@ export type TradeFilterChip =
       style?: StyleProp<ViewStyle>
     }
 
+// Pad so the chip doesn't sit flush with the visible edge after a
+// pull-into-view. Right pad is wider so the chip clears the fade gradient.
+const EDGE_PAD_LEFT = 16
+const EDGE_PAD_RIGHT = 50
+const FADE_GRADIENT_WIDTH = 42
+
+type ChipLayout = { x: number; width: number }
+
 const getChipLabel = (chip: TradeFilterChip): string =>
   typeof chip === 'string' ? chip : chip.label
 
@@ -27,15 +42,85 @@ export const TradeFilters = ({
   selectedChip,
   onSelectChip,
   onSearchPress,
+  scrollOffsetRef,
   testID
 }: {
   chips: TradeFilterChip[]
   selectedChip: string
   onSelectChip: (chip: string) => void
   onSearchPress?: () => void
+  /**
+   * Optional parent-owned ref that persists the horizontal scroll offset
+   * across remounts. The component reads it once on mount (via the
+   * ScrollView's `contentOffset`) and writes the latest offset back on
+   * every scroll. Pass a stable `useRef(0)` from the parent so the
+   * filter scroll position survives empty/non-empty list switches that
+   * unmount the surrounding header.
+   */
+  scrollOffsetRef?: React.MutableRefObject<number>
   testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
+  const scrollViewRef = useRef<ScrollView>(null)
+  const initialScrollX = scrollOffsetRef?.current ?? 0
+  const scrollXRef = useRef(initialScrollX)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const chipLayoutsRef = useRef<Map<string, ChipLayout>>(new Map())
+
+  const handleScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
+      const x = e.nativeEvent.contentOffset.x
+      scrollXRef.current = x
+      if (scrollOffsetRef) scrollOffsetRef.current = x
+    },
+    [scrollOffsetRef]
+  )
+
+  const handleContainerLayout = useCallback((e: LayoutChangeEvent): void => {
+    setContainerWidth(e.nativeEvent.layout.width)
+  }, [])
+
+  const handleChipLayout = useCallback(
+    (label: string, e: LayoutChangeEvent): void => {
+      const { x, width } = e.nativeEvent.layout
+      chipLayoutsRef.current.set(label, { x, width })
+    },
+    []
+  )
+
+  const scrollToChip = useCallback(
+    (label: string): void => {
+      const layout = chipLayoutsRef.current.get(label)
+      if (!layout || containerWidth === 0) return
+
+      const visibleLeft = scrollXRef.current
+      const visibleRight = visibleLeft + containerWidth
+      const chipLeft = layout.x
+      const chipRight = chipLeft + layout.width
+
+      // Already fully visible — leave the scroll position alone.
+      if (chipLeft >= visibleLeft && chipRight <= visibleRight) return
+
+      const target =
+        chipLeft < visibleLeft
+          ? chipLeft - EDGE_PAD_LEFT
+          : chipRight - containerWidth + EDGE_PAD_RIGHT
+
+      scrollViewRef.current?.scrollTo({
+        x: Math.max(0, target),
+        animated: true
+      })
+    },
+    [containerWidth]
+  )
+
+  // Re-scroll to the selected chip whenever the selection changes — this
+  // also corrects any parent-driven scroll resets that happen as a side
+  // effect of the new filter (e.g. when the filtered list returns no
+  // results and the surrounding layout shifts).
+  useEffect(() => {
+    scrollToChip(selectedChip)
+  }, [selectedChip, scrollToChip])
 
   return (
     <View
@@ -45,10 +130,14 @@ export const TradeFilters = ({
         flexDirection: 'row',
         alignItems: 'center'
       }}>
-      <View sx={{ flex: 1 }}>
+      <View sx={{ flex: 1 }} onLayout={handleContainerLayout}>
         <ScrollView
+          ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          contentOffset={{ x: initialScrollX, y: 0 }}
           contentContainerStyle={{
             flexDirection: 'row',
             gap: 8,
@@ -62,15 +151,16 @@ export const TradeFilters = ({
             const style = typeof chip === 'string' ? undefined : chip.style
 
             return (
-              <Chip
-                key={label}
-                size="large"
-                isSelected={isSelected}
-                onPress={() => onSelectChip(label)}
-                renderLeft={renderLeft}
-                style={style}>
-                {label}
-              </Chip>
+              <View key={label} onLayout={e => handleChipLayout(label, e)}>
+                <Chip
+                  size="large"
+                  isSelected={isSelected}
+                  onPress={() => onSelectChip(label)}
+                  renderLeft={renderLeft}
+                  style={style}>
+                  {label}
+                </Chip>
+              </View>
             )
           })}
         </ScrollView>
@@ -81,7 +171,7 @@ export const TradeFilters = ({
             right: 0,
             top: 0,
             bottom: 0,
-            width: 42,
+            width: FADE_GRADIENT_WIDTH,
             pointerEvents: 'none'
           }}
           colors={[
