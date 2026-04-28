@@ -1,6 +1,7 @@
 import {
   alpha,
   Button,
+  CircularDial,
   GroupList,
   Icons,
   Text,
@@ -13,6 +14,8 @@ import { useLocalSearchParams } from 'expo-router'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { MarketOutcomeRow } from '../components/MarketOutcomeRow'
 import {
   OUTCOME_COLORS,
@@ -31,6 +34,10 @@ const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
+  const [dialAmount, setDialAmount] = useState(2.32)
+  const [dialLoss, setDialLoss] = useState(1.5)
+
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const { event } = useGetEventDetail(tickerId)
@@ -62,6 +69,42 @@ const EventDetailsScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen navigationTitle={event?.title ?? ''}>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Default</Text>
+        <CircularDial
+          value={dialAmount}
+          onChange={setDialAmount}
+          min={0}
+          max={10000}
+          enableManualInput
+          label={selectedCurrency}
+          presets={[
+            { label: '25%', fraction: 0.25 },
+            { label: '50%', fraction: 0.5 },
+            { label: '100%', fraction: 1 }
+          ]}
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Minimum value</Text>
+        <CircularDial
+          value={dialLoss}
+          onChange={setDialLoss}
+          min={0}
+          max={10000000}
+          maxDecimals={2}
+          tone="danger"
+          referenceValue={2}
+          enableManualInput
+          label={selectedCurrency}
+          caption={`$${(dialLoss * 18.93).toFixed(2)} USD`}
+          presets={[
+            { label: '25%', fraction: 0.25 },
+            { label: '50%', fraction: 0.5 },
+            { label: '100%', fraction: 1 }
+          ]}
+        />
+      </View>
       <View style={{ gap: 10, paddingTop: 16 }}>
         <View style={{ gap: 10, paddingHorizontal: 16 }}>
           <TradeThumbnail url={event?.imageUrl} />
