@@ -427,5 +427,9 @@ export function deriveAllAddressesFromSeed(
   accountIndices: number[],
   isTestnet: boolean
 ): Promise<DerivedAllAddresses[]> {
-  return NativeCrypto.deriveAllAddressesFromSeed(seed, accountIndices, isTestnet)
+  return NativeCrypto.deriveAllAddressesFromSeed(
+    seed,
+    accountIndices,
+    isTestnet
+  )
 }

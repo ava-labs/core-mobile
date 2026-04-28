@@ -218,6 +218,62 @@ const initAccounts = async (
   }
 }
 
+// Native path for mnemonic wallets: batch all account indices into a
+// single deriveAllAddressesFromSeed call on a native thread (CP-14062).
+// Returns true if native derivation succeeded, false to fall back to JS.
+const reloadMnemonicWalletNative = async (
+  walletId: string,
+  accounts: Account[],
+  isDeveloperMode: boolean
+): Promise<AccountCollection | undefined> => {
+  try {
+    const secret = await BiometricsSDK.loadWalletSecret(walletId)
+    if (!secret.success) return undefined
+
+    const seed = await mnemonicToSeed(secret.value)
+    const seedBuffer = seed.buffer.slice(
+      seed.byteOffset,
+      seed.byteOffset + seed.byteLength
+    ) as ArrayBuffer
+
+    const indices = accounts.map(a => a.index)
+    const nativeResults = await deriveAllAddressesFromSeed(
+      seedBuffer,
+      indices,
+      isDeveloperMode
+    )
+
+    const reloadedAccounts: AccountCollection = {}
+    for (let k = 0; k < accounts.length; k++) {
+      const account = accounts[k]
+      const r = nativeResults[k]
+      if (!account || !r) continue
+
+      reloadedAccounts[account.id] = {
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        walletId: account.walletId,
+        index: account.index,
+        addressBTC: r.btc,
+        addressC: r.evm || account.addressC,
+        addressAVM: r.avm,
+        addressPVM: r.pvm,
+        addressCoreEth: r.coreEth,
+        addressSVM: r.solana
+      } as Account
+    }
+
+    return reloadedAccounts
+  } catch (error) {
+    Logger.error(
+      'Native reloadAccounts failed for mnemonic wallet, falling back to JS',
+      error
+    )
+    return undefined
+  }
+}
+
 // Reload addresses for all wallets.  For mnemonic wallets, uses the native
 // Nitro module to derive all addresses in a single off-thread call (CP-14062).
 const reloadAccounts = async (
@@ -230,54 +286,15 @@ const reloadAccounts = async (
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
-    // Native path for mnemonic wallets: batch all account indices into a
-    // single deriveAllAddressesFromSeed call on a native thread.
     if (wallet.type === WalletType.MNEMONIC) {
-      try {
-        const secret = await BiometricsSDK.loadWalletSecret(wallet.id)
-        if (secret.success) {
-          const seed = await mnemonicToSeed(secret.value)
-          const seedBuffer = seed.buffer.slice(
-            seed.byteOffset,
-            seed.byteOffset + seed.byteLength
-          ) as ArrayBuffer
-
-          const indices = accounts.map(a => a.index)
-          const nativeResults = await deriveAllAddressesFromSeed(
-            seedBuffer,
-            indices,
-            isDeveloperMode
-          )
-
-          const reloadedAccounts: AccountCollection = {}
-          for (let k = 0; k < accounts.length; k++) {
-            const account = accounts[k]
-            const r = nativeResults[k]
-            if (!account || !r) continue
-
-            reloadedAccounts[account.id] = {
-              id: account.id,
-              name: account.name,
-              type: account.type,
-              walletId: account.walletId,
-              index: account.index,
-              addressBTC: r.btc,
-              addressC: r.evm || account.addressC,
-              addressAVM: r.avm,
-              addressPVM: r.pvm,
-              addressCoreEth: r.coreEth,
-              addressSVM: r.solana
-            } as Account
-          }
-
-          listenerApi.dispatch(setAccounts(reloadedAccounts))
-          continue
-        }
-      } catch (error) {
-        Logger.error(
-          'Native reloadAccounts failed for mnemonic wallet, falling back to JS',
-          error
-        )
+      const nativeResult = await reloadMnemonicWalletNative(
+        wallet.id,
+        accounts,
+        isDeveloperMode
+      )
+      if (nativeResult) {
+        listenerApi.dispatch(setAccounts(nativeResult))
+        continue
       }
     }
 
