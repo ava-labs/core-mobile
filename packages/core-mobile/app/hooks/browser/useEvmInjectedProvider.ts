@@ -294,15 +294,26 @@ export function useEvmInjectedProvider(
   )
 
   const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
-    const meta = dappMetadata.current
     const nativeUrl = currentUrlRef.current
-    if (!meta && !nativeUrl) return undefined
+    if (!nativeUrl) return undefined
 
+    let hostname: string
+    try {
+      hostname = new URL(nativeUrl).hostname
+    } catch {
+      return undefined
+    }
+
+    // The dApp name and URL are derived ONLY from the WebView's actual
+    // top-level URL. The page-supplied domain_metadata cannot influence
+    // either (it would be a spoofing vector). The favicon is taken from
+    // domain_metadata since it is purely cosmetic.
+    const icon = dappMetadata.current?.icon
     return {
-      name: meta?.name ?? new URL(nativeUrl).hostname,
+      name: hostname,
       description: '',
-      url: nativeUrl || meta?.url || '',
-      icons: meta?.icon ? [meta.icon] : []
+      url: nativeUrl,
+      icons: icon ? [icon] : []
     }
   }, [])
 

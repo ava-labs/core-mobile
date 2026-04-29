@@ -759,6 +759,54 @@ describe('useEvmInjectedProvider', () => {
         }
       )
 
+      it('derives peerMeta.name from the native URL hostname, not from page-supplied domain_metadata', async () => {
+        const mockRequest = jest.fn().mockResolvedValue('0xSig')
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        // The page is actually loaded from a malicious origin...
+        act(() => {
+          result.current.setCurrentUrl('https://malicious.example/path')
+        })
+
+        // ...but it tries to spoof its display name via domain_metadata.
+        act(() => {
+          result.current.handleDomainMetadata(
+            JSON.stringify({
+              domain: 'core.app',
+              name: 'core.app',
+              icon: 'https://core.app/favicon.ico',
+              url: 'https://core.app/'
+            })
+          )
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 99,
+              request: {
+                method: 'personal_sign',
+                params: ['0xMessage', '0xAddress']
+              }
+            })
+          )
+        })
+
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            peerMeta: expect.objectContaining({
+              name: 'malicious.example',
+              url: 'https://malicious.example/path',
+              icons: ['https://core.app/favicon.ico']
+            })
+          })
+        )
+      })
+
       it('responds with signature on approval', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xSignatureResult')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
