@@ -47,7 +47,10 @@ import {
   Platform
 } from 'react-native'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
-import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
@@ -96,6 +99,7 @@ const SEGMENT_EVENT_MAP_LIMITED: Record<number, AnalyticsEventName> = {
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
+  const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
@@ -657,10 +661,18 @@ const PortfolioHomeScreen = (): JSX.Element => {
           position: 'absolute',
           bottom: 0,
           left: 0,
-          right: 0
+          right: 0,
+          // Limited mode hides the bottom tab bar entirely, so the default
+          // BottomTabWrapper would reserve phantom space below the segmented
+          // control. Use safe-area inset + a bit of padding instead.
+          paddingBottom: isLimitedMode ? insets.bottom + 16 : 0
         }}
         onLayout={handleSegmentedControlLayout}>
-        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
+        {isLimitedMode ? (
+          renderSegmentedControl()
+        ) : (
+          <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
+        )}
       </View>
 
       {/* 
