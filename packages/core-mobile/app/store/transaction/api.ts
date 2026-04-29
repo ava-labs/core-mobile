@@ -2,6 +2,7 @@ import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import ActivityService from 'services/activity/ActivityService'
 import { ActivityResponse } from 'services/activity/types'
 import Logger from 'utils/Logger'
+import { isLimitedMode } from 'utils/limitedMode'
 import {
   GetRecentTransactionsArgs,
   GetTransactionsArgs,
@@ -21,7 +22,11 @@ export const transactionApi = createApi({
             network,
             account,
             nextPageToken,
-            pageSize: 100
+            pageSize: 100,
+            // Bridge service is not initialized in limited mode (its listener
+            // is gated off). Calling analyzeTx would throw and fail the whole
+            // tx list. Skip the analysis entirely instead.
+            shouldAnalyzeBridgeTxs: !isLimitedMode
           })
 
           return { data }
@@ -47,7 +52,8 @@ export const transactionApi = createApi({
             network,
             account,
             nextPageToken: undefined,
-            pageSize: 100
+            pageSize: 100,
+            shouldAnalyzeBridgeTxs: !isLimitedMode
           })
 
           return { data: data.transactions }

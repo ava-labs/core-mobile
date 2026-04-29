@@ -39,27 +39,12 @@ export class ActivityService {
 
     const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
 
-    Logger.info(
-      `[ActivityService] fetching tx history chainId=${network.chainId} address=${address}`
-    )
-    let rawTxHistory
-    try {
-      rawTxHistory = await module.getTransactionHistory({
-        network: mapToVmNetwork(networkWithTokens),
-        address,
-        nextPageToken,
-        offset: pageSize
-      })
-    } catch (e) {
-      Logger.error(
-        `[ActivityService] getTransactionHistory threw chainId=${network.chainId}`,
-        e
-      )
-      throw e
-    }
-    Logger.info(
-      `[ActivityService] chainId=${network.chainId} returned ${rawTxHistory.transactions.length} txs`
-    )
+    const rawTxHistory = await module.getTransactionHistory({
+      network: mapToVmNetwork(networkWithTokens),
+      address,
+      nextPageToken,
+      offset: pageSize
+    })
 
     // Resolve any tokens that the SVM module couldn't match (symbol === "Unknown")
     const enrichedTxs = await this.resolveUnknownTokenSymbols(
