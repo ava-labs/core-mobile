@@ -20,11 +20,16 @@ export const getStepDecimals = (step: number): number => {
   return decimals
 }
 
-export const snapToStep = (v: number, step: number): number => {
+// Step doesn't always evenly divide max (e.g. step=2, max=7 → round=8 > 7);
+// when that happens we step down once. toFixed runs *before* the compare so
+// boundary float drift (3 * 0.1 = 0.30000000000000004) doesn't trip the clamp.
+export const snapToStep = (v: number, step: number, max: number): number => {
   'worklet'
-  const snapped = Math.round(v / step) * step
   const decimals = getStepDecimals(step)
-  return Number(snapped.toFixed(decimals))
+  const snapped = Number((Math.round(v / step) * step).toFixed(decimals))
+  if (snapped < 0) return 0
+  if (snapped <= max) return snapped
+  return Number((snapped - step).toFixed(decimals))
 }
 
 // Sweep convention: 180° (9 o'clock) at progress=0, 270° (12 o'clock)
@@ -101,11 +106,13 @@ export const validateRange = ({
     isValid = false
   }
   if (step <= 0 || step > max) {
+    // Fallback must be ≤ max so we don't immediately re-violate the invariant.
+    const fallback = max > 0 ? Math.min(0.01, max) : 0.01
     // eslint-disable-next-line no-console
     console.warn(
-      `[CircularDial] step (${step}) must be > 0 and <= max. Falling back to step=0.01.`
+      `[CircularDial] step (${step}) must be > 0 and <= max. Falling back to step=${fallback}.`
     )
-    normalizedStep = 0.01
+    normalizedStep = fallback
   }
   return { max, step: normalizedStep, isValid }
 }

@@ -45,14 +45,30 @@ describe('getStepDecimals', () => {
 
 describe('snapToStep', () => {
   it('snaps to nearest step', () => {
-    expect(snapToStep(5.03, 0.01)).toBeCloseTo(5.03, 2)
-    expect(snapToStep(5.034, 0.01)).toBeCloseTo(5.03, 2)
-    expect(snapToStep(5.036, 0.01)).toBeCloseTo(5.04, 2)
+    expect(snapToStep(5.03, 0.01, 100)).toBeCloseTo(5.03, 2)
+    expect(snapToStep(5.034, 0.01, 100)).toBeCloseTo(5.03, 2)
+    expect(snapToStep(5.036, 0.01, 100)).toBeCloseTo(5.04, 2)
   })
   it('handles non-power-of-10 steps without rounding drift', () => {
-    expect(snapToStep(0.25, 0.25)).toBe(0.25)
-    expect(snapToStep(0.37, 0.25)).toBe(0.25)
-    expect(snapToStep(0.39, 0.25)).toBe(0.5)
+    expect(snapToStep(0.25, 0.25, 1)).toBe(0.25)
+    expect(snapToStep(0.37, 0.25, 1)).toBe(0.25)
+    expect(snapToStep(0.39, 0.25, 1)).toBe(0.5)
+  })
+  it('clamps to the highest step ≤ max when step does not evenly divide max', () => {
+    // 7 / 2 rounds to 8 — but 8 > max=7, so we land on 6.
+    expect(snapToStep(7, 2, 7)).toBe(6)
+    expect(snapToStep(6.9, 2, 7)).toBe(6)
+    // 0.95 / 0.25 rounds to 1.0 — but 1.0 > max=0.95, so we land on 0.75.
+    expect(snapToStep(0.95, 0.25, 0.95)).toBe(0.75)
+  })
+  it('respects max when step boundaries align with max despite float drift', () => {
+    // 0.3 IS a step boundary (3 * 0.1) but 0.3 / 0.1 ≈ 2.9999… in JS
+    // floats. A naive snap-then-compare would clamp to 0.2; the correct
+    // result is 0.3 since it equals max exactly at the chosen precision.
+    expect(snapToStep(0.3, 0.1, 0.3)).toBe(0.3)
+  })
+  it('clamps negative inputs to 0', () => {
+    expect(snapToStep(-5, 0.5, 100)).toBe(0)
   })
 })
 
@@ -116,6 +132,10 @@ describe('validateRange', () => {
   })
   it('normalizes a step larger than max to 0.01', () => {
     expect(validateRange({ max: 5, step: 10 }).step).toBe(0.01)
+  })
+  it('caps the fallback step at max when max is below 0.01', () => {
+    // The 0.01 default would otherwise re-violate `step <= max`.
+    expect(validateRange({ max: 0.005, step: 1 }).step).toBe(0.005)
   })
 })
 

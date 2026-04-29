@@ -90,8 +90,10 @@ export const CircularDial: FC<CircularDialProps> = ({
     return minThreshold
   }, [minThreshold, vMax])
 
+  // Floor (not round) so stepIdx * vStep can never exceed vMax — e.g.
+  // vMax=7, vStep=2 → 3 steps, not 4 (which would land on 8).
   const stepCount = useMemo(
-    () => Math.max(1, Math.round(vMax / vStep)),
+    () => Math.max(1, Math.floor(vMax / vStep)),
     [vMax, vStep]
   )
 
@@ -144,7 +146,7 @@ export const CircularDial: FC<CircularDialProps> = ({
       isDragging.value = false
       isActive.value = false
       const raw = progressSv.value * vMax
-      const snapped = snapToStep(clamp(raw, 0, vMax), vStep)
+      const snapped = snapToStep(raw, vStep, vMax)
       progressSv.value = snapped / vMax
       scheduleOnRN(stableOnChange, snapped)
       scheduleOnRN(stableOnCommit, snapped)
@@ -194,7 +196,7 @@ export const CircularDial: FC<CircularDialProps> = ({
   const handlePresetPress = useCallback(
     (fraction: number) => {
       const targetValue = clamp(fraction, 0, 1) * vMax
-      const snapped = snapToStep(clamp(targetValue, 0, vMax), vStep)
+      const snapped = snapToStep(targetValue, vStep, vMax)
       isActive.value = true
       progressSv.value = withTiming(
         snapped / vMax,
