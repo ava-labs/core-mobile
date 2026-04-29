@@ -12,9 +12,35 @@ import { WalletDerivedDataCache } from './WalletDerivedDataCache'
 
 class WalletFactory {
   private derivedDataCache = new WalletDerivedDataCache()
+  private walletInstanceCache = new Map<string, Wallet>()
 
   get cache(): WalletDerivedDataCache {
     return this.derivedDataCache
+  }
+
+  async getOrCreateWallet({
+    walletId,
+    walletType
+  }: {
+    walletId: string
+    walletType: WalletType
+  }): Promise<Wallet> {
+    const cached = this.walletInstanceCache.get(walletId)
+    if (cached) {
+      return cached
+    }
+
+    const wallet = await this.createWallet({ walletId, walletType })
+    this.walletInstanceCache.set(walletId, wallet)
+    return wallet
+  }
+
+  clearWalletInstance(walletId: string): void {
+    this.walletInstanceCache.delete(walletId)
+  }
+
+  clearAllInstances(): void {
+    this.walletInstanceCache.clear()
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
