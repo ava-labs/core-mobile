@@ -1,5 +1,6 @@
 export default {
   bottomSheet: 'bottom_sheet',
+  privacyScreen: 'privacy_screen',
   keypadUpButton: 'keypad_up_button',
   successfullyAdded: 'successfully added',
   backButton: 'header_back',

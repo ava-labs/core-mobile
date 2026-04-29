@@ -104,11 +104,13 @@ export const appCheckStreamingFetch = async (
 
 export const appCheckPostJson = async (
   url: string,
-  bodyJson: string
+  bodyJson: string,
+  options?: { signal?: AbortSignal }
 ): Promise<Response> => {
   return appCheckFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: bodyJson
+    body: bodyJson,
+    signal: options?.signal
   })
 }
