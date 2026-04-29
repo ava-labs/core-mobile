@@ -144,7 +144,10 @@ const baseConfig = {
 
       // Force ALL @noble/hashes imports to the single patched copy (native quick-crypto)
       if (moduleName.startsWith('@noble/hashes')) {
-        const patchedRoot = path.resolve(__dirname, 'node_modules/@noble/hashes')
+        const patchedRoot = path.resolve(
+          __dirname,
+          'node_modules/@noble/hashes'
+        )
         const subpath = moduleName.slice('@noble/hashes'.length)
         return {
           type: 'sourceFile',
@@ -154,7 +157,10 @@ const baseConfig = {
 
       // Force ALL @noble/curves imports to the single patched copy (native nitro-avalabs-crypto)
       if (moduleName.startsWith('@noble/curves')) {
-        const patchedRoot = path.resolve(__dirname, 'node_modules/@noble/curves')
+        const patchedRoot = path.resolve(
+          __dirname,
+          'node_modules/@noble/curves'
+        )
         const subpath = moduleName.slice('@noble/curves'.length)
         return {
           type: 'sourceFile',
