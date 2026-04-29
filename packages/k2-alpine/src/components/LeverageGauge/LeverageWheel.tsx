@@ -156,6 +156,13 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   // lets the step-crossing reaction skip onChange and avoid flooding the JS
   // queue with stale values that could fire after the settle completes.
   const isDragging = useSharedValue(false)
+  // Wall-clock ms of the last onUpdate. Pan only fires onUpdate on actual
+  // movement, so the gap between the last update and onEnd tells us whether
+  // the finger was held still before lift. Needed because Android's
+  // VelocityTracker can leak stale velocity from prior motion when the
+  // finger pauses briefly — feeding that into withDecay would coast the
+  // wheel "unexpectedly" on what the user perceives as a stationary release.
+  const lastUpdateAt = useSharedValue(0)
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -165,8 +172,10 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       // animation — otherwise haptics stay suppressed for the whole drag.
       isProgrammatic.value = false
       gestureStartValue.value = currentValue.value
+      lastUpdateAt.value = Date.now()
     })
     .onUpdate(event => {
+      lastUpdateAt.value = Date.now()
       const deltaValue = -event.translationX / PX_PER_UNIT
       const next = gestureStartValue.value + deltaValue
       const range = max - min
@@ -191,13 +200,32 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       isDragging.value = false
       // Keep isActive=true through the release animation so that prop-sync in
       // useLeverageValue doesn't interrupt when the parent re-renders.
-      const valueVelocity = (-event.velocityX / PX_PER_UNIT) * velocityPower
+      // If the finger was stationary for a beat before lift, treat the
+      // release as zero-velocity regardless of what the platform tracker
+      // reports — Android's VelocityTracker can return stale velocity from
+      // earlier in the gesture, kicking the wheel into an unwanted decay
+      // coast on a release the user perceived as "in place".
+      const HELD_STILL_MS = 40
+      const heldStill = Date.now() - lastUpdateAt.value > HELD_STILL_MS
+      const valueVelocity = heldStill
+        ? 0
+        : (-event.velocityX / PX_PER_UNIT) * velocityPower
 
       const settleTo = (snapped: number): void => {
         'worklet'
+        // Distance-scaled duration: a near-snap release lands quickly,
+        // while a far-from-snap release keeps the slower easing for a
+        // confident visual landing. Max distance after snapping to the
+        // nearest step is step/2, so the fraction is in [0, 1].
+        const distance = Math.abs(snapped - currentValue.value)
+        const fraction = Math.min(1, (distance * 2) / step)
+        const SETTLE_MIN_MS = 200
+        const SETTLE_MAX_MS = 900
+        const duration =
+          SETTLE_MIN_MS + (SETTLE_MAX_MS - SETTLE_MIN_MS) * fraction
         currentValue.value = withTiming(
           snapped,
-          { duration: 900, easing: Easing.out(Easing.cubic) },
+          { duration, easing: Easing.out(Easing.cubic) },
           finished => {
             // If cancelled by a new gesture (finished=false, or a drag is
             // currently in progress), do NOT touch isActive / commit —
@@ -236,6 +264,15 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
             settleTo(snapToStep(target, min, step))
           }
         )
+        return
+      }
+
+      // Held-still release: skip the decay coast entirely. withDecay with
+      // velocity=0 is effectively a no-op that immediately schedules the
+      // settle, but skipping it keeps intent explicit and avoids any
+      // chance of a one-frame flicker through the decay machinery.
+      if (valueVelocity === 0) {
+        settleTo(snapToStep(currentValue.value, min, step))
         return
       }
 
