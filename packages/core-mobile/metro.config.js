@@ -1,3 +1,4 @@
+const path = require('path')
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
@@ -28,9 +29,7 @@ const baseConfig = {
   resolver: {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
-    extraNodeModules: {
-      '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
-    },
+    extraNodeModules: {},
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
@@ -141,6 +140,26 @@ const baseConfig = {
       if (moduleName === 'stream') {
         // when importing stream, resolve to readable-stream
         return context.resolveRequest(context, 'readable-stream', platform)
+      }
+
+      // Force ALL @noble/hashes imports to the single patched copy (native quick-crypto)
+      if (moduleName.startsWith('@noble/hashes')) {
+        const patchedRoot = path.resolve(__dirname, 'node_modules/@noble/hashes')
+        const subpath = moduleName.slice('@noble/hashes'.length)
+        return {
+          type: 'sourceFile',
+          filePath: require.resolve(patchedRoot + subpath)
+        }
+      }
+
+      // Force ALL @noble/curves imports to the single patched copy (native nitro-avalabs-crypto)
+      if (moduleName.startsWith('@noble/curves')) {
+        const patchedRoot = path.resolve(__dirname, 'node_modules/@noble/curves')
+        const subpath = moduleName.slice('@noble/curves'.length)
+        return {
+          type: 'sourceFile',
+          filePath: require.resolve(patchedRoot + subpath)
+        }
       }
 
       // optionally, chain to the standard Metro resolver.
