@@ -60,9 +60,24 @@ export function assertMnemonicWallet(
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
+  #seedCache?: Buffer
 
   constructor(mnemonic: string) {
     this.#mnemonic = mnemonic
+  }
+
+  private async getSeed(): Promise<Buffer> {
+    if (!this.#seedCache) {
+      this.#seedCache = await mnemonicToSeed(this.mnemonic)
+    }
+    return this.#seedCache
+  }
+
+  private getSeedSync(): Buffer {
+    if (!this.#seedCache) {
+      this.#seedCache = mnemonicToSeedSync(this.mnemonic)
+    }
+    return this.#seedCache
   }
 
   private async getBtcSigner(
@@ -98,7 +113,7 @@ export class MnemonicWallet implements Wallet {
     Logger.info('🔍 getSolanaSigner called', { accountIndex })
 
     try {
-      const seed = mnemonicToSeedSync(this.mnemonic)
+      const seed = this.getSeedSync()
       const node = slip10.fromMasterSeed(Uint8Array.from(seed))
       const derivationPathResult =
         ModuleManager.solanaModule.buildDerivationPath({
@@ -333,7 +348,7 @@ export class MnemonicWallet implements Wallet {
       )
     }
 
-    const seed = await mnemonicToSeed(this.mnemonic)
+    const seed = await this.getSeed()
 
     switch (curve) {
       case Curve.SECP256K1: {
