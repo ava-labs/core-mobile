@@ -75,8 +75,20 @@ export const CircularDial: FC<CircularDialProps> = ({
   )
 
   // Public `min` doubles as the reference-tick value when > 0; below
-  // that, values are invalid (danger colour + tick on the track).
-  const referenceValue = minThreshold > 0 ? minThreshold : undefined
+  // that, values are invalid (danger colour + tick on the track). Out
+  // of range → drop the tick and warn so consumers get a clear signal
+  // (matches `validateRange`'s style).
+  const referenceValue = useMemo(() => {
+    if (minThreshold <= 0) return undefined
+    if (minThreshold > vMax) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[CircularDial] min (${minThreshold}) must be ≤ max (${vMax}). Ignoring threshold.`
+      )
+      return undefined
+    }
+    return minThreshold
+  }, [minThreshold, vMax])
 
   const stepCount = useMemo(
     () => Math.max(1, Math.round(vMax / vStep)),
@@ -264,6 +276,7 @@ export const CircularDial: FC<CircularDialProps> = ({
           isActive={isActive}
           onChange={stableOnChange}
           onCommit={stableOnCommit}
+          testIDPrefix={testID}
         />
       </View>
       <DialPresets
@@ -272,6 +285,7 @@ export const CircularDial: FC<CircularDialProps> = ({
         max={vMax}
         step={vStep}
         onPresetPress={handlePresetPress}
+        testIDPrefix={testID}
       />
     </View>
   )

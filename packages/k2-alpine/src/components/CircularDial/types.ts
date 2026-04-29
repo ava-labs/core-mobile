@@ -1,7 +1,7 @@
 export type PresetButton = {
   /** Rendered label, e.g. "25%", "Max". */
   label: string
-  /** Target fraction of (max - min), clamped to [0, 1]. */
+  /** Target fraction of `max`, clamped to [0, 1]. */
   fraction: number
 }
 

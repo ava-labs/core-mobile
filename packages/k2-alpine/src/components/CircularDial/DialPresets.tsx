@@ -10,6 +10,8 @@ type DialPresetsProps = {
   max: number
   step: number
   onPresetPress: (fraction: number) => void
+  /** Prefix for each preset's `testID`. Falls back to `circular-dial`. */
+  testIDPrefix?: string
 }
 
 export const DialPresets: FC<DialPresetsProps> = ({
@@ -17,7 +19,8 @@ export const DialPresets: FC<DialPresetsProps> = ({
   value,
   max,
   step,
-  onPresetPress
+  onPresetPress,
+  testIDPrefix = 'circular-dial'
 }) => {
   const activePresetIndex = useMemo(() => {
     if (max <= 0) return -1
@@ -43,7 +46,7 @@ export const DialPresets: FC<DialPresetsProps> = ({
           type={activePresetIndex === i ? 'primary' : 'secondary'}
           size="small"
           onPress={() => onPresetPress(preset.fraction)}
-          testID={`circular-dial-preset-${preset.label}`}>
+          testID={`${testIDPrefix}-preset-${preset.label}`}>
           {preset.label}
         </Button>
       ))}

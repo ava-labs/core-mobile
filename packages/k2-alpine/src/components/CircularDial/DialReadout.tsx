@@ -81,6 +81,8 @@ type DialReadoutProps = {
   isActive: SharedValue<boolean>
   onChange: (v: number) => void
   onCommit: (v: number) => void
+  /** Prefix for the input's `testID`. Falls back to `circular-dial`. */
+  testIDPrefix?: string
 }
 
 /* eslint-disable sonarjs/cognitive-complexity --
@@ -104,7 +106,8 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       progressSv,
       isActive,
       onChange,
-      onCommit
+      onCommit,
+      testIDPrefix = 'circular-dial'
     },
     ref
   ) => {
@@ -354,7 +357,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
                 margin: 0
               }
             ]}
-            testID="circular-dial-value-input"
+            testID={`${testIDPrefix}-value-input`}
           />
         </View>
         {caption !== undefined && (

@@ -81,10 +81,16 @@ export const DialArc: FC<DialArcProps> = ({
     })
   }, [referenceTickProgress])
 
+  // Clamp into [0, 1] so a tick near either end of the arc doesn't
+  // produce out-of-range start/end values for Skia's `Path.start`/`end`.
   const tickLeftEdge =
-    referenceTickProgress !== null ? referenceTickProgress - TICK_GAP / 2 : 1
+    referenceTickProgress !== null
+      ? Math.max(0, referenceTickProgress - TICK_GAP / 2)
+      : 1
   const tickRightEdge =
-    referenceTickProgress !== null ? referenceTickProgress + TICK_GAP / 2 : 0
+    referenceTickProgress !== null
+      ? Math.min(1, referenceTickProgress + TICK_GAP / 2)
+      : 0
 
   // Zone opacities cross-fade with their inverse track opacities so
   // colour swaps are smooth as the knob crosses the tick.
