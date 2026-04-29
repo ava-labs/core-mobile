@@ -1261,12 +1261,6 @@ class AccountsService {
   }
 }
 
-// Yield the JS thread so React can process touches, BLE callbacks, and
-// renders between heavy async iterations.  A plain setTimeout(0) is
-// enough — the macrotask boundary lets the event loop drain its queue.
-const yieldThread = (): Promise<void> =>
-  new Promise(resolve => setTimeout(resolve, 0))
-
 const runWithConcurrency = async <TItem, TResult>({
   items,
   concurrency,
@@ -1287,9 +1281,6 @@ const runWithConcurrency = async <TItem, TResult>({
           items[currentIndex] as TItem,
           currentIndex
         )
-        // Yield between iterations so the JS thread can service UI events
-        // and BLE callbacks (fixes CP-14062).
-        await yieldThread()
       }
     })
   )
@@ -1338,9 +1329,6 @@ const processInOrderWithConcurrency = async <TResult,>({
     }
 
     scheduleNext()
-    // Yield between iterations so the JS thread can service UI events
-    // and BLE callbacks (fixes CP-14062).
-    await yieldThread()
   }
 }
 
