@@ -8,11 +8,13 @@
  *
  * Usage (from packages/core-mobile):
  *   TESTRAIL_API_KEY=xxx node scripts/createManualTestPlan.js <path-to.md>
+ * Set TESTRAIL_USERNAME if your API key is not for the default shared TestRail user.
  *
  * Example:
  *   node scripts/createManualTestPlan.js docs/manual-test-plan-Fusion-sample.md
  *
  * Optional env:
+ *   TESTRAIL_USERNAME  (default: mobiledevs@avalabs.org — must match API key owner)
  *   TESTRAIL_SUITE_ID  (default: 4 — from URL .../suites/view/4)
  */
 
@@ -23,7 +25,7 @@ const axios = require('axios')
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
-  process.env.TESTRAIL_USERNAME || 'md.cuenta@avalabs.org'
+  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
 const TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
 const TESTRAIL_PROJECT_ID = 4
 const TESTRAIL_SUITE_ID =

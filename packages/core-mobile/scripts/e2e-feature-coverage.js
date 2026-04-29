@@ -22,8 +22,11 @@
  * are omitted from percent denominators and gap lists. They still appear in the
  * checklist as △ for visibility.
  *
- * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script loads the
- * latest **iOS** and **Android** runs whose names match
+ * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script uses HTTP
+ * Basic auth (`TESTRAIL_USERNAME` + API key as password). Default username is the
+ * shared `mobiledevs@avalabs.org` TestRail user; set `TESTRAIL_USERNAME` when your
+ * API key belongs to a different account. It loads the latest **iOS** and **Android**
+ * runs whose names match
  * `[REGRESSION] iOS Test Run: YYYY-MM-DD` and `[REGRESSION] Android Test Run: YYYY-MM-DD`
  * (same naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`).
  * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
@@ -57,7 +60,7 @@
  *
  * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
  * before TestRail runs (existing env vars are not overwritten). Handy for
- * `TESTRAIL_API_KEY` without exporting in the shell.
+ * `TESTRAIL_API_KEY` / `TESTRAIL_USERNAME` without exporting in the shell.
  *
  * **Codebase composite (core-web–style):** `e2e-appium/coverage-model.config.json`
  * defines a weighted headline `codebaseCompositeCoverage.percent` from (1) breadth
@@ -361,7 +364,7 @@ function parseEnvInt(raw, defaultVal, bounds = {}) {
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
-  process.env.TESTRAIL_USERNAME || 'md.cuenta@avalabs.org'
+  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
 const TESTRAIL_PROJECT_ID = parseEnvInt(process.env.TESTRAIL_PROJECT_ID, 3, {
   min: 1
 })
@@ -2233,9 +2236,8 @@ function printJsonReport(ctx) {
       {
         summary: {
           e2eSource: 'e2e-appium',
-          appiumSpecPathsDiscovered: testFiles.length,
+          appiumSpecFiles: testFiles.length,
           appiumSpecFilesLoadedForMetrics: appiumSpecsReadable,
-          appiumSpecFiles: appiumSpecsReadable,
           testIdsDeclaredTotal: totalDeclaredTestIds,
           testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
           testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
