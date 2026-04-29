@@ -10,7 +10,8 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 import { View } from '../Primitives'
-import { clamp, getStepDecimals, snapToStep, validateRange } from './helpers'
+import { clamp } from '../../utils'
+import { getStepDecimals, snapToStep, validateRange } from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
 import type { LeverageGaugeProps, Preset } from './types'
@@ -58,8 +59,6 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   const stableOnChange = useCallback((v: number) => onChangeRef.current(v), [])
   const stableOnCommit = useCallback((v: number) => onCommitRef.current(v), [])
 
-  // When integersOnly, force the snap step to at least 1 so the wheel
-  // locks to integer positions regardless of the caller-supplied step.
   const effectiveStep = integersOnly ? Math.max(1, Math.round(step)) : step
   const {
     min: vMin,
@@ -71,16 +70,14 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     [min, max, effectiveStep]
   )
 
-  // Decimal places to show. integersOnly forces 0; explicit prop wins next;
-  // otherwise derived from the step's natural precision (handles non-power
-  // -of-10 steps like 0.25 → 2 correctly, unlike plain -log10).
+  // getStepDecimals handles non-power-of-10 steps (e.g. 0.25 → 2) correctly,
+  // unlike a plain -log10(step).
   const vDecimals = useMemo(() => {
     if (integersOnly) return 0
     if (typeof decimals === 'number') return Math.max(0, Math.floor(decimals))
     return getStepDecimals(vStep)
   }, [integersOnly, decimals, vStep])
 
-  // Filter out-of-range numeric presets; warn once per change.
   const filteredPresets = useMemo(() => {
     const out: Preset[] = []
     let dropped = 0
@@ -172,7 +169,6 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   )
 
   if (!isValid) {
-    // Minimal disabled render — caller is misconfigured.
     return (
       <View style={{ alignSelf: 'stretch' }} testID={testID}>
         <LeverageDisplay
@@ -198,9 +194,6 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   return (
     <GestureHandlerRootView style={{ flexShrink: 1 }}>
       <Animated.View
-        // Short fade on the chrome (card, Min/Max buttons, subtitle). The
-        // Skia canvases inside (wheel + number) have their own opacity
-        // animations driven by actual paint-readiness, not timing guesses.
         entering={FadeIn.duration(200)}
         style={{ alignSelf: 'stretch', gap: 4 }}
         testID={testID}

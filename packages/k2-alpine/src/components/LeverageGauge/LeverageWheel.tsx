@@ -8,14 +8,13 @@ import {
   useFont,
   vec
 } from '@shopify/react-native-skia'
-import React, { FC, memo, useEffect, useMemo, useState } from 'react'
+import React, { FC, memo, useMemo, useState } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
   interpolateColor,
   SharedValue,
   useAnimatedReaction,
-  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withDecay,
@@ -28,6 +27,7 @@ import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
 import { snapToStep } from './helpers'
+import { useSkiaCanvasFadeIn } from './useSkiaCanvasFadeIn'
 
 type LeverageWheelProps = {
   currentValue: SharedValue<number>
@@ -49,15 +49,11 @@ type LeverageWheelProps = {
 }
 
 const PX_PER_UNIT = 50
-// Ticks align at a common bottom baseline; majors reach higher than minors.
 const MAJOR_TICK_HEIGHT = 50
 const MINOR_TICK_HEIGHT = 20
-// How much a tick blooms at full active. Major/minor can differ if you want
-// integers to pop more than sub-steps.
 const ACTIVE_SCALE_MAJOR = 1.2
 const ACTIVE_SCALE_MINOR = 1.4
-// Baseline is deep enough that even the scaled-up major tick fits inside
-// the canvas (otherwise the top of a bloomed major gets clipped).
+// Deep enough that a bloomed major tick fits inside the canvas without clipping.
 const TICK_BASELINE_Y = MAJOR_TICK_HEIGHT * ACTIVE_SCALE_MAJOR
 const TICK_WIDTH = 2
 const LABEL_AREA_HEIGHT = 22
@@ -65,7 +61,6 @@ const CANVAS_HEIGHT = TICK_BASELINE_Y + LABEL_AREA_HEIGHT
 const EDGE_FADE_WIDTH = 70
 const LABEL_FONT_SIZE = 11
 const LABEL_BASELINE_Y = TICK_BASELINE_Y + 20
-// Ruler shows 4 minor ticks between integers, regardless of selection step.
 const VISUAL_TICK_STEP = 0.2
 
 type TickDescriptor = {
@@ -97,32 +92,9 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     LABEL_FONT_SIZE
   )
 
-  // Width fills the parent container. Measured via onLayout and mirrored to
-  // a shared value so UI-thread worklets (groupTransform, activeTickX) can
-  // read the current width without triggering re-renders per frame.
   const [wheelWidth, setWheelWidth] = useState(0)
-  const wheelWidthSv = useSharedValue(0)
 
-  // Canvas opacity starts at 0 and fades in once Skia is actually ready
-  // to paint — font resolved, width measured, and two RAFs confirming
-  // React has committed and the native Canvas has ticked a first frame.
-  const canvasOpacity = useSharedValue(0)
-  const canvasStyle = useAnimatedStyle(() => ({
-    opacity: canvasOpacity.value
-  }))
-  useEffect(() => {
-    if (!labelFont || wheelWidth <= 0) return
-    const cancelIds: { raf2?: number } = {}
-    const raf1 = requestAnimationFrame(() => {
-      cancelIds.raf2 = requestAnimationFrame(() => {
-        canvasOpacity.value = withTiming(1, { duration: 300 })
-      })
-    })
-    return () => {
-      cancelAnimationFrame(raf1)
-      if (cancelIds.raf2 !== undefined) cancelAnimationFrame(cancelIds.raf2)
-    }
-  }, [labelFont, wheelWidth, canvasOpacity])
+  const canvasStyle = useSkiaCanvasFadeIn(!!labelFont && wheelWidth > 0)
 
   const ticks: TickDescriptor[] = useMemo(() => {
     const out: TickDescriptor[] = []
@@ -152,16 +124,11 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   }, [ticks, labelFont])
 
   const gestureStartValue = useSharedValue(0)
-  // True only during finger-down drag. During decay/settle it's false, which
-  // lets the step-crossing reaction skip onChange and avoid flooding the JS
-  // queue with stale values that could fire after the settle completes.
+  // True only during finger-down drag — gates the step-crossing reaction
+  // from forwarding onChange during decay/settle, which would otherwise
+  // flood the JS queue with stale values after the gesture has released.
   const isDragging = useSharedValue(false)
-  // Wall-clock ms of the last onUpdate. Pan only fires onUpdate on actual
-  // movement, so the gap between the last update and onEnd tells us whether
-  // the finger was held still before lift. Needed because Android's
-  // VelocityTracker can leak stale velocity from prior motion when the
-  // finger pauses briefly — feeding that into withDecay would coast the
-  // wheel "unexpectedly" on what the user perceives as a stationary release.
+  // Wall-clock ms of the last onUpdate; see the heldStill check in onEnd.
   const lastUpdateAt = useSharedValue(0)
 
   const panGesture = Gesture.Pan()
@@ -198,13 +165,12 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     // eslint-disable-next-line sonarjs/cognitive-complexity
     .onEnd(event => {
       isDragging.value = false
-      // Keep isActive=true through the release animation so that prop-sync in
-      // useLeverageValue doesn't interrupt when the parent re-renders.
-      // If the finger was stationary for a beat before lift, treat the
-      // release as zero-velocity regardless of what the platform tracker
-      // reports — Android's VelocityTracker can return stale velocity from
-      // earlier in the gesture, kicking the wheel into an unwanted decay
-      // coast on a release the user perceived as "in place".
+      // isActive stays true through the release animation so prop-sync in
+      // useLeverageValue can't interrupt mid-flight on a parent re-render.
+      // Android's VelocityTracker can leak stale velocity from earlier in
+      // the gesture when the finger pauses briefly before lift; the time
+      // gap since the last onUpdate is a more reliable "held still" signal
+      // than the platform velocity reading.
       const HELD_STILL_MS = 40
       const heldStill = Date.now() - lastUpdateAt.value > HELD_STILL_MS
       const valueVelocity = heldStill
@@ -213,11 +179,18 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
 
       const settleTo = (snapped: number): void => {
         'worklet'
-        // Distance-scaled duration: a near-snap release lands quickly,
-        // while a far-from-snap release keeps the slower easing for a
-        // confident visual landing. Max distance after snapping to the
-        // nearest step is step/2, so the fraction is in [0, 1].
         const distance = Math.abs(snapped - currentValue.value)
+        // Already on the snap target — commit synchronously so the user
+        // doesn't perceive a 200 ms gap on a held-still on-tick release.
+        if (distance === 0) {
+          isActive.value = false
+          scheduleOnRN(onChange, snapped)
+          scheduleOnRN(onCommit, snapped)
+          return
+        }
+        // Distance-scaled duration: in-place releases land snappy, far-from
+        // -snap releases keep the confident slow landing. Max distance after
+        // snapping to nearest is step/2, so fraction is in (0, 1].
         const fraction = Math.min(1, (distance * 2) / step)
         const SETTLE_MIN_MS = 200
         const SETTLE_MAX_MS = 900
@@ -227,9 +200,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
           snapped,
           { duration, easing: Easing.out(Easing.cubic) },
           finished => {
-            // If cancelled by a new gesture (finished=false, or a drag is
-            // currently in progress), do NOT touch isActive / commit —
-            // otherwise we hand control back to the sync effect mid-gesture.
+            // Cancelled by a new gesture — let the new one manage state.
             if (!finished || isDragging.value) return
             isActive.value = false
             scheduleOnRN(onChange, snapped)
@@ -238,12 +209,10 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
         )
       }
 
-      // If released in the rubber-band zone, spring back to the clamped edge.
-      // Over-damped (ζ ≈ 1.33) so it doesn't overshoot past the edge.
-      // If the user's release velocity would push further PAST the edge, we
-      // zero it — otherwise the spring's initial momentum carries the wheel
-      // deeper into the rubber-band before reversing, which reads as an
-      // unwanted "bounce further, then return".
+      // Rubber-band release: spring back to the clamped edge.
+      // Over-damped (ζ ≈ 1.33) so it doesn't overshoot. If the release
+      // velocity would push further PAST the edge, we zero it — otherwise
+      // the spring's initial momentum reads as "bounce further, then return".
       if (currentValue.value < min || currentValue.value > max) {
         const target = currentValue.value < min ? min : max
         const inwardVelocity =
@@ -267,16 +236,11 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
         return
       }
 
-      // Held-still release: skip the decay coast entirely. withDecay with
-      // velocity=0 is effectively a no-op that immediately schedules the
-      // settle, but skipping it keeps intent explicit and avoids any
-      // chance of a one-frame flicker through the decay machinery.
       if (valueVelocity === 0) {
         settleTo(snapToStep(currentValue.value, min, step))
         return
       }
 
-      // Normal inside-bounds release: decay coast, then timed snap to step.
       currentValue.value = withDecay(
         {
           velocity: valueVelocity,
@@ -298,10 +262,8 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     Math.round((currentValue.value - min) / step)
   )
 
-  // Three haptic tiers so each kind of tick feels distinct:
-  //  - Minor (sub-step): Light tap
-  //  - Major (integer):  Medium thump
-  //  - Edge (min/max):   Heavy "wall bump"
+  // Three tiers — Light for sub-step ticks, Medium for integers, Heavy at
+  // the min/max edges — so each tick category feels distinct.
   const fireMinorHaptic = (): void => {
     impactAsync(ImpactFeedbackStyle.Light).catch(() => undefined)
   }
@@ -359,33 +321,6 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     return [{ translateX: offset }]
   })
 
-  // Hidden active-line marker kept intact for potential re-enable later.
-  const activeTickHeight = useDerivedValue(() => {
-    const raw = currentValue.value
-    const clamped = raw < min ? min : raw > max ? max : raw
-    const index = (clamped - min) / step
-    const floor = Math.floor(index)
-    const ceil = floor + 1
-    const t = index - floor
-    const heightOf = (i: number): number => {
-      const v = min + i * step
-      const isMajor = Math.abs(v - Math.round(v)) < step / 2
-      return isMajor ? MAJOR_TICK_HEIGHT : MINOR_TICK_HEIGHT
-    }
-    return heightOf(floor) + t * (heightOf(ceil) - heightOf(floor))
-  })
-  const activeTickY = useDerivedValue(
-    () => TICK_BASELINE_Y - activeTickHeight.value
-  )
-  const activeTickX = useDerivedValue(() => {
-    const v = currentValue.value
-    const center = wheelWidthSv.value / 2
-    let x = center
-    if (v < min) x = center + (min - v) * PX_PER_UNIT
-    else if (v > max) x = center - (v - max) * PX_PER_UNIT
-    return x - TICK_WIDTH / 2
-  })
-
   const tickColor = alpha(colors.$textPrimary, 0.35)
   const labelColor = alpha(colors.$textPrimary, 0.6)
 
@@ -396,7 +331,6 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
           const w = e.nativeEvent.layout.width
           if (w === wheelWidth) return
           setWheelWidth(w)
-          wheelWidthSv.value = w
         }}>
         <Animated.View style={canvasStyle}>
           <Canvas style={{ width: wheelWidth, height: CANVAS_HEIGHT }}>
@@ -457,17 +391,6 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
                 ]}
               />
             </Rect>
-
-            {/* Active-line marker — hidden; per-tick bloom carries the visual
-              for now. Logic kept intact so it's easy to re-enable. */}
-            <RoundedRect
-              x={activeTickX}
-              y={activeTickY}
-              width={TICK_WIDTH}
-              height={activeTickHeight}
-              r={TICK_WIDTH}
-              color="transparent"
-            />
           </Canvas>
         </Animated.View>
       </View>
@@ -475,19 +398,10 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   )
 }
 
-// Memoized — callers MUST pass stable onChange/onCommit refs (see
-// LeverageGauge's stableOnChange/stableOnCommit) or the bail-out doesn't
-// help. Skips reconciling the whole Skia canvas + 196 TickMarks when the
-// parent re-renders for unrelated reasons.
+// Callers MUST pass stable onChange/onCommit refs for the memo to bail out;
+// otherwise we reconcile the Skia canvas + ~196 TickMarks on every parent render.
 export const LeverageWheel = memo(LeverageWheelInner)
 
-/**
- * Single tick on the ruler. Height animates with currentValue — the tick at
- * the center grows toward MAJOR_TICK_HEIGHT (regardless of base category),
- * falling back to its base height as it moves away. Each tick has its own
- * derived value that reads currentValue, so the whole ruler "breathes"
- * around the live position.
- */
 const TickMark: FC<{
   tick: TickDescriptor
   currentValue: SharedValue<number>
@@ -520,9 +434,6 @@ const TickMark: FC<{
   const baseHeight = tick.isMajor ? MAJOR_TICK_HEIGHT : MINOR_TICK_HEIGHT
   const peakScale = tick.isMajor ? ACTIVE_SCALE_MAJOR : ACTIVE_SCALE_MINOR
 
-  // Progressive fade across `fadeSpan` — peaks at 1 when this tick is
-  // exactly at currentValue, drops to 0 once a neighbor is on top of it.
-  // When `animatable` is false, always returns 0 so the tick stays dim.
   const fade = useDerivedValue(() => {
     if (!animatable) return 0
     const raw = currentValue.value
@@ -533,10 +444,8 @@ const TickMark: FC<{
   const color = useDerivedValue(() =>
     interpolateColor(fade.value, [0, 1], [dimColor, activeColor])
   )
-  // Group-level transform scales the tick around its bottom-center so we
-  // only need one animated value for size instead of four (width/height/x/y).
-  // Reduces the per-tick derived-value count from 7 → 3 which matters when
-  // there are hundreds of ticks updating each frame.
+  // Group transform scales around bottom-center so we drive size with one
+  // animated value instead of four (width/height/x/y) — matters at ~196 ticks.
   const transform = useDerivedValue(() => [
     { scale: 1 + fade.value * (peakScale - 1) }
   ])

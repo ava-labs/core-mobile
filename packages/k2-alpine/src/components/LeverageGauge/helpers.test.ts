@@ -1,5 +1,4 @@
 import {
-  clamp,
   commitDraftText,
   formatNumber,
   getStepDecimals,
@@ -10,18 +9,6 @@ import {
   snapToStep,
   validateRange
 } from './helpers'
-
-describe('clamp', () => {
-  it('returns the value when within range', () => {
-    expect(clamp(5, 1, 10)).toBe(5)
-  })
-  it('clamps below min', () => {
-    expect(clamp(-3, 1, 10)).toBe(1)
-  })
-  it('clamps above max', () => {
-    expect(clamp(99, 1, 10)).toBe(10)
-  })
-})
 
 describe('snapToStep', () => {
   it('snaps to the nearest step from min', () => {

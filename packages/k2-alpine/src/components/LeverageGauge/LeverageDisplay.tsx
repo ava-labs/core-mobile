@@ -11,7 +11,6 @@ import Animated, {
   SharedValue,
   useAnimatedProps,
   useAnimatedReaction,
-  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withTiming
@@ -28,6 +27,7 @@ import {
   snapToStep
 } from './helpers'
 import type { Preset } from './types'
+import { useSkiaCanvasFadeIn } from './useSkiaCanvasFadeIn'
 
 type LeverageDisplayProps = {
   value: number
@@ -226,10 +226,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
             position: 'relative',
             minHeight: 80
           }}>
-          {/* Skia display — always rendered in flow so its derived values
-              and animated states persist, and its Canvas keeps painting
-              frames regardless of focus. When editing, the TextInput
-              overlays it with an opaque background. */}
+          {/* Always in flow — the editing TextInput overlays it with an
+              opaque background, so the Skia canvas keeps painting and its
+              derived values stay live regardless of focus. */}
           <Pressable
             onPress={startEdit}
             disabled={!enableManualInput || isEditing}
@@ -314,27 +313,18 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   )
 }
 
-// Memoized — wheel swipes cause the parent to re-render frequently, and
-// LeverageDisplay hosts a Skia canvas + many derived values. Bailing on
-// identical-props renders keeps JS-thread cost flat during fast swipes.
+// Bails on identical-props renders so wheel swipes don't churn the Skia
+// canvas + many derived values on every parent re-render.
 export const LeverageDisplay = memo(LeverageDisplayInner)
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
-/**
- * Renders the live wheel value via Skia. Each digit is rendered as its own
- * slot so only the characters that actually change fade out/in, while
- * unchanged digits stay put. Text is derived on the UI thread — no JS
- * dispatch per tick.
- */
 const NUMBER_CANVAS_HEIGHT = 80
 const NUMBER_FONT_SIZE = 60
 const NUMBER_BASELINE_Y = 64
-// The × glyph sits optically higher than numerals in Aeonik — nudge it
-// down so it visually aligns with the digit baseline.
+// × sits optically higher than numerals in Aeonik — nudge it down to align
+// with the digit baseline.
 const X_VERTICAL_OFFSET = 0
-// Pre-compute each slot's character and x position on the UI thread. The
-// layout is centered such that [number + × + gap] sits as one group.
 const X_GAP = 2.2
 
 type SkFont = NonNullable<ReturnType<typeof useFont>>
@@ -354,44 +344,20 @@ const AnimatedNumber: FC<{
     NUMBER_FONT_SIZE
   )
 
-  // Canvas opacity starts at 0 and fades in once Skia is actually ready
-  // to paint — font resolved plus two RAFs confirming React has committed
-  // and the native Canvas has ticked a first frame.
-  const canvasOpacity = useSharedValue(0)
-  const canvasStyle = useAnimatedStyle(() => ({
-    opacity: canvasOpacity.value
-  }))
-  useEffect(() => {
-    if (!font) return
-    const cancelIds: { raf2?: number } = {}
-    const raf1 = requestAnimationFrame(() => {
-      cancelIds.raf2 = requestAnimationFrame(() => {
-        canvasOpacity.value = withTiming(1, { duration: 300 })
-      })
-    })
-    return () => {
-      cancelAnimationFrame(raf1)
-      if (cancelIds.raf2 !== undefined) cancelAnimationFrame(cancelIds.raf2)
-    }
-  }, [font, canvasOpacity])
+  const canvasStyle = useSkiaCanvasFadeIn(!!font)
 
-  // How many digit slots we need to cover the widest possible number (× is
-  // rendered separately so it can slide smoothly).
   const slotCount = React.useMemo(() => {
     const widest = decimals > 0 ? `${max}.${'0'.repeat(decimals)}` : `${max}`
     return widest.length
   }, [max, decimals])
 
-  // Canvas width — generous enough that the widest value with × fits
-  // comfortably and remains centered by the outer flex row.
   const canvasWidth = React.useMemo(() => {
     if (!font) return 1
     const widest = decimals > 0 ? `${max}.${'0'.repeat(decimals)}` : `${max}`
     const w = font.measureText(widest + '×').width
     return Math.ceil(w) + 4
   }, [font, max, decimals])
-  // × glyph width is stable for a given font — cache it so the UI-thread
-  // layout derived value doesn't call measureText per frame.
+  // Cached so the UI-thread layout derived value doesn't measureText per frame.
   const xGlyphWidth = React.useMemo(
     () => (font ? font.measureText('×').width : 0),
     [font]

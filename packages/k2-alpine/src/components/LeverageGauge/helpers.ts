@@ -1,11 +1,5 @@
+import { clamp } from '../../utils/clamp'
 import type { Preset } from './types'
-
-export const clamp = (v: number, min: number, max: number): number => {
-  'worklet'
-  if (v < min) return min
-  if (v > max) return max
-  return v
-}
 
 /**
  * Number of decimal digits required to express `step` exactly, derived by
