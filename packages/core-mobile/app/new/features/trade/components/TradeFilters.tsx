@@ -62,7 +62,9 @@ export const TradeFilters = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const scrollViewRef = useRef<ScrollView>(null)
-  const initialScrollX = scrollOffsetRef?.current ?? 0
+  // Capture the initial offset exactly once so re-renders don't re-apply
+  // `contentOffset` and yank the scroll position mid-interaction.
+  const [initialScrollX] = useState(() => scrollOffsetRef?.current ?? 0)
   const scrollXRef = useRef(initialScrollX)
   const [containerWidth, setContainerWidth] = useState(0)
   const chipLayoutsRef = useRef<Map<string, ChipLayout>>(new Map())
@@ -94,11 +96,17 @@ export const TradeFilters = ({
       if (!layout || containerWidth === 0) return
 
       const visibleLeft = scrollXRef.current
-      const visibleRight = visibleLeft + containerWidth
+      // Subtract the fade gradient width so chips sitting under the
+      // right-edge fade are treated as clipped, not "fully visible".
+      const visibleRight = Math.max(
+        visibleLeft,
+        visibleLeft + containerWidth - FADE_GRADIENT_WIDTH
+      )
       const chipLeft = layout.x
       const chipRight = chipLeft + layout.width
 
-      // Already fully visible — leave the scroll position alone.
+      // Already fully visible within the unobscured viewport — leave
+      // the scroll position alone.
       if (chipLeft >= visibleLeft && chipRight <= visibleRight) return
 
       const target =
