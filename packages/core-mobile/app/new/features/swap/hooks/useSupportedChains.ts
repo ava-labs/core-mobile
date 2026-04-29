@@ -11,6 +11,10 @@ import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import {
+  LIMITED_MODE_ALLOWED_CHAIN_IDS,
+  isLimitedMode
+} from 'utils/limitedMode'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { useIsFusionServiceReady } from './useZustandStore'
@@ -31,8 +35,14 @@ function filterAndSortNetworks(
 ): Network[] {
   return networks
     .filter(network => {
-      // Filter out Solana networks if blocked or account has no Solana address
-      return !(hideSolana && isSolanaNetwork(network))
+      if (hideSolana && isSolanaNetwork(network)) return false
+      if (
+        isLimitedMode &&
+        !LIMITED_MODE_ALLOWED_CHAIN_IDS.has(network.chainId)
+      ) {
+        return false
+      }
+      return true
     })
     .sort((a, b) => {
       // Avalanche C-Chain always first

@@ -63,7 +63,13 @@ export const appCheckFetch = async (
 ): Promise<Response> => {
   const { url, requestInit } = await toUrlAndInit(input, init)
 
-  const { token } = await AppCheckService.getToken()
+  let token: string
+  try {
+    token = (await AppCheckService.getToken()).token
+  } catch (e) {
+    Logger.error(`[appCheckFetch] getToken failed url=${url}`, e)
+    throw e
+  }
   const headers = new Headers(requestInit.headers)
   headers.set(APPCHECK_HEADER, token)
 
@@ -73,11 +79,25 @@ export const appCheckFetch = async (
     return response
   }
 
-  Logger.warn('AppCheck token rejected, retrying with fresh token')
-  const { token: freshToken } = await AppCheckService.getToken(true)
+  Logger.warn(
+    `[appCheckFetch] ${response.status} on ${url}, retrying with fresh AppCheck token`
+  )
+  let freshToken: string
+  try {
+    freshToken = (await AppCheckService.getToken(true)).token
+  } catch (e) {
+    Logger.error(`[appCheckFetch] forced getToken failed url=${url}`, e)
+    return response
+  }
   headers.set(APPCHECK_HEADER, freshToken)
 
-  return nitroFetch(url, { ...requestInit, headers })
+  const retried = await nitroFetch(url, { ...requestInit, headers })
+  if (!retried.ok) {
+    Logger.warn(
+      `[appCheckFetch] retry status=${retried.status} url=${url}`
+    )
+  }
+  return retried
 }
 
 /**

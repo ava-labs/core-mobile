@@ -75,7 +75,11 @@ export const useActivityFilterAndSearch = ({
   }, [enabledNetworks])
 
   useEffect(() => {
-    if (!selectedNetwork && networkFilters[0]) {
+    if (!networkFilters[0]) return
+    const stillVisible = selectedNetwork
+      ? networkFilters.some(n => n.chainId === selectedNetwork.chainId)
+      : false
+    if (!stillVisible) {
       setSelectedNetwork(networkFilters[0])
     }
   }, [selectedNetwork, setSelectedNetwork, networkFilters])

@@ -282,7 +282,7 @@ const isWalletMigrated = (walletId: string): boolean => {
   return migratedActiveAccountsWalletIds.includes(walletId)
 }
 
-const markWalletAsMigrated = (walletId: string): void => {
+export const markWalletAsMigrated = (walletId: string): void => {
   appendToStoredArray(
     commonStorage,
     StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,

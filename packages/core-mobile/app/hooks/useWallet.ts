@@ -8,6 +8,7 @@ import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { setActiveWallet } from 'store/wallet/slice'
+import { markWalletAsMigrated } from 'store/account/utils'
 
 interface OnPinCreatedParams {
   walletId: string
@@ -91,6 +92,12 @@ export function useWallet(): UseWallet {
       )
       await dispatchStoreWallet.unwrap()
       dispatch(setActiveWallet(walletId))
+
+      // Pre-mark freshly-created wallets as migrated. There is nothing on
+      // chain for a brand-new mnemonic, so account discovery would scan and
+      // find nothing — and if it fails to complete cleanly, the wallet is
+      // never marked and discovery retries on every subsequent app unlock.
+      markWalletAsMigrated(walletId)
 
       return Promise.resolve(walletId)
     } catch (error) {

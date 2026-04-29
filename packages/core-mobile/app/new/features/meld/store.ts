@@ -161,6 +161,14 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
             ChainId.SOLANA_MAINNET_ID.toString()
           )
         }
+        // Meld returns AVAX with chainId/contractAddress = null, so neither
+        // the native nor ERC-20 generic branches match it. Special-case it
+        // the same way we do for BTC/SOL.
+        if (crypto.currencyCode === 'AVAX') {
+          match = tokenIndexes.nativeMap.get(
+            ChainId.AVALANCHE_MAINNET_ID.toString()
+          )
+        }
 
         if (
           crypto.chainId &&
@@ -173,6 +181,13 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
         if (!match && crypto.contractAddress && crypto.chainId) {
           match = tokenIndexes.erc20Map.get(
             `${crypto.chainId}-${crypto.contractAddress.toLowerCase()}`
+          )
+        }
+        // USDT_AVAX is also returned with null chainId/contractAddress.
+        // Resolve to the canonical USDT contract on Avalanche C-Chain.
+        if (!match && crypto.currencyCode === 'USDT_AVAX') {
+          match = tokenIndexes.erc20Map.get(
+            `${ChainId.AVALANCHE_MAINNET_ID}-0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7`
           )
         }
 

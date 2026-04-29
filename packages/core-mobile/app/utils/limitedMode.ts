@@ -105,31 +105,76 @@ export const isAllowedLimitedSwapToken = (
   return LIMITED_MODE_SWAP_ALLOWED_INTERNAL_IDS.has(token.internalId)
 }
 
-// Meld returns CryptoCurrency objects with currencyCode + numeric chainId +
-// contractAddress. BTC is special-cased by currencyCode (no chainId/contract).
-export const isAllowedLimitedBuyCrypto = (
-  crypto:
+// Tokens delivered by the Balance API (`LocalTokenWithBalance`) carry
+// `networkChainId` + (optional) `address` + a token-type discriminator. The
+// internalId field is sometimes absent / inconsistently formatted across
+// chains, so we identify allowlisted tokens by chain + address instead.
+const USDT_AVAX = '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7'
+const USDT_ETH = '0xdac17f958d2ee523a2206206994597c13d831ec7'
+const BTC_B_AVAX = '0x152b9d0fdc40c096757f570a51e494bd4b943e50'
+
+export const isAllowedLimitedLocalToken = (
+  token:
     | {
-        currencyCode?: string | null
-        chainId?: number | string | null
-        contractAddress?: string | null
+        networkChainId?: number | null
+        address?: string | null
+        type?: string | null
+        symbol?: string | null
       }
     | null
     | undefined
 ): boolean => {
   if (!isLimitedMode) return true
-  if (!crypto) return false
-  if (crypto.currencyCode === 'BTC') return true
-  const chain = String(crypto.chainId ?? '')
-  const addr = (crypto.contractAddress ?? '').toLowerCase()
-  const isNativeContract =
+  if (!token) return false
+  const chainId = Number(token.networkChainId)
+  const addr = (token.address ?? '').toLowerCase()
+  const isNative =
     !addr || addr === '0x0000000000000000000000000000000000000000'
-  if (isNativeContract && (chain === '43114' || chain === '1')) return true
-  return (
-    (chain === '43114' &&
-      addr === '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7') ||
-    (chain === '1' &&
-      addr === '0xdac17f958d2ee523a2206206994597c13d831ec7') ||
-    (chain === '43114' && addr === '0x152b9d0fdc40c096757f570a51e494bd4b943e50')
-  )
+
+  if (chainId === ChainId.BITCOIN || chainId === ChainId.BITCOIN_TESTNET) {
+    return true
+  }
+  if (
+    isNative &&
+    (chainId === ChainId.AVALANCHE_MAINNET_ID ||
+      chainId === ChainId.ETHEREUM_HOMESTEAD ||
+      chainId === ChainId.AVALANCHE_TESTNET_ID ||
+      chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
+  ) {
+    return true
+  }
+  if (chainId === ChainId.AVALANCHE_MAINNET_ID) {
+    return addr === USDT_AVAX || addr === BTC_B_AVAX
+  }
+  if (chainId === ChainId.ETHEREUM_HOMESTEAD) {
+    return addr === USDT_ETH
+  }
+  return false
+}
+
+// Meld returns CryptoCurrency objects keyed primarily by `currencyCode`
+// (the asset+chain identifier — e.g. "AVAX", "USDT_AVAX", "ETH_BASE").
+// chainId/contractAddress are inconsistently populated (null for many AVAX
+// entries), so we match against an explicit currencyCode allowlist.
+// BTC.b is intentionally not included because Meld does not list it.
+const ALLOWED_MELD_CURRENCY_CODES: ReadonlySet<string> = new Set([
+  'BTC',
+  'ETH',
+  'AVAX',
+  'USDT', // USDT on Ethereum
+  'USDT_AVAX' // USDT on Avalanche
+])
+
+export const isAllowedLimitedBuyCrypto = (
+  crypto:
+    | {
+        currencyCode?: string | null
+      }
+    | null
+    | undefined
+): boolean => {
+  if (!isLimitedMode) return true
+  const code = crypto?.currencyCode
+  if (!code) return false
+  return ALLOWED_MELD_CURRENCY_CODES.has(code)
 }
