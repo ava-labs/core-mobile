@@ -1,6 +1,11 @@
 import { AppStartListening } from 'store/types'
 import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
-import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
+import {
+  removeAccount,
+  setAccount,
+  setAccounts,
+  setNonActiveAccounts
+} from 'store/account'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
@@ -88,15 +93,31 @@ export const addNotificationsListeners = (
 
   startListening({
     matcher: isAnyOf(
-      onRehydrationComplete,
+      onAppUnlocked,
       setAccounts,
       setNonActiveAccounts,
       setAccount,
+      removeAccount,
       onFcmTokenChange,
       turnOnAllNotifications,
       onNotificationsTurnedOnForBalanceChange
     ),
     effect: async (_, listenerApi) => {
+      // Coalesce bursts so only the latest invocation posts to the backend
+      // (the subscribe endpoint reconciles to the *current* address set, so
+      // an out-of-order older POST could re-add an address we just removed).
+      // Bursts happen for any matched action — most notably `removeWallet`,
+      // which dispatches `removeAccount` once per account in the same tick —
+      // but also rapid imports, sign-in flows, etc.
+      // `cancelActiveListeners()` aborts the listener task and the threaded
+      // `listenerApi.signal` aborts any in-flight subscribe fetch, so the
+      // last invocation wins both at the listener boundary and on the wire.
+      listenerApi.cancelActiveListeners()
+      try {
+        await listenerApi.delay(100)
+      } catch {
+        return
+      }
       await subscribeBalanceChangeNotifications(listenerApi).catch(reason => {
         Logger.error(
           `[listeners.ts][subscribeBalanceChangeNotifications]${reason}`

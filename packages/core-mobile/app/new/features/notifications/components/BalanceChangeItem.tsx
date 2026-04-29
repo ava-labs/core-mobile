@@ -11,6 +11,12 @@ type BalanceChangeItemProps = {
   notification: AppNotification
   showSeparator: boolean
   accessoryType: 'chevron' | 'none'
+  /**
+   * Optional "{wallet} · {account}" label resolved by the parent screen.
+   * Prepended to the subtitle so multi-wallet users can tell which wallet a
+   * balance-change notification belongs to.
+   */
+  accountLabel?: string | null
   testID?: string
 }
 
@@ -70,12 +76,18 @@ const BalanceChangeItem: FC<BalanceChangeItemProps> = ({
   notification,
   showSeparator,
   accessoryType,
+  accountLabel,
   testID
 }) => {
+  const baseSubtitle = getSubtitle(notification)
+  const subtitle = accountLabel
+    ? `${accountLabel} · ${baseSubtitle}`
+    : baseSubtitle
+
   return (
     <NotificationListItem
       title={getTitle(notification)}
-      subtitle={getSubtitle(notification)}
+      subtitle={subtitle}
       icon={<NotificationIcon notification={notification} />}
       timestamp={notification.timestamp}
       showSeparator={showSeparator}
