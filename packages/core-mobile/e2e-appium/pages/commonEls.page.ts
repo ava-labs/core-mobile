@@ -278,6 +278,10 @@ class CommonElsPage {
     return selectors.getById(commonEls.bottomSheet)
   }
 
+  get privacyScreen() {
+    return selectors.getById(commonEls.privacyScreen)
+  }
+
   listItem(name: string) {
     return selectors.getById(`list_item__${name}`)
   }
@@ -527,6 +531,19 @@ class CommonElsPage {
 
   async goMyWallets() {
     await actions.tap(portfolioPage.portfolioAccountName)
+  }
+
+  async verifyPrivacyScreen() {
+    try {
+      await actions.waitFor(this.privacyScreen, 2000)
+      console.log('privacy screen appeared')
+    } catch {
+      console.log('privacy screen is gone')
+    }
+  }
+
+  async appGoToBackground(seconds: number) {
+    await driver.execute('mobile: backgroundApp', { seconds })
   }
 }
 

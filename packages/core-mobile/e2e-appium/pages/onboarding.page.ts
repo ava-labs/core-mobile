@@ -292,6 +292,15 @@ class OnboardingPage {
       await actions.tap(commonElsPage.keypadUpButton)
     }
   }
+
+  async unlockEnterPin() {
+    try {
+      await this.tapZero()
+    } catch {
+      await this.tapKeypadUpButton()
+      await this.tapZero()
+    }
+  }
 }
 
 export default new OnboardingPage()
