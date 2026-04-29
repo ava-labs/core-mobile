@@ -186,8 +186,7 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
 
     thunkApi.dispatch(_removeWallet(walletId))
 
-    // Clear cached wallet instance and derived data for the removed wallet
-    WalletFactory.clearWalletInstance(walletId)
+    // Clear all cached data (wallet instance, public keys, xpubs) for the removed wallet
     WalletFactory.cache.clearWallet(walletId)
 
     // If we removed the active wallet, set the first account of the new active wallet as active

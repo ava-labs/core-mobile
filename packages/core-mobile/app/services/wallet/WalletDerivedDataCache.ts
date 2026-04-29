@@ -1,11 +1,15 @@
+import { Wallet } from './types'
+
 /**
  * Centralized cache for expensive wallet derivation operations.
  * Persists across wallet instance lifecycles to prevent redundant
- * cryptographic operations like public key derivation and xpub generation.
+ * cryptographic operations like public key derivation, xpub generation,
+ * and wallet instance creation (keychain reads + seed derivation).
  */
 export class WalletDerivedDataCache {
   private publicKeyCache = new Map<string, string>()
   private xpubCache = new Map<string, string>()
+  private walletInstanceCache = new Map<string, Wallet>()
 
   /**
    * Get cached public key for a wallet's derivation path and curve
@@ -49,6 +53,20 @@ export class WalletDerivedDataCache {
   }
 
   /**
+   * Get cached wallet instance
+   */
+  getWalletInstance(walletId: string): Wallet | undefined {
+    return this.walletInstanceCache.get(walletId)
+  }
+
+  /**
+   * Cache a wallet instance
+   */
+  setWalletInstance(walletId: string, wallet: Wallet): void {
+    this.walletInstanceCache.set(walletId, wallet)
+  }
+
+  /**
    * Clear all cached data for a specific wallet
    */
   clearWallet(walletId: string): void {
@@ -65,6 +83,8 @@ export class WalletDerivedDataCache {
         this.xpubCache.delete(key)
       }
     }
+
+    this.walletInstanceCache.delete(walletId)
   }
 
   /**
@@ -73,6 +93,7 @@ export class WalletDerivedDataCache {
   clearAll(): void {
     this.publicKeyCache.clear()
     this.xpubCache.clear()
+    this.walletInstanceCache.clear()
   }
 
   /**
@@ -81,10 +102,12 @@ export class WalletDerivedDataCache {
   getStats(): {
     publicKeyCount: number
     xpubCount: number
+    walletInstanceCount: number
   } {
     return {
       publicKeyCount: this.publicKeyCache.size,
-      xpubCount: this.xpubCache.size
+      xpubCount: this.xpubCache.size,
+      walletInstanceCount: this.walletInstanceCache.size
     }
   }
 
