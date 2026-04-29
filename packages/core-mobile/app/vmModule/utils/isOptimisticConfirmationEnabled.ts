@@ -26,11 +26,14 @@ const CACHE_TTL_MS = 60_000
 // via a narrow assertion on the returned object.
 type WithHeliconTime = { heliconTime?: string }
 
-const isHeliconActivatedAt = (heliconTime: string | undefined): boolean => {
+// Returns true only when we can prove Helicon is *not yet* live. Any
+// uncertainty (missing field, unparseable date, etc.) falls through to the
+// caller's conservative `return false` (post-Helicon flow).
+const isPreHeliconAt = (heliconTime: string | undefined): boolean => {
   if (!heliconTime) return false
   const activationDate = new Date(heliconTime)
   if (Number.isNaN(activationDate.getTime())) return false
-  return activationDate.getTime() <= Date.now()
+  return activationDate.getTime() > Date.now()
 }
 
 const fetchOptimisticGate = async (
@@ -45,7 +48,10 @@ const fetchOptimisticGate = async (
   try {
     const upgradesInfo = await provider.getInfo().getUpgradesInfo()
     const heliconTime = (upgradesInfo as WithHeliconTime).heliconTime
-    return !isHeliconActivatedAt(heliconTime)
+    // Only enable optimistic UI when we can prove Helicon is still in the
+    // future; missing/unparseable `heliconTime` means we don't know, so
+    // default to the safer post-Helicon flow.
+    return isPreHeliconAt(heliconTime)
   } catch (error) {
     Logger.error('Failed to fetch Helicon upgrade status', { chainId, error })
     // Conservative fallback: post-Helicon, the optimistic UX is the regression
@@ -103,6 +109,13 @@ export async function isOptimisticConfirmationEnabled(
   const numericChainId = getChainIdFromCaip2(request.chainId)
 
   if (numericChainId === undefined || !isAvalancheChainId(numericChainId)) {
+    return false
+  }
+
+  // The local Avalanche network has no default mainnet/fuji-style provider
+  // we can query for upgrade info, so we don't speak for it here. Dev-only;
+  // QA can still flip the `sae-override` flag to exercise either path.
+  if (numericChainId === ChainId.AVALANCHE_LOCAL_ID) {
     return false
   }
 

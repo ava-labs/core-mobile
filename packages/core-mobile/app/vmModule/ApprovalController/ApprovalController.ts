@@ -45,6 +45,11 @@ import { handleLedgerErrorAndShowAlert } from './utils'
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
   private signingAddressMap = new BoundedMap<string, string>(10)
+  // Caches whether the optimistic-confirmation gate said yes/no for a given
+  // requestId. Set in onTransactionPending and read in onTransactionConfirmed
+  // so the two handlers can never disagree (e.g. if the upstream InfoAPI
+  // cache expired or a refetch errored between the two callbacks).
+  private optimisticGateMap = new BoundedMap<string, boolean>(20)
 
   async requestPublicKey({
     secretId,
@@ -76,6 +81,10 @@ class ApprovalController implements VmModuleApprovalController {
       isInAppAvalancheRequest(request) &&
       (await isOptimisticConfirmationEnabled(request))
 
+    // Persist the decision so onTransactionConfirmed reads the same value
+    // even if the upstream gate cache has expired or its next fetch errors.
+    this.optimisticGateMap.set(request.requestId, showSuccessOptimistically)
+
     if (showSuccessOptimistically) {
       transactionSnackbar.success({
         message: 'Transaction sent'
@@ -91,7 +100,7 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionConfirmed = async ({
+  onTransactionConfirmed = ({
     txHash,
     explorerLink,
     request
@@ -99,7 +108,7 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     explorerLink: string
     request: RpcRequest
-  }): Promise<void> => {
+  }): void => {
     if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
@@ -114,6 +123,12 @@ class ApprovalController implements VmModuleApprovalController {
       })
     }
 
+    // Read & clear the gate decision recorded at pending time. If we somehow
+    // missed onTransactionPending (shouldn't happen for normal flows), fall
+    // back to non-optimistic so we still emit a success toast on confirmation.
+    const wasOptimistic = this.optimisticGateMap.get(request.requestId) ?? false
+    this.optimisticGateMap.delete(request.requestId)
+
     if (!isTxFeedbackEnabled(request)) return
 
     if (isInAppReview(request)) {
@@ -123,15 +138,9 @@ class ApprovalController implements VmModuleApprovalController {
       }, CONFETTI_DURATION_MS + 200)
     }
 
-    // For in-app Avalanche requests pre-Helicon, the success toast/confetti
-    // was already shown in onTransactionPending - skip to avoid duplicating
-    // it. The util shares a single in-flight upgrade-info fetch across calls
-    // for the same network, so this returns the same value that drove the
-    // decision in onTransactionPending.
-    if (
-      isInAppAvalancheRequest(request) &&
-      (await isOptimisticConfirmationEnabled(request))
-    ) {
+    // For in-app Avalanche requests where the optimistic UI already fired in
+    // onTransactionPending, skip to avoid duplicating the success toast.
+    if (wasOptimistic) {
       return
     }
 
@@ -153,6 +162,9 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
   }): void => {
     transactionSnackbar.error({ error: 'Transaction reverted' })
+
+    // Clear any cached gate decision for this requestId so it doesn't linger.
+    this.optimisticGateMap.delete(request.requestId)
 
     if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''

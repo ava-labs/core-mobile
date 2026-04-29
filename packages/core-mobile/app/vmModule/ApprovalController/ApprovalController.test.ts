@@ -339,23 +339,41 @@ describe('ApprovalController', () => {
       ).toHaveBeenCalledTimes(1)
     })
 
-    it('does not show success toast for in-app Avalanche requests before Helicon is enabled (already shown in pending)', async () => {
+    it('does not show success toast for in-app Avalanche requests when optimistic UI fired in pending', async () => {
+      // Simulate the full pending->confirmed flow so the cached gate decision
+      // is populated by onTransactionPending and read by onTransactionConfirmed.
       mockIsInAppAvalancheRequest.mockReturnValue(true)
       mockIsOptimisticConfirmationEnabled.mockResolvedValue(true)
+      const request = makeRequest()
 
-      await approvalController.onTransactionConfirmed(
-        confirmedArgs(makeRequest())
-      )
+      await approvalController.onTransactionPending({
+        txHash: '0xabc',
+        request,
+        explorerLink: 'https://example.com'
+      })
+      ;(transactionSnackbar.success as jest.Mock).mockClear()
+      ;(mockShowConfetti as jest.Mock).mockClear()
+
+      await approvalController.onTransactionConfirmed(confirmedArgs(request))
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
     })
 
-    it('shows success toast and confetti for in-app Avalanche requests after Helicon is enabled', async () => {
+    it('shows success toast and confetti for in-app Avalanche requests when optimistic UI did not fire in pending', async () => {
       mockIsInAppAvalancheRequest.mockReturnValue(true)
       mockIsInAppRequest.mockReturnValue(true)
       mockIsOptimisticConfirmationEnabled.mockResolvedValue(false)
       const request = makeRequest()
       const explorerLink = 'https://explorer.example.com'
+
+      await approvalController.onTransactionPending({
+        txHash: '0xabc',
+        request,
+        explorerLink
+      })
+      ;(transactionSnackbar.success as jest.Mock).mockClear()
+      ;(transactionSnackbar.pending as jest.Mock).mockClear()
+      ;(mockShowConfetti as jest.Mock).mockClear()
 
       await approvalController.onTransactionConfirmed({
         txHash: '0xabc',

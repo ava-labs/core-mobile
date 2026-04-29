@@ -64,7 +64,7 @@ describe('createInAppRequest', () => {
     )
   })
 
-  it('does not add the sae-override key when the flag is unset', () => {
+  it("defaults the sae-override key to 'auto' when the flag is unset", () => {
     const getState = (): RootState => makeState(undefined)
     const request = createInAppRequest(dispatch, getState)
 
@@ -74,9 +74,11 @@ describe('createInAppRequest', () => {
       chainId: 'eip155:43114'
     })
 
-    const passedContext = mockGenerateInAppRequestPayload.mock.calls[0][0]
-      .context as Record<string, unknown>
-    expect(passedContext).not.toHaveProperty(RequestContext.SAE_OVERRIDE)
+    expect(mockGenerateInAppRequestPayload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        context: { [RequestContext.SAE_OVERRIDE]: 'auto' }
+      })
+    )
   })
 
   it('reads the flag at request creation time, not at module load time', () => {

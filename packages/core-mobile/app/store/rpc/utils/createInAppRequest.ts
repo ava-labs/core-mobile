@@ -1,7 +1,7 @@
 import { Dispatch, isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
-import { FeatureVars } from 'services/posthog/types'
+import { selectSaeOverride } from 'store/posthog/slice'
 import { RootState } from 'store/types'
 import {
   onInAppRequestFailed,
@@ -66,13 +66,10 @@ export const createInAppRequest = (
       // Snapshot the SAE override flag into context so downstream consumers
       // (gate util, ApprovalController) don't need to reach into redux from
       // outside React. Mirrors core-extension PR 900's `sae-override` flag.
-      const saeOverride =
-        getState().posthog.featureFlags[FeatureVars.SAE_OVERRIDE]
+      const saeOverride = selectSaeOverride(getState())
       const enrichedContext = {
         ...context,
-        ...(saeOverride !== undefined && {
-          [RequestContext.SAE_OVERRIDE]: saeOverride
-        })
+        [RequestContext.SAE_OVERRIDE]: saeOverride
       }
 
       // create and dispatch the request

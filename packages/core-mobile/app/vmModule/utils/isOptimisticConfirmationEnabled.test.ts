@@ -96,14 +96,39 @@ describe('isOptimisticConfirmationEnabled', () => {
     expect(result).toBe(false)
   })
 
-  it('treats a missing heliconTime field as not-yet-enabled', async () => {
+  it('treats a missing heliconTime field as unknown -> non-optimistic', async () => {
+    // We can't prove Helicon is still in the future, so default to the safer
+    // post-Helicon flow rather than re-enabling optimistic confetti.
     mockGetUpgradesInfo.mockResolvedValue({})
 
     const result = await isOptimisticConfirmationEnabled(
       makeRequest(AvalancheCaip2ChainId.C)
     )
 
-    expect(result).toBe(true)
+    expect(result).toBe(false)
+  })
+
+  it('treats an unparseable heliconTime as unknown -> non-optimistic', async () => {
+    mockGetUpgradesInfo.mockResolvedValue({ heliconTime: 'not-a-date' })
+
+    const result = await isOptimisticConfirmationEnabled(
+      makeRequest(AvalancheCaip2ChainId.C)
+    )
+
+    expect(result).toBe(false)
+  })
+
+  it('returns false for the local Avalanche chain without consulting InfoAPI', async () => {
+    // ChainId.AVALANCHE_LOCAL_ID = 43112; passes isAvalancheChainId but has no
+    // default mainnet/fuji-style provider for getUpgradesInfo.
+    const result = await isOptimisticConfirmationEnabled(
+      makeRequest('eip155:43112')
+    )
+
+    expect(result).toBe(false)
+    expect(mockGetUpgradesInfo).not.toHaveBeenCalled()
+    expect(mockGetMainnetProvider).not.toHaveBeenCalled()
+    expect(mockGetFujiProvider).not.toHaveBeenCalled()
   })
 
   it('uses the Fuji provider for Avalanche C-Chain testnet', async () => {
