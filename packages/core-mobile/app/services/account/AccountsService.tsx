@@ -654,18 +654,22 @@ class AccountsService {
       // Native path for mnemonic wallets: derive the entire window in one
       // native call (single Promise round-trip, single seed copy) instead of
       // per-account calls that underutilize the batching (CP-14062).
-      let addressResults: PromiseSettledResult<Record<NetworkVMType, string>>[]
+      // On native failure, disable seedBuffer and fall through to the JS
+      // path so discovery can still complete.
+      let nativeResults:
+        | PromiseSettledResult<Record<NetworkVMType, string>>[]
+        | undefined
 
       if (seedBuffer) {
         try {
-          const nativeResults = await deriveAllAddressesFromSeed(
+          const results = await deriveAllAddressesFromSeed(
             seedBuffer,
             windowIndices,
             false
           )
 
-          addressResults = windowIndices.map((_, k) => {
-            const r = nativeResults[k]
+          nativeResults = windowIndices.map((_, k) => {
+            const r = results[k]
             return {
               status: 'fulfilled' as const,
               value: {
@@ -679,17 +683,22 @@ class AccountsService {
               }
             }
           })
-        } catch (reason) {
-          // If the batch call fails, mark all indices as rejected so the
-          // activity check logic treats them as "unknown" and stops.
-          addressResults = windowIndices.map(() => ({
-            status: 'rejected' as const,
-            reason
-          }))
+        } catch (error) {
+          Logger.error(
+            'Native deriveAllAddressesFromSeed failed, falling back to JS',
+            error
+          )
+          // Disable the native path for this and all subsequent windows so
+          // discovery can complete via the JS fallback.
+          seedBuffer = undefined
         }
-      } else {
-        // Fallback: all-JS derivation (Keystone, or if seed loading failed).
-        addressResults = await runWithConcurrency({
+      }
+
+      const addressResults: PromiseSettledResult<
+        Record<NetworkVMType, string>
+      >[] =
+        nativeResults ??
+        (await runWithConcurrency({
           items: windowIndices,
           concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
           task: async accountIndex => {
@@ -710,8 +719,7 @@ class AccountsService {
               } as PromiseSettledResult<Record<NetworkVMType, string>>
             }
           }
-        })
-      }
+        }))
 
       const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
         if (result.status !== 'fulfilled') {

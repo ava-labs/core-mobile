@@ -289,7 +289,6 @@ export function verify(
 }
 
 /** Schnorr sign (BIP-340). messageHash must be 32 bytes. Returns 64-byte signature. */
-/** Schnorr sign (BIP-340). messageHash must be 32 bytes. Returns 64-byte signature. */
 export function signSchnorr(
   messageHash: string | ArrayBuffer | Uint8Array,
   secretKey: string | ArrayBuffer | Uint8Array,

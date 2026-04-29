@@ -43,18 +43,19 @@ namespace margelo::nitro::nitroavalabscrypto {
         };
 
         // Validate that every element of a JS number[] (bridged as
-        // vector<double>) is a finite, non-negative integer within uint32
-        // range.  Called before any cast to uint32_t so that NaN, Infinity,
-        // negative values, and fractional values are rejected with a clear
-        // error instead of silently producing incorrect derivation indices.
+        // vector<double>) is a finite, non-negative integer in the
+        // non-hardened BIP32/SLIP-0010 range [0, 2^31-1].  Values >= 2^31
+        // would collide with the hardened flag (index | 0x80000000) applied
+        // internally by the derivation functions, producing ambiguous child
+        // numbers and wrong addresses.
         inline void validateAccountIndices(const std::vector<double> &indices) {
             for (size_t i = 0; i < indices.size(); ++i) {
                 double v = indices[i];
                 if (!std::isfinite(v) || v < 0 || v != std::floor(v) ||
-                    v > static_cast<double>(UINT32_MAX)) {
+                    v > static_cast<double>(0x7FFFFFFF)) {
                     throw std::invalid_argument(
                         "accountIndices[" + std::to_string(i) +
-                        "] is invalid: must be a finite integer in [0, 2^32-1]");
+                        "] is invalid: must be a finite integer in [0, 2^31-1]");
                 }
             }
         }
@@ -485,8 +486,15 @@ namespace margelo::nitro::nitroavalabscrypto {
 
             // Scope guard: zero seed bytes on *any* exit path, including
             // exceptions thrown during the derivation loop.
-            ScopeGuard cleanup([&] {
+            ScopeGuard cleanupSeed([&] {
                 OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
+            });
+
+            // Compute SLIP-0010 master once — reused across all accounts.
+            auto master = slip0010_master_key(seedBytes.data(), seedBytes.size());
+            ScopeGuard cleanupMaster([&] {
+                OPENSSL_cleanse(master.secret.data(), master.secret.size());
+                OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
             });
 
             std::vector<DerivedSolanaAddress> results;
@@ -494,8 +502,7 @@ namespace margelo::nitro::nitroavalabscrypto {
 
             for (double idx : accountIndices) {
                 auto index = static_cast<uint32_t>(idx);
-                auto address = solana_address_from_seed(
-                    seedBytes.data(), seedBytes.size(), index);
+                auto address = solana_address_from_master(master, index);
 
                 results.push_back(DerivedSolanaAddress(idx, std::move(address)));
             }
