@@ -5270,10 +5270,10 @@ __metadata:
 
 "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.2.0
-  resolution: "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::version=1.2.0&hash=058e44&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::version=1.2.0&hash=79142c&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/curves": ^1.7.0
-  checksum: 20781cf9e1039bda8685ae0c0b7486141b070afec9844428236a006db84889525ebb406b5aa3ffe8ff4463e065ed0091f9abf2525f3fa5f609bcc7bb6b52e0d5
+  checksum: 00a767baf1b1e9e6b0e0870e271af6968f6ff2c3d42fc26f1db33fdfa4ed17f55e765dd381ca9ba43f740f4ee1e73a655ca0f5aea6f907f12dc5a3cbe2c5b328
   languageName: node
   linkType: hard
 
@@ -37015,7 +37015,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
   languageName: node
   linkType: hard
 
