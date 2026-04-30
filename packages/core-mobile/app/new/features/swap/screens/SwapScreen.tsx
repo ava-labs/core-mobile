@@ -1,6 +1,6 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,

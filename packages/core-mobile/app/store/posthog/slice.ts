@@ -50,34 +50,6 @@ export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
   return isSeedlessSigningBlocked(state.posthog.featureFlags)
 }
 
-export const selectIsLegacyBridgeEnabled = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-  if (isSeedlessWallet && isSeedlessSigningBlocked(featureFlags)) {
-    return false
-  }
-  return (
-    featureFlags[FeatureGates.LEGACY_BRIDGE] === true &&
-    featureFlags[FeatureGates.EVERYTHING] === true
-  )
-}
-
-export const selectIsBridgeBtcBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_BTC] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_ETH] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsEarnBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
