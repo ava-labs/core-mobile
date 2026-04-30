@@ -1,36 +1,15 @@
 import { Transaction } from 'store/transaction'
-import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { isPendingBridgeTransaction } from './bridgeUtils'
 
 /**
- * Get the source and target blockchain names to display a Bridge transaction.
- * @param tx Assumed to be a Bridge transaction for the active network
+ * Get the source and target blockchain names for a transaction whose
+ * `bridgeAnalysis` field has been populated by `UnifiedBridgeService.analyzeTx`.
  */
-export function useBlockchainNames(
-  tx: Transaction | BridgeTransaction | BridgeTransfer
-): {
+export function useBlockchainNames(tx: Transaction): {
   sourceBlockchain: string | undefined
   targetBlockchain: string | undefined
 } {
   const { getNetworkByCaip2ChainId, getNetwork } = useNetworks()
-  const pending = isPendingBridgeTransaction(tx)
-
-  if (pending) {
-    return {
-      sourceBlockchain: titleCase(
-        typeof tx.sourceChain === 'object'
-          ? tx.sourceChain.chainName
-          : tx.sourceChain
-      ),
-      targetBlockchain: titleCase(
-        typeof tx.targetChain === 'object'
-          ? tx.targetChain.chainName
-          : tx.targetChain
-      )
-    }
-  }
 
   if (!tx.bridgeAnalysis?.isBridgeTx) {
     return {
@@ -53,9 +32,4 @@ export function useBlockchainNames(
         targetChainId
       : undefined
   }
-}
-
-function titleCase(name: string): string {
-  if (name.length === 0) return ''
-  return name[0]?.toUpperCase() + name.slice(1)
 }

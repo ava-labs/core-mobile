@@ -25,16 +25,22 @@ export default async function warmup(
   await onboardingPage.verifyLoggedIn()
 }
 
-export async function restartAndUnlock() {
-  const appId = 'org.avalabs.corewallet'
-  try {
-    await driver.terminateApp(appId)
-    await driver.activateApp(appId)
-    await onboardingPage.exitMetroAfterLogin()
-  } catch (error) {
-    await driver.terminateApp(appId + '.internal')
-    await driver.activateApp(appId + '.internal')
+export async function killAndRestart() {
+  if (driver.isIOS) {
+    const appInfo = (await driver.execute('mobile: activeAppInfo')) as {
+      bundleId: string
+    }
+    const bundleId = appInfo.bundleId
+    await driver.execute('mobile: terminateApp', { bundleId })
+    await driver.execute('mobile: activateApp', { bundleId })
+  } else {
+    const appId = 'org.avalabs.corewallet'
+    try {
+      await driver.terminateApp(appId)
+      await driver.activateApp(appId)
+    } catch (error) {
+      await driver.terminateApp(appId + '.internal')
+      await driver.activateApp(appId + '.internal')
+    }
   }
-  await onboardingPage.tapKeypadUpButton()
-  await onboardingPage.tapZero()
 }

@@ -6,6 +6,7 @@ export enum ViewOnceKey {
   NOTIFICATIONS_PROMPT,
   HALLIDAY_BANNER,
   STAKE_ONBOARDING,
+  /** @deprecated Removed with legacy bridge (CP-14118). Slot kept to preserve numeric values of subsequent members in persisted state. */
   BRIDGE_ONBOARDING,
   SWAP_ONBOARDING,
   SEND_ONBOARDING,

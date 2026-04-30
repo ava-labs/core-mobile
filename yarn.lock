@@ -413,23 +413,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-bridge-sdk@npm:3.1.0-alpha.82":
-  version: 3.1.0-alpha.82
-  resolution: "@avalabs/core-bridge-sdk@npm:3.1.0-alpha.82"
-  dependencies:
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.82
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.82
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
-  peerDependencies:
-    big.js: ^6.2.1
-    bitcoinjs-lib: ^5.2.0
-    coinselect: ^3.1.12
-    ethers: ^6.7.1
-    react: ^17.0.2
-  checksum: 4b8a61c6e97bb0022aa2ffcc1d61c6fbce53afb6e6a8bfb94631244b6f1cc2c914b680ae961f2930555418ba45a54226168cf66f95d1ee6454276eae05d22248
-  languageName: node
-  linkType: hard
-
 "@avalabs/core-chains-sdk@npm:3.1.0-alpha.61":
   version: 3.1.0-alpha.61
   resolution: "@avalabs/core-chains-sdk@npm:3.1.0-alpha.61"
@@ -484,7 +467,6 @@ __metadata:
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/bitcoin-module": 3.6.1
     "@avalabs/bridge-unified": 4.4.1
-    "@avalabs/core-bridge-sdk": 3.1.0-alpha.82
     "@avalabs/core-chains-sdk": 3.1.0-alpha.82
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.82
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.82
@@ -976,6 +958,7 @@ __metadata:
     expo-blur: 15.0.8
     expo-constants: 18.0.13
     expo-font: 14.0.11
+    expo-haptics: 15.0.8
     expo-image: 3.0.11
     expo-linear-gradient: 15.0.8
     expo-splash-screen: 31.0.13
@@ -1005,6 +988,7 @@ __metadata:
     "@react-native-masked-view/masked-view": 0.3.2
     "@shopify/react-native-skia": 2.2.12
     expo-blur: 15.0.8
+    expo-haptics: 15.0.8
     expo-image: 3.0.11
     expo-linear-gradient: 15.0.8
     react: 19.1.0
