@@ -24,8 +24,8 @@ export type CircularDialProps = {
    */
   step?: number
   /**
-   * Number of decimals used by the drag-time animated display. When
-   * omitted, inferred from `step` (e.g. 0.01 → 2, 1 → 0).
+   * Number of decimals shown on the readout. When omitted, inferred
+   * from `step` (e.g. 0.01 → 2, 1 → 0).
    */
   decimals?: number
   /**

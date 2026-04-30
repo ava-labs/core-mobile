@@ -73,9 +73,7 @@ export const sanitizeDecimalInput = (text: string, max: number): string => {
   // Normalise leading zeros: collapse runs of leading zeros to one,
   // then drop that one if a digit follows (so "00" → "0", "023" →
   // "23", "0023" → "23"). Keep "0" and "0.x" intact.
-  const normalized = collapsed
-    .replace(/^0+/, '0')
-    .replace(/^0(?=\d)/, '')
+  const normalized = collapsed.replace(/^0+/, '0').replace(/^0(?=\d)/, '')
   if (normalized === '' || normalized === '.') return normalized
   const parsed = Number(normalized)
   if (Number.isFinite(parsed) && parsed > max) return `${max}`

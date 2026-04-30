@@ -172,14 +172,9 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const combinedGesture = Gesture.Race(tapGesture, panGesture)
 
-  // Emit onChange on every step crossing while the dial is "active"
-  // (drag OR preset animation). This is what drives the displayed
-  // text during drag/preset — `DialReadout` shows
-  // `naturalDigits(value)` when not editing, so each onChange step
-  // forces a re-render with the new digits. (Replaces an earlier
-  // approach where a worklet wrote text via setNativeProps; that
-  // raced with React's controlled value prop and caused desync
-  // during/after editing.)
+  // Emit onChange on every step crossing while the dial is active
+  // (drag or preset). Drives the displayed text via the parent's
+  // controlled `value` — readout text re-renders each step.
   useAnimatedReaction(
     () => {
       const raw = progressSv.value * vMax
@@ -208,11 +203,8 @@ export const CircularDial: FC<CircularDialProps> = ({
     }
   )
 
-  // Threshold-crossing haptic: fire `fireMajorHaptic` once on each
-  // crossing of the reference tick (above ↔ below `min`). Not gated
-  // on `isDragging` so the same beat fires whether the user reaches
-  // the threshold by drag, preset animation, or typing — the
-  // crossing is meaningful regardless of input method.
+  // Fire one major haptic each time the dial crosses the reference
+  // tick (above ↔ below `min`), regardless of input method.
   useAnimatedReaction(
     () => {
       if (referenceTickProgress === null) return false
@@ -230,8 +222,7 @@ export const CircularDial: FC<CircularDialProps> = ({
     (fraction: number) => {
       const targetValue = clamp(fraction, 0, 1) * vMax
       const snapped = snapToStep(targetValue, vStep, vMax)
-      // Match the drag-time scheme: heavy at end stops (0% / 100%),
-      // medium on intermediate presets.
+      // Heavy at end stops (0% / 100%), medium on intermediate.
       if (hapticsEnabled) {
         if (fraction <= 0 || fraction >= 1) fireEdgeHaptic()
         else fireMajorHaptic()

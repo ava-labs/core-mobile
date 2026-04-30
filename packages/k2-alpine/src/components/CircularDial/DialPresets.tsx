@@ -7,12 +7,7 @@ import type { PresetButton } from './types'
 
 type DialPresetsProps = {
   presets: PresetButton[]
-  /**
-   * Live progress on the dial (0..1). Driven from gestures, presets,
-   * AND from the manual-input draft — so the active preset highlight
-   * follows what the user is currently typing instead of lagging on
-   * the parent `value` until blur.
-   */
+  /** Live dial progress (0..1) — drives the active-preset highlight. */
   progressSv: SharedValue<number>
   max: number
   step: number
@@ -31,8 +26,6 @@ export const DialPresets: FC<DialPresetsProps> = ({
 }) => {
   const [activePresetIndex, setActivePresetIndex] = useState(-1)
 
-  // Recompute the active preset on the UI thread whenever progress
-  // changes, then mirror to React state so the buttons re-render.
   useAnimatedReaction(
     () => {
       if (max <= 0) return -1
