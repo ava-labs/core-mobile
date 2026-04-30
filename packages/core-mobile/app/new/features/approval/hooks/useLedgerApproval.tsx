@@ -12,6 +12,7 @@ import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils
 type UseLedgerApprovalReturn = {
   renderLedgerFooter: () => JSX.Element | null
   cancelLedger: () => void
+  dismissLedger: () => void
 }
 
 export const useLedgerApproval = (
@@ -111,11 +112,15 @@ export const useLedgerApproval = (
     setApprovalInProgress(false)
   }, [])
 
-  const cancelLedger = useCallback((): void => {
+  const dismissLedger = useCallback((): void => {
     resetLedgerState()
     ledgerParamsStore.getState().setReviewTransactionParams(null)
+  }, [resetLedgerState])
+
+  const cancelLedger = useCallback((): void => {
+    dismissLedger()
     reviewTransactionParams?.onReject(TRANSACTION_CANCELLED_BY_USER)
-  }, [resetLedgerState, reviewTransactionParams])
+  }, [dismissLedger, reviewTransactionParams])
 
   const renderLedgerFooter = useCallback((): JSX.Element | null => {
     if (!isLedger || ledgerPhase === LedgerReviewPhase.IDLE) return null
@@ -157,5 +162,5 @@ export const useLedgerApproval = (
     cancelLedger
   ])
 
-  return { renderLedgerFooter, cancelLedger }
+  return { renderLedgerFooter, cancelLedger, dismissLedger }
 }
