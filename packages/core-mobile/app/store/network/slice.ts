@@ -15,6 +15,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
+import {
+  LIMITED_MODE_ALLOWED_CHAIN_IDS,
+  isLimitedMode
+} from 'utils/limitedMode'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -136,8 +140,17 @@ export const networkSlice = createSlice({
 export const selectActiveChainId = (state: RootState): number =>
   state.network.active
 
-export const selectEnabledChainIds = (state: RootState): number[] =>
-  state.network.enabledChainIds
+export const selectEnabledChainIds = (state: RootState): number[] => {
+  const ids = state.network.enabledChainIds
+  // Limited mode: regardless of what's persisted in enabledChainIds, only the
+  // chains backing the six-token allowlist are considered enabled. This
+  // affects every downstream selector / fetch / filter without requiring each
+  // call site to know about limited mode.
+  if (isLimitedMode) {
+    return ids.filter(id => LIMITED_MODE_ALLOWED_CHAIN_IDS.has(id))
+  }
+  return ids
+}
 
 export const selectCustomNetworks = (state: RootState): Networks =>
   state.network.customNetworks

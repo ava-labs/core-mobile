@@ -41,6 +41,7 @@ import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 import { manualLockStore } from 'features/accountSettings/store'
 import { isLimitedMode } from 'utils/limitedMode'
+import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -347,7 +348,13 @@ const AccountSettingsScreen = (): JSX.Element => {
         )}
 
         {/* Footer */}
-        {!isLimitedMode && (
+        {isLimitedMode ? (
+          <View
+            testID="settings_footer"
+            sx={{ alignItems: 'center', paddingBottom: 24 }}>
+            <PoweredByAvalanche />
+          </View>
+        ) : (
           <View
             testID="settings_footer"
             sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>

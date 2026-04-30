@@ -7,11 +7,15 @@ import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMe
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
 import React, { useCallback } from 'react'
+import { useDispatch } from 'react-redux'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import { isLimitedMode } from 'utils/limitedMode'
 
 const SelectMfaMethodScreen = (): JSX.Element => {
   const { mfaMethods, oidcAuth } = useRecoveryMethodContext()
   const { verify } = useSeedlessRegister()
   const { navigate } = useRouter()
+  const dispatch = useDispatch()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
 
   const handleSelectMFA = useCallback(
@@ -27,12 +31,17 @@ const SelectMfaMethodScreen = (): JSX.Element => {
             return
           }
           if (mfaType === 'fido') {
-            navigate('/onboarding/seedless/analyticsConsent')
+            if (isLimitedMode) {
+              dispatch(setCoreAnalytics(false))
+              navigate('/onboarding/seedless/createPin')
+            } else {
+              navigate('/onboarding/seedless/analyticsConsent')
+            }
           }
         }
       })
     },
-    [navigate, oidcAuth, verify]
+    [navigate, oidcAuth, verify, dispatch]
   )
 
   return (

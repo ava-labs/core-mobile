@@ -18,6 +18,8 @@ import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
+import { isLimitedMode } from 'utils/limitedMode'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
@@ -933,6 +935,11 @@ export const SwapScreen = (): JSX.Element => {
           disabled={!canSwap || isSwapping}>
           {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
+        {isLimitedMode && (
+          <View sx={{ marginTop: 16 }}>
+            <PoweredByAvalanche />
+          </View>
+        )}
       </>
     )
   }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])

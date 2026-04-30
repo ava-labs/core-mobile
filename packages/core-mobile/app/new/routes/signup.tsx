@@ -26,6 +26,7 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
 import { isLimitedMode } from 'utils/limitedMode'
+import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
@@ -184,15 +185,18 @@ export default function Signup(): JSX.Element {
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {isLimitedMode ? (
-          <Text
-            sx={{
-              fontFamily: 'Aeonik-Bold',
-              fontSize: 56,
-              lineHeight: 56,
-              color: theme.colors.$textPrimary
-            }}>
-            Moto
-          </Text>
+          <View sx={{ alignItems: 'center', gap: 12 }}>
+            <Text
+              sx={{
+                fontFamily: 'Aeonik-Bold',
+                fontSize: 56,
+                lineHeight: 56,
+                color: theme.colors.$textPrimary
+              }}>
+              Moto
+            </Text>
+            <PoweredByAvalanche />
+          </View>
         ) : (
           <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
         )}

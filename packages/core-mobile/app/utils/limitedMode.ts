@@ -22,7 +22,9 @@ export const LIMITED_MODE_FORCED_TRUE: FeatureGates[] = [
 ]
 
 export const LIMITED_MODE_FORCED_FALSE: FeatureGates[] = [
-  FeatureGates.IMPORT_EXISTING_WALLET,
+  // IMPORT_EXISTING_WALLET stays enabled in limited mode so users can recover
+  // a wallet via mnemonic. The Access Wallet screen still hides Ledger /
+  // Keystone (those gates remain forced off below).
   FeatureGates.HARDWARE_WALLET_ONBOARDING,
   FeatureGates.ADD_WALLET,
   FeatureGates.WALLET_CONNECT,

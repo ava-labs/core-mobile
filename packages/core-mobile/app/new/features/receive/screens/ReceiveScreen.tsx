@@ -17,6 +17,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
+import { isLimitedMode } from 'utils/limitedMode'
+import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -115,7 +117,12 @@ export const ReceiveScreen = (): ReactNode => {
   }, [])
 
   const renderFooter = useCallback(() => {
-    return <AccountAddresses address={address ?? ''} />
+    return (
+      <View style={{ gap: 16 }}>
+        <AccountAddresses address={address ?? ''} />
+        {isLimitedMode && <PoweredByAvalanche />}
+      </View>
+    )
   }, [address])
 
   return (

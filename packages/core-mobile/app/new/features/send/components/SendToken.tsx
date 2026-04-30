@@ -18,6 +18,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
@@ -29,6 +30,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { isLimitedMode } from 'utils/limitedMode'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -203,6 +205,7 @@ export const SendToken = ({
           onPress={onSubmit}>
           {isSending ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
+        {isLimitedMode && <PoweredByAvalanche />}
       </View>
     )
   }, [canSubmit, isSending, onSubmit])

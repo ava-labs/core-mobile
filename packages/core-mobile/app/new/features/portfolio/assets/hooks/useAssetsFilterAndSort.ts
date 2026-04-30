@@ -16,6 +16,10 @@ import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
 import { usePortfolioView } from 'features/portfolio/store'
+import {
+  LIMITED_MODE_ALLOWED_CHAIN_IDS,
+  isLimitedMode
+} from 'utils/limitedMode'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -38,7 +42,12 @@ export const useAssetsFilterAndSort = (): {
     })
 
   const networkFilters = useMemo(() => {
-    const enabledNetworksFilter = enabledNetworks.map(network => {
+    const visibleNetworks = isLimitedMode
+      ? enabledNetworks.filter(n =>
+          LIMITED_MODE_ALLOWED_CHAIN_IDS.has(n.chainId)
+        )
+      : enabledNetworks
+    const enabledNetworksFilter = visibleNetworks.map(network => {
       return { filterName: network.chainName, chainId: network.chainId }
     })
     return [
