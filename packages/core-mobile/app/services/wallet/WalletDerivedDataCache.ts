@@ -1,4 +1,4 @@
-import { Wallet } from './types'
+import type { Wallet } from './types'
 
 /**
  * Centralized cache for expensive wallet derivation operations.
