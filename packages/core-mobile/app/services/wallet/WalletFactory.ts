@@ -24,14 +24,25 @@ class WalletFactory {
     walletId: string
     walletType: WalletType
   }): Promise<Wallet> {
+    // 1. Resolved instance cache hit
     const cached = this.derivedDataCache.getWalletInstance(walletId)
     if (cached) {
       return cached
     }
 
-    const wallet = await this.createWallet({ walletId, walletType })
-    this.derivedDataCache.setWalletInstance(walletId, wallet)
-    return wallet
+    // 2. In-flight creation — join existing Promise to avoid duplicate keychain reads
+    const inFlight = this.derivedDataCache.getWalletCreationInFlight(walletId)
+    if (inFlight) {
+      return inFlight
+    }
+
+    // 3. Start new creation and register the Promise synchronously before any await
+    const promise = this.createWallet({ walletId, walletType }).then(wallet => {
+      this.derivedDataCache.setWalletInstance(walletId, wallet)
+      return wallet
+    })
+    this.derivedDataCache.setWalletCreationInFlight(walletId, promise)
+    return promise
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

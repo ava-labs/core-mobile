@@ -8,6 +8,24 @@ const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 
 /**
+ * Force a @noble/* import to resolve to the single patched top-level copy.
+ * Returns a Metro resolution result, or undefined if the subpath doesn't exist.
+ */
+function resolveNoblePackage(packageName, moduleName) {
+  try {
+    const patchedRoot = path.resolve(__dirname, 'node_modules', packageName)
+    const subpath = moduleName.slice(packageName.length)
+    return {
+      type: 'sourceFile',
+      filePath: require.resolve(patchedRoot + subpath)
+    }
+  } catch {
+    // Subpath not found in patched copy — caller falls through to default resolver
+    return undefined
+  }
+}
+
+/**
  * Metro configuration
  * https://facebook.github.io/metro/docs/configuration
  *
@@ -142,31 +160,14 @@ const baseConfig = {
         return context.resolveRequest(context, 'readable-stream', platform)
       }
 
-      // Force ALL @noble/hashes imports to the single patched copy (native quick-crypto)
-      if (moduleName.startsWith('@noble/hashes')) {
-        const patchedRoot = path.resolve(
-          __dirname,
-          'node_modules/@noble/hashes'
-        )
-        const subpath = moduleName.slice('@noble/hashes'.length)
-        return {
-          type: 'sourceFile',
-          filePath: require.resolve(patchedRoot + subpath)
-        }
-      }
-
-      // Force ALL @noble/curves imports to the single patched copy (native nitro-avalabs-crypto)
-      if (moduleName.startsWith('@noble/curves')) {
-        const patchedRoot = path.resolve(
-          __dirname,
-          'node_modules/@noble/curves'
-        )
-        const subpath = moduleName.slice('@noble/curves'.length)
-        return {
-          type: 'sourceFile',
-          filePath: require.resolve(patchedRoot + subpath)
-        }
-      }
+      // Force ALL @noble/hashes and @noble/curves imports to the single patched copies
+      // (@noble/hashes → native quick-crypto, @noble/curves → native nitro-avalabs-crypto)
+      const nobleResolved =
+        (moduleName.startsWith('@noble/hashes') &&
+          resolveNoblePackage('@noble/hashes', moduleName)) ||
+        (moduleName.startsWith('@noble/curves') &&
+          resolveNoblePackage('@noble/curves', moduleName))
+      if (nobleResolved) return nobleResolved
 
       // optionally, chain to the standard Metro resolver.
       return context.resolveRequest(context, moduleName, platform)

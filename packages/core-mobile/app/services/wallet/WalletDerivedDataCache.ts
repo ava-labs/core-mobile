@@ -14,6 +14,7 @@ export class WalletDerivedDataCache {
   // walletId -> accountIndex -> xpub
   private xpubCache = new Map<string, Map<number, string>>()
   private walletInstanceCache = new Map<string, Wallet>()
+  private walletCreationInFlight = new Map<string, Promise<Wallet>>()
 
   getPublicKey(
     walletId: string,
@@ -58,16 +59,33 @@ export class WalletDerivedDataCache {
     this.walletInstanceCache.set(walletId, wallet)
   }
 
+  getWalletCreationInFlight(walletId: string): Promise<Wallet> | undefined {
+    return this.walletCreationInFlight.get(walletId)
+  }
+
+  setWalletCreationInFlight(walletId: string, promise: Promise<Wallet>): void {
+    this.walletCreationInFlight.set(walletId, promise)
+    // eslint-disable-next-line promise/catch-or-return
+    promise.finally(() => {
+      // Only clean up if this is still the same promise (not replaced by a new one after clearWallet)
+      if (this.walletCreationInFlight.get(walletId) === promise) {
+        this.walletCreationInFlight.delete(walletId)
+      }
+    })
+  }
+
   clearWallet(walletId: string): void {
     this.publicKeyCache.delete(walletId)
     this.xpubCache.delete(walletId)
     this.walletInstanceCache.delete(walletId)
+    this.walletCreationInFlight.delete(walletId)
   }
 
   clearAll(): void {
     this.publicKeyCache.clear()
     this.xpubCache.clear()
     this.walletInstanceCache.clear()
+    this.walletCreationInFlight.clear()
   }
 
   getStats(): {
