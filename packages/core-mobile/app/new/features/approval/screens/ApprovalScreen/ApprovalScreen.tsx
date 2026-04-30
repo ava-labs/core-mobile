@@ -57,7 +57,8 @@ const ApprovalScreen = ({
   const activeWallet = useActiveWallet()
   const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
-  const { renderLedgerFooter, cancelLedger } = useLedgerApproval(isLedger)
+  const { renderLedgerFooter, cancelLedger, dismissLedger } =
+    useLedgerApproval(isLedger)
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
@@ -256,6 +257,15 @@ const ApprovalScreen = ({
     }
     validateEthSendTransaction()
   }, [validateEthSendTransaction, gaslessEnabled])
+
+  // When gasless funding fails on a Ledger wallet, dismiss the Ledger review
+  // footer so the regular Approve/Reject buttons reappear. The user can then
+  // retry the transaction paying gas normally.
+  useEffect(() => {
+    if (gaslessError && isLedger) {
+      dismissLedger()
+    }
+  }, [gaslessError, isLedger, dismissLedger])
 
   useEffect(() => {
     setTimeout(() => {

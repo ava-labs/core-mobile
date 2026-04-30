@@ -5,8 +5,6 @@ import { uuid } from 'utils/uuid'
 export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
   [FeatureGates.EVENTS]: true,
-  [FeatureGates.BRIDGE_BTC]: true,
-  [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.EARN]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
@@ -30,11 +28,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_SIGNING]: true,
   [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
   [FeatureGates.ALL_NOTIFICATIONS]: true,
-  [FeatureGates.UNIFIED_BRIDGE_CCTP]: true,
-  [FeatureGates.UNIFIED_BRIDGE_ICTT]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_EVM]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_AVA_TO_BTC]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA]: true,
   [FeatureGates.HALLIDAY_BRIDGE_BANNER]: true,
   [FeatureGates.GASLESS]: true,
   [FeatureGates.MELD_ONRAMP]: true,
@@ -59,7 +52,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC]: false,
   [FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]: false,
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
-  [FeatureGates.LEGACY_BRIDGE]: false,
   [FeatureGates.INJECTED_PROVIDER]: false,
   [FeatureGates.PREDICTIONS]: false
 }
