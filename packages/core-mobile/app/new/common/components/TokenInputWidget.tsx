@@ -1,4 +1,4 @@
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from 'utils/Utils'
 import { Network } from '@avalabs/core-chains-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import {

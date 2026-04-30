@@ -37,23 +37,6 @@ export type AnalyticsEvents = {
   ApplicationLaunched: { FontScale: number }
   ApplicationOpened: undefined
 
-  Bridge_TokenSelected: undefined
-  BridgeTokenSelectError: { errorMessage: string }
-  BridgeTransferRequestError: {
-    sourceBlockchain: string
-    targetBlockchain: string
-  }
-  BridgeTransferRequestSucceeded: undefined
-  BridgeTransferRequestUserRejectedError: {
-    sourceBlockchain: string
-    targetBlockchain: string
-    fee: number
-  }
-  BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
-  BridgeTransactionHide: undefined
-  BridgeTransactionHideCancel: undefined
-  BridgeGasFeeOptionChanged: { modifier: string }
-
   // UNIFIED BRIDGE
   UnifedBridgeTransferStarted: {
     bridgeType: string
