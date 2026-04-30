@@ -253,29 +253,40 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const actionButtons = useMemo(() => {
     if (isLimitedMode) {
-      return [
-        { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
-        {
+      const hasBalance = balanceTotalInCurrency > 0
+      const buttons: ActionButton[] = []
+      // Send / Swap / Withdraw all require a balance — hide them at $0 to
+      // avoid dead-ends.
+      if (hasBalance) {
+        buttons.push({
+          title: ActionButtonTitle.Send,
+          icon: 'send',
+          onPress: handleSend
+        })
+        buttons.push({
           title: ActionButtonTitle.Swap,
           icon: 'swap',
           onPress: () => navigateToSwap()
-        },
-        {
-          title: ActionButtonTitle.Buy,
-          icon: 'buy',
-          onPress: navigateToBuy
-        },
-        {
-          title: ActionButtonTitle.Receive,
-          icon: 'receive',
-          onPress: handleReceive
-        },
-        {
+        })
+      }
+      buttons.push({
+        title: ActionButtonTitle.Buy,
+        icon: 'buy',
+        onPress: navigateToBuy
+      })
+      buttons.push({
+        title: ActionButtonTitle.Receive,
+        icon: 'receive',
+        onPress: handleReceive
+      })
+      if (hasBalance) {
+        buttons.push({
           title: ActionButtonTitle.Withdraw,
           icon: 'withdraw',
           onPress: navigateToWithdraw
-        }
-      ] as ActionButton[]
+        })
+      }
+      return buttons
     }
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
@@ -321,7 +332,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToSwap,
     isMeldOfframpBlocked,
     isLegacyBridgeEnabled,
-    isFusionEnabled
+    isFusionEnabled,
+    balanceTotalInCurrency
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {
@@ -407,7 +419,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor={theme.colors.$surfacePrimary}
         />
 
-        {filteredTokenList.length > 0 && (
+        {(filteredTokenList.length > 0 || isLimitedMode) && (
           <ActionButtons
             buttons={actionButtons}
             contentContainerStyle={{

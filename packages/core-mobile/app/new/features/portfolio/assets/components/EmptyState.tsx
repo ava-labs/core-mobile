@@ -9,6 +9,7 @@ import React, {
   useState
 } from 'react'
 import { Platform, View, ViewStyle } from 'react-native'
+import { isLimitedMode } from 'utils/limitedMode'
 
 import AVALANCHE_ANIMATION_DARK from 'assets/lotties/ava-logo-rotating-dark.json'
 import AVALANCHE_ANIMATION_LIGHT from 'assets/lotties/ava-logo-rotating.json'
@@ -147,6 +148,38 @@ export const EmptyState = ({
     insets.top,
     tabBarHeight
   ])
+
+  if (isLimitedMode) {
+    const limitedHeight =
+      frame.height -
+      header.height -
+      headerHeight -
+      insets.bottom -
+      insets.top -
+      tabBarHeight -
+      12
+    return (
+      <View
+        style={{
+          height: limitedHeight,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: 24,
+          gap: 8
+        }}>
+        <Text
+          variant="heading3"
+          sx={{ color: '$textPrimary', textAlign: 'center' }}>
+          No assets yet
+        </Text>
+        <Text
+          variant="body1"
+          sx={{ color: '$textSecondary', textAlign: 'center' }}>
+          Tap Buy or Receive above to fund your wallet.
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <View style={containerStyle}>

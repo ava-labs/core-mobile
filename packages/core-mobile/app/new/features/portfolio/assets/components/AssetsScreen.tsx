@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { isLimitedMode } from 'utils/limitedMode'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -235,7 +236,21 @@ const AssetsScreen: FC<Props> = ({
           sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
           filter={hasNoAssets ? undefined : filterSelection}
           sort={hasNoAssets ? undefined : sortSelection}
-          view={{ ...view, onSelected: handleManageList }}
+          view={
+            isLimitedMode && hasNoAssets
+              ? undefined
+              : {
+                  ...view,
+                  onSelected: handleManageList,
+                  // Limited mode hides the "Manage list" option from the
+                  // View dropdown — Grid / List toggle still works.
+                  ...(isLimitedMode && {
+                    data: view.data.filter(
+                      group => group.key !== 'asset-manage-list'
+                    )
+                  })
+                }
+          }
         />
       </View>
     )

@@ -1,4 +1,11 @@
-import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
+import {
+  View,
+  Button,
+  useTheme,
+  Logos,
+  SafeAreaView,
+  Text
+} from '@avalabs/k2-alpine'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -18,6 +25,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
@@ -175,7 +183,19 @@ export default function Signup(): JSX.Element {
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
+        {isLimitedMode ? (
+          <Text
+            sx={{
+              fontFamily: 'Aeonik-Bold',
+              fontSize: 56,
+              lineHeight: 56,
+              color: theme.colors.$textPrimary
+            }}>
+            Moto
+          </Text>
+        ) : (
+          <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
+        )}
       </View>
       <View sx={{ padding: 16, gap: 16 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}

@@ -207,12 +207,21 @@ const initAccounts = async (
 
   if (canMigrateActiveAccounts(activeWallet)) {
     const numberOfAccounts = Math.max(1, accountValues.length)
-    await migrateRemainingActiveAccounts({
-      listenerApi,
-      walletId: activeWallet.id,
-      walletType: activeWallet.type,
-      startIndex: numberOfAccounts
+    // Skip discovery if the wallet is already marked as migrated. Without
+    // this check, freshly-created wallets (pre-marked in `onPinCreated`)
+    // would still trigger a "Adding accounts…" scan on first unlock.
+    const shouldMigrate = await shouldMigrateActiveAccounts({
+      wallet: activeWallet,
+      numberOfAccounts
     })
+    if (shouldMigrate) {
+      await migrateRemainingActiveAccounts({
+        listenerApi,
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
+        startIndex: numberOfAccounts
+      })
+    }
   }
 }
 

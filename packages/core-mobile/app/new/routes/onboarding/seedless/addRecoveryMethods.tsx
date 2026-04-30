@@ -1,5 +1,6 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
+import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   RecoveryMethods,
@@ -9,11 +10,14 @@ import { AddRecoveryMethods as Component } from 'features/onboarding/components/
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { FidoType } from 'services/passkey/types'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { setCoreAnalytics } from 'store/settings/securityPrivacy'
+import { isLimitedMode } from 'utils/limitedMode'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
   const { oidcAuth } = useRecoveryMethodContext()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
+  const dispatch = useDispatch()
 
   const handleOnNext = (selectedMethod: RecoveryMethod): void => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
@@ -49,6 +53,11 @@ const AddRecoveryMethods = (): JSX.Element => {
   }
 
   const handleOnSkip = (): void => {
+    if (isLimitedMode) {
+      dispatch(setCoreAnalytics(false))
+      navigate('/onboarding/seedless/createPin')
+      return
+    }
     navigate('/onboarding/seedless/analyticsConsent')
   }
 

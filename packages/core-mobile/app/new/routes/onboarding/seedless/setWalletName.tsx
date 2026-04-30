@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import { usePendingSeedlessWalletName } from 'features/onboarding/store'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
@@ -13,7 +14,11 @@ export default function SetWalletName(): JSX.Element {
     // later, when the wallet is created, we will set the name in the listener
     setPendingSeedlessWalletName(name)
 
-    navigate('/onboarding/seedless/selectAvatar')
+    navigate(
+      isLimitedMode
+        ? '/onboarding/seedless/confirmation'
+        : '/onboarding/seedless/selectAvatar'
+    )
   }, [name, setPendingSeedlessWalletName, navigate])
 
   return <Component name={name} setName={setName} onNext={handleNext} />

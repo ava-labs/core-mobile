@@ -11,6 +11,7 @@ import React, { useCallback, useState } from 'react'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export const Confirmation = ({
   onNext
@@ -83,8 +84,9 @@ export const Confirmation = ({
               textAlign: 'center',
               marginTop: 20
             }}>
-            You can now start buying, swapping, sending, receiving crypto and
-            collectibles
+            {isLimitedMode
+              ? 'You can now start buying, swapping, sending, and receiving crypto'
+              : 'You can now start buying, swapping, sending, receiving crypto and collectibles'}
           </Text>
         </View>
       </View>

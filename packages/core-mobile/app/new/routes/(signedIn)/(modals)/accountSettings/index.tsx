@@ -40,6 +40,7 @@ import {
 import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 import { manualLockStore } from 'features/accountSettings/store'
+import { isLimitedMode } from 'utils/limitedMode'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -114,6 +115,9 @@ const AccountSettingsScreen = (): JSX.Element => {
   )
 
   const renderAppUpdateBanner = useCallback(() => {
+    // Hide the update banner in limited mode — the demo build is not meant
+    // to be updated through the standard channels.
+    if (isLimitedMode) return undefined
     if (appUpdateStatus?.needsUpdate === true) return <AppUpdateBanner />
 
     return undefined
@@ -127,7 +131,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       contentContainerStyle={{
         paddingTop: 16
       }}>
-      <View sx={{ gap: 60, marginTop: 16 }}>
+      <View sx={{ gap: isLimitedMode ? 24 : 60, marginTop: 16 }}>
         <View
           sx={{
             alignItems: 'center'
@@ -137,7 +141,7 @@ const AccountSettingsScreen = (): JSX.Element => {
             disabled={isDeveloperMode}>
             <Avatar
               testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
-              size={150}
+              size={isLimitedMode ? 80 : 150}
               source={avatar.source}
               hasLoading={false}
               isDeveloperMode={isDeveloperMode}
@@ -233,14 +237,59 @@ const AccountSettingsScreen = (): JSX.Element => {
                 />
               </>
             )}
-            <UserPreferences
-              selectNotificationPreferences={
-                isSettingsAdvancedBlocked
-                  ? undefined
-                  : goToNotificationPreferences
-              }
-              selectSecurityPrivacy={goToSecurityPrivacy}
-            />
+            {isLimitedMode ? (
+              <GroupList
+                data={[
+                  {
+                    title: 'Security & privacy',
+                    onPress: goToSecurityPrivacy
+                  },
+                  {
+                    title: 'Lock wallet',
+                    onPress: handleLockWallet
+                  },
+                  {
+                    title: (
+                      <Text
+                        variant="body1"
+                        sx={{ color: colors.$textDanger, lineHeight: 22 }}>
+                        Delete wallet
+                      </Text>
+                    ),
+                    onPress: () => {
+                      showAlert({
+                        title: 'Are you sure you want to delete your wallet?',
+                        description:
+                          'Removing the account will delete all local information stored on this device. Your assets will remain on chain.',
+                        buttons: [
+                          { text: 'Cancel' },
+                          {
+                            text: 'I understand, continue',
+                            style: 'destructive',
+                            onPress: deleteWallet
+                          }
+                        ]
+                      })
+                    }
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                separatorMarginRight={16}
+              />
+            ) : (
+              <UserPreferences
+                selectNotificationPreferences={
+                  isSettingsAdvancedBlocked
+                    ? undefined
+                    : goToNotificationPreferences
+                }
+                selectSecurityPrivacy={goToSecurityPrivacy}
+              />
+            )}
             {!isSettingsAdvancedBlocked && (
               <>
                 <Support onPressItem={handlePressAboutItem} />
@@ -248,63 +297,68 @@ const AccountSettingsScreen = (): JSX.Element => {
               </>
             )}
           </View>
-          <TouchableOpacity
-            sx={{
-              alignItems: 'center',
-              backgroundColor: colors.$surfaceSecondary,
-              borderRadius: 12,
-              padding: 14
-            }}
-            onPress={handleLockWallet}>
-            <Text
-              variant="body1"
-              sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
-              Lock wallet
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            sx={{
-              alignItems: 'center',
-              backgroundColor: colors.$surfaceSecondary,
-              borderRadius: 12,
-              padding: 14
-            }}
-            onPress={() => {
-              showAlert({
-                title: 'Are you sure you want to delete your wallet?',
-                description:
-                  'Removing the account will delete all local information stored on this device. Your assets will remain on chain.',
-                buttons: [
-                  {
-                    text: 'Cancel'
-                  },
-                  {
-                    text: 'I understand, continue',
-                    style: 'destructive',
-                    onPress: deleteWallet
-                  }
-                ]
-              })
-            }}>
-            <Text
-              variant="body1"
-              sx={{ color: colors.$textDanger, lineHeight: 20 }}>
-              Delete wallet
-            </Text>
-          </TouchableOpacity>
         </View>
 
+        {!isLimitedMode && (
+          <View sx={{ gap: 12, paddingHorizontal: 16 }}>
+            <TouchableOpacity
+              sx={{
+                alignItems: 'center',
+                backgroundColor: colors.$surfaceSecondary,
+                borderRadius: 12,
+                padding: 14
+              }}
+              onPress={handleLockWallet}>
+              <Text
+                variant="body1"
+                sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
+                Lock wallet
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              sx={{
+                alignItems: 'center',
+                backgroundColor: colors.$surfaceSecondary,
+                borderRadius: 12,
+                padding: 14
+              }}
+              onPress={() => {
+                showAlert({
+                  title: 'Are you sure you want to delete your wallet?',
+                  description:
+                    'Removing the account will delete all local information stored on this device. Your assets will remain on chain.',
+                  buttons: [
+                    { text: 'Cancel' },
+                    {
+                      text: 'I understand, continue',
+                      style: 'destructive',
+                      onPress: deleteWallet
+                    }
+                  ]
+                })
+              }}>
+              <Text
+                variant="body1"
+                sx={{ color: colors.$textDanger, lineHeight: 20 }}>
+                Delete wallet
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Footer */}
-        <View
-          testID="settings_footer"
-          sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
-          <Logos.AppIcons.Core
-            color={colors.$textSecondary}
-            width={79}
-            height={22}
-          />
-          <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
-        </View>
+        {!isLimitedMode && (
+          <View
+            testID="settings_footer"
+            sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
+            <Logos.AppIcons.Core
+              color={colors.$textSecondary}
+              width={79}
+              height={22}
+            />
+            <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
+          </View>
+        )}
       </View>
     </ScrollScreen>
   )
