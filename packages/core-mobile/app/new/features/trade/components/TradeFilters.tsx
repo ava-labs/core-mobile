@@ -13,10 +13,10 @@ import {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  ScrollView,
   StyleProp,
   ViewStyle
 } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 export type TradeFilterChip =
   | string
@@ -151,7 +151,7 @@ export const TradeFilters = ({
             flexDirection: 'row',
             gap: 8,
             paddingLeft: 16,
-            paddingTop: 16,
+            paddingTop: 20,
             paddingBottom: 12
           }}>
           {chips.map(chip => {
@@ -204,6 +204,7 @@ export const TradeFilters = ({
           justifyContent: 'center',
           alignItems: 'center',
           gap: 6,
+          marginTop: 8,
           paddingLeft: 10,
           paddingRight: 18,
           marginRight: 16
