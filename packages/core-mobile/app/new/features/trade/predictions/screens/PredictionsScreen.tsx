@@ -98,9 +98,7 @@ export const PredictionsScreen = ({
     () => (
       <View
         sx={{
-          marginHorizontal: -9,
-          paddingBottom: 14,
-          backgroundColor: theme.colors.$surfacePrimary
+          marginHorizontal: -9
         }}>
         <TradeFilters
           chips={chips}
@@ -110,7 +108,7 @@ export const PredictionsScreen = ({
         />
       </View>
     ),
-    [theme.colors.$surfacePrimary, chips, selectedChip, selectChip]
+    [chips, selectedChip, selectChip]
   )
 
   const renderItem = useCallback(
@@ -182,6 +180,14 @@ export const PredictionsScreen = ({
         onRefresh={refetch}
         onEndReached={onEndReached}
         isFetchingNextPage={isFetchingNextPage}
+        // FlashList enables maintainVisibleContentPosition by default,
+        // which makes the underlying ScrollView re-anchor on a previously
+        // visible item key when `data` changes. Filter-chip swaps replace
+        // the entire dataset, so the native anchor lands on a stale or
+        // mid-list item — Trending → Sports → Trending visibly jumps to
+        // the middle. Disable it: chip changes preserve numeric offset
+        // instead of anchoring to a no-longer-present item.
+        maintainVisibleContentPosition={{ disabled: true }}
       />
     </Animated.View>
   )

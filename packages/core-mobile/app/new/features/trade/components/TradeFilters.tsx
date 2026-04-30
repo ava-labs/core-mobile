@@ -136,7 +136,8 @@ export const TradeFilters = ({
       style={{
         gap: 10,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop: -16
       }}>
       <View sx={{ flex: 1 }} onLayout={handleContainerLayout}>
         <ScrollView
@@ -149,7 +150,10 @@ export const TradeFilters = ({
           contentContainerStyle={{
             flexDirection: 'row',
             gap: 8,
-            paddingLeft: 16
+            paddingLeft: 16,
+            // backgroundColor: 'red',
+            paddingTop: 16,
+            paddingBottom: 12
           }}>
           {chips.map(chip => {
             const label = getChipLabel(chip)
