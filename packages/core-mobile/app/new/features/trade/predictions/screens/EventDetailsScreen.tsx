@@ -76,7 +76,12 @@ const EventDetailsScreen = (): JSX.Element => {
   return (
     <ScrollScreen navigationTitle={event?.title ?? ''}>
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
-        <Text variant="heading3">Default</Text>
+        <Text variant="heading3">Minimal config</Text>
+        <Text variant="body2">
+          {`- Only \`max\` set
+- Default 25% / 50% / Max presets
+- No min threshold (no danger colour or reference tick)`}
+        </Text>
         <CircularDial
           value={dialDefault}
           onChange={setDialDefault}
@@ -86,12 +91,18 @@ const EventDetailsScreen = (): JSX.Element => {
         />
       </View>
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
-        <Text variant="heading3">Larger range</Text>
+        <Text variant="heading3">Wide range with soft min</Text>
+        <Text variant="body2">
+          {`- Range 25k–10M
+- min=25000 reference tick, danger colour below
+- Below-min still allowed (soft, not a floor)
+- Custom 100% preset label`}
+        </Text>
         <CircularDial
           value={dialAmount}
           onChange={setDialAmount}
-          min={100000}
-          max={1000000}
+          min={25000}
+          max={10000000}
           enableManualInput
           label={selectedCurrency}
           presets={[
@@ -102,7 +113,13 @@ const EventDetailsScreen = (): JSX.Element => {
         />
       </View>
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
-        <Text variant="heading3">Minimum value</Text>
+        <Text variant="heading3">Fine precision with fiat caption</Text>
+        <Text variant="body2">
+          {`- Range 2–10
+- maxDecimals=2 caps typing at hundredths
+- Live fiat caption updates on commit
+- Fine-grained editor, not a coarse slider`}
+        </Text>
         <CircularDial
           value={dialLoss}
           onChange={setDialLoss}

@@ -10,8 +10,8 @@ import React, {
 } from 'react'
 import { TextInput } from 'react-native'
 import Animated, {
+  cancelAnimation,
   SharedValue,
-  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withTiming
@@ -46,6 +46,12 @@ const CAPTION_LINE_HEIGHT = 16
 const CAPTION_BOTTOM = 22
 const INPUT_BOTTOM_WITH_CAPTION = CAPTION_LINE_HEIGHT + CAPTION_BOTTOM + 4
 
+// Per-keystroke arc easing. Short enough that the desync window
+// stays sub-perceptual but long enough to read as motion (not a
+// hard snap). Each new withTiming cancels the prior, so fast typing
+// keeps the arc chasing the latest value.
+const TYPING_ANIM_MS = 80
+
 // Strips trailing zeros so `5` stays `"5"` and `5.5` stays `"5.5"`.
 // Drag-time animated text uses raw `toFixed(decimals)` instead so the
 // dial visibly snaps at step granularity.
@@ -62,7 +68,6 @@ export type DialReadoutHandle = {
 type DialReadoutProps = {
   value: number
   max: number
-  step: number
   decimals: number
   /** Cap on the number of decimal places the user can type. */
   maxDecimals?: number
@@ -95,7 +100,6 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     {
       value,
       max,
-      step,
       decimals,
       maxDecimals,
       label,
@@ -171,17 +175,31 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     const startEdit = useCallback(() => {
       if (!enableManualInput) return
       if (draft !== null) return
-      // Defensive reset: a stale `isActive=true` (from an interrupted
-      // gesture or preset animation) would have `editingAnimatedProps`
-      // overwrite the typed text with the step-snapped value.
+      // Settle the dial's drive flag. `isActive=true` (from a drag
+      // or in-flight preset) would otherwise keep `useDialValue`'s
+      // sync effect from rolling external value changes into
+      // progress, and would let stale gesture state leak.
       isActive.value = false
+      // Cancel any in-flight preset/with-timing animation so its
+      // completion (which calls `onChange(target)` when finished)
+      // bails — without this, tapping Max then editing snaps the
+      // input back to max a few hundred ms later.
+      cancelAnimation(progressSv)
       const initial = naturalDigits(clamp(value, 0, max), displayDecimals)
       setDraft(initial)
       // Focus is driven from a state-bound effect (below), not here:
       // `.focus()` before React commits `editable=true` silently fails
       // on Android ("two taps to open keyboard") and can cross-focus
       // siblings.
-    }, [enableManualInput, draft, value, max, displayDecimals, isActive])
+    }, [
+      enableManualInput,
+      draft,
+      value,
+      max,
+      displayDecimals,
+      isActive,
+      progressSv
+    ])
 
     // Double-rAF defers `.focus()` past the native `editable=true`
     // commit on Android — calling earlier silently fails there.
@@ -214,9 +232,46 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
           }
         }
         setDraft(next)
+        // Animate the arc to the typed value rather than snapping —
+        // each new withTiming cancels the previous one, so fast
+        // typing produces a smooth chase rather than a stack of
+        // animations. Same tick as setDraft so input and track
+        // start moving together.
+        const target =
+          next === '' || next === '.'
+            ? 0
+            : Number.isFinite(Number(next))
+            ? valueToProgress(Number(next), max)
+            : null
+        if (target !== null) {
+          progressSv.value = withTiming(target, {
+            duration: TYPING_ANIM_MS
+          })
+        }
       },
-      [max, maxDecimals]
+      [max, maxDecimals, progressSv]
     )
+
+    // Project `draft` onto `progressSv` so the arc tracks every
+    // draft mutation — typing AND the `[value]`-sync effect during
+    // drag/preset. Skip while `isActive` is true (drag or in-flight
+    // preset animation): the dial owns `progressSv` then, and any
+    // direct assignment here would cancel the running withTiming.
+    // `handleChangeText` writes synchronously for typing, so this
+    // effect is purely the backstop for non-typing draft updates.
+    useEffect(() => {
+      if (draft === null) return
+      if (isActive.value) return
+      const target =
+        draft === '' || draft === '.'
+          ? 0
+          : Number.isFinite(Number(draft))
+          ? valueToProgress(Number(draft), max)
+          : null
+      if (target !== null) {
+        progressSv.value = withTiming(target, { duration: TYPING_ANIM_MS })
+      }
+    }, [draft, max, progressSv, isActive])
 
     const handleBlur = useCallback(() => {
       if (draft !== null) {
@@ -225,37 +280,31 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
           progressSv.value = valueToProgress(committed, max)
           onChange(committed)
           onCommit(committed)
+        } else {
+          // Empty / invalid draft: revert. The input falls back to
+          // showing `value` via `currentText`; reset `progressSv`
+          // here so the track lands on the same value instead of
+          // sitting at 0 from the cleared draft.
+          progressSv.value = valueToProgress(clamp(value, 0, max), max)
         }
       }
       setDraft(null)
-    }, [draft, progressSv, onChange, onCommit, max])
+    }, [draft, progressSv, onChange, onCommit, max, value])
 
-    // While editing, keep the React draft in sync with the underlying
-    // `value` — covers swipe-while-editing: the gesture's `onChange`
-    // updates `value`, which then rolls into the displayed draft so the
-    // input shows the new value once the drag-time animatedProps stops
-    // writing to native text.
+    // While editing, roll external `value` changes into the draft —
+    // covers drag-while-editing (gesture commits per step) and
+    // preset-press-while-editing (per-step `onChange` plus the
+    // commit at the end). Skip when the draft already represents
+    // `value` numerically (or is the partial `"."` state) so noise
+    // doesn't trigger pointless re-renders.
     useEffect(() => {
       if (!isEditing) return
+      if (draft === '.') return
+      const draftNum = draft === '' ? 0 : Number(draft)
+      if (Number.isFinite(draftNum) && draftNum === value) return
       setDraft(naturalDigits(clamp(value, 0, max), displayDecimals))
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
-
-    // UI-thread text driver during drag / preset animation, bypassing
-    // JS-thread lag. `startEdit` and `handleBlur` reset `isActive` so a
-    // stale flag can't overwrite a freshly-typed draft.
-    const editingAnimatedProps = useAnimatedProps(() => {
-      if (!isActive.value) {
-        return {} as { text?: string; defaultValue?: string }
-      }
-      const raw = progressSv.value * max
-      const clamped = raw < 0 ? 0 : raw > max ? max : raw
-      const stepIdx = Math.round(clamped / step)
-      const snapped = stepIdx * step
-      const textValue =
-        decimals > 0 ? snapped.toFixed(decimals) : `${Math.round(snapped)}`
-      return { text: textValue, defaultValue: textValue }
-    })
 
     // Danger flip lives off the typed `draftValue` while editing so the
     // colour updates per keystroke instead of waiting for blur/commit.
@@ -337,7 +386,6 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
             value={currentText}
             placeholder={placeholder ?? '0'}
             placeholderTextColor={alpha(colors.$textPrimary, 0.3)}
-            animatedProps={editingAnimatedProps}
             onChangeText={handleChangeText}
             onBlur={handleBlur}
             onSubmitEditing={handleBlur}
@@ -350,10 +398,15 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
               amountStyle,
               animatedDigitStyle,
               {
-                width: AMOUNT_CANVAS_WIDTH,
+                // Auto-size to content. The font auto-fit hook
+                // already shrinks the digits once text width
+                // exceeds `AMOUNT_FIT_WIDTH`, which keeps the input
+                // bounded; `maxWidth` is the hard cap so it never
+                // overflows the dial canvas.
+                maxWidth: AMOUNT_CANVAS_WIDTH,
                 textAlign: 'center',
                 padding: 0,
-                paddingHorizontal: 12,
+                paddingHorizontal: 8,
                 margin: 0
               }
             ]}

@@ -197,6 +197,21 @@ describe('sanitizeDecimalInput', () => {
   it('returns empty for empty input', () => {
     expect(sanitizeDecimalInput('', 100)).toBe('')
   })
+  it('keeps a single leading zero', () => {
+    expect(sanitizeDecimalInput('0', 100)).toBe('0')
+    expect(sanitizeDecimalInput('0.', 100)).toBe('0.')
+    expect(sanitizeDecimalInput('0.5', 100)).toBe('0.5')
+  })
+  it('collapses repeated leading zeros', () => {
+    expect(sanitizeDecimalInput('00', 100)).toBe('0')
+    expect(sanitizeDecimalInput('000', 100)).toBe('0')
+    expect(sanitizeDecimalInput('00.5', 100)).toBe('0.5')
+  })
+  it('drops a leading zero when followed by another digit', () => {
+    expect(sanitizeDecimalInput('023', 100)).toBe('23')
+    expect(sanitizeDecimalInput('0023', 1000)).toBe('23')
+    expect(sanitizeDecimalInput('0123', 1000)).toBe('123')
+  })
 })
 
 describe('commitDraftText', () => {

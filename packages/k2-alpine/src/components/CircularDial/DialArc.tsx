@@ -103,8 +103,12 @@ export const DialArc: FC<DialArcProps> = ({
 
   useAnimatedReaction(
     () => {
-      if (!hasReferenceTick) return 0
-      return progressSv.value < tickLeftEdge ? 1 : 0
+      if (referenceTickProgress === null) return 0
+      // Trigger on `< referenceTickProgress` (not `< tickLeftEdge`),
+      // so the danger colour engages at the same threshold the text
+      // uses (`< referenceValue`). Otherwise the gap halo around the
+      // tick creates a band where text is red but the track isn't.
+      return progressSv.value < referenceTickProgress ? 1 : 0
     },
     (target, prev) => {
       if (prev === null || target === prev) return
@@ -112,7 +116,7 @@ export const DialArc: FC<DialArcProps> = ({
         duration: ZONE_CROSSFADE_MS
       })
     },
-    [hasReferenceTick, tickLeftEdge]
+    [referenceTickProgress]
   )
   useAnimatedReaction(
     () => {

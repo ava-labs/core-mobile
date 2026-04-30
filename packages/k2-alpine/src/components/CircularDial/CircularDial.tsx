@@ -90,6 +90,14 @@ export const CircularDial: FC<CircularDialProps> = ({
     return minThreshold
   }, [minThreshold, vMax])
 
+  // Progress-space position of the reference tick, or `null` when no
+  // valid reference is set. Used by the threshold-crossing haptic
+  // below so the user feels a beat each time the dial crosses min.
+  const referenceTickProgress = useMemo(() => {
+    if (referenceValue === undefined) return null
+    return referenceValue / vMax
+  }, [referenceValue, vMax])
+
   // Floor (not round) so stepIdx * vStep can never exceed vMax — e.g.
   // vMax=7, vStep=2 → 3 steps, not 4 (which would land on 8).
   const stepCount = useMemo(
@@ -164,7 +172,14 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const combinedGesture = Gesture.Race(tapGesture, panGesture)
 
-  // Emit onChange on every step crossing while dragging.
+  // Emit onChange on every step crossing while the dial is "active"
+  // (drag OR preset animation). This is what drives the displayed
+  // text during drag/preset — `DialReadout` shows
+  // `naturalDigits(value)` when not editing, so each onChange step
+  // forces a re-render with the new digits. (Replaces an earlier
+  // approach where a worklet wrote text via setNativeProps; that
+  // raced with React's controlled value prop and caused desync
+  // during/after editing.)
   useAnimatedReaction(
     () => {
       const raw = progressSv.value * vMax
@@ -173,7 +188,7 @@ export const CircularDial: FC<CircularDialProps> = ({
     },
     (stepIdx, prev) => {
       if (prev === null || stepIdx === prev) return
-      if (!isDragging.value) return
+      if (!isActive.value) return
       const snapped = stepIdx * vStep
       scheduleOnRN(stableOnChange, snapped)
     }
@@ -193,14 +208,38 @@ export const CircularDial: FC<CircularDialProps> = ({
     }
   )
 
+  // Threshold-crossing haptic: fire `fireMajorHaptic` once on each
+  // crossing of the reference tick (above ↔ below `min`). Not gated
+  // on `isDragging` so the same beat fires whether the user reaches
+  // the threshold by drag, preset animation, or typing — the
+  // crossing is meaningful regardless of input method.
+  useAnimatedReaction(
+    () => {
+      if (referenceTickProgress === null) return false
+      return progressSv.value < referenceTickProgress
+    },
+    (isBelow, prev) => {
+      if (prev === null || isBelow === prev) return
+      if (!hapticsEnabled) return
+      scheduleOnRN(fireMajorHaptic)
+    },
+    [referenceTickProgress, hapticsEnabled]
+  )
+
   const handlePresetPress = useCallback(
     (fraction: number) => {
       const targetValue = clamp(fraction, 0, 1) * vMax
       const snapped = snapToStep(targetValue, vStep, vMax)
+      // Match the drag-time scheme: heavy at end stops (0% / 100%),
+      // medium on intermediate presets.
+      if (hapticsEnabled) {
+        if (fraction <= 0 || fraction >= 1) fireEdgeHaptic()
+        else fireMajorHaptic()
+      }
       isActive.value = true
       progressSv.value = withTiming(
         snapped / vMax,
-        { duration: 600, easing: Easing.out(Easing.cubic) },
+        { duration: 300, easing: Easing.out(Easing.cubic) },
         finished => {
           // Bail on cancellation so an interrupting gesture keeps
           // ownership of `isActive`.
@@ -211,7 +250,15 @@ export const CircularDial: FC<CircularDialProps> = ({
         }
       )
     },
-    [isActive, progressSv, stableOnChange, stableOnCommit, vMax, vStep]
+    [
+      hapticsEnabled,
+      isActive,
+      progressSv,
+      stableOnChange,
+      stableOnCommit,
+      vMax,
+      vStep
+    ]
   )
 
   if (!isValid) {
@@ -266,7 +313,6 @@ export const CircularDial: FC<CircularDialProps> = ({
           ref={readoutRef}
           value={value}
           max={vMax}
-          step={vStep}
           decimals={vDecimals}
           maxDecimals={maxDecimals}
           label={label}
@@ -283,7 +329,7 @@ export const CircularDial: FC<CircularDialProps> = ({
       </View>
       <DialPresets
         presets={presets}
-        value={value}
+        progressSv={progressSv}
         max={vMax}
         step={vStep}
         onPresetPress={handlePresetPress}
