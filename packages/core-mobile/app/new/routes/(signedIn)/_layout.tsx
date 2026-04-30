@@ -15,9 +15,8 @@ import { LedgerSetupProvider } from 'features/ledger'
 import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
-import LedgerService from 'services/ledger/LedgerService'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
 import { selectIsActiveWalletLedger } from 'store/wallet/slice'
@@ -34,16 +33,8 @@ export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
   const isLedgerWallet = useSelector(selectIsActiveWalletLedger)
 
-  // When the user switches away from a Ledger wallet, clear the
-  // remembered device so we don't attempt stale auto-reconnects.
-  useEffect(() => {
-    if (!isLedgerWallet) {
-      LedgerService.clearConnectedDevice()
-    }
-  }, [isLedgerWallet])
-
-  // Manage Ledger BLE lifecycle: auto-disconnect on background,
-  // auto-reconnect on foreground.
+  // Manage Ledger BLE lifecycle: forget device when switching away,
+  // auto-disconnect on background, auto-reconnect on foreground.
   useLedgerAppStateListener(isLedgerWallet)
 
   const { modalScreensOptions, secondaryModalScreensOptions } =

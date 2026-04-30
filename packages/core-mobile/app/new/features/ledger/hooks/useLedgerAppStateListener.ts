@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AppState, AppStateStatus } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
 import Logger from 'utils/Logger'
@@ -6,17 +6,25 @@ import Logger from 'utils/Logger'
 /**
  * Manages Ledger BLE lifecycle in response to app state changes.
  *
+ * - enabled true → false: forgets the device so we don't attempt stale
+ *   auto-reconnects (e.g. user switches away from a Ledger wallet).
+ *   Only fires on a true→false transition, not on initial mount.
  * - Background / inactive → releases the BLE link so other devices can
  *   connect, but keeps the device ID for auto-reconnect.
  * - Foreground → asks LedgerService to reconnect if eligible (device was
  *   previously connected and auto-reconnect is not disabled).
- *
- * Mount this once inside the signed-in layout so it is active for the
- * entire duration of a Ledger wallet session.
  */
 export const useLedgerAppStateListener = (enabled: boolean): void => {
+  const wasEnabledRef = useRef(false)
+
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) {
+      if (wasEnabledRef.current) {
+        LedgerService.forgetDevice()
+      }
+      return
+    }
+    wasEnabledRef.current = true
 
     const subscription = AppState.addEventListener(
       'change',

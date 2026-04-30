@@ -18,7 +18,6 @@ import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { DERIVATION_PATHS, LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
-import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
@@ -66,6 +65,7 @@ class LedgerService {
   }
 
   private appPollingInterval: number | null = null
+  private disconnectHandler: (() => void) | null = null
 
   // Reconnection state & policy
   private connectedDeviceId: string | null = null
@@ -75,6 +75,7 @@ class LedgerService {
   // (manual reconnect, auto-reconnect, onboarding) don't race on
   // TransportBLE.open().
   private connectInFlight: Promise<void> | null = null
+  private connectInFlightDeviceId: string | null = null
   private connectionStateListeners: Set<(connected: boolean) => void> =
     new Set()
 
@@ -83,15 +84,6 @@ class LedgerService {
   private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
   private currentDevices: LedgerDevice[] = []
   private isScanning = false
-
-  // Transport getter — used only by internal infra (getCurrentAppInfo, openApp)
-  private get transport(): TransportBLE {
-    assertNotNull(
-      this.#transport,
-      'Ledger transport is not initialized. Please connect to a device first.'
-    )
-    return this.#transport
-  }
 
   // Wrap transport's exchange method to automatically handle busy state
   private wrapTransportExchange(): void {
@@ -151,16 +143,24 @@ class LedgerService {
   }
 
   // Serializing wrapper: ensures only one TransportBLE.open() is in
-  // flight at a time. Concurrent callers await the same promise, so
-  // the second caller gets the result (or error) of the first.
+  // flight at a time. Same-device callers share the in-flight promise;
+  // different-device callers are rejected so they don't silently get
+  // connected to the wrong device.
   async connect(deviceId: string): Promise<void> {
     if (this.connectInFlight) {
-      Logger.info('connect() already in flight — joining existing attempt')
-      return this.connectInFlight
+      if (this.connectInFlightDeviceId === deviceId) {
+        Logger.info('connect() already in flight — joining existing attempt')
+        return this.connectInFlight
+      }
+      throw new Error(
+        `Connection to ${this.connectInFlightDeviceId} already in progress`
+      )
     }
 
+    this.connectInFlightDeviceId = deviceId
     this.connectInFlight = this.connectInternal(deviceId).finally(() => {
       this.connectInFlight = null
+      this.connectInFlightDeviceId = null
     })
 
     return this.connectInFlight
@@ -173,7 +173,7 @@ class LedgerService {
       await this.assertBluetoothAvailable()
       // Only reset auto-reconnect policy on user-initiated connects,
       // not when called from the auto-reconnect loop — otherwise an
-      // in-flight reconnect can undo a clearConnectedDevice() call.
+      // in-flight reconnect can undo a forgetDevice() call.
       if (!this.isAttemptingReconnect) {
         this.autoReconnectDisabled = false
       }
@@ -189,10 +189,11 @@ class LedgerService {
 
       // Listen for unexpected BLE disconnects (e.g. Ledger auto-sleep)
       // so we can attempt auto-reconnect instead of silently going stale.
-      this.#transport?.on('disconnect', () => {
+      this.disconnectHandler = (): void => {
         Logger.info('Transport disconnect event received')
         this.handleTransportDisconnect()
-      })
+      }
+      this.#transport?.on('disconnect', this.disconnectHandler)
 
       // Wrap the transport's exchange method to automatically handle busy state
       this.wrapTransportExchange()
@@ -240,6 +241,7 @@ class LedgerService {
     // Skip entirely to avoid spurious reconnects.
     if (!this.#transport) return
 
+    this.disconnectHandler = null
     this.#transport = null
     this.currentAppType = LedgerAppType.UNKNOWN
     this.stopAppPolling()
@@ -262,7 +264,7 @@ class LedgerService {
   }
 
   // Returns true when the reconnect loop should bail out — either because
-  // auto-reconnect was disabled (e.g. clearConnectedDevice during wallet
+  // auto-reconnect was disabled (e.g. forgetDevice during wallet
   // switch) or because a different device connected in the meantime.
   private shouldCancelReconnect(originalDeviceId: string): boolean {
     if (this.autoReconnectDisabled) {
@@ -301,7 +303,7 @@ class LedgerService {
           )
           await this.connect(deviceId)
 
-          // If clearConnectedDevice() was called while connect() was
+          // If forgetDevice() was called while connect() was
           // in flight, tear down the connection we just established.
           if (this.shouldCancelReconnect(deviceId)) {
             await this.disconnect({ manual: true })
@@ -321,7 +323,7 @@ class LedgerService {
             LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2 ** (attempt - 1)
           await new Promise(res => setTimeout(res, delay))
 
-          // Re-check after the delay — clearConnectedDevice() may have
+          // Re-check after the delay — forgetDevice() may have
           // been called while we were sleeping.
           if (this.shouldCancelReconnect(deviceId)) return
         }
@@ -533,7 +535,7 @@ class LedgerService {
   }
 
   private async getCurrentAppInfo(): Promise<AppInfo> {
-    return getLedgerAppInfo(this.transport as Transport)
+    return this.withTransport(transport => getLedgerAppInfo(transport))
   }
 
   // Map app name to our enum
@@ -902,6 +904,13 @@ class LedgerService {
       // Capture transport before nulling so we can still call close() below.
       const transport = this.#transport
       const deviceId = transport.id
+      // Remove disconnect listener before nulling transport so the
+      // handler doesn't fire during teardown and trigger a spurious
+      // reconnect attempt.
+      if (this.disconnectHandler) {
+        transport.off('disconnect', this.disconnectHandler)
+        this.disconnectHandler = null
+      }
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.notifyConnectionStateListeners(false)
@@ -919,10 +928,9 @@ class LedgerService {
     }
   }
 
-  // Explicitly clear the remembered device ID. Call this when the user
-  // switches away from a Ledger wallet so we don't attempt stale
-  // auto-reconnects.
-  clearConnectedDevice(): void {
+  // Forget the device: clear the remembered device ID and suppress
+  // auto-reconnect. Call when the user switches away from a Ledger wallet.
+  forgetDevice(): void {
     this.connectedDeviceId = null
     this.autoReconnectDisabled = true
   }
@@ -1380,7 +1388,9 @@ class LedgerService {
 
     try {
       const apdu = this.buildOpenAppApdu(app)
-      const response = await this.transport.exchange(apdu)
+      const response = await this.withTransport(transport =>
+        transport.exchange(apdu)
+      )
 
       // Last 2 bytes are the status word (SW1, SW2), the rest is data.
       const sw1 = response[response.length - 2]
@@ -1413,7 +1423,9 @@ class LedgerService {
    */
   async quitLedgerApp(): Promise<void> {
     try {
-      await this.transport.send(0xb0, 0xa7, 0x00, 0x00)
+      await this.withTransport(transport =>
+        transport.send(0xb0, 0xa7, 0x00, 0x00)
+      )
       this.currentAppType = LedgerAppType.UNKNOWN
       Logger.info('Successfully quit current Ledger app')
     } catch (error) {

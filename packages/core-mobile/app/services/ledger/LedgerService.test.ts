@@ -29,52 +29,101 @@ jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
 
 describe('LedgerService', () => {
   describe('openApp', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
     let mockTransport: {
+      id: string
       exchange: jest.Mock
       isConnected: boolean
       close: jest.Mock
+      on: jest.Mock
+      off: jest.Mock
+      exchangeBusyPromise: null
     }
-    let originalTransportGetter: PropertyDescriptor | undefined
 
-    beforeEach(() => {
-      // Create mock transport
+    beforeEach(async () => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+
       mockTransport = {
+        id: DEVICE_ID,
         exchange: jest.fn(),
         isConnected: true,
-        close: jest.fn()
+        close: jest.fn().mockResolvedValue(undefined as never),
+        on: jest.fn(),
+        off: jest.fn(),
+        exchangeBusyPromise: null
       }
 
-      // Mock Logger methods
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'info').mockImplementation(() => {})
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'error').mockImplementation(() => {})
-
-      // Save the original transport getter
-      originalTransportGetter = Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(LedgerService),
-        'transport'
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      // Default: exchange rejects so getCurrentAppInfo (called during
+      // connect) doesn't set a cached app type.
+      mockTransport.exchange.mockRejectedValue(
+        new Error('No app info') as never
       )
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
 
-      // Override the transport getter to return our mock
-      Object.defineProperty(LedgerService, 'transport', {
-        get: () => mockTransport,
-        configurable: true
+      // Establish a real connection so withTransport works.
+      // connect() calls wrapTransportExchange which replaces the exchange
+      // method, so we restore a fresh mock afterwards for test assertions.
+      await LedgerService.connect(DEVICE_ID)
+      LedgerService.stopAppPolling()
+      mockTransport.exchange = jest.fn()
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.forgetDevice()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
       })
+      jest.restoreAllMocks()
     })
 
-    afterEach(() => {
-      jest.clearAllMocks()
-
-      // Restore the original transport getter
-      if (originalTransportGetter) {
-        Object.defineProperty(
-          Object.getPrototypeOf(LedgerService),
-          'transport',
-          originalTransportGetter
-        )
-      }
-    })
+    // openApp now calls quitLedgerApp() + REQUEST_DELAY before sending
+    // the open APDU. Under fake timers the delay never fires, so we
+    // start the call, advance timers past the delay, then await.
+    async function openAppWithTimers(
+      appType: LedgerAppType
+    ): Promise<void> {
+      const promise = LedgerService.openApp(appType)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
+      return promise
+    }
 
     it('should successfully open the app when device returns success status code', async () => {
       const appType = LedgerAppType.AVALANCHE
@@ -83,14 +132,16 @@ describe('LedgerService', () => {
       const successResponse = Buffer.from([0x90, 0x00])
       mockTransport.exchange.mockResolvedValue(successResponse as never)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
-      // Verify APDU was sent
-      expect(mockTransport.exchange).toHaveBeenCalledTimes(1)
-
-      // Verify the APDU structure
+      // Verify APDU was sent (quit + open = 2 exchange calls)
+      // The last call is the open-app APDU
+      const openCall =
+        mockTransport.exchange.mock.calls[
+          mockTransport.exchange.mock.calls.length - 1
+        ]
       // @ts-ignore
-      const apdu = mockTransport.exchange.mock.calls[0][0] as Buffer
+      const apdu = openCall[0] as Buffer
       expect(apdu[0]).toBe(0xe0) // CLA
       expect(apdu[1]).toBe(0xd8) // INS
       expect(apdu[2]).toBe(0x00) // P1
@@ -114,10 +165,7 @@ describe('LedgerService', () => {
       const errorResponse = Buffer.from([0x69, 0x85])
       mockTransport.exchange.mockResolvedValue(errorResponse as never)
 
-      await LedgerService.openApp(appType)
-
-      // Verify exchange was called
-      expect(mockTransport.exchange).toHaveBeenCalledTimes(1)
+      await openAppWithTimers(appType)
 
       // Verify non-success status was logged
       expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6985')
@@ -130,9 +178,8 @@ describe('LedgerService', () => {
       const errorResponse = Buffer.from([0x6a, 0x80]) as never
       mockTransport.exchange.mockResolvedValue(errorResponse)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
-      expect(mockTransport.exchange).toHaveBeenCalledTimes(1)
       expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6a80')
     })
 
@@ -143,9 +190,8 @@ describe('LedgerService', () => {
       const errorResponse = Buffer.from([0x55, 0x15]) as never
       mockTransport.exchange.mockResolvedValue(errorResponse)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
-      expect(mockTransport.exchange).toHaveBeenCalledTimes(1)
       expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x5515')
     })
 
@@ -156,7 +202,7 @@ describe('LedgerService', () => {
       mockTransport.exchange.mockRejectedValue(exchangeError as never)
 
       // Should not throw
-      await expect(LedgerService.openApp(appType)).resolves.toBeUndefined()
+      await openAppWithTimers(appType)
 
       // Verify error was logged as info (best-effort)
       expect(Logger.info).toHaveBeenCalledWith(
@@ -171,7 +217,7 @@ describe('LedgerService', () => {
 
       mockTransport.exchange.mockRejectedValue(disconnectError)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
       expect(Logger.info).toHaveBeenCalledWith(
         `Failed to open ${appType} app:`,
@@ -191,7 +237,7 @@ describe('LedgerService', () => {
         const successResponse = Buffer.from([0x90, 0x00])
         mockTransport.exchange.mockResolvedValue(successResponse as never)
 
-        await LedgerService.openApp(appType)
+        await openAppWithTimers(appType)
 
         // @ts-ignore
         const apdu = mockTransport.exchange.mock.calls[
@@ -218,7 +264,7 @@ describe('LedgerService', () => {
       const responseWithData = Buffer.from([0x01, 0x02, 0x03, 0x90, 0x00])
       mockTransport.exchange.mockResolvedValue(responseWithData as never)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
       // Should extract status word correctly from the last 2 bytes
       expect(Logger.info).toHaveBeenCalledWith(
@@ -233,7 +279,7 @@ describe('LedgerService', () => {
       const lowByteResponse = Buffer.from([0x00, 0x01])
       mockTransport.exchange.mockResolvedValue(lowByteResponse as never)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
       // Verify padding is applied correctly
       expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x0001')
@@ -246,7 +292,7 @@ describe('LedgerService', () => {
       const errorResponse = Buffer.from([0x69, 0x86]) as never
       mockTransport.exchange.mockResolvedValue(errorResponse)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
       expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6986')
     })
@@ -258,9 +304,8 @@ describe('LedgerService', () => {
       const minResponse = Buffer.from([0x90, 0x00]) as never
       mockTransport.exchange.mockResolvedValue(minResponse)
 
-      await LedgerService.openApp(appType)
+      await openAppWithTimers(appType)
 
-      expect(mockTransport.exchange).toHaveBeenCalledTimes(1)
       expect(Logger.info).toHaveBeenCalledWith(
         `Successfully opened ${appType} app on Ledger device using APDU`
       )
@@ -555,6 +600,174 @@ describe('LedgerService', () => {
     })
   })
 
+  describe('connectInFlight', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
+    let mockTransport: {
+      id: string
+      exchange: jest.Mock
+      isConnected: boolean
+      close: jest.Mock
+      on: jest.Mock
+      off: jest.Mock
+      exchangeBusyPromise: null
+    }
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+
+      mockTransport = {
+        id: DEVICE_ID,
+        exchange: jest
+          .fn()
+          .mockRejectedValue(new Error('No app info') as never),
+        isConnected: true,
+        close: jest.fn().mockResolvedValue(undefined as never),
+        on: jest.fn(),
+        off: jest.fn(),
+        exchangeBusyPromise: null
+      }
+
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('concurrent connect() calls share the same in-flight promise', async () => {
+      // Make open() slow so the second call arrives while the first is pending
+      transportBLEMock.open.mockImplementation(
+        () =>
+          new Promise(resolve => setTimeout(() => resolve(mockTransport), 100))
+      )
+
+      const promise1 = LedgerService.connect(DEVICE_ID)
+      const promise2 = LedgerService.connect(DEVICE_ID)
+
+      // Advance past the open() delay
+      await jest.advanceTimersByTimeAsync(200)
+
+      await Promise.all([promise1, promise2])
+
+      // TransportBLE.open should only have been called once
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+      expect(Logger.info).toHaveBeenCalledWith(
+        'connect() already in flight — joining existing attempt'
+      )
+    })
+
+    it('concurrent callers all reject when the in-flight connect fails', async () => {
+      transportBLEMock.open.mockImplementation(
+        () =>
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('BLE open failed')), 100)
+          )
+      )
+
+      const promise1 = LedgerService.connect(DEVICE_ID)
+      const promise2 = LedgerService.connect(DEVICE_ID)
+
+      // Attach rejection handlers BEFORE advancing timers to avoid
+      // unhandled-rejection noise from Jest.
+      const assertion1 = expect(promise1).rejects.toThrow(
+        'Failed to connect to Ledger'
+      )
+      const assertion2 = expect(promise2).rejects.toThrow(
+        'Failed to connect to Ledger'
+      )
+
+      await jest.advanceTimersByTimeAsync(200)
+
+      await assertion1
+      await assertion2
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+    })
+
+    it('allows a fresh connect() after a failed in-flight attempt resolves', async () => {
+      // First call fails
+      transportBLEMock.open.mockRejectedValueOnce(
+        new Error('BLE open failed') as never
+      )
+
+      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow()
+
+      // connectInFlight should be cleared — a new connect() should start fresh
+      transportBLEMock.open.mockResolvedValueOnce(mockTransport as never)
+
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+    })
+
+    it('rejects when a different device tries to connect while one is in-flight', async () => {
+      // Make open() slow so device-A is still in-flight
+      transportBLEMock.open.mockImplementation(
+        () =>
+          new Promise(resolve => setTimeout(() => resolve(mockTransport), 100))
+      )
+
+      const deviceAPromise = LedgerService.connect(DEVICE_ID)
+
+      // Device B arrives while device A is in-flight — should reject
+      // immediately since the throw happens before any await.
+      const deviceBResult = await LedgerService.connect('other-device').then(
+        () => 'resolved',
+        (error: Error) => error.message
+      )
+
+      expect(deviceBResult).toEqual(
+        `Connection to ${DEVICE_ID} already in progress`
+      )
+
+      // Device A should still complete normally
+      await jest.advanceTimersByTimeAsync(200)
+      await deviceAPromise
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('waitForApp', () => {
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -843,6 +1056,7 @@ describe('LedgerService', () => {
       isConnected: boolean
       close: jest.Mock
       on: jest.Mock
+      off: jest.Mock
       exchangeBusyPromise: null
     }
 
@@ -870,6 +1084,7 @@ describe('LedgerService', () => {
         on: jest.fn((_event, callback) => {
           disconnectHandler = callback as () => void
         }),
+        off: jest.fn(),
         exchangeBusyPromise: null
       }
 
@@ -879,7 +1094,7 @@ describe('LedgerService', () => {
 
     afterEach(async () => {
       await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.clearConnectedDevice()
+      LedgerService.forgetDevice()
       LedgerService.stopAppPolling()
       jest.runOnlyPendingTimers()
       jest.useRealTimers()
@@ -963,7 +1178,7 @@ describe('LedgerService', () => {
       await connectAndReset()
 
       // Simulates wallet switch clearing the device reference
-      LedgerService.clearConnectedDevice()
+      LedgerService.forgetDevice()
 
       LedgerService.scheduleReconnect('test-trigger')
       await jest.advanceTimersByTimeAsync(0)
