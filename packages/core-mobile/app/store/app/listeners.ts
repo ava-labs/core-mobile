@@ -30,6 +30,7 @@ import {
 } from 'store/settings/appearance'
 import { selectLockWalletWithPIN } from 'store/settings/securityPrivacy'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import WalletFactory from 'services/wallet/WalletFactory'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
@@ -141,6 +142,8 @@ const lockApp = async (
   if (isTimeManipulated || secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
+    // Clear cached wallet instances to evict secrets (mnemonics, seeds, private keys) from heap
+    WalletFactory.cache.clearAll()
     if (walletState === WalletState.ACTIVE) {
       dispatch(setWalletState(WalletState.INACTIVE))
     }
@@ -165,6 +168,7 @@ const clearData = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch } = listenerApi
+  WalletFactory.cache.clearAll()
   dispatch(setWalletState(WalletState.NONEXISTENT))
   dispatch(setWalletType(WalletType.UNSET))
   dispatch(setSelectedAppearance(Appearance.System))

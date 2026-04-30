@@ -46,12 +46,12 @@ index 4a914633a13067af05838ab582a9dd41b53306ba..68df133248e9a1d067735ad1915f64af
 +  // Try native (RN Nitro) fast-path first
 +  if (typeof pointAddScalarNative === 'function') {
 +    try {
-+      const out = pointAddScalarNative(toNitroBuf(p), toNitroBuf(tweak), isCompressed);
++      const raw = pointAddScalarNative(toNitroBuf(p), toNitroBuf(tweak), isCompressed);
++      const out = raw instanceof ArrayBuffer ? new Uint8Array(raw) : raw;
 +      if (out.length === 0) {
 +        throw new Error("Tweaked point at infinity");
 +      }
-+      // Native returns ArrayBuffer or Uint8Array
-+      return out instanceof ArrayBuffer ? new Uint8Array(out) : out;
++      return out;
 +    } catch (e) { /* fall back to JS path below */
 +      if (e instanceof Error && e.message === "Tweaked point at infinity") {
 +        throw e;
