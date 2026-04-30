@@ -1,16 +1,8 @@
-diff --git a/.DS_Store b/.DS_Store
-new file mode 100644
-index 0000000000000000000000000000000000000000..9211d3bfe85cf15dbed0f66b9014a322c5f36ceb
---- /dev/null
-+++ b/.DS_Store
-@@ -0,0 +1 @@
-+
-\ No newline at end of file
 diff --git a/dist/index.js b/dist/index.js
 index 4a914633a13067af05838ab582a9dd41b53306ba..68df133248e9a1d067735ad1915f64afd4563057 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -4,6 +4,33 @@ var secp256k1 = require('@noble/curves/secp256k1');
+@@ -4,6 +4,36 @@ var secp256k1 = require('@noble/curves/secp256k1');
  var mod = require('@noble/curves/abstract/modular');
  var utils = require('@noble/curves/abstract/utils');
  
