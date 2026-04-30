@@ -96,14 +96,20 @@ const ActivityListItem: FC<Props> = ({
               flex: 1,
               gap: 3
             }}>
-            <Text
-              variant="buttonMedium"
-              sx={{
-                color: '$textPrimary',
-                lineHeight: 15
-              }}>
-              {title}
-            </Text>
+            {typeof title === 'string' || typeof title === 'number' ? (
+              <Text
+                variant="buttonMedium"
+                sx={{
+                  color: '$textPrimary',
+                  lineHeight: 15
+                }}>
+                {title}
+              </Text>
+            ) : (
+              <View accessible={false} style={{ alignSelf: 'flex-start' }}>
+                {title}
+              </View>
+            )}
             {subtitle ? (
               subtitleType === 'text' ? (
                 <Text
