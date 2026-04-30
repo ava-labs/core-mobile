@@ -11,6 +11,7 @@ import {
 import React, { FC, memo, useMemo, useState } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
+  cancelAnimation,
   Easing,
   interpolateColor,
   SharedValue,
@@ -132,6 +133,18 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   const lastUpdateAt = useSharedValue(0)
 
   const panGesture = Gesture.Pan()
+    // Stop any in-flight release animation (decay coast, settle snap, edge
+    // spring, or preset withTiming) the instant a finger lands. Pan only
+    // activates after a small movement threshold, so without this cancel a
+    // pure tap-to-halt wouldn't fire onStart and the prior animation would
+    // keep running under the stationary touch — the wheel "doesn't stop"
+    // when grabbed mid-coast.
+    .onTouchesDown(() => {
+      cancelAnimation(currentValue)
+      // If we just cancelled a preset animation, clear the flag so the next
+      // interaction's haptics aren't suppressed.
+      isProgrammatic.value = false
+    })
     .onStart(() => {
       isActive.value = true
       isDragging.value = true
@@ -254,6 +267,35 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
           // snapToStep also rounds away float drift (e.g. 2.4000000004 → 2.4).
           const snapped = snapToStep(currentValue.value, min, step)
           settleTo(snapped)
+        }
+      )
+    })
+    // Pan never activated (touch landed without enough movement to cross
+    // the activation threshold). onTouchesDown already cancelled any
+    // in-flight release animation, but neither onStart nor onEnd fired —
+    // so without this fallback, isActive can stay true forever and the
+    // wheel sits at a non-snap value with prop sync blocked.
+    .onFinalize((_event, success) => {
+      // success=true means onEnd ran and already scheduled a settle.
+      if (success || isDragging.value) return
+      if (!isActive.value) return
+      const snapped = snapToStep(currentValue.value, min, step)
+      if (snapped === currentValue.value) {
+        isActive.value = false
+        scheduleOnRN(onChange, snapped)
+        scheduleOnRN(onCommit, snapped)
+        return
+      }
+      // Quick snap on a tap-to-stop — the user's intent was a definitive
+      // halt, not another long settle phase.
+      currentValue.value = withTiming(
+        snapped,
+        { duration: 150, easing: Easing.out(Easing.cubic) },
+        finished => {
+          if (!finished || isDragging.value) return
+          isActive.value = false
+          scheduleOnRN(onChange, snapped)
+          scheduleOnRN(onCommit, snapped)
         }
       )
     })
