@@ -5270,10 +5270,10 @@ __metadata:
 
 "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.2.0
-  resolution: "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::version=1.2.0&hash=25262a&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@bitcoinerlab/secp256k1@patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch::version=1.2.0&hash=6cd800&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/curves": ^1.7.0
-  checksum: 62f1d5875180aadfd1b98256c1c7aeafd53275429cc2716ecbcf5ec8c0aa46ab67010f61c9f0dbf3e1d6497576770dc956dea20a8d7d52a78362eea652036b2b
+  checksum: ef5de66dce16bb697e64e944e277646aa84379d69043596c192c3b4b0efcd3e707ebd95971cc5de2778d229c1c2f91b1693d679a0a08a022e69a6491dbaf6b8c
   languageName: node
   linkType: hard
 

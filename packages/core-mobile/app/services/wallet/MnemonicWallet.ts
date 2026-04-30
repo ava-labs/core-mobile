@@ -37,7 +37,9 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
+import type HDKey from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
+import type { BIP32Interface } from 'bip32'
 import { bip32 } from 'utils/bip32'
 import { hex } from '@scure/base'
 import ModuleManager from 'vmModule/ModuleManager'
@@ -61,6 +63,8 @@ export function assertMnemonicWallet(
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
   #seedCache?: Buffer
+  #bip32Node?: BIP32Interface
+  #slip10Node?: HDKey
 
   constructor(mnemonic: string) {
     this.#mnemonic = mnemonic
@@ -78,6 +82,22 @@ export class MnemonicWallet implements Wallet {
       this.#seedCache = mnemonicToSeedSync(this.mnemonic)
     }
     return this.#seedCache
+  }
+
+  private async getBip32Node(): Promise<BIP32Interface> {
+    if (!this.#bip32Node) {
+      this.#bip32Node = bip32.fromSeed(await this.getSeed())
+    }
+    return this.#bip32Node
+  }
+
+  private getSlip10Node(): HDKey {
+    if (!this.#slip10Node) {
+      this.#slip10Node = slip10.fromMasterSeed(
+        Uint8Array.from(this.getSeedSync())
+      )
+    }
+    return this.#slip10Node
   }
 
   private async getBtcSigner(
@@ -113,8 +133,7 @@ export class MnemonicWallet implements Wallet {
     Logger.info('🔍 getSolanaSigner called', { accountIndex })
 
     try {
-      const seed = this.getSeedSync()
-      const node = slip10.fromMasterSeed(Uint8Array.from(seed))
+      const node = this.getSlip10Node()
       const derivationPathResult =
         ModuleManager.solanaModule.buildDerivationPath({
           accountIndex,
@@ -348,18 +367,16 @@ export class MnemonicWallet implements Wallet {
       )
     }
 
-    const seed = await this.getSeed()
-
     switch (curve) {
       case Curve.SECP256K1: {
-        const seedNode = bip32.fromSeed(seed)
+        const seedNode = await this.getBip32Node()
         return hex.encode(
           new Uint8Array(seedNode.derivePath(derivationPath).publicKey)
         )
       }
 
       case Curve.ED25519: {
-        const hdKey = slip10.fromMasterSeed(new Uint8Array(seed))
+        const hdKey = this.getSlip10Node()
         return hex.encode(hdKey.derive(derivationPath).publicKeyRaw)
       }
 
