@@ -9,7 +9,7 @@ function withPlatformAll(ios: string, android: string) {
 function getByText(text: string) {
   return withPlatform(
     `-ios predicate string:name == "${text}"`,
-    `//*[@text='${text}']`
+    `android=new UiSelector().text("${text}")`
   )
 }
 
@@ -32,7 +32,7 @@ function getByTextWithIndex(text: string, index = 0) {
 function getById(id: string) {
   return withPlatform(
     `~${id}`,
-    `//*[@resource-id='${id}' or @content-desc='${id}']`
+    `android=new UiSelector().description("${id}")`
   )
 }
 
@@ -40,9 +40,9 @@ function getBySmartText(textOrId: string) {
   return withPlatform(
     // iOS
     `-ios predicate string:
-      (name == "${textOrId}" 
+      (name == "${textOrId}"
        OR name == "${textOrId.toUpperCase()}"
-       OR label == "${textOrId}" 
+       OR label == "${textOrId}"
        OR value == "${textOrId}"
       )`,
     // Android
@@ -57,7 +57,7 @@ function getByXpath(xpath: string) {
 function getBySomeText(text: string) {
   return withPlatform(
     `-ios predicate string:name CONTAINS "${text}" AND accessible == true`,
-    `//*[contains(@text, '${text}')]`
+    `android=new UiSelector().textContains("${text}")`
   )
 }
 

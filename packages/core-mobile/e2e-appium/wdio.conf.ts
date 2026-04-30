@@ -77,8 +77,9 @@ const allCaps = [
     'appium:uiautomator2ServerInstallTimeout': 60000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
-    'appium:fullReset': true,
-    'appium:enforceAppInstall': true,
+    'appium:fullReset': process.env.NO_RESET !== 'true',
+    'appium:noReset': process.env.NO_RESET === 'true',
+    'appium:enforceAppInstall': process.env.NO_RESET !== 'true',
     'appium:uiautomator2ServerReadTimeout': 60000,
     'appium:skipDeviceInitialization': false,
     'appium:skipLogcatCapture': false
@@ -94,6 +95,7 @@ const allCaps = [
     ...(iosResolved.deviceUdid
       ? { 'appium:udid': iosResolved.deviceUdid }
       : {}),
+    'appium:noReset': process.env.NO_RESET === 'true',
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
     'appium:wdaStartupRetries': 5,

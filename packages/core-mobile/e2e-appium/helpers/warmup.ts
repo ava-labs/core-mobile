@@ -1,4 +1,22 @@
+import { actions } from './actions'
 import onboardingPage from '../pages/onboarding.page'
+import portfolioPage from '../pages/portfolio.page'
+
+type AppState = 'loggedIn' | 'locked' | 'onboarding'
+
+async function detectAppState(): Promise<AppState> {
+  const isLoggedIn = await actions.isElementVisible(
+    portfolioPage.portfolioBalanceHeader,
+    3000
+  )
+  if (isLoggedIn) return 'loggedIn'
+
+  // forgot_pin_btn only appears on the PIN lock screen
+  const isLocked = await actions.isElementVisible(onboardingPage.forgotPin, 3000)
+  if (isLocked) return 'locked'
+
+  return 'onboarding'
+}
 
 export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
@@ -11,6 +29,23 @@ export default async function warmup(
   }
 
   await onboardingPage.exitMetro()
+
+  const state = await detectAppState()
+  console.log(`App state detected: ${state}`)
+
+  if (state === 'loggedIn') {
+    console.log('Already logged in, skipping onboarding')
+    return
+  }
+
+  if (state === 'locked') {
+    console.log('App is locked, entering PIN to unlock')
+    await onboardingPage.unlockEnterPin()
+    await onboardingPage.verifyLoggedIn()
+    return
+  }
+
+  // Full onboarding flow
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()
   await onboardingPage.tapAgreeAndContinue()
