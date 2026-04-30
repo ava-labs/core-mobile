@@ -111,3 +111,6 @@ export class WalletDerivedDataCache {
     }
   }
 }
+
+/** Module-level singleton — shared by WalletFactory and importable without pulling in the full wallet dependency tree. */
+export const walletDerivedDataCache = new WalletDerivedDataCache()

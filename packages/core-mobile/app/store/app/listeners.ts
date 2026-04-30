@@ -1,12 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Action, isAnyOf } from '@reduxjs/toolkit'
+import type { Action } from '@reduxjs/toolkit'
+import { isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
-import {
-  AppState,
-  AppStateStatus,
-  Platform,
-  Appearance as RnAppearance
-} from 'react-native'
+import type { AppStateStatus } from 'react-native'
+import { AppState, Platform, Appearance as RnAppearance } from 'react-native'
 import BootSplash from 'react-native-bootsplash'
 import DeviceInfo from 'react-native-device-info'
 import SecureStorageService from 'security/SecureStorageService'
@@ -22,15 +19,15 @@ import {
   WalletState
 } from 'store/app'
 import { reduxStorage } from 'store/reduxStorage'
+import type { ColorSchemeName } from 'store/settings/appearance'
 import {
   Appearance,
-  ColorSchemeName,
   setSelectedAppearance,
   setSelectedColorScheme
 } from 'store/settings/appearance'
 import { selectLockWalletWithPIN } from 'store/settings/securityPrivacy'
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
-import WalletFactory from 'services/wallet/WalletFactory'
+import type { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import { walletDerivedDataCache } from 'services/wallet/WalletDerivedDataCache'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
@@ -143,7 +140,7 @@ const lockApp = async (
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     // Clear cached wallet instances to evict secrets (mnemonics, seeds, private keys) from heap
-    WalletFactory.cache.clearAll()
+    walletDerivedDataCache.clearAll()
     if (walletState === WalletState.ACTIVE) {
       dispatch(setWalletState(WalletState.INACTIVE))
     }
@@ -168,7 +165,7 @@ const clearData = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch } = listenerApi
-  WalletFactory.cache.clearAll()
+  walletDerivedDataCache.clearAll()
   dispatch(setWalletState(WalletState.NONEXISTENT))
   dispatch(setWalletType(WalletType.UNSET))
   dispatch(setSelectedAppearance(Appearance.System))

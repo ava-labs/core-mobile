@@ -5,16 +5,15 @@ import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
-import { Wallet, WalletType } from './types'
+import type { Wallet } from './types'
+import { WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 import { LedgerWallet } from './LedgerWallet'
-import { WalletDerivedDataCache } from './WalletDerivedDataCache'
+import { walletDerivedDataCache } from './WalletDerivedDataCache'
 
 class WalletFactory {
-  private derivedDataCache = new WalletDerivedDataCache()
-
-  get cache(): WalletDerivedDataCache {
-    return this.derivedDataCache
+  get cache() {
+    return walletDerivedDataCache
   }
 
   async getOrCreateWallet({
@@ -25,23 +24,23 @@ class WalletFactory {
     walletType: WalletType
   }): Promise<Wallet> {
     // 1. Resolved instance cache hit
-    const cached = this.derivedDataCache.getWalletInstance(walletId)
+    const cached = walletDerivedDataCache.getWalletInstance(walletId)
     if (cached) {
       return cached
     }
 
     // 2. In-flight creation — join existing Promise to avoid duplicate keychain reads
-    const inFlight = this.derivedDataCache.getWalletCreationInFlight(walletId)
+    const inFlight = walletDerivedDataCache.getWalletCreationInFlight(walletId)
     if (inFlight) {
       return inFlight
     }
 
     // 3. Start new creation and register the Promise synchronously before any await
     const promise = this.createWallet({ walletId, walletType }).then(wallet => {
-      this.derivedDataCache.setWalletInstance(walletId, wallet)
+      walletDerivedDataCache.setWalletInstance(walletId, wallet)
       return wallet
     })
-    this.derivedDataCache.setWalletCreationInFlight(walletId, promise)
+    walletDerivedDataCache.setWalletCreationInFlight(walletId, promise)
     return promise
   }
 
