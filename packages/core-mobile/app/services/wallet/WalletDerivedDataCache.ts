@@ -65,13 +65,16 @@ export class WalletDerivedDataCache {
 
   setWalletCreationInFlight(walletId: string, promise: Promise<Wallet>): void {
     this.walletCreationInFlight.set(walletId, promise)
-    // eslint-disable-next-line promise/catch-or-return
-    promise.finally(() => {
-      // Only clean up if this is still the same promise (not replaced by a new one after clearWallet)
-      if (this.walletCreationInFlight.get(walletId) === promise) {
-        this.walletCreationInFlight.delete(walletId)
-      }
-    })
+    // Clean up in-flight entry once settled. The .catch suppresses the
+    // unhandled rejection on this detached chain — callers still receive
+    // the rejection through the original promise they await.
+    promise
+      .finally(() => {
+        if (this.walletCreationInFlight.get(walletId) === promise) {
+          this.walletCreationInFlight.delete(walletId)
+        }
+      })
+      .catch(() => undefined)
   }
 
   clearWallet(walletId: string): void {
