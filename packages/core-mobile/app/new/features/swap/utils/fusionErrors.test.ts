@@ -1,3 +1,4 @@
+import { EstimateNativeFeeError, ErrorCode } from '@avalabs/fusion-sdk'
 import {
   fusionErrors,
   isGasOnlyNetworkFeeError,
@@ -99,6 +100,28 @@ describe('fusionErrors', () => {
         'Swap amount is too small for this token pair.\nTry a larger amount.'
       )
     })
+
+    it('should be tagged as provider-specific', () => {
+      const error = fusionErrors.swapAmountTooSmall()
+      expect(error.kind).toBe('provider-specific')
+    })
+  })
+
+  describe('insufficientFundsForFee', () => {
+    it('tags the undefined cause branch as provider-specific', () => {
+      const error = fusionErrors.insufficientFundsForFee(undefined)
+      expect(error.kind).toBe('provider-specific')
+    })
+
+    it('keeps the confirmed-native branch as network-fee-only', () => {
+      const error = fusionErrors.insufficientFundsForFee(true)
+      expect(error.kind).toBe('network-fee-only')
+    })
+
+    it('keeps the confirmed-token branch as other', () => {
+      const error = fusionErrors.insufficientFundsForFee(false)
+      expect(error.kind).toBe('other')
+    })
   })
 })
 
@@ -131,14 +154,60 @@ describe('isUserRejectionError', () => {
 })
 
 describe('isGasEstimationError', () => {
-  it('should return true for "gas estimation" message', () => {
+  it('should return true for legacy "gas estimation" message (pre-0.15.0 SDK)', () => {
     expect(isGasEstimationError(new Error('gas estimation failed'))).toBe(true)
     expect(isGasEstimationError(new Error('gas estimation error'))).toBe(true)
+  })
+
+  it('should return true for post-0.15.0 "estimate gas" messages', () => {
+    expect(
+      isGasEstimationError(
+        new Error('Failed to estimate gas for Markr swap transaction.')
+      )
+    ).toBe(true)
+    expect(
+      isGasEstimationError(
+        new Error(
+          'Failed to estimate gas for Markr swap transaction. Revert: TargetCallFailed().'
+        )
+      )
+    ).toBe(true)
+    expect(
+      isGasEstimationError(
+        new Error('Failed to estimate gas for ERC20 approval transaction.')
+      )
+    ).toBe(true)
+  })
+
+  it('should return true for real SDK EstimateNativeFeeError instances via the type guard', () => {
+    // Real SDK instance — the type guard uses instanceof and matches this.
+    const err = new EstimateNativeFeeError({
+      errorCode: ErrorCode.VIEM_ERROR,
+      tx: '0xtx'
+    })
+    expect(isGasEstimationError(err)).toBe(true)
+  })
+
+  it('should return false for duck-typed EstimateNativeFeeError without a matching substring', () => {
+    // The SDK's isEstimateNativeFeeError uses instanceof on its own class,
+    // so an error that merely has the same `name` property is not matched
+    // by the type guard. Without a "gas estimation" / "estimate gas"
+    // substring in the message, the substring fallback also misses —
+    // documenting that cross-realm / fake instances require SDK-wrapped
+    // errors or a recognisable message to be classified.
+    class FakeEstimateNativeFeeError extends Error {
+      override name = 'EstimateNativeFeeError'
+    }
+    const err = new FakeEstimateNativeFeeError('opaque message with no hint')
+    expect(isGasEstimationError(err)).toBe(false)
   })
 
   it('should be case-insensitive', () => {
     expect(isGasEstimationError(new Error('Gas Estimation Failed'))).toBe(true)
     expect(isGasEstimationError(new Error('GAS ESTIMATION'))).toBe(true)
+    expect(
+      isGasEstimationError(new Error('FAILED TO ESTIMATE GAS FOR SWAP'))
+    ).toBe(true)
   })
 
   it('should return false for unrelated errors', () => {
@@ -198,6 +267,13 @@ describe('shouldRetryWithNextQuote', () => {
     expect(shouldRetryWithNextQuote(new Error('gas estimation failed'))).toBe(
       true
     )
+    expect(
+      shouldRetryWithNextQuote(
+        new Error(
+          'Failed to estimate gas for Markr swap transaction. Revert: TargetCallFailed().'
+        )
+      )
+    ).toBe(true)
   })
 
   it('should return true for invalid response errors', () => {

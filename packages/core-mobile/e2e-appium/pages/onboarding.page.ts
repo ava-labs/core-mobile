@@ -157,7 +157,11 @@ class OnboardingPage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
+    if (driver.isAndroid) {
+      await actions.type(this.recoveryPhraseInput, recoveryPhrase)
+    } else {
+      await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
+    }
     await actions.tap(this.enterRecoveryPhraseTitle)
   }
 
@@ -286,6 +290,15 @@ class OnboardingPage {
     const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
     if (upKeypad) {
       await actions.tap(commonElsPage.keypadUpButton)
+    }
+  }
+
+  async unlockEnterPin() {
+    try {
+      await this.tapZero()
+    } catch {
+      await this.tapKeypadUpButton()
+      await this.tapZero()
     }
   }
 }
