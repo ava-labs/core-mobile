@@ -151,7 +151,6 @@ export const TradeFilters = ({
             flexDirection: 'row',
             gap: 8,
             paddingLeft: 16,
-            // backgroundColor: 'red',
             paddingTop: 16,
             paddingBottom: 12
           }}>
