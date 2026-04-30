@@ -117,9 +117,7 @@ describe('LedgerService', () => {
     // openApp now calls quitLedgerApp() + REQUEST_DELAY before sending
     // the open APDU. Under fake timers the delay never fires, so we
     // start the call, advance timers past the delay, then await.
-    async function openAppWithTimers(
-      appType: LedgerAppType
-    ): Promise<void> {
+    async function openAppWithTimers(appType: LedgerAppType): Promise<void> {
       const promise = LedgerService.openApp(appType)
       await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
       return promise
