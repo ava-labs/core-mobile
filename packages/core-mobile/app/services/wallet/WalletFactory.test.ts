@@ -201,7 +201,9 @@ describe('WalletFactory', () => {
 
       // Resolve the in-flight creation after the clear
       resolveCreation(staleWallet)
-      await firstPromise
+
+      // The stale promise rejects because the in-flight entry was invalidated
+      await firstPromise.catch(() => undefined)
 
       // The stale wallet should NOT be in the instance cache
       // A new call should trigger fresh creation
@@ -236,7 +238,9 @@ describe('WalletFactory', () => {
       WalletFactory.cache.clearAll()
 
       resolveCreation(staleWallet)
-      await firstPromise
+
+      // The stale promise rejects because the in-flight entry was invalidated
+      await firstPromise.catch(() => undefined)
 
       const second = await WalletFactory.getOrCreateWallet({
         walletId: 'w1',
