@@ -57,7 +57,7 @@ const ApprovalScreen = ({
   const activeWallet = useActiveWallet()
   const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
-  const { renderLedgerFooter, cancelLedger, dismissLedger } =
+  const { renderLedgerFooter, cancelLedger, dismissLedger, isLedgerActive } =
     useLedgerApproval(isLedger)
 
   const symbol = chainId
@@ -391,7 +391,11 @@ const ApprovalScreen = ({
       <SpendLimits
         spendLimits={spendLimits}
         hasBalanceChange={hasBalanceChange}
-        onSelect={canEdit ? updateSpendLimit : undefined}
+        onSelect={
+          canEdit && !submitting && !isLedgerActive
+            ? updateSpendLimit
+            : undefined
+        }
       />
     )
   }
