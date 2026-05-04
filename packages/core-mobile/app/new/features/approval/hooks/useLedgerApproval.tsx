@@ -13,6 +13,7 @@ type UseLedgerApprovalReturn = {
   renderLedgerFooter: () => JSX.Element | null
   cancelLedger: () => void
   dismissLedger: () => void
+  isLedgerActive: boolean
 }
 
 export const useLedgerApproval = (
@@ -162,5 +163,7 @@ export const useLedgerApproval = (
     cancelLedger
   ])
 
-  return { renderLedgerFooter, cancelLedger, dismissLedger }
+  const isLedgerActive = ledgerPhase !== LedgerReviewPhase.IDLE
+
+  return { renderLedgerFooter, cancelLedger, dismissLedger, isLedgerActive }
 }
