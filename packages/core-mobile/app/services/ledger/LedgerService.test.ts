@@ -772,6 +772,11 @@ describe('LedgerService', () => {
   })
 
   describe('waitForApp', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'info').mockImplementation(() => {})
@@ -779,7 +784,8 @@ describe('LedgerService', () => {
       jest.spyOn(Logger, 'error').mockImplementation(() => {})
     })
 
-    afterEach(() => {
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
       jest.clearAllMocks()
       jest.useRealTimers()
     })
@@ -795,6 +801,38 @@ describe('LedgerService', () => {
 
     it('should reject when signal is aborted during polling', async () => {
       jest.useFakeTimers()
+
+      // Establish a connected transport so pollForApp doesn't bail early
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(
+          Object.fromEntries(
+            [
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            ]
+              .filter(Boolean)
+              .map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+          ) as never
+        )
+      const mockTransport = {
+        id: 'test-device',
+        exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+        isConnected: true,
+        close: jest.fn().mockResolvedValue(undefined as never),
+        on: jest.fn(),
+        off: jest.fn(),
+        exchangeBusyPromise: null
+      }
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      await LedgerService.connect('test-device')
 
       // Make isAppCompatible return false so waitForApp enters polling
       const isAppCompatibleSpy = jest
