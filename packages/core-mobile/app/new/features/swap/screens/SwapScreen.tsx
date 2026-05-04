@@ -245,8 +245,12 @@ export const SwapScreen = (): JSX.Element => {
 
   const maxQuoteAdvances = useSelector(selectMarkrSwapMaxRetries)
 
+  const isSwapping = swapStatus === SwapStatus.Swapping
+
   useAutoAdvanceOnFeeValidationError({
     feeValidationError,
+    isValidating: isFeeValidating,
+    isSwapping,
     activeQuote,
     allQuotes,
     userQuote,
@@ -274,8 +278,6 @@ export const SwapScreen = (): JSX.Element => {
     !!activeQuote &&
     !isPriceImpactCalculating &&
     !isPriceImpactTooHigh
-
-  const isSwapping = swapStatus === SwapStatus.Swapping
 
   const coreFeeMessage = useMemo(() => {
     if (!activeQuote) return
