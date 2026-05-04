@@ -12,13 +12,19 @@ import type { Quote } from '../types'
  * swap-time retry and analytics stay correctly classified as 'auto'.
  *
  * Bounded by maxAdvances to avoid churning through every provider on a bad
- * token pair or amount. The counter resets whenever the error clears or the
- * user takes manual control via the Pricing sheet.
+ * token pair or amount. The counter resets only on a *stable* clear — when
+ * the error is gone AND fee validation isn't mid-flight — or when the user
+ * takes manual control via the Pricing sheet.
  *
- * No-op when userQuote is set — respect the user's explicit pick.
+ * No-op when:
+ * - `userQuote` is set — respect the user's explicit pick.
+ * - `isSwapping` is true — once the user has committed to a swap, the active
+ *   quote must not change underneath the in-flight `transferAsset` call.
  */
 export const useAutoAdvanceOnFeeValidationError = ({
   feeValidationError,
+  isValidating,
+  isSwapping,
   activeQuote,
   allQuotes,
   userQuote,
@@ -26,6 +32,8 @@ export const useAutoAdvanceOnFeeValidationError = ({
   maxAdvances
 }: {
   feeValidationError: FusionQuoteError | undefined
+  isValidating: boolean
+  isSwapping: boolean
   activeQuote: Quote | null
   allQuotes: Quote[]
   userQuote: Quote | null
@@ -39,6 +47,11 @@ export const useAutoAdvanceOnFeeValidationError = ({
   const lastAdvancedFromRef = useRef<string | null>(null)
 
   useEffect(() => {
+    // Swap is in flight — leave activeQuote alone. Otherwise advancing would
+    // race the captured quote inside SwapContext.swap() and spam Zustand
+    // updates while the JS thread is already busy with the transfer.
+    if (isSwapping) return
+
     // User has manually picked a quote — don't override their choice.
     if (userQuote) {
       advanceCountRef.current = 0
@@ -47,8 +60,14 @@ export const useAutoAdvanceOnFeeValidationError = ({
     }
 
     if (feeValidationError?.kind !== 'provider-specific') {
-      // Non-blocking or non-provider-specific error → reset so a fresh run of
-      // failures can advance up to maxAdvances again.
+      // While a fee estimation is in flight, `feeValidationError` is briefly
+      // undefined — that's not a real "error cleared", it's just a gap. If
+      // we reset the counter here, every quote-stream refresh re-arms the
+      // budget and the hook can walk the whole list again on each cycle.
+      if (isValidating) return
+
+      // Stable clear (validation finished with no error, or the error is
+      // non-provider-specific) → arm a fresh budget for the next failure.
       advanceCountRef.current = 0
       lastAdvancedFromRef.current = null
       return
@@ -84,6 +103,8 @@ export const useAutoAdvanceOnFeeValidationError = ({
     showSnackbar('Quote failed, trying next available')
   }, [
     feeValidationError,
+    isValidating,
+    isSwapping,
     activeQuote,
     allQuotes,
     userQuote,
