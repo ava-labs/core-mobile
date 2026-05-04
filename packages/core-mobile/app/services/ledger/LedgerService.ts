@@ -646,8 +646,9 @@ class LedgerService {
       throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
     }
 
-    if (this.isAppCompatible(this.currentAppType, appType)) {
-      Logger.info(`${appType} app is ready (detected: ${this.currentAppType})`)
+    // Always verify device state with a real APDU check — cached
+    // currentAppType may be stale after reconnects or app changes.
+    if (await this.checkApp(appType)) {
       return
     }
 

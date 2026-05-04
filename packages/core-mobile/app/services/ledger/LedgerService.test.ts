@@ -836,11 +836,6 @@ describe('LedgerService', () => {
       })
       await LedgerService.connect('test-device')
 
-      // Make isAppCompatible return false so waitForApp enters polling
-      const isAppCompatibleSpy = jest
-        .spyOn(LedgerService as any, 'isAppCompatible')
-        .mockReturnValue(false)
-
       // Make checkApp always return false (app never opens)
       const checkAppSpy = jest
         .spyOn(LedgerService as any, 'checkApp')
@@ -869,7 +864,6 @@ describe('LedgerService', () => {
 
       await rejectPromise
 
-      isAppCompatibleSpy.mockRestore()
       checkAppSpy.mockRestore()
     })
   })
