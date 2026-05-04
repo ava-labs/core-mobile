@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import NetworkService from 'services/network/NetworkService'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { PrivateKeyWallet } from './PrivateKeyWallet'
 
 const MOCK_PRIVATE_KEY =
@@ -66,6 +67,22 @@ describe('PrivateKeyWallet', () => {
       })
 
       expect(signedTx).toBe('{"signedTx":"signedTx"}')
+    })
+  })
+
+  describe('signAvalancheMessage', () => {
+    it('signs a P-chain message with an imported private key', async () => {
+      const result = await wallet.signMessage({
+        rpcMethod: RpcMethod.AVALANCHE_SIGN_MESSAGE,
+        data: '0x68656c6c6f',
+        accountIndex: 0,
+        network: { vmName: 'PVM', isTestnet: false, chainId: 1 },
+        provider: {} as JsonRpcBatchInternal
+      })
+
+      expect(typeof result).toBe('string')
+      expect(result.length).toBeGreaterThan(0)
+      expect(NetworkService.getAvalancheProviderXP).toHaveBeenCalledWith(false)
     })
   })
 })

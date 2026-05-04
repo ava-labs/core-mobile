@@ -26,6 +26,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
+import NetworkService from 'services/network/NetworkService'
 import {
   TypedDataV1,
   TypedData,
@@ -169,7 +170,11 @@ export class PrivateKeyWallet implements Wallet {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
 
-        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
+        return await this.signAvalancheMessage(
+          data,
+          chainAlias,
+          network.isTestnet ?? false
+        )
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
@@ -390,14 +395,14 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private signAvalancheMessage = async (
-    accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any,
-    chainAlias: Avalanche.ChainIDAlias
+    chainAlias: Avalanche.ChainIDAlias,
+    isTestnet: boolean
   ): Promise<string> => {
     const message = toUtf8(data)
-    // TODO(CP-14178 Task 3): replace with StaticSigner + fetched XP provider
-    const signer = new Avalanche.SimpleSigner(this.privateKey, accountIndex)
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+    const signer = await this.getAvaSigner(provXP)
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias
