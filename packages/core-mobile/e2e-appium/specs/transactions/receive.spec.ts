@@ -20,7 +20,7 @@ describe('Receive', () => {
       if (network !== cl.evm) {
         await txPage.selectNetwork(network)
       }
-      await txPage.verifyReceiveScreen(network, address)
+      await txPage.verifyReceiveScreen(network, address.toLowerCase())
     })
   })
 })

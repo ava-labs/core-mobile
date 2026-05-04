@@ -111,9 +111,22 @@ export const XPTokenActivityListItemTitle = ({
     }
   }, [tx, renderAmount])
 
+  const titleLabel = useMemo(() => {
+    return nodes
+      .map(node => {
+        if (typeof node === 'string') return node
+        if (React.isValidElement(node)) {
+          const props = node.props as { number?: number | string }
+          if (props.number !== undefined) return String(props.number)
+        }
+        return ''
+      })
+      .join('')
+  }, [nodes])
+
   return (
     <View
-      testID={`tx__from_${tx.from.toLowerCase()}_to_${tx.to.toLowerCase()}`}
+      testID={`tx__title__${titleLabel}`}
       style={{
         flexDirection: 'row',
         alignItems: 'baseline',
