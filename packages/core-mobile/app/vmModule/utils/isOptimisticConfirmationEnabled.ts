@@ -86,9 +86,12 @@ const getOptimisticGate = (
 // enabled. Post-Helicon, real confirmations come back fast enough that the
 // optimistic UX is misleading on failure.
 //
-// Multiple calls for the same network share a single in-flight upgrade-info
-// fetch so onTransactionPending and onTransactionConfirmed see the same gate
-// value (and resolve in call order via Promise microtask scheduling).
+// This util is called once per tx, in `ApprovalController.onTransactionPending`.
+// The result is cached on the controller's `optimisticGateMap` (keyed by
+// requestId) and re-read in `onTransactionConfirmed` / `onTransactionReverted`,
+// so pending and confirmed always see the same decision. The per-network
+// in-flight cache below is a fetch optimization across consecutive txs only,
+// not a correctness mechanism for a single tx.
 //
 // The `sae-override` PostHog flag (snapshotted onto request.context by
 // createInAppRequest) supersedes the InfoAPI check when set to 'enabled' or
