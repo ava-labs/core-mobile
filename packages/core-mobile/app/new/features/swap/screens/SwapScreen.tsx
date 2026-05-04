@@ -31,6 +31,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
+  FadeIn,
+  FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -844,7 +846,9 @@ export const SwapScreen = (): JSX.Element => {
     if (!activeError) return null
 
     return (
-      <View
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
         style={{
           alignItems: 'center',
           marginVertical: 8,
@@ -857,7 +861,7 @@ export const SwapScreen = (): JSX.Element => {
           sx={{ color: '$textDanger', textAlign: 'center' }}>
           {activeError.message}
         </Text>
-      </View>
+      </Animated.View>
     )
   }, [activeError])
 
