@@ -969,7 +969,11 @@ class LedgerService {
   // show a reconnect prompt rather than silently retrying.
   getTransport(): TransportBLE {
     if (!this.#transport?.isConnected) {
-      throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
+      const error = new Error(
+        'Ledger connection is not available. Please reconnect your Ledger device and try again.'
+      ) as Error & { code?: string }
+      error.code = LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE
+      throw error
     }
     return this.#transport
   }
