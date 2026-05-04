@@ -92,8 +92,7 @@ async function tapNumberPad(keyCode: string) {
       const iosPath = `-ios predicate string:label == "${char}" AND type == "XCUIElementTypeKey"`
       await selectors.getByXpath(iosPath).click()
     } else {
-      const num = 7 + parseInt(char, 10)
-      await driver.pressKeyCode(num)
+      await driver.execute('mobile: type', { text: char })
     }
   }
 }
@@ -453,23 +452,20 @@ async function typeSlowly(
     )
   }
 
+  if (driver.isAndroid) {
+    console.log('typeSlowly', textToType)
+    await driver.execute('mobile: type', { text: textToType })
+    console.log('typeSlowly2', textToType)
+    await driver.pause(200)
+    return
+  }
+
   // Clear any existing value
   try {
     await element.clearValue()
     await driver.pause(200)
   } catch {
-    // If clearValue fails, try selecting all and deleting
-    if (driver.isAndroid) {
-      try {
-        // 29 = KEYCODE_A, 4096 = META_CTRL_ON (Ctrl+A = select all)
-        await driver.pressKeyCode(29, 4096)
-        await driver.pause(100)
-        await driver.pressKeyCode(67) // Delete
-        await driver.pause(200)
-      } catch {
-        // Continue anyway
-      }
-    }
+    // Continue anyway
   }
 
   // Character-by-character input so PIN fields / masked inputs get per-keystroke events (setValue alone can skip that).

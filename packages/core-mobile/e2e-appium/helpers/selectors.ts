@@ -30,10 +30,7 @@ function getByTextWithIndex(text: string, index = 0) {
 }
 
 function getById(id: string) {
-  return withPlatform(
-    `~${id}`,
-    `android=new UiSelector().description("${id}")`
-  )
+  return withPlatform(`~${id}`, `android=new UiSelector().resourceId("${id}")`)
 }
 
 function getBySmartText(textOrId: string) {
@@ -45,8 +42,8 @@ function getBySmartText(textOrId: string) {
        OR label == "${textOrId}"
        OR value == "${textOrId}"
       )`,
-    // Android
-    `//*[@resource-id='${textOrId}' or @content-desc='${textOrId}' or @text='${textOrId}' or @text='${textOrId.toUpperCase()}']`
+    // Android: case-insensitive text match covers both 'Save' and 'SAVE' styled buttons
+    `android=new UiSelector().textMatches("(?i)^${textOrId}$")`
   )
 }
 
@@ -58,14 +55,13 @@ function getBySomeText(text: string) {
   return withPlatform(
     `-ios predicate string:name CONTAINS "${text}" AND accessible == true`,
     `android=new UiSelector().textContains("${text}")`
-    `//*[contains(@text, '${text}') or contains(@content-desc, '${text}')]`
   )
 }
 
 function getBySomeTextV2(text: string) {
   return withPlatform(
     `-ios predicate string:name CONTAINS "${text}"`,
-    `//*[contains(@text, '${text}') or contains(@content-desc, '${text}')]`
+    `android=new UiSelector().textContains("${text}")`
   )
 }
 

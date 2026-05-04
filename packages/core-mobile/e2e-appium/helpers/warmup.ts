@@ -1,6 +1,6 @@
-import { actions } from './actions'
 import onboardingPage from '../pages/onboarding.page'
 import portfolioPage from '../pages/portfolio.page'
+import { actions } from './actions'
 
 type AppState = 'loggedIn' | 'locked' | 'onboarding'
 
@@ -12,7 +12,10 @@ async function detectAppState(): Promise<AppState> {
   if (isLoggedIn) return 'loggedIn'
 
   // forgot_pin_btn only appears on the PIN lock screen
-  const isLocked = await actions.isElementVisible(onboardingPage.forgotPin, 3000)
+  const isLocked = await actions.isElementVisible(
+    onboardingPage.forgotPin,
+    3000
+  )
   if (isLocked) return 'locked'
 
   return 'onboarding'

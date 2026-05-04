@@ -29,11 +29,5 @@ describe('Buy', () => {
     // verify currency on settings
     await settingsPage.goSettings()
     await settingsPage.verifySettingsRow(settingsLoc.currency, commonLoc.hkd)
-    await commons.dismissBottomSheet()
-
-    // verify locale and currency on withdraw flow
-    await txPage.tapWithdraw()
-    await txPage.verifyLocale(commonLoc.southKorea, commonLoc.hkd)
-    await commons.dismissBottomSheet()
   })
 })

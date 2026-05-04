@@ -62,6 +62,7 @@ const allCaps = [
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
     'appium:automationName': 'UiAutomator2',
+    'appium:appWaitActivity': '*',
     'appium:app': androidAppPath,
     ...(androidResolved.deviceUdid
       ? { 'appium:udid': androidResolved.deviceUdid }
@@ -69,18 +70,18 @@ const allCaps = [
     ...(chromedriverExecutableDir
       ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
       : {}),
-    'appium:appWaitDuration': 60000,
+    'appium:appWaitDuration': 20000,
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
-    'appium:adbExecTimeout': 60000,
-    'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000,
+    'appium:adbExecTimeout': 20000,
+    'appium:uiautomator2ServerLaunchTimeout': 20000,
+    'appium:uiautomator2ServerInstallTimeout': 20000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
     'appium:fullReset': process.env.NO_RESET !== 'true',
     'appium:noReset': process.env.NO_RESET === 'true',
     'appium:enforceAppInstall': process.env.NO_RESET !== 'true',
-    'appium:uiautomator2ServerReadTimeout': 60000,
+    'appium:uiautomator2ServerReadTimeout': 20000,
     'appium:skipDeviceInitialization': false,
     'appium:skipLogcatCapture': false
   },
@@ -137,7 +138,7 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 1,
+  maxInstances: 2,
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly
   ...(isDeviceFarm
@@ -180,7 +181,7 @@ export const config: WebdriverIO.Config = {
   capabilities: caps,
   mochaOpts: {
     ui: 'bdd',
-    timeout: 600000
+    timeout: 200000
   },
 
   // hook before: make or get testRun before test

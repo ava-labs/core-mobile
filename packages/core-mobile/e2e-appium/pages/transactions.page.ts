@@ -353,20 +353,20 @@ class TransactionsPage {
     input: ReturnType<typeof selectors.getById> = this.amountInput
   ) {
     await this.enterAmount(amount, input)
-    let tryCount = 5
-    let newAmount = amount
-    try {
-      await actions.waitForNotVisible(this.errorMsg)
-    } catch (e) {
-      while (await actions.getVisible(this.errorMsg)) {
-        newAmount = await this.adjustAmount(newAmount)
-        await this.enterAmount(newAmount, input)
-        tryCount--
-        if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
-          break
-        }
-      }
-    }
+    // let tryCount = 5
+    // let newAmount = amount
+    // try {
+    //   await actions.waitForNotVisible(this.errorMsg)
+    // } catch (e) {
+    //   while (await actions.getVisible(this.errorMsg)) {
+    //     newAmount = await this.adjustAmount(newAmount)
+    //     await this.enterAmount(newAmount, input)
+    //     tryCount--
+    //     if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
+    //       break
+    //     }
+    //   }
+    // }
   }
 
   async tapSwapVerticalIcon() {
