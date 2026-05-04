@@ -74,9 +74,9 @@ export const useLedgerBLEConnection = ({
     [getLedgerInfoByWalletId, activeWalletId]
   )
 
-  // Track whether we've already attempted to open the app in this
-  // connecting phase so we don't spam the open-app APDU every poll tick.
-  const openAppAttemptedRef = useRef(false)
+  // Track the last app type we attempted to open so we don't spam the
+  // open-app APDU every poll tick, but still retry when appType changes.
+  const lastOpenAppAttemptRef = useRef<LedgerAppType | null>(null)
 
   // Reset connection state when a new connecting phase begins
   useEffect(() => {
@@ -85,7 +85,7 @@ export const useLedgerBLEConnection = ({
       setIsAvalancheAppOpen(false)
       setIsUnsupportedBtcVersion(false)
       setCurrentBtcVersion('')
-      openAppAttemptedRef.current = false
+      lastOpenAppAttemptRef.current = null
     }
   }, [isConnecting])
 
@@ -143,8 +143,8 @@ export const useLedgerBLEConnection = ({
 
         // Proactively quit the current app and open the required one.
         // openApp handles quit→open internally and is best-effort.
-        if (!isCorrectApp && !openAppAttemptedRef.current) {
-          openAppAttemptedRef.current = true
+        if (!isCorrectApp && lastOpenAppAttemptRef.current !== appType) {
+          lastOpenAppAttemptRef.current = appType
           LedgerService.openApp(appType).catch(() => undefined)
         }
         return

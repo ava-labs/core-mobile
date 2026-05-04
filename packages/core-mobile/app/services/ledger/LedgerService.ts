@@ -179,6 +179,14 @@ class LedgerService {
       }
       this.connectedDeviceId = deviceId // Store for auto-reconnect
 
+      // Clean up any previous transport's disconnect listener before
+      // opening a new one — otherwise a late-firing event from the old
+      // transport can null out the new #transport.
+      if (this.#transport && this.disconnectHandler) {
+        this.#transport.off('disconnect', this.disconnectHandler)
+        this.disconnectHandler = null
+      }
+
       await TransportBLE.disconnectDevice(deviceId).catch(Logger.error)
 
       this.#transport = await TransportBLE.open(
@@ -189,11 +197,18 @@ class LedgerService {
 
       // Listen for unexpected BLE disconnects (e.g. Ledger auto-sleep)
       // so we can attempt auto-reconnect instead of silently going stale.
+      // Capture the transport instance so stale events from a previous
+      // transport are ignored even if #transport has been replaced.
+      const currentTransport = this.#transport
       this.disconnectHandler = (): void => {
+        if (this.#transport !== currentTransport) {
+          Logger.info('Ignoring disconnect from stale transport')
+          return
+        }
         Logger.info('Transport disconnect event received')
         this.handleTransportDisconnect()
       }
-      this.#transport?.on('disconnect', this.disconnectHandler)
+      this.#transport.on('disconnect', this.disconnectHandler)
 
       // Wrap the transport's exchange method to automatically handle busy state
       this.wrapTransportExchange()
@@ -241,7 +256,12 @@ class LedgerService {
     // Skip entirely to avoid spurious reconnects.
     if (!this.#transport) return
 
-    this.disconnectHandler = null
+    // Detach the listener before nulling so the transport object doesn't
+    // hold a reference to a stale handler.
+    if (this.disconnectHandler) {
+      this.#transport.off('disconnect', this.disconnectHandler)
+      this.disconnectHandler = null
+    }
     this.#transport = null
     this.currentAppType = LedgerAppType.UNKNOWN
     this.stopAppPolling()
@@ -663,6 +683,10 @@ class LedgerService {
     while (Date.now() - startTime < timeoutMs) {
       if (signal?.aborted) {
         throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+      }
+
+      if (!this.#transport?.isConnected) {
+        throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
       }
 
       if (await this.checkApp(appType)) {
