@@ -68,9 +68,10 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getAvaSigner(
-    accountIndex: number
-  ): Promise<Avalanche.SimpleSigner> {
-    return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
+    provider: Avalanche.JsonRpcProvider
+  ): Promise<Avalanche.StaticSigner> {
+    const keyBuffer = Buffer.from(strip0x(this.privateKey), 'hex')
+    return new Avalanche.StaticSigner(keyBuffer, keyBuffer, provider)
   }
 
   private async getSvmSigner(): Promise<SolanaSigner> {
@@ -79,7 +80,7 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getSigner({
-    accountIndex,
+    accountIndex: _accountIndex,
     network,
     provider
   }: {
@@ -87,7 +88,7 @@ export class PrivateKeyWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
   }): Promise<
-    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | SolanaSigner
+    BitcoinWallet | BaseWallet | Avalanche.StaticSigner | SolanaSigner
   > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
@@ -111,7 +112,7 @@ export class PrivateKeyWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return await this.getAvaSigner(accountIndex)
+        return await this.getAvaSigner(provider)
       case NetworkVMType.SVM:
         return this.getSvmSigner()
       default:
@@ -254,7 +255,7 @@ export class PrivateKeyWallet implements Wallet {
   }): Promise<string> {
     const signer = await this.getSigner({ accountIndex, network, provider })
 
-    if (!(signer instanceof Avalanche.SimpleSigner)) {
+    if (!(signer instanceof Avalanche.StaticSigner)) {
       throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
@@ -395,7 +396,8 @@ export class PrivateKeyWallet implements Wallet {
     chainAlias: Avalanche.ChainIDAlias
   ): Promise<string> => {
     const message = toUtf8(data)
-    const signer = await this.getAvaSigner(accountIndex)
+    // TODO(CP-14178 Task 3): replace with StaticSigner + fetched XP provider
+    const signer = new Avalanche.SimpleSigner(this.privateKey, accountIndex)
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias
