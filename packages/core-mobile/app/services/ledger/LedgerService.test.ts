@@ -819,7 +819,9 @@ describe('LedgerService', () => {
         )
       const mockTransport = {
         id: 'test-device',
-        exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+        exchange: jest
+          .fn()
+          .mockRejectedValue(new Error('No app info') as never),
         isConnected: true,
         close: jest.fn().mockResolvedValue(undefined as never),
         on: jest.fn(),
