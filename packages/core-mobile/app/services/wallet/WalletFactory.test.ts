@@ -150,17 +150,107 @@ describe('WalletFactory', () => {
       expect(second).toBe(walletB)
       expect(createSpy).toHaveBeenCalledTimes(2)
     })
-  })
 
-  describe('createWallet', () => {
-    it('always creates a fresh instance (no caching)', async () => {
-      const walletA: Wallet = { ...mockWallet }
-      const walletB: Wallet = { ...mockWallet }
+    it('concurrent callers both reject when creation fails', async () => {
+      jest
+        .spyOn(WalletFactory, 'createWallet')
+        .mockRejectedValueOnce(new Error('keychain locked'))
+
+      const results = await Promise.allSettled([
+        WalletFactory.getOrCreateWallet({
+          walletId: 'w1',
+          walletType: WalletType.MNEMONIC
+        }),
+        WalletFactory.getOrCreateWallet({
+          walletId: 'w1',
+          walletType: WalletType.MNEMONIC
+        })
+      ])
+
+      expect(results[0]?.status).toBe('rejected')
+      expect(results[1]?.status).toBe('rejected')
+      expect((results[0] as PromiseRejectedResult).reason.message).toBe(
+        'keychain locked'
+      )
+      expect((results[1] as PromiseRejectedResult).reason.message).toBe(
+        'keychain locked'
+      )
+    })
+
+    it('clearWallet during in-flight creation prevents re-caching', async () => {
+      let resolveCreation!: (wallet: Wallet) => void
+      const creationPromise = new Promise<Wallet>(resolve => {
+        resolveCreation = resolve
+      })
+      const staleWallet: Wallet = { ...mockWallet }
+      const freshWallet: Wallet = { ...mockWallet }
 
       const createSpy = jest
         .spyOn(WalletFactory, 'createWallet')
-        .mockResolvedValueOnce(walletA)
-        .mockResolvedValueOnce(walletB)
+        .mockReturnValueOnce(creationPromise)
+        .mockResolvedValueOnce(freshWallet)
+
+      // Start creation — it's now in-flight
+      const firstPromise = WalletFactory.getOrCreateWallet({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC
+      })
+
+      // Clear while still in-flight (simulates lock/remove flow)
+      WalletFactory.cache.clearWallet('w1')
+
+      // Resolve the in-flight creation after the clear
+      resolveCreation(staleWallet)
+      await firstPromise
+
+      // The stale wallet should NOT be in the instance cache
+      // A new call should trigger fresh creation
+      const second = await WalletFactory.getOrCreateWallet({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC
+      })
+
+      expect(second).toBe(freshWallet)
+      expect(createSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('clearAll during in-flight creation prevents re-caching', async () => {
+      let resolveCreation!: (wallet: Wallet) => void
+      const creationPromise = new Promise<Wallet>(resolve => {
+        resolveCreation = resolve
+      })
+      const staleWallet: Wallet = { ...mockWallet }
+      const freshWallet: Wallet = { ...mockWallet }
+
+      const createSpy = jest
+        .spyOn(WalletFactory, 'createWallet')
+        .mockReturnValueOnce(creationPromise)
+        .mockResolvedValueOnce(freshWallet)
+
+      const firstPromise = WalletFactory.getOrCreateWallet({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC
+      })
+
+      // clearAll while in-flight (simulates logout)
+      WalletFactory.cache.clearAll()
+
+      resolveCreation(staleWallet)
+      await firstPromise
+
+      const second = await WalletFactory.getOrCreateWallet({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC
+      })
+
+      expect(second).toBe(freshWallet)
+      expect(createSpy).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('createWallet', () => {
+    it('loads wallet secret from keychain on every call (no caching)', async () => {
+      const BiometricsSDK = require('utils/BiometricsSDK').default
 
       const first = await WalletFactory.createWallet({
         walletId: 'w1',
@@ -171,10 +261,9 @@ describe('WalletFactory', () => {
         walletType: WalletType.MNEMONIC
       })
 
-      expect(first).toBe(walletA)
-      expect(second).toBe(walletB)
+      // Each call should hit BiometricsSDK — no caching at this layer
+      expect(BiometricsSDK.loadWalletSecret).toHaveBeenCalledTimes(2)
       expect(first).not.toBe(second)
-      expect(createSpy).toHaveBeenCalledTimes(2)
     })
   })
 })

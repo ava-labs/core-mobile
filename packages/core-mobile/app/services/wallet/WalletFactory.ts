@@ -37,7 +37,14 @@ class WalletFactory {
 
     // 3. Start new creation and register the Promise synchronously before any await
     const promise = this.createWallet({ walletId, walletType }).then(wallet => {
-      walletDerivedDataCache.setWalletInstance(walletId, wallet)
+      // Only cache if this promise is still the current in-flight entry.
+      // If clearWallet/clearAll was called while creation was in progress,
+      // the in-flight entry was deleted and we must not re-cache.
+      if (
+        walletDerivedDataCache.getWalletCreationInFlight(walletId) === promise
+      ) {
+        walletDerivedDataCache.setWalletInstance(walletId, wallet)
+      }
       return wallet
     })
     walletDerivedDataCache.setWalletCreationInFlight(walletId, promise)
