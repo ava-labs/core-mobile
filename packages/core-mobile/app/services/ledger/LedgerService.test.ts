@@ -1096,6 +1096,86 @@ describe('LedgerService', () => {
     })
   })
 
+  describe('wrapTransportExchange', () => {
+    let mockTransport: {
+      exchange: jest.Mock
+      isConnected: boolean
+      close: jest.Mock
+      exchangeBusyPromise: Promise<void> | null
+    }
+    let protoDesc: PropertyDescriptor | undefined
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+
+      mockTransport = {
+        exchange: jest.fn(),
+        isConnected: true,
+        close: jest.fn(),
+        exchangeBusyPromise: null
+      }
+
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+
+      // Use the prototype setter to set the real #transport private field
+      protoDesc = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(LedgerService),
+        'transport'
+      )
+      if (protoDesc?.set) {
+        protoDesc.set.call(LedgerService, mockTransport)
+      }
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+      jest.clearAllMocks()
+      // Clear transport to avoid leaking state
+      if (protoDesc?.set) {
+        protoDesc.set.call(LedgerService, null)
+      }
+    })
+
+    it('should await exchangeBusyPromise before sending APDU', async () => {
+      const callOrder: string[] = []
+      let resolveBusy!: () => void
+      mockTransport.exchangeBusyPromise = new Promise<void>(resolve => {
+        resolveBusy = resolve
+      })
+
+      const originalExchange = jest.fn().mockImplementation(async () => {
+        callOrder.push('exchange')
+        return Buffer.from([0x90, 0x00])
+      })
+      mockTransport.exchange = originalExchange
+
+      // @ts-ignore - accessing private
+      LedgerService.wrapTransportExchange()
+
+      const exchangePromise = mockTransport.exchange(Buffer.from([0xe0, 0x01]))
+
+      // Advance past the fixed REQUEST_DELAY timeout.
+      // With the buggy implementation, this causes the exchange to fire
+      // even though the busy promise hasn't resolved yet.
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY + 100)
+
+      // The exchange should NOT have been called yet because
+      // the busy promise is still unresolved
+      // @ts-ignore - Detox expect overloads conflict with Jest expect
+      expect(originalExchange).not.toHaveBeenCalled()
+
+      // Now resolve the busy promise
+      callOrder.push('busy-resolved')
+      resolveBusy()
+
+      await exchangePromise
+
+      // @ts-ignore - Detox expect overloads conflict with Jest expect for arrays
+      expect(callOrder).toEqual(['busy-resolved', 'exchange'])
+    })
+  })
+
   describe('getSolanaKeysForRange', () => {
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function

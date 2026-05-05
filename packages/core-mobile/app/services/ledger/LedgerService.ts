@@ -94,9 +94,9 @@ class LedgerService {
 
     // Replace exchange method with wrapped version
     this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
-      // If transport is busy, wait before sending next command
+      // If transport is busy, wait for the in-flight exchange to complete
       if (this.#transport?.exchangeBusyPromise) {
-        await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+        await this.#transport.exchangeBusyPromise
       }
       try {
         return await originalExchange(apdu)
@@ -112,9 +112,13 @@ class LedgerService {
               .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
         ) {
           // wait for the transport and retry
-          await new Promise(res =>
-            setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
-          )
+          if (this.#transport?.exchangeBusyPromise) {
+            await this.#transport.exchangeBusyPromise
+          } else {
+            await new Promise(res =>
+              setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
+            )
+          }
           return await originalExchange(apdu)
         }
         // Other errors should be thrown immediately
