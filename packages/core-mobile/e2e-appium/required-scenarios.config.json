@@ -1,0 +1,15 @@
+{
+  "flows": [
+    "send",
+    "swap",
+    "cross-chain-transfer",
+    "stake-delegate",
+    "defi",
+    "collectibles",
+    "activity",
+    "settings",
+    "accounts"
+  ],
+  "walletModes": ["mnemonic"],
+  "definition": "Each listed product flow should have Appium coverage under mnemonic-style login (recovery phrase / warmup). Seedless is not in `walletModes` until seedless Appium exists — add it here when that suite lands. Ledger is omitted (not automatable in Appium). Unknown `flows` keys are ignored with a console warning (see SPEC_COVERS_FLOW_MOBILE in e2e-feature-coverage.js)."
+}
