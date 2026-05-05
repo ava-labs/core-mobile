@@ -1,0 +1,9 @@
+{
+  "weights": {
+    "e2eFeatureCoveragePercent": 0.08,
+    "requiredScenariosPercent": 0.22,
+    "featureFolderWalletSlotPercent": 0.7
+  },
+  "impliedUncertaintyPercentagePoints": 10,
+  "definition": "Codebase-only headline for core-mobile: weighted blend of Appium spec→feature-folder breadth (token/stem/describe), required flow×wallet cells from required-scenarios.config.json (flows and walletModes from that file; invalid weight numbers fall back to defaults with a warning), and folder×wallet-slot assumption (N = walletModes.length). Ledger is not automatable in Appium. TestRail is not part of this number."
+}

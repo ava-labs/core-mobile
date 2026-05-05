@@ -6,6 +6,7 @@ import {
   NotificationTab
 } from './types'
 import {
+  buildAccountLabelMap,
   filterByTab,
   isSwapTerminal,
   mapTransferToSourceChainStatus,
@@ -125,6 +126,122 @@ describe('filterByTab', () => {
 
   it('returns empty array when input is empty', () => {
     expect(filterByTab([], NotificationTab.ALL)).toEqual([])
+  })
+})
+
+// ─── buildAccountLabelMap ─────────────────────────────────────────────────────
+
+describe('buildAccountLabelMap', () => {
+  const addr = '0x1111111111111111111111111111111111111111'
+  const otherAddr = '0x2222222222222222222222222222222222222222'
+
+  const makeAccounts = (
+    entries: { id: string; addressC: string; name: string; walletId: string }[]
+  ): Parameters<typeof buildAccountLabelMap>[0] =>
+    Object.fromEntries(
+      entries.map(e => [
+        e.id,
+        {
+          id: e.id,
+          addressC: e.addressC,
+          name: e.name,
+          walletId: e.walletId,
+          addressBTC: '',
+          index: 0
+        }
+      ])
+    ) as Parameters<typeof buildAccountLabelMap>[0]
+
+  const makeWallets = (
+    entries: { id: string; name: string }[]
+  ): Parameters<typeof buildAccountLabelMap>[1] =>
+    Object.fromEntries(
+      entries.map(e => [e.id, { id: e.id, name: e.name, type: 'MNEMONIC' }])
+    ) as Parameters<typeof buildAccountLabelMap>[1]
+
+  it('uses just the account name when the user has one wallet', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w1' }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe('Account 2')
+  })
+
+  it('prefixes the wallet name when the user has multiple wallets', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w2' }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Wallet A' },
+      { id: 'w2', name: 'Wallet B' }
+    ])
+
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe(
+      'Wallet B · Account 2'
+    )
+  })
+
+  it('keys the map by lowercased address regardless of input casing', () => {
+    const accounts = makeAccounts([
+      {
+        id: 'a1',
+        addressC: addr.toUpperCase(),
+        name: 'Account 2',
+        walletId: 'w1'
+      }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    const map = buildAccountLabelMap(accounts, wallets)
+    expect(map.get(addr)).toBe('Account 2')
+    expect(map.get(addr.toUpperCase())).toBeUndefined()
+  })
+
+  it('omits addresses for accounts the user does not own', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 1', walletId: 'w1' }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(
+      buildAccountLabelMap(accounts, wallets).get(otherAddr)
+    ).toBeUndefined()
+  })
+
+  it('returns an empty map when there are no accounts', () => {
+    expect(buildAccountLabelMap({}, {}).size).toBe(0)
+  })
+
+  it('lets the active account win when an address collides across wallets', () => {
+    // e.g. a private-key wallet imports a key already derived in a mnemonic
+    // wallet — both accounts legitimately own the same EVM address.
+    const accounts = makeAccounts([
+      {
+        id: 'mnemonic-acct',
+        addressC: addr,
+        name: 'Account 5',
+        walletId: 'w1'
+      },
+      {
+        id: 'private-key-acct',
+        addressC: addr,
+        name: 'Imported',
+        walletId: 'w2'
+      }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Mnemonic Wallet' },
+      { id: 'w2', name: 'Private Key Wallet' }
+    ])
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'private-key-acct').get(addr)
+    ).toBe('Private Key Wallet · Imported')
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'mnemonic-acct').get(addr)
+    ).toBe('Mnemonic Wallet · Account 5')
   })
 })
 
