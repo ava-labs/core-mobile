@@ -178,17 +178,16 @@ const baseConfig = {
         return context.resolveRequest(context, 'readable-stream', platform)
       }
 
-      // Force patched @noble/hashes subpaths and ALL @noble/curves imports
-      // to the single top-level copies with native crypto patches.
-      // Only the subpaths that are actually patched are redirected for
-      // @noble/hashes — other subpaths (e.g. _assert, utils) resolve
-      // normally so version-sensitive consumers aren't broken.
-      const nobleResolved =
-        (PATCHED_NOBLE_HASHES.has(moduleName) &&
-          resolveNoblePackage('@noble/hashes', moduleName)) ||
-        (moduleName.startsWith('@noble/curves') &&
-          resolveNoblePackage('@noble/curves', moduleName))
-      if (nobleResolved) return nobleResolved
+      // Force patched @noble/hashes subpaths to the top-level copy.
+      // Only the subpaths actually patched are redirected — non-patched
+      // subpaths (e.g. _assert, utils) resolve normally so consumers
+      // expecting the v1.3.x API (ethereum-cryptography) aren't broken.
+      // @noble/curves needs no redirect: the global Yarn resolution
+      // already forces every transitive copy onto the patched 1.9.7.
+      if (PATCHED_NOBLE_HASHES.has(moduleName)) {
+        const resolved = resolveNoblePackage('@noble/hashes', moduleName)
+        if (resolved) return resolved
+      }
 
       // optionally, chain to the standard Metro resolver.
       return context.resolveRequest(context, moduleName, platform)
