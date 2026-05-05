@@ -13,7 +13,7 @@
          Night-mode variants are defined in values-night/colors.xml. -->
     <color name="appSurfacePrimary">#FFFFFF</color>
     <color name="appSurfaceSecondary">#F8F8FB</color>
-    <color name="bootsplash_background">#28282E</color>
+    <color name="bootsplash_background">#000000</color>
     <color name="iconBackgroundBling">#000000</color>
     <color name="iconBackgroundGrid">#091B25</color>
     <color name="iconBackgroundIridescenceLight">#F0F0F0</color>

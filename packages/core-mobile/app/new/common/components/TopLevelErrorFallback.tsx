@@ -3,6 +3,7 @@ import RNRestart from 'react-native-restart'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { useColorScheme } from 'react-native'
+import { isLimitedMode } from 'utils/limitedMode'
 import { FullScreenWarning } from './FullScreenWarning'
 
 const TopLevelErrorFallback = (errorData: {
@@ -14,7 +15,9 @@ const TopLevelErrorFallback = (errorData: {
   const colorScheme = useColorScheme()
 
   return (
-    <K2AlpineThemeProvider colorScheme={colorScheme}>
+    <K2AlpineThemeProvider
+      colorScheme={colorScheme}
+      variant={isLimitedMode ? 'moto' : 'default'}>
       <SafeAreaProvider>
         <FullScreenWarning
           title={`Oops!\nSomething went wrong`}

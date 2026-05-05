@@ -4,8 +4,19 @@ import {
   NetworkTokenSymbols
 } from 'common/components/TokenIcon'
 import React from 'react'
-import { ViewStyle } from 'react-native'
+import { Image, ImageSourcePropType, ViewStyle } from 'react-native'
 import { TokenSymbol } from 'store/network'
+
+// Hello UI: limited-mode-only chain pack — Tether/Eth/Avax to match the
+// signup splash exactly. PNGs ship in app/assets/icons/limited-mode.
+const MOTO_RECEIVE_ICONS: ImageSourcePropType[] = [
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/usdt.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/eth.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/avax.png')
+]
 
 export const SupportedReceiveEvmTokens = ({
   iconSize,
@@ -15,8 +26,10 @@ export const SupportedReceiveEvmTokens = ({
   style?: ViewStyle
 }): JSX.Element => {
   const {
+    theme,
     theme: { colors }
   } = useTheme()
+  const isMoto = theme.variant === 'moto'
 
   const l2Tokens: NetworkTokenSymbols[] = [
     TokenSymbol.AVAX,
@@ -25,6 +38,37 @@ export const SupportedReceiveEvmTokens = ({
     TokenSymbol.OP,
     TokenSymbol.ARB
   ]
+
+  if (isMoto) {
+    // Hello UI: USDT/ETH/AVAX trio matching the signup splash. Slight
+    // negative margin so the squircle icons overlap, with a thin black
+    // outline lifting each one off its neighbour.
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'row',
+          ...style
+        }}>
+        {MOTO_RECEIVE_ICONS.map((source, index) => (
+          <Image
+            key={index}
+            source={source}
+            style={{
+              width: iconSize,
+              height: iconSize,
+              borderRadius: Math.round(iconSize * 0.25),
+              borderWidth: 1.5,
+              borderColor: '#000000',
+              marginLeft: index === 0 ? 0 : -Math.round(iconSize * 0.25)
+            }}
+          />
+        ))}
+      </View>
+    )
+  }
 
   return (
     <View

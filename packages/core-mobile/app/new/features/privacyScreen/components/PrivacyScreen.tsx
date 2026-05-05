@@ -11,8 +11,13 @@ export const PrivacyScreen = (): JSX.Element | null => {
   const isIdled = useSelector(selectIsIdled)
   const { inBackground } = useBgDetect()
   const {
+    theme,
     theme: { colors }
   } = useTheme()
+  // Hello UI: privacy overlay matches the bootsplash — black bg + white
+  // Moto wing. Default theme keeps the surface-primary + Core wordmark.
+  const isMoto = theme.variant === 'moto'
+  const overlayBg = isMoto ? '#000000' : colors.$surfacePrimary
 
   useFocusEffect(
     useCallback(() => {
@@ -28,16 +33,20 @@ export const PrivacyScreen = (): JSX.Element | null => {
           position: 'absolute',
           width: '100%',
           height: '100%',
-          backgroundColor: colors.$surfacePrimary
+          backgroundColor: overlayBg
         }}>
         <View
           style={{
             flex: 1,
-            backgroundColor: colors.$surfacePrimary,
+            backgroundColor: overlayBg,
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          <Logos.AppIcons.Core color={colors.$textPrimary} />
+          {isMoto ? (
+            <Logos.AppIcons.MotoWing width={80} height={80} color="#FFFFFF" />
+          ) : (
+            <Logos.AppIcons.Core color={colors.$textPrimary} />
+          )}
         </View>
       </FullWindowOverlay>
     )

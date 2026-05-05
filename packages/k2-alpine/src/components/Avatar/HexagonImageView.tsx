@@ -14,11 +14,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
 import { useTheme } from '../../hooks'
-import {
-  colors,
-  darkModeColors,
-  lightModeColors
-} from '../../theme/tokens/colors'
+import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
@@ -203,11 +199,7 @@ const Arrow = ({ isSelected }: { isSelected?: boolean }): JSX.Element => {
       fill="none">
       <AnimatedPath
         d={arrowPath.path}
-        stroke={
-          theme.isDark
-            ? lightModeColors.$textPrimary
-            : darkModeColors.$textPrimary
-        }
+        stroke={theme.colors.$inverseOnSurface}
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"

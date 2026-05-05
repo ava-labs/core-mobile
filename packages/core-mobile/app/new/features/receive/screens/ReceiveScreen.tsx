@@ -152,7 +152,18 @@ export const ReceiveScreen = (): ReactNode => {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 8,
-              backgroundColor: theme.colors.$surfaceSecondary,
+              // Hello UI: outline pill (transparent + Vellum border) to
+              // match the Filter/Sort chip language. Default theme keeps
+              // the legacy filled-gray look.
+              backgroundColor:
+                theme.variant === 'moto'
+                  ? 'transparent'
+                  : theme.colors.$surfaceSecondary,
+              borderWidth: theme.variant === 'moto' ? 1 : 0,
+              borderColor:
+                theme.variant === 'moto'
+                  ? theme.colors.$borderPrimary
+                  : undefined,
               paddingHorizontal: 8,
               borderRadius: 16,
               height: 31
@@ -199,8 +210,9 @@ export const ReceiveScreen = (): ReactNode => {
                 lineHeight: 15,
                 color: theme.colors.$textSecondary
               }}>
-              This address supports receiving tokens and NFTs on Avalanche
-              C-Chain, Ethereum, Base, Arbitrum, Optimism and Avalanche L1s
+              {theme.variant === 'moto'
+                ? 'This address supports receiving tokens on Avalanche C-Chain and Ethereum'
+                : 'This address supports receiving tokens and NFTs on Avalanche C-Chain, Ethereum, Base, Arbitrum, Optimism and Avalanche L1s'}
             </Text>
           </>
         )}

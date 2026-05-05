@@ -33,6 +33,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   isNft
 }) => {
   const {
+    theme,
     theme: { colors, isDark }
   } = useTheme()
 
@@ -45,7 +46,11 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
         hasLocalNetworkTokenLogo(L2_NETWORK_SYMBOL_MAPPING[chainId]))
   )
 
-  const borderRadiusValue = isNft ? 12 : size
+  // Hello UI renders token logos as rounded squares (~25% radius squircle),
+  // so in Moto we replace the legacy full-circle with a softer corner.
+  // NFTs already use a rounded-rect look in both themes.
+  const isMoto = theme.variant === 'moto'
+  const borderRadiusValue = isNft ? 12 : isMoto ? Math.round(size * 0.25) : size
 
   // border color is the same no matter where the logo is used
   const borderColor = useMemo(() => {

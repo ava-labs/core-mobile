@@ -2,6 +2,7 @@ import LogoCore from '../../assets/logos/core.svg'
 import CoreAppIconDark from '../../assets/logos/core-app-icon-dark.svg'
 import CoreAppIconLight from '../../assets/logos/core-app-icon-light.svg'
 import CoreAppIconDev from '../../assets/logos/core-app-icon-dev.svg'
+import MotoWing from '../../assets/logos/moto-wing.svg'
 
 // partner logos
 import Halliday from '../../assets/logos/halliday.svg'
@@ -53,7 +54,8 @@ export const Logos = {
     Core: LogoCore,
     CoreAppIconDark: CoreAppIconDark,
     CoreAppIconLight: CoreAppIconLight,
-    CoreAppIconDev: CoreAppIconDev
+    CoreAppIconDev: CoreAppIconDev,
+    MotoWing: MotoWing
   },
   PartnerLogos: {
     Halliday: Halliday,

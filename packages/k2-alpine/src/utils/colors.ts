@@ -1,7 +1,7 @@
 import tinycolor from 'tinycolor2'
 import { ButtonType } from '../components'
 import { K2AlpineTheme } from '../theme/theme'
-import { colors, darkModeColors, lightModeColors } from '../theme/tokens/colors'
+import { colors } from '../theme/tokens/colors'
 
 export function alpha(color: string, value: number): string {
   return tinycolor(color).setAlpha(value).toString()
@@ -32,10 +32,15 @@ export function getButtonBackgroundColor(
 ): string | undefined {
   switch (type) {
     case 'primary':
-      return theme.isDark
-        ? lightModeColors.$surfacePrimary
-        : darkModeColors.$surfacePrimary
+      // Default theme keeps the legacy inverse-surface look (dark fill in
+      // light mode, light fill in dark mode); Moto theme renders this as
+      // Whale blue. Both flow through `$primary`.
+      return theme.colors.$primary
     case 'secondary':
+      // Hello UI renders secondary as an outline pill (transparent fill +
+      // border), so in Moto we drop the gray fill and rely on
+      // getButtonBorderColor for the stroke.
+      if (theme.variant === 'moto') return 'transparent'
       return theme.isDark
         ? alpha('#ffffff', 0.1)
         : alpha(colors.$neutral850, 0.1)
@@ -50,12 +55,22 @@ export const getButtonTintColor = (
 ): string | undefined => {
   switch (type) {
     case 'primary':
-      return theme.isDark
-        ? lightModeColors.$textPrimary
-        : darkModeColors.$textPrimary
+      return theme.colors.$onPrimary
     case 'secondary':
       return theme.colors.$textPrimary
     case 'tertiary':
       return theme.colors.$textPrimary
   }
+}
+
+export const getButtonBorderColor = (
+  type: ButtonType,
+  theme: K2AlpineTheme
+): string | undefined => {
+  // Only Moto's secondary needs a stroke today — default theme keeps its
+  // filled-gray look. Returning undefined means "no border".
+  if (theme.variant === 'moto' && type === 'secondary') {
+    return theme.colors.$borderPrimary
+  }
+  return undefined
 }

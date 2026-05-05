@@ -29,6 +29,7 @@ const AccountListItem = ({
 }): JSX.Element => {
   const { account, wallet, isActive, hideSeparator } = displayData
   const { theme } = useTheme()
+  const isMoto = theme.variant === 'moto'
 
   const handlePress = useCallback(() => {
     onSetActiveAccount(account.id)
@@ -37,6 +38,13 @@ const AccountListItem = ({
   const handlePressDetails = useCallback(() => {
     onAccountDetails(account.id)
   }, [onAccountDetails, account.id])
+
+  // Hello UI: active row tints with the Whale primary at 12% instead of
+  // the legacy black-at-10%; info button becomes a filled circular badge
+  // (blue when active, light gray otherwise).
+  const activeRowBg = isMoto
+    ? alpha(theme.colors.$primary, 0.12)
+    : alpha(theme.colors.$textPrimary, 0.1)
 
   return (
     <View>
@@ -48,9 +56,7 @@ const AccountListItem = ({
           paddingLeft: 10,
           borderRadius: 12,
           height: 52,
-          backgroundColor: isActive
-            ? alpha(theme.colors.$textPrimary, 0.1)
-            : 'transparent'
+          backgroundColor: isActive ? activeRowBg : 'transparent'
         }}>
         <View
           sx={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
@@ -115,11 +121,43 @@ const AccountListItem = ({
                 hitSlop={16}
                 onPress={handlePressDetails}
                 testID={`account_detail_icon__${wallet.name}__${account.name}`}>
-                <Icons.Alert.AlertCircle
-                  color={theme.colors.$textPrimary}
-                  width={18}
-                  height={18}
-                />
+                {isMoto ? (
+                  /* Hello UI: 24dp circular info badge. Active row gets
+                     the Whale primary fill with white glyph; inactive
+                     rows get a Vellum-tinted fill with secondary glyph.
+                     We render a plain "i" Text rather than the AlertCircle
+                     icon — that icon already has a circle baked in, which
+                     would visually stack inside this badge. */
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      backgroundColor: isActive
+                        ? theme.colors.$primary
+                        : theme.colors.$borderPrimary,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                    <Text
+                      sx={{
+                        fontFamily: 'Rookery-Bold',
+                        fontSize: 13,
+                        lineHeight: 13,
+                        color: isActive
+                          ? theme.colors.$onPrimary
+                          : theme.colors.$textSecondary
+                      }}>
+                      i
+                    </Text>
+                  </View>
+                ) : (
+                  <Icons.Alert.AlertCircle
+                    color={theme.colors.$textPrimary}
+                    width={18}
+                    height={18}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           </View>

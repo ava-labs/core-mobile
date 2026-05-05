@@ -4,6 +4,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
 import { hideModal, showModal } from 'utils/modal'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export const useLogoModal = (): {
   showLogoModal: () => void
@@ -13,7 +14,9 @@ export const useLogoModal = (): {
 
   const showLogoModal = (): void => {
     showModal(
-      <K2AlpineThemeProvider colorScheme={colorScheme}>
+      <K2AlpineThemeProvider
+        colorScheme={colorScheme}
+        variant={isLimitedMode ? 'moto' : 'default'}>
         <LogoModal />
       </K2AlpineThemeProvider>
     )

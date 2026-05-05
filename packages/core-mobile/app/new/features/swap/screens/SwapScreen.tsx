@@ -923,6 +923,18 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [theme.isDark])
 
+  // Hello UI: sheet primary CTAs render as dark-filled pills (Vellum 10
+  // on light, Vellum 94 on dark). $primary in Moto is Whale-50 blue —
+  // appropriate for inline accents but too noisy for a modal's main
+  // action, so we override to inverse-surface tones in Moto.
+  const isMoto = theme.variant === 'moto'
+  const motoButtonStyle = isMoto
+    ? { backgroundColor: theme.colors.$inverseSurface }
+    : undefined
+  const motoTextStyle = isMoto
+    ? { color: theme.colors.$inverseOnSurface }
+    : undefined
+
   const renderFooter = useCallback(() => {
     return (
       <>
@@ -931,6 +943,8 @@ export const SwapScreen = (): JSX.Element => {
           testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
           type="primary"
           size="large"
+          style={motoButtonStyle}
+          textStyle={motoTextStyle}
           onPress={handleSwap}
           disabled={!canSwap || isSwapping}>
           {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
@@ -942,7 +956,15 @@ export const SwapScreen = (): JSX.Element => {
         )}
       </>
     )
-  }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
+  }, [
+    canSwap,
+    handleSwap,
+    isSwapping,
+    isLombard,
+    renderLombardLogo,
+    motoButtonStyle,
+    motoTextStyle
+  ])
 
   const renderFromAndToSections = useCallback(() => {
     if (isTokensLoading && !fromToken && !toToken) {

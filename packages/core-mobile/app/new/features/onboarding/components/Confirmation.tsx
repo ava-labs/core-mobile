@@ -2,13 +2,15 @@ import {
   ActivityIndicator,
   Avatar,
   Button,
+  Icons,
+  PageControl,
   Text,
   View,
   useTheme
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState } from 'react'
-import { Platform } from 'react-native'
+import { Platform, TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { isLimitedMode } from 'utils/limitedMode'
@@ -31,7 +33,49 @@ export const Confirmation = ({
     }, 100)
   }, [onNext])
 
+  // Hello UI footer: 5-dot pagination on the left (final step), forward
+  // arrow circular FAB on the right. In legacy onboarding we keep the
+  // full-width "Let's go!" pill button.
   const renderFooter = useCallback((): React.ReactNode => {
+    if (isLimitedMode) {
+      return (
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 4
+          }}>
+          <PageControl numberOfPage={5} currentPage={4} />
+          {/* Use a raw TouchableOpacity here instead of k2-alpine's
+              CircularButton — that component auto-tints its child to
+              $textPrimary, which would make the white arrow invisible
+              against the dark fill. */}
+          <TouchableOpacity
+            testID="lets_go_btn"
+            onPress={handleOnPress}
+            disabled={isLoading}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: colors.$inverseSurface,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+            {isLoading ? (
+              <ActivityIndicator color={colors.$inverseOnSurface} />
+            ) : (
+              <Icons.Navigation.ArrowForwardIOS
+                color={colors.$inverseOnSurface}
+                width={20}
+                height={20}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+      )
+    }
     return (
       <Button
         testID="lets_go_btn"
@@ -42,7 +86,12 @@ export const Confirmation = ({
         {isLoading ? <ActivityIndicator /> : `Let's go!`}
       </Button>
     )
-  }, [isLoading, handleOnPress])
+  }, [
+    isLoading,
+    handleOnPress,
+    colors.$inverseSurface,
+    colors.$inverseOnSurface
+  ])
 
   return (
     <ScrollScreen
@@ -52,22 +101,38 @@ export const Confirmation = ({
         sx={{
           alignItems: 'center',
           flex: 1,
-          gap: 76,
+          gap: 32,
           justifyContent: 'center'
         }}>
-        {avatar?.source && (
-          <Avatar
-            backgroundColor={colors.$surfacePrimary}
-            source={avatar.source}
-            size="large"
-            hasBlur={Platform.OS === 'ios'}
-            glowEffect={{
-              imageSource: require('../../../../assets/glow.png'),
-              size: 380,
-              delay: 300
-            }}
-            testID="selected_avatar"
-          />
+        {isLimitedMode ? (
+          /* Hello UI success state: solid teal circle with a white check.
+             Replaces the avatar/glow that ships in the legacy flow. */
+          <View
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: '$textSuccess',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+            <Icons.Navigation.Check color="#FFFFFF" width={40} height={40} />
+          </View>
+        ) : (
+          avatar?.source && (
+            <Avatar
+              backgroundColor={colors.$surfacePrimary}
+              source={avatar.source}
+              size="large"
+              hasBlur={Platform.OS === 'ios'}
+              glowEffect={{
+                imageSource: require('../../../../assets/glow.png'),
+                size: 380,
+                delay: 300
+              }}
+              testID="selected_avatar"
+            />
+          )
         )}
         <View
           sx={{

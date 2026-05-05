@@ -1,6 +1,5 @@
 import React from 'react'
 import { TouchableWithoutFeedback, ViewStyle } from 'react-native'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { SCREEN_WIDTH } from '../../const'
@@ -17,12 +16,8 @@ export const Snackbar = ({
   style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
-  const backgroundColor = theme.isDark
-    ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
-  const textColor = theme.isDark
-    ? lightModeColors.$textPrimary
-    : darkModeColors.$textPrimary
+  const backgroundColor = theme.colors.$inverseSurface
+  const textColor = theme.colors.$inverseOnSurface
 
   return (
     <TouchableWithoutFeedback

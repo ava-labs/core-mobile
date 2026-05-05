@@ -54,10 +54,17 @@ export const Chip = forwardRef<
         ? theme.colors.$textPrimary
         : theme.colors.$surfacePrimary
     }[variant]
-    const backgroundColor = {
-      light: theme.colors.$surfaceSecondary,
-      dark: alpha(colors.$neutral700, 0.8)
-    }[variant]
+    // Hello UI renders chips as outline pills (transparent + Vellum border),
+    // so in Moto we drop the gray fill and use $borderPrimary for the
+    // stroke. Default theme keeps the legacy filled-gray look.
+    const isMotoOutline = theme.variant === 'moto' && variant === 'light'
+    const backgroundColor = isMotoOutline
+      ? 'transparent'
+      : {
+          light: theme.colors.$surfaceSecondary,
+          dark: alpha(colors.$neutral700, 0.8)
+        }[variant]
+    const borderColor = isMotoOutline ? theme.colors.$borderPrimary : undefined
     const iconWidth = { large: 20, small: 16 }[size]
 
     return (
@@ -71,6 +78,8 @@ export const Chip = forwardRef<
             backgroundColor: isSelected
               ? theme.colors.$textPrimary
               : backgroundColor,
+            borderWidth: !isSelected && borderColor ? 1 : 0,
+            borderColor: !isSelected ? borderColor : undefined,
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden',

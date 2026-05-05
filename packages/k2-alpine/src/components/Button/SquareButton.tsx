@@ -24,6 +24,42 @@ export const SquareButton = ({
   const tintColor = disabled
     ? theme.colors.$textSecondary
     : theme.colors.$textPrimary
+  // Hello UI tiles center the icon and label; default theme keeps the
+  // legacy corner-anchored look.
+  const isMotoTile = theme.variant === 'moto'
+
+  if (isMotoTile) {
+    return (
+      <AnimatedPressable style={style} onPress={onPress} disabled={disabled}>
+        <View
+          sx={{
+            borderRadius: 12,
+            width: 75,
+            height: 75,
+            backgroundColor: '$surfaceSecondary',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6
+          }}>
+          {getIcon(icon, {
+            width: 24,
+            height: 24,
+            color: tintColor
+          })}
+          <Text
+            testID={testID}
+            sx={{
+              fontSize: 12,
+              lineHeight: 14,
+              fontFamily: 'Inter-SemiBold',
+              color: tintColor
+            }}>
+            {title}
+          </Text>
+        </View>
+      </AnimatedPressable>
+    )
+  }
 
   return (
     <AnimatedPressable style={style} onPress={onPress} disabled={disabled}>

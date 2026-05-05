@@ -19,7 +19,6 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { View } from '../Primitives'
 
 export const SegmentedControl = ({
@@ -123,7 +122,7 @@ export const SegmentedControl = ({
         style={{
           borderRadius: 100,
           overflow: 'hidden',
-          backgroundColor: theme.isDark ? '#C5C5C840' : '#28282820'
+          backgroundColor: theme.colors.$borderPrimary
         }}>
         <Animated.View style={styles.container} onLayout={handleLayout}>
           <Animated.View
@@ -204,12 +203,7 @@ const Segment = ({
     color: interpolateColor(
       Math.max(1 - Math.abs(selectedIndex.value - index), 0),
       [0, 1],
-      [
-        theme.colors.$textPrimary,
-        theme.isDark
-          ? lightModeColors.$textPrimary
-          : darkModeColors.$textPrimary
-      ]
+      [theme.colors.$textPrimary, theme.colors.$onPrimary]
     )
   }))
 

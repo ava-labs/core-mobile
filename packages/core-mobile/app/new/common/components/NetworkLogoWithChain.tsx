@@ -22,6 +22,7 @@ export const NetworkLogoWithChain = ({
   chainLogoStyle?: ViewStyle
 }): React.JSX.Element => {
   const { theme } = useTheme()
+  const isMoto = theme.variant === 'moto'
 
   const renderChainLogo = (): React.JSX.Element | undefined => {
     if (isXPChain(network.chainId)) {
@@ -100,7 +101,11 @@ export const NetworkLogoWithChain = ({
           style={{
             width: chainLogoSize ?? 16,
             height: chainLogoSize ?? 16,
-            borderRadius: 1000,
+            // Hello UI: badge wrapper matches the rounded-square shape of
+            // the parent token logo (~25% radius); legacy keeps a circle.
+            borderRadius: isMoto
+              ? Math.round((chainLogoSize ?? 16) * 0.25)
+              : 1000,
             justifyContent: 'center',
             alignItems: 'center',
             borderWidth: 2,

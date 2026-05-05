@@ -6,7 +6,6 @@ import {
   View as RNView
 } from 'react-native'
 import { View, Text } from '../Primitives'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { alpha, overlayColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
 import { useTheme } from '../../hooks'
@@ -81,15 +80,10 @@ const getBackgroundColor = (
   disabled: boolean | undefined
 ): string | undefined => {
   if (disabled) {
-    return theme.isDark
-      ? overlayColor(
-          alpha(lightModeColors.$surfacePrimary, 0.3),
-          darkModeColors.$surfacePrimary
-        )
-      : overlayColor(
-          alpha(darkModeColors.$surfaceSecondary, 0.3),
-          lightModeColors.$surfacePrimary
-        )
+    return overlayColor(
+      alpha(theme.colors.$inverseSurface, 0.3),
+      theme.colors.$surfacePrimary
+    )
   }
 
   return theme.colors.$surfaceSecondary
@@ -100,9 +94,7 @@ const getTintColor = (
   disabled: boolean | undefined
 ): string => {
   if (disabled) {
-    return theme.isDark
-      ? lightModeColors.$textPrimary
-      : darkModeColors.$textPrimary
+    return theme.colors.$inverseOnSurface
   }
 
   return theme.colors.$textPrimary

@@ -9,7 +9,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { SCREEN_WIDTH } from '../../const'
@@ -35,11 +34,8 @@ export const TransactionSnackbar = ({
 }: TransactionSnackbarProps): JSX.Element | null => {
   const { theme } = useTheme()
 
-  const backgroundColor = theme.isDark
-    ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
-
-  const textColor = theme.isDark ? theme.colors.$black : theme.colors.$white
+  const backgroundColor = theme.colors.$inverseSurface
+  const textColor = theme.colors.$inverseOnSurface
 
   const chevronRightColor = alpha(textColor, 0.5)
 

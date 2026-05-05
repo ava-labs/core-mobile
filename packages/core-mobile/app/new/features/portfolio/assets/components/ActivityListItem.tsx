@@ -43,7 +43,7 @@ const ActivityListItem: FC<Props> = ({
 
   const textColor =
     status === PriceChangeStatus.Up
-      ? '#47C4AF'
+      ? colors.$accent
       : status === PriceChangeStatus.Down
       ? colors.$textDanger
       : colors.$textSecondary

@@ -143,15 +143,17 @@ const CopyButton = ({
   onPress: () => void
   testID?: string
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
+  const isMoto = theme.variant === 'moto'
+  // Hello UI: Whale primary fill with white glyph for Copy CTAs.
+  const bg = isMoto ? theme.colors.$primary : theme.colors.$borderPrimary
+  const fg = isMoto ? theme.colors.$onPrimary : theme.colors.$textPrimary
   return (
     <View style={{ marginLeft: 16 }}>
       <TouchableOpacity
         onPress={onPress}
         style={{
-          backgroundColor: colors.$borderPrimary,
+          backgroundColor: bg,
           paddingHorizontal: 17,
           paddingVertical: 5,
           borderRadius: 17
@@ -159,7 +161,7 @@ const CopyButton = ({
         <Text
           testID={testID}
           variant="buttonMedium"
-          sx={{ fontSize: 14 }}
+          sx={{ fontSize: 14, color: fg }}
           numberOfLines={1}>
           Copy
         </Text>
@@ -173,9 +175,10 @@ const SolanaEnableButton = ({
 }: {
   accountId: string
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
+  const isMoto = theme.variant === 'moto'
+  const bg = isMoto ? theme.colors.$primary : theme.colors.$borderPrimary
+  const fg = isMoto ? theme.colors.$onPrimary : theme.colors.$textPrimary
   const { navigate } = useRouter()
 
   const handleOnPress = useCallback((): void => {
@@ -187,7 +190,7 @@ const SolanaEnableButton = ({
       <TouchableOpacity
         onPress={handleOnPress}
         style={{
-          backgroundColor: colors.$borderPrimary,
+          backgroundColor: bg,
           paddingHorizontal: 12,
           paddingVertical: 5,
           borderRadius: 17
@@ -195,7 +198,7 @@ const SolanaEnableButton = ({
         <Text
           testID={'copy_btn__solana'}
           variant="buttonMedium"
-          sx={{ fontSize: 14 }}
+          sx={{ fontSize: 14, color: fg }}
           numberOfLines={1}>
           Enable
         </Text>

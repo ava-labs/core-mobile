@@ -6,6 +6,9 @@ import {
   SafeAreaView,
   Text
 } from '@avalabs/k2-alpine'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Image, ImageSourcePropType, StatusBar } from 'react-native'
+import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -26,7 +29,17 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
 import { isLimitedMode } from 'utils/limitedMode'
-import { PoweredByAvalanche } from 'common/components/PoweredByAvalanche'
+
+const NETWORK_ICONS: ImageSourcePropType[] = [
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/usdt.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/eth.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/btc.png'),
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('assets/icons/limited-mode/avax.png')
+]
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
@@ -178,28 +191,145 @@ export default function Signup(): JSX.Element {
     )
   }
 
+  if (isLimitedMode) {
+    return (
+      <View sx={{ flex: 1, backgroundColor: '$black' }}>
+        <StatusBar barStyle="light-content" translucent />
+
+        {/* Hero band fills the top 630dp with the lifestyle photo. The
+            black gradient over the bottom half of the band keeps the
+            headline + body legible against bright photo content. */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 630,
+            overflow: 'hidden'
+          }}>
+          <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            source={require('assets/icons/limited-mode/onboarding-hero.jpg')}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={['rgba(0,0,0,0)', 'rgba(0,0,0,1)']}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 270,
+              height: 360
+            }}
+          />
+        </View>
+
+        {/* Use the raw safe-area-context view here — k2-alpine's styled
+            SafeAreaView paints `$surfacePrimary` over everything, which
+            would hide the hero photo. */}
+        <RNSafeAreaView
+          style={{ flex: 1, backgroundColor: 'transparent' }}
+          edges={['top', 'bottom']}>
+          {/* Hero copy block lands at ~344dp from top per Figma; using a
+              flex spacer above so the layout still works on taller
+              devices without hardcoding the exact y. */}
+          <View sx={{ flex: 1 }} />
+          <View sx={{ paddingHorizontal: 32, gap: 10 }}>
+            <Logos.AppIcons.MotoWing width={60} height={60} color="#FFFFFF" />
+            <Text
+              sx={{
+                fontFamily: 'Rookery-Bold',
+                fontSize: 60,
+                lineHeight: 65,
+                color: '#FFFFFF'
+              }}>
+              Crypto wallet
+            </Text>
+            <Text
+              sx={{
+                fontFamily: 'Rookery-Regular',
+                fontSize: 16,
+                lineHeight: 24,
+                color: '#FFFFFF',
+                width: 276
+              }}>
+              Securely buy, send, and manage digital assets like USDT in one
+              place.
+            </Text>
+            <View
+              sx={{ flexDirection: 'row', marginTop: 6 }}
+              testID="supported_networks">
+              {NETWORK_ICONS.map((source, i) => (
+                <Image
+                  key={i}
+                  source={source}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 10,
+                    borderWidth: 1.5,
+                    borderColor: '#000000',
+                    marginLeft: i === 0 ? 0 : -8
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View
+            sx={{
+              paddingHorizontal: 32,
+              gap: 16,
+              paddingBottom: 16,
+              paddingTop: 32
+            }}>
+            {!isSeedlessOnboardingBlocked && shouldShowGoogle && (
+              <Button
+                testID="continueWithGoogle"
+                type="primary"
+                size="large"
+                shouldInverseTheme
+                disabled={isRegistering}
+                leftIcon="google"
+                onPress={handleGoogleSignin}>
+                Continue with Google
+              </Button>
+            )}
+            {!isMnemonicOnboardingBlocked && (
+              <Button
+                testID="manually_create_new_wallet_button"
+                type="primary"
+                size="large"
+                shouldInverseTheme
+                onPress={handleSignupWithMnemonic}>
+                Manually create new wallet
+              </Button>
+            )}
+            {!isImportExistingWalletBlocked && (
+              <Button
+                testID="accessExistingWallet"
+                type="tertiary"
+                size="large"
+                textStyle={{ color: '#FFFFFF' }}
+                onPress={handleAccessExistingWallet}>
+                Access existing wallet
+              </Button>
+            )}
+          </View>
+        </RNSafeAreaView>
+      </View>
+    )
+  }
+
   return (
     <SafeAreaView
       style={{
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        {isLimitedMode ? (
-          <View sx={{ alignItems: 'center', gap: 12 }}>
-            <Text
-              sx={{
-                fontFamily: 'Aeonik-Bold',
-                fontSize: 56,
-                lineHeight: 56,
-                color: theme.colors.$textPrimary
-              }}>
-              Moto
-            </Text>
-            <PoweredByAvalanche />
-          </View>
-        ) : (
-          <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
-        )}
+        <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
       </View>
       <View sx={{ padding: 16, gap: 16 }}>
         {!isSeedlessOnboardingBlocked && renderSeedlessOnboarding()}

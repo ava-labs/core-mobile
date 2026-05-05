@@ -13,6 +13,7 @@ import { Icons } from '../../theme/tokens/Icons'
 import { TextVariant } from '../../theme/tokens/text'
 import {
   getButtonBackgroundColor,
+  getButtonBorderColor,
   getButtonTintColor
 } from '../../utils/colors'
 import { useInversedTheme, useTheme } from '../../hooks'
@@ -78,6 +79,11 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       [type, resultTheme]
     )
 
+    const borderColor = useMemo(
+      () => getButtonBorderColor(type, resultTheme),
+      [type, resultTheme]
+    )
+
     const iconWidth = { large: 20, medium: 16, small: 16 }[size]
     const textVariant = {
       large: 'buttonMedium',
@@ -97,6 +103,8 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
             overflow: 'hidden',
             alignItems: 'center',
             backgroundColor,
+            borderWidth: borderColor ? 1 : 0,
+            borderColor,
             opacity: disabled ? 0.3 : 1
           },
           style

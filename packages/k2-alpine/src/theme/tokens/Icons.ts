@@ -100,6 +100,7 @@ import IconShopeePay from '../../assets/icons/shopee_pay.svg'
 import IconAch from '../../assets/icons/ach.svg'
 import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
+import IconMotoShield from '../../assets/icons/moto-encrypted-shield.svg'
 import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
 import IconLedger from '../../assets/icons/ledger_logo.svg'
 import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
@@ -293,6 +294,7 @@ export const Icons = {
     BackArrowCustom: IconBackArrowCustom,
     FaceID: IconFaceID,
     TouchID: IconTouchID,
+    MotoShield: IconMotoShield,
     Send: IconSend,
     SwitchRight: IconSwitchRight,
     Pin: IconPin,

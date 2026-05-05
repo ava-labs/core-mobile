@@ -1,6 +1,6 @@
 import React from 'react'
 import { Dimensions, Pressable, ViewStyle } from 'react-native'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
+import { alpha } from '../../utils'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
@@ -21,21 +21,13 @@ export const NotificationAlert = ({
   style?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
-  const backgroundColor = theme.isDark
-    ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
-  const titleColor = theme.isDark
-    ? lightModeColors.$textPrimary
-    : darkModeColors.$textPrimary
-  const messageColor = theme.isDark
-    ? lightModeColors.$textSecondary
-    : darkModeColors.$textSecondary
-  const successColor = theme.isDark
-    ? lightModeColors.$textSuccess
-    : darkModeColors.$textSuccess
-  const errorColor = theme.isDark
-    ? lightModeColors.$textDanger
-    : darkModeColors.$textDanger
+  const backgroundColor = theme.colors.$inverseSurface
+  const titleColor = theme.colors.$inverseOnSurface
+  const messageColor = alpha(theme.colors.$inverseOnSurface, 0.6)
+  // Success / danger keep their semantic hue regardless of surface — readable
+  // against both dark and light inverse fills.
+  const successColor = theme.colors.$textSuccess
+  const errorColor = theme.colors.$textDanger
 
   const renderIcon = (): JSX.Element | undefined => {
     switch (type) {

@@ -27,8 +27,10 @@ import {
 
 export const WalletsScreen = (): JSX.Element => {
   const {
+    theme,
     theme: { colors, isDark }
   } = useTheme()
+  const isMoto = theme.variant === 'moto'
   const headerHeight = useEffectiveHeaderHeight()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
@@ -274,15 +276,17 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [colors.$textDanger, errorMessage])
 
+  // Hello UI lifts the cards via a bg differential (Vellum 96 page → Vellum
+  // 98 cards) instead of a hairline border. Default theme keeps the border.
   const cardStyle = useMemo(
     () => ({
       marginHorizontal: 16,
       marginVertical: 5,
       backgroundColor: colors.$surfacePrimary,
       borderColor: colors.$borderPrimary,
-      borderWidth: 1
+      borderWidth: isMoto ? 0 : 1
     }),
-    [colors.$surfacePrimary, colors.$borderPrimary]
+    [colors.$surfacePrimary, colors.$borderPrimary, isMoto]
   )
 
   const renderItem = useCallback(
@@ -340,7 +344,7 @@ export const WalletsScreen = (): JSX.Element => {
       subtitle={`An overview of your wallets\nand associated accounts`}
       data={walletsDisplayData}
       extraData={expandedWallets}
-      backgroundColor={isDark ? '#121213' : '#F1F1F4'}
+      backgroundColor={isMoto ? colors.$surfaceSecondary : isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
       refreshControl={
         <RefreshControl

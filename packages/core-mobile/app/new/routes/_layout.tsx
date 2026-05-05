@@ -1,4 +1,5 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
+import { isLimitedMode } from 'utils/limitedMode'
 import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -43,6 +44,21 @@ export default function Root(): JSX.Element | null {
     return () => subscription.remove()
   }, [dispatch, isDeveloperMode, selectedAppearance])
 
+  // Sync the active colorScheme with the user's appearance pick. Without
+  // this the theme provider only updates when the system theme changes,
+  // so picking "Light" or "Dark" explicitly in-app had no effect.
+  useEffect(() => {
+    if (selectedAppearance === Appearance.Light) {
+      dispatch(setSelectedColorScheme('light'))
+    } else if (selectedAppearance === Appearance.Dark) {
+      dispatch(setSelectedColorScheme('dark'))
+    } else {
+      dispatch(
+        setSelectedColorScheme(RnAppearance.getColorScheme() ?? 'light')
+      )
+    }
+  }, [dispatch, selectedAppearance])
+
   useEffect(() => {
     setStatusBarStyle(colorScheme === 'dark' ? 'light' : 'dark')
   }, [colorScheme])
@@ -57,7 +73,9 @@ export default function Root(): JSX.Element | null {
   return (
     <KeyboardProvider>
       <GestureHandlerRootView>
-        <K2AlpineThemeProvider colorScheme={colorScheme}>
+        <K2AlpineThemeProvider
+          colorScheme={colorScheme}
+          variant={isLimitedMode ? 'moto' : 'default'}>
           <NavigationThemeProvider>
             <DeeplinkContextProvider>
               <RecoveryMethodProvider>

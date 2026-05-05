@@ -25,8 +25,10 @@ export const LogoWithNetwork = ({
   outerBorderColor
 }: Props): React.JSX.Element => {
   const {
+    theme,
     theme: { isDark }
   } = useTheme()
+  const isMoto = theme.variant === 'moto'
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
 
@@ -102,7 +104,10 @@ export const LogoWithNetwork = ({
           sx={{
             width: 16,
             height: 16,
-            borderRadius: 16 / 2,
+            // Hello UI: badge wrapper matches the rounded-square shape of
+            // the parent token logo (~25% radius); legacy keeps a full
+            // circle.
+            borderRadius: isMoto ? 4 : 16 / 2,
             justifyContent: 'center',
             alignItems: 'center',
             borderWidth: 2,

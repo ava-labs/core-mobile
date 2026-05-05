@@ -25,6 +25,23 @@ export const AccountButtons = ({
   const dispatch = useDispatch()
   const router = useRouter()
   const { theme } = useTheme()
+  // Hello UI: footer outline pills get a 2pt black border + Inter-Bold
+  // 16/22 text. Default theme renders rounded rects (radius 12) with the
+  // built-in 1pt border + buttonMedium text size.
+  const isMoto = theme.variant === 'moto'
+  const buttonStyle = isMoto
+    ? {
+        borderWidth: 2,
+        borderColor: theme.colors.$textPrimary
+      }
+    : { borderRadius: 12 }
+  const buttonTextStyle = isMoto
+    ? {
+        fontFamily: 'Inter-Bold',
+        fontSize: 16,
+        lineHeight: 22
+      }
+    : undefined
   const account = useSelector(selectAccountById(accountId))
   const siblingAccounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, account?.walletId ?? '')
@@ -114,7 +131,8 @@ export const AccountButtons = ({
   return (
     <View sx={{ gap: 12 }}>
       <Button
-        style={{ borderRadius: 12 }}
+        style={buttonStyle}
+        textStyle={buttonTextStyle}
         size="large"
         type="secondary"
         onPress={handleShowAlertWithTextInput}>
@@ -125,9 +143,10 @@ export const AccountButtons = ({
           testID={
             !isRemoveEnabled ? 'remove_account_disabled' : 'remove_account'
           }
-          style={{ borderRadius: 12 }}
+          style={buttonStyle}
           size="large"
           textStyle={{
+            ...buttonTextStyle,
             color: theme.colors.$textDanger
           }}
           type="secondary"

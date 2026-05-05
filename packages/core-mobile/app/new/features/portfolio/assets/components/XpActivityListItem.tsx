@@ -1,4 +1,4 @@
-import { alpha, PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
+import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import {
   PChainTransactionType,
   TransactionType
@@ -26,9 +26,9 @@ export const XpActivityListItem: FC<Props> = ({
   showSeparator
 }) => {
   const {
-    theme: { isDark, colors }
+    theme: { colors }
   } = useTheme()
-  const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
+  const borderColor = colors.$borderPrimary
   const backgroundColor = colors.$borderPrimary
   const { formatTokenInCurrency } = useFormatCurrency()
   const currentPrice = useMarketTokenBySymbol({

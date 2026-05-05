@@ -35,7 +35,7 @@ export const AccountAddresses = memo(
           ),
           value: (
             <Button
-              type="secondary"
+              type={theme.variant === 'moto' ? 'primary' : 'secondary'}
               size="medium"
               testID={`copy_btn__${selectedNetwork.chainName}`}
               onPress={() =>
@@ -53,7 +53,8 @@ export const AccountAddresses = memo(
       activeAccount,
       selectedNetwork,
       address,
-      theme.colors.$surfaceSecondary
+      theme.colors.$surfaceSecondary,
+      theme.variant
     ])
 
     return (

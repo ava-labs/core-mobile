@@ -7,6 +7,7 @@ export { Logos } from './theme/tokens/Logos'
 export * from './utils'
 export * from './const'
 export type { TextVariant } from './theme/tokens/text'
+export { motoBrandGradient } from './theme/tokens/colors'
 
 import Constants from 'expo-constants'
 

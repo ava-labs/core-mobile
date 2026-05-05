@@ -366,28 +366,62 @@ const WalletMoreMenu = React.memo(
 const AddAccountButton = React.memo(
   ({ wallet }: { wallet: WalletDisplayData }) => {
     const {
+      theme,
       theme: { colors }
     } = useTheme()
     const { handleAddAccount, isAddingAccount } = useManageWallet()
+
+    // Hello UI shows "Add account" as a Whale-blue filled pill, so render
+    // primary in Moto. Default theme keeps the legacy secondary look.
+    const isMoto = theme.variant === 'moto'
+    const buttonType = isMoto ? 'primary' : 'secondary'
+    const iconColor = isMoto ? colors.$onPrimary : colors.$textPrimary
+
+    // Hello UI shows "Add account" as a compact, centered pill — not full
+    // width. Center via wrapper and add inline horizontal padding.
+    if (isMoto) {
+      return (
+        <View style={{ alignItems: 'center', paddingVertical: 4 }}>
+          <Button
+            size="medium"
+            style={{ paddingHorizontal: 24 }}
+            leftIcon={
+              isAddingAccount ? undefined : (
+                <Icons.Content.Add
+                  color={iconColor}
+                  width={20}
+                  height={20}
+                />
+              )
+            }
+            type={buttonType}
+            disabled={isAddingAccount}
+            testID={`add_account_btn__${wallet.name}`}
+            onPress={() => handleAddAccount(wallet)}>
+            {isAddingAccount ? (
+              <ActivityIndicator size="small" color={iconColor} />
+            ) : (
+              'Add account'
+            )}
+          </Button>
+        </View>
+      )
+    }
 
     return (
       <Button
         size="medium"
         leftIcon={
           isAddingAccount ? undefined : (
-            <Icons.Content.Add
-              color={colors.$textPrimary}
-              width={24}
-              height={24}
-            />
+            <Icons.Content.Add color={iconColor} width={24} height={24} />
           )
         }
-        type="secondary"
+        type={buttonType}
         disabled={isAddingAccount}
         testID={`add_account_btn__${wallet.name}`}
         onPress={() => handleAddAccount(wallet)}>
         {isAddingAccount ? (
-          <ActivityIndicator size="small" color={colors.$textPrimary} />
+          <ActivityIndicator size="small" color={iconColor} />
         ) : (
           'Add account'
         )}

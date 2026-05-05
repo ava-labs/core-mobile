@@ -185,10 +185,14 @@ export const BalanceHeader = ({
     )
   }, [colors.$textSecondary, walletIcon])
 
+  // Hello UI portfolio header shows just the account name + chevron — the
+  // wallet badge row is hidden in Moto.
+  const themeIsMoto = useTheme().theme.variant === 'moto'
+
   return (
     <View onLayout={onLayout}>
       <View sx={{ paddingRight: 16 }}>
-        {walletName && (
+        {walletName && !themeIsMoto && (
           <View
             sx={{
               flexDirection: 'row',

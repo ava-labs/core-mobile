@@ -22,6 +22,7 @@ import {
   InteractionManager,
   Keyboard,
   Platform,
+  TouchableOpacity,
   TouchableWithoutFeedback
 } from 'react-native'
 import Reanimated, {
@@ -320,6 +321,8 @@ export const PinScreen = ({
     }
   })
 
+  const isMoto = theme.variant === 'moto'
+
   return (
     <TouchableWithoutFeedback
       accessible={false}
@@ -334,7 +337,39 @@ export const PinScreen = ({
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-            <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
+            {isMoto ? (
+              /* Hello UI lock screen: green-gradient shield + "Wallet
+                 locked" headline + subtitle. Replaces the Core wordmark
+                 logo. The MotoShield SVG carries its own gradient so we
+                 don't tint it. */
+              <View sx={{ alignItems: 'center', gap: 16 }}>
+                <Icons.Custom.MotoShield width={75} height={75} />
+                <View sx={{ alignItems: 'center', gap: 8 }}>
+                  <Text
+                    sx={{
+                      fontFamily: 'Rookery-Bold',
+                      fontSize: 24,
+                      lineHeight: 32,
+                      textAlign: 'center'
+                    }}>
+                    Wallet locked
+                  </Text>
+                  <Text
+                    sx={{
+                      fontFamily: 'Rookery-Regular',
+                      fontSize: 13,
+                      lineHeight: 16,
+                      color: '$textSecondary',
+                      textAlign: 'center',
+                      maxWidth: 180
+                    }}>
+                    Use your PIN or biometrics to unlock your wallet
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
+            )}
             {disableKeypad && (
               <View
                 style={{
@@ -348,15 +383,20 @@ export const PinScreen = ({
               </View>
             )}
           </View>
-          <Reanimated.View
-            style={[avatarStyle, { zIndex: -100, marginTop: 32 }]}>
-            <Avatar
-              size="small"
-              source={avatar.source}
-              backgroundColor={theme.colors.$surfacePrimary}
-              isDeveloperMode={isDeveloperMode}
-            />
-          </Reanimated.View>
+          {/* Hello UI hides the avatar entirely on the lock screen —
+              the green shield + headline already communicates the
+              account is gated. */}
+          {!isMoto && (
+            <Reanimated.View
+              style={[avatarStyle, { zIndex: -100, marginTop: 32 }]}>
+              <Avatar
+                size="small"
+                source={avatar.source}
+                backgroundColor={theme.colors.$surfacePrimary}
+                isDeveloperMode={isDeveloperMode}
+              />
+            </Reanimated.View>
+          )}
 
           <View>
             <Reanimated.View style={[pinInputOpacityStyle]}>
@@ -400,24 +440,53 @@ export const PinScreen = ({
             sx={{
               flexDirection: 'row',
               justifyContent: 'center',
-              gap: 30
+              gap: isMoto ? 16 : 30
             }}>
-            {bioType !== BiometricType.NONE && (
-              <CircularButton onPress={handlePromptBioLogin}>
-                {bioType === BiometricType.FACE_ID ? (
-                  <Icons.Custom.FaceID width={26} height={26} />
-                ) : (
-                  <Icons.Custom.TouchID width={26} height={26} />
-                )}
-              </CircularButton>
-            )}
-            {isEnteringPin === false && !disableKeypad && (
-              <CircularButton
-                testID="keypad_up_button"
-                onPress={handleTogglePinInput}>
-                <Icons.Custom.Pin width={26} height={26} />
-              </CircularButton>
-            )}
+            {bioType !== BiometricType.NONE &&
+              (isMoto ? (
+                <MotoLockTile onPress={handlePromptBioLogin}>
+                  {bioType === BiometricType.FACE_ID ? (
+                    <Icons.Custom.FaceID
+                      width={32}
+                      height={32}
+                      color={theme.colors.$textPrimary}
+                    />
+                  ) : (
+                    <Icons.Custom.TouchID
+                      width={32}
+                      height={32}
+                      color={theme.colors.$textPrimary}
+                    />
+                  )}
+                </MotoLockTile>
+              ) : (
+                <CircularButton onPress={handlePromptBioLogin}>
+                  {bioType === BiometricType.FACE_ID ? (
+                    <Icons.Custom.FaceID width={26} height={26} />
+                  ) : (
+                    <Icons.Custom.TouchID width={26} height={26} />
+                  )}
+                </CircularButton>
+              ))}
+            {isEnteringPin === false &&
+              !disableKeypad &&
+              (isMoto ? (
+                <MotoLockTile
+                  testID="keypad_up_button"
+                  onPress={handleTogglePinInput}>
+                  <Icons.Custom.Pin
+                    width={32}
+                    height={32}
+                    color={theme.colors.$textPrimary}
+                  />
+                </MotoLockTile>
+              ) : (
+                <CircularButton
+                  testID="keypad_up_button"
+                  onPress={handleTogglePinInput}>
+                  <Icons.Custom.Pin width={26} height={26} />
+                </CircularButton>
+              ))}
           </View>
         </Reanimated.View>
       </View>
@@ -432,4 +501,34 @@ const configuration = {
     to: 20
   },
   noInputTimeout: 3000
+}
+
+// Hello UI lock-screen tile: 75x75 Vellum-96 squircle, rounded 20.
+// Replaces the small CircularButton entries for biometrics + keypad in
+// limited mode.
+const MotoLockTile = ({
+  children,
+  onPress,
+  testID
+}: {
+  children: React.ReactNode
+  onPress: () => void
+  testID?: string
+}): JSX.Element => {
+  const { theme } = useTheme()
+  return (
+    <TouchableOpacity onPress={onPress} testID={testID} activeOpacity={0.7}>
+      <View
+        style={{
+          width: 75,
+          height: 75,
+          borderRadius: 20,
+          backgroundColor: theme.colors.$surfaceSecondary,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        {children}
+      </View>
+    </TouchableOpacity>
+  )
 }

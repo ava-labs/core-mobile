@@ -46,11 +46,21 @@ export const WalletInfo = ({
     return results
   }, [account?.type, wallet?.name, onShowPrivateKey])
 
+  // Per Figma the explainer sits just below the settings card with
+  // breathing room — bumping the gap so it isn't crowding the group.
   return (
-    <View sx={{ gap: 4 }}>
+    <View sx={{ gap: 12 }}>
       <GroupList data={data} valueSx={{ fontSize: 16, lineHeight: 22 }} />
       {onShowPrivateKey !== undefined && (
-        <Text variant="caption" sx={{ color: colors.$textSecondary }}>
+        <Text
+          variant="caption"
+          sx={{
+            color: colors.$textSecondary,
+            fontFamily: 'Inter-Regular',
+            fontSize: 12,
+            lineHeight: 16,
+            paddingHorizontal: 4
+          }}>
           Your account’s private key is a fixed password for accessing the
           specific addresses above. Keep it secure, anyone with this private key
           can access the account associated with it
