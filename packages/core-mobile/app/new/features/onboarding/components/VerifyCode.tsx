@@ -1,6 +1,7 @@
 import { Card, showAlert, TextInput, useTheme } from '@avalabs/k2-alpine'
 import { Empty } from '@cubist-labs/cubesigner-sdk'
 import { useFocusEffect } from '@react-navigation/native'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TextInput as RNTextInput } from 'react-native'
@@ -12,11 +13,15 @@ import Logger from 'utils/Logger'
 export const VerifyCode = <T,>({
   onVerifyCode,
   onVerifySuccess,
-  showNavigationHeaderTitle
+  showNavigationHeaderTitle,
+  wizardStep
 }: {
   onVerifyCode: (code: string) => Promise<Result<T, TotpErrors>>
   onVerifySuccess: (response: T | Empty) => void
   showNavigationHeaderTitle?: boolean
+  // Decorative wizard footer — code auto-verifies on 6 digits, so the
+  // FAB stays disabled and just shows progress.
+  wizardStep?: { currentStep: number; totalSteps: number }
 }): React.JSX.Element => {
   const [code, setCode] = useState('')
   const [showError, setShowError] = useState(false)
@@ -93,13 +98,26 @@ export const VerifyCode = <T,>({
     }
   }, [handleRetry, showError])
 
+  const renderFooter = useCallback(() => {
+    if (!wizardStep) return null
+    return (
+      <OnboardingWizardFooter
+        currentStep={wizardStep.currentStep}
+        totalSteps={wizardStep.totalSteps}
+        onNext={() => undefined}
+        disabled
+      />
+    )
+  }, [wizardStep])
+
   return (
     <ScrollScreen
       showNavigationHeaderTitle={showNavigationHeaderTitle}
       title="Verify code"
       shouldAvoidKeyboard
       subtitle="Enter the code generated from your authenticator app"
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      contentContainerStyle={{ padding: 16, flex: 1 }}
+      renderFooter={wizardStep ? renderFooter : undefined}>
       <Card
         sx={{
           marginTop: 24,

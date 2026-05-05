@@ -1,5 +1,9 @@
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import {
+  useGlobalSearchParams,
+  useLocalSearchParams,
+  useRouter
+} from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback } from 'react'
@@ -8,12 +12,14 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { isLimitedMode } from 'utils/limitedMode'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
+  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
@@ -57,6 +63,14 @@ export default function CreatePin(): JSX.Element {
     ]
   )
 
+  // Limited mode wizard: createPin is step 3/6 in the create flow,
+  // step 2/5 in recovery.
+  const wizardStep = isLimitedMode
+    ? recovering === 'true'
+      ? { currentStep: 2, totalSteps: 5 }
+      : { currentStep: 3, totalSteps: 6 }
+    : undefined
+
   return (
     <Component
       onEnteredValidPin={async (pin: string) =>
@@ -68,6 +82,7 @@ export default function CreatePin(): JSX.Element {
       newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
       confirmPinTitle={`Confirm your\nPIN code`}
       isBiometricAvailable={isBiometricAvailable}
+      wizardStep={wizardStep}
     />
   )
 }

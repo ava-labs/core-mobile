@@ -6,6 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import React, { useCallback } from 'react'
@@ -13,11 +14,13 @@ import React, { useCallback } from 'react'
 export const RecoveryPhrase = ({
   onNext,
   mnemonic,
-  isLoading
+  isLoading,
+  wizardStep
 }: {
   onNext: () => void
   mnemonic: string
   isLoading: boolean
+  wizardStep?: { currentStep: number; totalSteps: number }
 }): React.JSX.Element => {
   const { theme } = useTheme()
 
@@ -36,6 +39,17 @@ export const RecoveryPhrase = ({
   }, [onNext])
 
   const renderFooter = useCallback(() => {
+    if (wizardStep) {
+      return (
+        <OnboardingWizardFooter
+          currentStep={wizardStep.currentStep}
+          totalSteps={wizardStep.totalSteps}
+          onNext={handleNext}
+          disabled={isLoading}
+          testID="next_btn"
+        />
+      )
+    }
     return (
       <Button
         testID="next_btn"
@@ -46,7 +60,7 @@ export const RecoveryPhrase = ({
         Next
       </Button>
     )
-  }, [handleNext, isLoading])
+  }, [handleNext, isLoading, wizardStep])
 
   return (
     <ScrollScreen

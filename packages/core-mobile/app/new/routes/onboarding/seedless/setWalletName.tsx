@@ -21,5 +21,17 @@ export default function SetWalletName(): JSX.Element {
     )
   }, [name, setPendingSeedlessWalletName, navigate])
 
-  return <Component name={name} setName={setName} onNext={handleNext} />
+  // Limited mode wizard: setWalletName is step 3/5 in the seedless flow.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 3, totalSteps: 5 }
+    : undefined
+
+  return (
+    <Component
+      name={name}
+      setName={setName}
+      onNext={handleNext}
+      wizardStep={wizardStep}
+    />
+  )
 }

@@ -51,6 +51,13 @@ const FidoNameInput = (): JSX.Element => {
       }))
   }
 
+  // FIDO setup is a substep of the MFA "Add recovery method" step, so we
+  // hold the dot at step 1/5 throughout — moves to step 2 only after the
+  // user lands on createPin.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 1, totalSteps: 5 }
+    : undefined
+
   return (
     <Component
       title={title ?? ''}
@@ -59,6 +66,7 @@ const FidoNameInput = (): JSX.Element => {
       name={name}
       setName={setName}
       onSave={handleSave}
+      wizardStep={wizardStep}
     />
   )
 }

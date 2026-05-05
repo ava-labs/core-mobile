@@ -7,6 +7,7 @@ import {
   Toggle,
   View
 } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
@@ -21,7 +22,8 @@ export const CreatePin = ({
   newPinDescription,
   confirmPinTitle,
   isBiometricAvailable = false,
-  isModal = false
+  isModal = false,
+  wizardStep
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
@@ -31,6 +33,9 @@ export const CreatePin = ({
   confirmPinTitle: string
   isBiometricAvailable?: boolean
   isModal?: boolean
+  // Wizard footer is decorative on this screen — PIN auto-advances on
+  // 6 valid digits, so the FAB stays disabled and informational.
+  wizardStep?: { currentStep: number; totalSteps: number }
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
   const processedValidPinRef = useRef<string | undefined>(undefined)
@@ -95,6 +100,35 @@ export const CreatePin = ({
     )
   }, [useBiometrics, setUseBiometrics, biometricType, isBiometricAvailable])
 
+  // In limited mode the wizard footer is always present (decorative,
+  // FAB always disabled); on the new-pin step we stack the biometric
+  // toggle above it. Default flow keeps the legacy footer rules.
+  const renderFooter = useCallback((): React.JSX.Element | null => {
+    if (wizardStep) {
+      const showBiometric = !chosenPinEntered && isBiometricAvailable
+      return (
+        <View sx={{ gap: 16 }}>
+          {showBiometric && renderBiometricToggle()}
+          <OnboardingWizardFooter
+            currentStep={wizardStep.currentStep}
+            totalSteps={wizardStep.totalSteps}
+            onNext={() => undefined}
+            disabled
+          />
+        </View>
+      )
+    }
+    if (!chosenPinEntered && isBiometricAvailable) {
+      return renderBiometricToggle()
+    }
+    return null
+  }, [
+    wizardStep,
+    chosenPinEntered,
+    isBiometricAvailable,
+    renderBiometricToggle
+  ])
+
   return (
     <ScrollScreen
       showNavigationHeaderTitle={false}
@@ -103,8 +137,9 @@ export const CreatePin = ({
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={
-        !chosenPinEntered && isBiometricAvailable
-          ? renderBiometricToggle
+        wizardStep ||
+        (!chosenPinEntered && isBiometricAvailable)
+          ? renderFooter
           : undefined
       }>
       {chosenPinEntered ? undefined : (

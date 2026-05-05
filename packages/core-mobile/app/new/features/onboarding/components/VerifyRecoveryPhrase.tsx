@@ -1,4 +1,5 @@
 import { Button, showAlert } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import WordSelection from 'features/onboarding/components/WordSelection'
 import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
@@ -12,10 +13,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const VerifyRecoveryPhrase = ({
   mnemonic,
-  onVerified
+  onVerified,
+  wizardStep
 }: {
   mnemonic?: string
   onVerified: () => void
+  wizardStep?: { currentStep: number; totalSteps: number }
 }): React.JSX.Element => {
   const mnemonics = useMemo(
     () => (mnemonic ? mnemonic.split(' ') : []),
@@ -121,6 +124,17 @@ export const VerifyRecoveryPhrase = ({
   }, [mnemonics])
 
   const renderFooter = useCallback(() => {
+    if (wizardStep) {
+      return (
+        <OnboardingWizardFooter
+          currentStep={wizardStep.currentStep}
+          totalSteps={wizardStep.totalSteps}
+          onNext={handleNext}
+          disabled={canVerify === false}
+          testID="next_btn"
+        />
+      )
+    }
     return (
       <Button
         size="large"
@@ -131,7 +145,7 @@ export const VerifyRecoveryPhrase = ({
         Next
       </Button>
     )
-  }, [canVerify, handleNext])
+  }, [canVerify, handleNext, wizardStep])
 
   return (
     <ScrollScreen

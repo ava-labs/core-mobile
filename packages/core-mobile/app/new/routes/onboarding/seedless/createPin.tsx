@@ -10,6 +10,7 @@ import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { isLimitedMode } from 'utils/limitedMode'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -50,6 +51,11 @@ export default function CreatePin(): JSX.Element {
     ]
   )
 
+  // Limited mode wizard: createPin is step 2/5 in the seedless flow.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 2, totalSteps: 5 }
+    : undefined
+
   return (
     <Component
       onEnteredValidPin={async (pin: string) =>
@@ -61,6 +67,7 @@ export default function CreatePin(): JSX.Element {
       newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
       confirmPinTitle={`Confirm your\nPIN code`}
       isBiometricAvailable={isBiometricAvailable}
+      wizardStep={wizardStep}
     />
   )
 }

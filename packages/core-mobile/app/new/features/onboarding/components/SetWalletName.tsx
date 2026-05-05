@@ -4,6 +4,7 @@ import {
   TextInputRef,
   View
 } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
@@ -17,7 +18,8 @@ export const SetWalletName = ({
   disabled,
   setName,
   onNext,
-  buttonText = 'Next'
+  buttonText = 'Next',
+  wizardStep
 }: {
   name: string
   disabled?: boolean
@@ -25,6 +27,7 @@ export const SetWalletName = ({
   buttonText?: string
   setName: (value: string) => void
   onNext: () => void
+  wizardStep?: { currentStep: number; totalSteps: number }
 }): React.JSX.Element => {
   const [isLoading, setIsLoading] = useState(false)
   const nameInputRef = useRef<TextInputRef>(null)
@@ -45,7 +48,20 @@ export const SetWalletName = ({
     }, 100)
   }, [onNext])
 
+  const isDisabled = disabled || name.length === 0 || isLoading
+
   const renderFooter = useCallback(() => {
+    if (wizardStep) {
+      return (
+        <OnboardingWizardFooter
+          currentStep={wizardStep.currentStep}
+          totalSteps={wizardStep.totalSteps}
+          onNext={handleNext}
+          disabled={isDisabled}
+          testID="name_wallet_next_btn"
+        />
+      )
+    }
     return (
       <Button
         accessible={true}
@@ -53,17 +69,17 @@ export const SetWalletName = ({
         type="primary"
         onPress={handleNext}
         testID="name_wallet_next_btn"
-        disabled={disabled || name.length === 0 || isLoading}>
+        disabled={isDisabled}>
         {parentIsLoading || isLoading ? <ActivityIndicator /> : buttonText}
       </Button>
     )
   }, [
     handleNext,
     isLoading,
-    disabled,
-    name.length,
+    isDisabled,
     parentIsLoading,
-    buttonText
+    buttonText,
+    wizardStep
   ])
 
   return (

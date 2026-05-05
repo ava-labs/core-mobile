@@ -25,5 +25,17 @@ export default function TermsAndConditions(): JSX.Element {
     navigate('/onboarding/mnemonic/analyticsConsent')
   }
 
-  return <Component onAgreeAndContinue={handleAgreeAndContinue} />
+  // Limited mode wizard: mnemonic create has 6 steps (terms, recovery,
+  // verify, pin, walletName, success); recovery flow has 5 (terms,
+  // enterPhrase, pin, walletName, success). Terms is always step 0.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 0, totalSteps: recovering === 'true' ? 5 : 6 }
+    : undefined
+
+  return (
+    <Component
+      onAgreeAndContinue={handleAgreeAndContinue}
+      wizardStep={wizardStep}
+    />
+  )
 }

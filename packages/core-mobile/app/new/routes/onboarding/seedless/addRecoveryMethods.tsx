@@ -61,6 +61,12 @@ const AddRecoveryMethods = (): JSX.Element => {
     navigate('/onboarding/seedless/analyticsConsent')
   }
 
+  // Limited mode wizard: addRecoveryMethods is step 1/5 in the seedless
+  // create flow.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 1, totalSteps: 5 }
+    : undefined
+
   return (
     <Component
       onNext={handleOnNext}
@@ -68,6 +74,7 @@ const AddRecoveryMethods = (): JSX.Element => {
       allowsUserToAddLater={true}
       oidcAuth={oidcAuth}
       availableRecoveryMethods={availableRecoveryMethods}
+      wizardStep={wizardStep}
     />
   )
 }

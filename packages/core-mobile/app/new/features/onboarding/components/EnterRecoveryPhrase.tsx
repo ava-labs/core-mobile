@@ -1,5 +1,6 @@
 import { Button, showAlert, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { TextInput } from 'react-native'
@@ -11,10 +12,12 @@ import RecoveryPhraseInput from './RecoveryPhraseInput'
 
 type EnterRecoveryPhraseProps = {
   onNext: (mnemonic: string) => void
+  wizardStep?: { currentStep: number; totalSteps: number }
 }
 
 export function EnterRecoveryPhrase({
-  onNext
+  onNext,
+  wizardStep
 }: EnterRecoveryPhraseProps): React.JSX.Element {
   const recoveryPhraseInputRef = useRef<TextInput>(null)
   const [mnemonic, setMnemonic] = useState('')
@@ -51,7 +54,32 @@ export function EnterRecoveryPhrase({
     onNext(testMnemonic)
   }, [onNext, testMnemonic])
 
+  const isInvalid =
+    !mnemonic ||
+    mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
+
   const renderFooter = useCallback(() => {
+    if (wizardStep) {
+      return (
+        <View sx={{ gap: 12 }}>
+          {__DEV__ && bip39.validateMnemonic(testMnemonic) && (
+            <Button
+              size="large"
+              type="tertiary"
+              onPress={handleEnterTestWallet}>
+              Enter Test Wallet
+            </Button>
+          )}
+          <OnboardingWizardFooter
+            currentStep={wizardStep.currentStep}
+            totalSteps={wizardStep.totalSteps}
+            onNext={handleNext}
+            disabled={isInvalid}
+            testID="import_btn"
+          />
+        </View>
+      )
+    }
     return (
       <View
         sx={{
@@ -67,15 +95,18 @@ export function EnterRecoveryPhrase({
           size="large"
           type="primary"
           onPress={handleNext}
-          disabled={
-            !mnemonic ||
-            mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
-          }>
+          disabled={isInvalid}>
           Import
         </Button>
       </View>
     )
-  }, [handleEnterTestWallet, handleNext, mnemonic, testMnemonic])
+  }, [
+    handleEnterTestWallet,
+    handleNext,
+    isInvalid,
+    testMnemonic,
+    wizardStep
+  ])
 
   return (
     <ScrollScreen

@@ -3,14 +3,14 @@ import {
   Avatar,
   Button,
   Icons,
-  PageControl,
   Text,
   View,
   useTheme
 } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState } from 'react'
-import { Platform, TouchableOpacity } from 'react-native'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { isLimitedMode } from 'utils/limitedMode'
@@ -33,47 +33,25 @@ export const Confirmation = ({
     }, 100)
   }, [onNext])
 
-  // Hello UI footer: 5-dot pagination on the left (final step), forward
-  // arrow circular FAB on the right. In legacy onboarding we keep the
-  // full-width "Let's go!" pill button.
+  // Hello UI footer: shared wizard footer (left dots + forward FAB).
+  // Mnemonic create flow has 6 steps; mnemonic recover and seedless
+  // create both have 5. Confirmation is always the last step.
   const renderFooter = useCallback((): React.ReactNode => {
     if (isLimitedMode) {
+      // Both 5- and 6-step flows want the FINAL dot extended; pinning
+      // current=last and total=last+1 keeps the active dot at the right
+      // edge. Total is wired by the screen above (recoveryFlow knows
+      // its length); here we default to 5 since this component doesn't
+      // know which flow it's part of, and 5 dots matches every limited
+      // flow's "completion" frame in Figma.
       return (
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 4
-          }}>
-          <PageControl numberOfPage={5} currentPage={4} />
-          {/* Use a raw TouchableOpacity here instead of k2-alpine's
-              CircularButton — that component auto-tints its child to
-              $textPrimary, which would make the white arrow invisible
-              against the dark fill. */}
-          <TouchableOpacity
-            testID="lets_go_btn"
-            onPress={handleOnPress}
-            disabled={isLoading}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: colors.$inverseSurface,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-            {isLoading ? (
-              <ActivityIndicator color={colors.$inverseOnSurface} />
-            ) : (
-              <Icons.Navigation.ArrowForwardIOS
-                color={colors.$inverseOnSurface}
-                width={20}
-                height={20}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
+        <OnboardingWizardFooter
+          currentStep={4}
+          totalSteps={5}
+          onNext={handleOnPress}
+          disabled={isLoading}
+          testID="lets_go_btn"
+        />
       )
     }
     return (
@@ -86,12 +64,7 @@ export const Confirmation = ({
         {isLoading ? <ActivityIndicator /> : `Let's go!`}
       </Button>
     )
-  }, [
-    isLoading,
-    handleOnPress,
-    colors.$inverseSurface,
-    colors.$inverseOnSurface
-  ])
+  }, [isLoading, handleOnPress])
 
   return (
     <ScrollScreen

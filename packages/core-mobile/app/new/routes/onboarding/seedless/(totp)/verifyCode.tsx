@@ -27,10 +27,17 @@ export default function VerifyCode(): JSX.Element {
     })
   }, [router, dispatch])
 
+  // TOTP setup substep — hold the dot at step 1/5 throughout the
+  // authenticator flow.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 1, totalSteps: 5 }
+    : undefined
+
   return (
     <VerifyCodeComponent
       onVerifyCode={onVerifyCode}
       onVerifySuccess={onVerifySuccess}
+      wizardStep={wizardStep}
     />
   )
 }

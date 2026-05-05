@@ -24,11 +24,18 @@ export default function VerifyCode(): JSX.Element {
     })
   }, [router, dispatch])
 
+  // Sub-step of MFA verification in the seedless recovery flow — hold
+  // the dot at step 1/5 throughout, advancing only after createPin.
+  const wizardStep = isLimitedMode
+    ? { currentStep: 1, totalSteps: 5 }
+    : undefined
+
   return (
     <VerifyCodeComponent
       showNavigationHeaderTitle={false}
       onVerifyCode={onVerifyCode}
       onVerifySuccess={onVerifySuccess}
+      wizardStep={wizardStep}
     />
   )
 }

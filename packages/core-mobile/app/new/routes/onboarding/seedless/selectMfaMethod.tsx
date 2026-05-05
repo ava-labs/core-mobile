@@ -1,5 +1,6 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { View } from '@avalabs/k2-alpine'
+import { OnboardingWizardFooter } from 'common/components/OnboardingWizardFooter'
 import { useRouter } from 'expo-router'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
@@ -44,12 +45,27 @@ const SelectMfaMethodScreen = (): JSX.Element => {
     [navigate, oidcAuth, verify, dispatch]
   )
 
+  // Decorative wizard footer — user advances by tapping a method tile,
+  // FAB stays disabled.
+  const renderFooter = useCallback((): JSX.Element | null => {
+    if (!isLimitedMode) return null
+    return (
+      <OnboardingWizardFooter
+        currentStep={1}
+        totalSteps={5}
+        onNext={() => undefined}
+        disabled
+      />
+    )
+  }, [])
+
   return (
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title={`Verify recovery\nmethods`}
       subtitle="Verify your recovery method(s) to continue."
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      contentContainerStyle={{ padding: 16, flex: 1 }}
+      renderFooter={isLimitedMode ? renderFooter : undefined}>
       <View
         style={{
           marginTop: 24

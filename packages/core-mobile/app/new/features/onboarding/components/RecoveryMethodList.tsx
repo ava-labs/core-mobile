@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  alpha,
   Card,
   SxProp,
   Text,
@@ -9,20 +10,26 @@ import {
   Separator,
   TouchableOpacity
 } from '@avalabs/k2-alpine'
-import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import {
+  RecoveryMethod,
+  RecoveryMethods
+} from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 export const RecoveryMethodList = ({
   data,
   sx,
-  onPress
+  onPress,
+  selectedType
 }: {
   data: RecoveryMethod[]
   sx?: SxProp
   onPress: (type: RecoveryMethod) => void
+  selectedType?: RecoveryMethods
 }): React.JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
+  const selectedRowBg = alpha(colors.$primary, 0.12)
 
   if (data.length === 0) {
     return undefined
@@ -36,10 +43,15 @@ export const RecoveryMethodList = ({
         paddingVertical: 8,
         alignItems: 'flex-start'
       }}>
-      {data.map((item, index) => (
+      {data.map((item, index) => {
+        const isSelected = item.type === selectedType
+        return (
         <TouchableOpacity
           key={index}
-          sx={{ width: '100%' }}
+          sx={{
+            width: '100%',
+            backgroundColor: isSelected ? selectedRowBg : 'transparent'
+          }}
           onPress={() => onPress(item)}>
           <>
             <View
@@ -90,7 +102,8 @@ export const RecoveryMethodList = ({
             )}
           </>
         </TouchableOpacity>
-      ))}
+        )
+      })}
     </Card>
   )
 }

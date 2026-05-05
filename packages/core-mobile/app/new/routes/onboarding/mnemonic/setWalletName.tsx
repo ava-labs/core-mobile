@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDispatch } from 'react-redux'
-import { useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import { setWalletName } from 'store/wallet/slice'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
@@ -12,6 +12,7 @@ export default function SetWalletName(): JSX.Element {
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const activeWallet = useActiveWallet()
+  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
 
   const handleNext = useCallback((): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
@@ -24,5 +25,20 @@ export default function SetWalletName(): JSX.Element {
     })
   }, [activeWallet.id, dispatch, name, navigate])
 
-  return <Component name={name} setName={setName} onNext={handleNext} />
+  // Limited mode wizard: setWalletName is step 4/6 in the create flow,
+  // step 3/5 in recovery.
+  const wizardStep = isLimitedMode
+    ? recovering === 'true'
+      ? { currentStep: 3, totalSteps: 5 }
+      : { currentStep: 4, totalSteps: 6 }
+    : undefined
+
+  return (
+    <Component
+      name={name}
+      setName={setName}
+      onNext={handleNext}
+      wizardStep={wizardStep}
+    />
+  )
 }
