@@ -1,19 +1,23 @@
 import {
   alpha,
   Button,
+  CircularDial,
   GroupList,
   Icons,
-  LeverageGauge,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { MarketOutcomeRow } from '../components/MarketOutcomeRow'
 import {
   OUTCOME_COLORS,
@@ -21,8 +25,8 @@ import {
   ProbabilityChart
 } from '../components/ProbabilityChart'
 import { useGetEventDetail } from '../hooks/useGetEventDetail'
-import { generateHistory, tickerToSeed } from '../utils'
 import { MarketWithQuotes } from '../types'
+import { generateHistory, tickerToSeed } from '../utils'
 
 const COLLAPSED_COUNT = 5
 const TIME_RANGES = ['1H', '1D', '1W', '1M', 'ALL'] as const
@@ -32,8 +36,13 @@ const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
-  const [leverage, setLeverage] = useState(2)
-  const [decimalLeverage, setDecimalLeverage] = useState(2)
+  const [dialDefault, setDialDefault] = useState(25)
+  const [dialAmount, setDialAmount] = useState(2.32)
+  const [dialLoss, setDialLoss] = useState(1.5)
+
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { formatCurrency } = useFormatCurrency()
+  const avaxPrice = useAvaxPrice()
 
   const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
   const router = useRouter()
@@ -67,26 +76,88 @@ const EventDetailsScreen = (): JSX.Element => {
   return (
     <ScrollScreen navigationTitle={event?.title ?? ''}>
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
-        <Text variant="heading3">Add leverage</Text>
-        <LeverageGauge
-          value={leverage}
-          onChange={setLeverage}
-          min={1}
-          max={40}
-          step={0.2}
-          integersOnly
+        <Text variant="heading3">Minimal config</Text>
+        <Text variant="body2">
+          {`- Only \`max\` set
+- Default 25% / 50% / Max presets
+- No min threshold (no danger colour or reference tick)`}
+        </Text>
+        <CircularDial
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
+          value={dialDefault}
+          onChange={setDialDefault}
+          max={100}
           enableManualInput
+          label={selectedCurrency}
         />
       </View>
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
-        <Text variant="heading3">Add leverage (decimals)</Text>
-        <LeverageGauge
-          value={decimalLeverage}
-          onChange={setDecimalLeverage}
-          min={1}
-          max={40}
-          step={0.2}
+        <Text variant="heading3">Wide range with soft min</Text>
+        <Text variant="body2">
+          {`- Range 25k–10M
+- min=25000 reference tick, danger colour below
+- Below-min still allowed (soft, not a floor)
+- Custom 100% preset label`}
+        </Text>
+        <CircularDial
+          value={dialAmount}
+          onChange={setDialAmount}
+          min={25000}
+          max={10000000}
           enableManualInput
+          label={selectedCurrency}
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
+          presets={[
+            { label: '25%', fraction: 0.25 },
+            { label: '50%', fraction: 0.5 },
+            { label: '100%', fraction: 1 }
+          ]}
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Fine precision with fiat caption</Text>
+        <Text variant="body2">
+          {`- Range 2-10
+- maxDecimals=2 caps typing at hundredths
+- Live fiat caption updates as you drag/type
+- Fine-grained editor, not a coarse slider`}
+        </Text>
+        <CircularDial
+          value={dialLoss}
+          onChange={setDialLoss}
+          min={2}
+          max={10}
+          maxDecimals={2}
+          enableManualInput
+          label="AVAX"
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
+          caption={formatCurrency({ amount: dialLoss * avaxPrice })}
+          presets={[
+            { label: '25%', fraction: 0.25 },
+            { label: '50%', fraction: 0.5 },
+            { label: '100%', fraction: 1 }
+          ]}
         />
       </View>
       <View style={{ gap: 10, paddingTop: 16 }}>
