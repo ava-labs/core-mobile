@@ -933,9 +933,7 @@ describe('LedgerWallet', () => {
           callOrder.push('sign')
           return { signatures: new Map() }
         })
-        mockResumeAppPolling.mockImplementation(() =>
-          callOrder.push('resume')
-        )
+        mockResumeAppPolling.mockImplementation(() => callOrder.push('resume'))
 
         await ledgerWallet.signAvalancheTransaction({
           accountIndex: 0,
@@ -995,6 +993,7 @@ describe('LedgerWallet', () => {
         }
 
         // Sign never resolves — simulates dead BLE connection
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         mockSign.mockReturnValue(new Promise(() => {}))
 
         const signPromise = ledgerWallet

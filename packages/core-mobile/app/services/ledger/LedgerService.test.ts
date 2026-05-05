@@ -1009,12 +1009,15 @@ describe('LedgerService', () => {
   })
 
   describe('app polling pause/resume', () => {
-    let getCurrentAppInfoSpy: jest.SpyInstance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let getCurrentAppInfoSpy: any
 
     beforeEach(() => {
       jest.useFakeTimers()
 
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'error').mockImplementation(() => {})
 
       // Mock getCurrentAppInfo to simulate a connected transport returning
@@ -1115,7 +1118,9 @@ describe('LedgerService', () => {
         exchangeBusyPromise: null
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'error').mockImplementation(() => {})
 
       // Use the prototype setter to set the real #transport private field
