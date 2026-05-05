@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
@@ -537,12 +538,53 @@ class PortfolioPage {
     await actions.tap(this.bridgeButton)
   }
 
-  async verifyActivityItem(
+  async verifySendOnTokenDetail(
+    network: string,
+    token: string,
+    title: string,
     from = commonEls.accountOneAddress,
     to = commonEls.accountTwoAddress
   ) {
+    await this.tapAssetsTab()
+    await commonElsPage.filter(network)
+    await this.tapToken(token)
     await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
-    console.log(`Verified the transaction activity: tx__from_${from}_to_${to}`)
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnTokenDetail(title: string) {
+    await this.tapActivityTab()
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnActivityTab(title: string, network?: string) {
+    await this.tapActivityTab()
+    if (network) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySendOnActivityTab(
+    network = commonEls.cChain_2,
+    title: string,
+    from = commonEls.accountOneAddress,
+    to = commonEls.accountTwoAddress
+  ) {
+    await this.tapActivityTab()
+    if (network !== commonEls.cChain_2) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyActivityNotVisible(title: string) {
+    await actions.isNotVisible(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySwapActivityHistory(title: string) {
+    await actions.waitFor(selectors.getBySomeTextV2(title))
   }
 
   async selectView(viewType = 'List view') {

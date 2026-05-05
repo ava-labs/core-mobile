@@ -89,6 +89,7 @@ export const useGasless = ({
     setGaslessError(
       'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
     )
+    setGaslessEnabled(false)
   }, [])
 
   const handleGaslessTx = async (
