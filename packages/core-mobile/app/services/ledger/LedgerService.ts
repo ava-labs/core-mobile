@@ -66,6 +66,8 @@ class LedgerService {
 
   private appPollingInterval: number | null = null
   private disconnectHandler: (() => void) | null = null
+  private appPollingEnabled = false
+  private appPollingPaused = false
 
   // Reconnection state & policy
   private connectedDeviceId: string | null = null
@@ -391,6 +393,8 @@ class LedgerService {
           return
         }
 
+        if (this.appPollingPaused) return
+
         const appInfo = await this.getCurrentAppInfo()
         const newAppType = this.mapAppNameToType(appInfo.applicationName)
 
@@ -414,6 +418,18 @@ class LedgerService {
       clearInterval(this.appPollingInterval)
       this.appPollingInterval = null
     }
+    this.appPollingEnabled = false
+    this.appPollingPaused = false
+  }
+
+  pauseAppPolling(): void {
+    this.appPollingPaused = true
+    Logger.info('App polling paused for signing')
+  }
+
+  resumeAppPolling(): void {
+    this.appPollingPaused = false
+    Logger.info('App polling resumed after signing')
   }
 
   // Handle scan errors (matching original implementation)

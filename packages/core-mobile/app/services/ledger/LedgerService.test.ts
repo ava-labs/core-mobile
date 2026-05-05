@@ -1008,6 +1008,94 @@ describe('LedgerService', () => {
     })
   })
 
+  describe('app polling pause/resume', () => {
+    let getCurrentAppInfoSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+
+      // Mock getCurrentAppInfo to simulate a connected transport returning
+      // valid app info. This avoids needing to set the true-private #transport
+      // field which the polling callback checks before calling getCurrentAppInfo.
+      getCurrentAppInfoSpy = jest
+        .spyOn(LedgerService as any, 'getCurrentAppInfo')
+        .mockResolvedValue({
+          applicationName: 'Avalanche',
+          version: '0.9.1'
+        })
+
+      // Bypass the #transport null-check inside the polling interval by
+      // stubbing the internal field check. The polling callback does:
+      //   if (!this.#transport || !this.#transport.isConnected) { ... }
+      // We can't set #transport from outside, so we override the entire
+      // polling method to remove that guard while keeping pause/resume logic.
+      // Instead, we set #transport indirectly by calling the prototype setter.
+      const protoDesc = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(LedgerService),
+        'transport'
+      )
+      if (protoDesc?.set) {
+        // The setter does: this.#transport = transport
+        // We pass a minimal object that satisfies the isConnected check.
+        protoDesc.set.call(LedgerService, { isConnected: true })
+      }
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+      jest.clearAllMocks()
+      LedgerService.stopAppPolling()
+    })
+
+    it('should skip getCurrentAppInfo when polling is paused', async () => {
+      // @ts-ignore - accessing private for testing
+      LedgerService.appPollingEnabled = false
+      // @ts-ignore
+      LedgerService.startAppPolling()
+
+      // Normal polling should fire and call getCurrentAppInfo
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.APP_POLLING_INTERVAL + 100
+      )
+      expect(getCurrentAppInfoSpy).toHaveBeenCalled()
+
+      // Pause polling
+      LedgerService.pauseAppPolling()
+
+      // Advance past several polling intervals
+      getCurrentAppInfoSpy.mockClear()
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.APP_POLLING_INTERVAL * 3
+      )
+
+      // No new calls should have been made while paused
+      expect(getCurrentAppInfoSpy).not.toHaveBeenCalled()
+    })
+
+    it('should resume getCurrentAppInfo after resumeAppPolling', async () => {
+      // @ts-ignore
+      LedgerService.appPollingEnabled = false
+      // @ts-ignore
+      LedgerService.startAppPolling()
+
+      // Pause then resume
+      LedgerService.pauseAppPolling()
+      LedgerService.resumeAppPolling()
+
+      // Advance past a polling interval
+      getCurrentAppInfoSpy.mockClear()
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.APP_POLLING_INTERVAL + 100
+      )
+
+      // Calls should have resumed
+      expect(getCurrentAppInfoSpy).toHaveBeenCalled()
+    })
+  })
+
   describe('getSolanaKeysForRange', () => {
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
