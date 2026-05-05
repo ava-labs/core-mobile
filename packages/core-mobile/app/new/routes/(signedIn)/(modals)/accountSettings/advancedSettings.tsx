@@ -1,1 +1,1 @@
-export { AdvancedSettingsScreen as default } from 'features/accountSettings/screens/AdvancedSettingsScreen'
+export { AdvancedSettingsScreen as default } from 'features/accountSettings/screens/advancedSettings/AdvancedSettingsScreen'
