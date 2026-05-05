@@ -25,6 +25,24 @@ function resolveNoblePackage(packageName, moduleName) {
   }
 }
 
+// Only redirect @noble/hashes subpaths that are patched for native crypto.
+// Non-crypto modules (_assert, utils, crypto) must resolve normally so
+// consumers expecting the v1.3.x API (e.g. ethereum-cryptography) don't break.
+const PATCHED_NOBLE_HASHES = new Set([
+  '@noble/hashes/hmac',
+  '@noble/hashes/hmac.js',
+  '@noble/hashes/pbkdf2',
+  '@noble/hashes/pbkdf2.js',
+  '@noble/hashes/ripemd160',
+  '@noble/hashes/ripemd160.js',
+  '@noble/hashes/sha2',
+  '@noble/hashes/sha2.js',
+  '@noble/hashes/sha256',
+  '@noble/hashes/sha256.js',
+  '@noble/hashes/sha512',
+  '@noble/hashes/sha512.js'
+])
+
 /**
  * Metro configuration
  * https://facebook.github.io/metro/docs/configuration
@@ -160,10 +178,13 @@ const baseConfig = {
         return context.resolveRequest(context, 'readable-stream', platform)
       }
 
-      // Force ALL @noble/hashes and @noble/curves imports to the single patched copies
-      // (@noble/hashes → native quick-crypto, @noble/curves → native nitro-avalabs-crypto)
+      // Force patched @noble/hashes subpaths and ALL @noble/curves imports
+      // to the single top-level copies with native crypto patches.
+      // Only the subpaths that are actually patched are redirected for
+      // @noble/hashes — other subpaths (e.g. _assert, utils) resolve
+      // normally so version-sensitive consumers aren't broken.
       const nobleResolved =
-        (moduleName.startsWith('@noble/hashes') &&
+        (PATCHED_NOBLE_HASHES.has(moduleName) &&
           resolveNoblePackage('@noble/hashes', moduleName)) ||
         (moduleName.startsWith('@noble/curves') &&
           resolveNoblePackage('@noble/curves', moduleName))
