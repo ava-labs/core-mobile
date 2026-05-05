@@ -51,7 +51,8 @@ export enum LEDGER_ERROR_CODES {
   BLUETOOTH_PERMISSION = 'ledger_bluetooth_permission_required',
   BLUETOOTH_RADIO_OFF = 'ledger_bluetooth_radio_off',
   BLUETOOTH_UNSUPPORTED = 'ledger_bluetooth_unsupported',
-  BLUETOOTH_UNKNOWN = 'ledger_bluetooth_unknown'
+  BLUETOOTH_UNKNOWN = 'ledger_bluetooth_unknown',
+  TRANSPORT_INTERFACE_NOT_AVAILABLE = 'transport_interface_not_available'
 }
 
 // ============================================================================
