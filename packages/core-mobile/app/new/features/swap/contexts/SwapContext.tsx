@@ -377,10 +377,9 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        const transfer = await FusionService.transferAsset(
-          quoteToUse,
-          transferGasMarginBps
-        )
+        const transfer = await FusionService.transferAsset(quoteToUse, {
+          estimateGasMarginBps: transferGasMarginBps
+        })
 
         if (transfer.status === 'failed') {
           const reason =

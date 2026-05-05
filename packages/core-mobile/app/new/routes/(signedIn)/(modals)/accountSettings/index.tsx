@@ -94,6 +94,10 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
+  const goToAdvancedSettings = useCallback(() => {
+    navigate('/accountSettings/advancedSettings')
+  }, [navigate])
+
   const onTestnetChange = (value: boolean): void => {
     showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
 
@@ -227,6 +231,7 @@ const AccountSettingsScreen = (): JSX.Element => {
             <UserPreferences
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
+              selectAdvancedSettings={goToAdvancedSettings}
             />
             <Support onPressItem={handlePressAboutItem} />
             <About onPressItem={handlePressAboutItem} />

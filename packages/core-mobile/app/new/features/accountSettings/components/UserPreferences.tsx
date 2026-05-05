@@ -1,13 +1,18 @@
 import React from 'react'
 import { GroupList } from '@avalabs/k2-alpine'
+import { useQuickSwaps } from 'features/swap/hooks/useQuickSwaps'
 
 export const UserPreferences = ({
   selectSecurityPrivacy,
-  selectNotificationPreferences
+  selectNotificationPreferences,
+  selectAdvancedSettings
 }: {
   selectSecurityPrivacy: () => void
   selectNotificationPreferences: () => void
+  selectAdvancedSettings: () => void
 }): React.JSX.Element => {
+  const { isAvailable: isQuickSwapsAvailable } = useQuickSwaps()
+
   const data = [
     {
       title: 'Security & privacy',
@@ -16,7 +21,15 @@ export const UserPreferences = ({
     {
       title: 'Notification preferences',
       onPress: selectNotificationPreferences
-    }
+    },
+    ...(isQuickSwapsAvailable
+      ? [
+          {
+            title: 'Advanced',
+            onPress: selectAdvancedSettings
+          }
+        ]
+      : [])
   ]
 
   return (

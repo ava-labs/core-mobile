@@ -2,6 +2,7 @@ import type {
   BridgeableUiAsset,
   CompletedTransfer,
   FailedTransfer,
+  GasSettings,
   GetBridgeableAssetsProps,
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
@@ -290,12 +291,12 @@ class FusionService implements IFusionService {
   /**
    * Execute a transfer using the provided quote
    * @param quote The quote to execute
-   * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
+   * @param gasSettings Gas settings passed through to the Fusion SDK
    * @returns Transfer object with status and transaction details
    */
   async transferAsset(
     quote: Quote,
-    estimateGasMarginBps: number
+    gasSettings: GasSettings
   ): Promise<Transfer> {
     try {
       Logger.info('Executing transfer with quote:', {
@@ -305,7 +306,7 @@ class FusionService implements IFusionService {
 
       const transfer = await this.transferManager.transferAsset({
         quote,
-        gasSettings: { estimateGasMarginBps }
+        gasSettings
       })
 
       Logger.info('Transfer executed:', {

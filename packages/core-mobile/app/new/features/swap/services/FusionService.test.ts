@@ -654,7 +654,9 @@ describe('FusionService', () => {
         signers: mockSigners
       })
 
-      const result = await FusionService.transferAsset(mockQuote, 2000)
+      const result = await FusionService.transferAsset(mockQuote, {
+        estimateGasMarginBps: 2000
+      })
 
       expect(result).toBe(mockTransfer)
       expect(mockTransferManager.transferAsset).toHaveBeenCalledWith({
@@ -682,7 +684,7 @@ describe('FusionService', () => {
       } as any
 
       await expect(
-        FusionService.transferAsset(mockQuote, 2000)
+        FusionService.transferAsset(mockQuote, { estimateGasMarginBps: 2000 })
       ).rejects.toThrow('Fusion service is not initialized')
     })
 
@@ -717,7 +719,7 @@ describe('FusionService', () => {
       })
 
       await expect(
-        FusionService.transferAsset(mockQuote, 2000)
+        FusionService.transferAsset(mockQuote, { estimateGasMarginBps: 2000 })
       ).rejects.toThrow('Transfer failed')
 
       expect(Logger.error).toHaveBeenCalledWith(

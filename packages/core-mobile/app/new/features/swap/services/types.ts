@@ -6,6 +6,7 @@ import type {
   Environment,
   EstimateNativeFeeOptions,
   EvmSignerWithMessage,
+  GasSettings,
   GetMinimumTransferAmountProps,
   NativeFeeEstimate,
   Quote,
@@ -88,10 +89,10 @@ export interface IFusionService {
   /**
    * Execute a transfer using the provided quote
    * @param quote The quote to execute
-   * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
+   * @param gasSettings Gas settings passed through to the Fusion SDK
    * @returns Transfer object with status and transaction details
    */
-  transferAsset(quote: Quote, estimateGasMarginBps: number): Promise<Transfer>
+  transferAsset(quote: Quote, gasSettings: GasSettings): Promise<Transfer>
 
   /**
    * Track a transfer's status changes via the SDK
