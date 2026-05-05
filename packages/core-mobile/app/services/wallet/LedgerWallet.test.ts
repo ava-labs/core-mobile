@@ -43,7 +43,9 @@ jest.mock('services/ledger/LedgerService', () => ({
     isConnected: jest.fn().mockReturnValue(true),
     getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
     getAllAddresses: jest.fn(),
-    getExtendedPublicKeys: jest.fn()
+    getExtendedPublicKeys: jest.fn(),
+    pauseAppPolling: jest.fn(),
+    resumeAppPolling: jest.fn()
   }
 }))
 
@@ -179,6 +181,8 @@ const mockGetCurrentAppType = LedgerService.getCurrentAppType as jest.Mock
 const mockGetAllAddresses = LedgerService.getAllAddresses as jest.Mock
 const mockGetExtendedPublicKeys =
   LedgerService.getExtendedPublicKeys as jest.Mock
+const mockPauseAppPolling = LedgerService.pauseAppPolling as jest.Mock
+const mockResumeAppPolling = LedgerService.resumeAppPolling as jest.Mock
 
 // Mock transport
 class MockTransport {
@@ -907,6 +911,108 @@ describe('LedgerWallet', () => {
           LedgerAppType.AVALANCHE,
           expect.any(Number)
         )
+      })
+    })
+
+    describe('polling pause/resume during signing', () => {
+      it('should pause app polling before signing and resume after', async () => {
+        const mockTx = {
+          getVM: jest.fn().mockReturnValue('PVM'),
+          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
+          addSignature: jest.fn(),
+          toJSON: jest.fn().mockReturnValue({})
+        }
+        const transaction: AvalancheTransactionRequest = {
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
+          externalIndices: [0]
+        }
+
+        const callOrder: string[] = []
+        mockPauseAppPolling.mockImplementation(() => callOrder.push('pause'))
+        mockSign.mockImplementation(async () => {
+          callOrder.push('sign')
+          return { signatures: new Map() }
+        })
+        mockResumeAppPolling.mockImplementation(() =>
+          callOrder.push('resume')
+        )
+
+        await ledgerWallet.signAvalancheTransaction({
+          accountIndex: 0,
+          transaction,
+          network: { vmName: 'PVM', isTestnet: false } as Network,
+          provider: {} as Avalanche.JsonRpcProvider
+        })
+
+        expect(callOrder).toEqual(['pause', 'sign', 'resume'])
+      })
+
+      it('should resume app polling even when signing fails', async () => {
+        const mockTx = {
+          getVM: jest.fn().mockReturnValue('PVM'),
+          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
+          addSignature: jest.fn(),
+          toJSON: jest.fn().mockReturnValue({})
+        }
+        const transaction: AvalancheTransactionRequest = {
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
+          externalIndices: [0]
+        }
+
+        mockSign.mockRejectedValue(new Error('User rejected'))
+
+        await expect(
+          ledgerWallet.signAvalancheTransaction({
+            accountIndex: 0,
+            transaction,
+            network: { vmName: 'PVM', isTestnet: false } as Network,
+            provider: {} as Avalanche.JsonRpcProvider
+          })
+        ).rejects.toThrow('User rejected')
+
+        expect(mockPauseAppPolling).toHaveBeenCalled()
+        expect(mockResumeAppPolling).toHaveBeenCalled()
+      })
+    })
+
+    describe('signing timeout', () => {
+      afterEach(() => {
+        jest.useRealTimers()
+      })
+
+      it('should reject with timeout error when signing hangs', async () => {
+        jest.useFakeTimers()
+
+        const mockTx = {
+          getVM: jest.fn().mockReturnValue('PVM'),
+          toBytes: jest.fn().mockReturnValue(new Uint8Array()),
+          addSignature: jest.fn(),
+          toJSON: jest.fn().mockReturnValue({})
+        }
+        const transaction: AvalancheTransactionRequest = {
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
+          externalIndices: [0]
+        }
+
+        // Sign never resolves — simulates dead BLE connection
+        mockSign.mockReturnValue(new Promise(() => {}))
+
+        const signPromise = ledgerWallet
+          .signAvalancheTransaction({
+            accountIndex: 0,
+            transaction,
+            network: { vmName: 'PVM', isTestnet: false } as Network,
+            provider: {} as Avalanche.JsonRpcProvider
+          })
+          .catch((e: Error) => e)
+
+        // Advance past the signing timeout (120s)
+        await jest.advanceTimersByTimeAsync(120_001)
+
+        const error = await signPromise
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).toBe('Ledger signing timed out')
+        expect(mockResumeAppPolling).toHaveBeenCalled()
       })
     })
   })

@@ -634,13 +634,16 @@ export class LedgerWallet implements Wallet {
     const txBuffer = Buffer.from(transaction.tx.toBytes())
 
     Logger.info('Calling avaxApp.sign...')
+    LedgerService.pauseAppPolling()
     try {
       // Sign directly with the Ledger device
-      const signResult = await avaxApp.sign(
-        accountPath,
-        signingPaths,
-        txBuffer,
-        changePaths.length > 0 ? changePaths : undefined
+      const signResult = await this.withSigningTimeout(
+        avaxApp.sign(
+          accountPath,
+          signingPaths,
+          txBuffer,
+          changePaths.length > 0 ? changePaths : undefined
+        )
       )
       Logger.info('avaxApp.sign completed')
 
@@ -658,6 +661,8 @@ export class LedgerWallet implements Wallet {
         handleLedgerError({ error: signError, appType })
       }
       throw signError
+    } finally {
+      LedgerService.resumeAppPolling()
     }
   }
 
@@ -684,6 +689,7 @@ export class LedgerWallet implements Wallet {
     // Get transport
     const transport = await this.handleAppConnection(appType)
 
+    LedgerService.pauseAppPolling()
     try {
       // Get the derivation path for this account
       const derivationPath = this.getDerivationPath(
@@ -715,9 +721,11 @@ export class LedgerWallet implements Wallet {
       Logger.info('Full serialized transaction:', serializedTx)
       Logger.info('Unsigned transaction hex:', unsignedTx)
 
-      const signature: SignatureRSV = await (isAvalanche
-        ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
-        : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
+      const signature: SignatureRSV = await this.withSigningTimeout(
+        isAvalanche
+          ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
+          : this.getEvmSignature({ transport, derivationPath, unsignedTx })
+      )
 
       // Create the signed EIP-1559 transaction
       const signedTx = Transaction.from({
@@ -742,6 +750,8 @@ export class LedgerWallet implements Wallet {
       }
 
       throw error
+    } finally {
+      LedgerService.resumeAppPolling()
     }
   }
 
@@ -762,6 +772,7 @@ export class LedgerWallet implements Wallet {
     const solanaApp = new AppSolana(transport as Transport)
     Logger.info('Created AppSolana instance')
 
+    LedgerService.pauseAppPolling()
     try {
       // Get the derivation path for this account
       const derivationPath = getSolanaDerivationPath(accountIndex)
@@ -810,10 +821,12 @@ export class LedgerWallet implements Wallet {
       }
 
       Logger.info('Signing transaction with Ledger')
-      const signResult = await solanaApp.signTransaction(
-        derivationPath,
-        Buffer.from(messageBytes),
-        userInputType
+      const signResult = await this.withSigningTimeout(
+        solanaApp.signTransaction(
+          derivationPath,
+          Buffer.from(messageBytes),
+          userInputType
+        )
       )
       Logger.info('Got signature from Ledger')
 
@@ -838,6 +851,8 @@ export class LedgerWallet implements Wallet {
       }
 
       throw error
+    } finally {
+      LedgerService.resumeAppPolling()
     }
   }
 
@@ -994,6 +1009,7 @@ export class LedgerWallet implements Wallet {
     // Get transport and create Avalanche app instance directly
     const transport = await this.handleAppConnection(appType)
 
+    LedgerService.pauseAppPolling()
     try {
       const avaxApp = new AppAvax(transport as Transport)
       Logger.info('Created AppAvax instance')
@@ -1014,10 +1030,8 @@ export class LedgerWallet implements Wallet {
 
       Logger.info('Signing message with AppAvax.signMsg')
       // Sign the message using the Avalanche app
-      const signResult = await avaxApp.signMsg(
-        accountPath,
-        signingPaths,
-        messageString
+      const signResult = await this.withSigningTimeout(
+        avaxApp.signMsg(accountPath, signingPaths, messageString)
       )
 
       // Extract the signature from the result
@@ -1037,6 +1051,8 @@ export class LedgerWallet implements Wallet {
         handleLedgerError({ error, appType })
       }
       throw error
+    } finally {
+      LedgerService.resumeAppPolling()
     }
   }
 
@@ -1292,13 +1308,16 @@ export class LedgerWallet implements Wallet {
       filteredTypes: Object.keys(filteredTypes)
     })
 
-    const hexSignature = await this.signEIP712WithFallback(
-      app,
-      derivationPath,
-      eip712Message
-    )
-    Logger.info('Successfully signed typed data')
-    return hexSignature
+    LedgerService.pauseAppPolling()
+    try {
+      const hexSignature = await this.withSigningTimeout(
+        this.signEIP712WithFallback(app, derivationPath, eip712Message)
+      )
+      Logger.info('Successfully signed typed data')
+      return hexSignature
+    } finally {
+      LedgerService.resumeAppPolling()
+    }
   }
 
   private async handleEthAndPersonalSign({
@@ -1328,12 +1347,19 @@ export class LedgerWallet implements Wallet {
       ? messageToSign.slice(2)
       : Buffer.from(messageToSign, 'utf8').toString('hex')
 
-    const signature = await app.signPersonalMessage(derivationPath, messageHex)
+    LedgerService.pauseAppPolling()
+    try {
+      const signature = await this.withSigningTimeout(
+        app.signPersonalMessage(derivationPath, messageHex)
+      )
 
-    // Convert signature to hex format (0x-prefixed)
-    const hexSignature = this.getHexSignature(signature)
-    Logger.info('Successfully signed personal message')
-    return hexSignature
+      // Convert signature to hex format (0x-prefixed)
+      const hexSignature = this.getHexSignature(signature)
+      Logger.info('Successfully signed personal message')
+      return hexSignature
+    } finally {
+      LedgerService.resumeAppPolling()
+    }
   }
 
   private async signEvmMessage({
@@ -1577,6 +1603,23 @@ export class LedgerWallet implements Wallet {
     }
     Logger.info('Got signature from Ethereum app:', signature)
     return signature
+  }
+
+  /**
+   * Race a signing promise against a timeout. Prevents indefinite hangs
+   * when the BLE connection silently dies during user review on the device.
+   */
+  private withSigningTimeout<T>(signingPromise: Promise<T>): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout>
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error('Ledger signing timed out')),
+        LEDGER_TIMEOUTS.SIGN_TIMEOUT
+      )
+    })
+    return Promise.race([signingPromise, timeoutPromise]).finally(() =>
+      clearTimeout(timeoutId)
+    )
   }
 
   private handleAppConnection = async (
