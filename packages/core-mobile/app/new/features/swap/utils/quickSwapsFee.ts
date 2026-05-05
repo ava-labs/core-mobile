@@ -2,12 +2,12 @@ import type { FeeRateTier } from '@avalabs/fusion-sdk'
 import type { QuickSwapFeeLevel } from 'store/settings/advanced/types'
 
 export type SuggestedGasFees = Partial<
-  Record<FeeRateTier, { maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }>
+  Record<FeeRateTier, { maxFeePerGas: bigint; maxPriorityFeePerGas?: bigint }>
 >
 
 export type QuickSwapsGasSettings = {
   maxFeePerGas: bigint
-  maxPriorityFeePerGas: bigint
+  maxPriorityFeePerGas?: bigint
 }
 
 export const feeSettingToTier = (level: QuickSwapFeeLevel): FeeRateTier => {

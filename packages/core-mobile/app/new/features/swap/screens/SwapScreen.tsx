@@ -55,6 +55,7 @@ import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
+import { useQuickSwaps } from '../hooks/useQuickSwaps'
 import {
   fusionTransfersStore,
   useFusionServiceInitError
@@ -157,7 +158,8 @@ export const SwapScreen = (): JSX.Element => {
     quoteError,
     swapStatus,
     successTransferId,
-    advanceBestQuote
+    advanceBestQuote,
+    fromAmountUsd
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -263,6 +265,27 @@ export const SwapScreen = (): JSX.Element => {
   const activeError = validationError ?? quoteError
 
   const {
+    isEnabled: isQuickSwapsActive,
+    isAmountOverLimit,
+    maxBuy
+  } = useQuickSwaps()
+  const hasFromAmount = !!fromTokenValue && fromTokenValue > 0n
+  const overLimit =
+    isQuickSwapsActive && hasFromAmount && isAmountOverLimit(fromAmountUsd)
+  const cannotDetermineValue =
+    isQuickSwapsActive && hasFromAmount && fromAmountUsd === undefined
+  const blockedByQuickSwaps = overLimit || cannotDetermineValue
+
+  useEffect(() => {
+    if (blockedByQuickSwaps) {
+      AnalyticsService.capture('SwapBlockedByQuickSwapLimit', {
+        maxBuy,
+        hasUsdValue: !cannotDetermineValue
+      })
+    }
+  }, [blockedByQuickSwaps, maxBuy, cannotDetermineValue])
+
+  const {
     priceImpact,
     priceImpactSeverity,
     priceImpactAvailability,
@@ -279,7 +302,8 @@ export const SwapScreen = (): JSX.Element => {
     !!toToken &&
     !!activeQuote &&
     !isPriceImpactCalculating &&
-    !isPriceImpactTooHigh
+    !isPriceImpactTooHigh &&
+    !blockedByQuickSwaps
 
   const coreFeeMessage = useMemo(() => {
     if (!activeQuote) return
@@ -865,6 +889,32 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [activeError])
 
+  const renderQuickSwapsError = useCallback(() => {
+    if (!blockedByQuickSwaps) return null
+
+    const message = cannotDetermineValue
+      ? `Can't determine swap value. Disable Quick Swaps to proceed.`
+      : 'Swap amount exceeds your limit. Lower the amount or change the limit in Advanced settings.'
+
+    return (
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={{
+          alignItems: 'center',
+          marginVertical: 8,
+          width: '85%',
+          alignSelf: 'center'
+        }}>
+        <Text
+          variant="caption"
+          sx={{ color: '$textDanger', textAlign: 'center' }}>
+          {message}
+        </Text>
+      </Animated.View>
+    )
+  }, [blockedByQuickSwaps, cannotDetermineValue])
+
   const renderAdditiveFeesNotice = useCallback(() => {
     if (
       !fromToken ||
@@ -1002,6 +1052,7 @@ export const SwapScreen = (): JSX.Element => {
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
       {renderError()}
+      {renderQuickSwapsError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}

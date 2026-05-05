@@ -12,6 +12,7 @@ import { DropdownGroup, DropdownMenu } from 'new/common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   selectIsQuickSwapsEnabled,
   selectQuickSwapsFeeSetting,
@@ -66,6 +67,7 @@ export const QuickSwapsToggleRow = ({
   const onToggle = useCallback(
     (value: boolean) => {
       dispatch(setQuickSwapsEnabled(value))
+      AnalyticsService.capture('QuickSwapsToggled', { isEnabled: value })
     },
     [dispatch]
   )

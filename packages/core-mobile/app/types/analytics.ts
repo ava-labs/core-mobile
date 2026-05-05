@@ -134,6 +134,14 @@ export type AnalyticsEvents = {
     }
     caip2SourceChainId: string
     caip2TargetChainId: string
+    quickSwapsEnabled?: boolean
+    quickSwapsFeeSetting?: 'low' | 'medium' | 'high'
+    quickSwapsMaxBuy?:
+      | 'unlimited'
+      | '1000'
+      | '5000'
+      | '10000'
+      | '50000'
   }
   SwapSuccessful: {
     encrypted: {
@@ -167,6 +175,16 @@ export type AnalyticsEvents = {
       targetTxHash?: string
       refundTxHash?: string
     }
+  }
+  QuickSwapsToggled: { isEnabled: boolean }
+  SwapBlockedByQuickSwapLimit: {
+    maxBuy:
+      | 'unlimited'
+      | '1000'
+      | '5000'
+      | '10000'
+      | '50000'
+    hasUsdValue: boolean
   }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
