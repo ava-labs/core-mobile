@@ -84,7 +84,8 @@ export const LEDGER_TIMEOUTS = {
   APP_CHECK_DELAY: 1000, // 1 second delay between app detection attempts
   REQUEST_DELAY: 3000, // 3s delay between APDU commands
   RECONNECT_MAX_RETRIES: 3, // max auto-reconnect attempts after unexpected disconnect
-  RECONNECT_BASE_DELAY: 1000 // 1s base delay between reconnect attempts (doubles each retry)
+  RECONNECT_BASE_DELAY: 1000, // 1s base delay between reconnect attempts (doubles each retry)
+  SIGN_TIMEOUT: 120000 // 2 minutes for user to review and approve on device
 } as const
 
 export const LEDGER_DEVICE_BRIEF_DELAY_MS = 1000
