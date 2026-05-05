@@ -536,5 +536,22 @@ export const migrations = {
     // on device forever.
     const { bridge: _bridge, unifiedBridge: _unifiedBridge, ...rest } = state
     return rest
+  },
+  29: (state: any) => {
+    // CP-13244: introduce quickSwaps settings on advanced
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        advanced: {
+          ...state.settings?.advanced,
+          quickSwaps: state.settings?.advanced?.quickSwaps ?? {
+            isEnabled: false,
+            feeSetting: 'medium',
+            maxBuy: 'unlimited'
+          }
+        }
+      }
+    }
   }
 }

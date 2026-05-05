@@ -575,6 +575,11 @@ export const selectIsFusionLombardBtcbToBtcEnabled = (
   )
 }
 
+export const selectIsQuickSwapsAvailable = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return featureFlags[FeatureGates.FUSION_QUICK_SWAPS] === true
+}
+
 export const selectIsAlternateAppIconsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

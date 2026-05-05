@@ -27,7 +27,7 @@ import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
 
-const VERSION = 28
+const VERSION = 29
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
