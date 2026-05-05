@@ -72,6 +72,10 @@ export class PrivateKeyWallet implements Wallet {
     provider: Avalanche.JsonRpcProvider
   ): Promise<Avalanche.StaticSigner> {
     const keyBuffer = Buffer.from(strip0x(this.privateKey), 'hex')
+    // An imported private key is a single secp256k1 keypair with no BIP-44
+    // derivation; the same key produces both the X/P (bech32) and C-chain
+    // (EVM) addresses, so we pass it to StaticSigner's X/P and C slots
+    // identically. Mirrors Core Extension's WalletService PrivateKey path.
     return new Avalanche.StaticSigner(keyBuffer, keyBuffer, provider)
   }
 
