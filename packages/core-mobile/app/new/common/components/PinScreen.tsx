@@ -37,7 +37,7 @@ import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { CommonStorageKeys } from 'utils/mmkv'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { manualLockStore } from 'features/accountSettings/store'
 
@@ -258,7 +258,7 @@ export const PinScreen = ({
         accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
 
       if (isBrokenBioState) {
-        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+        commonStorage.set(CommonStorageKeys.SECURE_ACCESS_SET, 'PIN')
         accessType = BiometricsSDK.getAccessType()
       }
     })

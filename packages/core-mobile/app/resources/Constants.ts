@@ -1,32 +1,5 @@
 import { Platform } from 'react-native'
 
-export enum StorageKey {
-  SECURE_ACCESS_SET = 'secureAccessSet',
-  POSTHOG_SUSPENDED = 'POSTHOG_SUSPENDED',
-  HAS_MIGRATED_FROM_ASYNC_STORAGE = 'hasMigratedFromAsyncStorage',
-  NOTIFICATIONS_OPTIMIZATION = 'NOTIFICATIONS_OPTIMIZATION',
-  LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
-  USER_UNIQUE_ID = 'USER_UNIQUE_ID',
-  LAST_SEEN_UPDATE_APP_VERSION = 'LAST_SEEN_UPDATE_APP_VERSION',
-  MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS = 'MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS',
-  INJECTED_PROVIDER_UUID = 'INJECTED_PROVIDER_UUID'
-}
-
-export enum ZustandStorageKeys {
-  RECENT_ACCOUNTS = 'recentAccounts',
-  ACTIVITY = 'activity',
-  BORROW_PROTOCOL = 'borrowProtocol',
-  PORTFOLIO_VIEW = 'portfolioView',
-  COLLECTIBLES_VIEW = 'collectiblesView',
-  DEFI_VIEW = 'defiView',
-  MARKET_VIEW = 'marketView',
-  FAVORITES_VIEW = 'favoritesView',
-  TRACK_SEARCH_VIEW = 'trackSearchView',
-  LEDGER_WALLET_MAP = 'ledgerWalletMap',
-  APP_REVIEW = 'appReview',
-  FUSION_TRANSFERS = 'fusionTransfers'
-}
-
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 
 export const TERMS_OF_USE_URL = 'https://core.app/terms/core'

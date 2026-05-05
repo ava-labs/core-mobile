@@ -1,46 +1,51 @@
+import { MMKV } from 'react-native-mmkv'
 import Logger from 'utils/Logger'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { reduxStorage, reduxStorageKeys } from 'store/reduxStorage'
-import { StorageKey } from 'resources/Constants'
-import { commonStorage, commonStorageKeys } from './storages'
 
-// TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
-export const hasMigratedFromAsyncStorage = (): boolean | undefined =>
-  commonStorage.getBoolean('hasMigratedFromAsyncStorage')
-
-// TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
-export async function migrateFromAsyncStorage(): Promise<void> {
-  Logger.info('Migration from AsyncStorage -> MMKKV started!')
+/**
+ * JSON-stringifies an array and writes it under `key`. Errors are logged
+ * but not thrown — callers shouldn't have to handle a broken stringify
+ * for a well-typed value.
+ */
+export const saveArrayToStorage = <T>(
+  storage: MMKV,
+  key: string,
+  value: T[]
+): void => {
   try {
-    const keys = await AsyncStorage.getAllKeys()
-    if (keys.length === 0) {
-      commonStorage.set(StorageKey.HAS_MIGRATED_FROM_ASYNC_STORAGE, true)
-      Logger.info(`Skip AsyncStorage Migration: No keys found in AsyncStorage!`)
-      return
-    }
-    const values = await AsyncStorage.multiGet(keys)
-    values.forEach(async ([key, value]) => {
-      if (value != null) {
-        const newValue = ['true', 'false'].includes(value)
-          ? value === 'true'
-          : value
-        if (commonStorageKeys.includes(key as StorageKey)) {
-          commonStorage.set(key, newValue)
-          await AsyncStorage.removeItem(key).catch(error => {
-            Logger.error(`Error removing key ${key} from AsyncStorage:`, error)
-          })
-        }
-        if (reduxStorageKeys.includes(key)) {
-          await reduxStorage.setItem(key, newValue)
-          await AsyncStorage.removeItem(key).catch(error => {
-            Logger.error(`Error removing key ${key} from AsyncStorage:`, error)
-          })
-        }
-      }
-    })
-    commonStorage.set(StorageKey.HAS_MIGRATED_FROM_ASYNC_STORAGE, true)
-    Logger.info(`Migration from AsyncStorage -> MMKV completed!`)
-  } catch (error) {
-    Logger.error('Error migrating from AsyncStorage to MMKV:', error)
+    storage.set(key, JSON.stringify(value))
+  } catch (err) {
+    Logger.error(`[MMKV:setArray] Failed to stringify ${key}`, err)
   }
+}
+
+/**
+ * Reads and parses a JSON array previously written by `saveArrayToStorage`.
+ * Returns `[]` if the key is missing or the stored value can't be parsed.
+ */
+export const loadArrayFromStorage = <T>(storage: MMKV, key: string): T[] => {
+  try {
+    const json = storage.getString(key)
+    if (!json) return []
+    return JSON.parse(json) as T[]
+  } catch (err) {
+    Logger.error(`[MMKV:getArray] Failed to parse ${key}`, err)
+    return []
+  }
+}
+
+/**
+ * Loads the array at `key`, appends `item`, and writes it back. Returns
+ * the new array.
+ *
+ * Not atomic across processes — callers in concurrent contexts should
+ * synchronize externally.
+ */
+export const appendToStoredArray = <T>(
+  storage: MMKV,
+  key: string,
+  item: T
+): T[] => {
+  const updated = [...loadArrayFromStorage<T>(storage, key), item]
+  saveArrayToStorage(storage, key, updated)
+  return updated
 }

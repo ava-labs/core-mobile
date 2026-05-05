@@ -5,6 +5,7 @@ import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { ErrorEvent, TransactionEvent } from '@sentry/core'
 import UserService from 'services/user/UserService'
+import { AllowedSentryBreadcrumbCategory } from './types'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
@@ -56,7 +57,17 @@ const init = (): void => {
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: scrubSentryData,
       beforeSendTransaction: scrubSentryData,
-      beforeBreadcrumb: () => {
+      beforeBreadcrumb: breadcrumb => {
+        // Breadcrumbs are dropped by default to prevent unintended data
+        // leaks (e.g. console output containing sensitive info). Categories
+        // listed in `AllowedSentryBreadcrumbCategory` are explicitly allowlisted.
+        const allowedCategories = Object.values(AllowedSentryBreadcrumbCategory)
+        if (
+          breadcrumb.category &&
+          (allowedCategories as string[]).includes(breadcrumb.category)
+        ) {
+          return breadcrumb
+        }
         return null
       },
       tracesSampler: samplingContext => {

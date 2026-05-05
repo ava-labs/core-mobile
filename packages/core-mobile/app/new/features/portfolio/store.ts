@@ -1,7 +1,6 @@
 import { CollectibleViewOption, ViewOption } from 'common/types'
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 

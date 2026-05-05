@@ -10,7 +10,7 @@ import BiometricsSDK, {
 } from 'utils/BiometricsSDK'
 import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
 import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { CommonStorageKeys } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import * as LocalAuthentication from 'expo-local-authentication'
@@ -124,7 +124,7 @@ describe('BiometricsSDK', () => {
       )
 
       expect(mockCommonStorage.set).toHaveBeenCalledWith(
-        StorageKey.SECURE_ACCESS_SET,
+        CommonStorageKeys.SECURE_ACCESS_SET,
         'PIN'
       )
       expect(mockEncrypt).toHaveBeenCalledWith(mockEncryptionKey, mockPin)
@@ -144,7 +144,7 @@ describe('BiometricsSDK', () => {
       )
 
       expect(mockCommonStorage.set).toHaveBeenCalledWith(
-        StorageKey.SECURE_ACCESS_SET,
+        CommonStorageKeys.SECURE_ACCESS_SET,
         'BIO'
       )
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
@@ -374,7 +374,7 @@ describe('BiometricsSDK', () => {
         service: 'some-other-service'
       })
       expect(mockCommonStorage.remove).toHaveBeenCalledWith(
-        StorageKey.SECURE_ACCESS_SET
+        CommonStorageKeys.SECURE_ACCESS_SET
       )
     })
 
@@ -385,7 +385,7 @@ describe('BiometricsSDK', () => {
         service: bioGetOptions.service
       })
       expect(mockCommonStorage.set).toHaveBeenCalledWith(
-        StorageKey.SECURE_ACCESS_SET,
+        CommonStorageKeys.SECURE_ACCESS_SET,
         'PIN'
       )
     })
