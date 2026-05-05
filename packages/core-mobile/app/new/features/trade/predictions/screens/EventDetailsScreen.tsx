@@ -83,6 +83,14 @@ const EventDetailsScreen = (): JSX.Element => {
 - No min threshold (no danger colour or reference tick)`}
         </Text>
         <CircularDial
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
           value={dialDefault}
           onChange={setDialDefault}
           max={100}
@@ -105,6 +113,14 @@ const EventDetailsScreen = (): JSX.Element => {
           max={10000000}
           enableManualInput
           label={selectedCurrency}
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
           presets={[
             { label: '25%', fraction: 0.25 },
             { label: '50%', fraction: 0.5 },
@@ -115,7 +131,7 @@ const EventDetailsScreen = (): JSX.Element => {
       <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
         <Text variant="heading3">Fine precision with fiat caption</Text>
         <Text variant="body2">
-          {`- Range 2–10
+          {`- Range 2-10
 - maxDecimals=2 caps typing at hundredths
 - Live fiat caption updates as you drag/type
 - Fine-grained editor, not a coarse slider`}
@@ -128,6 +144,14 @@ const EventDetailsScreen = (): JSX.Element => {
           maxDecimals={2}
           enableManualInput
           label="AVAX"
+          containerStyle={{
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12,
+            backgroundColor: theme.colors.$surfaceSecondary,
+            paddingVertical: 30
+          }}
           caption={formatCurrency({ amount: dialLoss * avaxPrice })}
           presets={[
             { label: '25%', fraction: 0.25 },

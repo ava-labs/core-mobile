@@ -50,6 +50,10 @@ const INPUT_BOTTOM_WITH_CAPTION = CAPTION_LINE_HEIGHT + CAPTION_BOTTOM + 4
 // so fast typing chases the latest value smoothly.
 const TYPING_ANIM_MS = 80
 
+// Fallback cap on display decimals when caller doesn't pass `maxDecimals`.
+// Wider than step-derived `decimals` so typed precision survives a blur.
+const DEFAULT_MAX_DISPLAY_DECIMALS = 8
+
 // Strips trailing zeros so `5` stays `"5"` and `5.5` stays `"5.5"`.
 const naturalDigits = (v: number, decimals: number): string => {
   if (decimals <= 0) return `${Math.round(v)}`
@@ -126,7 +130,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       if (typeof maxDecimals === 'number') {
         return Math.max(decimals, Math.max(0, Math.floor(maxDecimals)))
       }
-      return Math.max(decimals, 8)
+      return Math.max(decimals, DEFAULT_MAX_DISPLAY_DECIMALS)
     }, [decimals, maxDecimals])
 
     // Skia's `font.measureText` is synchronous on JS thread — single
@@ -192,13 +196,13 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     // commit — calling earlier silently fails on Android.
     useEffect(() => {
       if (!isEditing) return
+      const cancelIds: { id2?: number } = { id2: undefined }
       const id1 = requestAnimationFrame(() => {
         const id2 = requestAnimationFrame(() => {
           inputRef.current?.focus()
         })
         cancelIds.id2 = id2
       })
-      const cancelIds: { id2?: number } = { id2: undefined }
       return () => {
         cancelAnimationFrame(id1)
         if (cancelIds.id2 !== undefined) cancelAnimationFrame(cancelIds.id2)

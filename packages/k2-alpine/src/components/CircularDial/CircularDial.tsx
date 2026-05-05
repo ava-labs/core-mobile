@@ -41,7 +41,8 @@ export const CircularDial: FC<CircularDialProps> = ({
   enableManualInput = false,
   onCommit = noop,
   hapticsEnabled = true,
-  testID
+  testID,
+  containerStyle
 }) => {
   const {
     theme: { colors }
@@ -284,16 +285,12 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   return (
     <View
-      style={{
-        alignSelf: 'stretch',
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
-        alignItems: 'center',
-        backgroundColor: colors.$surfaceSecondary,
-        paddingVertical: 30
-      }}
+      style={[
+        {
+          alignItems: 'center'
+        },
+        containerStyle
+      ]}
       testID={testID}>
       <View
         style={{

@@ -1,3 +1,5 @@
+import { StyleProp, ViewStyle } from 'react-native'
+
 export type PresetButton = {
   /** Rendered label, e.g. "25%", "Max". */
   label: string
@@ -16,7 +18,6 @@ export type CircularDialProps = {
    * Must satisfy `0 ≤ min ≤ max`.
    */
   min?: number
-
   /**
    * Snap granularity. When omitted, derived from `max` so the dial
    * always offers ~1000 stops (e.g. max 10000 → step 10, max 1000 →
@@ -33,7 +34,6 @@ export type CircularDialProps = {
    * input. When omitted, no cap is applied.
    */
   maxDecimals?: number
-
   /**
    * Small text above the amount — typically the currency code or unit
    * (`"USD"`, `"%"`). The dial itself shows the raw number.
@@ -50,16 +50,12 @@ export type CircularDialProps = {
    * below the `min` threshold.
    */
   caption?: string
-
-  /** Tap the amount to open a `TextInput` for manual entry. */
   enableManualInput?: boolean
-
   /** Quick-select buttons below the dial. Defaults to 25% / 50% / Max. */
   presets?: PresetButton[]
-
   onCommit?: (v: number) => void
   /** Default `true`. */
   hapticsEnabled?: boolean
-
   testID?: string
+  containerStyle?: StyleProp<ViewStyle>
 }
