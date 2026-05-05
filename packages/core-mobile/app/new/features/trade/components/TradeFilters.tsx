@@ -152,7 +152,8 @@ export const TradeFilters = ({
             gap: 8,
             paddingLeft: 16,
             paddingTop: 20,
-            paddingBottom: 12
+            paddingBottom: 12,
+            paddingRight: 30
           }}>
           {chips.map(chip => {
             const label = getChipLabel(chip)
