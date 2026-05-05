@@ -79,7 +79,14 @@ export const CircularDial: FC<CircularDialProps> = ({
   // of range → drop the tick and warn so consumers get a clear signal
   // (matches `validateRange`'s style).
   const referenceValue = useMemo(() => {
-    if (minThreshold <= 0) return undefined
+    if (minThreshold < 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[CircularDial] min (${minThreshold}) must be ≥ 0. Ignoring threshold.`
+      )
+      return undefined
+    }
+    if (minThreshold === 0) return undefined
     if (minThreshold > vMax) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -135,7 +142,7 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const panGesture = Gesture.Pan()
     .activeOffsetX([-TAP_SLOP, TAP_SLOP])
-    .activeOffsetY([-TAP_SLOP, TAP_SLOP])
+    .failOffsetY([-TAP_SLOP, TAP_SLOP])
     .onStart(() => {
       'worklet'
       isActive.value = true
@@ -220,6 +227,7 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const handlePresetPress = useCallback(
     (fraction: number) => {
+      if (!Number.isFinite(fraction)) return
       const targetValue = clamp(fraction, 0, 1) * vMax
       const snapped = snapToStep(targetValue, vStep, vMax)
       // Heavy at end stops (0% / 100%), medium on intermediate.

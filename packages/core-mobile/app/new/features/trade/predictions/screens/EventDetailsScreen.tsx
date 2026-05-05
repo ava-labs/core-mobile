@@ -117,7 +117,7 @@ const EventDetailsScreen = (): JSX.Element => {
         <Text variant="body2">
           {`- Range 2–10
 - maxDecimals=2 caps typing at hundredths
-- Live fiat caption updates on commit
+- Live fiat caption updates as you drag/type
 - Fine-grained editor, not a coarse slider`}
         </Text>
         <CircularDial
