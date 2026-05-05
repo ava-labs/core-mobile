@@ -240,8 +240,8 @@ export const useDelegation = (): {
         }
 
         // Update progress after operation completes
-        // Use setTimeout pattern (proven successful in commit 0c60ac513)
-        // This ensures React Native has time to flush state updates before next operation
+        // 500ms delay gives BLE transport time to settle between sequential
+        // Ledger signings and ensures React Native flushes state updates
         stepIndex++
         const nextStep = steps[stepIndex]
 
@@ -249,7 +249,7 @@ export const useDelegation = (): {
           setTimeout(() => {
             onProgress?.(stepIndex, nextStep?.operation ?? null)
             resolve()
-          }, 10)
+          }, 500)
         })
       }
 
