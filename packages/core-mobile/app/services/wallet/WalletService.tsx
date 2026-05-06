@@ -216,7 +216,7 @@ class WalletService {
     }
 
     // Otherwise, create wallet and derive missing keys
-    const wallet = await WalletFactory.createWallet({
+    const wallet = await WalletFactory.getOrCreateWallet({
       walletId,
       walletType
     })
@@ -280,7 +280,7 @@ class WalletService {
       return cached
     }
 
-    const wallet = await WalletFactory.createWallet({
+    const wallet = await WalletFactory.getOrCreateWallet({
       walletId,
       walletType
     })
@@ -315,7 +315,7 @@ class WalletService {
       return cached
     }
 
-    const wallet = await WalletFactory.createWallet({
+    const wallet = await WalletFactory.getOrCreateWallet({
       walletId,
       walletType
     })

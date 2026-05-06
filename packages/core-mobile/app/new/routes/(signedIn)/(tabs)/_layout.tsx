@@ -143,7 +143,7 @@ export default function TabLayout(): JSX.Element {
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
           //TODO: uncomment when predictions is ready
-          // tabBarItemHidden: isPredictionsBlocked,
+          // tabBarItemHidden: isPredictionsBlocked
           tabBarItemHidden: true
         }}
       />

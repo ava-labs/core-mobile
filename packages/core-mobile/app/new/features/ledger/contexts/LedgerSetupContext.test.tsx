@@ -17,7 +17,7 @@ jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
 jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: {
-    ensureConnection: jest.fn(),
+    connect: jest.fn(),
     disconnect: jest.fn()
   }
 }))
