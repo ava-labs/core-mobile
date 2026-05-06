@@ -129,8 +129,14 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
   // from forwarding onChange during decay/settle, which would otherwise
   // flood the JS queue with stale values after the gesture has released.
   const isDragging = useSharedValue(false)
-  // Wall-clock ms of the last onUpdate; see the heldStill check in onEnd.
-  const lastUpdateAt = useSharedValue(0)
+  // samplePrevTx is the previous-frame translationX, snapshotted every
+  // RECENT_WINDOW_MS. Using it as the reference at onEnd (rather than the
+  // current frame) means recentDx always spans at least one frame —
+  // avoiding the race where a fresh single-sample refresh fires just
+  // before lift and leaves recentDx near zero on a legitimate fast flick.
+  const lastFrameTx = useSharedValue(0)
+  const samplePrevTx = useSharedValue(0)
+  const samplePrevAt = useSharedValue(0)
 
   const panGesture = Gesture.Pan()
     // Stop any in-flight release animation (decay coast, settle snap, edge
@@ -152,10 +158,18 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       // animation — otherwise haptics stay suppressed for the whole drag.
       isProgrammatic.value = false
       gestureStartValue.value = currentValue.value
-      lastUpdateAt.value = Date.now()
+      lastFrameTx.value = 0
+      samplePrevTx.value = 0
+      samplePrevAt.value = Date.now()
     })
     .onUpdate(event => {
-      lastUpdateAt.value = Date.now()
+      const RECENT_WINDOW_MS = 60
+      const nowMs = Date.now()
+      if (nowMs - samplePrevAt.value >= RECENT_WINDOW_MS) {
+        samplePrevTx.value = lastFrameTx.value
+        samplePrevAt.value = nowMs
+      }
+      lastFrameTx.value = event.translationX
       const deltaValue = -event.translationX / PX_PER_UNIT
       const next = gestureStartValue.value + deltaValue
       const range = max - min
@@ -180,15 +194,17 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       isDragging.value = false
       // isActive stays true through the release animation so prop-sync in
       // useLeverageValue can't interrupt mid-flight on a parent re-render.
-      // Android's VelocityTracker can leak stale velocity from earlier in
-      // the gesture when the finger pauses briefly before lift; the time
-      // gap since the last onUpdate is a more reliable "held still" signal
-      // than the platform velocity reading.
-      const HELD_STILL_MS = 40
-      const heldStill = Date.now() - lastUpdateAt.value > HELD_STILL_MS
-      const valueVelocity = heldStill
-        ? 0
-        : (-event.velocityX / PX_PER_UNIT) * velocityPower
+      // Android's VelocityTracker can report momentum leaked from earlier
+      // in the gesture (fast → slow → lift), causing unwanted slides. The
+      // leak case is characterised by "finger barely moved in the recent
+      // window" — so we zero the velocity when recentDx is below threshold,
+      // and trust platform velocity otherwise.
+      const SLOW_DISTANCE_PX = 6
+      const recentDx = event.translationX - samplePrevTx.value
+      const valueVelocity =
+        Math.abs(recentDx) < SLOW_DISTANCE_PX
+          ? 0
+          : (-event.velocityX / PX_PER_UNIT) * velocityPower
 
       const settleTo = (snapped: number): void => {
         'worklet'
