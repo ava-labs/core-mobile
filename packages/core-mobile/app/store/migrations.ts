@@ -527,5 +527,14 @@ export const migrations = {
         collectibleUnprocessableVisibility: true
       }
     }
+  },
+  28: (state: any) => {
+    // Drop the persisted `bridge` and `unifiedBridge` slices (CP-14118).
+    // Legacy Bridge has been removed; the legacy `bridge` slice is gone
+    // and the `unifiedBridge` slice was only ever populated by the legacy
+    // Bridge UI. Strip both keys from existing installs so they don't sit
+    // on device forever.
+    const { bridge: _bridge, unifiedBridge: _unifiedBridge, ...rest } = state
+    return rest
   }
 }

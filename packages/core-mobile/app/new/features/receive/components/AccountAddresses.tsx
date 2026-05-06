@@ -59,7 +59,7 @@ export const AccountAddresses = memo(
     return (
       <GroupList
         data={walletAddreses}
-        testID={`receive_address__${address}`}
+        testID={`receive_address__${address.toLowerCase()}`}
         textContainerSx={{
           width: '65%'
         }}

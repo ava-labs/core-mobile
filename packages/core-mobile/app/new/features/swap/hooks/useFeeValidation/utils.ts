@@ -1,5 +1,5 @@
 import { bigintToBig } from '@avalabs/core-utils-sdk'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from 'utils/Utils'
 import type { Network } from '@avalabs/core-chains-sdk'
 import {
   isSdkError,

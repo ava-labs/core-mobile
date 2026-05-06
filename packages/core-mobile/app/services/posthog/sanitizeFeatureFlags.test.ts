@@ -7,12 +7,12 @@ describe('app/contexts/posthogUtils.ts', () => {
       expect(
         sanitizeFeatureFlags({
           featureFlags: {
-            [FeatureGates.LEGACY_BRIDGE]: true,
+            [FeatureGates.FUSION]: true,
             'unknown-prop': true
           }
         })
       ).toStrictEqual({
-        [FeatureGates.LEGACY_BRIDGE]: true
+        [FeatureGates.FUSION]: true
       })
     })
 
@@ -149,13 +149,12 @@ describe('app/contexts/posthogUtils.ts', () => {
             const featureFlags = sanitizeFeatureFlags(
               {
                 featureFlags: {
-                  [FeatureGates.LEGACY_BRIDGE]: false,
+                  [FeatureGates.FUSION]: false,
                   [FeatureGates.SOLANA_SUPPORT]: true,
                   [FeatureGates.EARN]: false
                 },
                 featureFlagPayloads: {
-                  [FeatureGates.LEGACY_BRIDGE]:
-                    JSON.stringify(featureFlagPayloads),
+                  [FeatureGates.FUSION]: JSON.stringify(featureFlagPayloads),
                   [FeatureGates.SOLANA_SUPPORT]:
                     JSON.stringify(featureFlagPayloads)
                 }
@@ -164,9 +163,9 @@ describe('app/contexts/posthogUtils.ts', () => {
             )
 
             expect(featureFlags).toEqual({
-              [FeatureGates.LEGACY_BRIDGE]: false, // Comes disabled, should stay disabled even though it has a version attached.
+              [FeatureGates.FUSION]: false, // Comes disabled, should stay disabled even though it has a version attached.
               [FeatureGates.SOLANA_SUPPORT]: isEnabled, // Comes enabled with a payload, gotta be matched against the current version
-              [FeatureGates.EARN]: false // Comes without a payload, should stay in-tact
+              [FeatureGates.EARN]: false // Comes without a payload, should stay intact
             })
           }
         )

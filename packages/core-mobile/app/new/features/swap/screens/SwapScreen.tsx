@@ -1,6 +1,6 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
@@ -247,8 +247,12 @@ export const SwapScreen = (): JSX.Element => {
 
   const maxQuoteAdvances = useSelector(selectMarkrSwapMaxRetries)
 
+  const isSwapping = swapStatus === SwapStatus.Swapping
+
   useAutoAdvanceOnFeeValidationError({
     feeValidationError,
+    isValidating: isFeeValidating,
+    isSwapping,
     activeQuote,
     allQuotes,
     userQuote,
@@ -276,8 +280,6 @@ export const SwapScreen = (): JSX.Element => {
     !!activeQuote &&
     !isPriceImpactCalculating &&
     !isPriceImpactTooHigh
-
-  const isSwapping = swapStatus === SwapStatus.Swapping
 
   const coreFeeMessage = useMemo(() => {
     if (!activeQuote) return
