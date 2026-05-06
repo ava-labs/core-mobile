@@ -58,4 +58,12 @@ export type CircularDialProps = {
   hapticsEnabled?: boolean
   testID?: string
   containerStyle?: StyleProp<ViewStyle>
+  /**
+   * Vertical padding around the arc canvas, in pixels. Extends the
+   * gesture hit area by this amount above and below the arc so taps in
+   * the padded zone still control the dial. The readout stays anchored
+   * to the canvas baseline (its absolute box is inset by this amount).
+   * Defaults to `0`.
+   */
+  canvasPadding?: number
 }

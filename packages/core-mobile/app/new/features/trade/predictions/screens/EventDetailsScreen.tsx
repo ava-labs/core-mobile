@@ -92,9 +92,9 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           value={dialDefault}
           onChange={setDialDefault}
           max={100}
@@ -122,9 +122,9 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           presets={[
             { label: '25%', fraction: 0.25 },
             { label: '50%', fraction: 0.5 },
@@ -153,9 +153,9 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           caption={formatCurrency({ amount: dialLoss * avaxPrice })}
           presets={[
             { label: '25%', fraction: 0.25 },

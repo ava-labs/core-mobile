@@ -14,6 +14,13 @@ type DialPresetsProps = {
   onPresetPress: (fraction: number) => void
   /** Prefix for each preset's `testID`. Falls back to `circular-dial`. */
   testIDPrefix?: string
+  /**
+   * Distance from the bottom of the parent wrapper, in pixels. Matches
+   * `CircularDial`'s `canvasPadding` so the row sits inside the bottom
+   * canvas-padding zone with `pointerEvents="box-none"` letting non-button
+   * touches fall through to the dial gesture. Defaults to `0`.
+   */
+  canvasPadding?: number
 }
 
 export const DialPresets: FC<DialPresetsProps> = ({
@@ -22,7 +29,8 @@ export const DialPresets: FC<DialPresetsProps> = ({
   max,
   step,
   onPresetPress,
-  testIDPrefix = 'circular-dial'
+  testIDPrefix = 'circular-dial',
+  canvasPadding = 0
 }) => {
   const [activePresetIndex, setActivePresetIndex] = useState(-1)
 
@@ -46,21 +54,30 @@ export const DialPresets: FC<DialPresetsProps> = ({
   )
 
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        gap: 8
-      }}>
-      {presets.map((preset, i) => (
-        <Button
-          key={`preset-${i}-${preset.label}`}
-          type={activePresetIndex === i ? 'primary' : 'secondary'}
-          size="small"
-          onPress={() => onPresetPress(preset.fraction)}
-          testID={`${testIDPrefix}-preset-${preset.label}`}>
-          {preset.label}
-        </Button>
-      ))}
-    </View>
+    <>
+      <View style={{ height: 27 }} />
+      <View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          bottom: canvasPadding,
+          left: 0,
+          right: 0,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 8
+        }}>
+        {presets.map((preset, i) => (
+          <Button
+            key={`preset-${i}-${preset.label}`}
+            type={activePresetIndex === i ? 'primary' : 'secondary'}
+            size="small"
+            onPress={() => onPresetPress(preset.fraction)}
+            testID={`${testIDPrefix}-preset-${preset.label}`}>
+            {preset.label}
+          </Button>
+        ))}
+      </View>
+    </>
   )
 }

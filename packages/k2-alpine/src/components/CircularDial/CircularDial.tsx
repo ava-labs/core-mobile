@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useMemo, useRef } from 'react'
-import { Gesture } from 'react-native-gesture-handler'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import {
   Easing,
   useAnimatedReaction,
@@ -16,7 +16,7 @@ import {
   getStepDecimals
 } from '../../utils'
 import { Text, View } from '../Primitives'
-import { DialArc, ARC_RADIUS } from './DialArc'
+import { ARC_RADIUS, CANVAS_HEIGHT, CANVAS_WIDTH, DialArc } from './DialArc'
 import { DialPresets } from './DialPresets'
 import { DialReadout, DialReadoutHandle } from './DialReadout'
 import { snapToStep, validateRange } from './helpers'
@@ -48,7 +48,8 @@ export const CircularDial: FC<CircularDialProps> = ({
   onCommit = noop,
   hapticsEnabled = true,
   testID,
-  containerStyle
+  containerStyle,
+  canvasPadding = 0
 }) => {
   const {
     theme: { colors }
@@ -172,8 +173,6 @@ export const CircularDial: FC<CircularDialProps> = ({
       scheduleOnRN(handleTap)
     })
 
-  const combinedGesture = Gesture.Race(tapGesture, panGesture)
-
   // Emit onChange on every step crossing while the dial is active so the
   // readout text (driven by the parent's controlled `value`) updates live.
   useAnimatedReaction(
@@ -256,74 +255,76 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   if (!isValid) {
     return (
-      <View style={{ alignSelf: 'stretch' }} testID={testID}>
-        <View
-          style={{
-            borderTopLeftRadius: 4,
-            borderTopRightRadius: 4,
-            borderBottomLeftRadius: 12,
-            borderBottomRightRadius: 12,
-            height: 240,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text style={{ color: colors.$textSecondary }}>
-            Invalid dial range
-          </Text>
-        </View>
+      <View style={containerStyle} testID={testID}>
+        <Text style={{ color: colors.$textSecondary }}>Invalid dial range</Text>
       </View>
     )
   }
 
   return (
-    <View
-      style={[
-        {
-          alignItems: 'center'
-        },
-        containerStyle
-      ]}
-      testID={testID}>
+    // Outer pan covers the canvas-padded wrapper + DialPresets so swipes
+    // that start anywhere — including on a preset button or in the
+    // canvasPadding zones — promote to a dial drag after the
+    // `activeOffsetX` slop. Inner tap is scoped to the canvas-only
+    // wrapper so tapping the canvasPadding zones (or a preset) doesn't
+    // focus the readout's manual input.
+    <GestureDetector gesture={panGesture}>
       <View
-        style={{
-          position: 'relative',
-          alignSelf: 'stretch',
-          alignItems: 'center'
-        }}>
-        <DialArc
-          gesture={combinedGesture}
+        style={[
+          {
+            alignItems: 'center'
+          },
+          containerStyle
+        ]}
+        testID={testID}>
+        <View
+          style={{
+            alignSelf: 'stretch',
+            paddingVertical: canvasPadding,
+            alignItems: 'center'
+          }}>
+          <GestureDetector gesture={tapGesture}>
+            <View
+              style={{
+                width: CANVAS_WIDTH,
+                height: CANVAS_HEIGHT
+              }}>
+              <DialArc
+                progressSv={progressSv}
+                max={vMax}
+                value={value}
+                referenceValue={referenceValue}
+              />
+              <DialReadout
+                ref={readoutRef}
+                value={value}
+                max={vMax}
+                decimals={vDecimals}
+                maxDecimals={maxDecimals}
+                label={label}
+                placeholder={placeholder}
+                caption={caption}
+                enableManualInput={enableManualInput}
+                referenceValue={referenceValue}
+                progressSv={progressSv}
+                isActive={isActive}
+                onChange={stableOnChange}
+                onCommit={stableOnCommit}
+                testIDPrefix={testID}
+              />
+            </View>
+          </GestureDetector>
+        </View>
+        <DialPresets
+          presets={presets}
           progressSv={progressSv}
           max={vMax}
-          value={value}
-          referenceValue={referenceValue}
-        />
-        <DialReadout
-          ref={readoutRef}
-          value={value}
-          max={vMax}
-          decimals={vDecimals}
-          maxDecimals={maxDecimals}
-          label={label}
-          placeholder={placeholder}
-          caption={caption}
-          enableManualInput={enableManualInput}
-          referenceValue={referenceValue}
-          progressSv={progressSv}
-          isActive={isActive}
-          onChange={stableOnChange}
-          onCommit={stableOnCommit}
+          step={vStep}
+          onPresetPress={handlePresetPress}
           testIDPrefix={testID}
+          canvasPadding={canvasPadding}
         />
       </View>
-      <DialPresets
-        presets={presets}
-        progressSv={progressSv}
-        max={vMax}
-        step={vStep}
-        onPresetPress={handlePresetPress}
-        testIDPrefix={testID}
-      />
-    </View>
+    </GestureDetector>
   )
 }
