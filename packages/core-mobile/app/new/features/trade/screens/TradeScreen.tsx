@@ -1,7 +1,9 @@
 import {
+  alpha,
   NavigationTitleHeader,
   SegmentedControl,
   Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -25,6 +27,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import { PredictionBalanceRow } from '../predictions/components/PredictionBalanceRow'
 import { PredictionsScreen } from '../predictions/screens/PredictionsScreen'
 
@@ -48,6 +51,7 @@ function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
  * the Predictions and Perps tabs.
  */
 export function TradeScreen(): JSX.Element {
+  const { theme } = useTheme()
   const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -171,12 +175,34 @@ export function TradeScreen(): JSX.Element {
             {tabDescription}
           </Text>
         </View>
-        <View style={{ marginTop: 14, marginHorizontal: 16 }}>
-          <PredictionBalanceRow />
+        <View>
+          <LinearGradient
+            colors={[
+              theme.colors.$surfacePrimary,
+              alpha(theme.colors.$surfacePrimary, 0)
+            ]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 0, y: 1 }}
+            style={{
+              height: 90,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0
+            }}
+          />
+
+          <View
+            style={{
+              marginTop: 14,
+              marginHorizontal: 16
+            }}>
+            <PredictionBalanceRow />
+          </View>
         </View>
       </View>
     ),
-    [tabTitle, tabDescription]
+    [tabTitle, tabDescription, theme.colors.$surfacePrimary]
   )
 
   const renderSegmentedControl = useCallback(
