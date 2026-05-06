@@ -58,7 +58,6 @@ const iosResolved = runIos
 
 const allCaps = [
   {
-    maxInstances: 2,
     platformName: 'Android',
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
@@ -79,15 +78,14 @@ const allCaps = [
     'appium:uiautomator2ServerInstallTimeout': 20000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
+    'appium:enforceAppInstall': true,
+    'appium:uiautomator2ServerReadTimeout': 20000,
     'appium:fullReset': false,
     'appium:noReset': process.env.NO_RESET === 'true',
-    'appium:enforceAppInstall': process.env.NO_RESET !== 'true',
-    'appium:uiautomator2ServerReadTimeout': 20000,
     'appium:skipDeviceInitialization': false,
     'appium:skipLogcatCapture': false
   },
   {
-    maxInstances: 2,
     platformName: 'iOS',
     'appium:deviceName': iosResolved.deviceName,
     'appium:waitForIdleTimeout': 0,
@@ -98,7 +96,6 @@ const allCaps = [
     ...(iosResolved.deviceUdid
       ? { 'appium:udid': iosResolved.deviceUdid }
       : {}),
-    'appium:noReset': process.env.NO_RESET === 'true',
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
     'appium:wdaStartupRetries': 5,
@@ -140,7 +137,7 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 2,
+  maxInstances: 1,
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly
   ...(isDeviceFarm
