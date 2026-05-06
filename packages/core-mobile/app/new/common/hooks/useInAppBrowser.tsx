@@ -97,7 +97,7 @@ const useInAppBrowser = (): {
       }
       return
     }
-    openInAppBrowser(url, options)
+    await openInAppBrowser(url, options)
   }
 
   return { openUrl, openMoonPay, openCoinBasePay }
