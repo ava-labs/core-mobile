@@ -1,232 +1,88 @@
-// import crypto from 'crypto'
-// import * as Toast from 'utils/toast'
-// import * as navigationUtils from 'navigation/utils'
-// import { DeepLink } from '../types'
-// import { handleDeeplink } from './handleDeeplink'
+import { closeInAppBrowser } from 'utils/openInAppBrowser'
+import { dismissMeldStack } from 'features/meld/utils'
+import { ACTIONS, DeepLink, DeepLinkOrigin } from '../types'
+import { handleDeeplink } from './handleDeeplink'
 
-// const mockShowTransactionSuccessToast = jest.fn()
-// const mockShowTransactionErrorToast = jest.fn()
-// const mockDispatch = jest.fn()
-// const mockNavigateToClaimRewards = jest.fn()
-// const mockNavigateToChainPortfolio = jest.fn()
-// const mockNavigateToWatchlist = jest.fn()
-// const mockOpenUrl = jest.fn()
+jest.mock('utils/openInAppBrowser', () => ({
+  closeInAppBrowser: jest.fn()
+}))
 
-// jest
-//   .spyOn(Toast, 'showTransactionSuccessToast')
-//   .mockImplementation(mockShowTransactionSuccessToast)
-// jest
-//   .spyOn(Toast, 'showTransactionErrorToast')
-//   .mockImplementation(mockShowTransactionErrorToast)
+jest.mock('features/meld/utils', () => ({
+  dismissMeldStack: jest.fn()
+}))
 
-// jest
-//   .spyOn(navigationUtils, 'navigateToClaimRewards')
-//   .mockImplementation(mockNavigateToClaimRewards)
+jest.mock('@walletconnect/utils', () => ({
+  parseUri: jest.fn().mockReturnValue({ version: 2 })
+}))
 
-// jest
-//   .spyOn(navigationUtils, 'navigateToChainPortfolio')
-//   .mockImplementation(mockNavigateToChainPortfolio)
+jest.mock('store/walletConnectV2/slice', () => ({
+  newSession: jest.fn()
+}))
 
-// jest
-//   .spyOn(navigationUtils, 'navigateToWatchlist')
-//   .mockImplementation(mockNavigateToWatchlist)
+jest.mock('utils/navigateFromDeeplink', () => ({
+  navigateFromDeeplinkUrl: jest.fn()
+}))
+
+jest.mock('store/meld/slice', () => ({
+  offrampSend: jest.fn()
+}))
+
+jest.mock('new/common/utils/toast', () => ({
+  showSnackbar: jest.fn()
+}))
 
 describe('handleDeeplink', () => {
-  it('should handle deeplink', () => {
-    expect(true).toBe(true)
+  const mockDispatch = jest.fn()
+  const mockOpenUrl = jest.fn()
+
+  const defaultArgs = {
+    dispatch: mockDispatch,
+    isEarnBlocked: false,
+    isInAppDefiBorrowBlocked: false,
+    openUrl: mockOpenUrl
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('handle OnrampCompleted deeplink', () => {
+    it('should close in-app browser and dismiss meld stack when onrampCompleted deeplink is received', () => {
+      const deeplink: DeepLink = {
+        url: 'core://onrampCompleted?dismissCount=2',
+        origin: DeepLinkOrigin.ORIGIN_DEEPLINK
+      }
+
+      handleDeeplink({ deeplink, ...defaultArgs })
+
+      expect(closeInAppBrowser).toHaveBeenCalled()
+      expect(dismissMeldStack).toHaveBeenCalledWith(
+        ACTIONS.OnrampCompleted,
+        expect.any(URLSearchParams)
+      )
+
+      const callArgs = (dismissMeldStack as jest.Mock).mock.calls[0]
+      const searchParams: URLSearchParams = callArgs[1]
+      expect(searchParams.get('dismissCount')).toBe('2')
+    })
+
+    it('should not process onrampCompleted if dismissCount is 0', () => {
+      const deeplink: DeepLink = {
+        url: 'core://onrampCompleted?dismissCount=0',
+        origin: DeepLinkOrigin.ORIGIN_DEEPLINK
+      }
+
+      handleDeeplink({ deeplink, ...defaultArgs })
+
+      expect(closeInAppBrowser).toHaveBeenCalled()
+      expect(dismissMeldStack).toHaveBeenCalledWith(
+        ACTIONS.OnrampCompleted,
+        expect.any(URLSearchParams)
+      )
+
+      const callArgs = (dismissMeldStack as jest.Mock).mock.calls[0]
+      const searchParams: URLSearchParams = callArgs[1]
+      expect(searchParams.get('dismissCount')).toBe('0')
+    })
   })
 })
-// describe('handleDeeplink', () => {
-//   describe('handle walletConnect urls', () => {
-//     it('should parse https link correctly', () => {
-//       const mockDeeplink = {
-//         url: 'https://core.app/wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockDispatch).toHaveBeenCalledWith({
-//         payload:
-//           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
-//         type: 'walletConnectV2/newSession'
-//       })
-//     })
-
-//     it('should parse wc link correctly', () => {
-//       const mockDeeplink = {
-//         url: 'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockDispatch).toHaveBeenCalledWith({
-//         payload:
-//           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
-//         type: 'walletConnectV2/newSession'
-//       })
-//     })
-
-//     it('should parse core link correctly', () => {
-//       const mockDeeplink = {
-//         url: 'core://wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockDispatch).toHaveBeenCalledWith({
-//         payload:
-//           'wc:b08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec@2?relay-protocol=irn&symKey=a33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb',
-//         type: 'walletConnectV2/newSession'
-//       })
-//     })
-
-//     it('should ignore http url', () => {
-//       const mockDeeplink = {
-//         url: 'http://core.app/wc?uri=wc%3Ab08d4b7be6bd25662c5922faadf82ff94d525af4282e0bdc9a78ae2ed9e086ec%402%3Frelay-protocol%3Dirn%26symKey%3Da33be37bb809cfbfbc788a54649bfbf1baa8cdbfe2fe21657fb51ef1bc7ab1fb'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockDispatch).not.toHaveBeenCalled()
-//     })
-
-//     it('should ignore url with random string', () => {
-//       const randomString = crypto.randomBytes(16).toString('hex')
-//       const mockDeeplink = {
-//         url: randomString
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockDispatch).not.toHaveBeenCalled()
-//     })
-//   })
-
-//   describe('handle https urls', () => {
-//     it('should open https link', () => {
-//       const mockDeeplink = {
-//         url: 'https://www.avax.network/blog'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockOpenUrl).toHaveBeenCalledWith(mockDeeplink.url)
-//     })
-
-//     it('should ignore http link', () => {
-//       const mockDeeplink = {
-//         url: 'http://www.avax.network/blog'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockOpenUrl).not.toHaveBeenCalled()
-//     })
-
-//     it('should ignore url with random string', () => {
-//       const randomString = crypto.randomBytes(16).toString('hex')
-//       const mockDeeplink = {
-//         url: randomString
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockOpenUrl).not.toHaveBeenCalled()
-//     })
-//   })
-
-//   describe('handle stakecomplete deeplink', () => {
-//     it('should navigate to claim reward', () => {
-//       const mockDeeplink = {
-//         url: 'core://stakecomplete'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockNavigateToClaimRewards).toHaveBeenCalled()
-//     })
-
-//     it('should not navigate to claim reward when earn flag is blocked', () => {
-//       const mockDeeplink = {
-//         url: 'core://stakecomplet'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: true,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockNavigateToClaimRewards).not.toHaveBeenCalled()
-//     })
-//   })
-
-//   describe('handle portfolio deeplink', () => {
-//     it('should navigate to portfolio', () => {
-//       const mockDeeplink = {
-//         url: 'core://portfolio'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockNavigateToChainPortfolio).toHaveBeenCalled()
-//     })
-//   })
-
-//   describe('handle watchlist deeplink', () => {
-//     it('should navigate to watchlist', () => {
-//       const mockDeeplink = {
-//         url: 'core://watchlist'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockNavigateToWatchlist).toHaveBeenCalledWith(undefined)
-//     })
-
-//     it('should navigate to a watchlist token', () => {
-//       const mockDeeplink = {
-//         url: 'core://watchlist/avalanche-2'
-//       }
-//       handleDeeplink({
-//         deeplink: mockDeeplink as DeepLink,
-//         dispatch: mockDispatch,
-//         isEarnBlocked: false,
-//         openUrl: mockOpenUrl
-//       })
-//       expect(mockNavigateToWatchlist).toHaveBeenCalledWith('avalanche-2')
-//     })
-//   })
-// })

@@ -58,6 +58,7 @@ export const useSelectAmount = ({
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
   errorMessage?: string
+  redirectUrl: string
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const {
@@ -412,6 +413,7 @@ export const useSelectAmount = ({
     isLoadingTradeLimits,
     createSessionWidget,
     isLoadingCryptoQuotes,
-    errorMessage
+    errorMessage,
+    redirectUrl
   }
 }

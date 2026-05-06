@@ -32,6 +32,30 @@ export const closeInAppBrowser = async (): Promise<void> => {
   InAppBrowser.close()
 }
 
+export const openInAppBrowserForAuth = async (
+  url: string,
+  redirectUrl: string,
+  options: InAppBrowserOptions
+): Promise<string | undefined> => {
+  try {
+    if (await InAppBrowser.isAvailable()) {
+      useDisableLockAppStore.setState({ disableLockApp: true })
+      const result = await InAppBrowser.openAuth(url, redirectUrl, options)
+      useDisableLockAppStore.setState({ disableLockApp: false })
+      if (result.type === 'success') {
+        return result.url
+      }
+    } else {
+      useDisableLockAppStore.setState({ disableLockApp: false })
+      failSafe(url)
+    }
+  } catch (e) {
+    useDisableLockAppStore.setState({ disableLockApp: false })
+    failSafe(url)
+  }
+  return undefined
+}
+
 function failSafe(url: string): void {
   Linking.openURL(url).catch(Logger.error)
 }
