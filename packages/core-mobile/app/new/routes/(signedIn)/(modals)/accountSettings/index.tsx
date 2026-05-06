@@ -39,10 +39,7 @@ import {
 import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 import { manualLockStore } from 'features/accountSettings/store'
-import {
-  selectActiveWallet,
-  selectActiveWalletId
-} from 'store/wallet/slice'
+import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 // eslint-disable-next-line import/no-relative-parent-imports
 import { addressDerivationBenchmark } from '../../../../../../benchmark/addressDerivation'
 
@@ -253,7 +250,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               Lock wallet
             </Text>
           </TouchableOpacity>
-          {__DEV__ && activeWalletId && activeWallet ? (
+          {activeWalletId && activeWallet ? (
             <TouchableOpacity
               sx={{
                 alignItems: 'center',
