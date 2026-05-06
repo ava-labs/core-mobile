@@ -1,17 +1,20 @@
 import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
-import { AccessibilityInfo } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
-  FadeIn,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
-import { View } from '../Primitives'
 import { clamp } from '../../utils'
-import { getStepDecimals, snapToStep, validateRange } from './helpers'
+import { View } from '../Primitives'
+import {
+  filterValidPresets,
+  getStepDecimals,
+  snapToStep,
+  validateRange
+} from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
 import type { LeverageGaugeProps, Preset } from './types'
@@ -43,11 +46,10 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   testID
 }) => {
   const { theme } = useTheme()
-  // Stabilize `onChange` / `onCommit` behind refs so downstream memoized
-  // components (LeverageWheel / LeverageDisplay) can bail out of re-renders
-  // even when the consumer passes fresh callbacks every parent render. The
-  // refs themselves are stable; the actual functions inside them are
-  // refreshed in an effect so closures remain up-to-date.
+  // Stabilize onChange/onCommit behind refs so memoized children
+  // (LeverageWheel/LeverageDisplay) can bail on parent re-renders even when
+  // callers pass fresh callbacks each time. Refs stay identity-stable; the
+  // inner functions are refreshed via effect to keep closures up-to-date.
   const onChangeRef = useRef(onChange)
   const onCommitRef = useRef(onCommit)
   useEffect(() => {
@@ -78,25 +80,10 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     return getStepDecimals(vStep)
   }, [integersOnly, decimals, vStep])
 
-  const filteredPresets = useMemo(() => {
-    const out: Preset[] = []
-    let dropped = 0
-    for (const p of presets) {
-      if (p === 'min' || p === 'max') {
-        out.push(p)
-        continue
-      }
-      if (p >= vMin && p <= vMax) out.push(p)
-      else dropped++
-    }
-    if (dropped > 0) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[LeverageGauge] Dropped ${dropped} preset(s) outside [${vMin}, ${vMax}].`
-      )
-    }
-    return out
-  }, [presets, vMin, vMax])
+  const filteredPresets = useMemo(
+    () => filterValidPresets(presets, vMin, vMax),
+    [presets, vMin, vMax]
+  )
 
   const resolvedSubtitle = subtitle ?? `Up to ${vMax}× leverage`
 
@@ -106,10 +93,9 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     max: vMax,
     step: vStep
   })
-  // True while a preset/programmatic animation is running. isActive is also
-  // true, which blocks useLeverageValue's sync effect — but we use this
-  // separate flag so LeverageWheel can suppress haptics for programmatic
-  // moves (would otherwise fire for every step boundary crossed in 400ms).
+  // True while a preset/programmatic animation is running. Distinct from
+  // isActive so LeverageWheel can suppress per-step haptics for these moves
+  // (otherwise we'd fire one for every boundary the preset crosses).
   const isProgrammatic = useSharedValue(false)
 
   const handlePresetPress = useCallback(
@@ -121,10 +107,9 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
         snapped,
         { duration: 900, easing: Easing.out(Easing.cubic) },
         finished => {
-          // If cancelled (e.g. by a new gesture), leave the flags alone —
-          // the interrupting gesture is now responsible for managing them.
-          // Clearing them here would re-enable prop sync / haptics
-          // mid-gesture.
+          // If cancelled (e.g. a new gesture took over), leave the flags
+          // alone — the interrupting gesture now owns them. Clearing here
+          // would re-enable prop sync and haptics mid-gesture.
           if (!finished) return
           isActive.value = false
           isProgrammatic.value = false
@@ -155,19 +140,6 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     [currentValue, stableOnChange, stableOnCommit, vMin, vMax, vStep]
   )
 
-  const handleAccessibilityAction = useCallback(
-    (event: { nativeEvent: { actionName: string } }) => {
-      const action = event.nativeEvent.actionName
-      if (action !== 'increment' && action !== 'decrement') return
-      const delta = action === 'increment' ? vStep : -vStep
-      const next = snapToStep(clamp(value + delta, vMin, vMax), vMin, vStep)
-      stableOnChange(next)
-      stableOnCommit(next)
-      AccessibilityInfo.announceForAccessibility(formatValue(next))
-    },
-    [value, vMin, vMax, vStep, stableOnChange, stableOnCommit, formatValue]
-  )
-
   if (!isValid) {
     return (
       <View style={{ alignSelf: 'stretch' }} testID={testID}>
@@ -184,61 +156,42 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
           subtitle={resolvedSubtitle}
           formatValue={formatValue}
           enableManualInput={false}
-          onPresetPress={noop}
-          onManualCommit={noop}
         />
       </View>
     )
   }
 
   return (
-    <GestureHandlerRootView style={{ flexShrink: 1 }}>
-      <Animated.View
-        entering={FadeIn.duration(200)}
-        style={{ alignSelf: 'stretch', gap: 4 }}
-        testID={testID}
-        accessible
-        accessibilityRole="adjustable"
-        accessibilityValue={{
-          // min/max/now must be integers — the native accessibility bridge
-          // converts them to int64 and throws on non-integer floats. The
-          // precise fractional value is communicated via `text`, which
-          // VoiceOver/TalkBack prefer anyway.
-          min: Math.round(vMin),
-          max: Math.round(vMax),
-          now: Math.round(value),
-          text: formatValue(value)
-        }}
-        onAccessibilityAction={handleAccessibilityAction}
-        accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}>
-        <View
-          style={{
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            borderBottomLeftRadius: 4,
-            borderBottomRightRadius: 4,
-            paddingVertical: 16,
-            paddingHorizontal: 40,
-            height: 150,
-            backgroundColor: theme.colors.$surfaceSecondary
-          }}>
-          <LeverageDisplay
-            value={value}
-            currentValue={currentValue}
-            isActive={isActive}
-            min={vMin}
-            max={vMax}
-            step={vStep}
-            decimals={vDecimals}
-            integersOnly={integersOnly}
-            presets={filteredPresets}
-            subtitle={resolvedSubtitle}
-            formatValue={formatValue}
-            enableManualInput={enableManualInput}
-            onPresetPress={handlePresetPress}
-            onManualCommit={handleManualCommit}
-          />
-        </View>
+    <Animated.View style={{ alignSelf: 'stretch', gap: 4 }} testID={testID}>
+      <View
+        style={{
+          borderTopLeftRadius: 12,
+          borderTopRightRadius: 12,
+          borderBottomLeftRadius: 4,
+          borderBottomRightRadius: 4,
+          paddingVertical: 16,
+          paddingHorizontal: 40,
+          height: 150,
+          backgroundColor: theme.colors.$surfaceSecondary
+        }}>
+        <LeverageDisplay
+          value={value}
+          currentValue={currentValue}
+          isActive={isActive}
+          min={vMin}
+          max={vMax}
+          step={vStep}
+          decimals={vDecimals}
+          integersOnly={integersOnly}
+          presets={filteredPresets}
+          subtitle={resolvedSubtitle}
+          formatValue={formatValue}
+          enableManualInput={enableManualInput}
+          onPresetPress={handlePresetPress}
+          onManualCommit={handleManualCommit}
+        />
+      </View>
+      <GestureHandlerRootView style={{ flexShrink: 1 }}>
         <View
           style={{
             borderTopLeftRadius: 4,
@@ -265,7 +218,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
             coastDeceleration={coastDeceleration}
           />
         </View>
-      </Animated.View>
-    </GestureHandlerRootView>
+      </GestureHandlerRootView>
+    </Animated.View>
   )
 }

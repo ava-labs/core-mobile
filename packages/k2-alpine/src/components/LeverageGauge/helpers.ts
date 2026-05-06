@@ -119,6 +119,35 @@ export const shouldSyncExternalValue = ({
   return { sync: true, target }
 }
 
+/**
+ * Drop numeric presets that fall outside [min, max]. Sentinel presets
+ * ('min'/'max') always pass through. Warns about dropped entries since they
+ * usually indicate a caller config bug.
+ */
+export const filterValidPresets = (
+  presets: Preset[],
+  min: number,
+  max: number
+): Preset[] => {
+  const out: Preset[] = []
+  let dropped = 0
+  for (const p of presets) {
+    if (p === 'min' || p === 'max') {
+      out.push(p)
+      continue
+    }
+    if (p >= min && p <= max) out.push(p)
+    else dropped++
+  }
+  if (dropped > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[LeverageGauge] Dropped ${dropped} preset(s) outside [${min}, ${max}].`
+    )
+  }
+  return out
+}
+
 export const validateRange = ({
   min,
   max,

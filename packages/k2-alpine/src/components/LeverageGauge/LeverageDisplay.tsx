@@ -46,9 +46,11 @@ type LeverageDisplayProps = {
   subtitle: string
   formatValue: (v: number) => string
   enableManualInput: boolean
-  onPresetPress: (v: number) => void
-  onManualCommit: (v: number) => void
+  onPresetPress?: (v: number) => void
+  onManualCommit?: (v: number) => void
 }
+
+const noop = (): void => undefined
 
 const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   value,
@@ -63,8 +65,8 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   subtitle,
   formatValue,
   enableManualInput,
-  onPresetPress,
-  onManualCommit
+  onPresetPress = noop,
+  onManualCommit = noop
 }) => {
   const {
     theme: { colors }
@@ -79,11 +81,10 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     start: number
     end: number
   } | null>(null)
-  // Live value ticks at every step crossing — including during decay/settle
-  // when the `value` prop intentionally doesn't update (to avoid flooding the
-  // JS queue from LeverageWheel). Stored in a ref so updates during swipes
-  // don't re-render the whole display (which could blank the Skia canvas
-  // for a frame and cause a visible flicker).
+  // Live value at every step crossing — kept in a ref so wheel-driven
+  // updates don't re-render the display (which would flicker the Skia
+  // canvas). The `value` prop intentionally lags during decay to avoid
+  // flooding the JS queue from LeverageWheel.
   const liveValueRef = useRef<number>(value)
   const inputRef = useRef<TextInput>(null)
 
@@ -93,10 +94,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
 
   const maxStepIndex = Math.round((max - min) / step)
 
-  // Keeps JS state (draft) in sync with the wheel position while editing —
-  // so that handleBlur commits the right value. The *visible* text in the
-  // TextInput is driven independently by useAnimatedProps on the UI thread,
-  // so this setState can be slow without causing visible lag.
+  // Keeps JS draft state in sync with the wheel while editing so handleBlur
+  // commits the right value. The *visible* text is driven on the UI thread
+  // via useAnimatedProps, so this setState can be slow without visible lag.
   const syncFromWheel = (snapped: number, swept: boolean): void => {
     liveValueRef.current = snapped
     if (!swept) return
@@ -170,10 +170,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
 
   const isEditing = draft !== null
 
-  // Drives the focused TextInput's text on the UI thread — text is recomputed
-  // every frame from currentValue, so fast wheel swipes update the visible
-  // value with no JS-thread dispatch lag. Only active while isActive (wheel
-  // gesture) so user typing (isActive=false) isn't overwritten.
+  // Drives the focused TextInput's text on the UI thread, so fast swipes
+  // update the visible value without JS-thread dispatch lag. Only active
+  // while isActive (wheel motion) — user typing must not be overwritten.
   const editingAnimatedProps = useAnimatedProps(() => {
     if (!isActive.value) {
       // Empty object → no props overridden, user's controlled value wins.
@@ -226,9 +225,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
             position: 'relative',
             minHeight: 80
           }}>
-          {/* Always in flow — the editing TextInput overlays it with an
-              opaque background, so the Skia canvas keeps painting and its
-              derived values stay live regardless of focus. */}
+          {/* Always in flow — when editing, the TextInput overlays it with
+              an opaque background while the Skia canvas keeps painting, so
+              its derived values stay live regardless of focus. */}
           <Pressable
             onPress={startEdit}
             disabled={!enableManualInput || isEditing}
@@ -417,11 +416,10 @@ const AnimatedNumber: FC<{
     return { chars, neighborChars, xs, xSymbolX, fadeProgress }
   })
 
-  // × target x — its own smoothed shared value so it slides gently when the
-  // number width changes. Different durations depending on direction:
-  //  - Shorter number (× moves left, losing a digit): slower glide
-  //  - Longer number (× moves right, gaining a digit): quick catch-up so × is
-  //    already in place when the new digit fades in
+  // × target x — smoothed so it slides gently when the number width changes.
+  // Direction matters: when the number gets shorter (digit dropped) × glides
+  // left slowly; when it gets longer (digit added) × snaps right so it's
+  // already in place by the time the new digit fades in.
   const xSymbolTargetX = useDerivedValue(() => layout.value.xSymbolX)
   const xSymbolX = useSharedValue(xSymbolTargetX.value)
   useAnimatedReaction(

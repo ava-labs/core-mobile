@@ -54,20 +54,35 @@ const MAJOR_TICK_HEIGHT = 50
 const MINOR_TICK_HEIGHT = 20
 const ACTIVE_SCALE_MAJOR = 1.2
 const ACTIVE_SCALE_MINOR = 1.4
-// Deep enough that a bloomed major tick fits inside the canvas without clipping.
 const TICK_BASELINE_Y = MAJOR_TICK_HEIGHT * ACTIVE_SCALE_MAJOR
 const TICK_WIDTH = 2
 const LABEL_AREA_HEIGHT = 22
 const CANVAS_HEIGHT = TICK_BASELINE_Y + LABEL_AREA_HEIGHT
-const EDGE_FADE_WIDTH = 70
 const LABEL_FONT_SIZE = 11
 const LABEL_BASELINE_Y = TICK_BASELINE_Y + 20
 const VISUAL_TICK_STEP = 0.2
+
+// Feel-tuning constants — adjust these to change drag/release behaviour.
+const RECENT_WINDOW_MS = 60 // age of samplePrev when read at onEnd
+const SLOW_DISTANCE_PX = 6 // recentDx below this counts as "held still"
+const RUBBER_COEFF = 0.55 // UIKit-style rubber-band stiffness past edges
+const SETTLE_MIN_MS = 200 // settle duration for an on-tick release
+const SETTLE_MAX_MS = 900 // settle duration for a half-step-off release
 
 type TickDescriptor = {
   value: number
   x: number
   isMajor: boolean
+}
+
+const fireMinorHaptic = (): void => {
+  impactAsync(ImpactFeedbackStyle.Light).catch(() => undefined)
+}
+const fireMajorHaptic = (): void => {
+  impactAsync(ImpactFeedbackStyle.Medium).catch(() => undefined)
+}
+const fireEdgeHaptic = (): void => {
+  impactAsync(ImpactFeedbackStyle.Heavy).catch(() => undefined)
 }
 
 const LeverageWheelInner: FC<LeverageWheelProps> = ({
@@ -126,29 +141,109 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
 
   const gestureStartValue = useSharedValue(0)
   // True only during finger-down drag — gates the step-crossing reaction
-  // from forwarding onChange during decay/settle, which would otherwise
-  // flood the JS queue with stale values after the gesture has released.
+  // from flooding onChange during decay/settle.
   const isDragging = useSharedValue(false)
-  // samplePrevTx is the previous-frame translationX, snapshotted every
-  // RECENT_WINDOW_MS. Using it as the reference at onEnd (rather than the
-  // current frame) means recentDx always spans at least one frame —
-  // avoiding the race where a fresh single-sample refresh fires just
-  // before lift and leaves recentDx near zero on a legitimate fast flick.
+  // Two-sample tracking so onEnd's recentDx always spans at least one frame —
+  // avoiding the race where a fresh single-sample refresh leaves it near zero.
   const lastFrameTx = useSharedValue(0)
   const samplePrevTx = useSharedValue(0)
   const samplePrevAt = useSharedValue(0)
+  // Latched at rubber-band entry so the "wall hit" haptic fires once, not
+  // continuously while the finger sits past the edge.
+  const wasOverEdge = useSharedValue(false)
+
+  // Worklet helpers — closure-capture min/max/step/currentValue from above.
+  const applyRubberBandTranslation = (next: number): void => {
+    'worklet'
+    if (next < min) {
+      const overshoot = min - next
+      const range = max - min
+      const rubber = (1 - 1 / (overshoot / range + 1)) * range * RUBBER_COEFF
+      currentValue.value = min - rubber
+    } else if (next > max) {
+      const overshoot = next - max
+      const range = max - min
+      const rubber = (1 - 1 / (overshoot / range + 1)) * range * RUBBER_COEFF
+      currentValue.value = max + rubber
+    } else {
+      currentValue.value = next
+    }
+  }
+
+  const settleTo = (snapped: number): void => {
+    'worklet'
+    const distance = Math.abs(snapped - currentValue.value)
+    // Already on the snap target — commit synchronously so the user doesn't
+    // perceive a 200 ms gap on a held-still on-tick release.
+    if (distance === 0) {
+      isActive.value = false
+      scheduleOnRN(onChange, snapped)
+      scheduleOnRN(onCommit, snapped)
+      return
+    }
+    // Distance-scaled duration: in-place releases land snappy, far-from-snap
+    // releases keep the confident slow landing. fraction in (0, 1] since max
+    // post-snap distance is step/2.
+    const fraction = Math.min(1, (distance * 2) / step)
+    const duration = SETTLE_MIN_MS + (SETTLE_MAX_MS - SETTLE_MIN_MS) * fraction
+    currentValue.value = withTiming(
+      snapped,
+      { duration, easing: Easing.out(Easing.cubic) },
+      finished => {
+        if (!finished || isDragging.value) return
+        isActive.value = false
+        scheduleOnRN(onChange, snapped)
+        scheduleOnRN(onCommit, snapped)
+      }
+    )
+  }
+
+  // Rubber-band release: spring back to the clamped edge. Over-damped
+  // (ζ ≈ 1.33) so it doesn't overshoot. If the release velocity would push
+  // further PAST the edge, we zero it — otherwise the spring's initial
+  // momentum reads as "bounce further, then return".
+  const releaseFromOverEdge = (valueVelocity: number): void => {
+    'worklet'
+    const target = currentValue.value < min ? min : max
+    const inwardVelocity =
+      (target === min && valueVelocity < 0) ||
+      (target === max && valueVelocity > 0)
+        ? 0
+        : valueVelocity
+    currentValue.value = withSpring(
+      target,
+      { velocity: inwardVelocity, damping: 30, stiffness: 160, mass: 0.8 },
+      finished => {
+        if (!finished || isDragging.value) return
+        settleTo(snapToStep(target, min, step))
+      }
+    )
+  }
+
+  const coastWithDecay = (valueVelocity: number): void => {
+    'worklet'
+    currentValue.value = withDecay(
+      {
+        velocity: valueVelocity,
+        deceleration: coastDeceleration,
+        clamp: [min, max],
+        rubberBandEffect: false
+      },
+      finished => {
+        if (!finished || isDragging.value) return
+        // snapToStep also rounds away float drift (e.g. 2.4000000004 → 2.4).
+        const snapped = snapToStep(currentValue.value, min, step)
+        settleTo(snapped)
+      }
+    )
+  }
 
   const panGesture = Gesture.Pan()
-    // Stop any in-flight release animation (decay coast, settle snap, edge
-    // spring, or preset withTiming) the instant a finger lands. Pan only
-    // activates after a small movement threshold, so without this cancel a
-    // pure tap-to-halt wouldn't fire onStart and the prior animation would
-    // keep running under the stationary touch — the wheel "doesn't stop"
-    // when grabbed mid-coast.
+    // Cancel any in-flight release animation on touch down — Pan activates
+    // after a movement threshold, so without this a tap-to-halt wouldn't
+    // fire onStart and the wheel would keep coasting under the finger.
     .onTouchesDown(() => {
       cancelAnimation(currentValue)
-      // If we just cancelled a preset animation, clear the flag so the next
-      // interaction's haptics aren't suppressed.
       isProgrammatic.value = false
     })
     .onStart(() => {
@@ -161,136 +256,48 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
       lastFrameTx.value = 0
       samplePrevTx.value = 0
       samplePrevAt.value = Date.now()
+      wasOverEdge.value = false
     })
     .onUpdate(event => {
-      const RECENT_WINDOW_MS = 60
       const nowMs = Date.now()
       if (nowMs - samplePrevAt.value >= RECENT_WINDOW_MS) {
         samplePrevTx.value = lastFrameTx.value
         samplePrevAt.value = nowMs
       }
       lastFrameTx.value = event.translationX
-      const deltaValue = -event.translationX / PX_PER_UNIT
-      const next = gestureStartValue.value + deltaValue
-      const range = max - min
-      // Rubber-band past the edges so the wheel moves with the finger but
-      // meets increasing resistance. Uses UIKit's formula:
-      //   rubber = (1 - 1 / (offset/range + 1)) * range * coeff
-      const RUBBER_COEFF = 0.55
-      if (next < min) {
-        const overshoot = min - next
-        const rubber = (1 - 1 / (overshoot / range + 1)) * range * RUBBER_COEFF
-        currentValue.value = min - rubber
-      } else if (next > max) {
-        const overshoot = next - max
-        const rubber = (1 - 1 / (overshoot / range + 1)) * range * RUBBER_COEFF
-        currentValue.value = max + rubber
-      } else {
-        currentValue.value = next
+      const next = gestureStartValue.value - event.translationX / PX_PER_UNIT
+      const overEdge = next < min || next > max
+      if (overEdge && !wasOverEdge.value && hapticsEnabled) {
+        scheduleOnRN(fireEdgeHaptic)
       }
+      wasOverEdge.value = overEdge
+      applyRubberBandTranslation(next)
     })
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     .onEnd(event => {
       isDragging.value = false
-      // isActive stays true through the release animation so prop-sync in
-      // useLeverageValue can't interrupt mid-flight on a parent re-render.
-      // Android's VelocityTracker can report momentum leaked from earlier
-      // in the gesture (fast → slow → lift), causing unwanted slides. The
-      // leak case is characterised by "finger barely moved in the recent
-      // window" — so we zero the velocity when recentDx is below threshold,
-      // and trust platform velocity otherwise.
-      const SLOW_DISTANCE_PX = 6
+      // isActive stays true through the release animation so a parent
+      // re-render can't trigger useLeverageValue's prop-sync mid-flight.
+      // Zero the velocity when recent finger motion was small to suppress
+      // Android's leaked velocity (fast → slow → lift would otherwise slide).
       const recentDx = event.translationX - samplePrevTx.value
       const valueVelocity =
         Math.abs(recentDx) < SLOW_DISTANCE_PX
           ? 0
           : (-event.velocityX / PX_PER_UNIT) * velocityPower
 
-      const settleTo = (snapped: number): void => {
-        'worklet'
-        const distance = Math.abs(snapped - currentValue.value)
-        // Already on the snap target — commit synchronously so the user
-        // doesn't perceive a 200 ms gap on a held-still on-tick release.
-        if (distance === 0) {
-          isActive.value = false
-          scheduleOnRN(onChange, snapped)
-          scheduleOnRN(onCommit, snapped)
-          return
-        }
-        // Distance-scaled duration: in-place releases land snappy, far-from
-        // -snap releases keep the confident slow landing. Max distance after
-        // snapping to nearest is step/2, so fraction is in (0, 1].
-        const fraction = Math.min(1, (distance * 2) / step)
-        const SETTLE_MIN_MS = 200
-        const SETTLE_MAX_MS = 900
-        const duration =
-          SETTLE_MIN_MS + (SETTLE_MAX_MS - SETTLE_MIN_MS) * fraction
-        currentValue.value = withTiming(
-          snapped,
-          { duration, easing: Easing.out(Easing.cubic) },
-          finished => {
-            // Cancelled by a new gesture — let the new one manage state.
-            if (!finished || isDragging.value) return
-            isActive.value = false
-            scheduleOnRN(onChange, snapped)
-            scheduleOnRN(onCommit, snapped)
-          }
-        )
-      }
-
-      // Rubber-band release: spring back to the clamped edge.
-      // Over-damped (ζ ≈ 1.33) so it doesn't overshoot. If the release
-      // velocity would push further PAST the edge, we zero it — otherwise
-      // the spring's initial momentum reads as "bounce further, then return".
       if (currentValue.value < min || currentValue.value > max) {
-        const target = currentValue.value < min ? min : max
-        const inwardVelocity =
-          (target === min && valueVelocity < 0) ||
-          (target === max && valueVelocity > 0)
-            ? 0
-            : valueVelocity
-        currentValue.value = withSpring(
-          target,
-          {
-            velocity: inwardVelocity,
-            damping: 30,
-            stiffness: 160,
-            mass: 0.8
-          },
-          finished => {
-            if (!finished || isDragging.value) return
-            settleTo(snapToStep(target, min, step))
-          }
-        )
+        releaseFromOverEdge(valueVelocity)
         return
       }
-
       if (valueVelocity === 0) {
         settleTo(snapToStep(currentValue.value, min, step))
         return
       }
-
-      currentValue.value = withDecay(
-        {
-          velocity: valueVelocity,
-          deceleration: coastDeceleration,
-          clamp: [min, max],
-          rubberBandEffect: false
-        },
-        finished => {
-          // Cancelled by a new gesture — let the new one handle settling.
-          if (!finished || isDragging.value) return
-          // snapToStep also rounds away float drift (e.g. 2.4000000004 → 2.4).
-          const snapped = snapToStep(currentValue.value, min, step)
-          settleTo(snapped)
-        }
-      )
+      coastWithDecay(valueVelocity)
     })
-    // Pan never activated (touch landed without enough movement to cross
-    // the activation threshold). onTouchesDown already cancelled any
-    // in-flight release animation, but neither onStart nor onEnd fired —
-    // so without this fallback, isActive can stay true forever and the
-    // wheel sits at a non-snap value with prop sync blocked.
+    // Tap that didn't activate Pan — onStart/onEnd never fire but
+    // onTouchesDown already cancelled any animation. Without this fallback,
+    // isActive would stay true forever and prop sync would stay blocked.
     .onFinalize((_event, success) => {
       // success=true means onEnd ran and already scheduled a settle.
       if (success || isDragging.value) return
@@ -320,19 +327,17 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     Math.round((currentValue.value - min) / step)
   )
 
-  // Three tiers — Light for sub-step ticks, Medium for integers, Heavy at
-  // the min/max edges — so each tick category feels distinct.
-  const fireMinorHaptic = (): void => {
-    impactAsync(ImpactFeedbackStyle.Light).catch(() => undefined)
-  }
-  const fireMajorHaptic = (): void => {
-    impactAsync(ImpactFeedbackStyle.Medium).catch(() => undefined)
-  }
-  const fireEdgeHaptic = (): void => {
-    impactAsync(ImpactFeedbackStyle.Heavy).catch(() => undefined)
-  }
-
   const maxStepIndex = Math.round((max - min) / step)
+
+  const fireStepHaptic = (stepIndex: number): void => {
+    'worklet'
+    const atEdge = stepIndex === 0 || stepIndex === maxStepIndex
+    const snappedValue = min + stepIndex * step
+    const isMajor = Math.abs(snappedValue - Math.round(snappedValue)) < step / 2
+    if (atEdge) scheduleOnRN(fireEdgeHaptic)
+    else if (isMajor) scheduleOnRN(fireMajorHaptic)
+    else scheduleOnRN(fireMinorHaptic)
+  }
 
   useAnimatedReaction(
     // Clamp the observed step to [0, maxStepIndex]. While the wheel sits in
@@ -346,16 +351,15 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
     },
     (stepIndex, prevStepIndex) => {
       if (prevStepIndex === null || stepIndex === prevStepIndex) return
-      // Only forward onChange during finger-down drag. The decay phase
-      // explicitly schedules the final onChange(snap); emitting here too
-      // would flood the queue with stale values on fast flicks.
+      // Only forward onChange during finger-down drag — the decay path
+      // schedules the final onChange itself, so firing here as well would
+      // flood the JS queue with stale values on fast flicks.
       if (isDragging.value) {
         const value = snapToStep(min + stepIndex * step, min, step)
         scheduleOnRN(onChange, value)
       }
-      // Only emit haptics for user-initiated motion (drag, flick, snap). Skip
-      // passive animations (typing → isActive=false) and programmatic ones
-      // (preset press → isActive=true but isProgrammatic=true).
+      // Haptics fire only on user-initiated motion (drag, flick, settle).
+      // Typing leaves isActive=false; preset presses set isProgrammatic=true.
       if (
         hapticsEnabled &&
         isActive.value &&
@@ -363,13 +367,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
         stepIndex !== lastStepIndex.value
       ) {
         lastStepIndex.value = stepIndex
-        const atEdge = stepIndex === 0 || stepIndex === maxStepIndex
-        const snappedValue = min + stepIndex * step
-        const isMajor =
-          Math.abs(snappedValue - Math.round(snappedValue)) < step / 2
-        if (atEdge) scheduleOnRN(fireEdgeHaptic)
-        else if (isMajor) scheduleOnRN(fireMajorHaptic)
-        else scheduleOnRN(fireMinorHaptic)
+        fireStepHaptic(stepIndex)
       }
     }
   )
@@ -381,6 +379,7 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
 
   const tickColor = alpha(colors.$textPrimary, 0.35)
   const labelColor = alpha(colors.$textPrimary, 0.6)
+  const centerX = wheelWidth / 2
 
   return (
     <GestureDetector gesture={panGesture}>
@@ -422,11 +421,10 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
                 ))}
             </Group>
 
-            {/* Left fade */}
-            <Rect x={0} y={0} width={EDGE_FADE_WIDTH} height={CANVAS_HEIGHT}>
+            <Rect x={0} y={0} width={centerX} height={CANVAS_HEIGHT}>
               <LinearGradient
                 start={vec(0, 0)}
-                end={vec(EDGE_FADE_WIDTH, 0)}
+                end={vec(centerX, 0)}
                 colors={[
                   colors.$surfaceSecondary,
                   alpha(colors.$surfaceSecondary, 0)
@@ -434,14 +432,9 @@ const LeverageWheelInner: FC<LeverageWheelProps> = ({
               />
             </Rect>
 
-            {/* Right fade */}
-            <Rect
-              x={wheelWidth - EDGE_FADE_WIDTH}
-              y={0}
-              width={EDGE_FADE_WIDTH}
-              height={CANVAS_HEIGHT}>
+            <Rect x={centerX} y={0} width={centerX} height={CANVAS_HEIGHT}>
               <LinearGradient
-                start={vec(wheelWidth - EDGE_FADE_WIDTH, 0)}
+                start={vec(centerX, 0)}
                 end={vec(wheelWidth, 0)}
                 colors={[
                   alpha(colors.$surfaceSecondary, 0),
