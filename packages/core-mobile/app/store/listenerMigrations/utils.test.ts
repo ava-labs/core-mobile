@@ -3,6 +3,7 @@ import {
   buildFailureKey,
   emptyStorageState,
   getLatestVersion,
+  sanitizeStorageState,
   validateRegistry
 } from './utils'
 
@@ -97,6 +98,131 @@ describe('emptyStorageState', () => {
   })
 })
 
+describe('sanitizeStorageState', () => {
+  it('passes through a well-formed state unchanged', () => {
+    const valid = {
+      highestPerWallet: { 'wallet-a': 3, 'wallet-b': 5 },
+      highestGlobal: 7,
+      lastFailures: {
+        'wallet-a:4': {
+          version: 4,
+          name: 'm4',
+          scope: 'per-wallet',
+          walletId: 'wallet-a',
+          errorMessage: 'boom',
+          failedAt: 1000,
+          attemptCount: 2
+        }
+      }
+    }
+    expect(sanitizeStorageState(valid)).toEqual(valid)
+  })
+
+  it('returns empty state when the input is not a plain object', () => {
+    expect(sanitizeStorageState(null)).toEqual(emptyStorageState())
+    expect(sanitizeStorageState(undefined)).toEqual(emptyStorageState())
+    expect(sanitizeStorageState(42)).toEqual(emptyStorageState())
+    expect(sanitizeStorageState('garbage')).toEqual(emptyStorageState())
+    expect(sanitizeStorageState([1, 2, 3])).toEqual(emptyStorageState())
+  })
+
+  it('resets `highestPerWallet` to {} when it is not a plain object', () => {
+    const result = sanitizeStorageState({
+      highestPerWallet: 'not an object',
+      highestGlobal: 5,
+      lastFailures: {}
+    })
+    expect(result.highestPerWallet).toEqual({})
+    // Other valid fields preserved
+    expect(result.highestGlobal).toBe(5)
+  })
+
+  it('resets the entire `highestPerWallet` if any single entry is invalid', () => {
+    // Whole-field reset (zod `.catch({})` behavior). Trade-off: a single
+    // bad entry resets everyone's watermark, but storage corruption is
+    // rare and migrations are idempotent so re-running is safe.
+    const result = sanitizeStorageState({
+      highestPerWallet: {
+        'wallet-good': 3,
+        'wallet-bad': 'oops'
+      }
+    })
+    expect(result.highestPerWallet).toEqual({})
+  })
+
+  it('keeps a `highestPerWallet` where every entry is a non-negative integer', () => {
+    const result = sanitizeStorageState({
+      highestPerWallet: { 'wallet-a': 0, 'wallet-b': 3, 'wallet-c': 100 }
+    })
+    expect(result.highestPerWallet).toEqual({
+      'wallet-a': 0,
+      'wallet-b': 3,
+      'wallet-c': 100
+    })
+  })
+
+  it('resets `highestGlobal` to 0 when it is not a non-negative integer', () => {
+    expect(sanitizeStorageState({ highestGlobal: 'oops' }).highestGlobal).toBe(
+      0
+    )
+    expect(sanitizeStorageState({ highestGlobal: -5 }).highestGlobal).toBe(0)
+    expect(sanitizeStorageState({ highestGlobal: 1.5 }).highestGlobal).toBe(0)
+    expect(sanitizeStorageState({ highestGlobal: NaN }).highestGlobal).toBe(0)
+    expect(
+      sanitizeStorageState({ highestGlobal: Number.POSITIVE_INFINITY })
+        .highestGlobal
+    ).toBe(0)
+  })
+
+  it('resets `lastFailures` to {} when it is not a plain object', () => {
+    expect(sanitizeStorageState({ lastFailures: 'oops' }).lastFailures).toEqual(
+      {}
+    )
+    expect(sanitizeStorageState({ lastFailures: [1, 2] }).lastFailures).toEqual(
+      {}
+    )
+  })
+
+  it('resets the entire `lastFailures` if any single entry is malformed', () => {
+    const validRecord = {
+      version: 1,
+      name: 'm',
+      scope: 'per-wallet',
+      walletId: 'w',
+      errorMessage: 'boom',
+      failedAt: 0,
+      attemptCount: 1
+    }
+    const result = sanitizeStorageState({
+      lastFailures: { 'good-key': validRecord, 'bad-key': 42 }
+    })
+    expect(result.lastFailures).toEqual({})
+  })
+
+  it('keeps a `lastFailures` where every entry is a valid FailureRecord', () => {
+    const validRecord = {
+      version: 1,
+      name: 'm',
+      scope: 'per-wallet',
+      walletId: 'w',
+      errorMessage: 'boom',
+      failedAt: 0,
+      attemptCount: 1
+    }
+    const result = sanitizeStorageState({
+      lastFailures: { 'good-key': validRecord }
+    })
+    expect(result.lastFailures).toEqual({ 'good-key': validRecord })
+  })
+
+  it('returned object is freshly owned (mutations do not leak)', () => {
+    const a = sanitizeStorageState({})
+    a.highestPerWallet['wallet-1'] = 5
+    const b = sanitizeStorageState({})
+    expect(b.highestPerWallet).toEqual({})
+  })
+})
+
 describe('validateRegistry', () => {
   it('throws on duplicate version within the same scope', () => {
     expect(() =>
@@ -180,6 +306,30 @@ describe('validateRegistry', () => {
     expect(() =>
       validateRegistry([
         makeMigration({ version: -1, scope: 'per-wallet', name: 'm' })
+      ])
+    ).toThrow(/invalid version/)
+  })
+
+  it('throws on non-integer version (decimal, NaN, Infinity)', () => {
+    expect(() =>
+      validateRegistry([
+        makeMigration({ version: 1.5, scope: 'per-wallet', name: 'm' })
+      ])
+    ).toThrow(/invalid version/)
+
+    expect(() =>
+      validateRegistry([
+        makeMigration({ version: NaN, scope: 'per-wallet', name: 'm' })
+      ])
+    ).toThrow(/invalid version/)
+
+    expect(() =>
+      validateRegistry([
+        makeMigration({
+          version: Number.POSITIVE_INFINITY,
+          scope: 'per-wallet',
+          name: 'm'
+        })
       ])
     ).toThrow(/invalid version/)
   })

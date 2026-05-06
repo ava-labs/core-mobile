@@ -45,6 +45,7 @@ jest.mock('react-native-keychain', () => ({
 }))
 
 jest.mock('utils/mmkv', () => ({
+  ...jest.requireActual('utils/mmkv'),
   commonStorage: {
     getString: jest.fn(),
     set: jest.fn(),

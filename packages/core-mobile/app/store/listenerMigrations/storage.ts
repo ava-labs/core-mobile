@@ -2,7 +2,7 @@ import { MMKV } from 'react-native-mmkv'
 import { MigrationStorageKeys } from 'utils/mmkv'
 import Logger from 'utils/Logger'
 import { ListenerMigrationStorageState } from './types'
-import { emptyStorageState } from './utils'
+import { emptyStorageState, sanitizeStorageState } from './utils'
 
 /**
  * Persistence boundary for the listener migration system. The executor
@@ -47,12 +47,11 @@ export class MmkvMigrationStateStorage implements MigrationStateStorage {
     const raw = this.mmkv.getString(this.storageKey)
     if (!raw) return emptyStorageState()
     try {
-      const parsed = JSON.parse(raw) as Partial<ListenerMigrationStorageState>
-      return {
-        highestPerWallet: parsed.highestPerWallet ?? {},
-        highestGlobal: parsed.highestGlobal ?? 0,
-        lastFailures: parsed.lastFailures ?? {}
-      }
+      // Sanitize each field independently — defends against corrupt blobs
+      // and unexpected schema drift (e.g. a wrong type sneaking into a
+      // field). Invalid fields fall back to their empty defaults rather
+      // than being passed through, so subsequent writes can't crash.
+      return sanitizeStorageState(JSON.parse(raw))
     } catch (err) {
       Logger.error(
         '[MmkvMigrationStateStorage] failed to parse state, resetting',

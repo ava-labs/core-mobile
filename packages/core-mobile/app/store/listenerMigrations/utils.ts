@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import {
   ListenerMigration,
   ListenerMigrationScope,
@@ -19,6 +20,47 @@ export const emptyStorageState = (): ListenerMigrationStorageState => ({
   highestGlobal: 0,
   lastFailures: {}
 })
+
+const nonNegInt = z.number().int().nonnegative()
+
+const failureRecordSchema = z.object({
+  version: nonNegInt,
+  name: z.string(),
+  scope: z.enum(['per-wallet', 'global']),
+  walletId: z.string().optional(),
+  errorMessage: z.string(),
+  failedAt: z.number(),
+  attemptCount: nonNegInt
+})
+
+/**
+ * Validates a parsed `ListenerMigrationStorageState`. Each field has its
+ * own `.catch(...)` so corruption in one field doesn't poison the others
+ * — the whole field falls back to its empty default. The outer `.catch`
+ * handles the case where the input isn't a plain object at all.
+ *
+ * Note: `.catch({})` on records is whole-field reset — if any single
+ * entry is invalid, the entire record resets. We accept that trade-off
+ * because storage corruption is rare and migrations are idempotent (a
+ * full reset just means migrations re-run, not data loss).
+ */
+const storageStateSchema: z.ZodType<ListenerMigrationStorageState> = z
+  .object({
+    highestPerWallet: z.record(z.string(), nonNegInt).catch(() => ({})),
+    highestGlobal: nonNegInt.catch(0),
+    lastFailures: z.record(z.string(), failureRecordSchema).catch(() => ({}))
+  })
+  .catch(() => emptyStorageState())
+
+/**
+ * Coerces an arbitrary parsed value into a known-safe
+ * `ListenerMigrationStorageState`. Used by `MmkvMigrationStateStorage.load()`
+ * after `JSON.parse` to defend against corrupt blobs and unexpected schema
+ * drift.
+ */
+export const sanitizeStorageState = (
+  parsed: unknown
+): ListenerMigrationStorageState => storageStateSchema.parse(parsed)
 
 /**
  * Builds the composite key used to slot a `FailureRecord` in
@@ -55,7 +97,14 @@ export const getLatestVersion = (
  * `validateRegistry`.
  */
 const assertValidShape = (m: ListenerMigration): void => {
-  if (typeof m.version !== 'number' || m.version <= 0) {
+  // Versions must be positive integers. Reject non-numbers, NaN, Infinity,
+  // and non-integers — the executor sorts/compares them and persists them
+  // as a watermark, all of which assume well-behaved integers.
+  if (
+    typeof m.version !== 'number' ||
+    !Number.isInteger(m.version) ||
+    m.version <= 0
+  ) {
     throw new Error(
       `[listenerMigrations] migration "${m.name}" has invalid version: ${m.version}`
     )
