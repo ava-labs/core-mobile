@@ -78,10 +78,9 @@ const allCaps = [
     'appium:uiautomator2ServerInstallTimeout': 20000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
+    'appium:fullReset': true,
     'appium:enforceAppInstall': true,
     'appium:uiautomator2ServerReadTimeout': 20000,
-    'appium:fullReset': false,
-    'appium:noReset': process.env.NO_RESET === 'true',
     'appium:skipDeviceInitialization': false,
     'appium:skipLogcatCapture': false
   },
