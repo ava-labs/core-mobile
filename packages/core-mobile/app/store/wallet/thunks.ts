@@ -2,6 +2,7 @@ import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
 import {
   Account,
@@ -184,6 +185,9 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
     })
 
     thunkApi.dispatch(_removeWallet(walletId))
+
+    // Clear all cached data (wallet instance, public keys, xpubs) for the removed wallet
+    WalletFactory.cache.clearWallet(walletId)
 
     // If we removed the active wallet, set the first account of the new active wallet as active
     if (activeWalletIdBefore === walletId) {

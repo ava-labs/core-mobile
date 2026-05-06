@@ -22,8 +22,11 @@
  * are omitted from percent denominators and gap lists. They still appear in the
  * checklist as △ for visibility.
  *
- * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script loads the
- * latest **iOS** and **Android** runs whose names match
+ * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script uses HTTP
+ * Basic auth (`TESTRAIL_USERNAME` + API key as password). Default username is the
+ * shared `mobiledevs@avalabs.org` TestRail user; set `TESTRAIL_USERNAME` when your
+ * API key belongs to a different account. It loads the latest **iOS** and **Android**
+ * runs whose names match
  * `[REGRESSION] iOS Test Run: YYYY-MM-DD` and `[REGRESSION] Android Test Run: YYYY-MM-DD`
  * (same naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`).
  * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
@@ -57,10 +60,20 @@
  *
  * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
  * before TestRail runs (existing env vars are not overwritten). Handy for
- * `TESTRAIL_API_KEY` without exporting in the shell.
+ * `TESTRAIL_API_KEY` / `TESTRAIL_USERNAME` without exporting in the shell.
+ *
+ * **Codebase composite (core-web–style):** `e2e-appium/coverage-model.config.json`
+ * defines a weighted headline `codebaseCompositeCoverage.percent` from (1) breadth
+ * — share of in-scope `app/new/features/*` folders “claimed” by any Appium spec via
+ * file stem, outer `describe` title, and long tokens from `it`/`describe` strings;
+ * (2) `e2e-appium/required-scenarios.config.json` — flow × wallet cells (**Ledger**
+ * never counted; **seedless** is opt-in via `walletModes` when that E2E exists);
+ * (3) a **folder × N wallet-slot** assumption where **N = `walletModes.length`**
+ * in that config (default mnemonic only). TestRail stays
+ * a cross-check for regression-adjusted checklist %, not an input to the composite.
  *
  * Text output lists each `app/new/features/<name>` folder with O / X / △. JSON
- * includes per-feature detail and modals.
+ * includes per-feature detail, modals, and composite metrics.
  */
 
 const fs = require('fs')
@@ -529,6 +542,566 @@ function featureCoverageMark(f, stats) {
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
 
+/** `required-scenarios.config.json` walletMode values with detection logic in this script. */
+const SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES = new Set([
+  'mnemonic',
+  'seedless'
+])
+
+/** Feature folder names too generic for token-only breadth matching (false positives). */
+const BREADTH_AMBIGUOUS_FEATURE_DIRS = new Set([])
+
+/**
+ * Tokens shared by many names — excluded from standalone breadth token match
+ * (aligned with core-web `GENERIC_FEATURE_TOKENS`).
+ */
+const BREADTH_GENERIC_FEATURE_TOKENS = new Set([
+  'page',
+  'tab',
+  'tabs',
+  'header',
+  'grid',
+  'list',
+  'card',
+  'row',
+  'form',
+  'button',
+  'link',
+  'table',
+  'dialog',
+  'modal',
+  'drawer',
+  'menu',
+  'bar',
+  'panel',
+  'item',
+  'cell',
+  'icon',
+  'layout',
+  'content',
+  'section'
+])
+
+/**
+ * @param {unknown} rawVal
+ * @param {number} defaultVal
+ */
+function coalesceFiniteNonNegativeWeight(rawVal, defaultVal) {
+  const n = Number(rawVal ?? defaultVal)
+  if (!Number.isFinite(n) || n < 0) {
+    return defaultVal
+  }
+  return n
+}
+
+/**
+ * @param {object} w
+ * @param {string} key
+ */
+function rawWeightValueIsInvalid(w, key) {
+  const v = w?.[key]
+  return v != null && (!Number.isFinite(Number(v)) || Number(v) < 0)
+}
+
+/**
+ * @returns {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number }, impliedUncertaintyPercentagePoints: number, definition?: string, configPath: string }}
+ */
+function loadCoverageModelConfig() {
+  const configPath = path.join(E2E_APPIUM_DIR, 'coverage-model.config.json')
+  const defaults = {
+    weights: {
+      e2eFeatureCoveragePercent: 0.08,
+      requiredScenariosPercent: 0.22,
+      featureFolderWalletSlotPercent: 0.7
+    },
+    impliedUncertaintyPercentagePoints: 10
+  }
+  if (!fs.existsSync(configPath)) {
+    return { ...defaults, definition: undefined, configPath }
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    const w = raw.weights
+    const weightKeys = [
+      'e2eFeatureCoveragePercent',
+      'requiredScenariosPercent',
+      'featureFolderWalletSlotPercent'
+    ]
+    const hadInvalidWeight = weightKeys.some(k => rawWeightValueIsInvalid(w, k))
+    if (hadInvalidWeight) {
+      console.warn(
+        'e2e-feature-coverage: coverage-model.config.json weights contained non-finite or negative values; defaults used for those entries.'
+      )
+    }
+    let weights = {
+      e2eFeatureCoveragePercent: coalesceFiniteNonNegativeWeight(
+        w?.e2eFeatureCoveragePercent,
+        defaults.weights.e2eFeatureCoveragePercent
+      ),
+      requiredScenariosPercent: coalesceFiniteNonNegativeWeight(
+        w?.requiredScenariosPercent,
+        defaults.weights.requiredScenariosPercent
+      ),
+      featureFolderWalletSlotPercent: coalesceFiniteNonNegativeWeight(
+        w?.featureFolderWalletSlotPercent,
+        defaults.weights.featureFolderWalletSlotPercent
+      )
+    }
+    let sum =
+      weights.e2eFeatureCoveragePercent +
+      weights.requiredScenariosPercent +
+      weights.featureFolderWalletSlotPercent
+    if (!Number.isFinite(sum) || sum <= 0) {
+      console.warn(
+        'e2e-feature-coverage: coverage-model.config.json weights sum to zero or are invalid; using default weights.'
+      )
+      weights = { ...defaults.weights }
+      sum =
+        weights.e2eFeatureCoveragePercent +
+        weights.requiredScenariosPercent +
+        weights.featureFolderWalletSlotPercent
+    }
+    if (Number.isFinite(sum) && sum > 0 && Math.abs(sum - 1) > 0.02) {
+      weights.e2eFeatureCoveragePercent /= sum
+      weights.requiredScenariosPercent /= sum
+      weights.featureFolderWalletSlotPercent /= sum
+    }
+    const impliedRaw = raw.impliedUncertaintyPercentagePoints
+    const impliedInvalid =
+      impliedRaw != null &&
+      (!Number.isFinite(Number(impliedRaw)) || Number(impliedRaw) < 0)
+    if (impliedInvalid) {
+      console.warn(
+        'e2e-feature-coverage: impliedUncertaintyPercentagePoints invalid; using default.'
+      )
+    }
+    const impliedUncertaintyPercentagePoints = impliedInvalid
+      ? defaults.impliedUncertaintyPercentagePoints
+      : coalesceFiniteNonNegativeWeight(
+          impliedRaw,
+          defaults.impliedUncertaintyPercentagePoints
+        )
+    return {
+      weights,
+      impliedUncertaintyPercentagePoints,
+      definition:
+        typeof raw.definition === 'string' ? raw.definition : undefined,
+      configPath
+    }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.warn(
+      `e2e-feature-coverage: could not read or parse ${configPath}: ${msg}; using default coverage model.`
+    )
+    return { ...defaults, definition: undefined, configPath }
+  }
+}
+
+/**
+ * @param {object} raw
+ * @param {{ flows: string[], walletModes: string[] }} defaults
+ */
+function walletModesFromRequiredScenariosRaw(raw, defaults) {
+  const rawModes =
+    Array.isArray(raw.walletModes) && raw.walletModes.length
+      ? raw.walletModes.map(m => String(m).trim())
+      : defaults.walletModes
+  if (rawModes.includes('ledger')) {
+    console.warn(
+      'e2e-feature-coverage: walletMode "ledger" is ignored in required-scenarios (not automatable in Appium).'
+    )
+  }
+  const unsupported = rawModes.filter(
+    m => m !== 'ledger' && !SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+  )
+  if (unsupported.length) {
+    console.warn(
+      `e2e-feature-coverage: required-scenarios walletModes ignored (no detection logic): ${unsupported.join(
+        ', '
+      )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(
+        ', '
+      )}.`
+    )
+  }
+  return rawModes.filter(
+    m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+  )
+}
+
+/**
+ * @param {object} raw
+ * @param {{ flows: string[], walletModes: string[] }} defaults
+ */
+function flowsFromRequiredScenariosRaw(raw, defaults) {
+  const rawFlows =
+    Array.isArray(raw.flows) && raw.flows.length
+      ? raw.flows.map(f => String(f).trim())
+      : defaults.flows
+  const unknownFlows = rawFlows.filter(
+    f => !Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+  )
+  if (unknownFlows.length) {
+    console.warn(
+      `e2e-feature-coverage: required-scenarios flows ignored (no heuristic in SPEC_COVERS_FLOW_MOBILE): ${unknownFlows.join(
+        ', '
+      )}`
+    )
+  }
+  const flows = rawFlows.filter(f =>
+    Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+  )
+  return flows.length ? flows : defaults.flows
+}
+
+/**
+ * @returns {{ flows: string[], walletModes: string[], definition?: string, configPath: string }}
+ */
+function loadRequiredScenariosConfig() {
+  const configPath = path.join(E2E_APPIUM_DIR, 'required-scenarios.config.json')
+  const defaults = {
+    flows: ['send', 'swap'],
+    walletModes: ['mnemonic']
+  }
+  if (!fs.existsSync(configPath)) {
+    return { ...defaults, definition: undefined, configPath }
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    const walletModes = walletModesFromRequiredScenariosRaw(raw, defaults)
+    const flows = flowsFromRequiredScenariosRaw(raw, defaults)
+    return {
+      flows,
+      walletModes: walletModes.length ? walletModes : defaults.walletModes,
+      definition:
+        typeof raw.definition === 'string' ? raw.definition : undefined,
+      configPath
+    }
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.warn(
+      `e2e-feature-coverage: could not read or parse ${configPath}: ${msg}; using default required-scenarios config.`
+    )
+    return { ...defaults, definition: undefined, configPath }
+  }
+}
+
+/**
+ * @param {string} dirName
+ */
+function featureDirMatchTokens(dirName) {
+  const normalized = dirName.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
+  const words = normalized.split(/[\s_-]+/).filter(w => w.length > 0)
+  const tokens = new Set([dirName.toLowerCase(), ...words])
+  if (words.length > 1) {
+    tokens.add(words.join(''))
+  }
+  return [...tokens].filter(
+    t => t.length >= 3 && !BREADTH_GENERIC_FEATURE_TOKENS.has(t)
+  )
+}
+
+/**
+ * @param {{ dir: string, dirLower: string, corpus: string, minTokenLen: number, matched: Set<string> }} o
+ */
+function addMatchedDirsFromTokens(o) {
+  const { dir, dirLower, corpus, minTokenLen, matched } = o
+  if (dirLower.length >= 8 && corpus.includes(dirLower)) {
+    matched.add(dir)
+    return
+  }
+  for (const tok of featureDirMatchTokens(dir)) {
+    if (tok.length < minTokenLen) continue
+    try {
+      const re = new RegExp(
+        `\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'i'
+      )
+      if (re.test(corpus)) {
+        matched.add(dir)
+        break
+      }
+    } catch {
+      // ignore bad regex
+    }
+  }
+}
+
+/**
+ * @param {string[]} foldersInScope
+ * @param {string[]} corpusParts
+ * @param {{ minTokenLen?: number }} [opts]
+ */
+function inferMatchedFeatureFolders(foldersInScope, corpusParts, opts = {}) {
+  const minTokenLen = opts.minTokenLen ?? 4
+  const corpus = corpusParts.join(' ').toLowerCase()
+  const matched = new Set()
+  for (const dir of foldersInScope) {
+    if (BREADTH_AMBIGUOUS_FEATURE_DIRS.has(dir)) continue
+    addMatchedDirsFromTokens({
+      dir,
+      dirLower: dir.toLowerCase(),
+      corpus,
+      minTokenLen,
+      matched
+    })
+  }
+  return matched
+}
+
+/**
+ * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
+ * `context` variants (breadth + TestRail section mapping).
+ * @param {string} src
+ */
+function extractFirstDescribeTitle(src) {
+  const m = src.match(
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
+  )
+  if (!m) return null
+  return unescapeJsString(m[2])
+}
+
+/**
+ * @param {string} content
+ * @param {string | null} outerDescribe
+ */
+function collectItAndDescribeTitles(content, outerDescribe) {
+  const fromIt = extractStaticItTitles(content)
+  const fromDesc = extractAllStaticDescribeTitles(content)
+  const merged = [...fromDesc, ...fromIt]
+  if (outerDescribe != null) {
+    const idx = merged.indexOf(outerDescribe)
+    if (idx >= 0) merged.splice(idx, 1)
+  }
+  return merged
+}
+
+/** @type {Record<string, (relLower: string, text: string) => boolean>} */
+const SPEC_COVERS_FLOW_MOBILE = {
+  send: (relLower, text) =>
+    /\/send|withdraw|sendnft|xpchain|sendethereum|sendsolana|sendbitcoin|cchain\/send|ethereum\/send|solana\/send/i.test(
+      relLower
+    ) ||
+    /\.send\s*\(/i.test(text) ||
+    /\btxPage\.send\b/i.test(text) ||
+    /\bsendXPChain\b/i.test(text) ||
+    /\bsendEthereum\b/i.test(text) ||
+    /\bsendSolana\b/i.test(text),
+  swap: (relLower, text) =>
+    /swap/i.test(relLower) ||
+    /\bswapOnTrack\b/i.test(text) ||
+    /\btxPage\.swap\b/i.test(text) ||
+    /describe\s*\(\s*['"][^'"]*swap/i.test(text),
+  'cross-chain-transfer': (relLower, text) =>
+    /cross.chain|crosschain|subnet.transfer|export.?chain|import.?chain|c.?bridge/i.test(
+      text
+    ) || /\/bridge\/|cross.chain|subnet/i.test(relLower),
+  'stake-delegate': (relLower, text) =>
+    /stake|staking|delegate|p.chain|addstake/i.test(relLower) ||
+    /\bstakeTestnet\b/i.test(text) ||
+    /\bstaking\b/i.test(text),
+  defi: (relLower, text) =>
+    /\/defi\/|\/earn\/|borrow|deposit/i.test(relLower) ||
+    /\bdefiPage\b/i.test(text) ||
+    /\bdefi\b/i.test(relLower),
+  collectibles: (relLower, _text) =>
+    /collectible|nft|sendnft|sendethnft/i.test(relLower),
+  activity: (relLower, text) =>
+    /\/activity/i.test(relLower) ||
+    /\bactivityTab\b/i.test(text) ||
+    /\bactivity_tab\b/i.test(text),
+  settings: (relLower, _text) => relLower.includes('specs/settings/'),
+  accounts: (relLower, _text) => /accounts\.spec/i.test(relLower)
+}
+
+/**
+ * @param {string} flow
+ * @param {string} relLower
+ * @param {string} text
+ */
+function specCoversFlowMobile(flow, relLower, text) {
+  const fn = SPEC_COVERS_FLOW_MOBILE[flow]
+  if (!fn) return false
+  return fn(relLower, text)
+}
+
+/**
+ * @param {string} relLower
+ * @param {string} text
+ */
+function specHasSeedlessContext(relLower, text) {
+  if (relLower.includes('/seedless/') || relLower.includes('seedless/')) {
+    return true
+  }
+  return (
+    /\bseedlessWarmup\b/i.test(text) ||
+    /\bWalletType\.SEEDLESS\b/.test(text) ||
+    /from\s+['"][^'"]*seedless\//i.test(text) ||
+    /\bSEEDLESS_/i.test(text)
+  )
+}
+
+/**
+ * Recovery-phrase / created-wallet login paths (Ledger excluded at matrix level).
+ * @param {string} relLower
+ * @param {string} text
+ */
+function specHasMnemonicContext(relLower, text) {
+  if (relLower.includes('/ledger/')) return false
+  return (
+    /\bwarmup\s*\(/.test(text) ||
+    /helpers\/warmup/.test(relLower) ||
+    /['"]\.\.\/.*helpers\/warmup['"]/.test(text) ||
+    /['"]\.\/.*helpers\/warmup['"]/.test(text) ||
+    /\benterRecoveryPhrase\b/.test(text) ||
+    /\bgetMnemonicWords\b/.test(text) ||
+    /\btapTypeInRecoveryPhase\b/.test(text) ||
+    /\btapManuallyCreateNewWallet\b/.test(text) ||
+    /\bE2E_MNEMONIC\b/.test(text) ||
+    /\bE2E_METAMASK_MNEMONIC\b/.test(text)
+  )
+}
+
+/**
+ * @param {string} mode
+ * @param {string} relLower
+ * @param {string} txt
+ */
+function specImplementsRequiredScenarioMode(mode, relLower, txt) {
+  if (mode === 'mnemonic') {
+    if (
+      specHasSeedlessContext(relLower, txt) &&
+      !specHasMnemonicContext(relLower, txt)
+    ) {
+      return false
+    }
+    return specHasMnemonicContext(relLower, txt)
+  }
+  if (mode === 'seedless') {
+    return specHasSeedlessContext(relLower, txt)
+  }
+  throw new Error(
+    `e2e-feature-coverage: unhandled walletMode "${mode}" (add detection or filter in loadRequiredScenariosConfig)`
+  )
+}
+
+/**
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
+ * @param {{ flows: string[], walletModes: string[] }} cfg
+ */
+function computeRequiredScenarioMatrixMobile(specEntries, cfg) {
+  /** @type {{ id: string, flow: string, walletMode: string, implemented: boolean, evidence: string[] }[]} */
+  const scenarios = []
+
+  for (const flow of cfg.flows) {
+    for (const mode of cfg.walletModes) {
+      const evidence = []
+      for (const { rel, relLower, text: txt } of specEntries) {
+        if (!specCoversFlowMobile(flow, relLower, txt)) continue
+        if (specImplementsRequiredScenarioMode(mode, relLower, txt)) {
+          evidence.push(rel)
+        }
+      }
+      const evidenceSorted = [...new Set(evidence)].sort()
+      scenarios.push({
+        id: `${flow}-${mode}`,
+        flow,
+        walletMode: mode,
+        implemented: evidenceSorted.length > 0,
+        evidence: evidenceSorted
+      })
+    }
+  }
+
+  const totalRequired = scenarios.length
+  const implementedCount = scenarios.filter(s => s.implemented).length
+  const pct =
+    totalRequired === 0
+      ? 0
+      : Math.round((100 * implementedCount) / totalRequired)
+  return {
+    scenarios,
+    totalRequired,
+    implementedCount,
+    percent: pct,
+    missing: scenarios.filter(s => !s.implemented).map(s => s.id)
+  }
+}
+
+/**
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
+ * @param {string[]} foldersInScope breadth denominator: `app/new/features/*` minus exclusions
+ */
+function computeE2eFeatureBreadth(specEntries, foldersInScope) {
+  const claimed = new Set()
+  for (const { rel, text: content } of specEntries) {
+    const base = path.basename(rel, path.extname(rel))
+    const stem = base.replace(/\.spec$/i, '') || base
+    const describeTitle = extractFirstDescribeTitle(content)
+    const primaryCorpus = [
+      stem,
+      ...(describeTitle ? [describeTitle] : [])
+    ].filter(Boolean)
+    const matchedPrimary = inferMatchedFeatureFolders(
+      foldersInScope,
+      primaryCorpus,
+      { minTokenLen: 3 }
+    )
+    const looseTitles = collectItAndDescribeTitles(content, describeTitle)
+    const matchedLoose = inferMatchedFeatureFolders(
+      foldersInScope,
+      looseTitles,
+      {
+        minTokenLen: 8
+      }
+    )
+    for (const d of matchedPrimary) claimed.add(d)
+    for (const d of matchedLoose) claimed.add(d)
+  }
+
+  const totalAppFeatureAreas = foldersInScope.length
+  const matchedSet = new Set(claimed)
+  const featureAreasMatchedBySpecs = matchedSet.size
+  const uncoveredFeatureAreas = foldersInScope
+    .filter(f => !matchedSet.has(f))
+    .sort()
+  const pct =
+    totalAppFeatureAreas === 0
+      ? 0
+      : Math.round((100 * featureAreasMatchedBySpecs) / totalAppFeatureAreas)
+
+  return {
+    totalAppFeatureAreas,
+    featureAreasMatchedByAtLeastOneSpec: featureAreasMatchedBySpecs,
+    percent: pct,
+    uncoveredFeatureAreas,
+    featureAreasClaimedSet: matchedSet
+  }
+}
+
+/**
+ * @param {number} featureCoveragePercent
+ * @param {number} requiredScenariosPercent
+ * @param {number} featureWalletSlotPercent
+ * @param {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number } }} modelCfg
+ */
+function computeCodebaseCompositePercent(
+  featureCoveragePercent,
+  requiredScenariosPercent,
+  featureWalletSlotPercent,
+  modelCfg
+) {
+  const w = modelCfg.weights
+  return (
+    Math.round(
+      (w.e2eFeatureCoveragePercent * featureCoveragePercent +
+        w.requiredScenariosPercent * requiredScenariosPercent +
+        w.featureFolderWalletSlotPercent * featureWalletSlotPercent) *
+        100
+    ) / 100
+  )
+}
+
 function loadAxios() {
   return pkgRequire('axios')
 }
@@ -613,19 +1186,6 @@ async function fetchAllTestsForRun(client, runId) {
 }
 
 /**
- * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
- * `context` variants (used for TestRail section name ↔ spec mapping).
- * @param {string} src
- */
-function extractFirstDescribeTitle(src) {
-  const m = src.match(
-    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
-  )
-  if (!m) return null
-  return unescapeJsString(m[2])
-}
-
-/**
  * Static `it` / `it.skip` / `it.only` / `test` / `test.skip` / `test.only` titles.
  * @param {string} src
  * @returns {string[]}
@@ -645,8 +1205,26 @@ function extractStaticItTitles(src) {
 }
 
 /**
+ * Static `describe` / `describe.skip` / `describe.only` / `context` titles (breadth loose corpus).
+ * @param {string} src
+ * @returns {string[]}
+ */
+function extractAllStaticDescribeTitles(src) {
+  const titles = []
+  const re =
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
+  let m
+  while ((m = re.exec(src)) !== null) {
+    const q = m[1]
+    const inner = unescapeJsString(m[2])
+    if (q === '`' && inner.includes('${')) continue
+    titles.push(inner)
+  }
+  return titles
+}
+
+/**
  * Map `"<describe title>\\t<it title>"` → spec rel paths (see WDIO `beforeTest` / `afterTest`).
- * @param {{ rel: string, abs: string }[]} testFiles
  */
 function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
   const s = suite.trim()
@@ -659,16 +1237,13 @@ function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
   }
 }
 
-function buildSuiteCaseToSpecRelMap(testFiles) {
+/**
+ * @param {{ rel: string, text: string }[]} specEntries
+ */
+function buildSuiteCaseToSpecRelMap(specEntries) {
   /** @type {Map<string, Set<string>>} */
   const map = new Map()
-  for (const { rel, abs } of testFiles) {
-    let text = ''
-    try {
-      text = fs.readFileSync(abs, 'utf8')
-    } catch {
-      continue
-    }
+  for (const { rel, text } of specEntries) {
     const manual = DYNAMIC_SUITE_CASES_BY_SPEC_REL[rel]
     const suite = manual?.suite ?? extractFirstDescribeTitle(text)
     if (!suite) continue
@@ -1341,18 +1916,43 @@ function loadAppiumSpecFiles() {
 }
 
 /**
+ * Single `readFileSync` per spec; reuse for literals/corpus, breadth, scenarios, feature matching, TestRail map.
+ * Specs that cannot be read are omitted from metrics that depend on file contents (and listed in a warning).
  * @param {{ rel: string, abs: string }[]} testFiles
+ * @returns {{ rel: string, abs: string, relLower: string, text: string }[]}
  */
-function buildSpecLiteralsAndCorpus(testFiles) {
+function buildAppiumSpecEntries(testFiles) {
+  /** @type {{ rel: string, abs: string, relLower: string, text: string }[]} */
+  const entries = []
+  /** @type {string[]} */
+  const skippedRel = []
+  for (const { rel, abs } of testFiles) {
+    try {
+      const text = fs.readFileSync(abs, 'utf8')
+      entries.push({ rel, abs, relLower: rel.toLowerCase(), text })
+    } catch {
+      skippedRel.push(rel)
+    }
+  }
+  if (skippedRel.length > 0) {
+    console.warn(
+      `e2e-feature-coverage: skipped ${
+        skippedRel.length
+      } Appium spec(s) (unreadable); excluded from content-based metrics: ${skippedRel.join(
+        ', '
+      )}`
+    )
+  }
+  return entries
+}
+
+/**
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
+ */
+function buildSpecLiteralsAndCorpusFromEntries(specEntries) {
   const specLiteralSet = new Set()
   const specCorpusParts = []
-  for (const { abs } of testFiles) {
-    let text
-    try {
-      text = fs.readFileSync(abs, 'utf8')
-    } catch {
-      continue
-    }
+  for (const { text } of specEntries) {
     specCorpusParts.push(text)
     collectStringLiteralsFromTs(text, specLiteralSet)
   }
@@ -1425,21 +2025,13 @@ function populateFeatureStats(
 }
 
 /**
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, { tests: string[] }>} featureStats
  */
-function matchSpecsToFeatures(testFiles, featureNames, featureStats) {
+function matchSpecsToFeatures(specEntries, featureNames, featureStats) {
   const testToFeatures = []
-  for (const { rel, abs } of testFiles) {
-    const relLower = rel.toLowerCase()
-    let content = ''
-    try {
-      content = fs.readFileSync(abs, 'utf8')
-    } catch {
-      content = ''
-    }
-
+  for (const { rel, relLower, text: content } of specEntries) {
     const matched = []
     for (const f of featureNames) {
       if (!FEATURE_SIGNALS[f]) continue
@@ -1528,12 +2120,12 @@ function readModalFolderNames() {
 
 /**
  * @param {string} m
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower?: string, text?: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
  */
-function buildOneModalCoverage(m, testFiles, featureNames, featureStats) {
-  const relHits = testFiles.filter(({ rel }) =>
+function buildOneModalCoverage(m, specEntries, featureNames, featureStats) {
+  const relHits = specEntries.filter(({ rel }) =>
     modalMatchesTest(m, rel.toLowerCase())
   )
   const linked = modalLinkedFeature(m, featureNames)
@@ -1560,13 +2152,13 @@ function buildOneModalCoverage(m, testFiles, featureNames, featureStats) {
 
 /**
  * @param {string[]} modals
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower?: string, text?: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
  */
-function buildModalCoverage(modals, testFiles, featureNames, featureStats) {
+function buildModalCoverage(modals, specEntries, featureNames, featureStats) {
   return modals.map(m =>
-    buildOneModalCoverage(m, testFiles, featureNames, featureStats)
+    buildOneModalCoverage(m, specEntries, featureNames, featureStats)
   )
 }
 
@@ -1597,6 +2189,7 @@ function computeModalPercents(modalCoverage, modalsInScope, modals) {
 function printJsonReport(ctx) {
   const {
     testFiles,
+    appiumSpecsReadable,
     featureNames,
     featureStats,
     testToFeatures,
@@ -1631,7 +2224,11 @@ function printJsonReport(ctx) {
     regressionFailedFeatureCountAndroid,
     testrail,
     regressionFailedFeatureNamesIos,
-    regressionFailedFeatureNamesAndroid
+    regressionFailedFeatureNamesAndroid,
+    codebaseCompositeCoverage,
+    e2eFeatureBreadth,
+    requiredScenarios,
+    featureFolderWalletSlotAssumption
   } = counts
 
   console.log(
@@ -1640,12 +2237,20 @@ function printJsonReport(ctx) {
         summary: {
           e2eSource: 'e2e-appium',
           appiumSpecFiles: testFiles.length,
+          appiumSpecFilesLoadedForMetrics: appiumSpecsReadable,
           testIdsDeclaredTotal: totalDeclaredTestIds,
           testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
           testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
           totalCoveragePercent,
           totalCoveragePercentBasis:
             'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
+          codebaseCompositeCoverage,
+          codebaseCompositeCoveragePercent: codebaseCompositeCoverage.percent,
+          codebaseCompositeCoverageBasis:
+            'weighted_e2eFeatureBreadth_requiredScenarios_folderTimesNWalletSlots_testRailExcluded',
+          e2eFeatureBreadth,
+          requiredScenarios,
+          featureFolderWalletSlotAssumption,
           regressionAdjustedCoveragePercentIos,
           regressionAdjustedCoveragePercentIosBasis:
             regressionAdjustedCoveragePercentBasis('ios', testrail),
@@ -1742,6 +2347,7 @@ function featureListSortKey(a, b, featureStats) {
  */
 function printTextReportHeader(ctx) {
   const {
+    appiumSpecsReadable,
     excludedFeatureList,
     totalCoveragePercent,
     coveredEither,
@@ -1761,7 +2367,11 @@ function printTextReportHeader(ctx) {
     modalPctEither,
     modals,
     modalsOmittedCount,
-    testFiles
+    testFiles,
+    codebaseCompositeCoverage,
+    e2eFeatureBreadth,
+    requiredScenarios,
+    featureFolderWalletSlotAssumption
   } = ctx
 
   console.log('Appium e2e ↔ feature coverage (heuristic, not line coverage)')
@@ -1781,7 +2391,14 @@ function printTextReportHeader(ctx) {
   )
   console.log('')
   console.log(
-    `Total coverage:    ${totalCoveragePercent}%  (${coveredEither}/${featuresWithSignalsInScope.length} in-scope mapped features — spec path match OR ≥1 feature testID in a *.spec.ts)`
+    `Codebase composite (headline model): ${codebaseCompositeCoverage.percent}% (±${codebaseCompositeCoverage.impliedUncertaintyPercentagePoints} pp model uncertainty) — ${codebaseCompositeCoverage.configPath}`
+  )
+  console.log(
+    `  components: breadth ${e2eFeatureBreadth.percent}% (${e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec}/${e2eFeatureBreadth.totalAppFeatureAreas} in-scope folders from spec stem/describe/titles) · required scenarios ${requiredScenarios.percent}% (${requiredScenarios.implementedCount}/${requiredScenarios.totalRequired} flow×wallet cells per ${requiredScenarios.configPath}) · wallet×folder slots ${featureFolderWalletSlotAssumption.percent}% (${featureFolderWalletSlotAssumption.filledSlotsCredited}/${featureFolderWalletSlotAssumption.totalSlots})`
+  )
+  console.log('')
+  console.log(
+    `Checklist total:   ${totalCoveragePercent}%  (${coveredEither}/${featuresWithSignalsInScope.length} in-scope mapped features — spec path match OR ≥1 feature testID in a *.spec.ts)`
   )
   if (testIdLiteralInSpecPct !== null) {
     console.log(
@@ -1815,7 +2432,13 @@ function printTextReportHeader(ctx) {
     `                   (${modals.length} modal routes; ${modalsOmittedCount} omitted — no path hit and linked feature excluded from metrics)`
   )
   console.log(
-    `Appium: ${testFiles.length} spec files scanned for paths + testID text`
+    (() => {
+      const skipped = testFiles.length - appiumSpecsReadable
+      const base = `Appium: ${appiumSpecsReadable} spec file(s) read for paths + testID text`
+      return skipped > 0
+        ? `${base} (${skipped} path(s) under e2e-appium unreadable — skipped from content metrics; see warning above)`
+        : base
+    })()
   )
   printTestrailRegressionSummary(ctx)
   console.log('')
@@ -2070,7 +2693,7 @@ function emptyTestrailSkip(reason) {
 }
 
 async function loadTestrailRegressionSummary(
-  testFiles,
+  specEntries,
   featureNames,
   featureStats
 ) {
@@ -2109,7 +2732,7 @@ async function loadTestrailRegressionSummary(
 
   try {
     const runs = await fetchAllProjectRuns(client)
-    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(testFiles)
+    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(specEntries)
     /** Reuse `get_case` results between iOS and Android runs in one process. */
     const caseMetaByIdCache = new Map()
     const trIos = await fetchTestrailPlatformRegressionContext(
@@ -2167,8 +2790,9 @@ async function main() {
   const verbose = process.argv.includes('--verbose')
 
   const testFiles = loadAppiumSpecFiles()
+  const specEntries = buildAppiumSpecEntries(testFiles)
   const { specLiteralSet, specCorpus, specLiteralList } =
-    buildSpecLiteralsAndCorpus(testFiles)
+    buildSpecLiteralsAndCorpusFromEntries(specEntries)
   const featureNames = readFeatureFolderNames()
   const featureStats = {}
   populateFeatureStats(
@@ -2179,7 +2803,7 @@ async function main() {
     specLiteralList
   )
   const testToFeatures = matchSpecsToFeatures(
-    testFiles,
+    specEntries,
     featureNames,
     featureStats
   )
@@ -2193,7 +2817,7 @@ async function main() {
   const modals = readModalFolderNames()
   const modalCoverage = buildModalCoverage(
     modals,
-    testFiles,
+    specEntries,
     featureNames,
     featureStats
   )
@@ -2209,7 +2833,11 @@ async function main() {
     testrailAndroid,
     regressionFailedFeaturesIos,
     regressionFailedFeaturesAndroid
-  } = await loadTestrailRegressionSummary(testFiles, featureNames, featureStats)
+  } = await loadTestrailRegressionSummary(
+    specEntries,
+    featureNames,
+    featureStats
+  )
 
   const regressionAdjIos = computeRegressionAdjustedMetrics(
     coverageBase.featuresWithSignalsInScope,
@@ -2226,6 +2854,40 @@ async function main() {
   const androidAdj = pickRegressionAdjustedCounts(
     testrailAndroid,
     regressionAdjAndroid
+  )
+
+  const foldersInBreadthScope = featureNames.filter(
+    f => !excludedFromCoverageMetrics(f)
+  )
+  const coverageModelCfg = loadCoverageModelConfig()
+  const requiredScenariosCfg = loadRequiredScenariosConfig()
+  const e2eFeatureBreadth = computeE2eFeatureBreadth(
+    specEntries,
+    foldersInBreadthScope
+  )
+  const requiredScenarioMatrix = computeRequiredScenarioMatrixMobile(
+    specEntries,
+    requiredScenariosCfg
+  )
+  /** Slot denominator = in-scope folders × wallet modes in required-scenarios config. */
+  const walletModesAssumedForSlots = Math.max(
+    1,
+    requiredScenariosCfg.walletModes.length
+  )
+  const featureWalletSlotsTotal =
+    e2eFeatureBreadth.totalAppFeatureAreas * walletModesAssumedForSlots
+  const featureWalletSlotPercent =
+    featureWalletSlotsTotal === 0
+      ? 0
+      : Math.round(
+          (10000 * e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec) /
+            featureWalletSlotsTotal
+        ) / 100
+  const codebaseCompositePercent = computeCodebaseCompositePercent(
+    e2eFeatureBreadth.percent,
+    requiredScenarioMatrix.percent,
+    featureWalletSlotPercent,
+    coverageModelCfg
   )
 
   const counts = {
@@ -2247,12 +2909,64 @@ async function main() {
       ...regressionFailedFeaturesAndroid
     ].sort(),
     regressionFailedFeaturesIos,
-    regressionFailedFeaturesAndroid
+    regressionFailedFeaturesAndroid,
+    codebaseCompositeCoverage: {
+      percent: codebaseCompositePercent,
+      formula: 'weightedSum',
+      weights: coverageModelCfg.weights,
+      impliedUncertaintyPercentagePoints:
+        coverageModelCfg.impliedUncertaintyPercentagePoints,
+      definition:
+        coverageModelCfg.definition ??
+        'Weighted blend of breadth, required flow×wallet cells, and folder×N-wallet-slot assumption (codebase only; TestRail not included).',
+      configPath: path.relative(
+        pkgRoot,
+        coverageModelCfg.configPath ??
+          path.join(E2E_APPIUM_DIR, 'coverage-model.config.json')
+      ),
+      components: {
+        e2eFeatureBreadthPercent: e2eFeatureBreadth.percent,
+        requiredScenariosPercent: requiredScenarioMatrix.percent,
+        featureFolderWalletSlotPercent: featureWalletSlotPercent
+      }
+    },
+    e2eFeatureBreadth: {
+      definition:
+        'Share of in-scope app/new/features/* folders associated with at least one Appium *.spec.ts via file stem, outer describe title, or it/describe title tokens (min length 8 for title-only matches). Not based on FEATURE_SIGNALS or testID.',
+      totalAppFeatureAreas: e2eFeatureBreadth.totalAppFeatureAreas,
+      featureAreasMatchedByAtLeastOneSpec:
+        e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec,
+      percent: e2eFeatureBreadth.percent,
+      uncoveredFeatureAreas: e2eFeatureBreadth.uncoveredFeatureAreas
+    },
+    requiredScenarios: {
+      definition:
+        requiredScenariosCfg.definition ??
+        'Flow × wallet matrix from required-scenarios.config.json (Ledger never used; add seedless to walletModes when that E2E exists).',
+      configPath: path.relative(pkgRoot, requiredScenariosCfg.configPath),
+      flows: requiredScenariosCfg.flows,
+      walletModes: requiredScenariosCfg.walletModes,
+      totalRequired: requiredScenarioMatrix.totalRequired,
+      implementedCount: requiredScenarioMatrix.implementedCount,
+      percent: requiredScenarioMatrix.percent,
+      missing: requiredScenarioMatrix.missing,
+      scenarios: requiredScenarioMatrix.scenarios
+    },
+    featureFolderWalletSlotAssumption: {
+      definition:
+        'Assumes each in-scope feature folder should be covered under N wallet modes (N = walletModes in required-scenarios.config.json); credits one slot per folder with any breadth match. Denominator = folders×N.',
+      walletModesAssumed: walletModesAssumedForSlots,
+      totalSlots: featureWalletSlotsTotal,
+      filledSlotsCredited:
+        e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec,
+      percent: featureWalletSlotPercent
+    }
   }
 
   if (json) {
     printJsonReport({
       testFiles,
+      appiumSpecsReadable: specEntries.length,
       featureNames,
       featureStats,
       testToFeatures,
@@ -2268,6 +2982,7 @@ async function main() {
     ...counts,
     excludedFeatureList,
     testFiles,
+    appiumSpecsReadable: specEntries.length,
     modals,
     modalsInScope
   })
