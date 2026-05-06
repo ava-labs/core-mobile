@@ -413,23 +413,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-bridge-sdk@npm:3.1.0-alpha.85":
-  version: 3.1.0-alpha.85
-  resolution: "@avalabs/core-bridge-sdk@npm:3.1.0-alpha.85"
-  dependencies:
-    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.85
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.85
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.85
-  peerDependencies:
-    big.js: ^6.2.1
-    bitcoinjs-lib: ^5.2.0
-    coinselect: ^3.1.12
-    ethers: ^6.7.1
-    react: ^17.0.2
-  checksum: f7acf6826478aeebc90379619e6acf2cbbed83bd579e5078e8424b137cd3bd6991805ae5b6d6a62fca1f409aa31793fc9b4f9b2bfe3a0e42e7737fc7955e8a49
-  languageName: node
-  linkType: hard
-
 "@avalabs/core-chains-sdk@npm:3.1.0-alpha.61":
   version: 3.1.0-alpha.61
   resolution: "@avalabs/core-chains-sdk@npm:3.1.0-alpha.61"
@@ -484,7 +467,6 @@ __metadata:
     "@avalabs/avalanchejs": 5.1.0-alpha.3
     "@avalabs/bitcoin-module": 3.7.2
     "@avalabs/bridge-unified": 4.4.1
-    "@avalabs/core-bridge-sdk": 3.1.0-alpha.85
     "@avalabs/core-chains-sdk": 3.1.0-alpha.85
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.85
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.85
