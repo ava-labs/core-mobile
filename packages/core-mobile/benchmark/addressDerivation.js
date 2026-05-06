@@ -3,7 +3,6 @@ import { showResult } from './utils'
 import { mnemonicToSeed } from 'bip39'
 import { deriveAllAddressesFromSeed } from 'react-native-nitro-avalabs-crypto'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { AVALANCHE_MAINNET_NETWORK } from '@avalabs/core-chains-sdk'
 import ModuleManager from '../app/vmModule/ModuleManager'
 import WalletFactory from '../app/services/wallet/WalletFactory'
 import BiometricsSDK from '../app/utils/BiometricsSDK'
@@ -64,7 +63,8 @@ export const addressDerivationBenchmark = async ({
     )
   }
 
-  const network = AVALANCHE_MAINNET_NETWORK
+  // Stub network — modules only read network.isTestnet; matches AccountsService pattern.
+  const network = { isTestnet }
 
   // --- Setup (untimed) ---
   const secret = await BiometricsSDK.loadWalletSecret(walletId)
@@ -116,7 +116,8 @@ export const addressDerivationBenchmark = async ({
     for (const [n, b] of fields) {
       const ne = nativeCheck[i]?.[n]
       const ba = baselineCheck[i]?.[b]
-      if (ne !== ba) mismatches.push(`${n}[${i}]\n  native=${ne}\n  base  =${ba}`)
+      if (ne !== ba)
+        mismatches.push(`${n}[${i}]\n  native=${ne}\n  base  =${ba}`)
     }
   }
   if (mismatches.length > 0) {
@@ -219,7 +220,11 @@ export const addressDerivationBenchmark = async ({
     const r = results[N]
     const sp = r.nMed > 0 ? r.bMed / r.nMed : 0
     lines.push(
-      `${String(N).padEnd(4)} | ${r.bMed.toFixed(0).padStart(5)} (${r.bMean.toFixed(0).padStart(5)})   | ${r.nMed.toFixed(0).padStart(5)} (${r.nMean.toFixed(0).padStart(5)})   | ${sp.toFixed(1)}x`
+      `${String(N).padEnd(4)} | ${r.bMed.toFixed(0).padStart(5)} (${r.bMean
+        .toFixed(0)
+        .padStart(5)})   | ${r.nMed.toFixed(0).padStart(5)} (${r.nMean
+        .toFixed(0)
+        .padStart(5)})   | ${sp.toFixed(1)}x`
     )
   }
   lines.push('')
@@ -228,7 +233,11 @@ export const addressDerivationBenchmark = async ({
   for (const N of Ns) {
     const r = results[N]
     lines.push(
-      `${String(N).padEnd(4)} | ${String(r.bDropped).padStart(6)} / ${r.bWorst.toFixed(0)}ms  | ${String(r.nDropped).padStart(6)} / ${r.nWorst.toFixed(0)}ms`
+      `${String(N).padEnd(4)} | ${String(r.bDropped).padStart(
+        6
+      )} / ${r.bWorst.toFixed(0)}ms  | ${String(r.nDropped).padStart(
+        6
+      )} / ${r.nWorst.toFixed(0)}ms`
     )
   }
 
