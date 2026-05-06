@@ -1,7 +1,7 @@
+import { clamp } from '../../utils/clamp'
+import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
-  clamp,
   commitDraftText,
-  getStepDecimals,
   progressToPoint,
   sanitizeDecimalInput,
   shouldSyncExternalValue,

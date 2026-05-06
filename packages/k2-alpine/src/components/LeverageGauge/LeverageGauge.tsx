@@ -1,31 +1,20 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import React, { FC, useCallback, useMemo } from 'react'
 import Animated, {
   Easing,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
-import { useTheme } from '../../hooks'
-import { clamp } from '../../utils'
+import { useStableCallbacks, useTheme } from '../../hooks'
+import { clamp, getStepDecimals } from '../../utils'
 import { View } from '../Primitives'
-import {
-  filterValidPresets,
-  getStepDecimals,
-  snapToStep,
-  validateRange
-} from './helpers'
+import { snapToStep, validateRange } from './helpers'
 import { LeverageDisplay } from './LeverageDisplay'
 import { LeverageWheel } from './LeverageWheel'
-import type { LeverageGaugeProps, Preset } from './types'
+import type { LeverageGaugeProps } from './types'
 import { useLeverageValue } from './useLeverageValue'
 
-const DEFAULT_PRESETS: Preset[] = ['min', 'max']
 const noop = (): void => undefined
-// Hoisted so the default `formatValue` has a stable reference across
-// renders — otherwise the LeverageDisplay memo bailout breaks whenever
-// the consumer doesn't pass their own formatValue.
-const DEFAULT_FORMAT_VALUE = (v: number): string => `${v}×`
 
 export const LeverageGauge: FC<LeverageGaugeProps> = ({
   value,
@@ -33,9 +22,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   min,
   max,
   step = 1,
-  presets = DEFAULT_PRESETS,
   enableManualInput = false,
-  formatValue = DEFAULT_FORMAT_VALUE,
   subtitle,
   decimals,
   integersOnly = false,
@@ -46,20 +33,8 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
   testID
 }) => {
   const { theme } = useTheme()
-  // Stabilize onChange/onCommit behind refs so memoized children
-  // (LeverageWheel/LeverageDisplay) can bail on parent re-renders even when
-  // callers pass fresh callbacks each time. Refs stay identity-stable; the
-  // inner functions are refreshed via effect to keep closures up-to-date.
-  const onChangeRef = useRef(onChange)
-  const onCommitRef = useRef(onCommit)
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
-  useEffect(() => {
-    onCommitRef.current = onCommit
-  }, [onCommit])
-  const stableOnChange = useCallback((v: number) => onChangeRef.current(v), [])
-  const stableOnCommit = useCallback((v: number) => onCommitRef.current(v), [])
+  const { stablePrimary: stableOnChange, stableSecondary: stableOnCommit } =
+    useStableCallbacks(onChange, onCommit)
 
   const effectiveStep = integersOnly ? Math.max(1, Math.round(step)) : step
   const {
@@ -72,18 +47,11 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
     [min, max, effectiveStep]
   )
 
-  // getStepDecimals handles non-power-of-10 steps (e.g. 0.25 → 2) correctly,
-  // unlike a plain -log10(step).
   const vDecimals = useMemo(() => {
     if (integersOnly) return 0
     if (typeof decimals === 'number') return Math.max(0, Math.floor(decimals))
     return getStepDecimals(vStep)
   }, [integersOnly, decimals, vStep])
-
-  const filteredPresets = useMemo(
-    () => filterValidPresets(presets, vMin, vMax),
-    [presets, vMin, vMax]
-  )
 
   const resolvedSubtitle = subtitle ?? `Up to ${vMax}× leverage`
 
@@ -152,9 +120,7 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
           step={vStep}
           decimals={vDecimals}
           integersOnly={integersOnly}
-          presets={filteredPresets}
           subtitle={resolvedSubtitle}
-          formatValue={formatValue}
           enableManualInput={false}
         />
       </View>
@@ -183,42 +149,36 @@ export const LeverageGauge: FC<LeverageGaugeProps> = ({
           step={vStep}
           decimals={vDecimals}
           integersOnly={integersOnly}
-          presets={filteredPresets}
           subtitle={resolvedSubtitle}
-          formatValue={formatValue}
           enableManualInput={enableManualInput}
           onPresetPress={handlePresetPress}
           onManualCommit={handleManualCommit}
         />
       </View>
-      <GestureHandlerRootView style={{ flexShrink: 1 }}>
-        <View
-          style={{
-            borderTopLeftRadius: 4,
-            borderTopRightRadius: 4,
-            borderBottomLeftRadius: 12,
-            borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            height: 110,
-            justifyContent: 'center',
-            paddingHorizontal: 36
-          }}>
-          <LeverageWheel
-            currentValue={currentValue}
-            isActive={isActive}
-            isProgrammatic={isProgrammatic}
-            min={vMin}
-            max={vMax}
-            step={vStep}
-            integersOnly={integersOnly}
-            onChange={stableOnChange}
-            onCommit={stableOnCommit}
-            hapticsEnabled={hapticsEnabled}
-            velocityPower={velocityPower}
-            coastDeceleration={coastDeceleration}
-          />
-        </View>
-      </GestureHandlerRootView>
+      <LeverageWheel
+        containerStyle={{
+          borderTopLeftRadius: 4,
+          borderTopRightRadius: 4,
+          borderBottomLeftRadius: 12,
+          borderBottomRightRadius: 12,
+          backgroundColor: theme.colors.$surfaceSecondary,
+          height: 110,
+          justifyContent: 'center'
+        }}
+        canvasPadding={36}
+        currentValue={currentValue}
+        isActive={isActive}
+        isProgrammatic={isProgrammatic}
+        min={vMin}
+        max={vMax}
+        step={vStep}
+        integersOnly={integersOnly}
+        onChange={stableOnChange}
+        onCommit={stableOnCommit}
+        hapticsEnabled={hapticsEnabled}
+        velocityPower={velocityPower}
+        coastDeceleration={coastDeceleration}
+      />
     </Animated.View>
   )
 }

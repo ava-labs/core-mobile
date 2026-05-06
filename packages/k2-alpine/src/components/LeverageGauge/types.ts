@@ -1,5 +1,3 @@
-export type Preset = number | 'min' | 'max'
-
 export type LeverageGaugeProps = {
   // Required
   value: number
@@ -9,7 +7,6 @@ export type LeverageGaugeProps = {
 
   // Optional — range
   step?: number
-  presets?: Preset[]
   /**
    * Number of decimal places to show in the displayed value. When omitted,
    * it's inferred from `step` (e.g. step=0.2 → 1 decimal, step=1 → 0).
@@ -25,7 +22,6 @@ export type LeverageGaugeProps = {
 
   // Optional — behavior
   enableManualInput?: boolean
-  formatValue?: (v: number) => string
   subtitle?: string
 
   // Optional — feedback

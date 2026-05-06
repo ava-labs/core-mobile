@@ -1,9 +1,8 @@
+import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
   commitDraftText,
   formatNumber,
-  getStepDecimals,
   isMajorTick,
-  resolvePreset,
   sanitizeTypedText,
   shouldSyncExternalValue,
   snapToStep,
@@ -56,18 +55,6 @@ describe('getStepDecimals', () => {
     expect(getStepDecimals(-1)).toBe(0)
     expect(getStepDecimals(Number.NaN)).toBe(0)
     expect(getStepDecimals(Number.POSITIVE_INFINITY)).toBe(0)
-  })
-})
-
-describe('resolvePreset', () => {
-  it('returns min for "min"', () => {
-    expect(resolvePreset('min', 1, 40)).toBe(1)
-  })
-  it('returns max for "max"', () => {
-    expect(resolvePreset('max', 1, 40)).toBe(40)
-  })
-  it('returns the number as-is for numeric presets', () => {
-    expect(resolvePreset(5, 1, 40)).toBe(5)
   })
 })
 

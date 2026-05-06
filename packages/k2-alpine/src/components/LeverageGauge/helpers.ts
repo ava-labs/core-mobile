@@ -1,23 +1,5 @@
 import { clamp } from '../../utils/clamp'
-import type { Preset } from './types'
-
-/**
- * Number of decimal digits required to express `step` exactly, derived by
- * scaling until the value is integer (±epsilon). Works for non-power-of-10
- * steps (e.g. 0.25 → 2), unlike `-log10(step)` which only handles 10⁻ⁿ.
- */
-export const getStepDecimals = (step: number): number => {
-  'worklet'
-  if (!Number.isFinite(step) || step <= 0 || step >= 1) return 0
-  const epsilon = 1e-8
-  let decimals = 0
-  let scaled = step
-  while (decimals < 10 && Math.abs(scaled - Math.round(scaled)) > epsilon) {
-    scaled *= 10
-    decimals += 1
-  }
-  return decimals
-}
+import { getStepDecimals } from '../../utils/getStepDecimals'
 
 export const snapToStep = (v: number, min: number, step: number): number => {
   'worklet'
@@ -26,16 +8,6 @@ export const snapToStep = (v: number, min: number, step: number): number => {
   // Avoid floating-point drift by rounding to the step's natural precision.
   const decimals = getStepDecimals(step)
   return min + Number(snapped.toFixed(decimals))
-}
-
-export const resolvePreset = (
-  preset: Preset,
-  min: number,
-  max: number
-): number => {
-  if (preset === 'min') return min
-  if (preset === 'max') return max
-  return preset
 }
 
 export const isMajorTick = (value: number, step: number): boolean => {
@@ -117,35 +89,6 @@ export const shouldSyncExternalValue = ({
   const diff = Math.abs(currentValue - target)
   if (diff <= step) return { sync: false }
   return { sync: true, target }
-}
-
-/**
- * Drop numeric presets that fall outside [min, max]. Sentinel presets
- * ('min'/'max') always pass through. Warns about dropped entries since they
- * usually indicate a caller config bug.
- */
-export const filterValidPresets = (
-  presets: Preset[],
-  min: number,
-  max: number
-): Preset[] => {
-  const out: Preset[] = []
-  let dropped = 0
-  for (const p of presets) {
-    if (p === 'min' || p === 'max') {
-      out.push(p)
-      continue
-    }
-    if (p >= min && p <= max) out.push(p)
-    else dropped++
-  }
-  if (dropped > 0) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[LeverageGauge] Dropped ${dropped} preset(s) outside [${min}, ${max}].`
-    )
-  }
-  return out
 }
 
 export const validateRange = ({

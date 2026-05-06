@@ -1,11 +1,6 @@
 import React, { FC, memo, useEffect, useRef, useState } from 'react'
 import { Platform, Pressable, TextInput, TextStyle } from 'react-native'
-import {
-  Canvas,
-  Group,
-  Text as SkText,
-  useFont
-} from '@shopify/react-native-skia'
+import { Canvas, Text as SkText, useFont } from '@shopify/react-native-skia'
 import Animated, {
   Easing,
   SharedValue,
@@ -22,11 +17,9 @@ import { Button } from '../Button/Button'
 import {
   commitDraftText,
   formatNumber,
-  resolvePreset,
   sanitizeTypedText,
   snapToStep
 } from './helpers'
-import type { Preset } from './types'
 import { useSkiaCanvasFadeIn } from './useSkiaCanvasFadeIn'
 
 type LeverageDisplayProps = {
@@ -42,9 +35,7 @@ type LeverageDisplayProps = {
   decimals: number
   /** Restrict the input to integers (digit-only keyboard + input filter). */
   integersOnly: boolean
-  presets: Preset[]
   subtitle: string
-  formatValue: (v: number) => string
   enableManualInput: boolean
   onPresetPress?: (v: number) => void
   onManualCommit?: (v: number) => void
@@ -61,9 +52,7 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   step,
   decimals,
   integersOnly,
-  presets,
   subtitle,
-  formatValue,
   enableManualInput,
   onPresetPress = noop,
   onManualCommit = noop
@@ -201,21 +190,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
         Min
       </Button>
 
-      {presets.map((preset, index) => {
-        if (preset === 'min' || preset === 'max') return null
-        const resolved = resolvePreset(preset, min, max)
-        return (
-          <Button
-            key={`preset-${index}-${resolved}`}
-            type="tertiary"
-            size="small"
-            onPress={() => onPresetPress(resolved)}
-            testID={`leverage-gauge-preset-${resolved}`}>
-            {formatValue(resolved)}
-          </Button>
-        )
-      })}
-
       <View style={{ flex: 1, alignItems: 'center' }}>
         <View
           style={{
@@ -238,7 +212,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
               max={max}
               step={step}
               decimals={decimals}
-              integersOnly={integersOnly}
             />
           </Pressable>
           {isEditing && (
@@ -333,8 +306,7 @@ const AnimatedNumber: FC<{
   max: number
   step: number
   decimals: number
-  integersOnly: boolean
-}> = ({ currentValue, min, max, step, decimals, integersOnly }) => {
+}> = ({ currentValue, min, max, step, decimals }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -368,38 +340,17 @@ const AnimatedNumber: FC<{
     const maxStepIdx = Math.round((max - min) / step)
     const rawIdx = Math.round((clamped - min) / step)
     const stepIndex = Math.max(0, Math.min(maxStepIdx, rawIdx))
-    const snappedValue = min + stepIndex * step
 
-    // Direction of the "approaching" neighbor snap — determines which char
-    // at each slot is about to become this slot's char.
-    const neighborOffset = clamped > snappedValue ? 1 : -1
-    const neighborIdx = Math.max(
-      0,
-      Math.min(maxStepIdx, stepIndex + neighborOffset)
-    )
-
-    const formatSnapped = (idx: number): string => {
-      const rs = min + idx * step
-      const s = min + Number((rs - min).toFixed(decimals))
-      return decimals > 0 ? s.toFixed(decimals) : `${s}`
-    }
-    const currentText = formatSnapped(stepIndex)
-    const neighborText = formatSnapped(neighborIdx)
-
-    // How far we are between current snap and neighbor snap: 0 at snap,
-    // 1 at the boundary midpoint.
-    const distFromSnap = Math.abs(clamped - snappedValue)
-    const fadeProgress = Math.min(distFromSnap / (step / 2), 1)
+    const rs = min + stepIndex * step
+    const s = min + Number((rs - min).toFixed(decimals))
+    const currentText = decimals > 0 ? s.toFixed(decimals) : `${s}`
 
     const chars: string[] = []
-    const neighborChars: string[] = []
     const widths: number[] = []
     let numberWidth = 0
     for (let i = 0; i < slotCount; i++) {
       const ch = currentText[i] ?? ''
-      const nch = neighborText[i] ?? ''
       chars.push(ch)
-      neighborChars.push(nch)
       const w = ch && font ? font.measureText(ch).width : 0
       widths.push(w)
       numberWidth += w
@@ -413,7 +364,7 @@ const AnimatedNumber: FC<{
       cursor += widths[i] ?? 0
     }
     const xSymbolX = startX + numberWidth + X_GAP
-    return { chars, neighborChars, xs, xSymbolX, fadeProgress }
+    return { chars, xs, xSymbolX }
   })
 
   // × target x — smoothed so it slides gently when the number width changes.
@@ -463,7 +414,6 @@ const AnimatedNumber: FC<{
             layout={layout}
             font={font}
             color={colors.$textPrimary}
-            integersOnly={integersOnly}
           />
         ))}
         <SkText
@@ -478,49 +428,19 @@ const AnimatedNumber: FC<{
   )
 }
 
-/**
- * A single Skia digit slot. Opacity fades progressively only on decimal
- * digits (slots after the ".") when integersOnly is false. Integer digits
- * and all slots in integersOnly mode stay at full opacity.
- */
-const DIGIT_MIN_OPACITY = 0.2
 const DigitSlot: FC<{
   index: number
   layout: SharedValue<{
     chars: string[]
-    neighborChars: string[]
     xs: number[]
     xSymbolX: number
-    fadeProgress: number
   }>
   font: SkFont
   color: string
-  integersOnly: boolean
-}> = ({ index, layout, font, color, integersOnly }) => {
+}> = ({ index, layout, font, color }) => {
   const char = useDerivedValue(() => layout.value.chars[index] ?? '')
   const x = useDerivedValue(() => layout.value.xs[index] ?? 0)
-  const opacity = useDerivedValue(() => {
-    if (integersOnly) return 1
-    const chars = layout.value.chars
-    // Only fade digits to the right of the decimal point. Integer digits
-    // and the "." itself never fade.
-    const dotIndex = chars.indexOf('.')
-    if (dotIndex === -1 || index <= dotIndex) return 1
-    const cur = chars[index] ?? ''
-    const nxt = layout.value.neighborChars[index] ?? ''
-    if (cur === nxt) return 1
-    if (cur === '' || nxt === '') return 1
-    return 1 - layout.value.fadeProgress * (1 - DIGIT_MIN_OPACITY)
-  })
   return (
-    <Group opacity={opacity}>
-      <SkText
-        text={char}
-        x={x}
-        y={NUMBER_BASELINE_Y}
-        font={font}
-        color={color}
-      />
-    </Group>
+    <SkText text={char} x={x} y={NUMBER_BASELINE_Y} font={font} color={color} />
   )
 }

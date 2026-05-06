@@ -17,10 +17,9 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
-import { alpha } from '../../utils'
+import { alpha, clamp } from '../../utils'
 import { Text, View } from '../Primitives'
 import {
-  clamp,
   commitDraftText,
   sanitizeDecimalInput,
   valueToProgress

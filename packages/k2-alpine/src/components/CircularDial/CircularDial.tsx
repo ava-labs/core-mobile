@@ -1,5 +1,4 @@
-import { ImpactFeedbackStyle, impactAsync } from 'expo-haptics'
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { FC, useCallback, useMemo, useRef } from 'react'
 import { Gesture } from 'react-native-gesture-handler'
 import {
   Easing,
@@ -8,12 +7,19 @@ import {
   withTiming
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
-import { useTheme } from '../../hooks'
+import { useStableCallbacks, useTheme } from '../../hooks'
+import {
+  clamp,
+  fireEdgeHaptic,
+  fireMajorHaptic,
+  fireSelectionHaptic,
+  getStepDecimals
+} from '../../utils'
 import { Text, View } from '../Primitives'
 import { DialArc, ARC_RADIUS } from './DialArc'
 import { DialPresets } from './DialPresets'
 import { DialReadout, DialReadoutHandle } from './DialReadout'
-import { clamp, getStepDecimals, snapToStep, validateRange } from './helpers'
+import { snapToStep, validateRange } from './helpers'
 import { useDialValue } from './useDialValue'
 import type { CircularDialProps, PresetButton } from './types'
 
@@ -48,18 +54,8 @@ export const CircularDial: FC<CircularDialProps> = ({
     theme: { colors }
   } = useTheme()
 
-  // Refs so downstream sub-components bail on re-renders even when
-  // consumers pass fresh callbacks every render.
-  const onChangeRef = useRef(onChange)
-  const onCommitRef = useRef(onCommit)
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
-  useEffect(() => {
-    onCommitRef.current = onCommit
-  }, [onCommit])
-  const stableOnChange = useCallback((v: number) => onChangeRef.current(v), [])
-  const stableOnCommit = useCallback((v: number) => onCommitRef.current(v), [])
+  const { stablePrimary: stableOnChange, stableSecondary: stableOnCommit } =
+    useStableCallbacks(onChange, onCommit)
 
   const effectiveStep = useMemo(() => {
     if (typeof step === 'number') return step
@@ -75,10 +71,9 @@ export const CircularDial: FC<CircularDialProps> = ({
     [max, effectiveStep]
   )
 
-  // Public `min` doubles as the reference-tick value when > 0; below
-  // that, values are invalid (danger colour + tick on the track). Out
-  // of range → drop the tick and warn so consumers get a clear signal
-  // (matches `validateRange`'s style).
+  // Public `min` doubles as the reference-tick value when > 0. Below it,
+  // values are flagged as invalid; out-of-range thresholds are dropped with
+  // a console warning (matches validateRange's style).
   const referenceValue = useMemo(() => {
     if (minThreshold < 0) {
       // eslint-disable-next-line no-console
@@ -98,9 +93,8 @@ export const CircularDial: FC<CircularDialProps> = ({
     return minThreshold
   }, [minThreshold, vMax])
 
-  // Progress-space position of the reference tick, or `null` when no
-  // valid reference is set. Used by the threshold-crossing haptic
-  // below so the user feels a beat each time the dial crosses min.
+  // Progress-space position of the reference tick (or null if unset). Read
+  // by the threshold-crossing haptic below.
   const referenceTickProgress = useMemo(() => {
     if (referenceValue === undefined) return null
     return referenceValue / vMax
@@ -180,9 +174,8 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const combinedGesture = Gesture.Race(tapGesture, panGesture)
 
-  // Emit onChange on every step crossing while the dial is active
-  // (drag or preset). Drives the displayed text via the parent's
-  // controlled `value` — readout text re-renders each step.
+  // Emit onChange on every step crossing while the dial is active so the
+  // readout text (driven by the parent's controlled `value`) updates live.
   useAnimatedReaction(
     () => {
       const raw = progressSv.value * vMax
@@ -207,7 +200,7 @@ export const CircularDial: FC<CircularDialProps> = ({
       const isPresetCrossing = presetBuckets.indexOf(bucket) >= 0
       if (isEnd) scheduleOnRN(fireEdgeHaptic)
       else if (isPresetCrossing) scheduleOnRN(fireMajorHaptic)
-      else scheduleOnRN(fireMinorHaptic)
+      else scheduleOnRN(fireSelectionHaptic)
     }
   )
 
@@ -333,14 +326,4 @@ export const CircularDial: FC<CircularDialProps> = ({
       />
     </View>
   )
-}
-
-const fireMinorHaptic = (): void => {
-  impactAsync(ImpactFeedbackStyle.Light).catch(() => undefined)
-}
-const fireMajorHaptic = (): void => {
-  impactAsync(ImpactFeedbackStyle.Medium).catch(() => undefined)
-}
-const fireEdgeHaptic = (): void => {
-  impactAsync(ImpactFeedbackStyle.Heavy).catch(() => undefined)
 }
