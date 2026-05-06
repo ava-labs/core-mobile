@@ -303,9 +303,12 @@ async function swipe(
       percent: percent
     })
   } else {
-    const elementId = await ele.elementId
+    const { width, height } = await driver.getWindowSize()
     await driver.execute('mobile: swipeGesture', {
-      elementId: elementId,
+      left: 0,
+      top: Math.floor(height * 0.2),
+      width,
+      height: Math.floor(height * 0.6),
       direction: direction,
       percent: percent
     })
@@ -352,10 +355,33 @@ async function clearText(ele: ChainablePromiseElement) {
 }
 
 async function scrollTo(
-  ele: ChainablePromiseElement
-  // direction: 'down' | 'up' | 'left' | 'right' = 'down'
+  ele: ChainablePromiseElement,
+  direction = 'down',
+  amount = 0.1
 ) {
-  await ele.scrollIntoView()
+  const { width, height } = await driver.getWindowSize()
+  for (let i = 0; i < 10; i++) {
+    if (await ele.isDisplayed().catch(() => false)) return
+    if (driver.isIOS) {
+      // iOS `mobile: swipe` direction = finger direction (opposite of scroll direction)
+      // 'down' scroll intent → finger moves 'up', and vice versa
+      const iosDirection = direction === 'down' ? 'up' : 'down'
+      await driver.execute('mobile: swipe', {
+        direction: iosDirection,
+        percent: amount
+      })
+    } else {
+      await driver.execute('mobile: scrollGesture', {
+        left: 0,
+        top: Math.floor(height * 0.2),
+        width,
+        height: Math.floor(height * 0.4),
+        direction,
+        percent: 0.3
+      })
+    }
+  }
+  await waitFor(ele)
 }
 
 async function log() {
@@ -380,24 +406,15 @@ async function pasteText(
   text: string,
   keyboardId = 'Return'
 ) {
-  const encodedText = Buffer.from(text, 'utf-8').toString('base64')
-  if (driver.isIOS) {
-    await driver.setClipboard(encodedText)
-  } else {
-    await driver.setClipboard(encodedText, 'plaintext')
-  }
-
   await waitFor(inputElement)
-  await inputElement.longPress({
-    x: 0,
-    y: 0,
-    duration: 600
-  })
 
   if (driver.isIOS) {
+    const encodedText = Buffer.from(text, 'utf-8').toString('base64')
+    await driver.setClipboard(encodedText)
+    await inputElement.longPress({ x: 0, y: 0, duration: 600 })
     await click(selectors.getByText('Paste'))
   } else {
-    await tapXY(160, 650)
+    await type(inputElement, text)
   }
   try {
     await tapEnterOnKeyboard(keyboardId)
@@ -453,9 +470,7 @@ async function typeSlowly(
   }
 
   if (driver.isAndroid) {
-    console.log('typeSlowly', textToType)
     await driver.execute('mobile: type', { text: textToType })
-    console.log('typeSlowly2', textToType)
     await driver.pause(200)
     return
   }

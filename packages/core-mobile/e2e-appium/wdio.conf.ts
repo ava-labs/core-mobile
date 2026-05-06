@@ -58,6 +58,7 @@ const iosResolved = runIos
 
 const allCaps = [
   {
+    maxInstances: 2,
     platformName: 'Android',
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
@@ -78,7 +79,7 @@ const allCaps = [
     'appium:uiautomator2ServerInstallTimeout': 20000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
-    'appium:fullReset': process.env.NO_RESET !== 'true',
+    'appium:fullReset': false,
     'appium:noReset': process.env.NO_RESET === 'true',
     'appium:enforceAppInstall': process.env.NO_RESET !== 'true',
     'appium:uiautomator2ServerReadTimeout': 20000,
@@ -86,6 +87,7 @@ const allCaps = [
     'appium:skipLogcatCapture': false
   },
   {
+    maxInstances: 2,
     platformName: 'iOS',
     'appium:deviceName': iosResolved.deviceName,
     'appium:waitForIdleTimeout': 0,
@@ -248,8 +250,11 @@ export const config: WebdriverIO.Config = {
         const sanitizedTestName = test.title
           .replace(/[^a-zA-Z0-9]/g, '_')
           .substring(0, 50)
+        const outputDir = path.join(__dirname, 'page-source-failures')
+        if (!fs.existsSync(outputDir))
+          fs.mkdirSync(outputDir, { recursive: true })
         const pageSourcePath = path.join(
-          process.cwd(),
+          outputDir,
           `page-source-failure-${sanitizedTestName}-${timestamp}.xml`
         )
         fs.writeFileSync(pageSourcePath, pageSource)

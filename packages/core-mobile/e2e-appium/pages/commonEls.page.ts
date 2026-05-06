@@ -416,7 +416,11 @@ class CommonElsPage {
       await actions.tap(this.backButton)
     }
     await actions.waitFor(element, 30000)
-    await actions.dragAndDrop(element, [0, 1500])
+    if (driver.isAndroid) {
+      await driver.back()
+    } else {
+      await actions.dragAndDrop(element, [0, 1500])
+    }
     await actions.delay(1000)
     console.log('Dismissed bottom sheet')
   }
@@ -439,6 +443,12 @@ class CommonElsPage {
 
   async tapSave() {
     await actions.click(this.save)
+  }
+
+  async tapYesAlert() {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getByText('YES'))
+    }
   }
 
   async tapSaveAlert() {

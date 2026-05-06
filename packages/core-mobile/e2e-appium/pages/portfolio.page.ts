@@ -311,7 +311,7 @@ class PortfolioPage {
   }
 
   async tapDefiTab() {
-    await actions.click(this.defiTab)
+    await actions.longPress(this.defiTab)
   }
 
   async tapActivityTab() {

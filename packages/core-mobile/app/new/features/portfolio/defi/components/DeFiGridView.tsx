@@ -52,7 +52,6 @@ export const DeFiGridView = ({
     <Animated.View entering={getListItemEnteringAnimation(index)} style={style}>
       <AnimatedPressable onPress={handleOnPress}>
         <View
-          testID={`defi_grid_item__${index}`}
           sx={{
             borderRadius: 18,
             backgroundColor: '$surfaceSecondary',
@@ -62,7 +61,12 @@ export const DeFiGridView = ({
             paddingBottom: 36,
             alignItems: 'center'
           }}>
-          <LogoWithNetwork item={item} chain={chain} size="large" />
+          <LogoWithNetwork
+            testID={`defi_grid_item__${index}`}
+            item={item}
+            chain={chain}
+            size="large"
+          />
           <View sx={{ alignItems: 'center' }}>
             <Text
               variant="buttonMedium"

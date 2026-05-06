@@ -18,6 +18,14 @@ class BrowserPage {
     return selectors.getById(browserLoc.close)
   }
 
+  get browserUrlText() {
+    return selectors.getById(browserLoc.browserUrlText)
+  }
+
+  get discoverTitle() {
+    return selectors.getById(browserLoc.discoverTitle)
+  }
+
   get searchBar() {
     return selectors.getById(browserLoc.searchBar)
   }
@@ -27,15 +35,23 @@ class BrowserPage {
   }
 
   get blackholeAmountInput() {
-    return selectors.getByXpath(browserLoc.blackholeAmountInput)
+    return selectors.getByXpath(
+      driver.isAndroid
+        ? '//android.widget.EditText[1]'
+        : browserLoc.blackholeAmountInput
+    )
   }
 
   get blackholeSwapTitle() {
-    return selectors.getById(browserLoc.blackholeSwapTitle)
+    return driver.isAndroid
+      ? selectors.getBySomeText(browserLoc.blackholeSwapTitle)
+      : selectors.getById(browserLoc.blackholeSwapTitle)
   }
 
   get blackholeSwapButton() {
-    return selectors.getById(browserLoc.blackholeSwapButton)
+    return driver.isAndroid
+      ? selectors.getBySomeText(browserLoc.blackholeSwapButton)
+      : selectors.getById(browserLoc.blackholeSwapButton)
   }
 
   get tabsBtn() {
@@ -54,8 +70,8 @@ class BrowserPage {
     return selectors.getById(browserLoc.urlMenuTrigger)
   }
 
-  get ecosystemCarouselItem0() {
-    return selectors.getById(browserLoc.ecosystemCarouselItem0)
+  get blazeEcosystemCarouselItem() {
+    return selectors.getById(browserLoc.blazeEcosystemCarouselItem)
   }
 
   get learnCarouselItem0() {
@@ -64,6 +80,10 @@ class BrowserPage {
 
   get suggestedItem0() {
     return selectors.getById(browserLoc.suggestedItem0)
+  }
+
+  get trendingProjectsTitle() {
+    return selectors.getById(browserLoc.trendingProjectsTitle)
   }
 
   get clearAllHistoryBtn() {
@@ -91,7 +111,7 @@ class BrowserPage {
   }
 
   get openTrendingProjectBtn() {
-    return selectors.getByText(browserLoc.openTrendingProjectBtn)
+    return selectors.getById(browserLoc.openTrendingProjectBtn)
   }
 
   async goToUrl(url: string) {
@@ -111,16 +131,19 @@ class BrowserPage {
   }
 
   async verifyUrl(expected: string) {
-    await actions.waitFor(this.searchBar)
-    const uiUrl = await actions.getText(this.searchBar)
+    const uiUrl = await this.getDisplayedUrl()
     assert.equal(uiUrl, expected, `"${uiUrl}" !== "${expected}"`)
     console.log('URL text: ', uiUrl)
   }
 
   async verifyInjectedDapp() {
     await actions.waitFor(this.myWebview, 30000)
-    await actions.waitFor(selectors.getBySomeText('0x'))
-    await actions.isNotVisible(selectors.getByText('Connect'))
+    if (driver.isIOS) {
+      // Web content (0x address, Connect button) is accessible via XCUITest
+      // but not via UiAutomator2 native accessibility tree on Android
+      await actions.waitFor(selectors.getBySomeText('0x'))
+      await actions.isNotVisible(selectors.getByText('Connect'))
+    }
   }
 
   async tapClose() {
@@ -149,8 +172,7 @@ class BrowserPage {
   }
 
   async verifyUrlContains(substring: string) {
-    await actions.waitFor(this.searchBar)
-    const uiUrl = await actions.getText(this.searchBar)
+    const uiUrl = await this.getDisplayedUrl()
     assert.ok(
       uiUrl.includes(substring),
       `URL "${uiUrl}" does not contain "${substring}"`
@@ -159,8 +181,7 @@ class BrowserPage {
   }
 
   async verifyUrlLoaded() {
-    await actions.waitFor(this.searchBar)
-    const uiUrl = await actions.getText(this.searchBar)
+    const uiUrl = await this.getDisplayedUrl()
     assert.ok(
       uiUrl.startsWith('https://'),
       `Expected a loaded URL, got: "${uiUrl}"`
@@ -168,13 +189,23 @@ class BrowserPage {
     console.log('URL text: ', uiUrl)
   }
 
+  private async getDisplayedUrl(): Promise<string> {
+    if (driver.isAndroid) {
+      // UiAutomator2 slows down while WebView renders (including cookie dialogs).
+      // Wait for WebView to fully settle before querying native elements.
+      await actions.delay(8000)
+    }
+    await actions.waitFor(this.browserUrlText)
+    return actions.getText(this.browserUrlText)
+  }
+
   async removeAllTabs() {
     await this.tapTabsBtn()
+    await actions.waitFor(this.closeTabBtn)
     while (await actions.getVisible(this.closeTabBtn)) {
       await this.tapTabItemCloseBtn()
       await actions.delay(1000)
     }
-    await this.verifyBrowserDiscoveryScreen()
   }
 
   async tapTabsBtn() {
@@ -197,12 +228,49 @@ class BrowserPage {
     await actions.tap(this.closeTabBtn)
   }
 
-  async tapFirstEcosystemCarouselItem() {
-    await actions.tap(this.ecosystemCarouselItem0)
+  async tapBlazeEcosystemCarouselItem(maxSwipes = 15) {
+    await actions.waitFor(this.discoverTitle)
+    for (let i = 0; i < maxSwipes; i++) {
+      if (await actions.getVisible(this.blazeEcosystemCarouselItem)) {
+        await actions.tap(this.blazeEcosystemCarouselItem)
+        return
+      }
+      await this.swipeCarouselLeft()
+      await actions.delay(500)
+    }
+    throw new Error('blazeEcosystemCarouselItem not found after scrolling')
+  }
+
+  private async swipeCarouselLeft(): Promise<void> {
+    const { width, height } = await driver.getWindowSize()
+    await driver.performActions([
+      {
+        type: 'pointer',
+        id: 'finger1',
+        parameters: { pointerType: 'touch' },
+        actions: [
+          {
+            type: 'pointerMove',
+            duration: 0,
+            x: Math.round(width * 0.8),
+            y: Math.round(height * 0.4)
+          },
+          { type: 'pointerDown', button: 0 },
+          { type: 'pause', duration: 100 },
+          {
+            type: 'pointerMove',
+            duration: 300,
+            x: Math.round(width * 0.2),
+            y: Math.round(height * 0.4)
+          },
+          { type: 'pointerUp', button: 0 }
+        ]
+      }
+    ])
   }
 
   async tapFirstLearnItem() {
-    await actions.dragAndDrop(this.ecosystemCarouselItem0, [0, -300])
+    await actions.dragAndDrop(this.trendingProjectsTitle, [0, -1500])
     await actions.tap(this.learnCarouselItem0)
   }
 
@@ -210,8 +278,17 @@ class BrowserPage {
     await actions.tap(this.suggestedItem0)
   }
 
-  async tapFirstTrendingProjectOpenBtn() {
-    await actions.tap(this.openTrendingProjectBtn)
+  async tapTrendingProjectOpenBtn() {
+    await actions.dragAndDrop(this.trendingProjectsTitle, [0, -1000])
+    const items = ['Core web', 'Off The Grid', 'yellow ket']
+    for (const item of items) {
+      const button = selectors.getById(`trending_project_open_btn__${item}`)
+      if (await actions.getVisible(button)) {
+        await actions.tap(button)
+        return
+      }
+    }
+    throw new Error('trending project not found')
   }
 
   async openNewTabViaMenu() {
@@ -222,6 +299,7 @@ class BrowserPage {
 
   async tapCloseAllTabsMenu() {
     await actions.tap(this.closeAllTabsMenu)
+    await commonElsPage.tapYesAlert()
   }
 
   async tapBrowsingHistoryMenu() {
@@ -230,6 +308,7 @@ class BrowserPage {
 
   async tapClearAllHistory() {
     await actions.tap(this.clearAllHistoryBtn)
+    await commonElsPage.tapYesAlert()
   }
 
   async verifyNoHistory() {
@@ -238,7 +317,7 @@ class BrowserPage {
 
   async verifyBrowserDiscoveryScreen() {
     await actions.waitFor(this.searchBar)
-    await actions.waitFor(this.ecosystemCarouselItem0)
+    await actions.waitFor(this.discoverTitle)
   }
 
   async verifyHistoryScreen() {

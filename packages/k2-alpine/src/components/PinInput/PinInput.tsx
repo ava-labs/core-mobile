@@ -160,9 +160,10 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         ? {
             disabled,
             onPress: () => textInputRef.current?.focus(),
-            activeOpacity: 1 as const
+            activeOpacity: 1 as const,
+            testID: 'pin_input'
           }
-        : {}
+        : { testID: 'pin_input' }
 
     return (
       <Container {...containerProps}>
@@ -196,8 +197,6 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
              which focuses this input; on other platforms the TextInput itself
              may receive taps directly. */}
         <TextInput
-          accessibilityLabel="pin_input"
-          testID="pin_input"
           ref={textInputRef}
           style={[StyleSheet.absoluteFillObject, { opacity: 0 }]}
           value={value}

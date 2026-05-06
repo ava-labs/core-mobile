@@ -72,13 +72,8 @@ export async function killAndRestart() {
     await driver.execute('mobile: terminateApp', { bundleId })
     await driver.execute('mobile: activateApp', { bundleId })
   } else {
-    const appId = 'org.avalabs.corewallet'
-    try {
-      await driver.terminateApp(appId)
-      await driver.activateApp(appId)
-    } catch (error) {
-      await driver.terminateApp(appId + '.internal')
-      await driver.activateApp(appId + '.internal')
-    }
+    const appId = 'com.avaxwallet.internal'
+    await driver.terminateApp(appId)
+    await driver.activateApp(appId)
   }
 }

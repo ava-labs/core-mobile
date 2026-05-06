@@ -417,7 +417,11 @@ class Settings {
     await actions.waitFor(this.removeAllAccounts)
     await actions.isNotVisible(this.addAccountToThisWallet)
     await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
-    await this.tapMyWalletsTitle()
+    if (driver.isAndroid) {
+      await common.goAndroidBack()
+    } else {
+      await this.tapMyWalletsTitle()
+    }
   }
 
   async tapMyWalletsTitle() {
@@ -441,6 +445,7 @@ class Settings {
   }
 
   async verifyPKWalletRemoved(accountName = 'Account 3') {
+    await actions.delay(1000)
     await actions.isNotVisible(this.manageAccountsWalletName(settings.imported))
     await actions.isNotVisible(this.privateKeyAccount(accountName))
   }
@@ -543,12 +548,8 @@ class Settings {
   }
 
   async tapNotifications() {
-    await this.swipeSettings(0.3)
+    await actions.scrollTo(this.notificationsPreferences, 'down')
     await actions.tap(this.notificationsPreferences)
-  }
-
-  async swipeSettings(amount = 0.8) {
-    await actions.swipe('up', amount, this.mainnetAvatar)
   }
 
   async selectCurrency(curr: string) {
@@ -819,7 +820,7 @@ class Settings {
   }
 
   async verifyAppIconScreen(selectedIconId: string) {
-    await actions.waitFor(selectors.getById(settings.appIconTitle))
+    await actions.waitFor(selectors.getByText(settings.appIconTitle))
     const appIcons = [
       'Core light',
       'Old school Core',
@@ -856,12 +857,28 @@ class Settings {
       ][Math.floor(Math.random() * 6)] as string
     }
     await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    if (driver.isAndroid) {
+      // Emulators kill the app process when changing the icon; real devices don't.
+      // activateApp is a no-op if already running, so this handles both cases.
+      const appId = 'org.avalabs.corewallet'
+      await driver
+        .activateApp(appId)
+        .catch(() => driver.activateApp(appId + '.internal'))
+      const isLocked = await actions.isElementVisible(
+        onboardingPage.forgotPin,
+        3000
+      )
+      if (isLocked) {
+        await onboardingPage.unlockEnterPin()
+      }
+      await this.goSettings()
+    }
     return iconId
   }
 
   async tapSecurityAndPrivacy(needSwipe = true) {
     if (needSwipe) {
-      await this.swipeSettings()
+      await actions.scrollTo(this.securityAndPrivacy, 'down')
     }
     await actions.tap(this.securityAndPrivacy)
   }

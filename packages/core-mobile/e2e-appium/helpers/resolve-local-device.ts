@@ -46,8 +46,10 @@ export function inferRunPlatforms(
   if (isDeviceFarm) {
     return { runAndroid: true, runIos: true }
   }
-  if (getAndroidSerial()) {
-    return { runAndroid: true, runIos: false }
+  const hasAndroid = !!getAndroidSerial()
+  const hasIos = hasBootedSimulator()
+  if (hasAndroid || hasIos) {
+    return { runAndroid: hasAndroid, runIos: hasIos }
   }
   return { runAndroid: false, runIos: true }
 }
@@ -138,6 +140,27 @@ type SimctlDevicesJson = {
     string,
     Array<{ state?: string; name?: string; udid?: string }>
   >
+}
+
+function hasBootedSimulator(): boolean {
+  try {
+    const raw = execFileSync(
+      'xcrun',
+      ['simctl', 'list', 'devices', 'booted', '-j'],
+      {
+        encoding: 'utf8',
+        maxBuffer: CHILD_MAX_BUFFER
+      }
+    )
+    const parsed = JSON.parse(raw) as SimctlDevicesJson
+    const buckets = parsed.devices
+    if (!buckets) return false
+    return Object.values(buckets).some(
+      list => Array.isArray(list) && list.some(d => d.state === 'Booted')
+    )
+  } catch {
+    return false
+  }
 }
 
 function findSimulatorByUdid(udid: string): {
