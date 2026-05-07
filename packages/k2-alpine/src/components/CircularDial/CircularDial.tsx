@@ -30,6 +30,17 @@ const DEFAULT_PRESETS: PresetButton[] = [
 ]
 const noop = (): void => undefined
 
+// Half-angle (degrees) of the activation wedge measured from the
+// horizontal axis. A swipe within this many degrees of horizontal
+// activates the dial; anything more vertical falls through to the
+// parent scroll. 70° matches the eager horizontal bias of Apple's
+// Camera zoom dial — the user has to swipe nearly straight up/down
+// to escape the dial.
+const ACTIVATION_HALF_ANGLE_DEG = 70
+const ACTIVATION_TAN = Math.tan(
+  (ACTIVATION_HALF_ANGLE_DEG * Math.PI) / 180
+)
+
 export const CircularDial: FC<CircularDialProps> = ({
   value,
   onChange,
@@ -130,15 +141,61 @@ export const CircularDial: FC<CircularDialProps> = ({
   // after the first touch.
   const gestureStartProgress = useSharedValue(0)
 
+  // First-touch coordinates, captured in onTouchesDown so the
+  // direction-based activation logic in onTouchesMove can measure
+  // total motion from the touch's true origin.
+  const touchStartX = useSharedValue(0)
+  const touchStartY = useSharedValue(0)
+  // One-shot latch so the direction check only runs once per touch.
+  // Without this, onTouchesMove keeps re-evaluating the wedge for the
+  // whole gesture — a mid-drag vertical swing would flip the predicate
+  // and `manager.fail()` would kill the already-active gesture.
+  const hasDecided = useSharedValue(false)
+
   // Lets quick taps recognise first as a tap (below `maxDistance`)
   // before promoting to a pan.
   const TAP_SLOP = 10
 
   const readoutRef = useRef<DialReadoutHandle>(null)
 
+  // manualActivation + direction-based commit: once total motion
+  // exceeds TAP_SLOP, activate as a pan iff horizontal motion
+  // dominates. A predominantly vertical swipe fails the gesture so
+  // the parent scroll container can take over the touch. This avoids
+  // the failOffsetY threshold race where slight vertical drift killed
+  // the gesture before activeOffsetX could fire.
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-TAP_SLOP, TAP_SLOP])
-    .failOffsetY([-TAP_SLOP, TAP_SLOP])
+    .manualActivation(true)
+    .onTouchesDown(event => {
+      'worklet'
+      const touch = event.allTouches[0]
+      if (!touch) return
+      touchStartX.value = touch.absoluteX
+      touchStartY.value = touch.absoluteY
+      hasDecided.value = false
+    })
+    .onTouchesMove((event, manager) => {
+      'worklet'
+      if (hasDecided.value) return
+      const touch = event.allTouches[0]
+      if (!touch) return
+      const dx = touch.absoluteX - touchStartX.value
+      const dy = touch.absoluteY - touchStartY.value
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+      if (absDx <= TAP_SLOP && absDy <= TAP_SLOP) return
+      // Activate when the swipe lies within ACTIVATION_HALF_ANGLE_DEG
+      // of horizontal (|dy| < |dx| * tan(angle)); otherwise let the
+      // parent scroll claim the touch. Latched so subsequent motion
+      // — including a mid-drag direction change — can't unmake the
+      // decision.
+      hasDecided.value = true
+      if (absDy < absDx * ACTIVATION_TAN) {
+        manager.activate()
+      } else {
+        manager.fail()
+      }
+    })
     .onStart(() => {
       'worklet'
       isActive.value = true
