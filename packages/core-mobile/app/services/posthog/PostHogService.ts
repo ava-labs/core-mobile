@@ -1,5 +1,6 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'utils/caip2ChainIds'
@@ -78,7 +79,9 @@ class PostHogService implements PostHogServiceInterface {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to capture PostHog event', error)
+        Logger.error('failed to capture PostHog event', error, {
+          source: SentryTag.PostHog
+        })
       })
   }
 
@@ -107,7 +110,9 @@ class PostHogService implements PostHogServiceInterface {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to capture PostHog identify event', error)
+        Logger.error('failed to capture PostHog identify event', error, {
+          source: SentryTag.PostHog
+        })
       })
   }
 

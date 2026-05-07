@@ -22,6 +22,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   SortOrder,
@@ -479,7 +480,9 @@ class EarnService {
           }
         })
     } catch (error) {
-      Logger.error('getTransformedStakesForAllAccounts failed: ', error)
+      Logger.error('getTransformedStakesForAllAccounts failed: ', error, {
+        source: SentryTag.Glacier
+      })
     }
   }
 

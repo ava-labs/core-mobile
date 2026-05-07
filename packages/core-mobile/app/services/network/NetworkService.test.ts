@@ -76,15 +76,17 @@ describe('NetworkService', () => {
     })
 
     it('should handle errors in fetchNetworks and fetchDeBankNetworks gracefully', async () => {
+      const erc20Err = new TypeError('Network request failed')
+      const deBankErr = new TypeError('Network request failed')
       jest
         .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
-        .mockRejectedValue('ERC20 fetch error')
+        .mockRejectedValue(erc20Err)
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
           'fetchDeBankNetworks'
         )
-        .mockRejectedValue('DeBank fetch error')
+        .mockRejectedValue(deBankErr)
       jest.spyOn(Logger, 'error').mockImplementation(noop)
       jest
         .spyOn(NetworkService, 'getAvalancheNetworkP')
@@ -95,12 +97,19 @@ describe('NetworkService', () => {
 
       const result = await NetworkService.getNetworks({ includeSolana: false })
 
-      // Verify Logger was called for both fetch errors
+      // Verify Logger was called for both fetch errors with the glacier source tag.
+      // The underlying error object is passed as the second arg so Sentry preserves
+      // the original error type and stack (i.e. it joins the existing TypeError:
+      // Network request failed bucket rather than spawning a new fingerprint).
       expect(Logger.error).toHaveBeenCalledWith(
-        '[NetworkService][fetchNetworks]ERC20 fetch error'
+        '[NetworkService][fetchNetworks] failed',
+        erc20Err,
+        { source: 'glacier' }
       )
       expect(Logger.error).toHaveBeenCalledWith(
-        '[NetworkService][fetchDeBankNetworks]DeBank fetch error'
+        '[NetworkService][fetchDeBankNetworks] failed',
+        deBankErr,
+        { source: 'glacier' }
       )
 
       // Expected result should include the default network mappings
