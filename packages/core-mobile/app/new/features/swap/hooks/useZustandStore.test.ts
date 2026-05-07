@@ -16,7 +16,13 @@ const mockMMKV = {
   })
 }
 
-jest.mock('utils/mmkv/storages', () => ({
+// Mock the barrel (`utils/mmkv`) — the path the consumer imports from —
+// rather than the submodule (`utils/mmkv/storages`). Mocking the barrel
+// directly keeps the test correct if the barrel's re-export style ever
+// changes. `jest.requireActual` preserves the other exports
+// (ZustandStorageKeys, helpers, etc.) so unrelated imports still work.
+jest.mock('utils/mmkv', () => ({
+  ...jest.requireActual('utils/mmkv'),
   zustandStorageMMKV: mockMMKV
 }))
 
