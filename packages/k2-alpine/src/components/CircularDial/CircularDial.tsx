@@ -37,9 +37,7 @@ const noop = (): void => undefined
 // Camera zoom dial — the user has to swipe nearly straight up/down
 // to escape the dial.
 const ACTIVATION_HALF_ANGLE_DEG = 70
-const ACTIVATION_TAN = Math.tan(
-  (ACTIVATION_HALF_ANGLE_DEG * Math.PI) / 180
-)
+const ACTIVATION_TAN = Math.tan((ACTIVATION_HALF_ANGLE_DEG * Math.PI) / 180)
 
 export const CircularDial: FC<CircularDialProps> = ({
   value,
