@@ -1,15 +1,15 @@
 import { NftContentType, NftImageData, NftItemExternalData } from './types'
 import { convertIPFSResolver } from './utils'
 
-export class NftProcessor {
-  private base64SvgPrefix = 'data:image/svg+xml;base64,'
+const BASE64_SVG_PREFIX = 'data:image/svg+xml;base64,'
 
+export class NftProcessor {
   async fetchImage(imageData: string): Promise<NftImageData> {
     if (!imageData) {
       throw new Error('[NftProcessor] fetchImage called with empty uri')
     }
 
-    if (imageData.startsWith(this.base64SvgPrefix)) {
+    if (imageData.startsWith(BASE64_SVG_PREFIX)) {
       return { uri: imageData, type: NftContentType.SVG }
     }
 
