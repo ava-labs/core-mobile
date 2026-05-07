@@ -60,6 +60,16 @@ jest
   .spyOn(BiometricsSDK, 'loadWalletSecret')
   .mockResolvedValue({ success: true, value: 'superSecret' })
 
+jest.mock('utils/getAddressesFromXpubXP/getAddressesFromXpubXP', () => ({
+  getXpubXPIfAvailable: jest.fn().mockResolvedValue('xpubXP-stub')
+}))
+
+jest.mock('hooks/useXPAddresses/useXPAddresses', () => ({
+  getCachedXPAddresses: jest.fn().mockResolvedValue({
+    xpAddressDictionary: {}
+  })
+}))
+
 const mockOnRpcRequest = jest.fn()
 
 const mockModule: Module = {
@@ -629,6 +639,45 @@ describe('rpc - listeners', () => {
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
             1677366383831712,
             testError
+          )
+        })
+
+        // Regression: pre-existing request.context (e.g. SAE_OVERRIDE snapshot
+        // from createInAppRequest) must not short-circuit the auto-injected
+        // Avalanche `account` context for AVALANCHE_SEND/SIGN_TRANSACTION.
+        it('should merge request.context with auto-injected Avalanche account context', async () => {
+          mockOnRpcRequest.mockImplementation(async () => ({
+            result: 'tx-hash'
+          }))
+
+          const avalancheSendRequest = {
+            ...createRequest(
+              'avalanche_sendTransaction' as RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              {
+                chainAlias: 'P',
+                transactionHex: '0xdeadbeef',
+                externalIndices: [],
+                internalIndices: []
+              }
+            ),
+            context: { [RequestContext.SAE_OVERRIDE]: 'auto' }
+          }
+
+          store.dispatch(onRequest(avalancheSendRequest))
+
+          await jest.runOnlyPendingTimersAsync()
+
+          expect(mockOnRpcRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+              context: expect.objectContaining({
+                [RequestContext.SAE_OVERRIDE]: 'auto',
+                [RequestContext.IN_APP_REVIEW]: true,
+                account: expect.objectContaining({
+                  xpAddress: mockActiveAccount.addressPVM
+                })
+              })
+            }),
+            expect.anything()
           )
         })
       })

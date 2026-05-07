@@ -135,7 +135,10 @@ export const initFusionService = async (
       return
     }
 
-    const request = createInAppRequest(listenerApi.dispatch)
+    const request = createInAppRequest(
+      listenerApi.dispatch,
+      listenerApi.getState
+    )
 
     // Check if already initialized and if reinitialization is needed
     const isFusionServiceReady = useIsFusionServiceReady.getState()

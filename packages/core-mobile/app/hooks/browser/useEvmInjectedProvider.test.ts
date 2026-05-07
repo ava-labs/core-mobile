@@ -14,7 +14,10 @@ import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
-  useDispatch: jest.fn()
+  useDispatch: jest.fn(),
+  useStore: jest.fn(() => ({
+    getState: jest.fn(() => ({ posthog: { featureFlags: {} } }))
+  }))
 }))
 
 jest.mock('store/network/slice', () => ({
@@ -431,7 +434,10 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(payload)
         })
 
-        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+          mockDispatch,
+          expect.any(Function)
+        )
         expect(mockRequest).toHaveBeenCalledWith(
           expect.objectContaining({
             method: 'wallet_addEthereumChain',
@@ -611,7 +617,10 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+          mockDispatch,
+          expect.any(Function)
+        )
         expect(mockRequest).toHaveBeenCalledWith(
           expect.objectContaining({
             method: 'wallet_watchAsset',
@@ -735,7 +744,10 @@ describe('useEvmInjectedProvider', () => {
             result.current.handleProviderMessage(payload)
           })
 
-          expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+          expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+            mockDispatch,
+            expect.any(Function)
+          )
           expect(mockRequest).toHaveBeenCalledWith({
             method: rpcMethod,
             params: ['param1', 'param2'],
