@@ -146,7 +146,11 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
               : null}
             {typeof children === 'string' ? (
               <Text
-                numberOfLines={numberOfLines}
+                // RN Text on Android treats numberOfLines={0} as 1 (clips
+                // single-line). Coerce 0 → undefined so 0 means unlimited.
+                numberOfLines={
+                  numberOfLines === 0 ? undefined : numberOfLines
+                }
                 variant={textVariant}
                 style={[
                   {

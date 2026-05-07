@@ -245,7 +245,7 @@ export default function Signup(): JSX.Element {
                 lineHeight: 65,
                 color: '#FFFFFF'
               }}>
-              Crypto wallet
+              {'Crypto\nwallet'}
             </Text>
             <Text
               sx={{
