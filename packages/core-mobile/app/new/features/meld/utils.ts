@@ -57,18 +57,23 @@ export const isTokenTradable = (
   isSolToken(crypto, token) ||
   isSupportedSPLToken(crypto, token)
 
+const MAX_MELD_DISMISS_COUNT = 5
+
 export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
   searchParams: URLSearchParams
 ): void => {
-  const dismissCount = searchParams.get('dismissCount') ?? ''
+  const dismissCount = Math.min(
+    MAX_MELD_DISMISS_COUNT,
+    Math.max(0, Number(searchParams.get('dismissCount')) || 0)
+  )
 
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
   // TODO: when we start implementing native buy/sell, we can simply call dismissAll() and back()
   // the first dismiss is the selectBuyAmountScreen
   // the second dismiss is the selectBuyTokenScreen (only if user launched buy from token detail)
-  Array.from({ length: Number(dismissCount) }).forEach(() => {
+  Array.from({ length: dismissCount }).forEach(() => {
     router.canGoBack() && router.back()
   })
   router.navigate({

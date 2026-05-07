@@ -1,9 +1,17 @@
 import { Linking } from 'react-native'
 import InAppBrowser, {
-  InAppBrowserOptions
+  BrowserResult,
+  InAppBrowserOptions,
+  RedirectResult
 } from 'react-native-inappbrowser-reborn'
+import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDisableLockAppStore } from 'features/accountSettings/store'
 import Logger from './Logger'
+
+const ALLOWED_REDIRECT_PREFIXES = [
+  `core://${ACTIONS.OnrampCompleted}`,
+  `core://${ACTIONS.OfframpCompleted}`
+]
 
 // @deprecated use openUrl from useCoreBrowser hook instead
 export const openInAppBrowser = async (
@@ -13,9 +21,22 @@ export const openInAppBrowser = async (
   try {
     if (await InAppBrowser.isAvailable()) {
       useDisableLockAppStore.setState({ disableLockApp: true })
-      const result = await InAppBrowser.open(url, options)
-      if (result.type === 'cancel' || result.type === 'dismiss') {
-        useDisableLockAppStore.setState({ disableLockApp: false })
+      const result = (await InAppBrowser.open(url, options)) as
+        | BrowserResult
+        | RedirectResult
+      useDisableLockAppStore.setState({ disableLockApp: false })
+      if (result.type === 'success' && result.url) {
+        if (
+          ALLOWED_REDIRECT_PREFIXES.some(prefix =>
+            result.url.startsWith(prefix)
+          )
+        ) {
+          Linking.openURL(result.url).catch(Logger.error)
+        } else {
+          Logger.error(
+            `Blocked disallowed redirect from InAppBrowser: ${result.url}`
+          )
+        }
       }
     } else {
       useDisableLockAppStore.setState({ disableLockApp: false })
