@@ -892,6 +892,60 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
+      it('rejects wallet_addEthereumChain when origin is unavailable (no Core attribution)', async () => {
+        const mockRequest = jest.fn()
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 30,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0x1' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        // Must NOT reach the approval pipeline (would otherwise be attributed
+        // to CORE_MOBILE_META by generateInAppRequestPayload).
+        expect(mockRequest).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('Origin unavailable')
+        )
+      })
+
+      it('rejects wallet_watchAsset when origin is unavailable (no Core attribution)', async () => {
+        const mockRequest = jest.fn()
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 31,
+          request: {
+            method: 'wallet_watchAsset',
+            params: [{ type: 'ERC20', options: { address: '0x0' } }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockRequest).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('Origin unavailable')
+        )
+      })
+
       it('preserves well-formed RPC errors without re-serializing', async () => {
         const mockRequest = jest
           .fn()
