@@ -1055,8 +1055,6 @@ describe('LedgerService', () => {
 
     it('should skip getCurrentAppInfo when polling is paused', async () => {
       // @ts-ignore - accessing private for testing
-      LedgerService.appPollingEnabled = false
-      // @ts-ignore
       LedgerService.startAppPolling()
 
       // Normal polling should fire and call getCurrentAppInfo
@@ -1079,9 +1077,7 @@ describe('LedgerService', () => {
     })
 
     it('should resume getCurrentAppInfo after resumeAppPolling', async () => {
-      // @ts-ignore
-      LedgerService.appPollingEnabled = false
-      // @ts-ignore
+      // @ts-ignore - accessing private for testing
       LedgerService.startAppPolling()
 
       // Pause then resume

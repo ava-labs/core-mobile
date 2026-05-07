@@ -66,7 +66,6 @@ class LedgerService {
 
   private appPollingInterval: number | null = null
   private disconnectHandler: (() => void) | null = null
-  private appPollingEnabled = false
   private appPollingPaused = false
 
   // Reconnection state & policy
@@ -422,7 +421,6 @@ class LedgerService {
       clearInterval(this.appPollingInterval)
       this.appPollingInterval = null
     }
-    this.appPollingEnabled = false
     this.appPollingPaused = false
   }
 
