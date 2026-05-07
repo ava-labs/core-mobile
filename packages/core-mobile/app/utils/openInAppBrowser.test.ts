@@ -2,10 +2,7 @@ import { Linking } from 'react-native'
 import InAppBrowser from 'react-native-inappbrowser-reborn'
 import { useDisableLockAppStore } from 'features/accountSettings/store'
 import Logger from 'utils/Logger'
-import {
-  openInAppBrowser,
-  openInAppBrowserForAuth
-} from './openInAppBrowser'
+import { openInAppBrowser, openInAppBrowserForAuth } from './openInAppBrowser'
 
 jest.mock('react-native-inappbrowser-reborn', () => ({
   __esModule: true,
