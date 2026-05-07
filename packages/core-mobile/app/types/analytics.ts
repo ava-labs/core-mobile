@@ -136,12 +136,7 @@ export type AnalyticsEvents = {
     caip2TargetChainId: string
     quickSwapsEnabled?: boolean
     quickSwapsFeeSetting?: 'low' | 'medium' | 'high'
-    quickSwapsMaxBuy?:
-      | 'unlimited'
-      | '1000'
-      | '5000'
-      | '10000'
-      | '50000'
+    quickSwapsMaxBuy?: 'unlimited' | '1000' | '5000' | '10000' | '50000'
   }
   SwapSuccessful: {
     encrypted: {
@@ -178,13 +173,33 @@ export type AnalyticsEvents = {
   }
   QuickSwapsToggled: { isEnabled: boolean }
   SwapBlockedByQuickSwapLimit: {
-    maxBuy:
-      | 'unlimited'
-      | '1000'
-      | '5000'
-      | '10000'
-      | '50000'
+    maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
     hasUsdValue: boolean
+  }
+  QuickSwapsBypassFired: {
+    caip2SourceChainId: string
+    maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
+  }
+  QuickSwapsBypassFellBack: {
+    caip2SourceChainId: string
+    requiresManualApproval: boolean
+    reason:
+      | 'context_missing'
+      | 'tx_flagged_warning'
+      | 'tx_flagged_malicious'
+      | 'simulation_failed'
+      | 'min_amount_out_missing'
+      | 'balance_change_missing'
+      | 'token_address_missing'
+      | 'source_token_not_found'
+      | 'destination_token_not_found'
+      | 'amount_calculation_failed'
+      | 'amount_below_minimum'
+      | 'usd_pricing_unavailable'
+      | 'amount_over_limit'
+      | 'slippage_unavailable'
+      | 'slippage_exceeded'
+      | 'unknown'
   }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined

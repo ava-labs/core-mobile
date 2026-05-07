@@ -2,6 +2,8 @@ import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
+  selectIsQuickSwapsEnabled,
+  selectQuickSwapsMaxBuy,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
@@ -161,19 +163,23 @@ export const initFusionService = async (
 
     Logger.info('Initializing Fusion service', featureStates)
 
-    // Mark as not ready at start and clear any prior init error
     useIsFusionServiceReady.setState(false)
     useFusionServiceInitError.setState(null)
 
-    // Create signers
-    const evmSigner = createEvmSigner(request)
+    // Getter (not captured value) so the signer reads live Quick Swaps
+    // settings — the user can toggle between init and swap execution.
+    const evmSigner = createEvmSigner(request, () => {
+      const liveState = listenerApi.getState()
+      return {
+        isQuickSwapsActive: selectIsQuickSwapsEnabled(liveState),
+        maxBuy: selectQuickSwapsMaxBuy(liveState)
+      }
+    })
     const btcSigner = createBtcSigner(request, featureStates.isDeveloperMode)
     const svmSigner = createSvmSigner(request, featureStates.isDeveloperMode)
 
-    // Determine environment
     const environment = getFusionEnvironment(featureStates.isDeveloperMode)
 
-    // Build feature flags object for the service
     const featureFlags = {
       'fusion-markr': featureStates.isFusionMarkrEnabled,
       'fusion-avalanche-evm': featureStates.isFusionAvalancheEvmEnabled,

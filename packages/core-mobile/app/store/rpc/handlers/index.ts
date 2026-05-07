@@ -16,6 +16,7 @@ import { avalancheAddAccountHandler } from './account/avalanche_addAccount/avala
 import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
 import { walletEnableNetworkHandler } from './chain/wallet_enableNetwork/wallet_enableNetwork'
 import { walletWatchAssetHandler } from './chain/wallet_watchAsset/wallet_watchAsset'
+import { ethSendTransactionBatchHandler } from './eth_sendTransactionBatch/eth_sendTransactionBatch'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -34,7 +35,8 @@ const handlerMap = [
   walletGetNetworkStateHandler,
   avalancheAddAccountHandler,
   walletEnableNetworkHandler,
-  walletWatchAssetHandler
+  walletWatchAssetHandler,
+  ethSendTransactionBatchHandler
 ].reduce((acc, current) => {
   if (current?.methods === undefined) return acc
 

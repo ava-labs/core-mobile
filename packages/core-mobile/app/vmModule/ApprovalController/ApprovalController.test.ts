@@ -67,7 +67,7 @@ jest.mock(
 )
 jest.mock('services/wallet/WalletService', () => ({
   __esModule: true,
-  default: { getPublicKeyFor: jest.fn() }
+  default: { getPublicKeyFor: jest.fn(), sign: jest.fn() }
 }))
 const mockSetReviewTransactionParams = jest.fn()
 jest.mock('features/ledger/store', () => ({
@@ -850,6 +850,174 @@ describe('ApprovalController', () => {
       expect(mockOnReject).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'User denied' })
       )
+    })
+  })
+
+  // CP-14211: requestBatchApproval consults the validator registry and,
+  // on isValid:true, signs each signingRequests[i].signingData via
+  // WalletService.sign (returning signed RLP for the EVM module to
+  // broadcast). On manual-review / hard-reject, returns a structured
+  // error. The lifecycle (onTransactionPending) is fired by the EVM
+  // module's broadcast loop via this same controller's method —
+  // verified separately in the onTransactionPending describe block.
+  describe('requestBatchApproval', () => {
+    const { approvalValidators } = jest.requireActual('./validators')
+    const mockSign = jest.requireMock('services/wallet/WalletService').default
+      .sign as jest.Mock
+
+    const baseRequest = (): RpcRequest =>
+      ({
+        ...makeRequest(),
+        method: RpcMethod.ETH_SEND_TRANSACTION_BATCH as never,
+        context: {
+          walletId: 'wallet-1',
+          walletType: 'mnemonic',
+          accountIndex: 0,
+          network: { chainId: 43114, vmName: 'EVM' }
+        }
+      } as RpcRequest)
+
+    const makeSigningRequest = (data: Record<string, unknown> = {}) => ({
+      signingData: {
+        type: 'eth_sendTransaction',
+        account: '0x123',
+        data
+      },
+      displayData: {}
+    })
+
+    const baseParams = (
+      signingRequests: ReturnType<typeof makeSigningRequest>[] = [
+        makeSigningRequest({ to: '0xrouter' })
+      ]
+    ) => ({
+      request: baseRequest(),
+      signingRequests,
+      displayData: {} as never,
+      updateTx: (() => ({})) as never
+    })
+
+    beforeEach(() => {
+      approvalValidators.length = 0
+      mockSign.mockReset()
+    })
+
+    afterAll(() => {
+      approvalValidators.length = 0
+    })
+
+    it('returns error when no validator matches', async () => {
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('signs each signingRequest and returns signed RLP on isValid:true', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      mockSign
+        .mockResolvedValueOnce('0xsigned-approve')
+        .mockResolvedValueOnce('0xsigned-swap')
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams([
+          makeSigningRequest({ to: '0xtoken', data: '0xapprove' }),
+          makeSigningRequest({ to: '0xrouter', data: '0xswap' })
+        ]) as never
+      )
+
+      expect(mockSign).toHaveBeenCalledTimes(2)
+      expect('result' in result).toBe(true)
+      if ('result' in result) {
+        expect(result.result).toEqual([
+          { signedData: '0xsigned-approve' },
+          { signedData: '0xsigned-swap' }
+        ])
+      }
+      // Verify signing context is read from request.context, not from
+      // any callback closure (the architectural-refactor invariant).
+      const firstCallArgs = mockSign.mock.calls[0]?.[0]
+      expect(firstCallArgs).toMatchObject({
+        walletId: 'wallet-1',
+        walletType: 'mnemonic',
+        accountIndex: 0
+      })
+    })
+
+    it('returns error when WalletService.sign rejects', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      mockSign.mockRejectedValue(new Error('insufficient gas'))
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+    })
+
+    it('returns error when signing context is missing from request.context', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      const params = baseParams()
+      ;(params.request as { context: Record<string, unknown> }).context = {}
+
+      const result = await approvalController.requestBatchApproval(
+        params as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('returns error with manual-review marker when requiresManualApproval', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+      // Structured marker so EvmSigner.signBatch recognises and falls
+      // back to the per-tx approval flow.
+      if ('error' in result) {
+        const data = (result.error as { data?: unknown }).data as
+          | { quickSwapsManualReview?: boolean; code?: string }
+          | undefined
+        expect(data?.quickSwapsManualReview).toBe(true)
+        expect(data?.code).toBe('slippage_exceeded')
+      }
+    })
+
+    it('returns error on hard-reject verdict', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: false,
+          reason: 'Malicious'
+        })
+      })
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
     })
   })
 })

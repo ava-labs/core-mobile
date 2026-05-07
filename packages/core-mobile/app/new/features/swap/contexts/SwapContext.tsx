@@ -190,7 +190,7 @@ export const SwapContextProvider = ({
   // USD value of the current from-amount — used for Quick Swaps limit check and analytics
   const fromAmountUsd = useMemo(() => {
     if (!fromToken || !amount) return undefined
-    const decimals = fromToken.decimals ?? 18
+    const decimals = 'decimals' in fromToken ? fromToken.decimals : 18
     const decimal = bigintToBig(amount, decimals)
     const price = fromToken.priceInCurrency
     if (price === undefined) return undefined
@@ -352,7 +352,14 @@ export const SwapContextProvider = ({
         )
       }
     },
-    [dispatch, setTransfers, fromAmountUsd, isQuickSwapsActive, feeSetting, maxBuy]
+    [
+      dispatch,
+      setTransfers,
+      fromAmountUsd,
+      isQuickSwapsActive,
+      feeSetting,
+      maxBuy
+    ]
   )
 
   // Handle swap error: logging, toast

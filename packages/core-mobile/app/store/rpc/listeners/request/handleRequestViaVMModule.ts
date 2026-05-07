@@ -110,6 +110,17 @@ export const handleRequestViaVMModule = async ({
     }
   }
 
+  // Signing context for ApprovalController bypass paths. Safe to
+  // attach to every request — validator canHandle gates filter dApp
+  // requests out before these fields are read.
+  context = {
+    ...context,
+    walletId: activeWallet.id,
+    walletType: activeWallet.type,
+    accountIndex: activeAccount.index,
+    network
+  }
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),

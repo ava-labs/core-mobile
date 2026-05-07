@@ -2,6 +2,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { AppListenerEffectAPI } from 'store/types'
 import { RpcError } from '@avalabs/vm-module-types'
 import { uuid } from 'utils/uuid'
+import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
 
 export interface PeerMeta {
   name: string
@@ -41,6 +42,8 @@ export enum RpcMethod {
   /* standard methods */
   ETH_REQUEST_ACCOUNTS = 'eth_requestAccounts',
   ETH_SEND_TRANSACTION = 'eth_sendTransaction',
+  // In-app only — not declared in the WC namespace allowlist.
+  ETH_SEND_TRANSACTION_BATCH = 'eth_sendTransactionBatch',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
   SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
@@ -193,5 +196,25 @@ export enum RequestContext {
 
   // used to show "Transaction sent" immediately in onTransactionPending instead of a
   // pending toast — used when no confirmed toast will follow (e.g. Fusion same-chain swap)
-  IMMEDIATE_SENT_TOAST = 'immediateSentToast'
+  IMMEDIATE_SENT_TOAST = 'immediateSentToast',
+
+  // Quick Swaps bypass intent — consumed by SwapValidator and
+  // BatchSwapValidator to decide whether a Markr swap can skip the
+  // /approval modal.
+  SWAP_AUTO_APPROVE = 'swapAutoApprove'
+}
+
+export type SwapAutoApproveContext = {
+  autoApprove: boolean
+  maxBuy?: QuickSwapMaxBuy
+  srcTokenAddress?: string
+  destTokenAddress?: string
+  isSrcTokenNative?: boolean
+  isDestTokenNative?: boolean
+  // Basis points (e.g. 50 = 0.5%).
+  slippage?: number
+  minAmountOut?: string
+  // Used to net out gas burn from source-side diff on native swaps.
+  amountIn?: string
+  isSwapFeesEnabled?: boolean
 }

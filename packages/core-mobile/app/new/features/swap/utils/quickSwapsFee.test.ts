@@ -1,7 +1,4 @@
-import {
-  feeSettingToTier,
-  mapFeeSettingToGasSettings
-} from './quickSwapsFee'
+import { feeSettingToTier, mapFeeSettingToGasSettings } from './quickSwapsFee'
 
 describe('feeSettingToTier', () => {
   it.each([
@@ -37,6 +34,8 @@ describe('mapFeeSettingToGasSettings', () => {
   })
 
   it('returns undefined when the picked tier is missing', () => {
-    expect(mapFeeSettingToGasSettings('high', { slow: fees.slow })).toBeUndefined()
+    expect(
+      mapFeeSettingToGasSettings('high', { slow: fees.slow })
+    ).toBeUndefined()
   })
 })

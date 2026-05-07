@@ -1,9 +1,12 @@
 import { router } from 'expo-router'
+import { rpcErrors } from '@metamask/rpc-errors'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
+  BatchApprovalParams,
+  BatchApprovalResponse,
   RpcRequest,
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
@@ -40,6 +43,39 @@ import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
+import { approvalValidators, requestValidators } from './validators'
+
+type BatchSigningContext = {
+  walletId: string
+  walletType: WalletType
+  accountIndex: number
+  network: Parameters<typeof WalletService.sign>[0]['network']
+}
+
+const readBatchSigningContext = (
+  request: RpcRequest
+): BatchSigningContext | undefined => {
+  const ctx = request.context as Record<string, unknown> | undefined
+  if (!ctx) return undefined
+  const walletId = ctx.walletId
+  const walletType = ctx.walletType
+  const accountIndex = ctx.accountIndex
+  const network = ctx.network
+  if (
+    typeof walletId !== 'string' ||
+    typeof walletType !== 'string' ||
+    typeof accountIndex !== 'number' ||
+    !network
+  ) {
+    return undefined
+  }
+  return {
+    walletId,
+    walletType: walletType as WalletType,
+    accountIndex,
+    network: network as BatchSigningContext['network']
+  }
+}
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
@@ -259,16 +295,74 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  async requestApproval({
-    request,
-    displayData,
-    signingData
-  }: ApprovalParams): Promise<ApprovalResponse> {
+  // Returns null when the validator defers to the manual modal.
+  // EvmSigner.sign only attaches SWAP_AUTO_APPROVE when tx.maxFeePerGas
+  // is already filled — so signingData.data is broadcast-ready here.
+  private runRequestValidator = async (
+    validator: typeof requestValidators[number],
+    params: ApprovalParams
+  ): Promise<ApprovalResponse | null> => {
+    const verdict = await validator.validate(params)
+    if (verdict.isValid) {
+      const signingContext = readBatchSigningContext(params.request)
+      if (!signingContext) {
+        return {
+          error: rpcErrors.internal({
+            message:
+              'requestApproval: validator approved but signing context missing from request'
+          })
+        }
+      }
+      try {
+        const signedData = await WalletService.sign({
+          walletId: signingContext.walletId,
+          walletType: signingContext.walletType,
+          transaction: (
+            params.signingData as {
+              data: Parameters<typeof WalletService.sign>[0]['transaction']
+            }
+          ).data,
+          accountIndex: signingContext.accountIndex,
+          network: signingContext.network,
+          sentrySpanName: 'sign-transaction'
+        })
+        return { signedData }
+      } catch (err) {
+        return {
+          error: rpcErrors.internal({
+            message:
+              err instanceof Error
+                ? err.message
+                : 'requestApproval: bypass sign failed'
+          })
+        }
+      }
+    }
+
+    if (verdict.requiresManualApproval) return null
+
+    return {
+      error: rpcErrors.invalidRequest({
+        message:
+          verdict.reason || 'requestApproval: blocked by safety validation'
+      })
+    }
+  }
+
+  async requestApproval(params: ApprovalParams): Promise<ApprovalResponse> {
+    const { request, displayData, signingData } = params
     const requestId = request.requestId
-    // Clear any previous cancellation state for this request
     this.userCancelledMap.delete(requestId)
 
-    // Check for EIP-4361 (SIWE) domain/scheme/port mismatch
+    // Synchronous find keeps the common (no-validator-matches) path
+    // microtask-free so callers that observe walletConnectCache.set +
+    // router.navigate synchronously still see them on the same tick.
+    const validator = requestValidators.find(v => v.canHandle(params))
+    if (validator) {
+      const bypassResult = await this.runRequestValidator(validator, params)
+      if (bypassResult) return bypassResult
+    }
+
     const enrichedDisplayData = maybeInjectSiweAlert({
       request,
       signingData,
@@ -312,6 +406,83 @@ class ApprovalController implements VmModuleApprovalController {
         }
       })
     })
+  }
+
+  // On requiresManualApproval, returns a structured error with the
+  // quickSwapsManualReview marker that EvmSigner.signBatch detects to
+  // re-issue each tx through the per-tx approval modal.
+  async requestBatchApproval(
+    params: BatchApprovalParams
+  ): Promise<BatchApprovalResponse> {
+    const { request, signingRequests } = params
+    const validator = approvalValidators.find(v => v.canHandle(request))
+    if (!validator) {
+      return {
+        error: rpcErrors.internal({
+          message:
+            'eth_sendTransactionBatch: no validator matched the batch request'
+        })
+      }
+    }
+
+    const verdict = await validator.validate(params)
+    if (verdict.isValid) {
+      const signingContext = readBatchSigningContext(request)
+      if (!signingContext) {
+        return {
+          error: rpcErrors.internal({
+            message:
+              'eth_sendTransactionBatch: signing context missing from request'
+          })
+        }
+      }
+      try {
+        const signedTxs: { signedData: string }[] = []
+        for (const sr of signingRequests) {
+          const signedData = await WalletService.sign({
+            walletId: signingContext.walletId,
+            walletType: signingContext.walletType,
+            transaction: sr.signingData.data,
+            accountIndex: signingContext.accountIndex,
+            network: signingContext.network,
+            sentrySpanName: 'sign-transaction'
+          })
+          signedTxs.push({ signedData })
+        }
+        return { result: signedTxs }
+      } catch (err) {
+        return {
+          error: rpcErrors.internal({
+            message:
+              err instanceof Error
+                ? err.message
+                : 'eth_sendTransactionBatch: batch sign failed'
+          })
+        }
+      }
+    }
+
+    if (verdict.requiresManualApproval) {
+      const detail = verdict.reason || 'unknown reason'
+      return {
+        error: rpcErrors.internal({
+          message: `Quick Swaps requires manual review for this swap (${detail}).`,
+          data: {
+            quickSwapsManualReview: true,
+            code: verdict.code,
+            reason: verdict.reason
+          }
+        })
+      }
+    }
+
+    return {
+      error: rpcErrors.invalidRequest({
+        message:
+          verdict.reason ||
+          'eth_sendTransactionBatch: blocked by safety validation'
+      })
+    }
   }
 }
 
