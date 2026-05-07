@@ -228,11 +228,45 @@ export function isInvalidResponseError(error: unknown): boolean {
 }
 
 /**
+ * Check if error is a Fusion `TRANSACTION_REVERTED` (errorCode 5006) on the
+ * source or target leg. Matches:
+ *   - "Source transaction was reverted" (SDK errorReason for source leg)
+ *   - "Target transaction was reverted" (SDK errorReason for target leg)
+ *   - The numeric `5006` token from `SwapContext.swap`'s
+ *     `Transfer failed: ${errorReason ?? errorCode}` rethrow when only the
+ *     code is present (no errorReason)
+ *
+ * Scope intentionally narrow: leaves out generic "transaction was reverted"
+ * substrings to avoid catching ERC20 approval reverts, user-rejection
+ * phrasings, or unrelated SDK messages.
+ *
+ * Effective only on synchronously-reverted paths (AVALANCHE_EVM same-chain
+ * `waitForTransactionReceipt` returning `reverted`, and Markr ERC20 approval
+ * reverts). 5006s surfaced via the post-`source-pending` tracking listener
+ * resolve through a different code path and are not retried by this hook.
+ */
+export function isTransactionRevertedError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+
+  const message = error.message
+  const lower = message.toLowerCase()
+  return (
+    lower.includes('source transaction was reverted') ||
+    lower.includes('target transaction was reverted') ||
+    /\b5006\b/.test(message)
+  )
+}
+
+/**
  * Determine if we should retry with next quote
  * Only retry for specific error types
  */
 export function shouldRetryWithNextQuote(error: unknown): boolean {
-  return isGasEstimationError(error) || isInvalidResponseError(error)
+  return (
+    isGasEstimationError(error) ||
+    isInvalidResponseError(error) ||
+    isTransactionRevertedError(error)
+  )
 }
 
 /**
@@ -261,6 +295,13 @@ export function getSwapErrorMessage(error: unknown): string {
   }
   if (message.includes('gas estimation')) {
     return 'Unable to estimate gas. The swap may fail.'
+  }
+  // Fusion errorCode 5006 — most commonly OOG sub-call failures upstream of
+  // our gas-margin clamp. The helper handles case-insensitive matching
+  // against the same walked error so the SDK's Title-Case
+  // "Source transaction was reverted" is recognised.
+  if (isTransactionRevertedError(actualError ?? error)) {
+    return 'Swap failed on-chain. Please try again with a fresh quote.'
   }
 
   // Default to original message

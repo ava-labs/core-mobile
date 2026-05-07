@@ -285,6 +285,40 @@ describe('shouldRetryWithNextQuote', () => {
     ).toBe(true)
   })
 
+  it('should return true for transaction-reverted errors (errorCode 5006)', () => {
+    // SwapContext rethrow shape: `Transfer failed: ${errorReason ?? errorCode}`
+    expect(
+      shouldRetryWithNextQuote(
+        new Error('Transfer failed: Source transaction was reverted')
+      )
+    ).toBe(true)
+    expect(shouldRetryWithNextQuote(new Error('Transfer failed: 5006'))).toBe(
+      true
+    )
+    // Direct SDK errorReason text (case-insensitive)
+    expect(
+      shouldRetryWithNextQuote(new Error('source transaction was reverted'))
+    ).toBe(true)
+    expect(
+      shouldRetryWithNextQuote(new Error('Target transaction was reverted'))
+    ).toBe(true)
+  })
+
+  it('should NOT retry on ERC20 approval reverts or other generic "transaction was reverted" phrasings', () => {
+    // The SDK's Markr handler also emits "transaction was reverted" phrasings
+    // for ERC20 approval reverts. Those are not gas-OOG and shouldn't auto-retry.
+    expect(
+      shouldRetryWithNextQuote(
+        new Error('Transfer failed: ERC20 approval transaction was reverted')
+      )
+    ).toBe(false)
+    expect(
+      shouldRetryWithNextQuote(
+        new Error('the transaction was reverted by the EVM')
+      )
+    ).toBe(false)
+  })
+
   it('should return false for user rejection errors', () => {
     expect(shouldRetryWithNextQuote(new Error('user rejected'))).toBe(false)
   })
@@ -336,6 +370,32 @@ describe('getSwapErrorMessage', () => {
     expect(getSwapErrorMessage(new Error('gas estimation failed'))).toBe(
       'Unable to estimate gas. The swap may fail.'
     )
+  })
+
+  it('should return retry-friendly message for transaction-reverted errors', () => {
+    expect(
+      getSwapErrorMessage(
+        new Error('Transfer failed: Source transaction was reverted')
+      )
+    ).toBe('Swap failed on-chain. Please try again with a fresh quote.')
+    expect(
+      getSwapErrorMessage(new Error('Target transaction was reverted'))
+    ).toBe('Swap failed on-chain. Please try again with a fresh quote.')
+    expect(getSwapErrorMessage(new Error('Transfer failed: 5006'))).toBe(
+      'Swap failed on-chain. Please try again with a fresh quote.'
+    )
+  })
+
+  it('lets sibling branches win when they match earlier in the cascade', () => {
+    // If a future SDK message contains both "slippage" and "5006", the
+    // slippage branch wins — locks in current cascade order so behaviour
+    // doesn't silently flip if the cascade is reordered later.
+    expect(
+      getSwapErrorMessage(new Error('slippage tolerance exceeded (code 5006)'))
+    ).toBe('Price moved too much. Try increasing slippage tolerance.')
+    expect(
+      getSwapErrorMessage(new Error('quote expired during 5006 path'))
+    ).toBe('Quote expired. Please try again.')
   })
 
   it('should return original message for unrecognized errors', () => {
