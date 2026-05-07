@@ -86,16 +86,20 @@ class LedgerService {
   private currentDevices: LedgerDevice[] = []
   private isScanning = false
 
-  // Wrap transport's exchange method to automatically handle busy state
-  private wrapTransportExchange(): void {
-    if (!this.#transport) return
-    const originalExchange = this.#transport.exchange.bind(this.#transport)
+  // Wrap transport's exchange method to automatically handle busy state.
+  // Accepts an explicit transport so tests can inject a mock; production
+  // callers omit the argument and operate on the captured #transport.
+  private wrapTransportExchange(
+    transport: TransportBLE | null = this.#transport
+  ): void {
+    if (!transport) return
+    const originalExchange = transport.exchange.bind(transport)
 
     // Replace exchange method with wrapped version
-    this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
+    transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
       // If transport is busy, wait for the in-flight exchange to complete
-      if (this.#transport?.exchangeBusyPromise) {
-        await this.#transport.exchangeBusyPromise
+      if (transport.exchangeBusyPromise) {
+        await transport.exchangeBusyPromise
       }
       try {
         return await originalExchange(apdu)
@@ -111,8 +115,8 @@ class LedgerService {
               .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
         ) {
           // wait for the transport and retry
-          if (this.#transport?.exchangeBusyPromise) {
-            await this.#transport.exchangeBusyPromise
+          if (transport.exchangeBusyPromise) {
+            await transport.exchangeBusyPromise
           } else {
             await new Promise(res =>
               setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
@@ -379,6 +383,12 @@ class LedgerService {
     })
   }
 
+  // Test seam — exposed (private) so polling tests can stub the
+  // true-private #transport readiness check without leaking the field.
+  private isTransportConnected(): boolean {
+    return !!this.#transport && this.#transport.isConnected
+  }
+
   // Start passive app detection polling
   private startAppPolling(): void {
     if (this.appPollingInterval !== null) {
@@ -387,7 +397,7 @@ class LedgerService {
 
     this.appPollingInterval = setInterval(async () => {
       try {
-        if (!this.#transport || !this.#transport.isConnected) {
+        if (!this.isTransportConnected()) {
           this.stopAppPolling()
 
           // Safety net: if the transport disconnect event did not fire,

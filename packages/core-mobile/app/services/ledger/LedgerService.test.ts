@@ -1030,21 +1030,14 @@ describe('LedgerService', () => {
           version: '0.9.1'
         })
 
-      // Bypass the #transport null-check inside the polling interval by
-      // stubbing the internal field check. The polling callback does:
-      //   if (!this.#transport || !this.#transport.isConnected) { ... }
-      // We can't set #transport from outside, so we override the entire
-      // polling method to remove that guard while keeping pause/resume logic.
-      // Instead, we set #transport indirectly by calling the prototype setter.
-      const protoDesc = Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(LedgerService),
-        'transport'
-      )
-      if (protoDesc?.set) {
-        // The setter does: this.#transport = transport
-        // We pass a minimal object that satisfies the isConnected check.
-        protoDesc.set.call(LedgerService, { isConnected: true })
-      }
+      // Bypass the #transport null-check inside the polling interval.
+      // #transport is a true-private field with no public setter; stub
+      // the isTransportConnected() seam so the callback proceeds to
+      // getCurrentAppInfo (or the pause check) on each tick.
+      jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .spyOn(LedgerService as any, 'isTransportConnected')
+        .mockReturnValue(true)
     })
 
     afterEach(() => {
@@ -1102,7 +1095,6 @@ describe('LedgerService', () => {
       close: jest.Mock
       exchangeBusyPromise: Promise<void> | null
     }
-    let protoDesc: PropertyDescriptor | undefined
 
     beforeEach(() => {
       jest.useFakeTimers()
@@ -1118,24 +1110,11 @@ describe('LedgerService', () => {
       jest.spyOn(Logger, 'info').mockImplementation(() => {})
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'error').mockImplementation(() => {})
-
-      // Use the prototype setter to set the real #transport private field
-      protoDesc = Object.getOwnPropertyDescriptor(
-        Object.getPrototypeOf(LedgerService),
-        'transport'
-      )
-      if (protoDesc?.set) {
-        protoDesc.set.call(LedgerService, mockTransport)
-      }
     })
 
     afterEach(() => {
       jest.useRealTimers()
       jest.clearAllMocks()
-      // Clear transport to avoid leaking state
-      if (protoDesc?.set) {
-        protoDesc.set.call(LedgerService, null)
-      }
     })
 
     it('should await exchangeBusyPromise before sending APDU', async () => {
@@ -1151,8 +1130,10 @@ describe('LedgerService', () => {
       })
       mockTransport.exchange = originalExchange
 
+      // wrapTransportExchange accepts a transport arg (default this.#transport)
+      // so tests can inject a mock without touching the true-private field.
       // @ts-ignore - accessing private
-      LedgerService.wrapTransportExchange()
+      LedgerService.wrapTransportExchange(mockTransport)
 
       const exchangePromise = mockTransport.exchange(Buffer.from([0xe0, 0x01]))
 
