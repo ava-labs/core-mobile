@@ -2,31 +2,20 @@ import { NftContentType, NftImageData, NftItemExternalData } from './types'
 import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
-  private base64 = require('base-64')
-  private base64Prefix = 'data:image/svg+xml;base64,'
+  private base64SvgPrefix = 'data:image/svg+xml;base64,'
 
   async fetchImage(imageData: string): Promise<NftImageData> {
     if (!imageData) {
       throw new Error('[NftProcessor] fetchImage called with empty uri')
     }
 
-    if (this.isBase64Svg(imageData)) {
-      const svg = this.decodeBase64Svg(imageData)
-      return { uri: svg, type: NftContentType.SVG }
+    if (imageData.startsWith(this.base64SvgPrefix)) {
+      return { uri: imageData, type: NftContentType.SVG }
     }
 
     const imageUrl = convertIPFSResolver(imageData)
     const type = await this.identifyByMagicNumber(imageUrl)
     return { uri: imageUrl, type }
-  }
-
-  private isBase64Svg(imageData: string): boolean {
-    return imageData.startsWith(this.base64Prefix)
-  }
-
-  private decodeBase64Svg(svgData: string): string {
-    const base64Data = svgData.substring(this.base64Prefix.length)
-    return this.base64Prefix + this.base64.decode(base64Data).toString()
   }
 
   private async identifyByMagicNumber(url: string): Promise<NftContentType> {
