@@ -1,7 +1,6 @@
 import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import Config from 'react-native-config'
-import { commonStorage } from 'utils/mmkv'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import FCMService from 'services/fcm/FCMService'
 

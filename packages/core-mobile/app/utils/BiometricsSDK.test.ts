@@ -9,8 +9,7 @@ import BiometricsSDK, {
   walletSecretOptions
 } from 'utils/BiometricsSDK'
 import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
-import { commonStorage } from 'utils/mmkv'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import * as LocalAuthentication from 'expo-local-authentication'

@@ -6,9 +6,8 @@ import {
   PLAY_STORE_URI,
   PLAY_STORE_URL
 } from 'resources/Constants'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
 import { checkVersion } from 'react-native-check-version'
 import { checkForUpdate, UpdateFlow } from 'react-native-in-app-updates'
 

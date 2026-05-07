@@ -8,10 +8,9 @@ import Keychain, {
   hasGenericPassword,
   SetOptions
 } from 'react-native-keychain'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { Result } from 'types/result'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
-import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 

@@ -1,5 +1,4 @@
-import { CommonStorageKeys } from 'utils/mmkv'
-import { commonStorage } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { uuid } from 'utils/uuid'
 
 class UserService {

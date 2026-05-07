@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CommonStorageKeys } from 'utils/mmkv'
-import { commonStorage } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 
 /**
  * Hook to get deviceArn from MMKV storage.

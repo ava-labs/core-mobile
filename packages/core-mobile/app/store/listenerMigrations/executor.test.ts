@@ -103,6 +103,94 @@ describe('ListenerMigrationExecutor', () => {
       expect(executor.getCurrentFailures()).toEqual([])
       expect(mockBreadcrumb).not.toHaveBeenCalled()
     })
+
+    it('skips redux selectors entirely when registry is empty', async () => {
+      const storage = new InMemoryMigrationStateStorage()
+      const executor = new ListenerMigrationExecutor(storage, [])
+
+      await executor.executePendingMigrations(buildListenerApi())
+
+      // Empty-registry guard short-circuits before reaching the selectors.
+      expect(mockSelectActiveWallet).not.toHaveBeenCalled()
+      expect(mockSelectWallets).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('reentrancy', () => {
+    it('returns the in-flight promise when called again before the first run finishes', async () => {
+      let resolveMigrate: (() => void) | null = null
+      const migrate = jest.fn(
+        () =>
+          new Promise<MigrationResult>(resolve => {
+            resolveMigrate = () => resolve({ outcome: 'applied' })
+          })
+      )
+      const m1 = makeMigration({
+        version: 1,
+        scope: 'per-wallet',
+        name: 'm1',
+        migrate
+      })
+      const storage = new InMemoryMigrationStateStorage()
+      const executor = new ListenerMigrationExecutor(storage, [m1])
+
+      setWalletState([buildWallet('w1')], 'w1')
+      const first = executor.executePendingMigrations(buildListenerApi())
+      const second = executor.executePendingMigrations(buildListenerApi())
+
+      // Both callers get the same promise — no parallel pass.
+      expect(first).toBe(second)
+      // Migration was only kicked off once.
+      expect(migrate).toHaveBeenCalledTimes(1)
+
+      resolveMigrate?.()
+      await first
+    })
+
+    it('clears the in-flight slot after completion so a later call re-runs', async () => {
+      const migrate = jest.fn(async () => ({ outcome: 'applied' as const }))
+      const m1 = makeMigration({
+        version: 1,
+        scope: 'per-wallet',
+        name: 'm1',
+        migrate
+      })
+      const storage = new InMemoryMigrationStateStorage()
+      const executor = new ListenerMigrationExecutor(storage, [m1])
+
+      setWalletState([buildWallet('w1'), buildWallet('w2')], 'w1')
+      await executor.executePendingMigrations(buildListenerApi())
+      // After the first finishes, a second call against a not-yet-migrated
+      // wallet should proceed normally (in-flight slot was cleared).
+      await executor.executePendingMigrations(buildListenerApi())
+
+      // 2 wallets × 1 pass = 2 invocations (second pass is a no-op since
+      // both wallets were marked complete on the first pass).
+      expect(migrate).toHaveBeenCalledTimes(2)
+    })
+
+    it('clears the in-flight slot even when the run throws', async () => {
+      // A throw inside the wallet-iteration phase (e.g. selector blowing up)
+      // must not leave the executor permanently locked.
+      const storage = new InMemoryMigrationStateStorage()
+      const executor = new ListenerMigrationExecutor(storage, [
+        makeMigration({ version: 1, scope: 'per-wallet', name: 'm1' })
+      ])
+
+      mockSelectWallets.mockImplementationOnce(() => {
+        throw new Error('selector blew up')
+      })
+      mockSelectActiveWallet.mockReturnValueOnce(undefined)
+
+      await expect(
+        executor.executePendingMigrations(buildListenerApi())
+      ).rejects.toThrow('selector blew up')
+
+      // Subsequent call must work normally — the in-flight slot was cleared.
+      setWalletState([buildWallet('w1')], 'w1')
+      await executor.executePendingMigrations(buildListenerApi())
+      expect(executor.getHighestCompletedVersion('per-wallet', 'w1')).toBe(1)
+    })
   })
 
   describe('per-wallet migrations', () => {

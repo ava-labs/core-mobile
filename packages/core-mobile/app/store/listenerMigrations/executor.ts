@@ -29,6 +29,14 @@ import { buildFailureKey, getLatestVersion } from './utils'
  * `MigrationStateStorage` and a custom migration array.
  */
 export class ListenerMigrationExecutor {
+  /**
+   * Promise of the currently-running `executePendingMigrations` call, or
+   * `null` when idle. Concurrent calls return this same promise so the
+   * MMKV state isn't read/written by two passes in parallel (which would
+   * race on `attemptCount` and watermark updates).
+   */
+  private inFlight: Promise<void> | null = null
+
   constructor(
     private readonly storage: MigrationStateStorage,
     private readonly migrations: ListenerMigration[]
@@ -78,24 +86,42 @@ export class ListenerMigrationExecutor {
    * first failure stops subsequent migrations so the failed version stays
    * pending for retry on the next unlock — a successful v3 must not
    * advance the completed-version watermark past a still-failing v2.
+   *
+   * Two early-return guards:
+   * - Empty registry: skip the redux selector and MMKV reads entirely.
+   * - Already running: return the in-flight promise so a second
+   *   `onAppUnlocked` doesn't race the first on MMKV state.
    */
-  async executePendingMigrations(
-    listenerApi: AppListenerEffectAPI
-  ): Promise<void> {
-    const reduxState = listenerApi.getState()
-    const activeWallet = selectActiveWallet(reduxState)
-    const allWallets = Object.values(selectWallets(reduxState))
+  executePendingMigrations(listenerApi: AppListenerEffectAPI): Promise<void> {
+    if (this.migrations.length === 0) return Promise.resolve()
+    if (this.inFlight) return this.inFlight
 
-    // Active wallet first, then others in stable iteration order.
-    const orderedWalletIds = [
-      ...(activeWallet ? [activeWallet.id] : []),
-      ...allWallets.filter(w => w.id !== activeWallet?.id).map(w => w.id)
-    ]
+    // Cleanup is chained via `.finally()` (not an inner `try/finally`) so
+    // it runs strictly after the IIFE settles. An inner `finally` would
+    // run synchronously on a sync throw — before `this.inFlight` is even
+    // assigned — leaving the slot permanently stuck on the rejected
+    // promise.
+    const run = async (): Promise<void> => {
+      const reduxState = listenerApi.getState()
+      const activeWallet = selectActiveWallet(reduxState)
+      const allWallets = Object.values(selectWallets(reduxState))
 
-    for (const walletId of orderedWalletIds) {
-      await this.runScope('per-wallet', walletId, listenerApi)
+      // Active wallet first, then others in stable iteration order.
+      const orderedWalletIds = [
+        ...(activeWallet ? [activeWallet.id] : []),
+        ...allWallets.filter(w => w.id !== activeWallet?.id).map(w => w.id)
+      ]
+
+      for (const walletId of orderedWalletIds) {
+        await this.runScope('per-wallet', walletId, listenerApi)
+      }
+      await this.runScope('global', undefined, listenerApi)
     }
-    await this.runScope('global', undefined, listenerApi)
+
+    this.inFlight = run().finally(() => {
+      this.inFlight = null
+    })
+    return this.inFlight
   }
 
   // ---------- internals ----------

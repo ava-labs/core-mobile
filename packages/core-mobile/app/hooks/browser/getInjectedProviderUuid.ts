@@ -1,5 +1,4 @@
-import { commonStorage } from 'utils/mmkv'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { uuid as generateUuid } from 'utils/uuid'
 
 let cached: string | undefined

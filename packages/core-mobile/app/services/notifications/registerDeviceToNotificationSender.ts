@@ -2,8 +2,7 @@ import Logger from 'utils/Logger'
 import Config from 'react-native-config'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import { Platform } from 'react-native'
-import { commonStorage } from 'utils/mmkv'
-import { CommonStorageKeys } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import FCMService from 'services/fcm/FCMService'
 
 // Singleton promise to prevent multiple concurrent calls
