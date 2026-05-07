@@ -42,6 +42,10 @@ export interface ButtonProps {
   rightIcon?: ButtonIconType | JSX.Element
   hitSlop?: number | Insets
   shouldInverseTheme?: boolean
+  // Default 1 (legacy single-line + truncation). Pass 0 / undefined to
+  // allow the label to wrap when its width exceeds the button content
+  // area — useful for long copy in non-Latin metrics like Rookery.
+  numberOfLines?: number
 }
 
 export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
@@ -58,6 +62,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       testID,
       accessible = false,
       shouldInverseTheme = false,
+      numberOfLines = 1,
       ...rest
     },
     ref
@@ -121,6 +126,12 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
             style={{
               flexDirection: 'row',
               alignItems: 'center',
+              justifyContent: 'center',
+              // When the label may wrap (numberOfLines !== 1) we need the
+              // row to span the button's full inner width so the Text has
+              // a flex constraint to wrap against. Without width:100% the
+              // row sizes to its content and overflows the pill.
+              ...(numberOfLines !== 1 && { width: '100%' }),
               ...sizeStyles[size]
             }}>
             {React.isValidElement(leftIcon)
@@ -135,12 +146,13 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
               : null}
             {typeof children === 'string' ? (
               <Text
-                numberOfLines={1}
+                numberOfLines={numberOfLines}
                 variant={textVariant}
                 style={[
                   {
                     color: tintColor,
-                    flexShrink: 1
+                    flexShrink: 1,
+                    textAlign: 'center'
                   },
                   textStyle
                 ]}>

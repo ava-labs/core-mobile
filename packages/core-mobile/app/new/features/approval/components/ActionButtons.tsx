@@ -39,8 +39,9 @@ export const ActionButtons = ({
   alert
 }: ActionButtonsProps): JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, variant }
   } = useTheme()
+  const isMoto = variant === 'moto'
   const [alertConfirmed, setAlertConfirmed] = useState(false)
 
   const containerStyle = useMemo(
@@ -60,6 +61,8 @@ export const ActionButtons = ({
         <Button
           size="large"
           type="primary"
+          style={isMoto ? { backgroundColor: colors.$inverseSurface } : undefined}
+          textStyle={isMoto ? { color: colors.$inverseOnSurface } : undefined}
           onPress={() => confirm.onPress()}
           disabled={shouldDisableConfirm}
           testID={
@@ -78,7 +81,7 @@ export const ActionButtons = ({
         </Button>
       </View>
     )
-  }, [confirm, cancel, alert, alertConfirmed])
+  }, [confirm, cancel, alert, alertConfirmed, isMoto, colors])
 
   const renderIcon = useCallback(
     (alertType: AlertType) => {

@@ -93,8 +93,7 @@ export const OnboardingProgressDots = ({
           alignItems: 'center',
           gap: 5,
           paddingVertical: 8,
-          paddingHorizontal: 12,
-          alignSelf: 'flex-start'
+          paddingHorizontal: 12
         },
         style
       ]}>

@@ -43,7 +43,7 @@ export const PrivacyScreen = (): JSX.Element | null => {
             justifyContent: 'center'
           }}>
           {isMoto ? (
-            <Logos.AppIcons.MotoWing width={80} height={80} color="#FFFFFF" />
+            <Logos.AppIcons.MotoTetherWing width={160} height={84} />
           ) : (
             <Logos.AppIcons.Core color={colors.$textPrimary} />
           )}

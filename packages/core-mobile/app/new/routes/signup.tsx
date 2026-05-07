@@ -237,7 +237,7 @@ export default function Signup(): JSX.Element {
               devices without hardcoding the exact y. */}
           <View sx={{ flex: 1 }} />
           <View sx={{ paddingHorizontal: 32, gap: 10 }}>
-            <Logos.AppIcons.MotoWing width={60} height={60} color="#FFFFFF" />
+            <Logos.AppIcons.MotoTetherWing width={120} height={63} />
             <Text
               sx={{
                 fontFamily: 'Rookery-Bold',
@@ -293,6 +293,7 @@ export default function Signup(): JSX.Element {
                 shouldInverseTheme
                 disabled={isRegistering}
                 leftIcon="google"
+                numberOfLines={0}
                 onPress={handleGoogleSignin}>
                 Continue with Google
               </Button>
@@ -303,6 +304,7 @@ export default function Signup(): JSX.Element {
                 type="primary"
                 size="large"
                 shouldInverseTheme
+                numberOfLines={0}
                 onPress={handleSignupWithMnemonic}>
                 Manually create new wallet
               </Button>
@@ -312,6 +314,7 @@ export default function Signup(): JSX.Element {
                 testID="accessExistingWallet"
                 type="tertiary"
                 size="large"
+                numberOfLines={0}
                 textStyle={{ color: '#FFFFFF' }}
                 onPress={handleAccessExistingWallet}>
                 Access existing wallet

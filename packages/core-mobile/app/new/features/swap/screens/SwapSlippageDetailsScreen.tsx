@@ -40,8 +40,9 @@ export const SwapSlippageDetailsScreen = ({
   quoteSlippageBps
 }: SwapSlippageDetailsScreenProps): JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors, isDark, variant }
   } = useTheme()
+  const isMoto = variant === 'moto'
   const {
     theme: { colors: inversedColors }
   } = useInversedTheme({ isDark })
@@ -351,7 +352,13 @@ export const SwapSlippageDetailsScreen = ({
             type="primary"
             size="large"
             onPress={handleDone}
-            style={{ width: '100%' }}>
+            style={[
+              { width: '100%' },
+              isMoto && { backgroundColor: colors.$inverseSurface }
+            ]}
+            textStyle={
+              isMoto ? { color: colors.$inverseOnSurface } : undefined
+            }>
             Done
           </Button>
         </View>

@@ -60,8 +60,9 @@ export const SendToken = ({
   const prevSelectedToken = usePrevious(selectedToken)
   const { getMarketTokenBySymbol } = useWatchlist()
   const {
-    theme: { colors }
+    theme: { colors, variant }
   } = useTheme()
+  const isMoto = variant === 'moto'
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
@@ -202,13 +203,15 @@ export const SendToken = ({
           disabled={!canSubmit}
           type="primary"
           size="large"
+          style={isMoto ? { backgroundColor: colors.$inverseSurface } : undefined}
+          textStyle={isMoto ? { color: colors.$inverseOnSurface } : undefined}
           onPress={onSubmit}>
           {isSending ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
         {isLimitedMode && <PoweredByAvalanche />}
       </View>
     )
-  }, [canSubmit, isSending, onSubmit])
+  }, [canSubmit, isSending, onSubmit, isMoto, colors])
 
   return (
     <ScrollScreen
