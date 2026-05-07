@@ -127,11 +127,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              // When the label may wrap (numberOfLines !== 1) we need the
-              // row to span the button's full inner width so the Text has
-              // a flex constraint to wrap against. Without width:100% the
-              // row sizes to its content and overflows the pill.
-              ...(numberOfLines !== 1 && { width: '100%' }),
+              alignSelf: 'stretch',
               ...sizeStyles[size]
             }}>
             {React.isValidElement(leftIcon)
@@ -146,11 +142,9 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
               : null}
             {typeof children === 'string' ? (
               <Text
-                // RN Text on Android treats numberOfLines={0} as 1 (clips
-                // single-line). Coerce 0 → undefined so 0 means unlimited.
-                numberOfLines={
-                  numberOfLines === 0 ? undefined : numberOfLines
-                }
+                {...(numberOfLines && numberOfLines !== 0
+                  ? { numberOfLines }
+                  : {})}
                 variant={textVariant}
                 style={[
                   {
