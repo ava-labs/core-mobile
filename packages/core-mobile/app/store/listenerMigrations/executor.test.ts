@@ -118,7 +118,7 @@ describe('ListenerMigrationExecutor', () => {
 
   describe('reentrancy', () => {
     it('returns the in-flight promise when called again before the first run finishes', async () => {
-      let resolveMigrate: (() => void) | null = null
+      let resolveMigrate: () => void = () => undefined
       const migrate = jest.fn(
         () =>
           new Promise<MigrationResult>(resolve => {
@@ -143,7 +143,7 @@ describe('ListenerMigrationExecutor', () => {
       // Migration was only kicked off once.
       expect(migrate).toHaveBeenCalledTimes(1)
 
-      resolveMigrate?.()
+      resolveMigrate()
       await first
     })
 
