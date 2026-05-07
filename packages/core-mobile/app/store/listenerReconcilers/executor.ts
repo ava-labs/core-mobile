@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react-native'
 import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
 import { AppListenerEffectAPI } from 'store/types'
 import Logger from 'utils/Logger'
-import { Reconciler, ReconcilerResult } from './types'
+import { Reconciler, ReconcilerContext, ReconcilerResult } from './types'
 
 /**
  * Runs all registered listener reconcilers sequentially on every
@@ -66,7 +66,7 @@ export class ListenerReconcilerExecutor {
 
   private async runReconciler(
     reconciler: Reconciler,
-    ctx: { listenerApi: AppListenerEffectAPI }
+    ctx: ReconcilerContext
   ): Promise<ReconcilerResult> {
     const startedAt = Date.now()
 

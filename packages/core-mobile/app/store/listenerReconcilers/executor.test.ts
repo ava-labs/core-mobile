@@ -101,39 +101,33 @@ describe('ListenerReconcilerExecutor', () => {
       expect(reconcile).toHaveBeenCalledTimes(2)
     })
 
-    it('clears the in-flight slot even when the run throws', async () => {
+    it('clears the in-flight slot on the same executor even when the run throws', async () => {
       // A throw inside the iteration phase must not leave the executor
-      // permanently locked. Use a reconciler whose reconcile() returns a
-      // rejected promise so the IIFE rejects.
-      const throwing = makeReconciler({
-        name: 'throwing',
-        reconcile: () => Promise.reject(new Error('boom'))
-      })
-      const recovering = jest.fn(async () => ({
-        outcome: 'applied' as const
-      }))
-      // Note: `runReconciler` catches reconcile() errors and converts to
-      // outcome=failed, so this case actually never propagates out of
-      // executeAll today. To test the cleanup path we override
-      // `runReconciler` indirectly by stubbing the reconcile() to throw
-      // synchronously inside the for-loop's await. We do that by mocking
-      // the iterator: simpler — make `Sentry.addBreadcrumb` throw once,
-      // which propagates out of recordOutcome → out of the IIFE.
+      // permanently locked. `runReconciler` catches reconcile() errors and
+      // converts to outcome=failed, so to surface a throw out of the IIFE
+      // we make `Sentry.addBreadcrumb` throw — once — which propagates out
+      // of recordOutcome → out of the IIFE. The same executor is used for
+      // both calls so we're actually asserting `inFlight` was cleared on it.
+      const reconcile = jest.fn(async () => ({ outcome: 'applied' as const }))
+      const executor = new ListenerReconcilerExecutor([
+        makeReconciler({ name: 'r', reconcile })
+      ])
+
       mockBreadcrumb.mockImplementationOnce(() => {
         throw new Error('breadcrumb sink blew up')
       })
 
-      const executor = new ListenerReconcilerExecutor([throwing])
       await expect(executor.executeAll(buildListenerApi())).rejects.toThrow(
         'breadcrumb sink blew up'
       )
 
-      // Subsequent call must work normally — the in-flight slot was cleared.
-      const executor2 = new ListenerReconcilerExecutor([
-        makeReconciler({ name: 'r2', reconcile: recovering })
-      ])
-      await executor2.executeAll(buildListenerApi())
-      expect(recovering).toHaveBeenCalledTimes(1)
+      // Second call on the same executor must not be short-circuited by a
+      // stale in-flight promise. It should run the reconciler again and
+      // resolve normally now that the breadcrumb mock no longer throws.
+      await expect(
+        executor.executeAll(buildListenerApi())
+      ).resolves.toBeUndefined()
+      expect(reconcile).toHaveBeenCalledTimes(2)
     })
   })
 
