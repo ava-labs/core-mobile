@@ -40,17 +40,21 @@ export type ReconcilerOutcome = 'applied' | 'noOp' | 'failed'
 
 /**
  * Returned by every `reconcile(ctx)` call. The `outcome` field drives
- * analytics and Sentry breadcrumb level. `metadata` is free-form
- * per-reconciler context (e.g. `{ accountsAdded: 3 }`) — consumed by
- * the analytics event so the team can see "what work did this
- * reconciler do" trended over time, and used to drive the removal
+ * the Sentry breadcrumb level today and is intended to drive the future
+ * analytics event. `metadata` is free-form per-reconciler context (e.g.
+ * `{ accountsAdded: 3 }`) — currently attached to the breadcrumb only;
+ * intended to feed the future analytics event so the team can trend
+ * "what work did this reconciler do" over time and drive the removal
  * policy (when `applied %` stays near 0 for 30+ days, remove the
- * reconciler).
+ * reconciler). Analytics emission is not wired up in this PR.
  */
 export interface ReconcilerResult {
   outcome: ReconcilerOutcome
   /** Present only when `outcome === 'failed'`. */
   error?: Error
-  /** Free-form per-reconciler context for analytics. */
+  /**
+   * Free-form per-reconciler context. Currently surfaced on the Sentry
+   * breadcrumb only; intended for the future analytics event.
+   */
   metadata?: Record<string, unknown>
 }
