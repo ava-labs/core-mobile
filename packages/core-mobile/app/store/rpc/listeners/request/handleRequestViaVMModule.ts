@@ -92,16 +92,20 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
-  let context =
-    request.context ??
-    (await getContext({
+  // Merge, don't fallback: a non-empty `request.context` from the caller must
+  // not suppress the per-method auto-injected context (e.g. Avalanche `account`
+  // for AVALANCHE_SEND/SIGN_TRANSACTION). Caller wins on key conflicts.
+  let context = {
+    ...(await getContext({
       method,
       params,
       activeAccount,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
       isTestnet
-    }))
+    })),
+    ...request.context
+  }
 
   if (!isInAppReviewBlocked) {
     context = {
