@@ -35,9 +35,8 @@ jest.mock('utils/uuid', () => ({
   uuid: jest.fn().mockReturnValue('mock-uuid')
 }))
 jest.mock('utils/mmkv', () => ({
-  commonStorage: {}
-}))
-jest.mock('utils/mmkv/storages', () => ({
+  ...jest.requireActual('utils/mmkv'),
+  commonStorage: {},
   appendToStoredArray: jest.fn(),
   loadArrayFromStorage: jest.fn().mockReturnValue([]),
   zustandPersistStorage: {

@@ -1,5 +1,5 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { ZustandStorageKeys } from 'resources/Constants'
+import { ZustandStorageKeys } from 'utils/mmkv'
 import { MarketName, MarketNames } from '../types'
 
 const DEFAULT_BORROW_PROTOCOL: MarketName = MarketNames.aave

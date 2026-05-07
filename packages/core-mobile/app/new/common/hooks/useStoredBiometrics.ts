@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
 import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import { selectWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
@@ -39,7 +38,7 @@ export const useStoredBiometrics = (): {
   }, [])
 
   useEffect(() => {
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+    const type = commonStorage.getString(CommonStorageKeys.SECURE_ACCESS_SET)
     if (type) {
       setUseBiometrics(type === 'BIO')
     } else if (

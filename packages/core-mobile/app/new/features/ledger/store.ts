@@ -1,6 +1,5 @@
-import { ZustandStorageKeys } from 'resources/Constants'
 import { LedgerDerivationPathType, LedgerDevice } from 'services/ledger/types'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Network } from '@avalabs/core-chains-sdk'
