@@ -477,6 +477,7 @@ export const ListScreen = <T,>({
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}
       <AnimatedFlatList
+        testID="bottom_sheet"
         data={data}
         ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}

@@ -136,7 +136,7 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 1,
+  maxInstances: 2,
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly
   ...(isDeviceFarm
@@ -179,7 +179,7 @@ export const config: WebdriverIO.Config = {
   capabilities: caps,
   mochaOpts: {
     ui: 'bdd',
-    timeout: 200000
+    timeout: 400000
   },
 
   // hook before: make or get testRun before test

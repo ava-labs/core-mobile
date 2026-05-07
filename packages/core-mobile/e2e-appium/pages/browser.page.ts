@@ -151,23 +151,11 @@ class BrowserPage {
       await actions.tap(this.close)
     } else {
       try {
-        await driver.switchContext('NATIVE_APP')
-      } catch {
-        /* already in native context */
+        await actions.waitFor(this.androidChromePager)
+      } catch (e) {
+        console.log('a different webview is displayed')
       }
-      try {
-        const menuTrigger = selectors.getById('browser_url_menu_trigger')
-        await actions.waitFor(menuTrigger, 5000)
-        await actions.tap(menuTrigger)
-        const backBtn = selectors.getByText('Back')
-        await actions.waitFor(backBtn, 5000)
-        await actions.tap(backBtn)
-      } catch {
-        await commonElsPage.goAndroidBack()
-        await actions.delay(500)
-        await commonElsPage.goAndroidBack()
-      }
-      await actions.delay(1000)
+      await commonElsPage.goAndroidBack()
     }
   }
 

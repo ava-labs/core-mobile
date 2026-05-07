@@ -87,7 +87,7 @@ class CommonElsPage {
   }
 
   get dismissAndroid() {
-    return selectors.getByText(commonEls.dismissAndroid)
+    return selectors.getBySmartText(commonEls.dismissAndroid)
   }
 
   get cChain() {
@@ -144,6 +144,14 @@ class CommonElsPage {
 
   get save() {
     return selectors.getByText(commonEls.save)
+  }
+
+  get saveId() {
+    return selectors.getById(commonEls.saveId)
+  }
+
+  get cancelId() {
+    return selectors.getById(commonEls.cancelId)
   }
 
   get saveUpperCase() {
@@ -409,12 +417,19 @@ class CommonElsPage {
 
   async dismissBottomSheet(element = this.bottomSheet) {
     await actions.delay(1000)
-    const backBtn =
-      !(await actions.getVisible(element)) &&
+    let backBtn =
+      (await actions.getVisible(element)) &&
       (await actions.getVisible(this.backButton))
-    if (backBtn) {
+
+    while (backBtn) {
       await actions.tap(this.backButton)
+      await actions.delay(500)
+      backBtn =
+        (await actions.getVisible(element)) &&
+        (await actions.getVisible(this.backButton))
+      console.log(`backBtn is visible on the bottom sheet? - ${backBtn}`)
     }
+
     await actions.waitFor(element, 30000)
     if (driver.isAndroid) {
       await driver.back()
@@ -442,12 +457,12 @@ class CommonElsPage {
   }
 
   async tapSave() {
-    await actions.click(this.save)
+    await actions.tap(this.saveId)
   }
 
   async tapYesAlert() {
     if (driver.isAndroid) {
-      await actions.click(selectors.getByText('YES'))
+      await actions.click(selectors.getBySmartText('YES'))
     }
   }
 
@@ -471,6 +486,12 @@ class CommonElsPage {
         console.log('Appium handled the auto accept alerts')
       }
     } else {
+      await actions.click(selectors.getBySmartText(commonEls.delete))
+    }
+  }
+
+  async tapAndroidDeleteAlert() {
+    if (driver.isAndroid) {
       await actions.click(selectors.getBySmartText(commonEls.delete))
     }
   }

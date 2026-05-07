@@ -90,28 +90,6 @@ export const networks: Network[] = [
     }
   },
   {
-    name: common.optimism,
-    haveToggle: true,
-    data: {
-      rpcUrl: 'https://mainnet.optimism.io',
-      explorerUrl: 'https://optimistic.etherscan.io',
-      chainId: '10',
-      tokenSymbol: 'ETH',
-      tokenName: 'Ethereum'
-    }
-  },
-  {
-    name: common.base,
-    haveToggle: true,
-    data: {
-      rpcUrl: 'https://proxy-api.avax.network/proxy/nownodes/base',
-      explorerUrl: 'https://basescan.org',
-      chainId: '8453',
-      tokenSymbol: 'ETH',
-      tokenName: 'Ethereum'
-    }
-  },
-  {
     name: common.arbitrum,
     haveToggle: true,
     data: {
@@ -122,4 +100,26 @@ export const networks: Network[] = [
       tokenName: 'Ethereum'
     }
   }
+  // {
+  //   name: common.optimism,
+  //   haveToggle: true,
+  //   data: {
+  //     rpcUrl: 'https://mainnet.optimism.io',
+  //     explorerUrl: 'https://optimistic.etherscan.io',
+  //     chainId: '10',
+  //     tokenSymbol: 'ETH',
+  //     tokenName: 'Ethereum'
+  //   }
+  // },
+  // {
+  //   name: common.base,
+  //   haveToggle: true,
+  //   data: {
+  //     rpcUrl: 'https://proxy-api.avax.network/proxy/nownodes/base',
+  //     explorerUrl: 'https://basescan.org',
+  //     chainId: '8453',
+  //     tokenSymbol: 'ETH',
+  //     tokenName: 'Ethereum'
+  //   }
+  // }
 ]

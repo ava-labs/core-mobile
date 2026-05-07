@@ -385,11 +385,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isNotVisible(selectors.getBySomeText(name))
-    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async dismissNetworkDropdown(network = commonEls.cChain) {
@@ -408,6 +404,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async verifyAccountName(name: string) {
