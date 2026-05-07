@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
@@ -147,6 +148,7 @@ export function useEvmInjectedProvider(
   tabId: TabId
 ) {
   const dispatch = useDispatch()
+  const store = useStore<RootState>()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const allNetworks = useSelector(selectAllNetworks, shallowEqual)
@@ -317,7 +319,7 @@ export function useEvmInjectedProvider(
       }
 
       const caip2ChainId = getEvmCaip2ChainId(browserNetworkRef.current.chainId)
-      const request = createInAppRequest(dispatch)
+      const request = createInAppRequest(dispatch, store.getState)
 
       try {
         const result = await request({
@@ -394,7 +396,7 @@ export function useEvmInjectedProvider(
         | undefined
       const addHexChainId = addParam?.chainId
       const addRpcUrl = addParam?.rpcUrls?.[0]
-      const inAppRequest = createInAppRequest(dispatch)
+      const inAppRequest = createInAppRequest(dispatch, store.getState)
       try {
         await inAppRequest({
           method: 'wallet_addEthereumChain' as unknown as RpcMethod,
@@ -439,7 +441,7 @@ export function useEvmInjectedProvider(
     async (id: number, params: unknown[] | unknown) => {
       // Normalize: some dApps send object form { type, options } instead of array
       const normalizedParams = Array.isArray(params) ? params : [params]
-      const inAppRequest = createInAppRequest(dispatch)
+      const inAppRequest = createInAppRequest(dispatch, store.getState)
       try {
         const result = await inAppRequest({
           method: 'wallet_watchAsset' as unknown as RpcMethod,
