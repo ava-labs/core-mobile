@@ -1,7 +1,6 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { ActivityNetworkFilter } from './hooks/useActivityFilterAndSearch'

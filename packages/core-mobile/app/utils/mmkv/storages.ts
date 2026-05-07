@@ -1,30 +1,41 @@
-import { createMMKV, MMKV } from 'react-native-mmkv'
-import { StorageKey } from 'resources/Constants'
-import Logger from 'utils/Logger'
-import { StorageValue } from 'zustand/middleware'
-import { PersistStorage, StateStorage } from 'zustand/middleware'
+import { createMMKV } from 'react-native-mmkv'
+import { PersistStorage, StateStorage, StorageValue } from 'zustand/middleware'
 
-export const commonStorageKeys = [
-  StorageKey.POSTHOG_SUSPENDED,
-  StorageKey.SECURE_ACCESS_SET,
-  StorageKey.LAST_SEEN_UPDATE_APP_VERSION,
-  StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS
-]
+// ---------- common storage ----------
 
 export const commonStorage = createMMKV({
   id: `common`
 })
 
+// ---------- query storage ----------
+
 export const queryStorage = createMMKV({
   id: `query`
 })
+
+// ---------- migration storage ----------
+
+/**
+ * Dedicated storage for the listener migration system. Isolating the
+ * tracking blob from `commonStorage` keeps migration state from competing
+ * with unrelated keys for serialization slots and makes it easy to inspect
+ * or clear independently.
+ */
+export const migrationStorage = createMMKV({
+  id: `migration`
+})
+
+// ---------- zustand storage ----------
 
 export const zustandStorageMMKV = createMMKV({
   id: `zustand`
 })
 
-// Simple Zustand persist adapter backed by MMKV.
-// Uses JSON.parse/stringify
+/**
+ * Simple Zustand persist adapter backed by `zustandStorageMMKV`. Each
+ * persisted Zustand store keys into this same MMKV instance under its
+ * configured `name` (a `ZustandStorageKeys` value).
+ */
 export const zustandPersistStorage: PersistStorage<StateStorage> = {
   getItem: (name: string) => {
     const value = zustandStorageMMKV.getString(name)
@@ -36,39 +47,4 @@ export const zustandPersistStorage: PersistStorage<StateStorage> = {
   removeItem: (name: string) => {
     zustandStorageMMKV.remove(name)
   }
-}
-
-export const saveArrayToStorage = <T>(
-  storage: MMKV,
-  key: string,
-  value: T[]
-): void => {
-  try {
-    const json = JSON.stringify(value)
-    storage.set(key, json)
-  } catch (err) {
-    Logger.error(`[MMKV:setArray] Failed to stringify ${key}`, err)
-  }
-}
-
-export const loadArrayFromStorage = <T>(storage: MMKV, key: string): T[] => {
-  try {
-    const json = storage.getString(key)
-    if (!json) return []
-    return JSON.parse(json) as T[]
-  } catch (err) {
-    Logger.error(`[MMKV:getArray] Failed to parse ${key}`, err)
-    return []
-  }
-}
-
-export const appendToStoredArray = <T>(
-  storage: MMKV,
-  key: string,
-  item: T
-): T[] => {
-  const arr = loadArrayFromStorage<T>(storage, key)
-  const updated = [...arr, item]
-  saveArrayToStorage(storage, key, updated)
-  return updated
 }

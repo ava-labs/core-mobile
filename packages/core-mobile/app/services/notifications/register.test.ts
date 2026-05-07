@@ -1,7 +1,6 @@
 import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import Config from 'react-native-config'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import FCMService from 'services/fcm/FCMService'
 
@@ -22,7 +21,7 @@ describe('registerDeviceToNotificationSender', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    commonStorage.remove(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+    commonStorage.remove(CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION)
     mockGetFCMToken.mockResolvedValue(deviceToken)
   })
 
@@ -53,7 +52,7 @@ describe('registerDeviceToNotificationSender', () => {
 
   it('should store deviceArn in common store on successful register', async () => {
     let storedArn = commonStorage.getString(
-      StorageKey.NOTIFICATIONS_OPTIMIZATION
+      CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION
     )
     expect(storedArn).toBe(undefined)
 
@@ -69,7 +68,9 @@ describe('registerDeviceToNotificationSender', () => {
 
     await registerDeviceToNotificationSender()
 
-    storedArn = commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+    storedArn = commonStorage.getString(
+      CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION
+    )
     expect(storedArn).toBe(
       'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
     )

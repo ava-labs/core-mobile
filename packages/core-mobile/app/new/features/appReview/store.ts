@@ -1,5 +1,4 @@
-import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getAppReviewConfig } from 'features/appReview/config'
