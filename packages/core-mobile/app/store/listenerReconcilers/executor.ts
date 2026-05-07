@@ -15,7 +15,8 @@ import { Reconciler, ReconcilerResult } from './types'
  * count + per-execution failure volume makes it unnecessary).
  *
  * No state is persisted: reconcilers don't track completion. Per-execution
- * timeline lives in Sentry breadcrumbs and analytics events.
+ * timeline lives in Sentry breadcrumbs today; an analytics event is
+ * planned but not wired up in this PR.
  *
  * One instance per app session is exported as the
  * `listenerReconcilerExecutor` singleton from `./index.ts`. Tests
