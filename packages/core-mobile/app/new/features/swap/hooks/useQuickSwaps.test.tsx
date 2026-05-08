@@ -17,12 +17,14 @@ jest.mock('store/network/slice', () => ({
 const { useActiveWallet } = jest.requireMock('common/hooks/useActiveWallet')
 const { selectActiveNetwork } = jest.requireMock('store/network/slice')
 
-const buildStore = (overrides?: Partial<{
-  flagOn: boolean
-  isEnabled: boolean
-  feeSetting: 'low' | 'medium' | 'high'
-  maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
-}>) => {
+const buildStore = (
+  overrides?: Partial<{
+    flagOn: boolean
+    isEnabled: boolean
+    feeSetting: 'low' | 'medium' | 'high'
+    maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
+  }>
+): ReturnType<typeof configureStore> => {
   const flagOn = overrides?.flagOn ?? true
   return configureStore({
     reducer: {
@@ -49,7 +51,9 @@ const buildStore = (overrides?: Partial<{
 }
 
 const wrap =
-  (store: ReturnType<typeof buildStore>): React.FC<{ children: React.ReactNode }> =>
+  (
+    store: ReturnType<typeof buildStore>
+  ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) =>
     Provider({ store, children })
 

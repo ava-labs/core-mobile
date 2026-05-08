@@ -16,7 +16,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
@@ -26,9 +25,6 @@ import {
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
-import type { GasSettings } from '@avalabs/fusion-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
-import type Big from 'big.js'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -40,12 +36,7 @@ import {
   useFusionTransfers
 } from '../hooks/useZustandStore'
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
-import { useQuickSwaps } from '../hooks/useQuickSwaps'
 import FusionService from '../services/FusionService'
-import {
-  mapFeeSettingToGasSettings,
-  SuggestedGasFees
-} from '../utils/quickSwapsFee'
 import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
@@ -97,8 +88,6 @@ interface SwapContextState {
   setAmount: Dispatch<bigint | undefined>
   /** ID of the transfer that was just successfully submitted */
   successTransferId: string | undefined
-  /** USD value of the current from-amount; undefined when token/price is unavailable */
-  fromAmountUsd: Big | undefined
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -167,10 +156,6 @@ export const SwapContextProvider = ({
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
     [fromToken, getNetwork]
   )
-
-  // Quick Swaps gas tier
-  const { isEnabled: isQuickSwapsActive, feeSetting, maxBuy } = useQuickSwaps()
-  const { data: networkFees } = useNetworkFee(fromNetwork)
   const toNetwork = useMemo(
     () => (toToken ? getNetwork(toToken.networkChainId) : undefined),
     [toToken, getNetwork]
@@ -186,16 +171,6 @@ export const SwapContextProvider = ({
     if (!activeAccount || !toNetwork) return undefined
     return getAddressByNetwork(activeAccount, toNetwork)
   }, [activeAccount, toNetwork])
-
-  // USD value of the current from-amount — used for Quick Swaps limit check and analytics
-  const fromAmountUsd = useMemo(() => {
-    if (!fromToken || !amount) return undefined
-    const decimals = fromToken.decimals ?? 18
-    const decimal = bigintToBig(amount, decimals)
-    const price = fromToken.priceInCurrency
-    if (price === undefined) return undefined
-    return decimal.times(price)
-  }, [fromToken, amount])
 
   const onNoQuotesError = useCallback((retry: () => void) => {
     showAlert({
@@ -301,10 +276,7 @@ export const SwapContextProvider = ({
           autoRetryAttempt
         },
         caip2SourceChainId: quote.sourceChain.chainId,
-        caip2TargetChainId: quote.targetChain.chainId,
-        quickSwapsEnabled: isQuickSwapsActive,
-        quickSwapsFeeSetting: feeSetting,
-        quickSwapsMaxBuy: maxBuy
+        caip2TargetChainId: quote.targetChain.chainId
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -338,21 +310,33 @@ export const SwapContextProvider = ({
 
       // Dispatch swapCompleted for Nest Egg qualification tracking
       const swapTxHash = transfer.source?.txHash
-      if (swapTxHash && fromAmountUsd !== undefined) {
-        const fromAmountUsdNumber = fromAmountUsd.toNumber()
+      if (
+        swapTxHash &&
+        transfer.amountIn &&
+        fromTokenData.priceInCurrency &&
+        'decimals' in fromTokenData
+      ) {
+        // Calculate USD amount from the quote for Nest Egg tracking
+        // amountIn is the swap amount in token units (as string)
+
+        // Convert amount from token units to decimal value
+        const amountDecimal =
+          Number(transfer.amountIn) / Math.pow(10, fromTokenData.decimals)
+        const fromAmountUsd = amountDecimal * fromTokenData.priceInCurrency
+
         dispatch(
           swapCompleted({
             txHash: swapTxHash,
             chainId: Number(quote.sourceChain.chainId.split(':')[1]),
             fromTokenSymbol: fromTokenData.symbol,
             toTokenSymbol: toTokenData.symbol,
-            fromAmountUsd: fromAmountUsdNumber,
-            toAmountUsd: fromAmountUsdNumber
+            fromAmountUsd,
+            toAmountUsd: fromAmountUsd
           })
         )
       }
     },
-    [dispatch, setTransfers, fromAmountUsd, isQuickSwapsActive, feeSetting, maxBuy]
+    [dispatch, setTransfers]
   )
 
   // Handle swap error: logging, toast
@@ -393,30 +377,9 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        let gasSettings: GasSettings = {
-          estimateGasMarginBps: transferGasMarginBps
-        }
-
-        if (isQuickSwapsActive) {
-          const suggested: SuggestedGasFees | undefined = networkFees && {
-            slow: networkFees.low,
-            normal: networkFees.medium,
-            fast: networkFees.high
-          }
-          const tierOverride = mapFeeSettingToGasSettings(feeSetting, suggested)
-          if (tierOverride) {
-            gasSettings = { ...gasSettings, ...tierOverride }
-          } else {
-            Logger.warn(
-              '[SwapContext] no gas tier override available; using SDK default',
-              { feeSetting }
-            )
-          }
-        }
-
         const transfer = await FusionService.transferAsset(
           quoteToUse,
-          gasSettings
+          transferGasMarginBps
         )
 
         if (transfer.status === 'failed') {
@@ -487,9 +450,6 @@ export const SwapContextProvider = ({
       allQuotes,
       maxRetries,
       transferGasMarginBps,
-      isQuickSwapsActive,
-      feeSetting,
-      networkFees,
       handleSwapSuccess,
       handleSwapError
     ]
@@ -517,8 +477,7 @@ export const SwapContextProvider = ({
     setDestination,
     swapStatus,
     setAmount,
-    successTransferId,
-    fromAmountUsd
+    successTransferId
   }
 
   return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>
