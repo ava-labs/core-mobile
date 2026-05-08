@@ -144,7 +144,7 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur,
           //TODO: uncomment when predictions is ready
           // tabBarItemHidden: isPredictionsBlocked
-          tabBarItemHidden: false
+          tabBarItemHidden: true
         }}
       />
       <BottomTabs.Screen
