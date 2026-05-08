@@ -6,15 +6,20 @@ import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
 import type { NetworkWithCaip2ChainId } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
+import * as Sentry from '@sentry/react-native'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
-import { SentryTag } from 'services/sentry/types'
+import {
+  AllowedSentryBreadcrumbCategory,
+  SentryTag
+} from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
 import {
   getFingerprintForFeeEstimationError,
-  isQuoteUsable
+  isQuoteUsable,
+  isUserStateError
 } from './useFeeEstimation.helpers'
 import { buildFeeOptions } from './useMaxSwapAmount/utils'
 
@@ -85,6 +90,22 @@ export const useFeeEstimation = ({
 
   useEffect(() => {
     if (!error) return
+
+    // Suppress capture for known user-state errors (insufficient native AVAX,
+    // insufficient ERC20 balance/allowance). The UI already surfaces these via
+    // `useFeeValidation → canSwap`; Sentry doesn't add value and the noise
+    // dominates the swap-feature issue list when not filtered. We still leave
+    // a breadcrumb so investigators retain forensic context if a downstream
+    // (non-suppressed) error fires later in the same session.
+    if (isUserStateError(error)) {
+      Sentry.addBreadcrumb({
+        category: AllowedSentryBreadcrumbCategory.FeeEstimationUserState,
+        level: 'info',
+        message: '[useFeeEstimation] skipped user-state error'
+      })
+      return
+    }
+
     if (isEstimateNativeFeeError(error) && error.details) {
       Logger.warn('[useFeeEstimation] estimateNativeFee revert error', error)
       // Use captureMessage (not Logger.error) for Sentry so that BigInt values

@@ -53,7 +53,8 @@ export const SentryTag = {
  * — breadcrumbs without a listed category get dropped.
  */
 export const AllowedSentryBreadcrumbCategory = {
-  ListenerMigration: 'listenerMigration'
+  ListenerMigration: 'listenerMigration',
+  FeeEstimationUserState: 'feeEstimationUserState'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =

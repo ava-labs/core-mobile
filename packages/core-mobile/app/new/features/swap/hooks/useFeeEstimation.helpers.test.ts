@@ -1,7 +1,8 @@
 import type { Quote } from '../types'
 import {
   getFingerprintForFeeEstimationError,
-  isQuoteUsable
+  isQuoteUsable,
+  isUserStateError
 } from './useFeeEstimation.helpers'
 
 describe('isQuoteUsable', () => {
@@ -78,5 +79,124 @@ describe('getFingerprintForFeeEstimationError', () => {
     expect(getFingerprintForFeeEstimationError('oops')).toEqual([
       '{{ default }}'
     ])
+  })
+})
+
+describe('isUserStateError', () => {
+  it('matches raw RPC -32000 insufficient funds', () => {
+    const error = {
+      code: -32000,
+      message:
+        'failed with 40000000 gas: insufficient funds for gas * price + value: address 0x... have 0 want 1000'
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('matches wrapped SDK error via causedByInsufficientFunds', () => {
+    const error = {
+      causedByInsufficientFunds: () => true
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('matches transfer amount exceeds balance via details.cause.shortMessage', () => {
+    const error = {
+      details: {
+        cause: { shortMessage: 'ERC20: transfer amount exceeds balance' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('matches transfer amount exceeds allowance', () => {
+    const error = {
+      details: {
+        cause: { shortMessage: 'ERC20: transfer amount exceeds allowance' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('matches WAVAX unwrap burn balance', () => {
+    const error = {
+      details: {
+        cause: { shortMessage: 'ERC20: burn amount exceeds balance' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('does NOT match TargetCallFailed (the 5006 SDK family)', () => {
+    const error = {
+      details: {
+        data: '0xeda86850',
+        cause: { shortMessage: 'Execution reverted: TargetCallFailed()' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(false)
+  })
+
+  it('does NOT match Panic(17) reverts', () => {
+    const error = {
+      details: {
+        cause: { shortMessage: 'Panic(17)' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(false)
+  })
+
+  it('does NOT match UnsupportedTokenOut', () => {
+    const error = {
+      details: {
+        cause: { shortMessage: 'Execution reverted: UnsupportedTokenOut()' }
+      }
+    }
+    expect(isUserStateError(error)).toBe(false)
+  })
+
+  it('does NOT match unknown errors (fail open, capture by default)', () => {
+    expect(isUserStateError(new Error('something unexpected'))).toBe(false)
+  })
+
+  it('does NOT match QUOTE_EXPIRED (different fix path)', () => {
+    const error = {
+      name: 'InvalidParamsError',
+      message: 'Quote expired 5 seconds ago.'
+    }
+    expect(isUserStateError(error)).toBe(false)
+  })
+
+  it('does NOT match null', () => {
+    expect(isUserStateError(null)).toBe(false)
+  })
+
+  it('does NOT match a primitive', () => {
+    expect(isUserStateError('oops')).toBe(false)
+  })
+
+  it('does NOT match -32000 without insufficient funds in message', () => {
+    expect(
+      isUserStateError({ code: -32000, message: 'some other failure' })
+    ).toBe(false)
+  })
+
+  it('matches string-coded -32000 (some RPC providers emit code as a string)', () => {
+    const error = {
+      code: '-32000',
+      message: 'insufficient funds for gas * price + value'
+    }
+    expect(isUserStateError(error)).toBe(true)
+  })
+
+  it('falls through when causedByInsufficientFunds throws', () => {
+    const error = {
+      causedByInsufficientFunds: () => {
+        throw new Error('boom')
+      }
+    }
+    // Should NOT crash and should NOT silently match — fall through to other
+    // matchers; with no other match it returns false so caller still captures.
+    expect(() => isUserStateError(error)).not.toThrow()
+    expect(isUserStateError(error)).toBe(false)
   })
 })
