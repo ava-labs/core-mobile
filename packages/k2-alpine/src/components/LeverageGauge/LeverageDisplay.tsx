@@ -1,17 +1,11 @@
 import React, { FC, memo, useEffect, useRef, useState } from 'react'
 import { Platform, Pressable, TextInput, TextStyle } from 'react-native'
-import {
-  Canvas,
-  Group,
-  Text as SkText,
-  useFont
-} from '@shopify/react-native-skia'
+import { Canvas, Text as SkText, useFont } from '@shopify/react-native-skia'
 import Animated, {
   Easing,
   SharedValue,
   useAnimatedProps,
   useAnimatedReaction,
-  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   withTiming
@@ -23,11 +17,10 @@ import { Button } from '../Button/Button'
 import {
   commitDraftText,
   formatNumber,
-  resolvePreset,
   sanitizeTypedText,
   snapToStep
 } from './helpers'
-import type { Preset } from './types'
+import { useSkiaCanvasFadeIn } from './useSkiaCanvasFadeIn'
 
 type LeverageDisplayProps = {
   value: number
@@ -42,13 +35,13 @@ type LeverageDisplayProps = {
   decimals: number
   /** Restrict the input to integers (digit-only keyboard + input filter). */
   integersOnly: boolean
-  presets: Preset[]
   subtitle: string
-  formatValue: (v: number) => string
   enableManualInput: boolean
-  onPresetPress: (v: number) => void
-  onManualCommit: (v: number) => void
+  onPresetPress?: (v: number) => void
+  onManualCommit?: (v: number) => void
 }
+
+const noop = (): void => undefined
 
 const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   value,
@@ -59,12 +52,10 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   step,
   decimals,
   integersOnly,
-  presets,
   subtitle,
-  formatValue,
   enableManualInput,
-  onPresetPress,
-  onManualCommit
+  onPresetPress = noop,
+  onManualCommit = noop
 }) => {
   const {
     theme: { colors }
@@ -79,11 +70,10 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
     start: number
     end: number
   } | null>(null)
-  // Live value ticks at every step crossing — including during decay/settle
-  // when the `value` prop intentionally doesn't update (to avoid flooding the
-  // JS queue from LeverageWheel). Stored in a ref so updates during swipes
-  // don't re-render the whole display (which could blank the Skia canvas
-  // for a frame and cause a visible flicker).
+  // Live value at every step crossing — kept in a ref so wheel-driven
+  // updates don't re-render the display (which would flicker the Skia
+  // canvas). The `value` prop intentionally lags during decay to avoid
+  // flooding the JS queue from LeverageWheel.
   const liveValueRef = useRef<number>(value)
   const inputRef = useRef<TextInput>(null)
 
@@ -93,10 +83,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
 
   const maxStepIndex = Math.round((max - min) / step)
 
-  // Keeps JS state (draft) in sync with the wheel position while editing —
-  // so that handleBlur commits the right value. The *visible* text in the
-  // TextInput is driven independently by useAnimatedProps on the UI thread,
-  // so this setState can be slow without causing visible lag.
+  // Keeps JS draft state in sync with the wheel while editing so handleBlur
+  // commits the right value. The *visible* text is driven on the UI thread
+  // via useAnimatedProps, so this setState can be slow without visible lag.
   const syncFromWheel = (snapped: number, swept: boolean): void => {
     liveValueRef.current = snapped
     if (!swept) return
@@ -170,10 +159,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
 
   const isEditing = draft !== null
 
-  // Drives the focused TextInput's text on the UI thread — text is recomputed
-  // every frame from currentValue, so fast wheel swipes update the visible
-  // value with no JS-thread dispatch lag. Only active while isActive (wheel
-  // gesture) so user typing (isActive=false) isn't overwritten.
+  // Drives the focused TextInput's text on the UI thread, so fast swipes
+  // update the visible value without JS-thread dispatch lag. Only active
+  // while isActive (wheel motion) — user typing must not be overwritten.
   const editingAnimatedProps = useAnimatedProps(() => {
     if (!isActive.value) {
       // Empty object → no props overridden, user's controlled value wins.
@@ -202,21 +190,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
         Min
       </Button>
 
-      {presets.map((preset, index) => {
-        if (preset === 'min' || preset === 'max') return null
-        const resolved = resolvePreset(preset, min, max)
-        return (
-          <Button
-            key={`preset-${index}-${resolved}`}
-            type="tertiary"
-            size="small"
-            onPress={() => onPresetPress(resolved)}
-            testID={`leverage-gauge-preset-${resolved}`}>
-            {formatValue(resolved)}
-          </Button>
-        )
-      })}
-
       <View style={{ flex: 1, alignItems: 'center' }}>
         <View
           style={{
@@ -226,10 +199,9 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
             position: 'relative',
             minHeight: 80
           }}>
-          {/* Skia display — always rendered in flow so its derived values
-              and animated states persist, and its Canvas keeps painting
-              frames regardless of focus. When editing, the TextInput
-              overlays it with an opaque background. */}
+          {/* Always in flow — when editing, the TextInput overlays it with
+              an opaque background while the Skia canvas keeps painting, so
+              its derived values stay live regardless of focus. */}
           <Pressable
             onPress={startEdit}
             disabled={!enableManualInput || isEditing}
@@ -240,7 +212,6 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
               max={max}
               step={step}
               decimals={decimals}
-              integersOnly={integersOnly}
             />
           </Pressable>
           {isEditing && (
@@ -314,27 +285,18 @@ const LeverageDisplayInner: FC<LeverageDisplayProps> = ({
   )
 }
 
-// Memoized — wheel swipes cause the parent to re-render frequently, and
-// LeverageDisplay hosts a Skia canvas + many derived values. Bailing on
-// identical-props renders keeps JS-thread cost flat during fast swipes.
+// Bails on identical-props renders so wheel swipes don't churn the Skia
+// canvas + many derived values on every parent re-render.
 export const LeverageDisplay = memo(LeverageDisplayInner)
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
-/**
- * Renders the live wheel value via Skia. Each digit is rendered as its own
- * slot so only the characters that actually change fade out/in, while
- * unchanged digits stay put. Text is derived on the UI thread — no JS
- * dispatch per tick.
- */
 const NUMBER_CANVAS_HEIGHT = 80
 const NUMBER_FONT_SIZE = 60
 const NUMBER_BASELINE_Y = 64
-// The × glyph sits optically higher than numerals in Aeonik — nudge it
-// down so it visually aligns with the digit baseline.
+// × sits optically higher than numerals in Aeonik — nudge it down to align
+// with the digit baseline.
 const X_VERTICAL_OFFSET = 0
-// Pre-compute each slot's character and x position on the UI thread. The
-// layout is centered such that [number + × + gap] sits as one group.
 const X_GAP = 2.2
 
 type SkFont = NonNullable<ReturnType<typeof useFont>>
@@ -344,8 +306,7 @@ const AnimatedNumber: FC<{
   max: number
   step: number
   decimals: number
-  integersOnly: boolean
-}> = ({ currentValue, min, max, step, decimals, integersOnly }) => {
+}> = ({ currentValue, min, max, step, decimals }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -354,44 +315,20 @@ const AnimatedNumber: FC<{
     NUMBER_FONT_SIZE
   )
 
-  // Canvas opacity starts at 0 and fades in once Skia is actually ready
-  // to paint — font resolved plus two RAFs confirming React has committed
-  // and the native Canvas has ticked a first frame.
-  const canvasOpacity = useSharedValue(0)
-  const canvasStyle = useAnimatedStyle(() => ({
-    opacity: canvasOpacity.value
-  }))
-  useEffect(() => {
-    if (!font) return
-    const cancelIds: { raf2?: number } = {}
-    const raf1 = requestAnimationFrame(() => {
-      cancelIds.raf2 = requestAnimationFrame(() => {
-        canvasOpacity.value = withTiming(1, { duration: 300 })
-      })
-    })
-    return () => {
-      cancelAnimationFrame(raf1)
-      if (cancelIds.raf2 !== undefined) cancelAnimationFrame(cancelIds.raf2)
-    }
-  }, [font, canvasOpacity])
+  const canvasStyle = useSkiaCanvasFadeIn(!!font)
 
-  // How many digit slots we need to cover the widest possible number (× is
-  // rendered separately so it can slide smoothly).
   const slotCount = React.useMemo(() => {
     const widest = decimals > 0 ? `${max}.${'0'.repeat(decimals)}` : `${max}`
     return widest.length
   }, [max, decimals])
 
-  // Canvas width — generous enough that the widest value with × fits
-  // comfortably and remains centered by the outer flex row.
   const canvasWidth = React.useMemo(() => {
     if (!font) return 1
     const widest = decimals > 0 ? `${max}.${'0'.repeat(decimals)}` : `${max}`
     const w = font.measureText(widest + '×').width
     return Math.ceil(w) + 4
   }, [font, max, decimals])
-  // × glyph width is stable for a given font — cache it so the UI-thread
-  // layout derived value doesn't call measureText per frame.
+  // Cached so the UI-thread layout derived value doesn't measureText per frame.
   const xGlyphWidth = React.useMemo(
     () => (font ? font.measureText('×').width : 0),
     [font]
@@ -403,38 +340,17 @@ const AnimatedNumber: FC<{
     const maxStepIdx = Math.round((max - min) / step)
     const rawIdx = Math.round((clamped - min) / step)
     const stepIndex = Math.max(0, Math.min(maxStepIdx, rawIdx))
-    const snappedValue = min + stepIndex * step
 
-    // Direction of the "approaching" neighbor snap — determines which char
-    // at each slot is about to become this slot's char.
-    const neighborOffset = clamped > snappedValue ? 1 : -1
-    const neighborIdx = Math.max(
-      0,
-      Math.min(maxStepIdx, stepIndex + neighborOffset)
-    )
-
-    const formatSnapped = (idx: number): string => {
-      const rs = min + idx * step
-      const s = min + Number((rs - min).toFixed(decimals))
-      return decimals > 0 ? s.toFixed(decimals) : `${s}`
-    }
-    const currentText = formatSnapped(stepIndex)
-    const neighborText = formatSnapped(neighborIdx)
-
-    // How far we are between current snap and neighbor snap: 0 at snap,
-    // 1 at the boundary midpoint.
-    const distFromSnap = Math.abs(clamped - snappedValue)
-    const fadeProgress = Math.min(distFromSnap / (step / 2), 1)
+    const rs = min + stepIndex * step
+    const s = min + Number((rs - min).toFixed(decimals))
+    const currentText = decimals > 0 ? s.toFixed(decimals) : `${s}`
 
     const chars: string[] = []
-    const neighborChars: string[] = []
     const widths: number[] = []
     let numberWidth = 0
     for (let i = 0; i < slotCount; i++) {
       const ch = currentText[i] ?? ''
-      const nch = neighborText[i] ?? ''
       chars.push(ch)
-      neighborChars.push(nch)
       const w = ch && font ? font.measureText(ch).width : 0
       widths.push(w)
       numberWidth += w
@@ -448,14 +364,13 @@ const AnimatedNumber: FC<{
       cursor += widths[i] ?? 0
     }
     const xSymbolX = startX + numberWidth + X_GAP
-    return { chars, neighborChars, xs, xSymbolX, fadeProgress }
+    return { chars, xs, xSymbolX }
   })
 
-  // × target x — its own smoothed shared value so it slides gently when the
-  // number width changes. Different durations depending on direction:
-  //  - Shorter number (× moves left, losing a digit): slower glide
-  //  - Longer number (× moves right, gaining a digit): quick catch-up so × is
-  //    already in place when the new digit fades in
+  // × target x — smoothed so it slides gently when the number width changes.
+  // Direction matters: when the number gets shorter (digit dropped) × glides
+  // left slowly; when it gets longer (digit added) × snaps right so it's
+  // already in place by the time the new digit fades in.
   const xSymbolTargetX = useDerivedValue(() => layout.value.xSymbolX)
   const xSymbolX = useSharedValue(xSymbolTargetX.value)
   useAnimatedReaction(
@@ -499,7 +414,6 @@ const AnimatedNumber: FC<{
             layout={layout}
             font={font}
             color={colors.$textPrimary}
-            integersOnly={integersOnly}
           />
         ))}
         <SkText
@@ -514,49 +428,19 @@ const AnimatedNumber: FC<{
   )
 }
 
-/**
- * A single Skia digit slot. Opacity fades progressively only on decimal
- * digits (slots after the ".") when integersOnly is false. Integer digits
- * and all slots in integersOnly mode stay at full opacity.
- */
-const DIGIT_MIN_OPACITY = 0.2
 const DigitSlot: FC<{
   index: number
   layout: SharedValue<{
     chars: string[]
-    neighborChars: string[]
     xs: number[]
     xSymbolX: number
-    fadeProgress: number
   }>
   font: SkFont
   color: string
-  integersOnly: boolean
-}> = ({ index, layout, font, color, integersOnly }) => {
+}> = ({ index, layout, font, color }) => {
   const char = useDerivedValue(() => layout.value.chars[index] ?? '')
   const x = useDerivedValue(() => layout.value.xs[index] ?? 0)
-  const opacity = useDerivedValue(() => {
-    if (integersOnly) return 1
-    const chars = layout.value.chars
-    // Only fade digits to the right of the decimal point. Integer digits
-    // and the "." itself never fade.
-    const dotIndex = chars.indexOf('.')
-    if (dotIndex === -1 || index <= dotIndex) return 1
-    const cur = chars[index] ?? ''
-    const nxt = layout.value.neighborChars[index] ?? ''
-    if (cur === nxt) return 1
-    if (cur === '' || nxt === '') return 1
-    return 1 - layout.value.fadeProgress * (1 - DIGIT_MIN_OPACITY)
-  })
   return (
-    <Group opacity={opacity}>
-      <SkText
-        text={char}
-        x={x}
-        y={NUMBER_BASELINE_Y}
-        font={font}
-        color={color}
-      />
-    </Group>
+    <SkText text={char} x={x} y={NUMBER_BASELINE_Y} font={font} color={color} />
   )
 }

@@ -1,22 +1,9 @@
 import {
-  clamp,
   computeMaxTravel,
   normalizeThreshold,
   crossedThreshold,
   activeSide
 } from './helpers'
-
-describe('clamp', () => {
-  it('returns value when inside range', () => {
-    expect(clamp(5, 0, 10)).toBe(5)
-  })
-  it('returns min when below', () => {
-    expect(clamp(-5, 0, 10)).toBe(0)
-  })
-  it('returns max when above', () => {
-    expect(clamp(15, 0, 10)).toBe(10)
-  })
-})
 
 describe('computeMaxTravel', () => {
   it('subtracts thumb size and padding from track width', () => {

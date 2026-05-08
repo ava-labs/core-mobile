@@ -7,7 +7,8 @@ import {
   withTiming
 } from 'react-native-reanimated'
 import { ANIMATED } from '../../utils/animations'
-import { activeSide, clamp, crossedThreshold } from './helpers'
+import { clamp } from '../../utils/clamp'
+import { activeSide, crossedThreshold } from './helpers'
 import { fireResetHaptic, fireSelectionHaptic } from './haptics'
 import type { SlideState } from './types'
 
