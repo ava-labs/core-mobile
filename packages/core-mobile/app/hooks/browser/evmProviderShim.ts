@@ -466,31 +466,6 @@ export function buildEvmProviderShim({
     document.addEventListener('DOMContentLoaded', sendDomainMetadata);
   }
 
-  // ──────────────────────────────────────────────
-  // 10. SPA navigation listener
-  // ──────────────────────────────────────────────
-  (function() {
-    var lastUrl = window.location.href;
-    function onUrlChange() {
-      var newUrl = window.location.href;
-      if (newUrl !== lastUrl) {
-        lastUrl = newUrl;
-        safeSend({ method: 'nav_change', payload: newUrl });
-      }
-    }
-    var origPushState = history.pushState;
-    history.pushState = function() {
-      origPushState.apply(history, arguments);
-      onUrlChange();
-    };
-    var origReplaceState = history.replaceState;
-    history.replaceState = function() {
-      origReplaceState.apply(history, arguments);
-      onUrlChange();
-    };
-    window.addEventListener('popstate', onUrlChange);
-  })();
-
   safeSend({ method: 'log', payload: 'Core EVM provider injected (chainId=' + _chainId + ')' });
 })();`
 }
