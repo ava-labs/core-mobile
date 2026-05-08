@@ -48,7 +48,8 @@ export const SentryTag = {
   PostHog: 'posthog',
   Glacier: 'glacier',
   ProfileApi: 'profile-api',
-  GasStation: 'gas-station'
+  GasStation: 'gas-station',
+  Proxy: 'proxy'
 } as const
 
 /**

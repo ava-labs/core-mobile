@@ -97,19 +97,19 @@ describe('NetworkService', () => {
 
       const result = await NetworkService.getNetworks({ includeSolana: false })
 
-      // Verify Logger was called for both fetch errors with the glacier source tag.
+      // Verify Logger was called for both fetch errors with the proxy source tag.
       // The underlying error object is passed as the second arg so Sentry preserves
       // the original error type and stack (i.e. it joins the existing TypeError:
       // Network request failed bucket rather than spawning a new fingerprint).
       expect(Logger.error).toHaveBeenCalledWith(
         '[NetworkService][fetchNetworks] failed',
         erc20Err,
-        { source: 'glacier' }
+        { source: 'proxy' }
       )
       expect(Logger.error).toHaveBeenCalledWith(
         '[NetworkService][fetchDeBankNetworks] failed',
         deBankErr,
-        { source: 'glacier' }
+        { source: 'proxy' }
       )
 
       // Expected result should include the default network mappings

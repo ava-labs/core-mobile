@@ -40,14 +40,14 @@ class NetworkService {
       includeSolana
     }).catch(reason => {
       Logger.error('[NetworkService][fetchNetworks] failed', reason, {
-        source: SentryTag.Glacier
+        source: SentryTag.Proxy
       })
       return {} as Networks
     })
 
     const deBankNetworks = await this.fetchDeBankNetworks().catch(reason => {
       Logger.error('[NetworkService][fetchDeBankNetworks] failed', reason, {
-        source: SentryTag.Glacier
+        source: SentryTag.Proxy
       })
       return {} as Networks
     })
