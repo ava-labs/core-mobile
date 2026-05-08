@@ -12,7 +12,10 @@ import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
-import { getFingerprintForFeeEstimationError } from './useFeeEstimation.helpers'
+import {
+  getFingerprintForFeeEstimationError,
+  isQuoteUsable
+} from './useFeeEstimation.helpers'
 import { buildFeeOptions } from './useMaxSwapAmount/utils'
 
 /**
@@ -46,6 +49,15 @@ export const useFeeEstimation = ({
     [feeUnitsMarginBps, networkFee]
   )
 
+  // Capture the usable quote up-front so the queryFn closure can rely on
+  // narrowing without a runtime re-check. TanStack v5 invokes the latest
+  // queryFn from the most recent `setOptions`, so each render's closure
+  // sees that render's `usableQuote`. Re-checking inside the closure would
+  // require returning `undefined` on the stale path, which v5 rejects with
+  // "data cannot be undefined" and would re-introduce the double-capture
+  // this guard is meant to eliminate.
+  const usableQuote = isQuoteUsable(quote) ? quote : null
+
   const { data, error, isFetching } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
@@ -56,10 +68,10 @@ export const useFeeEstimation = ({
       feeOptions.overrides?.maxPriorityFeePerGas.toString(),
       gasSafetyBps
     ],
-    queryFn: quote
+    queryFn: usableQuote
       ? async () => {
           const { totalFee, totalFeeWithoutMargin } =
-            await FusionService.estimateNativeFee(quote, feeOptions)
+            await FusionService.estimateNativeFee(usableQuote, feeOptions)
           const buffered =
             gasSafetyBps > 0
               ? (totalFee * (10000n + BigInt(gasSafetyBps))) / 10000n

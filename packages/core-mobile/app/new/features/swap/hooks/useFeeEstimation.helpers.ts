@@ -1,3 +1,20 @@
+import type { Quote } from '../types'
+
+/**
+ * Type guard mirroring the SDK's expired-quote check from
+ * `transferManager.estimateNativeFee`: the SDK throws
+ * `InvalidParamsError(QUOTE_EXPIRED)` when
+ * `quote.expiresAt <= Math.floor(Date.now() / 1000)`. Use this guard before
+ * calling `FusionService.estimateNativeFee` so we skip the round-trip entirely
+ * for stale quotes. The narrowing form lets callers use the narrowed `Quote`
+ * inside the truthy branch without a non-null assertion.
+ */
+export const isQuoteUsable = (quote: Quote | null): quote is Quote => {
+  if (!quote) return false
+  const now = Math.floor(Date.now() / 1000)
+  return quote.expiresAt > now
+}
+
 /**
  * Builds a Sentry fingerprint for fee-estimation errors that propagated through
  * the SDK's EstimateNativeFeeError wrap. The on-chain revert signature
