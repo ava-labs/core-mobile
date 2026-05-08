@@ -4,16 +4,14 @@ import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
 import Logger from 'utils/Logger'
-import {
-  openInAppBrowser,
-  openInAppBrowserForAuth
-} from 'utils/openInAppBrowser'
-import { InAppBrowserOptions } from 'react-native-inappbrowser-reborn'
+import { openInAppBrowser } from 'utils/openInAppBrowser'
+import InAppBrowser, {
+  InAppBrowserOptions
+} from 'react-native-inappbrowser-reborn'
 import { useTheme } from '@avalabs/k2-alpine'
 import { showSnackbar } from 'common/utils/toast'
-import { Platform } from 'react-native'
-import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
-import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { Linking } from 'react-native'
+import { useDisableLockAppStore } from 'features/accountSettings/store'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -22,7 +20,8 @@ const moonpayURL = async (address: string): Promise<{ url: string }> => {
 }
 
 const useInAppBrowser = (): {
-  openUrl: (url: string, redirectUrl?: string) => Promise<void>
+  openUrl: (url: string) => Promise<void>
+  openUrlWithRedirect: (url: string, redirectScheme: string) => Promise<void>
   openCoinBasePay: (address: string) => Promise<void>
   openMoonPay: () => Promise<void>
 } => {
@@ -30,7 +29,6 @@ const useInAppBrowser = (): {
     theme: { colors }
   } = useTheme()
   const addressC = useSelector(selectActiveAccount)?.addressC ?? ''
-  const { setPendingDeepLink } = useDeeplink()
 
   async function openMoonPay(): Promise<void> {
     const [result, error] = await resolve(moonpayURL(addressC))
@@ -60,7 +58,7 @@ const useInAppBrowser = (): {
     openUrl(coinbaseUrl).catch(Logger.error)
   }
 
-  async function openUrl(url: string, redirectUrl?: string): Promise<void> {
+  async function openUrl(url: string): Promise<void> {
     const options: InAppBrowserOptions = {
       // iOS Properties
       dismissButtonStyle: 'close',
@@ -83,24 +81,53 @@ const useInAppBrowser = (): {
       forceCloseOnRedirection: false,
       showInRecents: true
     }
-    if (Platform.OS === 'ios' && redirectUrl) {
-      const callbackUrl = await openInAppBrowserForAuth(
-        url,
-        redirectUrl,
-        options
-      )
-      if (callbackUrl) {
-        setPendingDeepLink({
-          url: callbackUrl,
-          origin: DeepLinkOrigin.ORIGIN_IN_APP_BROWSER
-        } as DeepLink)
-      }
-      return
-    }
-    await openInAppBrowser(url, options)
+    openInAppBrowser(url, options)
   }
 
-  return { openUrl, openMoonPay, openCoinBasePay }
+  async function openUrlWithRedirect(
+    url: string,
+    redirectScheme: string
+  ): Promise<void> {
+    try {
+      if (await InAppBrowser.isAvailable()) {
+        useDisableLockAppStore.setState({ disableLockApp: true })
+        const result = await InAppBrowser.openAuth(url, redirectScheme, {
+          // iOS Properties
+          dismissButtonStyle: 'close',
+          preferredBarTintColor: colors.$surfacePrimary,
+          preferredControlTintColor: colors.$textPrimary,
+          readerMode: false,
+          animated: true,
+          modalPresentationStyle: 'fullScreen',
+          modalTransitionStyle: 'coverVertical',
+          modalEnabled: true,
+          enableBarCollapsing: false,
+          ephemeralWebSession: true,
+          // Android Properties
+          showTitle: true,
+          toolbarColor: colors.$surfacePrimary,
+          secondaryToolbarColor: colors.$textPrimary,
+          navigationBarColor: colors.$textPrimary,
+          navigationBarDividerColor: colors.$surfaceSecondary,
+          enableUrlBarHiding: false,
+          enableDefaultShare: true,
+          forceCloseOnRedirection: true,
+          showInRecents: true
+        })
+        if (result.type === 'success' && result.url) {
+          Linking.openURL(result.url).catch(Logger.error)
+        }
+      } else {
+        Linking.openURL(url).catch(Logger.error)
+      }
+    } catch (e) {
+      Linking.openURL(url).catch(Logger.error)
+    } finally {
+      useDisableLockAppStore.setState({ disableLockApp: false })
+    }
+  }
+
+  return { openUrl, openUrlWithRedirect, openMoonPay, openCoinBasePay }
 }
 
 export default useInAppBrowser

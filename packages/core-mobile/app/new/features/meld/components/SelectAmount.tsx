@@ -61,10 +61,9 @@ export const SelectAmount = ({
     isLoadingTradeLimits,
     createSessionWidget,
     isLoadingCryptoQuotes,
-    errorMessage,
-    redirectUrl
+    errorMessage
   } = useSelectAmount({ category })
-  const { openUrl } = useInAppBrowser()
+  const { openUrlWithRedirect } = useInAppBrowser()
   const [createSessionWidgetErrorMessage, setCreateSessionWidgetErrorMessage] =
     useState<string | undefined>()
   const [isLoadingCreateSessionWidget, setIsLoadingCreateSessionWidget] =
@@ -109,14 +108,15 @@ export const SelectAmount = ({
         // this is used to fetch the transaction details from the service provider immediately
         setSessionId(sessionWidget.id)
       }
-      sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl, redirectUrl)
+      sessionWidget?.widgetUrl &&
+        openUrlWithRedirect(sessionWidget.widgetUrl, 'core://')
     } catch (error) {
       const err = getErrorMessage(error as Error)
       setCreateSessionWidgetErrorMessage(err?.message)
     } finally {
       setIsLoadingCreateSessionWidget(false)
     }
-  }, [category, createSessionWidget, openUrl, redirectUrl, setSessionId])
+  }, [category, createSessionWidget, openUrlWithRedirect, setSessionId])
 
   const renderFooter = useCallback(() => {
     return (
