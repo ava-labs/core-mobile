@@ -207,7 +207,7 @@ describe('swapValidator.canHandle', () => {
     }
   )
 
-  it('matches when walletType is missing from context', () => {
+  it('rejects when walletType is missing from context (allowlist fails closed)', () => {
     expect(
       swapValidator.canHandle(
         makeParams({
@@ -218,7 +218,7 @@ describe('swapValidator.canHandle', () => {
           })
         })
       )
-    ).toBe(true)
+    ).toBe(false)
   })
 })
 

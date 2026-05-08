@@ -19,10 +19,13 @@ import type {
   ValidationResult
 } from './types'
 
-const HARDWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
-  WalletType.LEDGER,
-  WalletType.LEDGER_LIVE,
-  WalletType.KEYSTONE
+// Allowlist (not denylist): future wallet types fail-safe — they must be
+// explicitly added here to become eligible. Also fails closed when
+// walletType is missing from context (denylist would fail open).
+const SOFTWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
+  WalletType.MNEMONIC,
+  WalletType.SEEDLESS,
+  WalletType.PRIVATE_KEY
 ])
 
 type BypassFallbackReason =
@@ -171,7 +174,7 @@ export const swapValidator: RequestValidator = {
     const ctx = readAutoApproveContext(params.request)
     if (!ctx?.autoApprove) return false
     const walletType = readWalletType(params.request)
-    return !(walletType && HARDWARE_WALLET_TYPES.has(walletType))
+    return walletType !== undefined && SOFTWARE_WALLET_TYPES.has(walletType)
   },
 
   validate: async (

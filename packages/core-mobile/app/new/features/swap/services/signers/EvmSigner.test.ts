@@ -264,6 +264,39 @@ describe('createEvmSigner.signBatch', () => {
     ).toBe(true)
   })
 
+  it('falls back to per-tx sign() for cross-chain quotes (sourceChainId !== targetChainId)', async () => {
+    // Cross-chain swaps are structurally unverifiable by the validator
+    // (Blockaid simulation is single-chain). Mirrors core-extension's
+    // `!isCrossChainSwap` upstream gate.
+    const request = jest
+      .fn<Promise<string>, [unknown]>()
+      .mockResolvedValueOnce('0xhashA')
+      .mockResolvedValueOnce('0xhashB')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited'
+    }))
+
+    await signer.signBatch?.(
+      [makeTx(), makeTx({ to: '0xrouter' })],
+      jest.fn() as never,
+      makeStepDetails({
+        quote: makeQuote({
+          sourceChain: { chainId: 'eip155:43114' },
+          targetChain: { chainId: 'eip155:1' }
+        })
+      })
+    )
+
+    expect(
+      request.mock.calls.every(
+        c =>
+          (c[0] as { method: RpcMethod }).method ===
+          RpcMethod.ETH_SEND_TRANSACTION
+      )
+    ).toBe(true)
+  })
+
   it('reads getBatchOptions at call time, not signer-creation time', async () => {
     let isActive = false
     const request = jest.fn().mockResolvedValue(['0xa', '0xb'])
@@ -496,6 +529,29 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     })
 
     await signer.sign(txWithoutFees, jest.fn() as never, markrStepDetails)
+
+    expect(request).toHaveBeenCalledTimes(1)
+    const call = request.mock.calls[0][0]
+    expect(call.method).toBe(RpcMethod.ETH_SEND_TRANSACTION)
+    expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toBeUndefined()
+  })
+
+  it('does NOT attach SWAP_AUTO_APPROVE for cross-chain quotes (sourceChainId !== targetChainId)', async () => {
+    const request = jest.fn().mockResolvedValue('0xhashSingle')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: '5000'
+    }))
+
+    const crossChainStepDetails = makeStepDetails({
+      quote: makeQuote({
+        serviceType: ServiceType.MARKR,
+        sourceChain: { chainId: 'eip155:43114' },
+        targetChain: { chainId: 'eip155:1' }
+      })
+    })
+
+    await signer.sign(makeTx(), jest.fn() as never, crossChainStepDetails)
 
     expect(request).toHaveBeenCalledTimes(1)
     const call = request.mock.calls[0][0]

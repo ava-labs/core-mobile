@@ -57,6 +57,14 @@ const isApproveTx = (data: string | null | undefined): boolean =>
   typeof data === 'string' &&
   data.toLowerCase().startsWith(ERC20_APPROVE_SELECTOR)
 
+// Cross-chain bypass is structurally unverifiable: Blockaid simulation is
+// single-chain so the validator can't confirm destination-side delivery.
+// Skip the bypass attempt rather than letting the validator fall back via
+// balance_change_missing (cleaner telemetry, fewer noise events). Matches
+// core-extension's upstream gate.
+const isCrossChainQuote = (quote: Quote): boolean =>
+  quote.sourceChain.chainId !== quote.targetChain.chainId
+
 const isQuickSwapsManualReviewError = (err: unknown): boolean => {
   if (!err || typeof err !== 'object') return false
   const data = (err as { data?: unknown }).data
@@ -174,7 +182,8 @@ export function createEvmSigner(
       isQuickSwapsActive &&
       stepDetails.quote.serviceType === ServiceType.MARKR &&
       !isApprove &&
-      hasUpstreamFees
+      hasUpstreamFees &&
+      !isCrossChainQuote(stepDetails.quote)
     const baseContext = buildRequestContext(stepDetails)
     const requestContext = shouldAttachAutoApprove
       ? {
@@ -270,7 +279,8 @@ export function createEvmSigner(
       const allTxsHaveFees = transactions.every(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
-      if (!isQuickSwapsActive || !allTxsHaveFees) {
+      const isCrossChain = isCrossChainQuote(stepDetails.quote)
+      if (!isQuickSwapsActive || !allTxsHaveFees || isCrossChain) {
         return signEachManually()
       }
 

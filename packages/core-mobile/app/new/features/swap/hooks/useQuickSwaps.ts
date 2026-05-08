@@ -17,10 +17,12 @@ import { WalletType } from 'services/wallet/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { isAmountOverLimit } from '../utils/quickSwapsLimits'
 
-const HARDWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
-  WalletType.LEDGER,
-  WalletType.LEDGER_LIVE,
-  WalletType.KEYSTONE
+// Allowlist (not denylist): future wallet types fail-safe — they must be
+// explicitly added here to become eligible.
+const SOFTWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
+  WalletType.MNEMONIC,
+  WalletType.SEEDLESS,
+  WalletType.PRIVATE_KEY
 ])
 
 type UseQuickSwapsResult = {
@@ -42,7 +44,7 @@ export const useQuickSwaps = (): UseQuickSwapsResult => {
   const feeSetting = useSelector(selectQuickSwapsFeeSetting)
   const maxBuy = useSelector(selectQuickSwapsMaxBuy)
 
-  const walletAllowed = !HARDWARE_WALLET_TYPES.has(wallet.type)
+  const walletAllowed = SOFTWARE_WALLET_TYPES.has(wallet.type)
   const chainAllowed = activeNetwork?.vmName === NetworkVMType.EVM
   const isAvailable = flagOn && walletAllowed && chainAllowed
 

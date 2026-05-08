@@ -186,13 +186,13 @@ describe('BatchSwapValidator.canHandle', () => {
     }
   )
 
-  it('matches when walletType is missing from context', () => {
+  it('rejects when walletType is missing from context (allowlist fails closed)', () => {
     const noWallet = makeBatchRequest({
       context: {
         [RequestContext.SWAP_AUTO_APPROVE]: baseContext
       } as never
     })
-    expect(batchSwapValidator.canHandle(noWallet)).toBe(true)
+    expect(batchSwapValidator.canHandle(noWallet)).toBe(false)
   })
 })
 
