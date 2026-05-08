@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useStore } from 'react-redux'
 import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
+import { RootState } from 'store/types'
 
 /**
  * A hook to execute an in-app rpc request and wait for the response.
@@ -26,8 +27,12 @@ import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
  */
 export const useInAppRequest = (): { request: Request } => {
   const dispatch = useDispatch()
+  const store = useStore<RootState>()
 
-  const request = useMemo(() => createInAppRequest(dispatch), [dispatch])
+  const request = useMemo(
+    () => createInAppRequest(dispatch, store.getState),
+    [dispatch, store]
+  )
 
   return { request }
 }

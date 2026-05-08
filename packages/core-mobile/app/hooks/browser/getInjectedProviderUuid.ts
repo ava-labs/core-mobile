@@ -1,5 +1,4 @@
-import { commonStorage } from 'utils/mmkv/storages'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { uuid as generateUuid } from 'utils/uuid'
 
 let cached: string | undefined
@@ -7,14 +6,16 @@ let cached: string | undefined
 export function getInjectedProviderUuid(): string {
   if (cached) return cached
 
-  const stored = commonStorage.getString(StorageKey.INJECTED_PROVIDER_UUID)
+  const stored = commonStorage.getString(
+    CommonStorageKeys.INJECTED_PROVIDER_UUID
+  )
   if (stored) {
     cached = stored
     return stored
   }
 
   const fresh = generateUuid()
-  commonStorage.set(StorageKey.INJECTED_PROVIDER_UUID, fresh)
+  commonStorage.set(CommonStorageKeys.INJECTED_PROVIDER_UUID, fresh)
   cached = fresh
   return fresh
 }

@@ -4,11 +4,10 @@ import {
   APP_STORE_URL,
   BUNDLE_ID,
   PLAY_STORE_URI,
-  PLAY_STORE_URL,
-  StorageKey
+  PLAY_STORE_URL
 } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
 import { checkVersion } from 'react-native-check-version'
 import { checkForUpdate, UpdateFlow } from 'react-native-in-app-updates'
 
@@ -48,7 +47,7 @@ export class AppUpdateService {
 
   static hasSeenAppUpdateScreen(version: string): boolean {
     const lastSeenVersion = commonStorage.getString(
-      StorageKey.LAST_SEEN_UPDATE_APP_VERSION
+      CommonStorageKeys.LAST_SEEN_UPDATE_APP_VERSION
     )
 
     return lastSeenVersion === version
@@ -57,7 +56,7 @@ export class AppUpdateService {
   static markAppUpdateScreenAsSeen(version: string): void {
     if (!version) return
 
-    commonStorage.set(StorageKey.LAST_SEEN_UPDATE_APP_VERSION, version)
+    commonStorage.set(CommonStorageKeys.LAST_SEEN_UPDATE_APP_VERSION, version)
   }
 }
 
