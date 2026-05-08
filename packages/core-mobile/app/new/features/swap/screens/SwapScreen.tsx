@@ -18,8 +18,15 @@ import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenInputWidget } from 'common/components/TokenInputWidget'
+import {
+  TokenInputWidget,
+  TokenInputWidgetRef
+} from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import {
+  FORM_SHEET_FOCUS_BUFFER_MS,
+  useAfterScreenEnterTransition
+} from 'common/hooks/useAfterScreenEnterTransition'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -462,8 +469,23 @@ export const SwapScreen = (): JSX.Element => {
     [formatCurrency]
   )
 
-  // Track if we've already auto-focused in this session
-  const hasAutoFocused = useRef(false)
+  // Defer auto-focus until the modal's enter transition has completed.
+  // Focusing during the transition races the keyboard spring-up and the
+  // KeyboardAwareScrollView's input-into-view scroll, which on Android can
+  // collapse the fading header into a half-broken state where the "Swap"
+  // title disappears and "You pay" is clipped by the navigation bar (CP-13946).
+  const fromTokenInputRef = useRef<TokenInputWidgetRef>(null)
+  const hasAutoFocusedRef = useRef(false)
+  useAfterScreenEnterTransition(
+    () => {
+      if (hasAutoFocusedRef.current) return
+      hasAutoFocusedRef.current = true
+      fromTokenInputRef.current?.focus()
+    },
+    {
+      layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
+    }
+  )
 
   const renderFromSection = useCallback(() => {
     return (
@@ -476,10 +498,10 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
+          ref={fromTokenInputRef}
           amountInputTestID="token_amount_input_field__you_pay"
           disabled={isSwapping}
           editable={!isSwapping}
-          autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}
@@ -496,10 +518,6 @@ export const SwapScreen = (): JSX.Element => {
           network={getNetwork(fromToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
-          onFocus={() => {
-            // Mark that we've auto-focused
-            hasAutoFocused.current = true
-          }}
           onSelectToken={handleSelectFromToken}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
