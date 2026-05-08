@@ -31,8 +31,8 @@ const STROKE_WIDTH = 6
 const KNOB_RADIUS = 11
 const REFERENCE_TICK_RADIUS = 3
 export const ARC_RADIUS = 110
-const ARC_CX = CANVAS_WIDTH / 2
-const ARC_CY = CANVAS_HEIGHT - 35
+export const ARC_CX = CANVAS_WIDTH / 2
+export const ARC_CY = CANVAS_HEIGHT - 35
 
 // ~7% of the sweep ≈ 12.6° — the negative-space halo around the tick.
 const TICK_GAP = 0.07
