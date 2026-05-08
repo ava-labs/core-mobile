@@ -122,10 +122,13 @@ const sanitizeContext = (value: unknown): unknown => {
   }
 }
 
+/* eslint-disable max-params -- positional args preserve the existing call-site
+   shape; converting to an options object would touch every caller. */
 const captureMessage = (
   message: string,
   context?: Record<string, unknown>,
-  tags?: Record<string, string>
+  tags?: Record<string, string>,
+  fingerprint?: string[]
 ): void => {
   if (!isAvailable) {
     return
@@ -141,9 +144,13 @@ const captureMessage = (
     if (tags) {
       scope.setTags(tags)
     }
+    if (fingerprint && fingerprint.length > 0) {
+      scope.setFingerprint(fingerprint)
+    }
     Sentry.captureMessage(message)
   })
 }
+/* eslint-enable max-params */
 
 export default {
   init,

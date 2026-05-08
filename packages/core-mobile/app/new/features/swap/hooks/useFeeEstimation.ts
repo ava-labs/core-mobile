@@ -12,6 +12,7 @@ import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
+import { getFingerprintForFeeEstimationError } from './useFeeEstimation.helpers'
 import { buildFeeOptions } from './useMaxSwapAmount/utils'
 
 /**
@@ -79,7 +80,8 @@ export const useFeeEstimation = ({
       SentryService.captureMessage(
         '[useFeeEstimation] estimateNativeFee revert error',
         { ...error.details, cause: error.cause },
-        { source: SentryTag.FusionSdk }
+        { source: SentryTag.FusionSdk },
+        getFingerprintForFeeEstimationError(error)
       )
     } else {
       logSdkError('[useFeeEstimation] estimateNativeFee error', error)
