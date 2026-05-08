@@ -33,10 +33,12 @@ jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: {
     openApp: jest.fn().mockResolvedValue(undefined),
-    ensureConnection: jest.fn().mockResolvedValue({
+    getTransport: jest.fn().mockReturnValue({
       send: jest.fn(),
-      close: jest.fn()
+      close: jest.fn(),
+      isConnected: true
     }),
+    connect: jest.fn().mockResolvedValue(undefined),
     waitForApp: jest.fn().mockResolvedValue(undefined),
     isConnected: jest.fn().mockReturnValue(true),
     getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
@@ -170,7 +172,7 @@ import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 
 // Get references to the mocked functions
 const mockOpenApp = LedgerService.openApp as jest.Mock
-const mockEnsureConnection = LedgerService.ensureConnection as jest.Mock
+const mockGetTransport = LedgerService.getTransport as jest.Mock
 const mockWaitForApp = LedgerService.waitForApp as jest.Mock
 const mockIsConnected = LedgerService.isConnected as jest.Mock
 const mockGetCurrentAppType = LedgerService.getCurrentAppType as jest.Mock
@@ -225,7 +227,7 @@ describe('LedgerWallet', () => {
 
     // Reset and configure mocks with default behavior
     mockOpenApp.mockResolvedValue(undefined)
-    mockEnsureConnection.mockResolvedValue(new MockTransport() as never)
+    mockGetTransport.mockReturnValue(new MockTransport() as never)
     mockWaitForApp.mockResolvedValue(undefined)
     mockIsConnected.mockReturnValue(true)
     mockGetCurrentAppType.mockReturnValue('AVALANCHE')
@@ -261,7 +263,7 @@ describe('LedgerWallet', () => {
     // Spy on getTransport to return mock transport
     jest
       .spyOn(ledgerWallet as never, 'getTransport')
-      .mockResolvedValue(new MockTransport() as never)
+      .mockReturnValue(new MockTransport() as never)
   })
 
   describe('signAvalancheTransaction', () => {
@@ -743,9 +745,9 @@ describe('LedgerWallet', () => {
 
     describe('error handling', () => {
       it('should throw error when connection fails', async () => {
-        mockEnsureConnection.mockRejectedValueOnce(
-          new Error('DisconnectedDevice')
-        )
+        mockGetTransport.mockImplementationOnce(() => {
+          throw new Error('DisconnectedDevice')
+        })
 
         const mockTx = {
           getVM: jest.fn().mockReturnValue('AVM'),
@@ -850,8 +852,12 @@ describe('LedgerWallet', () => {
         expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
       })
 
-      it('should ensure connection before signing', async () => {
-        mockEnsureConnection.mockClear()
+      it('should ensure transport is obtained before signing', async () => {
+        // Restore the spy so the real LedgerWallet.getTransport() runs,
+        // which calls through to LedgerService.getTransport().
+        jest.restoreAllMocks()
+        mockGetTransport.mockClear()
+        mockGetTransport.mockReturnValue(new MockTransport() as never)
 
         const mockTx = {
           getVM: jest.fn().mockReturnValue('AVM'),
@@ -872,7 +878,7 @@ describe('LedgerWallet', () => {
           provider: mockProvider
         })
 
-        expect(mockEnsureConnection).toHaveBeenCalledWith(mockDeviceId)
+        expect(mockGetTransport).toHaveBeenCalled()
       })
 
       it('should wait for Avalanche app before signing', async () => {
@@ -1092,28 +1098,29 @@ describe('LedgerWallet', () => {
 
   describe('Private Methods', () => {
     describe('getTransport', () => {
-      it('should call LedgerService.ensureConnection with deviceId', async () => {
+      it('should call LedgerService.getTransport', () => {
         // Remove the spy set up in beforeEach
         jest.restoreAllMocks()
 
         const mockTransport = new MockTransport()
-        mockEnsureConnection.mockResolvedValue(mockTransport as never)
+        mockGetTransport.mockReturnValue(mockTransport as never)
 
-        // Access private method using bracket notation
-        const result = await (ledgerWallet as any).getTransport()
+        const result = (ledgerWallet as any).getTransport()
 
-        expect(mockEnsureConnection).toHaveBeenCalledWith(mockDeviceId)
+        expect(mockGetTransport).toHaveBeenCalled()
         expect(result).toBe(mockTransport)
       })
 
-      it('should throw error when connection fails', async () => {
+      it('should throw error when transport is not available', () => {
         // Remove the spy set up in beforeEach
         jest.restoreAllMocks()
 
-        mockEnsureConnection.mockRejectedValue(new Error('Connection failed'))
+        mockGetTransport.mockImplementation(() => {
+          throw new Error('transport_interface_not_available')
+        })
 
-        await expect((ledgerWallet as any).getTransport()).rejects.toThrow(
-          'Connection failed'
+        expect(() => (ledgerWallet as any).getTransport()).toThrow(
+          'transport_interface_not_available'
         )
       })
     })
@@ -1412,7 +1419,9 @@ describe('LedgerWallet', () => {
       })
 
       it('should handle app connection errors', async () => {
-        mockEnsureConnection.mockRejectedValue(new Error('Connection failed'))
+        mockGetTransport.mockImplementation(() => {
+          throw new Error('Connection failed')
+        })
 
         await expect(
           (ledgerWallet as any).signAvalancheMessage(0, 'message')
@@ -1845,7 +1854,7 @@ describe('LedgerWallet', () => {
       it('should ensure connection and wait for app', async () => {
         await (ledgerWallet as any).handleAppConnection(LedgerAppType.AVALANCHE)
 
-        expect(mockEnsureConnection).toHaveBeenCalledWith(mockDeviceId)
+        expect(mockGetTransport).toHaveBeenCalled()
         expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
         expect(mockWaitForApp).toHaveBeenCalledWith(
           LedgerAppType.AVALANCHE,
@@ -1864,7 +1873,9 @@ describe('LedgerWallet', () => {
       })
 
       it('should throw error when connection fails', async () => {
-        mockEnsureConnection.mockRejectedValue(new Error('Device not found'))
+        mockGetTransport.mockImplementation(() => {
+          throw new Error('Device not found')
+        })
 
         await expect(
           (ledgerWallet as any).handleAppConnection(LedgerAppType.AVALANCHE)
@@ -2093,7 +2104,9 @@ describe('LedgerWallet', () => {
       })
 
       it('should throw when app connection fails', async () => {
-        mockEnsureConnection.mockRejectedValueOnce(new Error('No device'))
+        mockGetTransport.mockImplementationOnce(() => {
+          throw new Error('No device')
+        })
 
         await expect(
           (ledgerWallet as any).handleEthAndPersonalSign({

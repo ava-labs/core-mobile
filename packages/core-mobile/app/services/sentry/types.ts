@@ -46,3 +46,17 @@ export const SentryTag = {
   FusionSdk: 'fusion-sdk',
   AccountService: 'accounts-service'
 } as const
+
+/**
+ * Breadcrumb categories explicitly allowed by `SentryService.beforeBreadcrumb`.
+ * `SentryService` derives its allowlist from `Object.values(...)` of this
+ * object at module load, so adding a new entry here is enough — no other
+ * file needs to change. Breadcrumbs whose category isn't listed get dropped.
+ */
+export const AllowedSentryBreadcrumbCategory = {
+  ListenerMigration: 'listenerMigration',
+  ListenerReconciler: 'listenerReconciler'
+} as const
+
+export type AllowedSentryBreadcrumbCategory =
+  typeof AllowedSentryBreadcrumbCategory[keyof typeof AllowedSentryBreadcrumbCategory]

@@ -26,6 +26,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
+import NetworkService from 'services/network/NetworkService'
 import {
   TypedDataV1,
   TypedData,
@@ -68,9 +69,14 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getAvaSigner(
-    accountIndex: number
-  ): Promise<Avalanche.SimpleSigner> {
-    return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
+    provider: Avalanche.JsonRpcProvider
+  ): Promise<Avalanche.StaticSigner> {
+    const keyBuffer = Buffer.from(strip0x(this.privateKey), 'hex')
+    // An imported private key is a single secp256k1 keypair with no BIP-44
+    // derivation; the same key produces both the X/P (bech32) and C-chain
+    // (EVM) addresses, so we pass it to StaticSigner's X/P and C slots
+    // identically. Mirrors Core Extension's WalletService PrivateKey path.
+    return new Avalanche.StaticSigner(keyBuffer, keyBuffer, provider)
   }
 
   private async getSvmSigner(): Promise<SolanaSigner> {
@@ -79,7 +85,7 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getSigner({
-    accountIndex,
+    accountIndex: _accountIndex,
     network,
     provider
   }: {
@@ -87,7 +93,7 @@ export class PrivateKeyWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
   }): Promise<
-    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | SolanaSigner
+    BitcoinWallet | BaseWallet | Avalanche.StaticSigner | SolanaSigner
   > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
@@ -111,7 +117,7 @@ export class PrivateKeyWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return await this.getAvaSigner(accountIndex)
+        return await this.getAvaSigner(provider)
       case NetworkVMType.SVM:
         return this.getSvmSigner()
       default:
@@ -168,7 +174,11 @@ export class PrivateKeyWallet implements Wallet {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
 
-        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
+        return await this.signAvalancheMessage(
+          data,
+          chainAlias,
+          network.isTestnet ?? false
+        )
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
@@ -254,7 +264,7 @@ export class PrivateKeyWallet implements Wallet {
   }): Promise<string> {
     const signer = await this.getSigner({ accountIndex, network, provider })
 
-    if (!(signer instanceof Avalanche.SimpleSigner)) {
+    if (!(signer instanceof Avalanche.StaticSigner)) {
       throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
@@ -389,13 +399,14 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private signAvalancheMessage = async (
-    accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any,
-    chainAlias: Avalanche.ChainIDAlias
+    chainAlias: Avalanche.ChainIDAlias,
+    isTestnet: boolean
   ): Promise<string> => {
     const message = toUtf8(data)
-    const signer = await this.getAvaSigner(accountIndex)
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+    const signer = await this.getAvaSigner(provXP)
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias

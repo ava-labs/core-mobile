@@ -10,7 +10,7 @@ import {
   TradeFilterChip,
   TradeFilters
 } from 'features/trade/components/TradeFilters'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { EventCard } from '../components/EventCard'
@@ -45,6 +45,12 @@ export const PredictionsScreen = ({
     () => ({ ...containerStyle, paddingHorizontal: 9 }),
     [containerStyle]
   )
+
+  // Persists the filter strip's horizontal scroll across CollapsibleTabList's
+  // empty/non-empty switch — the underlying list swaps from FlashList to
+  // ScrollView when results disappear, which would otherwise unmount the
+  // header (and `TradeFilters` with it) and reset the strip to scrollX=0.
+  const filterScrollOffsetRef = useRef(0)
 
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -92,18 +98,17 @@ export const PredictionsScreen = ({
     () => (
       <View
         sx={{
-          marginHorizontal: -9,
-          paddingBottom: 14,
-          backgroundColor: theme.colors.$surfacePrimary
+          marginHorizontal: -9
         }}>
         <TradeFilters
           chips={chips}
           selectedChip={selectedChip}
           onSelectChip={selectChip}
+          scrollOffsetRef={filterScrollOffsetRef}
         />
       </View>
     ),
-    [theme.colors.$surfacePrimary, chips, selectedChip, selectChip]
+    [chips, selectedChip, selectChip]
   )
 
   const renderItem = useCallback(
@@ -175,6 +180,14 @@ export const PredictionsScreen = ({
         onRefresh={refetch}
         onEndReached={onEndReached}
         isFetchingNextPage={isFetchingNextPage}
+        // FlashList enables maintainVisibleContentPosition by default,
+        // which makes the underlying ScrollView re-anchor on a previously
+        // visible item key when `data` changes. Filter-chip swaps replace
+        // the entire dataset, so the native anchor lands on a stale or
+        // mid-list item — Trending → Sports → Trending visibly jumps to
+        // the middle. Disable it: chip changes preserve numeric offset
+        // instead of anchoring to a no-longer-present item.
+        maintainVisibleContentPosition={{ disabled: true }}
       />
     </Animated.View>
   )

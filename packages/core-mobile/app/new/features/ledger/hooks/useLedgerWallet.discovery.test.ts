@@ -89,7 +89,8 @@ jest.mock('store/posthog', () => ({
 jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: {
-    ensureConnection: jest.fn(),
+    connect: jest.fn(),
+    getTransport: jest.fn(),
     disconnect: jest.fn()
   }
 }))

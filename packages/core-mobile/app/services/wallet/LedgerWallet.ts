@@ -73,7 +73,6 @@ import {
 import { getAddressDerivationPath, handleLedgerError } from './utils'
 
 export class LedgerWallet implements Wallet {
-  private deviceId: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PerAccountPublicKeys
@@ -81,7 +80,6 @@ export class LedgerWallet implements Wallet {
   private walletId: string
 
   constructor(ledgerData: LedgerWalletData & { walletId: string }) {
-    this.deviceId = ledgerData.deviceId
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
     this.walletId = ledgerData.walletId
@@ -93,9 +91,9 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  private async getTransport(): Promise<TransportBLE> {
+  private getTransport(): TransportBLE {
     Logger.info('getTransport called - using LedgerService')
-    return LedgerService.ensureConnection(this.deviceId)
+    return LedgerService.getTransport()
   }
 
   private async getBitcoinSigner(
@@ -159,7 +157,7 @@ export class LedgerWallet implements Wallet {
         throw new Error('Failed to derive Bitcoin address public key')
       }
 
-      const transport = await this.getTransport()
+      const transport = this.getTransport()
 
       this.bitcoinWallet = new BitcoinLedgerWallet(
         addressNode.publicKey,
@@ -385,7 +383,7 @@ export class LedgerWallet implements Wallet {
 
     try {
       // Ensure device is connected
-      const transport = await this.getTransport()
+      const transport = this.getTransport()
 
       // Ensure Bitcoin app is ready
       Logger.info('Ensuring Bitcoin app is ready...')
@@ -1588,7 +1586,7 @@ export class LedgerWallet implements Wallet {
     Logger.info('Ensuring connection to Ledger device...')
     let transport: TransportBLE
     try {
-      transport = await LedgerService.ensureConnection(this.deviceId)
+      transport = LedgerService.getTransport()
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)

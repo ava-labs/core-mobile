@@ -79,7 +79,7 @@ const initUnifiedBridgeService = async (
   const isTest = selectIsDeveloperMode(state)
   const bitcoinProvider = await getBitcoinProvider(isTest)
 
-  const request = createInAppRequest(listenerApi.dispatch)
+  const request = createInAppRequest(listenerApi.dispatch, listenerApi.getState)
   const evmSigner = createEvmSigner(request)
   const btcSigner: BtcSigner = {
     sign: async (txData, _, { requiredSignatures, currentSignature }) =>

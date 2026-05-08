@@ -37,7 +37,9 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
-import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
+import type HDKey from 'micro-key-producer/slip10.js'
+import { mnemonicToSeed } from 'bip39'
+import type { BIP32Interface } from 'bip32'
 import { bip32 } from 'utils/bip32'
 import { hex } from '@scure/base'
 import ModuleManager from 'vmModule/ModuleManager'
@@ -60,9 +62,35 @@ export function assertMnemonicWallet(
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
+  #seedCache?: Buffer
+  #bip32Node?: BIP32Interface
+  #slip10Node?: HDKey
 
   constructor(mnemonic: string) {
     this.#mnemonic = mnemonic
+  }
+
+  private async getSeed(): Promise<Buffer> {
+    if (!this.#seedCache) {
+      this.#seedCache = await mnemonicToSeed(this.mnemonic)
+    }
+    return this.#seedCache
+  }
+
+  private async getBip32Node(): Promise<BIP32Interface> {
+    if (!this.#bip32Node) {
+      this.#bip32Node = bip32.fromSeed(await this.getSeed())
+    }
+    return this.#bip32Node
+  }
+
+  private async getSlip10Node(): Promise<HDKey> {
+    if (!this.#slip10Node) {
+      this.#slip10Node = slip10.fromMasterSeed(
+        Uint8Array.from(await this.getSeed())
+      )
+    }
+    return this.#slip10Node
   }
 
   private async getBtcSigner(
@@ -93,13 +121,12 @@ export class MnemonicWallet implements Wallet {
     return wallet
   }
 
-  private getSvmSigner(accountIndex: number): SolanaSigner {
+  private async getSvmSigner(accountIndex: number): Promise<SolanaSigner> {
     const start = now()
     Logger.info('🔍 getSolanaSigner called', { accountIndex })
 
     try {
-      const seed = mnemonicToSeedSync(this.mnemonic)
-      const node = slip10.fromMasterSeed(Uint8Array.from(seed))
+      const node = await this.getSlip10Node()
       const derivationPathResult =
         ModuleManager.solanaModule.buildDerivationPath({
           accountIndex,
@@ -333,18 +360,16 @@ export class MnemonicWallet implements Wallet {
       )
     }
 
-    const seed = await mnemonicToSeed(this.mnemonic)
-
     switch (curve) {
       case Curve.SECP256K1: {
-        const seedNode = bip32.fromSeed(seed)
+        const seedNode = await this.getBip32Node()
         return hex.encode(
           new Uint8Array(seedNode.derivePath(derivationPath).publicKey)
         )
       }
 
       case Curve.ED25519: {
-        const hdKey = slip10.fromMasterSeed(new Uint8Array(seed))
+        const hdKey = await this.getSlip10Node()
         return hex.encode(hdKey.derive(derivationPath).publicKeyRaw)
       }
 
@@ -380,7 +405,7 @@ export class MnemonicWallet implements Wallet {
     provider: SolanaProvider
   }): Promise<string> {
     try {
-      const signer = this.getSvmSigner(accountIndex)
+      const signer = await this.getSvmSigner(accountIndex)
       return await signer.signTx(transaction.serializedTx, provider)
     } catch (error) {
       Logger.error('🔍 Error in signSolanaTransaction:', error)
@@ -393,7 +418,7 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
   ): Promise<string> {
     if (typeof data !== 'string') throw new Error('data must be string')
-    const signer = this.getSvmSigner(accountIndex)
+    const signer = await this.getSvmSigner(accountIndex)
     return await signer.signMessage(data)
   }
 

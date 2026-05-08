@@ -11,9 +11,12 @@ import { AppListenerEffectAPI } from 'store/types'
 import { recentAccountsStore } from 'features/accountSettings/store'
 import { uuid } from 'utils/uuid'
 import { Wallet } from 'store/wallet/types'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
-import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
+import {
+  appendToStoredArray,
+  commonStorage,
+  CommonStorageKeys,
+  loadArrayFromStorage
+} from 'utils/mmkv'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import { selectWalletState, WalletState } from 'store/app'
 import { setAccounts, setNonActiveAccounts } from './slice'
@@ -277,7 +280,7 @@ export const canMigrateActiveAccounts = (
 const isWalletMigrated = (walletId: string): boolean => {
   const migratedActiveAccountsWalletIds = loadArrayFromStorage(
     commonStorage,
-    StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS
+    CommonStorageKeys.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS
   )
   return migratedActiveAccountsWalletIds.includes(walletId)
 }
@@ -285,7 +288,7 @@ const isWalletMigrated = (walletId: string): boolean => {
 const markWalletAsMigrated = (walletId: string): void => {
   appendToStoredArray(
     commonStorage,
-    StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
+    CommonStorageKeys.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
     walletId
   )
 }

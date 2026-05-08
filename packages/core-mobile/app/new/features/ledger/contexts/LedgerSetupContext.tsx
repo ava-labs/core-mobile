@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import LedgerService from 'services/ledger/LedgerService'
+import { useLedgerAppStateListener } from '../hooks/useLedgerAppStateListener'
 
 interface LedgerSetupContextValue {
   // State values
@@ -67,7 +68,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     async (deviceId: string, deviceName?: string) => {
       setIsConnecting(true)
       try {
-        await LedgerService.ensureConnection(deviceId)
+        await LedgerService.connect(deviceId)
         handleSetConnectedDevice(deviceId, deviceName || 'Ledger')
       } finally {
         setIsConnecting(false)
@@ -108,6 +109,10 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       resetSetup
     ]
   )
+
+  // Release BLE on background during onboarding — before the wallet is
+  // registered as Ledger, the signed-in layout's listener isn't active.
+  useLedgerAppStateListener(connectedDeviceId !== null)
 
   return (
     <LedgerSetupContext.Provider value={contextValue}>

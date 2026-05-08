@@ -64,6 +64,11 @@ export type {
 export * from './AutoSizeTextInput/AutoSizeTextInput'
 export * from './LoadingContent/LoadingContent'
 export * from './BlurViewWithFallback/BlurViewWithFallback'
+export * from './CircularDial/CircularDial'
+export type {
+  CircularDialProps,
+  PresetButton as CircularDialPresetButton
+} from './CircularDial/types'
 export * from './LeverageGauge/LeverageGauge'
 export type {
   LeverageGaugeProps,

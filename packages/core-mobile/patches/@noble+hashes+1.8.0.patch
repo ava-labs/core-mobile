@@ -104,7 +104,7 @@ index 060cf57..e296575 100644
 +    super()
 +
 +    this.algo = getAlgoName(hash)
-+    this.key = utils_ts_1.toBytes(key)
++    this.key = utils_ts_1.toBytes(_key)
 +    this.buffer = []
 +  }
 +  update(buf) {

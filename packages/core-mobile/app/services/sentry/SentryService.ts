@@ -5,11 +5,21 @@ import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { ErrorEvent, TransactionEvent } from '@sentry/core'
 import UserService from 'services/user/UserService'
+import { AllowedSentryBreadcrumbCategory } from './types'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
   // eslint-disable-next-line no-console
   console.warn('SENTRY_DSN is not defined. Sentry is disabled.')
+
+/**
+ * Allowlist used by `beforeBreadcrumb`. Hoisted to module scope and held
+ * as a Set so the filter — which fires on every breadcrumb — does an O(1)
+ * lookup instead of re-allocating an array and scanning it each call.
+ */
+const ALLOWED_BREADCRUMB_CATEGORIES = new Set<string>(
+  Object.values(AllowedSentryBreadcrumbCategory)
+)
 
 // if development then only enable if spotlight is enabled
 // otherwise enable if not development
@@ -56,7 +66,16 @@ const init = (): void => {
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: scrubSentryData,
       beforeSendTransaction: scrubSentryData,
-      beforeBreadcrumb: () => {
+      beforeBreadcrumb: breadcrumb => {
+        // Breadcrumbs are dropped by default to prevent unintended data
+        // leaks (e.g. console output containing sensitive info). Categories
+        // listed in `AllowedSentryBreadcrumbCategory` are explicitly allowlisted.
+        if (
+          breadcrumb.category &&
+          ALLOWED_BREADCRUMB_CATEGORIES.has(breadcrumb.category)
+        ) {
+          return breadcrumb
+        }
         return null
       },
       tracesSampler: samplingContext => {

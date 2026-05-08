@@ -1,102 +1,116 @@
+import type { Wallet } from './types'
+
 /**
  * Centralized cache for expensive wallet derivation operations.
  * Persists across wallet instance lifecycles to prevent redundant
- * cryptographic operations like public key derivation and xpub generation.
+ * cryptographic operations like public key derivation, xpub generation,
+ * and wallet instance creation (keychain reads + seed derivation).
+ *
+ * Uses nested Maps keyed by walletId for O(1) per-wallet clearing.
  */
 export class WalletDerivedDataCache {
-  private publicKeyCache = new Map<string, string>()
-  private xpubCache = new Map<string, string>()
+  // walletId -> "derivationPath:curve" -> publicKey
+  private publicKeyCache = new Map<string, Map<string, string>>()
+  // walletId -> accountIndex -> xpub
+  private xpubCache = new Map<string, Map<number, string>>()
+  private walletInstanceCache = new Map<string, Wallet>()
+  private walletCreationInFlight = new Map<string, Promise<Wallet>>()
 
-  /**
-   * Get cached public key for a wallet's derivation path and curve
-   */
   getPublicKey(
     walletId: string,
     derivationPath: string,
     curve: string
   ): string | undefined {
-    const key = this.buildPublicKeyKey(walletId, derivationPath, curve)
-    return this.publicKeyCache.get(key)
+    return this.publicKeyCache.get(walletId)?.get(`${derivationPath}:${curve}`)
   }
 
-  /**
-   * Cache a public key for a wallet's derivation path and curve
-   */
   setPublicKey(
     walletId: string,
     derivationPath: string,
     curve: string,
     publicKey: string
   ): void {
-    const key = this.buildPublicKeyKey(walletId, derivationPath, curve)
-    this.publicKeyCache.set(key, publicKey)
+    let walletMap = this.publicKeyCache.get(walletId)
+    if (!walletMap) {
+      walletMap = new Map()
+      this.publicKeyCache.set(walletId, walletMap)
+    }
+    walletMap.set(`${derivationPath}:${curve}`, publicKey)
   }
 
-  /**
-   * Get cached extended public key (xpub) for a wallet's account index
-   */
   getXpub(walletId: string, accountIndex: number): string | undefined {
-    const key = this.buildXpubKey(walletId, accountIndex)
-    return this.xpubCache.get(key)
+    return this.xpubCache.get(walletId)?.get(accountIndex)
   }
 
-  /**
-   * Cache an extended public key (xpub) for a wallet's account index
-   */
   setXpub(walletId: string, accountIndex: number, xpub: string): void {
-    const key = this.buildXpubKey(walletId, accountIndex)
-    this.xpubCache.set(key, xpub)
+    let walletMap = this.xpubCache.get(walletId)
+    if (!walletMap) {
+      walletMap = new Map()
+      this.xpubCache.set(walletId, walletMap)
+    }
+    walletMap.set(accountIndex, xpub)
   }
 
-  /**
-   * Clear all cached data for a specific wallet
-   */
+  getWalletInstance(walletId: string): Wallet | undefined {
+    return this.walletInstanceCache.get(walletId)
+  }
+
+  setWalletInstance(walletId: string, wallet: Wallet): void {
+    this.walletInstanceCache.set(walletId, wallet)
+  }
+
+  getWalletCreationInFlight(walletId: string): Promise<Wallet> | undefined {
+    return this.walletCreationInFlight.get(walletId)
+  }
+
+  setWalletCreationInFlight(walletId: string, promise: Promise<Wallet>): void {
+    this.walletCreationInFlight.set(walletId, promise)
+    // Clean up in-flight entry once settled. The .catch suppresses the
+    // unhandled rejection on this detached chain — callers still receive
+    // the rejection through the original promise they await.
+    promise
+      .finally(() => {
+        if (this.walletCreationInFlight.get(walletId) === promise) {
+          this.walletCreationInFlight.delete(walletId)
+        }
+      })
+      .catch(() => undefined)
+  }
+
   clearWallet(walletId: string): void {
-    const prefix = `${walletId}:`
-
-    for (const key of this.publicKeyCache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.publicKeyCache.delete(key)
-      }
-    }
-
-    for (const key of this.xpubCache.keys()) {
-      if (key.startsWith(prefix)) {
-        this.xpubCache.delete(key)
-      }
-    }
+    this.publicKeyCache.delete(walletId)
+    this.xpubCache.delete(walletId)
+    this.walletInstanceCache.delete(walletId)
+    this.walletCreationInFlight.delete(walletId)
   }
 
-  /**
-   * Clear all cached data
-   */
   clearAll(): void {
     this.publicKeyCache.clear()
     this.xpubCache.clear()
+    this.walletInstanceCache.clear()
+    this.walletCreationInFlight.clear()
   }
 
-  /**
-   * Get cache statistics for debugging
-   */
   getStats(): {
     publicKeyCount: number
     xpubCount: number
+    walletInstanceCount: number
   } {
+    let publicKeyCount = 0
+    for (const walletMap of this.publicKeyCache.values()) {
+      publicKeyCount += walletMap.size
+    }
+    let xpubCount = 0
+    for (const walletMap of this.xpubCache.values()) {
+      xpubCount += walletMap.size
+    }
     return {
-      publicKeyCount: this.publicKeyCache.size,
-      xpubCount: this.xpubCache.size
+      publicKeyCount,
+      xpubCount,
+      walletInstanceCount: this.walletInstanceCache.size
     }
   }
-
-  private buildPublicKeyKey(
-    walletId: string,
-    derivationPath: string,
-    curve: string
-  ): string {
-    return `${walletId}:${derivationPath}:${curve}`
-  }
-
-  private buildXpubKey(walletId: string, accountIndex: number): string {
-    return `${walletId}:${accountIndex}`
-  }
 }
+
+/** Module-level singleton — shared by WalletFactory and importable without pulling in the full wallet dependency tree. */
+export const walletDerivedDataCache = new WalletDerivedDataCache()

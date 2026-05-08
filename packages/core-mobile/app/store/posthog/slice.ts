@@ -92,6 +92,17 @@ const parseFloatFlag = (raw: unknown, fallback: string): number => {
   return Number.isNaN(n) ? parseFloat(fallback) : n
 }
 
+// 3-state override for the optimistic-confirmation gate. Mirrors the
+// `sae-override` flag in core-extension. `auto` (or any unrecognized value)
+// defers to the InfoAPI Helicon check.
+export type SaeOverride = 'auto' | 'enabled' | 'disabled'
+
+export const selectSaeOverride = (state: RootState): SaeOverride => {
+  const value = state.posthog.featureFlags[FeatureVars.SAE_OVERRIDE]
+  if (value === 'enabled' || value === 'disabled') return value
+  return 'auto'
+}
+
 export const selectSentrySampleRate = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return (

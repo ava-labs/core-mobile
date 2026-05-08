@@ -1,3 +1,4 @@
+const path = require('path')
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
@@ -5,6 +6,42 @@ const merge = require('lodash.merge')
 const monorepoConfig = require('./metro.monorepo.config')
 const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
+
+/**
+ * Force a @noble/* import to resolve to the single patched top-level copy.
+ * Returns a Metro resolution result, or undefined if the subpath doesn't exist.
+ */
+function resolveNoblePackage(packageName, moduleName) {
+  try {
+    const patchedRoot = path.resolve(__dirname, 'node_modules', packageName)
+    const subpath = moduleName.slice(packageName.length)
+    return {
+      type: 'sourceFile',
+      filePath: require.resolve(patchedRoot + subpath)
+    }
+  } catch {
+    // Subpath not found in patched copy — caller falls through to default resolver
+    return undefined
+  }
+}
+
+// Only redirect @noble/hashes subpaths that are patched for native crypto.
+// Non-crypto modules (_assert, utils, crypto) must resolve normally so
+// consumers expecting the v1.3.x API (e.g. ethereum-cryptography) don't break.
+const PATCHED_NOBLE_HASHES = new Set([
+  '@noble/hashes/hmac',
+  '@noble/hashes/hmac.js',
+  '@noble/hashes/pbkdf2',
+  '@noble/hashes/pbkdf2.js',
+  '@noble/hashes/ripemd160',
+  '@noble/hashes/ripemd160.js',
+  '@noble/hashes/sha2',
+  '@noble/hashes/sha2.js',
+  '@noble/hashes/sha256',
+  '@noble/hashes/sha256.js',
+  '@noble/hashes/sha512',
+  '@noble/hashes/sha512.js'
+])
 
 /**
  * Metro configuration
@@ -28,9 +65,7 @@ const baseConfig = {
   resolver: {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
-    extraNodeModules: {
-      '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
-    },
+    extraNodeModules: {},
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
@@ -141,6 +176,17 @@ const baseConfig = {
       if (moduleName === 'stream') {
         // when importing stream, resolve to readable-stream
         return context.resolveRequest(context, 'readable-stream', platform)
+      }
+
+      // Force patched @noble/hashes subpaths to the top-level copy.
+      // Only the subpaths actually patched are redirected — non-patched
+      // subpaths (e.g. _assert, utils) resolve normally so consumers
+      // expecting the v1.3.x API (ethereum-cryptography) aren't broken.
+      // @noble/curves needs no redirect: the global Yarn resolution
+      // already forces every transitive copy onto the patched 1.9.7.
+      if (PATCHED_NOBLE_HASHES.has(moduleName)) {
+        const resolved = resolveNoblePackage('@noble/hashes', moduleName)
+        if (resolved) return resolved
       }
 
       // optionally, chain to the standard Metro resolver.

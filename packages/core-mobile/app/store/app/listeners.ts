@@ -1,12 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Action, isAnyOf } from '@reduxjs/toolkit'
+import type { Action } from '@reduxjs/toolkit'
+import { isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
-import {
-  AppState,
-  AppStateStatus,
-  Platform,
-  Appearance as RnAppearance
-} from 'react-native'
+import type { AppStateStatus } from 'react-native'
+import { AppState, Platform, Appearance as RnAppearance } from 'react-native'
 import BootSplash from 'react-native-bootsplash'
 import DeviceInfo from 'react-native-device-info'
 import SecureStorageService from 'security/SecureStorageService'
@@ -21,15 +18,16 @@ import {
   setWalletState,
   WalletState
 } from 'store/app'
+import { listenerReconcilerExecutor } from 'store/listenerReconcilers'
 import { reduxStorage } from 'store/reduxStorage'
+import type { ColorSchemeName } from 'store/settings/appearance'
 import {
   Appearance,
-  ColorSchemeName,
   setSelectedAppearance,
   setSelectedColorScheme
 } from 'store/settings/appearance'
 import { selectLockWalletWithPIN } from 'store/settings/securityPrivacy'
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import type { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
@@ -210,6 +208,12 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: setStateToUnlocked
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: (_, listenerApi) =>
+      listenerReconcilerExecutor.executeAll(listenerApi)
   })
 
   startListening({

@@ -168,7 +168,7 @@ export default function AppConnectionScreen({
       if (!deviceId) {
         throw new Error('No device ID found')
       }
-      await LedgerService.ensureConnection(deviceId)
+      await LedgerService.connect(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
       const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
@@ -233,7 +233,7 @@ export default function AppConnectionScreen({
       if (!deviceId) {
         throw new Error('No device ID found')
       }
-      await LedgerService.ensureConnection(deviceId)
+      await LedgerService.connect(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Create a fresh AbortController for this connection attempt.

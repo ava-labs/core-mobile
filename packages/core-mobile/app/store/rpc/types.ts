@@ -198,10 +198,11 @@ export enum RequestContext {
   // pending toast — used when no confirmed toast will follow (e.g. Fusion same-chain swap)
   IMMEDIATE_SENT_TOAST = 'immediateSentToast',
 
-  // Quick Swaps bypass intent — consumed by SwapValidator and
-  // BatchSwapValidator to decide whether a Markr swap can skip the
-  // /approval modal.
-  SWAP_AUTO_APPROVE = 'swapAutoApprove'
+  // Snapshot of the `sae-override` PostHog feature flag, captured at request
+  // creation time by createInAppRequest. Read by isOptimisticConfirmationEnabled
+  // to short-circuit the InfoAPI Helicon check. See createInAppRequest for the
+  // rationale on threading this via context instead of a service-level read.
+  SAE_OVERRIDE = 'saeOverride'
 }
 
 export type SwapAutoApproveContext = {

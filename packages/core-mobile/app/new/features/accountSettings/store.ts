@@ -6,9 +6,8 @@ import {
   supportsAlternateIcons
 } from 'expo-alternate-app-icons'
 import { Platform } from 'react-native'
-import { ZustandStorageKeys } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { isDebugOrInternalBuild } from 'utils/Utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'

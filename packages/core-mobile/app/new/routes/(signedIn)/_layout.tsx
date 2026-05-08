@@ -12,12 +12,14 @@ import {
 } from 'common/utils/navigationGuard'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { LedgerSetupProvider } from 'features/ledger'
+import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
+import { selectIsActiveWalletLedger } from 'store/wallet/slice'
 
 // Note: React.lazy() is not supported in React Native with Metro bundler since 0.81.0.
 // This polyfill needs to be available early anyway to ensure crypto operations work.
@@ -29,6 +31,11 @@ export const unstable_settings = {
 
 export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
+  const isLedgerWallet = useSelector(selectIsActiveWalletLedger)
+
+  // Manage Ledger BLE lifecycle: forget device when switching away,
+  // auto-disconnect on background, auto-reconnect on foreground.
+  useLedgerAppStateListener(isLedgerWallet)
 
   const { modalScreensOptions, secondaryModalScreensOptions } =
     useModalScreensOptions()
