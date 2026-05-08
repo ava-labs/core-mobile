@@ -16,8 +16,7 @@ import {
   toggleAnalytics
 } from 'store/posthog/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -41,8 +40,9 @@ export const PosthogContextProvider = ({
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
-    getTime: () => commonStorage.getString(StorageKey.POSTHOG_SUSPENDED),
-    setTime: time => commonStorage.set(StorageKey.POSTHOG_SUSPENDED, time)
+    getTime: () => commonStorage.getString(CommonStorageKeys.POSTHOG_SUSPENDED),
+    setTime: time =>
+      commonStorage.set(CommonStorageKeys.POSTHOG_SUSPENDED, time)
   })
 
   const [analyticsConsent, setAnalyticsConsent] = useState<

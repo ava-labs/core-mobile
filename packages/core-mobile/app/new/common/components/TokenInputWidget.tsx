@@ -14,7 +14,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState
+} from 'react'
 import Animated, {
   Easing,
   FadeIn,
@@ -23,27 +30,12 @@ import Animated, {
 } from 'react-native-reanimated'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
-export const TokenInputWidget = ({
-  title,
-  token,
-  balance,
-  shouldShowBalance,
-  network,
-  maximum,
-  amount,
-  onAmountChange,
-  formatInCurrency,
-  onSelectToken,
-  onFocus,
-  onBlur,
-  sx,
-  disabled,
-  editable = true,
-  isLoadingAmount = false,
-  autoFocus,
-  valid = true,
-  amountInputTestID = 'token_amount_input_field'
-}: {
+export type TokenInputWidgetRef = {
+  focus: () => void
+  blur: () => void
+}
+
+type TokenInputWidgetProps = {
   title: string
   amount?: bigint
   maximum?: bigint
@@ -60,10 +52,36 @@ export const TokenInputWidget = ({
   disabled?: boolean
   editable?: boolean
   isLoadingAmount?: boolean
-  autoFocus?: boolean
   valid?: boolean
   amountInputTestID?: string
-}): JSX.Element => {
+}
+
+export const TokenInputWidget = forwardRef<
+  TokenInputWidgetRef,
+  TokenInputWidgetProps
+>(function TokenInputWidget(
+  {
+    title,
+    token,
+    balance,
+    shouldShowBalance,
+    network,
+    maximum,
+    amount,
+    onAmountChange,
+    formatInCurrency,
+    onSelectToken,
+    onFocus,
+    onBlur,
+    sx,
+    disabled,
+    editable = true,
+    isLoadingAmount = false,
+    valid = true,
+    amountInputTestID = 'token_amount_input_field'
+  },
+  ref
+): JSX.Element {
   const {
     theme: { colors }
   } = useTheme()
@@ -73,6 +91,15 @@ export const TokenInputWidget = ({
   >([])
 
   const tokenAmountInputRef = useRef<TokenAmountInputRef>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => tokenAmountInputRef.current?.focus(),
+      blur: () => tokenAmountInputRef.current?.blur()
+    }),
+    []
+  )
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -217,7 +244,6 @@ export const TokenInputWidget = ({
                     <TokenAmountInput
                       ref={tokenAmountInputRef}
                       testID={amountInputTestID}
-                      autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
                       textAlign="right"
@@ -326,7 +352,7 @@ export const TokenInputWidget = ({
       </Animated.View>
     </View>
   )
-}
+})
 
 type PercentageButton = {
   text: string

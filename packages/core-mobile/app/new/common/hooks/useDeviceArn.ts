@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { StorageKey } from 'resources/Constants'
-import { commonStorage } from 'utils/mmkv'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 
 /**
  * Hook to get deviceArn from MMKV storage.
@@ -9,14 +8,14 @@ import { commonStorage } from 'utils/mmkv'
  */
 export function useDeviceArn(): string | undefined {
   const [deviceArn, setDeviceArn] = useState<string | undefined>(() =>
-    commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+    commonStorage.getString(CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION)
   )
 
   useEffect(() => {
     const listener = commonStorage.addOnValueChangedListener(changedKey => {
-      if (changedKey === StorageKey.NOTIFICATIONS_OPTIMIZATION) {
+      if (changedKey === CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION) {
         setDeviceArn(
-          commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+          commonStorage.getString(CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION)
         )
       }
     })

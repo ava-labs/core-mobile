@@ -36,7 +36,7 @@ describe('NftProcessor.fetchImage', () => {
     const result = await NftProcessor.fetchImage(base64)
 
     expect(result.type).toBe(NftContentType.SVG)
-    expect(result.uri).toContain('data:image/svg+xml;base64,')
+    expect(result.uri).toBe(base64)
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 

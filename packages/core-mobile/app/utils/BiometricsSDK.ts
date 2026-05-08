@@ -8,10 +8,9 @@ import Keychain, {
   hasGenericPassword,
   SetOptions
 } from 'react-native-keychain'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { Result } from 'types/result'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
-import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 
@@ -88,7 +87,7 @@ class BiometricsSDK {
   }
 
   getAccessType(): string | undefined {
-    return commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+    return commonStorage.getString(CommonStorageKeys.SECURE_ACCESS_SET)
   }
 
   async generateEncryptionKey(): Promise<string> {
@@ -198,7 +197,7 @@ class BiometricsSDK {
     encryptionKey: string,
     pin: string
   ): Promise<boolean> {
-    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+    commonStorage.set(CommonStorageKeys.SECURE_ACCESS_SET, 'PIN')
     const encrypted = await encrypt(encryptionKey, pin)
     await Keychain.setGenericPassword(
       'encryptionKey',
@@ -226,7 +225,7 @@ class BiometricsSDK {
         bioSetOptions
       )
       this.#encryptionKey = encryptionKey
-      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
+      commonStorage.set(CommonStorageKeys.SECURE_ACCESS_SET, 'BIO')
       return true
     } catch (e) {
       Logger.error('failed to store encryption key with biometry', e)
@@ -313,7 +312,7 @@ class BiometricsSDK {
         e
       )
     }
-    commonStorage.remove(StorageKey.SECURE_ACCESS_SET)
+    commonStorage.remove(CommonStorageKeys.SECURE_ACCESS_SET)
   }
 
   async clearAllData(): Promise<void> {
@@ -337,7 +336,7 @@ class BiometricsSDK {
           await Keychain.resetGenericPassword({ service })
         }
       }
-      commonStorage.remove(StorageKey.SECURE_ACCESS_SET)
+      commonStorage.remove(CommonStorageKeys.SECURE_ACCESS_SET)
     } catch (e) {
       Logger.error('Failed to clear all keychain data', e)
     }
@@ -406,7 +405,7 @@ class BiometricsSDK {
   }
 
   async disableBiometry(): Promise<void> {
-    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+    commonStorage.set(CommonStorageKeys.SECURE_ACCESS_SET, 'PIN')
     await Keychain.resetGenericPassword({
       service: ENCRYPTION_KEY_SERVICE_BIO
     })
@@ -450,8 +449,8 @@ class BiometricsSDK {
         await LocalAuthentication.authenticateAsync(bioAuthenticationOptions)
       if (!result.success) {
         if (result.error === 'user_cancel') {
-          const isEnrolled = await LocalAuthentication.isEnrolledAsync()
-          if (isEnrolled) {
+          const stillEnrolled = await LocalAuthentication.isEnrolledAsync()
+          if (stillEnrolled) {
             return false
           }
           Logger.error(

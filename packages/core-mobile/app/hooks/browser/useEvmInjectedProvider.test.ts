@@ -14,7 +14,10 @@ import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
-  useDispatch: jest.fn()
+  useDispatch: jest.fn(),
+  useStore: jest.fn(() => ({
+    getState: jest.fn(() => ({ posthog: { featureFlags: {} } }))
+  }))
 }))
 
 jest.mock('store/network/slice', () => ({
@@ -431,7 +434,10 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(payload)
         })
 
-        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+          mockDispatch,
+          expect.any(Function)
+        )
         expect(mockRequest).toHaveBeenCalledWith(
           expect.objectContaining({
             method: 'wallet_addEthereumChain',
@@ -611,7 +617,10 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+          mockDispatch,
+          expect.any(Function)
+        )
         expect(mockRequest).toHaveBeenCalledWith(
           expect.objectContaining({
             method: 'wallet_watchAsset',
@@ -735,7 +744,10 @@ describe('useEvmInjectedProvider', () => {
             result.current.handleProviderMessage(payload)
           })
 
-          expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+          expect(mockCreateInAppRequest).toHaveBeenCalledWith(
+            mockDispatch,
+            expect.any(Function)
+          )
           expect(mockRequest).toHaveBeenCalledWith({
             method: rpcMethod,
             params: ['param1', 'param2'],
@@ -746,6 +758,54 @@ describe('useEvmInjectedProvider', () => {
           })
         }
       )
+
+      it('derives peerMeta.name from the native URL hostname, not from page-supplied domain_metadata', async () => {
+        const mockRequest = jest.fn().mockResolvedValue('0xSig')
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        // The page is actually loaded from a malicious origin...
+        act(() => {
+          result.current.setCurrentUrl('https://malicious.example/path')
+        })
+
+        // ...but it tries to spoof its display name via domain_metadata.
+        act(() => {
+          result.current.handleDomainMetadata(
+            JSON.stringify({
+              domain: 'core.app',
+              name: 'core.app',
+              icon: 'https://core.app/favicon.ico',
+              url: 'https://core.app/'
+            })
+          )
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 99,
+              request: {
+                method: 'personal_sign',
+                params: ['0xMessage', '0xAddress']
+              }
+            })
+          )
+        })
+
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            peerMeta: expect.objectContaining({
+              name: 'malicious.example',
+              url: 'https://malicious.example/path',
+              icons: ['https://core.app/favicon.ico']
+            })
+          })
+        )
+      })
 
       it('responds with signature on approval', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xSignatureResult')
@@ -827,6 +887,60 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('"code":-32603')
         )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('Origin unavailable')
+        )
+      })
+
+      it('rejects wallet_addEthereumChain when origin is unavailable (no Core attribution)', async () => {
+        const mockRequest = jest.fn()
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 30,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0x1' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        // Must NOT reach the approval pipeline (would otherwise be attributed
+        // to CORE_MOBILE_META by generateInAppRequestPayload).
+        expect(mockRequest).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('Origin unavailable')
+        )
+      })
+
+      it('rejects wallet_watchAsset when origin is unavailable (no Core attribution)', async () => {
+        const mockRequest = jest.fn()
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 31,
+          request: {
+            method: 'wallet_watchAsset',
+            params: [{ type: 'ERC20', options: { address: '0x0' } }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockRequest).not.toHaveBeenCalled()
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('Origin unavailable')
         )
