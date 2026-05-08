@@ -304,6 +304,7 @@ class PortfolioPage {
 
   async tapAssetsTab() {
     await actions.tap(this.assetsTab)
+    await actions.delay(1000)
   }
 
   async tapCollectiblesTab() {
@@ -312,10 +313,12 @@ class PortfolioPage {
 
   async tapDefiTab() {
     await actions.longPress(this.defiTab)
+    await actions.delay(1000)
   }
 
   async tapActivityTab() {
     await actions.tap(this.activityTab)
+    await actions.delay(1000)
   }
 
   async tapEthNetwork() {
@@ -556,6 +559,7 @@ class PortfolioPage {
 
   async verifyXPSendOnActivityTab(title: string, network?: string) {
     await this.tapActivityTab()
+    await actions.delay(2000)
     if (network) {
       await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
     }
@@ -581,7 +585,11 @@ class PortfolioPage {
   }
 
   async verifySwapActivityHistory(title: string) {
-    await actions.waitFor(selectors.getBySomeTextV2(title))
+    if (driver.isAndroid) {
+      await actions.waitFor(selectors.getBySomeId(`tx__title__${title}`))
+    } else {
+      await actions.waitFor(selectors.getBySomeTextV2(title))
+    }
   }
 
   async selectView(viewType = 'List view') {

@@ -47,6 +47,13 @@ function getBySmartText(textOrId: string) {
   )
 }
 
+function getBySomeId(id: string) {
+  return withPlatform(
+    `-ios predicate string:identifier CONTAINS "${id}"`,
+    `android=new UiSelector().resourceIdMatches(".*${id}.*")`
+  )
+}
+
 function getByXpath(xpath: string) {
   return $(xpath)
 }
@@ -72,6 +79,7 @@ export const selectors = {
   getByTextWithIndex,
   getBySomeText,
   getBySomeTextV2,
+  getBySomeId,
   getByXpath,
   getBySmartText
 }

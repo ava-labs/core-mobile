@@ -3,7 +3,6 @@ import { selectors } from '../helpers/selectors'
 import earnLoc from '../locators/earn.loc'
 import txPage from './transactions.page'
 import bottomTabsPage from './bottomTabs.page'
-import commonElsPage from './commonEls.page'
 
 class EarnPage {
   get earnSubtitle() {
@@ -59,7 +58,7 @@ class EarnPage {
   }
 
   get borrowTab() {
-    return selectors.getById(earnLoc.borrowTab)
+    return selectors.getByText(earnLoc.borrowTab)
   }
 
   get selectDepositsToUseAsCollateralTitle() {
@@ -91,7 +90,7 @@ class EarnPage {
   }
 
   pool(poolName: string) {
-    return selectors.getById(`protocol_logo__${poolName}`)
+    return selectors.getById(`protocol__${poolName}`)
   }
 
   withdrawBtn(pool: string, token: string) {
@@ -188,7 +187,7 @@ class EarnPage {
   }
 
   async tapBorrowCard(pool = 'aave', token = 'AVAX') {
-    await commonElsPage.pullToRefresh(this.borrowOn)
+    await actions.delay(2000)
     await actions.tap(this.borrowCard(pool, token))
   }
 
