@@ -49,11 +49,13 @@ export const SentryTag = {
 
 /**
  * Breadcrumb categories explicitly allowed by `SentryService.beforeBreadcrumb`.
- * Add new categories here AND update the allowlist in `SentryService.ts`
- * — breadcrumbs without a listed category get dropped.
+ * `SentryService` derives its allowlist from `Object.values(...)` of this
+ * object at module load, so adding a new entry here is enough — no other
+ * file needs to change. Breadcrumbs whose category isn't listed get dropped.
  */
 export const AllowedSentryBreadcrumbCategory = {
-  ListenerMigration: 'listenerMigration'
+  ListenerMigration: 'listenerMigration',
+  ListenerReconciler: 'listenerReconciler'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =
