@@ -75,6 +75,16 @@ const ALLOWED_METHODS = new Set([
   'wallet_watchAsset'
 ])
 
+// Methods that trigger a user-facing approval modal and therefore require a
+// verified native origin. Without one, the downstream generateInAppRequestPayload
+// would fall back to CORE_MOBILE_META and misattribute the request to Core —
+// the same spoofing class CP-14159 exists to prevent.
+const APPROVAL_METHODS = new Set([
+  ...Object.keys(SIGNING_METHODS),
+  'wallet_addEthereumChain',
+  'wallet_watchAsset'
+])
+
 function validateProviderRequest(data: unknown): data is ProviderRequest {
   if (typeof data !== 'object' || data === null) return false
   const obj = data as Record<string, unknown>
@@ -293,16 +303,30 @@ export function useEvmInjectedProvider(
     [sendResponse]
   )
 
-  const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
-    const meta = dappMetadata.current
+  const buildDappPeerMeta = useCallback((): PeerMeta => {
     const nativeUrl = currentUrlRef.current
-    if (!meta && !nativeUrl) return undefined
+    let hostname = ''
+    if (nativeUrl) {
+      try {
+        hostname = new URL(nativeUrl).hostname
+      } catch {
+        // fall through to placeholder
+      }
+    }
 
+    // The dApp name and URL are derived ONLY from the WebView's actual
+    // top-level URL. The page-supplied domain_metadata cannot influence
+    // either (it would be a spoofing vector). The favicon is taken from
+    // domain_metadata since it is purely cosmetic. When the native URL is
+    // unavailable we return a non-Core placeholder so the downstream
+    // generateInAppRequestPayload does NOT fall back to CORE_MOBILE_META
+    // (which would misattribute the request to https://core.app).
+    const icon = dappMetadata.current?.icon
     return {
-      name: meta?.name ?? new URL(nativeUrl).hostname,
+      name: hostname || 'Unknown site',
       description: '',
-      url: nativeUrl || meta?.url || '',
-      icons: meta?.icon ? [meta.icon] : []
+      url: hostname ? nativeUrl : '',
+      icons: icon ? [icon] : []
     }
   }, [])
 
@@ -494,13 +518,11 @@ export function useEvmInjectedProvider(
 
       if (nativeOrigin) {
         pendingOrigins.current.set(id, nativeOrigin)
-      } else if (method in SIGNING_METHODS) {
-        // Signing methods require a verified page origin — reject without one.
-        sendResponse(
-          id,
-          rpcErrors.internal('Origin unavailable — cannot sign'),
-          undefined
-        )
+      } else if (APPROVAL_METHODS.has(method)) {
+        // Methods that surface an approval modal require a verified native
+        // origin. Without one, peerMeta would be undefined downstream and
+        // CORE_MOBILE_META would attribute the request to Core/core.app.
+        sendResponse(id, rpcErrors.internal('Origin unavailable'), undefined)
         return
       }
 
