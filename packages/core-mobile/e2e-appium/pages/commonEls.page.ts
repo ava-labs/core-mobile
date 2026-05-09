@@ -302,7 +302,9 @@ class CommonElsPage {
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
   ) {
+    await actions.delay(2000)
     await actions.click(filterDropdown)
+    await actions.delay(2000)
     await this.selectDropdownItem(item)
   }
 

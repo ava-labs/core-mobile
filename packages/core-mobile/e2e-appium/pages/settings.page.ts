@@ -819,7 +819,7 @@ class Settings {
   }
 
   async verifyAppIconScreen(selectedIconId: string) {
-    await actions.waitFor(selectors.getByText(settings.appIconTitle))
+    await actions.waitFor(selectors.getBySomeText(settings.appIconTitle))
     const appIcons = [
       'Core light',
       'Old school Core',
