@@ -37,6 +37,11 @@ import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
 import KeystoneWallet from './KeystoneWallet'
 import { LedgerWallet } from './LedgerWallet'
+import {
+  getAddressesCache,
+  setAddressesCache,
+  clearAddressesCache
+} from './getAddressesCache'
 
 // Retry helper. Local to WalletService — promote to utils/ only if a second
 // caller appears. Backoff: 250 / 500 / 1000 ms. Treat network errors and
@@ -458,6 +463,10 @@ class WalletService {
     return raceAnyTrueOrThrow(checks)
   }
 
+  public clearAddressCache(): void {
+    clearAddressesCache()
+  }
+
   private async getAddressesForExtendedPublicKey({
     extendedPublicKey,
     networkType,
@@ -469,6 +478,17 @@ class WalletService {
     isTestnet: boolean
     onlyWithActivity: boolean
   }): Promise<GetAddressesResponse> {
+    const cacheKey = {
+      extendedPublicKey,
+      networkType,
+      isTestnet,
+      onlyWithActivity
+    }
+    const cached = getAddressesCache(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const callOnce = async (): Promise<GetAddressesResponse> => {
       const raw = await postV1GetAddresses({
         client: profileApiClient,
@@ -518,11 +538,13 @@ class WalletService {
     }
 
     try {
-      return await retryWithBackoff(
+      const body = await retryWithBackoff(
         callOnce,
         isTransientHttpError,
         RETRY_DELAYS_MS
       )
+      setAddressesCache(cacheKey, body)
+      return body
     } catch (err) {
       Logger.error(
         '[WalletService.ts][getAddressesForExtendedPublicKey] failed',

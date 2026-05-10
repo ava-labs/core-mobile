@@ -261,3 +261,102 @@ describe('WalletService.getAddresses retry behavior', () => {
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
 })
+
+import { clearAddressesCache } from './getAddressesCache'
+
+describe('WalletService.getAddresses cache behavior', () => {
+  beforeEach(() => {
+    clearAddressesCache()
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+    jest.restoreAllMocks()
+  })
+
+  it('returns the cached value on the second call without re-calling postV1GetAddresses', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-cache')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockResolvedValue({ data: avmWithActivityResponse })
+
+    const args = {
+      walletId: 'wallet-cache',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const first = await WalletService.getAddressesFromXpubXP(args)
+    const second = await WalletService.getAddressesFromXpubXP(args)
+
+    expect(first).toEqual(avmWithActivityResponse)
+    expect(second).toEqual(avmWithActivityResponse)
+    // getRawXpubXP is called both times (cheap), but the API is hit only once.
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+
+  it('clearAddressCache forces re-fetch', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-clear')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockResolvedValue({ data: avmWithActivityResponse })
+
+    const args = {
+      walletId: 'wallet-clear',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    await WalletService.getAddressesFromXpubXP(args)
+    WalletService.clearAddressCache()
+    await WalletService.getAddressesFromXpubXP(args)
+
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(2)
+  })
+
+  it('does NOT cache failed responses', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-fail')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    let calls = 0
+    postV1GetAddresses.mockImplementation(async () => {
+      calls += 1
+      if (calls === 1)
+        return { data: undefined, error: { status: 401, message: 'auth' } }
+      return { data: avmWithActivityResponse }
+    })
+
+    const args = {
+      walletId: 'wallet-fail',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    await expect(WalletService.getAddressesFromXpubXP(args)).rejects.toThrow(
+      /auth/
+    )
+    await expect(WalletService.getAddressesFromXpubXP(args)).resolves.toEqual(
+      avmWithActivityResponse
+    )
+
+    expect(calls).toBe(2)
+  })
+})
