@@ -38,6 +38,51 @@ import { MnemonicWallet } from './MnemonicWallet'
 import KeystoneWallet from './KeystoneWallet'
 import { LedgerWallet } from './LedgerWallet'
 
+// Retry helper. Local to WalletService — promote to utils/ only if a second
+// caller appears. Backoff: 250 / 500 / 1000 ms. Treat network errors and
+// HTTP 5xx as transient; everything else is fatal on the first try.
+const isTransientHttpError = (err: unknown): boolean => {
+  if (
+    err &&
+    typeof err === 'object' &&
+    'status' in err &&
+    typeof (err as { status: unknown }).status === 'number'
+  ) {
+    const status = (err as { status: number }).status
+    return status >= 500 && status < 600
+  }
+  // No status field → most likely a fetch/network error → treat as transient.
+  return true
+}
+
+const RETRY_DELAYS_MS = [250, 500, 1000] as const
+
+const retryWithBackoff = async <T,>(
+  attempt: () => Promise<T>,
+  isTransient: (err: unknown) => boolean,
+  delays: readonly number[]
+): Promise<T> => {
+  let lastErr: unknown
+  for (let i = 0; i <= delays.length; i++) {
+    try {
+      return await attempt()
+    } catch (err) {
+      lastErr = err
+      if (i === delays.length || !isTransient(err)) {
+        throw err
+      }
+      Logger.info(
+        `[WalletService.retryWithBackoff] attempt ${
+          i + 1
+        } failed, retrying in ${delays[i]}ms: ${String(err)}`
+      )
+      await new Promise(r => setTimeout(r, delays[i]))
+    }
+  }
+  // Unreachable, but satisfies TS.
+  throw lastErr
+}
+
 class WalletService {
   public async sign({
     walletId,
@@ -424,7 +469,7 @@ class WalletService {
     isTestnet: boolean
     onlyWithActivity: boolean
   }): Promise<GetAddressesResponse> {
-    try {
+    const callOnce = async (): Promise<GetAddressesResponse> => {
       const raw = await postV1GetAddresses({
         client: profileApiClient,
         body: {
@@ -435,13 +480,49 @@ class WalletService {
         }
       })
 
+      // If hey-api gave us a structured error envelope, surface it as a
+      // throw so the retry helper sees it. The status field is what
+      // `isTransientHttpError` keys on.
+      if (
+        raw &&
+        typeof raw === 'object' &&
+        'error' in raw &&
+        (raw as { error: unknown }).error !== undefined
+      ) {
+        const err = (raw as { error: { status?: number; message?: string } })
+          .error
+        const message = err?.message ?? 'profile-api returned an error envelope'
+        const wrapped = new Error(
+          `postV1GetAddresses failed (status=${
+            err?.status ?? 'unknown'
+          }): ${message}`
+        )
+        // Attach status so retry helper can categorize.
+        ;(wrapped as Error & { status?: number }).status = err?.status
+        throw wrapped
+      }
+
       const body = unwrapPostV1GetAddressesResult(raw)
 
       if (!isGetAddressesResponseBody(body)) {
-        throw new Error('Failed to get addresses from postV1GetAddresses')
+        throw new Error(
+          `postV1GetAddresses returned an unrecognized body shape: ${
+            typeof body === 'object'
+              ? JSON.stringify(body).slice(0, 200)
+              : String(body)
+          }`
+        )
       }
 
       return body
+    }
+
+    try {
+      return await retryWithBackoff(
+        callOnce,
+        isTransientHttpError,
+        RETRY_DELAYS_MS
+      )
     } catch (err) {
       Logger.error(
         '[WalletService.ts][getAddressesForExtendedPublicKey] failed',

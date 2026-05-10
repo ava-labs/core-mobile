@@ -158,3 +158,106 @@ describe('WalletService.hasActivityFromXpubXP', () => {
     ).resolves.toBe(true)
   })
 })
+
+describe('WalletService.getAddresses retry behavior', () => {
+  // Use fake timers so we can fast-forward the exponential backoff
+  // (250 / 500 / 1000 ms) without making the test slow.
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+    jest.restoreAllMocks()
+  })
+
+  it('retries postV1GetAddresses up to two times on transient HTTP failure', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-retry')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    let calls = 0
+    postV1GetAddresses.mockImplementation(async () => {
+      calls += 1
+      if (calls < 3) {
+        // Mimic hey-api shape on a 5xx response: parsed body with error field.
+        return { data: undefined, error: { status: 503, message: 'upstream' } }
+      }
+      return { data: avmWithActivityResponse }
+    })
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-retry',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // Drive the backoff timers. 250ms after first failure, then 500ms after second.
+    await jest.advanceTimersByTimeAsync(250)
+    await jest.advanceTimersByTimeAsync(500)
+
+    const result = await promise
+    expect(result).toEqual(avmWithActivityResponse)
+    expect(calls).toBe(3)
+  })
+
+  it('preserves upstream error message when retries are exhausted', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-exhaust')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockImplementation(async () => ({
+      data: undefined,
+      error: { status: 503, message: 'profile-api down' }
+    }))
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-exhaust',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // Run all backoff timers, capturing the rejection.
+    // eslint-disable-next-line jest/valid-expect -- awaited below
+    const expectation = expect(promise).rejects.toThrow(/profile-api down/)
+    await jest.advanceTimersByTimeAsync(250 + 500 + 1000)
+    await expectation
+  })
+
+  it('does NOT retry on non-transient (4xx) error', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-4xx')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockImplementation(async () => ({
+      data: undefined,
+      error: { status: 401, message: 'unauthorized' }
+    }))
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-4xx',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // eslint-disable-next-line jest/valid-expect -- awaited below
+    const expectation = expect(promise).rejects.toThrow(/unauthorized/)
+    await jest.advanceTimersByTimeAsync(0)
+    await expectation
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+})
