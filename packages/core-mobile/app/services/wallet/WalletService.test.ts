@@ -170,7 +170,7 @@ describe('WalletService.getAddresses retry behavior', () => {
     jest.restoreAllMocks()
   })
 
-  it('retries postV1GetAddresses up to two times on transient HTTP failure', async () => {
+  it('retries postV1GetAddresses up to three times on transient HTTP failure', async () => {
     jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-retry')
 
     const { postV1GetAddresses } = jest.requireMock(

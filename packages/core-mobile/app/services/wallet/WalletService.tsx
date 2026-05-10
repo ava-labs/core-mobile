@@ -44,8 +44,10 @@ import {
 } from './getAddressesCache'
 
 // Retry helper. Local to WalletService — promote to utils/ only if a second
-// caller appears. Backoff: 250 / 500 / 1000 ms. Treat network errors and
-// HTTP 5xx as transient; everything else is fatal on the first try.
+// caller appears. Backoff: 250 / 500 / 1000 ms (3 retries, 4 total attempts).
+// Treat network errors and HTTP 5xx as transient; everything else is fatal
+// on the first try. Note: retry attempts are logged via Logger.info, which
+// is console-only — they do NOT surface to Sentry in production.
 const isTransientHttpError = (err: unknown): boolean => {
   if (
     err &&
