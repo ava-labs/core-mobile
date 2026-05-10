@@ -9,9 +9,9 @@ type CacheKey = {
 }
 
 const serializeKey = (key: CacheKey): string =>
-  `${key.extendedPublicKey}|${key.networkType}|${
-    key.isTestnet ? 't' : 'm'
-  }|${key.onlyWithActivity ? 'a' : 'all'}`
+  `${key.extendedPublicKey}|${key.networkType}|${key.isTestnet ? 't' : 'm'}|${
+    key.onlyWithActivity ? 'a' : 'all'
+  }`
 
 const cache = new Map<string, GetAddressesResponse>()
 
