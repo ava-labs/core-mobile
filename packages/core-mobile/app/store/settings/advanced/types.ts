@@ -1,10 +1,14 @@
 export const QUICK_SWAP_FEE_LEVELS = ['low', 'medium', 'high'] as const
-export type QuickSwapFeeLevel = (typeof QUICK_SWAP_FEE_LEVELS)[number]
+export type QuickSwapFeeLevel = typeof QUICK_SWAP_FEE_LEVELS[number]
 
 export const QUICK_SWAP_MAX_BUY_VALUES = [
-  'unlimited', '1000', '5000', '10000', '50000'
+  'unlimited',
+  '1000',
+  '5000',
+  '10000',
+  '50000'
 ] as const
-export type QuickSwapMaxBuy = (typeof QUICK_SWAP_MAX_BUY_VALUES)[number]
+export type QuickSwapMaxBuy = typeof QUICK_SWAP_MAX_BUY_VALUES[number]
 
 export type QuickSwapsSettings = {
   isEnabled: boolean

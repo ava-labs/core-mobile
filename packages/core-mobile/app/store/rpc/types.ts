@@ -202,7 +202,12 @@ export enum RequestContext {
   // creation time by createInAppRequest. Read by isOptimisticConfirmationEnabled
   // to short-circuit the InfoAPI Helicon check. See createInAppRequest for the
   // rationale on threading this via context instead of a service-level read.
-  SAE_OVERRIDE = 'saeOverride'
+  SAE_OVERRIDE = 'saeOverride',
+
+  // Quick Swaps bypass intent — consumed by SwapValidator and
+  // BatchSwapValidator to decide whether a Markr swap can skip the
+  // /approval modal.
+  SWAP_AUTO_APPROVE = 'swapAutoApprove'
 }
 
 export type SwapAutoApproveContext = {

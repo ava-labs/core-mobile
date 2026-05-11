@@ -1,3 +1,4 @@
+import type { RootState } from 'store/types'
 import { advancedReducer, advancedSlice } from './slice'
 import {
   selectIsQuickSwapsEnabled,
@@ -6,7 +7,6 @@ import {
   selectQuickSwapsMaxBuy
 } from './slice'
 import { initialState, QUICK_SWAPS_DEFAULT } from './types'
-import type { RootState } from 'store/types'
 
 const wrap = (advanced: typeof initialState) =>
   ({ settings: { advanced } } as unknown as RootState)

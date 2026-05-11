@@ -7,9 +7,9 @@ export const AdvancedSettings = ({
 }: {
   selectAdvancedSettings: () => void
 }): React.JSX.Element | null => {
-  const { isAvailable } = useQuickSwaps()
+  const { flagOn } = useQuickSwaps()
 
-  if (!isAvailable) return null
+  if (!flagOn) return null
 
   return (
     <GroupList
