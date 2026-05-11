@@ -8,7 +8,7 @@ import BootSplash from 'react-native-bootsplash'
 import DeviceInfo from 'react-native-device-info'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
+import { clearAddressesCache } from 'services/wallet/getAddressesCache'
 import { WalletType } from 'services/wallet/types'
 import {
   onRehydrationComplete,
@@ -174,7 +174,7 @@ const clearData = async (
     Logger.error('failed to clear biometrics', e)
   )
   try {
-    WalletService.clearAddressCache()
+    clearAddressesCache()
   } catch (e) {
     Logger.error('failed to clear address cache', e)
   }
@@ -231,7 +231,7 @@ export const addAppListeners = (startListening: AppStartListening): void => {
     actionCreator: onAppLocked,
     effect: () => {
       try {
-        WalletService.clearAddressCache()
+        clearAddressesCache()
       } catch (e) {
         Logger.error('failed to clear address cache on lock', e)
       }
