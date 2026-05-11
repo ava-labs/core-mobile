@@ -301,7 +301,7 @@ describe('WalletService.getAddresses cache behavior', () => {
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
 
-  it('clearAddressCache forces re-fetch', async () => {
+  it('clearAddressesCache forces re-fetch', async () => {
     jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-clear')
 
     const { postV1GetAddresses } = jest.requireMock(
@@ -320,7 +320,7 @@ describe('WalletService.getAddresses cache behavior', () => {
     }
 
     await WalletService.getAddressesFromXpubXP(args)
-    WalletService.clearAddressCache()
+    clearAddressesCache()
     await WalletService.getAddressesFromXpubXP(args)
 
     expect(postV1GetAddresses).toHaveBeenCalledTimes(2)
@@ -409,7 +409,7 @@ describe('WalletService.getAddresses cache behavior', () => {
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
 
-  it('does NOT populate the cache if clearAddressCache fires mid-fetch', async () => {
+  it('does NOT populate the cache if clearAddressesCache fires mid-fetch', async () => {
     jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-race')
 
     const { postV1GetAddresses } = jest.requireMock(

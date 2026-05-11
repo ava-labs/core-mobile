@@ -40,7 +40,6 @@ import { LedgerWallet } from './LedgerWallet'
 import {
   getAddressesCache,
   setAddressesCache,
-  clearAddressesCache,
   getInFlightAddressesFetch,
   setInFlightAddressesFetch,
   clearInFlightAddressesFetch,
@@ -467,10 +466,6 @@ class WalletService {
     ]
 
     return raceAnyTrueOrThrow(checks)
-  }
-
-  public clearAddressCache(): void {
-    clearAddressesCache()
   }
 
   private async getAddressesForExtendedPublicKey({
