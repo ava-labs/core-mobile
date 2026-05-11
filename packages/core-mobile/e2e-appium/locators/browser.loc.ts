@@ -1,9 +1,12 @@
 export default {
+  discoverTitle: 'discover_title',
+  trendingProjectsTitle: 'trending_projects_title',
   browserHistoryItem: 'browser_history_item',
   openTrendingProjectBtn: 'trending_project_open_btn__0',
   close: 'Close',
   androidChromePager: 'com.android.chrome:id/fre_pager',
   searchBar: 'search_bar',
+  browserUrlText: 'browser_url_text',
   closeTabBtn: 'close_btn__0',
   myWebview: 'myWebview',
   blackholeAmountInput: '//XCUIElementTypeTextField[1]',
@@ -21,7 +24,7 @@ export default {
   tabsMoreBtn: 'browser_tabs_more_btn',
   urlMenuTrigger: 'browser_url_menu_trigger',
   // Discovery section items (index-based testIDs)
-  ecosystemCarouselItem0: 'browser_ecosystem_item__0',
+  blazeEcosystemCarouselItem: 'browser_ecosystem_item__Blaze',
   learnCarouselItem0: 'browser_learn_item__0',
   suggestedItem0: 'browser_suggested_item__0',
   // Text-based menu items

@@ -234,8 +234,11 @@ export const config: WebdriverIO.Config = {
         const sanitizedTestName = test.title
           .replace(/[^a-zA-Z0-9]/g, '_')
           .substring(0, 50)
+        const outputDir = path.join(__dirname, 'page-source-failures')
+        if (!fs.existsSync(outputDir))
+          fs.mkdirSync(outputDir, { recursive: true })
         const pageSourcePath = path.join(
-          process.cwd(),
+          outputDir,
           `page-source-failure-${sanitizedTestName}-${timestamp}.xml`
         )
         fs.writeFileSync(pageSourcePath, pageSource)

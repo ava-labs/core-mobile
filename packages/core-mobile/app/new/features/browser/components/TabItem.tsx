@@ -182,9 +182,11 @@ export const TabItem = ({
                 {title}
               </Text>
 
-              <Pressable hitSlop={10} onPress={handleOnClose}>
+              <Pressable
+                testID={`close_btn__${index}`}
+                hitSlop={10}
+                onPress={handleOnClose}>
                 <Icons.Content.Close
-                  testID={`close_btn__${index}`}
                   color={theme.colors.$textPrimary}
                   height={24}
                   width={24}

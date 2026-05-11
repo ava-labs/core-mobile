@@ -49,13 +49,10 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
     handleUrlSubmit?.(item.website ?? '')
   }
 
-  const renderItem: ListRenderItem<ContentfulEcosystemProject> = ({
-    item,
-    index
-  }) => {
+  const renderItem: ListRenderItem<ContentfulEcosystemProject> = ({ item }) => {
     return (
       <CarouselItem
-        testID={`browser_ecosystem_item__${index}`}
+        testID={`browser_ecosystem_item__${item.name}`}
         title={item.name}
         image={item.logo?.url}
         description={item.description}

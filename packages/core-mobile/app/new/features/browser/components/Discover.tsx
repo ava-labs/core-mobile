@@ -61,7 +61,9 @@ export const Discover = (): JSX.Element => {
       </Animated.View>
 
       <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-        <Text variant="heading2">Discover</Text>
+        <Text testID="discover_title" variant="heading2">
+          Discover
+        </Text>
         <Text variant="body1">
           {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
         </Text>
@@ -74,7 +76,9 @@ export const Discover = (): JSX.Element => {
           gap: HORIZONTAL_MARGIN / 2
         }}>
         <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-          <Text variant="heading3">Trending projects</Text>
+          <Text testID="trending_projects_title" variant="heading3">
+            Trending projects
+          </Text>
         </View>
         <DiscoverFeaturedProjects />
       </View>

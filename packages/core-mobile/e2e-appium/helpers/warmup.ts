@@ -1,4 +1,25 @@
 import onboardingPage from '../pages/onboarding.page'
+import portfolioPage from '../pages/portfolio.page'
+import { actions } from './actions'
+
+type AppState = 'loggedIn' | 'locked' | 'onboarding'
+
+async function detectAppState(): Promise<AppState> {
+  const isLoggedIn = await actions.isElementVisible(
+    portfolioPage.portfolioBalanceHeader,
+    3000
+  )
+  if (isLoggedIn) return 'loggedIn'
+
+  // forgot_pin_btn only appears on the PIN lock screen
+  const isLocked = await actions.isElementVisible(
+    onboardingPage.forgotPin,
+    3000
+  )
+  if (isLocked) return 'locked'
+
+  return 'onboarding'
+}
 
 export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
@@ -11,6 +32,23 @@ export default async function warmup(
   }
 
   await onboardingPage.exitMetro()
+
+  const state = await detectAppState()
+  console.log(`App state detected: ${state}`)
+
+  if (state === 'loggedIn') {
+    console.log('Already logged in, skipping onboarding')
+    return
+  }
+
+  if (state === 'locked') {
+    console.log('App is locked, entering PIN to unlock')
+    await onboardingPage.unlockEnterPin()
+    await onboardingPage.verifyLoggedIn()
+    return
+  }
+
+  // Full onboarding flow
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()
   await onboardingPage.tapAgreeAndContinue()
@@ -34,13 +72,8 @@ export async function killAndRestart() {
     await driver.execute('mobile: terminateApp', { bundleId })
     await driver.execute('mobile: activateApp', { bundleId })
   } else {
-    const appId = 'org.avalabs.corewallet'
-    try {
-      await driver.terminateApp(appId)
-      await driver.activateApp(appId)
-    } catch (error) {
-      await driver.terminateApp(appId + '.internal')
-      await driver.activateApp(appId + '.internal')
-    }
+    const appId = 'com.avaxwallet.internal'
+    await driver.terminateApp(appId)
+    await driver.activateApp(appId)
   }
 }

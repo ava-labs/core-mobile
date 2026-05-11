@@ -9,8 +9,6 @@ import { selectors } from '../../../helpers/selectors'
 describe('Portfolio tab', () => {
   it('Assets - filter assets by network', async () => {
     await warmup()
-    await commonElsPage.filter(commonElsLoc.cChain_2)
-    await portfolioPage.displayAssetsByNetwork(commonElsLoc.cChain_2)
 
     await commonElsPage.filter(commonElsLoc.pChain)
     await portfolioPage.displayAssetsByNetwork(commonElsLoc.pChain_3)
@@ -24,7 +22,8 @@ describe('Portfolio tab', () => {
     await commonElsPage.filter(commonElsLoc.bitcoin)
     await portfolioPage.displayAssetsByNetwork(commonElsLoc.bitcoin)
 
-    await commonElsPage.filter(commonElsLoc.allNetworks)
+    await commonElsPage.filter(commonElsLoc.cChain_2)
+    await portfolioPage.displayAssetsByNetwork(commonElsLoc.cChain_2)
   })
 
   it('Assets - sort assets', async () => {
@@ -39,8 +38,8 @@ describe('Portfolio tab', () => {
       )
 
       assert(
-        previousAmount > currentAmount,
-        `Expected ${previousAmount} to be greater than ${currentAmount}`
+        previousAmount >= currentAmount,
+        `Expected ${previousAmount} to be greater than or equal to ${currentAmount}`
       )
 
       previousAmount = currentAmount

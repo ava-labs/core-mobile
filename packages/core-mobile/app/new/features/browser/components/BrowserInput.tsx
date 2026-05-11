@@ -103,6 +103,7 @@ export const BrowserInput = (): ReactNode => {
     return (
       <Pressable
         testID="search_bar"
+        accessibilityLabel="search_bar"
         style={{
           flex: 1,
           height: '100%',
@@ -115,6 +116,7 @@ export const BrowserInput = (): ReactNode => {
         {activeTab?.activeHistory?.url.length &&
         isValidHttpUrl(activeTab?.activeHistory?.url) ? (
           <Text
+            testID="browser_url_text"
             numberOfLines={1}
             style={{
               fontFamily: 'Inter-Medium',

@@ -106,7 +106,7 @@ export default {
   nameThisNetworkBtn: 'Name this network',
   saveNetworkBtn: 'save_network_btn',
   appIcon: 'App icon',
-  appIconTitle: 'Customize\nthe app icon',
+  appIconTitle: 'Customize',
   default: 'Default',
   core: 'Core'
 }

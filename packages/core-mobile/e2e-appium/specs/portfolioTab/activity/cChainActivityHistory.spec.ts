@@ -27,6 +27,7 @@ describe('Activity history', () => {
     await portfolio.verifySendOnActivityTab(common.cChain_2, '0.01 AVAX sent')
     await portfolio.verifyActivityNotVisible('0.0001 AVAX sent')
   })
+
   it('[C-Chain Swap] verify swap history on activity tab', async () => {
     await portfolio.verifySwapActivityHistory('0.02 AVAX swapped for')
   })
