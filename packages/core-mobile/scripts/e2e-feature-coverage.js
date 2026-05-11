@@ -27,7 +27,7 @@
  * shared `mobiledevs@avalabs.org` TestRail user; set `TESTRAIL_USERNAME` when your
  * API key belongs to a different account. It loads the latest **iOS** and **Android**
  * runs whose names match
- * `[REGRESSION] iOS Test Run: YYYY-MM-DD` and `[REGRESSION] Android Test Run: YYYY-MM-DD`
+ * `[AWS regression] iOS Test Run: YYYY-MM-DD` and `[AWS regression] Android Test Run: YYYY-MM-DD`
  * (same naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`).
  * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
  * (Mocha `describe` / `it`). **Regression-adjusted coverage %** is computed
@@ -45,7 +45,7 @@
  *   node scripts/e2e-feature-coverage.js --no-testrail
  *
  * Optional: `E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS` (default 7) — max age of the
- * `YYYY-MM-DD` in `[REGRESSION] iOS|Android Test Run: …` for regression-adjusted metrics.
+ * `YYYY-MM-DD` in `[AWS regression] iOS|Android Test Run: …` for regression-adjusted metrics.
  *
  * Optional: `E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY` (default 12, max 32) —
  * parallel `get_case` calls when resolving a run (fewer round-trips in wall time).
@@ -375,7 +375,7 @@ const TESTRAIL_SUITE_ID_FOR_RUN_LIST = parseEnvInt(
   { min: 1 }
 )
 
-/** Parsed from `[REGRESSION] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
+/** Parsed from `[AWS regression] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
 const REGRESSION_RUN_MAX_AGE_DAYS = parseEnvInt(
   process.env.E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS,
   7,
@@ -424,7 +424,7 @@ const DYNAMIC_SUITE_CASES_BY_SPEC_REL = {
 function platformRegressionRunRe(platform) {
   const esc = platform.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   return new RegExp(
-    `\\[REGRESSION\\]\\s+${esc}\\s+Test\\s+Run:\\s*\\d{4}-\\d{2}-\\d{2}`,
+    `\\[AWS regression\\]\\s+${esc}\\s+Test\\s+Run:\\s*\\d{4}-\\d{2}-\\d{2}`,
     'i'
   )
 }
@@ -1433,7 +1433,7 @@ async function fetchTestrailPlatformRegressionContext(
     return {
       ok: false,
       staleRun: false,
-      error: `No [REGRESSION] ${platform} Test Run: YYYY-MM-DD found in TestRail project`,
+      error: `No [AWS regression] ${platform} Test Run: YYYY-MM-DD found in TestRail project`,
       run: null,
       failedSpecRels: [],
       mappedTotal: 0,

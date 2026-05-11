@@ -16,17 +16,20 @@ const testrail = axios.create(authConfig)
 export async function getTestRun(
   platform: string,
   isSmoke: boolean,
-  isPerformance: boolean
+  isPerformance: boolean,
+  isSeedlessTransaction: boolean = false
 ) {
   const today = new Date().toISOString().split('T')[0]
 
   let runType: string
-  if (isPerformance) {
-    runType = '[PERFORMANCE]'
+  if (isSeedlessTransaction) {
+    runType = '[Bitrise Seedless Transaction]'
+  } else if (isPerformance) {
+    runType = '[Bitrise performance]'
   } else if (isSmoke) {
-    runType = '[SMOKE]'
+    runType = '[Bitrise smoke]'
   } else {
-    runType = '[REGRESSION]'
+    runType = '[AWS regression]'
   }
 
   const title = `${runType} ${platform} Test Run: ${today}`

@@ -106,16 +106,19 @@ const caps = platformToRun
         (runIos && cap.platformName === 'iOS')
     )
 
-/** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
 function getSpecs(): string[] {
-  if (
-    process.env.TEST_TYPE === 'performance' ||
-    process.env.IS_PERFORMANCE === 'true'
-  ) {
+  const testType = process.env.TEST_TYPE
+  if (testType === 'performance' || process.env.IS_PERFORMANCE === 'true') {
     return ['./specs/performance/**/*.ts']
+  }
+  if (testType === 'seedless-transaction') {
+    return ['./specs/transactions/**/*.ts']
   }
   return ['./specs/**/*.ts']
 }
+
+const shardIndex = parseInt(process.env.SHARD_INDEX ?? '1', 10)
+const shardTotal = parseInt(process.env.SHARD_TOTAL ?? '1', 10)
 
 export const config: WebdriverIO.Config = {
   runner: 'local',
@@ -126,6 +129,9 @@ export const config: WebdriverIO.Config = {
     './specs/login.e2e.ts'
   ],
   maxInstances: 1,
+  ...(isDeviceFarm && shardTotal > 1
+    ? { shard: { current: shardIndex, total: shardTotal } }
+    : {}),
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly
   ...(isDeviceFarm
@@ -176,7 +182,8 @@ export const config: WebdriverIO.Config = {
     const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
-    runId = await getTestRun(platform, isSmoke, isPerformance)
+    const isSeedlessTransaction = testType === 'seedless-transaction'
+    runId = await getTestRun(platform, isSmoke, isPerformance, isSeedlessTransaction)
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
