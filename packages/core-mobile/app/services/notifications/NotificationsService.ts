@@ -255,11 +255,11 @@ class NotificationsService {
    *         the deeplink callback can be invoked once the React tree returns
    *         to the active state (see DeeplinkContext AppState listener).
    *
-   *  2. Cold start tap: the headless task fires before redux rehydration. The
-   *     capture below is a no-op (AnalyticsService.isEnabled is still
-   *     undefined) and the pending data is overwritten by the same
-   *     notification later anyway. The press is instead captured via
-   *     {@link getInitialNotification} once the React tree mounts.
+   *  2. Cold start tap: the headless task fires before redux rehydration.
+   *     The capture below is a no-op (AnalyticsService.isEnabled is still
+   *     undefined). The pending data is then drained by
+   *     {@link getInitialNotification} once the React tree mounts, and the
+   *     actual press is captured there with `appState: 'cold_start'`.
    */
   registerBackgroundNotificationHandler = (): void => {
     if (this.backgroundHandlerRegistered) {
@@ -356,6 +356,9 @@ class NotificationsService {
         androidChannelId: detail?.notification?.android?.channelId,
         data
       })
+      // Foreground PRESS is delivered through `notifee.onForegroundEvent` on
+      // BOTH platforms (notifee wraps the APNs alert path on iOS), so the
+      // handler is always `'notifee'` here regardless of `Platform.OS`.
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: data.url,
