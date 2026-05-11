@@ -161,9 +161,16 @@ describe('WalletService.hasActivityFromXpubXP', () => {
 })
 
 describe('WalletService.getAddresses retry behavior', () => {
-  // Use fake timers so we can fast-forward the exponential backoff
-  // (250 / 500 / 1000 ms) without making the test slow.
+  // Each test owns its own postV1GetAddresses mock impl. We force a hard
+  // reset so a closure-captured `calls` counter or hanging promise from a
+  // prior test cannot bleed into the next one — that bleed is what makes
+  // these tests appear to "time out" or surface a TypeError on slow CI.
   beforeEach(() => {
+    clearAddressesCache()
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+    postV1GetAddresses.mockReset()
     jest.useFakeTimers()
   })
   afterEach(() => {
@@ -197,9 +204,10 @@ describe('WalletService.getAddresses retry behavior', () => {
       onlyWithActivity: false
     })
 
-    // Drive the backoff timers. 250ms after first failure, then 500ms after second.
-    await jest.advanceTimersByTimeAsync(250)
-    await jest.advanceTimersByTimeAsync(500)
+    // Drain all queued backoff timers + microtasks until the promise settles.
+    // `runAllTimersAsync` is more robust on slow CI than `advanceTimersByTimeAsync`
+    // with hand-tuned values, which can drop interleaved microtasks.
+    await jest.runAllTimersAsync()
 
     const result = await promise
     expect(result).toEqual(avmWithActivityResponse)
@@ -227,11 +235,13 @@ describe('WalletService.getAddresses retry behavior', () => {
       onlyWithActivity: false
     })
 
-    // Run all backoff timers, capturing the rejection.
-    // eslint-disable-next-line jest/valid-expect -- awaited below
-    const expectation = expect(promise).rejects.toThrow(/profile-api down/)
-    await jest.advanceTimersByTimeAsync(250 + 500 + 1000)
-    await expectation
+    // Catch the rejection ourselves so an unhandled-rejection warning can't
+    // race the assertion. Then drain all retries.
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/profile-api down/)
   })
 
   it('does NOT retry on non-transient (4xx) error', async () => {
@@ -255,10 +265,11 @@ describe('WalletService.getAddresses retry behavior', () => {
       onlyWithActivity: false
     })
 
-    // eslint-disable-next-line jest/valid-expect -- awaited below
-    const expectation = expect(promise).rejects.toThrow(/unauthorized/)
-    await jest.advanceTimersByTimeAsync(0)
-    await expectation
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/unauthorized/)
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
 
@@ -284,23 +295,26 @@ describe('WalletService.getAddresses retry behavior', () => {
       onlyWithActivity: false
     })
 
-    // eslint-disable-next-line jest/valid-expect -- awaited below
-    const expectation = expect(promise).rejects.toThrow(
-      /unrecognized body shape/
-    )
-    await jest.advanceTimersByTimeAsync(0)
-    await expectation
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/unrecognized body shape/)
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
 })
 
 describe('WalletService.getAddresses cache behavior', () => {
+  // No fake timers in this block — none of these tests exercise the
+  // backoff, and fake timers add microtask-flush brittleness on slow CI.
   beforeEach(() => {
     clearAddressesCache()
-    jest.useFakeTimers()
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+    postV1GetAddresses.mockReset()
   })
   afterEach(() => {
-    jest.useRealTimers()
     jest.restoreAllMocks()
   })
 
