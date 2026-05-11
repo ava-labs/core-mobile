@@ -47,10 +47,20 @@ export const SelectAmountScreen = (): JSX.Element => {
     AnalyticsService.capture('EarnBorrowSuccess')
   }, [])
 
-  // Called when transaction is reverted or fails
+  // Wallet/form errors. Param is optional because the form prop is typed `() => void`,
+  // but the underlying useETHSendTransaction invokes onError(error) at runtime.
   const handleError = useCallback((error?: unknown) => {
     AnalyticsService.capture('EarnBorrowFailure', {
-      errorMessage: error instanceof Error ? error.message : String(error ?? '')
+      errorMessage:
+        error instanceof Error ? error.message : 'Transaction failed'
+    })
+  }, [])
+
+  // Called when the on-chain receipt reports status 0. useETHSendTransaction
+  // passes a requestId (string) we intentionally ignore so it doesn't pollute analytics.
+  const handleReverted = useCallback(() => {
+    AnalyticsService.capture('EarnBorrowFailure', {
+      errorMessage: 'Transaction reverted on-chain'
     })
   }, [])
 
@@ -64,7 +74,7 @@ export const SelectAmountScreen = (): JSX.Element => {
         market={market}
         onSubmitted={handleSubmitted}
         onConfirmed={handleConfirmed}
-        onReverted={handleError}
+        onReverted={handleReverted}
         onError={handleError}
       />
     )
@@ -76,7 +86,7 @@ export const SelectAmountScreen = (): JSX.Element => {
         market={market}
         onSubmitted={handleSubmitted}
         onConfirmed={handleConfirmed}
-        onReverted={handleError}
+        onReverted={handleReverted}
         onError={handleError}
       />
     )

@@ -35,9 +35,20 @@ export function RepaySelectAmountScreen(): JSX.Element {
     AnalyticsService.capture('EarnRepaySuccess')
   }, [])
 
+  // Wallet/form errors. Param is optional because the form prop is typed `() => void`,
+  // but the underlying useETHSendTransaction invokes onError(error) at runtime.
   const handleError = useCallback((error?: unknown) => {
     AnalyticsService.capture('EarnRepayFailure', {
-      errorMessage: error instanceof Error ? error.message : String(error ?? '')
+      errorMessage:
+        error instanceof Error ? error.message : 'Transaction failed'
+    })
+  }, [])
+
+  // Called when the on-chain receipt reports status 0. useETHSendTransaction
+  // passes a requestId (string) we intentionally ignore so it doesn't pollute analytics.
+  const handleReverted = useCallback(() => {
+    AnalyticsService.capture('EarnRepayFailure', {
+      errorMessage: 'Transaction reverted on-chain'
     })
   }, [])
 
@@ -47,7 +58,7 @@ export function RepaySelectAmountScreen(): JSX.Element {
         marketId={marketId ?? ''}
         onSubmitted={handleSubmitted}
         onConfirmed={handleConfirmed}
-        onReverted={handleError}
+        onReverted={handleReverted}
         onError={handleError}
       />
     )
@@ -59,7 +70,7 @@ export function RepaySelectAmountScreen(): JSX.Element {
         marketId={marketId ?? ''}
         onSubmitted={handleSubmitted}
         onConfirmed={handleConfirmed}
-        onReverted={handleError}
+        onReverted={handleReverted}
         onError={handleError}
       />
     )

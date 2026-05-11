@@ -68,8 +68,12 @@ class GoogleSigninService {
       // revokeAccess + signOut forces Play Services to fetch a fresh token
       // instead of returning a stale/empty one from cache.
       Logger.warn('Google sign in: empty token received, retrying...')
-      await GoogleSignin.revokeAccess().catch(() => {})
-      await GoogleSignin.signOut().catch(() => {})
+      await GoogleSignin.revokeAccess().catch(err =>
+        Logger.warn('Google sign in: revokeAccess failed during retry', err)
+      )
+      await GoogleSignin.signOut().catch(err =>
+        Logger.warn('Google sign in: signOut failed during retry', err)
+      )
 
       const retryInfo = await GoogleSignin.signIn()
       if (retryInfo.data?.idToken) {

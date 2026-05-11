@@ -58,6 +58,66 @@ export const useClaimRewards = (): {
     })
   }, [refetchAvailableRewards])
 
+  const claimAaveRewards = useCallback(
+    async (from: Address, chainId: number): Promise<void> => {
+      if (!merklData?.claimParams || !merklData?.hasClaimableRewards) return
+
+      setClaimStatus('claiming-aave')
+
+      const claimData = encodeFunctionData({
+        abi: MERKL_DISTRIBUTOR_ABI,
+        functionName: 'claim',
+        args: [
+          merklData.claimParams.users,
+          merklData.claimParams.tokens,
+          merklData.claimParams.amounts,
+          merklData.claimParams.proofs
+        ]
+      })
+
+      await request({
+        method: RpcMethod.ETH_SEND_TRANSACTION,
+        params: [{ from, to: MERKL_DISTRIBUTOR_ADDRESS, data: claimData }],
+        chainId: getEvmCaip2ChainId(chainId)
+      })
+    },
+    [merklData, request]
+  )
+
+  const claimBenqiTokenRewards = useCallback(
+    async (params: {
+      from: Address
+      chainId: number
+      symbol: 'QI' | 'AVAX'
+      tokenType: typeof BENQI_TOKEN_TYPE_QI | typeof BENQI_TOKEN_TYPE_AVAX
+      status: ClaimStatus
+    }): Promise<void> => {
+      const { from, chainId, symbol, tokenType, status } = params
+      const hasRewards =
+        availableRewards?.rewards.some(
+          r => r.provider === 'benqi' && r.token === symbol
+        ) ?? false
+      if (!hasRewards) return
+
+      setClaimStatus(status)
+
+      const claimData = encodeFunctionData({
+        abi: BENQI_COMPTROLLER_ABI,
+        functionName: 'claimReward',
+        args: [tokenType, from]
+      })
+
+      await request({
+        method: RpcMethod.ETH_SEND_TRANSACTION,
+        params: [
+          { from, to: BENQI_COMPTROLLER_C_CHAIN_ADDRESS, data: claimData }
+        ],
+        chainId: getEvmCaip2ChainId(chainId)
+      })
+    },
+    [availableRewards, request]
+  )
+
   const claimAllRewards = useCallback(async () => {
     if (!addressEVM || !cChainNetwork) {
       return
@@ -66,91 +126,22 @@ export const useClaimRewards = (): {
     setClaimStatus('claiming')
 
     try {
-      // 1. Claim Aave rewards via Merkl Distributor
-      if (merklData?.claimParams && merklData?.hasClaimableRewards) {
-        setClaimStatus('claiming-aave')
+      await claimAaveRewards(addressEVM, cChainNetwork.chainId)
+      await claimBenqiTokenRewards({
+        from: addressEVM,
+        chainId: cChainNetwork.chainId,
+        symbol: 'QI',
+        tokenType: BENQI_TOKEN_TYPE_QI,
+        status: 'claiming-benqi-qi'
+      })
+      await claimBenqiTokenRewards({
+        from: addressEVM,
+        chainId: cChainNetwork.chainId,
+        symbol: 'AVAX',
+        tokenType: BENQI_TOKEN_TYPE_AVAX,
+        status: 'claiming-benqi-avax'
+      })
 
-        const claimData = encodeFunctionData({
-          abi: MERKL_DISTRIBUTOR_ABI,
-          functionName: 'claim',
-          args: [
-            merklData.claimParams.users,
-            merklData.claimParams.tokens,
-            merklData.claimParams.amounts,
-            merklData.claimParams.proofs
-          ]
-        })
-
-        await request({
-          method: RpcMethod.ETH_SEND_TRANSACTION,
-          params: [
-            {
-              from: addressEVM,
-              to: MERKL_DISTRIBUTOR_ADDRESS,
-              data: claimData
-            }
-          ],
-          chainId: getEvmCaip2ChainId(cChainNetwork.chainId)
-        })
-      }
-
-      // 2. Claim Benqi QI rewards
-      const hasBenqiQiRewards =
-        availableRewards?.rewards.some(
-          r => r.provider === 'benqi' && r.token === 'QI'
-        ) ?? false
-
-      if (hasBenqiQiRewards) {
-        setClaimStatus('claiming-benqi-qi')
-
-        const claimQiData = encodeFunctionData({
-          abi: BENQI_COMPTROLLER_ABI,
-          functionName: 'claimReward',
-          args: [BENQI_TOKEN_TYPE_QI, addressEVM]
-        })
-
-        await request({
-          method: RpcMethod.ETH_SEND_TRANSACTION,
-          params: [
-            {
-              from: addressEVM,
-              to: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
-              data: claimQiData
-            }
-          ],
-          chainId: getEvmCaip2ChainId(cChainNetwork.chainId)
-        })
-      }
-
-      // 3. Claim Benqi AVAX rewards
-      const hasBenqiAvaxRewards =
-        availableRewards?.rewards.some(
-          r => r.provider === 'benqi' && r.token === 'AVAX'
-        ) ?? false
-
-      if (hasBenqiAvaxRewards) {
-        setClaimStatus('claiming-benqi-avax')
-
-        const claimAvaxData = encodeFunctionData({
-          abi: BENQI_COMPTROLLER_ABI,
-          functionName: 'claimReward',
-          args: [BENQI_TOKEN_TYPE_AVAX, addressEVM]
-        })
-
-        await request({
-          method: RpcMethod.ETH_SEND_TRANSACTION,
-          params: [
-            {
-              from: addressEVM,
-              to: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
-              data: claimAvaxData
-            }
-          ],
-          chainId: getEvmCaip2ChainId(cChainNetwork.chainId)
-        })
-      }
-
-      // Refetch all rewards data after claiming
       refetchAll()
       AnalyticsService.capture('EarnClaimSuccess')
     } catch (error) {
@@ -167,9 +158,8 @@ export const useClaimRewards = (): {
   }, [
     addressEVM,
     cChainNetwork,
-    merklData,
-    availableRewards,
-    request,
+    claimAaveRewards,
+    claimBenqiTokenRewards,
     refetchAll
   ])
 
