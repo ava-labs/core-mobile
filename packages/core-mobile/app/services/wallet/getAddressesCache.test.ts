@@ -3,7 +3,10 @@ import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client
 import {
   getAddressesCache,
   setAddressesCache,
-  clearAddressesCache
+  clearAddressesCache,
+  getInFlightAddressesFetch,
+  setInFlightAddressesFetch,
+  clearInFlightAddressesFetch
 } from './getAddressesCache'
 
 const sampleAvmResponse: GetAddressesResponse = {
@@ -143,5 +146,79 @@ describe('getAddressesCache', () => {
         onlyWithActivity: false
       })
     ).toBeUndefined()
+  })
+})
+
+describe('getAddressesCache — in-flight promise tracking', () => {
+  beforeEach(() => {
+    clearAddressesCache()
+  })
+
+  it('returns undefined when no in-flight fetch for a key', () => {
+    expect(
+      getInFlightAddressesFetch({
+        extendedPublicKey: 'xpub-1',
+        networkType: NetworkVMType.AVM,
+        isTestnet: false,
+        onlyWithActivity: false
+      })
+    ).toBeUndefined()
+  })
+
+  it('returns the registered promise for an in-flight key', async () => {
+    const key = {
+      extendedPublicKey: 'xpub-1',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+
+    const inflight = Promise.resolve(sampleAvmResponse)
+    setInFlightAddressesFetch(key, inflight)
+
+    expect(getInFlightAddressesFetch(key)).toBe(inflight)
+    // Cleanup so a hanging unresolved promise can't leak between tests
+    clearInFlightAddressesFetch(key)
+  })
+
+  it('clearInFlightAddressesFetch removes a single key without touching others', () => {
+    const keyA = {
+      extendedPublicKey: 'xpub-A',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+    const keyB = {
+      extendedPublicKey: 'xpub-B',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+
+    const promiseA = Promise.resolve(sampleAvmResponse)
+    const promiseB = Promise.resolve(samplePvmResponse)
+    setInFlightAddressesFetch(keyA, promiseA)
+    setInFlightAddressesFetch(keyB, promiseB)
+
+    clearInFlightAddressesFetch(keyA)
+
+    expect(getInFlightAddressesFetch(keyA)).toBeUndefined()
+    expect(getInFlightAddressesFetch(keyB)).toBe(promiseB)
+
+    clearInFlightAddressesFetch(keyB)
+  })
+
+  it('clearAddressesCache also wipes in-flight promises', () => {
+    const key = {
+      extendedPublicKey: 'xpub-1',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+
+    setInFlightAddressesFetch(key, Promise.resolve(sampleAvmResponse))
+    clearAddressesCache()
+
+    expect(getInFlightAddressesFetch(key)).toBeUndefined()
   })
 })

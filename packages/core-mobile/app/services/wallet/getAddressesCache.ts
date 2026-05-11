@@ -14,6 +14,7 @@ const serializeKey = (key: CacheKey): string =>
   }`
 
 const cache = new Map<string, GetAddressesResponse>()
+const inFlight = new Map<string, Promise<GetAddressesResponse>>()
 
 export const getAddressesCache = (
   key: CacheKey
@@ -28,4 +29,20 @@ export const setAddressesCache = (
 
 export const clearAddressesCache = (): void => {
   cache.clear()
+  inFlight.clear()
+}
+
+export const getInFlightAddressesFetch = (
+  key: CacheKey
+): Promise<GetAddressesResponse> | undefined => inFlight.get(serializeKey(key))
+
+export const setInFlightAddressesFetch = (
+  key: CacheKey,
+  promise: Promise<GetAddressesResponse>
+): void => {
+  inFlight.set(serializeKey(key), promise)
+}
+
+export const clearInFlightAddressesFetch = (key: CacheKey): void => {
+  inFlight.delete(serializeKey(key))
 }

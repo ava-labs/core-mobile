@@ -40,7 +40,10 @@ import { LedgerWallet } from './LedgerWallet'
 import {
   getAddressesCache,
   setAddressesCache,
-  clearAddressesCache
+  clearAddressesCache,
+  getInFlightAddressesFetch,
+  setInFlightAddressesFetch,
+  clearInFlightAddressesFetch
 } from './getAddressesCache'
 
 // Retry helper. Local to WalletService — promote to utils/ only if a second
@@ -491,6 +494,11 @@ class WalletService {
       return cached
     }
 
+    const inFlight = getInFlightAddressesFetch(cacheKey)
+    if (inFlight) {
+      return inFlight
+    }
+
     const callOnce = async (): Promise<GetAddressesResponse> => {
       const raw = await postV1GetAddresses({
         client: profileApiClient,
@@ -539,22 +547,29 @@ class WalletService {
       return body
     }
 
-    try {
-      const body = await retryWithBackoff(
-        callOnce,
-        isTransientHttpError,
-        RETRY_DELAYS_MS
-      )
-      setAddressesCache(cacheKey, body)
-      return body
-    } catch (err) {
-      Logger.error(
-        '[WalletService.ts][getAddressesForExtendedPublicKey] failed',
-        err,
-        { source: SentryTag.ProfileApi }
-      )
-      throw err
-    }
+    const fetchPromise = (async () => {
+      try {
+        const body = await retryWithBackoff(
+          callOnce,
+          isTransientHttpError,
+          RETRY_DELAYS_MS
+        )
+        setAddressesCache(cacheKey, body)
+        return body
+      } catch (err) {
+        Logger.error(
+          '[WalletService.ts][getAddressesForExtendedPublicKey] failed',
+          err,
+          { source: SentryTag.ProfileApi }
+        )
+        throw err
+      } finally {
+        clearInFlightAddressesFetch(cacheKey)
+      }
+    })()
+
+    setInFlightAddressesFetch(cacheKey, fetchPromise)
+    return fetchPromise
   }
 
   public async getPrivateKeyFromMnemonic(

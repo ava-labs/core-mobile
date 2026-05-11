@@ -359,4 +359,53 @@ describe('WalletService.getAddresses cache behavior', () => {
 
     expect(calls).toBe(2)
   })
+
+  it('de-dups concurrent calls with the same key — only one API call fires', async () => {
+    jest
+      .spyOn(WalletService, 'getRawXpubXP')
+      .mockResolvedValue('xpub-concurrent')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Hold the API mock unresolved until we have both callers in flight.
+    let resolveApi: (value: { data: GetAddressesResponse }) => void = () => {
+      /* set below */
+    }
+    postV1GetAddresses.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveApi = resolve
+        })
+    )
+
+    const args = {
+      walletId: 'wallet-concurrent',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const first = WalletService.getAddressesFromXpubXP(args)
+    const second = WalletService.getAddressesFromXpubXP(args)
+
+    // Flush microtasks so both callers reach the in-flight registration
+    // (each first awaits the mocked getRawXpubXP before hitting the cache).
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // Both callers are in flight; only one API call should have fired.
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+
+    // Resolve the single API call and confirm both promises receive the value.
+    resolveApi({ data: avmWithActivityResponse })
+
+    const [a, b] = await Promise.all([first, second])
+    expect(a).toEqual(avmWithActivityResponse)
+    expect(b).toEqual(avmWithActivityResponse)
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
 })
