@@ -1,8 +1,28 @@
 import notifee, { EventDetail, EventType } from '@notifee/react-native'
 import messaging from '@react-native-firebase/messaging'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 import { ChannelId, DEFAULT_ANDROID_CHANNEL } from './channels'
 import NotificationsService from './NotificationsService'
+
+// Helper for poking at the singleton's private state in tests. The class is
+// exported as a singleton so we cannot instantiate a fresh one per test —
+// reset the guard fields directly so each test starts from a known state.
+const resetBackgroundHandlerState = (): void => {
+  ;(
+    NotificationsService as unknown as { backgroundHandlerRegistered: boolean }
+  ).backgroundHandlerRegistered = false
+}
+
+const setPendingBackgroundPress = (
+  value: Record<string, unknown> | undefined
+): void => {
+  ;(
+    NotificationsService as unknown as {
+      pendingBackgroundPress: Record<string, unknown> | undefined
+    }
+  ).pendingBackgroundPress = value
+}
 
 // Override the messaging mock from tests/jestSetup/firebase.js so its default
 // export is a jest.fn(), allowing per-test control of getInitialNotification.
@@ -183,6 +203,7 @@ describe('getInitialNotification', () => {
     jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
     setNotifeeInitial(null)
     setFcmInitial(null)
+    setPendingBackgroundPress(undefined)
   })
 
   it('captures press from notifee initial notification (Android data-only cold start)', async () => {
@@ -335,6 +356,41 @@ describe('getInitialNotification', () => {
     )
     expect(callback).toHaveBeenCalledWith(fcmData)
   })
+
+  it('drains pendingBackgroundPress after handling a cold-start notifee press so the AppState active listener does not re-fire it', async () => {
+    // Simulate the notifee headless background handler having stashed the
+    // same press during cold start before React mounted.
+    setPendingBackgroundPress({ url: 'core://portfolio' })
+    setNotifeeInitial(
+      buildNotifeeInitial(
+        { url: 'core://portfolio' },
+        ChannelId.PRODUCT_ANNOUNCEMENTS
+      )
+    )
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+  })
+
+  it('also drains pendingBackgroundPress when handling a cold-start FCM press', async () => {
+    setPendingBackgroundPress({ url: 'core://stale' })
+    setFcmInitial({
+      data: { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
+    })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+  })
+
+  it('drains pendingBackgroundPress even when no initial notification is present on either source', async () => {
+    setPendingBackgroundPress({ url: 'core://stale' })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+  })
 })
 
 describe('registerBackgroundNotificationHandler', () => {
@@ -348,8 +404,11 @@ describe('registerBackgroundNotificationHandler', () => {
 
   beforeEach(() => {
     jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
-    // Drain any pending press leftover from a previous test so each test starts
-    // from a known clean state.
+    // Reset the singleton's idempotence guard and clear the notifee mock so
+    // each test exercises a fresh registration. Also drain any pending press
+    // leftover from a previous test.
+    resetBackgroundHandlerState()
+    ;(notifee.onBackgroundEvent as jest.Mock).mockClear()
     NotificationsService.consumePendingBackgroundPress()
   })
 
@@ -357,6 +416,17 @@ describe('registerBackgroundNotificationHandler', () => {
     NotificationsService.registerBackgroundNotificationHandler()
 
     expect(notifee.onBackgroundEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('logs a warning and skips re-registration on duplicate calls (notifee only supports one handler)', () => {
+    const warnSpy = jest.spyOn(Logger, 'warn').mockImplementation()
+
+    NotificationsService.registerBackgroundNotificationHandler()
+    NotificationsService.registerBackgroundNotificationHandler()
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    expect(notifee.onBackgroundEvent).toHaveBeenCalledTimes(1)
+    expect(warnSpy).toHaveBeenCalledTimes(2)
   })
 
   it('cancels the trigger notification on PRESS events', async () => {

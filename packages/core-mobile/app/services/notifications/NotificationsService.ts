@@ -34,6 +34,43 @@ import {
   STAKE_COMPELETE_DEEPLINK_URL
 } from './constants'
 
+/**
+ * Pure helper that resolves the channel id for a `PushNotificationPressed`
+ * analytics event. Centralizes the precedence rule shared by every capture
+ * site (foreground, warm-background notifee, cold-start notifee, iOS
+ * background FCM):
+ *
+ *   1. android.channelId on the displayed notifee notification, if any
+ *      (Android data-only path — the notifee `Notification.android.channelId`
+ *      is the most authoritative source since it's set by us at display time)
+ *   2. data.channelId carried in the FCM payload (NEWS notifications)
+ *   3. EVENT_TO_CH_ID lookup against the event string
+ *   4. DEFAULT_ANDROID_CHANNEL as a final fallback
+ *
+ * Accepts loosely-typed input because notification data shapes vary across
+ * the FCM SDK, notifee, and the legacy `notification` payload — narrowing
+ * happens here so callers don't need unsafe `as string` casts.
+ */
+export const resolveChannelId = (args: {
+  androidChannelId?: string
+  data?: Record<string, unknown>
+  fallbackEvent?: string
+}): string => {
+  const { androidChannelId, data, fallbackEvent } = args
+  const dataChannelId =
+    typeof data?.channelId === 'string' && data.channelId.length > 0
+      ? data.channelId
+      : undefined
+  const event =
+    (typeof data?.event === 'string' ? data.event : undefined) ?? fallbackEvent
+  return (
+    androidChannelId ??
+    dataChannelId ??
+    (event ? EVENT_TO_CH_ID[event] : undefined) ??
+    DEFAULT_ANDROID_CHANNEL
+  )
+}
+
 class NotificationsService {
   /**
    * Notification data from a PRESS event that was received in the background
@@ -47,6 +84,14 @@ class NotificationsService {
    * warm-resuming, the cold-start `getInitialNotification` returns null.
    */
   private pendingBackgroundPress: NotificationData | undefined
+
+  /**
+   * Notifee only supports a single background event handler. We guard against
+   * repeat calls so a future call site (e.g. an accidental import in another
+   * entry point or a hot-reload re-evaluation) cannot silently overwrite the
+   * registered handler — it would log a warning instead.
+   */
+  private backgroundHandlerRegistered = false
 
   async getNotificationSettings(): Promise<AuthorizationStatus> {
     const settings = await notifee.getNotificationSettings()
@@ -255,6 +300,14 @@ class NotificationsService {
    *     {@link getInitialNotification} once the React tree mounts.
    */
   registerBackgroundNotificationHandler = (): void => {
+    if (this.backgroundHandlerRegistered) {
+      Logger.warn(
+        '[NotificationsService.ts][registerBackgroundNotificationHandler] handler already registered; ignoring duplicate call'
+      )
+      return
+    }
+    this.backgroundHandlerRegistered = true
+
     notifee.onBackgroundEvent(async ({ type, detail }) => {
       if (type !== EventType.PRESS) return
 
@@ -268,13 +321,12 @@ class NotificationsService {
       }
 
       const data = detail?.notification?.data as NotificationData | undefined
-      if (!data?.url) return
+      if (typeof data?.url !== 'string') return
 
-      const channelId =
-        detail?.notification?.android?.channelId ??
-        (typeof data.channelId === 'string' ? data.channelId : undefined) ??
-        EVENT_TO_CH_ID[data.event as string] ??
-        DEFAULT_ANDROID_CHANNEL
+      const channelId = resolveChannelId({
+        androidChannelId: detail?.notification?.android?.channelId,
+        data
+      })
 
       Logger.info(
         '[NotificationsService.ts][registerBackgroundNotificationHandler] press',
@@ -282,7 +334,7 @@ class NotificationsService {
       )
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
-        deeplinkUrl: String(data.url),
+        deeplinkUrl: data.url,
         appState: 'background',
         handler: 'notifee'
       })
@@ -331,16 +383,21 @@ class NotificationsService {
       await this.cancelTriggerNotification(detail.notification.id)
     }
 
-    if (detail?.notification?.data) {
+    const data = detail?.notification?.data as NotificationData | undefined
+    if (data) {
+      const channelId = resolveChannelId({
+        androidChannelId: detail?.notification?.android?.channelId,
+        data
+      })
       AnalyticsService.capture('PushNotificationPressed', {
-        channelId: detail.notification?.data?.channelId as string,
-        deeplinkUrl: detail.notification?.data?.url as string,
+        channelId,
+        deeplinkUrl: typeof data.url === 'string' ? data.url : undefined,
         appState: 'foreground',
         handler: 'notifee'
       })
     }
 
-    callback(detail?.notification?.data)
+    callback(data)
   }
 
   handleNotificationEvent = async ({
@@ -400,71 +457,78 @@ class NotificationsService {
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
-    const [notifeeInitial, fcmInitial] = await Promise.all([
-      notifee.getInitialNotification().catch(reason => {
-        Logger.error(
-          `[NotificationsService.ts][getInitialNotification:notifee]${reason}`
-        )
-        return null
-      }),
-      messaging()
-        .getInitialNotification()
-        .catch(reason => {
+    try {
+      const [notifeeInitial, fcmInitial] = await Promise.all([
+        notifee.getInitialNotification().catch(reason => {
           Logger.error(
-            `[NotificationsService.ts][getInitialNotification:fcm]${reason}`
+            `[NotificationsService.ts][getInitialNotification:notifee]${reason}`
           )
           return null
+        }),
+        messaging()
+          .getInitialNotification()
+          .catch(reason => {
+            Logger.error(
+              `[NotificationsService.ts][getInitialNotification:fcm]${reason}`
+            )
+            return null
+          })
+      ])
+
+      // Prefer notifee: notifee actually displayed the notification on the
+      // data-only Android path, so its data is the source of truth. The
+      // legacy `notification` payload (FCM-displayed) is also being phased
+      // out on the backend.
+      const notifeeData = notifeeInitial?.notification?.data as
+        | NotificationData
+        | undefined
+
+      if (typeof notifeeData?.url === 'string') {
+        const channelId = resolveChannelId({
+          androidChannelId: notifeeInitial?.notification?.android?.channelId,
+          data: notifeeData
         })
-    ])
+        Logger.info(
+          '[NotificationsService.ts][getInitialNotification] notifee initial press',
+          { channelId, deeplinkUrl: notifeeData.url }
+        )
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId,
+          deeplinkUrl: notifeeData.url,
+          appState: 'cold_start',
+          handler: 'notifee'
+        })
+        callback(notifeeData)
+        return
+      }
 
-    // Prefer notifee, since data-only is the current backend format and the
-    // legacy `notification` payload is being phased out.
-    const notifeeData = notifeeInitial?.notification?.data as
-      | NotificationData
-      | undefined
+      const fcmData = fcmInitial?.data as NotificationData | undefined
 
-    if (notifeeData?.url) {
-      const channelId =
-        notifeeInitial?.notification?.android?.channelId ??
-        (typeof notifeeData.channelId === 'string'
-          ? notifeeData.channelId
-          : undefined) ??
-        EVENT_TO_CH_ID[notifeeData.event as string] ??
-        DEFAULT_ANDROID_CHANNEL
-      Logger.info(
-        '[NotificationsService.ts][getInitialNotification] notifee initial press',
-        { channelId, deeplinkUrl: notifeeData.url }
-      )
-      AnalyticsService.capture('PushNotificationPressed', {
-        channelId,
-        deeplinkUrl: String(notifeeData.url),
-        appState: 'cold_start',
-        handler: 'notifee'
-      })
-      callback(notifeeData)
-      return
+      if (typeof fcmData?.url === 'string') {
+        const channelId = resolveChannelId({ data: fcmData })
+        Logger.info(
+          '[NotificationsService.ts][getInitialNotification] fcm initial press',
+          { channelId, deeplinkUrl: fcmData.url }
+        )
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId,
+          deeplinkUrl: fcmData.url,
+          appState: 'cold_start',
+          handler: 'fcm'
+        })
+        callback(fcmData)
+        return
+      }
+
+      callback(undefined)
+    } finally {
+      // On cold start the notifee headless background handler also stashes
+      // the same press into `pendingBackgroundPress`. We've handled it here,
+      // so drain it — otherwise the next AppState 'active' transition (the
+      // first time the user backgrounds and re-foregrounds the app) would
+      // re-fire the same deeplink via the listener in DeeplinkContext.
+      this.consumePendingBackgroundPress()
     }
-
-    const fcmData = fcmInitial?.data as NotificationData | undefined
-
-    if (fcmData?.url) {
-      const channelId =
-        EVENT_TO_CH_ID[fcmData.event as string] ?? DEFAULT_ANDROID_CHANNEL
-      Logger.info(
-        '[NotificationsService.ts][getInitialNotification] fcm initial press',
-        { channelId, deeplinkUrl: fcmData.url }
-      )
-      AnalyticsService.capture('PushNotificationPressed', {
-        channelId,
-        deeplinkUrl: String(fcmData.url),
-        appState: 'cold_start',
-        handler: 'fcm'
-      })
-      callback(fcmData)
-      return
-    }
-
-    callback(undefined)
   }
 
   cancelAllNotifications = async (): Promise<void> => {

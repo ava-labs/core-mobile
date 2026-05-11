@@ -24,7 +24,9 @@ import {
   ChannelId,
   DEFAULT_ANDROID_CHANNEL
 } from 'services/notifications/channels'
-import NotificationsService from 'services/notifications/NotificationsService'
+import NotificationsService, {
+  resolveChannelId
+} from 'services/notifications/NotificationsService'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import Logger from 'utils/Logger'
 
@@ -199,18 +201,14 @@ class FCMService {
       const { data } = notificationData
       if (typeof data?.url !== 'string') return
 
-      // Capture analytics BEFORE the deeplink-skip decision, and use the same
-      // channelId fallback as the cold-start path
-      // (NotificationsService.getInitialNotification). Previously, both the
-      // `shouldSkipHandlingDeeplink` early-return and the strict `channelId`
-      // guard caused balance-change press events on iOS background to never
-      // reach this capture call.
-      const channelId =
-        (typeof data.channelId === 'string' && data.channelId.length > 0
-          ? data.channelId
-          : undefined) ??
-        EVENT_TO_CH_ID[result.data.data.event as string] ??
-        DEFAULT_ANDROID_CHANNEL
+      // Capture analytics BEFORE the deeplink-skip decision so balance-change
+      // and walletconnect taps are no longer dropped. Channel-id resolution
+      // is centralized in `resolveChannelId` to keep precedence consistent
+      // with the cold-start and warm-background paths.
+      const channelId = resolveChannelId({
+        data,
+        fallbackEvent: result.data.data.event
+      })
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: data.url,
