@@ -214,6 +214,18 @@ export type AnalyticsEvents = {
   PushNotificationPressed: {
     channelId: string
     deeplinkUrl?: string
+    /**
+     * Which capture path the press came from. Added for CP-14006 verification.
+     *
+     * - `foreground`:      notifee.onForegroundEvent PRESS while the app is open
+     * - `ios_background`:  messaging().onNotificationOpenedApp (iOS background tap)
+     * - `notifee_initial`: notifee.getInitialNotification() — cold start tap on a
+     *                      notification displayed by notifee (Android data-only)
+     * - `fcm_initial`:     messaging().getInitialNotification() — cold start tap
+     *                      on a notification displayed by the FCM SDK directly
+     *                      (legacy notification payload)
+     */
+    source: 'foreground' | 'ios_background' | 'notifee_initial' | 'fcm_initial'
   }
   PushNotificationUnsubscribed: {
     channelId: string

@@ -229,7 +229,8 @@ class FCMService {
       ) {
         AnalyticsService.capture('PushNotificationPressed', {
           channelId: notificationData.data.channelId,
-          deeplinkUrl: notificationData.data.url
+          deeplinkUrl: notificationData.data.url,
+          source: 'ios_background'
         })
       }
     })

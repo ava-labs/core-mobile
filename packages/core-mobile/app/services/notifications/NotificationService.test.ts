@@ -204,7 +204,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
-        deeplinkUrl: 'core://portfolio'
+        deeplinkUrl: 'core://portfolio',
+        source: 'notifee_initial'
       }
     )
     expect(callback).toHaveBeenCalledWith(data)
@@ -224,7 +225,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
-        deeplinkUrl: 'core://portfolio'
+        deeplinkUrl: 'core://portfolio',
+        source: 'fcm_initial'
       }
     )
     expect(callback).toHaveBeenCalledWith(data)
@@ -269,7 +271,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
-        deeplinkUrl: 'core://portfolio'
+        deeplinkUrl: 'core://portfolio',
+        source: 'notifee_initial'
       }
     )
     expect(callback).toHaveBeenCalledWith(notifeeData)
@@ -285,7 +288,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: ChannelId.PRICE_ALERTS,
-        deeplinkUrl: 'core://watchlist'
+        deeplinkUrl: 'core://watchlist',
+        source: 'notifee_initial'
       }
     )
   })
@@ -300,7 +304,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: DEFAULT_ANDROID_CHANNEL,
-        deeplinkUrl: 'core://portfolio'
+        deeplinkUrl: 'core://portfolio',
+        source: 'notifee_initial'
       }
     )
   })
@@ -318,7 +323,8 @@ describe('getInitialNotification', () => {
       'PushNotificationPressed',
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
-        deeplinkUrl: 'core://portfolio'
+        deeplinkUrl: 'core://portfolio',
+        source: 'fcm_initial'
       }
     )
     expect(callback).toHaveBeenCalledWith(fcmData)

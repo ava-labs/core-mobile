@@ -279,7 +279,8 @@ class NotificationsService {
     if (detail?.notification?.data) {
       AnalyticsService.capture('PushNotificationPressed', {
         channelId: detail.notification?.data?.channelId as string,
-        deeplinkUrl: detail.notification?.data?.url as string
+        deeplinkUrl: detail.notification?.data?.url as string,
+        source: 'foreground'
       })
     }
 
@@ -374,9 +375,14 @@ class NotificationsService {
           : undefined) ??
         EVENT_TO_CH_ID[notifeeData.event as string] ??
         DEFAULT_ANDROID_CHANNEL
+      Logger.info(
+        '[NotificationsService.ts][getInitialNotification] notifee initial press',
+        { channelId, deeplinkUrl: notifeeData.url }
+      )
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
-        deeplinkUrl: String(notifeeData.url)
+        deeplinkUrl: String(notifeeData.url),
+        source: 'notifee_initial'
       })
       callback(notifeeData)
       return
@@ -385,10 +391,16 @@ class NotificationsService {
     const fcmData = fcmInitial?.data as NotificationData | undefined
 
     if (fcmData?.url) {
+      const channelId =
+        EVENT_TO_CH_ID[fcmData.event as string] ?? DEFAULT_ANDROID_CHANNEL
+      Logger.info(
+        '[NotificationsService.ts][getInitialNotification] fcm initial press',
+        { channelId, deeplinkUrl: fcmData.url }
+      )
       AnalyticsService.capture('PushNotificationPressed', {
-        channelId:
-          EVENT_TO_CH_ID[fcmData.event as string] ?? DEFAULT_ANDROID_CHANNEL,
-        deeplinkUrl: String(fcmData.url)
+        channelId,
+        deeplinkUrl: String(fcmData.url),
+        source: 'fcm_initial'
       })
       callback(fcmData)
       return
