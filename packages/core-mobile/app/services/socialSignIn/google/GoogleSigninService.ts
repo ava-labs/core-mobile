@@ -59,7 +59,9 @@ class GoogleSigninService {
       }
       const reason = formatSignInErrorReason(error)
       Logger.error(`Google sign in error: ${reason}`, error)
-      throw error instanceof Error ? error : new Error('Google sign in error')
+      throw error instanceof Error
+        ? error
+        : new Error(`Google sign in error: ${reason}`)
     }
   }
 

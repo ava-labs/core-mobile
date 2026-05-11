@@ -72,6 +72,17 @@ describe('GoogleSigninService', () => {
         sdkError
       )
     })
+
+    it('preserves detail when the SDK throws a non-Error value', async () => {
+      signInMock.mockRejectedValueOnce({
+        code: 'PLAY_SERVICES_NOT_AVAILABLE',
+        message: 'play services missing'
+      })
+
+      await expect(GoogleSigninService.signin()).rejects.toThrow(
+        /PLAY_SERVICES_NOT_AVAILABLE/
+      )
+    })
   })
 
   describe('preserved behavior', () => {
