@@ -271,37 +271,37 @@ class NotificationsService {
     this.backgroundHandlerRegistered = true
 
     notifee.onBackgroundEvent(async ({ type, detail }) => {
-      if (type !== EventType.PRESS) return
+      // Wrap the entire body so a synchronous throw (e.g. analytics, future
+      // validation) doesn't escape the headless task as an unhandled
+      // rejection. Notifee logs unhandled rejections from this callback.
+      try {
+        if (type !== EventType.PRESS) return
 
-      if (detail?.notification?.id) {
-        await this.cancelTriggerNotification(detail.notification.id).catch(
-          reason =>
-            Logger.error(
-              `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
-            )
+        if (detail?.notification?.id) {
+          await this.cancelTriggerNotification(detail.notification.id)
+        }
+
+        const data = detail?.notification?.data as NotificationData | undefined
+        if (typeof data?.url !== 'string') return
+
+        const channelId = resolveChannelId({
+          androidChannelId: detail?.notification?.android?.channelId,
+          data
+        })
+
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId,
+          deeplinkUrl: data.url,
+          appState: 'background',
+          handler: 'notifee'
+        })
+
+        this.pendingBackgroundPress = data
+      } catch (reason) {
+        Logger.error(
+          `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
         )
       }
-
-      const data = detail?.notification?.data as NotificationData | undefined
-      if (typeof data?.url !== 'string') return
-
-      const channelId = resolveChannelId({
-        androidChannelId: detail?.notification?.android?.channelId,
-        data
-      })
-
-      Logger.info(
-        '[NotificationsService.ts][registerBackgroundNotificationHandler] press',
-        { channelId, deeplinkUrl: data.url }
-      )
-      AnalyticsService.capture('PushNotificationPressed', {
-        channelId,
-        deeplinkUrl: data.url,
-        appState: 'background',
-        handler: 'notifee'
-      })
-
-      this.pendingBackgroundPress = data
     })
   }
 
@@ -346,14 +346,19 @@ class NotificationsService {
     }
 
     const data = detail?.notification?.data as NotificationData | undefined
-    if (data) {
+    // Match the historical "URL or skip" volume: only capture
+    // `PushNotificationPressed` when the press has an actionable deeplink.
+    // Presses with no URL (e.g. notifications fired without an action) would
+    // otherwise inflate the foreground metric and ship `deeplinkUrl: undefined`
+    // to PostHog.
+    if (typeof data?.url === 'string') {
       const channelId = resolveChannelId({
         androidChannelId: detail?.notification?.android?.channelId,
         data
       })
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
-        deeplinkUrl: typeof data.url === 'string' ? data.url : undefined,
+        deeplinkUrl: data.url,
         appState: 'foreground',
         handler: 'notifee'
       })
@@ -451,10 +456,6 @@ class NotificationsService {
           androidChannelId: notifeeInitial?.notification?.android?.channelId,
           data: notifeeData
         })
-        Logger.info(
-          '[NotificationsService.ts][getInitialNotification] notifee initial press',
-          { channelId, deeplinkUrl: notifeeData.url }
-        )
         AnalyticsService.capture('PushNotificationPressed', {
           channelId,
           deeplinkUrl: notifeeData.url,
@@ -470,10 +471,6 @@ class NotificationsService {
 
       if (typeof fcmData?.url === 'string') {
         const channelId = resolveChannelId({ data: fcmData })
-        Logger.info(
-          '[NotificationsService.ts][getInitialNotification] fcm initial press',
-          { channelId, deeplinkUrl: fcmData.url }
-        )
         AnalyticsService.capture('PushNotificationPressed', {
           channelId,
           deeplinkUrl: fcmData.url,

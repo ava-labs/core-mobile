@@ -107,6 +107,13 @@ describe('handleNotificationPress', () => {
   jest
     .spyOn(NotificationsService, 'cancelTriggerNotification')
     .mockImplementation(mockCancelTriggerNotification)
+
+  beforeEach(() => {
+    mockCallback.mockClear()
+    mockCancelTriggerNotification.mockClear()
+    jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
+  })
+
   it('should have called mockCallback and mockCancelTriggerNotification', async () => {
     const mockDetail = {
       notification: {
@@ -122,6 +129,44 @@ describe('handleNotificationPress', () => {
     })
     expect(mockCancelTriggerNotification).toHaveBeenCalled()
     expect(mockCallback).toHaveBeenCalled()
+  })
+
+  it('does not capture PushNotificationPressed when the foreground PRESS has no deeplink url, but still routes the callback', async () => {
+    const mockDetail = {
+      notification: {
+        id: 'testNodeId',
+        data: { event: 'PRODUCT_ANNOUNCEMENTS' }
+      }
+    }
+    await NotificationsService.handleNotificationPress({
+      detail: mockDetail,
+      callback: mockCallback
+    })
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    expect(mockCallback).toHaveBeenCalledWith(mockDetail.notification.data)
+  })
+
+  it('captures PushNotificationPressed (appState=foreground, handler=notifee) when the foreground PRESS has a deeplink url', async () => {
+    const mockDetail = {
+      notification: {
+        id: 'testNodeId',
+        data: { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' },
+        android: { channelId: ChannelId.PRODUCT_ANNOUNCEMENTS }
+      }
+    }
+    await NotificationsService.handleNotificationPress({
+      detail: mockDetail,
+      callback: mockCallback
+    })
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio',
+        appState: 'foreground',
+        handler: 'notifee'
+      }
+    )
   })
 })
 
