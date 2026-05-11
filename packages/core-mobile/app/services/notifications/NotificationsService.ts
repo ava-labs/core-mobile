@@ -35,6 +35,19 @@ import {
 } from './constants'
 
 class NotificationsService {
+  /**
+   * Notification data from a PRESS event that was received in the background
+   * headless task (notifee.onBackgroundEvent). Held until the React tree
+   * becomes active and consumes it via {@link consumePendingBackgroundPress},
+   * which then routes it through the standard deeplink callback.
+   *
+   * Cold start does NOT use this path — cold-start press is retrieved
+   * separately via {@link getInitialNotification}. They are mutually
+   * exclusive: when cold-starting, `pendingBackgroundPress` is undefined; when
+   * warm-resuming, the cold-start `getInitialNotification` returns null.
+   */
+  private pendingBackgroundPress: NotificationData | undefined
+
   async getNotificationSettings(): Promise<AuthorizationStatus> {
     const settings = await notifee.getNotificationSettings()
     return settings.authorizationStatus
@@ -223,14 +236,23 @@ class NotificationsService {
    * handler, so this should be the only call site for notifee.onBackgroundEvent.
    *
    * Background events run as a headless JS task without React context, so we
-   * cannot dispatch redux actions or update UI here. We also intentionally do
-   * NOT capture the press analytics event here: on cold start, PostHog /
-   * AnalyticsService is not configured yet (configure runs after redux store
-   * rehydration completes), so the call would be silently dropped because
-   * AnalyticsService.isEnabled is still undefined.
+   * cannot dispatch redux actions or update UI here directly. Two scenarios
+   * land here on Android (the only platform where this fires, since notifee is
+   * only used to display data-only push on Android):
    *
-   * Cold-start press analytics + deeplink handling is performed later, once the
-   * React tree is mounted, via {@link getInitialNotification}.
+   *  1. Warm background tap: the app is running but minimized. PostHog and
+   *     redux store are already configured. We:
+   *       - capture `PushNotificationPressed`
+   *         (appState: 'background', handler: 'notifee'),
+   *       - stash the notification data in {@link pendingBackgroundPress} so
+   *         the deeplink callback can be invoked once the React tree returns
+   *         to the active state (see DeeplinkContext AppState listener).
+   *
+   *  2. Cold start tap: the headless task fires before redux rehydration. The
+   *     capture below is a no-op (AnalyticsService.isEnabled is still
+   *     undefined) and the pending data is overwritten by the same
+   *     notification later anyway. The press is instead captured via
+   *     {@link getInitialNotification} once the React tree mounts.
    */
   registerBackgroundNotificationHandler = (): void => {
     notifee.onBackgroundEvent(async ({ type, detail }) => {
@@ -244,7 +266,40 @@ class NotificationsService {
             )
         )
       }
+
+      const data = detail?.notification?.data as NotificationData | undefined
+      if (!data?.url) return
+
+      const channelId =
+        detail?.notification?.android?.channelId ??
+        (typeof data.channelId === 'string' ? data.channelId : undefined) ??
+        EVENT_TO_CH_ID[data.event as string] ??
+        DEFAULT_ANDROID_CHANNEL
+
+      Logger.info(
+        '[NotificationsService.ts][registerBackgroundNotificationHandler] press',
+        { channelId, deeplinkUrl: data.url }
+      )
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId,
+        deeplinkUrl: String(data.url),
+        appState: 'background',
+        handler: 'notifee'
+      })
+
+      this.pendingBackgroundPress = data
     })
+  }
+
+  /**
+   * Returns the notification data from the most recent background PRESS event
+   * (if any) and clears it. Intended to be called from an AppState 'active'
+   * listener once the React tree resumes — see DeeplinkContext.
+   */
+  consumePendingBackgroundPress = (): NotificationData | undefined => {
+    const data = this.pendingBackgroundPress
+    this.pendingBackgroundPress = undefined
+    return data
   }
 
   incrementBadgeCount = async (incrementBy?: number): Promise<void> => {
@@ -280,7 +335,8 @@ class NotificationsService {
       AnalyticsService.capture('PushNotificationPressed', {
         channelId: detail.notification?.data?.channelId as string,
         deeplinkUrl: detail.notification?.data?.url as string,
-        source: 'foreground'
+        appState: 'foreground',
+        handler: 'notifee'
       })
     }
 
@@ -382,7 +438,8 @@ class NotificationsService {
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: String(notifeeData.url),
-        source: 'notifee_initial'
+        appState: 'cold_start',
+        handler: 'notifee'
       })
       callback(notifeeData)
       return
@@ -400,7 +457,8 @@ class NotificationsService {
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: String(fcmData.url),
-        source: 'fcm_initial'
+        appState: 'cold_start',
+        handler: 'fcm'
       })
       callback(fcmData)
       return

@@ -196,22 +196,36 @@ class FCMService {
       }
 
       const notificationData = this.#prepareNotificationData(result.data)
+      const { data } = notificationData
+      if (typeof data?.url !== 'string') return
 
-      if (
-        notificationData.data?.url === undefined ||
-        typeof notificationData.data.url !== 'string'
-      ) {
-        return
-      }
+      // Capture analytics BEFORE the deeplink-skip decision, and use the same
+      // channelId fallback as the cold-start path
+      // (NotificationsService.getInitialNotification). Previously, both the
+      // `shouldSkipHandlingDeeplink` early-return and the strict `channelId`
+      // guard caused balance-change press events on iOS background to never
+      // reach this capture call.
+      const channelId =
+        (typeof data.channelId === 'string' && data.channelId.length > 0
+          ? data.channelId
+          : undefined) ??
+        EVENT_TO_CH_ID[result.data.data.event as string] ??
+        DEFAULT_ANDROID_CHANNEL
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId,
+        deeplinkUrl: data.url,
+        appState: 'background',
+        handler: 'fcm'
+      })
 
       // we simply take user to portfolio/home page if the url is walletconnect or balanche-change events
-      if (this.shouldSkipHandlingDeeplink(notificationData.data.url)) {
+      if (this.shouldSkipHandlingDeeplink(data.url)) {
         return
       }
 
       handleDeeplink({
         deeplink: {
-          url: notificationData.data.url,
+          url: data.url,
           origin: DeepLinkOrigin.ORIGIN_NOTIFICATION
         },
         dispatch: action => action,
@@ -223,16 +237,6 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
-      if (
-        typeof notificationData.data?.channelId === 'string' &&
-        notificationData.data?.channelId.length !== 0
-      ) {
-        AnalyticsService.capture('PushNotificationPressed', {
-          channelId: notificationData.data.channelId,
-          deeplinkUrl: notificationData.data.url,
-          source: 'ios_background'
-        })
-      }
     })
   }
 

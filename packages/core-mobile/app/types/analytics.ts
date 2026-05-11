@@ -215,17 +215,30 @@ export type AnalyticsEvents = {
     channelId: string
     deeplinkUrl?: string
     /**
-     * Which capture path the press came from. Added for CP-14006 verification.
+     * App state at the moment the press was received.
      *
-     * - `foreground`:      notifee.onForegroundEvent PRESS while the app is open
-     * - `ios_background`:  messaging().onNotificationOpenedApp (iOS background tap)
-     * - `notifee_initial`: notifee.getInitialNotification() — cold start tap on a
-     *                      notification displayed by notifee (Android data-only)
-     * - `fcm_initial`:     messaging().getInitialNotification() — cold start tap
-     *                      on a notification displayed by the FCM SDK directly
-     *                      (legacy notification payload)
+     * - `foreground`: app is open and in view.
+     * - `background`: app is alive but minimized (warm resume on tap).
+     * - `cold_start`: app was killed and was launched by the press.
+     *
+     * Combined with `handler` to identify the exact capture path. Added for
+     * CP-14006 verification — lets us break down underreporting by app state
+     * regardless of which RN API caught the press.
      */
-    source: 'foreground' | 'ios_background' | 'notifee_initial' | 'fcm_initial'
+    appState: 'foreground' | 'background' | 'cold_start'
+    /**
+     * Which RN notification API delivered the press to us.
+     *
+     * - `notifee`: notifee.onForegroundEvent / onBackgroundEvent /
+     *              getInitialNotification — used for all Android data-only
+     *              notifications and for foreground notifications on both
+     *              platforms.
+     * - `fcm`:     messaging().onNotificationOpenedApp /
+     *              getInitialNotification — used when the FCM SDK displays
+     *              the notification itself (iOS APNs alert path, or legacy
+     *              Android `notification` payload).
+     */
+    handler: 'notifee' | 'fcm'
   }
   PushNotificationUnsubscribed: {
     channelId: string

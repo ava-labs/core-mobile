@@ -8,7 +8,7 @@ import React, {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsIdled, selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
-import { Linking } from 'react-native'
+import { AppState, Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
 import {
@@ -92,11 +92,23 @@ export const DeeplinkContextProvider = ({
     )
 
     // The notifee background event handler is registered once in `index.js`
-    // (notifee only supports a single handler). Cold-start press handling is
-    // performed via NotificationsService.getInitialNotification above.
+    // (notifee only supports a single handler). When a background PRESS occurs
+    // while the app is alive but minimized, the data is stashed in
+    // NotificationsService.pendingBackgroundPress; we consume it here on the
+    // next AppState 'active' transition so the deeplink callback runs in a
+    // mounted React context. Cold-start press is handled separately via
+    // getInitialNotification above.
+    const appStateSub = AppState.addEventListener('change', state => {
+      if (state !== 'active') return
+      const pending = NotificationsService.consumePendingBackgroundPress()
+      if (pending) {
+        handleNotificationCallback(pending)
+      }
+    })
 
     return () => {
       unsubscribeForegroundEvent()
+      appStateSub.remove()
     }
   }, [handleNotificationCallback, isAllNotificationsBlocked])
 
