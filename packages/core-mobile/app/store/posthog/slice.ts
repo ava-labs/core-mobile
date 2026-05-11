@@ -591,6 +591,13 @@ export const selectIsQuickSwapsAvailable = (state: RootState): boolean => {
   return featureFlags[FeatureGates.FUSION_QUICK_SWAPS] === true
 }
 
+// Composed selector — true when ANY feature on the Advanced Settings
+// screen is available. Drives the entry-row visibility on Account
+// Settings. Add new flags here as features are added to the Advanced
+// screen so the entry doesn't disappear when one specific flag flips off.
+export const selectIsAdvancedSettingsAvailable = (state: RootState): boolean =>
+  selectIsQuickSwapsAvailable(state)
+
 export const selectIsAlternateAppIconsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

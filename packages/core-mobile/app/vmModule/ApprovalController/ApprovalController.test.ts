@@ -930,6 +930,108 @@ describe('ApprovalController', () => {
         expect.objectContaining({ message: 'User denied' })
       )
     })
+
+    it('injects WARNING alert into displayData when request carries quickSwapsManualReviewReason (per-tx fallback path)', async () => {
+      const request = makeApprovalRequest({
+        context: {
+          quickSwapsManualReviewReason: 'Slippage tolerance exceeded'
+        } as never
+      })
+      const params = {
+        request,
+        displayData: {} as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      expect(alert).toBeDefined()
+      expect(alert?.type).toBe('Warning')
+      expect(alert?.details).toEqual({
+        title: 'Manual approval required',
+        description: 'Manual approval required\nSlippage tolerance exceeded'
+      })
+    })
+
+    it('does not inject a fallback alert when quickSwapsManualReviewReason is absent', async () => {
+      const request = makeApprovalRequest()
+      const params = {
+        request,
+        displayData: {} as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (params.displayData as { alert?: unknown }).alert
+      expect(alert).toBeUndefined()
+    })
+
+    it('preserves an existing Blockaid alert and does not clobber it with the fallback reason', async () => {
+      const existingAlert = {
+        type: 'Warning',
+        details: { title: 'Suspicious spender', description: 'Blockaid' }
+      }
+      const request = makeApprovalRequest({
+        context: {
+          quickSwapsManualReviewReason: 'Slippage tolerance exceeded'
+        } as never
+      })
+      const params = {
+        request,
+        displayData: { alert: existingAlert } as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (params.displayData as { alert?: typeof existingAlert })
+        .alert
+      expect(alert).toEqual(existingAlert)
+    })
+
+    it('injects WARNING alert into displayData when single-tx validator returns requiresManualApproval', async () => {
+      const { requestValidators } = jest.requireActual('./validators')
+      const mockSign = jest.requireMock('services/wallet/WalletService').default
+        .sign as jest.Mock
+
+      requestValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage tolerance exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      try {
+        const params = {
+          request: makeApprovalRequest(),
+          displayData: {} as never,
+          signingData: signingData as never
+        }
+        // requestApproval returns a Promise that only resolves via the
+        // modal's onApprove/onReject. We fire-and-forget here — we only
+        // care about the side-effect on displayData.
+        approvalController.requestApproval(params)
+        // Let the await on validator.validate() resolve.
+        await new Promise(resolve => setImmediate(resolve))
+
+        const alert = (
+          params.displayData as { alert?: { type: string; details: unknown } }
+        ).alert
+        expect(alert).toBeDefined()
+        expect(alert?.type).toBe('Warning')
+        expect(alert?.details).toEqual({
+          title: 'Manual approval required',
+          description: 'Manual approval required\nSlippage tolerance exceeded'
+        })
+        expect(mockSign).not.toHaveBeenCalled()
+      } finally {
+        requestValidators.length = 0
+      }
+    })
   })
 
   // CP-14211: requestBatchApproval consults the validator registry and,
@@ -1080,6 +1182,62 @@ describe('ApprovalController', () => {
         expect(data?.quickSwapsManualReview).toBe(true)
         expect(data?.code).toBe('slippage_exceeded')
       }
+    })
+
+    it('injects WARNING alert into displayData on requiresManualApproval', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage tolerance exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      const params = baseParams()
+      await approvalController.requestBatchApproval(params as never)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      expect(alert).toBeDefined()
+      expect(alert?.type).toBe('Warning')
+      expect(alert?.details).toEqual({
+        title: 'Manual approval required',
+        description: 'Manual approval required\nSlippage tolerance exceeded'
+      })
+    })
+
+    it('does NOT clobber an existing alert (e.g. Blockaid Warning)', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage exceeded'
+        })
+      })
+
+      const params = {
+        ...baseParams(),
+        displayData: {
+          alert: {
+            type: 'Danger',
+            details: { title: 'Blockaid', description: 'Pre-existing' }
+          }
+        } as never
+      }
+      await approvalController.requestBatchApproval(params as never)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      // Original alert is preserved.
+      expect(alert?.type).toBe('Danger')
+      expect((alert?.details as { description: string }).description).toBe(
+        'Pre-existing'
+      )
     })
 
     it('returns error on hard-reject verdict', async () => {

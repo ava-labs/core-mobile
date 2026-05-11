@@ -206,13 +206,15 @@ describe('BatchSwapValidator.validate', () => {
     expect(result.isValid).toBe(true)
   })
 
-  it('hard-rejects when displayData.alert is Danger (Blockaid Malicious)', async () => {
+  it('falls back to manual when displayData.alert is Danger (Blockaid Malicious)', async () => {
+    // Matches core-extension: Danger surfaces the alert in the manual
+    // modal rather than hard-rejecting.
     const result = await batchSwapValidator.validate(
       makeParams({ alertType: AlertType.DANGER })
     )
     expect(result.isValid).toBe(false)
     if (!result.isValid) {
-      expect(result.requiresManualApproval).toBe(false)
+      expect(result.requiresManualApproval).toBe(true)
       expect(result.code).toBe('tx_flagged_malicious')
     }
   })
@@ -314,7 +316,7 @@ describe('BatchSwapValidator.validate telemetry', () => {
     })
   })
 
-  it('emits `tx_flagged_malicious` and requiresManualApproval:false on hard reject', async () => {
+  it('emits `tx_flagged_malicious` and requiresManualApproval:true on Danger fallback', async () => {
     await batchSwapValidator.validate(
       makeParams({ alertType: AlertType.DANGER })
     )
@@ -322,7 +324,7 @@ describe('BatchSwapValidator.validate telemetry', () => {
       'QuickSwapsBypassFellBack',
       expect.objectContaining({
         reason: 'tx_flagged_malicious',
-        requiresManualApproval: false
+        requiresManualApproval: true
       })
     )
   })

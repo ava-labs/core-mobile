@@ -232,13 +232,16 @@ describe('swapValidator.validate', () => {
     expect(result.isValid).toBe(true)
   })
 
-  it('hard-rejects when displayData.alert is Danger (Blockaid Malicious)', async () => {
+  it('falls back to manual when displayData.alert is Danger (Blockaid Malicious)', async () => {
+    // Matches core-extension: Danger surfaces the alert in the manual
+    // modal rather than hard-rejecting. The user sees Blockaid's "Scam
+    // transaction" banner and explicit Proceed/Reject buttons.
     const result = await swapValidator.validate(
       makeParams({ alertType: AlertType.DANGER })
     )
     expect(result.isValid).toBe(false)
     if (!result.isValid) {
-      expect(result.requiresManualApproval).toBe(false)
+      expect(result.requiresManualApproval).toBe(true)
       expect(result.code).toBe('tx_flagged_malicious')
     }
   })
@@ -333,13 +336,13 @@ describe('swapValidator.validate telemetry', () => {
     })
   })
 
-  it('emits `tx_flagged_malicious` and requiresManualApproval:false on hard reject', async () => {
+  it('emits `tx_flagged_malicious` and requiresManualApproval:true on Danger fallback', async () => {
     await swapValidator.validate(makeParams({ alertType: AlertType.DANGER }))
     expect(mockAnalyticsCapture).toHaveBeenCalledWith(
       'QuickSwapsBypassFellBack',
       expect.objectContaining({
         reason: 'tx_flagged_malicious',
-        requiresManualApproval: false
+        requiresManualApproval: true
       })
     )
   })

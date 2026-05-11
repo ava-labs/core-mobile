@@ -105,12 +105,15 @@ const captureFellBack = (
   })
 }
 
+// Both Danger and Warning fall through to the manual modal — matches
+// `core-extension`. The modal renders the alert banner inline so the
+// user sees the warning and chooses.
 const interpretAlert = (
   alert: BatchValidationParams['displayData']['alert']
 ): ValidationResult | null => {
   if (!alert) return null
   if (alert.type === AlertType.DANGER) {
-    return hardReject(
+    return fallback(
       alert.details?.title || 'Transaction flagged as malicious',
       'tx_flagged_malicious'
     )

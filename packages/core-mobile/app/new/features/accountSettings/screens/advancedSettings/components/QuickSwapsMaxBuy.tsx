@@ -1,7 +1,6 @@
 import { GroupList, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -13,26 +12,28 @@ import {
   QuickSwapMaxBuy
 } from 'store/settings/advanced/types'
 
+// Hardcoded USD labels — the cap is USD-denominated (validator compares
+// against Blockaid's `sourceUsdValue`), so showing user-currency
+// conversions would be misleading. Matches `core-extension`.
+const MAX_BUY_LABELS: Record<QuickSwapMaxBuy, string> = {
+  unlimited: 'Unlimited',
+  '1000': '$1,000',
+  '5000': '$5,000',
+  '10000': '$10,000',
+  '50000': '$50,000'
+}
+
 export const QuickSwapsMaxBuy = (): React.JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const maxBuy = useSelector(selectQuickSwapsMaxBuy)
-  const { formatIntegerCurrency } = useFormatCurrency()
-
-  const formatMaxBuy = useCallback(
-    (value: QuickSwapMaxBuy): string =>
-      value === 'unlimited'
-        ? 'Unlimited'
-        : formatIntegerCurrency({ amount: Number(value) }),
-    [formatIntegerCurrency]
-  )
 
   const maxBuyMenuGroups: DropdownGroup[] = [
     {
       id: 'quick-swaps-max-buy',
       items: QUICK_SWAP_MAX_BUY_VALUES.map(value => ({
         id: value,
-        title: formatMaxBuy(value),
+        title: MAX_BUY_LABELS[value],
         icon: maxBuy === value ? DropdownMenuIcon.Check : undefined
       }))
     }
@@ -76,7 +77,7 @@ export const QuickSwapsMaxBuy = (): React.JSX.Element => {
                   lineHeight: 22,
                   color: theme.colors.$textSecondary
                 }}>
-                {formatMaxBuy(maxBuy)}
+                {MAX_BUY_LABELS[maxBuy]}
               </Text>
             </View>
           </DropdownMenu>

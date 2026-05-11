@@ -63,7 +63,8 @@ const isApproveTx = (data: string | null | undefined): boolean =>
 // balance_change_missing (cleaner telemetry, fewer noise events). Matches
 // core-extension's upstream gate.
 const isCrossChainQuote = (quote: Quote): boolean =>
-  quote.sourceChain.chainId !== quote.targetChain.chainId
+  quote.sourceChain.chainId.toLowerCase() !==
+  quote.targetChain.chainId.toLowerCase()
 
 const isQuickSwapsManualReviewError = (err: unknown): boolean => {
   if (!err || typeof err !== 'object') return false
@@ -73,6 +74,14 @@ const isQuickSwapsManualReviewError = (err: unknown): boolean => {
     (data as { quickSwapsManualReview?: unknown }).quickSwapsManualReview ===
     true
   )
+}
+
+const readManualReviewReason = (err: unknown): string | undefined => {
+  if (!err || typeof err !== 'object') return undefined
+  const data = (err as { data?: unknown }).data
+  if (!data || typeof data !== 'object') return undefined
+  const reason = (data as { reason?: unknown }).reason
+  return typeof reason === 'string' && reason.length > 0 ? reason : undefined
 }
 
 const getChainIdForBatch = (
@@ -161,11 +170,29 @@ const dispatchAsBatch = async (
   return result as unknown as readonly `0x${string}`[]
 }
 
+// Awaited by signEachManually between non-final txs to prevent the
+// "exceeds allowance" race when the approve hasn't mined before the
+// swap's estimateGas runs.
+export type WaitForReceipt = (
+  chainId: number,
+  txHash: `0x${string}`
+) => Promise<void>
+
 export function createEvmSigner(
   request: Request,
-  getBatchOptions: SignBatchOptionsGetter
+  getBatchOptions: SignBatchOptionsGetter,
+  waitForReceipt?: WaitForReceipt
 ): EvmSignerWithMessage {
-  const sign: EvmSignerWithMessage['sign'] = async (tx, _, stepDetails) => {
+  type SignOptions = {
+    manualReviewReason?: string
+    isIntermediate?: boolean
+  }
+  const signOne = async (
+    tx: Parameters<EvmSignerWithMessage['sign']>[0],
+    stepDetails: Parameters<EvmSignerWithMessage['sign']>[2],
+    options: SignOptions
+  ): Promise<`0x${string}`> => {
+    const { manualReviewReason, isIntermediate } = options
     const { from, data, to, value, chainId } = tx
     assert(to, 'Invalid transaction: missing "to" field')
     assert(from, 'Invalid transaction: missing "from" field')
@@ -178,14 +205,26 @@ export function createEvmSigner(
     // Markr (proves networkFees was loaded). The bypass skips the
     // modal's fee picker, so missing-fees would broadcast as 0.
     const hasUpstreamFees = typeof tx.maxFeePerGas === 'bigint'
+    // On batch fallback we suppress autoApprove on every per-tx call so
+    // both the approve and the swap modal render the "Manual approval
+    // required" banner — otherwise the swap could auto-approve silently
+    // while the approve showed the banner.
     const shouldAttachAutoApprove =
+      !manualReviewReason &&
       isQuickSwapsActive &&
       stepDetails.quote.serviceType === ServiceType.MARKR &&
       !isApprove &&
       hasUpstreamFees &&
       !isCrossChainQuote(stepDetails.quote)
-    const baseContext = buildRequestContext(stepDetails)
-    const requestContext = shouldAttachAutoApprove
+    const rawContext = buildRequestContext(stepDetails)
+    // The SDK passes the same stepDetails for every per-tx call in a
+    // batch fallback, so buildRequestContext can't tell intermediate
+    // from final on its own — mark non-final explicitly to suppress
+    // the intermediate-tx confetti/toast.
+    const baseContext = isIntermediate
+      ? { ...rawContext, [RequestContext.SUPPRESS_TX_FEEDBACK]: true }
+      : rawContext
+    const contextWithAutoApprove = shouldAttachAutoApprove
       ? {
           ...baseContext,
           [RequestContext.SWAP_AUTO_APPROVE]: buildAutoApproveContext(
@@ -195,6 +234,12 @@ export function createEvmSigner(
           )
         }
       : baseContext
+    const requestContext = manualReviewReason
+      ? {
+          ...contextWithAutoApprove,
+          [RequestContext.QUICK_SWAPS_MANUAL_REVIEW_REASON]: manualReviewReason
+        }
+      : contextWithAutoApprove
 
     try {
       const result = await request({
@@ -232,6 +277,52 @@ export function createEvmSigner(
     }
   }
 
+  const sign: EvmSignerWithMessage['sign'] = (tx, _, stepDetails) =>
+    signOne(tx, stepDetails, {})
+
+  // Best-effort: errors are swallowed so the next signOne can surface
+  // the real revert if the previous tx truly didn't land.
+  const maybeWaitForReceipt = async (
+    chainId: bigint | string,
+    hash: `0x${string}`
+  ): Promise<void> => {
+    if (!waitForReceipt) return
+    try {
+      await waitForReceipt(Number(chainId), hash)
+    } catch (err) {
+      Logger.warn(
+        '[fusion::evmSigner.signEachManually] receipt wait failed; continuing',
+        err
+      )
+    }
+  }
+
+  const signEachManually = async (
+    transactions: readonly Parameters<EvmSignerWithMessage['sign']>[0][],
+    stepDetails: Parameters<EvmSignerWithMessage['sign']>[2],
+    manualReviewReason?: string
+  ): Promise<`0x${string}`[]> => {
+    const hashes: `0x${string}`[] = []
+    // Only wait for receipts when we know this is a Quick Swaps batch
+    // fallback. Legacy non-bypass paths haven't waited historically and
+    // we don't want to add latency to them.
+    const isFallback = manualReviewReason !== undefined
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i]
+      if (!tx) continue
+      const isIntermediate = i < transactions.length - 1
+      const hash = await signOne(tx, stepDetails, {
+        manualReviewReason,
+        isIntermediate
+      })
+      hashes.push(hash)
+      if (isIntermediate && isFallback) {
+        await maybeWaitForReceipt(tx.chainId, hash)
+      }
+    }
+    return hashes
+  }
+
   return {
     sign,
 
@@ -267,21 +358,13 @@ export function createEvmSigner(
       assert(transactions.length > 0, 'signBatch called with no transactions')
       const { isQuickSwapsActive, maxBuy } = getBatchOptions()
 
-      const signEachManually = async (): Promise<`0x${string}`[]> => {
-        const hashes: `0x${string}`[] = []
-        for (const tx of transactions) {
-          hashes.push(await sign(tx, dispatch, stepDetails))
-        }
-        return hashes
-      }
-
       // Cold-start guard: every batch tx must have fees pre-filled.
       const allTxsHaveFees = transactions.every(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
       const isCrossChain = isCrossChainQuote(stepDetails.quote)
       if (!isQuickSwapsActive || !allTxsHaveFees || isCrossChain) {
-        return signEachManually()
+        return signEachManually([...transactions], stepDetails)
       }
 
       try {
@@ -295,7 +378,11 @@ export function createEvmSigner(
             '[fusion::evmSigner.signBatch] bypass requires manual review; falling back to per-tx approval',
             (err as { data?: unknown }).data
           )
-          return signEachManually()
+          return signEachManually(
+            [...transactions],
+            stepDetails,
+            readManualReviewReason(err)
+          )
         }
         Logger.error('[fusion::evmSigner.signBatch]', err)
         throw err

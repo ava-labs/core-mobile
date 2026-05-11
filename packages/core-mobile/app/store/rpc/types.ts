@@ -207,7 +207,11 @@ export enum RequestContext {
   // Quick Swaps bypass intent — consumed by SwapValidator and
   // BatchSwapValidator to decide whether a Markr swap can skip the
   // /approval modal.
-  SWAP_AUTO_APPROVE = 'swapAutoApprove'
+  SWAP_AUTO_APPROVE = 'swapAutoApprove',
+
+  // Carries the BatchSwapValidator's reason to the per-tx fallback flow
+  // so the manual modal can render "Manual approval required: <reason>".
+  QUICK_SWAPS_MANUAL_REVIEW_REASON = 'quickSwapsManualReviewReason'
 }
 
 export type SwapAutoApproveContext = {

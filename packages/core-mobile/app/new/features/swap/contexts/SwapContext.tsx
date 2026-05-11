@@ -26,7 +26,7 @@ import {
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
-import type { GasSettings } from '@avalabs/fusion-sdk'
+import { ServiceType, type GasSettings } from '@avalabs/fusion-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import type Big from 'big.js'
 import type { Quote, Transfer } from '../types'
@@ -419,6 +419,19 @@ export const SwapContextProvider = ({
               { feeSetting }
             )
           }
+        }
+
+        if (
+          isQuickSwapsActive &&
+          quoteToUse.serviceType !== ServiceType.MARKR
+        ) {
+          AnalyticsService.capture('QuickSwapsBypassOpportunityMissed', {
+            caip2SourceChainId: quoteToUse.sourceChain.chainId,
+            activeServiceType: quoteToUse.serviceType,
+            markrQuoteAvailable: allQuotes.some(
+              q => q.serviceType === ServiceType.MARKR
+            )
+          })
         }
 
         const transfer = await FusionService.transferAsset(

@@ -1,15 +1,16 @@
 import React from 'react'
 import { GroupList } from '@avalabs/k2-alpine'
-import { useQuickSwaps } from 'features/swap/hooks/useQuickSwaps'
+import { useSelector } from 'react-redux'
+import { selectIsAdvancedSettingsAvailable } from 'store/posthog'
 
 export const AdvancedSettings = ({
   selectAdvancedSettings
 }: {
   selectAdvancedSettings: () => void
 }): React.JSX.Element | null => {
-  const { flagOn } = useQuickSwaps()
+  const isAvailable = useSelector(selectIsAdvancedSettingsAvailable)
 
-  if (!flagOn) return null
+  if (!isAvailable) return null
 
   return (
     <GroupList

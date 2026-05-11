@@ -3,7 +3,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import React from 'react'
 import { QuickSwaps } from './components/QuickSwaps'
 
-export const AdvancedSettingsScreen = (): React.JSX.Element => {
+export const AdvancedSettingsScreen = (): React.JSX.Element | null => {
   return (
     <ScrollScreen
       navigationTitle="Advanced settings"

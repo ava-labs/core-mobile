@@ -151,10 +151,8 @@ describe('ethSendTransactionBatchHandler', () => {
         listenerApi
       )
       expect(result.success).toBe(false)
-      // Phase E reroute is gone — handler does NOT touch the EVM module
-      // for 1-tx batches; caller (`EvmSigner.signBatch`) is expected to
-      // route single-tx flows through the standard `eth_sendTransaction`
-      // → `requestApproval` → `SwapValidator` path.
+      // Handler doesn't touch the EVM module for 1-tx batches; callers
+      // must route single-tx flows through `eth_sendTransaction`.
       expect(mockOnRpcRequest).not.toHaveBeenCalled()
     })
 

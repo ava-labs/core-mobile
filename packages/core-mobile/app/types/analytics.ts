@@ -172,10 +172,6 @@ export type AnalyticsEvents = {
     }
   }
   QuickSwapsToggled: { isEnabled: boolean }
-  SwapBlockedByQuickSwapLimit: {
-    maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
-    hasUsdValue: boolean
-  }
   QuickSwapsBypassFired: {
     caip2SourceChainId: string
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
@@ -200,6 +196,15 @@ export type AnalyticsEvents = {
       | 'slippage_unavailable'
       | 'slippage_exceeded'
       | 'unknown'
+  }
+  // Emitted at swap-dispatch time when Quick Swaps is enabled but the
+  // active quote's serviceType isn't Markr (so the bypass can't fire).
+  // `markrQuoteAvailable` answers: would the bypass have fired if the
+  // user had picked the Markr quote from the dropdown?
+  QuickSwapsBypassOpportunityMissed: {
+    caip2SourceChainId: string
+    activeServiceType: string
+    markrQuoteAvailable: boolean
   }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined

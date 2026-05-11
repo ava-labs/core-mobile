@@ -29,7 +29,8 @@ function getMaxBuyLimit(
   if (!maxBuy || maxBuy === 'unlimited') {
     return null
   }
-  return parseInt(maxBuy, 10)
+  const n = Number(maxBuy)
+  return Number.isFinite(n) && n > 0 ? n : null
 }
 
 function validateMinAmountOut(

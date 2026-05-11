@@ -2,6 +2,7 @@ import { router } from 'expo-router'
 import { rpcErrors } from '@metamask/rpc-errors'
 import LedgerService from 'services/ledger/LedgerService'
 import {
+  AlertType,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
@@ -13,6 +14,7 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc/types'
 import {
   isTxSendMethod,
   TxSendConfirmedEvent,
@@ -51,6 +53,34 @@ type BatchSigningContext = {
   walletType: WalletType
   accountIndex: number
   network: Parameters<typeof WalletService.sign>[0]['network']
+}
+
+// Skipped when an alert is already present (e.g. Blockaid Warning) to
+// avoid clobbering it. The title is baked into description with `\n`
+// because ApprovalScreen only renders `details.description`.
+const injectFallbackAlert = (
+  displayData:
+    | ApprovalParams['displayData']
+    | BatchApprovalParams['displayData'],
+  reason: string | undefined
+): void => {
+  if (displayData.alert) return
+  const description = reason
+    ? `Manual approval required\n${reason}`
+    : 'Manual approval required\nQuick Swaps could not auto-approve this swap.'
+  displayData.alert = {
+    type: AlertType.WARNING,
+    details: {
+      title: 'Manual approval required',
+      description
+    }
+  }
+}
+
+const readManualReviewReason = (request: RpcRequest): string | undefined => {
+  const ctx = request.context as Record<string, unknown> | undefined
+  const reason = ctx?.[RequestContext.QUICK_SWAPS_MANUAL_REVIEW_REASON]
+  return typeof reason === 'string' && reason.length > 0 ? reason : undefined
 }
 
 const readBatchSigningContext = (
@@ -364,13 +394,25 @@ class ApprovalController implements VmModuleApprovalController {
       }
     }
 
-    if (verdict.requiresManualApproval) return null
+    if (verdict.requiresManualApproval) {
+      injectFallbackAlert(params.displayData, verdict.reason)
+      return null
+    }
 
     return {
       error: rpcErrors.invalidRequest({
         message:
           verdict.reason || 'requestApproval: blocked by safety validation'
       })
+    }
+  }
+
+  // For the per-tx approve from a fallen-back batch: no validator
+  // matches (approves are never bypassed), so we surface the reason here.
+  private maybeInjectManualReviewAlert = (params: ApprovalParams): void => {
+    const manualReviewReason = readManualReviewReason(params.request)
+    if (manualReviewReason) {
+      injectFallbackAlert(params.displayData, manualReviewReason)
     }
   }
 
@@ -386,6 +428,8 @@ class ApprovalController implements VmModuleApprovalController {
     if (validator) {
       const bypassResult = await this.runRequestValidator(validator, params)
       if (bypassResult) return bypassResult
+    } else {
+      this.maybeInjectManualReviewAlert(params)
     }
 
     const enrichedDisplayData = maybeInjectSiweAlert({
@@ -488,6 +532,13 @@ class ApprovalController implements VmModuleApprovalController {
     }
 
     if (verdict.requiresManualApproval) {
+      // EvmSigner.signBatch catches the marker and re-issues each tx
+      // through `requestApproval`. The per-tx swap will re-run
+      // SwapValidator, which will inject its own fallback alert into
+      // the per-tx displayData. We also inject one here for callers
+      // (and future code paths) that may render the batch displayData
+      // directly.
+      injectFallbackAlert(params.displayData, verdict.reason)
       const detail = verdict.reason || 'unknown reason'
       return {
         error: rpcErrors.internal({
