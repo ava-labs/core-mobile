@@ -239,15 +239,22 @@ const WalletCard = ({
               gap: 5,
               flex: 1
             }}>
-            <View>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flex: 1 }}>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4
+                }}>
                 <Text
                   testID={`manage_accounts_wallet_name__${wallet.name}`}
                   variant="heading4"
                   style={{
-                    lineHeight: 27
+                    lineHeight: 27,
+                    flexShrink: 1
                   }}
-                  numberOfLines={1}>
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
                   {wallet.name}
                 </Text>
                 {isActive && (
@@ -266,7 +273,7 @@ const WalletCard = ({
                 style={{
                   marginTop: 4,
                   fontSize: 12,
-                  lineHeight: 12,
+                  lineHeight: 16,
                   color: colors.$textSecondary
                 }}>
                 {(() => {

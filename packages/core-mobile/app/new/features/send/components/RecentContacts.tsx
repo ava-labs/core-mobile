@@ -21,6 +21,7 @@ import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
@@ -189,13 +190,30 @@ const ContactListItem = ({
   const wallets = useSelector(selectWallets)
   const walletsCount = Object.keys(wallets).length
 
+  const ledgerDerivationLabel =
+    wallet?.type === WalletType.LEDGER
+      ? LedgerDerivationPathType.BIP44
+      : wallet?.type === WalletType.LEDGER_LIVE
+      ? LedgerDerivationPathType.LedgerLive
+      : null
+  const isLedger = ledgerDerivationLabel !== null
+
+  const walletLabel =
+    wallet?.type === WalletType.PRIVATE_KEY
+      ? 'Imported'
+      : ledgerDerivationLabel
+      ? wallet?.name
+        ? `${wallet.name} · ${ledgerDerivationLabel}`
+        : ledgerDerivationLabel
+      : wallet?.name
+
   return (
     <ListViewItem
       avatar={avatar}
       title={item.name}
       renderTop={() =>
         wallet &&
-        walletsCount > 1 && (
+        (walletsCount > 1 || isLedger) && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
             <WalletIcon
               width={16}
@@ -210,9 +228,7 @@ const ContactListItem = ({
                 color: '$textSecondary',
                 lineHeight: 16
               }}>
-              {wallet?.type === WalletType.PRIVATE_KEY
-                ? 'Imported'
-                : wallet?.name}
+              {walletLabel}
             </Text>
           </View>
         )
