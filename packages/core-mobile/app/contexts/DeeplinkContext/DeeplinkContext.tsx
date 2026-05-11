@@ -92,18 +92,18 @@ export const DeeplinkContextProvider = ({
     )
 
     // The notifee background event handler is registered once in `index.js`
-    // (notifee only supports a single handler). When a background PRESS occurs
-    // while the app is alive but minimized, the data is stashed in
-    // NotificationsService.pendingBackgroundPress; we consume it here on the
-    // next AppState 'active' transition so the deeplink callback runs in a
-    // mounted React context. Cold-start press is handled separately via
-    // getInitialNotification above.
+    // (notifee only supports a single handler). When a background PRESS
+    // occurs while the app is alive but minimized, that headless handler
+    // stashes the notification data; on the next AppState 'active'
+    // transition we drain it here — analytics capture + deeplink callback
+    // both happen inside NotificationsService.handlePendingBackgroundPress
+    // so they run in a React-mounted context with PostHog configured.
+    // Cold-start press is handled separately via getInitialNotification.
     const appStateSub = AppState.addEventListener('change', state => {
       if (state !== 'active') return
-      const pending = NotificationsService.consumePendingBackgroundPress()
-      if (pending) {
-        handleNotificationCallback(pending)
-      }
+      NotificationsService.handlePendingBackgroundPress(
+        handleNotificationCallback
+      )
     })
 
     return () => {

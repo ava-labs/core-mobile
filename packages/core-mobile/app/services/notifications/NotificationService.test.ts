@@ -514,73 +514,30 @@ describe('registerBackgroundNotificationHandler', () => {
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
   })
 
-  it('captures PushNotificationPressed (appState=background, handler=notifee) on a PRESS event with a deeplink', async () => {
+  it('does NOT capture analytics from the headless background handler (capture is deferred to React-mounted context)', async () => {
+    // The notifee background event runs as a headless JS task. Capture is
+    // deliberately deferred to handlePendingBackgroundPress (warm-background)
+    // or getInitialNotification (cold-start), both of which run with PostHog
+    // / redux fully initialized. This avoids the duplicate-capture observed
+    // during CP-14006 device verification (one 'background' + one
+    // 'cold_start' for the same cold-start tap).
     NotificationsService.registerBackgroundNotificationHandler()
 
     await getHandler()({
       type: EventType.PRESS,
       detail: {
         notification: {
-          id: 'noti-warm',
+          id: 'noti-press',
           data: { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' },
           android: { channelId: ChannelId.PRODUCT_ANNOUNCEMENTS }
         }
       }
     })
 
-    expect(AnalyticsService.capture).toHaveBeenCalledWith(
-      'PushNotificationPressed',
-      {
-        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
-        deeplinkUrl: 'core://portfolio',
-        appState: 'background',
-        handler: 'notifee'
-      }
-    )
-  })
-
-  it('falls back to EVENT_TO_CH_ID when android.channelId is absent on the PRESS event', async () => {
-    NotificationsService.registerBackgroundNotificationHandler()
-
-    await getHandler()({
-      type: EventType.PRESS,
-      detail: {
-        notification: {
-          id: 'noti-fallback',
-          data: { url: 'core://watchlist', event: 'PRICE_ALERTS' }
-        }
-      }
-    })
-
-    expect(AnalyticsService.capture).toHaveBeenCalledWith(
-      'PushNotificationPressed',
-      {
-        channelId: ChannelId.PRICE_ALERTS,
-        deeplinkUrl: 'core://watchlist',
-        appState: 'background',
-        handler: 'notifee'
-      }
-    )
-  })
-
-  it('does not capture when the PRESS notification has no deeplink url', async () => {
-    NotificationsService.registerBackgroundNotificationHandler()
-
-    await getHandler()({
-      type: EventType.PRESS,
-      detail: {
-        notification: {
-          id: 'noti-no-url',
-          data: { event: 'PRODUCT_ANNOUNCEMENTS' }
-        }
-      }
-    })
-
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
-    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
   })
 
-  it('stashes the notification data so it can be consumed by the AppState active listener', async () => {
+  it('stashes the notification data so it can be consumed by the React-mounted context', async () => {
     NotificationsService.registerBackgroundNotificationHandler()
 
     const data = { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
@@ -598,5 +555,84 @@ describe('registerBackgroundNotificationHandler', () => {
     expect(NotificationsService.consumePendingBackgroundPress()).toEqual(data)
     // consume is one-shot
     expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+  })
+
+  it('does not stash when the PRESS notification has no deeplink url', async () => {
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    await getHandler()({
+      type: EventType.PRESS,
+      detail: {
+        notification: {
+          id: 'noti-no-url',
+          data: { event: 'PRODUCT_ANNOUNCEMENTS' }
+        }
+      }
+    })
+
+    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+  })
+})
+
+describe('handlePendingBackgroundPress', () => {
+  beforeEach(() => {
+    jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
+    NotificationsService.consumePendingBackgroundPress()
+  })
+
+  it('captures PushNotificationPressed (appState=background, handler=notifee) and invokes the callback when a press is pending', () => {
+    const data = { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
+    setPendingBackgroundPress(data)
+    const callback = jest.fn()
+
+    NotificationsService.handlePendingBackgroundPress(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio',
+        appState: 'background',
+        handler: 'notifee'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(data)
+  })
+
+  it('falls back to DEFAULT_ANDROID_CHANNEL when the pending press has no channelId or event mapping', () => {
+    setPendingBackgroundPress({ url: 'core://portfolio' })
+    const callback = jest.fn()
+
+    NotificationsService.handlePendingBackgroundPress(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: DEFAULT_ANDROID_CHANNEL,
+        deeplinkUrl: 'core://portfolio',
+        appState: 'background',
+        handler: 'notifee'
+      }
+    )
+  })
+
+  it('is a no-op when no press is pending', () => {
+    const callback = jest.fn()
+
+    NotificationsService.handlePendingBackgroundPress(callback)
+
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    expect(callback).not.toHaveBeenCalled()
+  })
+
+  it('drains the pending press after handling so subsequent calls are no-ops', () => {
+    setPendingBackgroundPress({ url: 'core://portfolio' })
+    const callback = jest.fn()
+
+    NotificationsService.handlePendingBackgroundPress(callback)
+    NotificationsService.handlePendingBackgroundPress(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledTimes(1)
   })
 })
