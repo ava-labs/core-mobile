@@ -1,29 +1,5 @@
-import type { Preset } from './types'
-
-export const clamp = (v: number, min: number, max: number): number => {
-  'worklet'
-  if (v < min) return min
-  if (v > max) return max
-  return v
-}
-
-/**
- * Number of decimal digits required to express `step` exactly, derived by
- * scaling until the value is integer (±epsilon). Works for non-power-of-10
- * steps (e.g. 0.25 → 2), unlike `-log10(step)` which only handles 10⁻ⁿ.
- */
-export const getStepDecimals = (step: number): number => {
-  'worklet'
-  if (!Number.isFinite(step) || step <= 0 || step >= 1) return 0
-  const epsilon = 1e-8
-  let decimals = 0
-  let scaled = step
-  while (decimals < 10 && Math.abs(scaled - Math.round(scaled)) > epsilon) {
-    scaled *= 10
-    decimals += 1
-  }
-  return decimals
-}
+import { clamp } from '../../utils/clamp'
+import { getStepDecimals } from '../../utils/getStepDecimals'
 
 export const snapToStep = (v: number, min: number, step: number): number => {
   'worklet'
@@ -32,16 +8,6 @@ export const snapToStep = (v: number, min: number, step: number): number => {
   // Avoid floating-point drift by rounding to the step's natural precision.
   const decimals = getStepDecimals(step)
   return min + Number(snapped.toFixed(decimals))
-}
-
-export const resolvePreset = (
-  preset: Preset,
-  min: number,
-  max: number
-): number => {
-  if (preset === 'min') return min
-  if (preset === 'max') return max
-  return preset
 }
 
 export const isMajorTick = (value: number, step: number): boolean => {

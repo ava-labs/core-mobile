@@ -4,7 +4,8 @@ import {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { clamp, shouldSyncExternalValue } from './helpers'
+import { clamp } from '../../utils'
+import { shouldSyncExternalValue } from './helpers'
 
 type UseLeverageValueArgs = {
   value: number
