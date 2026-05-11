@@ -408,4 +408,57 @@ describe('WalletService.getAddresses cache behavior', () => {
     expect(b).toEqual(avmWithActivityResponse)
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
+
+  it('does NOT populate the cache if clearAddressCache fires mid-fetch', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-race')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Hold the API resolution until we release it manually, so we can clear
+    // the cache while the retry promise is still in flight.
+    let resolveApi: (value: { data: GetAddressesResponse }) => void = () => {
+      /* set below */
+    }
+    postV1GetAddresses.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveApi = resolve
+        })
+    )
+
+    const args = {
+      walletId: 'wallet-race',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const fetchInFlight = WalletService.getAddressesFromXpubXP(args)
+
+    // Let both `getRawXpubXP` and the in-flight registration settle, then
+    // simulate an app-lock by clearing the cache while the API is mid-flight.
+    await Promise.resolve()
+    await Promise.resolve()
+    clearAddressesCache()
+
+    // Resolve the in-flight API call. Its body should NOT be cached because
+    // the epoch advanced between fetch-start and fetch-resolve.
+    resolveApi({ data: avmWithActivityResponse })
+    const result = await fetchInFlight
+    expect(result).toEqual(avmWithActivityResponse)
+
+    // Subsequent call should hit the API again, not return a stale cache hit.
+    let secondCallFired = false
+    postV1GetAddresses.mockImplementation(async () => {
+      secondCallFired = true
+      return { data: avmWithActivityResponse }
+    })
+
+    await WalletService.getAddressesFromXpubXP(args)
+    expect(secondCallFired).toBe(true)
+  })
 })

@@ -43,7 +43,8 @@ import {
   clearAddressesCache,
   getInFlightAddressesFetch,
   setInFlightAddressesFetch,
-  clearInFlightAddressesFetch
+  clearInFlightAddressesFetch,
+  getAddressesCacheEpoch
 } from './getAddressesCache'
 
 // Retry helper. Local to WalletService — promote to utils/ only if a second
@@ -499,62 +500,18 @@ class WalletService {
       return inFlight
     }
 
-    const callOnce = async (): Promise<GetAddressesResponse> => {
-      const raw = await postV1GetAddresses({
-        client: profileApiClient,
-        body: {
-          networkType: networkType,
-          extendedPublicKey,
-          isTestnet,
-          onlyWithActivity
-        }
-      })
-
-      // If hey-api gave us a structured error envelope, surface it as a
-      // throw so the retry helper sees it. The status field is what
-      // `isTransientHttpError` keys on.
-      if (
-        raw &&
-        typeof raw === 'object' &&
-        'error' in raw &&
-        (raw as { error: unknown }).error !== undefined
-      ) {
-        const err = (raw as { error: { status?: number; message?: string } })
-          .error
-        const message = err?.message ?? 'profile-api returned an error envelope'
-        const wrapped = new Error(
-          `postV1GetAddresses failed (status=${
-            err?.status ?? 'unknown'
-          }): ${message}`
-        )
-        // Attach status so retry helper can categorize.
-        ;(wrapped as Error & { status?: number }).status = err?.status
-        throw wrapped
-      }
-
-      const body = unwrapPostV1GetAddressesResult(raw)
-
-      if (!isGetAddressesResponseBody(body)) {
-        throw new Error(
-          `postV1GetAddresses returned an unrecognized body shape: ${
-            typeof body === 'object'
-              ? JSON.stringify(body).slice(0, 200)
-              : String(body)
-          }`
-        )
-      }
-
-      return body
-    }
+    const startEpoch = getAddressesCacheEpoch()
 
     const fetchPromise = (async () => {
       try {
         const body = await retryWithBackoff(
-          callOnce,
+          () => callPostV1GetAddressesOnce(cacheKey),
           isTransientHttpError,
           RETRY_DELAYS_MS
         )
-        setAddressesCache(cacheKey, body)
+        if (getAddressesCacheEpoch() === startEpoch) {
+          setAddressesCache(cacheKey, body)
+        }
         return body
       } catch (err) {
         Logger.error(
@@ -623,6 +580,68 @@ const isGetAddressesResponseBody = (
   'networkType' in value &&
   Array.isArray((value as GetAddressesResponse).externalAddresses) &&
   Array.isArray((value as GetAddressesResponse).internalAddresses)
+
+/**
+ * One call to postV1GetAddresses + envelope/error normalization. Extracted
+ * to module scope so `getAddressesForExtendedPublicKey` stays under the
+ * cognitive-complexity ceiling.
+ */
+const callPostV1GetAddressesOnce = async ({
+  extendedPublicKey,
+  networkType,
+  isTestnet,
+  onlyWithActivity
+}: {
+  extendedPublicKey: string
+  networkType: NetworkVMType.AVM | NetworkVMType.PVM
+  isTestnet: boolean
+  onlyWithActivity: boolean
+}): Promise<GetAddressesResponse> => {
+  const raw = await postV1GetAddresses({
+    client: profileApiClient,
+    body: {
+      networkType,
+      extendedPublicKey,
+      isTestnet,
+      onlyWithActivity
+    }
+  })
+
+  // If hey-api gave us a structured error envelope, surface it as a
+  // throw so the retry helper sees it. The status field is what
+  // `isTransientHttpError` keys on.
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    'error' in raw &&
+    (raw as { error: unknown }).error !== undefined
+  ) {
+    const err = (raw as { error: { status?: number; message?: string } }).error
+    const message = err?.message ?? 'profile-api returned an error envelope'
+    const wrapped = new Error(
+      `postV1GetAddresses failed (status=${
+        err?.status ?? 'unknown'
+      }): ${message}`
+    )
+    // Attach status so retry helper can categorize.
+    ;(wrapped as Error & { status?: number }).status = err?.status
+    throw wrapped
+  }
+
+  const body = unwrapPostV1GetAddressesResult(raw)
+
+  if (!isGetAddressesResponseBody(body)) {
+    throw new Error(
+      `postV1GetAddresses returned an unrecognized body shape: ${
+        typeof body === 'object'
+          ? JSON.stringify(body).slice(0, 200)
+          : String(body)
+      }`
+    )
+  }
+
+  return body
+}
 
 /**
  * Races boolean promises, returning true as soon as any resolves true.

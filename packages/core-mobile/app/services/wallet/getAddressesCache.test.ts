@@ -6,7 +6,8 @@ import {
   clearAddressesCache,
   getInFlightAddressesFetch,
   setInFlightAddressesFetch,
-  clearInFlightAddressesFetch
+  clearInFlightAddressesFetch,
+  getAddressesCacheEpoch
 } from './getAddressesCache'
 
 const sampleAvmResponse: GetAddressesResponse = {
@@ -220,5 +221,43 @@ describe('getAddressesCache — in-flight promise tracking', () => {
     clearAddressesCache()
 
     expect(getInFlightAddressesFetch(key)).toBeUndefined()
+  })
+})
+
+describe('getAddressesCache — epoch counter', () => {
+  beforeEach(() => {
+    clearAddressesCache()
+  })
+
+  it('exposes a numeric epoch', () => {
+    expect(typeof getAddressesCacheEpoch()).toBe('number')
+  })
+
+  it('increments on every clear', () => {
+    const start = getAddressesCacheEpoch()
+
+    clearAddressesCache()
+    expect(getAddressesCacheEpoch()).toBe(start + 1)
+
+    clearAddressesCache()
+    expect(getAddressesCacheEpoch()).toBe(start + 2)
+  })
+
+  it('does NOT increment on set / read operations', () => {
+    const start = getAddressesCacheEpoch()
+    const key = {
+      extendedPublicKey: 'xpub-1',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+
+    setAddressesCache(key, sampleAvmResponse)
+    void getAddressesCache(key)
+    setInFlightAddressesFetch(key, Promise.resolve(sampleAvmResponse))
+    void getInFlightAddressesFetch(key)
+    clearInFlightAddressesFetch(key)
+
+    expect(getAddressesCacheEpoch()).toBe(start)
   })
 })
