@@ -975,6 +975,24 @@ class LedgerService {
     return this.#transport
   }
 
+  // Ensure a live BLE transport before returning it. Multi-step signing
+  // flows (e.g. delegation, claim P→C) leave the link idle between steps;
+  // a silent BLE drop or device sleep can leave #transport stale by the
+  // time the next step calls into the signer. ensureConnection reconnects
+  // to the remembered deviceId in that case so the second prompt actually
+  // reaches the device. connect() is mutex-guarded, so joining an
+  // in-flight auto-reconnect is safe.
+  async ensureConnection(): Promise<TransportBLE> {
+    if (!this.connectedDeviceId) {
+      throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
+    }
+    if (!this.#transport || !this.#transport.isConnected) {
+      Logger.info('[ensureConnection] transport unavailable — reconnecting')
+      await this.connect(this.connectedDeviceId)
+    }
+    return this.getTransport()
+  }
+
   // Always-verify app readiness: skip the openApp APDU if the cached state
   // matches (minimizing BLE traffic) but always run waitForApp to verify
   // device readiness before sending the payload.
