@@ -1,6 +1,17 @@
 import notifee, { EventDetail, EventType } from '@notifee/react-native'
-import { ChannelId } from './channels'
+import messaging from '@react-native-firebase/messaging'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ChannelId, DEFAULT_ANDROID_CHANNEL } from './channels'
 import NotificationsService from './NotificationsService'
+
+// Override the messaging mock from tests/jestSetup/firebase.js so its default
+// export is a jest.fn(), allowing per-test control of getInitialNotification.
+jest.mock('@react-native-firebase/messaging', () =>
+  jest.fn(() => ({
+    deleteToken: jest.fn(() => ({ token: 'fcmToken' })),
+    getInitialNotification: jest.fn().mockResolvedValue(null)
+  }))
+)
 
 describe('scheduleNotification', () => {
   it('should have scheduled notification', async () => {
@@ -142,5 +153,238 @@ describe('handleNotificationEvent', () => {
     })
     expect(mockIncrementBadgeCount).not.toHaveBeenCalled()
     expect(mockHandleNotificationPress).not.toHaveBeenCalled()
+  })
+})
+
+describe('getInitialNotification', () => {
+  const callback = jest.fn()
+  const buildNotifeeInitial = (
+    data: Record<string, unknown> | undefined,
+    androidChannelId?: string
+  ): unknown => ({
+    notification: {
+      data,
+      android: androidChannelId ? { channelId: androidChannelId } : undefined
+    },
+    pressAction: { id: 'default' }
+  })
+
+  const setFcmInitial = (value: unknown): void => {
+    ;(messaging as unknown as jest.Mock).mockReturnValue({
+      getInitialNotification: jest.fn().mockResolvedValue(value)
+    })
+  }
+
+  const setNotifeeInitial = (value: unknown): void => {
+    ;(notifee.getInitialNotification as jest.Mock).mockResolvedValue(value)
+  }
+
+  beforeEach(() => {
+    jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
+    setNotifeeInitial(null)
+    setFcmInitial(null)
+  })
+
+  it('captures press from notifee initial notification (Android data-only cold start)', async () => {
+    const data = {
+      url: 'core://portfolio',
+      event: 'PRODUCT_ANNOUNCEMENTS',
+      channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+      title: 'New product',
+      body: 'Check it out'
+    }
+    setNotifeeInitial(
+      buildNotifeeInitial(data, ChannelId.PRODUCT_ANNOUNCEMENTS)
+    )
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledTimes(1)
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(data)
+  })
+
+  it('captures press from FCM initial notification when notifee initial is null (legacy notification payload path)', async () => {
+    const data = {
+      url: 'core://portfolio',
+      event: 'PRODUCT_ANNOUNCEMENTS'
+    }
+    setFcmInitial({ data })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledTimes(1)
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(data)
+  })
+
+  it('does not capture and invokes callback with undefined when no initial notification is present in either source', async () => {
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    expect(callback).toHaveBeenCalledWith(undefined)
+  })
+
+  it('does not capture when notifee initial notification lacks a deeplink url', async () => {
+    setNotifeeInitial(
+      buildNotifeeInitial(
+        { event: 'PRODUCT_ANNOUNCEMENTS' },
+        ChannelId.PRODUCT_ANNOUNCEMENTS
+      )
+    )
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    expect(callback).toHaveBeenCalledWith(undefined)
+  })
+
+  it('prefers notifee initial notification over FCM when both are present', async () => {
+    const notifeeData = {
+      url: 'core://portfolio',
+      event: 'PRODUCT_ANNOUNCEMENTS'
+    }
+    const fcmData = { url: 'core://watchlist', event: 'PRICE_ALERTS' }
+    setNotifeeInitial(
+      buildNotifeeInitial(notifeeData, ChannelId.PRODUCT_ANNOUNCEMENTS)
+    )
+    setFcmInitial({ data: fcmData })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledTimes(1)
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(notifeeData)
+  })
+
+  it('falls back to EVENT_TO_CH_ID mapping when no android.channelId is set on the notifee notification', async () => {
+    const data = { url: 'core://watchlist', event: 'PRICE_ALERTS' }
+    setNotifeeInitial(buildNotifeeInitial(data, undefined))
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRICE_ALERTS,
+        deeplinkUrl: 'core://watchlist'
+      }
+    )
+  })
+
+  it('falls back to DEFAULT_ANDROID_CHANNEL when no channel info is available at all', async () => {
+    const data = { url: 'core://portfolio' }
+    setNotifeeInitial(buildNotifeeInitial(data, undefined))
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: DEFAULT_ANDROID_CHANNEL,
+        deeplinkUrl: 'core://portfolio'
+      }
+    )
+  })
+
+  it('still falls back to FCM when notifee.getInitialNotification rejects', async () => {
+    ;(notifee.getInitialNotification as jest.Mock).mockRejectedValue(
+      new Error('notifee boom')
+    )
+    const fcmData = { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
+    setFcmInitial({ data: fcmData })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
+        deeplinkUrl: 'core://portfolio'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(fcmData)
+  })
+})
+
+describe('registerBackgroundNotificationHandler', () => {
+  it('registers a notifee.onBackgroundEvent handler exactly once per call', () => {
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    expect(notifee.onBackgroundEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('cancels the trigger notification on PRESS events', async () => {
+    const cancelSpy = jest
+      .spyOn(NotificationsService, 'cancelTriggerNotification')
+      .mockResolvedValue(undefined)
+
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    const handler = (notifee.onBackgroundEvent as jest.Mock).mock.calls.at(
+      -1
+    )?.[0]
+    expect(handler).toBeDefined()
+
+    await handler({
+      type: EventType.PRESS,
+      detail: { notification: { id: 'noti-1' } }
+    })
+
+    expect(cancelSpy).toHaveBeenCalledWith('noti-1')
+  })
+
+  it('ignores non-PRESS background events (e.g. DELIVERED)', async () => {
+    const cancelSpy = jest
+      .spyOn(NotificationsService, 'cancelTriggerNotification')
+      .mockResolvedValue(undefined)
+
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    const handler = (notifee.onBackgroundEvent as jest.Mock).mock.calls.at(
+      -1
+    )?.[0]
+
+    await handler({
+      type: EventType.DELIVERED,
+      detail: { notification: { id: 'noti-2' } }
+    })
+
+    expect(cancelSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not capture analytics from the headless background event (PostHog is not configured yet on cold start)', async () => {
+    jest.spyOn(AnalyticsService, 'capture').mockResolvedValue(undefined)
+
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    const handler = (notifee.onBackgroundEvent as jest.Mock).mock.calls.at(
+      -1
+    )?.[0]
+
+    await handler({
+      type: EventType.PRESS,
+      detail: { notification: { id: 'noti-3', data: { url: 'core://x' } } }
+    })
+
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
   })
 })

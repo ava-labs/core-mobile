@@ -91,7 +91,9 @@ export const DeeplinkContextProvider = ({
       handleNotificationCallback
     )
 
-    NotificationsService.onBackgroundEvent(handleNotificationCallback)
+    // The notifee background event handler is registered once in `index.js`
+    // (notifee only supports a single handler). Cold-start press handling is
+    // performed via NotificationsService.getInitialNotification above.
 
     return () => {
       unsubscribeForegroundEvent()

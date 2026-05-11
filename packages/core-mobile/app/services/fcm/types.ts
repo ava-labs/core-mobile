@@ -62,8 +62,10 @@ export const NotificationPayloadSchema = object({
     })
       .optional()
       .describe(
-        'Deprecated: this is for backward compatibility, remove when https://github.com/ava-labs/core-notification-sender-service/pull/62 is released to prod '
-      ) //TODO
+        // Backend only sends this for SNS endpoints classified as UNKNOWN
+        // (legacy clients). iOS foreground path still depends on it.
+        'Legacy field for UNKNOWN-classified SNS endpoints.'
+      )
   }).optional()
 })
 

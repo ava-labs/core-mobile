@@ -10,7 +10,10 @@ import notifee, {
   TriggerType
 } from '@notifee/react-native'
 import messaging from '@react-native-firebase/messaging'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
+import {
+  HandleNotificationCallback,
+  NotificationData
+} from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -213,17 +216,34 @@ class NotificationsService {
   }
 
   /**
-   * method should be registered as early on in your project as possible (e.g. the index.js file)
+   * Registers the notifee background event handler.
+   *
+   * MUST be called at the entry point of the app (e.g. index.js) BEFORE
+   * AppRegistry.registerComponent — notifee only supports a single background
+   * handler, so this should be the only call site for notifee.onBackgroundEvent.
+   *
+   * Background events run as a headless JS task without React context, so we
+   * cannot dispatch redux actions or update UI here. We also intentionally do
+   * NOT capture the press analytics event here: on cold start, PostHog /
+   * AnalyticsService is not configured yet (configure runs after redux store
+   * rehydration completes), so the call would be silently dropped because
+   * AnalyticsService.isEnabled is still undefined.
+   *
+   * Cold-start press analytics + deeplink handling is performed later, once the
+   * React tree is mounted, via {@link getInitialNotification}.
    */
-  onBackgroundEvent = (callback: HandleNotificationCallback): void => {
-    return notifee.onBackgroundEvent(async ({ type, detail }) => {
-      this.handleNotificationEvent({
-        type,
-        detail,
-        callback
-      }).catch(reason =>
-        Logger.error(`[NotificationsService.ts][onBackgroundEvent]${reason}`)
-      )
+  registerBackgroundNotificationHandler = (): void => {
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+      if (type !== EventType.PRESS) return
+
+      if (detail?.notification?.id) {
+        await this.cancelTriggerNotification(detail.notification.id).catch(
+          reason =>
+            Logger.error(
+              `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
+            )
+        )
+      }
     })
   }
 
@@ -297,25 +317,84 @@ class NotificationsService {
     }
   }
 
-  // only for Android to obtain the notification data when the app is in the background
-  // for iOS, it is handled in the onForegroundEvent PRESS event
+  /**
+   * Picks up a notification press that caused the app to cold-start.
+   *
+   * Two display paths exist on Android, each surfaced through a different API:
+   *
+   *  1. Data-only FCM messages (current backend format) are displayed by
+   *     notifee inside FCMService.handleBackgroundMessageAndroid. The press
+   *     on such notifications can only be retrieved via
+   *     `notifee.getInitialNotification()` — `messaging().getInitialNotification()`
+   *     returns null for them because they were NOT displayed by the FCM SDK.
+   *
+   *  2. Legacy `notification + data` FCM payloads are displayed directly by
+   *     the FCM SDK. Their press is retrievable via
+   *     `messaging().getInitialNotification()`.
+   *
+   * Previously we only checked path (2), which meant every Android push press
+   * from the data-only path was lost on cold start — the root cause of the
+   * Android `PushNotificationPressed` under-reporting (CP-14006).
+   *
+   * On iOS this method is mostly a no-op for analytics because notifee's
+   * `getInitialNotification` is deprecated on iOS and APNs-displayed
+   * notifications are handled via `onForegroundEvent` / `onNotificationOpenedApp`.
+   */
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
-    return messaging()
-      .getInitialNotification()
-      .then(notification => {
-        // if the notification has a url, we need to capture the analytics for the push notification pressed
-        if (notification && notification.data?.url) {
-          AnalyticsService.capture('PushNotificationPressed', {
-            channelId:
-              EVENT_TO_CH_ID[notification.data.event as string] ??
-              DEFAULT_ANDROID_CHANNEL,
-            deeplinkUrl: notification.data?.url as string
-          })
-        }
-        callback(notification?.data)
+    const [notifeeInitial, fcmInitial] = await Promise.all([
+      notifee.getInitialNotification().catch(reason => {
+        Logger.error(
+          `[NotificationsService.ts][getInitialNotification:notifee]${reason}`
+        )
+        return null
+      }),
+      messaging()
+        .getInitialNotification()
+        .catch(reason => {
+          Logger.error(
+            `[NotificationsService.ts][getInitialNotification:fcm]${reason}`
+          )
+          return null
+        })
+    ])
+
+    // Prefer notifee, since data-only is the current backend format and the
+    // legacy `notification` payload is being phased out.
+    const notifeeData = notifeeInitial?.notification?.data as
+      | NotificationData
+      | undefined
+
+    if (notifeeData?.url) {
+      const channelId =
+        notifeeInitial?.notification?.android?.channelId ??
+        (typeof notifeeData.channelId === 'string'
+          ? notifeeData.channelId
+          : undefined) ??
+        EVENT_TO_CH_ID[notifeeData.event as string] ??
+        DEFAULT_ANDROID_CHANNEL
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId,
+        deeplinkUrl: String(notifeeData.url)
       })
+      callback(notifeeData)
+      return
+    }
+
+    const fcmData = fcmInitial?.data as NotificationData | undefined
+
+    if (fcmData?.url) {
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId:
+          EVENT_TO_CH_ID[fcmData.event as string] ?? DEFAULT_ANDROID_CHANNEL,
+        deeplinkUrl: String(fcmData.url)
+      })
+      callback(fcmData)
+      return
+    }
+
+    callback(undefined)
   }
 
   cancelAllNotifications = async (): Promise<void> => {
