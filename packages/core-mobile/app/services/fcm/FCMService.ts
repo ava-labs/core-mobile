@@ -15,33 +15,20 @@ import {
   BalanceChangeData,
   BalanceChangeEvents,
   NewsData,
-  NewsEvents,
   NotificationPayload,
   NotificationPayloadSchema,
   NotificationTypes
 } from 'services/fcm/types'
+import { DEFAULT_ANDROID_CHANNEL } from 'services/notifications/channels'
 import {
-  ChannelId,
-  DEFAULT_ANDROID_CHANNEL
-} from 'services/notifications/channels'
-import NotificationsService, {
+  EVENT_TO_CH_ID,
   resolveChannelId
-} from 'services/notifications/NotificationsService'
+} from 'services/notifications/eventChannelMap'
+import NotificationsService from 'services/notifications/NotificationsService'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import Logger from 'utils/Logger'
 
 type UnsubscribeFunc = () => void
-
-export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
-  [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_TRANSFERRED]: ChannelId.BALANCE_CHANGES,
-  [NewsEvents.MARKET_NEWS]: ChannelId.MARKET_NEWS,
-  [NewsEvents.OFFERS_AND_PROMOTIONS]: ChannelId.OFFERS_AND_PROMOTIONS,
-  [NewsEvents.PRICE_ALERTS]: ChannelId.PRICE_ALERTS,
-  [NewsEvents.PRODUCT_ANNOUNCEMENTS]: ChannelId.PRODUCT_ANNOUNCEMENTS
-}
 
 /**
  * Wrapper for @react-native-firebase/messaging

@@ -17,13 +17,12 @@ import {
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { EVENT_TO_CH_ID } from 'services/fcm/FCMService'
 import {
   ChannelId,
-  DEFAULT_ANDROID_CHANNEL,
   NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
+import { resolveChannelId } from 'services/notifications/eventChannelMap'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import { StakeCompleteNotification } from 'store/notifications'
 import { audioFiles } from 'utils/AudioFeedback'
@@ -33,43 +32,6 @@ import {
   PressActionId,
   STAKE_COMPELETE_DEEPLINK_URL
 } from './constants'
-
-/**
- * Pure helper that resolves the channel id for a `PushNotificationPressed`
- * analytics event. Centralizes the precedence rule shared by every capture
- * site (foreground, warm-background notifee, cold-start notifee, iOS
- * background FCM):
- *
- *   1. android.channelId on the displayed notifee notification, if any
- *      (Android data-only path — the notifee `Notification.android.channelId`
- *      is the most authoritative source since it's set by us at display time)
- *   2. data.channelId carried in the FCM payload (NEWS notifications)
- *   3. EVENT_TO_CH_ID lookup against the event string
- *   4. DEFAULT_ANDROID_CHANNEL as a final fallback
- *
- * Accepts loosely-typed input because notification data shapes vary across
- * the FCM SDK, notifee, and the legacy `notification` payload — narrowing
- * happens here so callers don't need unsafe `as string` casts.
- */
-export const resolveChannelId = (args: {
-  androidChannelId?: string
-  data?: Record<string, unknown>
-  fallbackEvent?: string
-}): string => {
-  const { androidChannelId, data, fallbackEvent } = args
-  const dataChannelId =
-    typeof data?.channelId === 'string' && data.channelId.length > 0
-      ? data.channelId
-      : undefined
-  const event =
-    (typeof data?.event === 'string' ? data.event : undefined) ?? fallbackEvent
-  return (
-    androidChannelId ??
-    dataChannelId ??
-    (event ? EVENT_TO_CH_ID[event] : undefined) ??
-    DEFAULT_ANDROID_CHANNEL
-  )
-}
 
 class NotificationsService {
   /**
@@ -457,6 +419,7 @@ class NotificationsService {
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
+    let handledColdStart = false
     try {
       const [notifeeInitial, fcmInitial] = await Promise.all([
         notifee.getInitialNotification().catch(reason => {
@@ -499,6 +462,7 @@ class NotificationsService {
           handler: 'notifee'
         })
         callback(notifeeData)
+        handledColdStart = true
         return
       }
 
@@ -517,17 +481,25 @@ class NotificationsService {
           handler: 'fcm'
         })
         callback(fcmData)
+        handledColdStart = true
         return
       }
 
       callback(undefined)
     } finally {
       // On cold start the notifee headless background handler also stashes
-      // the same press into `pendingBackgroundPress`. We've handled it here,
-      // so drain it — otherwise the next AppState 'active' transition (the
-      // first time the user backgrounds and re-foregrounds the app) would
-      // re-fire the same deeplink via the listener in DeeplinkContext.
-      this.consumePendingBackgroundPress()
+      // the same press into `pendingBackgroundPress`. If we just handled it
+      // here, drain it — otherwise the next AppState 'active' transition
+      // would re-fire the same deeplink via the listener in DeeplinkContext.
+      //
+      // We deliberately do NOT drain when no cold-start press was found:
+      // the effect that calls this method re-runs on
+      // `isAllNotificationsBlocked` toggles, and a legitimate warm-background
+      // press can already be sitting in `pendingBackgroundPress` waiting for
+      // the AppState listener to consume it.
+      if (handledColdStart) {
+        this.consumePendingBackgroundPress()
+      }
     }
   }
 

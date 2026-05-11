@@ -384,12 +384,21 @@ describe('getInitialNotification', () => {
     expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
   })
 
-  it('drains pendingBackgroundPress even when no initial notification is present on either source', async () => {
-    setPendingBackgroundPress({ url: 'core://stale' })
+  it('preserves pendingBackgroundPress when no cold-start notification is found, so a pending warm-background press can still be consumed by the AppState listener', async () => {
+    // Re-invocation path: if the `getInitialNotification` effect re-runs
+    // (e.g. on `isAllNotificationsBlocked` flag toggle) while a warm-
+    // background press is sitting in pending, we must NOT drain it — the
+    // DeeplinkContext AppState 'active' listener owns that press.
+    const pending = { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
+    setPendingBackgroundPress(pending)
 
     await NotificationsService.getInitialNotification(callback)
 
-    expect(NotificationsService.consumePendingBackgroundPress()).toBeUndefined()
+    expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    expect(callback).toHaveBeenCalledWith(undefined)
+    expect(NotificationsService.consumePendingBackgroundPress()).toEqual(
+      pending
+    )
   })
 })
 
