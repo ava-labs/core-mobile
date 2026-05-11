@@ -160,13 +160,12 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         ? {
             disabled,
             onPress: () => textInputRef.current?.focus(),
-            activeOpacity: 1 as const,
-            testID: 'pin_input'
+            activeOpacity: 1 as const
           }
-        : { testID: 'pin_input' }
+        : {}
 
     return (
-      <Container {...containerProps}>
+      <Container testID="pin_input" {...containerProps}>
         {/* Display for input dots */}
         <Animated.View
           style={[
