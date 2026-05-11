@@ -3,6 +3,7 @@ import { WalletType } from 'services/wallet/types'
 import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import WalletFactory from './WalletFactory'
 import WalletService from './WalletService'
+import { clearAddressesCache } from './getAddressesCache'
 
 const avmWithActivityResponse: GetAddressesResponse = {
   networkType: 'AVM',
@@ -260,9 +261,38 @@ describe('WalletService.getAddresses retry behavior', () => {
     await expectation
     expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
   })
-})
 
-import { clearAddressesCache } from './getAddressesCache'
+  it('does NOT retry on unrecognized body shape (deterministic validation error)', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-shape')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Successful HTTP response but body fails the schema check —
+    // retrying won't recover, so the helper must give up immediately.
+    postV1GetAddresses.mockResolvedValue({
+      data: { not: 'a valid GetAddressesResponse' }
+    })
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-shape',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // eslint-disable-next-line jest/valid-expect -- awaited below
+    const expectation = expect(promise).rejects.toThrow(
+      /unrecognized body shape/
+    )
+    await jest.advanceTimersByTimeAsync(0)
+    await expectation
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+})
 
 describe('WalletService.getAddresses cache behavior', () => {
   beforeEach(() => {

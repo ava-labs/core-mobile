@@ -51,18 +51,38 @@ import {
 // Treat network errors and HTTP 5xx as transient; everything else is fatal
 // on the first try. Note: retry attempts are logged via Logger.info, which
 // is console-only — they do NOT surface to Sentry in production.
+const NETWORK_ERROR_PATTERN =
+  /network request failed|timeout|timed out|aborted|fetch failed|socket hang up|econn|enotfound|getaddrinfo/i
+
 const isTransientHttpError = (err: unknown): boolean => {
-  if (
-    err &&
-    typeof err === 'object' &&
-    'status' in err &&
-    typeof (err as { status: unknown }).status === 'number'
-  ) {
-    const status = (err as { status: number }).status
-    return status >= 500 && status < 600
+  if (!err || typeof err !== 'object') {
+    return false
   }
-  // No status field → most likely a fetch/network error → treat as transient.
-  return true
+  // Explicit non-retryable marker wins over every other heuristic.
+  if ((err as { nonRetryable?: boolean }).nonRetryable === true) {
+    return false
+  }
+  const statusRaw = (err as { status?: unknown }).status
+  if (typeof statusRaw === 'number') {
+    return statusRaw >= 500 && statusRaw < 600
+  }
+  // No numeric status. Only treat as transient if it looks like a
+  // fetch/network error — TypeError from RN's fetch, or a message that
+  // matches a known network-failure pattern. Everything else (validation,
+  // JSON parse, programmer error) fails fast.
+  if (err instanceof TypeError) {
+    return true
+  }
+  const name = (err as { name?: unknown }).name
+  if (
+    name === 'FetchError' ||
+    name === 'AbortError' ||
+    name === 'TimeoutError'
+  ) {
+    return true
+  }
+  const message = (err as { message?: unknown }).message
+  return typeof message === 'string' && NETWORK_ERROR_PATTERN.test(message)
 }
 
 const RETRY_DELAYS_MS = [250, 500, 1000] as const
@@ -626,13 +646,16 @@ const callPostV1GetAddressesOnce = async ({
   const body = unwrapPostV1GetAddressesResult(raw)
 
   if (!isGetAddressesResponseBody(body)) {
-    throw new Error(
+    const shapeErr = new Error(
       `postV1GetAddresses returned an unrecognized body shape: ${
         typeof body === 'object'
           ? JSON.stringify(body).slice(0, 200)
           : String(body)
       }`
     )
+    // Deterministic upstream contract violation — retrying won't help.
+    ;(shapeErr as Error & { nonRetryable?: boolean }).nonRetryable = true
+    throw shapeErr
   }
 
   return body
