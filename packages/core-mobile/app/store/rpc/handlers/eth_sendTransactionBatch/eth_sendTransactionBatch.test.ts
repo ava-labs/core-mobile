@@ -124,28 +124,24 @@ describe('ethSendTransactionBatchHandler', () => {
   })
 
   describe('param validation', () => {
-    it('rejects when transactions array is missing', async () => {
-      const request = makeRequest({ transactions: undefined })
-      ;(
-        request.data.params.request.params as Record<string, unknown>
-      ).transactions = undefined
-      const result = await ethSendTransactionBatchHandler.handle(
-        request,
-        listenerApi
-      )
-      expect(result.success).toBe(false)
-      expect(mockOnRpcRequest).not.toHaveBeenCalled()
-    })
-
-    it('rejects when transactions array is empty', async () => {
-      const request = makeRequest({ transactions: [] })
-      const result = await ethSendTransactionBatchHandler.handle(
-        request,
-        listenerApi
-      )
-      expect(result.success).toBe(false)
-      expect(mockOnRpcRequest).not.toHaveBeenCalled()
-    })
+    it.each([
+      ['missing', undefined],
+      ['empty', [] as unknown[]]
+    ])(
+      'rejects when transactions array is %s',
+      async (_label, transactions) => {
+        const request = makeRequest({ transactions })
+        ;(
+          request.data.params.request.params as Record<string, unknown>
+        ).transactions = transactions
+        const result = await ethSendTransactionBatchHandler.handle(
+          request,
+          listenerApi
+        )
+        expect(result.success).toBe(false)
+        expect(mockOnRpcRequest).not.toHaveBeenCalled()
+      }
+    )
 
     it('defensively rejects 1-tx batches (route through eth_sendTransaction instead)', async () => {
       const result = await ethSendTransactionBatchHandler.handle(
@@ -248,18 +244,17 @@ describe('ethSendTransactionBatchHandler', () => {
   })
 
   describe('redux preconditions', () => {
-    it('fails fast when no active wallet', async () => {
-      mockSelectActiveWalletId.mockReturnValue(null)
-      const result = await ethSendTransactionBatchHandler.handle(
-        makeRequest(),
-        listenerApi
-      )
-      expect(result.success).toBe(false)
-      expect(mockOnRpcRequest).not.toHaveBeenCalled()
-    })
-
-    it('fails fast when no active account', async () => {
-      mockSelectActiveAccount.mockReturnValue(undefined)
+    it.each([
+      [
+        'no active wallet',
+        () => mockSelectActiveWalletId.mockReturnValue(null)
+      ],
+      [
+        'no active account',
+        () => mockSelectActiveAccount.mockReturnValue(undefined)
+      ]
+    ])('fails fast when %s', async (_label, setup) => {
+      setup()
       const result = await ethSendTransactionBatchHandler.handle(
         makeRequest(),
         listenerApi

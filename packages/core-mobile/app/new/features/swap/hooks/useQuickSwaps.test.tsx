@@ -41,7 +41,14 @@ const buildStore = (
         )
       }),
       posthog: () => ({
-        featureFlags: { 'fusion-quick-swaps': flagOn }
+        // `selectIsQuickSwapsAvailable` requires the per-feature flag
+        // AND the master `everything` kill-switch. Test mock keeps both
+        // on by default; pass `flagOn: false` to flip the per-feature
+        // gate off.
+        featureFlags: {
+          'fusion-quick-swaps': flagOn,
+          everything: true
+        }
       }),
       // Minimal wallet slice shape so selectActiveWallet finds an entry.
       wallet: () => ({
@@ -71,16 +78,13 @@ describe('useQuickSwaps', () => {
     expect(result.current.isAvailable).toBe(true)
   })
 
-  it.each([WalletType.LEDGER, WalletType.LEDGER_LIVE, WalletType.KEYSTONE])(
-    'isAvailable=false for %s wallet',
-    type => {
-      useActiveWallet.mockReturnValue({ type })
-      const { result } = renderHook(() => useQuickSwaps(), {
-        wrapper: wrap(buildStore({ walletType: type }))
-      })
-      expect(result.current.isAvailable).toBe(false)
-    }
-  )
+  it('isAvailable=false on hardware wallets (one negative case is enough — the allowlist itself is tested in shared.test.ts)', () => {
+    useActiveWallet.mockReturnValue({ type: WalletType.LEDGER })
+    const { result } = renderHook(() => useQuickSwaps(), {
+      wrapper: wrap(buildStore({ walletType: WalletType.LEDGER }))
+    })
+    expect(result.current.isAvailable).toBe(false)
+  })
 
   it('isAvailable=false when posthog flag is off', () => {
     const { result } = renderHook(() => useQuickSwaps(), {

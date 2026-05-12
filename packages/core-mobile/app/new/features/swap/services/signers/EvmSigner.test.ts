@@ -134,54 +134,47 @@ describe('createEvmSigner.signBatch', () => {
       return ctx[RequestContext.SWAP_AUTO_APPROVE] as Record<string, unknown>
     }
 
-    it('marks src token native when assetIn.type is NATIVE (no address)', async () => {
-      const ctx = await callBatch({
-        assetIn: {
-          type: TokenType.NATIVE,
-          decimals: 18,
-          symbol: 'AVAX',
-          name: 'Avalanche'
-        }
-      })
-      expect(ctx.isSrcTokenNative).toBe(true)
-      expect(ctx.srcTokenAddress).toBeUndefined()
-    })
+    const nativeAsset = {
+      type: TokenType.NATIVE,
+      decimals: 18,
+      symbol: 'AVAX',
+      name: 'Avalanche'
+    }
 
-    it('marks dest token native when assetOut.type is NATIVE', async () => {
-      const ctx = await callBatch({
-        assetOut: {
-          type: TokenType.NATIVE,
-          decimals: 18,
-          symbol: 'AVAX',
-          name: 'Avalanche'
-        }
-      })
-      expect(ctx.isDestTokenNative).toBe(true)
-      expect(ctx.destTokenAddress).toBeUndefined()
-    })
+    it.each([
+      ['src', { assetIn: nativeAsset }, 'isSrcTokenNative', 'srcTokenAddress'],
+      [
+        'dest',
+        { assetOut: nativeAsset },
+        'isDestTokenNative',
+        'destTokenAddress'
+      ]
+    ] as const)(
+      'marks %s token native when assetX.type is NATIVE (no address)',
+      async (_side, override, nativeField, addressField) => {
+        const ctx = await callBatch(override)
+        expect(ctx[nativeField]).toBe(true)
+        expect(ctx[addressField]).toBeUndefined()
+      }
+    )
 
-    it('passes quote.partnerFeeBps through to the context', async () => {
-      const ctx = await callBatch({ partnerFeeBps: 85 })
-      expect(ctx.partnerFeeBps).toBe(85)
-    })
+    it.each([
+      [85, 85],
+      [null, 0],
+      [undefined, 0]
+    ])(
+      'forwards quote.partnerFeeBps=%p as %p (null/undefined default to 0)',
+      async (input, expected) => {
+        const ctx = await callBatch({ partnerFeeBps: input })
+        expect(ctx.partnerFeeBps).toBe(expected)
+      }
+    )
 
-    it('defaults partnerFeeBps to 0 when the quote omits it (null)', async () => {
-      const ctx = await callBatch({ partnerFeeBps: null })
-      expect(ctx.partnerFeeBps).toBe(0)
-    })
-
-    it('computes minAmountOut from amountOut and slippageBps', async () => {
-      const ctx = await callBatch({
-        amountOut: 100n,
-        slippageBps: 100 // 1%
-      })
+    it('computes minAmountOut from amountOut and slippageBps; passes slippageBps through as `slippage`', async () => {
+      const ctx = await callBatch({ amountOut: 100n, slippageBps: 100 }) // 1%
       // 100 * (10000-100)/10000 = 99
       expect(ctx.minAmountOut).toBe('99')
-    })
-
-    it('forwards slippageBps untouched as basis points', async () => {
-      const ctx = await callBatch({ slippageBps: 250 })
-      expect(ctx.slippage).toBe(250)
+      expect(ctx.slippage).toBe(100)
     })
   })
 

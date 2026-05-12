@@ -17,16 +17,12 @@ describe('mapFeeSettingToGasSettings', () => {
     fast: { maxFeePerGas: 500n, maxPriorityFeePerGas: 5n }
   }
 
-  it('returns the slow tier for "low"', () => {
-    expect(mapFeeSettingToGasSettings('low', fees)).toEqual(fees.slow)
-  })
-
-  it('returns the normal tier for "medium"', () => {
-    expect(mapFeeSettingToGasSettings('medium', fees)).toEqual(fees.normal)
-  })
-
-  it('returns the fast tier for "high"', () => {
-    expect(mapFeeSettingToGasSettings('high', fees)).toEqual(fees.fast)
+  it.each([
+    ['low', 'slow'],
+    ['medium', 'normal'],
+    ['high', 'fast']
+  ] as const)('returns the %s tier when level is %s', (level, tier) => {
+    expect(mapFeeSettingToGasSettings(level, fees)).toEqual(fees[tier])
   })
 
   it('returns undefined when suggestedFees is missing', () => {

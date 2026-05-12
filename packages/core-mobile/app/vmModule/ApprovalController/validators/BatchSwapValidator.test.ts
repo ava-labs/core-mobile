@@ -1,7 +1,4 @@
-import {
-  type BatchApprovalParams,
-  type RpcRequest
-} from '@avalabs/vm-module-types'
+import { type RpcRequest } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
 import {
   CORE_MOBILE_TOPIC,
@@ -9,7 +6,6 @@ import {
   RpcMethod,
   type SwapAutoApproveContext
 } from 'store/rpc/types'
-import type { BalanceChangeData } from 'features/swap/utils/swapValidation'
 
 jest.mock('services/analytics/AnalyticsService', () => ({
   __esModule: true,
@@ -18,10 +14,9 @@ jest.mock('services/analytics/AnalyticsService', () => ({
 
 import { batchSwapValidator } from './BatchSwapValidator'
 
-// Behavioural cases for validate()/telemetry live in shared.test.ts —
-// this file covers only canHandle (which is what's specific to the
-// batch validator) plus a one-shot smoke test that proves validate()
-// delegates to the shared module.
+// Behavioural cases for validate()/telemetry live in shared.test.ts.
+// This file only covers canHandle (the only thing specific to the
+// batch validator).
 
 const SRC_TOKEN = '0xAAA0000000000000000000000000000000000001'
 const DST_TOKEN = '0xBBB0000000000000000000000000000000000002'
@@ -50,35 +45,6 @@ const makeBatchRequest = (overrides: Partial<RpcRequest> = {}): RpcRequest =>
     },
     ...overrides
   } as unknown as RpcRequest)
-
-const balanceChange: BalanceChangeData = {
-  outs: [
-    {
-      token: { address: SRC_TOKEN, decimals: 0, symbol: 'SRC' },
-      items: [{ displayValue: '100', usdPrice: '100', rawValue: '100' }]
-    }
-  ],
-  ins: [
-    {
-      token: { address: DST_TOKEN, decimals: 0, symbol: 'DST' },
-      items: [{ displayValue: '100', usdPrice: '100', rawValue: '100' }]
-    }
-  ]
-}
-
-const makeParams = (
-  overrides: { request?: RpcRequest } = {}
-): BatchApprovalParams => ({
-  request: overrides.request ?? makeBatchRequest(),
-  signingRequests: [],
-  displayData: {
-    title: 'Quick Swaps',
-    details: [],
-    balanceChange: balanceChange as never,
-    isSimulationSuccessful: true
-  },
-  updateTx: jest.fn() as never
-})
 
 describe('BatchSwapValidator.canHandle', () => {
   it('matches an in-app batch request with SWAP_AUTO_APPROVE context and software wallet', () => {
@@ -155,12 +121,5 @@ describe('BatchSwapValidator.canHandle', () => {
         })
       )
     ).toBe(false)
-  })
-})
-
-describe('BatchSwapValidator.validate (smoke — full coverage in shared.test.ts)', () => {
-  it('delegates to runValidateAndCapture and returns isValid:true on a clean params object', async () => {
-    const result = await batchSwapValidator.validate(makeParams())
-    expect(result.isValid).toBe(true)
   })
 })

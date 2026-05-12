@@ -995,6 +995,9 @@ describe('ApprovalController', () => {
       const mockSign = jest.requireMock('services/wallet/WalletService').default
         .sign as jest.Mock
 
+      // Snapshot + restore on teardown so the default swapValidator
+      // isn't lost for any test that runs after.
+      const originalValidators = [...requestValidators]
       requestValidators.push({
         canHandle: () => true,
         validate: async () => ({
@@ -1029,7 +1032,11 @@ describe('ApprovalController', () => {
         })
         expect(mockSign).not.toHaveBeenCalled()
       } finally {
-        requestValidators.length = 0
+        requestValidators.splice(
+          0,
+          requestValidators.length,
+          ...originalValidators
+        )
       }
     })
   })
@@ -1045,6 +1052,18 @@ describe('ApprovalController', () => {
     const { approvalValidators } = jest.requireActual('./validators')
     const mockSign = jest.requireMock('services/wallet/WalletService').default
       .sign as jest.Mock
+
+    // Snapshot once; restored on every beforeEach and afterAll so the
+    // default batchSwapValidator isn't lost between tests (or for any
+    // test that runs after this describe block).
+    const originalValidators = [...approvalValidators]
+    const restoreValidators = (): void => {
+      approvalValidators.splice(
+        0,
+        approvalValidators.length,
+        ...originalValidators
+      )
+    }
 
     const baseRequest = (): RpcRequest =>
       ({
@@ -1079,13 +1098,13 @@ describe('ApprovalController', () => {
     })
 
     beforeEach(() => {
-      approvalValidators.length = 0
+      // Reset to the original baseline before each test; individual
+      // tests push their own mock validator on top.
+      restoreValidators()
       mockSign.mockReset()
     })
 
-    afterAll(() => {
-      approvalValidators.length = 0
-    })
+    afterAll(restoreValidators)
 
     it('returns error when no validator matches', async () => {
       const result = await approvalController.requestBatchApproval(

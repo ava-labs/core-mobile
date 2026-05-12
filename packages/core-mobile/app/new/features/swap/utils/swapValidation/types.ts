@@ -50,7 +50,19 @@ export type SwapValidationInput = {
   context: SwapValidationContext
 }
 
+// One flat union of every reason a Quick Swaps bypass can fall back
+// or hard-reject. Codes split into two groups by origin:
+//
+//   - validateSwapAmounts produces the swap-content reasons (slippage,
+//     balance change, amounts, USD pricing, max-buy)
+//   - the validator wrapper produces the bypass-shape reasons (context
+//     missing, Blockaid alert, validation threw)
+//
+// Kept as a single union so consumers (analytics, fallback handlers)
+// have an exhaustive list to switch on, and so the validator wrapper
+// can return `code: ValidationFailReason` without a cast.
 export type ValidationFailReason =
+  // validateSwapAmounts results
   | 'simulation_failed'
   | 'min_amount_out_missing'
   | 'balance_change_missing'
@@ -63,6 +75,11 @@ export type ValidationFailReason =
   | 'amount_over_limit'
   | 'slippage_unavailable'
   | 'slippage_exceeded'
+  // validator-wrapper results
+  | 'context_missing'
+  | 'tx_flagged_warning'
+  | 'tx_flagged_malicious'
+  | 'unknown'
 
 export type ValidationResult =
   | { isValid: true }

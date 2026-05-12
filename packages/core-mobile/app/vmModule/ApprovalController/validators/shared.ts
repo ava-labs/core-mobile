@@ -3,7 +3,10 @@ import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { WalletType } from 'services/wallet/types'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
-import { QUICK_SWAP_MAX_BUY_VALUES } from 'store/settings/advanced/types'
+import {
+  QUICK_SWAP_MAX_BUY_VALUES,
+  QUICK_SWAPS_SOFTWARE_WALLET_TYPES
+} from 'store/settings/advanced/types'
 import {
   validateSwapAmounts,
   type BalanceChangeData,
@@ -30,22 +33,6 @@ const swapAutoApproveContextSchema = z
     partnerFeeBps: z.number().optional()
   })
   .strict()
-
-// Allowlist (not denylist): future wallet types fail-safe — they must be
-// explicitly added here to become eligible. Also fails closed when
-// walletType is missing from context (denylist would fail open).
-const SOFTWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
-  WalletType.MNEMONIC,
-  WalletType.SEEDLESS,
-  WalletType.PRIVATE_KEY
-])
-
-type BypassFallbackReason =
-  | 'context_missing'
-  | 'tx_flagged_warning'
-  | 'tx_flagged_malicious'
-  | 'unknown'
-  | ValidationFailReason
 
 const readCtx = (request: RpcRequest): Record<string, unknown> | undefined =>
   request.context as Record<string, unknown> | undefined
@@ -95,27 +82,30 @@ export const isBypassEligible = (request: RpcRequest): boolean => {
   if (!isQuickSwapsAvailable(request)) return false
   if (!readAutoApproveContext(request)) return false
   const walletType = readWalletType(request)
-  return walletType !== undefined && SOFTWARE_WALLET_TYPES.has(walletType)
+  return (
+    walletType !== undefined &&
+    QUICK_SWAPS_SOFTWARE_WALLET_TYPES.has(walletType)
+  )
 }
 
 const fallback = (
   reason: string,
-  code: BypassFallbackReason
+  code: ValidationFailReason
 ): ValidationResult => ({
   isValid: false,
   requiresManualApproval: true,
   reason,
-  code: code as ValidationFailReason
+  code
 })
 
 const hardReject = (
   reason: string,
-  code: BypassFallbackReason
+  code: ValidationFailReason
 ): ValidationResult => ({
   isValid: false,
   requiresManualApproval: false,
   reason,
-  code: code as ValidationFailReason
+  code
 })
 
 // Minimal structural type — single-tx and batch displayData both expose
@@ -206,7 +196,7 @@ const captureFired = (
 
 const captureFellBack = (
   request: RpcRequest,
-  reason: BypassFallbackReason,
+  reason: ValidationFailReason,
   requiresManualApproval: boolean
 ): void => {
   AnalyticsService.capture('QuickSwapsBypassFellBack', {
@@ -248,7 +238,7 @@ export const runValidateAndCapture = async (params: {
     })
     captureFellBack(
       params.request,
-      (result.code as BypassFallbackReason | undefined) ?? 'unknown',
+      result.code ?? 'unknown',
       result.requiresManualApproval
     )
   }
