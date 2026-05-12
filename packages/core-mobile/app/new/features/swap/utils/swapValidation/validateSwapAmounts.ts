@@ -234,7 +234,8 @@ function validateLossWithinTolerance(
   if (
     slippage === undefined ||
     slippage === null ||
-    typeof slippage !== 'number'
+    typeof slippage !== 'number' ||
+    slippage < 0
   ) {
     return fail(
       true,
@@ -243,12 +244,28 @@ function validateLossWithinTolerance(
     )
   }
 
-  const slippagePercent = slippage / BASIS_POINTS_DIVISOR
+  const partnerFeeBps = context.partnerFeeBps ?? 0
+  if (partnerFeeBps < 0) {
+    return fail(
+      true,
+      'Unable to verify slippage impact',
+      'slippage_unavailable'
+    )
+  }
 
+  const slippagePercent = slippage / BASIS_POINTS_DIVISOR
   // Use the quote-attested partner fee, not a constant — the validator
   // tolerates exactly what Markr charged for this specific quote.
-  const feePercent = (context.partnerFeeBps ?? 0) / BASIS_POINTS_DIVISOR
+  const feePercent = partnerFeeBps / BASIS_POINTS_DIVISOR
   const totalPercent = slippagePercent + feePercent
+
+  // Defense: if slippage + fee exceeds 100% (out-of-range quote, schema
+  // drift, or pathological config), `minAcceptableUsdValue` would go
+  // negative and the comparison below would silently approve any
+  // loss. Fall back to the manual modal instead.
+  if (totalPercent >= 1) {
+    return fail(true, 'Slippage tolerance out of range', 'slippage_unavailable')
+  }
 
   const minAcceptableUsdValue = sourceUsdValue * (1 - totalPercent)
 

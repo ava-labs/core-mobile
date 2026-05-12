@@ -17,9 +17,14 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 
 // Schema mirrors SwapAutoApproveContext. Validating at the validator
-// boundary means a malformed context (string instead of number,
-// missing fields, etc.) fails loudly with a context_missing fallback
+// boundary means a malformed context (string instead of number, out
+// of range, etc.) fails loudly with a context_missing fallback
 // instead of misbehaving inside validateSwapAmounts.
+//
+// Range bounds on slippage/partnerFeeBps prevent a malformed quote
+// from producing `slippagePercent + feePercent >= 1`, which would
+// negate the loss-tolerance check.
+const BPS_MAX = 10_000
 const swapAutoApproveContextSchema = z
   .object({
     maxBuy: z.enum(QUICK_SWAP_MAX_BUY_VALUES).optional(),
@@ -27,10 +32,10 @@ const swapAutoApproveContextSchema = z
     destTokenAddress: z.string().optional(),
     isSrcTokenNative: z.boolean().optional(),
     isDestTokenNative: z.boolean().optional(),
-    slippage: z.number().optional(),
+    slippage: z.number().min(0).max(BPS_MAX).optional(),
     minAmountOut: z.string().optional(),
     amountIn: z.string().optional(),
-    partnerFeeBps: z.number().optional()
+    partnerFeeBps: z.number().min(0).max(BPS_MAX).optional()
   })
   .strict()
 

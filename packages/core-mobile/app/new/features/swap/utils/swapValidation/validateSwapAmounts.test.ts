@@ -404,6 +404,62 @@ describe('validateSwapAmounts — failure paths', () => {
     if (!result.isValid) expect(result.code).toBe('slippage_unavailable')
   })
 
+  // Out-of-range guards only run inside validateLossWithinTolerance,
+  // which is reached when destUsdValue < sourceUsdValue. Construct
+  // inputs with a real loss so the guard branches are exercised.
+  const lossyDisplayData = {
+    isSimulationSuccessful: true,
+    balanceChange: {
+      outs: [
+        createMockTokenBalanceChange([{ usdPrice: '100', displayValue: '1' }], {
+          address: SRC_TOKEN,
+          decimals: 0
+        })
+      ],
+      ins: [
+        createMockTokenBalanceChange(
+          [{ usdPrice: '99', displayValue: '100' }],
+          { address: DST_TOKEN, decimals: 0 }
+        )
+      ]
+    }
+  }
+
+  it('returns slippage_unavailable when slippage is negative (out of range)', () => {
+    const result = validateSwapAmounts(
+      goodInput({
+        context: { ...baseContext, slippage: -10 },
+        displayData: lossyDisplayData
+      })
+    )
+    expect(result.isValid).toBe(false)
+    if (!result.isValid) expect(result.code).toBe('slippage_unavailable')
+  })
+
+  it('returns slippage_unavailable when partnerFeeBps is negative', () => {
+    const result = validateSwapAmounts(
+      goodInput({
+        context: { ...baseContext, partnerFeeBps: -50 },
+        displayData: lossyDisplayData
+      })
+    )
+    expect(result.isValid).toBe(false)
+    if (!result.isValid) expect(result.code).toBe('slippage_unavailable')
+  })
+
+  it('returns slippage_unavailable when slippage + partnerFeeBps >= 100% (defense: would otherwise approve any loss)', () => {
+    // 6000 bps slippage + 5000 bps fee = 110% → would make
+    // minAcceptableUsdValue negative if unchecked.
+    const result = validateSwapAmounts(
+      goodInput({
+        context: { ...baseContext, slippage: 6000, partnerFeeBps: 5000 },
+        displayData: lossyDisplayData
+      })
+    )
+    expect(result.isValid).toBe(false)
+    if (!result.isValid) expect(result.code).toBe('slippage_unavailable')
+  })
+
   it('returns slippage_exceeded when loss is beyond slippage tolerance', () => {
     // Source $100, dest $98 (2% loss), slippage 50bps (0.5%) → exceeds.
     const result = validateSwapAmounts(
