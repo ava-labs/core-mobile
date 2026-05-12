@@ -163,10 +163,10 @@ export function useQuoteStreaming(
     // Subscribe to quote stream
     const unsubscribe = quoter.subscribe((event, data) => {
       switch (event) {
-        case 'quote': {
+        case 'quote':
           // Write to Zustand stores
-          setBestQuote(data.bestQuote ?? null)
-          setAllQuotes([...data.quotes])
+          setBestQuote(data.bestQuote)
+          setAllQuotes([...data.quotes]) // Convert readonly array to mutable
 
           setIsLoading(false)
           setError(null)
@@ -176,7 +176,6 @@ export function useQuoteStreaming(
             quotesCount: data.quotes.length
           })
           break
-        }
         case 'error': {
           Logger.error('Quote stream error', data)
           setError(data)

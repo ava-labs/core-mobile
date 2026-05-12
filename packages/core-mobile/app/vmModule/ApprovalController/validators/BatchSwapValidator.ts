@@ -1,11 +1,8 @@
-import { type RpcRequest } from '@avalabs/vm-module-types'
+import type { BatchApprovalParams, RpcRequest } from '@avalabs/vm-module-types'
 import { RpcMethod } from 'store/rpc/types'
+import type { ValidationResult } from 'features/swap/utils/swapValidation'
 import { isBypassEligible, runValidateAndCapture } from './shared'
-import type {
-  ApprovalValidator,
-  BatchValidationParams,
-  ValidationResult
-} from './types'
+import type { ApprovalValidator } from './types'
 
 export const batchSwapValidator: ApprovalValidator = {
   canHandle: (request: RpcRequest): boolean => {
@@ -13,7 +10,7 @@ export const batchSwapValidator: ApprovalValidator = {
     return (request.method as string) === RpcMethod.ETH_SEND_TRANSACTION_BATCH
   },
 
-  validate: (params: BatchValidationParams): Promise<ValidationResult> =>
+  validate: (params: BatchApprovalParams): Promise<ValidationResult> =>
     runValidateAndCapture({
       request: params.request,
       displayData: params.displayData,

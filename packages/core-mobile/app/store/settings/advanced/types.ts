@@ -16,6 +16,8 @@ export type QuickSwapsSettings = {
   maxBuy: QuickSwapMaxBuy
 }
 
+// Matches core-extension's default (SettingsService.ts: maxBuy: 'unlimited').
+// Users opt into a cap explicitly via the Settings dropdown.
 export const QUICK_SWAPS_DEFAULT: QuickSwapsSettings = {
   isEnabled: false,
   feeSetting: 'medium',

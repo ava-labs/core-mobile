@@ -16,8 +16,7 @@ const baseContext: SwapValidationContext = {
   isDestTokenNative: false,
   slippage: 50, // 0.5% in basis points
   minAmountOut: '99',
-  maxBuy: 'unlimited',
-  isSwapFeesEnabled: false
+  maxBuy: 'unlimited'
 }
 
 const createMockTokenBalanceChange = (
@@ -106,7 +105,7 @@ describe('validateSwapAmounts — happy path', () => {
         context: {
           ...baseContext,
           slippage: 20,
-          isSwapFeesEnabled: true
+          partnerFeeBps: 85
         },
         displayData: {
           isSimulationSuccessful: true,
@@ -437,7 +436,7 @@ describe('validateSwapAmounts — failure paths', () => {
     // Source $100, dest $98 (2% loss) → exceeds.
     const result = validateSwapAmounts(
       goodInput({
-        context: { ...baseContext, isSwapFeesEnabled: true },
+        context: { ...baseContext, partnerFeeBps: 85 },
         displayData: {
           isSimulationSuccessful: true,
           balanceChange: {
@@ -617,7 +616,7 @@ describe('validateSwapAmounts — native source gas net-out', () => {
       srcTokenAddress: undefined,
       isSrcTokenNative: true,
       slippage: 20,
-      isSwapFeesEnabled: true,
+      partnerFeeBps: 85,
       amountIn: '1000000000000000000', // 1 AVAX raw
       minAmountOut: '9408000'
     },
@@ -682,7 +681,7 @@ describe('validateSwapAmounts — native source gas net-out', () => {
         context: {
           ...baseContext,
           slippage: 20,
-          isSwapFeesEnabled: true,
+          partnerFeeBps: 85,
           amountIn: '500000000000000000' // half of total source out
         },
         displayData: {

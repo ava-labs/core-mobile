@@ -9,12 +9,8 @@ import { useQuickSwaps } from './useQuickSwaps'
 jest.mock('common/hooks/useActiveWallet', () => ({
   useActiveWallet: jest.fn()
 }))
-jest.mock('store/network/slice', () => ({
-  selectActiveNetwork: jest.fn()
-}))
 
 const { useActiveWallet } = jest.requireMock('common/hooks/useActiveWallet')
-const { selectActiveNetwork } = jest.requireMock('store/network/slice')
 
 const buildStore = (
   overrides?: Partial<{
@@ -58,11 +54,10 @@ const wrap =
 
 beforeEach(() => {
   useActiveWallet.mockReturnValue({ type: WalletType.SEEDLESS })
-  selectActiveNetwork.mockReturnValue({ vmName: 'EVM' })
 })
 
 describe('useQuickSwaps', () => {
-  it('isAvailable=true for seedless + EVM + flag on', () => {
+  it('isAvailable=true for software wallet + flag on', () => {
     const { result } = renderHook(() => useQuickSwaps(), {
       wrapper: wrap(buildStore())
     })
@@ -83,14 +78,6 @@ describe('useQuickSwaps', () => {
   it('isAvailable=false when posthog flag is off', () => {
     const { result } = renderHook(() => useQuickSwaps(), {
       wrapper: wrap(buildStore({ flagOn: false }))
-    })
-    expect(result.current.isAvailable).toBe(false)
-  })
-
-  it('isAvailable=false on a non-EVM active network', () => {
-    selectActiveNetwork.mockReturnValue({ vmName: 'BITCOIN' })
-    const { result } = renderHook(() => useQuickSwaps(), {
-      wrapper: wrap(buildStore())
     })
     expect(result.current.isAvailable).toBe(false)
   })

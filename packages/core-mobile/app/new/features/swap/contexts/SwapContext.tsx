@@ -28,7 +28,6 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
 import { ServiceType, type GasSettings } from '@avalabs/fusion-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
-import type Big from 'big.js'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -97,8 +96,6 @@ interface SwapContextState {
   setAmount: Dispatch<bigint | undefined>
   /** ID of the transfer that was just successfully submitted */
   successTransferId: string | undefined
-  /** USD value of the current from-amount; undefined when token/price is unavailable */
-  fromAmountUsd: Big | undefined
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -187,7 +184,8 @@ export const SwapContextProvider = ({
     return getAddressByNetwork(activeAccount, toNetwork)
   }, [activeAccount, toNetwork])
 
-  // USD value of the current from-amount — used for Quick Swaps limit check and analytics
+  // USD value of the current from-amount — fed into the swapCompleted
+  // dispatch for Nest Egg qualification tracking.
   const fromAmountUsd = useMemo(() => {
     if (!fromToken || !amount) return undefined
     const decimals = 'decimals' in fromToken ? fromToken.decimals : 18
@@ -537,8 +535,7 @@ export const SwapContextProvider = ({
     setDestination,
     swapStatus,
     setAmount,
-    successTransferId,
-    fromAmountUsd
+    successTransferId
   }
 
   return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>

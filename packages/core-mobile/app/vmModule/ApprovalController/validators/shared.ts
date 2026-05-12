@@ -1,15 +1,35 @@
+import { z } from 'zod'
 import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { WalletType } from 'services/wallet/types'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
+import { QUICK_SWAP_MAX_BUY_VALUES } from 'store/settings/advanced/types'
 import {
   validateSwapAmounts,
   type BalanceChangeData,
-  type ValidationFailReason
+  type ValidationFailReason,
+  type ValidationResult
 } from 'features/swap/utils/swapValidation'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import type { ValidationResult } from './types'
+
+// Schema mirrors SwapAutoApproveContext. Validating at the validator
+// boundary means a malformed context (string instead of number,
+// missing fields, etc.) fails loudly with a context_missing fallback
+// instead of misbehaving inside validateSwapAmounts.
+const swapAutoApproveContextSchema = z
+  .object({
+    maxBuy: z.enum(QUICK_SWAP_MAX_BUY_VALUES).optional(),
+    srcTokenAddress: z.string().optional(),
+    destTokenAddress: z.string().optional(),
+    isSrcTokenNative: z.boolean().optional(),
+    isDestTokenNative: z.boolean().optional(),
+    slippage: z.number().optional(),
+    minAmountOut: z.string().optional(),
+    amountIn: z.string().optional(),
+    partnerFeeBps: z.number().optional()
+  })
+  .strict()
 
 // Allowlist (not denylist): future wallet types fail-safe — they must be
 // explicitly added here to become eligible. Also fails closed when
@@ -27,25 +47,27 @@ type BypassFallbackReason =
   | 'unknown'
   | ValidationFailReason
 
+const readCtx = (request: RpcRequest): Record<string, unknown> | undefined =>
+  request.context as Record<string, unknown> | undefined
+
 const readAutoApproveContext = (
   request: RpcRequest
 ): SwapAutoApproveContext | undefined => {
-  const ctx = request.context as Record<string, unknown> | undefined
-  if (!ctx) return undefined
-  const value = ctx[RequestContext.SWAP_AUTO_APPROVE]
-  if (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof (value as { autoApprove?: unknown }).autoApprove === 'boolean'
-  ) {
-    return value as SwapAutoApproveContext
+  const value = readCtx(request)?.[RequestContext.SWAP_AUTO_APPROVE]
+  if (value === null || typeof value !== 'object') return undefined
+  const parsed = swapAutoApproveContextSchema.safeParse(value)
+  if (!parsed.success) {
+    Logger.error(
+      '[shared.readAutoApproveContext] malformed SWAP_AUTO_APPROVE context',
+      parsed.error
+    )
+    return undefined
   }
-  return undefined
+  return parsed.data
 }
 
 const readWalletType = (request: RpcRequest): WalletType | undefined => {
-  const ctx = request.context as Record<string, unknown> | undefined
-  const wt = ctx?.walletType
+  const wt = readCtx(request)?.walletType
   if (
     typeof wt === 'string' &&
     Object.values(WalletType).includes(wt as WalletType)
@@ -61,8 +83,7 @@ const readWalletType = (request: RpcRequest): WalletType | undefined => {
 // and batch.
 export const isBypassEligible = (request: RpcRequest): boolean => {
   if (!isInAppRequest(request)) return false
-  const ctx = readAutoApproveContext(request)
-  if (!ctx?.autoApprove) return false
+  if (!readAutoApproveContext(request)) return false
   const walletType = readWalletType(request)
   return walletType !== undefined && SOFTWARE_WALLET_TYPES.has(walletType)
 }
@@ -158,7 +179,7 @@ const runSwapValidation = async (params: {
       minAmountOut: ctx.minAmountOut,
       amountIn: ctx.amountIn,
       maxBuy: ctx.maxBuy,
-      isSwapFeesEnabled: ctx.isSwapFeesEnabled ?? false
+      partnerFeeBps: ctx.partnerFeeBps
     }
   })
 }
@@ -197,7 +218,10 @@ export const runValidateAndCapture = async (params: {
   try {
     result = await runSwapValidation(params)
   } catch (err) {
-    Logger.warn(`${params.loggerTag} validation failed; falling back`, err)
+    // Logger.error pipes to Sentry — an unexpected validation throw
+    // is a real bug (validateSwapAmounts contract violation, etc.),
+    // not a routine fallback path.
+    Logger.error(`${params.loggerTag} validation threw; falling back`, err)
     result = fallback('Transaction safety check failed', 'unknown')
   }
 

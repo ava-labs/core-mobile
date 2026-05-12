@@ -14,6 +14,7 @@ import { assert } from 'store/rpc/utils/assert'
 import Logger from 'utils/Logger'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
 import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
+import { BASIS_POINTS_DIVISOR } from '../../consts'
 import { buildRequestContext } from '../../utils/buildRequestContext'
 
 // Getter (not captured value) so the signer reads the latest settings
@@ -23,9 +24,10 @@ export type SignBatchOptionsGetter = () => {
   maxBuy: QuickSwapMaxBuy
 }
 
-const normalizeBatchTx = (
-  tx: EvmTransactionRequest
-): Record<string, unknown> => ({
+// Common hex-encoded tx fields shared by single-tx eth_sendTransaction
+// and batch eth_sendTransactionBatch params. Optional fields are only
+// included when present so the SDK's Zod schema doesn't reject them.
+const toHexTx = (tx: EvmTransactionRequest): Record<string, unknown> => ({
   from: tx.from,
   to: tx.to ?? undefined,
   data: tx.data ?? undefined,
@@ -43,7 +45,16 @@ const normalizeBatchTx = (
   ...(typeof tx.gasPrice === 'bigint'
     ? { gasPrice: bigIntToHex(tx.gasPrice) }
     : {}),
-  ...(tx.nonce !== undefined ? { nonce: tx.nonce } : {}),
+  ...(tx.nonce !== undefined ? { nonce: tx.nonce } : {})
+})
+
+// Batch additionally carries `type` (EIP-1559 envelope tag). Single-tx
+// eth_sendTransaction omits it — historical wire format that the EVM
+// module already infers from maxFeePerGas presence.
+const normalizeBatchTx = (
+  tx: EvmTransactionRequest
+): Record<string, unknown> => ({
+  ...toHexTx(tx),
   ...(tx.type !== undefined && tx.type !== null ? { type: tx.type } : {})
 })
 
@@ -51,11 +62,24 @@ const normalizeBatchTx = (
 // approves (allowance changes live in exposures, not balances) — the
 // validator would hit balance_change_missing. Plus, the spend-limit
 // modal is a security affordance worth preserving on Quick Swaps too.
-const ERC20_APPROVE_SELECTOR = '0x095ea7b3'
+//
+// CAVEAT: This only catches the canonical ERC-20 `approve(address,uint256)`
+// selector (0x095ea7b3). It does NOT catch:
+//   - increaseAllowance(0x39509351)
+//   - Permit2.permit / approve flows (EIP-2612 etc.)
+//   - Custom router pre-auth functions
+// Today Markr only uses standard ERC-20 approves in the batch, so this
+// is sufficient. If Markr ever changes its signing scheme this guard
+// must be widened — see core-extension's `isApproveTx` for parity.
+const ERC20_APPROVE_SELECTORS: ReadonlySet<string> = new Set([
+  '0x095ea7b3' // approve(address,uint256)
+])
 
-const isApproveTx = (data: string | null | undefined): boolean =>
-  typeof data === 'string' &&
-  data.toLowerCase().startsWith(ERC20_APPROVE_SELECTOR)
+const isApproveTx = (data: string | null | undefined): boolean => {
+  if (typeof data !== 'string' || data.length < 10) return false
+  const selector = data.slice(0, 10).toLowerCase()
+  return ERC20_APPROVE_SELECTORS.has(selector)
+}
 
 // Cross-chain bypass is structurally unverifiable: Blockaid simulation is
 // single-chain so the validator can't confirm destination-side delivery.
@@ -92,7 +116,7 @@ const getChainIdForBatch = (
   return Number(first.chainId)
 }
 
-const BASIS_POINTS_DIVISOR = 10_000n
+const BPS_DIVISOR_BIGINT = BigInt(BASIS_POINTS_DIVISOR)
 
 // minAmountOut nets out included fees: Markr deducts fees with
 // fundingModel='included' from amountOut before the user receives
@@ -100,7 +124,6 @@ const BASIS_POINTS_DIVISOR = 10_000n
 // Computing from the gross would systematically reject small swaps.
 const buildAutoApproveContext = (
   quote: Quote,
-  isQuickSwapsActive: boolean,
   maxBuy: QuickSwapMaxBuy
 ): SwapAutoApproveContext => {
   const {
@@ -123,11 +146,10 @@ const buildAutoApproveContext = (
   const netAmountOut =
     amountOut > includedFeeSum ? amountOut - includedFeeSum : amountOut
   const minAmountOut =
-    (netAmountOut * (BASIS_POINTS_DIVISOR - slippageBpsBigInt)) /
-    BASIS_POINTS_DIVISOR
+    (netAmountOut * (BPS_DIVISOR_BIGINT - slippageBpsBigInt)) /
+    BPS_DIVISOR_BIGINT
 
   return {
-    autoApprove: isQuickSwapsActive,
     maxBuy,
     srcTokenAddress: isSrcTokenNative
       ? undefined
@@ -140,8 +162,10 @@ const buildAutoApproveContext = (
     slippage: slippageBps,
     minAmountOut: minAmountOut.toString(),
     amountIn: amountIn.toString(),
-    isSwapFeesEnabled:
-      partnerFeeBps !== null && partnerFeeBps !== undefined && partnerFeeBps > 0
+    // Pass the quote-attested fee, not a constant. Validator will use
+    // this in the USD-loss tolerance math so a future fee bump or
+    // partner-specific override doesn't reject valid swaps.
+    partnerFeeBps: partnerFeeBps ?? 0
   }
 }
 
@@ -162,7 +186,6 @@ const dispatchAsBatch = async (
       ...buildRequestContext(stepDetails as never),
       [RequestContext.SWAP_AUTO_APPROVE]: buildAutoApproveContext(
         stepDetails.quote,
-        true,
         maxBuy
       )
     }
@@ -193,7 +216,7 @@ export function createEvmSigner(
     options: SignOptions
   ): Promise<`0x${string}`> => {
     const { manualReviewReason, isIntermediate } = options
-    const { from, data, to, value, chainId } = tx
+    const { from, data, to, chainId } = tx
     assert(to, 'Invalid transaction: missing "to" field')
     assert(from, 'Invalid transaction: missing "from" field')
     assert(data, 'Invalid transaction: missing "data" field')
@@ -229,7 +252,6 @@ export function createEvmSigner(
           ...baseContext,
           [RequestContext.SWAP_AUTO_APPROVE]: buildAutoApproveContext(
             stepDetails.quote,
-            true,
             maxBuy
           )
         }
@@ -244,28 +266,7 @@ export function createEvmSigner(
     try {
       const result = await request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: [
-          {
-            from,
-            to,
-            data,
-            value: typeof value === 'bigint' ? bigIntToHex(value) : undefined,
-            chainId,
-            ...(typeof tx.gasLimit === 'bigint'
-              ? { gasLimit: bigIntToHex(tx.gasLimit) }
-              : {}),
-            ...(typeof tx.maxFeePerGas === 'bigint'
-              ? { maxFeePerGas: bigIntToHex(tx.maxFeePerGas) }
-              : {}),
-            ...(typeof tx.maxPriorityFeePerGas === 'bigint'
-              ? { maxPriorityFeePerGas: bigIntToHex(tx.maxPriorityFeePerGas) }
-              : {}),
-            ...(typeof tx.gasPrice === 'bigint'
-              ? { gasPrice: bigIntToHex(tx.gasPrice) }
-              : {}),
-            ...(tx.nonce !== undefined ? { nonce: tx.nonce } : {})
-          }
-        ],
+        params: [toHexTx(tx)],
         chainId: getEvmCaip2ChainId(Number(chainId)),
         context: requestContext
       })

@@ -214,8 +214,9 @@ export enum RequestContext {
   QUICK_SWAPS_MANUAL_REVIEW_REASON = 'quickSwapsManualReviewReason'
 }
 
+// Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass
+// intent. Fields below are inputs the validator consumes.
 export type SwapAutoApproveContext = {
-  autoApprove: boolean
   maxBuy?: QuickSwapMaxBuy
   srcTokenAddress?: string
   destTokenAddress?: string
@@ -226,5 +227,9 @@ export type SwapAutoApproveContext = {
   minAmountOut?: string
   // Used to net out gas burn from source-side diff on native swaps.
   amountIn?: string
-  isSwapFeesEnabled?: boolean
+  // Quote-attested partner fee (basis points). Validator adds this to
+  // the slippage tolerance for the USD-loss check. Passing the actual
+  // value (not just a boolean) means we tolerate exactly the fee Markr
+  // quoted, not a constant guess. Undefined or 0 = no fee.
+  partnerFeeBps?: number
 }

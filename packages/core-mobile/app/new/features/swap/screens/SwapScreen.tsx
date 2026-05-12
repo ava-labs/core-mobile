@@ -43,9 +43,9 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
-import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
   selectIsSolanaSwapBlocked,

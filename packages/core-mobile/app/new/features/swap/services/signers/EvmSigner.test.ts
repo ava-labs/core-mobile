@@ -97,7 +97,6 @@ describe('createEvmSigner.signBatch', () => {
     expect(call.params.transactions).toHaveLength(2)
     expect(call.params.options).toEqual({ skipIntermediateTxs: true })
     expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toEqual({
-      autoApprove: true,
       maxBuy: '5000',
       srcTokenAddress: '0xAAA0000000000000000000000000000000000001',
       destTokenAddress: '0xBBB0000000000000000000000000000000000002',
@@ -110,7 +109,7 @@ describe('createEvmSigner.signBatch', () => {
       // ERC-20 sources (the scaling step is skipped when isSrcTokenNative
       // is false).
       amountIn: '1000000',
-      isSwapFeesEnabled: false
+      partnerFeeBps: 0
     })
   })
 
@@ -161,14 +160,14 @@ describe('createEvmSigner.signBatch', () => {
       expect(ctx.destTokenAddress).toBeUndefined()
     })
 
-    it('sets isSwapFeesEnabled when partnerFeeBps is positive', async () => {
+    it('passes quote.partnerFeeBps through to the context', async () => {
       const ctx = await callBatch({ partnerFeeBps: 85 })
-      expect(ctx.isSwapFeesEnabled).toBe(true)
+      expect(ctx.partnerFeeBps).toBe(85)
     })
 
-    it('leaves isSwapFeesEnabled false when partnerFeeBps is null', async () => {
+    it('defaults partnerFeeBps to 0 when the quote omits it (null)', async () => {
       const ctx = await callBatch({ partnerFeeBps: null })
-      expect(ctx.isSwapFeesEnabled).toBe(false)
+      expect(ctx.partnerFeeBps).toBe(0)
     })
 
     it('computes minAmountOut from amountOut and slippageBps', async () => {
@@ -648,7 +647,6 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     expect(call.method).toBe(RpcMethod.ETH_SEND_TRANSACTION)
     expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toEqual(
       expect.objectContaining({
-        autoApprove: true,
         maxBuy: '5000',
         srcTokenAddress: '0xAAA0000000000000000000000000000000000001',
         destTokenAddress: '0xBBB0000000000000000000000000000000000002'
@@ -705,6 +703,34 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const call = request.mock.calls[0][0]
     expect(call.method).toBe(RpcMethod.ETH_SEND_TRANSACTION)
     expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toBeUndefined()
+  })
+
+  // Pinned regression: if Markr ever switches signing schemes (e.g.
+  // `increaseAllowance` or Permit2), this test will start failing
+  // because the bypass will fire on what is effectively still an
+  // allowance change. Fix `isApproveTx` to widen the selector set
+  // before allowing the bypass for those flows.
+  it('Markr is assumed to use only the canonical 0x095ea7b3 approve — widen isApproveTx if this changes', async () => {
+    const request = jest.fn().mockResolvedValue('0xhashIncrease')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: '5000'
+    }))
+
+    // increaseAllowance(spender, amount) — 0x39509351 — not currently
+    // detected by isApproveTx.
+    const increaseAllowanceTx = makeTx({
+      data: '0x39509351000000000000000000000000aaa00000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000064'
+    })
+
+    await signer.sign(increaseAllowanceTx, jest.fn() as never, markrStepDetails)
+
+    expect(request).toHaveBeenCalledTimes(1)
+    const call = request.mock.calls[0][0]
+    // Today: bypass fires on increaseAllowance because the selector
+    // isn't in ERC20_APPROVE_SELECTORS. If Markr ever emits these,
+    // widen the set or this assertion's expectation flips.
+    expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toBeDefined()
   })
 
   it('does NOT attach SWAP_AUTO_APPROVE when tx.maxFeePerGas is missing (cold-start guard)', async () => {

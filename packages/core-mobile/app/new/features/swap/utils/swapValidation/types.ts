@@ -22,7 +22,7 @@ export interface BalanceChangeData {
 }
 
 // Slippage is in basis points (e.g. 50 = 0.5%); the USD-loss tolerance
-// check divides by 10_000.
+// check divides by BASIS_POINTS_DIVISOR.
 export type SwapValidationContext = {
   srcTokenAddress: string | undefined
   destTokenAddress: string | undefined
@@ -35,8 +35,9 @@ export type SwapValidationContext = {
   // breaks the USD-loss check on small native swaps.
   amountIn?: string
   maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000' | undefined
-  // True when quote.partnerFeeBps > 0; adds 0.85% to slippage tolerance.
-  isSwapFeesEnabled: boolean
+  // Quote-attested partner fee in basis points. Added to slippage
+  // tolerance in the USD-loss check. Undefined or 0 = no fee added.
+  partnerFeeBps?: number
 }
 
 export type SwapValidationInput = {

@@ -1,4 +1,5 @@
 import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
+import { BASIS_POINTS_DIVISOR } from '../../consts'
 import { findTokenInBalanceChange } from './helpers'
 import {
   BalanceChangeData,
@@ -8,12 +9,6 @@ import {
   ValidationFailReason,
   ValidationResult
 } from './types'
-
-const BASIS_POINTS_DIVISOR = 10_000 as const
-
-// Markr's 0.85% partner fee — added to slippage tolerance in
-// validateSwapUsdPrices when swap fees are enabled.
-const MARKR_PARTNER_FEE_BPS = 85 as const
 
 function fail(
   requiresManualApproval: boolean,
@@ -250,9 +245,9 @@ function validateLossWithinTolerance(
 
   const slippagePercent = slippage / BASIS_POINTS_DIVISOR
 
-  const feePercent = context.isSwapFeesEnabled
-    ? MARKR_PARTNER_FEE_BPS / BASIS_POINTS_DIVISOR
-    : 0
+  // Use the quote-attested partner fee, not a constant — the validator
+  // tolerates exactly what Markr charged for this specific quote.
+  const feePercent = (context.partnerFeeBps ?? 0) / BASIS_POINTS_DIVISOR
   const totalPercent = slippagePercent + feePercent
 
   const minAcceptableUsdValue = sourceUsdValue * (1 - totalPercent)
