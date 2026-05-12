@@ -127,7 +127,6 @@ export const Custom = (): JSX.Element =>
       Icons.Custom.Search,
       Icons.Custom.SignPost,
       Icons.Custom.Signature,
-      Icons.Custom.AvalabsTrademark,
       Icons.Custom.TxTypeAdd,
       Icons.Custom.AdvanceTime,
       Icons.Custom.Airdrop,
