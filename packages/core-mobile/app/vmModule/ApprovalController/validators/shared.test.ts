@@ -41,6 +41,7 @@ const makeRequest = (overrides: Partial<RpcRequest> = {}): RpcRequest =>
     dappInfo: { name: 'Core', url: '', icon: '' },
     context: {
       [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+      [RequestContext.QUICK_SWAPS_AVAILABLE]: true,
       walletType: WalletType.MNEMONIC
     },
     ...overrides
@@ -140,6 +141,7 @@ describe('shared.isBypassEligible', () => {
           makeRequest({
             context: {
               [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+              [RequestContext.QUICK_SWAPS_AVAILABLE]: true,
               walletType
             } as never
           })
@@ -153,7 +155,35 @@ describe('shared.isBypassEligible', () => {
       isBypassEligible(
         makeRequest({
           context: {
-            [RequestContext.SWAP_AUTO_APPROVE]: baseContext
+            [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+            [RequestContext.QUICK_SWAPS_AVAILABLE]: true
+          } as never
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('returns false when QUICK_SWAPS_AVAILABLE is false (kill switch)', () => {
+    expect(
+      isBypassEligible(
+        makeRequest({
+          context: {
+            [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+            [RequestContext.QUICK_SWAPS_AVAILABLE]: false,
+            walletType: WalletType.MNEMONIC
+          } as never
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('returns false when QUICK_SWAPS_AVAILABLE is absent (defense-in-depth)', () => {
+    expect(
+      isBypassEligible(
+        makeRequest({
+          context: {
+            [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+            walletType: WalletType.MNEMONIC
           } as never
         })
       )
@@ -168,6 +198,7 @@ describe('shared.isBypassEligible', () => {
             [RequestContext.SWAP_AUTO_APPROVE]: {
               slippage: 'not-a-number' // wrong type
             },
+            [RequestContext.QUICK_SWAPS_AVAILABLE]: true,
             walletType: WalletType.MNEMONIC
           } as never
         })

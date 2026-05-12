@@ -211,7 +211,13 @@ export enum RequestContext {
 
   // Carries the BatchSwapValidator's reason to the per-tx fallback flow
   // so the manual modal can render "Manual approval required: <reason>".
-  QUICK_SWAPS_MANUAL_REVIEW_REASON = 'quickSwapsManualReviewReason'
+  QUICK_SWAPS_MANUAL_REVIEW_REASON = 'quickSwapsManualReviewReason',
+
+  // Snapshot of the `fusion-quick-swaps` PostHog flag at in-app request
+  // creation time. The validator re-checks this so a kill-switch flip
+  // refuses bypass even if a stale SWAP_AUTO_APPROVE context arrives
+  // from a code path that didn't go through the live-state-aware signer.
+  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable'
 }
 
 // Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass

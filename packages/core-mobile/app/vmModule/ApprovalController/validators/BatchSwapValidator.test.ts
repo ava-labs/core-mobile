@@ -45,6 +45,7 @@ const makeBatchRequest = (overrides: Partial<RpcRequest> = {}): RpcRequest =>
     dappInfo: { name: 'Core', url: '', icon: '' },
     context: {
       [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+      [RequestContext.QUICK_SWAPS_AVAILABLE]: true,
       walletType: WalletType.MNEMONIC
     },
     ...overrides
@@ -120,6 +121,7 @@ describe('BatchSwapValidator.canHandle', () => {
           makeBatchRequest({
             context: {
               [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+              [RequestContext.QUICK_SWAPS_AVAILABLE]: true,
               walletType
             } as never
           })
@@ -133,7 +135,22 @@ describe('BatchSwapValidator.canHandle', () => {
       batchSwapValidator.canHandle(
         makeBatchRequest({
           context: {
-            [RequestContext.SWAP_AUTO_APPROVE]: baseContext
+            [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+            [RequestContext.QUICK_SWAPS_AVAILABLE]: true
+          } as never
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('rejects when QUICK_SWAPS_AVAILABLE is false (kill switch flipped)', () => {
+    expect(
+      batchSwapValidator.canHandle(
+        makeBatchRequest({
+          context: {
+            [RequestContext.SWAP_AUTO_APPROVE]: baseContext,
+            [RequestContext.QUICK_SWAPS_AVAILABLE]: false,
+            walletType: WalletType.MNEMONIC
           } as never
         })
       )

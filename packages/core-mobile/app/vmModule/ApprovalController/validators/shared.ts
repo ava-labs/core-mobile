@@ -77,12 +77,22 @@ const readWalletType = (request: RpcRequest): WalletType | undefined => {
   return undefined
 }
 
+// Reads the PostHog kill-switch snapshot injected into in-app
+// requests by handleRequestViaVMModule / eth_sendTransactionBatch.
+// Defense-in-depth: the signer is the primary gate, but re-checking
+// here means a stale SWAP_AUTO_APPROVE context (e.g. from a code path
+// that didn't go through the live-state-aware signer) still refuses
+// bypass after the flag flips off.
+const isQuickSwapsAvailable = (request: RpcRequest): boolean =>
+  readCtx(request)?.[RequestContext.QUICK_SWAPS_AVAILABLE] === true
+
 // Trust boundary: isInAppRequest gate prevents external dApps from
 // triggering the bypass even if their context shape matches. Method
 // check stays with each validator since it differs between single-tx
 // and batch.
 export const isBypassEligible = (request: RpcRequest): boolean => {
   if (!isInAppRequest(request)) return false
+  if (!isQuickSwapsAvailable(request)) return false
   if (!readAutoApproveContext(request)) return false
   const walletType = readWalletType(request)
   return walletType !== undefined && SOFTWARE_WALLET_TYPES.has(walletType)

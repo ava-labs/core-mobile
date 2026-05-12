@@ -15,7 +15,10 @@ import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
+import {
+  selectIsInAppReviewBlocked,
+  selectIsQuickSwapsAvailable
+} from 'store/posthog/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
@@ -121,14 +124,16 @@ export const handleRequestViaVMModule = async ({
 
   // Signing context for ApprovalController bypass paths — only
   // attached to in-app requests so dApp calls don't carry walletId
-  // through the VM module's RPC pipeline.
+  // through the VM module's RPC pipeline. QUICK_SWAPS_AVAILABLE is
+  // the live PostHog kill-switch snapshot the validator re-checks.
   if (request.data.topic === CORE_MOBILE_TOPIC) {
     context = {
       ...context,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
       accountIndex: activeAccount.index,
-      network
+      network,
+      [RequestContext.QUICK_SWAPS_AVAILABLE]: selectIsQuickSwapsAvailable(state)
     }
   }
 

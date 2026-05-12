@@ -5,10 +5,12 @@ import type { AppListenerEffectAPI } from 'store/types'
 import { selectActiveWalletId, selectActiveWallet } from 'store/wallet/slice'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectNetwork } from 'store/network/slice'
+import { selectIsQuickSwapsAvailable } from 'store/posthog/slice'
 import ModuleManager from 'vmModule/ModuleManager'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import {
   CORE_MOBILE_TOPIC,
+  RequestContext,
   RpcMethod,
   type RpcRequest as InAppRpcRequest
 } from '../../types'
@@ -122,7 +124,9 @@ class EthSendTransactionBatchHandler
         walletId: activeWalletId,
         walletType: activeWallet.type,
         accountIndex: activeAccount.index,
-        network
+        network,
+        [RequestContext.QUICK_SWAPS_AVAILABLE]:
+          selectIsQuickSwapsAvailable(state)
       }
     } as unknown as VmModuleRpcRequest
 

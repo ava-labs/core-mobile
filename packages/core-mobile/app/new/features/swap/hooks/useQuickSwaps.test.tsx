@@ -18,9 +18,11 @@ const buildStore = (
     isEnabled: boolean
     feeSetting: 'low' | 'medium' | 'high'
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
+    walletType: WalletType
   }>
 ): ReturnType<typeof configureStore> => {
   const flagOn = overrides?.flagOn ?? true
+  const walletType = overrides?.walletType ?? WalletType.SEEDLESS
   return configureStore({
     reducer: {
       settings: (state: any = { advanced: undefined }, action: any) => ({
@@ -40,6 +42,11 @@ const buildStore = (
       }),
       posthog: () => ({
         featureFlags: { 'fusion-quick-swaps': flagOn }
+      }),
+      // Minimal wallet slice shape so selectActiveWallet finds an entry.
+      wallet: () => ({
+        activeWalletId: 'wallet-1',
+        wallets: { 'wallet-1': { id: 'wallet-1', type: walletType } }
       })
     }
   })
@@ -69,7 +76,7 @@ describe('useQuickSwaps', () => {
     type => {
       useActiveWallet.mockReturnValue({ type })
       const { result } = renderHook(() => useQuickSwaps(), {
-        wrapper: wrap(buildStore())
+        wrapper: wrap(buildStore({ walletType: type }))
       })
       expect(result.current.isAvailable).toBe(false)
     }

@@ -1,3 +1,11 @@
+import { WalletType } from 'services/wallet/types'
+
+// Allowlist (not denylist): future wallet types fail-safe — they must
+// be explicitly added here to become eligible. Hardware wallets can't
+// auto-approve because the Ledger sign flow has no auto-approve path.
+export const QUICK_SWAPS_SOFTWARE_WALLET_TYPES: ReadonlySet<WalletType> =
+  new Set([WalletType.MNEMONIC, WalletType.SEEDLESS, WalletType.PRIVATE_KEY])
+
 export const QUICK_SWAP_FEE_LEVELS = ['low', 'medium', 'high'] as const
 export type QuickSwapFeeLevel = typeof QUICK_SWAP_FEE_LEVELS[number]
 

@@ -2,23 +2,15 @@ import { useSelector } from 'react-redux'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectIsQuickSwapsAvailable } from 'store/posthog'
 import {
-  selectIsQuickSwapsEnabled,
   selectQuickSwapsFeeSetting,
   selectQuickSwapsMaxBuy
 } from 'store/settings/advanced/slice'
-import type {
-  QuickSwapFeeLevel,
-  QuickSwapMaxBuy
+import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
+import {
+  QUICK_SWAPS_SOFTWARE_WALLET_TYPES,
+  type QuickSwapFeeLevel,
+  type QuickSwapMaxBuy
 } from 'store/settings/advanced/types'
-import { WalletType } from 'services/wallet/types'
-
-// Allowlist: future wallet types fail-safe — they must be
-// explicitly added here to become eligible.
-const SOFTWARE_WALLET_TYPES: ReadonlySet<WalletType> = new Set([
-  WalletType.MNEMONIC,
-  WalletType.SEEDLESS,
-  WalletType.PRIVATE_KEY
-])
 
 type UseQuickSwapsResult = {
   // PostHog feature flag is on
@@ -30,6 +22,9 @@ type UseQuickSwapsResult = {
   // attaches auto-approve for Markr (EVM-only) quotes.
   walletAllowed: boolean
   isAvailable: boolean
+  // Composed gate: PostHog flag + wallet allowlist + saved toggle.
+  // Same value the signer and validator use (via selectIsQuickSwapsActive),
+  // so consumers can't drift.
   isEnabled: boolean
   feeSetting: QuickSwapFeeLevel
   maxBuy: QuickSwapMaxBuy
@@ -38,18 +33,18 @@ type UseQuickSwapsResult = {
 export const useQuickSwaps = (): UseQuickSwapsResult => {
   const wallet = useActiveWallet()
   const flagOn = useSelector(selectIsQuickSwapsAvailable)
-  const rawIsEnabled = useSelector(selectIsQuickSwapsEnabled)
+  const isEnabled = useSelector(selectIsQuickSwapsActive)
   const feeSetting = useSelector(selectQuickSwapsFeeSetting)
   const maxBuy = useSelector(selectQuickSwapsMaxBuy)
 
-  const walletAllowed = SOFTWARE_WALLET_TYPES.has(wallet.type)
+  const walletAllowed = QUICK_SWAPS_SOFTWARE_WALLET_TYPES.has(wallet.type)
   const isAvailable = flagOn && walletAllowed
 
   return {
     flagOn,
     walletAllowed,
     isAvailable,
-    isEnabled: isAvailable && rawIsEnabled,
+    isEnabled,
     feeSetting,
     maxBuy
   }

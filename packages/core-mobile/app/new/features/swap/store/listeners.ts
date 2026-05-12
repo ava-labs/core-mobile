@@ -2,10 +2,10 @@ import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
-  selectIsQuickSwapsEnabled,
   selectQuickSwapsMaxBuy,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
+import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
 import { isAnyOf } from '@reduxjs/toolkit'
 import {
   selectIsFusionEnabled,
@@ -175,12 +175,16 @@ export const initFusionService = async (
 
     // Getter (not captured value) so the signer reads live Quick Swaps
     // settings — the user can toggle between init and swap execution.
+    // Uses the composite selector so PostHog flag, wallet allowlist,
+    // and the saved toggle all gate the bypass consistently — a stale
+    // `isEnabled: true` on a hardware wallet or with the flag off must
+    // NOT trigger bypass.
     const evmSigner = createEvmSigner(
       request,
       () => {
         const liveState = listenerApi.getState()
         return {
-          isQuickSwapsActive: selectIsQuickSwapsEnabled(liveState),
+          isQuickSwapsActive: selectIsQuickSwapsActive(liveState),
           maxBuy: selectQuickSwapsMaxBuy(liveState)
         }
       },

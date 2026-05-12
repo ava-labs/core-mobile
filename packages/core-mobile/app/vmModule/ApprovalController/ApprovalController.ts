@@ -1,21 +1,17 @@
 import { router } from 'expo-router'
-import { rpcErrors } from '@metamask/rpc-errors'
 import LedgerService from 'services/ledger/LedgerService'
 import {
-  AlertType,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
   BatchApprovalParams,
   BatchApprovalResponse,
   RpcRequest,
-  RequestPublicKeyParams,
-  SigningData_EthSendTx
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { RequestContext } from 'store/rpc/types'
 import {
   isTxSendMethod,
   TxSendConfirmedEvent,
@@ -47,70 +43,11 @@ import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
-import { approvalValidators, requestValidators } from './validators'
-
-type BatchSigningContext = {
-  walletId: string
-  walletType: WalletType
-  accountIndex: number
-  network: Parameters<typeof WalletService.sign>[0]['network']
-}
-
-// Skipped when an alert is already present (e.g. Blockaid Warning) to
-// avoid clobbering it. The title is baked into description with `\n`
-// because ApprovalScreen only renders `details.description`.
-const injectFallbackAlert = (
-  displayData:
-    | ApprovalParams['displayData']
-    | BatchApprovalParams['displayData'],
-  reason: string | undefined
-): void => {
-  if (displayData.alert) return
-  const description = reason
-    ? `Manual approval required\n${reason}`
-    : 'Manual approval required\nQuick Swaps could not auto-approve this swap.'
-  displayData.alert = {
-    type: AlertType.WARNING,
-    details: {
-      title: 'Manual approval required',
-      description
-    }
-  }
-}
-
-const readCtx = (request: RpcRequest): Record<string, unknown> | undefined =>
-  request.context as Record<string, unknown> | undefined
-
-const readManualReviewReason = (request: RpcRequest): string | undefined => {
-  const reason =
-    readCtx(request)?.[RequestContext.QUICK_SWAPS_MANUAL_REVIEW_REASON]
-  return typeof reason === 'string' && reason.length > 0 ? reason : undefined
-}
-
-const readBatchSigningContext = (
-  request: RpcRequest
-): BatchSigningContext | undefined => {
-  const ctx = readCtx(request)
-  if (!ctx) return undefined
-  const walletId = ctx.walletId
-  const walletType = ctx.walletType
-  const accountIndex = ctx.accountIndex
-  const network = ctx.network
-  if (
-    typeof walletId !== 'string' ||
-    typeof walletType !== 'string' ||
-    typeof accountIndex !== 'number' ||
-    !network
-  ) {
-    return undefined
-  }
-  return {
-    walletId,
-    walletType: walletType as WalletType,
-    accountIndex,
-    network: network as BatchSigningContext['network']
-  }
-}
+import {
+  findRequestValidator,
+  runBatchApprovalBypass,
+  runRequestValidatorBypass
+} from './quickSwapsBypass'
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
@@ -354,149 +291,18 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  // Resolves the bypass signing context from request.context. Returned
-  // as an error envelope so callers (single-tx and batch) emit a
-  // consistently-labelled rpcErrors.internal on a missing context.
-  private resolveSigningContext = (
-    request: ApprovalParams['request'],
-    errorLabel: string
-  ):
-    | { context: BatchSigningContext }
-    | { error: ReturnType<typeof rpcErrors.internal> } => {
-    const context = readBatchSigningContext(request)
-    if (!context) {
-      return {
-        error: rpcErrors.internal({
-          message: `${errorLabel}: signing context missing from request`
-        })
-      }
-    }
-    return { context }
-  }
-
-  private signOneWithBypassContext = async ({
-    request,
-    transaction,
-    errorLabel
-  }: {
-    request: ApprovalParams['request']
-    transaction: Parameters<typeof WalletService.sign>[0]['transaction']
-    errorLabel: string
-  }): Promise<
-    { signedData: string } | { error: ReturnType<typeof rpcErrors.internal> }
-  > => {
-    const resolved = this.resolveSigningContext(request, errorLabel)
-    if ('error' in resolved) return resolved
-    try {
-      const signedData = await WalletService.sign({
-        ...resolved.context,
-        transaction,
-        sentrySpanName: 'sign-transaction'
-      })
-      return { signedData }
-    } catch (err) {
-      return {
-        error: rpcErrors.internal({
-          message:
-            err instanceof Error ? err.message : `${errorLabel}: sign failed`
-        })
-      }
-    }
-  }
-
-  private signManyWithBypassContext = async ({
-    request,
-    transactions,
-    errorLabel
-  }: {
-    request: ApprovalParams['request']
-    transactions: readonly Parameters<
-      typeof WalletService.sign
-    >[0]['transaction'][]
-    errorLabel: string
-  }): Promise<
-    | { signedTxs: { signedData: string }[] }
-    | { error: ReturnType<typeof rpcErrors.internal> }
-  > => {
-    const resolved = this.resolveSigningContext(request, errorLabel)
-    if ('error' in resolved) return resolved
-    try {
-      const signedTxs: { signedData: string }[] = []
-      for (const tx of transactions) {
-        const signedData = await WalletService.sign({
-          ...resolved.context,
-          transaction: tx,
-          sentrySpanName: 'sign-transaction'
-        })
-        signedTxs.push({ signedData })
-      }
-      return { signedTxs }
-    } catch (err) {
-      return {
-        error: rpcErrors.internal({
-          message:
-            err instanceof Error ? err.message : `${errorLabel}: sign failed`
-        })
-      }
-    }
-  }
-
-  // Returns null when the validator defers to the manual modal.
-  // EvmSigner.sign only attaches SWAP_AUTO_APPROVE when tx.maxFeePerGas
-  // is already filled — so signingData.data is broadcast-ready here.
-  private runRequestValidator = async (
-    validator: typeof requestValidators[number],
-    params: ApprovalParams
-  ): Promise<ApprovalResponse | null> => {
-    const verdict = await validator.validate(params)
-    if (verdict.isValid) {
-      // canHandle guarantees signingData.type === ETH_SEND_TRANSACTION,
-      // i.e. shape is SigningData_EthSendTx.
-      const tx = (params.signingData as SigningData_EthSendTx)
-        .data as Parameters<typeof WalletService.sign>[0]['transaction']
-      return this.signOneWithBypassContext({
-        request: params.request,
-        transaction: tx,
-        errorLabel: 'requestApproval'
-      })
-    }
-
-    if (verdict.requiresManualApproval) {
-      injectFallbackAlert(params.displayData, verdict.reason)
-      return null
-    }
-
-    return {
-      error: rpcErrors.invalidRequest({
-        message:
-          verdict.reason || 'requestApproval: blocked by safety validation'
-      })
-    }
-  }
-
-  // For the per-tx approve from a fallen-back batch: no validator
-  // matches (approves are never bypassed), so we surface the reason here.
-  private maybeInjectManualReviewAlert = (params: ApprovalParams): void => {
-    const manualReviewReason = readManualReviewReason(params.request)
-    if (manualReviewReason) {
-      injectFallbackAlert(params.displayData, manualReviewReason)
-    }
-  }
-
   async requestApproval(params: ApprovalParams): Promise<ApprovalResponse> {
     const { request, displayData, signingData } = params
     const requestId = request.requestId
     this.userCancelledMap.delete(requestId)
 
-    // Synchronous find keeps the common (no-validator-matches) path
-    // microtask-free so callers that observe walletConnectCache.set +
-    // router.navigate synchronously still see them on the same tick.
-    const validator = requestValidators.find(v => v.canHandle(params))
+    // Quick Swaps bypass — sync find then async run keeps the common
+    // (no-validator) path microtask-free so the modal navigation
+    // below happens on the same tick callers observe.
+    const validator = findRequestValidator(params)
     if (validator) {
-      const bypassResult = await this.runRequestValidator(validator, params)
+      const bypassResult = await runRequestValidatorBypass(validator, params)
       if (bypassResult) return bypassResult
-    } else {
-      this.maybeInjectManualReviewAlert(params)
     }
 
     const enrichedDisplayData = maybeInjectSiweAlert({
@@ -544,62 +350,12 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  // On requiresManualApproval, returns a structured error with the
-  // quickSwapsManualReview marker that EvmSigner.signBatch detects to
-  // re-issue each tx through the per-tx approval modal.
+  // Batch approvals only exist for the Quick Swaps bypass — there's
+  // no batch manual-modal flow in this app. Delegate fully.
   async requestBatchApproval(
     params: BatchApprovalParams
   ): Promise<BatchApprovalResponse> {
-    const { request, signingRequests } = params
-    const validator = approvalValidators.find(v => v.canHandle(request))
-    if (!validator) {
-      return {
-        error: rpcErrors.internal({
-          message:
-            'eth_sendTransactionBatch: no validator matched the batch request'
-        })
-      }
-    }
-
-    const verdict = await validator.validate(params)
-    if (verdict.isValid) {
-      const result = await this.signManyWithBypassContext({
-        request,
-        transactions: signingRequests.map(sr => sr.signingData.data),
-        errorLabel: 'eth_sendTransactionBatch'
-      })
-      if ('error' in result) return result
-      return { result: result.signedTxs }
-    }
-
-    if (verdict.requiresManualApproval) {
-      // EvmSigner.signBatch catches the marker and re-issues each tx
-      // through `requestApproval`. The per-tx swap will re-run
-      // SwapValidator, which will inject its own fallback alert into
-      // the per-tx displayData. We also inject one here for callers
-      // (and future code paths) that may render the batch displayData
-      // directly.
-      injectFallbackAlert(params.displayData, verdict.reason)
-      const detail = verdict.reason || 'unknown reason'
-      return {
-        error: rpcErrors.internal({
-          message: `Quick Swaps requires manual review for this swap (${detail}).`,
-          data: {
-            quickSwapsManualReview: true,
-            code: verdict.code,
-            reason: verdict.reason
-          }
-        })
-      }
-    }
-
-    return {
-      error: rpcErrors.invalidRequest({
-        message:
-          verdict.reason ||
-          'eth_sendTransactionBatch: blocked by safety validation'
-      })
-    }
+    return runBatchApprovalBypass(params)
   }
 }
 

@@ -34,6 +34,10 @@ jest.mock('utils/caip2ChainIds', () => ({
   getChainIdFromCaip2: (...args: unknown[]) => mockGetChainIdFromCaip2(...args)
 }))
 
+jest.mock('store/posthog/slice', () => ({
+  selectIsQuickSwapsAvailable: () => true
+}))
+
 import { ethSendTransactionBatchHandler } from './eth_sendTransactionBatch'
 
 const makeRequest = (

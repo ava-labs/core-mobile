@@ -184,17 +184,6 @@ export const SwapContextProvider = ({
     return getAddressByNetwork(activeAccount, toNetwork)
   }, [activeAccount, toNetwork])
 
-  // USD value of the current from-amount — fed into the swapCompleted
-  // dispatch for Nest Egg qualification tracking.
-  const fromAmountUsd = useMemo(() => {
-    if (!fromToken || !amount) return undefined
-    const decimals = 'decimals' in fromToken ? fromToken.decimals : 18
-    const decimal = bigintToBig(amount, decimals)
-    const price = fromToken.priceInCurrency
-    if (price === undefined) return undefined
-    return decimal.times(price)
-  }, [fromToken, amount])
-
   const onNoQuotesError = useCallback((retry: () => void) => {
     showAlert({
       title: 'Quotes unavailable',
@@ -334,30 +323,38 @@ export const SwapContextProvider = ({
       // Dispatch trackFusionTransfer to start tracking transfer status
       dispatch(trackFusionTransfer(transfer))
 
-      // Dispatch swapCompleted for Nest Egg qualification tracking
+      // Dispatch swapCompleted for Nest Egg qualification tracking.
+      // Computed from `transfer.amountIn` (what actually swapped) not
+      // the live `amount` state, so if the user changed the input
+      // between submit and completion the analytics still reflect
+      // reality. bigintToBig preserves precision that Number() would
+      // lose on large amounts.
       const swapTxHash = transfer.source?.txHash
-      if (swapTxHash && fromAmountUsd !== undefined) {
-        const fromAmountUsdNumber = fromAmountUsd.toNumber()
+      if (
+        swapTxHash &&
+        transfer.amountIn &&
+        fromTokenData.priceInCurrency !== undefined &&
+        'decimals' in fromTokenData
+      ) {
+        const fromAmountUsd = bigintToBig(
+          BigInt(transfer.amountIn),
+          fromTokenData.decimals
+        )
+          .times(fromTokenData.priceInCurrency)
+          .toNumber()
         dispatch(
           swapCompleted({
             txHash: swapTxHash,
             chainId: Number(quote.sourceChain.chainId.split(':')[1]),
             fromTokenSymbol: fromTokenData.symbol,
             toTokenSymbol: toTokenData.symbol,
-            fromAmountUsd: fromAmountUsdNumber,
-            toAmountUsd: fromAmountUsdNumber
+            fromAmountUsd,
+            toAmountUsd: fromAmountUsd
           })
         )
       }
     },
-    [
-      dispatch,
-      setTransfers,
-      fromAmountUsd,
-      isQuickSwapsActive,
-      feeSetting,
-      maxBuy
-    ]
+    [dispatch, setTransfers, isQuickSwapsActive, feeSetting, maxBuy]
   )
 
   // Handle swap error: logging, toast
