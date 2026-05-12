@@ -47,7 +47,7 @@ import {
 } from '../hooks/useZustandStore'
 import { fetchAdapter } from '../utils/fetchAdapter'
 import { logSdkError } from '../utils/fusionLogger'
-import { trackFusionTransfer, TrackFusionTransferPayload } from './actions'
+import { trackFusionTransfer, type TrackFusionTransferPayload } from './actions'
 
 /**
  * Get the current state of all Fusion feature flags

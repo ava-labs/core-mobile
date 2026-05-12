@@ -550,7 +550,7 @@ describe('Fusion listeners', () => {
       amountIn: 1290000000000000000n
     } as any
 
-    it('captures all 7 new fields on SwapFailed when userClickedMax is true', () => {
+    it('captures all 8 new fields on SwapFailed when userClickedMax is true', () => {
       const capture = createCaptureSwapAnalytics({
         quote: baseQuote,
         userClickedMax: true,
