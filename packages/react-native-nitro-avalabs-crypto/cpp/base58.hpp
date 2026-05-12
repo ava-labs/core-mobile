@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstdio>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -152,6 +153,44 @@ namespace margelo::nitro::nitroavalabscrypto {
             throw std::invalid_argument(
                     "parse_xpub: expected 78-byte payload, got " +
                     std::to_string(payload.size()));
+        }
+
+        // BIP-32 version bytes (bytes [0..4), big-endian). Whitelist the
+        // mainnet/testnet *public* extended-key versions and explicitly reject
+        // the matching *private* versions — a confused caller passing an xprv
+        // would otherwise feed bytes [45..78) to secp256k1_ec_pubkey_parse,
+        // which can succeed on garbage and silently derive a wrong key tree.
+        const uint32_t version =
+            (static_cast<uint32_t>(payload[0]) << 24) |
+            (static_cast<uint32_t>(payload[1]) << 16) |
+            (static_cast<uint32_t>(payload[2]) << 8)  |
+            (static_cast<uint32_t>(payload[3]));
+
+        constexpr uint32_t XPUB_MAINNET = 0x0488B21Eu;  // "xpub..."
+        constexpr uint32_t XPUB_TESTNET = 0x043587CFu;  // "tpub..."
+        constexpr uint32_t XPRV_MAINNET = 0x0488ADE4u;  // "xprv..."
+        constexpr uint32_t XPRV_TESTNET = 0x04358394u;  // "tprv..."
+
+        if (version == XPRV_MAINNET || version == XPRV_TESTNET) {
+            throw std::invalid_argument(
+                "parse_xpub: extended private key passed where xpub expected");
+        }
+        if (version != XPUB_MAINNET && version != XPUB_TESTNET) {
+            char hex[11];
+            std::snprintf(hex, sizeof(hex), "0x%08x", version);
+            throw std::invalid_argument(
+                std::string("parse_xpub: unsupported version bytes ") + hex);
+        }
+
+        // Compressed SEC1 public-key prefix must be 0x02 (even Y) or 0x03
+        // (odd Y). Anything else means a corrupted xpub — fail loudly before
+        // we hand bytes to secp256k1_ec_pubkey_parse.
+        const uint8_t key_prefix = payload[45];
+        if (key_prefix != 0x02 && key_prefix != 0x03) {
+            char hex[5];
+            std::snprintf(hex, sizeof(hex), "0x%02x", key_prefix);
+            throw std::invalid_argument(
+                std::string("parse_xpub: invalid public-key prefix ") + hex);
         }
 
         Xpub result;

@@ -162,6 +162,17 @@ namespace margelo::nitro::nitroavalabscrypto {
         if (witness_version > 16) {
             throw std::invalid_argument("bech32_encode_segwit: witness version out of range");
         }
+        // BIP-350 requires the bech32m constant (0x2bc830a3) for witness
+        // version >= 1 (Taproot P2TR and beyond). This file only implements
+        // BIP-173 bech32 with constant 1, which would silently produce
+        // addresses that BIP-350-aware wallets and nodes will reject.
+        // Fail loudly here so the next person wiring up P2TR has a clear
+        // signpost instead of generating invalid addresses.
+        if (witness_version > 0) {
+            throw std::invalid_argument(
+                "bech32_encode_segwit: witness version >= 1 requires bech32m "
+                "(BIP-350); this encoder only supports BIP-173 bech32");
+        }
         if (program.size() < 2 || program.size() > 40) {
             throw std::invalid_argument("bech32_encode_segwit: program length out of range");
         }

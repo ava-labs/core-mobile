@@ -350,11 +350,20 @@ export function getExtendedPublicKey(
   // L = 2^252 + 27742317777372353535851937790883648493
   // Hex representation taken directly from the specification:
   // 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
-
   const ED25519_ORDER = BigInt(
     '0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed'
   )
-  const scalarRaw = BigInt(result.scalar)
+
+  // Build the bigint directly from `head` (little-endian per RFC 8032 clamp
+  // step) instead of reading `result.scalar`. The native side intentionally
+  // returns an empty string for `scalar` — emitting the secret-derived hex
+  // as a JS string would intern it in the engine's heap with no way to zero
+  // it later. `head` is already returned as an ArrayBuffer in the same call,
+  // so this adds no leak surface.
+  let scalarRaw = 0n
+  for (let i = 31; i >= 0; i--) {
+    scalarRaw = (scalarRaw << 8n) | BigInt(head[i]!)
+  }
   const scalar = scalarRaw % ED25519_ORDER
 
   // HYBRID APPROACH for web wallet compatibility:

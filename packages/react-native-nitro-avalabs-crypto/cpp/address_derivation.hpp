@@ -72,8 +72,13 @@ inline std::vector<uint8_t> hmac_sha512(const uint8_t *key, size_t key_len,
                                          const uint8_t *data, size_t data_len) {
     std::vector<uint8_t> out(64);
     unsigned int out_len = 64;
-    HMAC(EVP_sha512(), key, static_cast<int>(key_len),
-         data, data_len, out.data(), &out_len);
+    // HMAC() returns NULL on allocator/EVP failure. Without this check we would
+    // continue with a zeroed output buffer and silently produce a deterministic
+    // but wrong derivation — i.e. wrong addresses, no error to the caller.
+    if (HMAC(EVP_sha512(), key, static_cast<int>(key_len),
+             data, data_len, out.data(), &out_len) == nullptr) {
+        throw std::runtime_error("hmac_sha512: HMAC failed");
+    }
     return out;
 }
 
@@ -150,9 +155,12 @@ inline BIP32PublicKey bip32_derive_path(
 // path contains hardened segments (e.g. m/44'/60'/0', m/44'/9000'/{i}').
 // ---------------------------------------------------------------------------
 
+// Fixed-size storage so secret bytes live inline in the struct (no separate
+// heap allocations that std::vector can move/realloc and leave uncleansed).
+// Mirrors the SLIP0010Key pattern in slip0010.hpp.
 struct BIP32PrivateKey {
-    std::vector<uint8_t> key;        // 32 bytes private key
-    std::vector<uint8_t> chain_code; // 32 bytes
+    std::array<uint8_t, 32> key{};        // 32 bytes private key
+    std::array<uint8_t, 32> chain_code{}; // 32 bytes
 };
 
 // Master key from BIP39 seed: HMAC-SHA512("Bitcoin seed", seed)
@@ -160,10 +168,9 @@ inline BIP32PrivateKey bip32_master_from_seed(const uint8_t *seed, size_t seed_l
     auto I = hmac_sha512(
         reinterpret_cast<const uint8_t *>("Bitcoin seed"), 12,
         seed, seed_len);
-    BIP32PrivateKey result{
-        std::vector<uint8_t>(I.begin(), I.begin() + 32),
-        std::vector<uint8_t>(I.begin() + 32, I.end())
-    };
+    BIP32PrivateKey result;
+    std::copy(I.begin(), I.begin() + 32, result.key.begin());
+    std::copy(I.begin() + 32, I.end(), result.chain_code.begin());
     OPENSSL_cleanse(I.data(), I.size());
     return result;
 }
@@ -175,7 +182,17 @@ inline BIP32PrivateKey bip32_derive_hardened_child(
         const BIP32PrivateKey &parent,
         uint32_t index) {
 
-    std::vector<uint8_t> data(37);
+    // Reject indices that already carry the hardening flag — otherwise an
+    // index in [2^31, 2^32) silently collides with the hardened range and
+    // derives a different child than the caller intended. Callers feeding
+    // unvalidated input would produce wrong addresses with no error.
+    if (index >= 0x80000000u) {
+        throw std::invalid_argument(
+            "bip32_derive_hardened_child: index must be < 2^31 "
+            "(hardening flag is applied internally)");
+    }
+
+    std::array<uint8_t, 37> data{};
     data[0] = 0x00;
     std::memcpy(data.data() + 1, parent.key.data(), 32);
     uint32_t hardened = index | 0x80000000u;
@@ -187,22 +204,21 @@ inline BIP32PrivateKey bip32_derive_hardened_child(
     auto I = hmac_sha512(parent.chain_code.data(), parent.chain_code.size(),
                           data.data(), data.size());
 
-    std::vector<uint8_t> IL(I.begin(), I.begin() + 32);
-    std::vector<uint8_t> IR(I.begin() + 32, I.end());
+    BIP32PrivateKey child;
+    std::copy(I.begin(), I.begin() + 32, child.key.begin());
+    std::copy(I.begin() + 32, I.end(), child.chain_code.begin());
     OPENSSL_cleanse(I.data(), I.size());
 
-    // child_key = parse256(IL) + parent_key (mod n)
-    // secp256k1_ec_seckey_tweak_add does: key = key + tweak mod n
-    std::vector<uint8_t> child_key = IL;
-    if (secp256k1_ec_seckey_tweak_add(ctx, child_key.data(), parent.key.data()) != 1) {
-        OPENSSL_cleanse(IL.data(), IL.size());
+    // child.key = parse256(IL) + parent.key (mod n)
+    if (secp256k1_ec_seckey_tweak_add(ctx, child.key.data(), parent.key.data()) != 1) {
+        OPENSSL_cleanse(child.key.data(), child.key.size());
+        OPENSSL_cleanse(child.chain_code.data(), child.chain_code.size());
         OPENSSL_cleanse(data.data(), data.size());
         throw std::runtime_error("BIP32 hardened derivation failed (invalid key)");
     }
-    OPENSSL_cleanse(IL.data(), IL.size());
     OPENSSL_cleanse(data.data(), data.size());
 
-    return {child_key, IR};
+    return child;
 }
 
 // Derive a hardened path (e.g. [44, 60, 0] for m/44'/60'/0')
@@ -213,12 +229,14 @@ inline BIP32PrivateKey bip32_derive_hardened_path(
     BIP32PrivateKey current = master;
     for (uint32_t idx : indices) {
         auto child = bip32_derive_hardened_child(ctx, current, idx);
-        // Zero the outgoing intermediate key.  On the first iteration this
+        // Zero the outgoing intermediate key. On the first iteration this
         // cleanses a *copy* of master (harmless); on later iterations it
-        // cleanses a genuine intermediate private key.
+        // cleanses a genuine intermediate private key. Since `current` is
+        // std::array-based, this clears every byte; nothing strands on a
+        // moved-from heap allocation.
         OPENSSL_cleanse(current.key.data(), current.key.size());
         OPENSSL_cleanse(current.chain_code.data(), current.chain_code.size());
-        current = std::move(child);
+        current = child;
     }
     return current;
 }
@@ -235,7 +253,10 @@ inline BIP32PublicKey bip32_private_to_public(
     size_t out_len = 33;
     secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &out_len,
                                   &pk, SECP256K1_EC_COMPRESSED);
-    return {compressed, priv.chain_code};
+    return BIP32PublicKey{
+        compressed,
+        std::vector<uint8_t>(priv.chain_code.begin(), priv.chain_code.end())
+    };
 }
 
 // ---------------------------------------------------------------------------

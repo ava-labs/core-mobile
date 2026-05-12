@@ -35,8 +35,13 @@ inline std::array<uint8_t, 64> slip0010_hmac_sha512(
         const uint8_t *data, size_t data_len) {
     std::array<uint8_t, 64> out{};
     unsigned int out_len = 64;
-    HMAC(EVP_sha512(), key, static_cast<int>(key_len),
-         data, data_len, out.data(), &out_len);
+    // HMAC() returns NULL on allocator/EVP failure. Without this check we
+    // would continue with a zeroed output buffer and silently produce a
+    // deterministic but wrong derivation.
+    if (HMAC(EVP_sha512(), key, static_cast<int>(key_len),
+             data, data_len, out.data(), &out_len) == nullptr) {
+        throw std::runtime_error("slip0010_hmac_sha512: HMAC failed");
+    }
     return out;
 }
 
@@ -56,6 +61,15 @@ inline SLIP0010Key slip0010_master_key(const uint8_t *seed, size_t seed_len) {
 
 // Hardened child derivation: HMAC-SHA512(chainCode, 0x00 || secret || ser32(index + 0x80000000))
 inline SLIP0010Key slip0010_derive_hardened(const SLIP0010Key &parent, uint32_t index) {
+    // Reject indices that already carry the hardening flag — see the matching
+    // check in bip32_derive_hardened_child for rationale. SLIP-0010 ed25519
+    // only supports hardened derivation so this guard applies to every call.
+    if (index >= 0x80000000u) {
+        throw std::invalid_argument(
+            "slip0010_derive_hardened: index must be < 2^31 "
+            "(hardening flag is applied internally)");
+    }
+
     // data = 0x00 || parent.secret (32 bytes) || ser32(index | 0x80000000) (4 bytes)
     std::array<uint8_t, 37> data{};
     data[0] = 0x00;

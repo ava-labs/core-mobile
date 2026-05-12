@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <exception>
 #include <stdexcept>
 
 #include <openssl/evp.h>
@@ -63,6 +64,62 @@ namespace margelo::nitro::nitroavalabscrypto {
             if (c >= 'a' && c <= 'f') return static_cast<uint8_t>(10 + (c - 'a'));
             throw std::invalid_argument("Invalid hex character");
         }
+
+        // Run `fn(i)` for i in [0, n) across hardware_concurrency() worker
+        // threads, partitioning the index range into contiguous chunks so each
+        // worker writes only its own slots (no synchronization needed inside
+        // fn). Exceptions thrown by fn are captured; the first one is rethrown
+        // on the calling thread after all workers join.
+        //
+        // Single-worker (n <= 1 or single-core) path bypasses thread creation.
+        template <typename Fn>
+        inline void parallelFor(size_t n, Fn &&fn) {
+            const size_t hw =
+                std::max<size_t>(1, std::thread::hardware_concurrency());
+            const size_t numWorkers = std::min(hw, n);
+
+            if (numWorkers <= 1) {
+                for (size_t i = 0; i < n; ++i) fn(i);
+                return;
+            }
+
+            std::vector<std::thread> workers;
+            workers.reserve(numWorkers);
+            std::atomic<bool> failed{false};
+            std::mutex errMutex;
+            // Capture the first thrown exception via exception_ptr so the
+            // original type (e.g. std::invalid_argument vs std::runtime_error)
+            // is preserved when rethrown on the calling thread. catch(...)
+            // also covers foreign exceptions — an uncaught exception escaping
+            // a std::thread would call std::terminate.
+            std::exception_ptr errPtr;
+
+            const size_t chunk = (n + numWorkers - 1) / numWorkers;
+            for (size_t w = 0; w < numWorkers; ++w) {
+                const size_t start = w * chunk;
+                const size_t end = std::min(start + chunk, n);
+                if (start >= end) break;
+                workers.emplace_back([&, start, end]() {
+                    try {
+                        for (size_t i = start; i < end; ++i) {
+                            if (failed.load(std::memory_order_relaxed)) return;
+                            fn(i);
+                        }
+                    } catch (...) {
+                        if (!failed.exchange(true)) {
+                            std::lock_guard<std::mutex> g(errMutex);
+                            errPtr = std::current_exception();
+                        }
+                    }
+                });
+            }
+
+            for (auto &t : workers) t.join();
+
+            if (errPtr) {
+                std::rethrow_exception(errPtr);
+            }
+        }
     }
 
     secp256k1_context *CryptoHybrid::ctx() {
@@ -82,12 +139,21 @@ namespace margelo::nitro::nitroavalabscrypto {
     }
 
     std::vector<uint8_t> CryptoHybrid::hexToBytes(const std::string &h) {
-        std::string hex = h;
-        if (hex.rfind("0x", 0) == 0 || hex.rfind("0X", 0) == 0) hex.erase(0, 2);
-        if (hex.size() % 2 != 0) throw std::invalid_argument("Hex string must have even length");
-        std::vector<uint8_t> out(hex.size() / 2);
+        // Read the optional "0x"/"0X" prefix as an offset rather than allocating
+        // a mutated copy of the input — when the input is a secret-key hex, a
+        // copy would strand cleartext on the heap that we never get to cleanse.
+        size_t off = 0;
+        if (h.size() >= 2 && h[0] == '0' && (h[1] == 'x' || h[1] == 'X')) {
+            off = 2;
+        }
+        const size_t hexLen = h.size() - off;
+        if (hexLen % 2 != 0) {
+            throw std::invalid_argument("Hex string must have even length");
+        }
+        std::vector<uint8_t> out(hexLen / 2);
         for (size_t i = 0; i < out.size(); ++i) {
-            out[i] = static_cast<uint8_t>((hexNibble(hex[2 * i]) << 4) | hexNibble(hex[2 * i + 1]));
+            out[i] = static_cast<uint8_t>(
+                (hexNibble(h[off + 2 * i]) << 4) | hexNibble(h[off + 2 * i + 1]));
         }
         return out;
     }
@@ -105,11 +171,17 @@ namespace margelo::nitro::nitroavalabscrypto {
 
     std::array<uint8_t, 32> CryptoHybrid::require32(const BufferOrString &v, const char *what) {
         auto bytes = bytesFromVariant(v);
+        // Cleanse the intermediate vector regardless of size — when the caller
+        // is on a secret-key path, `bytes` carries cleartext that must not
+        // outlive this function (the vector's heap may be reused immediately
+        // after destruction).
         if (bytes.size() != 32) {
+            OPENSSL_cleanse(bytes.data(), bytes.size());
             throw std::invalid_argument(std::string(what) + " must be 32 bytes");
         }
         std::array<uint8_t, 32> out{};
         std::copy(bytes.begin(), bytes.end(), out.begin());
+        OPENSSL_cleanse(bytes.data(), bytes.size());
         return out;
     }
 
@@ -148,6 +220,8 @@ namespace margelo::nitro::nitroavalabscrypto {
     std::shared_ptr<ArrayBuffer> CryptoHybrid::getPublicKeyFromString(const std::string &secretKey,
                                                                       std::optional<bool> isCompressed) {
         auto sk = hexToBytes(secretKey);
+        // Cleanse on every return path — `sk` is the decoded private key.
+        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk.data(), sk.size()); });
         if (sk.size() != 32) throw std::invalid_argument("secretKey must be 32 bytes hex");
         bool comp = isCompressed.value_or(true);
 
@@ -207,6 +281,8 @@ namespace margelo::nitro::nitroavalabscrypto {
             const BufferOrString &message
     ) {
         auto sk = require32(secretKey, "secretKey");
+        // Cleanse on every return path (normal return + exception unwind).
+        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk.data(), sk.size()); });
         auto msg32 = require32(message, "message");
 
         if (secp256k1_ec_seckey_verify(ctx(), sk.data()) != 1)
@@ -269,6 +345,7 @@ namespace margelo::nitro::nitroavalabscrypto {
             const BufferOrString &auxRand
     ) {
         auto sk = require32(secretKey, "secretKey");
+        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk.data(), sk.size()); });
         auto msg32 = require32(messageHash, "messageHash");
         auto aux32 = require32(auxRand, "auxRand");
 
@@ -276,6 +353,9 @@ namespace margelo::nitro::nitroavalabscrypto {
             throw std::invalid_argument("Invalid secret key");
 
         secp256k1_keypair keypair;
+        // secp256k1_keypair stores the secret key internally; zero its bytes on
+        // every return path, not just success.
+        ScopeGuard cleanseKeypair([&] { OPENSSL_cleanse(&keypair, sizeof(keypair)); });
         if (secp256k1_keypair_create(ctx(), &keypair, sk.data()) != 1)
             throw std::runtime_error("keypair_create failed");
 
@@ -346,9 +426,13 @@ namespace margelo::nitro::nitroavalabscrypto {
     CryptoHybrid::getExtendedPublicKey(const BufferOrString &secretKey) {
         // Input validation
         auto sk32 = require32(secretKey, "secretKey");
+        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk32.data(), sk32.size()); });
 
         // Step 1: Hash secret key with SHA-512
         std::array<uint8_t, 64> hash64{};
+        // SHA-512 output is derived directly from the secret — treat as
+        // secret-equivalent on every return path.
+        ScopeGuard cleanseHash([&] { OPENSSL_cleanse(hash64.data(), hash64.size()); });
         EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
         if (!mdctx) {
             throw std::runtime_error("Ed25519: EVP_MD_CTX_new failed");
@@ -384,22 +468,31 @@ namespace margelo::nitro::nitroavalabscrypto {
         head[31] &= 0x7f;  // Clear top bit (ensure < 2^255)
         head[31] |= 0x40;  // Set second-highest bit (ensure >= 2^254)
 
-        // Step 4: Convert CLAMPED head to scalar hex string for TypeScript
-        // TypeScript will:
-        // 1. Apply modular reduction: scalar % ED25519_ORDER
-        // 2. Derive point using @noble/curves: point = BASE.multiply(scalar)
-        // This hybrid approach ensures web wallet compatibility
-        std::array<uint8_t, 32> headBE{};
-        std::reverse_copy(head.begin(), head.end(), headBE.begin());
-        std::string scalarStr = "0x" + to_hex(headBE.data(), 32);
-        
-        // Step 5: Return empty pointBytes - point derivation happens in TypeScript
-        // C++ only does the expensive SHA-512 hash and clamping
+        // Step 4: Scalar derivation is now done in TypeScript directly from
+        // `head` — JS reverses the little-endian bytes to big-endian and
+        // parses as a BigInt, then applies the mod-L reduction. Keeping the
+        // scalar out of the C++→JS string bridge eliminates the only path
+        // where a secret-derived value crossed as an immutable JS string
+        // (which we cannot zero from C++ once interned by the JS engine).
+        // The `scalar` field in the returned struct remains for ABI stability
+        // but is intentionally empty.
+        std::string scalarStr;
+
+        // Step 5: Return empty pointBytes — point derivation happens in TS
+        // using @noble/curves on top of the head bytes.
         std::array<uint8_t, 32> pointBytes{};  // Empty, filled by TypeScript
-        
+
         auto headAB = toAB(std::vector<uint8_t>(head.begin(), head.end()));
         auto prefixAB = toAB(std::vector<uint8_t>(prefix.begin(), prefix.end()));
         auto pointBytesAB = toAB(std::vector<uint8_t>(pointBytes.begin(), pointBytes.end()));
+
+        // Cleanse the secret-derived local arrays once the ArrayBuffers above
+        // have an independent copy. The returned head/prefix ArrayBuffers
+        // intentionally carry secret-derived bytes to JS; this only zeros our
+        // local copies so the stack frame doesn't strand them after return.
+        OPENSSL_cleanse(headUnclamped.data(), headUnclamped.size());
+        OPENSSL_cleanse(prefix.data(), prefix.size());
+        OPENSSL_cleanse(head.data(), head.size());
 
         return ExtendedPublicKey(headAB, prefixAB, scalarStr, pointBytesAB);
     }
@@ -424,24 +517,37 @@ namespace margelo::nitro::nitroavalabscrypto {
 
             auto evm_parsed = parse_xpub(evmXpub);
 
-            std::vector<DerivedSecp256k1Addresses> results;
-            results.reserve(accountIndices.size());
+            // Pre-parse all avalanche xpubs once. parse_xpub is base58check
+            // decode + double-SHA256 + 78-byte unpack — redoing it per loop
+            // iteration was O(N) wasted work.
+            std::vector<Xpub> avax_parsed;
+            avax_parsed.reserve(avalancheXpubs.size());
+            for (const auto &s : avalancheXpubs) {
+                avax_parsed.push_back(parse_xpub(s));
+            }
 
-            for (size_t i = 0; i < accountIndices.size(); ++i) {
+            const size_t n = accountIndices.size();
+            std::vector<DerivedSecp256k1Addresses> results(n);
+
+            auto deriveOne = [&](size_t i) {
                 auto index = static_cast<uint32_t>(accountIndices[i]);
-                auto avax_parsed = parse_xpub(avalancheXpubs[i]);
                 auto addrs = derive_addresses_for_index(
-                    CryptoHybrid::ctx(), evm_parsed, avax_parsed, isTestnet, index);
-
-                results.push_back(DerivedSecp256k1Addresses(
+                    CryptoHybrid::ctx(), evm_parsed, avax_parsed[i],
+                    isTestnet, index);
+                results[i] = DerivedSecp256k1Addresses(
                     accountIndices[i],
                     std::move(addrs.evm),
                     std::move(addrs.btc),
                     std::move(addrs.avm),
                     std::move(addrs.pvm),
-                    std::move(addrs.coreEth)
-                ));
-            }
+                    std::move(addrs.coreEth));
+            };
+
+            // Each account is independent (per-account avalanche xpub, EVM
+            // child index varies); libsecp256k1 documents its const-context
+            // API as safe for concurrent use, and our OpenSSL EVP / HMAC
+            // calls each create their own context per invocation.
+            parallelFor(n, deriveOne);
 
             return results;
         });
@@ -480,15 +586,20 @@ namespace margelo::nitro::nitroavalabscrypto {
                 OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
             });
 
-            std::vector<DerivedSolanaAddress> results;
-            results.reserve(accountIndices.size());
+            const size_t n = accountIndices.size();
+            std::vector<DerivedSolanaAddress> results(n);
 
-            for (double idx : accountIndices) {
+            auto deriveOne = [&](size_t i) {
+                auto idx = accountIndices[i];
                 auto index = static_cast<uint32_t>(idx);
                 auto address = solana_address_from_master(master, index);
+                results[i] = DerivedSolanaAddress(idx, std::move(address));
+            };
 
-                results.push_back(DerivedSolanaAddress(idx, std::move(address)));
-            }
+            // `master` is treated as read-only by solana_address_from_master
+            // (it copies the master into a local before mutating), so per-index
+            // derivation is independent.
+            parallelFor(n, deriveOne);
 
             return results;
         });
@@ -543,30 +654,34 @@ namespace margelo::nitro::nitroavalabscrypto {
                 OPENSSL_cleanse(sol_master.chain_code.data(), sol_master.chain_code.size());
             });
 
-            std::vector<DerivedAllAddresses> results;
-            results.reserve(accountIndices.size());
+            const size_t n = accountIndices.size();
+            std::vector<DerivedAllAddresses> results(n);
 
-            for (double idx : accountIndices) {
+            auto deriveOne = [&](size_t i) {
+                auto idx = accountIndices[i];
                 auto index = static_cast<uint32_t>(idx);
 
                 // secp256k1 addresses (EVM, BTC, AVM, PVM, CoreEth)
                 auto addrs = derive_all_addresses_for_index(
-                    sctx, master, evm_xpub,
-                    isTestnet, index);
+                    sctx, master, evm_xpub, isTestnet, index);
 
                 // Solana address (SLIP-0010 Ed25519) — uses pre-computed master
                 auto solana = solana_address_from_master(sol_master, index);
 
-                results.push_back(DerivedAllAddresses(
+                results[i] = DerivedAllAddresses(
                     idx,
                     std::move(addrs.evm),
                     std::move(addrs.btc),
                     std::move(addrs.avm),
                     std::move(addrs.pvm),
                     std::move(addrs.coreEth),
-                    std::move(solana)
-                ));
-            }
+                    std::move(solana));
+            };
+
+            // `master`, `evm_xpub`, and `sol_master` are read-only from here
+            // (each derivation copies master state before mutating it), so
+            // per-account work is independent and parallel-safe.
+            parallelFor(n, deriveOne);
 
             return results;
         });
