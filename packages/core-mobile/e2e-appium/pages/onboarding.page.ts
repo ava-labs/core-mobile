@@ -216,6 +216,8 @@ class OnboardingPage {
     if (driver.isIOS) {
       await actions.typeSlowly(this.pinInputField, pin)
     } else {
+      await this.pinInputField.click()
+      await driver.pause(300)
       await actions.tapNumberPad(pin)
     }
   }

@@ -15,31 +15,20 @@ import {
   BalanceChangeData,
   BalanceChangeEvents,
   NewsData,
-  NewsEvents,
   NotificationPayload,
   NotificationPayloadSchema,
   NotificationTypes
 } from 'services/fcm/types'
+import { DEFAULT_ANDROID_CHANNEL } from 'services/notifications/channels'
 import {
-  ChannelId,
-  DEFAULT_ANDROID_CHANNEL
-} from 'services/notifications/channels'
+  EVENT_TO_CH_ID,
+  resolveChannelId
+} from 'services/notifications/eventChannelMap'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import Logger from 'utils/Logger'
 
 type UnsubscribeFunc = () => void
-
-export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
-  [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
-  [BalanceChangeEvents.BALANCES_TRANSFERRED]: ChannelId.BALANCE_CHANGES,
-  [NewsEvents.MARKET_NEWS]: ChannelId.MARKET_NEWS,
-  [NewsEvents.OFFERS_AND_PROMOTIONS]: ChannelId.OFFERS_AND_PROMOTIONS,
-  [NewsEvents.PRICE_ALERTS]: ChannelId.PRICE_ALERTS,
-  [NewsEvents.PRODUCT_ANNOUNCEMENTS]: ChannelId.PRODUCT_ANNOUNCEMENTS
-}
 
 /**
  * Wrapper for @react-native-firebase/messaging
@@ -196,22 +185,32 @@ class FCMService {
       }
 
       const notificationData = this.#prepareNotificationData(result.data)
+      const { data } = notificationData
+      if (typeof data?.url !== 'string') return
 
-      if (
-        notificationData.data?.url === undefined ||
-        typeof notificationData.data.url !== 'string'
-      ) {
-        return
-      }
+      // Capture analytics BEFORE the deeplink-skip decision so balance-change
+      // and walletconnect taps are no longer dropped. Channel-id resolution
+      // is centralized in `resolveChannelId` to keep precedence consistent
+      // with the cold-start and warm-background paths.
+      const channelId = resolveChannelId({
+        data,
+        fallbackEvent: result.data.data.event
+      })
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId,
+        deeplinkUrl: data.url,
+        appState: 'background',
+        handler: 'fcm'
+      })
 
       // we simply take user to portfolio/home page if the url is walletconnect or balanche-change events
-      if (this.shouldSkipHandlingDeeplink(notificationData.data.url)) {
+      if (this.shouldSkipHandlingDeeplink(data.url)) {
         return
       }
 
       handleDeeplink({
         deeplink: {
-          url: notificationData.data.url,
+          url: data.url,
           origin: DeepLinkOrigin.ORIGIN_NOTIFICATION
         },
         dispatch: action => action,
@@ -223,15 +222,6 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
-      if (
-        typeof notificationData.data?.channelId === 'string' &&
-        notificationData.data?.channelId.length !== 0
-      ) {
-        AnalyticsService.capture('PushNotificationPressed', {
-          channelId: notificationData.data.channelId,
-          deeplinkUrl: notificationData.data.url
-        })
-      }
     })
   }
 

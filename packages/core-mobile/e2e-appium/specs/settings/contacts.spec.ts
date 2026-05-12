@@ -13,12 +13,17 @@ const newAddress: Record<string, string> = {
 }
 
 describe('Settings', () => {
-  it('Contacts - Should add contact', async () => {
-    // Verify empty contacts
+  before(async () => {
     await warmup()
+  })
+
+  it('Contacts - Should verify the empty state', async () => {
     await settings.goSettings()
     await settings.tapContacts()
     await settings.verifyEmptyContacts()
+  })
+
+  it('Contacts - Should add contact', async () => {
     await settings.tapAddAddressButton()
     await settings.addContactAddress(networkAndAddress, 'Core Dev')
     await settings.verifyContact(cl.myEvmAddress, 'Core Dev')

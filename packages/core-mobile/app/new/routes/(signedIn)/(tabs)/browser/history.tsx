@@ -127,7 +127,11 @@ const HistoryScreen = (): JSX.Element => {
 
     return (
       <NavigationBarButton>
-        <Button type="secondary" size="small" onPress={removeAll}>
+        <Button
+          testID="clear_all_history_btn"
+          type="secondary"
+          size="small"
+          onPress={removeAll}>
           Clear all
         </Button>
       </NavigationBarButton>

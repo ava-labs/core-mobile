@@ -10,17 +10,19 @@ import notifee, {
   TriggerType
 } from '@notifee/react-native'
 import messaging from '@react-native-firebase/messaging'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
+import {
+  HandleNotificationCallback,
+  NotificationData
+} from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { EVENT_TO_CH_ID } from 'services/fcm/FCMService'
 import {
   ChannelId,
-  DEFAULT_ANDROID_CHANNEL,
   NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
+import { resolveChannelId } from 'services/notifications/eventChannelMap'
 import { DisplayNotificationParams } from 'services/notifications/types'
 import { StakeCompleteNotification } from 'store/notifications'
 import { audioFiles } from 'utils/AudioFeedback'
@@ -32,6 +34,35 @@ import {
 } from './constants'
 
 class NotificationsService {
+  /**
+   * Notification data from a PRESS event delivered via the notifee background
+   * headless task. Held until either:
+   *
+   *  - The React tree becomes active (warm-background case) and consumes it
+   *    via {@link handlePendingBackgroundPress}, which captures analytics
+   *    and routes the deeplink callback.
+   *  - {@link getInitialNotification} runs on cold start and drains any
+   *    stale value via {@link consumePendingBackgroundPress} so the AppState
+   *    listener doesn't replay the same press once the user later
+   *    backgrounds and re-activates the app.
+   *
+   * Cold-start press analytics + deeplink are owned by
+   * {@link getInitialNotification}, which is why this field is intentionally
+   * not captured inside the notifee.onBackgroundEvent handler: capturing
+   * there would double-count cold-start presses (one 'background' from the
+   * headless task + one 'cold_start' from getInitialNotification — observed
+   * during CP-14006 device verification).
+   */
+  private pendingBackgroundPress: NotificationData | undefined
+
+  /**
+   * Notifee only supports a single background event handler. We guard against
+   * repeat calls so a future call site (e.g. an accidental import in another
+   * entry point or a hot-reload re-evaluation) cannot silently overwrite the
+   * registered handler — it would log a warning instead.
+   */
+  private backgroundHandlerRegistered = false
+
   async getNotificationSettings(): Promise<AuthorizationStatus> {
     const settings = await notifee.getNotificationSettings()
     return settings.authorizationStatus
@@ -213,18 +244,111 @@ class NotificationsService {
   }
 
   /**
-   * method should be registered as early on in your project as possible (e.g. the index.js file)
+   * Registers the notifee background event handler.
+   *
+   * MUST be called at the entry point of the app (e.g. index.js) BEFORE
+   * AppRegistry.registerComponent — notifee only supports a single background
+   * handler, so this should be the only call site for notifee.onBackgroundEvent.
+   *
+   * Background events run as a headless JS task. This handler intentionally
+   * does the minimum amount of work that is safe in that headless context:
+   *
+   *  - decrement the badge count by one (mirroring the foreground PRESS
+   *    handler so a tap clears its badge on every platform / app state), then
+   *  - cancel the matching trigger notification (idempotent native call), and
+   *  - stash the notification data into {@link pendingBackgroundPress}.
+   *
+   * Analytics capture is deliberately NOT performed here. The same PRESS is
+   * surfaced to the React-mounted context through one of two paths, which
+   * handle capture there (with both PostHog and the redux store guaranteed
+   * to be initialized):
+   *
+   *  - warm-background tap: AppState 'active' transition in DeeplinkContext
+   *    invokes {@link handlePendingBackgroundPress}.
+   *  - cold-start tap: notifee.getInitialNotification() returns the same
+   *    press inside {@link getInitialNotification}, which captures it as
+   *    `appState: 'cold_start'` and then drains the stale pending value via
+   *    {@link consumePendingBackgroundPress}.
+   *
+   * This split eliminates the duplicate-capture bug observed during CP-14006
+   * device verification (cold-start press emitting both 'background' and
+   * 'cold_start') without any state flag.
    */
-  onBackgroundEvent = (callback: HandleNotificationCallback): void => {
-    return notifee.onBackgroundEvent(async ({ type, detail }) => {
-      this.handleNotificationEvent({
-        type,
-        detail,
-        callback
-      }).catch(reason =>
-        Logger.error(`[NotificationsService.ts][onBackgroundEvent]${reason}`)
+  registerBackgroundNotificationHandler = (): void => {
+    if (this.backgroundHandlerRegistered) {
+      Logger.warn(
+        '[NotificationsService.ts][registerBackgroundNotificationHandler] handler already registered; ignoring duplicate call'
       )
+      return
+    }
+    this.backgroundHandlerRegistered = true
+
+    notifee.onBackgroundEvent(async ({ type, detail }) => {
+      // Wrap the entire body so a synchronous throw doesn't escape the
+      // headless task as an unhandled rejection.
+      try {
+        if (type !== EventType.PRESS) return
+
+        // Mirror the foreground PRESS handler — decrement the badge for every
+        // tap regardless of app state. Without this, taps that resume the app
+        // from background never clear their own badge, which leaves the badge
+        // permanently inflated even after the user reads the notification.
+        await this.decrementBadgeCount(1)
+
+        if (detail?.notification?.id) {
+          await this.cancelTriggerNotification(detail.notification.id)
+        }
+
+        const data = detail?.notification?.data as NotificationData | undefined
+        if (typeof data?.url !== 'string') return
+
+        this.pendingBackgroundPress = data
+      } catch (reason) {
+        Logger.error(
+          `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
+        )
+      }
     })
+  }
+
+  /**
+   * Drains the most recent background PRESS data (if any) without side
+   * effects. Intended for stale-cleanup paths such as
+   * {@link getInitialNotification} on cold start, where the same press has
+   * already been captured as `appState: 'cold_start'` and we just need to
+   * prevent the AppState listener from replaying it later.
+   */
+  consumePendingBackgroundPress = (): NotificationData | undefined => {
+    const data = this.pendingBackgroundPress
+    this.pendingBackgroundPress = undefined
+    return data
+  }
+
+  /**
+   * Warm-background press handler. Drains {@link pendingBackgroundPress},
+   * captures `PushNotificationPressed` (appState: 'background', handler:
+   * 'notifee'), and forwards the data to the provided callback for deeplink
+   * processing. No-op if nothing is pending.
+   *
+   * Intended to be called from an AppState 'active' transition in
+   * DeeplinkContext — that is the only point where we know the React tree
+   * is mounted and PostHog / redux are configured.
+   */
+  handlePendingBackgroundPress = (
+    callback: HandleNotificationCallback
+  ): void => {
+    const data = this.consumePendingBackgroundPress()
+    if (typeof data?.url !== 'string') return
+
+    const channelId = resolveChannelId({ data })
+    AnalyticsService.capture('PushNotificationPressed', {
+      channelId,
+      deeplinkUrl: data.url,
+      appState: 'background',
+      handler: 'notifee'
+    })
+
+    callback(data)
   }
 
   incrementBadgeCount = async (incrementBy?: number): Promise<void> => {
@@ -256,14 +380,29 @@ class NotificationsService {
       await this.cancelTriggerNotification(detail.notification.id)
     }
 
-    if (detail?.notification?.data) {
+    const data = detail?.notification?.data as NotificationData | undefined
+    // Match the historical "URL or skip" volume: only capture
+    // `PushNotificationPressed` when the press has an actionable deeplink.
+    // Presses with no URL (e.g. notifications fired without an action) would
+    // otherwise inflate the foreground metric and ship `deeplinkUrl: undefined`
+    // to PostHog.
+    if (typeof data?.url === 'string') {
+      const channelId = resolveChannelId({
+        androidChannelId: detail?.notification?.android?.channelId,
+        data
+      })
+      // Foreground PRESS is delivered through `notifee.onForegroundEvent` on
+      // BOTH platforms (notifee wraps the APNs alert path on iOS), so the
+      // handler is always `'notifee'` here regardless of `Platform.OS`.
       AnalyticsService.capture('PushNotificationPressed', {
-        channelId: detail.notification?.data?.channelId as string,
-        deeplinkUrl: detail.notification?.data?.url as string
+        channelId,
+        deeplinkUrl: data.url,
+        appState: 'foreground',
+        handler: 'notifee'
       })
     }
 
-    callback(detail?.notification?.data)
+    callback(data)
   }
 
   handleNotificationEvent = async ({
@@ -297,25 +436,121 @@ class NotificationsService {
     }
   }
 
-  // only for Android to obtain the notification data when the app is in the background
-  // for iOS, it is handled in the onForegroundEvent PRESS event
+  /**
+   * Picks up a notification press that caused the app to cold-start.
+   *
+   * Two display paths exist on Android, each surfaced through a different API:
+   *
+   *  1. Data-only FCM messages (current backend format) are displayed by
+   *     notifee inside FCMService.handleBackgroundMessageAndroid. The press
+   *     on such notifications can only be retrieved via
+   *     `notifee.getInitialNotification()` — `messaging().getInitialNotification()`
+   *     returns null for them because they were NOT displayed by the FCM SDK.
+   *
+   *  2. Legacy `notification + data` FCM payloads are displayed directly by
+   *     the FCM SDK. Their press is retrievable via
+   *     `messaging().getInitialNotification()`.
+   *
+   * Previously we only checked path (2), which meant every Android push press
+   * from the data-only path was lost on cold start — the root cause of the
+   * Android `PushNotificationPressed` under-reporting (CP-14006).
+   *
+   * On iOS this method is mostly a no-op for analytics because notifee's
+   * `getInitialNotification` is deprecated on iOS and APNs-displayed
+   * notifications are handled via `onForegroundEvent` / `onNotificationOpenedApp`.
+   */
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
-    return messaging()
-      .getInitialNotification()
-      .then(notification => {
-        // if the notification has a url, we need to capture the analytics for the push notification pressed
-        if (notification && notification.data?.url) {
-          AnalyticsService.capture('PushNotificationPressed', {
-            channelId:
-              EVENT_TO_CH_ID[notification.data.event as string] ??
-              DEFAULT_ANDROID_CHANNEL,
-            deeplinkUrl: notification.data?.url as string
+    let handledColdStart = false
+    try {
+      const [notifeeInitial, fcmInitial] = await Promise.all([
+        notifee.getInitialNotification().catch(reason => {
+          Logger.error(
+            `[NotificationsService.ts][getInitialNotification:notifee]${reason}`
+          )
+          return null
+        }),
+        messaging()
+          .getInitialNotification()
+          .catch(reason => {
+            Logger.error(
+              `[NotificationsService.ts][getInitialNotification:fcm]${reason}`
+            )
+            return null
           })
-        }
-        callback(notification?.data)
-      })
+      ])
+
+      // Prefer notifee: notifee actually displayed the notification on the
+      // data-only Android path, so its data is the source of truth. The
+      // legacy `notification` payload (FCM-displayed) is also being phased
+      // out on the backend.
+      const notifeeData = notifeeInitial?.notification?.data as
+        | NotificationData
+        | undefined
+
+      if (typeof notifeeData?.url === 'string') {
+        const channelId = resolveChannelId({
+          androidChannelId: notifeeInitial?.notification?.android?.channelId,
+          data: notifeeData
+        })
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId,
+          deeplinkUrl: notifeeData.url,
+          appState: 'cold_start',
+          handler: 'notifee'
+        })
+        callback(notifeeData)
+        handledColdStart = true
+        return
+      }
+
+      const fcmData = fcmInitial?.data as NotificationData | undefined
+      // The FCM cold-start path delivers the raw backend SNS payload (the
+      // notifee path is already normalized in FCMService.#extractDeepLinkData,
+      // which is why we only need the fallback here). NEWS notifications can
+      // arrive with only `urlV2` populated — accept either to avoid dropping
+      // legacy-iOS NEWS cold-start presses. DeeplinkContext already resolves
+      // `urlV2 ?? url` when routing the deeplink, so forwarding `fcmData`
+      // as-is keeps the downstream contract intact.
+      // TODO: remove `urlV2` fallback after backend is updated to send `url`
+      // for NEWS notifications.
+      const fcmDeeplinkUrl =
+        typeof fcmData?.url === 'string'
+          ? fcmData.url
+          : typeof fcmData?.urlV2 === 'string'
+          ? fcmData.urlV2
+          : undefined
+
+      if (fcmDeeplinkUrl !== undefined) {
+        const channelId = resolveChannelId({ data: fcmData })
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId,
+          deeplinkUrl: fcmDeeplinkUrl,
+          appState: 'cold_start',
+          handler: 'fcm'
+        })
+        callback(fcmData)
+        handledColdStart = true
+        return
+      }
+
+      callback(undefined)
+    } finally {
+      // On cold start the notifee headless background handler also stashes
+      // the same press into `pendingBackgroundPress`. If we just handled it
+      // here, drain it — otherwise the next AppState 'active' transition
+      // would re-fire the same deeplink via the listener in DeeplinkContext.
+      //
+      // We deliberately do NOT drain when no cold-start press was found:
+      // the effect that calls this method re-runs on
+      // `isAllNotificationsBlocked` toggles, and a legitimate warm-background
+      // press can already be sitting in `pendingBackgroundPress` waiting for
+      // the AppState listener to consume it.
+      if (handledColdStart) {
+        this.consumePendingBackgroundPress()
+      }
+    }
   }
 
   cancelAllNotifications = async (): Promise<void> => {

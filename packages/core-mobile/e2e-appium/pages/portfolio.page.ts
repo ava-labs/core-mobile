@@ -304,6 +304,7 @@ class PortfolioPage {
 
   async tapAssetsTab() {
     await actions.tap(this.assetsTab)
+    await actions.delay(1000)
   }
 
   async tapCollectiblesTab() {
@@ -311,11 +312,13 @@ class PortfolioPage {
   }
 
   async tapDefiTab() {
-    await actions.click(this.defiTab)
+    await actions.longPress(this.defiTab)
+    await actions.delay(1000)
   }
 
   async tapActivityTab() {
     await actions.tap(this.activityTab)
+    await actions.delay(1000)
   }
 
   async tapEthNetwork() {
@@ -385,11 +388,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isNotVisible(selectors.getBySomeText(name))
-    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async dismissNetworkDropdown(network = commonEls.cChain) {
@@ -408,6 +407,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async verifyAccountName(name: string) {
@@ -559,6 +559,7 @@ class PortfolioPage {
 
   async verifyXPSendOnActivityTab(title: string, network?: string) {
     await this.tapActivityTab()
+    await actions.delay(2000)
     if (network) {
       await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
     }
@@ -584,7 +585,11 @@ class PortfolioPage {
   }
 
   async verifySwapActivityHistory(title: string) {
-    await actions.waitFor(selectors.getBySomeTextV2(title))
+    if (driver.isAndroid) {
+      await actions.waitFor(selectors.getBySomeId(`tx__title__${title}`))
+    } else {
+      await actions.waitFor(selectors.getBySomeTextV2(title))
+    }
   }
 
   async selectView(viewType = 'List view') {

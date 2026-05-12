@@ -70,8 +70,5 @@ export type {
   PresetButton as CircularDialPresetButton
 } from './CircularDial/types'
 export * from './LeverageGauge/LeverageGauge'
-export type {
-  LeverageGaugeProps,
-  Preset as LeverageGaugePreset
-} from './LeverageGauge/types'
+export type { LeverageGaugeProps } from './LeverageGauge/types'
 export * from './SlidingButton/SlidingButton'

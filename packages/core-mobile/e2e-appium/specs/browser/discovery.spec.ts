@@ -5,17 +5,26 @@ import browserLoc from '../../locators/browser.loc'
 import { actions } from '../../helpers/actions'
 
 describe('Browser - Discovery', () => {
-  it('Should navigate to Discovery dapp', async () => {
+  before(async () => {
     await warmup()
     await bottomTabsPage.tapBrowserTab()
+  })
 
-    await browserPage.tapFirstEcosystemCarouselItem()
+  it('Should navigates to suggested dApps', async () => {
+    await actions.tap(browserPage.searchBar)
+    await browserPage.tapFirstSuggestedItem()
+    await browserPage.verifyUrlLoaded()
+  })
+
+  it('Should navigate to Discovery dapp', async () => {
+    await browserPage.removeAllTabs()
+    await browserPage.tapBlazeEcosystemCarouselItem()
     await browserPage.verifyUrlLoaded()
   })
 
   it('Should navigate to a trending project', async () => {
     await browserPage.removeAllTabs()
-    await browserPage.tapFirstTrendingProjectOpenBtn()
+    await browserPage.tapTrendingProjectOpenBtn()
     await browserPage.verifyUrlLoaded()
   })
 
@@ -23,12 +32,5 @@ describe('Browser - Discovery', () => {
     await browserPage.removeAllTabs()
     await browserPage.tapFirstLearnItem()
     await browserPage.verifyUrlContains(browserLoc.supportCoreApp)
-  })
-
-  it('Should navigates to suggested dApps', async () => {
-    await browserPage.removeAllTabs()
-    await actions.tap(browserPage.searchBar)
-    await browserPage.tapFirstSuggestedItem()
-    await browserPage.verifyUrlLoaded()
   })
 })

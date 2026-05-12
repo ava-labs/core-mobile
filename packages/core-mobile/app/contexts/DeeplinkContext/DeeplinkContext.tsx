@@ -8,7 +8,7 @@ import React, {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsIdled, selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
-import { Linking } from 'react-native'
+import { AppState, Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
 import {
@@ -91,10 +91,24 @@ export const DeeplinkContextProvider = ({
       handleNotificationCallback
     )
 
-    NotificationsService.onBackgroundEvent(handleNotificationCallback)
+    // The notifee background event handler is registered once in `index.js`
+    // (notifee only supports a single handler). When a background PRESS
+    // occurs while the app is alive but minimized, that headless handler
+    // stashes the notification data; on the next AppState 'active'
+    // transition we drain it here — analytics capture + deeplink callback
+    // both happen inside NotificationsService.handlePendingBackgroundPress
+    // so they run in a React-mounted context with PostHog configured.
+    // Cold-start press is handled separately via getInitialNotification.
+    const appStateSub = AppState.addEventListener('change', state => {
+      if (state !== 'active') return
+      NotificationsService.handlePendingBackgroundPress(
+        handleNotificationCallback
+      )
+    })
 
     return () => {
       unsubscribeForegroundEvent()
+      appStateSub.remove()
     }
   }, [handleNotificationCallback, isAllNotificationsBlocked])
 

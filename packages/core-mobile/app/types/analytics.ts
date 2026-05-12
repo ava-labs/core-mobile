@@ -252,6 +252,31 @@ export type AnalyticsEvents = {
   PushNotificationPressed: {
     channelId: string
     deeplinkUrl?: string
+    /**
+     * App state at the moment the press was received.
+     *
+     * - `foreground`: app is open and in view.
+     * - `background`: app is alive but minimized (warm resume on tap).
+     * - `cold_start`: app was killed and was launched by the press.
+     *
+     * Combined with `handler` to identify the exact capture path. Added for
+     * CP-14006 verification — lets us break down underreporting by app state
+     * regardless of which RN API caught the press.
+     */
+    appState: 'foreground' | 'background' | 'cold_start'
+    /**
+     * Which RN notification API delivered the press to us.
+     *
+     * - `notifee`: notifee.onForegroundEvent / onBackgroundEvent /
+     *              getInitialNotification — used for all Android data-only
+     *              notifications and for foreground notifications on both
+     *              platforms.
+     * - `fcm`:     messaging().onNotificationOpenedApp /
+     *              getInitialNotification — used when the FCM SDK displays
+     *              the notification itself (iOS APNs alert path, or legacy
+     *              Android `notification` payload).
+     */
+    handler: 'notifee' | 'fcm'
   }
   PushNotificationUnsubscribed: {
     channelId: string

@@ -1,4 +1,7 @@
+export * from './clamp'
 export * from './colors'
+export * from './getStepDecimals'
+export * from './haptics'
 export * from './screens'
 export * from './animations'
 export * from './tokenUnitInput'

@@ -4,7 +4,7 @@ import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
 describe('Send transaction', () => {
-  it('[Smoke] should send ETH on Ethereum', async () => {
+  it('should send ETH on Ethereum', async () => {
     // login & create account
     await warmup()
     // Send

@@ -28,7 +28,10 @@ export const LogoWithNetwork = ({
   const networkLogoInset = size === 'large' ? -2 : -4
 
   return (
-    <View sx={{ width: width, height: width }}>
+    <View
+      accessible={true}
+      testID={testID}
+      sx={{ width: width, height: width }}>
       <Image
         source={{ uri: item.logoUrl }}
         style={{
@@ -36,7 +39,6 @@ export const LogoWithNetwork = ({
           height: width,
           borderRadius: width / 2
         }}
-        testID={testID}
       />
       <Image
         source={{ uri: networkLogo }}

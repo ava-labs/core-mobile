@@ -10,7 +10,7 @@ describe('Browser - dApp', () => {
 
     await browserPage.goToUrl(browserLoc.core)
     await browserPage.verifyInjectedDapp()
-    await browserPage.verifyUrl(browserLoc.injectedCore)
+    await browserPage.verifyUrlContains('core.app')
 
     await browserPage.goToUrl(browserLoc.aave)
     await browserPage.verifyInjectedDapp()

@@ -1,27 +1,13 @@
+import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
-  clamp,
   commitDraftText,
   formatNumber,
-  getStepDecimals,
   isMajorTick,
-  resolvePreset,
   sanitizeTypedText,
   shouldSyncExternalValue,
   snapToStep,
   validateRange
 } from './helpers'
-
-describe('clamp', () => {
-  it('returns the value when within range', () => {
-    expect(clamp(5, 1, 10)).toBe(5)
-  })
-  it('clamps below min', () => {
-    expect(clamp(-3, 1, 10)).toBe(1)
-  })
-  it('clamps above max', () => {
-    expect(clamp(99, 1, 10)).toBe(10)
-  })
-})
 
 describe('snapToStep', () => {
   it('snaps to the nearest step from min', () => {
@@ -69,18 +55,6 @@ describe('getStepDecimals', () => {
     expect(getStepDecimals(-1)).toBe(0)
     expect(getStepDecimals(Number.NaN)).toBe(0)
     expect(getStepDecimals(Number.POSITIVE_INFINITY)).toBe(0)
-  })
-})
-
-describe('resolvePreset', () => {
-  it('returns min for "min"', () => {
-    expect(resolvePreset('min', 1, 40)).toBe(1)
-  })
-  it('returns max for "max"', () => {
-    expect(resolvePreset('max', 1, 40)).toBe(40)
-  })
-  it('returns the number as-is for numeric presets', () => {
-    expect(resolvePreset(5, 1, 40)).toBe(5)
   })
 })
 

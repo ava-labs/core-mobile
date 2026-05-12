@@ -15,22 +15,6 @@ export const Default = (): JSX.Element => {
   )
 }
 
-export const WithNumericPresets = (): JSX.Element => {
-  const [value, setValue] = useState(5)
-  return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
-      <Text>Presets: min, 2, 5, 10, max</Text>
-      <LeverageGauge
-        value={value}
-        onChange={setValue}
-        min={1}
-        max={40}
-        presets={['min', 2, 5, 10, 'max']}
-      />
-    </ScrollView>
-  )
-}
-
 export const ManualInput = (): JSX.Element => {
   const [value, setValue] = useState(5)
   return (
@@ -43,23 +27,6 @@ export const ManualInput = (): JSX.Element => {
         max={40}
         step={0.2}
         enableManualInput
-      />
-    </ScrollView>
-  )
-}
-
-export const CustomFormat = (): JSX.Element => {
-  const [value, setValue] = useState(3)
-  return (
-    <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
-      <Text>Custom formatValue</Text>
-      <LeverageGauge
-        value={value}
-        onChange={setValue}
-        min={1}
-        max={10}
-        formatValue={v => `×${v.toFixed(1)}`}
-        step={0.5}
       />
     </ScrollView>
   )

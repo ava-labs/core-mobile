@@ -1,4 +1,6 @@
 export default {
+  saveId: 'save_btn',
+  cancelId: 'cancel_btn',
   bottomSheet: 'bottom_sheet',
   privacyScreen: 'privacy_screen',
   keypadUpButton: 'keypad_up_button',
