@@ -101,7 +101,19 @@ export type AnalyticsEvents = {
   SeedlessExportPhraseHidden: undefined
   SeedlessExportPhraseRevealed: undefined
   SeedlessMfaVerified: { type: string }
-  SeedlessLoginFailed: { reason: string }
+  SeedlessLoginFailed: {
+    reason: string
+    stage?:
+      | 'oidc-token'
+      | 'identity-proof'
+      | 'register'
+      | 'auth'
+      | 'secure-store'
+      | 'post-auth'
+    oidcProvider?: number
+    errorName?: string
+    errorCode?: string
+  }
   SeedlessRegisterTOTPStartFailed: undefined
   SeedlessSignIn: { oidcProvider: number }
   SeedlessSignUp: { oidcProvider: number }
