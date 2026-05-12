@@ -2,7 +2,6 @@ import React from 'react'
 import { renderHook } from '@testing-library/react-hooks'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
-import Big from 'big.js'
 import { advancedReducer } from 'store/settings/advanced/slice'
 import { WalletType } from 'services/wallet/types'
 import { useQuickSwaps } from './useQuickSwaps'
@@ -24,7 +23,7 @@ const buildStore = (
     feeSetting: 'low' | 'medium' | 'high'
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'
   }>
-) => {
+): ReturnType<typeof configureStore> => {
   const flagOn = overrides?.flagOn ?? true
   return configureStore({
     reducer: {
@@ -101,14 +100,5 @@ describe('useQuickSwaps', () => {
       wrapper: wrap(buildStore({ isEnabled: false }))
     })
     expect(result.current.isEnabled).toBe(false)
-  })
-
-  it('isAmountOverLimit delegates to util', () => {
-    const { result } = renderHook(() => useQuickSwaps(), {
-      wrapper: wrap(buildStore({ maxBuy: '1000' }))
-    })
-    expect(result.current.isAmountOverLimit(new Big('500'))).toBe(false)
-    expect(result.current.isAmountOverLimit(new Big('1500'))).toBe(true)
-    expect(result.current.isAmountOverLimit(undefined)).toBe(true)
   })
 })

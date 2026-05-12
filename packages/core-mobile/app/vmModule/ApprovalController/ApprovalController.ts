@@ -350,6 +350,55 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
+  // Signs the supplied transactions with the request's bypass context.
+  // Both single-tx and batch bypass paths funnel through here so the
+  // signing-context read and error wrapping live in one place.
+  private signWithBypassContext = async ({
+    request,
+    transactions,
+    errorLabel
+  }: {
+    request: ApprovalParams['request']
+    transactions: readonly Parameters<
+      typeof WalletService.sign
+    >[0]['transaction'][]
+    errorLabel: string
+  }): Promise<
+    | { signedTxs: { signedData: string }[] }
+    | { error: ReturnType<typeof rpcErrors.internal> }
+  > => {
+    const signingContext = readBatchSigningContext(request)
+    if (!signingContext) {
+      return {
+        error: rpcErrors.internal({
+          message: `${errorLabel}: signing context missing from request`
+        })
+      }
+    }
+    try {
+      const signedTxs: { signedData: string }[] = []
+      for (const tx of transactions) {
+        const signedData = await WalletService.sign({
+          walletId: signingContext.walletId,
+          walletType: signingContext.walletType,
+          transaction: tx,
+          accountIndex: signingContext.accountIndex,
+          network: signingContext.network,
+          sentrySpanName: 'sign-transaction'
+        })
+        signedTxs.push({ signedData })
+      }
+      return { signedTxs }
+    } catch (err) {
+      return {
+        error: rpcErrors.internal({
+          message:
+            err instanceof Error ? err.message : `${errorLabel}: sign failed`
+        })
+      }
+    }
+  }
+
   // Returns null when the validator defers to the manual modal.
   // EvmSigner.sign only attaches SWAP_AUTO_APPROVE when tx.maxFeePerGas
   // is already filled — so signingData.data is broadcast-ready here.
@@ -359,39 +408,26 @@ class ApprovalController implements VmModuleApprovalController {
   ): Promise<ApprovalResponse | null> => {
     const verdict = await validator.validate(params)
     if (verdict.isValid) {
-      const signingContext = readBatchSigningContext(params.request)
-      if (!signingContext) {
+      const tx = (
+        params.signingData as {
+          data: Parameters<typeof WalletService.sign>[0]['transaction']
+        }
+      ).data
+      const result = await this.signWithBypassContext({
+        request: params.request,
+        transactions: [tx],
+        errorLabel: 'requestApproval'
+      })
+      if ('error' in result) return result
+      const first = result.signedTxs[0]
+      if (!first) {
         return {
           error: rpcErrors.internal({
-            message:
-              'requestApproval: validator approved but signing context missing from request'
+            message: 'requestApproval: bypass sign returned no signed tx'
           })
         }
       }
-      try {
-        const signedData = await WalletService.sign({
-          walletId: signingContext.walletId,
-          walletType: signingContext.walletType,
-          transaction: (
-            params.signingData as {
-              data: Parameters<typeof WalletService.sign>[0]['transaction']
-            }
-          ).data,
-          accountIndex: signingContext.accountIndex,
-          network: signingContext.network,
-          sentrySpanName: 'sign-transaction'
-        })
-        return { signedData }
-      } catch (err) {
-        return {
-          error: rpcErrors.internal({
-            message:
-              err instanceof Error
-                ? err.message
-                : 'requestApproval: bypass sign failed'
-          })
-        }
-      }
+      return { signedData: first.signedData }
     }
 
     if (verdict.requiresManualApproval) {
@@ -496,39 +532,13 @@ class ApprovalController implements VmModuleApprovalController {
 
     const verdict = await validator.validate(params)
     if (verdict.isValid) {
-      const signingContext = readBatchSigningContext(request)
-      if (!signingContext) {
-        return {
-          error: rpcErrors.internal({
-            message:
-              'eth_sendTransactionBatch: signing context missing from request'
-          })
-        }
-      }
-      try {
-        const signedTxs: { signedData: string }[] = []
-        for (const sr of signingRequests) {
-          const signedData = await WalletService.sign({
-            walletId: signingContext.walletId,
-            walletType: signingContext.walletType,
-            transaction: sr.signingData.data,
-            accountIndex: signingContext.accountIndex,
-            network: signingContext.network,
-            sentrySpanName: 'sign-transaction'
-          })
-          signedTxs.push({ signedData })
-        }
-        return { result: signedTxs }
-      } catch (err) {
-        return {
-          error: rpcErrors.internal({
-            message:
-              err instanceof Error
-                ? err.message
-                : 'eth_sendTransactionBatch: batch sign failed'
-          })
-        }
-      }
+      const result = await this.signWithBypassContext({
+        request,
+        transactions: signingRequests.map(sr => sr.signingData.data),
+        errorLabel: 'eth_sendTransactionBatch'
+      })
+      if ('error' in result) return result
+      return { result: result.signedTxs }
     }
 
     if (verdict.requiresManualApproval) {

@@ -5,7 +5,7 @@ export type SuggestedGasFees = Partial<
   Record<FeeRateTier, { maxFeePerGas: bigint; maxPriorityFeePerGas?: bigint }>
 >
 
-export type QuickSwapsGasSettings = {
+type QuickSwapsGasSettings = {
   maxFeePerGas: bigint
   maxPriorityFeePerGas?: bigint
 }

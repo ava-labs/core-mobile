@@ -2,7 +2,6 @@ import type { RootState } from 'store/types'
 import { advancedReducer, advancedSlice } from './slice'
 import {
   selectIsQuickSwapsEnabled,
-  selectQuickSwaps,
   selectQuickSwapsFeeSetting,
   selectQuickSwapsMaxBuy
 } from './slice'
@@ -42,7 +41,6 @@ describe('advancedSlice — quickSwaps', () => {
       ...initialState,
       quickSwaps: { isEnabled: true, feeSetting: 'low', maxBuy: '10000' }
     } as typeof initialState
-    expect(selectQuickSwaps(wrap(next))).toEqual(next.quickSwaps)
     expect(selectIsQuickSwapsEnabled(wrap(next))).toBe(true)
     expect(selectQuickSwapsFeeSetting(wrap(next))).toBe('low')
     expect(selectQuickSwapsMaxBuy(wrap(next))).toBe('10000')

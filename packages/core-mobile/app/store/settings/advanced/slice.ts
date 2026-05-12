@@ -1,11 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import {
-  initialState,
-  QuickSwapFeeLevel,
-  QuickSwapMaxBuy,
-  QuickSwapsSettings
-} from './types'
+import { initialState, QuickSwapFeeLevel, QuickSwapMaxBuy } from './types'
 
 const reducerName = 'advanced'
 
@@ -40,9 +35,6 @@ export const selectIsDeveloperMode = (state: RootState): boolean =>
 
 export const selectIsLeftHanded = (state: RootState): boolean =>
   state.settings.advanced.isLeftHanded
-
-export const selectQuickSwaps = (state: RootState): QuickSwapsSettings =>
-  state.settings.advanced.quickSwaps
 
 export const selectIsQuickSwapsEnabled = (state: RootState): boolean =>
   state.settings.advanced.quickSwaps.isEnabled
