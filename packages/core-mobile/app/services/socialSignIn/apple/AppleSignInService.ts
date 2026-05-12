@@ -1,6 +1,7 @@
 import appleAuth from '@invertase/react-native-apple-authentication'
 import { OidcPayload } from 'seedless/types'
 import Logger from 'utils/Logger'
+import { formatSignInErrorReason } from '../formatSignInErrorReason'
 import { AppleSigninServiceInterface } from './types'
 
 class AppleSigninService implements AppleSigninServiceInterface {
@@ -31,7 +32,7 @@ class AppleSigninService implements AppleSigninServiceInterface {
 
       if (credentialState !== appleAuth.State.AUTHORIZED) {
         Logger.error('iOS Apple sign in error: unauthorized user')
-        throw new Error('iOS Apple sign in error unauthorized user')
+        throw new Error('iOS Apple sign in error: unauthorized user')
       }
 
       return { oidcToken: identityToken }
@@ -43,8 +44,15 @@ class AppleSigninService implements AppleSigninServiceInterface {
       ) {
         throw new Error('USER_CANCELED')
       }
-      Logger.error('iOS Apple sign in error', error)
-      throw new Error('iOS Apple sign in error')
+      if (
+        error instanceof Error &&
+        error.message.startsWith('iOS Apple sign in error')
+      ) {
+        throw error
+      }
+      const reason = formatSignInErrorReason(error)
+      Logger.error(`iOS Apple sign in error: ${reason}`, error)
+      throw new Error(`iOS Apple sign in error: ${reason}`)
     }
   }
 }

@@ -20,6 +20,44 @@ import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useRecoveryMethodContext } from '../contexts/RecoveryMethodProvider'
 import { MfaType } from '../types/types'
 
+type SeedlessRegisterStage =
+  | 'oidc-token'
+  | 'identity-proof'
+  | 'register'
+  | 'auth'
+  | 'secure-store'
+  | 'post-auth'
+
+type ErrorContext = {
+  reason: string
+  errorName?: string
+  errorCode?: string
+}
+
+// Exception-safe extraction. Errors with throwing getters on .message / .code
+// (or hostile Proxies, etc.) must not blow up the catch handler itself.
+const extractErrorContext = (error: unknown): ErrorContext => {
+  try {
+    const reason = error instanceof Error ? error.message : String(error)
+    const errorName = error instanceof Error ? error.name : undefined
+    let errorCode: string | undefined
+    if (error && typeof error === 'object') {
+      for (const key of ['code', 'errorCode']) {
+        if (key in error) {
+          const value = (error as Record<string, unknown>)[key]
+          if (value !== undefined && value !== null) {
+            errorCode = String(value)
+            break
+          }
+        }
+      }
+    }
+    return { reason, errorName, errorCode }
+  } catch {
+    return { reason: 'unserializable error' }
+  }
+}
+
 type RegisterProps = {
   getOidcToken: () => Promise<OidcPayload>
   oidcProvider: OidcProviders
@@ -80,23 +118,33 @@ export const useSeedlessRegister = (): ReturnType => {
   RegisterProps): Promise<void> => {
     setIsRegistering(true)
 
+    let stage: SeedlessRegisterStage = 'oidc-token'
+
     try {
       const { oidcToken } = await getOidcToken()
+
+      stage = 'identity-proof'
       const identity = await SeedlessService.session.oidcProveIdentity(
         oidcToken
       )
+
+      stage = 'register'
       const result = await CoreSeedlessAPIService.register(identity)
+
+      stage = 'auth'
       const signResponse = await SeedlessService.session.requestOidcAuth(
         oidcToken
       )
       const isMfaRequired = signResponse.requiresMfa()
 
+      stage = 'secure-store'
       // persist email and provider for later use with refresh token flow
       // email is always the same on the cubist's side
       // even if user changes it in the provider, it doesn't change
       await SecureStorageService.store(KeySlot.OidcUserId, identity.email)
       await SecureStorageService.store(KeySlot.OidcProvider, oidcProvider)
 
+      stage = 'post-auth'
       const mfaId = signResponse.mfaId()
 
       if (result === SeedlessUserRegistrationResult.ALREADY_REGISTERED) {
@@ -138,13 +186,20 @@ export const useSeedlessRegister = (): ReturnType => {
           })
         }
       } else {
+        stage = 'register'
         throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
     } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      if (reason !== 'USER_CANCELED') {
-        AnalyticsService.capture('SeedlessLoginFailed', { reason })
-        Logger.error('useSeedlessRegister error', error)
+      const ctx = extractErrorContext(error)
+      if (ctx.reason !== 'USER_CANCELED') {
+        AnalyticsService.capture('SeedlessLoginFailed', {
+          reason: ctx.reason,
+          stage,
+          oidcProvider,
+          ...(ctx.errorName ? { errorName: ctx.errorName } : {}),
+          ...(ctx.errorCode ? { errorCode: ctx.errorCode } : {})
+        })
+        Logger.error(`useSeedlessRegister error [${stage}]`, error)
       }
       throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {

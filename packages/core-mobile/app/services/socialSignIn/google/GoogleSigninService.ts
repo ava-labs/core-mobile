@@ -6,6 +6,7 @@ import {
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { OidcPayload } from 'seedless/types'
+import { formatSignInErrorReason } from '../formatSignInErrorReason'
 
 if (!Config.GOOGLE_OAUTH_CLIENT_WEB_ID) {
   Logger.warn(
@@ -56,8 +57,11 @@ class GoogleSigninService {
       ) {
         throw error
       }
-      Logger.error('Google sign in error', error)
-      throw error instanceof Error ? error : new Error('Google sign in error')
+      const reason = formatSignInErrorReason(error)
+      Logger.error(`Google sign in error: ${reason}`, error)
+      throw error instanceof Error
+        ? error
+        : new Error(`Google sign in error: ${reason}`)
     }
   }
 
