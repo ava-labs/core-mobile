@@ -198,14 +198,8 @@ const ContactListItem = ({
       : null
   const isLedger = ledgerDerivationLabel !== null
 
-  const walletLabel =
-    wallet?.type === WalletType.PRIVATE_KEY
-      ? 'Imported'
-      : ledgerDerivationLabel
-      ? wallet?.name
-        ? `${wallet.name} · ${ledgerDerivationLabel}`
-        : ledgerDerivationLabel
-      : wallet?.name
+  const walletNameText =
+    wallet?.type === WalletType.PRIVATE_KEY ? 'Imported' : wallet?.name
 
   return (
     <ListViewItem
@@ -214,7 +208,12 @@ const ContactListItem = ({
       renderTop={() =>
         wallet &&
         (walletsCount > 1 || isLedger) && (
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 2
+            }}>
             <WalletIcon
               width={16}
               height={16}
@@ -222,14 +221,32 @@ const ContactListItem = ({
               color={theme.colors.$textSecondary}
               isExpanded
             />
-            <Text
-              variant="buttonSmall"
-              sx={{
-                color: '$textSecondary',
-                lineHeight: 16
-              }}>
-              {walletLabel}
-            </Text>
+            {walletNameText ? (
+              <Text
+                variant="buttonSmall"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                sx={{
+                  color: '$textSecondary',
+                  lineHeight: 16,
+                  flexShrink: 1
+                }}>
+                {walletNameText}
+              </Text>
+            ) : null}
+            {ledgerDerivationLabel ? (
+              <Text
+                variant="buttonSmall"
+                numberOfLines={1}
+                sx={{
+                  color: '$textSecondary',
+                  lineHeight: 16
+                }}>
+                {walletNameText
+                  ? ` · ${ledgerDerivationLabel}`
+                  : ledgerDerivationLabel}
+              </Text>
+            ) : null}
           </View>
         )
       }
