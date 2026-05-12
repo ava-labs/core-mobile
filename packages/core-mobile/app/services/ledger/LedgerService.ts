@@ -1256,14 +1256,17 @@ class LedgerService {
     startIndex = 0,
     signal?: AbortSignal
   ): Promise<(PublicKeyInfo[] | null)[]> {
-    // Open and wait for the Solana app once before the loop instead of
-    // on every iteration — the app stays open between APDUs (CP-14062).
-    await this.openApp(LedgerAppType.SOLANA)
-    await this.waitForApp(
-      LedgerAppType.SOLANA,
-      LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT,
-      signal
-    )
+    if (count <= 0) return []
+    if (signal?.aborted) {
+      Logger.info('getSolanaKeysForRange: aborted before app open')
+      return []
+    }
+
+    // Ensure the Solana app is open and ready once before the loop instead
+    // of on every iteration — the app stays open between APDUs (CP-14062).
+    // ensureAppReady skips the openApp APDU when the cached state already
+    // matches Solana, and always runs waitForApp to verify device readiness.
+    await this.ensureAppReady(LedgerAppType.SOLANA, signal)
 
     const results: (PublicKeyInfo[] | null)[] = []
 

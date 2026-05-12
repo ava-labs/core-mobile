@@ -133,6 +133,11 @@ export async function deriveAddressesBatch(
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<Map<number, DerivedAddresses>> {
+  if (avalancheXpubs.length !== accountIndices.length) {
+    throw new Error(
+      `deriveAddressesBatch requires avalancheXpubs and accountIndices to have the same length; received ${avalancheXpubs.length} avalanche xpubs for ${accountIndices.length} account indices.`
+    )
+  }
   try {
     const results = await nativeDeriveAddresses(
       evmXpub,

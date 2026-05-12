@@ -5,10 +5,14 @@
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/ThreadPool.hpp>
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <cmath>
 #include <exception>
+#include <mutex>
 #include <stdexcept>
+#include <thread>
+#include <utility>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
