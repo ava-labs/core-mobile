@@ -300,6 +300,53 @@ describe('getInitialNotification', () => {
     expect(callback).toHaveBeenCalledWith(data)
   })
 
+  it('falls back to urlV2 when the FCM initial notification only has urlV2 (legacy iOS NEWS payload)', async () => {
+    // NEWS notifications can arrive with only `urlV2`; the FCM cold-start
+    // path receives the raw backend SNS payload (notifee path is normalized
+    // upstream), so without this fallback we silently drop NEWS cold-start
+    // presses on the legacy iOS APNs alert route.
+    const data = {
+      urlV2: 'core://watchlist',
+      event: 'PRICE_ALERTS'
+    }
+    setFcmInitial({ data })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledTimes(1)
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRICE_ALERTS,
+        deeplinkUrl: 'core://watchlist',
+        appState: 'cold_start',
+        handler: 'fcm'
+      }
+    )
+    expect(callback).toHaveBeenCalledWith(data)
+  })
+
+  it('prefers url over urlV2 in the FCM initial notification payload', async () => {
+    const data = {
+      url: 'core://portfolio',
+      urlV2: 'core://watchlist',
+      event: 'PRICE_ALERTS'
+    }
+    setFcmInitial({ data })
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.PRICE_ALERTS,
+        deeplinkUrl: 'core://portfolio',
+        appState: 'cold_start',
+        handler: 'fcm'
+      }
+    )
+  })
+
   it('does not capture and invokes callback with undefined when no initial notification is present in either source', async () => {
     await NotificationsService.getInitialNotification(callback)
 
@@ -498,6 +545,20 @@ describe('registerBackgroundNotificationHandler', () => {
     expect(cancelSpy).toHaveBeenCalledWith('noti-1')
   })
 
+  it('decrements the badge count on PRESS events (mirrors the foreground handler)', async () => {
+    // The foreground handler decrements on PRESS; without the matching
+    // decrement here a warm-background tap (or any cold-start tap) would
+    // leave the badge inflated even after the user read the notification.
+    NotificationsService.registerBackgroundNotificationHandler()
+
+    await getHandler()({
+      type: EventType.PRESS,
+      detail: { notification: { id: 'noti-badge' } }
+    })
+
+    expect(notifee.decrementBadgeCount).toHaveBeenCalledWith(1)
+  })
+
   it('ignores non-PRESS background events (e.g. DELIVERED)', async () => {
     const cancelSpy = jest
       .spyOn(NotificationsService, 'cancelTriggerNotification')
@@ -511,6 +572,7 @@ describe('registerBackgroundNotificationHandler', () => {
     })
 
     expect(cancelSpy).not.toHaveBeenCalled()
+    expect(notifee.decrementBadgeCount).not.toHaveBeenCalled()
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
   })
 

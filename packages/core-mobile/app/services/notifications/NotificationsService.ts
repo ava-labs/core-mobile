@@ -253,6 +253,8 @@ class NotificationsService {
    * Background events run as a headless JS task. This handler intentionally
    * does the minimum amount of work that is safe in that headless context:
    *
+   *  - decrement the badge count by one (mirroring the foreground PRESS
+   *    handler so a tap clears its badge on every platform / app state), then
    *  - cancel the matching trigger notification (idempotent native call), and
    *  - stash the notification data into {@link pendingBackgroundPress}.
    *
@@ -286,6 +288,12 @@ class NotificationsService {
       // headless task as an unhandled rejection.
       try {
         if (type !== EventType.PRESS) return
+
+        // Mirror the foreground PRESS handler — decrement the badge for every
+        // tap regardless of app state. Without this, taps that resume the app
+        // from background never clear their own badge, which leaves the badge
+        // permanently inflated even after the user reads the notification.
+        await this.decrementBadgeCount(1)
 
         if (detail?.notification?.id) {
           await this.cancelTriggerNotification(detail.notification.id)
@@ -498,12 +506,27 @@ class NotificationsService {
       }
 
       const fcmData = fcmInitial?.data as NotificationData | undefined
+      // The FCM cold-start path delivers the raw backend SNS payload (the
+      // notifee path is already normalized in FCMService.#extractDeepLinkData,
+      // which is why we only need the fallback here). NEWS notifications can
+      // arrive with only `urlV2` populated — accept either to avoid dropping
+      // legacy-iOS NEWS cold-start presses. DeeplinkContext already resolves
+      // `urlV2 ?? url` when routing the deeplink, so forwarding `fcmData`
+      // as-is keeps the downstream contract intact.
+      // TODO: remove `urlV2` fallback after backend is updated to send `url`
+      // for NEWS notifications.
+      const fcmDeeplinkUrl =
+        typeof fcmData?.url === 'string'
+          ? fcmData.url
+          : typeof fcmData?.urlV2 === 'string'
+          ? fcmData.urlV2
+          : undefined
 
-      if (typeof fcmData?.url === 'string') {
+      if (fcmDeeplinkUrl !== undefined) {
         const channelId = resolveChannelId({ data: fcmData })
         AnalyticsService.capture('PushNotificationPressed', {
           channelId,
-          deeplinkUrl: fcmData.url,
+          deeplinkUrl: fcmDeeplinkUrl,
           appState: 'cold_start',
           handler: 'fcm'
         })
