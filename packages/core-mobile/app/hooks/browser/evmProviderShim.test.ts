@@ -380,4 +380,26 @@ describe('buildEvmProviderShim', () => {
       expect(shim).not.toContain("event === 'accountsChanged'")
     })
   })
+
+  describe('SPA navigation listener (security)', () => {
+    it('does not emit nav_change messages from page JS', () => {
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '0x1234567890abcdef1234567890abcdef12345678',
+        uuid: 'test-uuid-1234'
+      })
+      // The page must not be able to drive the native origin via postMessage.
+      expect(shim).not.toContain('nav_change')
+    })
+
+    it('does not patch history.pushState or history.replaceState', () => {
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '0x1234567890abcdef1234567890abcdef12345678',
+        uuid: 'test-uuid-1234'
+      })
+      expect(shim).not.toContain('history.pushState')
+      expect(shim).not.toContain('history.replaceState')
+    })
+  })
 })

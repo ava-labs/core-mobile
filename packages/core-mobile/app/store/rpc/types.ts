@@ -193,5 +193,11 @@ export enum RequestContext {
 
   // used to show "Transaction sent" immediately in onTransactionPending instead of a
   // pending toast — used when no confirmed toast will follow (e.g. Fusion same-chain swap)
-  IMMEDIATE_SENT_TOAST = 'immediateSentToast'
+  IMMEDIATE_SENT_TOAST = 'immediateSentToast',
+
+  // Snapshot of the `sae-override` PostHog feature flag, captured at request
+  // creation time by createInAppRequest. Read by isOptimisticConfirmationEnabled
+  // to short-circuit the InfoAPI Helicon check. See createInAppRequest for the
+  // rationale on threading this via context instead of a service-level read.
+  SAE_OVERRIDE = 'saeOverride'
 }

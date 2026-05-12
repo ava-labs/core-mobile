@@ -62,6 +62,7 @@ const allCaps = [
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
     'appium:automationName': 'UiAutomator2',
+    'appium:appWaitActivity': '*',
     'appium:app': androidAppPath,
     ...(androidResolved.deviceUdid
       ? { 'appium:udid': androidResolved.deviceUdid }
@@ -69,17 +70,17 @@ const allCaps = [
     ...(chromedriverExecutableDir
       ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
       : {}),
-    'appium:appWaitDuration': 60000,
+    'appium:appWaitDuration': 20000,
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
-    'appium:adbExecTimeout': 60000,
-    'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000,
+    'appium:adbExecTimeout': 20000,
+    'appium:uiautomator2ServerLaunchTimeout': 20000,
+    'appium:uiautomator2ServerInstallTimeout': 20000,
     'appium:noSign': true,
     'appium:disableWindowAnimation': true,
     'appium:fullReset': true,
     'appium:enforceAppInstall': true,
-    'appium:uiautomator2ServerReadTimeout': 60000,
+    'appium:uiautomator2ServerReadTimeout': 20000,
     'appium:skipDeviceInitialization': false,
     'appium:skipLogcatCapture': false
   },
@@ -178,7 +179,7 @@ export const config: WebdriverIO.Config = {
   capabilities: caps,
   mochaOpts: {
     ui: 'bdd',
-    timeout: 600000
+    timeout: 400000
   },
 
   // hook before: make or get testRun before test
@@ -245,8 +246,11 @@ export const config: WebdriverIO.Config = {
         const sanitizedTestName = test.title
           .replace(/[^a-zA-Z0-9]/g, '_')
           .substring(0, 50)
+        const outputDir = path.join(__dirname, 'page-source-failures')
+        if (!fs.existsSync(outputDir))
+          fs.mkdirSync(outputDir, { recursive: true })
         const pageSourcePath = path.join(
-          process.cwd(),
+          outputDir,
           `page-source-failure-${sanitizedTestName}-${timestamp}.xml`
         )
         fs.writeFileSync(pageSourcePath, pageSource)

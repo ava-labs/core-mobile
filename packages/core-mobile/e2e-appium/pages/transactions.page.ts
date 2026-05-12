@@ -270,6 +270,7 @@ class TransactionsPage {
     const isInsufficientBalance = await this.checkInsufficientBalance()
     if (isInsufficientBalance) {
       await commonElsPage.dismissBottomSheet()
+      return performance.now()
     } else {
       await this.tapNext()
       await this.tapApprove()
@@ -384,7 +385,7 @@ class TransactionsPage {
     await portfolioPage.tapToken(fromToken)
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.enterAmount(amount, this.swapAmountInput)
     // Select To Token
     if (toToken !== 'USDC') {
       await this.tapYouReceive()
@@ -423,7 +424,7 @@ class TransactionsPage {
     await this.selectToken(to, network)
 
     // enter amount
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.enterAmount(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
@@ -436,7 +437,7 @@ class TransactionsPage {
 
   async quickSwap(amount = '0.000001') {
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.enterAmount(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
     await actions.waitFor(this.approveTitle, 40000)
     await this.tapApprove()

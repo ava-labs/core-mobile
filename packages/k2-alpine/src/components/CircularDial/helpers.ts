@@ -1,24 +1,5 @@
-export const clamp = (v: number, min: number, max: number): number => {
-  'worklet'
-  if (v < min) return min
-  if (v > max) return max
-  return v
-}
-
-// Works for non-power-of-10 steps (e.g. 0.25 → 2), unlike `-log10(step)`
-// which would lose precision.
-export const getStepDecimals = (step: number): number => {
-  'worklet'
-  if (!Number.isFinite(step) || step <= 0 || step >= 1) return 0
-  const epsilon = 1e-8
-  let decimals = 0
-  let scaled = step
-  while (decimals < 10 && Math.abs(scaled - Math.round(scaled)) > epsilon) {
-    scaled *= 10
-    decimals += 1
-  }
-  return decimals
-}
+import { clamp } from '../../utils/clamp'
+import { getStepDecimals } from '../../utils/getStepDecimals'
 
 // Step doesn't always evenly divide max (e.g. step=2, max=7 → round=8 > 7);
 // when that happens we step down once. toFixed runs *before* the compare so

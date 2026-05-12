@@ -4,6 +4,7 @@ import {
   CircularDial,
   GroupList,
   Icons,
+  LeverageGauge,
   Text,
   useTheme,
   View
@@ -39,6 +40,9 @@ const EventDetailsScreen = (): JSX.Element => {
   const [dialDefault, setDialDefault] = useState(25)
   const [dialAmount, setDialAmount] = useState(2.32)
   const [dialLoss, setDialLoss] = useState(1.5)
+  const [leverageInt, setLeverageInt] = useState(10)
+  const [leverageManual, setLeverageManual] = useState(5)
+  const [leverageFine, setLeverageFine] = useState(2.5)
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -88,9 +92,9 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           value={dialDefault}
           onChange={setDialDefault}
           max={100}
@@ -118,9 +122,9 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           presets={[
             { label: '25%', fraction: 0.25 },
             { label: '50%', fraction: 0.5 },
@@ -149,15 +153,59 @@ const EventDetailsScreen = (): JSX.Element => {
             borderTopRightRadius: 4,
             borderBottomLeftRadius: 12,
             borderBottomRightRadius: 12,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            paddingVertical: 30
+            backgroundColor: theme.colors.$surfaceSecondary
           }}
+          canvasPadding={30}
           caption={formatCurrency({ amount: dialLoss * avaxPrice })}
           presets={[
             { label: '25%', fraction: 0.25 },
             { label: '50%', fraction: 0.5 },
             { label: '100%', fraction: 1 }
           ]}
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Integer leverage</Text>
+        <Text variant="body2">
+          {`- Range 1×–100× whole numbers
+- integersOnly forces integer step + number-pad
+- Default min/max preset buttons`}
+        </Text>
+        <LeverageGauge
+          value={leverageInt}
+          onChange={setLeverageInt}
+          min={1}
+          max={100}
+          integersOnly
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Fine precision with manual input</Text>
+        <Text variant="body2">
+          {`- Range 1×–50×, step=0.2
+- enableManualInput lets users tap the number to type`}
+        </Text>
+        <LeverageGauge
+          value={leverageManual}
+          onChange={setLeverageManual}
+          min={1}
+          max={50}
+          step={0.2}
+          enableManualInput
+        />
+      </View>
+      <View style={{ paddingTop: 16, paddingHorizontal: 16, gap: 8 }}>
+        <Text variant="heading3">Ultra-fine step</Text>
+        <Text variant="body2">
+          {`- Range 1×–10×, step=0.1
+- Fine snap precision`}
+        </Text>
+        <LeverageGauge
+          value={leverageFine}
+          onChange={setLeverageFine}
+          min={1}
+          max={10}
+          step={0.1}
         />
       </View>
       <View style={{ gap: 10, paddingTop: 16 }}>

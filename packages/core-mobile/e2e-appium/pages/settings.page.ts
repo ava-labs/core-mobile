@@ -309,8 +309,9 @@ class Settings {
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
+      await common.tapAndroidDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
-      await this.setAddress(network, address, contactName)
+      await this.setAddress(network, address)
     }
     // exit the edit contact form
     await common.goBack()
@@ -322,17 +323,16 @@ class Settings {
 
   async tapDeleteContact() {
     await actions.tap(this.deleteContactBtn)
+    await common.tapDeleteAlert()
   }
 
-  async setAddress(network: string, address: string, contactName: string) {
+  async setAddress(network: string, address: string) {
     await actions.click(selectors.getByText(`Add ${network} address`))
-    await actions.click(this.typeInOrPasteAddress)
-    await actions.type(
-      selectors.getById(`advanced_input__${network.toLowerCase()}`),
-      address
-    )
-    await actions.dismissKeyboard()
-    await actions.tap(selectors.getByText(contactName))
+    await actions.tap(this.typeInOrPasteAddress)
+    const input = selectors.getById(`advanced_input__${network.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, address)
+    await actions.tapEnterOnKeyboard()
   }
 
   async verifyContact(address: string, contactName: string) {
@@ -347,7 +347,7 @@ class Settings {
     await this.addContactName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
-      await this.setAddress(network, address, contactName)
+      await this.setAddress(network, address)
     }
     // save contact
     await common.tapSave()
@@ -417,7 +417,11 @@ class Settings {
     await actions.waitFor(this.removeAllAccounts)
     await actions.isNotVisible(this.addAccountToThisWallet)
     await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
-    await this.tapMyWalletsTitle()
+    if (driver.isAndroid) {
+      await common.goAndroidBack()
+    } else {
+      await this.tapMyWalletsTitle()
+    }
   }
 
   async tapMyWalletsTitle() {
@@ -441,6 +445,7 @@ class Settings {
   }
 
   async verifyPKWalletRemoved(accountName = 'Account 3') {
+    await actions.delay(1000)
     await actions.isNotVisible(this.manageAccountsWalletName(settings.imported))
     await actions.isNotVisible(this.privateKeyAccount(accountName))
   }
@@ -543,12 +548,8 @@ class Settings {
   }
 
   async tapNotifications() {
-    await this.swipeSettings(0.3)
+    await actions.scrollTo(this.notificationsPreferences, 'down')
     await actions.tap(this.notificationsPreferences)
-  }
-
-  async swipeSettings(amount = 0.8) {
-    await actions.swipe('up', amount, this.mainnetAvatar)
   }
 
   async selectCurrency(curr: string) {
@@ -624,14 +625,13 @@ class Settings {
 
   async setNetworkData(type: string, value: string) {
     await actions.tap(selectors.getByText(`Add ${type}`))
-    await actions.type(
-      selectors.getById(`advanced_input__${type.toLowerCase()}`),
-      value
-    )
+    const input = selectors.getById(`advanced_input__${type.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, value)
     if (type === 'Chain ID') {
       await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
     } else {
-      await actions.dismissKeyboard()
+      await actions.tapEnterOnKeyboard()
     }
   }
 
@@ -819,7 +819,7 @@ class Settings {
   }
 
   async verifyAppIconScreen(selectedIconId: string) {
-    await actions.waitFor(selectors.getById(settings.appIconTitle))
+    await actions.waitFor(selectors.getBySomeText(settings.appIconTitle))
     const appIcons = [
       'Core light',
       'Old school Core',
@@ -856,12 +856,26 @@ class Settings {
       ][Math.floor(Math.random() * 6)] as string
     }
     await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    if (driver.isAndroid) {
+      // Emulators kill the app process when changing the icon; real devices don't.
+      // activateApp fails after icon change because Android temporarily can't
+      // resolve the launchable activity alias — use startActivity explicitly.
+      await actions.delay(2000)
+      if (driver.isAndroid) {
+        const appId = 'com.avaxwallet.internal'
+        await driver.terminateApp(appId)
+        await driver.activateApp(appId)
+        await onboardingPage.exitMetroAfterLogin()
+        await onboardingPage.unlockEnterPin()
+        await this.goSettings()
+      }
+    }
     return iconId
   }
 
   async tapSecurityAndPrivacy(needSwipe = true) {
     if (needSwipe) {
-      await this.swipeSettings()
+      await actions.scrollTo(this.securityAndPrivacy, 'down')
     }
     await actions.tap(this.securityAndPrivacy)
   }

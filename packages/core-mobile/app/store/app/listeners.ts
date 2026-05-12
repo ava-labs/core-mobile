@@ -18,6 +18,7 @@ import {
   setWalletState,
   WalletState
 } from 'store/app'
+import { listenerReconcilerExecutor } from 'store/listenerReconcilers'
 import { reduxStorage } from 'store/reduxStorage'
 import type { ColorSchemeName } from 'store/settings/appearance'
 import {
@@ -207,6 +208,12 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: setStateToUnlocked
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: (_, listenerApi) =>
+      listenerReconcilerExecutor.executeAll(listenerApi)
   })
 
   startListening({

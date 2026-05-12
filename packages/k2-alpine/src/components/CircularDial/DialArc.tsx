@@ -11,11 +11,6 @@ import {
 } from '@shopify/react-native-skia'
 import React, { FC, useMemo } from 'react'
 import {
-  ComposedGesture,
-  GestureDetector,
-  GestureType
-} from 'react-native-gesture-handler'
-import {
   SharedValue,
   useAnimatedReaction,
   useDerivedValue,
@@ -30,31 +25,27 @@ import { progressToPoint, valueToProgress } from './helpers'
 // Canvas is wider/taller than the arc bounding box so the knob's
 // BoxShadow (blur 13 + dy 6) can render fully at the endpoints without
 // being clipped at the canvas edge.
-const CANVAS_WIDTH = 280
-const CANVAS_HEIGHT = 161
+export const CANVAS_WIDTH = 280
+export const CANVAS_HEIGHT = 161
 const STROKE_WIDTH = 6
 const KNOB_RADIUS = 11
 const REFERENCE_TICK_RADIUS = 3
 export const ARC_RADIUS = 110
-const ARC_CX = CANVAS_WIDTH / 2
-const ARC_CY = CANVAS_HEIGHT - 35
+export const ARC_CX = CANVAS_WIDTH / 2
+export const ARC_CY = CANVAS_HEIGHT - 35
 
 // ~7% of the sweep ≈ 12.6° — the negative-space halo around the tick.
 const TICK_GAP = 0.07
 const ZONE_CROSSFADE_MS = 120
 
 type DialArcProps = {
-  gesture: ComposedGesture | GestureType
   progressSv: SharedValue<number>
   max: number
   value: number
   referenceValue: number | undefined
 }
 
-// `GestureDetector` view stretches the full parent width so touches in
-// the side padding still control the dial.
 export const DialArc: FC<DialArcProps> = ({
-  gesture,
   progressSv,
   max,
   value,
@@ -196,115 +187,113 @@ export const DialArc: FC<DialArcProps> = ({
   const fillColor = colors.$textSuccess
 
   return (
-    <GestureDetector gesture={gesture}>
-      <View
-        style={{
-          alignSelf: 'stretch',
-          height: CANVAS_HEIGHT,
-          alignItems: 'center'
-        }}>
-        <Canvas
-          pointerEvents="none"
-          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-          {hasReferenceTick ? (
-            <>
-              <Group opacity={leftTrackOpacity}>
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={trackColor}
-                  start={0}
-                  end={tickLeftEdge}
-                />
-              </Group>
-              <Group opacity={rightTrackOpacity}>
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={trackColor}
-                  start={tickRightEdge}
-                  end={1}
-                />
-              </Group>
-              <Group opacity={dangerZoneOpacity}>
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={alpha(colors.$textDanger, 0.3)}
-                  start={0}
-                  end={dangerFadedEnd}
-                />
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={colors.$textDanger}
-                  start={dangerSolidStart}
-                  end={tickLeftEdge}
-                />
-              </Group>
-              <Group opacity={successZoneOpacity}>
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={colors.$textSuccess}
-                  start={tickRightEdge}
-                  end={successSolidEnd}
-                />
-                <Path
-                  path={trackPath}
-                  style="stroke"
-                  strokeWidth={STROKE_WIDTH}
-                  strokeCap="round"
-                  color={alpha(colors.$textSuccess, 0.3)}
-                  start={successFadedStart}
-                  end={1}
-                />
-              </Group>
-            </>
-          ) : (
-            <>
+    <View
+      style={{
+        alignSelf: 'stretch',
+        height: CANVAS_HEIGHT,
+        alignItems: 'center'
+      }}>
+      <Canvas
+        pointerEvents="none"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
+        {hasReferenceTick ? (
+          <>
+            <Group opacity={leftTrackOpacity}>
               <Path
                 path={trackPath}
                 style="stroke"
                 strokeWidth={STROKE_WIDTH}
                 strokeCap="round"
                 color={trackColor}
+                start={0}
+                end={tickLeftEdge}
+              />
+            </Group>
+            <Group opacity={rightTrackOpacity}>
+              <Path
+                path={trackPath}
+                style="stroke"
+                strokeWidth={STROKE_WIDTH}
+                strokeCap="round"
+                color={trackColor}
+                start={tickRightEdge}
+                end={1}
+              />
+            </Group>
+            <Group opacity={dangerZoneOpacity}>
+              <Path
+                path={trackPath}
+                style="stroke"
+                strokeWidth={STROKE_WIDTH}
+                strokeCap="round"
+                color={alpha(colors.$textDanger, 0.3)}
+                start={0}
+                end={dangerFadedEnd}
               />
               <Path
                 path={trackPath}
                 style="stroke"
                 strokeWidth={STROKE_WIDTH}
                 strokeCap="round"
-                color={fillColor}
-                start={0}
-                end={progressSv}
+                color={colors.$textDanger}
+                start={dangerSolidStart}
+                end={tickLeftEdge}
               />
-            </>
-          )}
-          {referenceTickPoint !== null && (
-            <Circle
-              cx={referenceTickPoint.x}
-              cy={referenceTickPoint.y}
-              r={REFERENCE_TICK_RADIUS}
+            </Group>
+            <Group opacity={successZoneOpacity}>
+              <Path
+                path={trackPath}
+                style="stroke"
+                strokeWidth={STROKE_WIDTH}
+                strokeCap="round"
+                color={colors.$textSuccess}
+                start={tickRightEdge}
+                end={successSolidEnd}
+              />
+              <Path
+                path={trackPath}
+                style="stroke"
+                strokeWidth={STROKE_WIDTH}
+                strokeCap="round"
+                color={alpha(colors.$textSuccess, 0.3)}
+                start={successFadedStart}
+                end={1}
+              />
+            </Group>
+          </>
+        ) : (
+          <>
+            <Path
+              path={trackPath}
+              style="stroke"
+              strokeWidth={STROKE_WIDTH}
+              strokeCap="round"
               color={trackColor}
             />
-          )}
-          <Box box={knobBox} color="white">
-            <BoxShadow dx={0} dy={0.5} blur={4} color="rgba(0,0,0,0.08)" />
-            <BoxShadow dx={0} dy={6} blur={13} color="rgba(0,0,0,0.12)" />
-          </Box>
-        </Canvas>
-      </View>
-    </GestureDetector>
+            <Path
+              path={trackPath}
+              style="stroke"
+              strokeWidth={STROKE_WIDTH}
+              strokeCap="round"
+              color={fillColor}
+              start={0}
+              end={progressSv}
+            />
+          </>
+        )}
+        {referenceTickPoint !== null && (
+          <Circle
+            cx={referenceTickPoint.x}
+            cy={referenceTickPoint.y}
+            r={REFERENCE_TICK_RADIUS}
+            color={trackColor}
+          />
+        )}
+        <Box box={knobBox} color="white">
+          <BoxShadow dx={0} dy={0.5} blur={4} color="rgba(0,0,0,0.08)" />
+          <BoxShadow dx={0} dy={6} blur={13} color="rgba(0,0,0,0.12)" />
+        </Box>
+      </Canvas>
+    </View>
   )
 }

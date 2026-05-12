@@ -86,6 +86,7 @@ export const SelectPoolScreen = (): JSX.Element => {
       ]
       return (
         <TouchableOpacity
+          testID={`protocol__${item.marketName}`}
           sx={{ marginHorizontal: 16, marginTop: 10 }}
           onPress={() => handleSelectPool(item)}>
           <View

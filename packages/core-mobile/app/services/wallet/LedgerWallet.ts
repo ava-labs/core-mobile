@@ -91,9 +91,9 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  private getTransport(): TransportBLE {
-    Logger.info('getTransport called - using LedgerService')
-    return LedgerService.getTransport()
+  private async getTransport(): Promise<TransportBLE> {
+    Logger.info('getTransport called - using LedgerService.ensureConnection')
+    return LedgerService.ensureConnection()
   }
 
   private async getBitcoinSigner(
@@ -157,7 +157,7 @@ export class LedgerWallet implements Wallet {
         throw new Error('Failed to derive Bitcoin address public key')
       }
 
-      const transport = this.getTransport()
+      const transport = await this.getTransport()
 
       this.bitcoinWallet = new BitcoinLedgerWallet(
         addressNode.publicKey,
@@ -383,7 +383,7 @@ export class LedgerWallet implements Wallet {
 
     try {
       // Ensure device is connected
-      const transport = this.getTransport()
+      const transport = await this.getTransport()
 
       // Ensure Bitcoin app is ready
       Logger.info('Ensuring Bitcoin app is ready...')
@@ -1582,11 +1582,13 @@ export class LedgerWallet implements Wallet {
   private handleAppConnection = async (
     appType: LedgerAppType
   ): Promise<TransportBLE> => {
-    // First ensure we're connected to the device
+    // First ensure we're connected to the device. ensureConnection
+    // reconnects the BLE transport if it went idle between signings —
+    // this is the safety net multi-step signing flows rely on.
     Logger.info('Ensuring connection to Ledger device...')
     let transport: TransportBLE
     try {
-      transport = LedgerService.getTransport()
+      transport = await LedgerService.ensureConnection()
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)

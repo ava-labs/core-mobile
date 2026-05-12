@@ -57,7 +57,11 @@ export enum FeatureVars {
   FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps',
   FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT = 'fusion-max-amount-additive-bps-default',
   FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA = 'fusion-max-amount-additive-bps-evm-to-solana',
-  FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM = 'fusion-max-amount-additive-bps-solana-to-evm'
+  FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM = 'fusion-max-amount-additive-bps-solana-to-evm',
+  // 3-state override for the optimistic-confirmation gate ('auto' | 'enabled' |
+  // 'disabled'). Mirrors core-extension's `sae-override` flag. Used to force the
+  // post-Helicon (no optimistic confetti) flow on or off without a code release.
+  SAE_OVERRIDE = 'sae-override'
 }
 
 // posthog response can be an empty object when all features are disabled
