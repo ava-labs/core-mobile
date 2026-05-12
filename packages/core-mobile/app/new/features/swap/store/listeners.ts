@@ -2,8 +2,10 @@ import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
+  selectQuickSwapsMaxBuy,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
+import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
 import { isAnyOf } from '@reduxjs/toolkit'
 import {
   selectIsFusionEnabled,
@@ -17,7 +19,11 @@ import {
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import {
+  getBitcoinProvider,
+  getEvmProvider
+} from 'services/network/utils/providerUtils'
+import { selectNetwork } from 'store/network/slice'
 import type {
   CompletedTransfer,
   FailedTransfer,
@@ -164,19 +170,36 @@ export const initFusionService = async (
 
     Logger.info('Initializing Fusion service', featureStates)
 
-    // Mark as not ready at start and clear any prior init error
     useIsFusionServiceReady.setState(false)
     useFusionServiceInitError.setState(null)
 
-    // Create signers
-    const evmSigner = createEvmSigner(request)
+    // Getter (not captured value) so the signer reads live Quick Swaps
+    // settings — the user can toggle between init and swap execution.
+    // Uses the composite selector so PostHog flag, wallet allowlist,
+    // and the saved toggle all gate the bypass consistently — a stale
+    // `isEnabled: true` on a hardware wallet or with the flag off must
+    // NOT trigger bypass.
+    const evmSigner = createEvmSigner(
+      request,
+      () => {
+        const liveState = listenerApi.getState()
+        return {
+          isQuickSwapsActive: selectIsQuickSwapsActive(liveState),
+          maxBuy: selectQuickSwapsMaxBuy(liveState)
+        }
+      },
+      async (chainId, txHash) => {
+        const network = selectNetwork(Number(chainId))(listenerApi.getState())
+        if (!network) return
+        const provider = await getEvmProvider(network)
+        await provider.waitForTransaction(txHash, 1, 60_000)
+      }
+    )
     const btcSigner = createBtcSigner(request, featureStates.isDeveloperMode)
     const svmSigner = createSvmSigner(request, featureStates.isDeveloperMode)
 
-    // Determine environment
     const environment = getFusionEnvironment(featureStates.isDeveloperMode)
 
-    // Build feature flags object for the service
     const featureFlags = {
       'fusion-markr': featureStates.isFusionMarkrEnabled,
       'fusion-avalanche-evm': featureStates.isFusionAvalancheEvmEnabled,

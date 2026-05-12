@@ -20,6 +20,7 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
+import { AdvancedSettings } from 'features/accountSettings/components/AdvancedSettings'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import { Support } from 'features/accountSettings/components/Support'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
@@ -91,6 +92,10 @@ const AccountSettingsScreen = (): JSX.Element => {
 
   const goToSecurityPrivacy = useCallback(() => {
     navigate('/accountSettings/securityAndPrivacy')
+  }, [navigate])
+
+  const goToAdvancedSettings = useCallback(() => {
+    navigate('/accountSettings/advancedSettings')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
@@ -223,6 +228,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectCurrency={goToCurrency}
               selectAppIcon={goToSelectAppIcon}
             />
+            <AdvancedSettings selectAdvancedSettings={goToAdvancedSettings} />
             <UserPreferences
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}

@@ -21,6 +21,11 @@ export const MARKR_EVM_PARTNER_ID =
   '0x655812b0b38b7733f8b36ec2bf870fd23be54cde979bcb722861de8ab6861fc4'
 
 /**
+ * Basis-points divisor (100% = 10_000 bps).
+ */
+export const BASIS_POINTS_DIVISOR = 10_000
+
+/**
  * Minimum allowed slippage percentage for swaps.
  * @example 0.1 -> 0.1%
  */
