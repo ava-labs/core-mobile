@@ -1316,9 +1316,11 @@ class LedgerService {
   ): Promise<
     Array<{ evm: ExtendedPublicKey; avalanche: ExtendedPublicKey } | null>
   > {
-    // Wait for Avalanche app once before the loop instead of on every
-    // iteration — the app stays open between APDU commands (CP-14062).
-    await this.waitForApp(LedgerAppType.AVALANCHE)
+    // Ensure the Avalanche app is open and ready once before the loop.
+    // ensureAppReady() sends openApp when the cached state doesn't match
+    // and always runs waitForApp, so onboarding doesn't stall waiting for
+    // the user to manually open the app. Loop body uses skipAppCheck: true.
+    await this.ensureAppReady(LedgerAppType.AVALANCHE)
 
     const results: Array<{
       evm: ExtendedPublicKey

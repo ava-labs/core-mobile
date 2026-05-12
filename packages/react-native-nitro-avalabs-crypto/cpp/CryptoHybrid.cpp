@@ -9,12 +9,9 @@
 #include <cmath>
 #include <stdexcept>
 
-#ifndef OPENSSL_NOT_AVAILABLE
-
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-#endif
 #ifdef __ANDROID__
 
 #include <android/log.h>
@@ -73,16 +70,11 @@ namespace margelo::nitro::nitroavalabscrypto {
             g_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
             // Randomize the context to protect against side-channel attacks.
             unsigned char seed[32];
-#ifndef OPENSSL_NOT_AVAILABLE
             if (RAND_bytes(seed, sizeof(seed)) != 1) {
                 // Fall back to unrandomized context if RNG fails — still functional,
                 // just without side-channel blinding.
                 return;
             }
-#else
-            // Without OpenSSL, leave unrandomized.
-            return;
-#endif
             (void) secp256k1_context_randomize(g_ctx, seed);
             OPENSSL_cleanse(seed, sizeof(seed));
         });
@@ -352,14 +344,6 @@ namespace margelo::nitro::nitroavalabscrypto {
 
     ExtendedPublicKey
     CryptoHybrid::getExtendedPublicKey(const BufferOrString &secretKey) {
-#ifdef OPENSSL_NOT_AVAILABLE
-        throw std::runtime_error(
-          "Ed25519 getExtendedPublicKey requires OpenSSL, but "
-          "it was not found during build. "
-          "Please ensure react-native-quick-crypto is "
-          "properly installed and OpenSSL is available."
-        );
-#else
         // Input validation
         auto sk32 = require32(secretKey, "secretKey");
 
@@ -418,7 +402,6 @@ namespace margelo::nitro::nitroavalabscrypto {
         auto pointBytesAB = toAB(std::vector<uint8_t>(pointBytes.begin(), pointBytes.end()));
 
         return ExtendedPublicKey(headAB, prefixAB, scalarStr, pointBytesAB);
-#endif // OPENSSL_NOT_AVAILABLE
     }
 
 /* -------------------- Batch Address Derivation (async) -------------------- */

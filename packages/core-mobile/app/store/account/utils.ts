@@ -194,8 +194,17 @@ export const migrateRemainingActiveAccounts = async ({
       return
     }
 
-    // Batch discovered accounts and dispatch in chunks to avoid a
-    // re-render cascade from individual Redux dispatches (CP-14062).
+    // Only MNEMONIC, KEYSTONE, and SEEDLESS reach this function — gated by
+    // canMigrateActiveAccounts. Ledger wallets use a separate discovery path
+    // (discoverLedgerAccountsFromXpubs).
+    //
+    // For seedless wallets, skip incremental dispatches entirely — XP balance
+    // fetching iterates over all accounts, so batch flushes would trigger
+    // redundant downstream work in balance/XP listeners. The final setAccounts
+    // dispatch below covers seedless. For mnemonic/keystone, batch discovered
+    // accounts and dispatch in chunks of 5 to avoid a re-render cascade from
+    // individual Redux dispatches (CP-14062).
+    const isSeedless = walletType === WalletType.SEEDLESS
     const DISPATCH_BATCH_SIZE = 5
     let pendingAccounts: AccountCollection = {}
     let pendingAccountIds: string[] = []
@@ -221,17 +230,20 @@ export const migrateRemainingActiveAccounts = async ({
       walletType,
       startIndex,
       scanWindow,
-      onAccountCreated: account => {
-        pendingAccounts[account.id] = account
-        pendingAccountIds.push(account.id)
+      onAccountCreated: isSeedless
+        ? undefined
+        : account => {
+            pendingAccounts[account.id] = account
+            pendingAccountIds.push(account.id)
 
-        if (pendingAccountIds.length >= DISPATCH_BATCH_SIZE) {
-          flushPendingAccounts()
-        }
-      }
+            if (pendingAccountIds.length >= DISPATCH_BATCH_SIZE) {
+              flushPendingAccounts()
+            }
+          }
     })
 
     // Flush any remaining accounts that didn't fill a complete batch.
+    // No-op for seedless (no callback was wired).
     flushPendingAccounts()
 
     const state = getState()

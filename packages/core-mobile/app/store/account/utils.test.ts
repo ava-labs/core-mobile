@@ -561,6 +561,33 @@ describe('account/utils', () => {
       )
     })
 
+    it('does not dispatch intermediate setNonActiveAccounts for seedless wallets', async () => {
+      // Seedless XP balance fetching iterates all accounts, so any
+      // intermediate setNonActiveAccounts would trigger redundant downstream
+      // work in balance/XP listeners. Only the final setAccounts should fire.
+      mockFetchRemainingActiveAccounts.mockImplementation(
+        async ({ onAccountCreated }) => {
+          Object.values(mockAccounts).forEach(account => {
+            onAccountCreated?.(account)
+          })
+          return { accounts: mockAccounts, completedCleanly: true }
+        }
+      )
+
+      await migrateRemainingActiveAccounts({
+        listenerApi: mockListenerApi,
+        walletId: 'wallet-1',
+        walletType: WalletType.SEEDLESS,
+        startIndex: 1
+      })
+
+      const setNonActiveAccountsCalls = mockDispatch.mock.calls.filter(
+        ([action]: [{ type?: string }]) =>
+          action?.type === 'account/setNonActiveAccounts'
+      )
+      expect(setNonActiveAccountsCalls).toHaveLength(0)
+    })
+
     it('updates recentAccountsStore when accounts found', async () => {
       const mockAddRecentAccounts = jest.fn()
       jest.spyOn(recentAccountsStore, 'getState').mockReturnValue({
