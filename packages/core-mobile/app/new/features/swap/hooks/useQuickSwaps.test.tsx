@@ -64,7 +64,7 @@ const wrap =
     store: ReturnType<typeof buildStore>
   ): React.FC<{ children: React.ReactNode }> =>
   ({ children }) =>
-    Provider({ store, children })
+    <Provider store={store}>{children}</Provider>
 
 beforeEach(() => {
   useActiveWallet.mockReturnValue({ type: WalletType.SEEDLESS })

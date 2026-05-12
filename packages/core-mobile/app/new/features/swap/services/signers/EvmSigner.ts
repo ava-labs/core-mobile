@@ -364,7 +364,17 @@ export function createEvmSigner(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
       const isCrossChain = isCrossChainQuote(stepDetails.quote)
-      if (!isQuickSwapsActive || !allTxsHaveFees || isCrossChain) {
+      // The `eth_sendTransactionBatch` handler rejects batches with
+      // fewer than 2 txs (the EVM module's Zod schema requires
+      // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would
+      // otherwise hit invalidParams without the quickSwapsManualReview
+      // marker and the swap would fail. Fall back to per-tx instead.
+      if (
+        !isQuickSwapsActive ||
+        !allTxsHaveFees ||
+        isCrossChain ||
+        transactions.length < 2
+      ) {
         return signEachManually([...transactions], stepDetails)
       }
 

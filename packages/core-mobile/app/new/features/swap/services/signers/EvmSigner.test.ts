@@ -291,6 +291,32 @@ describe('createEvmSigner.signBatch', () => {
     ).toBe(true)
   })
 
+  it('falls back to per-tx sign() when the batch has fewer than 2 txs (handler min-batch guard)', async () => {
+    // The eth_sendTransactionBatch handler rejects batches < 2 txs with
+    // invalidParams (no quickSwapsManualReview marker), so we must not
+    // dispatch a 1-tx batch through the bypass path even when Quick
+    // Swaps is otherwise active.
+    const request = jest
+      .fn<Promise<string>, [unknown]>()
+      .mockResolvedValueOnce('0xhashSingle')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited'
+    }))
+
+    const result = await signer.signBatch?.(
+      [makeTx()],
+      jest.fn() as never,
+      makeStepDetails()
+    )
+
+    expect(result).toEqual(['0xhashSingle'])
+    expect(request).toHaveBeenCalledTimes(1)
+    expect((request.mock.calls[0]?.[0] as { method: RpcMethod }).method).toBe(
+      RpcMethod.ETH_SEND_TRANSACTION
+    )
+  })
+
   it('reads getBatchOptions at call time, not signer-creation time', async () => {
     let isActive = false
     const request = jest.fn().mockResolvedValue(['0xa', '0xb'])
