@@ -7,6 +7,7 @@ import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
 import AppCheckService from 'services/fcm/AppCheckService'
+import NotificationsService from 'services/notifications/NotificationsService'
 import Bootsplash from 'react-native-bootsplash'
 import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
@@ -68,6 +69,10 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 
 AppCheckService.init()
 FCMService.listenForMessagesBackground()
+// Notifee only supports a single background event handler and requires it to
+// be registered before AppRegistry.registerComponent so it can handle cold-start
+// PRESS events for notifications displayed by notifee (data-only Android push).
+NotificationsService.registerBackgroundNotificationHandler()
 
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
