@@ -208,6 +208,7 @@ export const migrateRemainingActiveAccounts = async ({
     const DISPATCH_BATCH_SIZE = 5
     let pendingAccounts: AccountCollection = {}
     let pendingAccountIds: string[] = []
+    let walletBecameInactive = false
 
     const flushPendingAccounts = (): void => {
       if (pendingAccountIds.length === 0) return
@@ -217,6 +218,9 @@ export const migrateRemainingActiveAccounts = async ({
         Logger.error(
           'Wallet became inactive during discovery, skipping dispatch'
         )
+        walletBecameInactive = true
+        pendingAccounts = {}
+        pendingAccountIds = []
         return
       }
 
@@ -233,6 +237,8 @@ export const migrateRemainingActiveAccounts = async ({
       onAccountCreated: isSeedless
         ? undefined
         : account => {
+            if (walletBecameInactive) return
+
             pendingAccounts[account.id] = account
             pendingAccountIds.push(account.id)
 

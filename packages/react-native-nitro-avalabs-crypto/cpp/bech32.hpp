@@ -123,6 +123,9 @@ namespace margelo::nitro::nitroavalabscrypto {
             if (c < 33 || c > 126) {
                 throw std::invalid_argument("bech32_encode_raw: HRP char out of range");
             }
+            if (c >= 'A' && c <= 'Z') {
+                throw std::invalid_argument("bech32_encode_raw: HRP must be lowercase");
+            }
         }
 
         auto checksum = bech32_create_checksum(hrp, data5);
@@ -130,9 +133,9 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::string result;
         result.reserve(hrp.size() + 1 + data5.size() + 6);
 
-        // HRP (lowercased) + separator
+        // HRP + separator
         for (char c : hrp) {
-            result += static_cast<char>(c | 0x20); // force lowercase
+            result += c;
         }
         result += '1'; // separator
 
