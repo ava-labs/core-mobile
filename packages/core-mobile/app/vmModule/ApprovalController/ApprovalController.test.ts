@@ -72,7 +72,7 @@ jest.mock(
 )
 jest.mock('services/wallet/WalletService', () => ({
   __esModule: true,
-  default: { getPublicKeyFor: jest.fn() }
+  default: { getPublicKeyFor: jest.fn(), sign: jest.fn() }
 }))
 const mockSetReviewTransactionParams = jest.fn()
 jest.mock('features/ledger/store', () => ({
@@ -929,6 +929,351 @@ describe('ApprovalController', () => {
       expect(mockOnReject).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'User denied' })
       )
+    })
+
+    it('injects WARNING alert into displayData when request carries quickSwapsManualReviewReason (per-tx fallback path)', async () => {
+      const request = makeApprovalRequest({
+        context: {
+          quickSwapsManualReviewReason: 'Slippage tolerance exceeded'
+        } as never
+      })
+      const params = {
+        request,
+        displayData: {} as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      expect(alert).toBeDefined()
+      expect(alert?.type).toBe('Warning')
+      expect(alert?.details).toEqual({
+        title: 'Manual approval required',
+        description: 'Manual approval required\nSlippage tolerance exceeded'
+      })
+    })
+
+    it('does not inject a fallback alert when quickSwapsManualReviewReason is absent', async () => {
+      const request = makeApprovalRequest()
+      const params = {
+        request,
+        displayData: {} as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (params.displayData as { alert?: unknown }).alert
+      expect(alert).toBeUndefined()
+    })
+
+    it('preserves an existing Blockaid alert and does not clobber it with the fallback reason', async () => {
+      const existingAlert = {
+        type: 'Warning',
+        details: { title: 'Suspicious spender', description: 'Blockaid' }
+      }
+      const request = makeApprovalRequest({
+        context: {
+          quickSwapsManualReviewReason: 'Slippage tolerance exceeded'
+        } as never
+      })
+      const params = {
+        request,
+        displayData: { alert: existingAlert } as never,
+        signingData
+      }
+      approvalController.requestApproval(params)
+
+      const alert = (params.displayData as { alert?: typeof existingAlert })
+        .alert
+      expect(alert).toEqual(existingAlert)
+    })
+
+    it('injects WARNING alert into displayData when single-tx validator returns requiresManualApproval', async () => {
+      const { requestValidators } = jest.requireActual('./validators')
+      const mockSign = jest.requireMock('services/wallet/WalletService').default
+        .sign as jest.Mock
+
+      // Snapshot + restore on teardown so the default swapValidator
+      // isn't lost for any test that runs after.
+      const originalValidators = [...requestValidators]
+      requestValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage tolerance exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      try {
+        const params = {
+          request: makeApprovalRequest(),
+          displayData: {} as never,
+          signingData: signingData as never
+        }
+        // requestApproval returns a Promise that only resolves via the
+        // modal's onApprove/onReject. We fire-and-forget here — we only
+        // care about the side-effect on displayData.
+        approvalController.requestApproval(params)
+        // Let the await on validator.validate() resolve.
+        await new Promise(resolve => setImmediate(resolve))
+
+        const alert = (
+          params.displayData as { alert?: { type: string; details: unknown } }
+        ).alert
+        expect(alert).toBeDefined()
+        expect(alert?.type).toBe('Warning')
+        expect(alert?.details).toEqual({
+          title: 'Manual approval required',
+          description: 'Manual approval required\nSlippage tolerance exceeded'
+        })
+        expect(mockSign).not.toHaveBeenCalled()
+      } finally {
+        requestValidators.splice(
+          0,
+          requestValidators.length,
+          ...originalValidators
+        )
+      }
+    })
+  })
+
+  // CP-14211: requestBatchApproval consults the validator registry and,
+  // on isValid:true, signs each signingRequests[i].signingData via
+  // WalletService.sign (returning signed RLP for the EVM module to
+  // broadcast). On manual-review / hard-reject, returns a structured
+  // error. The lifecycle (onTransactionPending) is fired by the EVM
+  // module's broadcast loop via this same controller's method —
+  // verified separately in the onTransactionPending describe block.
+  describe('requestBatchApproval', () => {
+    const { approvalValidators } = jest.requireActual('./validators')
+    const mockSign = jest.requireMock('services/wallet/WalletService').default
+      .sign as jest.Mock
+
+    // Snapshot once; restored on every beforeEach and afterAll so the
+    // default batchSwapValidator isn't lost between tests (or for any
+    // test that runs after this describe block).
+    const originalValidators = [...approvalValidators]
+    const restoreValidators = (): void => {
+      approvalValidators.splice(
+        0,
+        approvalValidators.length,
+        ...originalValidators
+      )
+    }
+
+    const baseRequest = (): RpcRequest =>
+      ({
+        ...makeRequest(),
+        method: RpcMethod.ETH_SEND_TRANSACTION_BATCH as never,
+        context: {
+          walletId: 'wallet-1',
+          walletType: 'mnemonic',
+          accountIndex: 0,
+          network: { chainId: 43114, vmName: 'EVM' }
+        }
+      } as RpcRequest)
+
+    const makeSigningRequest = (data: Record<string, unknown> = {}) => ({
+      signingData: {
+        type: 'eth_sendTransaction',
+        account: '0x123',
+        data
+      },
+      displayData: {}
+    })
+
+    const baseParams = (
+      signingRequests: ReturnType<typeof makeSigningRequest>[] = [
+        makeSigningRequest({ to: '0xrouter' })
+      ]
+    ) => ({
+      request: baseRequest(),
+      signingRequests,
+      displayData: {} as never,
+      updateTx: (() => ({})) as never
+    })
+
+    beforeEach(() => {
+      // Reset to the original baseline before each test; individual
+      // tests push their own mock validator on top.
+      restoreValidators()
+      mockSign.mockReset()
+    })
+
+    afterAll(restoreValidators)
+
+    it('returns error when no validator matches', async () => {
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('signs each signingRequest and returns signed RLP on isValid:true', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      mockSign
+        .mockResolvedValueOnce('0xsigned-approve')
+        .mockResolvedValueOnce('0xsigned-swap')
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams([
+          makeSigningRequest({ to: '0xtoken', data: '0xapprove' }),
+          makeSigningRequest({ to: '0xrouter', data: '0xswap' })
+        ]) as never
+      )
+
+      expect(mockSign).toHaveBeenCalledTimes(2)
+      expect('result' in result).toBe(true)
+      if ('result' in result) {
+        expect(result.result).toEqual([
+          { signedData: '0xsigned-approve' },
+          { signedData: '0xsigned-swap' }
+        ])
+      }
+      // Verify signing context is read from request.context, not from
+      // any callback closure (the architectural-refactor invariant).
+      const firstCallArgs = mockSign.mock.calls[0]?.[0]
+      expect(firstCallArgs).toMatchObject({
+        walletId: 'wallet-1',
+        walletType: 'mnemonic',
+        accountIndex: 0
+      })
+    })
+
+    it('returns error when WalletService.sign rejects', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      mockSign.mockRejectedValue(new Error('insufficient gas'))
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+    })
+
+    it('returns error when signing context is missing from request.context', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({ isValid: true })
+      })
+      const params = baseParams()
+      ;(params.request as { context: Record<string, unknown> }).context = {}
+
+      const result = await approvalController.requestBatchApproval(
+        params as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('returns error with manual-review marker when requiresManualApproval', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
+      // Structured marker so EvmSigner.signBatch recognises and falls
+      // back to the per-tx approval flow.
+      if ('error' in result) {
+        const data = (result.error as { data?: unknown }).data as
+          | { quickSwapsManualReview?: boolean; code?: string }
+          | undefined
+        expect(data?.quickSwapsManualReview).toBe(true)
+        expect(data?.code).toBe('slippage_exceeded')
+      }
+    })
+
+    it('injects WARNING alert into displayData on requiresManualApproval', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage tolerance exceeded',
+          code: 'slippage_exceeded'
+        })
+      })
+
+      const params = baseParams()
+      await approvalController.requestBatchApproval(params as never)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      expect(alert).toBeDefined()
+      expect(alert?.type).toBe('Warning')
+      expect(alert?.details).toEqual({
+        title: 'Manual approval required',
+        description: 'Manual approval required\nSlippage tolerance exceeded'
+      })
+    })
+
+    it('does NOT clobber an existing alert (e.g. Blockaid Warning)', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: true,
+          reason: 'Slippage exceeded'
+        })
+      })
+
+      const params = {
+        ...baseParams(),
+        displayData: {
+          alert: {
+            type: 'Danger',
+            details: { title: 'Blockaid', description: 'Pre-existing' }
+          }
+        } as never
+      }
+      await approvalController.requestBatchApproval(params as never)
+
+      const alert = (
+        params.displayData as { alert?: { type: string; details: unknown } }
+      ).alert
+      // Original alert is preserved.
+      expect(alert?.type).toBe('Danger')
+      expect((alert?.details as { description: string }).description).toBe(
+        'Pre-existing'
+      )
+    })
+
+    it('returns error on hard-reject verdict', async () => {
+      approvalValidators.push({
+        canHandle: () => true,
+        validate: async () => ({
+          isValid: false,
+          requiresManualApproval: false,
+          reason: 'Malicious'
+        })
+      })
+
+      const result = await approvalController.requestBatchApproval(
+        baseParams() as never
+      )
+      expect('error' in result).toBe(true)
+      expect(mockSign).not.toHaveBeenCalled()
     })
   })
 })

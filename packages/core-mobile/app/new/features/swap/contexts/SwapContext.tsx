@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
@@ -25,6 +26,8 @@ import {
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
+import { ServiceType, type GasSettings } from '@avalabs/fusion-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -36,7 +39,12 @@ import {
   useFusionTransfers
 } from '../hooks/useZustandStore'
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
+import { useQuickSwaps } from '../hooks/useQuickSwaps'
 import FusionService from '../services/FusionService'
+import {
+  mapFeeSettingToGasSettings,
+  SuggestedGasFees
+} from '../utils/quickSwapsFee'
 import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
@@ -156,6 +164,10 @@ export const SwapContextProvider = ({
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
     [fromToken, getNetwork]
   )
+
+  // Quick Swaps gas tier
+  const { isEnabled: isQuickSwapsActive, feeSetting, maxBuy } = useQuickSwaps()
+  const { data: networkFees } = useNetworkFee(fromNetwork)
   const toNetwork = useMemo(
     () => (toToken ? getNetwork(toToken.networkChainId) : undefined),
     [toToken, getNetwork]
@@ -276,7 +288,10 @@ export const SwapContextProvider = ({
           autoRetryAttempt
         },
         caip2SourceChainId: quote.sourceChain.chainId,
-        caip2TargetChainId: quote.targetChain.chainId
+        caip2TargetChainId: quote.targetChain.chainId,
+        quickSwapsEnabled: isQuickSwapsActive,
+        quickSwapsFeeSetting: feeSetting,
+        quickSwapsMaxBuy: maxBuy
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -308,22 +323,25 @@ export const SwapContextProvider = ({
       // Dispatch trackFusionTransfer to start tracking transfer status
       dispatch(trackFusionTransfer(transfer))
 
-      // Dispatch swapCompleted for Nest Egg qualification tracking
+      // Dispatch swapCompleted for Nest Egg qualification tracking.
+      // Computed from `transfer.amountIn` (what actually swapped) not
+      // the live `amount` state, so if the user changed the input
+      // between submit and completion the analytics still reflect
+      // reality. bigintToBig preserves precision that Number() would
+      // lose on large amounts.
       const swapTxHash = transfer.source?.txHash
       if (
         swapTxHash &&
         transfer.amountIn &&
-        fromTokenData.priceInCurrency &&
+        fromTokenData.priceInCurrency !== undefined &&
         'decimals' in fromTokenData
       ) {
-        // Calculate USD amount from the quote for Nest Egg tracking
-        // amountIn is the swap amount in token units (as string)
-
-        // Convert amount from token units to decimal value
-        const amountDecimal =
-          Number(transfer.amountIn) / Math.pow(10, fromTokenData.decimals)
-        const fromAmountUsd = amountDecimal * fromTokenData.priceInCurrency
-
+        const fromAmountUsd = bigintToBig(
+          BigInt(transfer.amountIn),
+          fromTokenData.decimals
+        )
+          .times(fromTokenData.priceInCurrency)
+          .toNumber()
         dispatch(
           swapCompleted({
             txHash: swapTxHash,
@@ -336,7 +354,7 @@ export const SwapContextProvider = ({
         )
       }
     },
-    [dispatch, setTransfers]
+    [dispatch, setTransfers, isQuickSwapsActive, feeSetting, maxBuy]
   )
 
   // Handle swap error: logging, toast
@@ -377,9 +395,43 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
+        let gasSettings: GasSettings = {
+          estimateGasMarginBps: transferGasMarginBps
+        }
+
+        if (isQuickSwapsActive) {
+          const suggested: SuggestedGasFees | undefined = networkFees && {
+            slow: networkFees.low,
+            normal: networkFees.medium,
+            fast: networkFees.high
+          }
+          const tierOverride = mapFeeSettingToGasSettings(feeSetting, suggested)
+          if (tierOverride) {
+            gasSettings = { ...gasSettings, ...tierOverride }
+          } else {
+            Logger.warn(
+              '[SwapContext] no gas tier override available; using SDK default',
+              { feeSetting }
+            )
+          }
+        }
+
+        if (
+          isQuickSwapsActive &&
+          quoteToUse.serviceType !== ServiceType.MARKR
+        ) {
+          AnalyticsService.capture('QuickSwapsBypassOpportunityMissed', {
+            caip2SourceChainId: quoteToUse.sourceChain.chainId,
+            activeServiceType: quoteToUse.serviceType,
+            markrQuoteAvailable: allQuotes.some(
+              q => q.serviceType === ServiceType.MARKR
+            )
+          })
+        }
+
         const transfer = await FusionService.transferAsset(
           quoteToUse,
-          transferGasMarginBps
+          gasSettings
         )
 
         if (transfer.status === 'failed') {
@@ -450,6 +502,9 @@ export const SwapContextProvider = ({
       allQuotes,
       maxRetries,
       transferGasMarginBps,
+      isQuickSwapsActive,
+      feeSetting,
+      networkFees,
       handleSwapSuccess,
       handleSwapError
     ]

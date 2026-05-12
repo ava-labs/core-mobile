@@ -571,24 +571,26 @@ describe('rpc - listeners', () => {
           const network = mockNetworks[43114] as Network
           const transformedNetwork = mapToVmNetwork(network)
 
-          const request = {
-            requestId: String(testRequest.data.id),
-            sessionId: testRequest.data.topic,
-            chainId: testRequest.data.params.chainId,
-            dappInfo: {
-              name: testRequest.peerMeta.name,
-              icon: testRequest.peerMeta.icons[0] ?? '',
-              url: testRequest.peerMeta.url
-            },
-            method: testRequest.method,
-            params: testRequest.data.params.request.params,
-            context: {
-              [RequestContext.IN_APP_REVIEW]: true
-            }
-          }
-
+          // The handler injects signing context (walletId, walletType,
+          // accountIndex, network) into every request before handing it
+          // to the EVM module — `objectContaining` keeps the assertion
+          // focused on the SDK-shape fields the test cares about.
           expect(mockOnRpcRequest).toHaveBeenCalledWith(
-            request,
+            expect.objectContaining({
+              requestId: String(testRequest.data.id),
+              sessionId: testRequest.data.topic,
+              chainId: testRequest.data.params.chainId,
+              dappInfo: {
+                name: testRequest.peerMeta.name,
+                icon: testRequest.peerMeta.icons[0] ?? '',
+                url: testRequest.peerMeta.url
+              },
+              method: testRequest.method,
+              params: testRequest.data.params.request.params,
+              context: expect.objectContaining({
+                [RequestContext.IN_APP_REVIEW]: true
+              })
+            }),
             transformedNetwork
           )
 

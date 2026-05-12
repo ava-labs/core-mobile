@@ -1,6 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { initialState } from './types'
+import { initialState, QuickSwapFeeLevel, QuickSwapMaxBuy } from './types'
 
 const reducerName = 'advanced'
 
@@ -13,6 +13,18 @@ export const advancedSlice = createSlice({
     },
     toggleLeftHanded: state => {
       state.isLeftHanded = !state.isLeftHanded
+    },
+    setQuickSwapsEnabled: (state, action: PayloadAction<boolean>) => {
+      state.quickSwaps.isEnabled = action.payload
+    },
+    setQuickSwapsFeeSetting: (
+      state,
+      action: PayloadAction<QuickSwapFeeLevel>
+    ) => {
+      state.quickSwaps.feeSetting = action.payload
+    },
+    setQuickSwapsMaxBuy: (state, action: PayloadAction<QuickSwapMaxBuy>) => {
+      state.quickSwaps.maxBuy = action.payload
     }
   }
 })
@@ -24,7 +36,23 @@ export const selectIsDeveloperMode = (state: RootState): boolean =>
 export const selectIsLeftHanded = (state: RootState): boolean =>
   state.settings.advanced.isLeftHanded
 
+export const selectIsQuickSwapsEnabled = (state: RootState): boolean =>
+  state.settings.advanced.quickSwaps.isEnabled
+
+export const selectQuickSwapsFeeSetting = (
+  state: RootState
+): QuickSwapFeeLevel => state.settings.advanced.quickSwaps.feeSetting
+
+export const selectQuickSwapsMaxBuy = (state: RootState): QuickSwapMaxBuy =>
+  state.settings.advanced.quickSwaps.maxBuy
+
 // actions
-export const { toggleDeveloperMode, toggleLeftHanded } = advancedSlice.actions
+export const {
+  toggleDeveloperMode,
+  toggleLeftHanded,
+  setQuickSwapsEnabled,
+  setQuickSwapsFeeSetting,
+  setQuickSwapsMaxBuy
+} = advancedSlice.actions
 
 export const advancedReducer = advancedSlice.reducer

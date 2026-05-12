@@ -31,6 +31,7 @@ import { getInitialState as browserTabsGetInitialState } from './browser/slices/
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
 import { ViewOnceKey } from './viewOnce'
 import { CollectibleVisibility, TokenVisibility } from './portfolio'
+import { QUICK_SWAPS_DEFAULT } from './settings/advanced/types'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -536,5 +537,21 @@ export const migrations = {
     // on device forever.
     const { bridge: _bridge, unifiedBridge: _unifiedBridge, ...rest } = state
     return rest
+  },
+  29: (state: any) => {
+    // CP-13244: introduce quickSwaps settings on advanced. Filled from
+    // the slice's QUICK_SWAPS_DEFAULT so any future default change stays
+    // in sync with the slice initialState instead of drifting.
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        advanced: {
+          ...state.settings?.advanced,
+          quickSwaps:
+            state.settings?.advanced?.quickSwaps ?? QUICK_SWAPS_DEFAULT
+        }
+      }
+    }
   }
 }

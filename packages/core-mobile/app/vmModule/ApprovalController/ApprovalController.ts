@@ -4,6 +4,8 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
+  BatchApprovalParams,
+  BatchApprovalResponse,
   RpcRequest,
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
@@ -41,6 +43,11 @@ import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
+import {
+  findRequestValidator,
+  runBatchApprovalBypass,
+  runRequestValidatorBypass
+} from './quickSwapsBypass'
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
@@ -284,16 +291,20 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  async requestApproval({
-    request,
-    displayData,
-    signingData
-  }: ApprovalParams): Promise<ApprovalResponse> {
+  async requestApproval(params: ApprovalParams): Promise<ApprovalResponse> {
+    const { request, displayData, signingData } = params
     const requestId = request.requestId
-    // Clear any previous cancellation state for this request
     this.userCancelledMap.delete(requestId)
 
-    // Check for EIP-4361 (SIWE) domain/scheme/port mismatch
+    // Quick Swaps bypass — sync find then async run keeps the common
+    // (no-validator) path microtask-free so the modal navigation
+    // below happens on the same tick callers observe.
+    const validator = findRequestValidator(params)
+    if (validator) {
+      const bypassResult = await runRequestValidatorBypass(validator, params)
+      if (bypassResult) return bypassResult
+    }
+
     const enrichedDisplayData = maybeInjectSiweAlert({
       request,
       signingData,
@@ -337,6 +348,14 @@ class ApprovalController implements VmModuleApprovalController {
         }
       })
     })
+  }
+
+  // Batch approvals only exist for the Quick Swaps bypass — there's
+  // no batch manual-modal flow in this app. Delegate fully.
+  async requestBatchApproval(
+    params: BatchApprovalParams
+  ): Promise<BatchApprovalResponse> {
+    return runBatchApprovalBypass(params)
   }
 }
 
