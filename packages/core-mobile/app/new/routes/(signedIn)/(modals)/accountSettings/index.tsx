@@ -39,12 +39,20 @@ import {
 import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 import { manualLockStore } from 'features/accountSettings/store'
+import {
+  selectActiveWallet,
+  selectActiveWalletId
+} from 'store/wallet/slice'
+// eslint-disable-next-line import/no-relative-parent-imports
+import { addressDerivationBenchmark } from '../../../../../../benchmark/addressDerivation'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const activeWalletId = useSelector(selectActiveWalletId)
+  const activeWallet = useSelector(selectActiveWallet)
   const {
     theme: { colors }
   } = useTheme()
@@ -250,6 +258,28 @@ const AccountSettingsScreen = (): JSX.Element => {
               Lock wallet
             </Text>
           </TouchableOpacity>
+          {activeWalletId && activeWallet ? (
+            <TouchableOpacity
+              sx={{
+                alignItems: 'center',
+                backgroundColor: colors.$surfaceSecondary,
+                borderRadius: 12,
+                padding: 14
+              }}
+              onPress={() =>
+                addressDerivationBenchmark({
+                  walletId: activeWalletId,
+                  walletType: activeWallet.type,
+                  isTestnet: isDeveloperMode
+                })
+              }>
+              <Text
+                variant="body1"
+                sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
+                Run address derivation bench (DEV)
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             sx={{
               alignItems: 'center',
