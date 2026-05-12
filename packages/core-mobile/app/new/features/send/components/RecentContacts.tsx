@@ -21,6 +21,7 @@ import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
@@ -189,14 +190,30 @@ const ContactListItem = ({
   const wallets = useSelector(selectWallets)
   const walletsCount = Object.keys(wallets).length
 
+  const ledgerDerivationLabel =
+    wallet?.type === WalletType.LEDGER
+      ? LedgerDerivationPathType.BIP44
+      : wallet?.type === WalletType.LEDGER_LIVE
+      ? LedgerDerivationPathType.LedgerLive
+      : null
+  const isLedger = ledgerDerivationLabel !== null
+
+  const walletNameText =
+    wallet?.type === WalletType.PRIVATE_KEY ? 'Imported' : wallet?.name
+
   return (
     <ListViewItem
       avatar={avatar}
       title={item.name}
       renderTop={() =>
         wallet &&
-        walletsCount > 1 && (
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+        (walletsCount > 1 || isLedger) && (
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 2
+            }}>
             <WalletIcon
               width={16}
               height={16}
@@ -204,16 +221,32 @@ const ContactListItem = ({
               color={theme.colors.$textSecondary}
               isExpanded
             />
-            <Text
-              variant="buttonSmall"
-              sx={{
-                color: '$textSecondary',
-                lineHeight: 16
-              }}>
-              {wallet?.type === WalletType.PRIVATE_KEY
-                ? 'Imported'
-                : wallet?.name}
-            </Text>
+            {walletNameText ? (
+              <Text
+                variant="buttonSmall"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                sx={{
+                  color: '$textSecondary',
+                  lineHeight: 16,
+                  flexShrink: 1
+                }}>
+                {walletNameText}
+              </Text>
+            ) : null}
+            {ledgerDerivationLabel ? (
+              <Text
+                variant="buttonSmall"
+                numberOfLines={1}
+                sx={{
+                  color: '$textSecondary',
+                  lineHeight: 16
+                }}>
+                {walletNameText
+                  ? ` · ${ledgerDerivationLabel}`
+                  : ledgerDerivationLabel}
+              </Text>
+            ) : null}
           </View>
         )
       }

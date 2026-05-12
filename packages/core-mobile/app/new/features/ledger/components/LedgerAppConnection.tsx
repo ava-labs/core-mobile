@@ -277,8 +277,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
             ),
             title: 'Connect to Solana App',
             subtitle: onlySolana
-              ? `Open the Solana app on your ${deviceName}, then press Continue when ready.`
-              : `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
+              ? `Confirm "Open Solana?" on your ${deviceName}, then press Continue when ready.`
+              : `Your ${deviceName} will prompt "Open Solana?" — confirm it on the device, then press Continue when ready.`,
             showAnimation: false
           }
 

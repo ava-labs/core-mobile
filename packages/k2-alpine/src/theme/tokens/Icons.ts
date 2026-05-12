@@ -54,7 +54,6 @@ import IconVolumeOn from '../../assets/icons/volume_on.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
 import IconAlertCircle from '../../assets/icons/alert_circle.svg'
-import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
 import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
 import IconSearch from '../../assets/icons/search.svg'
@@ -313,7 +312,6 @@ export const Icons = {
     ArrowDownHandleBar: IconArrowDownHandleBar,
     Search: IconSearch,
     SearchCustom: IconSearchCustom,
-    AvalabsTrademark: IconAvalabsTrademark,
     SignPost: IconSignPost,
     TxTypeAdd: IconTxTypeAdd,
     AdvanceTime: IconTxTypeAdvanceTime,
