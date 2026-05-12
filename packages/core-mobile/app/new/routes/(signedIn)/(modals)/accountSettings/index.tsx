@@ -286,14 +286,20 @@ const AccountSettingsScreen = (): JSX.Element => {
             height={22}
           />
           <Text
-            variant="buttonSmall"
-            sx={{ color: colors.$textSecondary, fontFamily: 'Inter-Regular' }}>
-            {`©${new Date().getFullYear()} Ava Labs – All rights reserved`}
+            sx={{
+              color: colors.$textSecondary,
+              fontFamily: 'Inter-Regular',
+              fontSize: 12,
+              lineHeight: 14
+            }}>
+            {`©${COPYRIGHT_YEAR} Ava Labs – All rights reserved`}
           </Text>
         </View>
       </View>
     </ScrollScreen>
   )
 }
+
+const COPYRIGHT_YEAR = new Date().getFullYear()
 
 export default AccountSettingsScreen
