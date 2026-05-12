@@ -588,7 +588,10 @@ export const selectIsFusionLombardBtcbToBtcEnabled = (
 
 export const selectIsQuickSwapsAvailable = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
-  return featureFlags[FeatureGates.FUSION_QUICK_SWAPS] === true
+  return (
+    featureFlags[FeatureGates.FUSION_QUICK_SWAPS] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
 }
 
 // Composed selector — true when ANY feature on the Advanced Settings
