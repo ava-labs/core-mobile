@@ -1,7 +1,6 @@
 import {
   Avatar,
   GroupList,
-  Icons,
   Logos,
   showAlert,
   Text,
@@ -280,13 +279,17 @@ const AccountSettingsScreen = (): JSX.Element => {
         {/* Footer */}
         <View
           testID="settings_footer"
-          sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
+          sx={{ gap: 6, alignItems: 'center', paddingBottom: 24 }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}
             height={22}
           />
-          <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
+          <Text
+            variant="buttonSmall"
+            sx={{ color: colors.$textSecondary, fontFamily: 'Inter-Regular' }}>
+            {`©${new Date().getFullYear()} Ava Labs – All rights reserved`}
+          </Text>
         </View>
       </View>
     </ScrollScreen>
