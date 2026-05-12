@@ -624,23 +624,25 @@ const callPostV1GetAddressesOnce = async ({
 
   // If hey-api gave us a structured error envelope, surface it as a
   // throw so the retry helper sees it. The status field is what
-  // `isTransientHttpError` keys on.
-  if (
-    raw &&
-    typeof raw === 'object' &&
-    'error' in raw &&
-    (raw as { error: unknown }).error !== undefined
-  ) {
-    const err = (raw as { error: { status?: number; message?: string } }).error
-    const message = err?.message ?? 'profile-api returned an error envelope'
-    const wrapped = new Error(
-      `postV1GetAddresses failed (status=${
-        err?.status ?? 'unknown'
-      }): ${message}`
-    )
-    // Attach status so retry helper can categorize.
-    ;(wrapped as Error & { status?: number }).status = err?.status
-    throw wrapped
+  // `isTransientHttpError` keys on. Only treat as a failure when `error`
+  // is actually populated (not null/undefined) AND no `data` came back —
+  // a `{ error: null }` or `{ data: ..., error: null }` shape would
+  // otherwise mask a real success.
+  if (raw && typeof raw === 'object') {
+    const errField = (raw as { error?: unknown }).error
+    const dataField = (raw as { data?: unknown }).data
+    if (errField != null && dataField === undefined) {
+      const err = errField as { status?: number; message?: string }
+      const message = err?.message ?? 'profile-api returned an error envelope'
+      const wrapped = new Error(
+        `postV1GetAddresses failed (status=${
+          err?.status ?? 'unknown'
+        }): ${message}`
+      )
+      // Attach status so retry helper can categorize.
+      ;(wrapped as Error & { status?: number }).status = err?.status
+      throw wrapped
+    }
   }
 
   const body = unwrapPostV1GetAddressesResult(raw)
