@@ -273,17 +273,21 @@ export type AnalyticsEvents = {
     channelId: string
     deeplinkUrl?: string
     /**
-     * App state at the moment the press was received.
+     * Whether the press launched the app from a fully-killed state (cold
+     * start) as opposed to resuming it from background or being tapped while
+     * already foregrounded.
      *
-     * - `foreground`: app is open and in view.
-     * - `background`: app is alive but minimized (warm resume on tap).
-     * - `cold_start`: app was killed and was launched by the press.
-     *
-     * Combined with `handler` to identify the exact capture path. Added for
-     * CP-14006 verification — lets us break down underreporting by app state
-     * regardless of which RN API caught the press.
+     * This is the one app-state distinction we can detect with high
+     * confidence: cold-start presses come back through
+     * `notifee.getInitialNotification` / `messaging().getInitialNotification`
+     * on the very first JS evaluation, and nothing else can produce that
+     * signal. Foreground-vs-background, by contrast, can't be cleanly
+     * separated on iOS — notifee delivers warm-background presses through
+     * `onForegroundEvent` once the app reactivates, so we'd be guessing.
+     * We intentionally don't emit a (foreground|background) field rather
+     * than ship a misleading one.
      */
-    appState: 'foreground' | 'background' | 'cold_start'
+    isColdStart: boolean
     /**
      * Which RN notification API delivered the press to us.
      *
