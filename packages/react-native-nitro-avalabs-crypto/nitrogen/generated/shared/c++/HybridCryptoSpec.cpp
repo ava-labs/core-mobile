@@ -23,7 +23,6 @@ namespace margelo::nitro::nitroavalabscrypto {
       prototype.registerHybridMethod("verifySchnorr", &HybridCryptoSpec::verifySchnorr);
       prototype.registerHybridMethod("getExtendedPublicKey", &HybridCryptoSpec::getExtendedPublicKey);
       prototype.registerHybridMethod("deriveAddressesFromXpubs", &HybridCryptoSpec::deriveAddressesFromXpubs);
-      prototype.registerHybridMethod("deriveSolanaAddressesFromSeed", &HybridCryptoSpec::deriveSolanaAddressesFromSeed);
       prototype.registerHybridMethod("deriveAllAddressesFromSeed", &HybridCryptoSpec::deriveAllAddressesFromSeed);
     });
   }

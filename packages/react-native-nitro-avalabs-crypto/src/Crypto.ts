@@ -5,14 +5,12 @@ import type {
   Crypto,
   DerivedAllAddresses,
   DerivedSecp256k1Addresses,
-  DerivedSolanaAddress,
   ExtendedPublicKeyResult
 } from './specs/Crypto.nitro'
 
 export type {
   DerivedAllAddresses,
   DerivedSecp256k1Addresses,
-  DerivedSolanaAddress,
   ExtendedPublicKeyResult
 } from './specs/Crypto.nitro'
 
@@ -404,21 +402,6 @@ export function deriveAddressesFromXpubs(
     isTestnet,
     accountIndices
   )
-}
-
-/**
- * Batch-derive Solana addresses from a BIP39 seed.
- * Runs entirely on a native background thread — the JS thread stays free.
- *
- * @param seed           64-byte BIP39 seed (ArrayBuffer)
- * @param accountIndices account indices to derive
- * @returns one DerivedSolanaAddress per index
- */
-export function deriveSolanaAddressesFromSeed(
-  seed: ArrayBuffer,
-  accountIndices: number[]
-): Promise<DerivedSolanaAddress[]> {
-  return NativeCrypto.deriveSolanaAddressesFromSeed(seed, accountIndices)
 }
 
 /**

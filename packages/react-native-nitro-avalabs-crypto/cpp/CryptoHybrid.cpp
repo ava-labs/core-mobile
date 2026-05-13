@@ -557,58 +557,6 @@ namespace margelo::nitro::nitroavalabscrypto {
         });
     }
 
-/* --------------- Batch Solana Address Derivation (async) --------------- */
-
-    std::shared_ptr<Promise<std::vector<DerivedSolanaAddress>>>
-    CryptoHybrid::deriveSolanaAddressesFromSeed(
-            const std::shared_ptr<ArrayBuffer> &seed,
-            const std::vector<double> &accountIndices) {
-
-        if (!seed || seed->size() != 64) {
-            throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
-        }
-        validateAccountIndices(accountIndices);
-
-        // Copy seed bytes so the lambda owns them (the ArrayBuffer may be
-        // invalidated before the background thread runs).
-        std::vector<uint8_t> seedBytes(64);
-        std::memcpy(seedBytes.data(), seed->data(), 64);
-
-        return Promise<std::vector<DerivedSolanaAddress>>::async(
-            [seedBytes = std::move(seedBytes), accountIndices]() mutable {
-
-            // Scope guard: zero seed bytes on *any* exit path, including
-            // exceptions thrown during the derivation loop.
-            ScopeGuard cleanupSeed([&] {
-                OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
-            });
-
-            // Compute SLIP-0010 master once — reused across all accounts.
-            auto master = slip0010_master_key(seedBytes.data(), seedBytes.size());
-            ScopeGuard cleanupMaster([&] {
-                OPENSSL_cleanse(master.secret.data(), master.secret.size());
-                OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
-            });
-
-            const size_t n = accountIndices.size();
-            std::vector<DerivedSolanaAddress> results(n);
-
-            auto deriveOne = [&](size_t i) {
-                auto idx = accountIndices[i];
-                auto index = static_cast<uint32_t>(idx);
-                auto address = solana_address_from_master(master, index);
-                results[i] = DerivedSolanaAddress(idx, std::move(address));
-            };
-
-            // `master` is treated as read-only by solana_address_from_master
-            // (it copies the master into a local before mutating), so per-index
-            // derivation is independent.
-            parallelFor(n, deriveOne);
-
-            return results;
-        });
-    }
-
 /* ---------- All Addresses From Seed (secp256k1 + Ed25519, async) --------- */
 
     std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>

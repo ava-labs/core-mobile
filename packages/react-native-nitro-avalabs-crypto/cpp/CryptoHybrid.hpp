@@ -74,11 +74,6 @@ namespace margelo::nitro::nitroavalabscrypto {
                 bool isTestnet,
                 const std::vector<double> &accountIndices) override;
 
-        std::shared_ptr<Promise<std::vector<DerivedSolanaAddress>>>
-        deriveSolanaAddressesFromSeed(
-                const std::shared_ptr<ArrayBuffer> &seed,
-                const std::vector<double> &accountIndices) override;
-
         std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>
         deriveAllAddressesFromSeed(
                 const std::shared_ptr<ArrayBuffer> &seed,
