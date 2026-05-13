@@ -280,6 +280,15 @@ function parseDerEcdsa(sig: Uint8Array): { r: Uint8Array; s: Uint8Array } {
 /** Convert DER ECDSA signature to compact 64-byte (r||s). */
 function derToCompact64(sigDer: Uint8Array): Uint8Array<ArrayBuffer> {
   const { r, s } = parseDerEcdsa(sigDer)
+  // Reject zero-length r or s. parseDerEcdsa strips leading 0x00 (which
+  // exists only when the high bit of the next byte is set, to force DER
+  // positive-INTEGER encoding); a zero-length result means the encoded
+  // integer was literally zero, which is invalid for ECDSA. Without this
+  // guard `out.set([], 32)` is a no-op and we'd hand a signature with a
+  // zero r (or s) to native verify — verification will reject it, but
+  // with a less-clear error than a direct throw here.
+  if (r.length === 0 || s.length === 0)
+    throw new TypeError('Invalid DER: r and s must be non-zero')
   if (r.length > 32 || s.length > 32)
     throw new TypeError('Invalid DER: r/s too long')
   const out = new Uint8Array(64)

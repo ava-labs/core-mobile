@@ -268,6 +268,22 @@ This replaces `ModuleManager.deriveAddresses()` for the discovery use case only.
 
 `reloadAccounts` (Phase 2 of the `onAppUnlockedOrchestrator`) batches all account indices into a single `deriveAllAddressesFromSeed` native call for mnemonic wallets, instead of looping through `ModuleManager.deriveAddresses` per account on the JS thread.
 
+**Field-preservation invariant:** the per-account result construction in `reloadMnemonicWalletNative` MUST spread the original `Account` first and then overwrite only the six address fields:
+
+```ts
+reloadedAccounts[account.id] = {
+  ...account,            // ← preserves `active`, custom flags, future-added Account fields
+  addressBTC: r.btc,
+  addressC: r.evm || account.addressC,
+  addressAVM: r.avm,
+  addressPVM: r.pvm,
+  addressCoreEth: r.coreEth,
+  addressSVM: r.solana
+}
+```
+
+An explicit-field-list construction (which the original implementation used) silently drops any non-address property on `Account` and diverges from the JS fallback path in `AccountsService.reloadAccounts`. The spread-first pattern keeps the native path field-for-field equivalent for non-address properties so future additions to the `Account` type are handled automatically.
+
 ## Testing
 
 ### Unit tests for native functions

@@ -82,6 +82,9 @@ lib/
 .cache
 *.tsbuildinfo
 
+# packed tarballs (yarn/npm pack output)
+*.tgz
+
 # Nitro Modules
 nitrogen/
 
