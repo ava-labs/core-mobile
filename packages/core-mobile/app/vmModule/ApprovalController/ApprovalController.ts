@@ -6,12 +6,9 @@ import {
   ApprovalResponse,
   BatchApprovalParams,
   BatchApprovalResponse,
-  RpcMethod,
   RpcRequest,
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
-import { getLedgerAppForEvmTx, getLedgerAppName } from 'features/ledger/utils'
-import { LedgerAppType } from 'services/ledger/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
@@ -277,25 +274,9 @@ class ApprovalController implements VmModuleApprovalController {
       }
     }
 
-    // Compute the Ledger app to prompt up-front so the UI doesn't show
-    // the Avalanche app prompt and then immediately switch to the
-    // Ethereum app once sign-time routing kicks in.
-    //
-    // EVM `eth_sendTransaction` needs the full request context (chain +
-    // calldata) to decide between the Avalanche app (simple AVAX
-    // transfers on C-Chain) and the Ethereum app (EVM contract calls,
-    // including Uniswap on C-Chain). Other signing flows derive the app
-    // from the network alone.
-    const appType: LedgerAppType =
-      signingData.type === RpcMethod.ETH_SEND_TRANSACTION
-        ? getLedgerAppForEvmTx(
-            Number(params.network.chainId),
-            signingData.data.data
-          )
-        : getLedgerAppName(params.network)
-
     ledgerParamsStore.getState().setReviewTransactionParams({
-      appType,
+      rpcMethod: request.method,
+      network: params.network,
       onApprove: () =>
         onApprove({
           ...params,
@@ -335,28 +316,24 @@ class ApprovalController implements VmModuleApprovalController {
         request,
         displayData: enrichedDisplayData,
         signingData,
-        onApprove: async (approveParams: OnApproveParams) => {
+        onApprove: async (params: OnApproveParams) => {
           if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
-            this.cacheSigningAddress(
-              requestId,
-              request.chainId,
-              approveParams.account
-            )
+            this.cacheSigningAddress(requestId, request.chainId, params.account)
           }
 
           if (
-            approveParams.walletType === WalletType.LEDGER ||
-            approveParams.walletType === WalletType.LEDGER_LIVE
+            params.walletType === WalletType.LEDGER ||
+            params.walletType === WalletType.LEDGER_LIVE
           ) {
             this.handleLedgerApproval({
               requestId,
               request,
-              params: approveParams,
+              params,
               signingData,
               resolve
             })
           } else {
-            return onApprove({ ...approveParams, resolve, signingData })
+            return onApprove({ ...params, resolve, signingData })
           }
         },
         onReject: (message?: string) => onReject({ resolve, message })

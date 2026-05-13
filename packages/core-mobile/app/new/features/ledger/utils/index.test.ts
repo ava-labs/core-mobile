@@ -12,9 +12,7 @@ import {
   getFormattedAddresses,
   buildKeysFromMultiIndex,
   buildLedgerWalletSecret,
-  LedgerWalletSecretSchema,
-  isEvmContractCallData,
-  getLedgerAppForEvmTx
+  LedgerWalletSecretSchema
 } from './index'
 
 describe('isVersionExceeding', () => {
@@ -327,7 +325,6 @@ describe('buildKeysFromMultiIndex', () => {
       derivationPathType: LedgerDerivationPathType.BIP44
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const keys = publicKeys[0]!
     expect(keys).toBeDefined()
     // mainnet avalanche pk + solana pk + testnet avalanche pk = 3
@@ -342,7 +339,6 @@ describe('buildKeysFromMultiIndex', () => {
   it('deduplicates public keys with the same key value', () => {
     const multiIndexKeys = makeMultiIndexKeys([0])
     // Make testnet key identical to mainnet key
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     multiIndexKeys.testnet[0]!.avalancheKeys!.publicKeys = [
       makePk('pk_mainnet_0')
     ]
@@ -353,7 +349,6 @@ describe('buildKeysFromMultiIndex', () => {
       derivationPathType: LedgerDerivationPathType.BIP44
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const keyValues = publicKeys[0]!.map(k => k.key)
     expect(keyValues.filter(k => k === 'pk_mainnet_0')).toHaveLength(1)
   })
@@ -846,7 +841,6 @@ describe('buildLedgerWalletSecret', () => {
       })
 
       const parsed2 = LedgerWalletSecretSchema.parse(JSON.parse(updatedSecret))
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(Object.keys(parsed2.extendedPublicKeys!)).toHaveLength(2)
       expect(Object.keys(parsed2.publicKeys)).toHaveLength(2)
 
@@ -867,69 +861,7 @@ describe('buildLedgerWalletSecret', () => {
       // Account 1 should be untouched
       expect(parsed3.publicKeys[1]).toHaveLength(1)
       // Xpubs should still be intact
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(Object.keys(parsed3.extendedPublicKeys!)).toHaveLength(2)
     })
-  })
-})
-
-describe('isEvmContractCallData', () => {
-  it('returns false for empty / "0x" data', () => {
-    expect(isEvmContractCallData(undefined)).toBe(false)
-    expect(isEvmContractCallData(null)).toBe(false)
-    expect(isEvmContractCallData('')).toBe(false)
-    expect(isEvmContractCallData('0x')).toBe(false)
-  })
-
-  it('returns true for non-trivial calldata', () => {
-    expect(isEvmContractCallData('0xa9059cbb')).toBe(true)
-    expect(
-      isEvmContractCallData(
-        '0x3593564c0000000000000000000000000000000000000000'
-      )
-    ).toBe(true)
-  })
-
-  it('returns false for non-string values', () => {
-    expect(isEvmContractCallData(0)).toBe(false)
-    expect(isEvmContractCallData({})).toBe(false)
-  })
-})
-
-describe('getLedgerAppForEvmTx', () => {
-  // Mainnet C-Chain
-  const AVAX_C_CHAIN = 43114
-  const ETHEREUM_MAINNET = 1
-
-  it('returns Avalanche app for simple AVAX transfers on Avalanche C-Chain', () => {
-    expect(getLedgerAppForEvmTx(AVAX_C_CHAIN, '0x')).toBe(
-      LedgerAppType.AVALANCHE
-    )
-    expect(getLedgerAppForEvmTx(AVAX_C_CHAIN, undefined)).toBe(
-      LedgerAppType.AVALANCHE
-    )
-  })
-
-  it('returns Ethereum app for Avalanche C-Chain contract calls', () => {
-    // Uniswap UR `execute(...)` selector
-    expect(
-      getLedgerAppForEvmTx(
-        AVAX_C_CHAIN,
-        '0x3593564c0000000000000000000000000000000000000000'
-      )
-    ).toBe(LedgerAppType.ETHEREUM)
-    // ERC20 transfer
-    expect(getLedgerAppForEvmTx(AVAX_C_CHAIN, '0xa9059cbb')).toBe(
-      LedgerAppType.ETHEREUM
-    )
-  })
-
-  it('returns Ethereum app for non-Avalanche EVM chains regardless of data', () => {
-    expect(getLedgerAppForEvmTx(ETHEREUM_MAINNET, '0x')).toBe(
-      LedgerAppType.ETHEREUM
-    )
-    expect(getLedgerAppForEvmTx(ETHEREUM_MAINNET, '0xa9059cbb')).toBe(
-      LedgerAppType.ETHEREUM
-    )
   })
 })

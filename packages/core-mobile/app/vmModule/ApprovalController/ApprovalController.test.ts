@@ -1,6 +1,5 @@
 import { RpcMethod, RpcRequest } from '@avalabs/vm-module-types'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
-import { LedgerAppType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -887,18 +886,13 @@ describe('ApprovalController', () => {
 
       const { onApprove: capturedOnApprove } =
         mockWalletConnectCacheSet.mock.calls[0][0]
-      const params = {
-        walletType: WalletType.LEDGER,
-        network: { chainId: 1 }
-      } as never
+      const params = { walletType: WalletType.LEDGER } as never
       await capturedOnApprove(params)
 
       expect(mockSetReviewTransactionParams).toHaveBeenCalledTimes(1)
       expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(
         expect.objectContaining({
-          // Pre-computed by ApprovalController so consumers (the review
-          // sheet) don't have to derive it from `network` again.
-          appType: LedgerAppType.ETHEREUM,
+          rpcMethod: request.method,
           onApprove: expect.any(Function),
           onReject: expect.any(Function)
         })
@@ -911,16 +905,13 @@ describe('ApprovalController', () => {
 
       const { onApprove: capturedOnApprove } =
         mockWalletConnectCacheSet.mock.calls[0][0]
-      const params = {
-        walletType: WalletType.LEDGER_LIVE,
-        network: { chainId: 1 }
-      } as never
+      const params = { walletType: WalletType.LEDGER_LIVE } as never
       await capturedOnApprove(params)
 
       expect(mockSetReviewTransactionParams).toHaveBeenCalledTimes(1)
       expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(
         expect.objectContaining({
-          appType: LedgerAppType.ETHEREUM,
+          rpcMethod: request.method,
           onApprove: expect.any(Function),
           onReject: expect.any(Function)
         })

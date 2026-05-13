@@ -5,8 +5,8 @@ import {
 import { UnsupportedBitcoinApp } from 'features/ledger/components/UnsupportedBitcoinApp'
 import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnection'
 import { ledgerParamsStore, useLedgerParams } from 'features/ledger/store'
-import { LedgerAppType } from 'services/ledger/types'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { getLedgerAppName } from 'features/ledger/utils'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 
 type UseLedgerApprovalReturn = {
@@ -34,10 +34,10 @@ export const useLedgerApproval = (
   const { reviewTransactionParams } = useLedgerParams()
   const prevParamsRef = useRef(reviewTransactionParams)
 
-  // `appType` is pre-computed by ApprovalController which has the full
-  // request context — see `getLedgerAppForEvmTx`. We fall back to UNKNOWN
-  // only while `reviewTransactionParams` is null (sheet not active).
-  const appType = reviewTransactionParams?.appType ?? LedgerAppType.UNKNOWN
+  const appType = useMemo(
+    () => getLedgerAppName(reviewTransactionParams?.network),
+    [reviewTransactionParams?.network]
+  )
 
   const {
     isLedgerConnected,
