@@ -79,7 +79,7 @@ const config = {
   region:
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-west-2',
   waitForCompletion: parseBoolEnv('WAIT_FOR_COMPLETION'),
-  shardTotal: parseInt(process.env.SHARD_TOTAL ?? '1', 10) || 1
+  specFile: process.env.SPEC_FILE || ''
 }
 
 // Parse CLI arguments (--flag value). Map kebab-case flags to config keys (not raw dash-stripping).
@@ -92,7 +92,7 @@ const cliFlagToConfigKey = {
   platform: 'platform',
   region: 'region',
   'wait-for-completion': 'waitForCompletion',
-  shards: 'shardTotal'
+  'spec-file': 'specFile'
 }
 for (let i = 0; i < args.length; i += 2) {
   const flag = args[i]?.replace(/^--/, '')
@@ -409,19 +409,16 @@ async function waitForRunCompletion(runArn) {
 }
 
 /**
- * Reads the base test spec yaml and injects SHARD_INDEX / SHARD_TOTAL exports
- * before `npm test` so each Device Farm job receives its shard assignment.
+ * Reads the base test spec yaml and injects SPEC_FILE export before `npm test` if provided.
  * @param {string} baseSpecPath
- * @param {number} shardIndex 1-based
- * @param {number} shardTotal
+ * @param {string} specFile
  * @returns {string} modified yaml content
  */
-function buildShardedSpecContent(baseSpecPath, shardIndex, shardTotal) {
+function buildSpecYamlContent(baseSpecPath, specFile) {
   const content = fs.readFileSync(baseSpecPath, 'utf8')
-  const shardLines =
-    `      - export SHARD_INDEX="${shardIndex}"\n` +
-    `      - export SHARD_TOTAL="${shardTotal}"`
-  return content.replace(/([ \t]*)(- npm test)/, `${shardLines}\n$1$2`)
+  if (!specFile) return content
+  const line = `      - export SPEC_FILE="${specFile}"`
+  return content.replace(/([ \t]*)(- npm test)/, `${line}\n$1$2`)
 }
 
 /**
@@ -452,15 +449,9 @@ async function scheduleRun({
   return runResponse.run.arn
 }
 
-/**
- * Main function to trigger test run(s).
- * When SHARD_TOTAL > 1, triggers one run per shard with shard env vars baked into
- * a temporary spec yaml so Device Farm jobs split the spec file workload.
- */
 async function main() {
   try {
-    const shardTotal = Math.max(1, Math.floor(Number(config.shardTotal) || 1))
-    const isSharded = shardTotal > 1
+    const specFile = config.specFile || ''
 
     console.log('🚀 Starting AWS Device Farm test run via API...')
     console.log('')
@@ -472,8 +463,8 @@ async function main() {
     console.log(`   appPath:        ${config.appPath}`)
     console.log(`   testPackagePath: ${config.testPackagePath}`)
     console.log(`   testSpecPath:   ${config.testSpecPath}`)
-    if (isSharded) {
-      console.log(`   shards:         ${shardTotal} (parallel runs)`)
+    if (specFile) {
+      console.log(`   specFile:       ${specFile}`)
     }
     console.log('')
 
@@ -490,7 +481,6 @@ async function main() {
 
     const appType = config.platform === 'android' ? 'ANDROID_APP' : 'IOS_APP'
 
-    // Upload app and test package once — shared across all shards.
     const appUploadArn = await uploadFile(
       config.appPath,
       config.projectArn,
@@ -506,104 +496,60 @@ async function main() {
     )
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const runArns = []
 
-    if (isSharded) {
-      // Upload one spec yaml per shard (each has SHARD_INDEX/SHARD_TOTAL baked in),
-      // then schedule the runs in parallel.
-      const os = require('os')
-      const specUploadPromises = Array.from({ length: shardTotal }, async (_, i) => {
-        const shardIndex = i + 1 // WDIO shard.current is 1-based
-        const shardedContent = buildShardedSpecContent(
-          config.testSpecPath,
-          shardIndex,
-          shardTotal
-        )
-        const tmpPath = path.join(
-          os.tmpdir(),
-          `aws_test_spec_shard${shardIndex}of${shardTotal}.yaml`
-        )
-        fs.writeFileSync(tmpPath, shardedContent)
-        const arn = await uploadFile(
-          tmpPath,
-          config.projectArn,
-          'APPIUM_NODE_TEST_SPEC',
-          `aws_test_spec_shard${shardIndex}of${shardTotal}.yaml`
-        )
-        fs.unlinkSync(tmpPath)
-        return { shardIndex, arn }
-      })
+    const os = require('os')
+    const specContent = buildSpecYamlContent(config.testSpecPath, specFile)
+    const tmpPath = path.join(os.tmpdir(), 'aws_test_spec.yaml')
+    fs.writeFileSync(tmpPath, specContent)
+    const testSpecUploadArn = await uploadFile(
+      tmpPath,
+      config.projectArn,
+      'APPIUM_NODE_TEST_SPEC',
+      'aws_test_spec.yaml'
+    )
+    fs.unlinkSync(tmpPath)
 
-      const specUploads = await Promise.all(specUploadPromises)
+    console.log('📅 Scheduling test run...')
+    const runName = `Appium Test Run - ${timestamp}`
+    const runArn = await scheduleRun({
+      appUploadArn,
+      testPackageUploadArn,
+      testSpecUploadArn,
+      runName
+    })
 
-      console.log(`📅 Scheduling ${shardTotal} sharded runs...`)
-      const schedulePromises = specUploads.map(({ shardIndex, arn: testSpecUploadArn }) => {
-        const runName = `Appium Test Run - ${timestamp} (shard ${shardIndex}/${shardTotal})`
-        return scheduleRun({ appUploadArn, testPackageUploadArn, testSpecUploadArn, runName })
-      })
-
-      const shardedArns = await Promise.all(schedulePromises)
-      runArns.push(...shardedArns)
-
-      shardedArns.forEach((runArn, i) => {
-        const runUrl = buildRunUrl(runArn)
-        console.log(`✅ Shard ${i + 1}/${shardTotal} scheduled: ${runUrl}`)
-      })
-    } else {
-      // Single run (no sharding).
-      const testSpecUploadArn = await uploadFile(
-        config.testSpecPath,
-        config.projectArn,
-        'APPIUM_NODE_TEST_SPEC',
-        'aws_test_spec.yaml'
-      )
-
-      console.log('📅 Scheduling test run...')
-      const runName = `Appium Test Run - ${timestamp}`
-      const runArn = await scheduleRun({
-        appUploadArn,
-        testPackageUploadArn,
-        testSpecUploadArn,
-        runName
-      })
-      runArns.push(runArn)
-
-      const runUrl = buildRunUrl(runArn)
-      console.log('✅ Test run scheduled successfully!')
-      console.log(`   Run ARN: ${runArn}`)
-      console.log(`   View run at: ${runUrl}`)
-    }
+    const runUrl = buildRunUrl(runArn)
+    console.log('✅ Test run scheduled successfully!')
+    console.log(`   Run ARN: ${runArn}`)
+    console.log(`   View run at: ${runUrl}`)
 
     if (config.waitForCompletion) {
-      console.log('⏳ Waiting for all test run(s) to complete (GetRun polling)...')
-      await Promise.all(runArns.map(arn => waitForRunCompletion(arn)))
+      console.log('⏳ Waiting for test run to complete (GetRun polling)...')
+      await waitForRunCompletion(runArn)
     } else {
       console.log(
         'ℹ️  Exiting after schedule (set WAIT_FOR_COMPLETION=true to poll until the run finishes).'
       )
     }
 
-    // Expose first run ARN for Bitrise follow-up steps via envman.
-    const primaryArn = runArns[0]
-    const primaryUrl = buildRunUrl(primaryArn)
     try {
       const { execFileSync } = require('child_process')
       execFileSync(
         'envman',
-        ['add', '--key', 'DEVICEFARM_RUN_ARN', '--value', primaryArn],
+        ['add', '--key', 'DEVICEFARM_RUN_ARN', '--value', runArn],
         { stdio: 'ignore' }
       )
       execFileSync(
         'envman',
-        ['add', '--key', 'DEVICEFARM_RUN_URL', '--value', primaryUrl],
+        ['add', '--key', 'DEVICEFARM_RUN_URL', '--value', runUrl],
         { stdio: 'ignore' }
       )
     } catch {
       // envman not on PATH (e.g. local runs) — ignore
     }
 
-    console.log(`\nRun ARN: ${primaryArn}`)
-    return primaryArn
+    console.log(`\nRun ARN: ${runArn}`)
+    return runArn
   } catch (error) {
     console.error('❌ Error:', error.message)
     if (error.stack) {

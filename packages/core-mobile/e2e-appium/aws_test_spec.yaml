@@ -160,11 +160,6 @@ phases:
       - node --version
       - npm --version
 
-      # SHARD_INDEX (1-based) and SHARD_TOTAL are injected by trigger-devicefarm-api.js for
-      # parallel sharded runs. Defaults here cover single-device (non-sharded) runs.
-      - export SHARD_INDEX="${SHARD_INDEX:-1}"
-      - export SHARD_TOTAL="${SHARD_TOTAL:-1}"
-
       # Run the tests using npm test, which executes "wdio run wdio.conf.ts"
       # The wdio.conf.ts file is automatically created from wdio.devicefarm.conf.ts during packaging
       - npm test

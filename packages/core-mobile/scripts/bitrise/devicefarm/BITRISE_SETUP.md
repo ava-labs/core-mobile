@@ -120,7 +120,7 @@ These are set automatically by Bitrise or the workflow - **you don't need to con
 2. Select your project
 3. Click on **"Project settings"** or look at the URL
 4. The ARN is in the format: `arn:aws:devicefarm:us-west-2:ACCOUNT_ID:project:PROJECT_ID`
-
+                             `arn:aws:devicefarm:us-west-2:975050371175:devicepool:aaa156b6-69ac-4b1f-adce-bdb74a7a5aad/82df3fa0-7f19-4`
 ### Device Pool ARN
 1. In your Device Farm project, go to **"Device pools"**
 2. Select the pool you want to use (or create a new one)

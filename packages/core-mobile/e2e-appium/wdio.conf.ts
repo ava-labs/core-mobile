@@ -118,6 +118,10 @@ const caps = platformToRun
     )
 
 function getSpecs(): string[] {
+  if (process.env.SPEC_FILE) {
+    console.log('SPEC_FILE: ', process.env.SPEC_FILE)
+    return [process.env.SPEC_FILE]
+  }
   const testType = process.env.TEST_TYPE
   if (testType === 'performance' || process.env.IS_PERFORMANCE === 'true') {
     return ['./specs/performance/**/*.ts']
