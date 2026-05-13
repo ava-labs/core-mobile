@@ -1054,20 +1054,47 @@ describe('LedgerWallet', () => {
       expect(mockSignEVMTransaction).not.toHaveBeenCalled()
     })
 
-    it('uses getCChainSignature (Avalanche app) for Avalanche chains', async () => {
+    it('uses getCChainSignature (Avalanche app) for simple AVAX transfers on Avalanche C-Chain', async () => {
       ;(isAvalancheChainId as jest.Mock).mockReturnValue(true)
       mockGetETHAddress.mockResolvedValue({ address: '0xabc' })
       mockSignEVMTransaction.mockResolvedValue(mockSignature)
 
+      // Simple AVAX transfer — no calldata. Stays on Avalanche app so
+      // the device shows the native AVAX flow.
       await ledgerWallet.signEvmTransaction({
         accountIndex: 0,
-        transaction: { ...baseTransaction, chainId: 43114 },
+        transaction: { ...baseTransaction, chainId: 43114, data: '0x' },
         network: mockNetwork,
         provider: mockProvider
       })
 
       expect(mockSignEVMTransaction).toHaveBeenCalledTimes(1)
       expect(mockEthSignTransaction).not.toHaveBeenCalled()
+    })
+
+    it('uses getEvmSignature (Ethereum app) for Avalanche C-Chain contract calls', async () => {
+      // Refs: Sentry CORE-REACT-NATIVE-9BP / 9D2. The Avalanche Ledger app's
+      // EVM signing path has no plugin support for common DeFi contracts
+      // (e.g. Uniswap Universal Router) and no blind-signing toggle, so it
+      // returns 0x6984 on unrecognised contracts. We therefore route
+      // Avalanche C-Chain contract calls to the Ethereum app — matching
+      // MetaMask / Ledger Live convention.
+      ;(isAvalancheChainId as jest.Mock).mockReturnValue(true)
+
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: {
+          ...baseTransaction,
+          chainId: 43114,
+          // Uniswap UR `execute(bytes,bytes[],uint256)` selector.
+          data: '0x3593564c0000000000000000000000000000000000000000'
+        },
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      expect(mockEthSignTransaction).toHaveBeenCalledTimes(1)
+      expect(mockSignEVMTransaction).not.toHaveBeenCalled()
     })
 
     it('returns a serialized signed transaction string', async () => {
