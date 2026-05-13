@@ -871,6 +871,9 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
+    - SPEC_FILE: specs/onboarding/newWallet.spec.ts
+      opts:
+        is_expand: false
     steps:
     - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
         title: AWS Device Farm — upload & schedule run
@@ -905,6 +908,9 @@ workflows:
       opts:
         is_expand: false
     - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    - SPEC_FILE: specs/onboarding/newWallet.spec.ts
       opts:
         is_expand: false
     steps:
