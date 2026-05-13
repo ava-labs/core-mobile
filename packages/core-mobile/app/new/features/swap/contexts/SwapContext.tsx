@@ -94,6 +94,15 @@ interface SwapContextState {
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
+  /**
+   * True iff the source amount was most-recently set by the Max button.
+   * Cleared by any manual edit or by the 25%/50% percentage buttons.
+   * Captured on `SwapFailed` analytics so we can quantify the cohort Eric
+   * suspects (Markr toxic-pool quotes are more common on the small-amount
+   * "minimum probe" path the Max button takes).
+   */
+  userClickedMax: boolean
+  setUserClickedMax: Dispatch<boolean>
   /** ID of the transfer that was just successfully submitted */
   successTransferId: string | undefined
 }
@@ -119,6 +128,7 @@ export const SwapContextProvider = ({
   >()
   const isSwappingRef = useRef(false)
   const [amount, setAmount] = useState<bigint>()
+  const [userClickedMax, setUserClickedMax] = useState<boolean>(false)
 
   // Get quotes
   const [bestQuote] = useBestQuote()
@@ -265,6 +275,7 @@ export const SwapContextProvider = ({
       toTokenData: LocalTokenWithBalance
       quoteSelectionMode: 'manual' | 'auto'
       autoRetryAttempt?: number
+      userClickedMax: boolean
     }) => {
       const {
         transfer,
@@ -274,8 +285,13 @@ export const SwapContextProvider = ({
         fromTokenData,
         toTokenData,
         quoteSelectionMode,
-        autoRetryAttempt
+        autoRetryAttempt,
+        userClickedMax: maxClicked
       } = params
+      const sourceTokenAddress =
+        'address' in fromTokenData ? fromTokenData.address : undefined
+      const destinationTokenAddress =
+        'address' in toTokenData ? toTokenData.address : undefined
       audioFeedback(Audios.Send)
       AnalyticsService.capture('SwapConfirmed', {
         encrypted: {
@@ -320,8 +336,21 @@ export const SwapContextProvider = ({
       setSuccessTransferId(transfer.id)
       setSwapStatus(SwapStatus.Success)
 
-      // Dispatch trackFusionTransfer to start tracking transfer status
-      dispatch(trackFusionTransfer(transfer))
+      // Dispatch trackFusionTransfer to start tracking transfer status.
+      // Carries the analytics context the listener needs to populate the
+      // SwapFailed payload (userClickedMax, token metadata, quote aggregator)
+      // since the SDK's Transfer object doesn't expose those fields.
+      dispatch(
+        trackFusionTransfer({
+          transfer,
+          quote,
+          userClickedMax: maxClicked,
+          sourceTokenAddress,
+          sourceTokenSymbol: fromTokenData.symbol,
+          destinationTokenAddress,
+          destinationTokenSymbol: toTokenData.symbol
+        })
+      )
 
       // Dispatch swapCompleted for Nest Egg qualification tracking.
       // Computed from `transfer.amountIn` (what actually swapped) not
@@ -449,7 +478,8 @@ export const SwapContextProvider = ({
           fromTokenData: fromToken,
           toTokenData: toToken,
           quoteSelectionMode: userQuote ? 'manual' : 'auto',
-          autoRetryAttempt: !userQuote && retries > 0 ? retries : undefined
+          autoRetryAttempt: !userQuote && retries > 0 ? retries : undefined,
+          userClickedMax
         })
       } catch (error) {
         // Handle user rejection - silent exit, no error shown
@@ -506,7 +536,8 @@ export const SwapContextProvider = ({
       feeSetting,
       networkFees,
       handleSwapSuccess,
-      handleSwapError
+      handleSwapError,
+      userClickedMax
     ]
   )
 
@@ -532,6 +563,8 @@ export const SwapContextProvider = ({
     setDestination,
     swapStatus,
     setAmount,
+    userClickedMax,
+    setUserClickedMax,
     successTransferId
   }
 

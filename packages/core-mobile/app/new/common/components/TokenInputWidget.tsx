@@ -44,6 +44,13 @@ type TokenInputWidgetProps = {
   shouldShowBalance?: boolean
   network?: Network
   onAmountChange: (amount: bigint) => void
+  /**
+   * Fires when the Max percentage button is pressed (100% of balance).
+   * Distinct from `onAmountChange` so callers can flag analytics events
+   * (e.g. SwapFailed.userClickedMax) without inferring "max" from amount
+   * equality, which is brittle.
+   */
+  onPressMax?: () => void
   formatInCurrency: (amount: bigint | undefined) => string
   onSelectToken?: () => void
   onFocus?: () => void
@@ -69,6 +76,7 @@ export const TokenInputWidget = forwardRef<
     maximum,
     amount,
     onAmountChange,
+    onPressMax,
     formatInCurrency,
     onSelectToken,
     onFocus,
@@ -113,6 +121,9 @@ export const TokenInputWidget = forwardRef<
     }
 
     onAmountChange?.(value)
+    if (button.percent === 1) {
+      onPressMax?.()
+    }
 
     setPercentageButtons(prevButtons =>
       prevButtons.map((b, i) =>
