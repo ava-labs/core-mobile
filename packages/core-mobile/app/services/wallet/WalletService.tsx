@@ -37,6 +37,81 @@ import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
 import KeystoneWallet from './KeystoneWallet'
 import { LedgerWallet } from './LedgerWallet'
+import {
+  getAddressesCache,
+  setAddressesCache,
+  getInFlightAddressesFetch,
+  setInFlightAddressesFetch,
+  clearInFlightAddressesFetch,
+  getAddressesCacheEpoch
+} from './getAddressesCache'
+
+// Retry helper. Local to WalletService — promote to utils/ only if a second
+// caller appears. Backoff: 250 / 500 / 1000 ms (3 retries, 4 total attempts).
+// Treat network errors and HTTP 5xx as transient; everything else is fatal
+// on the first try. Note: retry attempts are logged via Logger.info, which
+// is console-only — they do NOT surface to Sentry in production.
+const NETWORK_ERROR_PATTERN =
+  /network request failed|timeout|timed out|aborted|fetch failed|socket hang up|econn|enotfound|getaddrinfo/i
+
+const isTransientHttpError = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+  // Explicit non-retryable marker wins over every other heuristic.
+  if ((err as { nonRetryable?: boolean }).nonRetryable === true) {
+    return false
+  }
+  const statusRaw = (err as { status?: unknown }).status
+  if (typeof statusRaw === 'number') {
+    return statusRaw >= 500 && statusRaw < 600
+  }
+  // No numeric status. Only treat as transient if it looks like a
+  // fetch/network error — TypeError from RN's fetch, or a message that
+  // matches a known network-failure pattern. Everything else (validation,
+  // JSON parse, programmer error) fails fast.
+  if (err instanceof TypeError) {
+    return true
+  }
+  const name = (err as { name?: unknown }).name
+  if (
+    name === 'FetchError' ||
+    name === 'AbortError' ||
+    name === 'TimeoutError'
+  ) {
+    return true
+  }
+  const message = (err as { message?: unknown }).message
+  return typeof message === 'string' && NETWORK_ERROR_PATTERN.test(message)
+}
+
+const RETRY_DELAYS_MS = [250, 500, 1000] as const
+
+const retryWithBackoff = async <T,>(
+  attempt: () => Promise<T>,
+  isTransient: (err: unknown) => boolean,
+  delays: readonly number[]
+): Promise<T> => {
+  let lastErr: unknown
+  for (let i = 0; i <= delays.length; i++) {
+    try {
+      return await attempt()
+    } catch (err) {
+      lastErr = err
+      if (i === delays.length || !isTransient(err)) {
+        throw err
+      }
+      Logger.info(
+        `[WalletService.retryWithBackoff] attempt ${
+          i + 1
+        } failed, retrying in ${delays[i]}ms: ${String(err)}`
+      )
+      await new Promise(r => setTimeout(r, delays[i]))
+    }
+  }
+  // Unreachable, but satisfies TS.
+  throw lastErr
+}
 
 class WalletService {
   public async sign({
@@ -424,32 +499,57 @@ class WalletService {
     isTestnet: boolean
     onlyWithActivity: boolean
   }): Promise<GetAddressesResponse> {
-    try {
-      const raw = await postV1GetAddresses({
-        client: profileApiClient,
-        body: {
-          networkType: networkType,
-          extendedPublicKey,
-          isTestnet,
-          onlyWithActivity
-        }
-      })
-
-      const body = unwrapPostV1GetAddressesResult(raw)
-
-      if (!isGetAddressesResponseBody(body)) {
-        throw new Error('Failed to get addresses from postV1GetAddresses')
-      }
-
-      return body
-    } catch (err) {
-      Logger.error(
-        '[WalletService.ts][getAddressesForExtendedPublicKey] failed',
-        err,
-        { source: SentryTag.ProfileApi }
-      )
-      throw err
+    const cacheKey = {
+      extendedPublicKey,
+      networkType,
+      isTestnet,
+      onlyWithActivity
     }
+    const cached = getAddressesCache(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    const inFlight = getInFlightAddressesFetch(cacheKey)
+    if (inFlight) {
+      return inFlight
+    }
+
+    const startEpoch = getAddressesCacheEpoch()
+
+    const fetchPromise = (async () => {
+      try {
+        const body = await retryWithBackoff(
+          () => callPostV1GetAddressesOnce(cacheKey),
+          isTransientHttpError,
+          RETRY_DELAYS_MS
+        )
+        if (getAddressesCacheEpoch() === startEpoch) {
+          setAddressesCache(cacheKey, body)
+        }
+        return body
+      } catch (err) {
+        Logger.error(
+          '[WalletService.ts][getAddressesForExtendedPublicKey] failed',
+          err,
+          { source: SentryTag.ProfileApi }
+        )
+        throw err
+      }
+    })()
+
+    setInFlightAddressesFetch(cacheKey, fetchPromise)
+
+    // Compare-and-delete only the entry that still points at THIS promise, so
+    // a clear-then-new-fetch interleaving can't have our stale settle wipe a
+    // newer registration. The trailing `.catch(() => {})` swallows the chained
+    // promise's rejection so it isn't reported as unhandled — callers get the
+    // original `fetchPromise` for actual error propagation.
+    fetchPromise
+      .finally(() => clearInFlightAddressesFetch(cacheKey, fetchPromise))
+      .catch(() => undefined)
+
+    return fetchPromise
   }
 
   public async getPrivateKeyFromMnemonic(
@@ -503,6 +603,73 @@ const isGetAddressesResponseBody = (
   'networkType' in value &&
   Array.isArray((value as GetAddressesResponse).externalAddresses) &&
   Array.isArray((value as GetAddressesResponse).internalAddresses)
+
+/**
+ * One call to postV1GetAddresses + envelope/error normalization. Extracted
+ * to module scope so `getAddressesForExtendedPublicKey` stays under the
+ * cognitive-complexity ceiling.
+ */
+const callPostV1GetAddressesOnce = async ({
+  extendedPublicKey,
+  networkType,
+  isTestnet,
+  onlyWithActivity
+}: {
+  extendedPublicKey: string
+  networkType: NetworkVMType.AVM | NetworkVMType.PVM
+  isTestnet: boolean
+  onlyWithActivity: boolean
+}): Promise<GetAddressesResponse> => {
+  const raw = await postV1GetAddresses({
+    client: profileApiClient,
+    body: {
+      networkType,
+      extendedPublicKey,
+      isTestnet,
+      onlyWithActivity
+    }
+  })
+
+  // If hey-api gave us a structured error envelope, surface it as a
+  // throw so the retry helper sees it. The status field is what
+  // `isTransientHttpError` keys on. Only treat as a failure when `error`
+  // is actually populated (not null/undefined) AND no `data` came back —
+  // a `{ error: null }` or `{ data: ..., error: null }` shape would
+  // otherwise mask a real success.
+  if (raw && typeof raw === 'object') {
+    const errField = (raw as { error?: unknown }).error
+    const dataField = (raw as { data?: unknown }).data
+    if (errField != null && dataField === undefined) {
+      const err = errField as { status?: number; message?: string }
+      const message = err?.message ?? 'profile-api returned an error envelope'
+      const wrapped = new Error(
+        `postV1GetAddresses failed (status=${
+          err?.status ?? 'unknown'
+        }): ${message}`
+      )
+      // Attach status so retry helper can categorize.
+      ;(wrapped as Error & { status?: number }).status = err?.status
+      throw wrapped
+    }
+  }
+
+  const body = unwrapPostV1GetAddressesResult(raw)
+
+  if (!isGetAddressesResponseBody(body)) {
+    const shapeErr = new Error(
+      `postV1GetAddresses returned an unrecognized body shape: ${
+        typeof body === 'object'
+          ? JSON.stringify(body).slice(0, 200)
+          : String(body)
+      }`
+    )
+    // Deterministic upstream contract violation — retrying won't help.
+    ;(shapeErr as Error & { nonRetryable?: boolean }).nonRetryable = true
+    throw shapeErr
+  }
+
+  return body
+}
 
 /**
  * Races boolean promises, returning true as soon as any resolves true.
