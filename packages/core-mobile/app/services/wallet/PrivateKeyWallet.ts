@@ -3,10 +3,10 @@ import {
   BitcoinWallet,
   BitcoinProvider,
   JsonRpcBatchInternal,
-  getPublicKeyFromPrivateKey,
   SolanaSigner,
   SolanaProvider
 } from '@avalabs/core-wallets-sdk'
+import { getPublicKey } from 'react-native-nitro-avalabs-crypto'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
@@ -131,7 +131,7 @@ export class PrivateKeyWallet implements Wallet {
 
     switch (curve) {
       case Curve.SECP256K1: {
-        key = hex.encode(new Uint8Array(getPublicKeyFromPrivateKey(strippedPk)))
+        key = hex.encode(getPublicKey(strippedPk))
         break
       }
 

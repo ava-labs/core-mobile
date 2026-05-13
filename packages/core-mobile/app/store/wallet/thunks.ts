@@ -63,8 +63,6 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
   `${reducerName}/importPrivateKeyWalletAndAccount`,
   async ({ accountDetails, accountSecret }, thunkApi) => {
     const dispatch = thunkApi.dispatch
-    const state = thunkApi.getState()
-    const isDeveloperMode = selectIsDeveloperMode(state)
 
     const newWalletId = uuid()
 
@@ -78,21 +76,17 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    const addresses = await AccountsService.getAddresses({
-      walletId: newWalletId,
-      walletType: WalletType.PRIVATE_KEY,
-      isTestnet: isDeveloperMode
-    })
-
+    // `accountDetails` already carries the full 6-address set, derived
+    // natively in C++ by `useDeriveAddresses` →
+    // `deriveAllAddressesFromPrivateKey`.  A raw imported key has no
+    // BIP-32 / SLIP-0010 derivation tree, so there is no per-chain
+    // derivation work for `ModuleManager.deriveAddresses` to do — fanning
+    // out to four `@avalabs/*` VM module packages would just re-encode
+    // the same secp256k1 pubkey and Ed25519 pubkey we already have.
+    // Trust the hook's output and skip the keychain round-trip.
     const accountToImport: ImportedAccount = {
       ...accountDetails,
-      walletId: newWalletId,
-      addressC: addresses.EVM,
-      addressBTC: addresses.BITCOIN,
-      addressAVM: addresses.AVM,
-      addressPVM: addresses.PVM,
-      addressSVM: addresses.SVM,
-      addressCoreEth: addresses.CoreEth
+      walletId: newWalletId
     }
 
     thunkApi.dispatch(setAccount(accountToImport))

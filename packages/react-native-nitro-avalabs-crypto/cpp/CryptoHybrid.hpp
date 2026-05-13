@@ -80,6 +80,10 @@ namespace margelo::nitro::nitroavalabscrypto {
                 const std::vector<double> &accountIndices,
                 bool isTestnet) override;
 
+        DerivedAllAddresses deriveAllAddressesFromPrivateKey(
+                const std::shared_ptr<ArrayBuffer> &privateKey,
+                bool isTestnet) override;
+
     protected:
         // If your nitrogen requires it, you can override loadHybridMethods(),
         // but the base already wires methods based on the spec.

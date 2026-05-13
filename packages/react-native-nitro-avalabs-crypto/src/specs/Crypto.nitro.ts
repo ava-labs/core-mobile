@@ -155,6 +155,33 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   ): Promise<DerivedSecp256k1Addresses[]>
 
   /**
+   * Derive ALL addresses (secp256k1 + Ed25519) from a single 32-byte raw
+   * private key.  Used by the imported-private-key flow, where the same
+   * 32-byte secret feeds both curves: secp256k1 for EVM / BTC / Avalanche
+   * chains, and Ed25519 for Solana (RFC 8032 §5.1.5 — SHA-512 + clamp +
+   * scalar × base, no SLIP-0010 derivation path since there is no seed).
+   *
+   * Synchronous — single-key work is dominated by one secp256k1
+   * pubkey_create + one Ed25519 pubkey derivation + a few hashes (<1 ms in
+   * practice). Bridge overhead of an async Promise would dwarf it.
+   *
+   * The returned `accountIndex` is always 0 — there is no derivation index
+   * for a raw imported key. The field is kept for ABI parity with the
+   * seed-based batch result.
+   *
+   * @param privateKey  32-byte ArrayBuffer holding the raw secret. The same
+   *                    bytes are interpreted as a secp256k1 scalar
+   *                    (validated against curve order) AND as an Ed25519
+   *                    secret (any bit pattern is valid after clamping).
+   * @param isTestnet   true → fuji HRP + tb1 BTC prefix; false → avax + bc1
+   * @returns one DerivedAllAddresses computed from the key
+   */
+  deriveAllAddressesFromPrivateKey(
+    privateKey: ArrayBuffer,
+    isTestnet: boolean
+  ): DerivedAllAddresses
+
+  /**
    * Derive ALL addresses (secp256k1 + Ed25519) for multiple account indices
    * from a BIP39 seed in a single native call.  Runs entirely on a native
    * background thread — the JS thread does zero crypto work.

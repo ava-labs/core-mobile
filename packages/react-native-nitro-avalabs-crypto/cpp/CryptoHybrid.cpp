@@ -639,4 +639,69 @@ namespace margelo::nitro::nitroavalabscrypto {
         });
     }
 
+/* ------- All Addresses From a Raw Private Key — secp256k1 + Ed25519 ------ */
+/* Used by the imported-private-key flow.  The same 32 bytes feed two
+ * different curves:
+ *
+ *   - secp256k1 (BIP-32 / SEC1) → EVM, BTC, AVM, PVM, CoreEth
+ *   - Ed25519 (RFC 8032 §5.1.5)  → Solana
+ *
+ * There is no derivation tree — the raw secret is used directly on each
+ * curve, mirroring Core Extension's WalletService PrivateKey path. */
+
+    DerivedAllAddresses CryptoHybrid::deriveAllAddressesFromPrivateKey(
+            const std::shared_ptr<ArrayBuffer> &privateKey,
+            bool isTestnet) {
+
+        if (!privateKey || privateKey->size() != 32) {
+            throw std::invalid_argument("privateKey must be a 32-byte ArrayBuffer");
+        }
+
+        // Copy the secret out of the JS-owned ArrayBuffer into a local
+        // std::array so we can OPENSSL_cleanse our copy on every return path
+        // — including exception unwind from any of the encoder helpers.
+        std::array<uint8_t, 32> sk{};
+        std::memcpy(sk.data(), privateKey->data(), 32);
+        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk.data(), sk.size()); });
+
+        auto *sctx = CryptoHybrid::ctx();
+
+        // ---- secp256k1: EVM / BTC / AVM / PVM / CoreEth ----
+        if (secp256k1_ec_seckey_verify(sctx, sk.data()) != 1) {
+            throw std::invalid_argument("Invalid secret key");
+        }
+
+        secp256k1_pubkey pk{};
+        if (secp256k1_ec_pubkey_create(sctx, &pk, sk.data()) != 1) {
+            throw std::runtime_error("secp256k1_ec_pubkey_create failed");
+        }
+
+        auto compressed = serializePubkey(pk, true);
+
+        const std::string avax_hrp = isTestnet ? "fuji" : "avax";
+        auto evm = evm_address_from_pubkey(sctx, compressed);
+        auto btc = btc_address_from_pubkey(compressed, isTestnet);
+        auto avax_bech32 = avalanche_bech32_from_pubkey(compressed, avax_hrp);
+
+        // ---- Ed25519: Solana ----
+        // ed25519_public_key (slip0010.hpp) wraps OpenSSL's raw Ed25519 API
+        // — EVP_PKEY_new_raw_private_key + EVP_PKEY_get_raw_public_key —
+        // which is RFC 8032 §5.1.5 (SHA-512 + clamp + scalar × base) in one
+        // call.  Matches `@noble/curves/ed25519`.getPublicKey(secret) and
+        // therefore matches `PrivateKeyWallet.getPublicKeyFor(Curve.ED25519)`
+        // and `SolanaSigner` byte-for-byte.
+        auto ed_pub = ed25519_public_key(sk);
+        std::string solana = base58_encode(
+            std::vector<uint8_t>(ed_pub.begin(), ed_pub.end()));
+
+        return DerivedAllAddresses(
+            0.0,  // accountIndex N/A for a raw imported key — kept for ABI parity
+            std::move(evm),
+            std::move(btc),
+            "X-" + avax_bech32,
+            "P-" + avax_bech32,
+            "C-" + avax_bech32,
+            std::move(solana));
+    }
+
 } // namespace margelo::nitro::nitroavalabscrypto

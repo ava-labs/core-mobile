@@ -424,3 +424,25 @@ export function deriveAllAddressesFromSeed(
     isTestnet
   )
 }
+
+/**
+ * Derive ALL addresses (secp256k1 + Ed25519) from a single 32-byte raw
+ * private key.  Used by the imported-private-key flow: the same 32 bytes
+ * feed both curves — secp256k1 for EVM / BTC / Avalanche chains, Ed25519
+ * (RFC 8032 §5.1.5) for Solana.  No BIP-32 / SLIP-0010 derivation tree.
+ *
+ * Accepts the secret as a hex string, ArrayBuffer, or Uint8Array; converts
+ * to a tight 32-byte ArrayBuffer before crossing the bridge.
+ *
+ * @param privateKey  32-byte secret (hex with optional 0x prefix,
+ *                    ArrayBuffer, or Uint8Array)
+ * @param isTestnet   true → fuji HRP + tb1 BTC prefix; false → avax + bc1
+ * @returns           one DerivedAllAddresses (accountIndex always 0)
+ */
+export function deriveAllAddressesFromPrivateKey(
+  privateKey: string | ArrayBuffer | Uint8Array,
+  isTestnet: boolean
+): DerivedAllAddresses {
+  const ab = ensure32('privateKey', hexLikeToArrayBuffer(privateKey))
+  return NativeCrypto.deriveAllAddressesFromPrivateKey(ab, isTestnet)
+}

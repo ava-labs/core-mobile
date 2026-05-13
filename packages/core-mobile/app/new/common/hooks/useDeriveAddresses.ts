@@ -1,11 +1,6 @@
 import { strip0x } from '@avalabs/core-utils-sdk'
-import {
-  getBtcAddressFromPubKey,
-  getEvmAddressFromPubKey,
-  getPublicKeyFromPrivateKey
-} from '@avalabs/core-wallets-sdk'
 import { CoreAccountType } from '@avalabs/types'
-import { networks } from 'bitcoinjs-lib'
+import { deriveAllAddressesFromPrivateKey } from 'react-native-nitro-avalabs-crypto'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
@@ -44,13 +39,14 @@ export const useDeriveAddresses = (
         throw new Error('Invalid private key')
       }
 
-      const publicKey = getPublicKeyFromPrivateKey(strippedPk)
-
-      const addressC = getEvmAddressFromPubKey(publicKey)
-      const addressBTC = getBtcAddressFromPubKey(
-        publicKey,
-        isTestnet ? networks.testnet : networks.bitcoin
-      )
+      const {
+        evm: addressC,
+        btc: addressBTC,
+        avm: addressAVM,
+        pvm: addressPVM,
+        coreEth: addressCoreEth,
+        solana: addressSVM
+      } = deriveAllAddressesFromPrivateKey(strippedPk, isTestnet)
 
       const accountsCount =
         Object.values(accounts).filter(
@@ -65,9 +61,10 @@ export const useDeriveAddresses = (
         walletId: CORE_MOBILE_WALLET_ID,
         addressC,
         addressBTC,
-        addressAVM: '',
-        addressPVM: '',
-        addressCoreEth: addressC
+        addressAVM,
+        addressPVM,
+        addressCoreEth,
+        addressSVM
       } as ImportedAccount
       setTempAccountDetails(newTempAccountData)
 
