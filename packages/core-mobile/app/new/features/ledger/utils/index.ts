@@ -7,6 +7,7 @@ import {
   WalletSecretOperation,
   WalletSecretParams
 } from 'services/ledger/types'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { z } from 'zod'
 import { Curve } from 'utils/publicKeys'
 import { MAX_BITCOIN_APP_VERSION } from '../consts'
@@ -44,6 +45,44 @@ export const isBitcoinCompatibleApp = (
     return !isVersionExceeding(appVersion, MAX_BITCOIN_APP_VERSION)
   }
   return false
+}
+
+/**
+ * Returns true if the given EVM `data` field represents a contract call
+ * (i.e. the calldata is more than just the empty `0x`). Used to disambiguate
+ * between a simple AVAX transfer and a dApp interaction.
+ */
+export const isEvmContractCallData = (data: unknown): boolean =>
+  typeof data === 'string' && data !== '0x' && data.length > 2
+
+/**
+ * Decides which Ledger app to prompt for an EVM transaction.
+ *
+ * - Non-Avalanche EVM chains → Ethereum app (unchanged).
+ * - Avalanche C-Chain simple AVAX transfer (no calldata) → Avalanche app
+ *   (preserves the native AVAX display flow on device).
+ * - Avalanche C-Chain contract call (Uniswap, ERC20 transfers, dApp calls)
+ *   → Ethereum app. The Avalanche Ledger app's EVM signing path has no
+ *   plugin support for common DeFi contracts and no blind-signing toggle
+ *   for arbitrary contract calls (only "Expert mode" which covers X/P-chain
+ *   raw display, not EVM), so it returns 0x6984 on unrecognised contracts.
+ *   Routing contract calls to the Ethereum app matches the convention used
+ *   by MetaMask and Ledger Live.
+ *
+ * Both `LedgerWallet.signEvmTransaction` (sign-time) and
+ * `ApprovalController.handleLedgerApproval` (prompt-time) call this so the
+ * UI flow doesn't briefly prompt the wrong app before switching.
+ *
+ * Refs: Sentry CORE-REACT-NATIVE-9BP, CORE-REACT-NATIVE-9D2.
+ */
+export const getLedgerAppForEvmTx = (
+  chainId: number,
+  data: unknown
+): LedgerAppType => {
+  if (isAvalancheChainId(chainId) && !isEvmContractCallData(data)) {
+    return LedgerAppType.AVALANCHE
+  }
+  return LedgerAppType.ETHEREUM
 }
 
 export const getLedgerAppName = (network?: Network): LedgerAppType => {

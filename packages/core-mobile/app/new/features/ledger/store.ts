@@ -1,16 +1,25 @@
-import { LedgerDerivationPathType, LedgerDevice } from 'services/ledger/types'
+import {
+  LedgerAppType,
+  LedgerDerivationPathType,
+  LedgerDevice
+} from 'services/ledger/types'
 import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Network } from '@avalabs/core-chains-sdk'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
-import { RpcMethod } from '@avalabs/vm-module-types'
 
 type WalletId = string
 
 export type LedgerReviewTransactionParams = {
-  rpcMethod?: RpcMethod
-  network: Network
+  /**
+   * Pre-computed Ledger app to prompt for this transaction. The producer
+   * (ApprovalController) has the full request context (chain + signing
+   * data) and is the right place to derive this — consumers should not
+   * have to recompute it from `network` alone, which can yield the wrong
+   * app for EVM contract calls on Avalanche C-Chain. See
+   * `getLedgerAppForEvmTx` and `getLedgerAppName`.
+   */
+  appType: LedgerAppType
   onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
   onReject: (message?: string) => void
 }
