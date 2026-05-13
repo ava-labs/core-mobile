@@ -6,11 +6,21 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
+  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+// TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
+// Imports for on-device chart preview using fixture data.
+import { CandlestickChart } from 'common/components/chart/CandlestickChart'
+import { ChartRangeSelector } from 'common/components/chart/ChartRangeSelector'
+import { ChartTypeToggle } from 'common/components/chart/ChartTypeToggle'
+import { CrosshairTooltip } from 'common/components/chart/CrosshairTooltip'
+import { ChartRange, OhlcvResponse } from 'common/components/chart/types'
+import SparklineChart from 'features/track/components/SparklineChart'
+import { selectChartType } from 'store/chartPreferences/slice'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
@@ -68,6 +78,17 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 
+// TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
+// Static OHLCV fixtures so the chart works on-device without backend data.
+const CHART_FIXTURES: Record<ChartRange, OhlcvResponse> = {
+  '1H': require('common/components/chart/__fixtures__/ohlcv-avax-1h.json'),
+  '1D': require('common/components/chart/__fixtures__/ohlcv-avax-1d.json'),
+  '1W': require('common/components/chart/__fixtures__/ohlcv-avax-1w.json'),
+  '1M': require('common/components/chart/__fixtures__/ohlcv-avax-1m.json'),
+  '3M': require('common/components/chart/__fixtures__/ohlcv-avax-3m.json'),
+  '1Y': require('common/components/chart/__fixtures__/ohlcv-avax-1y.json')
+}
+
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
@@ -96,6 +117,26 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     chainId: string
   }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  // TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267)
+  const chartType = useSelector(selectChartType)
+  const [chartRange, setChartRange] = useState<ChartRange>('1D')
+  const chartIsActive = useSharedValue(false)
+  const chartActiveIndex = useSharedValue<number | null>(null)
+  const chartCrosshairX = useSharedValue(0)
+  const idleHeaderStyle = useAnimatedStyle(() => ({
+    opacity: chartIsActive.value ? 0 : 1
+  }))
+  const latestCandle =
+    CHART_FIXTURES[chartRange].candles[
+      CHART_FIXTURES[chartRange].candles.length - 1
+    ]
+  const firstCandle = CHART_FIXTURES[chartRange].candles[0]
+  const chartDelta =
+    latestCandle && firstCandle ? latestCandle.close - firstCandle.open : 0
+  const chartDeltaPct =
+    firstCandle && firstCandle.open !== 0
+      ? (chartDelta / firstCandle.open) * 100
+      : 0
 
   const erc20ContractTokens = useErc20ContractTokens()
   // Keep zero balance tokens visible so the page doesn't crash after sending max balance
@@ -344,10 +385,82 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             padding: 16
           }}
         />
-        {/* TODO: add after design is finalized */}
-        {/* <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-          <TokenPriceCard token={token} />
-        </View> */}
+        {/* TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
+            Static chart preview using fixture data so we can validate on-device.
+            CP-14267 replaces this with the real chart wired to useTokenOhlc. */}
+        <View
+          style={{
+            paddingBottom: 12,
+            gap: 12
+          }}
+          testID="token-detail-chart-slot">
+          <View style={{ position: 'relative' }}>
+            <Animated.View
+              style={[
+                {
+                  paddingHorizontal: 16,
+                  alignItems: 'flex-start'
+                },
+                idleHeaderStyle
+              ]}>
+              <Text variant="heading2">
+                {latestCandle ? `$${latestCandle.close.toFixed(2)}` : '$0.00'}
+              </Text>
+              <Text variant="caption" sx={{ color: '$textSecondary' }}>
+                Current price of {token?.symbol ?? 'AVAX'}
+              </Text>
+              <Text
+                variant="caption"
+                sx={{
+                  color: chartDelta >= 0 ? '$textSuccess' : '$textDanger'
+                }}>
+                {chartDelta >= 0 ? '+' : '-'}$
+                {Math.abs(chartDelta).toFixed(2)}{' '}
+                {chartDelta >= 0 ? '▲' : '▼'}{' '}
+                {Math.abs(chartDeltaPct).toFixed(2)}%
+              </Text>
+            </Animated.View>
+            <CrosshairTooltip
+              candles={CHART_FIXTURES[chartRange].candles}
+              activeIndex={chartActiveIndex}
+              isActive={chartIsActive}
+              x={chartCrosshairX}
+              width={frame.width}
+            />
+          </View>
+          {chartType === 'candlestick' ? (
+            <CandlestickChart
+              candles={CHART_FIXTURES[chartRange].candles}
+              width={frame.width}
+              height={235}
+              externalIsActive={chartIsActive}
+              externalActiveIndex={chartActiveIndex}
+              externalCrosshairX={chartCrosshairX}
+              hideInternalTooltip
+            />
+          ) : (
+            <SparklineChart
+              data={CHART_FIXTURES[chartRange].candles.map(c => ({
+                value: c.close,
+                date: new Date(c.ts)
+              }))}
+              style={{ width: frame.width, height: 235 }}
+              enablePanGesture
+            />
+          )}
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 8,
+              paddingHorizontal: 16,
+              alignItems: 'center'
+            }}>
+            <View sx={{ flex: 1 }}>
+              <ChartRangeSelector value={chartRange} onChange={setChartRange} />
+            </View>
+            <ChartTypeToggle />
+          </View>
+        </View>
       </View>
     )
   }, [
@@ -361,7 +474,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     isPrivacyModeEnabled,
-    actionButtons
+    actionButtons,
+    chartType,
+    chartRange,
+    frame.width,
+    idleHeaderStyle,
+    latestCandle,
+    chartDelta,
+    chartDeltaPct,
+    chartIsActive,
+    chartActiveIndex,
+    chartCrosshairX
   ])
 
   const tabHeight = useMemo(() => {
