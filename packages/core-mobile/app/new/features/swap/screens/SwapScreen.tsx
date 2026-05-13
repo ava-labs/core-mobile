@@ -419,8 +419,9 @@ export const SwapScreen = (): JSX.Element => {
       setToTokenValue(amount)
       setDestination(SwapSide.BUY)
       setAmount(amount)
+      setUserClickedMax(false)
     },
-    [setDestination, setAmount]
+    [setDestination, setAmount, setUserClickedMax]
   )
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
