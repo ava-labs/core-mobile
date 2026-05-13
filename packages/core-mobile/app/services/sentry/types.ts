@@ -60,7 +60,8 @@ export const SentryTag = {
  */
 export const AllowedSentryBreadcrumbCategory = {
   ListenerMigration: 'listenerMigration',
-  ListenerReconciler: 'listenerReconciler'
+  ListenerReconciler: 'listenerReconciler',
+  FeeEstimationUserState: 'feeEstimationUserState'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =
