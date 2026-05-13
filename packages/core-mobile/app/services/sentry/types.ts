@@ -44,7 +44,12 @@ export const SentryStorage = 'sentry_sample_rate'
 
 export const SentryTag = {
   FusionSdk: 'fusion-sdk',
-  AccountService: 'accounts-service'
+  AccountService: 'accounts-service',
+  PostHog: 'posthog',
+  Glacier: 'glacier',
+  ProfileApi: 'profile-api',
+  GasStation: 'gas-station',
+  Proxy: 'proxy'
 } as const
 
 /**

@@ -21,7 +21,7 @@ import {
   TypedDataV1,
   DerivationPathType
 } from '@avalabs/vm-module-types'
-import { SpanName } from 'services/sentry/types'
+import { SentryTag, SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
@@ -443,7 +443,11 @@ class WalletService {
 
       return body
     } catch (err) {
-      Logger.error(`[WalletService.ts][getAddressesForExtendedPublicKey]${err}`)
+      Logger.error(
+        '[WalletService.ts][getAddressesForExtendedPublicKey] failed',
+        err,
+        { source: SentryTag.ProfileApi }
+      )
       throw err
     }
   }

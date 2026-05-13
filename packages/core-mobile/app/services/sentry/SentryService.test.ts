@@ -72,6 +72,14 @@ describe('SentryService', () => {
         service.captureException('oops')
         expect(Sentry.captureException).not.toHaveBeenCalled()
       })
+
+      it('still no-ops when tags are provided', () => {
+        service.captureException('oops', new Error('boom'), {
+          source: 'gas-station'
+        })
+        expect(Sentry.captureException).not.toHaveBeenCalled()
+        expect(Sentry.withScope).not.toHaveBeenCalled()
+      })
     })
 
     describe('captureMessage', () => {
@@ -128,6 +136,36 @@ describe('SentryService', () => {
           expect.any(Error),
           undefined
         )
+      })
+
+      it('sets tags on the scope when tags are provided', () => {
+        const error = new Error('boom')
+        service.captureException('context', error, { source: 'gas-station' })
+
+        expect(Sentry.withScope).toHaveBeenCalled()
+        expect(mockScope.setTags).toHaveBeenCalledWith({
+          source: 'gas-station'
+        })
+        expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+          extra: { message: 'context' }
+        })
+      })
+
+      it('sets tags when value is non-Error and tags are provided', () => {
+        service.captureException('msg', { code: 42 }, { source: 'glacier' })
+
+        expect(mockScope.setTags).toHaveBeenCalledWith({ source: 'glacier' })
+        expect(Sentry.captureException).toHaveBeenCalledWith(
+          expect.any(Error),
+          { extra: { value: { code: 42 } } }
+        )
+      })
+
+      it('does not set tags or open a scope when no tags provided (preserves existing behavior)', () => {
+        service.captureException('msg', new Error('boom'))
+
+        expect(mockScope.setTags).not.toHaveBeenCalled()
+        expect(Sentry.withScope).not.toHaveBeenCalled()
       })
     })
 

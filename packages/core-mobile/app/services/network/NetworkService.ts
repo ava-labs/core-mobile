@@ -21,7 +21,7 @@ import Logger from 'utils/Logger'
 import { DebankNetwork } from 'services/network/types'
 import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
 import { Module } from '@avalabs/vm-module-types'
-import { SpanName } from 'services/sentry/types'
+import { SentryTag, SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ChainInfo } from '@avalabs/glacier-sdk'
 import GlacierService from 'services/glacier/GlacierService'
@@ -39,12 +39,16 @@ class NetworkService {
     const networks = await this.fetchNetworks({
       includeSolana
     }).catch(reason => {
-      Logger.error(`[NetworkService][fetchNetworks]${reason}`)
+      Logger.error('[NetworkService][fetchNetworks] failed', reason, {
+        source: SentryTag.Proxy
+      })
       return {} as Networks
     })
 
     const deBankNetworks = await this.fetchDeBankNetworks().catch(reason => {
-      Logger.error(`[NetworkService][fetchDeBankNetworks]${reason}`)
+      Logger.error('[NetworkService][fetchDeBankNetworks] failed', reason, {
+        source: SentryTag.Proxy
+      })
       return {} as Networks
     })
 

@@ -9,6 +9,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import GaslessService from 'services/gasless/GaslessService'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
@@ -147,7 +148,9 @@ export const useGasless = ({
           errorMessage,
           errorCategory
         })
-        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`)
+        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`, error, {
+          source: SentryTag.GasStation
+        })
         showGaslessError()
         return undefined
       }
