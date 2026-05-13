@@ -49,9 +49,9 @@ class NotificationsService {
    * Cold-start press analytics + deeplink are owned by
    * {@link getInitialNotification}, which is why this field is intentionally
    * not captured inside the notifee.onBackgroundEvent handler: capturing
-   * there would double-count cold-start presses (one 'background' from the
-   * headless task + one 'cold_start' from getInitialNotification — observed
-   * during CP-14006 device verification).
+   * there would double-count cold-start presses (one `isColdStart: false`
+   * from the headless task + one `isColdStart: true` from getInitialNotification
+   * — observed during CP-14006 device verification).
    */
   private pendingBackgroundPress: NotificationData | undefined
 
@@ -271,8 +271,8 @@ class NotificationsService {
    *    {@link consumePendingBackgroundPress}.
    *
    * This split eliminates the duplicate-capture bug observed during CP-14006
-   * device verification (cold-start press emitting both 'background' and
-   * 'cold_start') without any state flag.
+   * device verification (cold-start press emitting both `isColdStart: false`
+   * and `isColdStart: true`) without any state flag.
    */
   registerBackgroundNotificationHandler = (): void => {
     if (this.backgroundHandlerRegistered) {
