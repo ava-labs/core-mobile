@@ -11,6 +11,7 @@ import {
   selectFusionDisableCrossChainSwaps
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import FusionService from '../services/FusionService'
 import {
   useIsFusionServiceReady,
@@ -21,7 +22,8 @@ import {
 import {
   initFusionService,
   cleanupFusionService,
-  addFusionListeners
+  addFusionListeners,
+  createCaptureSwapAnalytics
 } from './listeners'
 
 // ---------------------------------------------------------------------------
@@ -53,6 +55,11 @@ jest.mock('utils/Logger', () => ({
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn()
+}))
+
+jest.mock('services/analytics/AnalyticsService', () => ({
+  __esModule: true,
+  default: { capture: jest.fn() }
 }))
 
 jest.mock('store/rpc/utils/createInAppRequest', () => ({
@@ -468,12 +475,17 @@ describe('Fusion listeners', () => {
       )
       const effect = call[0].effect
       const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const payload = {
+        transfer,
+        quote: { aggregator: { id: 'agg-1', name: 'KyberSwap' } } as any,
+        userClickedMax: false
+      }
 
       const mockListenerApi = {
         getState: jest.fn().mockReturnValue({}),
         delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
       }
-      const effectPromise = effect({ payload: transfer }, mockListenerApi)
+      const effectPromise = effect({ payload }, mockListenerApi)
 
       // trackTransfer should not be called immediately
       expect(FusionService.trackTransfer).not.toHaveBeenCalled()
@@ -501,17 +513,131 @@ describe('Fusion listeners', () => {
         c => c[0]?.actionCreator?.type === 'fusion/trackTransfer'
       )
       const effect = call[0].effect
-      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const payload = {
+        transfer: { id: 'transfer-1', status: 'source-pending' } as any,
+        quote: { aggregator: { id: 'agg-1', name: 'KyberSwap' } } as any,
+        userClickedMax: false
+      }
 
       const mockListenerApi = {
         getState: jest.fn().mockReturnValue({}),
         delay: jest.fn()
       }
 
-      await effect({ payload: transfer }, mockListenerApi)
+      await effect({ payload }, mockListenerApi)
 
       expect(FusionService.trackTransfer).not.toHaveBeenCalled()
       expect(mockListenerApi.delay).not.toHaveBeenCalled()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('createCaptureSwapAnalytics — SwapFailed instrumentation (CP-14225)', () => {
+    const baseFailedTransfer = {
+      status: 'failed',
+      fromAddress: '0xfromAddress',
+      toAddress: '0xtoAddress',
+      sourceChain: { chainId: 'eip155:43114' },
+      targetChain: { chainId: 'eip155:43114' },
+      source: { txHash: '0xsourceHash' },
+      target: undefined,
+      errorCode: 5006,
+      errorReason: 'TRANSACTION_REVERTED'
+    } as any
+
+    const baseQuote = {
+      aggregator: { id: 'agg-markr-odos', name: 'Odos' },
+      amountIn: 1290000000000000000n
+    } as any
+
+    it('captures all 8 new fields on SwapFailed when userClickedMax is true', () => {
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: true,
+        sourceTokenAddress: undefined,
+        sourceTokenSymbol: 'AVAX',
+        destinationTokenAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+        destinationTokenSymbol: 'USDC'
+      })
+
+      capture(baseFailedTransfer)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapFailed',
+        expect.objectContaining({
+          encrypted: expect.objectContaining({
+            sourceAddress: '0xfromAddress',
+            targetAddress: '0xtoAddress',
+            sourceChainId: 'eip155:43114',
+            targetChainId: 'eip155:43114',
+            sourceTxHash: '0xsourceHash',
+            errorCode: '5006',
+            errorReason: 'TRANSACTION_REVERTED',
+            userClickedMax: true,
+            sourceTokenSymbol: 'AVAX',
+            sourceTokenAddress: undefined,
+            sourceAmount: '1290000000000000000',
+            destinationTokenAddress:
+              '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+            destinationTokenSymbol: 'USDC',
+            quoteAggregator: 'Odos',
+            quoteAggregatorId: 'agg-markr-odos'
+          })
+        })
+      )
+    })
+
+    it('captures userClickedMax=false on SwapFailed when the user did not press Max', () => {
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: false,
+        sourceTokenAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+        sourceTokenSymbol: 'USDC',
+        destinationTokenAddress: undefined,
+        destinationTokenSymbol: 'AVAX'
+      })
+
+      capture(baseFailedTransfer)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapFailed',
+        expect.objectContaining({
+          encrypted: expect.objectContaining({
+            userClickedMax: false,
+            sourceTokenSymbol: 'USDC',
+            destinationTokenSymbol: 'AVAX',
+            quoteAggregator: 'Odos'
+          })
+        })
+      )
+    })
+
+    it('does not enrich SwapSuccessful with the new fields', () => {
+      const completed = {
+        ...baseFailedTransfer,
+        status: 'completed',
+        source: { txHash: '0xsourceHash' },
+        target: { txHash: '0xtargetHash' }
+      } as any
+
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: true,
+        sourceTokenSymbol: 'AVAX',
+        destinationTokenSymbol: 'USDC'
+      })
+
+      capture(completed)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapSuccessful',
+        expect.objectContaining({
+          encrypted: expect.not.objectContaining({
+            userClickedMax: expect.anything(),
+            quoteAggregator: expect.anything()
+          })
+        })
+      )
     })
   })
 })

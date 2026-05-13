@@ -47,7 +47,7 @@ import {
 } from '../hooks/useZustandStore'
 import { fetchAdapter } from '../utils/fetchAdapter'
 import { logSdkError } from '../utils/fusionLogger'
-import { trackFusionTransfer } from './actions'
+import { trackFusionTransfer, type TrackFusionTransferPayload } from './actions'
 
 /**
  * Get the current state of all Fusion feature flags
@@ -109,10 +109,12 @@ const resumeTransfersTracking = (): void => {
     const pending = getPendingFusionTransfers()
     for (const { transfer } of pending) {
       Logger.info('[FusionTracking] resuming tracking for', transfer.id)
+      // Original UI state (quote, userClickedMax) is lost across reinit;
+      // resumed analytics emit without the CP-14225 enrichment fields.
       FusionService.trackTransfer(
         transfer,
         updateFusionTransfer,
-        captureSwapAnalytics
+        createCaptureSwapAnalytics()
       )
     }
   } catch (error) {
@@ -255,44 +257,67 @@ export const cleanupFusionService = async (
   useFusionServiceInitError.setState(null)
 }
 
-const captureSwapAnalytics = (
-  concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
-): void => {
-  const addresses = {
-    sourceAddress: concludedTransfer.fromAddress,
-    targetAddress: concludedTransfer.toAddress,
-    sourceChainId: concludedTransfer.sourceChain.chainId,
-    targetChainId: concludedTransfer.targetChain.chainId
-  }
+/**
+ * Build a `concludedTransfer` callback for `FusionService.trackTransfer` that
+ * forwards Fusion outcomes to PostHog. The `context` carries client-side data
+ * the SDK's Transfer object does not (was-it-Max-button, token metadata,
+ * aggregator name/id) and is captured on `SwapFailed` so we can diagnose
+ * Markr toxic-pool cohorts post-hoc.
+ *
+ * Context is fully optional because `resumeTransfersTracking` re-creates the
+ * callback after an app reinit, when the original UI state (quote object,
+ * userClickedMax flag) is no longer in memory.
+ */
+export const createCaptureSwapAnalytics = (
+  context: Partial<Omit<TrackFusionTransferPayload, 'transfer'>> = {}
+) => {
+  return (
+    concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
+  ): void => {
+    const addresses = {
+      sourceAddress: concludedTransfer.fromAddress,
+      targetAddress: concludedTransfer.toAddress,
+      sourceChainId: concludedTransfer.sourceChain.chainId,
+      targetChainId: concludedTransfer.targetChain.chainId
+    }
 
-  if (isCompletedTransfer(concludedTransfer)) {
-    AnalyticsService.capture('SwapSuccessful', {
-      encrypted: {
-        ...addresses,
-        sourceTxHash: concludedTransfer.source.txHash,
-        targetTxHash: concludedTransfer.target?.txHash
-      }
-    })
-  } else if (isFailedTransfer(concludedTransfer)) {
-    // source is optional on FailedTransfer — tx may not have been submitted
-    AnalyticsService.capture('SwapFailed', {
-      encrypted: {
-        ...addresses,
-        sourceTxHash: concludedTransfer.source?.txHash,
-        targetTxHash: concludedTransfer.target?.txHash,
-        errorCode: concludedTransfer.errorCode?.toString(),
-        errorReason: concludedTransfer.errorReason ?? undefined
-      }
-    })
-  } else if (isRefundedTransfer(concludedTransfer)) {
-    AnalyticsService.capture('SwapRefunded', {
-      encrypted: {
-        ...addresses,
-        sourceTxHash: concludedTransfer.source.txHash,
-        targetTxHash: concludedTransfer.target?.txHash,
-        refundTxHash: concludedTransfer.refund.txHash ?? undefined
-      }
-    })
+    if (isCompletedTransfer(concludedTransfer)) {
+      AnalyticsService.capture('SwapSuccessful', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source.txHash,
+          targetTxHash: concludedTransfer.target?.txHash
+        }
+      })
+    } else if (isFailedTransfer(concludedTransfer)) {
+      // source is optional on FailedTransfer — tx may not have been submitted
+      AnalyticsService.capture('SwapFailed', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source?.txHash,
+          targetTxHash: concludedTransfer.target?.txHash,
+          errorCode: concludedTransfer.errorCode?.toString(),
+          errorReason: concludedTransfer.errorReason ?? undefined,
+          userClickedMax: context.userClickedMax,
+          sourceTokenAddress: context.sourceTokenAddress,
+          sourceTokenSymbol: context.sourceTokenSymbol,
+          sourceAmount: context.quote?.amountIn.toString(),
+          destinationTokenAddress: context.destinationTokenAddress,
+          destinationTokenSymbol: context.destinationTokenSymbol,
+          quoteAggregator: context.quote?.aggregator.name,
+          quoteAggregatorId: context.quote?.aggregator.id
+        }
+      })
+    } else if (isRefundedTransfer(concludedTransfer)) {
+      AnalyticsService.capture('SwapRefunded', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source.txHash,
+          targetTxHash: concludedTransfer.target?.txHash,
+          refundTxHash: concludedTransfer.refund.txHash ?? undefined
+        }
+      })
+    }
   }
 }
 
@@ -312,10 +337,7 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
 
   startListening({
     actionCreator: trackFusionTransfer,
-    effect: async (
-      { payload: transfer },
-      listenerApi: AppListenerEffectAPI
-    ) => {
+    effect: async ({ payload }, listenerApi: AppListenerEffectAPI) => {
       if (!selectIsFusionEnabled(listenerApi.getState())) return
 
       try {
@@ -327,10 +349,11 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
       }
 
       try {
+        const { transfer, ...context } = payload
         FusionService.trackTransfer(
           transfer,
           updateFusionTransfer,
-          captureSwapAnalytics
+          createCaptureSwapAnalytics(context)
         )
       } catch (error) {
         logSdkError('[trackFusionTransfer listener] error', error)
