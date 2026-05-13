@@ -1266,7 +1266,16 @@ class LedgerService {
     // of on every iteration — the app stays open between APDUs (CP-14062).
     // ensureAppReady skips the openApp APDU when the cached state already
     // matches Solana, and always runs waitForApp to verify device readiness.
-    await this.ensureAppReady(LedgerAppType.SOLANA, signal)
+    try {
+      await this.ensureAppReady(LedgerAppType.SOLANA, signal)
+    } catch (error) {
+      if (signal?.aborted) {
+        Logger.info('getSolanaKeysForRange: aborted while waiting for app')
+        return []
+      }
+
+      throw error
+    }
 
     const results: (PublicKeyInfo[] | null)[] = []
 
