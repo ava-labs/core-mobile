@@ -221,17 +221,33 @@ const initAccounts = async (
 // Native path for mnemonic wallets: batch all account indices into a
 // single deriveAllAddressesFromSeed call on a native thread (CP-14062).
 // Returns true if native derivation succeeded, false to fall back to JS.
+//
+// PRECONDITION — Solana support gate is caller-enforced. This helper
+// unconditionally populates `addressSVM` for every account, matching the
+// JS fallback (`AccountsService.reloadAccounts` → `ModuleManager.deriveAddresses`)
+// which also runs the Solana module unconditionally. The
+// `isSolanaSupportBlocked` Posthog gate is checked at the call site
+// (Phase 2 of the migration orchestrator) before invoking either path.
+// If you add a new caller of this helper, gate Solana there. If the JS
+// path is ever taught to honor the flag, update this helper too so the
+// two paths stay observably equivalent.
 const reloadMnemonicWalletNative = async (
   walletId: string,
   accounts: Account[],
   isDeveloperMode: boolean
 ): Promise<AccountCollection | undefined> => {
+  // Hoisted so the finally block can overwrite the cleartext seed bytes on
+  // every exit (success, fallback, or throw). The JS heap can't be
+  // OPENSSL_cleansed from C++, but explicitly zeroing the underlying bytes
+  // here bounds the cleartext window to this function's lifetime instead of
+  // GC's. Same caveat as bigintToArrayBuffer32's docstring in Crypto.ts.
+  let seedBuffer: ArrayBuffer | undefined
   try {
     const secret = await BiometricsSDK.loadWalletSecret(walletId)
     if (!secret.success) return undefined
 
     const seed = await mnemonicToSeed(secret.value)
-    const seedBuffer = seed.buffer.slice(
+    seedBuffer = seed.buffer.slice(
       seed.byteOffset,
       seed.byteOffset + seed.byteLength
     ) as ArrayBuffer
@@ -242,6 +258,18 @@ const reloadMnemonicWalletNative = async (
       indices,
       isDeveloperMode
     )
+
+    // A short native array (any account missing its derived addresses) would
+    // cause the for-loop below to skip entries, and the caller dispatches
+    // setAccounts(...) which replaces the entire collection — silently
+    // dropping accounts from Redux. Refuse the partial result and let the JS
+    // fallback path recompute everything instead.
+    if (nativeResults.length !== accounts.length) {
+      Logger.error(
+        `Native reloadAccounts returned ${nativeResults.length} results for ${accounts.length} indices, falling back to JS`
+      )
+      return undefined
+    }
 
     const reloadedAccounts: AccountCollection = {}
     for (let k = 0; k < accounts.length; k++) {
@@ -274,6 +302,11 @@ const reloadMnemonicWalletNative = async (
       error
     )
     return undefined
+  } finally {
+    if (seedBuffer) {
+      new Uint8Array(seedBuffer).fill(0)
+      seedBuffer = undefined
+    }
   }
 }
 

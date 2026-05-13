@@ -626,6 +626,10 @@ class AccountsService {
     // For mnemonic wallets, cache the seed so the per-account task can use
     // a single native call (deriveAllAddressesFromSeed) that does ALL crypto
     // on a native background thread — zero JS thread crypto work (CP-14062).
+    // The seed lives in the JS heap, which can't be OPENSSL_cleansed from
+    // C++, so the try/finally below explicitly zeros the bytes when discovery
+    // ends — bounding the cleartext window to this function's lifetime
+    // instead of GC's. Same caveat as bigintToArrayBuffer32 in Crypto.ts.
     let seedBuffer: ArrayBuffer | undefined
     if (walletType === WalletType.MNEMONIC) {
       try {
@@ -645,206 +649,223 @@ class AccountsService {
       }
     }
 
-    while (i < startIndex + maxScan) {
-      const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
-      const windowSize = windowEnd - i
+    try {
+      while (i < startIndex + maxScan) {
+        const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
+        const windowSize = windowEnd - i
 
-      const windowIndices = Array.from({ length: windowSize }, (_, k) => i + k)
+        const windowIndices = Array.from(
+          { length: windowSize },
+          (_, k) => i + k
+        )
 
-      // Native path for mnemonic wallets: derive the entire window in one
-      // native call (single Promise round-trip, single seed copy) instead of
-      // per-account calls that underutilize the batching (CP-14062).
-      // On native failure, disable seedBuffer and fall through to the JS
-      // path so discovery can still complete.
-      let nativeResults:
-        | PromiseSettledResult<Record<NetworkVMType, string>>[]
-        | undefined
+        // Native path for mnemonic wallets: derive the entire window in one
+        // native call (single Promise round-trip, single seed copy) instead of
+        // per-account calls that underutilize the batching (CP-14062).
+        // On native failure, disable seedBuffer and fall through to the JS
+        // path so discovery can still complete.
+        let nativeResults:
+          | PromiseSettledResult<Record<NetworkVMType, string>>[]
+          | undefined
 
-      if (seedBuffer) {
-        try {
-          const results = await deriveAllAddressesFromSeed(
-            seedBuffer,
-            windowIndices,
-            false
-          )
+        if (seedBuffer) {
+          try {
+            const results = await deriveAllAddressesFromSeed(
+              seedBuffer,
+              windowIndices,
+              !!network.isTestnet
+            )
 
-          nativeResults = windowIndices.map((accountIndex, k) => {
-            const r = results[k]
-            if (!r) {
-              // A missing slot means the native call returned fewer
-              // results than requested for this window. Treat it as a
-              // per-account failure so downstream activity detection
-              // doesn't misclassify it as "valid but inactive" — the JS
-              // fallback path returns status: 'rejected' for per-account
-              // failures, so mirror that here.
-              return {
-                status: 'rejected' as const,
-                reason: new Error(
-                  `Native deriveAllAddressesFromSeed returned no result for accountIndex ${accountIndex} (window slot ${k})`
-                )
+            nativeResults = windowIndices.map((accountIndex, k) => {
+              const r = results[k]
+              if (!r) {
+                // A missing slot means the native call returned fewer
+                // results than requested for this window. Treat it as a
+                // per-account failure so downstream activity detection
+                // doesn't misclassify it as "valid but inactive" — the JS
+                // fallback path returns status: 'rejected' for per-account
+                // failures, so mirror that here.
+                return {
+                  status: 'rejected' as const,
+                  reason: new Error(
+                    `Native deriveAllAddressesFromSeed returned no result for accountIndex ${accountIndex} (window slot ${k})`
+                  )
+                }
               }
-            }
-            return {
-              status: 'fulfilled' as const,
-              value: {
-                [NetworkVMType.EVM]: r.evm,
-                [NetworkVMType.BITCOIN]: r.btc,
-                [NetworkVMType.AVM]: r.avm,
-                [NetworkVMType.PVM]: r.pvm,
-                [NetworkVMType.CoreEth]: r.coreEth,
-                [NetworkVMType.SVM]: r.solana,
-                [NetworkVMType.HVM]: ''
+              return {
+                status: 'fulfilled' as const,
+                value: {
+                  [NetworkVMType.EVM]: r.evm,
+                  [NetworkVMType.BITCOIN]: r.btc,
+                  [NetworkVMType.AVM]: r.avm,
+                  [NetworkVMType.PVM]: r.pvm,
+                  [NetworkVMType.CoreEth]: r.coreEth,
+                  [NetworkVMType.SVM]: r.solana,
+                  [NetworkVMType.HVM]: ''
+                }
               }
-            }
-          })
-        } catch (error) {
-          Logger.error(
-            'Native deriveAllAddressesFromSeed failed, falling back to JS',
-            error
-          )
-          // Disable the native path for this and all subsequent windows so
-          // discovery can complete via the JS fallback.
-          seedBuffer = undefined
-        }
-      }
-
-      const addressResults: PromiseSettledResult<
-        Record<NetworkVMType, string>
-      >[] =
-        nativeResults ??
-        (await runWithConcurrency({
-          items: windowIndices,
-          concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
-          task: async accountIndex => {
-            try {
-              return {
-                status: 'fulfilled',
-                value: await ModuleManager.deriveAddresses({
-                  walletId,
-                  walletType,
-                  accountIndex,
-                  network
-                })
-              } as PromiseSettledResult<Record<NetworkVMType, string>>
-            } catch (reason) {
-              return {
-                status: 'rejected',
-                reason
-              } as PromiseSettledResult<Record<NetworkVMType, string>>
-            }
+            })
+          } catch (error) {
+            Logger.error(
+              'Native deriveAllAddressesFromSeed failed, falling back to JS',
+              error
+            )
+            // Disable the native path for this and all subsequent windows so
+            // discovery can complete via the JS fallback. Cleanse the bytes
+            // before dropping the reference — once seedBuffer = undefined,
+            // the finally block at the function's exit can no longer reach
+            // the underlying ArrayBuffer.
+            new Uint8Array(seedBuffer).fill(0)
+            seedBuffer = undefined
           }
-        }))
-
-      const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
-        if (result.status !== 'fulfilled') {
-          return []
         }
 
-        return [
-          {
-            id: `scan-${i + k}`,
-            index: i + k,
-            addresses: result.value
-          }
-        ]
-      })
+        const addressResults: PromiseSettledResult<
+          Record<NetworkVMType, string>
+        >[] =
+          nativeResults ??
+          (await runWithConcurrency({
+            items: windowIndices,
+            concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
+            task: async accountIndex => {
+              try {
+                return {
+                  status: 'fulfilled',
+                  value: await ModuleManager.deriveAddresses({
+                    walletId,
+                    walletType,
+                    accountIndex,
+                    network
+                  })
+                } as PromiseSettledResult<Record<NetworkVMType, string>>
+              } catch (reason) {
+                return {
+                  status: 'rejected',
+                  reason
+                } as PromiseSettledResult<Record<NetworkVMType, string>>
+              }
+            }
+          }))
 
-      const balanceActiveAccountIds =
-        await this.getSeedBasedBalanceActiveAccountIds({
-          walletId,
-          walletType,
-          accounts: discoveredWindowAccounts
+        const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
+          if (result.status !== 'fulfilled') {
+            return []
+          }
+
+          return [
+            {
+              id: `scan-${i + k}`,
+              index: i + k,
+              addresses: result.value
+            }
+          ]
         })
 
-      let shouldStop = false
-      let foundActiveInWindow = false
-
-      await processInOrderWithConcurrency({
-        count: addressResults.length,
-        concurrency: Math.min(MAX_PARALLEL_ACTIVITY_CHECKS, windowSize),
-        task: async k => {
-          const result = addressResults[k]
-
-          if (!result) {
-            return 'unknown' as const
-          }
-
-          if (result?.status === 'rejected') {
-            Logger.error('Error deriving addresses for account activity scan', {
-              accountIndex: i + k,
-              reason: result.reason
-            })
-            return 'unknown' as const
-          }
-
-          const discoveredAccountId = `scan-${i + k}`
-          if (balanceActiveAccountIds.has(discoveredAccountId)) {
-            return 'active' as const
-          }
-
-          return this.getSeedBasedActivityStatus({
+        const balanceActiveAccountIds =
+          await this.getSeedBasedBalanceActiveAccountIds({
             walletId,
             walletType,
-            accountIndex: i + k,
-            addresses: result.value,
-            modules: {
-              evmModule,
-              bitcoinModule,
-              solanaModule,
-              avalancheModule
-            },
-            vmNetworks
+            accounts: discoveredWindowAccounts
           })
-        },
-        onResult: async (status, k) => {
-          const addressResult = addressResults[k]
 
-          if (status === 'unknown') {
-            stoppedDueToError = true
-            shouldStop = true
-            return false
-          }
+        let shouldStop = false
+        let foundActiveInWindow = false
 
-          if (status === 'active') {
-            if (addressResult?.status !== 'fulfilled') {
+        await processInOrderWithConcurrency({
+          count: addressResults.length,
+          concurrency: Math.min(MAX_PARALLEL_ACTIVITY_CHECKS, windowSize),
+          task: async k => {
+            const result = addressResults[k]
+
+            if (!result) {
+              return 'unknown' as const
+            }
+
+            if (result?.status === 'rejected') {
+              Logger.error(
+                'Error deriving addresses for account activity scan',
+                {
+                  accountIndex: i + k,
+                  reason: result.reason
+                }
+              )
+              return 'unknown' as const
+            }
+
+            const discoveredAccountId = `scan-${i + k}`
+            if (balanceActiveAccountIds.has(discoveredAccountId)) {
+              return 'active' as const
+            }
+
+            return this.getSeedBasedActivityStatus({
+              walletId,
+              walletType,
+              accountIndex: i + k,
+              addresses: result.value,
+              modules: {
+                evmModule,
+                bitcoinModule,
+                solanaModule,
+                avalancheModule
+              },
+              vmNetworks
+            })
+          },
+          onResult: async (status, k) => {
+            const addressResult = addressResults[k]
+
+            if (status === 'unknown') {
               stoppedDueToError = true
               shouldStop = true
               return false
             }
 
-            foundActiveInWindow = true
-            discoveredAccounts.push({
-              id: `scan-${i + k}`,
-              index: i + k,
-              addresses: addressResult.value
-            })
-            consecutiveInactive = 0
+            if (status === 'active') {
+              if (addressResult?.status !== 'fulfilled') {
+                stoppedDueToError = true
+                shouldStop = true
+                return false
+              }
+
+              foundActiveInWindow = true
+              discoveredAccounts.push({
+                id: `scan-${i + k}`,
+                index: i + k,
+                addresses: addressResult.value
+              })
+              consecutiveInactive = 0
+              return true
+            }
+
+            consecutiveInactive++
+            if (consecutiveInactive >= maxConsecutiveInactive) {
+              shouldStop = true
+              return false
+            }
+
             return true
           }
+        })
 
-          consecutiveInactive++
-          if (consecutiveInactive >= maxConsecutiveInactive) {
-            shouldStop = true
-            return false
-          }
-
-          return true
+        if (shouldStop) break
+        i = windowEnd
+        if (foundActiveInWindow) {
+          currentScanWindow = Math.min(
+            scanWindow,
+            Math.max(maxConsecutiveInactive, currentScanWindow * 2)
+          )
         }
-      })
-
-      if (shouldStop) break
-      i = windowEnd
-      if (foundActiveInWindow) {
-        currentScanWindow = Math.min(
-          scanWindow,
-          Math.max(maxConsecutiveInactive, currentScanWindow * 2)
-        )
       }
-    }
 
-    return {
-      accounts: discoveredAccounts,
-      completedCleanly: !stoppedDueToError
+      return {
+        accounts: discoveredAccounts,
+        completedCleanly: !stoppedDueToError
+      }
+    } finally {
+      if (seedBuffer) {
+        new Uint8Array(seedBuffer).fill(0)
+        seedBuffer = undefined
+      }
     }
   }
 

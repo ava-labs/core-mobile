@@ -97,6 +97,28 @@ namespace margelo::nitro::nitroavalabscrypto {
         // as a unit, but it does hide independent failures if multiple
         // workers throw for different reasons.
         //
+        // FAIL-FAST IS COOPERATIVE, NOT INSTANT: the per-iteration check
+        // uses `memory_order_relaxed`, and the original thrower flips
+        // `failed` AFTER `fn` returns (i.e. inside catch). Sibling workers
+        // can therefore execute several extra `fn(i)` invocations between
+        // the first throw and observing the flag. This is fine as long as
+        // `fn` is idempotent for distinct `i` values — exactly the contract
+        // already required above. If `fn` ever needs "must not run after
+        // first error" semantics (e.g. side-effecting writes), tighten the
+        // ordering here or add a per-iteration abort check inside `fn`.
+        //
+        // RESULT-VECTOR CONTRACT FOR CALLERS: when `fn` writes to a shared
+        // result vector indexed by `i`, slots not yet visited at the moment
+        // a worker short-circuits will remain default-constructed (empty
+        // strings, zeroed structs, etc.). Because `parallelFor` rethrows
+        // immediately after `join`, those gaps NEVER propagate out on a
+        // successful path — the rethrow causes the caller's promise/lambda
+        // to exit with the exception, and the result vector is destroyed.
+        // Callers MUST NOT consult the result vector after `parallelFor`
+        // throws. The TS-side wrappers document this as an "all-or-nothing"
+        // contract for JS consumers; preserve that invariant if you ever
+        // change `parallelFor`'s exception handling.
+        //
         // Single-worker (n <= 1 or single-core) path bypasses thread creation.
         template <typename Fn>
         inline void parallelFor(size_t n, Fn &&fn) {
@@ -157,14 +179,17 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::call_once(g_once, [] {
             g_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
             // Randomize the context to protect against side-channel attacks.
+            // ScopeGuard ensures the seed buffer is cleansed on every exit path
+            // — including the early return below if RAND_bytes fails — so the
+            // cleanse contract holds regardless of how this lambda exits.
             unsigned char seed[32];
+            ScopeGuard cleanseSeed([&] { OPENSSL_cleanse(seed, sizeof(seed)); });
             if (RAND_bytes(seed, sizeof(seed)) != 1) {
                 // Fall back to unrandomized context if RNG fails — still functional,
                 // just without side-channel blinding.
                 return;
             }
             (void) secp256k1_context_randomize(g_ctx, seed);
-            OPENSSL_cleanse(seed, sizeof(seed));
         });
         return g_ctx;
     }

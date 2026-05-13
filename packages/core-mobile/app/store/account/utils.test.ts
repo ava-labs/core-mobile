@@ -704,7 +704,7 @@ describe('account/utils', () => {
       // Batch flush skipped because wallet became inactive
       expect(accountDispatches).toHaveLength(0)
       expect(Logger.error).toHaveBeenCalledWith(
-        'Wallet became inactive during discovery, skipping dispatch'
+        'Wallet became inactive during discovery, discarding pending batch'
       )
     })
 

@@ -154,8 +154,16 @@ async function discoverFromXpubs(
 
   // Derive all accounts in a single native call per network.
   // avalancheXpubs is aligned 1-to-1 with validIndices.
+  //
+  // Use allSettled so a rejection from one network's batch (native + JS
+  // fallback both failing, or an unanticipated synchronous throw inside
+  // deriveAddressesBatch) doesn't silently zero out the entire discovery
+  // result. The downstream loop requires BOTH mainnet and testnet maps to
+  // emit an account, so a single-network rejection still produces no
+  // accounts in practice — but each failure is logged independently, and
+  // an unrelated bug surfacing in only one batch can't mask the other.
   try {
-    const [mainnetBatch, testnetBatch] = await Promise.all([
+    const [mainnetSettled, testnetSettled] = await Promise.allSettled([
       deriveAddressesBatch(
         evmAccountXpub,
         avalancheXpubsForBatch,
@@ -170,24 +178,60 @@ async function discoverFromXpubs(
       )
     ])
 
+    const mainnetBatch =
+      mainnetSettled.status === 'fulfilled'
+        ? mainnetSettled.value
+        : new Map<number, DerivedAddresses>()
+    const testnetBatch =
+      testnetSettled.status === 'fulfilled'
+        ? testnetSettled.value
+        : new Map<number, DerivedAddresses>()
+
+    if (mainnetSettled.status === 'rejected') {
+      Logger.error(
+        'Mainnet batch derivation failed for Ledger discovery',
+        mainnetSettled.reason
+      )
+    }
+    if (testnetSettled.status === 'rejected') {
+      Logger.error(
+        'Testnet batch derivation failed for Ledger discovery',
+        testnetSettled.reason
+      )
+    }
+
     for (let i = 0; i < validIndices.length; i++) {
       const index = validIndices[i]!
-      const mainnet = mainnetBatch.get(index)
-      const testnet = testnetBatch.get(index)
-      if (!mainnet || !testnet) continue
+      try {
+        const mainnet = mainnetBatch.get(index)
+        const testnet = testnetBatch.get(index)
+        if (!mainnet || !testnet) continue
 
-      addressesByIndex.set(index, { mainnet, testnet })
+        addressesByIndex.set(index, { mainnet, testnet })
 
-      derivedAccounts.push({
-        index,
-        addressC: mainnet.evm,
-        addressBTC: mainnet.btc,
-        xpubXP: avalancheXpubsForBatch[i]!,
-        addressSVM: solanaAddresses[index] ?? undefined
-      })
+        derivedAccounts.push({
+          index,
+          addressC: mainnet.evm,
+          addressBTC: mainnet.btc,
+          xpubXP: avalancheXpubsForBatch[i]!,
+          addressSVM: solanaAddresses[index] ?? undefined
+        })
+      } catch (error) {
+        // Isolate per-index mapping failures so one bad index doesn't drop
+        // the whole batch. The native batch call itself is robust; reaching
+        // here means a synchronous bug in the mapping above.
+        Logger.error(
+          `Failed to map batch-derived Ledger addresses for index ${index}`,
+          error
+        )
+      }
     }
   } catch (error) {
-    Logger.error('Failed to batch-derive Ledger addresses', error)
+    // Backstop for any unexpected throw that isn't captured by allSettled
+    // or the per-index try (e.g. iteration-body memory error). With the
+    // changes above, the only realistic path to here is a bug, not a
+    // network-specific failure.
+    Logger.error('Unexpected failure in Ledger batch discovery', error)
   }
 
   return buildDiscoveredAccounts({

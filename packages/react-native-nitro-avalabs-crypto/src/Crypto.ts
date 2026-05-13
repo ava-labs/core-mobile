@@ -68,11 +68,11 @@ function ensure32(name: string, ab: ArrayBuffer): ArrayBuffer {
  * SECRET RESIDUE CAVEAT — applies whenever the input bigint represents a
  * secret (e.g. a 32-byte private key passed as bigint):
  *
- *   - The input `n` itself lives in the V8 / Hermes BigInt heap.  JS
- *     provides no API to zero a BigInt's internal limb storage from
- *     user code, so the secret bytes remain in the engine heap until
- *     garbage collection compacts the slot, and then potentially
- *     forever in unallocated pages until overwritten.
+ *   - The input `n` itself lives in the JS engine's (Hermes / JSC)
+ *     BigInt heap.  JS provides no API to zero a BigInt's internal
+ *     limb storage from user code, so the secret bytes remain in the
+ *     engine heap until garbage collection compacts the slot, and then
+ *     potentially forever in unallocated pages until overwritten.
  *   - The returned ArrayBuffer's 32 bytes are passed to the native
  *     bridge, which immediately copies them into a std::array and
  *     OPENSSL_cleanses the local copy.  The JS-side ArrayBuffer itself
@@ -290,7 +290,9 @@ function derToCompact64(sigDer: Uint8Array): Uint8Array<ArrayBuffer> {
   if (r.length === 0 || s.length === 0)
     throw new TypeError('Invalid DER: r and s must be non-zero')
   if (r.length > 32 || s.length > 32)
-    throw new TypeError('Invalid DER: r/s too long')
+    throw new TypeError(
+      `Invalid DER: r/s too long (r=${r.length} bytes, s=${s.length} bytes; max 32 each after leading-zero strip)`
+    )
   const out = new Uint8Array(64)
   out.set(r, 32 - r.length)
   out.set(s, 64 - s.length)
@@ -462,10 +464,20 @@ export function getExtendedPublicKey(
  * Batch-derive secp256k1 chain addresses from BIP32 extended public keys.
  * Runs entirely on a native background thread — the JS thread stays free.
  *
+ * All-or-nothing contract: the returned array is meaningful ONLY when the
+ * Promise resolves. On rejection, no partially-populated array is observable
+ * from JS — the native side rethrows the first worker exception and discards
+ * the in-progress result vector (some slots of which may have been skipped
+ * by the cooperative fail-fast in parallelFor). Callers can rely on
+ * `results.length === accountIndices.length` and every slot being populated
+ * whenever the await succeeds.
+ *
  * @param evmXpub        base58 shared xpub at m/44'/60'/0'
  * @param avalancheXpubs base58 per-account xpubs, aligned with accountIndices
  * @param isTestnet      true → fuji HRP + tb1 BTC; false → avax HRP + bc1
- * @param accountIndices BIP32 address indices to derive
+ * @param accountIndices BIP32 address indices to derive (max 1024 per call;
+ *                       the native module throws std::invalid_argument above
+ *                       this — real wallets never come close)
  * @returns one DerivedSecp256k1Addresses per index
  */
 export function deriveAddressesFromXpubs(
@@ -486,8 +498,16 @@ export function deriveAddressesFromXpubs(
  * Derive ALL addresses (secp256k1 + Ed25519) from a BIP39 seed in one
  * native call.  The JS thread does zero crypto work.
  *
+ * All-or-nothing contract: the returned array is meaningful ONLY when the
+ * Promise resolves. On rejection, no partially-populated array is observable
+ * from JS — see `deriveAddressesFromXpubs` above for the full rationale.
+ * Callers can rely on `results.length === accountIndices.length` and every
+ * slot being populated whenever the await succeeds.
+ *
  * @param seed           64-byte BIP39 seed (ArrayBuffer)
- * @param accountIndices account indices to derive
+ * @param accountIndices account indices to derive (max 1024 per call; the
+ *                       native module throws std::invalid_argument above
+ *                       this — real wallets never come close)
  * @param isTestnet      true → fuji/tb1; false → avax/bc1
  * @returns one DerivedAllAddresses per index
  */

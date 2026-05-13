@@ -21,6 +21,12 @@ import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import { selectWalletState, WalletState } from 'store/app'
 import { setAccounts, setNonActiveAccounts } from './slice'
 
+// Chunk size for incremental setNonActiveAccounts dispatches during
+// mnemonic/keystone discovery. Balances UI responsiveness (users see accounts
+// appear as they're derived) against the Redux re-render cost of each
+// dispatch — chosen empirically while fixing CP-14062's re-render cascade.
+const DISPATCH_BATCH_SIZE = 5
+
 export function getAddressByVM(
   vm: VM,
   account: Account | undefined
@@ -202,10 +208,9 @@ export const migrateRemainingActiveAccounts = async ({
     // fetching iterates over all accounts, so batch flushes would trigger
     // redundant downstream work in balance/XP listeners. The final setAccounts
     // dispatch below covers seedless. For mnemonic/keystone, batch discovered
-    // accounts and dispatch in chunks of 5 to avoid a re-render cascade from
-    // individual Redux dispatches (CP-14062).
+    // accounts and dispatch in DISPATCH_BATCH_SIZE-sized chunks to avoid a
+    // re-render cascade from individual Redux dispatches (CP-14062).
     const isSeedless = walletType === WalletType.SEEDLESS
-    const DISPATCH_BATCH_SIZE = 5
     let pendingAccounts: AccountCollection = {}
     let pendingAccountIds: string[] = []
     let walletBecameInactive = false
@@ -216,7 +221,7 @@ export const migrateRemainingActiveAccounts = async ({
       const currentWalletState = selectWalletState(getState())
       if (currentWalletState !== WalletState.ACTIVE) {
         Logger.error(
-          'Wallet became inactive during discovery, skipping dispatch'
+          'Wallet became inactive during discovery, discarding pending batch'
         )
         walletBecameInactive = true
         pendingAccounts = {}

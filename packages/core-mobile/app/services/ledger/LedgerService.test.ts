@@ -1238,6 +1238,67 @@ describe('LedgerService', () => {
       openAppSpy.mockRestore()
       waitForAppSpy.mockRestore()
     })
+
+    it('should return [] and not iterate when signal aborts during ensureAppReady', async () => {
+      const controller = new AbortController()
+
+      // Simulate the user aborting while the function is still waiting for
+      // the Solana app to open (CP-14062 hoisted ensureAppReady before the
+      // loop). waitForApp aborts the controller and rejects, mirroring how
+      // pollForApp throws USER_CANCELLED when its signal listener fires.
+      const openAppSpy = jest
+        .spyOn(LedgerService, 'openApp')
+        .mockResolvedValue(undefined)
+      const waitForAppSpy = jest
+        .spyOn(LedgerService, 'waitForApp')
+        .mockImplementation(async () => {
+          controller.abort()
+          throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+        })
+      const getSolanaKeysSpy = jest
+        .spyOn(LedgerService, 'getSolanaKeys')
+        .mockResolvedValue([])
+
+      const results = await LedgerService.getSolanaKeysForRange(
+        5,
+        0,
+        controller.signal
+      )
+
+      // Aborted before any index was attempted — empty result, no iteration.
+      expect(results).toEqual([])
+      expect(getSolanaKeysSpy).not.toHaveBeenCalled()
+
+      getSolanaKeysSpy.mockRestore()
+      openAppSpy.mockRestore()
+      waitForAppSpy.mockRestore()
+    })
+
+    it('should rethrow non-abort errors from ensureAppReady', async () => {
+      const controller = new AbortController()
+
+      // ensureAppReady fails for a real reason (device error), signal never
+      // aborts → the function should not swallow the error.
+      const openAppSpy = jest
+        .spyOn(LedgerService, 'openApp')
+        .mockResolvedValue(undefined)
+      const waitForAppSpy = jest
+        .spyOn(LedgerService, 'waitForApp')
+        .mockRejectedValue(new Error('Device error'))
+      const getSolanaKeysSpy = jest
+        .spyOn(LedgerService, 'getSolanaKeys')
+        .mockResolvedValue([])
+
+      await expect(
+        LedgerService.getSolanaKeysForRange(5, 0, controller.signal)
+      ).rejects.toThrow('Device error')
+
+      expect(getSolanaKeysSpy).not.toHaveBeenCalled()
+
+      getSolanaKeysSpy.mockRestore()
+      openAppSpy.mockRestore()
+      waitForAppSpy.mockRestore()
+    })
   })
 
   describe('auto-reconnect', () => {
