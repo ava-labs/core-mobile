@@ -78,9 +78,14 @@ export const isUserStateError = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') return false
 
   // Raw RPC -32000 insufficient funds (the un-wrapped path that lands in 9X6).
-  // Coerce `code` via Number() because some RPC providers emit it as a string.
+  // Coerce `code` via Number() because some RPC providers emit it as a string;
+  // narrow the type first because `Number(symbol)` throws and would break the
+  // fails-open contract.
   if (
     'code' in error &&
+    (typeof error.code === 'string' ||
+      typeof error.code === 'number' ||
+      typeof error.code === 'bigint') &&
     Number(error.code) === -32000 &&
     'message' in error &&
     typeof error.message === 'string' &&

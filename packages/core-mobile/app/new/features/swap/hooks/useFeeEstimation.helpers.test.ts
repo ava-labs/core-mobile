@@ -188,6 +188,15 @@ describe('isUserStateError', () => {
     expect(isUserStateError(error)).toBe(true)
   })
 
+  it('does not throw when code is a symbol (Number(symbol) would throw)', () => {
+    const error = {
+      code: Symbol('-32000'),
+      message: 'insufficient funds for gas * price + value'
+    }
+    expect(() => isUserStateError(error)).not.toThrow()
+    expect(isUserStateError(error)).toBe(false)
+  })
+
   it('falls through when causedByInsufficientFunds throws', () => {
     const error = {
       causedByInsufficientFunds: () => {
