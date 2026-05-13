@@ -199,7 +199,7 @@ class FCMService {
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: data.url,
-        appState: 'background',
+        isColdStart: false,
         handler: 'fcm'
       })
 

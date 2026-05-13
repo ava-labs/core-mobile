@@ -267,7 +267,7 @@ class NotificationsService {
    *    invokes {@link handlePendingBackgroundPress}.
    *  - cold-start tap: notifee.getInitialNotification() returns the same
    *    press inside {@link getInitialNotification}, which captures it as
-   *    `appState: 'cold_start'` and then drains the stale pending value via
+   *    `isColdStart: true` and then drains the stale pending value via
    *    {@link consumePendingBackgroundPress}.
    *
    * This split eliminates the duplicate-capture bug observed during CP-14006
@@ -315,7 +315,7 @@ class NotificationsService {
    * Drains the most recent background PRESS data (if any) without side
    * effects. Intended for stale-cleanup paths such as
    * {@link getInitialNotification} on cold start, where the same press has
-   * already been captured as `appState: 'cold_start'` and we just need to
+   * already been captured as `isColdStart: true` and we just need to
    * prevent the AppState listener from replaying it later.
    */
   consumePendingBackgroundPress = (): NotificationData | undefined => {
@@ -326,7 +326,7 @@ class NotificationsService {
 
   /**
    * Warm-background press handler. Drains {@link pendingBackgroundPress},
-   * captures `PushNotificationPressed` (appState: 'background', handler:
+   * captures `PushNotificationPressed` (isColdStart: false, handler:
    * 'notifee'), and forwards the data to the provided callback for deeplink
    * processing. No-op if nothing is pending.
    *
@@ -344,7 +344,7 @@ class NotificationsService {
     AnalyticsService.capture('PushNotificationPressed', {
       channelId,
       deeplinkUrl: data.url,
-      appState: 'background',
+      isColdStart: false,
       handler: 'notifee'
     })
 
@@ -394,10 +394,16 @@ class NotificationsService {
       // Foreground PRESS is delivered through `notifee.onForegroundEvent` on
       // BOTH platforms (notifee wraps the APNs alert path on iOS), so the
       // handler is always `'notifee'` here regardless of `Platform.OS`.
+      //
+      // Note: on iOS this event also fires for warm-background presses on
+      // notifee-displayed notifications (e.g. tapping a banner that was
+      // delivered while the app was in foreground and then backgrounded).
+      // That's why we deliberately don't emit a foreground/background flag
+      // here — see the `isColdStart` doc on `PushNotificationPressed`.
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,
         deeplinkUrl: data.url,
-        appState: 'foreground',
+        isColdStart: false,
         handler: 'notifee'
       })
     }
@@ -497,7 +503,7 @@ class NotificationsService {
         AnalyticsService.capture('PushNotificationPressed', {
           channelId,
           deeplinkUrl: notifeeData.url,
-          appState: 'cold_start',
+          isColdStart: true,
           handler: 'notifee'
         })
         callback(notifeeData)
@@ -527,7 +533,7 @@ class NotificationsService {
         AnalyticsService.capture('PushNotificationPressed', {
           channelId,
           deeplinkUrl: fcmDeeplinkUrl,
-          appState: 'cold_start',
+          isColdStart: true,
           handler: 'fcm'
         })
         callback(fcmData)
