@@ -49,7 +49,6 @@ import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
-import { getLedgerAppForEvmTx } from 'new/features/ledger/utils'
 import { bip32, extendedPublicKeyToXpub } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import {
@@ -675,14 +674,12 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signEvmTransaction called')
 
-    // Determine which Ledger app to use. See `getLedgerAppForEvmTx`
-    // (new/features/ledger/utils) for the full rationale — both this
-    // sign-time path and the approval-time prompt path call the same
-    // helper so the UI doesn't prompt one app and then switch to
-    // another mid-flow.
+    // Determine chain type and required app
     const chainId = transaction.chainId ? Number(transaction.chainId) : 43114
-    const appType = getLedgerAppForEvmTx(chainId, transaction.data)
-    const useAvalancheApp = appType === LedgerAppType.AVALANCHE
+    const isAvalanche = isAvalancheChainId(chainId)
+    const appType = isAvalanche
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
 
     // Get transport
     const transport = await this.handleAppConnection(appType)
@@ -718,7 +715,7 @@ export class LedgerWallet implements Wallet {
       Logger.info('Full serialized transaction:', serializedTx)
       Logger.info('Unsigned transaction hex:', unsignedTx)
 
-      const signature: SignatureRSV = await (useAvalancheApp
+      const signature: SignatureRSV = await (isAvalanche
         ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
         : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
 
