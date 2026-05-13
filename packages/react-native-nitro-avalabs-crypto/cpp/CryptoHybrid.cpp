@@ -32,17 +32,11 @@ namespace margelo::nitro::nitroavalabscrypto {
         std::once_flag g_once;
         secp256k1_context *g_ctx = nullptr;
 
-        // RAII scope guard — invokes a cleanup lambda on destruction (normal
-        // exit *or* exception unwind), ensuring sensitive buffers are always
-        // zeroed regardless of the control-flow path taken.
-        template<typename F>
-        struct ScopeGuard {
-            F fn;
-            explicit ScopeGuard(F f) : fn(std::move(f)) {}
-            ~ScopeGuard() { fn(); }
-            ScopeGuard(const ScopeGuard &) = delete;
-            ScopeGuard &operator=(const ScopeGuard &) = delete;
-        };
+        // Use the shared scope guard from scope_guard.hpp (transitively
+        // included via address_derivation.hpp / slip0010.hpp). The previous
+        // local definition has been removed to keep the template in one
+        // place and avoid drift between callers.
+        using detail::ScopeGuard;
 
         // Validate that every element of a JS number[] (bridged as
         // vector<double>) is a finite, non-negative integer in the
@@ -50,7 +44,24 @@ namespace margelo::nitro::nitroavalabscrypto {
         // would collide with the hardened flag (index | 0x80000000) applied
         // internally by the derivation functions, producing ambiguous child
         // numbers and wrong addresses.
+        // Hard upper bound on how many account indices a single batch-derive
+        // call will accept.  Each entry triggers BIP-32 derivation work plus
+        // a ~300-byte DerivedSecp256k1Addresses / DerivedAllAddresses result
+        // — at 1M entries that's ~300 MB and ~12 s on-thread, easily an OOM
+        // on memory-constrained devices.  No real wallet derives anywhere
+        // near 1024 accounts; this cap exists purely as a sanity guard
+        // against buggy or malicious JS callers.  Bump if a legitimate
+        // use case ever needs more.
+        static constexpr size_t MAX_ACCOUNT_INDICES_PER_CALL = 1024;
+
         inline void validateAccountIndices(const std::vector<double> &indices) {
+            if (indices.size() > MAX_ACCOUNT_INDICES_PER_CALL) {
+                throw std::invalid_argument(
+                    "accountIndices: batch size " + std::to_string(indices.size()) +
+                    " exceeds maximum of " +
+                    std::to_string(MAX_ACCOUNT_INDICES_PER_CALL) +
+                    " — split into multiple calls if you genuinely need this many");
+            }
             for (size_t i = 0; i < indices.size(); ++i) {
                 double v = indices[i];
                 if (!std::isfinite(v) || v < 0 || v != std::floor(v) ||
@@ -74,6 +85,20 @@ namespace margelo::nitro::nitroavalabscrypto {
         // worker writes only its own slots (no synchronization needed inside
         // fn). Exceptions thrown by fn are captured; the first one is rethrown
         // on the calling thread after all workers join.
+        //
+        // CONTRACT: `fn` MUST be thread-safe under concurrent calls with
+        // distinct `i` values.  Workers all invoke the SAME captured `fn`
+        // concurrently; a stateful `fn` (e.g. `[counter = 0]() mutable { … }`)
+        // would silently race.  Our call sites pass stateless lambdas that
+        // read shared state and write to disjoint result slots — anything
+        // else needs explicit synchronization inside `fn`.
+        //
+        // EXCEPTION POLICY: only the FIRST throwing worker's exception is
+        // preserved (`failed.exchange(true)` gates the write).  Subsequent
+        // concurrent throws are silently dropped on the worker side.  This
+        // is acceptable because the worker pool is treated as failing-fast
+        // as a unit, but it does hide independent failures if multiple
+        // workers throw for different reasons.
         //
         // Single-worker (n <= 1 or single-core) path bypasses thread creation.
         template <typename Fn>
@@ -127,6 +152,11 @@ namespace margelo::nitro::nitroavalabscrypto {
     }
 
     secp256k1_context *CryptoHybrid::ctx() {
+        // Process-lifetime singleton. `secp256k1_context_destroy(g_ctx)` is
+        // intentionally never called — the context is needed for the entire
+        // lifetime of the app, and at process exit the OS reclaims the page.
+        // libsecp256k1 documents its const-context API as safe for concurrent
+        // use after init, which is what we rely on inside `parallelFor`.
         std::call_once(g_once, [] {
             g_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
             // Randomize the context to protect against side-channel attacks.
@@ -203,13 +233,21 @@ namespace margelo::nitro::nitroavalabscrypto {
 
     std::vector<uint8_t>
     CryptoHybrid::serializePubkey(const secp256k1_pubkey &pk, bool compressed) {
-        size_t len = compressed ? 33 : 65;
+        // Verify both the return code AND the written length, matching the
+        // pattern in address_derivation.hpp. libsecp256k1 documents the call
+        // as always returning 1 and writing exactly 33 / 65 bytes, but a
+        // mismatched length would silently shrink the output via the
+        // previous `out.resize(len)` and hand callers a malformed SEC1
+        // buffer.
+        const size_t expected = compressed ? 33u : 65u;
+        size_t len = expected;
         std::vector<uint8_t> out(len);
         unsigned int flags = compressed ? SECP256K1_EC_COMPRESSED : SECP256K1_EC_UNCOMPRESSED;
-        if (secp256k1_ec_pubkey_serialize(ctx(), out.data(), &len, &pk, flags) != 1) {
-            throw std::runtime_error("Failed to serialize public key");
+        if (secp256k1_ec_pubkey_serialize(ctx(), out.data(), &len, &pk, flags) != 1
+            || len != expected) {
+            throw std::runtime_error(
+                "serializePubkey: failed to serialize public key");
         }
-        out.resize(len);
         return out;
     }
 
@@ -332,7 +370,17 @@ namespace margelo::nitro::nitroavalabscrypto {
         }
         if (!parsed) return false;
 
-        // Normalize (makes high-S equal low-S for verification)
+        // Normalize (makes high-S equal low-S for verification).
+        // The return code is intentionally ignored: 1 means normalization was
+        // applied, 0 means the signature was already in low-S form — either
+        // way `sigNorm` is valid for verification.
+        //
+        // NOTE: this means we silently accept malleable high-S signatures by
+        // verifying their low-S equivalent.  Bitcoin (BIP-62) and Ethereum
+        // (EIP-2) require strict low-S rejection.  Callers that need that
+        // policy must reject high-S signatures themselves at a higher layer
+        // — this primitive intentionally implements the more permissive
+        // verification rule that matches generic libsecp256k1 semantics.
         secp256k1_ecdsa_signature sigNorm = sig;
         (void) secp256k1_ecdsa_signature_normalize(ctx(), &sigNorm, &sig);
 
@@ -570,19 +618,23 @@ namespace margelo::nitro::nitroavalabscrypto {
         }
         validateAccountIndices(accountIndices);
 
-        std::vector<uint8_t> seedBytes(64);
+        // Use CleansingArray<64> rather than std::vector<uint8_t>(64) so the
+        // seed bytes are cleansed via the buffer's destructor regardless of
+        // whether the async lambda below ever actually runs.  A plain
+        // std::vector captured-by-move would leak the secret on the freed
+        // allocator slab if the Promise is dropped before dispatch (e.g.
+        // process teardown, JS engine shutdown).
+        detail::CleansingArray<64> seedBytes;
         std::memcpy(seedBytes.data(), seed->data(), 64);
 
         return Promise<std::vector<DerivedAllAddresses>>::async(
             [seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
 
-            // Protect seedBytes immediately — every subsequent derivation
-            // step has its own guard so sensitive material is zeroed even if
-            // an earlier step throws.
-            ScopeGuard cleanupSeed([&] {
-                OPENSSL_cleanse(seedBytes.data(), seedBytes.size());
-            });
-
+            // No explicit cleanse needed for seedBytes — CleansingArray's
+            // destructor handles it.  The per-step guards below still cover
+            // the derived intermediates (master, evm_xpub, sol_master), which
+            // are stack-local inside this lambda and only exist if the lambda
+            // actually runs.
             auto *sctx = CryptoHybrid::ctx();
 
             // BIP32 master from seed (once)
@@ -592,12 +644,12 @@ namespace margelo::nitro::nitroavalabscrypto {
                 OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
             });
 
-            // EVM xpub at m/44'/60'/0' (once — shared across all accounts)
-            auto evm_priv = bip32_derive_hardened_path(sctx, master, {44, 60, 0});
-            auto evm_xpub = bip32_private_to_public(sctx, evm_priv);
-            // Zero the EVM private key — only the public key is needed from here.
-            OPENSSL_cleanse(evm_priv.key.data(), evm_priv.key.size());
-            OPENSSL_cleanse(evm_priv.chain_code.data(), evm_priv.chain_code.size());
+            // EVM xpub at m/44'/60'/0' (once — shared across all accounts).
+            // bip32_derive_hardened_xpub_path cleanses the intermediate
+            // private key internally on every exit path (incl. exception
+            // unwind), so there's no secret material to manage here.
+            auto evm_xpub = bip32_derive_hardened_xpub_path(
+                sctx, master, {44, 60, 0});
 
             // SLIP-0010 master for Solana (once — shared across all accounts)
             auto sol_master = slip0010_master_key(seedBytes.data(), seedBytes.size());

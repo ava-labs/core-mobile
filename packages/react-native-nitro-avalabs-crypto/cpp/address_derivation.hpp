@@ -15,6 +15,7 @@
 #include "base58.hpp"
 #include "bech32.hpp"
 #include "keccak256.hpp"
+#include "scope_guard.hpp"
 
 namespace margelo::nitro::nitroavalabscrypto {
 
@@ -28,17 +29,18 @@ inline std::vector<uint8_t> sha256(const uint8_t *data, size_t len) {
     if (!mdctx) {
         throw std::runtime_error("sha256: EVP_MD_CTX_new failed");
     }
+    // Single RAII free path — survives any future edits that add throwing
+    // ops between init and finalize.
+    detail::ScopeGuard freeMdctx([&] { EVP_MD_CTX_free(mdctx); });
+
     if (EVP_DigestInit_ex(mdctx, EVP_sha256(), nullptr) != 1 ||
         EVP_DigestUpdate(mdctx, data, len) != 1) {
-        EVP_MD_CTX_free(mdctx);
         throw std::runtime_error("sha256: digest computation failed");
     }
     unsigned int md_len = 0;
     if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
-        EVP_MD_CTX_free(mdctx);
         throw std::runtime_error("sha256: digest finalization failed");
     }
-    EVP_MD_CTX_free(mdctx);
     return out;
 }
 
@@ -48,17 +50,16 @@ inline std::vector<uint8_t> ripemd160(const uint8_t *data, size_t len) {
     if (!mdctx) {
         throw std::runtime_error("ripemd160: EVP_MD_CTX_new failed");
     }
+    detail::ScopeGuard freeMdctx([&] { EVP_MD_CTX_free(mdctx); });
+
     if (EVP_DigestInit_ex(mdctx, EVP_ripemd160(), nullptr) != 1 ||
         EVP_DigestUpdate(mdctx, data, len) != 1) {
-        EVP_MD_CTX_free(mdctx);
         throw std::runtime_error("ripemd160: digest computation failed");
     }
     unsigned int md_len = 0;
     if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
-        EVP_MD_CTX_free(mdctx);
         throw std::runtime_error("ripemd160: digest finalization failed");
     }
-    EVP_MD_CTX_free(mdctx);
     return out;
 }
 
@@ -123,15 +124,38 @@ inline BIP32PublicKey bip32_derive_public_child(
         throw std::runtime_error("Failed to parse parent public key");
     }
 
+    // BIP-32 §"Public parent key → public child key" says: in case
+    // `parse256(IL) >= n` or the resulting key is the identity point, "the
+    // resulting key is invalid, and one should proceed with the next value
+    // for i." This implementation throws instead, deviating from spec.
+    //
+    // Rationale: the probability of hitting either condition is ≈ 2⁻¹²⁸ —
+    // negligible for a wallet that will never derive more than a few
+    // hundred indices over its lifetime.  Implementing the retry-next-i
+    // policy would force the caller's loop logic to know about index
+    // bumping, which complicates the per-account batch-derivation contract
+    // (parallel workers operating on a fixed `accountIndices` array).
+    //
+    // A user who somehow hits this gets a clean exception with the index
+    // identified, can advance their account discovery past it manually,
+    // and is statistically guaranteed never to see it again.  Other major
+    // wallets (e.g. ledger, trezor, bitcoinjs-lib) make the same trade-off.
     if (!secp256k1_ec_pubkey_tweak_add(ctx, &parent_pk, IL.data())) {
         throw std::runtime_error("Failed to tweak public key (invalid IL)");
     }
 
-    // Serialize child key (compressed)
+    // Serialize child key (compressed). libsecp256k1 documents this as
+    // always returning 1, but check both the return code and the written
+    // length so we don't hand back an uninitialized 33-byte buffer if a
+    // future build flips that contract (e.g. -Werror=unused-result).
     std::vector<uint8_t> child_key(33);
     size_t out_len = 33;
-    secp256k1_ec_pubkey_serialize(ctx, child_key.data(), &out_len,
-                                  &parent_pk, SECP256K1_EC_COMPRESSED);
+    if (secp256k1_ec_pubkey_serialize(ctx, child_key.data(), &out_len,
+                                      &parent_pk, SECP256K1_EC_COMPRESSED) != 1
+        || out_len != 33) {
+        throw std::runtime_error(
+            "bip32_derive_public_child: failed to serialize compressed pubkey");
+    }
 
     return {child_key, IR};
 }
@@ -168,10 +192,15 @@ inline BIP32PrivateKey bip32_master_from_seed(const uint8_t *seed, size_t seed_l
     auto I = hmac_sha512(
         reinterpret_cast<const uint8_t *>("Bitcoin seed"), 12,
         seed, seed_len);
+    // `I` is secret-derived (master scalar + chain code). std::copy on
+    // trivial types is noexcept today, but the guard keeps the function
+    // safe against future throwing edits — and matches the SLIP-0010
+    // counterpart in slip0010.hpp.
+    detail::ScopeGuard cleanseI([&] { OPENSSL_cleanse(I.data(), I.size()); });
+
     BIP32PrivateKey result;
     std::copy(I.begin(), I.begin() + 32, result.key.begin());
     std::copy(I.begin() + 32, I.end(), result.chain_code.begin());
-    OPENSSL_cleanse(I.data(), I.size());
     return result;
 }
 
@@ -193,6 +222,14 @@ inline BIP32PrivateKey bip32_derive_hardened_child(
     }
 
     std::array<uint8_t, 37> data{};
+    // `data` contains the parent private key in bytes [1..33). Cleanse on
+    // *every* exit path — including exception unwind from hmac_sha512()
+    // (OpenSSL HMAC()/EVP allocator failure) or seckey_tweak_add — so
+    // cleartext never strands on the stack.
+    detail::ScopeGuard cleanseData([&] {
+        OPENSSL_cleanse(data.data(), data.size());
+    });
+
     data[0] = 0x00;
     std::memcpy(data.data() + 1, parent.key.data(), 32);
     uint32_t hardened = index | 0x80000000u;
@@ -203,30 +240,75 @@ inline BIP32PrivateKey bip32_derive_hardened_child(
 
     auto I = hmac_sha512(parent.chain_code.data(), parent.chain_code.size(),
                           data.data(), data.size());
+    // I[0..32) is IL (secret scalar); I[32..64) is the child chain code.
+    // Both are secret-derived; cleanse the local copy unconditionally
+    // after the bytes have been moved into `child`.
+    detail::ScopeGuard cleanseI([&] { OPENSSL_cleanse(I.data(), I.size()); });
 
     BIP32PrivateKey child;
     std::copy(I.begin(), I.begin() + 32, child.key.begin());
     std::copy(I.begin() + 32, I.end(), child.chain_code.begin());
-    OPENSSL_cleanse(I.data(), I.size());
+
+    // `child` holds secret material from this point until the function
+    // returns. On the success path the caller takes ownership; on the
+    // exception path (e.g. seckey_tweak_add failure below) we cleanse so
+    // nothing strands. The flag flips just before the return statement.
+    bool succeeded = false;
+    detail::ScopeGuard cleanseChildOnFail([&] {
+        if (!succeeded) {
+            OPENSSL_cleanse(child.key.data(), child.key.size());
+            OPENSSL_cleanse(child.chain_code.data(), child.chain_code.size());
+        }
+    });
 
     // child.key = parse256(IL) + parent.key (mod n)
+    //
+    // BIP-32 §"Private parent key → private child key" says: in case
+    // `parse256(IL) >= n` or `k_i = 0`, "the resulting key is invalid, and
+    // one should proceed with the next value for i."  See the matching
+    // comment in bip32_derive_public_child for why this implementation
+    // throws instead of looping — same trade-off (probability ≈ 2⁻¹²⁸,
+    // batch-API simplicity), same precedent in major wallets.
     if (secp256k1_ec_seckey_tweak_add(ctx, child.key.data(), parent.key.data()) != 1) {
-        OPENSSL_cleanse(child.key.data(), child.key.size());
-        OPENSSL_cleanse(child.chain_code.data(), child.chain_code.size());
-        OPENSSL_cleanse(data.data(), data.size());
         throw std::runtime_error("BIP32 hardened derivation failed (invalid key)");
     }
-    OPENSSL_cleanse(data.data(), data.size());
 
+    succeeded = true;
     return child;
 }
 
-// Derive a hardened path (e.g. [44, 60, 0] for m/44'/60'/0')
+// Derive a hardened path (e.g. [44, 60, 0] for m/44'/60'/0').
+//
+// SECURITY: the returned BIP32PrivateKey is LIVE secret material — the
+// 32-byte private key + 32-byte chain code at the leaf of the path.  The
+// caller takes ownership of cleansing it (OPENSSL_cleanse on .key and
+// .chain_code) once no longer needed.  Forgetting strands the derived
+// child private key in stack/heap memory until it is overwritten.
+//
+// If you only need the *public* form of the result (every existing caller
+// in this codebase does — both call sites immediately convert to
+// BIP32PublicKey via bip32_private_to_public), prefer
+// `bip32_derive_hardened_xpub_path` below, which wraps the
+// derive-convert-cleanse sequence in one call so the foot-gun is gone.
 inline BIP32PrivateKey bip32_derive_hardened_path(
         secp256k1_context *ctx,
         const BIP32PrivateKey &master,
         const std::vector<uint32_t> &indices) {
     BIP32PrivateKey current = master;
+
+    // `current` accumulates intermediate private keys across iterations.
+    // If bip32_derive_hardened_child throws mid-loop, the manual cleanse
+    // below never runs and the partially-derived intermediate strands on
+    // the stack. Cleanse on exception only — on success, `current` is
+    // the return value and the caller takes ownership.
+    bool succeeded = false;
+    detail::ScopeGuard cleanseCurrentOnFail([&] {
+        if (!succeeded) {
+            OPENSSL_cleanse(current.key.data(), current.key.size());
+            OPENSSL_cleanse(current.chain_code.data(), current.chain_code.size());
+        }
+    });
+
     for (uint32_t idx : indices) {
         auto child = bip32_derive_hardened_child(ctx, current, idx);
         // Zero the outgoing intermediate key. On the first iteration this
@@ -238,6 +320,8 @@ inline BIP32PrivateKey bip32_derive_hardened_path(
         OPENSSL_cleanse(current.chain_code.data(), current.chain_code.size());
         current = child;
     }
+
+    succeeded = true;
     return current;
 }
 
@@ -251,12 +335,42 @@ inline BIP32PublicKey bip32_private_to_public(
     }
     std::vector<uint8_t> compressed(33);
     size_t out_len = 33;
-    secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &out_len,
-                                  &pk, SECP256K1_EC_COMPRESSED);
+    if (secp256k1_ec_pubkey_serialize(ctx, compressed.data(), &out_len,
+                                      &pk, SECP256K1_EC_COMPRESSED) != 1
+        || out_len != 33) {
+        throw std::runtime_error(
+            "bip32_private_to_public: failed to serialize compressed pubkey");
+    }
     return BIP32PublicKey{
         compressed,
         std::vector<uint8_t>(priv.chain_code.begin(), priv.chain_code.end())
     };
+}
+
+// Derive a hardened path and return the xpub (compressed pubkey + chain
+// code) — equivalent to bip32_derive_hardened_path immediately followed by
+// bip32_private_to_public, with the intermediate BIP32PrivateKey cleansed
+// internally.
+//
+// Use this whenever you only need the public form of the result.  Saves
+// every call site from having to remember the OPENSSL_cleanse of the
+// intermediate private key, and keeps the cleanse exception-safe via
+// ScopeGuard: if bip32_private_to_public throws, the private bytes are
+// still zeroed on the unwind path.
+//
+// NOTE: a BIP32PublicKey is itself an extended public key (pubkey + chain
+// code) — the chain code is intentionally part of the returned value.
+// What's cleansed inside is the 32-byte private scalar only.
+inline BIP32PublicKey bip32_derive_hardened_xpub_path(
+        secp256k1_context *ctx,
+        const BIP32PrivateKey &master,
+        const std::vector<uint32_t> &indices) {
+    auto priv = bip32_derive_hardened_path(ctx, master, indices);
+    detail::ScopeGuard cleansePriv([&] {
+        OPENSSL_cleanse(priv.key.data(), priv.key.size());
+        OPENSSL_cleanse(priv.chain_code.data(), priv.chain_code.size());
+    });
+    return bip32_private_to_public(ctx, priv);
 }
 
 // ---------------------------------------------------------------------------
@@ -274,8 +388,12 @@ inline std::vector<uint8_t> decompress_pubkey(
     }
     std::vector<uint8_t> out(65);
     size_t out_len = 65;
-    secp256k1_ec_pubkey_serialize(ctx, out.data(), &out_len,
-                                  &pk, SECP256K1_EC_UNCOMPRESSED);
+    if (secp256k1_ec_pubkey_serialize(ctx, out.data(), &out_len,
+                                      &pk, SECP256K1_EC_UNCOMPRESSED) != 1
+        || out_len != 65) {
+        throw std::runtime_error(
+            "decompress_pubkey: failed to serialize uncompressed pubkey");
+    }
     return out;
 }
 
@@ -381,6 +499,31 @@ inline AddressSet derive_addresses_for_index(
 
 // ---------------------------------------------------------------------------
 // Full address derivation from seed for one account index
+//
+// PARALLEL-SAFETY INVARIANT (do not break in future refactors):
+//   This function is called concurrently per-account from `parallelFor`
+//   in CryptoHybrid::deriveAllAddressesFromSeed.  The same `bip32_master`
+//   and `evm_xpub` references are passed to every worker thread.
+//
+//   For that pattern to be data-race-free, BOTH parameters and every
+//   function reached through them MUST treat the inputs as read-only:
+//
+//     derive_all_addresses_for_index
+//       → bip32_derive_hardened_xpub_path   (forwards `master` by const&)
+//           → bip32_derive_hardened_path    (copies into local `current`
+//                                            before mutating — read-only
+//                                            of the arg)
+//       → derive_addresses_for_index        (xpubs: copy into local roots)
+//           → bip32_derive_path
+//               → bip32_derive_public_child  (parent: read via .data() only)
+//
+//   If any future change introduces a write through `bip32_master` or
+//   `evm_xpub` — or through any reference reachable from them — the
+//   parallel region in `deriveAllAddressesFromSeed` becomes unsound and
+//   the call site must switch to per-worker copies, or this function
+//   must be made to copy its inputs internally.
+//
+//   The `const` on both parameters is part of this contract — keep it.
 // ---------------------------------------------------------------------------
 
 inline AddressSet derive_all_addresses_for_index(
@@ -390,11 +533,12 @@ inline AddressSet derive_all_addresses_for_index(
         bool is_testnet,
         uint32_t account_index) {
 
-    // Avalanche xpub: m/44'/9000'/{accountIndex}' (hardened from master)
-    auto avax_priv = bip32_derive_hardened_path(ctx, bip32_master, {44, 9000, account_index});
-    auto avax_xpub = bip32_private_to_public(ctx, avax_priv);
-    OPENSSL_cleanse(avax_priv.key.data(), avax_priv.key.size());
-    OPENSSL_cleanse(avax_priv.chain_code.data(), avax_priv.chain_code.size());
+    // Avalanche xpub: m/44'/9000'/{accountIndex}' (hardened from master).
+    // bip32_derive_hardened_xpub_path internally cleanses the intermediate
+    // private key on every exit path (including exception unwind), so
+    // there's no secret material to manage here.
+    auto avax_xpub = bip32_derive_hardened_xpub_path(
+        ctx, bip32_master, {44, 9000, account_index});
 
     // Convert BIP32PublicKey to Xpub for derive_addresses_for_index
     Xpub evm_xpub_converted{evm_xpub.key, evm_xpub.chain_code};

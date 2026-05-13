@@ -62,7 +62,31 @@ function ensure32(name: string, ab: ArrayBuffer): ArrayBuffer {
   return ab
 }
 
-/** bigint → 32-byte ArrayBuffer (left-padded). Throws if it doesn't fit. */
+/**
+ * bigint → 32-byte ArrayBuffer (left-padded). Throws if it doesn't fit.
+ *
+ * SECRET RESIDUE CAVEAT — applies whenever the input bigint represents a
+ * secret (e.g. a 32-byte private key passed as bigint):
+ *
+ *   - The input `n` itself lives in the V8 / Hermes BigInt heap.  JS
+ *     provides no API to zero a BigInt's internal limb storage from
+ *     user code, so the secret bytes remain in the engine heap until
+ *     garbage collection compacts the slot, and then potentially
+ *     forever in unallocated pages until overwritten.
+ *   - The returned ArrayBuffer's 32 bytes are passed to the native
+ *     bridge, which immediately copies them into a std::array and
+ *     OPENSSL_cleanses the local copy.  The JS-side ArrayBuffer itself
+ *     is still cleartext until JS garbage-collects it; nothing in JS
+ *     can guarantee its erasure.
+ *   - Same fundamental limitation as the scalar reconstruction in
+ *     getExtendedPublicKey below — once a secret crosses into a JS
+ *     BigInt or interned string, it cannot be zeroed from C++ or JS.
+ *
+ * Mitigation at the API level: prefer passing secrets as ArrayBuffer
+ * (caller owns the buffer and can overwrite it after the call) or
+ * Uint8Array; reach for the bigint overload only when the secret is
+ * already living in a BigInt for unrelated reasons.
+ */
 function bigintToArrayBuffer32(n: bigint): ArrayBuffer {
   if (n < 0n) throw new TypeError('Secret key must be non-negative')
   const out = new Uint8Array(32)
@@ -286,7 +310,29 @@ export function verify(
   return NativeCrypto.verify(pkAB, msgAB, sigU8.buffer)
 }
 
-/** Schnorr sign (BIP-340). messageHash must be 32 bytes. Returns 64-byte signature. */
+// One-time warning gate so we don't spam logs if a caller signs many
+// messages on a runtime without crypto.getRandomValues.
+let _schnorrAuxRandFallbackWarned = false
+
+/**
+ * Schnorr sign (BIP-340). `messageHash` must be 32 bytes. Returns the 64-byte signature.
+ *
+ * **`auxRand` security note (BIP-340 §3.3):**
+ * `auxRand` is the per-signature side-channel-protection nonce.  When omitted,
+ * this wrapper attempts to source 32 fresh bytes from
+ * `globalThis.crypto.getRandomValues` (available in React Native via
+ * `react-native-get-random-values`, in Node ≥18, and in all modern browsers).
+ *
+ * If `crypto.getRandomValues` is unavailable, the wrapper falls back to an
+ * all-zero `auxRand` (the historical default), which produces a
+ * mathematically-valid signature but weakens BIP-340's side-channel
+ * protection.  A `console.warn` fires exactly once per process when this
+ * fallback is taken so the degraded mode is surfaced to the developer.
+ *
+ * For production signing paths, the caller should either:
+ *   - ensure `crypto.getRandomValues` is installed early in app startup, or
+ *   - pass an explicit 32-byte `auxRand` from a trusted CSPRNG.
+ */
 export function signSchnorr(
   messageHash: string | ArrayBuffer | Uint8Array,
   secretKey: string | ArrayBuffer | Uint8Array,
@@ -300,7 +346,30 @@ export function signSchnorr(
 
   let auxAB: ArrayBuffer
   if (auxRand === undefined) {
-    auxAB = new Uint8Array(32).buffer
+    const cryptoLike = (
+      globalThis as typeof globalThis & {
+        crypto?: {
+          getRandomValues?: <T extends ArrayBufferView>(array: T) => T
+        }
+      }
+    ).crypto
+    if (cryptoLike?.getRandomValues) {
+      const randomBytes = new Uint8Array(32)
+      cryptoLike.getRandomValues(randomBytes)
+      auxAB = randomBytes.buffer
+    } else {
+      if (!_schnorrAuxRandFallbackWarned) {
+        _schnorrAuxRandFallbackWarned = true
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[signSchnorr] globalThis.crypto.getRandomValues is unavailable; ' +
+            'falling back to all-zero auxRand. This weakens BIP-340 ' +
+            'side-channel protection. Install react-native-get-random-values ' +
+            'or pass an explicit 32-byte auxRand from a trusted CSPRNG.'
+        )
+      }
+      auxAB = new Uint8Array(32).buffer
+    }
   } else {
     auxAB = ensure32('Schnorr auxRand', hexLikeToArrayBuffer(auxRand))
   }

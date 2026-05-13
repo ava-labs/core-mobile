@@ -249,19 +249,22 @@ const reloadMnemonicWalletNative = async (
       const r = nativeResults[k]
       if (!account || !r) continue
 
+      // Spread the original account first so non-address fields (e.g.
+      // `active`, custom flags, or any future-added Account properties)
+      // survive the native fast-path. Then overwrite only the address
+      // fields with the freshly-derived values. This keeps the native
+      // path field-for-field equivalent to the JS fallback in
+      // AccountsService.reloadAccounts, which preserves the full account
+      // object.
       reloadedAccounts[account.id] = {
-        id: account.id,
-        name: account.name,
-        type: account.type,
-        walletId: account.walletId,
-        index: account.index,
+        ...account,
         addressBTC: r.btc,
         addressC: r.evm || account.addressC,
         addressAVM: r.avm,
         addressPVM: r.pvm,
         addressCoreEth: r.coreEth,
         addressSVM: r.solana
-      } as Account
+      }
     }
 
     return reloadedAccounts

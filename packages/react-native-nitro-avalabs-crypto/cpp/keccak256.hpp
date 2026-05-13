@@ -5,6 +5,8 @@
 #include <cstring>
 #include <vector>
 
+#include <openssl/crypto.h>
+
 namespace margelo::nitro::nitroavalabscrypto {
 
 namespace detail {
@@ -114,6 +116,19 @@ inline std::vector<uint8_t> keccak256(const uint8_t* data, size_t len) {
     // Squeeze phase (single squeeze for 256-bit output since 256 < 1088)
     std::vector<uint8_t> hash(detail::KECCAK_DIGEST);
     std::memcpy(hash.data(), state, detail::KECCAK_DIGEST);
+
+    // Defensive cleanse of the permutation state and the last-block scratch
+    // buffer.  Every CURRENT caller hashes public material (compressed
+    // pubkey bytes for EIP-55 / Avalanche bech32 derivation), so there is
+    // no secret to protect today.  But the function is positioned in a
+    // security-sensitive module and is generic enough that a future caller
+    // could feed it secret-derived input.  Zeroing the 25-lane state and
+    // the 136-byte block (which holds the final input chunk) costs ~1µs
+    // and keeps the function safe-by-default regardless of caller intent.
+    // Use OPENSSL_cleanse (rather than std::fill / memset) so the compiler
+    // cannot optimize the writes away on an about-to-be-destroyed buffer.
+    OPENSSL_cleanse(state, sizeof(state));
+    OPENSSL_cleanse(block, sizeof(block));
     return hash;
 }
 

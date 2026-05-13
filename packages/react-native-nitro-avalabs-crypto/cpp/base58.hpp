@@ -9,6 +9,14 @@
 
 #include <openssl/sha.h>
 
+// NOTE on OpenSSL 3 deprecation: this file uses the legacy single-call
+// `SHA256()` API which is deprecated in OpenSSL 3 in favour of `EVP_Digest`.
+// Behaviour is unchanged on every build we target, but builds with
+// `-Wdeprecated-declarations` will warn here.  Migrating to `EVP_Digest`
+// is purely future-proofing; defer until / unless OpenSSL drops the legacy
+// API entirely.  Same note applies to `HMAC()` in address_derivation.hpp
+// and slip0010.hpp.
+
 namespace margelo::nitro::nitroavalabscrypto {
 
     // Bitcoin Base58 alphabet
@@ -105,12 +113,23 @@ namespace margelo::nitro::nitroavalabscrypto {
         const uint8_t *payload_ptr = data.data();
         const uint8_t *checksum_ptr = data.data() + payload_len;
 
-        // Compute double SHA-256 of the payload
+        // Compute double SHA-256 of the payload.
+        // OpenSSL `SHA256()` returns NULL on allocator/provider failure;
+        // continuing with an uninitialized buffer would compare the
+        // checksum against stack garbage and could either spuriously pass
+        // (accept a malformed xpub → wrong downstream derivation) or fail.
+        // Mirror the null-check pattern used by hmac_sha512 elsewhere.
         uint8_t hash1[SHA256_DIGEST_LENGTH];
-        SHA256(payload_ptr, payload_len, hash1);
+        if (SHA256(payload_ptr, payload_len, hash1) == nullptr) {
+            throw std::runtime_error(
+                "base58check_decode: SHA256 (first pass) failed");
+        }
 
         uint8_t hash2[SHA256_DIGEST_LENGTH];
-        SHA256(hash1, SHA256_DIGEST_LENGTH, hash2);
+        if (SHA256(hash1, SHA256_DIGEST_LENGTH, hash2) == nullptr) {
+            throw std::runtime_error(
+                "base58check_decode: SHA256 (second pass) failed");
+        }
 
         // Compare first 4 bytes of the double hash with the checksum
         if (hash2[0] != checksum_ptr[0] ||

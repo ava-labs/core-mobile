@@ -668,17 +668,31 @@ class AccountsService {
             false
           )
 
-          nativeResults = windowIndices.map((_, k) => {
+          nativeResults = windowIndices.map((accountIndex, k) => {
             const r = results[k]
+            if (!r) {
+              // A missing slot means the native call returned fewer
+              // results than requested for this window. Treat it as a
+              // per-account failure so downstream activity detection
+              // doesn't misclassify it as "valid but inactive" — the JS
+              // fallback path returns status: 'rejected' for per-account
+              // failures, so mirror that here.
+              return {
+                status: 'rejected' as const,
+                reason: new Error(
+                  `Native deriveAllAddressesFromSeed returned no result for accountIndex ${accountIndex} (window slot ${k})`
+                )
+              }
+            }
             return {
               status: 'fulfilled' as const,
               value: {
-                [NetworkVMType.EVM]: r?.evm ?? '',
-                [NetworkVMType.BITCOIN]: r?.btc ?? '',
-                [NetworkVMType.AVM]: r?.avm ?? '',
-                [NetworkVMType.PVM]: r?.pvm ?? '',
-                [NetworkVMType.CoreEth]: r?.coreEth ?? '',
-                [NetworkVMType.SVM]: r?.solana ?? '',
+                [NetworkVMType.EVM]: r.evm,
+                [NetworkVMType.BITCOIN]: r.btc,
+                [NetworkVMType.AVM]: r.avm,
+                [NetworkVMType.PVM]: r.pvm,
+                [NetworkVMType.CoreEth]: r.coreEth,
+                [NetworkVMType.SVM]: r.solana,
                 [NetworkVMType.HVM]: ''
               }
             }
