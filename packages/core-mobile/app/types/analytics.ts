@@ -170,6 +170,14 @@ export type AnalyticsEvents = {
       targetTxHash?: string
       errorCode?: string
       errorReason?: string
+      userClickedMax?: boolean
+      sourceTokenAddress?: string
+      sourceTokenSymbol?: string
+      sourceAmount?: string
+      destinationTokenAddress?: string
+      destinationTokenSymbol?: string
+      quoteAggregator?: string
+      quoteAggregatorId?: string
     }
   }
   SwapRefunded: {

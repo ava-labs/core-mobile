@@ -164,7 +164,8 @@ export const SwapScreen = (): JSX.Element => {
     quoteError,
     swapStatus,
     successTransferId,
-    advanceBestQuote
+    advanceBestQuote,
+    setUserClickedMax
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -404,17 +405,23 @@ export const SwapScreen = (): JSX.Element => {
     (amount: bigint): void => {
       setFromTokenValue(amount)
       setDestination(SwapSide.SELL)
+      setUserClickedMax(false)
     },
-    [setDestination]
+    [setDestination, setUserClickedMax]
   )
+
+  const handlePressMax = useCallback((): void => {
+    setUserClickedMax(true)
+  }, [setUserClickedMax])
 
   const handleToAmountChange = useCallback(
     (amount: bigint): void => {
       setToTokenValue(amount)
       setDestination(SwapSide.BUY)
       setAmount(amount)
+      setUserClickedMax(false)
     },
-    [setDestination, setAmount]
+    [setDestination, setAmount, setUserClickedMax]
   )
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
@@ -518,6 +525,7 @@ export const SwapScreen = (): JSX.Element => {
           network={getNetwork(fromToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
+          onPressMax={handlePressMax}
           onSelectToken={handleSelectFromToken}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
@@ -528,6 +536,7 @@ export const SwapScreen = (): JSX.Element => {
     theme,
     formatInCurrency,
     handleFromAmountChange,
+    handlePressMax,
     handleSelectFromToken,
     getNetwork,
     fromToken,
@@ -763,7 +772,14 @@ export const SwapScreen = (): JSX.Element => {
     setFromTokenValue(undefined)
     resetDebouncedFromTokenValue(undefined)
     setAmount(undefined)
-  }, [fromToken, setFromTokenValue, setAmount, resetDebouncedFromTokenValue])
+    setUserClickedMax(false)
+  }, [
+    fromToken,
+    setFromTokenValue,
+    setAmount,
+    resetDebouncedFromTokenValue,
+    setUserClickedMax
+  ])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
