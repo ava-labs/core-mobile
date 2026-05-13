@@ -20,13 +20,14 @@ export async function getTestRun(
 ) {
   const today = new Date().toISOString().split('T')[0]
 
+  const isAndroid = platform.toLowerCase() === 'android'
   let runType: string
   if (isPerformance) {
-    runType = '[PERFORMANCE]'
+    runType = isAndroid ? '[Emulator Performance]' : '[Simulator Performance]'
   } else if (isSmoke) {
-    runType = '[SMOKE]'
+    runType = isAndroid ? '[Emulator Smoke]' : '[Simulator Smoke]'
   } else {
-    runType = '[REGRESSION]'
+    runType = '[Real Device Regression]'
   }
 
   const title = `${runType} ${platform} Test Run: ${today}`

@@ -841,6 +841,81 @@ workflows:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
             IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+  aws-android-regression-test:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-external-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: externalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+  aws-ios-regression-test:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-external-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
   android-e2e-run-pixel9:
     before_run:
     - _install-and-set-env
