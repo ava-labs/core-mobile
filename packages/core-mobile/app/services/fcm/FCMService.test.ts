@@ -2,6 +2,7 @@ import messaging from '@react-native-firebase/messaging'
 import { Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ChannelId } from 'services/notifications/channels'
+import NotificationsService from 'services/notifications/NotificationsService'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import FCMService from './FCMService'
 
@@ -29,6 +30,12 @@ jest.mock('contexts/DeeplinkContext/utils/handleDeeplink', () => ({
 
 jest.mock('expo-router', () => ({
   router: { navigate: jest.fn() }
+}))
+
+jest.mock('contexts/ReactQueryProvider', () => ({
+  queryClient: {
+    invalidateQueries: jest.fn().mockResolvedValue(undefined)
+  }
 }))
 
 describe('FCMService.listenForMessagesBackground (iOS warm-background)', () => {
@@ -200,5 +207,117 @@ describe('FCMService.listenForMessagesBackground (iOS warm-background)', () => {
 
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
     expect(handleDeeplink).not.toHaveBeenCalled()
+  })
+})
+
+describe('FCMService.listenForMessagesForeground (notifee data stamping)', () => {
+  let registeredForegroundHandler: (
+    remoteMessage: unknown
+  ) => Promise<void> | void
+  let displaySpy: jest.SpyInstance
+
+  /**
+   * Captures the handler passed to `messaging().onMessage(...)` so tests can
+   * drive the foreground notification pipeline end-to-end with synthetic
+   * `remoteMessage` payloads. This exercises the real
+   * `FCMService.#extractDeepLinkData` helper (private, so not directly
+   * testable) via its single public entry point. The assertions then check
+   * what `NotificationsService.displayNotification` actually receives — i.e.
+   * what notifee will surface back on later cold-start / background presses.
+   */
+  const registerForegroundHandler = (): void => {
+    const onMessage = jest.fn(handler => {
+      registeredForegroundHandler = handler
+      return jest.fn()
+    })
+    ;(messaging as unknown as jest.Mock).mockReturnValue({
+      onMessage,
+      onTokenRefresh: jest.fn()
+    })
+    FCMService.listenForMessagesForeground()
+    expect(onMessage).toHaveBeenCalledTimes(1)
+  }
+
+  beforeEach(() => {
+    displaySpy = jest
+      .spyOn(NotificationsService, 'displayNotification')
+      .mockResolvedValue(undefined)
+    registerForegroundHandler()
+  })
+
+  it('stamps channelId and event onto the notifee data payload for BALANCE_CHANGES', async () => {
+    // CP-14006 regression guard. If `#extractDeepLinkData` ever stops
+    // stamping `channelId`/`event` on the BALANCE_CHANGES branch, the
+    // notifee notification's `data` will lose channel context — causing
+    // later retrievals via `notifee.getInitialNotification` / `onBackgroundEvent`
+    // to fall back to DEFAULT_ANDROID_CHANNEL ('miscellaneous'), which is the
+    // exact bug observed on iOS cold-start during device verification.
+    await registeredForegroundHandler({
+      notification: { title: 'You received tokens', body: '0.5 AVAX' },
+      data: {
+        type: 'BALANCE_CHANGES',
+        event: 'BALANCES_RECEIVED',
+        title: 'You received tokens',
+        body: '0.5 AVAX',
+        accountAddress: '0xabc',
+        chainId: '43114',
+        transactionHash: '0xdeadbeef',
+        url: 'core://portfolio'
+      }
+    })
+
+    expect(displaySpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          url: 'core://portfolio',
+          channelId: ChannelId.BALANCE_CHANGES,
+          event: 'BALANCES_RECEIVED'
+        })
+      })
+    )
+  })
+
+  it('stamps channelId and event onto the notifee data payload for NEWS', async () => {
+    await registeredForegroundHandler({
+      notification: { title: 'AVAX price alert', body: 'AVAX is up 15%' },
+      data: {
+        type: 'NEWS',
+        event: 'PRICE_ALERTS',
+        title: 'AVAX price alert',
+        body: 'AVAX is up 15%',
+        url: 'core://watchlist'
+      }
+    })
+
+    expect(displaySpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          url: 'core://watchlist',
+          channelId: ChannelId.PRICE_ALERTS,
+          event: 'PRICE_ALERTS'
+        })
+      })
+    )
+  })
+
+  it('skips display for in-app spend / transfer events (existing behavior)', async () => {
+    // Sanity guard: BALANCES_SPENT / BALANCES_TRANSFERRED are intentionally
+    // suppressed in foreground because the user just performed the action
+    // in-app. The stamping fix should not change that.
+    await registeredForegroundHandler({
+      notification: { title: 'Sent', body: '0.5 AVAX' },
+      data: {
+        type: 'BALANCE_CHANGES',
+        event: 'BALANCES_SPENT',
+        title: 'Sent',
+        body: '0.5 AVAX',
+        accountAddress: '0xabc',
+        chainId: '43114',
+        transactionHash: '0xdeadbeef',
+        url: 'core://portfolio'
+      }
+    })
+
+    expect(displaySpy).not.toHaveBeenCalled()
   })
 })
