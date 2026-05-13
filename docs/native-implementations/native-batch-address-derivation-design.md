@@ -11,11 +11,12 @@ The repro is: log in with a mnemonic wallet, and while the "Adding accounts..." 
 
 ## Solution
 
-Add three async Nitro Module functions to the existing `react-native-nitro-avalabs-crypto` package that perform all per-account address derivation on a native background thread, freeing the JS thread entirely.
+Add two async Nitro Module functions to the existing `react-native-nitro-avalabs-crypto` package that perform all per-account address derivation on a native background thread, freeing the JS thread entirely. Both functions parallelize across `std::thread::hardware_concurrency()` worker threads internally so multi-core devices see ~N× speedup on large discovery windows.
 
 1. **`deriveAddressesFromXpubs`** — secp256k1 addresses from BIP32 extended public keys (used by Ledger offline discovery)
-2. **`deriveSolanaAddressesFromSeed`** — Solana addresses via SLIP-0010 Ed25519 from BIP39 seed (standalone Solana derivation)
-3. **`deriveAllAddressesFromSeed`** — all addresses (secp256k1 + Ed25519) from BIP39 seed in a single native call (primary function for mnemonic discovery)
+2. **`deriveAllAddressesFromSeed`** — all addresses (secp256k1 + Ed25519) from BIP39 seed in a single native call (primary function for mnemonic discovery)
+
+> A `deriveSolanaAddressesFromSeed` standalone variant was prototyped but removed: `deriveAllAddressesFromSeed` already covers every caller (Ledger gets Solana addresses directly via APDU), and a Solana-only batch had no consumer.
 
 ## API Design
 
@@ -26,7 +27,7 @@ Derives addresses for secp256k1-based chains (EVM, BTC, Avalanche X/P/CoreEth) f
 ```typescript
 async deriveAddressesFromXpubs(
   evmXpub: string,
-  avalancheXpub: string,
+  avalancheXpubs: string[],
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<DerivedSecp256k1Addresses[]>
@@ -42,15 +43,15 @@ interface DerivedSecp256k1Addresses {
 ```
 
 **Inputs:**
-- `evmXpub`: base58-encoded xpub at account level, e.g. `m/44'/60'/0'` (BIP44) or `m/44'/60'/{account}'` (LedgerLive)
-- `avalancheXpub`: base58-encoded xpub at account level, e.g. `m/44'/9000'/{account}'`
+- `evmXpub`: base58-encoded shared xpub at `m/44'/60'/0'` (one xpub for all accounts; EVM addresses come from child path `0/{accountIndex}`)
+- `avalancheXpubs`: array of base58-encoded per-account xpubs at `m/44'/9000'/{account}'`, one per account index and aligned with `accountIndices` (Avalanche addresses come from child path `0/0` within each xpub). Must be the same length as `accountIndices`.
 - `isTestnet`: controls HRP (`avax` vs `fuji`) and BTC network (`bc` vs `tb`)
 - `accountIndices`: array of BIP32 address indices to derive (e.g. `[0, 1, 2, ..., 9]`)
 
 **Per-index derivation logic (all in C++):**
 1. Parse xpub from base58 → extract compressed public key (33 bytes) + chain code (32 bytes)
 2. BIP32 public child derivation: derive `evmXpub/0/{accountIndex}` → EVM child pubkey
-3. BIP32 public child derivation: derive `avalancheXpub/0/0` → Avalanche child pubkey
+3. BIP32 public child derivation: derive `avalancheXpubs[i]/0/0` → Avalanche child pubkey (where `i` is the position in `accountIndices`)
 4. EVM address: decompress EVM pubkey → Keccak-256 of uncompressed (sans prefix) → last 20 bytes → EIP-55 checksum
 5. BTC address: SHA-256(EVM pubkey) → RIPEMD-160 → bech32 P2WPKH (witness version 0)
 6. Avalanche bech32 (AVM, PVM): SHA-256(Avalanche pubkey) → RIPEMD-160 → bech32 with `avax`/`fuji` HRP
@@ -58,36 +59,9 @@ interface DerivedSecp256k1Addresses {
 
 **Used by:** Ledger offline discovery (where xpubs are already available from the device).
 
-### Function 2: `deriveSolanaAddressesFromSeed`
+The JS wrapper (`deriveAddressesBatch` in `deriveAddressesOffline.ts`) validates `avalancheXpubs.length === accountIndices.length` before dispatching to native — a mismatch would otherwise produce wrong per-account addresses, so it fails loudly with the offending counts in the message.
 
-Derives Solana addresses from a BIP39 seed using SLIP-0010 Ed25519 hardened derivation.
-
-```typescript
-async deriveSolanaAddressesFromSeed(
-  seed: ArrayBuffer,
-  accountIndices: number[]
-): Promise<DerivedSolanaAddress[]>
-
-interface DerivedSolanaAddress {
-  accountIndex: number
-  address: string    // base58-encoded 32-byte Ed25519 public key
-}
-```
-
-**Inputs:**
-- `seed`: 64-byte BIP39 seed (derived from mnemonic via PBKDF2 — done once in JS, cached)
-- `accountIndices`: array of account indices to derive
-
-**Per-index derivation logic (all in C++):**
-1. SLIP-0010 master key: HMAC-SHA512(`"ed25519 seed"`, seed) → master secret (32 bytes) + master chain code (32 bytes)
-2. Hardened child derivation at path `m/44'/501'/{accountIndex}'/0'`:
-   - For each path segment `i'`: HMAC-SHA512(chainCode, `0x00` || secret || `i + 0x80000000`) → new secret + chainCode
-3. Ed25519 scalar-to-point: secret → public key (32 bytes)
-4. Base58 encode public key → Solana address string
-
-**Used by:** Available as standalone for callers that only need Solana addresses. Ledger gets Solana addresses directly from the device via APDU.
-
-### Function 3: `deriveAllAddressesFromSeed`
+### Function 2: `deriveAllAddressesFromSeed`
 
 Derives ALL addresses (secp256k1 + Ed25519) for multiple account indices from a BIP39 seed in a single native call. This is the primary function for mnemonic wallet discovery — the JS thread does zero crypto work.
 
@@ -136,15 +110,15 @@ All crypto helpers are implemented as header-only `.hpp` files for simplicity (i
 
 | File | Purpose |
 |---|---|
-| `cpp/CryptoHybrid.cpp` | `deriveAddressesFromXpubs`, `deriveSolanaAddressesFromSeed`, and `deriveAllAddressesFromSeed` method implementations |
+| `cpp/CryptoHybrid.cpp` | `deriveAddressesFromXpubs` and `deriveAllAddressesFromSeed` method implementations; shared `parallelFor` worker-pool helper |
 | `cpp/CryptoHybrid.hpp` | Class declaration with Nitro spec overrides |
 | `cpp/address_derivation.hpp` | BIP32 public + hardened private child derivation, xpub parsing (via base58), secp256k1 address encoding (EVM, BTC, Avalanche), full seed-to-addresses pipeline |
 | `cpp/slip0010.hpp` | SLIP-0010 Ed25519 hardened derivation + Solana address encoding |
 | `cpp/keccak256.hpp` | Standalone Keccak-256 (Ethereum variant, NOT SHA3-256) |
-| `cpp/bech32.hpp` | BIP-173 bech32 encoding for BTC P2WPKH + Avalanche addresses |
+| `cpp/bech32.hpp` | BIP-173 bech32 encoding for BTC P2WPKH + Avalanche addresses (rejects uppercase HRP; rejects witness_version ≥ 1 to guard against shipping invalid P2TR addresses with a BIP-173 encoder) |
 | `cpp/base58.hpp` | Base58Check decode (xpub parsing) + Base58 encode (Solana addresses) |
-| `src/specs/Crypto.nitro.ts` | Nitro spec with all three method signatures + result types |
-| `src/Crypto.ts` | JS wrapper functions |
+| `src/specs/Crypto.nitro.ts` | Nitro spec with both method signatures + result types |
+| `src/Crypto.ts` | JS wrapper functions (incl. length-match guard for `deriveAddressesFromXpubs`) |
 
 ### Dependencies (all already available)
 
@@ -163,18 +137,13 @@ All crypto helpers are implemented as header-only `.hpp` files for simplicity (i
 interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // ... existing methods ...
 
-  // Batch address derivation (async — runs on native thread)
+  // Batch address derivation (async — runs on native thread, parallelized internally)
   deriveAddressesFromXpubs(
     evmXpub: string,
-    avalancheXpub: string,
+    avalancheXpubs: string[],
     isTestnet: boolean,
     accountIndices: number[]
   ): Promise<DerivedSecp256k1Addresses[]>
-
-  deriveSolanaAddressesFromSeed(
-    seed: ArrayBuffer,
-    accountIndices: number[]
-  ): Promise<DerivedSolanaAddress[]>
 
   deriveAllAddressesFromSeed(
     seed: ArrayBuffer,
@@ -190,11 +159,6 @@ interface DerivedSecp256k1Addresses {
   avm: string
   pvm: string
   coreEth: string
-}
-
-interface DerivedSolanaAddress {
-  accountIndex: number
-  address: string
 }
 
 interface DerivedAllAddresses {
@@ -215,14 +179,23 @@ After updating the spec, run `yarn specs` to regenerate the Nitrogen bindings.
 ### Key material handling
 
 - The BIP39 seed crosses into native memory within the same process (no new trust boundary).
+- `BIP32PrivateKey` uses `std::array<uint8_t, 32>` (not `std::vector`) so secret bytes live inline in the struct — eliminates moved-from heap allocations that `OPENSSL_cleanse` cannot reach. Mirrors the existing `SLIP0010Key` pattern.
 - `OPENSSL_cleanse` zeroes all seed and private key copies after use:
   - `deriveAllAddressesFromSeed`: seed bytes, BIP32 master key, EVM private key, SLIP-0010 master secret + chain code
-  - `deriveSolanaAddressesFromSeed`: seed bytes
   - `bip32_master_from_seed`: HMAC output `I`
   - `bip32_derive_hardened_child`: HMAC output `I`, intermediate key `IL`, `data` buffer (contains parent private key)
   - `derive_all_addresses_for_index`: Avalanche private key after public key extraction
   - `slip0010_master_key` / `slip0010_derive_hardened`: HMAC outputs, `data` buffers containing secret material
   - `solana_address_from_master` / `solana_address_from_seed`: derived secrets, master key material
+- `hexToBytes` no longer copies its input string (offset-based prefix strip instead) and `require32` cleanses the intermediate vector. `sign` / `signSchnorr` / `getPublicKeyFromString` / `getExtendedPublicKey` wrap secret-derived intermediates in `ScopeGuard` so they are cleansed on every return path including exception unwind. `signSchnorr` also cleanses the `secp256k1_keypair` struct (which internally stores the secret).
+- `getExtendedPublicKey` does **not** emit the secret-derived scalar across JSI. Native returns an empty `scalar` field for ABI stability; the TS wrapper recomputes the bigint from the `head` bytes. Once a `std::string` crosses JSI, JS interns it in the engine heap with no API to zero it from C++.
+
+### Input validation (security)
+
+- `parse_xpub` whitelists BIP-32 version bytes (`xpub` / `tpub` only; explicit reject for `xprv` / `tprv` with a distinct error) and validates the SEC1 pubkey prefix byte (0x02 / 0x03). A malformed xpub could previously pass bytes `[45..78)` to `secp256k1_ec_pubkey_parse`, which can succeed on garbage and silently derive an attacker-influenced key tree. Also hoisted out of the per-index loop into a pre-built `std::vector<Xpub>` so the base58check decode + double-SHA-256 only runs once per xpub.
+- `bip32_derive_hardened_child` and `slip0010_derive_hardened` reject indices ≥ 2³¹. A caller bypassing `validateAccountIndices` can no longer silently collide with the hardening flag and derive a different child than intended.
+- `bech32_encode_raw` rejects uppercase HRP characters instead of silently normalizing via `c | 0x20`, matching its documented contract.
+- `bech32_encode_segwit` throws on `witness_version ≥ 1` with a message pointing at BIP-350/bech32m. The encoder only implements BIP-173; this guard prevents any future Taproot wiring from shipping invalid P2TR addresses.
 
 ### Side-channel protection
 
@@ -231,7 +204,18 @@ After updating the spec, run `yarn specs` to regenerate the Nitrogen bindings.
 ### Robustness
 
 - `sha256()` and `ripemd160()` check `EVP_MD_CTX_new()` for null and verify all `EVP_Digest*` return values, freeing the context on every error path. Prevents silent incorrect hash outputs (which would produce wrong wallet addresses).
+- `hmac_sha512` / `slip0010_hmac_sha512` null-check the OpenSSL `HMAC()` return. On allocator failure the prior code continued with a zeroed output buffer and produced a deterministic-but-wrong derivation with no error.
 - `base58_map()` uses C++11 thread-safe static local initialization (lambda-initialized `std::array`) instead of a manual `bool` flag pattern that had a data race.
+
+### Parallelism
+
+- Both batch APIs parallelize across `std::thread::hardware_concurrency()` worker threads via a shared `parallelFor` helper. libsecp256k1's const-context API is thread-safe for concurrent calls; OpenSSL EVP and HMAC calls each create their own context per invocation; shared master/xpub state is read-only inside the parallel region; each worker writes only to its own pre-allocated output slot.
+- `parallelFor` catches `(...)` and rethrows via `std::exception_ptr` / `std::current_exception()` so foreign exceptions (e.g. Objective-C++ `NSException` on iOS) cannot escape a worker and call `std::terminate`. Exception type is preserved across the parallel boundary, so caller-side `catch (const std::invalid_argument&)` blocks still match the original throw site.
+- `CryptoHybrid.cpp` directly includes `<atomic>`, `<mutex>`, `<thread>`, `<utility>` (previously resolved only via transitive Nitro headers) so the translation unit stays self-contained across compilers and include orders.
+
+### Build
+
+- OpenSSL is a hard requirement on Android: CMake configure fails with remediation steps instead of falling back to a JS path that cannot run once the batch-derivation headers unconditionally include OpenSSL.
 
 ## Integration Points
 
@@ -251,12 +235,12 @@ export function deriveAddressesFromXpub(evmXpub, avalancheXpub, isTestnet, evmAd
 // After: async, runs on native thread, batch all indices in one call
 export async function deriveAddressesBatch(
   evmXpub: string,
-  avalancheXpub: string,
+  avalancheXpubs: string[],
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<Map<number, DerivedAddresses>> {
   const results = await NativeCrypto.deriveAddressesFromXpubs(
-    evmXpub, avalancheXpub, isTestnet, accountIndices
+    evmXpub, avalancheXpubs, isTestnet, accountIndices
   )
   // Map native results to existing DerivedAddresses type
 }
@@ -268,7 +252,7 @@ The existing sync `deriveAddressesFromXpub` is kept for backward compatibility b
 
 **File:** `packages/core-mobile/app/new/features/ledger/utils/discoverLedgerAccountsFromXpubs.ts`
 
-Replace the `for` loop over `additionalIndices` (calling `deriveAddressesFromXpub` per index) with a single `deriveAddressesBatch(evmXpub, avalancheXpub, isTestnet, additionalIndices)` call.
+Replace the `for` loop over `additionalIndices` (calling `deriveAddressesFromXpub` per index) with a single `deriveAddressesBatch(evmXpub, avalancheXpubs, isTestnet, additionalIndices)` call, where `avalancheXpubs` is the array of per-account Avalanche xpubs aligned with `additionalIndices`.
 
 ### 3. Mnemonic account discovery
 
@@ -289,17 +273,17 @@ This replaces `ModuleManager.deriveAddresses()` for the discovery use case only.
 ### Unit tests for native functions
 
 - Derive addresses from known xpubs and verify against expected addresses (use test vectors from BIP32/BIP44 specs)
-- Derive Solana addresses from known seeds and verify against expected base58 addresses
-- Derive all addresses from seed and verify all 6 address types match expected values
+- Derive all addresses from seed and verify all 6 address types (EVM, BTC, AVM, PVM, CoreEth, Solana) match expected values
 - Test with both mainnet and testnet parameters
 - Test with empty and large account index arrays
-- Test with invalid xpub strings (should throw, not crash)
+- Test with invalid xpub strings (xprv/tprv, malformed SEC1 prefix, bad checksum) — should throw with a descriptive error, not crash
+- Test that hardened-index inputs ≥ 2³¹ are rejected
+- Test that mismatched `avalancheXpubs` / `accountIndices` lengths throw at the JS boundary
 
 ### Integration tests
 
 - Verify that `deriveAddressesBatch` produces identical results to the existing `deriveAddressesFromXpub` for the same inputs
-- Verify that `deriveSolanaAddressesBatch` produces identical results to the existing JS Solana derivation
-- Verify that `deriveAllAddressesFromSeed` produces identical results to calling `deriveAddressesBatch` + `deriveSolanaAddressesBatch` separately
+- Verify that `deriveAllAddressesFromSeed` produces identical results to JS-side reference derivation (secp256k1 + Solana) for the same seed/indices
 - Run mnemonic account discovery with the native path and verify same accounts are discovered
 
 ### Performance validation
