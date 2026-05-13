@@ -120,11 +120,30 @@ namespace margelo::nitro::nitroavalabscrypto {
         // change `parallelFor`'s exception handling.
         //
         // Single-worker (n <= 1 or single-core) path bypasses thread creation.
+        //
+        // BATCH-SIZE TUNING: callers typically pass n in [1, 20] (account
+        // discovery window). Two caps keep small batches from paying full
+        // pthread_create + 1 MB stack reservation × hardware_concurrency:
+        //   * kSmallBatchSerial — below this, run serially; the overhead of
+        //     spawning even one extra thread exceeds the saved work.
+        //   * kMaxWorkers — cap parallelism even when hw is higher; on mobile
+        //     big.LITTLE SoCs (typ. 4 perf + 4 efficiency cores), spreading
+        //     past ~4 workers schedules onto efficiency cores that run each
+        //     worker slower, so wall-clock gains flatten. Raise only if
+        //     `parallelFor` ever ingests large (n >> 20) batches.
         template <typename Fn>
         inline void parallelFor(size_t n, Fn &&fn) {
+            constexpr size_t kSmallBatchSerial = 2;
+            constexpr size_t kMaxWorkers = 4;
+
+            if (n <= kSmallBatchSerial) {
+                for (size_t i = 0; i < n; ++i) fn(i);
+                return;
+            }
+
             const size_t hw =
                 std::max<size_t>(1, std::thread::hardware_concurrency());
-            const size_t numWorkers = std::min(hw, n);
+            const size_t numWorkers = std::min({hw, n, kMaxWorkers});
 
             if (numWorkers <= 1) {
                 for (size_t i = 0; i < n; ++i) fn(i);

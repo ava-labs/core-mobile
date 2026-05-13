@@ -222,20 +222,24 @@ const initAccounts = async (
 // single deriveAllAddressesFromSeed call on a native thread (CP-14062).
 // Returns true if native derivation succeeded, false to fall back to JS.
 //
-// PRECONDITION — Solana support gate is caller-enforced. This helper
-// unconditionally populates `addressSVM` for every account, matching the
-// JS fallback (`AccountsService.reloadAccounts` → `ModuleManager.deriveAddresses`)
-// which also runs the Solana module unconditionally. The
-// `isSolanaSupportBlocked` Posthog gate is checked at the call site
-// (Phase 2 of the migration orchestrator) before invoking either path.
-// If you add a new caller of this helper, gate Solana there. If the JS
-// path is ever taught to honor the flag, update this helper too so the
-// two paths stay observably equivalent.
-const reloadMnemonicWalletNative = async (
-  walletId: string,
-  accounts: Account[],
+// `isSolanaSupportBlocked` is honored here: when set, `addressSVM` is
+// cleared on every result, matching the JS fallback path
+// (`ModuleManager.deriveAddresses`) which omits the Solana module entirely
+// when the Posthog feature is disabled. Without this, mnemonic users in
+// Solana-blocked configurations would end up with eagerly-derived SVM
+// addresses bypassing the gate enforced elsewhere
+// (e.g. `migrateSolanaAddressesIfNeeded`).
+const reloadMnemonicWalletNative = async ({
+  walletId,
+  accounts,
+  isDeveloperMode,
+  isSolanaSupportBlocked
+}: {
+  walletId: string
+  accounts: Account[]
   isDeveloperMode: boolean
-): Promise<AccountCollection | undefined> => {
+  isSolanaSupportBlocked: boolean
+}): Promise<AccountCollection | undefined> => {
   // Hoisted so the finally block can overwrite the cleartext seed bytes on
   // every exit (success, fallback, or throw). The JS heap can't be
   // OPENSSL_cleansed from C++, but explicitly zeroing the underlying bytes
@@ -291,7 +295,7 @@ const reloadMnemonicWalletNative = async (
         addressAVM: r.avm,
         addressPVM: r.pvm,
         addressCoreEth: r.coreEth,
-        addressSVM: r.solana
+        addressSVM: isSolanaSupportBlocked ? '' : r.solana
       }
     }
 
@@ -318,16 +322,18 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
     if (wallet.type === WalletType.MNEMONIC) {
-      const nativeResult = await reloadMnemonicWalletNative(
-        wallet.id,
+      const nativeResult = await reloadMnemonicWalletNative({
+        walletId: wallet.id,
         accounts,
-        isDeveloperMode
-      )
+        isDeveloperMode,
+        isSolanaSupportBlocked
+      })
       if (nativeResult) {
         listenerApi.dispatch(setAccounts(nativeResult))
         continue
@@ -422,7 +428,8 @@ const migrateSolanaAddressesIfNeeded = async (
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
-    await reloadAccounts(undefined, listenerApi)
+    const action = { type: 'migrateSolanaAddressesIfNeeded' }
+    await reloadAccounts(action, listenerApi)
   }
 }
 

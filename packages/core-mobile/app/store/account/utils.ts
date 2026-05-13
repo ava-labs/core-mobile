@@ -19,6 +19,7 @@ import {
 } from 'utils/mmkv'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import { selectWalletState, WalletState } from 'store/app'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { setAccounts, setNonActiveAccounts } from './slice'
 
 // Chunk size for incremental setNonActiveAccounts dispatches during
@@ -112,13 +113,15 @@ export const discoverRemainingActiveAccounts = async ({
   walletType,
   startIndex,
   onAccountCreated,
-  scanWindow
+  scanWindow,
+  isSolanaSupportBlocked
 }: {
   walletId: string
   walletType: WalletType
   startIndex: number
   onAccountCreated?: (account: Account) => void
   scanWindow?: number
+  isSolanaSupportBlocked: boolean
 }): Promise<{ accounts: AccountCollection; accountIds: string[] }> => {
   const toastId = uuid()
   const shouldShowToast = walletType !== WalletType.SEEDLESS
@@ -134,7 +137,8 @@ export const discoverRemainingActiveAccounts = async ({
         walletType,
         startIndex,
         onAccountCreated,
-        scanWindow
+        scanWindow,
+        isSolanaSupportBlocked
       })
 
     const accountIds = Object.keys(accounts)
@@ -200,6 +204,8 @@ export const migrateRemainingActiveAccounts = async ({
       return
     }
 
+    const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(getState())
+
     // Only MNEMONIC, KEYSTONE, and SEEDLESS reach this function — gated by
     // canMigrateActiveAccounts. Ledger wallets use a separate discovery path
     // (discoverLedgerAccountsFromXpubs).
@@ -239,6 +245,7 @@ export const migrateRemainingActiveAccounts = async ({
       walletType,
       startIndex,
       scanWindow,
+      isSolanaSupportBlocked,
       onAccountCreated: isSeedless
         ? undefined
         : account => {

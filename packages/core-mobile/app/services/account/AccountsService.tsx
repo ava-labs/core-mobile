@@ -454,13 +454,15 @@ class AccountsService {
     walletType,
     startIndex,
     onAccountCreated,
-    scanWindow
+    scanWindow,
+    isSolanaSupportBlocked
   }: {
     walletId: string
     walletType: WalletType
     startIndex: number
     onAccountCreated?: (account: Account) => void
     scanWindow?: number
+    isSolanaSupportBlocked: boolean
   }): Promise<{ accounts: AccountCollection; completedCleanly: boolean }> {
     /**
      * note:
@@ -477,6 +479,7 @@ class AccountsService {
         walletId,
         walletType,
         startIndex,
+        isSolanaSupportBlocked,
         ...(scanWindow !== undefined && { scanWindow })
       })
 
@@ -583,7 +586,8 @@ class AccountsService {
     maxConsecutiveInactive = 2,
     startIndex = 1, // start from 1 because we assume the first account is always active
     maxScan = 1000,
-    scanWindow = DEFAULT_ACTIVITY_SCAN_WINDOW
+    scanWindow = DEFAULT_ACTIVITY_SCAN_WINDOW,
+    isSolanaSupportBlocked
   }: {
     walletId: string
     walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
@@ -591,6 +595,7 @@ class AccountsService {
     startIndex?: number
     maxScan?: number
     scanWindow?: number
+    isSolanaSupportBlocked: boolean
   }): Promise<{
     accounts: DiscoveredSeedBasedAccount[]
     completedCleanly: boolean
@@ -700,7 +705,12 @@ class AccountsService {
                   [NetworkVMType.AVM]: r.avm,
                   [NetworkVMType.PVM]: r.pvm,
                   [NetworkVMType.CoreEth]: r.coreEth,
-                  [NetworkVMType.SVM]: r.solana,
+                  // Honor the Solana support Posthog gate: when blocked,
+                  // clear the natively-derived SVM address so it isn't
+                  // eagerly persisted onto discovered accounts. The JS
+                  // fallback path (ModuleManager.deriveAddresses) achieves
+                  // the same by omitting the Solana module entirely.
+                  [NetworkVMType.SVM]: isSolanaSupportBlocked ? '' : r.solana,
                   [NetworkVMType.HVM]: ''
                 }
               }

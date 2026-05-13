@@ -333,7 +333,8 @@ describe('account/utils', () => {
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(result.accounts).toEqual(mockAccounts)
@@ -341,7 +342,8 @@ describe('account/utils', () => {
       expect(mockFetchRemainingActiveAccounts).toHaveBeenCalledWith({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
     })
 
@@ -354,7 +356,8 @@ describe('account/utils', () => {
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(result.accounts).toEqual({})
@@ -370,7 +373,8 @@ describe('account/utils', () => {
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(transactionSnackbar.pending).toHaveBeenCalledWith({
@@ -392,7 +396,8 @@ describe('account/utils', () => {
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(transactionSnackbar.plain).toHaveBeenCalledWith({
@@ -410,7 +415,8 @@ describe('account/utils', () => {
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.SEEDLESS,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(transactionSnackbar.pending).not.toHaveBeenCalled()
@@ -429,7 +435,8 @@ describe('account/utils', () => {
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(transactionSnackbar.success).toHaveBeenCalledWith({
@@ -446,7 +453,8 @@ describe('account/utils', () => {
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(result.accounts).toEqual({})

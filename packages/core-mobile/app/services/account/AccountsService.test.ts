@@ -548,7 +548,8 @@ describe('AccountsService', () => {
       const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       expect(Object.values(accounts)).toEqual([
@@ -610,7 +611,8 @@ describe('AccountsService', () => {
       const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        startIndex: 1
+        startIndex: 1,
+        isSolanaSupportBlocked: false
       })
 
       const accountList = Object.values(accounts).sort(
