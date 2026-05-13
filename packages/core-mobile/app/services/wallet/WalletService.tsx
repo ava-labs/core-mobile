@@ -535,12 +535,20 @@ class WalletService {
           { source: SentryTag.ProfileApi }
         )
         throw err
-      } finally {
-        clearInFlightAddressesFetch(cacheKey, fetchPromise)
       }
     })()
 
     setInFlightAddressesFetch(cacheKey, fetchPromise)
+
+    // Compare-and-delete only the entry that still points at THIS promise, so
+    // a clear-then-new-fetch interleaving can't have our stale settle wipe a
+    // newer registration. The trailing `.catch(() => {})` swallows the chained
+    // promise's rejection so it isn't reported as unhandled — callers get the
+    // original `fetchPromise` for actual error propagation.
+    fetchPromise
+      .finally(() => clearInFlightAddressesFetch(cacheKey, fetchPromise))
+      .catch(() => undefined)
+
     return fetchPromise
   }
 
