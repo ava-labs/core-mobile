@@ -47,6 +47,16 @@ export const setInFlightAddressesFetch = (
   inFlight.set(serializeKey(key), promise)
 }
 
-export const clearInFlightAddressesFetch = (key: CacheKey): void => {
-  inFlight.delete(serializeKey(key))
+// Compare-and-delete: only remove the entry if it still matches `promise`.
+// Guards against a stale `finally` from a pre-clear fetch deleting the
+// in-flight registration of a *newer* fetch for the same key after
+// `clearAddressesCache()` wiped the map in between.
+export const clearInFlightAddressesFetch = (
+  key: CacheKey,
+  promise: Promise<GetAddressesResponse>
+): void => {
+  const serialized = serializeKey(key)
+  if (inFlight.get(serialized) === promise) {
+    inFlight.delete(serialized)
+  }
 }

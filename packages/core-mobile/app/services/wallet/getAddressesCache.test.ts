@@ -179,7 +179,7 @@ describe('getAddressesCache — in-flight promise tracking', () => {
 
     expect(getInFlightAddressesFetch(key)).toBe(inflight)
     // Cleanup so a hanging unresolved promise can't leak between tests
-    clearInFlightAddressesFetch(key)
+    clearInFlightAddressesFetch(key, inflight)
   })
 
   it('clearInFlightAddressesFetch removes a single key without touching others', () => {
@@ -201,12 +201,37 @@ describe('getAddressesCache — in-flight promise tracking', () => {
     setInFlightAddressesFetch(keyA, promiseA)
     setInFlightAddressesFetch(keyB, promiseB)
 
-    clearInFlightAddressesFetch(keyA)
+    clearInFlightAddressesFetch(keyA, promiseA)
 
     expect(getInFlightAddressesFetch(keyA)).toBeUndefined()
     expect(getInFlightAddressesFetch(keyB)).toBe(promiseB)
 
-    clearInFlightAddressesFetch(keyB)
+    clearInFlightAddressesFetch(keyB, promiseB)
+  })
+
+  it('clearInFlightAddressesFetch is a no-op when the stored promise has been replaced', () => {
+    const key = {
+      extendedPublicKey: 'xpub-replace',
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    } as const
+
+    const oldPromise = Promise.resolve(sampleAvmResponse)
+    const newPromise = Promise.resolve(sampleAvmResponse)
+
+    setInFlightAddressesFetch(key, oldPromise)
+    // Simulate clear + new fetch registration between old fetch start and
+    // its finally firing.
+    clearAddressesCache()
+    setInFlightAddressesFetch(key, newPromise)
+
+    // Stale finally from the old fetch must NOT remove the new entry.
+    clearInFlightAddressesFetch(key, oldPromise)
+
+    expect(getInFlightAddressesFetch(key)).toBe(newPromise)
+
+    clearInFlightAddressesFetch(key, newPromise)
   })
 
   it('clearAddressesCache also wipes in-flight promises', () => {
@@ -253,10 +278,11 @@ describe('getAddressesCache — epoch counter', () => {
     } as const
 
     setAddressesCache(key, sampleAvmResponse)
-    void getAddressesCache(key)
-    setInFlightAddressesFetch(key, Promise.resolve(sampleAvmResponse))
-    void getInFlightAddressesFetch(key)
-    clearInFlightAddressesFetch(key)
+    expect(getAddressesCache(key)).toBe(sampleAvmResponse)
+    const inflight = Promise.resolve(sampleAvmResponse)
+    setInFlightAddressesFetch(key, inflight)
+    expect(getInFlightAddressesFetch(key)).toBe(inflight)
+    clearInFlightAddressesFetch(key, inflight)
 
     expect(getAddressesCacheEpoch()).toBe(start)
   })

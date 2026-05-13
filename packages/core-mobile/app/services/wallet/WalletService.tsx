@@ -536,7 +536,7 @@ class WalletService {
         )
         throw err
       } finally {
-        clearInFlightAddressesFetch(cacheKey)
+        clearInFlightAddressesFetch(cacheKey, fetchPromise)
       }
     })()
 
