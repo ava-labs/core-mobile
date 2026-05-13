@@ -5,6 +5,13 @@ import { ChannelId } from 'services/notifications/channels'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import FCMService from './FCMService'
 
+// Snapshot the real Platform.OS so we can restore it in afterAll. Without
+// this restore the override leaks across files when Jest reuses a worker
+// (watch mode, --runInBand). `configurable: true` matches the pattern used
+// in BluetoothService.test.ts / useBluetooth.test.ts and is required so
+// future test additions can re-define Platform.OS without TypeError.
+const originalPlatformOS = Platform.OS
+
 // Override the messaging mock from tests/jestSetup/firebase.js so we can
 // capture the handler passed to `onNotificationOpenedApp` and invoke it
 // directly per test, simulating the OS calling us back on iOS warm-background
@@ -47,7 +54,17 @@ describe('FCMService.listenForMessagesBackground (iOS warm-background)', () => {
   }
 
   beforeAll(() => {
-    Object.defineProperty(Platform, 'OS', { value: 'ios', writable: true })
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: 'ios'
+    })
+  })
+
+  afterAll(() => {
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: originalPlatformOS
+    })
   })
 
   beforeEach(() => {
