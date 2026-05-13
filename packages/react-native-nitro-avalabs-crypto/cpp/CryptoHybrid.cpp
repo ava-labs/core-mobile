@@ -45,13 +45,10 @@ namespace margelo::nitro::nitroavalabscrypto {
         // internally by the derivation functions, producing ambiguous child
         // numbers and wrong addresses.
         // Hard upper bound on how many account indices a single batch-derive
-        // call will accept.  Each entry triggers BIP-32 derivation work plus
-        // a ~300-byte DerivedSecp256k1Addresses / DerivedAllAddresses result
-        // — at 1M entries that's ~300 MB and ~12 s on-thread, easily an OOM
-        // on memory-constrained devices.  No real wallet derives anywhere
-        // near 1024 accounts; this cap exists purely as a sanity guard
-        // against buggy or malicious JS callers.  Bump if a legitimate
-        // use case ever needs more.
+        // call will accept. No real wallet derives anywhere near 1024
+        // accounts in one request; this cap exists purely as a sanity guard
+        // against buggy or malicious JS callers and to bound CPU/memory work
+        // per call. Bump if a legitimate use case ever needs more.
         static constexpr size_t MAX_ACCOUNT_INDICES_PER_CALL = 1024;
 
         inline void validateAccountIndices(const std::vector<double> &indices) {
