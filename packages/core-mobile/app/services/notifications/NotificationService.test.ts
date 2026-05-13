@@ -278,6 +278,38 @@ describe('getInitialNotification', () => {
     expect(callback).toHaveBeenCalledWith(data)
   })
 
+  it('classifies a BALANCE_CHANGES notifee cold-start press as the BALANCE_CHANGES channel (not miscellaneous)', async () => {
+    // Regression: this case was observed during CP-14006 device verification.
+    // BALANCE_CHANGES notifications retrieved via `notifee.getInitialNotification`
+    // were falling through to DEFAULT_ANDROID_CHANNEL because the notifee
+    // data payload was missing both `channelId` and `event`. The fix stamps
+    // both fields in `FCMService.#extractDeepLinkData` so this test asserts
+    // the resolved channel travels end-to-end.
+    const data = {
+      url: 'core://portfolio',
+      event: 'BALANCES_RECEIVED',
+      channelId: ChannelId.BALANCE_CHANGES,
+      accountAddress: '0xabc',
+      chainId: '43114',
+      transactionHash: '0xdeadbeef'
+    }
+    // iOS notifee notifications have no `android.channelId` — pass undefined
+    // to exercise the `data.channelId` precedence in `resolveChannelId`.
+    setNotifeeInitial(buildNotifeeInitial(data, undefined))
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.BALANCE_CHANGES,
+        deeplinkUrl: 'core://portfolio',
+        isColdStart: true,
+        handler: 'notifee'
+      }
+    )
+  })
+
   it('captures press from FCM initial notification when notifee initial is null (legacy notification payload path)', async () => {
     const data = {
       url: 'core://portfolio',

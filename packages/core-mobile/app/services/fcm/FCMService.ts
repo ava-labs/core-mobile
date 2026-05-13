@@ -19,7 +19,10 @@ import {
   NotificationPayloadSchema,
   NotificationTypes
 } from 'services/fcm/types'
-import { DEFAULT_ANDROID_CHANNEL } from 'services/notifications/channels'
+import {
+  ChannelId,
+  DEFAULT_ANDROID_CHANNEL
+} from 'services/notifications/channels'
 import {
   EVENT_TO_CH_ID,
   resolveChannelId
@@ -136,21 +139,34 @@ class FCMService {
         chainId: string
         transactionHash: string
         url: string
+        channelId: string
+        event: string
       }
-    | { url: string; channelId: string }
+    | { url: string; channelId: string; event: string }
     | undefined => {
+    // We stamp both `channelId` AND `event` on every branch so that the
+    // notification data carried into notifee.displayNotification preserves
+    // enough context for `resolveChannelId` to classify the press correctly
+    // when it later comes back via notifee.getInitialNotification /
+    // onBackgroundEvent / onForegroundEvent. Without these fields, a
+    // BALANCE_CHANGES tap retrieved through notifee would fall all the way
+    // through to the DEFAULT_ANDROID_CHANNEL ('miscellaneous') fallback —
+    // observed during CP-14006 device verification on iOS cold-start.
     if (fcmData.type === NotificationTypes.BALANCE_CHANGES) {
       return {
         accountAddress: fcmData.accountAddress,
         chainId: fcmData.chainId,
         transactionHash: fcmData.transactionHash,
-        url: `${PROTOCOLS.CORE}://${ACTIONS.Portfolio}`
+        url: `${PROTOCOLS.CORE}://${ACTIONS.Portfolio}`,
+        channelId: ChannelId.BALANCE_CHANGES,
+        event: fcmData.event
       }
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
         // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
         url: fcmData.urlV2 ?? fcmData.url ?? '',
-        channelId: EVENT_TO_CH_ID[fcmData.event] as string
+        channelId: EVENT_TO_CH_ID[fcmData.event] as string,
+        event: fcmData.event
       }
     }
   }
