@@ -77,31 +77,30 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - install-missing-android-tools@3:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
-    - script-runner@0:
-        title: Fix Android Env Vars
+    - android-build@1:
         inputs:
-        - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - script-runner@0:
-        title: Create Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - android-build-for-ui-testing@0:
-        inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
         - project_location: $ANDROID_PROJECT_LOCATION
+        - module: $ANDROID_MODULE
+        - build_type: apk
+        - cache_level: all
+        - variant: $ANDROID_BUILD_VARIANT
+        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - android_app: $BITRISE_APK_PATH
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
@@ -112,30 +111,11 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-    - script-runner@0:
-        title: Create Tests To Run Arrays
-        inputs:
-        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
-            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_1
-            TESTS_TO_RUN_GROUP_2=$TESTS_2
-            TESTS_TO_RUN_GROUP_3=$TESTS_3
-            TESTS_TO_RUN_GROUP_4=$TESTS_4
-            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
   _build-android-internal-for-testing:
     envs:
     - ENVIRONMENT: production
