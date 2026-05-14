@@ -659,22 +659,24 @@ namespace margelo::nitro::nitroavalabscrypto {
         }
         validateAccountIndices(accountIndices);
 
-        // Use CleansingArray<64> rather than std::vector<uint8_t>(64) so the
-        // seed bytes are cleansed via the buffer's destructor regardless of
-        // whether the async lambda below ever actually runs.  A plain
-        // std::vector captured-by-move would leak the secret on the freed
-        // allocator slab if the Promise is dropped before dispatch (e.g.
-        // process teardown, JS engine shutdown).
-        detail::CleansingArray<64> seedBytes;
-        std::memcpy(seedBytes.data(), seed->data(), 64);
+        // Heap-allocate the cleansing buffer behind a shared_ptr so the
+        // lambda below remains CopyConstructible: Nitro's Promise::async
+        // wraps its callable in std::function<T()>, which can't hold a
+        // move-only target.  The CleansingArray's destructor still fires
+        // (and zeros the seed) when the last copy of the lambda is
+        // released, so the cleanse-on-promise-discard guarantee is
+        // preserved on every exit path (success, throw, never-dispatched).
+        auto seedBuf = std::make_shared<detail::CleansingArray<64>>();
+        std::memcpy(seedBuf->data(), seed->data(), 64);
 
         return Promise<std::vector<DerivedAllAddresses>>::async(
-            [seedBytes = std::move(seedBytes), accountIndices, isTestnet]() mutable {
+            [seedBuf, accountIndices, isTestnet]() {
 
-            // No explicit cleanse needed for seedBytes — CleansingArray's
-            // destructor handles it.  The per-step guards below still cover
-            // the derived intermediates (master, evm_xpub, sol_master), which
-            // are stack-local inside this lambda and only exist if the lambda
+            const auto &seedBytes = *seedBuf;
+
+            // The per-step guards below still cover the derived
+            // intermediates (master, evm_xpub, sol_master), which are
+            // stack-local inside this lambda and only exist if the lambda
             // actually runs.
             auto *sctx = CryptoHybrid::ctx();
 

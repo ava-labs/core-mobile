@@ -70,16 +70,20 @@ struct ScopeGuard {
 //
 // Use this instead of std::array / std::vector when the buffer holds
 // secret material whose cleansing must survive paths a manual
-// ScopeGuard can't cover — most notably **values captured by move into
-// a deferred async lambda whose execution is not guaranteed**:
+// ScopeGuard can't cover — most notably async lambdas whose execution
+// is not guaranteed.  Because Nitro's Promise::async wraps the callable
+// in std::function<T()>, which requires CopyConstructible, you must
+// hold the buffer behind a shared_ptr (the CleansingArray itself is
+// move-only by design):
 //
-//   CleansingArray<64> seedBytes;
-//   // ... fill ...
-//   Promise<T>::async([buf = std::move(seedBytes), ...]() mutable {
-//       use(buf.data(), buf.size());
-//       // No explicit cleanse needed — `buf` cleanses on lambda destruction
-//       // whether the lambda runs to completion, throws, or never runs at
-//       // all (e.g. process teardown / promise discarded before dispatch).
+//   auto buf = std::make_shared<CleansingArray<64>>();
+//   // ... fill via buf->data() ...
+//   Promise<T>::async([buf]() {
+//       use(buf->data(), buf->size());
+//       // No explicit cleanse needed — the CleansingArray's destructor
+//       // fires when the last copy of the lambda is released, whether
+//       // the lambda runs to completion, throws, or never runs at all
+//       // (e.g. process teardown / promise discarded before dispatch).
 //   });
 //
 // Move semantics: the source is cleansed immediately after the move so
