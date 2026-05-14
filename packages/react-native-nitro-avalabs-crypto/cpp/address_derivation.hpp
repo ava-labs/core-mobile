@@ -157,7 +157,14 @@ inline BIP32PublicKey bip32_derive_public_child(
             "bip32_derive_public_child: failed to serialize compressed pubkey");
     }
 
-    return {child_key, IR};
+    std::vector<uint8_t> child_chain_code = IR;
+    if (!IL.empty()) {
+        OPENSSL_cleanse(IL.data(), IL.size());
+    }
+    if (!IR.empty()) {
+        OPENSSL_cleanse(IR.data(), IR.size());
+    }
+    return {child_key, child_chain_code};
 }
 
 // Derive through a chain of non-hardened indices (e.g. [0, accountIndex])

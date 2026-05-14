@@ -184,9 +184,8 @@ function extractBatch(
  * addressesByIndex.
  *
  * allSettled prevents a single-network rejection from zeroing out the whole
- * discovery result. The outer try/catch is a backstop for unexpected throws
- * (e.g. iteration-body memory error); with allSettled in place, reaching it
- * means a bug, not a network failure.
+ * discovery result — each batch's failure is logged independently inside
+ * extractBatch.
  */
 async function deriveAndMapBatch(params: {
   evmAccountXpub: string
@@ -213,30 +212,22 @@ async function deriveAndMapBatch(params: {
     { mainnet: DerivedAddresses; testnet: DerivedAddresses }
   >()
 
-  let mainnetBatch = new Map<number, DerivedAddresses>()
-  let testnetBatch = new Map<number, DerivedAddresses>()
-
-  try {
-    const [mainnetSettled, testnetSettled] = await Promise.allSettled([
-      deriveAddressesBatch(
-        evmAccountXpub,
-        avalancheXpubsForBatch,
-        false,
-        validIndices
-      ),
-      deriveAddressesBatch(
-        evmAccountXpub,
-        avalancheXpubsForBatch,
-        true,
-        validIndices
-      )
-    ])
-    mainnetBatch = extractBatch(mainnetSettled, 'Mainnet')
-    testnetBatch = extractBatch(testnetSettled, 'Testnet')
-  } catch (error) {
-    Logger.error('Unexpected failure in Ledger batch discovery', error)
-    return { derivedAccounts, addressesByIndex }
-  }
+  const [mainnetSettled, testnetSettled] = await Promise.allSettled([
+    deriveAddressesBatch(
+      evmAccountXpub,
+      avalancheXpubsForBatch,
+      false,
+      validIndices
+    ),
+    deriveAddressesBatch(
+      evmAccountXpub,
+      avalancheXpubsForBatch,
+      true,
+      validIndices
+    )
+  ])
+  const mainnetBatch = extractBatch(mainnetSettled, 'Mainnet')
+  const testnetBatch = extractBatch(testnetSettled, 'Testnet')
 
   for (let i = 0; i < validIndices.length; i++) {
     const index = validIndices[i]!

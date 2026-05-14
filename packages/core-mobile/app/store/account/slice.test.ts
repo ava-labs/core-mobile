@@ -1,6 +1,13 @@
+import { CoreAccountType } from '@avalabs/types'
 import { RootState } from 'store/types'
-import { selectLedgerAddresses, selectLedgerAddressesByWalletId } from './slice'
-import { LedgerAddresses } from './types'
+import {
+  accountsReducer,
+  selectLedgerAddresses,
+  selectLedgerAddressesByWalletId,
+  setAccounts,
+  setNonActiveAccounts
+} from './slice'
+import { Account, AccountsState, LedgerAddresses } from './types'
 
 const makeLedgerAddress = (
   overrides: Partial<LedgerAddresses> & { id: string; walletId: string }
@@ -170,5 +177,75 @@ describe('selectLedgerAddressesByWalletId', () => {
     } as unknown as Partial<RootState>)
 
     expect(selectLedgerAddressesByWalletId(state, 'w1')).toEqual([])
+  })
+})
+
+const makeAccount = (
+  overrides: Partial<Account> & { id: string; walletId: string }
+): Account => ({
+  name: 'Account',
+  type: CoreAccountType.PRIMARY,
+  index: 0,
+  addressC: '0xC',
+  addressBTC: 'btc',
+  addressAVM: 'X-avm',
+  addressPVM: 'P-pvm',
+  addressCoreEth: '0xCE',
+  addressSVM: 'svm',
+  ...overrides
+})
+
+// Guards the invariant that the per-wallet final setAccounts dispatch in
+// migrateRemainingActiveAccounts (utils.ts) cannot drop accounts belonging
+// to a sibling wallet that was discovered concurrently. Both setAccounts
+// and setNonActiveAccounts must merge by id, never replace.
+describe('accountsReducer — sibling-wallet safety', () => {
+  const walletAExisting = makeAccount({ id: 'a1', walletId: 'wallet-A' })
+  const walletAUpdated = makeAccount({
+    id: 'a1',
+    walletId: 'wallet-A',
+    addressC: '0xC-updated'
+  })
+  const walletANew = makeAccount({
+    id: 'a2',
+    walletId: 'wallet-A',
+    index: 1
+  })
+  const walletBSibling = makeAccount({ id: 'b1', walletId: 'wallet-B' })
+
+  const seededState: AccountsState = {
+    accounts: { a1: walletAExisting, b1: walletBSibling },
+    activeAccountId: 'a1',
+    ledgerAddresses: {}
+  }
+
+  it('setAccounts preserves sibling-wallet accounts and merges by id', () => {
+    const next = accountsReducer(
+      seededState,
+      setAccounts({ a1: walletAUpdated, a2: walletANew })
+    )
+
+    expect(next.accounts.b1).toEqual(walletBSibling)
+    expect(next.accounts.a1).toEqual(walletAUpdated)
+    expect(next.accounts.a2).toEqual(walletANew)
+    expect(Object.keys(next.accounts).sort()).toEqual(['a1', 'a2', 'b1'])
+  })
+
+  it('setNonActiveAccounts preserves sibling-wallet accounts and merges by id', () => {
+    const next = accountsReducer(
+      seededState,
+      setNonActiveAccounts({ a1: walletAUpdated, a2: walletANew })
+    )
+
+    expect(next.accounts.b1).toEqual(walletBSibling)
+    expect(next.accounts.a1).toEqual(walletAUpdated)
+    expect(next.accounts.a2).toEqual(walletANew)
+    expect(Object.keys(next.accounts).sort()).toEqual(['a1', 'a2', 'b1'])
+  })
+
+  it('setAccounts with an empty payload is a no-op for sibling accounts', () => {
+    const next = accountsReducer(seededState, setAccounts({}))
+
+    expect(next.accounts).toEqual(seededState.accounts)
   })
 })

@@ -327,6 +327,12 @@ const reloadAccounts = async (
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
+    // Skip wallets with no accounts (transient state during reload, or
+    // seedless edge cases). Both branches below would otherwise dispatch
+    // setAccounts({}), which can wipe the wallet's accounts in Redux
+    // depending on reducer semantics.
+    if (accounts.length === 0) continue
+
     if (wallet.type === WalletType.MNEMONIC) {
       const nativeResult = await reloadMnemonicWalletNative({
         walletId: wallet.id,
