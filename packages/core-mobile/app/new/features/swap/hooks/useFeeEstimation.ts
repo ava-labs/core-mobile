@@ -8,6 +8,7 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
+import { buildSentryFingerprint } from 'services/sentry/fingerprint'
 import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
@@ -79,7 +80,8 @@ export const useFeeEstimation = ({
       SentryService.captureMessage(
         '[useFeeEstimation] estimateNativeFee revert error',
         { ...error.details, cause: error.cause },
-        { source: SentryTag.FusionSdk }
+        { source: SentryTag.FusionSdk },
+        buildSentryFingerprint('useFeeEstimation', error.details.data)
       )
     } else {
       logSdkError('[useFeeEstimation] estimateNativeFee error', error)
