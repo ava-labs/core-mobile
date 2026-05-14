@@ -468,12 +468,22 @@ async function main() {
       .toISOString()
       .replace(/[:.]/g, '-')}`
 
+    const envVars = {}
+    if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
+    if (process.env.E2E_MNEMONIC) envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.TESTRAIL_USERNAME)
+      envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
+    if (process.env.TESTRAIL_API_KEY)
+      envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
+
     const testConfig = {
       type: 'APPIUM_NODE',
-      testPackageArn: testPackageUploadArn
+      testPackageArn: testPackageUploadArn,
+      testSpecArn: testSpecUploadArn,
+      ...(Object.keys(envVars).length > 0
+        ? { environmentVariables: envVars }
+        : {})
     }
-
-    testConfig.testSpecArn = testSpecUploadArn
 
     const scheduleRunCommand = new ScheduleRunCommand({
       projectArn: config.projectArn,

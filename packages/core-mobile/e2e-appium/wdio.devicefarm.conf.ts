@@ -108,6 +108,9 @@ const caps = platformToRun
 
 /** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
 function getSpecs(): string[] {
+  if (process.env.SPEC_FILE) {
+    return [`./${process.env.SPEC_FILE}`]
+  }
   if (
     process.env.TEST_TYPE === 'performance' ||
     process.env.IS_PERFORMANCE === 'true'
