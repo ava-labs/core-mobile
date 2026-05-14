@@ -25,7 +25,7 @@ TEST_PACKAGE="$CORE_MOBILE_DIR/e2e-appium/appium-tests-devicefarm.zip"
 TEST_SPEC="$CORE_MOBILE_DIR/e2e-appium/aws_test_spec.yaml"
 
 _SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$_SCRIPT_DIR/../../devicefarm/ensure-client-device-farm.sh"
+source "$_SCRIPT_DIR/../../../devicefarm/ensure-client-device-farm.sh"
 ensure_client_device_farm
 
 export DEVICEFARM_APP_PATH="$BITRISE_APK_PATH"
