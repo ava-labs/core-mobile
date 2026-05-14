@@ -7,7 +7,7 @@ import {
   setAccounts,
   setNonActiveAccounts
 } from './slice'
-import { Account, AccountsState, LedgerAddresses } from './types'
+import { AccountsState, LedgerAddresses, PrimaryAccount } from './types'
 
 const makeLedgerAddress = (
   overrides: Partial<LedgerAddresses> & { id: string; walletId: string }
@@ -181,10 +181,9 @@ describe('selectLedgerAddressesByWalletId', () => {
 })
 
 const makeAccount = (
-  overrides: Partial<Account> & { id: string; walletId: string }
-): Account => ({
+  overrides: Partial<PrimaryAccount> & { id: string; walletId: string }
+): PrimaryAccount => ({
   name: 'Account',
-  type: CoreAccountType.PRIMARY,
   index: 0,
   addressC: '0xC',
   addressBTC: 'btc',
@@ -192,7 +191,8 @@ const makeAccount = (
   addressPVM: 'P-pvm',
   addressCoreEth: '0xCE',
   addressSVM: 'svm',
-  ...overrides
+  ...overrides,
+  type: CoreAccountType.PRIMARY
 })
 
 // Guards the invariant that the per-wallet final setAccounts dispatch in
