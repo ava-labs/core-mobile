@@ -18,8 +18,22 @@ import { currentRouteStore } from './store'
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
-  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
-    useState(true)
+  // Derive initial value from current redux state so the first frame already
+  // has the correct guard. Previously this was hard-coded to `true`, which
+  // forced a PIN-only → signedIn group swap on every fresh mount (including
+  // warm-background reactivation after notifee.onBackgroundEvent), producing
+  // a transient blank flash as <Stack.Protected> tore down one group and
+  // mounted the other.
+  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState(
+    () => !appIsReady || walletState !== WalletState.ACTIVE
+  )
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[BLANK-DEBUG] RootNavigator render shouldRenderOnlyPinScreen=${shouldRenderOnlyPinScreen} walletState=${walletState} appIsReady=${appIsReady}`
+    )
+  }, [shouldRenderOnlyPinScreen, walletState, appIsReady])
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked
