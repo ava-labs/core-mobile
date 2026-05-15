@@ -407,6 +407,31 @@ async function waitForRunCompletion(runArn) {
 }
 
 /**
+ * Inject env var exports into aws_test_spec.yaml right before `npm test`.
+ * Returns path to a temp file if vars were injected, original path otherwise.
+ */
+function injectEnvVarsIntoTestSpec(specPath, envVars) {
+  if (Object.keys(envVars).length === 0) return specPath
+
+  const exports = Object.entries(envVars)
+    .map(([k, v]) => `      - export ${k}="${v}"`)
+    .join('\n')
+
+  const content = fs.readFileSync(specPath, 'utf8')
+  const modified = content.replace('      - npm test', `${exports}\n      - npm test`)
+
+  if (modified === content) {
+    console.warn('⚠️  Could not inject env vars into test spec (npm test line not found)')
+    return specPath
+  }
+
+  const tmpPath = specPath.replace('.yaml', '_injected.yaml')
+  fs.writeFileSync(tmpPath, modified)
+  console.log(`✅ Injected env vars into test spec: ${Object.keys(envVars).join(', ')}`)
+  return tmpPath
+}
+
+/**
  * Main function to trigger test run
  */
 async function main() {
@@ -454,20 +479,7 @@ async function main() {
       'appium-tests.zip'
     )
 
-    // 3. Upload test spec (required; validated before main upload flow)
-    const testSpecUploadArn = await uploadFile(
-      config.testSpecPath,
-      config.projectArn,
-      testSpecType,
-      'aws_test_spec.yaml'
-    )
-
-    // 4. Schedule test run
-    console.log('📅 Scheduling test run...')
-    const runName = `Appium Test Run - ${new Date()
-      .toISOString()
-      .replace(/[:.]/g, '-')}`
-
+    // 3. Upload test spec — inject env vars (SPEC_FILE, E2E_MNEMONIC, etc.) before npm test
     const envVars = {}
     if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
     if (process.env.E2E_MNEMONIC) envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
@@ -476,13 +488,25 @@ async function main() {
     if (process.env.TESTRAIL_API_KEY)
       envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
 
+    const testSpecPath = injectEnvVarsIntoTestSpec(config.testSpecPath, envVars)
+    const testSpecUploadArn = await uploadFile(
+      testSpecPath,
+      config.projectArn,
+      testSpecType,
+      'aws_test_spec.yaml'
+    )
+    if (testSpecPath !== config.testSpecPath) fs.unlinkSync(testSpecPath)
+
+    // 4. Schedule test run
+    console.log('📅 Scheduling test run...')
+    const runName = `Appium Test Run - ${new Date()
+      .toISOString()
+      .replace(/[:.]/g, '-')}`
+
     const testConfig = {
       type: 'APPIUM_NODE',
       testPackageArn: testPackageUploadArn,
-      testSpecArn: testSpecUploadArn,
-      ...(Object.keys(envVars).length > 0
-        ? { environmentVariables: envVars }
-        : {})
+      testSpecArn: testSpecUploadArn
     }
 
     const scheduleRunCommand = new ScheduleRunCommand({
