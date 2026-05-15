@@ -1,17 +1,11 @@
-import { Text } from '@avalabs/k2-alpine'
+import { Text } from '../../Primitives'
 import React, { FC } from 'react'
 import Animated, {
   SharedValue,
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
-
-export type YAxisTick = {
-  /** Price value displayed on the label. */
-  price: number
-  /** Canvas-relative y position of the gridline (label sits above this). */
-  y: number
-}
+import { YAxisTick } from './types'
 
 type Props = {
   isActive: SharedValue<boolean>

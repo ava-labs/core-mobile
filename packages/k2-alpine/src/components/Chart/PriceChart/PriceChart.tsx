@@ -1,4 +1,5 @@
-import { Text, useTheme } from '@avalabs/k2-alpine'
+import { Text } from '../../Primitives'
+import { useTheme } from '../../../hooks'
 import {
   Canvas,
   DashPathEffect,
@@ -18,7 +19,15 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 import { ChartFooter } from './ChartFooter'
-import { CHART_INSET } from './constants'
+import {
+  CANDLE_BODY_WIDTH_RATIO,
+  CHART_FOOTER_HEIGHT,
+  CHART_INSET,
+  LINE_BOTTOM_PADDING,
+  LINE_MODE_CROSSHAIR_WIDTH,
+  PRICE_TOP_PADDING,
+  VOLUME_ROW_HEIGHT
+} from './constants'
 import { Crosshair } from './Crosshair'
 import { CrosshairTooltip } from './CrosshairTooltip'
 import { LineChartDot } from './LineChartDot'
@@ -29,7 +38,7 @@ import {
   touchXToIndex,
   yAxisTicks
 } from './helpers'
-import { OhlcCandle } from './types'
+import { ChartState, OhlcCandle, PriceChartMode } from './types'
 import { VolumeRow } from './VolumeRow'
 import { YAxisLabels } from './YAxisLabels'
 
@@ -37,13 +46,13 @@ type Props = {
   candles: OhlcCandle[]
   width: number
   height: number
-  volumeRowHeight?: number // defaults to 30
-  state?: 'loaded' | 'loading' | 'empty' | 'error'
+  volumeRowHeight?: number
+  state?: ChartState
   onRetry?: () => void
   /** Rendering mode for the price series — candle bodies + wicks, or a
    * single line joining the close prices. All other affordances (volume
    * row, crosshair, footer) are shared. Defaults to 'candlestick'. */
-  mode?: 'candlestick' | 'line'
+  mode?: PriceChartMode
   /** Optional external SharedValue — when provided, the chart writes its
    * press-and-hold state into it so a parent can coordinate other UI
    * (e.g. fading an idle-state price header). Defaults to internal. */
@@ -57,9 +66,7 @@ type Props = {
   hideInternalTooltip?: boolean
 }
 
-const CANDLE_BODY_WIDTH_RATIO = 0.6 // candle body occupies 60% of the per-candle slot
-
-export const CandlestickChart: FC<Props> = ({
+export const PriceChart: FC<Props> = ({
   candles,
   width,
   height,
@@ -83,18 +90,18 @@ export const CandlestickChart: FC<Props> = ({
   const bodyWidth = slotWidth * CANDLE_BODY_WIDTH_RATIO
 
   const showVolume = mode === 'candlestick'
-  const footerH = 24
+  const footerH = CHART_FOOTER_HEIGHT
   // In candle mode, volume occupies its own row below the candles. In line /
   // area mode the volume row is skipped and that slot is absorbed into the
   // chart area, so the line extends further down while the footer stays in
   // the same place.
-  const volH = showVolume ? volumeRowHeight ?? 30 : 0
+  const volH = showVolume ? volumeRowHeight ?? VOLUME_ROW_HEIGHT : 0
   const candleH = Math.max(0, height - volH - footerH)
   // Top padding leaves room for the y-axis label of the max-price gridline
   // (the label sits above its line). Bottom padding is the breathing room
   // below the line/area in area-chart mode.
-  const priceTopPadding = 14
-  const priceBottomPadding = mode === 'line' ? 30 : 0
+  const priceTopPadding = PRICE_TOP_PADDING
+  const priceBottomPadding = mode === 'line' ? LINE_BOTTOM_PADDING : 0
   const priceAreaH = Math.max(0, candleH - priceTopPadding - priceBottomPadding)
 
   // Canvas-relative y position for each y-axis tick — shared between the
@@ -478,7 +485,7 @@ export const CandlestickChart: FC<Props> = ({
           isActive={isActive}
           height={showVolume ? candleH + volH : priceTopPadding + priceAreaH}
           bottomInset={showVolume ? animatedBarHeight : undefined}
-          width={mode === 'line' ? 3 : bodyWidth}
+          width={mode === 'line' ? LINE_MODE_CROSSHAIR_WIDTH : bodyWidth}
         />
         {mode === 'line' && (
           <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />

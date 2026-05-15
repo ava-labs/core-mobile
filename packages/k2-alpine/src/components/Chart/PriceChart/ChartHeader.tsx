@@ -1,4 +1,4 @@
-import { Text } from '@avalabs/k2-alpine'
+import { Text } from '../../Primitives'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, View } from 'react-native'
 import Animated, {
@@ -176,8 +176,7 @@ export const ChartHeader: FC<Props> = ({
   const active = idx !== null ? candles[idx] : undefined
   const displayed = active ?? latest
   const delta = displayed && first ? displayed.close - first.open : 0
-  const deltaPct =
-    first && first.open !== 0 ? (delta / first.open) * 100 : 0
+  const deltaPct = first && first.open !== 0 ? (delta / first.open) * 100 : 0
 
   const formattedActiveTime = useMemo(
     () => (active ? formatActiveTime(active.ts) : undefined),
@@ -190,23 +189,46 @@ export const ChartHeader: FC<Props> = ({
         onLayout={onBlockLayout}
         style={[blockStyle, { alignItems: 'flex-start' }]}>
         <Animated.View onLayout={onPriceLayout} style={priceStyle}>
-          <Text variant="heading2">
+          <Text variant="heading3">
             {displayed ? `$${displayed.close.toFixed(2)}` : '$0.00'}
           </Text>
         </Animated.View>
         <Animated.View onLayout={onSubtitleLayout} style={subtitleStyle}>
-          <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
             {formattedActiveTime ?? `Current price of ${symbol}`}
           </Text>
         </Animated.View>
-        <Animated.View onLayout={onDeltaLayout} style={deltaStyle}>
+        <Animated.View
+          onLayout={onDeltaLayout}
+          style={[deltaStyle, { flexDirection: 'row', alignItems: 'center' }]}>
           <Text
-            variant="caption"
             sx={{
+              fontFamily: 'Inter-SemiBold',
+              fontSize: 14,
+              lineHeight: 18,
               color: delta >= 0 ? '$textSuccess' : '$textDanger'
             }}>
-            {delta >= 0 ? '+' : '-'}${Math.abs(delta).toFixed(2)}{' '}
-            {delta >= 0 ? '▲' : '▼'} {Math.abs(deltaPct).toFixed(2)}%
+            {delta >= 0 ? '+' : '-'}${Math.abs(delta).toFixed(2)}
+          </Text>
+          <Text
+            sx={{
+              fontFamily: 'Inter-SemiBold',
+              fontSize: 14,
+              lineHeight: 18,
+              marginLeft: 4,
+              marginRight: 4,
+              color: delta >= 0 ? '$textSuccess' : '$textDanger'
+            }}>
+            {delta >= 0 ? '▲' : '▼'}
+          </Text>
+          <Text
+            sx={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 14,
+              lineHeight: 18,
+              color: '$textPrimary'
+            }}>
+            {Math.abs(deltaPct).toFixed(2)}%
           </Text>
         </Animated.View>
       </Animated.View>

@@ -12,13 +12,10 @@ import {
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 // TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
-// Imports for on-device chart preview using fixture data.
-import { CandlestickChart } from 'common/components/chart/CandlestickChart'
-import { ChartHeader } from 'common/components/chart/ChartHeader'
-import { ChartRangeSelector } from 'common/components/chart/ChartRangeSelector'
-import { ChartTypeToggle } from 'common/components/chart/ChartTypeToggle'
-import { ChartRange, OhlcvResponse } from 'common/components/chart/types'
-import { selectChartType } from 'store/chartPreferences/slice'
+// Static fixture-backed chart preview. CP-14267 wires up `useTokenOhlc`.
+import { ChartRange, OhlcCandle } from '@avalabs/k2-alpine'
+import { CHART_FIXTURES } from 'common/components/chart/fixtures'
+import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
@@ -77,15 +74,10 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 
 // TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
-// Static OHLCV fixtures so the chart works on-device without backend data.
-const CHART_FIXTURES: Record<ChartRange, OhlcvResponse> = {
-  '1H': require('common/components/chart/__fixtures__/ohlcv-avax-1h.json'),
-  '1D': require('common/components/chart/__fixtures__/ohlcv-avax-1d.json'),
-  '1W': require('common/components/chart/__fixtures__/ohlcv-avax-1w.json'),
-  '1M': require('common/components/chart/__fixtures__/ohlcv-avax-1m.json'),
-  '3M': require('common/components/chart/__fixtures__/ohlcv-avax-3m.json'),
-  '1Y': require('common/components/chart/__fixtures__/ohlcv-avax-1y.json')
-}
+// Resolver bridging the static fixtures into <TokenPriceChart>. Swap with
+// `useTokenOhlc(coinId, range)` when wiring up the live data.
+const getFixtureCandles = (range: ChartRange): OhlcCandle[] =>
+  CHART_FIXTURES[range].candles
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -115,13 +107,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     chainId: string
   }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  // TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267)
-  const chartType = useSelector(selectChartType)
-  const [chartRange, setChartRange] = useState<ChartRange>('1D')
-  const chartIsActive = useSharedValue(false)
-  const chartActiveIndex = useSharedValue<number | null>(null)
-  const chartCrosshairX = useSharedValue(0)
-  const chartCandles = CHART_FIXTURES[chartRange].candles
 
   const erc20ContractTokens = useErc20ContractTokens()
   // Keep zero balance tokens visible so the page doesn't crash after sending max balance
@@ -370,45 +355,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             padding: 16
           }}
         />
-        {/* TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
-            Static chart preview using fixture data so we can validate on-device.
-            CP-14267 replaces this with the real chart wired to useTokenOhlc. */}
-        <View
-          style={{
-            paddingBottom: 12,
-            gap: 12
-          }}
-          testID="token-detail-chart-slot">
-          <ChartHeader
-            candles={chartCandles}
+        {/* TEMPORARY (CP-14265 visual verification — fixture-backed.
+            CP-14267 replaces `getFixtureCandles` with `useTokenOhlc`. */}
+        <View testID="token-detail-chart-slot">
+          <TokenPriceChart
             symbol={token?.symbol ?? 'AVAX'}
-            activeIndex={chartActiveIndex}
-            crosshairX={chartCrosshairX}
-            isActive={chartIsActive}
-            containerWidth={frame.width}
-          />
-          <CandlestickChart
-            candles={chartCandles}
             width={frame.width}
-            height={235}
-            mode={chartType}
-            externalIsActive={chartIsActive}
-            externalActiveIndex={chartActiveIndex}
-            externalCrosshairX={chartCrosshairX}
-            hideInternalTooltip
+            getCandles={getFixtureCandles}
           />
-          <View
-            sx={{
-              flexDirection: 'row',
-              gap: 8,
-              paddingHorizontal: 16,
-              alignItems: 'center'
-            }}>
-            <View sx={{ flex: 1 }}>
-              <ChartRangeSelector value={chartRange} onChange={setChartRange} />
-            </View>
-            <ChartTypeToggle />
-          </View>
         </View>
       </View>
     )
@@ -424,13 +378,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceLoading,
     isPrivacyModeEnabled,
     actionButtons,
-    chartType,
-    chartRange,
-    chartCandles,
-    frame.width,
-    chartIsActive,
-    chartActiveIndex,
-    chartCrosshairX
+    frame.width
   ])
 
   const tabHeight = useMemo(() => {

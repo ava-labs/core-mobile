@@ -1,4 +1,4 @@
-import { Text, View } from '@avalabs/k2-alpine'
+import { Text, View } from '../../Primitives'
 import React, { FC, useState } from 'react'
 import Animated, {
   SharedValue,

@@ -1,4 +1,4 @@
-import { Text } from '@avalabs/k2-alpine'
+import { Text } from '../../Primitives'
 import React, { FC, useState } from 'react'
 import { View } from 'react-native'
 import Animated, {

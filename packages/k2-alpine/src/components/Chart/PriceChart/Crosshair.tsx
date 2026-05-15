@@ -1,4 +1,4 @@
-import { useTheme } from '@avalabs/k2-alpine'
+import { useTheme } from '../../../hooks'
 import React, { FC } from 'react'
 import Animated, {
   SharedValue,

@@ -1,4 +1,4 @@
-import { SegmentedControl } from '@avalabs/k2-alpine'
+import { SegmentedControl } from '../../SegmentedControl/SegmentedControl'
 import React, { FC, useCallback, useEffect } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
 import { CHART_RANGES, ChartRange } from './types'

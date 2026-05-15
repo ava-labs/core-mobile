@@ -1,5 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { SegmentedControl, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  ChartRange,
+  ChartRangeSelector,
+  OhlcCandle,
+  OhlcvResponse,
+  PriceChart,
+  SegmentedControl,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { useSelector } from 'react-redux'
 import React, { useMemo, useState } from 'react'
@@ -9,14 +19,7 @@ import { useSharedValue } from 'react-native-reanimated'
 import { Provider } from 'react-redux'
 import { chartPreferencesReducer } from 'store/chartPreferences/slice'
 import { ChartType } from 'store/chartPreferences/types'
-import { CandlestickChart } from 'common/components/chart/CandlestickChart'
-import { ChartRangeSelector } from 'common/components/chart/ChartRangeSelector'
 import { ChartTypeToggle } from 'common/components/chart/ChartTypeToggle'
-import {
-  ChartRange,
-  OhlcCandle,
-  OhlcvResponse
-} from 'common/components/chart/types'
 
 // ---------------------------------------------------------------------------
 // Local mini-store for Storybook isolation (no encrypted-store dependency).
@@ -53,7 +56,7 @@ type StateOpt = typeof STATES[number]
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
-export default { title: 'CandlestickChart' }
+export default { title: 'PriceChart' }
 
 // ---------------------------------------------------------------------------
 // Story
@@ -147,7 +150,7 @@ const ChartArea: React.FC<ChartAreaProps> = ({
   // Read chart type from the local mini-store.
   const chartType = useSelector(selectChartTypeLocal)
 
-  // For loading / empty / error states delegate to CandlestickChart which
+  // For loading / empty / error states delegate to PriceChart which
   // already implements all placeholder branches (Tasks 12-13). This keeps the
   // story DRY and ensures both chart types share the same placeholder UX.
   const needsPlaceholder =
@@ -158,7 +161,7 @@ const ChartArea: React.FC<ChartAreaProps> = ({
 
   if (chartType === 'candlestick' || needsPlaceholder) {
     return (
-      <CandlestickChart
+      <PriceChart
         candles={candles}
         width={width}
         height={height}

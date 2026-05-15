@@ -37,3 +37,17 @@ export const CHART_RANGES: readonly ChartRange[] = [
   '3M',
   '1Y'
 ] as const
+
+/** Rendering mode for the price series. */
+export type PriceChartMode = 'candlestick' | 'line'
+
+/** Loading / data state of the chart. */
+export type ChartState = 'loaded' | 'loading' | 'empty' | 'error'
+
+/** Pre-computed y-axis tick — used to keep gridlines and labels aligned. */
+export type YAxisTick = {
+  /** Price value displayed on the label. */
+  price: number
+  /** Canvas-relative y position of the gridline (label sits above this). */
+  y: number
+}

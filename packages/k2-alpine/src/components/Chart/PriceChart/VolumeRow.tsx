@@ -1,4 +1,4 @@
-import { useTheme } from '@avalabs/k2-alpine'
+import { useTheme } from '../../../hooks'
 import { Canvas, RoundedRect } from '@shopify/react-native-skia'
 import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
@@ -38,7 +38,8 @@ export const VolumeRow: FC<Props> = ({
   // One SharedValue per bar so opacity updates stay on the UI thread (no JS
   // re-renders during drag). Recreated when the candle count changes.
   const opacities = useMemo(
-    () => Array.from({ length: candles.length }, () => makeMutable(IDLE_OPACITY)),
+    () =>
+      Array.from({ length: candles.length }, () => makeMutable(IDLE_OPACITY)),
     [candles.length]
   )
 
@@ -97,8 +98,7 @@ export const VolumeRow: FC<Props> = ({
       <Canvas style={{ width, height }}>
         {candles.map((c, i) => {
           if (c.volume == null) return null
-          const xCenter =
-            indexToX(i, candles.length, innerWidth) + CHART_INSET
+          const xCenter = indexToX(i, candles.length, innerWidth) + CHART_INSET
           const x = xCenter - barWidth / 2
           const barHeight = (c.volume / maxVolume) * height
           const y = height - barHeight

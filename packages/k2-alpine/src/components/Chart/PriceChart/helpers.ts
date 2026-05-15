@@ -39,7 +39,7 @@ export const indexToX = (
  * Clamps to [0, candleCount - 1]. Returns 0 for empty input.
  *
  * Marked as a worklet because it's called inside gesture-handler callbacks
- * that run on the UI thread (see CandlestickChart's Pan gesture).
+ * that run on the UI thread (see PriceChart's Pan gesture).
  */
 export const touchXToIndex = (
   touchX: number,

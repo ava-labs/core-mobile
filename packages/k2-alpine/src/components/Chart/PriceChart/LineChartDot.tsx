@@ -1,4 +1,4 @@
-import { useTheme } from '@avalabs/k2-alpine'
+import { useTheme } from '../../../hooks'
 import React, { FC } from 'react'
 import Animated, {
   SharedValue,
@@ -14,15 +14,24 @@ type Props = {
   isActive: SharedValue<boolean>
   /** Diameter of the dot in pixels. */
   size?: number
+  /** Fill color — defaults to the theme's $textPrimary so it matches the
+   * crosshair line in most cases. */
+  color?: string
 }
 
 /**
  * Filled dot rendered as an Animated.View — uses the same RN transform
  * pipeline as the Crosshair line so the two stay perfectly synced.
  */
-export const LineChartDot: FC<Props> = ({ x, y, isActive, size = 9 }) => {
+export const LineChartDot: FC<Props> = ({
+  x,
+  y,
+  isActive,
+  size = 9,
+  color: colorProp
+}) => {
   const { theme } = useTheme()
-  const color = theme.colors.$textPrimary ?? '#000'
+  const color = colorProp ?? theme.colors.$textPrimary ?? '#000'
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: isActive.value ? 1 : 0,
