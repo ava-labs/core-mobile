@@ -19,6 +19,9 @@ type Props = {
   /** Chart width — used to clamp the active overlay inside chart bounds. */
   width: number
   height: number
+  /** When false, the footer keeps showing "Last update: …" even while pressed
+   * (used in line/area mode where volume isn't displayed). Defaults to true. */
+  showVolume?: boolean
 }
 
 const VOLUME_WIDTH = 140
@@ -34,7 +37,8 @@ export const ChartFooter: FC<Props> = ({
   isActive,
   x,
   width,
-  height
+  height,
+  showVolume = true
 }) => {
   const [idx, setIdx] = useState<number | null>(null)
 
@@ -43,7 +47,7 @@ export const ChartFooter: FC<Props> = ({
   })
 
   const idleStyle = useAnimatedStyle(() => ({
-    opacity: isActive.value ? 0 : 1
+    opacity: showVolume && isActive.value ? 0 : 1
   }))
   const activeStyle = useAnimatedStyle(() => {
     const target = x.value - VOLUME_WIDTH / 2
@@ -51,7 +55,7 @@ export const ChartFooter: FC<Props> = ({
     const max = width - VOLUME_WIDTH - EDGE_PADDING
     const clamped = Math.max(min, Math.min(max, target))
     return {
-      opacity: isActive.value ? 1 : 0,
+      opacity: showVolume && isActive.value ? 1 : 0,
       transform: [{ translateX: clamped }]
     }
   })

@@ -24,9 +24,9 @@ type Props = {
 }
 
 /** Fraction of the chart width where the left zone ends. */
-const LEFT_ZONE_THRESHOLD = 0.15
+const LEFT_ZONE_THRESHOLD = 0.19
 /** Fraction of the chart width where the right zone begins. */
-const RIGHT_ZONE_THRESHOLD = 0.85
+const RIGHT_ZONE_THRESHOLD = 0.81
 
 const formatActiveTime = (ts: number): string => {
   const d = new Date(ts)

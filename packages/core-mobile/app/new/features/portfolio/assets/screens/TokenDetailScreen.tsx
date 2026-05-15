@@ -18,7 +18,6 @@ import { ChartHeader } from 'common/components/chart/ChartHeader'
 import { ChartRangeSelector } from 'common/components/chart/ChartRangeSelector'
 import { ChartTypeToggle } from 'common/components/chart/ChartTypeToggle'
 import { ChartRange, OhlcvResponse } from 'common/components/chart/types'
-import SparklineChart from 'features/track/components/SparklineChart'
 import { selectChartType } from 'store/chartPreferences/slice'
 import {
   CollapsibleTabs,
@@ -388,26 +387,16 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             isActive={chartIsActive}
             containerWidth={frame.width}
           />
-          {chartType === 'candlestick' ? (
-            <CandlestickChart
-              candles={chartCandles}
-              width={frame.width}
-              height={235}
-              externalIsActive={chartIsActive}
-              externalActiveIndex={chartActiveIndex}
-              externalCrosshairX={chartCrosshairX}
-              hideInternalTooltip
-            />
-          ) : (
-            <SparklineChart
-              data={chartCandles.map(c => ({
-                value: c.close,
-                date: new Date(c.ts)
-              }))}
-              style={{ width: frame.width, height: 235 }}
-              enablePanGesture
-            />
-          )}
+          <CandlestickChart
+            candles={chartCandles}
+            width={frame.width}
+            height={235}
+            mode={chartType}
+            externalIsActive={chartIsActive}
+            externalActiveIndex={chartActiveIndex}
+            externalCrosshairX={chartCrosshairX}
+            hideInternalTooltip
+          />
           <View
             sx={{
               flexDirection: 'row',

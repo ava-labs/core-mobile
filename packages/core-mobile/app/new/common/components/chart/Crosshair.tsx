@@ -11,6 +11,8 @@ type Props = {
   /** Whether the crosshair is currently visible (driven by gesture state). */
   isActive: SharedValue<boolean>
   height: number
+  /** Y offset from the canvas top — the line starts at `topOffset`, not 0. */
+  topOffset?: number
   /** Pixel amount to shrink the line from the bottom — used to stop the
    * crosshair at the top of the highlighted volume bar. */
   bottomInset?: SharedValue<number>
@@ -31,6 +33,7 @@ export const Crosshair: FC<Props> = ({
   x,
   isActive,
   height,
+  topOffset = 0,
   bottomInset,
   width = DEFAULT_CROSSHAIR_WIDTH
 }) => {
@@ -53,7 +56,7 @@ export const Crosshair: FC<Props> = ({
       style={[
         {
           position: 'absolute',
-          top: 0,
+          top: topOffset,
           left: 0, // translateX moves the line from x=0
           width,
           borderRadius: width / 2,
