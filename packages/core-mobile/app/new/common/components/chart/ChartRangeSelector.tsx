@@ -34,6 +34,7 @@ export const ChartRangeSelector: FC<Props> = ({ value, onChange }) => {
     <SegmentedControl
       dynamicItemWidth={false}
       items={items}
+      type="thin"
       selectedSegmentIndex={selectedSegmentIndex}
       onSelectSegment={handleSelectSegment}
     />

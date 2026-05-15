@@ -14,6 +14,9 @@ type Props = {
   /** Pixel amount to shrink the line from the bottom — used to stop the
    * crosshair at the top of the highlighted volume bar. */
   bottomInset?: SharedValue<number>
+  /** Line width — matches the candle body / volume bar width so the
+   * crosshair visually aligns with the highlighted tick. */
+  width?: number
 }
 
 /**
@@ -22,13 +25,14 @@ type Props = {
  * Skia's declarative Line API doesn't accept SharedValue props, so we use RN
  * primitives for the crosshair specifically.
  */
-const CROSSHAIR_WIDTH = 3
+const DEFAULT_CROSSHAIR_WIDTH = 3
 
 export const Crosshair: FC<Props> = ({
   x,
   isActive,
   height,
-  bottomInset
+  bottomInset,
+  width = DEFAULT_CROSSHAIR_WIDTH
 }) => {
   const { theme } = useTheme()
   const color = theme.colors.$textPrimary ?? '#000'
@@ -37,8 +41,8 @@ export const Crosshair: FC<Props> = ({
     const inset = bottomInset?.value ?? 0
     return {
       opacity: isActive.value ? 1 : 0,
-      // Center the 3px line on the touch point.
-      transform: [{ translateX: x.value - CROSSHAIR_WIDTH / 2 }],
+      // Center the line on the touch point.
+      transform: [{ translateX: x.value - width / 2 }],
       height: Math.max(0, height - inset)
     }
   })
@@ -51,8 +55,8 @@ export const Crosshair: FC<Props> = ({
           position: 'absolute',
           top: 0,
           left: 0, // translateX moves the line from x=0
-          width: CROSSHAIR_WIDTH,
-          borderRadius: CROSSHAIR_WIDTH / 2,
+          width,
+          borderRadius: width / 2,
           backgroundColor: color
         },
         animatedStyle

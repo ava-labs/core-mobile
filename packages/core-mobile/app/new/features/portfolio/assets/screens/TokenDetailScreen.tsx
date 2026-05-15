@@ -6,7 +6,6 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
-  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -15,9 +14,9 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 // TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
 // Imports for on-device chart preview using fixture data.
 import { CandlestickChart } from 'common/components/chart/CandlestickChart'
+import { ChartHeader } from 'common/components/chart/ChartHeader'
 import { ChartRangeSelector } from 'common/components/chart/ChartRangeSelector'
 import { ChartTypeToggle } from 'common/components/chart/ChartTypeToggle'
-import { CrosshairTooltip } from 'common/components/chart/CrosshairTooltip'
 import { ChartRange, OhlcvResponse } from 'common/components/chart/types'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { selectChartType } from 'store/chartPreferences/slice'
@@ -123,20 +122,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const chartIsActive = useSharedValue(false)
   const chartActiveIndex = useSharedValue<number | null>(null)
   const chartCrosshairX = useSharedValue(0)
-  const idleHeaderStyle = useAnimatedStyle(() => ({
-    opacity: chartIsActive.value ? 0 : 1
-  }))
-  const latestCandle =
-    CHART_FIXTURES[chartRange].candles[
-      CHART_FIXTURES[chartRange].candles.length - 1
-    ]
-  const firstCandle = CHART_FIXTURES[chartRange].candles[0]
-  const chartDelta =
-    latestCandle && firstCandle ? latestCandle.close - firstCandle.open : 0
-  const chartDeltaPct =
-    firstCandle && firstCandle.open !== 0
-      ? (chartDelta / firstCandle.open) * 100
-      : 0
+  const chartCandles = CHART_FIXTURES[chartRange].candles
 
   const erc20ContractTokens = useErc20ContractTokens()
   // Keep zero balance tokens visible so the page doesn't crash after sending max balance
@@ -394,43 +380,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             gap: 12
           }}
           testID="token-detail-chart-slot">
-          <View style={{ position: 'relative' }}>
-            <Animated.View
-              style={[
-                {
-                  paddingHorizontal: 16,
-                  alignItems: 'flex-start'
-                },
-                idleHeaderStyle
-              ]}>
-              <Text variant="heading2">
-                {latestCandle ? `$${latestCandle.close.toFixed(2)}` : '$0.00'}
-              </Text>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                Current price of {token?.symbol ?? 'AVAX'}
-              </Text>
-              <Text
-                variant="caption"
-                sx={{
-                  color: chartDelta >= 0 ? '$textSuccess' : '$textDanger'
-                }}>
-                {chartDelta >= 0 ? '+' : '-'}$
-                {Math.abs(chartDelta).toFixed(2)}{' '}
-                {chartDelta >= 0 ? '▲' : '▼'}{' '}
-                {Math.abs(chartDeltaPct).toFixed(2)}%
-              </Text>
-            </Animated.View>
-            <CrosshairTooltip
-              candles={CHART_FIXTURES[chartRange].candles}
-              activeIndex={chartActiveIndex}
-              isActive={chartIsActive}
-              x={chartCrosshairX}
-              width={frame.width}
-            />
-          </View>
+          <ChartHeader
+            candles={chartCandles}
+            symbol={token?.symbol ?? 'AVAX'}
+            activeIndex={chartActiveIndex}
+            crosshairX={chartCrosshairX}
+            isActive={chartIsActive}
+            containerWidth={frame.width}
+          />
           {chartType === 'candlestick' ? (
             <CandlestickChart
-              candles={CHART_FIXTURES[chartRange].candles}
+              candles={chartCandles}
               width={frame.width}
               height={235}
               externalIsActive={chartIsActive}
@@ -440,7 +400,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             />
           ) : (
             <SparklineChart
-              data={CHART_FIXTURES[chartRange].candles.map(c => ({
+              data={chartCandles.map(c => ({
                 value: c.close,
                 date: new Date(c.ts)
               }))}
@@ -477,11 +437,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     actionButtons,
     chartType,
     chartRange,
+    chartCandles,
     frame.width,
-    idleHeaderStyle,
-    latestCandle,
-    chartDelta,
-    chartDeltaPct,
     chartIsActive,
     chartActiveIndex,
     chartCrosshairX

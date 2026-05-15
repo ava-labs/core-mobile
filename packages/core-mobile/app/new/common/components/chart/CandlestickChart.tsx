@@ -309,6 +309,7 @@ export const CandlestickChart: FC<Props> = ({
           isActive={isActive}
           height={candleH + volH}
           bottomInset={animatedBarHeight}
+          width={bodyWidth}
         />
         {!hideInternalTooltip && (
           <CrosshairTooltip

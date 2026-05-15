@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
   aboutContainer: { paddingHorizontal: 16, marginTop: 25, gap: 20 },
   aboutCard: { alignItems: undefined, gap: 3 },
   segmentedControl: { marginHorizontal: 16 },
-  lastUpdatedContainer: { paddingTop: 40, marginTop: 8 }
+  lastUpdatedContainer: { paddingTop: 40, marginTop: 12 }
 })
 
 export default TrackTokenDetailScreen

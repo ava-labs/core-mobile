@@ -2,12 +2,7 @@ import { SxProp } from 'dripsy'
 import { BlurView } from 'expo-blur'
 import throttle from 'lodash/throttle'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import {
-  LayoutChangeEvent,
-  Pressable,
-  StyleSheet,
-  ViewStyle
-} from 'react-native'
+import { LayoutChangeEvent, Pressable, ViewStyle } from 'react-native'
 import Animated, {
   DerivedValue,
   interpolateColor,
@@ -125,18 +120,25 @@ export const SegmentedControl = ({
           overflow: 'hidden',
           backgroundColor: theme.isDark ? '#C5C5C840' : '#28282820'
         }}>
-        <Animated.View style={styles.container} onLayout={handleLayout}>
+        <Animated.View
+          style={{ borderRadius: 100, flexDirection: 'row' }}
+          onLayout={handleLayout}>
           <Animated.View
             style={[
-              styles.indicator,
-              { backgroundColor: theme.colors.$textPrimary },
+              {
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                borderRadius: 100,
+                backgroundColor: theme.colors.$textPrimary
+              },
               selectionIndicatorAnimatedStyle
             ]}
           />
           {items.map((item, index) => {
             return (
               <Segment
-                sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
+                sx={{ height: type === 'thin' ? 36 : 42 }}
                 key={index}
                 ratio={dynamicItemWidth ? textRatios : 1 / itemsCount}
                 text={item.title}
@@ -222,11 +224,24 @@ const Segment = ({
   return (
     <Animated.View style={flexStyle}>
       <Pressable onPress={throttledOnPress}>
-        <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
+        <View
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor,
+            ...sx
+          }}>
           <View>
             <Animated.Text
               onLayout={handleTextLayout}
-              style={[styles.text, textColorAnimatedStyle]}
+              style={[
+                {
+                  fontFamily: 'Inter-SemiBold',
+                  fontSize: 14,
+                  lineHeight: 18
+                },
+                textColorAnimatedStyle
+              ]}
               allowFontScaling={false}>
               {text}
             </Animated.Text>
@@ -237,12 +252,6 @@ const Segment = ({
     </Animated.View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: { borderRadius: 100, flexDirection: 'row' },
-  indicator: { position: 'absolute', top: 0, bottom: 0, borderRadius: 100 },
-  text: { fontFamily: 'Inter-SemiBold', fontSize: 14, lineHeight: 18 }
-})
 
 const Configuration = {
   animation: {
