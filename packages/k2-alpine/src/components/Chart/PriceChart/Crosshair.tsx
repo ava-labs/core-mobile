@@ -1,9 +1,9 @@
-import { useTheme } from '../../../hooks'
 import React, { FC } from 'react'
 import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
 
 type Props = {
   /** X position of the crosshair in chart-local pixels. */

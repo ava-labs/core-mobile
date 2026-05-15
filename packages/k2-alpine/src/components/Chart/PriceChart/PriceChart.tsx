@@ -1,5 +1,3 @@
-import { Text } from '../../Primitives'
-import { useTheme } from '../../../hooks'
 import {
   Canvas,
   DashPathEffect,
@@ -8,6 +6,7 @@ import {
   Path,
   RoundedRect,
   Skia,
+  useFont,
   vec
 } from '@shopify/react-native-skia'
 import React, { FC, useMemo } from 'react'
@@ -18,6 +17,8 @@ import {
   useDerivedValue,
   useSharedValue
 } from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
+import { Text } from '../../Primitives'
 import { ChartFooter } from './ChartFooter'
 import {
   CANDLE_BODY_WIDTH_RATIO,
@@ -36,6 +37,7 @@ import {
   priceToY,
   rangeBounds,
   touchXToIndex,
+  traceSmoothLine,
   yAxisTicks
 } from './helpers'
 import { ChartState, OhlcCandle, PriceChartMode } from './types'
@@ -80,6 +82,13 @@ export const PriceChart: FC<Props> = ({
   hideInternalTooltip = false
 }) => {
   const { theme } = useTheme()
+
+  // Skia font for the y-axis labels. `useFont` returns null until the font
+  // file is loaded; the labels render nothing until then.
+  const labelFont = useFont(
+    require('../../../assets/fonts/Inter-Medium.ttf'),
+    11
+  )
 
   const { minPrice, maxPrice } = useMemo(() => rangeBounds(candles), [candles])
 
@@ -153,30 +162,6 @@ export const PriceChart: FC<Props> = ({
       priceTopPadding
     ]
   )
-
-  // Trace `linePoints` onto `p` using Catmull-Rom-to-Bezier so the line
-  // glides smoothly through each point rather than zig-zagging.
-  const traceSmoothLine = (
-    p: ReturnType<typeof Skia.Path.Make>,
-    points: { x: number; y: number }[]
-  ): void => {
-    if (points.length === 0) return
-    const first = points[0]
-    if (!first) return
-    p.moveTo(first.x, first.y)
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i === 0 ? i : i - 1]
-      const p1 = points[i]
-      const p2 = points[i + 1]
-      const p3 = points[i + 2 < points.length ? i + 2 : i + 1]
-      if (!p0 || !p1 || !p2 || !p3) continue
-      const cp1x = p1.x + (p2.x - p0.x) / 6
-      const cp1y = p1.y + (p2.y - p0.y) / 6
-      const cp2x = p2.x - (p3.x - p1.x) / 6
-      const cp2y = p2.y - (p3.y - p1.y) / 6
-      p.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
-    }
-  }
 
   const linePath = useMemo(() => {
     const p = Skia.Path.Make()
@@ -455,12 +440,13 @@ export const PriceChart: FC<Props> = ({
                   </React.Fragment>
                 )
               })}
+            <YAxisLabels
+              isActive={isActive}
+              ticks={tickPositions}
+              font={labelFont}
+              color={theme.colors.$textPrimary ?? '#000'}
+            />
           </Canvas>
-          <YAxisLabels
-            isActive={isActive}
-            ticks={tickPositions}
-            containerHeight={candleH}
-          />
         </View>
         {showVolume && (
           <VolumeRow

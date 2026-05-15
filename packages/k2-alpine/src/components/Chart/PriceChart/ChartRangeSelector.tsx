@@ -1,6 +1,6 @@
-import { SegmentedControl } from '../../SegmentedControl/SegmentedControl'
 import React, { FC, useCallback, useEffect } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
+import { SegmentedControl } from '../../SegmentedControl/SegmentedControl'
 import { CHART_RANGES, ChartRange } from './types'
 
 type Props = {

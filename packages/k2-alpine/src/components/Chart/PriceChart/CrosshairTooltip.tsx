@@ -1,11 +1,10 @@
-import { Text, View } from '../../Primitives'
-import React, { FC, useState } from 'react'
+import React, { FC } from 'react'
 import Animated, {
   SharedValue,
-  runOnJS,
-  useAnimatedStyle,
-  useDerivedValue
+  useAnimatedStyle
 } from 'react-native-reanimated'
+import { Text, View } from '../../Primitives'
+import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -54,13 +53,7 @@ export const CrosshairTooltip: FC<Props> = ({
   x,
   width
 }) => {
-  const [idx, setIdx] = useState<number | null>(null)
-
-  // Bridge SharedValue<number | null> -> React state so we can render content.
-  // useDerivedValue runs on UI thread; runOnJS marshals back to the JS thread.
-  useDerivedValue(() => {
-    runOnJS(setIdx)(activeIndex.value)
-  })
+  const idx = useActiveIndex(activeIndex)
 
   const animatedStyle = useAnimatedStyle(() => {
     const target = x.value - TOOLTIP_WIDTH / 2

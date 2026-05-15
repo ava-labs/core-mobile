@@ -1,13 +1,12 @@
-import { Text } from '../../Primitives'
-import React, { FC, useState } from 'react'
+import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import Animated, {
   SharedValue,
-  runOnJS,
-  useAnimatedStyle,
-  useDerivedValue
+  useAnimatedStyle
 } from 'react-native-reanimated'
+import { Text } from '../../Primitives'
 import { formatLastUpdate, formatVolume } from './helpers'
+import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -40,11 +39,18 @@ export const ChartFooter: FC<Props> = ({
   height,
   showVolume = true
 }) => {
-  const [idx, setIdx] = useState<number | null>(null)
+  const idx = useActiveIndex(activeIndex)
 
-  useDerivedValue(() => {
-    runOnJS(setIdx)(activeIndex.value)
-  })
+  // Pre-compute the volume label for every candle once per candles ref so
+  // per-frame re-renders during drag are just an array lookup.
+  const formattedVolumes = useMemo(
+    () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
+    [candles]
+  )
+  const idleText = useMemo(() => {
+    const latest = candles[candles.length - 1]
+    return latest ? formatLastUpdate(latest.ts) : ''
+  }, [candles])
 
   const idleStyle = useAnimatedStyle(() => ({
     opacity: showVolume && isActive.value ? 0 : 1
@@ -60,14 +66,7 @@ export const ChartFooter: FC<Props> = ({
     }
   })
 
-  const latest = candles[candles.length - 1]
-  const idleText = latest ? formatLastUpdate(latest.ts) : ''
-
-  const activeCandle = idx !== null ? candles[idx] : undefined
-  const activeText =
-    activeCandle && activeCandle.volume != null
-      ? formatVolume(activeCandle.volume)
-      : ''
+  const activeText = idx !== null ? formattedVolumes[idx] ?? '' : ''
 
   return (
     <View
@@ -87,9 +86,9 @@ export const ChartFooter: FC<Props> = ({
           idleStyle
         ]}>
         <Text
+          variant="caption"
           sx={{
-            fontSize: 11,
-            fontWeight: '500',
+            fontFamily: 'Inter-Medium',
             color: '$textSecondary',
             textAlign: 'center'
           }}>
@@ -108,12 +107,8 @@ export const ChartFooter: FC<Props> = ({
           activeStyle
         ]}>
         <Text
-          sx={{
-            fontSize: 11,
-            fontWeight: '600',
-            color: '$textPrimary',
-            textAlign: 'center'
-          }}>
+          variant="caption"
+          sx={{ fontFamily: 'Inter-SemiBold', textAlign: 'center' }}>
           {activeText}
         </Text>
       </Animated.View>

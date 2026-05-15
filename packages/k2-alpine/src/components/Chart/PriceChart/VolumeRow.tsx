@@ -1,4 +1,3 @@
-import { useTheme } from '../../../hooks'
 import { Canvas, RoundedRect } from '@shopify/react-native-skia'
 import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
@@ -7,6 +6,7 @@ import {
   SharedValue,
   useAnimatedReaction
 } from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
 import { CHART_INSET } from './constants'
 import { indexToX } from './helpers'
 import { OhlcCandle } from './types'

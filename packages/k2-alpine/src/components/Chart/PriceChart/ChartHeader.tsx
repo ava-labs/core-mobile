@@ -1,15 +1,15 @@
-import { Text } from '../../Primitives'
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { LayoutChangeEvent, View } from 'react-native'
 import Animated, {
-  runOnJS,
   SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { Text } from '../../Primitives'
+import { formatActiveTime } from './helpers'
+import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -27,24 +27,6 @@ type Props = {
 const LEFT_ZONE_THRESHOLD = 0.19
 /** Fraction of the chart width where the right zone begins. */
 const RIGHT_ZONE_THRESHOLD = 0.81
-
-const formatActiveTime = (ts: number): string => {
-  const d = new Date(ts)
-  const now = new Date()
-  const sameDay =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  const datePart = sameDay
-    ? 'Today'
-    : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  const timePart = d.toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: false
-  })
-  return `${datePart}, ${timePart}`
-}
 
 /**
  * Persistent chart header showing the price/time/delta of either the latest
@@ -64,11 +46,7 @@ export const ChartHeader: FC<Props> = ({
   isActive,
   containerWidth
 }) => {
-  const [idx, setIdx] = useState<number | null>(null)
-
-  useDerivedValue(() => {
-    runOnJS(setIdx)(activeIndex.value)
-  })
+  const idx = useActiveIndex(activeIndex)
 
   const blockWidth = useSharedValue(0)
   const priceWidth = useSharedValue(0)
@@ -171,17 +149,31 @@ export const ChartHeader: FC<Props> = ({
     [deltaWidth]
   )
 
-  const latest = candles[candles.length - 1]
-  const first = candles[0]
-  const active = idx !== null ? candles[idx] : undefined
-  const displayed = active ?? latest
-  const delta = displayed && first ? displayed.close - first.open : 0
-  const deltaPct = first && first.open !== 0 ? (delta / first.open) * 100 : 0
+  // Pre-compute every candle's display strings once per `candles` reference,
+  // so per-frame re-renders during drag are just array lookups — no
+  // `Date`/`toLocaleString`/`toFixed` work in the hot path.
+  const formatted = useMemo(() => {
+    const firstOpen = candles[0]?.open ?? 0
+    return candles.map(c => {
+      const delta = c.close - firstOpen
+      const deltaPct = firstOpen !== 0 ? (delta / firstOpen) * 100 : 0
+      const isPositive = delta >= 0
+      return {
+        priceText: `$${c.close.toFixed(2)}`,
+        timeText: formatActiveTime(c.ts),
+        deltaAmountText: `${isPositive ? '+' : '-'}$${Math.abs(delta).toFixed(
+          2
+        )}`,
+        deltaArrowText: isPositive ? '▲' : '▼',
+        deltaPctText: `${Math.abs(deltaPct).toFixed(2)}%`,
+        isPositive
+      }
+    })
+  }, [candles])
 
-  const formattedActiveTime = useMemo(
-    () => (active ? formatActiveTime(active.ts) : undefined),
-    [active]
-  )
+  const idleStrings = formatted[formatted.length - 1]
+  const active = idx !== null ? formatted[idx] : undefined
+  const displayed = active ?? idleStrings
 
   return (
     <View style={{ paddingHorizontal: 16, alignItems: 'flex-start' }}>
@@ -189,46 +181,36 @@ export const ChartHeader: FC<Props> = ({
         onLayout={onBlockLayout}
         style={[blockStyle, { alignItems: 'flex-start' }]}>
         <Animated.View onLayout={onPriceLayout} style={priceStyle}>
-          <Text variant="heading3">
-            {displayed ? `$${displayed.close.toFixed(2)}` : '$0.00'}
-          </Text>
+          <Text variant="heading3">{displayed?.priceText ?? '$0.00'}</Text>
         </Animated.View>
         <Animated.View onLayout={onSubtitleLayout} style={subtitleStyle}>
           <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
-            {formattedActiveTime ?? `Current price of ${symbol}`}
+            {active ? active.timeText : `Current price of ${symbol}`}
           </Text>
         </Animated.View>
         <Animated.View
           onLayout={onDeltaLayout}
           style={[deltaStyle, { flexDirection: 'row', alignItems: 'center' }]}>
           <Text
+            variant="body2"
             sx={{
               fontFamily: 'Inter-SemiBold',
-              fontSize: 14,
-              lineHeight: 18,
-              color: delta >= 0 ? '$textSuccess' : '$textDanger'
+              color: displayed?.isPositive ? '$textSuccess' : '$textDanger'
             }}>
-            {delta >= 0 ? '+' : '-'}${Math.abs(delta).toFixed(2)}
+            {displayed?.deltaAmountText ?? '$0.00'}
           </Text>
           <Text
+            variant="body2"
             sx={{
               fontFamily: 'Inter-SemiBold',
-              fontSize: 14,
-              lineHeight: 18,
               marginLeft: 4,
               marginRight: 4,
-              color: delta >= 0 ? '$textSuccess' : '$textDanger'
+              color: displayed?.isPositive ? '$textSuccess' : '$textDanger'
             }}>
-            {delta >= 0 ? '▲' : '▼'}
+            {displayed?.deltaArrowText ?? '▲'}
           </Text>
-          <Text
-            sx={{
-              fontFamily: 'Inter-Medium',
-              fontSize: 14,
-              lineHeight: 18,
-              color: '$textPrimary'
-            }}>
-            {Math.abs(deltaPct).toFixed(2)}%
+          <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
+            {displayed?.deltaPctText ?? '0.00%'}
           </Text>
         </Animated.View>
       </Animated.View>

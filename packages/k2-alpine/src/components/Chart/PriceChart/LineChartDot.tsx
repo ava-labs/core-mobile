@@ -1,9 +1,9 @@
-import { useTheme } from '../../../hooks'
 import React, { FC } from 'react'
 import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
 
 type Props = {
   /** Same crosshair X SharedValue used by the Crosshair line so the dot

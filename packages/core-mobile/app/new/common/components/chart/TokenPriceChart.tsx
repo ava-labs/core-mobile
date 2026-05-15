@@ -7,7 +7,7 @@ import {
   PriceChart,
   View
 } from '@avalabs/k2-alpine'
-import React, { FC, useState } from 'react'
+import React, { FC, useMemo, useState } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectChartType } from 'store/chartPreferences/slice'
@@ -55,7 +55,9 @@ export const TokenPriceChart: FC<Props> = ({
   const activeIndex = useSharedValue<number | null>(null)
   const crosshairX = useSharedValue(0)
 
-  const candles = getCandles(range)
+  // Memoize so chart-internal `useMemo`s (linePoints, gridPath, etc.) don't
+  // bust when the parent screen re-renders unrelated state.
+  const candles = useMemo(() => getCandles(range), [getCandles, range])
   const state = getState?.(range) ?? 'loaded'
 
   return (

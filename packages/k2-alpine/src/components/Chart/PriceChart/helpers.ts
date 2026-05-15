@@ -1,4 +1,7 @@
+import { Skia } from '@shopify/react-native-skia'
 import { OhlcCandle } from './types'
+
+type SkPath = ReturnType<typeof Skia.Path.Make>
 
 /**
  * Map a price to a y-pixel coordinate.
@@ -101,6 +104,58 @@ export const formatVolume = (vol: number): string => {
   if (vol >= 1_000_000) return `Vol. $${(vol / 1_000_000).toFixed(2)}M`
   if (vol >= 1_000) return `Vol. $${(vol / 1_000).toFixed(2)}K`
   return `Vol. $${vol.toFixed(2)}`
+}
+
+/**
+ * Trace `points` onto `path` using Catmull-Rom-to-Bezier so the line glides
+ * smoothly through each point rather than zig-zagging. Mutates `path`.
+ *
+ * Tension is fixed at 1/6 — the standard Catmull-Rom-to-cubic-Bezier
+ * conversion. Endpoints use a duplicated neighbor so the curve still
+ * passes through them.
+ */
+export const traceSmoothLine = (
+  path: SkPath,
+  points: { x: number; y: number }[]
+): void => {
+  if (points.length === 0) return
+  const first = points[0]
+  if (!first) return
+  path.moveTo(first.x, first.y)
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? i : i - 1]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1]
+    if (!p0 || !p1 || !p2 || !p3) continue
+    const cp1x = p1.x + (p2.x - p0.x) / 6
+    const cp1y = p1.y + (p2.y - p0.y) / 6
+    const cp2x = p2.x - (p3.x - p1.x) / 6
+    const cp2y = p2.y - (p3.y - p1.y) / 6
+    path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
+  }
+}
+
+/**
+ * Format a timestamp as e.g. "Today, 7:25" or "Apr 29, 7:25" — used by the
+ * chart header to label the active candle's bucket. 24-hour time, no AM/PM.
+ */
+export const formatActiveTime = (ts: number): string => {
+  const d = new Date(ts)
+  const now = new Date()
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  const datePart = sameDay
+    ? 'Today'
+    : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const timePart = d.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: false
+  })
+  return `${datePart}, ${timePart}`
 }
 
 /**
