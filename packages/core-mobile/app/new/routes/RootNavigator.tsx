@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Platform } from 'react-native'
 import {
   modalScreensOptions,
   stackNavigatorScreenOptions,
@@ -36,11 +37,30 @@ export function RootNavigator(): JSX.Element {
   }, [shouldRenderOnlyPinScreen, walletState, appIsReady])
 
   useEffect(() => {
-    // set shouldRenderOnlyPinScreen to false once wallet is unlocked
-    // do nothing if app is not ready (as we need to sync wallet state after rehydration)
-    // or if we have already set shouldRenderOnlyPinScreen to false
-    if (!appIsReady || shouldRenderOnlyPinScreen === false) return
+    if (!appIsReady) return
 
+    // On Android, the PinScreenOverlay is wrapped in
+    // react-native-screens' FullWindowOverlay, which is iOS-only and
+    // silently falls back to a plain absolute-positioned <View> on Android.
+    // That fallback does NOT reliably stack above the signedIn group, so
+    // a warm-background resume into walletState=INACTIVE was rendering a
+    // blank screen (the overlay UI was mounted — bio auth still fired —
+    // but its pixels were never composited on top). Toggle the PIN-only
+    // group instead so a real Stack.Screen renders fullscreen.
+    if (Platform.OS === 'android') {
+      const next = walletState !== WalletState.ACTIVE
+      // eslint-disable-next-line no-console
+      console.error(
+        `[BLANK-DEBUG] RootNavigator setShouldRenderOnlyPinScreen android-path next=${next} walletState=${walletState}`
+      )
+      setShouldRenderOnlyPinScreen(next)
+      return
+    }
+
+    // iOS keeps the existing overlay UX (FullWindowOverlay is a real
+    // native overlay there): once unlocked, never flip back to the PIN-only
+    // group — the PinScreenOverlay covers the signedIn group on lock.
+    if (shouldRenderOnlyPinScreen === false) return
     setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
   }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
 
