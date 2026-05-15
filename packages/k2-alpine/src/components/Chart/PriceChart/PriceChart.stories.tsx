@@ -1,45 +1,28 @@
-import { configureStore } from '@reduxjs/toolkit'
-import {
-  CHART_RANGES,
-  ChartRange,
-  Icons,
-  OhlcvResponse,
-  PriceChart,
-  SegmentedControl,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
-import SparklineChart from 'features/track/components/SparklineChart'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
-import { Provider, useDispatch, useSelector } from 'react-redux'
+import { useTheme } from '../../../hooks'
+import { Icons } from '../../../theme/tokens/Icons'
+import { Text, View } from '../../Primitives'
+import { SegmentedControl } from '../../SegmentedControl/SegmentedControl'
+import { PriceChart } from './PriceChart'
 import {
-  chartPreferencesReducer,
-  setChartType
-} from 'store/chartPreferences/slice'
-import { ChartType } from 'store/chartPreferences/types'
-
-const storyStore = configureStore({
-  reducer: { chartPreferences: chartPreferencesReducer }
-})
-
-type StoryState = ReturnType<typeof storyStore.getState>
-
-const selectChartTypeLocal = (state: StoryState): ChartType =>
-  state.chartPreferences.chartType
+  CHART_RANGES,
+  ChartRange,
+  OhlcvResponse,
+  PriceChartMode
+} from './types'
 
 const fixtures: Record<ChartRange, OhlcvResponse> = {
-  '1H': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-1h.json'),
-  '1D': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-1d.json'),
-  '1W': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-1w.json'),
-  '1M': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-1m.json'),
-  '3M': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-3m.json'),
-  '1Y': require('../../app/new/common/components/chart/__fixtures__/ohlcv-avax-1y.json')
+  '1H': require('./__fixtures__/ohlcv-avax-1h.json'),
+  '1D': require('./__fixtures__/ohlcv-avax-1d.json'),
+  '1W': require('./__fixtures__/ohlcv-avax-1w.json'),
+  '1M': require('./__fixtures__/ohlcv-avax-1m.json'),
+  '3M': require('./__fixtures__/ohlcv-avax-3m.json'),
+  '1Y': require('./__fixtures__/ohlcv-avax-1y.json')
 }
-const emptyFixture: OhlcvResponse = require('../../app/new/common/components/chart/__fixtures__/ohlcv-empty.json')
+const emptyFixture: OhlcvResponse = require('./__fixtures__/ohlcv-empty.json')
 
 const STATES = ['loaded', 'loading', 'empty', 'error'] as const
 type StateOpt = typeof STATES[number]
@@ -50,19 +33,11 @@ const STATE_ITEMS = STATES.map(s => ({ title: s }))
 
 export default { title: 'PriceChart' }
 
-export const All = (): JSX.Element => (
-  <Provider store={storyStore}>
-    <Body />
-  </Provider>
-)
-
-const Body: React.FC = () => {
+export const All = (): JSX.Element => {
   const { theme } = useTheme()
-  const dispatch = useDispatch()
-  const chartType = useSelector(selectChartTypeLocal)
-
   const [range, setRange] = useState<ChartRange>('1D')
   const [state, setState] = useState<StateOpt>('loaded')
+  const [chartType, setChartTypeState] = useState<PriceChartMode>('candlestick')
 
   const stateSegmentIndex = useSharedValue(0)
   const rangeSegmentIndex = useSharedValue(CHART_RANGES.indexOf('1D'))
@@ -91,21 +66,10 @@ const Body: React.FC = () => {
     ? theme.colors.$surfacePrimary
     : theme.colors.$textPrimary
   const onToggleChartType = (): void => {
-    dispatch(setChartType(isCandle ? 'line' : 'candlestick'))
+    setChartTypeState(isCandle ? 'line' : 'candlestick')
   }
 
   const fixture = state === 'empty' ? emptyFixture : fixtures[range]
-  const candles = fixture.candles
-  const lineData = useMemo(
-    () => candles.map(c => ({ value: c.close, date: new Date(c.ts) })),
-    [candles]
-  )
-  const needsPlaceholder =
-    state === 'loading' ||
-    state === 'empty' ||
-    state === 'error' ||
-    candles.length === 0
-  const showSparkline = chartType === 'line' && !needsPlaceholder
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -151,26 +115,18 @@ const Body: React.FC = () => {
         </View>
 
         <View sx={{ height: 235 }}>
-          {showSparkline ? (
-            <SparklineChart
-              data={lineData}
-              style={{ width: 350, height: 235 }}
-              enablePanGesture
-            />
-          ) : (
-            <PriceChart
-              candles={candles}
-              width={350}
-              height={235}
-              state={state}
-              onRetry={() => setState('loaded')}
-            />
-          )}
+          <PriceChart
+            candles={fixture.candles}
+            width={350}
+            height={235}
+            mode={chartType}
+            state={state}
+            onRetry={() => setState('loaded')}
+          />
         </View>
 
         <Text variant="caption" sx={{ color: '$textSecondary' }}>
-          Tap & hold the chart to activate the crosshair, tooltip, and y-axis
-          labels.
+          Tap & hold the chart to activate the crosshair and y-axis labels.
         </Text>
       </ScrollView>
     </GestureHandlerRootView>
