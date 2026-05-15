@@ -177,8 +177,10 @@ export const defaultEnabledL2ChainIds = [
   // 421614, // Arbitrum Sepolia
   10, // Optimism
   // 11155420, // Optimism Sepolia
-  8453 // Base Mainnet
+  8453, // Base Mainnet
   // 84532 // Base Sepolia
+  56, // BNB Smart Chain
+  137 // Polygon
 ]
 
 // Primary networks are the ones that are always enabled in the app
