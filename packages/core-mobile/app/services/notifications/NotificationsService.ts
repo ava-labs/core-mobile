@@ -284,25 +284,50 @@ class NotificationsService {
     this.backgroundHandlerRegistered = true
 
     notifee.onBackgroundEvent(async ({ type, detail }) => {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[BLANK-DEBUG] onBackgroundEvent fired type=${type} hasUrl=${
+          typeof (detail?.notification?.data as NotificationData | undefined)
+            ?.url === 'string'
+        }`
+      )
       // Wrap the entire body so a synchronous throw doesn't escape the
       // headless task as an unhandled rejection.
       try {
         if (type !== EventType.PRESS) return
 
-        // Mirror the foreground PRESS handler — decrement the badge for every
-        // tap regardless of app state. Without this, taps that resume the app
-        // from background never clear their own badge, which leaves the badge
-        // permanently inflated even after the user reads the notification.
+        // Stash the press data FIRST, synchronously, before any awaits.
+        // The OS transitions the app to active in parallel with this headless
+        // callback, and DeeplinkContext drains `pendingBackgroundPress` as
+        // soon as it sees `AppState='active'`. If we await before stashing,
+        // the drain can win the race and find the slot empty — observed on
+        // Android release builds as a "blank screen on warm-background
+        // notification tap" (CP-14006 device verification).
+        const data = detail?.notification?.data as NotificationData | undefined
+        if (typeof data?.url === 'string') {
+          this.pendingBackgroundPress = data
+          // eslint-disable-next-line no-console
+          console.error(
+            `[BLANK-DEBUG] onBackgroundEvent stashed pendingBackgroundPress url=${data.url}`
+          )
+        } else {
+          // eslint-disable-next-line no-console
+          console.error(
+            `[BLANK-DEBUG] onBackgroundEvent NOT stashing — no url in data=${JSON.stringify(
+              data
+            )}`
+          )
+        }
+
+        // Side effects run after the synchronous stash so they can never
+        // delay it. Mirror the foreground PRESS handler — decrement the
+        // badge for every tap regardless of app state. Without this, taps
+        // that resume the app from background never clear their own badge.
         await this.decrementBadgeCount(1)
 
         if (detail?.notification?.id) {
           await this.cancelTriggerNotification(detail.notification.id)
         }
-
-        const data = detail?.notification?.data as NotificationData | undefined
-        if (typeof data?.url !== 'string') return
-
-        this.pendingBackgroundPress = data
       } catch (reason) {
         Logger.error(
           `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
@@ -338,7 +363,19 @@ class NotificationsService {
     callback: HandleNotificationCallback
   ): void => {
     const data = this.consumePendingBackgroundPress()
-    if (typeof data?.url !== 'string') return
+    // eslint-disable-next-line no-console
+    console.error(
+      `[BLANK-DEBUG] handlePendingBackgroundPress drained data=${JSON.stringify(
+        data
+      )}`
+    )
+    if (typeof data?.url !== 'string') {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[BLANK-DEBUG] handlePendingBackgroundPress NO URL, returning early`
+      )
+      return
+    }
 
     const channelId = resolveChannelId({ data })
     AnalyticsService.capture('PushNotificationPressed', {
@@ -348,6 +385,10 @@ class NotificationsService {
       handler: 'notifee'
     })
 
+    // eslint-disable-next-line no-console
+    console.error(
+      `[BLANK-DEBUG] handlePendingBackgroundPress invoking callback url=${data.url}`
+    )
     callback(data)
   }
 
