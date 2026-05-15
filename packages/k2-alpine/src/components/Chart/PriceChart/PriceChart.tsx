@@ -14,6 +14,7 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 import { useTheme } from '../../../hooks'
+import { colors as baseColors } from '../../../theme/tokens/colors'
 import { Text } from '../../Primitives'
 import { AreaSeries } from './AreaSeries'
 import { Candles } from './Candles'
@@ -54,6 +55,10 @@ type Props = {
   externalIsActive?: SharedValue<boolean>
   externalActiveIndex?: SharedValue<number | null>
   externalCrosshairX?: SharedValue<number>
+  /** Locale + currency-aware money formatter for y-axis labels. */
+  formatPrice?: (amount: number) => string
+  /** Locale + currency-aware compact formatter for the volume label. */
+  formatVolume?: (volume: number) => string
 }
 
 const renderPlaceholderState = ({
@@ -120,7 +125,9 @@ export const PriceChart: FC<Props> = ({
   mode = 'candlestick',
   externalIsActive,
   externalActiveIndex,
-  externalCrosshairX
+  externalCrosshairX,
+  formatPrice,
+  formatVolume
 }) => {
   const { theme } = useTheme()
 
@@ -221,8 +228,8 @@ export const PriceChart: FC<Props> = ({
     return p
   }, [linePoints, priceAreaH, priceTopPadding])
 
-  const greenColor = theme.colors.$textSuccess ?? '#1FA95E'
-  const redColor = theme.colors.$textDanger ?? '#E84142'
+  const greenColor = baseColors.$accentSuccessL
+  const redColor = baseColors.$accentDanger
 
   const lineColor = useMemo(() => {
     const last = candles[candles.length - 1]
@@ -374,6 +381,7 @@ export const PriceChart: FC<Props> = ({
               ticks={tickPositions}
               font={labelFont}
               color={theme.colors.$textPrimary ?? '#000'}
+              formatPrice={formatPrice}
             />
           </Canvas>
         </View>
@@ -394,6 +402,7 @@ export const PriceChart: FC<Props> = ({
           width={width}
           height={footerH}
           showVolume={showVolume}
+          formatVolume={formatVolume}
         />
         <Crosshair
           x={crosshairX}

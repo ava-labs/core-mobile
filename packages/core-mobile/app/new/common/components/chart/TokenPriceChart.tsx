@@ -9,8 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Pressable } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
@@ -23,6 +24,7 @@ type Props = {
   width: number
   height?: number
   initialRange?: ChartRange
+  onPriceHeaderPress?: () => void
 }
 
 const TOGGLE_SIZE = 36
@@ -33,13 +35,30 @@ export const TokenPriceChart: FC<Props> = ({
   coingeckoId,
   width,
   height = 235,
-  initialRange = '1D'
+  initialRange = '1D',
+  onPriceHeaderPress
 }) => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
+  const { formatCurrency, formatTokenInCurrency } = useFormatCurrency()
+  const formatPrice = useMemo(
+    () => (amount: number) =>
+      formatTokenInCurrency({
+        amount: Number.isFinite(amount) ? amount : 0
+      }),
+    [formatTokenInCurrency]
+  )
+  const formatVolume = useMemo(
+    () => (volume: number) =>
+      `Vol. ${formatCurrency({
+        amount: Number.isFinite(volume) ? volume : 0,
+        notation: 'compact'
+      })}`,
+    [formatCurrency]
+  )
 
   const [range, setRange] = useState<ChartRange>(initialRange)
 
@@ -87,6 +106,8 @@ export const TokenPriceChart: FC<Props> = ({
         crosshairX={crosshairX}
         isActive={isActive}
         containerWidth={width}
+        onPriceHeaderPress={onPriceHeaderPress}
+        formatPrice={formatPrice}
       />
       <PriceChart
         candles={candles}
@@ -97,6 +118,8 @@ export const TokenPriceChart: FC<Props> = ({
         externalIsActive={isActive}
         externalActiveIndex={activeIndex}
         externalCrosshairX={crosshairX}
+        formatPrice={formatPrice}
+        formatVolume={formatVolume}
       />
       <View
         sx={{
@@ -110,6 +133,7 @@ export const TokenPriceChart: FC<Props> = ({
             dynamicItemWidth={false}
             items={RANGE_ITEMS}
             type="thin"
+            backgroundColor={theme.colors.$surfaceSecondary}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={handleSelectRange}
           />

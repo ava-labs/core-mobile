@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
-import { formatLastUpdate, formatVolume } from './helpers'
+import { formatLastUpdate, formatVolume as defaultFormatVolume } from './helpers'
 import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
 
@@ -18,6 +18,8 @@ type Props = {
   height: number
   /** When false, the footer stays on "Last update: …" even while pressed. */
   showVolume?: boolean
+  /** Locale + currency-aware money formatter. Falls back to compact `$X.XX[B|M|K]`. */
+  formatVolume?: (volume: number) => string
 }
 
 const VOLUME_WIDTH = 140
@@ -30,13 +32,14 @@ export const ChartFooter: FC<Props> = ({
   x,
   width,
   height,
-  showVolume = true
+  showVolume = true,
+  formatVolume = defaultFormatVolume
 }) => {
   const idx = useActiveIndex(activeIndex)
 
   const formattedVolumes = useMemo(
     () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
-    [candles]
+    [candles, formatVolume]
   )
   const idleText = useMemo(() => {
     const latest = candles[candles.length - 1]

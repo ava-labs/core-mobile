@@ -32,11 +32,13 @@ const RANGE_TO_CANDLE_COUNT: Record<ChartRange, number> = {
 
 const HOUR_RANGE_WINDOW_SECONDS = 2 * 60 * 60
 
-type PriceDataPoint = { date: Date; value: number }
+type PriceDataPoint = { date: Date; value: number; volume?: number | null }
 
 const sanitizeValue = (n: number): number => (Number.isFinite(n) ? n : 0)
 const pointTimestamp = (p: PriceDataPoint): number =>
   p.date instanceof Date ? p.date.getTime() : Number(p.date) || 0
+const pointVolume = (p: PriceDataPoint): number | null =>
+  typeof p.volume === 'number' && Number.isFinite(p.volume) ? p.volume : null
 
 const pointsToFlatCandles = (points: PriceDataPoint[]): OhlcCandle[] =>
   points.map(p => {
@@ -47,7 +49,7 @@ const pointsToFlatCandles = (points: PriceDataPoint[]): OhlcCandle[] =>
       high: value,
       low: value,
       close: value,
-      volume: null
+      volume: pointVolume(p)
     }
   })
 
@@ -57,10 +59,17 @@ const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
   if (!first || !last) return null
   let high = -Infinity
   let low = Infinity
+  let volumeSum = 0
+  let hasVolume = false
   for (const p of slice) {
     const value = sanitizeValue(p.value)
     if (value > high) high = value
     if (value < low) low = value
+    const v = pointVolume(p)
+    if (v !== null) {
+      volumeSum += v
+      hasVolume = true
+    }
   }
   if (!Number.isFinite(high) || !Number.isFinite(low)) return null
   return {
@@ -69,7 +78,7 @@ const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
     high,
     low,
     close: sanitizeValue(last.value),
-    volume: null
+    volume: hasVolume ? volumeSum : null
   }
 }
 

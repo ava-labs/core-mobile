@@ -23,7 +23,8 @@ export const SegmentedControl = ({
   onSelectSegment,
   dynamicItemWidth,
   style,
-  type = 'default'
+  type = 'default',
+  backgroundColor
 }: {
   items: { title: string; badge?: JSX.Element }[]
   selectedSegmentIndex: SharedValue<number> | DerivedValue<number>
@@ -31,6 +32,7 @@ export const SegmentedControl = ({
   dynamicItemWidth: boolean
   style?: ViewStyle
   type?: 'default' | 'thin'
+  backgroundColor?: string
 }): JSX.Element | null => {
   const { theme } = useTheme()
 
@@ -118,7 +120,8 @@ export const SegmentedControl = ({
         style={{
           borderRadius: 100,
           overflow: 'hidden',
-          backgroundColor: theme.isDark ? '#C5C5C840' : '#28282820'
+          backgroundColor:
+            backgroundColor ?? (theme.isDark ? '#C5C5C840' : '#28282820')
         }}>
         <Animated.View
           style={{ borderRadius: 100, flexDirection: 'row' }}

@@ -116,11 +116,21 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [chainId, filteredTokenList, localId])
 
   const { resolveMarketToken } = useWatchlist()
-  const tokenCoingeckoId = useMemo(
-    () =>
-      token ? resolveMarketToken(token)?.coingeckoId ?? undefined : undefined,
+  const marketToken = useMemo(
+    () => (token ? resolveMarketToken(token) : undefined),
     [token, resolveMarketToken]
   )
+  const tokenCoingeckoId = marketToken?.coingeckoId ?? undefined
+  const trackTokenId = marketToken?.id
+
+  const handleOpenTrackTokenDetail = useCallback(() => {
+    if (!trackTokenId) return
+    navigate({
+      // @ts-ignore route is defined under (modals)/trackTokenDetail
+      pathname: '/trackTokenDetail',
+      params: { tokenId: trackTokenId }
+    })
+  }, [navigate, trackTokenId])
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
@@ -356,11 +366,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           }}
         />
         {!isPriceChartBlocked && (
-            <TokenPriceChart
-              symbol={token?.symbol ?? ''}
-              coingeckoId={tokenCoingeckoId}
-              width={frame.width}
-            />
+          <TokenPriceChart
+            symbol={token?.symbol ?? ''}
+            coingeckoId={tokenCoingeckoId}
+            width={frame.width}
+            onPriceHeaderPress={
+              trackTokenId ? handleOpenTrackTokenDetail : undefined
+            }
+          />
         )}
       </View>
     )
@@ -378,7 +391,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     actionButtons,
     frame.width,
     tokenCoingeckoId,
-    isPriceChartBlocked
+    isPriceChartBlocked,
+    trackTokenId,
+    handleOpenTrackTokenDetail
   ])
 
   const tabHeight = useMemo(() => {

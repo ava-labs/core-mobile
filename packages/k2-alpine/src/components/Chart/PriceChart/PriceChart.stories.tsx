@@ -92,6 +92,7 @@ export const All = (): JSX.Element => {
               dynamicItemWidth={false}
               items={RANGE_ITEMS}
               type="thin"
+              backgroundColor={theme.colors.$surfaceSecondary}
               selectedSegmentIndex={rangeSegmentIndex}
               onSelectSegment={handleSelectRange}
             />

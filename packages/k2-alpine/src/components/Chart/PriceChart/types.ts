@@ -21,7 +21,6 @@ export type OhlcvResponse = {
 }
 
 export const CHART_RANGES: readonly ChartRange[] = [
-  '1H',
   '1D',
   '1W',
   '1M',

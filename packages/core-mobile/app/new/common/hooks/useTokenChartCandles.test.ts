@@ -30,10 +30,12 @@ const setQueryResult = (result: Partial<ReturnType<typeof useQuery>>): void => {
 
 const makePoint = (
   ts: number,
-  value: number
-): { date: Date; value: number } => ({
+  value: number,
+  volume: number | null = null
+): { date: Date; value: number; volume: number | null } => ({
   date: new Date(ts),
-  value
+  value,
+  volume
 })
 
 describe('useTokenChartCandles', () => {
@@ -121,6 +123,22 @@ describe('useTokenChartCandles', () => {
       ])
     })
 
+    it('passes per-point volume through to flat candles', () => {
+      const points = [makePoint(1000, 10, 100), makePoint(2000, 20, 200)]
+      setQueryResult({ data: { dataPoints: points, ranges: {} } })
+
+      const { result } = renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range: '1D',
+          currency: VsCurrencyType.USD,
+          mode: 'line'
+        })
+      )
+
+      expect(result.current.candles.map(c => c.volume)).toEqual([100, 200])
+    })
+
     it('treats non-finite values as 0', () => {
       const points = [makePoint(1000, NaN), makePoint(2000, Infinity)]
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
@@ -202,7 +220,7 @@ describe('useTokenChartCandles', () => {
       )
     })
 
-    it('always sets volume to null (CoinGecko market_chart has no volume)', () => {
+    it('sets volume to null when source points have no volume', () => {
       const points = [makePoint(1000, 10), makePoint(2000, 20)]
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
 
@@ -216,6 +234,26 @@ describe('useTokenChartCandles', () => {
       )
 
       expect(result.current.candles.every(c => c.volume === null)).toBe(true)
+    })
+
+    it('sums per-bucket volumes when source points carry volume', () => {
+      const points: ReturnType<typeof makePoint>[] = []
+      for (let i = 0; i < 48; i++) {
+        points.push(makePoint(i * 1000, i, 10))
+      }
+      setQueryResult({ data: { dataPoints: points, ranges: {} } })
+
+      const { result } = renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range: '1D',
+          currency: VsCurrencyType.USD,
+          mode: 'candlestick'
+        })
+      )
+
+      expect(result.current.candles.length).toBe(24)
+      expect(result.current.candles.every(c => c.volume === 20)).toBe(true)
     })
   })
 

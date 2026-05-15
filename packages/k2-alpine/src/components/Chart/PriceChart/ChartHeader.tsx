@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useMemo } from 'react'
-import { LayoutChangeEvent, View } from 'react-native'
+import { LayoutChangeEvent, Pressable, View } from 'react-native'
 import Animated, {
   SharedValue,
   useAnimatedReaction,
@@ -7,6 +7,10 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
+import { Icons } from '../../../theme/tokens/Icons'
+import { PriceChangeIndicator } from '../../PriceChangeIndicator/PriceChangeIndicator'
+import { PriceChangeStatus } from '../../PriceChangeIndicator/types'
 import { Text } from '../../Primitives'
 import { DURATIONS } from './constants'
 import { formatActiveTime } from './helpers'
@@ -20,7 +24,14 @@ type Props = {
   crosshairX: SharedValue<number>
   isActive: SharedValue<boolean>
   containerWidth: number
+  /** When provided, renders a chevron next to the price; tapping the price row fires it. */
+  onPriceHeaderPress?: () => void
+  /** Locale + currency-aware money formatter. Falls back to `$X.XX` when omitted. */
+  formatPrice?: (amount: number) => string
 }
+
+const defaultFormatPrice = (amount: number): string =>
+  `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`
 
 const LEFT_ZONE_THRESHOLD = 0.19
 const RIGHT_ZONE_THRESHOLD = 0.81
@@ -31,8 +42,11 @@ export const ChartHeader: FC<Props> = ({
   activeIndex,
   crosshairX,
   isActive,
-  containerWidth
+  containerWidth,
+  onPriceHeaderPress,
+  formatPrice = defaultFormatPrice
 }) => {
+  const { theme } = useTheme()
   const idx = useActiveIndex(activeIndex)
 
   const blockWidth = useSharedValue(0)
@@ -150,19 +164,21 @@ export const ChartHeader: FC<Props> = ({
           : 0
       const safeDelta = Number.isFinite(delta) ? delta : 0
       const safeDeltaPct = Number.isFinite(deltaPct) ? deltaPct : 0
-      const isPositive = safeDelta >= 0
+      const status =
+        safeDelta > 0
+          ? PriceChangeStatus.Up
+          : safeDelta < 0
+          ? PriceChangeStatus.Down
+          : PriceChangeStatus.Neutral
       return {
-        priceText: `$${close.toFixed(2)}`,
+        priceText: formatPrice(close),
         timeText: formatActiveTime(c.ts),
-        deltaAmountText: `${isPositive ? '+' : '-'}$${Math.abs(
-          safeDelta
-        ).toFixed(2)}`,
-        deltaArrowText: isPositive ? '▲' : '▼',
+        deltaPriceText: formatPrice(Math.abs(safeDelta)),
         deltaPctText: `${Math.abs(safeDeltaPct).toFixed(2)}%`,
-        isPositive
+        status
       }
     })
-  }, [candles])
+  }, [candles, formatPrice])
 
   const idleStrings = formatted[formatted.length - 1]
   const active = idx !== null ? formatted[idx] : undefined
@@ -174,37 +190,37 @@ export const ChartHeader: FC<Props> = ({
         onLayout={onBlockLayout}
         style={[blockStyle, { alignItems: 'flex-start' }]}>
         <Animated.View onLayout={onPriceLayout} style={priceStyle}>
-          <Text variant="heading3">{displayed?.priceText ?? '$0.00'}</Text>
+          {onPriceHeaderPress ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="View token details"
+              onPress={onPriceHeaderPress}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text variant="heading3">{displayed?.priceText ?? formatPrice(0)}</Text>
+              <Icons.Navigation.ChevronRight
+                color={theme.colors.$textSecondary}
+                width={20}
+                height={20}
+              />
+            </Pressable>
+          ) : (
+            <Text variant="heading3">{displayed?.priceText ?? formatPrice(0)}</Text>
+          )}
         </Animated.View>
         <Animated.View onLayout={onSubtitleLayout} style={subtitleStyle}>
           <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
             {active ? active.timeText : `Current price of ${symbol}`}
           </Text>
         </Animated.View>
-        <Animated.View
-          onLayout={onDeltaLayout}
-          style={[deltaStyle, { flexDirection: 'row', alignItems: 'center' }]}>
-          <Text
-            variant="body2"
-            sx={{
-              fontFamily: 'Inter-SemiBold',
-              color: displayed?.isPositive ? '$textSuccess' : '$textDanger'
-            }}>
-            {displayed?.deltaAmountText ?? '$0.00'}
-          </Text>
-          <Text
-            variant="body2"
-            sx={{
-              fontFamily: 'Inter-SemiBold',
-              marginLeft: 4,
-              marginRight: 4,
-              color: displayed?.isPositive ? '$textSuccess' : '$textDanger'
-            }}>
-            {displayed?.deltaArrowText ?? '▲'}
-          </Text>
-          <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
-            {displayed?.deltaPctText ?? '0.00%'}
-          </Text>
+        <Animated.View onLayout={onDeltaLayout} style={deltaStyle}>
+          <PriceChangeIndicator
+            status={displayed?.status ?? PriceChangeStatus.Neutral}
+            formattedPrice={displayed?.deltaPriceText ?? formatPrice(0)}
+            formattedPercent={displayed?.deltaPctText ?? '0.00%'}
+            textVariant="buttonSmall"
+            percentSx={{ fontSize: 14, lineHeight: 18 }}
+            priceSx={{ fontSize: 14, lineHeight: 18 }}
+          />
         </Animated.View>
       </Animated.View>
     </View>
