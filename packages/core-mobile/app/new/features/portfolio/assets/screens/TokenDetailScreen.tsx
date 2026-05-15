@@ -11,10 +11,6 @@ import {
 } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-// TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
-// Static fixture-backed chart preview. CP-14267 wires up `useTokenOhlc`.
-import { ChartRange, OhlcCandle } from '@avalabs/k2-alpine'
-import { CHART_FIXTURES } from 'common/components/chart/fixtures'
 import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
 import {
   CollapsibleTabs,
@@ -48,6 +44,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -72,12 +69,6 @@ import {
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-
-// TEMPORARY (CP-14265 visual verification — revert or replace in CP-14267):
-// Resolver bridging the static fixtures into <TokenPriceChart>. Swap with
-// `useTokenOhlc(coinId, range)` when wiring up the live data.
-const getFixtureCandles = (range: ChartRange): OhlcCandle[] =>
-  CHART_FIXTURES[range].candles
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -121,6 +112,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       tk => tk.localId === localId && tk.networkChainId === Number(chainId)
     )
   }, [chainId, filteredTokenList, localId])
+
+  const { resolveMarketToken } = useWatchlist()
+  const tokenCoingeckoId = useMemo(
+    () =>
+      token ? resolveMarketToken(token)?.coingeckoId ?? undefined : undefined,
+    [token, resolveMarketToken]
+  )
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
@@ -355,13 +353,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             padding: 16
           }}
         />
-        {/* TEMPORARY (CP-14265 visual verification — fixture-backed.
-            CP-14267 replaces `getFixtureCandles` with `useTokenOhlc`. */}
         <View testID="token-detail-chart-slot">
           <TokenPriceChart
-            symbol={token?.symbol ?? 'AVAX'}
+            symbol={token?.symbol ?? ''}
+            coingeckoId={tokenCoingeckoId}
             width={frame.width}
-            getCandles={getFixtureCandles}
           />
         </View>
       </View>
@@ -378,7 +374,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceLoading,
     isPrivacyModeEnabled,
     actionButtons,
-    frame.width
+    frame.width,
+    tokenCoingeckoId
   ])
 
   const tabHeight = useMemo(() => {

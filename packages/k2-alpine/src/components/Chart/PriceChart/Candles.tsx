@@ -1,8 +1,4 @@
-import {
-  Line,
-  RoundedRect,
-  vec
-} from '@shopify/react-native-skia'
+import { Line, RoundedRect, vec } from '@shopify/react-native-skia'
 import React, { FC } from 'react'
 import { indexToX, priceToY } from './helpers'
 import { OhlcCandle } from './types'
@@ -10,13 +6,10 @@ import { OhlcCandle } from './types'
 type Props = {
   candles: OhlcCandle[]
   innerWidth: number
-  /** Horizontal inset from the canvas left at which the first candle sits. */
   chartInset: number
-  /** Per-candle body width — same value used by the volume bars + crosshair. */
   bodyWidth: number
-  /** Price-area height used by `priceToY` (excludes top + bottom padding). */
+  /** Price-area height (excludes top + bottom padding). */
   priceAreaH: number
-  /** Vertical offset applied to every candle's y (the top padding). */
   priceTopPadding: number
   priceMin: number
   priceMax: number
@@ -24,10 +17,7 @@ type Props = {
   downColor: string
 }
 
-/**
- * Renders the candle bodies + wicks for one OHLC series as a flat list of
- * Skia primitives. Must be a child of a `<Canvas>`.
- */
+/** Skia primitives — must be a child of a `<Canvas>`. */
 export const Candles: FC<Props> = ({
   candles,
   innerWidth,

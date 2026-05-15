@@ -8,14 +8,6 @@ type Props = {
   size?: number
 }
 
-/**
- * Two visual states:
- *   - 'line': outlined icon on transparent background
- *   - 'candlestick': solid white icon on dark filled circular background
- *
- * Icon glyphs are inline placeholders (three vertical bars); replace with
- * K2-Alpine icons or extract-from-Figma assets in a follow-up if needed.
- */
 export const ChartTypeToggle: FC<Props> = ({ size = 36 }) => {
   const { theme } = useTheme()
   const chartType = useSelector(selectChartType)

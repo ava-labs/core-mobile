@@ -6,23 +6,13 @@ import Animated, {
 import { useTheme } from '../../../hooks'
 
 type Props = {
-  /** Same crosshair X SharedValue used by the Crosshair line so the dot
-   * tracks it pixel-for-pixel — no separate animation pipeline. */
   x: SharedValue<number>
-  /** Y position on the close-price line at the crosshair X. */
   y: SharedValue<number>
   isActive: SharedValue<boolean>
-  /** Diameter of the dot in pixels. */
   size?: number
-  /** Fill color — defaults to the theme's $textPrimary so it matches the
-   * crosshair line in most cases. */
   color?: string
 }
 
-/**
- * Filled dot rendered as an Animated.View — uses the same RN transform
- * pipeline as the Crosshair line so the two stay perfectly synced.
- */
 export const LineChartDot: FC<Props> = ({
   x,
   y,

@@ -76,6 +76,9 @@ export enum ReactQueryKeys {
   NOTIFICATION_CENTER_LIST = 'notificationCenterList',
   PRICE_ALERT_CHART = 'priceAlertChart',
 
+  // token detail chart
+  TOKEN_CHART_DATA = 'tokenChartData',
+
   // predictions
   PREDICTIONS_MARKETS = 'predictionsMarkets',
   PREDICTIONS_SERIES = 'predictionsSeries',

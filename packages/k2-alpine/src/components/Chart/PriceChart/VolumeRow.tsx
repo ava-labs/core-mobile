@@ -15,9 +15,8 @@ type Props = {
   candles: OhlcCandle[]
   width: number
   height: number
-  /** When provided, each bar's opacity tracks the crosshair X — bars closest
-   * to it pop to full opacity, falling off linearly to idle within one
-   * candle's distance. */
+  /** When provided, each bar's opacity tracks the crosshair X — closest bars
+   * pop to full opacity, falling off linearly within one candle's distance. */
   crosshairX?: SharedValue<number>
   isActive?: SharedValue<boolean>
 }
@@ -35,8 +34,7 @@ export const VolumeRow: FC<Props> = ({
 }) => {
   const { theme } = useTheme()
 
-  // One SharedValue per bar so opacity updates stay on the UI thread (no JS
-  // re-renders during drag). Recreated when the candle count changes.
+  // One SharedValue per bar so opacity updates stay on the UI thread.
   const opacities = useMemo(
     () =>
       Array.from({ length: candles.length }, () => makeMutable(IDLE_OPACITY)),
@@ -75,7 +73,6 @@ export const VolumeRow: FC<Props> = ({
     [candles.length, innerWidth]
   )
 
-  // If every candle has null volume, render nothing.
   const allNull = useMemo(
     () => candles.every(c => c.volume === null),
     [candles]
@@ -89,8 +86,6 @@ export const VolumeRow: FC<Props> = ({
 
   const slotWidth = innerWidth / candles.length
   const barWidth = slotWidth * BAR_WIDTH_RATIO
-  // Per Figma: all volume bars are a neutral gray (textPrimary @ 10%).
-  // Opacity is animated per-bar based on crosshair distance.
   const barColor = theme.colors.$textPrimary ?? '#28282E'
 
   return (

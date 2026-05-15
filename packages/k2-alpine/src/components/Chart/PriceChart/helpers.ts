@@ -3,11 +3,7 @@ import { OhlcCandle } from './types'
 
 type SkPath = ReturnType<typeof Skia.Path.Make>
 
-/**
- * Map a price to a y-pixel coordinate.
- * Larger prices map to smaller y (top of chart).
- * If priceMin === priceMax, returns the midpoint to avoid NaN.
- */
+/** Larger prices map to smaller y. Returns midpoint when min === max. */
 export const priceToY = ({
   price,
   priceMin,
@@ -24,10 +20,6 @@ export const priceToY = ({
   return ((priceMax - price) / range) * height
 }
 
-/**
- * Map a candle index to an x-pixel coordinate. Evenly distributed across width.
- * Single-candle input renders at the horizontal midpoint.
- */
 export const indexToX = (
   index: number,
   candleCount: number,
@@ -37,13 +29,7 @@ export const indexToX = (
   return (index / (candleCount - 1)) * width
 }
 
-/**
- * Map a touch x-pixel to the nearest candle index.
- * Clamps to [0, candleCount - 1]. Returns 0 for empty input.
- *
- * Marked as a worklet because it's called inside gesture-handler callbacks
- * that run on the UI thread (see PriceChart's Pan gesture).
- */
+/** Worklet — called from gesture-handler callbacks on the UI thread. */
 export const touchXToIndex = (
   touchX: number,
   candleCount: number,
@@ -58,10 +44,6 @@ export const touchXToIndex = (
   return Math.max(0, Math.min(candleCount - 1, rounded))
 }
 
-/**
- * Compute price min/max across a series of candles.
- * Empty input returns { minPrice: 0, maxPrice: 0 } to avoid NaN downstream.
- */
 export const rangeBounds = (
   candles: OhlcCandle[]
 ): { minPrice: number; maxPrice: number } => {
@@ -77,10 +59,7 @@ export const rangeBounds = (
   return { minPrice, maxPrice }
 }
 
-/**
- * Format a timestamp as e.g. "Last update: Wed, Apr 29, 2026 at 9:41 AM".
- * Used for the chart footer idle text.
- */
+/** e.g. "Last update: Wed, Apr 29, 2026 at 9:41 AM" */
 export const formatLastUpdate = (ts: number): string => {
   const d = new Date(ts)
   const datePart = d.toLocaleDateString(undefined, {
@@ -96,9 +75,6 @@ export const formatLastUpdate = (ts: number): string => {
   return `Last update: ${datePart} at ${timePart}`
 }
 
-/**
- * Format a volume value as "Vol. $X" with K/M suffixes.
- */
 export const formatVolume = (vol: number): string => {
   if (vol >= 1_000_000_000) return `Vol. $${(vol / 1_000_000_000).toFixed(2)}B`
   if (vol >= 1_000_000) return `Vol. $${(vol / 1_000_000).toFixed(2)}M`
@@ -106,14 +82,7 @@ export const formatVolume = (vol: number): string => {
   return `Vol. $${vol.toFixed(2)}`
 }
 
-/**
- * Trace `points` onto `path` using Catmull-Rom-to-Bezier so the line glides
- * smoothly through each point rather than zig-zagging. Mutates `path`.
- *
- * Tension is fixed at 1/6 — the standard Catmull-Rom-to-cubic-Bezier
- * conversion. Endpoints use a duplicated neighbor so the curve still
- * passes through them.
- */
+/** Catmull-Rom-to-Bezier smoothing — mutates `path`. */
 export const traceSmoothLine = (
   path: SkPath,
   points: { x: number; y: number }[]
@@ -136,10 +105,7 @@ export const traceSmoothLine = (
   }
 }
 
-/**
- * Format a timestamp as e.g. "Today, 7:25" or "Apr 29, 7:25" — used by the
- * chart header to label the active candle's bucket. 24-hour time, no AM/PM.
- */
+/** e.g. "Today, 7:25" or "Apr 29, 7:25" — 24-hour, no AM/PM. */
 export const formatActiveTime = (ts: number, nowMs?: number): string => {
   const d = new Date(ts)
   const now = nowMs !== undefined ? new Date(nowMs) : new Date()
@@ -158,10 +124,7 @@ export const formatActiveTime = (ts: number, nowMs?: number): string => {
   return `${datePart}, ${timePart}`
 }
 
-/**
- * Generate `count + 1` evenly-spaced tick values from min to max, inclusive.
- * Returns `[min]` only when min === max.
- */
+/** `count + 1` evenly-spaced values from min to max, inclusive. */
 export const yAxisTicks = (
   min: number,
   max: number,

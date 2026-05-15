@@ -11,23 +11,17 @@ import {
 } from './constants'
 
 type Props = {
-  /** Closed path for the gradient fill — line points + bottom of price area. */
+  /** Closed path for the gradient fill. */
   areaPath: SkPath
   /** Open path for the stroke. */
   linePath: SkPath
-  /** Direction-coloured line/area (green if up, red if down). */
   color: string
-  /** Y at which the gradient's top stop sits (top of price area). */
   topY: number
-  /** Y at which the gradient's bottom stop sits (bottom of price area). */
   bottomY: number
   strokeWidth?: number
 }
 
-/**
- * Smooth area chart — gradient fill under a stroked line. Must be a child
- * of a `<Canvas>`.
- */
+/** Skia primitives — must be a child of a `<Canvas>`. */
 export const AreaSeries: FC<Props> = ({
   areaPath,
   linePath,

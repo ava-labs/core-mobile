@@ -6,27 +6,16 @@ import Animated, {
 import { useTheme } from '../../../hooks'
 
 type Props = {
-  /** X position of the crosshair in chart-local pixels. */
   x: SharedValue<number>
-  /** Whether the crosshair is currently visible (driven by gesture state). */
   isActive: SharedValue<boolean>
   height: number
-  /** Y offset from the canvas top — the line starts at `topOffset`, not 0. */
   topOffset?: number
   /** Pixel amount to shrink the line from the bottom — used to stop the
    * crosshair at the top of the highlighted volume bar. */
   bottomInset?: SharedValue<number>
-  /** Line width — matches the candle body / volume bar width so the
-   * crosshair visually aligns with the highlighted tick. */
   width?: number
 }
 
-/**
- * Vertical line drawn as a 1px-wide Animated.View, translated by a Reanimated
- * shared value. Runs on the UI thread; no JS-thread cost during finger drag.
- * Skia's declarative Line API doesn't accept SharedValue props, so we use RN
- * primitives for the crosshair specifically.
- */
 const DEFAULT_CROSSHAIR_WIDTH = 3
 
 export const Crosshair: FC<Props> = ({
@@ -44,7 +33,6 @@ export const Crosshair: FC<Props> = ({
     const inset = bottomInset?.value ?? 0
     return {
       opacity: isActive.value ? 1 : 0,
-      // Center the line on the touch point.
       transform: [{ translateX: x.value - width / 2 }],
       height: Math.max(0, height - inset)
     }
@@ -57,7 +45,7 @@ export const Crosshair: FC<Props> = ({
         {
           position: 'absolute',
           top: topOffset,
-          left: 0, // translateX moves the line from x=0
+          left: 0,
           width,
           borderRadius: width / 2,
           backgroundColor: color

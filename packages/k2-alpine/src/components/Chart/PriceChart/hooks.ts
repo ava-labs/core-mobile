@@ -6,12 +6,7 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
-/**
- * Bridges a `SharedValue<number | null>` (driven on the UI thread by the
- * chart's gesture) to React state, only crossing the JS bridge when the
- * value actually changes. Without this dirty-check, `runOnJS(setState)`
- * would fire on every gesture frame, even with no-op updates.
- */
+/** Bridges UI-thread SharedValue to React state; dirty-check avoids per-frame setState. */
 export const useActiveIndex = (
   activeIndex: SharedValue<number | null>
 ): number | null => {

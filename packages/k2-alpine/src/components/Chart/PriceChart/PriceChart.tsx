@@ -23,12 +23,10 @@ import {
   CHART_FOOTER_HEIGHT,
   CHART_INSET,
   LINE_BOTTOM_PADDING,
-  LINE_MODE_CROSSHAIR_WIDTH,
   PRICE_TOP_PADDING,
   VOLUME_ROW_HEIGHT
 } from './constants'
 import { Crosshair } from './Crosshair'
-import { CrosshairTooltip } from './CrosshairTooltip'
 import { LineChartDot } from './LineChartDot'
 import {
   indexToX,
@@ -49,21 +47,67 @@ type Props = {
   volumeRowHeight?: number
   state?: ChartState
   onRetry?: () => void
-  /** Rendering mode for the price series — candle bodies + wicks, or a
-   * single line joining the close prices. All other affordances (volume
-   * row, crosshair, footer) are shared. Defaults to 'candlestick'. */
   mode?: PriceChartMode
-  /** Optional external SharedValue — when provided, the chart writes its
-   * press-and-hold state into it so a parent can coordinate other UI
-   * (e.g. fading an idle-state price header). Defaults to internal. */
+  /** When provided, the chart writes its press-and-hold state into these
+   * SharedValues so a parent can coordinate sibling UI without re-rendering
+   * (e.g. fading an idle-state price header). */
   externalIsActive?: SharedValue<boolean>
   externalActiveIndex?: SharedValue<number | null>
-  /** Optional external SharedValue for the crosshair X position, so a parent
-   * can render the CrosshairTooltip elsewhere (e.g. overlaying a sibling). */
   externalCrosshairX?: SharedValue<number>
-  /** When true, the chart skips rendering its internal CrosshairTooltip so the
-   * parent can render it positioned anywhere it wants. */
-  hideInternalTooltip?: boolean
+}
+
+const renderPlaceholderState = ({
+  state,
+  candles,
+  width,
+  height,
+  onRetry
+}: {
+  state: ChartState
+  candles: OhlcCandle[]
+  width: number
+  height: number
+  onRetry?: () => void
+}): React.ReactElement | null => {
+  const containerStyle = {
+    width,
+    height,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const
+  }
+  if (state === 'loading') {
+    return (
+      <View style={containerStyle}>
+        <ActivityIndicator />
+      </View>
+    )
+  }
+  if (state === 'empty' || candles.length === 0) {
+    return (
+      <View style={containerStyle}>
+        <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          No data for this range
+        </Text>
+      </View>
+    )
+  }
+  if (state === 'error') {
+    return (
+      <View style={{ ...containerStyle, gap: 8 }}>
+        <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          Couldn't load chart data
+        </Text>
+        {onRetry && (
+          <Pressable onPress={onRetry}>
+            <Text variant="caption" sx={{ color: '$textPrimary' }}>
+              Retry
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    )
+  }
+  return null
 }
 
 export const PriceChart: FC<Props> = ({
@@ -76,13 +120,10 @@ export const PriceChart: FC<Props> = ({
   mode = 'candlestick',
   externalIsActive,
   externalActiveIndex,
-  externalCrosshairX,
-  hideInternalTooltip = false
+  externalCrosshairX
 }) => {
   const { theme } = useTheme()
 
-  // Skia font for the y-axis labels. `useFont` returns null until the font
-  // file is loaded; the labels render nothing until then.
   const labelFont = useFont(
     require('../../../assets/fonts/Inter-Medium.ttf'),
     11
@@ -90,32 +131,31 @@ export const PriceChart: FC<Props> = ({
 
   const { minPrice, maxPrice } = useMemo(() => rangeBounds(candles), [candles])
 
-  // Line / area chart fills the canvas edge-to-edge; candles keep the inset.
+  // Area chart fills the canvas edge-to-edge; candles keep horizontal inset.
   const chartInset = mode === 'line' ? 0 : CHART_INSET
   const innerWidth = Math.max(0, width - 2 * chartInset)
   const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
   const bodyWidth = slotWidth * CANDLE_BODY_WIDTH_RATIO
 
-  const showVolume = mode === 'candlestick'
+  // Reserve the volume slot only when we actually have volume to draw —
+  // candles derived from a close-only feed have `volume: null` and would
+  // otherwise leave an empty band under the candles.
+  const hasVolumeData = useMemo(
+    () => candles.some(c => c.volume != null),
+    [candles]
+  )
+  const showVolume = mode === 'candlestick' && hasVolumeData
   const footerH = CHART_FOOTER_HEIGHT
-  // In candle mode, volume occupies its own row below the candles. In line /
-  // area mode the volume row is skipped and that slot is absorbed into the
-  // chart area, so the line extends further down while the footer stays in
-  // the same place.
   const volH = showVolume ? volumeRowHeight ?? VOLUME_ROW_HEIGHT : 0
   const candleH = Math.max(0, height - volH - footerH)
-  // Top padding leaves room for the y-axis label of the max-price gridline
-  // (the label sits above its line). Bottom padding is the breathing room
-  // below the line/area in area-chart mode.
   const priceTopPadding = PRICE_TOP_PADDING
   const priceBottomPadding = mode === 'line' ? LINE_BOTTOM_PADDING : 0
   const priceAreaH = Math.max(0, candleH - priceTopPadding - priceBottomPadding)
 
-  // Canvas-relative y position for each y-axis tick — shared between the
-  // gridline path and the YAxisLabels so the labels stay locked to their
-  // gridlines (including any edge clamping for visibility).
+  // Shared between the gridline path and the y-axis labels so each label
+  // stays locked to its dashed line (including the edge-clamping below).
   const tickPositions = useMemo(() => {
-    const prices = yAxisTicks(minPrice, maxPrice, 3) // 4 evenly-spaced prices
+    const prices = yAxisTicks(minPrice, maxPrice, 3)
     return prices.map(price => {
       const rawY = priceToY({
         price,
@@ -123,6 +163,7 @@ export const PriceChart: FC<Props> = ({
         priceMax: maxPrice,
         height: priceAreaH
       })
+      // Inset edge ticks so their 1px stroke isn't half-clipped by the canvas.
       const clamped = Math.max(2, Math.min(priceAreaH - 3, rawY))
       return { price, y: clamped + priceTopPadding }
     })
@@ -137,7 +178,6 @@ export const PriceChart: FC<Props> = ({
     return p
   }, [innerWidth, chartInset, tickPositions])
 
-  // Close-price points used by both the line stroke and the area fill.
   const linePoints = useMemo(
     () =>
       candles.map((c, i) => ({
@@ -167,8 +207,6 @@ export const PriceChart: FC<Props> = ({
     return p
   }, [linePoints])
 
-  // Closed area path = smooth line extended down to the bottom of the price
-  // area (above the bottom padding), filled with a vertical gradient.
   const areaPath = useMemo(() => {
     const p = Skia.Path.Make()
     if (linePoints.length === 0) return p
@@ -186,7 +224,6 @@ export const PriceChart: FC<Props> = ({
   const greenColor = theme.colors.$textSuccess ?? '#1FA95E'
   const redColor = theme.colors.$textDanger ?? '#E84142'
 
-  // Direction-coloured line/area/dot — green if overall close >= overall open.
   const lineColor = useMemo(() => {
     const last = candles[candles.length - 1]
     const first = candles[0]
@@ -206,9 +243,8 @@ export const PriceChart: FC<Props> = ({
     [candles]
   )
 
-  // Y position for the tracker dot — linearly interpolated between the two
-  // adjacent close prices so the dot just moves up or down between candles
-  // instead of wobbling along Bezier curvature.
+  // Y on the close-price line at the crosshair X (linear interp between the
+  // two neighboring close prices, so the dot glides vertically only).
   const activeLineY = useDerivedValue(() => {
     if (linePoints.length === 0 || innerWidth === 0) return 0
     const last = linePoints.length - 1
@@ -225,9 +261,8 @@ export const PriceChart: FC<Props> = ({
     return a.y + (b.y - a.y) * t
   }, [linePoints, innerWidth])
 
-  // Continuous bottom inset for the crosshair line — interpolates between the
-  // bar heights of the two adjacent candles based on the actual finger X,
-  // so the line glides between sizes as the finger crosses between candles.
+  // Bottom inset for the crosshair line so it stops 8px above the active
+  // volume bar; interpolated between adjacent bar heights for smoothness.
   const animatedBarHeight = useDerivedValue(() => {
     if (candles.length === 0 || maxVolume === 0 || innerWidth === 0) return 0
     const last = candles.length - 1
@@ -285,74 +320,24 @@ export const PriceChart: FC<Props> = ({
           isActive.value = false
           activeIndex.value = null
         }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- SharedValues from useSharedValue are stable refs, not reactive deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- SharedValues are stable refs.
     [candles.length, width, innerWidth]
   )
 
-  // Loading state
-  if (state === 'loading') {
-    return (
-      <View
-        style={{
-          width,
-          height,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <ActivityIndicator />
-      </View>
-    )
-  }
+  const placeholder = renderPlaceholderState({
+    state,
+    candles,
+    width,
+    height,
+    onRetry
+  })
+  if (placeholder) return placeholder
 
-  // Empty state
-  if (state === 'empty' || candles.length === 0) {
-    return (
-      <View
-        style={{
-          width,
-          height,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Text variant="caption" sx={{ color: '$textSecondary' }}>
-          No data for this range
-        </Text>
-      </View>
-    )
-  }
-
-  // Error state
-  if (state === 'error') {
-    return (
-      <View
-        style={{
-          width,
-          height,
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 8
-        }}>
-        <Text variant="caption" sx={{ color: '$textSecondary' }}>
-          Couldn't load chart data
-        </Text>
-        {onRetry && (
-          <Pressable onPress={onRetry}>
-            <Text variant="caption" sx={{ color: '$textPrimary' }}>
-              Retry
-            </Text>
-          </Pressable>
-        )}
-      </View>
-    )
-  }
-
-  // Loaded: existing JSX
   return (
     <GestureDetector gesture={gesture}>
       <View style={{ width, height }}>
         <View style={{ width, height: candleH }}>
           <Canvas style={{ width, height: candleH }}>
-            {/* Faint dashed horizontal gridlines at 25 / 50 / 75% of the candle area. */}
             <Path
               path={gridPath}
               color={theme.colors.$textSecondary ?? '#888'}
@@ -415,19 +400,10 @@ export const PriceChart: FC<Props> = ({
           isActive={isActive}
           height={showVolume ? candleH + volH : priceTopPadding + priceAreaH}
           bottomInset={showVolume ? animatedBarHeight : undefined}
-          width={mode === 'line' ? LINE_MODE_CROSSHAIR_WIDTH : bodyWidth}
+          width={3}
         />
         {mode === 'line' && (
           <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
-        )}
-        {!hideInternalTooltip && (
-          <CrosshairTooltip
-            candles={candles}
-            activeIndex={activeIndex}
-            isActive={isActive}
-            x={crosshairX}
-            width={width}
-          />
         )}
       </View>
     </GestureDetector>

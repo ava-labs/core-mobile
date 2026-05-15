@@ -13,23 +13,16 @@ type Props = {
   candles: OhlcCandle[]
   activeIndex: SharedValue<number | null>
   isActive: SharedValue<boolean>
-  /** Crosshair X (chart-local px). The active "Vol. …" text follows this. */
   x: SharedValue<number>
-  /** Chart width — used to clamp the active overlay inside chart bounds. */
   width: number
   height: number
-  /** When false, the footer keeps showing "Last update: …" even while pressed
-   * (used in line/area mode where volume isn't displayed). Defaults to true. */
+  /** When false, the footer stays on "Last update: …" even while pressed. */
   showVolume?: boolean
 }
 
 const VOLUME_WIDTH = 140
 const EDGE_PADDING = 8
 
-/**
- * Footer row rendered below the volume row. Shows "Last updated …" when idle
- * and the active candle's volume when the user is pressing the chart.
- */
 export const ChartFooter: FC<Props> = ({
   candles,
   activeIndex,
@@ -41,8 +34,6 @@ export const ChartFooter: FC<Props> = ({
 }) => {
   const idx = useActiveIndex(activeIndex)
 
-  // Pre-compute the volume label for every candle once per candles ref so
-  // per-frame re-renders during drag are just an array lookup.
   const formattedVolumes = useMemo(
     () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
     [candles]
