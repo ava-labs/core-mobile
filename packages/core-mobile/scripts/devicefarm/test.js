@@ -469,15 +469,7 @@ async function main() {
       path.basename(config.appPath)
     )
 
-    // 2. Upload test package
-    const testPackageUploadArn = await uploadFile(
-      config.testPackagePath,
-      config.projectArn,
-      'APPIUM_NODE_TEST_PACKAGE',
-      'appium-tests.zip'
-    )
-
-    // 3. Bundle env vars into test package zip (values hidden from Device Farm logs)
+    // 2. Bundle env vars into test package zip BEFORE uploading (values hidden from Device Farm logs)
     const envVars = {}
     if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
     if (process.env.E2E_MNEMONIC) envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
@@ -486,6 +478,14 @@ async function main() {
     if (process.env.TESTRAIL_USERNAME) envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
 
     injectEnvVarsIntoTestPackage(config.testPackagePath, envVars)
+
+    // 3. Upload test package (now includes .df_env with env vars)
+    const testPackageUploadArn = await uploadFile(
+      config.testPackagePath,
+      config.projectArn,
+      'APPIUM_NODE_TEST_PACKAGE',
+      'appium-tests.zip'
+    )
 
     // 4. Upload test spec
     const testSpecUploadArn = await uploadFile(
