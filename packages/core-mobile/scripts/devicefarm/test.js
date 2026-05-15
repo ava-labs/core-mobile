@@ -414,15 +414,9 @@ async function waitForRunCompletion(runArn) {
 function injectEnvVarsIntoTestSpec(specPath, envVars) {
   if (Object.keys(envVars).length === 0) return specPath
 
-  const envContent = Object.entries(envVars)
-    .map(([k, v]) => `export ${k}="${v}"`)
+  const injection = Object.entries(envVars)
+    .map(([k, v]) => `      - export ${k}="${v}"`)
     .join('\n')
-  const b64 = Buffer.from(envContent).toString('base64')
-
-  const injection = [
-    `      - echo "${b64}" | base64 -d > /tmp/.df_env`,
-    `      - source /tmp/.df_env`
-  ].join('\n')
 
   const content = fs.readFileSync(specPath, 'utf8')
   const modified = content.replace('      - npm test', `${injection}\n      - npm test`)
