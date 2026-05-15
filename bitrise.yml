@@ -851,7 +851,7 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
-    - SPEC_FILE: specs/onboarding
+    - SPEC_FILE: specs/onboarding/**/*.ts
       opts:
         is_expand: false
     steps:
@@ -890,7 +890,7 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
-    - SPEC_FILE: specs/onboarding/newWallet.spec.ts
+    - SPEC_FILE: specs/onboarding/**/*.ts
       opts:
         is_expand: false
     steps:

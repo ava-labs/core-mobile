@@ -124,10 +124,7 @@ export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
   specs: getSpecs(),
-  exclude: [
-    // 'path/to/excluded/files'
-    './specs/login.e2e.ts'
-  ],
+  exclude: [],
   maxInstances: 1,
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly

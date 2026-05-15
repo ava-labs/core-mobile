@@ -407,18 +407,25 @@ async function waitForRunCompletion(runArn) {
 }
 
 /**
- * Inject env var exports into aws_test_spec.yaml right before `npm test`.
+ * Inject env vars into aws_test_spec.yaml right before `npm test`.
+ * Values are base64-encoded so they don't appear as plaintext in Device Farm logs.
  * Returns path to a temp file if vars were injected, original path otherwise.
  */
 function injectEnvVarsIntoTestSpec(specPath, envVars) {
   if (Object.keys(envVars).length === 0) return specPath
 
-  const exports = Object.entries(envVars)
-    .map(([k, v]) => `      - export ${k}="${v}"`)
+  const envContent = Object.entries(envVars)
+    .map(([k, v]) => `export ${k}="${v}"`)
     .join('\n')
+  const b64 = Buffer.from(envContent).toString('base64')
+
+  const injection = [
+    `      - echo "${b64}" | base64 -d > /tmp/.df_env`,
+    `      - source /tmp/.df_env`
+  ].join('\n')
 
   const content = fs.readFileSync(specPath, 'utf8')
-  const modified = content.replace('      - npm test', `${exports}\n      - npm test`)
+  const modified = content.replace('      - npm test', `${injection}\n      - npm test`)
 
   if (modified === content) {
     console.warn('⚠️  Could not inject env vars into test spec (npm test line not found)')
@@ -479,14 +486,17 @@ async function main() {
       'appium-tests.zip'
     )
 
-    // 3. Upload test spec — inject env vars (SPEC_FILE, E2E_MNEMONIC, etc.) before npm test
+    // 3. Upload env vars
     const envVars = {}
     if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
-    if (process.env.E2E_MNEMONIC) envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.E2E_MNEMONIC)
+      envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
     if (process.env.TESTRAIL_USERNAME)
       envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
     if (process.env.TESTRAIL_API_KEY)
       envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
+    if (process.env.E2E_METAMASK_MNEMONIC)
+      envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
 
     const testSpecPath = injectEnvVarsIntoTestSpec(config.testSpecPath, envVars)
     const testSpecUploadArn = await uploadFile(

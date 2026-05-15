@@ -104,46 +104,6 @@ phases:
       - export DEVICEFARM_DEVICE_UDID="$DEVICEFARM_DEVICE_UDID"
       - export DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR="$DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR"
       
-      # Load environment variables from AWS Secrets Manager
-      # The secret "core/dev/mobile/.env.internal.e2e" contains all required test configuration
-      # AWS credentials are provided via IAM role attached to Device Farm test execution role
-      - cd $DEVICEFARM_TEST_PACKAGE_PATH
-      - |
-        if [ -d "e2e-appium" ]; then
-          cd e2e-appium
-        fi
-      - |
-        echo "Loading environment variables from AWS Secrets Manager..."
-        SCRIPT_PATH="scripts/load-secrets-from-aws.js"
-        if [ ! -f "$SCRIPT_PATH" ]; then
-          echo "❌ Script not found: $SCRIPT_PATH"
-          echo "   Current directory: $(pwd)"
-          echo "   Listing scripts directory:"
-          ls -la scripts/ 2>&1 || echo "   scripts/ directory not found"
-          echo "⚠️  Continuing without secrets - tests may fail if E2E_MNEMONIC is required"
-        else
-          # stdout is only the env file path (see load-secrets-from-aws.js). Temporarily allow failure so we can branch on $? (set -e would exit the phase first).
-          set +e
-          ENV_FILE_PATH=$(node "$SCRIPT_PATH")
-          SECRETS_EXIT_CODE=$?
-          set -e
-          if [ $SECRETS_EXIT_CODE -eq 0 ] && [ -n "$ENV_FILE_PATH" ] && [ -f "$ENV_FILE_PATH" ]; then
-            echo "Sourcing environment variables from $ENV_FILE_PATH"
-            source "$ENV_FILE_PATH"
-            echo "✅ Environment variables loaded successfully"
-            # Verify critical variables are set
-            if [ -z "$E2E_MNEMONIC" ]; then
-              echo "⚠️  Warning: E2E_MNEMONIC not found in secrets"
-            else
-              echo "✅ E2E_MNEMONIC is set"
-            fi
-          else
-            echo "❌ Failed to load secrets from AWS Secrets Manager"
-            echo "   Exit code: $SECRETS_EXIT_CODE"
-            echo "   File path: $ENV_FILE_PATH"
-            echo "⚠️  Continuing without secrets - tests may fail if E2E_MNEMONIC is required"
-          fi
-        fi
 
   # The test phase contains commands for running your tests.
   test:
