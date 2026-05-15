@@ -36,7 +36,14 @@ export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM="ios"
 export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 
-# 4. Finally trigger test run
+# 4. Load env file so E2E_MNEMONIC etc. are available to test.js
+if [ -f "$CORE_MOBILE_DIR/.env.production.e2e" ]; then
+  set -a
+  source "$CORE_MOBILE_DIR/.env.production.e2e"
+  set +a
+fi
+
+# 5. Finally trigger test run
 node scripts/devicefarm/test.js
 EXIT_CODE=$?
 cleanup_client_device_farm_tmp

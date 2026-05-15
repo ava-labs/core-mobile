@@ -485,8 +485,6 @@ async function main() {
     if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
     if (process.env.E2E_MNEMONIC)
       envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
-    if (process.env.TESTRAIL_USERNAME)
-      envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
     if (process.env.TESTRAIL_API_KEY)
       envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
     if (process.env.E2E_METAMASK_MNEMONIC)

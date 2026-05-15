@@ -15,6 +15,7 @@ export default {
   selectAvatarTitle: 'Select your',
   nameWalletTitle: 'Add a name for your wallet',
   nameWalletNextBtn: 'name_wallet_next_btn',
+  nextText: 'Next',
   nextBtnOnAvatarScreen: 'avatar_next_btn',
   updateAppModalTitle: 'update_app_title',
   solanaLaunchTitle: 'solana_launch_title',

@@ -62,6 +62,10 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.nameWalletNextBtn)
   }
 
+  get nextText() {
+    return selectors.getByText(onboardingLoc.nextText)
+  }
+
   get nextBtnOnAvatarScreen() {
     return selectors.getById(onboardingLoc.nextBtnOnAvatarScreen)
   }
@@ -173,7 +177,11 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnNameWallet() {
-    await actions.tap(this.nameWalletNextBtn)
+    try {
+      await actions.tap(this.nameWalletNextBtn)
+    } catch (e) {
+      await actions.tap(this.nextText)
+    }
   }
 
   async tapNextBtnOnAvatarScreen() {
