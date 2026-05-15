@@ -122,6 +122,7 @@ phases:
       
       # Run the tests using npm test, which executes "wdio run wdio.conf.ts"
       # The wdio.conf.ts file is automatically created from wdio.devicefarm.conf.ts during packaging
+      - test -f .df_env && source .df_env || true
       - npm test
 
   # The post-test phase contains commands that are run after your tests have completed.

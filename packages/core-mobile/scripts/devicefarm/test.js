@@ -407,29 +407,26 @@ async function waitForRunCompletion(runArn) {
 }
 
 /**
- * Inject env vars into aws_test_spec.yaml right before `npm test`.
- * Values are base64-encoded so they don't appear as plaintext in Device Farm logs.
- * Returns path to a temp file if vars were injected, original path otherwise.
+ * Write env vars into a .df_env file and add it to the test package zip.
+ * The yaml sources this file silently — values never appear in Device Farm logs.
  */
-function injectEnvVarsIntoTestSpec(specPath, envVars) {
-  if (Object.keys(envVars).length === 0) return specPath
+function injectEnvVarsIntoTestPackage(testPackagePath, envVars) {
+  if (Object.keys(envVars).length === 0) return
 
-  const injection = Object.entries(envVars)
-    .map(([k, v]) => `      - export ${k}="${v}"`)
+  const { execFileSync } = require('child_process')
+  const envContent = Object.entries(envVars)
+    .map(([k, v]) => `export ${k}="${v}"`)
     .join('\n')
 
-  const content = fs.readFileSync(specPath, 'utf8')
-  const modified = content.replace('      - npm test', `${injection}\n      - npm test`)
+  const tmpEnvPath = path.join(path.dirname(testPackagePath), '.df_env')
+  fs.writeFileSync(tmpEnvPath, envContent)
 
-  if (modified === content) {
-    console.warn('⚠️  Could not inject env vars into test spec (npm test line not found)')
-    return specPath
+  try {
+    execFileSync('zip', ['-j', testPackagePath, tmpEnvPath])
+    console.log(`✅ Env vars bundled into test package: ${Object.keys(envVars).join(', ')}`)
+  } finally {
+    fs.unlinkSync(tmpEnvPath)
   }
-
-  const tmpPath = specPath.replace('.yaml', '_injected.yaml')
-  fs.writeFileSync(tmpPath, modified)
-  console.log(`✅ Injected env vars into test spec: ${Object.keys(envVars).join(', ')}`)
-  return tmpPath
 }
 
 /**
@@ -480,24 +477,23 @@ async function main() {
       'appium-tests.zip'
     )
 
-    // 3. Upload env vars
+    // 3. Bundle env vars into test package zip (values hidden from Device Farm logs)
     const envVars = {}
     if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
-    if (process.env.E2E_MNEMONIC)
-      envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
-    if (process.env.TESTRAIL_API_KEY)
-      envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
-    if (process.env.E2E_METAMASK_MNEMONIC)
-      envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
+    if (process.env.E2E_MNEMONIC) envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.E2E_METAMASK_MNEMONIC) envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
+    if (process.env.TESTRAIL_API_KEY) envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
+    if (process.env.TESTRAIL_USERNAME) envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
 
-    const testSpecPath = injectEnvVarsIntoTestSpec(config.testSpecPath, envVars)
+    injectEnvVarsIntoTestPackage(config.testPackagePath, envVars)
+
+    // 4. Upload test spec
     const testSpecUploadArn = await uploadFile(
-      testSpecPath,
+      config.testSpecPath,
       config.projectArn,
       testSpecType,
       'aws_test_spec.yaml'
     )
-    if (testSpecPath !== config.testSpecPath) fs.unlinkSync(testSpecPath)
 
     // 4. Schedule test run
     console.log('📅 Scheduling test run...')
