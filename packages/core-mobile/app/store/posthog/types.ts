@@ -55,7 +55,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
   [FeatureGates.INJECTED_PROVIDER]: false,
   [FeatureGates.PREDICTIONS]: false,
-  [FeatureGates.TOKEN_DETAIL_CANDLESTICK_CHART]: false
+  [FeatureGates.PRICE_CHART]: false
 }
 
 export const initialState = {

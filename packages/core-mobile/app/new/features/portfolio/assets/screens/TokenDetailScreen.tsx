@@ -64,7 +64,8 @@ import { AVAX_P_ID } from 'services/balance/const'
 import { selectActiveAccount } from 'store/account/slice'
 import {
   selectIsFusionEnabled,
-  selectIsMeldOfframpBlocked
+  selectIsMeldOfframpBlocked,
+  selectIsPriceChartBlocked
 } from 'store/posthog'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -93,6 +94,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   >()
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isPriceChartBlocked = useSelector(selectIsPriceChartBlocked)
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
@@ -353,13 +355,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             padding: 16
           }}
         />
-        <View testID="token-detail-chart-slot">
-          <TokenPriceChart
-            symbol={token?.symbol ?? ''}
-            coingeckoId={tokenCoingeckoId}
-            width={frame.width}
-          />
-        </View>
+        {!isPriceChartBlocked && (
+            <TokenPriceChart
+              symbol={token?.symbol ?? ''}
+              coingeckoId={tokenCoingeckoId}
+              width={frame.width}
+            />
+        )}
       </View>
     )
   }, [
@@ -375,7 +377,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isPrivacyModeEnabled,
     actionButtons,
     frame.width,
-    tokenCoingeckoId
+    tokenCoingeckoId,
+    isPriceChartBlocked
   ])
 
   const tabHeight = useMemo(() => {

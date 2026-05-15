@@ -44,7 +44,7 @@ export enum FeatureGates {
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   INJECTED_PROVIDER = 'injected-provider',
   PREDICTIONS = 'predictions',
-  TOKEN_DETAIL_CANDLESTICK_CHART = 'token-detail-candlestick-chart'
+  PRICE_CHART = 'price-chart'
 }
 
 export enum FeatureVars {
