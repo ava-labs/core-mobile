@@ -162,30 +162,40 @@ async function discoverFromXpubs(
 }
 
 /**
- * Unwrap an allSettled result, returning the resolved map or an empty map
- * if the batch rejected. Logs the rejection independently so a single-network
+ * Await a batch derivation, returning the resolved map or an empty map if
+ * the batch rejected. Logs the rejection independently so a single-network
  * failure surfaces in logs even though the downstream loop would skip those
  * indices anyway.
  */
-function extractBatch(
-  settled: PromiseSettledResult<Map<number, DerivedAddresses>>,
+async function extractBatch(
+  batch: Promise<Map<number, DerivedAddresses>>,
   label: string
-): Map<number, DerivedAddresses> {
-  if (settled.status === 'fulfilled') return settled.value
-  Logger.error(
-    `${label} batch derivation failed for Ledger discovery`,
-    settled.reason
-  )
-  return new Map<number, DerivedAddresses>()
+): Promise<Map<number, DerivedAddresses>> {
+  try {
+    return await batch
+  } catch (error) {
+    Logger.error(`${label} batch derivation failed for Ledger discovery`, error)
+    return new Map<number, DerivedAddresses>()
+  }
 }
 
 /**
- * Run both network batches in parallel and map results to derivedAccounts /
+ * Run both network batches sequentially and map results to derivedAccounts /
  * addressesByIndex.
  *
- * allSettled prevents a single-network rejection from zeroing out the whole
- * discovery result — each batch's failure is logged independently inside
- * extractBatch.
+ * Sequential (not parallel) is intentional: each native batch internally
+ * fans out across up to kMaxWorkers (4) threads via parallelFor. Running
+ * the two networks in parallel would spawn up to 8 secp256k1 workers and
+ * on 4-perf-core mobile SoCs spill onto efficiency cores, partially negating
+ * the per-call parallelism the native batch is built around. It also
+ * doubles peak derivation-state memory. The two networks share zero
+ * crypto state anyway (only bech32/HRP differs), so back-to-back execution
+ * keeps the worker pool fully fed without contention.
+ *
+ * Each call is awaited through extractBatch, which catches per-batch
+ * rejections and returns an empty map so a single-network failure still
+ * lets the other network's results flow through — matching the prior
+ * parallel behavior.
  */
 async function deriveAndMapBatch(params: {
   evmAccountXpub: string
@@ -212,25 +222,29 @@ async function deriveAndMapBatch(params: {
     { mainnet: DerivedAddresses; testnet: DerivedAddresses }
   >()
 
-  const [mainnetSettled, testnetSettled] = await Promise.allSettled([
+  const mainnetBatch = await extractBatch(
     deriveAddressesBatch(
       evmAccountXpub,
       avalancheXpubsForBatch,
       false,
       validIndices
     ),
+    'Mainnet'
+  )
+  const testnetBatch = await extractBatch(
     deriveAddressesBatch(
       evmAccountXpub,
       avalancheXpubsForBatch,
       true,
       validIndices
-    )
-  ])
-  const mainnetBatch = extractBatch(mainnetSettled, 'Mainnet')
-  const testnetBatch = extractBatch(testnetSettled, 'Testnet')
+    ),
+    'Testnet'
+  )
 
   for (let i = 0; i < validIndices.length; i++) {
-    const index = validIndices[i]!
+    const index = validIndices[i]
+    const xpubXP = avalancheXpubsForBatch[i]
+    if (index === undefined || xpubXP === undefined) continue
     try {
       const mainnet = mainnetBatch.get(index)
       const testnet = testnetBatch.get(index)
@@ -241,7 +255,7 @@ async function deriveAndMapBatch(params: {
         index,
         addressC: mainnet.evm,
         addressBTC: mainnet.btc,
-        xpubXP: avalancheXpubsForBatch[i]!,
+        xpubXP,
         addressSVM: solanaAddresses[index] ?? undefined
       })
     } catch (error) {

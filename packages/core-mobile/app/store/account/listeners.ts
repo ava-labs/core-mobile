@@ -241,16 +241,22 @@ const reloadMnemonicWalletNative = async ({
   isSolanaSupportBlocked: boolean
 }): Promise<AccountCollection | undefined> => {
   // Hoisted so the finally block can overwrite the cleartext seed bytes on
-  // every exit (success, fallback, or throw). The JS heap can't be
-  // OPENSSL_cleansed from C++, but explicitly zeroing the underlying bytes
-  // here bounds the cleartext window to this function's lifetime instead of
-  // GC's. Same caveat as bigintToArrayBuffer32's docstring in Crypto.ts.
+  // every exit (success, fallback, or throw). Two buffers need cleansing:
+  //   (1) `seedBuffer` — the ArrayBuffer copy we hand to the Nitro bridge.
+  //   (2) `seed` — the Node Buffer returned by bip39.mnemonicToSeed, which
+  //       carries the same cleartext bytes in a separate underlying buffer.
+  // Filling only (1) leaves (2) live until GC. The JS heap can't be
+  // OPENSSL_cleansed from C++, and any pbkdf2 intermediates inside bip39 are
+  // out of reach, but zeroing both references here bounds the cleartext
+  // window to this function's lifetime. Same caveat as bigintToArrayBuffer32's
+  // docstring in Crypto.ts.
   let seedBuffer: ArrayBuffer | undefined
+  let seed: Buffer | undefined
   try {
     const secret = await BiometricsSDK.loadWalletSecret(walletId)
     if (!secret.success) return undefined
 
-    const seed = await mnemonicToSeed(secret.value)
+    seed = await mnemonicToSeed(secret.value)
     seedBuffer = seed.buffer.slice(
       seed.byteOffset,
       seed.byteOffset + seed.byteLength
@@ -309,7 +315,9 @@ const reloadMnemonicWalletNative = async ({
   } finally {
     if (seedBuffer) {
       new Uint8Array(seedBuffer).fill(0)
-      seedBuffer = undefined
+    }
+    if (seed) {
+      seed.fill(0)
     }
   }
 }

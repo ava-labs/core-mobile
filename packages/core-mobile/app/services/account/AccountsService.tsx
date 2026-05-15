@@ -631,20 +631,38 @@ class AccountsService {
     // For mnemonic wallets, cache the seed so the per-account task can use
     // a single native call (deriveAllAddressesFromSeed) that does ALL crypto
     // on a native background thread — zero JS thread crypto work (CP-14062).
-    // The seed lives in the JS heap, which can't be OPENSSL_cleansed from
-    // C++, so the try/finally below explicitly zeros the bytes when discovery
-    // ends — bounding the cleartext window to this function's lifetime
-    // instead of GC's. Same caveat as bigintToArrayBuffer32 in Crypto.ts.
+    //
+    // Cleartext-window cleansing covers two distinct buffers:
+    //   (1) `seedBuffer` — the ArrayBuffer copy we pass across the Nitro
+    //       bridge. The .slice() above produces an independent buffer the
+    //       caller owns; we zero it in the finally below.
+    //   (2) `seed` — the Node Buffer returned by bip39.mnemonicToSeed,
+    //       backed by its own ArrayBuffer (possibly a slice of bip39's pbkdf2
+    //       output pool). Filling only (1) leaves the cleartext bytes in (2)
+    //       live until GC. We hoist `seed` here so the same finally block can
+    //       zero both, bounding the cleartext window to this function's
+    //       lifetime regardless of which path it takes.
+    //
+    // Caveat unchanged from bigintToArrayBuffer32 in Crypto.ts: the JS heap
+    // can't be OPENSSL_cleansed from C++, and any pbkdf2 intermediates that
+    // bip39 made internally are out of our reach.
     let seedBuffer: ArrayBuffer | undefined
+    let seed: Buffer | undefined
+    // Separate state flag from data: `useNativeBatch` gates the per-window
+    // native path. Flipped to false on first native failure so subsequent
+    // windows fall through to the JS path. The buffer references are kept
+    // until the outer finally cleanses them — they are not used as flags.
+    let useNativeBatch = false
     if (walletType === WalletType.MNEMONIC) {
       try {
         const secret = await BiometricsSDK.loadWalletSecret(walletId)
         if (secret.success) {
-          const seed = await mnemonicToSeed(secret.value)
+          seed = await mnemonicToSeed(secret.value)
           seedBuffer = seed.buffer.slice(
             seed.byteOffset,
             seed.byteOffset + seed.byteLength
           ) as ArrayBuffer
+          useNativeBatch = true
         }
       } catch (error) {
         Logger.error(
@@ -667,13 +685,13 @@ class AccountsService {
         // Native path for mnemonic wallets: derive the entire window in one
         // native call (single Promise round-trip, single seed copy) instead of
         // per-account calls that underutilize the batching (CP-14062).
-        // On native failure, disable seedBuffer and fall through to the JS
-        // path so discovery can still complete.
+        // On native failure, flip useNativeBatch off so subsequent windows
+        // fall through to the JS path; discovery still completes.
         let nativeResults:
           | PromiseSettledResult<Record<NetworkVMType, string>>[]
           | undefined
 
-        if (seedBuffer) {
+        if (useNativeBatch && seedBuffer) {
           try {
             const results = await deriveAllAddressesFromSeed(
               seedBuffer,
@@ -721,12 +739,14 @@ class AccountsService {
               error
             )
             // Disable the native path for this and all subsequent windows so
-            // discovery can complete via the JS fallback. Cleanse the bytes
-            // before dropping the reference — once seedBuffer = undefined,
-            // the finally block at the function's exit can no longer reach
-            // the underlying ArrayBuffer.
+            // discovery can complete via the JS fallback. Cleanse the seed
+            // bytes eagerly to shrink the cleartext window — the outer
+            // finally still runs, but `.fill(0)` is idempotent.
+            useNativeBatch = false
             new Uint8Array(seedBuffer).fill(0)
-            seedBuffer = undefined
+            if (seed) {
+              seed.fill(0)
+            }
           }
         }
 
@@ -874,7 +894,9 @@ class AccountsService {
     } finally {
       if (seedBuffer) {
         new Uint8Array(seedBuffer).fill(0)
-        seedBuffer = undefined
+      }
+      if (seed) {
+        seed.fill(0)
       }
     }
   }

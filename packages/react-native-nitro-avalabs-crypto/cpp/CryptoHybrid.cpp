@@ -77,11 +77,14 @@ namespace margelo::nitro::nitroavalabscrypto {
             throw std::invalid_argument("Invalid hex character");
         }
 
-        // Run `fn(i)` for i in [0, n) across hardware_concurrency() worker
-        // threads, partitioning the index range into contiguous chunks so each
-        // worker writes only its own slots (no synchronization needed inside
-        // fn). Exceptions thrown by fn are captured; the first one is rethrown
-        // on the calling thread after all workers join.
+        // Run `fn(i)` for i in [0, n) across up to kMaxWorkers worker threads
+        // using a work-stealing scheduler: every worker pulls the next index
+        // from a shared atomic counter, so uneven per-item costs don't strand
+        // a worker holding leftover items while siblings sit idle. Each call
+        // to `fn` sees a unique `i`, so as long as `fn` writes to disjoint
+        // result slots no synchronization is needed inside `fn`. Exceptions
+        // thrown by fn are captured; the first one is rethrown on the calling
+        // thread after all workers join.
         //
         // CONTRACT: `fn` MUST be thread-safe under concurrent calls with
         // distinct `i` values.  Workers all invoke the SAME captured `fn`
@@ -161,15 +164,23 @@ namespace margelo::nitro::nitroavalabscrypto {
             // a std::thread would call std::terminate.
             std::exception_ptr errPtr;
 
-            const size_t chunk = (n + numWorkers - 1) / numWorkers;
+            // Work-stealing scheduler: workers race to claim the next index
+            // from a shared atomic counter. Replaces an earlier chunked
+            // partition (`(n + numWorkers - 1) / numWorkers`) that could
+            // both leave later workers empty when `n % numWorkers != 0` and,
+            // more importantly, strand the slowest chunk's worker holding
+            // leftover items while siblings sat idle. The atomic fetch_add
+            // cost (~10ns) is well below noise for the crypto-heavy work
+            // this function serves (µs-to-100µs per index).
+            std::atomic<size_t> next{0};
             for (size_t w = 0; w < numWorkers; ++w) {
-                const size_t start = w * chunk;
-                const size_t end = std::min(start + chunk, n);
-                if (start >= end) break;
-                workers.emplace_back([&, start, end]() {
+                workers.emplace_back([&]() {
                     try {
-                        for (size_t i = start; i < end; ++i) {
+                        for (;;) {
                             if (failed.load(std::memory_order_relaxed)) return;
+                            const size_t i =
+                                next.fetch_add(1, std::memory_order_relaxed);
+                            if (i >= n) return;
                             fn(i);
                         }
                     } catch (...) {
