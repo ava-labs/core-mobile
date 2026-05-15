@@ -8,6 +8,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
+import { DURATIONS } from './constants'
 import { formatActiveTime } from './helpers'
 import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
@@ -59,7 +60,9 @@ export const ChartHeader: FC<Props> = ({
   useAnimatedReaction(
     () => isActive.value,
     active => {
-      progress.value = withTiming(active ? 1 : 0, { duration: 200 })
+      progress.value = withTiming(active ? 1 : 0, {
+        duration: DURATIONS.headerPress
+      })
     }
   )
 
@@ -73,7 +76,9 @@ export const ChartHeader: FC<Props> = ({
       return 0
     },
     target => {
-      innerAnchor.value = withTiming(target, { duration: 220 })
+      innerAnchor.value = withTiming(target, {
+        duration: DURATIONS.headerZone
+      })
     }
   )
 
@@ -155,17 +160,21 @@ export const ChartHeader: FC<Props> = ({
   const formatted = useMemo(() => {
     const firstOpen = candles[0]?.open ?? 0
     return candles.map(c => {
-      const delta = c.close - firstOpen
-      const deltaPct = firstOpen !== 0 ? (delta / firstOpen) * 100 : 0
-      const isPositive = delta >= 0
+      const close = Number.isFinite(c.close) ? c.close : 0
+      const delta = close - firstOpen
+      const deltaPct =
+        Number.isFinite(firstOpen) && firstOpen !== 0
+          ? (delta / firstOpen) * 100
+          : 0
+      const safeDelta = Number.isFinite(delta) ? delta : 0
+      const safeDeltaPct = Number.isFinite(deltaPct) ? deltaPct : 0
+      const isPositive = safeDelta >= 0
       return {
-        priceText: `$${c.close.toFixed(2)}`,
+        priceText: `$${close.toFixed(2)}`,
         timeText: formatActiveTime(c.ts),
-        deltaAmountText: `${isPositive ? '+' : '-'}$${Math.abs(delta).toFixed(
-          2
-        )}`,
+        deltaAmountText: `${isPositive ? '+' : '-'}$${Math.abs(safeDelta).toFixed(2)}`,
         deltaArrowText: isPositive ? '▲' : '▼',
-        deltaPctText: `${Math.abs(deltaPct).toFixed(2)}%`,
+        deltaPctText: `${Math.abs(safeDeltaPct).toFixed(2)}%`,
         isPositive
       }
     })

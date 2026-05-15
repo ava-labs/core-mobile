@@ -3,8 +3,23 @@ import {
   indexToX,
   touchXToIndex,
   rangeBounds,
-  yAxisTicks
+  yAxisTicks,
+  traceSmoothLine,
+  formatActiveTime,
+  formatLastUpdate,
+  formatVolume
 } from './helpers'
+
+// `traceSmoothLine` only invokes `path.moveTo(x, y)` and
+// `path.cubicTo(...)` — we can fake the SkPath without importing Skia
+// (which requires native bridge transforms Jest doesn't ship by default).
+const makeRecordingPath = (): {
+  moveTo: jest.Mock
+  cubicTo: jest.Mock
+} => ({
+  moveTo: jest.fn(),
+  cubicTo: jest.fn()
+})
 import { OhlcCandle } from './types'
 
 const sampleCandles: OhlcCandle[] = [
@@ -110,5 +125,92 @@ describe('yAxisTicks', () => {
 
   it('returns a single tick when min === max', () => {
     expect(yAxisTicks(5, 5, 3)).toEqual([5])
+  })
+})
+
+describe('traceSmoothLine', () => {
+  it('is a no-op on empty input', () => {
+    const p = makeRecordingPath()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    traceSmoothLine(p as any, [])
+    expect(p.moveTo).not.toHaveBeenCalled()
+    expect(p.cubicTo).not.toHaveBeenCalled()
+  })
+
+  it('moves to the only point when given a single point', () => {
+    const p = makeRecordingPath()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    traceSmoothLine(p as any, [{ x: 10, y: 20 }])
+    expect(p.moveTo).toHaveBeenCalledWith(10, 20)
+    expect(p.cubicTo).not.toHaveBeenCalled()
+  })
+
+  it('emits one cubic-to per segment between adjacent points', () => {
+    const p = makeRecordingPath()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    traceSmoothLine(p as any, [
+      { x: 0, y: 0 },
+      { x: 10, y: 5 },
+      { x: 20, y: 0 },
+      { x: 30, y: 5 }
+    ])
+    // 4 points → 3 segments → 3 cubicTo calls.
+    expect(p.cubicTo).toHaveBeenCalledTimes(3)
+    expect(p.moveTo).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('formatVolume', () => {
+  it('formats sub-thousand volumes with two decimals', () => {
+    expect(formatVolume(0)).toBe('Vol. $0.00')
+    expect(formatVolume(999.5)).toBe('Vol. $999.50')
+  })
+  it('formats thousands with K suffix', () => {
+    expect(formatVolume(1_500)).toBe('Vol. $1.50K')
+  })
+  it('formats millions with M suffix', () => {
+    expect(formatVolume(1_500_000)).toBe('Vol. $1.50M')
+  })
+  it('formats billions with B suffix', () => {
+    expect(formatVolume(2_300_000_000)).toBe('Vol. $2.30B')
+  })
+})
+
+describe('formatActiveTime', () => {
+  // Pick deterministic timestamps to avoid TZ drift.
+  // 2026-05-15T07:25:00Z and 2026-05-15T12:00:00Z (same UTC day).
+  const sameDayTs = new Date('2026-05-15T07:25:00Z').getTime()
+  const now = new Date('2026-05-15T12:00:00Z').getTime()
+  const earlierDayTs = new Date('2026-04-29T07:25:00Z').getTime()
+
+  it('uses "Today" prefix when the timestamp is on the same day as now', () => {
+    expect(formatActiveTime(sameDayTs, now)).toContain('Today,')
+  })
+
+  it('uses a Mmm DD date when the timestamp is on a different day', () => {
+    const out = formatActiveTime(earlierDayTs, now)
+    expect(out).not.toContain('Today,')
+    // The exact month abbreviation depends on locale, but it should not
+    // include the year (formatActiveTime keeps it short).
+    expect(out).not.toMatch(/2026/)
+  })
+
+  it('formats time in 24-hour numeric (no AM/PM)', () => {
+    expect(formatActiveTime(sameDayTs, now)).not.toMatch(/AM|PM/)
+  })
+})
+
+describe('formatLastUpdate', () => {
+  it('prefixes with "Last update:"', () => {
+    const ts = new Date('2026-04-29T13:41:00Z').getTime()
+    expect(formatLastUpdate(ts)).toMatch(/^Last update:/)
+  })
+
+  it('uses the full Wed, Apr 29, 2026 at H:mm format', () => {
+    const ts = new Date('2026-04-29T13:41:00Z').getTime()
+    const out = formatLastUpdate(ts)
+    // Year is included; "at" joins date and time.
+    expect(out).toMatch(/2026/)
+    expect(out).toContain(' at ')
   })
 })

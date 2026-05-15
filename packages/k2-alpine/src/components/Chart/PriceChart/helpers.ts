@@ -1,4 +1,4 @@
-import { Skia } from '@shopify/react-native-skia'
+import type { Skia } from '@shopify/react-native-skia'
 import { OhlcCandle } from './types'
 
 type SkPath = ReturnType<typeof Skia.Path.Make>
@@ -140,9 +140,9 @@ export const traceSmoothLine = (
  * Format a timestamp as e.g. "Today, 7:25" or "Apr 29, 7:25" — used by the
  * chart header to label the active candle's bucket. 24-hour time, no AM/PM.
  */
-export const formatActiveTime = (ts: number): string => {
+export const formatActiveTime = (ts: number, nowMs?: number): string => {
   const d = new Date(ts)
-  const now = new Date()
+  const now = nowMs !== undefined ? new Date(nowMs) : new Date()
   const sameDay =
     d.getFullYear() === now.getFullYear() &&
     d.getMonth() === now.getMonth() &&

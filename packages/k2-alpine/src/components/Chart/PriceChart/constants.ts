@@ -26,3 +26,21 @@ export const CANDLE_BODY_WIDTH_RATIO = 0.6
 
 /** Volume bar width as a fraction of the per-candle slot width. */
 export const VOLUME_BAR_WIDTH_RATIO = 0.6
+
+/**
+ * Centralized animation timings (ms). Adjust here to retune the chart's
+ * "feel" without hunting through individual components.
+ */
+export const DURATIONS = {
+  /** ChartHeader: press ↔ release slide of the block. */
+  headerPress: 200,
+  /** ChartHeader: zone-to-zone slide of the inner texts. */
+  headerZone: 220,
+  /** YAxisLabels: fade-in / fade-out of the price labels. */
+  labelsFade: 150
+} as const
+
+/** Top stop of the area-chart gradient (alpha byte appended to the line color). */
+export const AREA_GRADIENT_TOP_ALPHA = '66'
+/** Bottom stop of the area-chart gradient (transparent). */
+export const AREA_GRADIENT_BOTTOM_ALPHA = '00'

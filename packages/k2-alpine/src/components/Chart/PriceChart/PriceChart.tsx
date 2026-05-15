@@ -1,13 +1,9 @@
 import {
   Canvas,
   DashPathEffect,
-  Line,
-  LinearGradient,
   Path,
-  RoundedRect,
   Skia,
-  useFont,
-  vec
+  useFont
 } from '@shopify/react-native-skia'
 import React, { FC, useMemo } from 'react'
 import { ActivityIndicator, Pressable, View } from 'react-native'
@@ -19,6 +15,8 @@ import {
 } from 'react-native-reanimated'
 import { useTheme } from '../../../hooks'
 import { Text } from '../../Primitives'
+import { AreaSeries } from './AreaSeries'
+import { Candles } from './Candles'
 import { ChartFooter } from './ChartFooter'
 import {
   CANDLE_BODY_WIDTH_RATIO,
@@ -364,82 +362,28 @@ export const PriceChart: FC<Props> = ({
               <DashPathEffect intervals={[2, 4]} />
             </Path>
             {mode === 'line' && (
-              <React.Fragment>
-                <Path path={areaPath} style="fill">
-                  <LinearGradient
-                    start={vec(0, priceTopPadding)}
-                    end={vec(0, priceTopPadding + priceAreaH)}
-                    colors={[`${lineColor}66`, `${lineColor}00`]}
-                  />
-                </Path>
-                <Path
-                  path={linePath}
-                  color={lineColor}
-                  style="stroke"
-                  strokeWidth={2.5}
-                  strokeJoin="round"
-                  strokeCap="round"
-                />
-              </React.Fragment>
+              <AreaSeries
+                areaPath={areaPath}
+                linePath={linePath}
+                color={lineColor}
+                topY={priceTopPadding}
+                bottomY={priceTopPadding + priceAreaH}
+              />
             )}
-            {mode === 'candlestick' &&
-              candles.map((c, i) => {
-                const xCenter =
-                  indexToX(i, candles.length, innerWidth) + chartInset
-                const x = xCenter - bodyWidth / 2
-                const isUp = c.close >= c.open
-                const top =
-                  priceToY({
-                    price: Math.max(c.open, c.close),
-                    priceMin: minPrice,
-                    priceMax: maxPrice,
-                    height: priceAreaH
-                  }) + priceTopPadding
-                const bottom =
-                  priceToY({
-                    price: Math.min(c.open, c.close),
-                    priceMin: minPrice,
-                    priceMax: maxPrice,
-                    height: priceAreaH
-                  }) + priceTopPadding
-                const bodyHeight = Math.max(1, bottom - top)
-                const wickTop =
-                  priceToY({
-                    price: c.high,
-                    priceMin: minPrice,
-                    priceMax: maxPrice,
-                    height: priceAreaH
-                  }) + priceTopPadding
-                const wickBottom =
-                  priceToY({
-                    price: c.low,
-                    priceMin: minPrice,
-                    priceMax: maxPrice,
-                    height: priceAreaH
-                  }) + priceTopPadding
-                const bodyRadius = Math.min(bodyWidth, bodyHeight) / 2
-                const wickStroke = Math.max(1, bodyWidth / 4)
-                return (
-                  <React.Fragment key={c.ts}>
-                    <Line
-                      p1={vec(xCenter, wickTop)}
-                      p2={vec(xCenter, wickBottom)}
-                      color={isUp ? greenColor : redColor}
-                      strokeWidth={wickStroke}
-                      strokeCap="round"
-                      opacity={0.5}
-                    />
-                    <RoundedRect
-                      x={x}
-                      y={top}
-                      width={bodyWidth}
-                      height={bodyHeight}
-                      r={bodyRadius}
-                      color={isUp ? greenColor : redColor}
-                    />
-                  </React.Fragment>
-                )
-              })}
+            {mode === 'candlestick' && (
+              <Candles
+                candles={candles}
+                innerWidth={innerWidth}
+                chartInset={chartInset}
+                bodyWidth={bodyWidth}
+                priceAreaH={priceAreaH}
+                priceTopPadding={priceTopPadding}
+                priceMin={minPrice}
+                priceMax={maxPrice}
+                upColor={greenColor}
+                downColor={redColor}
+              />
+            )}
             <YAxisLabels
               isActive={isActive}
               ticks={tickPositions}

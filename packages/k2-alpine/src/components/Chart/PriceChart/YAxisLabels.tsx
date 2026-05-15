@@ -10,6 +10,7 @@ import {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { DURATIONS } from './constants'
 import { YAxisTick } from './types'
 
 type Props = {
@@ -28,7 +29,6 @@ type Props = {
 const LABEL_LEFT = 16
 const LABEL_GAP_ABOVE_LINE = 6
 const PEAK_OPACITY = 0.3
-const FADE_DURATION = 150
 
 const formatLabel = (n: number): string =>
   n >= 1 ? `$${n.toFixed(2)}` : `$${n.toFixed(4)}`
@@ -46,7 +46,7 @@ export const YAxisLabels: FC<Props> = ({ isActive, ticks, font, color }) => {
     () => isActive.value,
     active => {
       opacity.value = withTiming(active ? PEAK_OPACITY : 0, {
-        duration: FADE_DURATION
+        duration: DURATIONS.labelsFade
       })
     }
   )
