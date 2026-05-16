@@ -1,6 +1,14 @@
 import { enableFreeze } from 'react-native-screens'
 
-enableFreeze(true)
+// BLANK-DEBUG: temporarily disable react-native-screens freezing to test
+// whether the Android release-build "blank screen on warm-background
+// notification tap" is caused by freeze/unfreeze breaking native view
+// composition during the <Stack.Protected guard> swap. If blank disappears
+// with this set to false, decide between (a) keeping it off in production
+// for the memory/perf trade-off, (b) switching specific screens off via
+// freezeOnBlur, or (c) replacing the Stack.Protected pattern with
+// conditional rendering in RootNavigator.
+enableFreeze(false)
 
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
