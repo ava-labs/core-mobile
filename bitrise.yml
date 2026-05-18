@@ -1188,7 +1188,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios-external-for-testing
+    - _build-ios
     envs:
     - ENVIRONMENT: production
       opts:
@@ -1202,7 +1202,7 @@ workflows:
     - XCODE_EXPORT: ad-hoc
       opts:
         is_expand: false
-    - IOS_SCHEME: AvaxWalletExternal
+    - IOS_SCHEME: AvaxWallet
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile
@@ -1214,6 +1214,16 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
+    steps:
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_IPA_PATH:BITRISE_IPA_PATH
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            BITRISE_IPA_PATH=$BITRISE_IPA_PATH
+            IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
   appium-smoke-setup:
     envs:
     - IS_SMOKE: "true"
