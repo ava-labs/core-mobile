@@ -21,7 +21,7 @@ echo "📦 Packaging tests..."
 yarn devicefarm:package
 
 TEST_PACKAGE="$CORE_MOBILE_DIR/e2e-appium/appium-tests-devicefarm.zip"
-TEST_SPEC="$CORE_MOBILE_DIR/e2e-appium/aws_test_spec.yaml"
+TEST_SPEC="$CORE_MOBILE_DIR/e2e-appium/aws_test_spec_ios.yaml"
 
 _SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_SCRIPT_DIR/../../../devicefarm/ensure-client-device-farm.sh"
