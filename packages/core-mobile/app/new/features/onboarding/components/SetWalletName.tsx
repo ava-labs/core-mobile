@@ -52,7 +52,7 @@ export const SetWalletName = ({
         size="large"
         type="primary"
         onPress={handleNext}
-        testID="name_wallet_next_btn"
+        testID={'name_wallet_next_btn'}
         disabled={disabled || name.length === 0 || isLoading}>
         {parentIsLoading || isLoading ? <ActivityIndicator /> : buttonText}
       </Button>
