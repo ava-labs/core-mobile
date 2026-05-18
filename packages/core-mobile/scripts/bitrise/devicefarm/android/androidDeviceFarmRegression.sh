@@ -34,14 +34,6 @@ export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM="android"
 export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 
-# 4. Load env file so E2E_MNEMONIC etc. are available to test.js
-if [ -f "$CORE_MOBILE_DIR/.env.production.e2e" ]; then
-  while IFS='=' read -r key value; do
-    [[ "$key" =~ ^[[:space:]]*# ]] && continue
-    [[ -z "$key" ]] && continue
-    export "${key}=${value}"
-  done < "$CORE_MOBILE_DIR/.env.production.e2e"
-fi
 
 # 5. Finally trigger test run
 node scripts/devicefarm/test.js
