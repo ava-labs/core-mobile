@@ -10,17 +10,11 @@ this is done to ensure that the app is fully loaded before navigating to the spe
 @example navigateFromDeeplinkUrl('/claimStakeReward')
 **/
 export const navigateFromDeeplinkUrl = (href: Href): void => {
-  // eslint-disable-next-line no-console
-  console.error(`[BLANK-DEBUG] navigateFromDeeplinkUrl scheduling href=${href}`)
   // added InteractionManager and setTimeout of 1000ms here,
   // so that it doesn't navigate too fast before screen re-renders,
   // and the deeplinked screen goes away because of the re-rendering.
   InteractionManager.runAfterInteractions(() => {
     setTimeout(() => {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] navigateFromDeeplinkUrl firing router.navigate href=${href}`
-      )
       router.navigate(href)
     }, 1000)
   })

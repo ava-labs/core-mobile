@@ -30,13 +30,6 @@ export function RootNavigator(): JSX.Element {
   )
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] RootNavigator render shouldRenderOnlyPinScreen=${shouldRenderOnlyPinScreen} walletState=${walletState} appIsReady=${appIsReady}`
-    )
-  }, [shouldRenderOnlyPinScreen, walletState, appIsReady])
-
-  useEffect(() => {
     if (!appIsReady) return
 
     // On Android, the PinScreenOverlay is wrapped in
@@ -49,10 +42,6 @@ export function RootNavigator(): JSX.Element {
     // group instead so a real Stack.Screen renders fullscreen.
     if (Platform.OS === 'android') {
       const next = walletState !== WalletState.ACTIVE
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] RootNavigator setShouldRenderOnlyPinScreen android-path next=${next} walletState=${walletState}`
-      )
       setShouldRenderOnlyPinScreen(next)
       return
     }

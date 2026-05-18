@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useTheme, View } from '@avalabs/k2-alpine'
 import { FullWindowOverlay } from 'react-native-screens'
 import { useFocusEffect } from 'expo-router'
-import { Keyboard, Platform } from 'react-native'
+import { Keyboard } from 'react-native'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { ForgotPinComponent } from './ForgotPinComponent'
@@ -15,17 +15,6 @@ export const PinScreenOverlay = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] PinScreenOverlay mounted platform=${Platform.OS}`
-    )
-    return () => {
-      // eslint-disable-next-line no-console
-      console.error(`[BLANK-DEBUG] PinScreenOverlay unmounted`)
-    }
-  }, [])
 
   useFocusEffect(
     useCallback(() => {

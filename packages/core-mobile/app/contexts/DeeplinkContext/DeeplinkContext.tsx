@@ -104,13 +104,7 @@ export const DeeplinkContextProvider = ({
     // Both paths call handlePendingBackgroundPress; consume is one-shot so
     // whichever fires first wins, the other becomes a no-op.
     const appStateSub = AppState.addEventListener('change', state => {
-      // eslint-disable-next-line no-console
-      console.error(`[BLANK-DEBUG] DeeplinkContext AppState change=${state}`)
       if (state !== 'active') return
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] DeeplinkContext draining pendingBackgroundPress`
-      )
       NotificationsService.handlePendingBackgroundPress(
         handleNotificationCallback
       )
@@ -166,15 +160,7 @@ export const DeeplinkContextProvider = ({
    * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] DeeplinkContext pendingDeepLink effect url=${pendingDeepLink?.url} isWalletActive=${isWalletActive} isIdled=${isIdled}`
-    )
     if (pendingDeepLink && isWalletActive && !isIdled) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] DeeplinkContext invoking handleDeeplink url=${pendingDeepLink.url}`
-      )
       handleDeeplink({
         deeplink: pendingDeepLink,
         dispatch,

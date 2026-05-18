@@ -306,13 +306,6 @@ class NotificationsService {
     this.backgroundHandlerRegistered = true
 
     notifee.onBackgroundEvent(async ({ type, detail }) => {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] onBackgroundEvent fired type=${type} hasUrl=${
-          typeof (detail?.notification?.data as NotificationData | undefined)
-            ?.url === 'string'
-        } appState=${AppState.currentState}`
-      )
       // Wrap the entire body so a synchronous throw doesn't escape the
       // headless task as an unhandled rejection.
       try {
@@ -355,28 +348,14 @@ class NotificationsService {
     data: NotificationData | undefined
   ): void => {
     if (typeof data?.url !== 'string') {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] onBackgroundEvent NOT stashing — no url in data=${JSON.stringify(
-          data
-        )}`
-      )
       return
     }
 
     this.pendingBackgroundPress = data
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] onBackgroundEvent stashed pendingBackgroundPress url=${data.url}`
-    )
 
     if (AppState.currentState !== 'active') return
 
     const cb = this.onPendingBackgroundPressArrived
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] onBackgroundEvent draining itself (already active) hasCallback=${!!cb}`
-    )
     if (cb) this.handlePendingBackgroundPress(cb)
   }
 
@@ -421,17 +400,7 @@ class NotificationsService {
     callback: HandleNotificationCallback
   ): void => {
     const data = this.consumePendingBackgroundPress()
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] handlePendingBackgroundPress drained data=${JSON.stringify(
-        data
-      )}`
-    )
     if (typeof data?.url !== 'string') {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[BLANK-DEBUG] handlePendingBackgroundPress NO URL, returning early`
-      )
       return
     }
 
@@ -443,10 +412,6 @@ class NotificationsService {
       handler: 'notifee'
     })
 
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] handlePendingBackgroundPress invoking callback url=${data.url}`
-    )
     callback(data)
   }
 
