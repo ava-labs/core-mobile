@@ -151,19 +151,18 @@ export const PriceChart: FC<Props> = ({
   )
   const showVolume = mode === 'candlestick' && hasVolumeData
   const footerH = CHART_FOOTER_HEIGHT
-  // Stable price area drives gridlines + candle scaling so they stay locked
-  // across modes; in line/area mode the line/area uses `dataAreaH` (extended
-  // into the would-be volume-row space) so the curve can dip below the
-  // bottom gridline and fill that band with gradient.
+  // Volume slot is always reserved in the math so gridlines + candle
+  // scaling stay locked across modes. The canvas spans the full chart
+  // area (candle body + volume band) so both line/area and candles can
+  // stay mounted and swap via opacity without resizing the Canvas.
   const volH = volumeRowHeight ?? VOLUME_ROW_HEIGHT
   const candleH = Math.max(0, height - volH - footerH)
   const priceTopPadding = PRICE_TOP_PADDING
   const priceAreaH = Math.max(0, candleH - priceTopPadding)
-  // Canvas always covers the full chart area (candle body + volume band).
-  // We cross-fade between line/area and candles via opacity, so both Skia
-  // primitives stay mounted — `canvasH` cannot shrink with mode or layout
-  // jumps would re-trigger Canvas re-creation and break the transition.
   const canvasH = candleH + volH
+  // Area fill extends below the bottom gridline into the volume-row band
+  // for visual continuity in line mode (the line itself still hugs the
+  // gridlines via `priceAreaH`).
   const areaBottomY = priceTopPadding + priceAreaH + volH
 
   const modeAnim = useSharedValue(mode === 'candlestick' ? 1 : 0)
@@ -330,13 +329,14 @@ export const PriceChart: FC<Props> = ({
   }, [candles, maxVolume, volH, innerWidth])
 
   // Two simultaneous gestures coordinate the crosshair interaction:
-  //   - LongPress: pressing and holding (≥200ms with <3px wander) activates
-  //     the crosshair under the finger without requiring any drag.
-  //   - Pan: horizontal motion past 6px activates the crosshair and tracks
-  //     it; vertical motion past 5px fails the gesture so the parent scroll
-  //     view takes over the touch. Both thresholds are processed in native
-  //     code (no manualActivation worklet round-trip), keeping the scroll
-  //     handoff snappy.
+  //   - LongPress (≥200ms with <3px wander): activates the crosshair at the
+  //     touch location without requiring any drag.
+  //   - Pan with manualActivation + direction-based commit: once motion
+  //     exceeds TAP_SLOP, horizontal-dominant motion activates the
+  //     crosshair, vertical-dominant fails so the parent scroll takes the
+  //     touch. Once LongPress has already activated, Pan accepts any
+  //     direction so the user can drag the crosshair vertically without
+  //     losing it.
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const gesture = useMemo(() => {
     const clampX = (x: number): number => {
