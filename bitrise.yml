@@ -256,7 +256,7 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
-    - IOS_SCHEME: AvaxWalletExternal
+    - IOS_SCHEME: AvaxWallet
       opts:
         is_expand: false
     - XCODE_EXPORT: ad-hoc
@@ -890,7 +890,7 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
-    - IOS_SCHEME: AvaxWalletExternal
+    - IOS_SCHEME: AvaxWallet
       opts:
         is_expand: false
     - XCODE_EXPORT: ad-hoc
@@ -1505,10 +1505,10 @@ workflows:
       - IOS_CONFIGURATION: Release
         opts:
           is_expand: false
-      - IOS_SCHEME: AvaxWalletExternal
+      - IOS_SCHEME: AvaxWallet
         opts:
           is_expand: false
-      - APP_TITLE: Core Mobile 
+      - APP_TITLE: Core Mobile
         opts:
           is_expand: false
       - E2E: "true"
@@ -1516,7 +1516,7 @@ workflows:
           is_expand: false
       - POST_TO_TESTRAIL: "true"
         opts:
-          is_expand: false 
+          is_expand: false
       - IS_REGRESSION_RUN: "true"
         opts:
           is_expand: false
