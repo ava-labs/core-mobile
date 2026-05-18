@@ -1,21 +1,16 @@
 import { enableFreeze } from 'react-native-screens'
-
-// BLANK-DEBUG: temporarily disable react-native-screens freezing to test
-// whether the Android release-build "blank screen on warm-background
-// notification tap" is caused by freeze/unfreeze breaking native view
-// composition during the <Stack.Protected guard> swap. If blank disappears
-// with this set to false, decide between (a) keeping it off in production
-// for the memory/perf trade-off, (b) switching specific screens off via
-// freezeOnBlur, or (c) replacing the Stack.Protected pattern with
-// conditional rendering in RootNavigator.
-enableFreeze(false)
-
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
+
+// Disable react-native-screens freezing on Android only. The combination of
+// freezing and the <Stack.Protected guard> swap pattern in RootNavigator
+// broke native view composition on Android release builds, leaving warm-
+// background notification taps stuck on a blank screen. iOS keeps freezing
+// for the memory/perf benefit; only Android needs the opt-out.
+enableFreeze(Platform.OS !== 'android')
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
 import AppCheckService from 'services/fcm/AppCheckService'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import NotificationsService from 'services/notifications/NotificationsService'
 import Bootsplash from 'react-native-bootsplash'
 import Logger, { LogLevel } from 'utils/Logger'
@@ -78,22 +73,10 @@ if (DevDebuggingConfig.STORYBOOK_ENABLED) {
 
 AppCheckService.init()
 FCMService.listenForMessagesBackground()
-// BLANK-DEBUG: temporarily disable the notifee background handler
-// registration to test whether the registration itself (or the headless
-// task it spawns on PRESS) is what's leaving Android release builds with
-// a blank screen on warm-background notification taps. If blank disappears
-// with this commented out, the production fix needs to change WHEN/WHERE
-// we register this handler.
-//
-// Cost while diagnostic is on:
-//  - cold-start presses on data-only Android pushes won't be captured
-//    (the original CP-14006 regression returns for that path only)
-//  - notifee trigger notifications won't be auto-cancelled on press
-//
-// // Notifee only supports a single background event handler and requires it to
-// // be registered before AppRegistry.registerComponent so it can handle cold-start
-// // PRESS events for notifications displayed by notifee (data-only Android push).
-// NotificationsService.registerBackgroundNotificationHandler()
+// Notifee only supports a single background event handler and requires it to
+// be registered before AppRegistry.registerComponent so it can handle cold-start
+// PRESS events for notifications displayed by notifee (data-only Android push).
+NotificationsService.registerBackgroundNotificationHandler()
 
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 

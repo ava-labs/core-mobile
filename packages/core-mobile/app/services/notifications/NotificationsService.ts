@@ -345,21 +345,10 @@ class NotificationsService {
     const data = detail?.notification?.data as NotificationData | undefined
     this.stashAndMaybeDrainBackgroundPress(data)
 
-    // BLANK-DEBUG: temporarily disable badge decrement + trigger
-    // cancellation so the headless onBackgroundEvent task returns
-    // immediately after the synchronous stash. If the Android warm-
-    // background blank screen disappears with this, the long-running
-    // async body of this headless task is the root cause — we'll then
-    // move these side effects out of the headless task (e.g. into the
-    // React-mounted callback) for the production fix.
-    // await this.decrementBadgeCount(1)
-    // if (detail?.notification?.id) {
-    //   await this.cancelTriggerNotification(detail.notification.id)
-    // }
-    // eslint-disable-next-line no-console
-    console.error(
-      `[BLANK-DEBUG] handleBackgroundPress skipped post-stash side effects for diagnostic`
-    )
+    await this.decrementBadgeCount(1)
+    if (detail?.notification?.id) {
+      await this.cancelTriggerNotification(detail.notification.id)
+    }
   }
 
   private stashAndMaybeDrainBackgroundPress = (
