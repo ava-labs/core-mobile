@@ -314,7 +314,37 @@ export const ScrollScreen = ({
     if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
-        const footerInner = (
+        const footerContent = (
+          <LinearGradientBottomWrapper>
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingBottom: insets.bottom + 16
+              }}>
+              <View onLayout={handleFooterLayout}>{footer}</View>
+            </View>
+          </LinearGradientBottomWrapper>
+        )
+
+        if (shouldAvoidKeyboard) {
+          const measuredFooterHeight = footerLayout?.height ?? 0
+          const footerMinHeight =
+            measuredFooterHeight > 0
+              ? measuredFooterHeight + insets.bottom + 16
+              : 88
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}
+              style={{ minHeight: footerMinHeight }}>
+              {footerContent}
+            </KeyboardStickyView>
+          )
+        }
+
+        return (
           <View
             collapsable={false}
             style={{
@@ -323,35 +353,9 @@ export const ScrollScreen = ({
               left: 0,
               right: 0
             }}>
-            <LinearGradientBottomWrapper>
-              <View
-                style={{
-                  paddingHorizontal: 16,
-                  paddingBottom: insets.bottom + 16
-                }}>
-                <View onLayout={handleFooterLayout}>{footer}</View>
-              </View>
-            </LinearGradientBottomWrapper>
+            {footerContent}
           </View>
         )
-
-        if (shouldAvoidKeyboard) {
-          const measuredFooterHeight = footerLayout?.height ?? 0
-          const footerMinHeight =
-            measuredFooterHeight > 0 ? measuredFooterHeight : 88
-          return (
-            <KeyboardStickyView
-              enabled={!disableStickyFooter}
-              offset={{
-                opened: insets.bottom
-              }}
-              style={{ minHeight: footerMinHeight }}>
-              {footerInner}
-            </KeyboardStickyView>
-          )
-        }
-
-        return footerInner
       }
     }
 
