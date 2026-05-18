@@ -5,7 +5,10 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
-import { formatLastUpdate, formatVolume as defaultFormatVolume } from './helpers'
+import {
+  formatLastUpdate,
+  formatVolume as defaultFormatVolume
+} from './helpers'
 import { useActiveIndex } from './hooks'
 import { OhlcCandle } from './types'
 
@@ -73,6 +76,7 @@ export const ChartFooter: FC<Props> = ({
         style={[
           {
             position: 'absolute',
+            top: 12,
             left: 16,
             right: 16,
             alignItems: 'center'
@@ -94,6 +98,7 @@ export const ChartFooter: FC<Props> = ({
         style={[
           {
             position: 'absolute',
+            top: 12,
             left: 0,
             width: VOLUME_WIDTH,
             alignItems: 'center'

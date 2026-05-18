@@ -92,6 +92,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const [tokenPriceChartLayout, setTokenPriceChartLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isPriceChartBlocked = useSelector(selectIsPriceChartBlocked)
@@ -160,6 +163,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleSegmentedControlLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleTokenPriceChartLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setTokenPriceChartLayout(event.nativeEvent.layout)
     },
     []
   )
@@ -362,19 +372,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         <ActionButtons
           buttons={actionButtons}
           contentContainerStyle={{
-            padding: 16
+            paddingHorizontal: 16,
+            paddingVertical: 24
           }}
         />
-        {!isPriceChartBlocked && (
-          <TokenPriceChart
-            symbol={token?.symbol ?? ''}
-            coingeckoId={tokenCoingeckoId}
-            width={frame.width}
-            onPriceHeaderPress={
-              trackTokenId ? handleOpenTrackTokenDetail : undefined
-            }
-          />
-        )}
       </View>
     )
   }, [
@@ -388,27 +389,56 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     isPrivacyModeEnabled,
-    actionButtons,
-    frame.width,
-    tokenCoingeckoId,
+    actionButtons
+  ])
+
+  const tokenPriceChartElement = useMemo(() => {
+    return (
+      <View onLayout={handleTokenPriceChartLayout}>
+        {isPriceChartBlocked ? null : (
+          <TokenPriceChart
+            symbol={token?.symbol ?? ''}
+            coingeckoId={tokenCoingeckoId}
+            width={frame.width}
+            onPriceHeaderPress={
+              trackTokenId ? handleOpenTrackTokenDetail : undefined
+            }
+          />
+        )}
+      </View>
+    )
+  }, [
     isPriceChartBlocked,
+    handleTokenPriceChartLayout,
+    token?.symbol,
+    tokenCoingeckoId,
+    frame.width,
     trackTokenId,
     handleOpenTrackTokenDetail
   ])
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight,
-      android: frame.height - headerHeight + (tokenHeaderLayout?.height ?? 0)
+      ios: frame.height - headerHeight + (tokenPriceChartLayout?.height ?? 0),
+      android:
+        frame.height -
+        headerHeight +
+        (tokenHeaderLayout?.height ?? 0) +
+        (tokenPriceChartLayout?.height ?? 0)
     })
-  }, [frame.height, headerHeight, tokenHeaderLayout?.height])
+  }, [
+    frame.height,
+    headerHeight,
+    tokenPriceChartLayout?.height,
+    tokenHeaderLayout?.height
+  ])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
+      paddingBottom: insets.bottom + (segmentedControlLayout?.height ?? 0),
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight, insets.bottom])
 
   const tabs = useMemo(() => {
     const activityTab = {
@@ -418,6 +448,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           token={token}
           handleExplorerLink={handleExplorerLink}
           containerStyle={contentContainerStyle}
+          preFilter={tokenPriceChartElement}
         />
       )
     }
@@ -431,7 +462,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [token, handleExplorerLink, contentContainerStyle, isXpToken])
+  }, [
+    token,
+    handleExplorerLink,
+    contentContainerStyle,
+    isXpToken,
+    tokenPriceChartElement
+  ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (

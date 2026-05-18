@@ -1,17 +1,21 @@
 import {
   Canvas,
   DashPathEffect,
+  Group,
   Path,
   Skia,
   useFont
 } from '@shopify/react-native-skia'
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useMemo } from 'react'
 import { ActivityIndicator, Pressable, View } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
-import {
+import Animated, {
+  Easing,
   SharedValue,
+  useAnimatedStyle,
   useDerivedValue,
-  useSharedValue
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../../hooks'
 import { colors as baseColors } from '../../../theme/tokens/colors'
@@ -23,7 +27,6 @@ import {
   CANDLE_BODY_WIDTH_RATIO,
   CHART_FOOTER_HEIGHT,
   CHART_INSET,
-  LINE_BOTTOM_PADDING,
   PRICE_TOP_PADDING,
   VOLUME_ROW_HEIGHT
 } from './constants'
@@ -59,6 +62,8 @@ type Props = {
   formatPrice?: (amount: number) => string
   /** Locale + currency-aware compact formatter for the volume label. */
   formatVolume?: (volume: number) => string
+  /** Background refetch (e.g., on range change). Dims the chart and shows a spinner overlay. */
+  isFetching?: boolean
 }
 
 const renderPlaceholderState = ({
@@ -127,7 +132,8 @@ export const PriceChart: FC<Props> = ({
   externalActiveIndex,
   externalCrosshairX,
   formatPrice,
-  formatVolume
+  formatVolume,
+  isFetching = false
 }) => {
   const { theme } = useTheme()
 
@@ -144,20 +150,49 @@ export const PriceChart: FC<Props> = ({
   const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
   const bodyWidth = slotWidth * CANDLE_BODY_WIDTH_RATIO
 
-  // Reserve the volume slot only when we actually have volume to draw —
-  // candles derived from a close-only feed have `volume: null` and would
-  // otherwise leave an empty band under the candles.
   const hasVolumeData = useMemo(
     () => candles.some(c => c.volume != null),
     [candles]
   )
   const showVolume = mode === 'candlestick' && hasVolumeData
   const footerH = CHART_FOOTER_HEIGHT
-  const volH = showVolume ? volumeRowHeight ?? VOLUME_ROW_HEIGHT : 0
+  // Stable price area drives gridlines + candle scaling so they stay locked
+  // across modes; in line/area mode the line/area uses `dataAreaH` (extended
+  // into the would-be volume-row space) so the curve can dip below the
+  // bottom gridline and fill that band with gradient.
+  const volH = volumeRowHeight ?? VOLUME_ROW_HEIGHT
   const candleH = Math.max(0, height - volH - footerH)
   const priceTopPadding = PRICE_TOP_PADDING
-  const priceBottomPadding = mode === 'line' ? LINE_BOTTOM_PADDING : 0
-  const priceAreaH = Math.max(0, candleH - priceTopPadding - priceBottomPadding)
+  const priceAreaH = Math.max(0, candleH - priceTopPadding)
+  // Canvas always covers the full chart area (candle body + volume band).
+  // We cross-fade between line/area and candles via opacity, so both Skia
+  // primitives stay mounted — `canvasH` cannot shrink with mode or layout
+  // jumps would re-trigger Canvas re-creation and break the transition.
+  const canvasH = candleH + volH
+  const areaBottomY = priceTopPadding + priceAreaH + volH
+
+  const modeAnim = useSharedValue(mode === 'candlestick' ? 1 : 0)
+  useEffect(() => {
+    modeAnim.value = mode === 'candlestick' ? 1 : 0
+  }, [mode, modeAnim])
+  const candleOpacity = useDerivedValue(() => modeAnim.value)
+  const lineOpacity = useDerivedValue(() => 1 - modeAnim.value)
+
+  const touchStartX = useSharedValue(0)
+  const touchStartY = useSharedValue(0)
+  const touchStartLocalX = useSharedValue(0)
+  const hasDecided = useSharedValue(false)
+
+  const chartContentOpacity = useSharedValue(1)
+  useEffect(() => {
+    chartContentOpacity.value = withTiming(isFetching ? 0.4 : 1, {
+      duration: isFetching ? 120 : 250,
+      easing: Easing.out(Easing.quad)
+    })
+  }, [isFetching, chartContentOpacity])
+  const chartContentStyle = useAnimatedStyle(() => ({
+    opacity: chartContentOpacity.value
+  }))
 
   // Shared between the gridline path and the y-axis labels so each label
   // stays locked to its dashed line (including the edge-clamping below).
@@ -221,12 +256,11 @@ export const PriceChart: FC<Props> = ({
     const last = linePoints[linePoints.length - 1]
     const first = linePoints[0]
     if (!last || !first) return p
-    const bottomY = priceTopPadding + priceAreaH
-    p.lineTo(last.x, bottomY)
-    p.lineTo(first.x, bottomY)
+    p.lineTo(last.x, areaBottomY)
+    p.lineTo(first.x, areaBottomY)
     p.close()
     return p
-  }, [linePoints, priceAreaH, priceTopPadding])
+  }, [linePoints, areaBottomY])
 
   const greenColor = baseColors.$accentSuccessL
   const redColor = baseColors.$accentDanger
@@ -294,24 +328,58 @@ export const PriceChart: FC<Props> = ({
     return interp + 8
   }, [candles, maxVolume, volH, innerWidth])
 
+  // Direction-based commit (mirrors CircularDial): once total motion exceeds
+  // TAP_SLOP, activate iff horizontal motion dominates. Predominantly
+  // vertical swipes fail the gesture so the parent scroll container takes
+  // over the touch immediately — no long-press wait that blocks the scroll.
   const gesture = useMemo(
     () =>
       Gesture.Pan()
-        .activateAfterLongPress(150)
-        .onStart(e => {
+        .manualActivation(true)
+        .onTouchesDown(event => {
+          'worklet'
+          const touch = event.allTouches[0]
+          if (!touch) return
+          touchStartX.value = touch.absoluteX
+          touchStartY.value = touch.absoluteY
+          touchStartLocalX.value = touch.x
+          hasDecided.value = false
+        })
+        .onTouchesMove((event, manager) => {
+          'worklet'
+          if (hasDecided.value) return
+          const touch = event.allTouches[0]
+          if (!touch) return
+          const dx = touch.absoluteX - touchStartX.value
+          const dy = touch.absoluteY - touchStartY.value
+          const absDx = Math.abs(dx)
+          const absDy = Math.abs(dy)
+          const TAP_SLOP = 8
+          if (absDx <= TAP_SLOP && absDy <= TAP_SLOP) return
+          hasDecided.value = true
+          if (absDx > absDy) {
+            manager.activate()
+          } else {
+            manager.fail()
+          }
+        })
+        .onStart(() => {
+          'worklet'
+          const startX = touchStartLocalX.value
           const clampedX = Math.max(
             chartInset,
-            Math.min(width - chartInset, e.x)
+            Math.min(width - chartInset, startX)
           )
           crosshairX.value = clampedX
           activeIndex.value = touchXToIndex(
-            e.x - chartInset,
+            startX - chartInset,
             candles.length,
             innerWidth
           )
           isActive.value = true
         })
         .onChange(e => {
+          'worklet'
           const clampedX = Math.max(
             chartInset,
             Math.min(width - chartInset, e.x)
@@ -324,11 +392,12 @@ export const PriceChart: FC<Props> = ({
           )
         })
         .onFinalize(() => {
+          'worklet'
           isActive.value = false
           activeIndex.value = null
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- SharedValues are stable refs.
-    [candles.length, width, innerWidth]
+    [candles.length, width, innerWidth, chartInset]
   )
 
   const placeholder = renderPlaceholderState({
@@ -343,8 +412,9 @@ export const PriceChart: FC<Props> = ({
   return (
     <GestureDetector gesture={gesture}>
       <View style={{ width, height }}>
-        <View style={{ width, height: candleH }}>
-          <Canvas style={{ width, height: candleH }}>
+        <Animated.View style={[{ width, height }, chartContentStyle]}>
+        <View style={{ width, height: canvasH }}>
+          <Canvas style={{ width, height: canvasH }}>
             <Path
               path={gridPath}
               color={theme.colors.$textSecondary ?? '#888'}
@@ -353,16 +423,16 @@ export const PriceChart: FC<Props> = ({
               opacity={0.3}>
               <DashPathEffect intervals={[2, 4]} />
             </Path>
-            {mode === 'line' && (
+            <Group opacity={lineOpacity}>
               <AreaSeries
                 areaPath={areaPath}
                 linePath={linePath}
                 color={lineColor}
                 topY={priceTopPadding}
-                bottomY={priceTopPadding + priceAreaH}
+                bottomY={areaBottomY}
               />
-            )}
-            {mode === 'candlestick' && (
+            </Group>
+            <Group opacity={candleOpacity}>
               <Candles
                 candles={candles}
                 innerWidth={innerWidth}
@@ -375,7 +445,7 @@ export const PriceChart: FC<Props> = ({
                 upColor={greenColor}
                 downColor={redColor}
               />
-            )}
+            </Group>
             <YAxisLabels
               isActive={isActive}
               ticks={tickPositions}
@@ -386,13 +456,23 @@ export const PriceChart: FC<Props> = ({
           </Canvas>
         </View>
         {showVolume && (
-          <VolumeRow
-            candles={candles}
-            width={width}
-            height={volH}
-            crosshairX={crosshairX}
-            isActive={isActive}
-          />
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: candleH,
+              left: 0,
+              width,
+              height: volH
+            }}>
+            <VolumeRow
+              candles={candles}
+              width={width}
+              height={volH}
+              crosshairX={crosshairX}
+              isActive={isActive}
+            />
+          </View>
         )}
         <ChartFooter
           candles={candles}
@@ -407,12 +487,28 @@ export const PriceChart: FC<Props> = ({
         <Crosshair
           x={crosshairX}
           isActive={isActive}
-          height={showVolume ? candleH + volH : priceTopPadding + priceAreaH}
+          height={candleH + volH}
           bottomInset={showVolume ? animatedBarHeight : undefined}
           width={3}
         />
         {mode === 'line' && (
           <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
+        )}
+        </Animated.View>
+        {isFetching && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <ActivityIndicator />
+          </View>
         )}
       </View>
     </GestureDetector>

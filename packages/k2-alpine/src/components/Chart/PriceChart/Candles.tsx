@@ -1,5 +1,5 @@
 import { Line, RoundedRect, vec } from '@shopify/react-native-skia'
-import React, { FC } from 'react'
+import React, { FC, memo } from 'react'
 import { indexToX, priceToY } from './helpers'
 import { OhlcCandle } from './types'
 
@@ -18,7 +18,7 @@ type Props = {
 }
 
 /** Skia primitives — must be a child of a `<Canvas>`. */
-export const Candles: FC<Props> = ({
+export const Candles: FC<Props> = memo(({
   candles,
   innerWidth,
   chartInset,
@@ -89,4 +89,4 @@ export const Candles: FC<Props> = ({
       )
     })}
   </>
-)
+))

@@ -2,7 +2,7 @@ import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -155,24 +155,16 @@ const ContentWrapper = ({
   return (
     <View
       style={[
-        Platform.OS === 'ios'
-          ? {
-              // iOS works with 100%, but android needs specific height
-              height: '100%',
-              paddingBottom: header.height - tabBarHeight + insets.bottom
-            }
-          : {
-              height:
-                frame.height -
-                header.height -
-                headerHeight -
-                insets.bottom -
-                tabBarHeight -
-                extraOffset
-            },
         {
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          height:
+            frame.height -
+            header.height -
+            headerHeight -
+            insets.bottom -
+            tabBarHeight -
+            extraOffset
         }
       ]}>
       <Animated.View style={animatedStyle}>{children}</Animated.View>

@@ -1,12 +1,7 @@
-import type {
-  ChartRange,
-  ChartState,
-  OhlcCandle,
-  PriceChartMode
-} from '@avalabs/k2-alpine'
-import { useQuery } from '@tanstack/react-query'
+import type { ChartRange, ChartState, OhlcCandle } from '@avalabs/k2-alpine'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 
@@ -39,19 +34,6 @@ const pointTimestamp = (p: PriceDataPoint): number =>
   p.date instanceof Date ? p.date.getTime() : Number(p.date) || 0
 const pointVolume = (p: PriceDataPoint): number | null =>
   typeof p.volume === 'number' && Number.isFinite(p.volume) ? p.volume : null
-
-const pointsToFlatCandles = (points: PriceDataPoint[]): OhlcCandle[] =>
-  points.map(p => {
-    const value = sanitizeValue(p.value)
-    return {
-      ts: pointTimestamp(p),
-      open: value,
-      high: value,
-      low: value,
-      close: value,
-      volume: pointVolume(p)
-    }
-  })
 
 const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
   const first = slice[0]
@@ -102,18 +84,20 @@ const bucketPointsIntoCandles = (
 export const useTokenChartCandles = ({
   coingeckoId,
   range,
-  currency,
-  mode
+  currency
 }: {
   coingeckoId: string | undefined
   range: ChartRange
   currency: VsCurrencyType
-  mode: PriceChartMode
-}): { candles: OhlcCandle[]; state: ChartState } => {
+}): {
+  candles: OhlcCandle[]
+  state: ChartState
+  isFetching: boolean
+} => {
   const days = RANGE_TO_DAYS[range]
   const enabled = Boolean(coingeckoId)
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isPlaceholderData } = useQuery({
     enabled,
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [ReactQueryKeys.TOKEN_CHART_DATA, coingeckoId, range, currency],
@@ -135,23 +119,61 @@ export const useTokenChartCandles = ({
       })
     },
     staleTime: 60_000,
-    networkMode: 'offlineFirst'
+    networkMode: 'offlineFirst',
+    // Keep the previous range's candles visible during a range-change
+    // refetch so the chart fades in place instead of dropping to an empty
+    // placeholder.
+    placeholderData: keepPreviousData
   })
+
+  // Track the range that the current `data` actually came from. While
+  // `data` is the placeholder (previous range's points), the bucketing
+  // needs to use the previous range's bucket count — otherwise we
+  // re-bucket old points with the new range's count and the chart flickers
+  // a different shape before the new data lands.
+  const dataRangeRef = useRef(range)
+  useEffect(() => {
+    if (!isPlaceholderData) dataRangeRef.current = range
+  }, [isPlaceholderData, range])
 
   return useMemo(() => {
     if (!enabled)
-      return { candles: [] as OhlcCandle[], state: 'empty' as ChartState }
+      return {
+        candles: [] as OhlcCandle[],
+        state: 'empty' as ChartState,
+        isFetching: false
+      }
     if (isLoading)
-      return { candles: [] as OhlcCandle[], state: 'loading' as ChartState }
+      return {
+        candles: [] as OhlcCandle[],
+        state: 'loading' as ChartState,
+        isFetching: false
+      }
     if (isError)
-      return { candles: [] as OhlcCandle[], state: 'error' as ChartState }
+      return {
+        candles: [] as OhlcCandle[],
+        state: 'error' as ChartState,
+        isFetching: false
+      }
     const points = data?.dataPoints ?? []
     if (points.length === 0)
-      return { candles: [] as OhlcCandle[], state: 'empty' as ChartState }
-    const candles =
-      mode === 'candlestick'
-        ? bucketPointsIntoCandles(points, RANGE_TO_CANDLE_COUNT[range])
-        : pointsToFlatCandles(points)
-    return { candles, state: 'loaded' as ChartState }
-  }, [enabled, isLoading, isError, data, mode, range])
+      return {
+        candles: [] as OhlcCandle[],
+        state: 'empty' as ChartState,
+        isFetching: false
+      }
+    // Bucket for both modes so the chart never has to render thousands of
+    // points; line mode connects the bucket close values, candle mode draws
+    // OHLC bodies. Same data shape = no recomputation on mode toggle.
+    const effectiveRange = isPlaceholderData ? dataRangeRef.current : range
+    const candles = bucketPointsIntoCandles(
+      points,
+      RANGE_TO_CANDLE_COUNT[effectiveRange]
+    )
+    return {
+      candles,
+      state: 'loaded' as ChartState,
+      isFetching: isPlaceholderData
+    }
+  }, [enabled, isLoading, isError, data, range, isPlaceholderData])
 }

@@ -11,7 +11,7 @@ import {
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { FC, memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { Pressable } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,6 +30,71 @@ type Props = {
 const TOGGLE_SIZE = 36
 const RANGE_ITEMS = CHART_RANGES.map(range => ({ title: range }))
 
+const ChartTypeToggle: FC = memo(() => {
+  const { theme } = useTheme()
+  const dispatch = useDispatch()
+  const chartType = useSelector(selectChartType)
+  const isCandle = chartType === 'candlestick'
+  const onPress = (): void => {
+    dispatch(setChartType(isCandle ? 'line' : 'candlestick'))
+  }
+  const bg = isCandle
+    ? theme.colors.$textPrimary
+    : theme.colors.$surfaceSecondary
+  const fg = isCandle ? theme.colors.$surfacePrimary : theme.colors.$textPrimary
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Switch chart to ${
+        isCandle ? 'line' : 'candlestick'
+      } view`}
+      onPressIn={onPress}
+      style={{
+        width: TOGGLE_SIZE,
+        height: TOGGLE_SIZE,
+        borderRadius: TOGGLE_SIZE / 2,
+        backgroundColor: bg,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      <Icons.Custom.Candlestick color={fg} width={24} height={24} />
+    </Pressable>
+  )
+})
+
+const ChartRangeSelector: FC<{
+  value: ChartRange
+  onChange: (range: ChartRange) => void
+}> = memo(({ value, onChange }) => {
+  const { theme } = useTheme()
+  const selectedSegmentIndex = useSharedValue(CHART_RANGES.indexOf(value))
+
+  useEffect(() => {
+    const index = CHART_RANGES.indexOf(value)
+    if (index !== -1) selectedSegmentIndex.value = index
+  }, [value, selectedSegmentIndex])
+
+  const handleSelectSegment = useCallback(
+    (index: number) => {
+      const next = CHART_RANGES[index]
+      if (next) onChange(next)
+    },
+    [onChange]
+  )
+
+  return (
+    <SegmentedControl
+      dynamicItemWidth={false}
+      items={RANGE_ITEMS}
+      type="thin"
+      backgroundColor={theme.colors.$surfaceSecondary}
+      selectedSegmentIndex={selectedSegmentIndex}
+      onSelectSegment={handleSelectSegment}
+    />
+  )
+})
+
 export const TokenPriceChart: FC<Props> = ({
   symbol,
   coingeckoId,
@@ -38,8 +103,6 @@ export const TokenPriceChart: FC<Props> = ({
   initialRange = '1D',
   onPriceHeaderPress
 }) => {
-  const { theme } = useTheme()
-  const dispatch = useDispatch()
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
@@ -62,43 +125,18 @@ export const TokenPriceChart: FC<Props> = ({
 
   const [range, setRange] = useState<ChartRange>(initialRange)
 
-  const { candles, state } = useTokenChartCandles({
+  const { candles, state, isFetching } = useTokenChartCandles({
     coingeckoId,
     range,
-    currency,
-    mode: chartType
+    currency
   })
 
   const isActive = useSharedValue(false)
   const activeIndex = useSharedValue<number | null>(null)
   const crosshairX = useSharedValue(0)
-  const selectedSegmentIndex = useSharedValue(
-    CHART_RANGES.indexOf(initialRange)
-  )
-
-  useEffect(() => {
-    const index = CHART_RANGES.indexOf(range)
-    if (index !== -1) selectedSegmentIndex.value = index
-  }, [range, selectedSegmentIndex])
-
-  const handleSelectRange = useCallback((index: number) => {
-    const next = CHART_RANGES[index]
-    if (next) setRange(next)
-  }, [])
-
-  const isCandle = chartType === 'candlestick'
-  const toggleBg = isCandle
-    ? theme.colors.$textPrimary
-    : theme.colors.$surfaceSecondary
-  const toggleFg = isCandle
-    ? theme.colors.$surfacePrimary
-    : theme.colors.$textPrimary
-  const onToggleChartType = (): void => {
-    dispatch(setChartType(isCandle ? 'line' : 'candlestick'))
-  }
 
   return (
-    <View style={{ paddingBottom: 12, gap: 12 }}>
+    <View style={{ paddingBottom: 18, gap: 12 }}>
       <ChartHeader
         candles={candles}
         symbol={symbol}
@@ -115,6 +153,7 @@ export const TokenPriceChart: FC<Props> = ({
         height={height}
         mode={chartType}
         state={state}
+        isFetching={isFetching}
         externalIsActive={isActive}
         externalActiveIndex={activeIndex}
         externalCrosshairX={crosshairX}
@@ -129,31 +168,9 @@ export const TokenPriceChart: FC<Props> = ({
           alignItems: 'center'
         }}>
         <View sx={{ flex: 1 }}>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={RANGE_ITEMS}
-            type="thin"
-            backgroundColor={theme.colors.$surfaceSecondary}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectRange}
-          />
+          <ChartRangeSelector value={range} onChange={setRange} />
         </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Switch chart to ${
-            isCandle ? 'line' : 'candlestick'
-          } view`}
-          onPress={onToggleChartType}
-          style={{
-            width: TOGGLE_SIZE,
-            height: TOGGLE_SIZE,
-            borderRadius: TOGGLE_SIZE / 2,
-            backgroundColor: toggleBg,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <Icons.Custom.Candlestick color={toggleFg} width={24} height={24} />
-        </Pressable>
+        <ChartTypeToggle />
       </View>
     </View>
   )
