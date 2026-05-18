@@ -110,6 +110,24 @@ describe('useTokenChartCandles', () => {
   })
 
   describe('bucketing', () => {
+    it('emits a single flat candle when the response has one point', () => {
+      const points = [makePoint(1000, 42)]
+      setQueryResult({ data: { dataPoints: points, ranges: {} } })
+
+      const { result } = renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range: '1D',
+          currency: VsCurrencyType.USD
+        })
+      )
+
+      expect(result.current.state).toBe('loaded')
+      expect(result.current.candles).toEqual([
+        { ts: 1000, open: 42, high: 42, low: 42, close: 42, volume: null }
+      ])
+    })
+
     it('produces 24 candles from 24 sub-points for the 1D range', () => {
       const points = Array.from({ length: 24 }, (_, i) =>
         makePoint(i * 60_000, 100 + i)

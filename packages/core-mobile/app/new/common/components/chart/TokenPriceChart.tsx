@@ -11,7 +11,14 @@ import {
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
-import React, { FC, memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { Pressable } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'

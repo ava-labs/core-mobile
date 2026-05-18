@@ -337,6 +337,7 @@ export const PriceChart: FC<Props> = ({
   //     view takes over the touch. Both thresholds are processed in native
   //     code (no manualActivation worklet round-trip), keeping the scroll
   //     handoff snappy.
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const gesture = useMemo(() => {
     const clampX = (x: number): number => {
       'worklet'
@@ -441,87 +442,87 @@ export const PriceChart: FC<Props> = ({
     <GestureDetector gesture={gesture}>
       <View style={{ width, height }}>
         <Animated.View style={[{ width, height }, chartContentStyle]}>
-        <View style={{ width, height: canvasH }}>
-          <Canvas style={{ width, height: canvasH }}>
-            <Path
-              path={gridPath}
-              color={theme.colors.$textSecondary ?? '#888'}
-              style="stroke"
-              strokeWidth={1}
-              opacity={0.3}>
-              <DashPathEffect intervals={[2, 4]} />
-            </Path>
-            <Group opacity={lineOpacity}>
-              <AreaSeries
-                areaPath={areaPath}
-                linePath={linePath}
-                color={lineColor}
-                topY={priceTopPadding}
-                bottomY={areaBottomY}
+          <View style={{ width, height: canvasH }}>
+            <Canvas style={{ width, height: canvasH }}>
+              <Path
+                path={gridPath}
+                color={theme.colors.$textSecondary ?? '#888'}
+                style="stroke"
+                strokeWidth={1}
+                opacity={0.3}>
+                <DashPathEffect intervals={[2, 4]} />
+              </Path>
+              <Group opacity={lineOpacity}>
+                <AreaSeries
+                  areaPath={areaPath}
+                  linePath={linePath}
+                  color={lineColor}
+                  topY={priceTopPadding}
+                  bottomY={areaBottomY}
+                />
+              </Group>
+              <Group opacity={candleOpacity}>
+                <Candles
+                  candles={candles}
+                  innerWidth={innerWidth}
+                  chartInset={chartInset}
+                  bodyWidth={bodyWidth}
+                  priceAreaH={priceAreaH}
+                  priceTopPadding={priceTopPadding}
+                  priceMin={minPrice}
+                  priceMax={maxPrice}
+                  upColor={greenColor}
+                  downColor={redColor}
+                />
+              </Group>
+              <YAxisLabels
+                isActive={isActive}
+                ticks={tickPositions}
+                font={labelFont}
+                color={theme.colors.$textPrimary ?? '#000'}
+                formatPrice={formatPrice}
               />
-            </Group>
-            <Group opacity={candleOpacity}>
-              <Candles
-                candles={candles}
-                innerWidth={innerWidth}
-                chartInset={chartInset}
-                bodyWidth={bodyWidth}
-                priceAreaH={priceAreaH}
-                priceTopPadding={priceTopPadding}
-                priceMin={minPrice}
-                priceMax={maxPrice}
-                upColor={greenColor}
-                downColor={redColor}
-              />
-            </Group>
-            <YAxisLabels
-              isActive={isActive}
-              ticks={tickPositions}
-              font={labelFont}
-              color={theme.colors.$textPrimary ?? '#000'}
-              formatPrice={formatPrice}
-            />
-          </Canvas>
-        </View>
-        {showVolume && (
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: candleH,
-              left: 0,
-              width,
-              height: volH
-            }}>
-            <VolumeRow
-              candles={candles}
-              width={width}
-              height={volH}
-              crosshairX={crosshairX}
-              isActive={isActive}
-            />
+            </Canvas>
           </View>
-        )}
-        <ChartFooter
-          candles={candles}
-          activeIndex={activeIndex}
-          isActive={isActive}
-          x={crosshairX}
-          width={width}
-          height={footerH}
-          showVolume={showVolume}
-          formatVolume={formatVolume}
-        />
-        <Crosshair
-          x={crosshairX}
-          isActive={isActive}
-          height={candleH + volH}
-          bottomInset={showVolume ? animatedBarHeight : undefined}
-          width={3}
-        />
-        {mode === 'line' && (
-          <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
-        )}
+          {showVolume && (
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: candleH,
+                left: 0,
+                width,
+                height: volH
+              }}>
+              <VolumeRow
+                candles={candles}
+                width={width}
+                height={volH}
+                crosshairX={crosshairX}
+                isActive={isActive}
+              />
+            </View>
+          )}
+          <ChartFooter
+            candles={candles}
+            activeIndex={activeIndex}
+            isActive={isActive}
+            x={crosshairX}
+            width={width}
+            height={footerH}
+            showVolume={showVolume}
+            formatVolume={formatVolume}
+          />
+          <Crosshair
+            x={crosshairX}
+            isActive={isActive}
+            height={candleH + volH}
+            bottomInset={showVolume ? animatedBarHeight : undefined}
+            width={3}
+          />
+          {mode === 'line' && (
+            <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
+          )}
         </Animated.View>
         {showSpinner && (
           <View

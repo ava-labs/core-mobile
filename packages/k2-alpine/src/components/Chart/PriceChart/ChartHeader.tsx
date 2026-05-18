@@ -57,8 +57,17 @@ export const ChartHeader: FC<Props> = memo(
     const priceText = displayed?.priceText ?? formatPrice(0)
     const subtitleText = active ? active.timeText : `Current price of ${symbol}`
 
+    // Hide the header content while candles are empty (initial load / range
+    // fetch) so a placeholder "$0.00 / 0.00%" never flashes before real data.
+    const hasData = candles.length > 0
+
     return (
-      <View style={{ paddingHorizontal: 16, alignItems: 'flex-start' }}>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          alignItems: 'flex-start',
+          opacity: hasData ? 1 : 0
+        }}>
         <Animated.View
           onLayout={animations.onBlockLayout}
           style={[animations.blockStyle, { alignItems: 'flex-start' }]}>
