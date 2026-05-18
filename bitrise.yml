@@ -230,7 +230,7 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-archive@5.9.4:
+    - xcode-archive@6.0.1:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
@@ -1173,6 +1173,36 @@ workflows:
       opts:
         is_expand: false
     - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+  ios-external-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-external-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - XCODE_EXPORT: ad-hoc
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletExternal
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile
