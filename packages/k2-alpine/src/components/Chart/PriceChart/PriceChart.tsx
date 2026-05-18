@@ -85,14 +85,9 @@ const renderPlaceholderState = ({
     justifyContent: 'center' as const,
     alignItems: 'center' as const
   }
-  if (state === 'loading') {
-    return (
-      <View style={containerStyle}>
-        <ActivityIndicator />
-      </View>
-    )
-  }
-  if (state === 'empty' || candles.length === 0) {
+  // 'loading' falls through to the main render so we get a stable layout
+  // with a spinner overlay and fade-in instead of swapping layouts.
+  if (state === 'empty' && candles.length === 0) {
     return (
       <View style={containerStyle}>
         <Text variant="caption" sx={{ color: '$textSecondary' }}>
@@ -178,21 +173,27 @@ export const PriceChart: FC<Props> = ({
   const candleOpacity = useDerivedValue(() => modeAnim.value)
   const lineOpacity = useDerivedValue(() => 1 - modeAnim.value)
 
+  const isPanActive = useSharedValue(false)
+  const isLongPressActive = useSharedValue(false)
   const touchStartX = useSharedValue(0)
   const touchStartY = useSharedValue(0)
-  const touchStartLocalX = useSharedValue(0)
   const hasDecided = useSharedValue(false)
 
-  const chartContentOpacity = useSharedValue(1)
+  const chartContentOpacity = useSharedValue(0)
   useEffect(() => {
-    chartContentOpacity.value = withTiming(isFetching ? 0.4 : 1, {
-      duration: isFetching ? 120 : 250,
+    let target: number
+    if (state !== 'loaded') target = 0
+    else if (isFetching) target = 0.4
+    else target = 1
+    chartContentOpacity.value = withTiming(target, {
+      duration: target === 0 ? 120 : 250,
       easing: Easing.out(Easing.quad)
     })
-  }, [isFetching, chartContentOpacity])
+  }, [state, isFetching, chartContentOpacity])
   const chartContentStyle = useAnimatedStyle(() => ({
     opacity: chartContentOpacity.value
   }))
+  const showSpinner = state === 'loading' || isFetching
 
   // Shared between the gridline path and the y-axis labels so each label
   // stays locked to its dashed line (including the edge-clamping below).
@@ -328,77 +329,104 @@ export const PriceChart: FC<Props> = ({
     return interp + 8
   }, [candles, maxVolume, volH, innerWidth])
 
-  // Direction-based commit (mirrors CircularDial): once total motion exceeds
-  // TAP_SLOP, activate iff horizontal motion dominates. Predominantly
-  // vertical swipes fail the gesture so the parent scroll container takes
-  // over the touch immediately — no long-press wait that blocks the scroll.
-  const gesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .manualActivation(true)
-        .onTouchesDown(event => {
-          'worklet'
-          const touch = event.allTouches[0]
-          if (!touch) return
-          touchStartX.value = touch.absoluteX
-          touchStartY.value = touch.absoluteY
-          touchStartLocalX.value = touch.x
-          hasDecided.value = false
-        })
-        .onTouchesMove((event, manager) => {
-          'worklet'
-          if (hasDecided.value) return
-          const touch = event.allTouches[0]
-          if (!touch) return
-          const dx = touch.absoluteX - touchStartX.value
-          const dy = touch.absoluteY - touchStartY.value
-          const absDx = Math.abs(dx)
-          const absDy = Math.abs(dy)
-          const TAP_SLOP = 8
-          if (absDx <= TAP_SLOP && absDy <= TAP_SLOP) return
-          hasDecided.value = true
-          if (absDx > absDy) {
-            manager.activate()
-          } else {
-            manager.fail()
-          }
-        })
-        .onStart(() => {
-          'worklet'
-          const startX = touchStartLocalX.value
-          const clampedX = Math.max(
-            chartInset,
-            Math.min(width - chartInset, startX)
-          )
-          crosshairX.value = clampedX
-          activeIndex.value = touchXToIndex(
-            startX - chartInset,
-            candles.length,
-            innerWidth
-          )
-          isActive.value = true
-        })
-        .onChange(e => {
-          'worklet'
-          const clampedX = Math.max(
-            chartInset,
-            Math.min(width - chartInset, e.x)
-          )
-          crosshairX.value = clampedX
-          activeIndex.value = touchXToIndex(
-            e.x - chartInset,
-            candles.length,
-            innerWidth
-          )
-        })
-        .onFinalize(() => {
-          'worklet'
+  // Two simultaneous gestures coordinate the crosshair interaction:
+  //   - LongPress: pressing and holding (≥200ms with <3px wander) activates
+  //     the crosshair under the finger without requiring any drag.
+  //   - Pan: horizontal motion past 6px activates the crosshair and tracks
+  //     it; vertical motion past 5px fails the gesture so the parent scroll
+  //     view takes over the touch. Both thresholds are processed in native
+  //     code (no manualActivation worklet round-trip), keeping the scroll
+  //     handoff snappy.
+  const gesture = useMemo(() => {
+    const clampX = (x: number): number => {
+      'worklet'
+      return Math.max(chartInset, Math.min(width - chartInset, x))
+    }
+    const indexAt = (x: number): number => {
+      'worklet'
+      return touchXToIndex(x - chartInset, candles.length, innerWidth)
+    }
+
+    const longPress = Gesture.LongPress()
+      .minDuration(200)
+      .maxDistance(3)
+      .onStart(e => {
+        'worklet'
+        isLongPressActive.value = true
+        crosshairX.value = clampX(e.x)
+        activeIndex.value = indexAt(e.x)
+        isActive.value = true
+      })
+      .onFinalize(() => {
+        'worklet'
+        isLongPressActive.value = false
+        if (!isPanActive.value) {
           isActive.value = false
           activeIndex.value = null
-        }),
+        }
+      })
+
+    const TAP_SLOP = 5
+
+    const pan = Gesture.Pan()
+      .manualActivation(true)
+      .onTouchesDown(event => {
+        'worklet'
+        const t = event.allTouches[0]
+        if (!t) return
+        touchStartX.value = t.absoluteX
+        touchStartY.value = t.absoluteY
+        hasDecided.value = false
+      })
+      .onTouchesMove((event, manager) => {
+        'worklet'
+        if (hasDecided.value) return
+        // If the press already activated (LongPress confirmed), accept any
+        // direction — the user is in deliberate crosshair-drag mode and
+        // vertical motion should still move the crosshair X, not scroll.
+        if (isLongPressActive.value) {
+          hasDecided.value = true
+          manager.activate()
+          return
+        }
+        const t = event.allTouches[0]
+        if (!t) return
+        const dx = t.absoluteX - touchStartX.value
+        const dy = t.absoluteY - touchStartY.value
+        const absDx = Math.abs(dx)
+        const absDy = Math.abs(dy)
+        if (absDx <= TAP_SLOP && absDy <= TAP_SLOP) return
+        hasDecided.value = true
+        if (absDx > absDy) {
+          manager.activate()
+        } else {
+          manager.fail()
+        }
+      })
+      .onStart(e => {
+        'worklet'
+        isPanActive.value = true
+        crosshairX.value = clampX(e.x)
+        activeIndex.value = indexAt(e.x)
+        isActive.value = true
+      })
+      .onChange(e => {
+        'worklet'
+        crosshairX.value = clampX(e.x)
+        activeIndex.value = indexAt(e.x)
+      })
+      .onFinalize(() => {
+        'worklet'
+        isPanActive.value = false
+        if (!isLongPressActive.value) {
+          isActive.value = false
+          activeIndex.value = null
+        }
+      })
+
+    return Gesture.Simultaneous(longPress, pan)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- SharedValues are stable refs.
-    [candles.length, width, innerWidth, chartInset]
-  )
+  }, [candles.length, width, innerWidth, chartInset])
 
   const placeholder = renderPlaceholderState({
     state,
@@ -495,7 +523,7 @@ export const PriceChart: FC<Props> = ({
           <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
         )}
         </Animated.View>
-        {isFetching && (
+        {showSpinner && (
           <View
             pointerEvents="none"
             style={{

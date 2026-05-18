@@ -17,6 +17,10 @@ export const DURATIONS = {
   labelsFade: 150
 } as const
 
+/** Crosshair x / containerWidth ratios for header inner alignment. */
+export const HEADER_LEFT_ZONE_THRESHOLD = 0.19
+export const HEADER_RIGHT_ZONE_THRESHOLD = 0.81
+
 /** Alpha bytes appended to the line color for the gradient stops. */
 export const AREA_GRADIENT_TOP_ALPHA = '66'
 export const AREA_GRADIENT_BOTTOM_ALPHA = '00'

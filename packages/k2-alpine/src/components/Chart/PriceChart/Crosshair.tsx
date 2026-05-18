@@ -1,7 +1,11 @@
 import React, { FC } from 'react'
 import Animated, {
+  Easing,
   SharedValue,
-  useAnimatedStyle
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../../hooks'
 
@@ -29,10 +33,21 @@ export const Crosshair: FC<Props> = ({
   const { theme } = useTheme()
   const color = theme.colors.$textPrimary ?? '#000'
 
+  const opacity = useSharedValue(0)
+  useAnimatedReaction(
+    () => isActive.value,
+    active => {
+      opacity.value = withTiming(active ? 1 : 0, {
+        duration: active ? 120 : 180,
+        easing: Easing.out(Easing.quad)
+      })
+    }
+  )
+
   const animatedStyle = useAnimatedStyle(() => {
     const inset = bottomInset?.value ?? 0
     return {
-      opacity: isActive.value ? 1 : 0,
+      opacity: opacity.value,
       transform: [{ translateX: x.value - width / 2 }],
       height: Math.max(0, height - inset)
     }

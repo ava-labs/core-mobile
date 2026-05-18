@@ -1,4 +1,9 @@
 import type { Skia } from '@shopify/react-native-skia'
+import { PriceChangeStatus } from '../../PriceChangeIndicator/types'
+import {
+  HEADER_LEFT_ZONE_THRESHOLD,
+  HEADER_RIGHT_ZONE_THRESHOLD
+} from './constants'
 import { OhlcCandle } from './types'
 
 type SkPath = ReturnType<typeof Skia.Path.Make>
@@ -103,6 +108,60 @@ export const traceSmoothLine = (
     const cp2y = p2.y - (p3.y - p1.y) / 6
     path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
   }
+}
+
+export type CandleDisplayStrings = {
+  priceText: string
+  timeText: string
+  deltaPriceText: string
+  deltaPctText: string
+  status: PriceChangeStatus
+}
+
+export const priceChangeStatusFromDelta = (
+  delta: number
+): PriceChangeStatus => {
+  if (delta > 0) return PriceChangeStatus.Up
+  if (delta < 0) return PriceChangeStatus.Down
+  return PriceChangeStatus.Neutral
+}
+
+/** Pre-compute header strings per candle for drag-time lookups. */
+export const formatCandleDisplayStrings = (
+  candles: OhlcCandle[],
+  formatPrice: (amount: number) => string
+): CandleDisplayStrings[] => {
+  const firstOpen = candles[0]?.open ?? 0
+  return candles.map(c => {
+    const close = Number.isFinite(c.close) ? c.close : 0
+    const delta = close - firstOpen
+    const deltaPct =
+      Number.isFinite(firstOpen) && firstOpen !== 0
+        ? (delta / firstOpen) * 100
+        : 0
+    const safeDelta = Number.isFinite(delta) ? delta : 0
+    const safeDeltaPct = Number.isFinite(deltaPct) ? deltaPct : 0
+    return {
+      priceText: formatPrice(close),
+      timeText: formatActiveTime(c.ts),
+      deltaPriceText: formatPrice(Math.abs(safeDelta)),
+      deltaPctText: `${Math.abs(safeDeltaPct).toFixed(2)}%`,
+      status: priceChangeStatusFromDelta(safeDelta)
+    }
+  })
+}
+
+/** 0 = flex-start, 0.5 = center, 1 = flex-end — worklet for header zone reaction. */
+export const crosshairInnerAnchorTarget = (
+  isActive: boolean,
+  crosshairX: number,
+  containerWidth: number
+): number => {
+  'worklet'
+  if (!isActive || containerWidth <= 0) return 0
+  if (crosshairX > HEADER_RIGHT_ZONE_THRESHOLD * containerWidth) return 1
+  if (crosshairX > HEADER_LEFT_ZONE_THRESHOLD * containerWidth) return 0.5
+  return 0
 }
 
 /** e.g. "Today, 7:25" or "Apr 29, 7:25" — 24-hour, no AM/PM. */
