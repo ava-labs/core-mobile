@@ -16,7 +16,8 @@ const testrail = axios.create(authConfig)
 export async function getTestRun(
   platform: string,
   isSmoke: boolean,
-  isPerformance: boolean
+  isPerformance: boolean,
+  isDeviceFarm = false
 ) {
   const today = new Date().toISOString().split('T')[0]
 
@@ -26,8 +27,10 @@ export async function getTestRun(
     runType = isAndroid ? '[Emulator Performance]' : '[Simulator Performance]'
   } else if (isSmoke) {
     runType = isAndroid ? '[Emulator Smoke]' : '[Simulator Smoke]'
-  } else {
+  } else if (isDeviceFarm) {
     runType = '[Real Device Regression]'
+  } else {
+    runType = isAndroid ? '[Emulator Regression]' : '[Simulator Regression]'
   }
 
   const title = `${runType} ${platform} Test Run: ${today}`

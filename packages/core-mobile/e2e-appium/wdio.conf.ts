@@ -189,7 +189,7 @@ export const config: WebdriverIO.Config = {
     const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
-    runId = await getTestRun(platform, isSmoke, isPerformance)
+    runId = await getTestRun(platform, isSmoke, isPerformance, isDeviceFarm)
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
