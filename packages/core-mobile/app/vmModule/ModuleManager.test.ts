@@ -169,5 +169,29 @@ describe('ModuleManager', () => {
         'X-avax2'
       ])
     })
+
+    it('returns empty AVM/PVM/CoreEth when wallet exposes no xp pubkey', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const WalletService = require('services/wallet/WalletService').default
+      WalletService.getPublicKey.mockResolvedValueOnce({
+        evm: '02' + '11'.repeat(32)
+        // xp intentionally omitted
+      })
+
+      const result = await ModuleManager.deriveAllAddresses({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC,
+        accountIndices: [0],
+        network: { isTestnet: false } as Network
+      })
+      expect(result).toHaveLength(1)
+      expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
+      expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc0')
+      expect(result[0]?.[NetworkVMType.SVM]).toBe('svm0')
+      // AVM/PVM/CoreEth all empty because the wallet did not expose xp
+      expect(result[0]?.[NetworkVMType.AVM]).toBe('')
+      expect(result[0]?.[NetworkVMType.PVM]).toBe('')
+      expect(result[0]?.[NetworkVMType.CoreEth]).toBe('')
+    })
   })
 })

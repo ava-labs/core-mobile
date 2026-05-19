@@ -205,6 +205,9 @@ class ModuleManager {
 
     const pubkeyTriples = await Promise.all(
       accountIndices.map(async accountIndex => {
+        // SVM path is positional in the SDK helper (accountIndex, vm, options?).
+        // The local services/wallet/utils.ts wrapper takes object args, but
+        // importing it here would create a cycle through ModuleManager itself.
         const svmPath = getAddressDerivationPath(
           accountIndex,
           'SVM',
@@ -221,33 +224,69 @@ class ModuleManager {
         ])
         return {
           evm: hexToUint8(evm),
-          avax: hexToUint8(xp ?? evm),
+          // xp may be absent for wallet types that do not derive an Avalanche
+          // pubkey (e.g. some seedless flows). Returning the EVM pubkey here
+          // would silently produce wrong-but-valid AVM/PVM/CoreEth bech32
+          // strings — match the single-index path's silent-empty contract by
+          // signalling the absence with `undefined` and emitting empty strings
+          // for AVM/PVM/CoreEth below.
+          avax: xp !== undefined ? hexToUint8(xp) : undefined,
           svm: hexToUint8(svmHex)
         }
       })
     )
 
+    // Build per-call inputs. For Avax we drop the indices that have no xp
+    // pubkey, then map back to the original positions on the way out.
     const evmPubkeys = pubkeyTriples.map(t => t.evm)
-    const avaxPubkeys = pubkeyTriples.map(t => t.avax)
     const svmPubkeys = pubkeyTriples.map(t => t.svm)
+    const avaxSlots: Array<{ originalIndex: number; pubkey: Uint8Array }> = []
+    pubkeyTriples.forEach((t, i) => {
+      if (t.avax !== undefined) {
+        avaxSlots.push({ originalIndex: i, pubkey: t.avax })
+      }
+    })
     const isTestnet = Boolean(network.isTestnet)
 
-    const [evmAddrs, btcAddrs, avaxAddrs, svmAddrs] = await Promise.all([
-      Promise.resolve(deriveAddressesForEvm(evmPubkeys)),
-      Promise.resolve(deriveAddressesForBTC(evmPubkeys, isTestnet)),
-      Promise.resolve(deriveAddressesForAvax(avaxPubkeys, evmPubkeys, isTestnet)),
-      Promise.resolve(deriveAddressesForSVM(svmPubkeys))
-    ])
+    // Native batch encoders are synchronous; the JS-level Promise.all was
+    // cosmetic and read as if it parallelized them. Call them in sequence —
+    // the per-call C++ parallelFor is where the actual concurrency happens.
+    const evmAddrs = deriveAddressesForEvm(evmPubkeys)
+    const btcAddrs = deriveAddressesForBTC(evmPubkeys, isTestnet)
+    const avaxAddrs =
+      avaxSlots.length > 0
+        ? deriveAddressesForAvax(
+            avaxSlots.map(s => s.pubkey),
+            avaxSlots.map(s => evmPubkeys[s.originalIndex] as Uint8Array),
+            isTestnet
+          )
+        : []
+    const svmAddrs = deriveAddressesForSVM(svmPubkeys)
 
-    return accountIndices.map((_, i) => ({
-      [NetworkVMType.EVM]: evmAddrs[i] ?? '',
-      [NetworkVMType.BITCOIN]: btcAddrs[i] ?? '',
-      [NetworkVMType.AVM]: avaxAddrs[i]?.avm ?? '',
-      [NetworkVMType.PVM]: avaxAddrs[i]?.pvm ?? '',
-      [NetworkVMType.CoreEth]: avaxAddrs[i]?.coreEth ?? '',
-      [NetworkVMType.SVM]: svmAddrs[i] ?? '',
-      [NetworkVMType.HVM]: ''
-    } as Record<NetworkVMType, string>))
+    // Re-key Avax results back to the original `accountIndices` positions.
+    const avaxByOriginalIndex = new Map<
+      number,
+      { avm: string; pvm: string; coreEth: string }
+    >()
+    avaxAddrs.forEach((entry, k) => {
+      const slot = avaxSlots[k]
+      if (slot && entry) {
+        avaxByOriginalIndex.set(slot.originalIndex, entry)
+      }
+    })
+
+    return accountIndices.map((_, i) => {
+      const avax = avaxByOriginalIndex.get(i)
+      return {
+        [NetworkVMType.EVM]: evmAddrs[i] ?? '',
+        [NetworkVMType.BITCOIN]: btcAddrs[i] ?? '',
+        [NetworkVMType.AVM]: avax?.avm ?? '',
+        [NetworkVMType.PVM]: avax?.pvm ?? '',
+        [NetworkVMType.CoreEth]: avax?.coreEth ?? '',
+        [NetworkVMType.SVM]: svmAddrs[i] ?? '',
+        [NetworkVMType.HVM]: ''
+      } as Record<NetworkVMType, string>
+    })
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
