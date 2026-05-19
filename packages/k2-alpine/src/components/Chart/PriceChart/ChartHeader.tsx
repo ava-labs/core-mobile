@@ -1,4 +1,5 @@
 import React, { FC, memo, useCallback, useMemo } from 'react'
+import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, Pressable, View, ViewStyle } from 'react-native'
 import Animated, {
   SharedValue,
@@ -153,6 +154,31 @@ type Props = {
 const defaultFormatPrice = (amount: number): string =>
   `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`
 
+const SKELETON_WIDTH = 160
+const SKELETON_HEIGHT = 62
+
+const ChartHeaderSkeleton: FC = () => {
+  const {
+    theme: { isDark }
+  } = useTheme()
+  const backgroundColor = isDark ? '#3E3E43' : '#F2F2F3'
+  const foregroundColor = isDark ? '#69696D' : '#D9D9D9'
+
+  return (
+    <ContentLoader
+      speed={1}
+      width={SKELETON_WIDTH}
+      height={SKELETON_HEIGHT}
+      viewBox={`0 0 ${SKELETON_WIDTH} ${SKELETON_HEIGHT}`}
+      backgroundColor={backgroundColor}
+      foregroundColor={foregroundColor}>
+      <Rect x="0" y="0" rx="6" ry="6" width="140" height="22" />
+      <Rect x="0" y="28" rx="6" ry="6" width="120" height="12" />
+      <Rect x="0" y="46" rx="6" ry="6" width="100" height="14" />
+    </ContentLoader>
+  )
+}
+
 export const ChartHeader: FC<Props> = memo(
   ({
     candles,
@@ -183,72 +209,75 @@ export const ChartHeader: FC<Props> = memo(
     const priceText = displayed?.priceText ?? formatPrice(0)
     const subtitleText = active ? active.timeText : `Current price of ${symbol}`
 
-    // Hide the header content while candles are empty (initial load / range
-    // fetch) so a placeholder "$0.00 / 0.00%" never flashes before real data.
+    // While candles are empty (initial load / range fetch) show a skeleton
+    // so a placeholder "$0.00 / 0.00%" never flashes before real data.
     const hasData = candles.length > 0
 
     return (
       <View
         style={{
           paddingHorizontal: 16,
-          alignItems: 'flex-start',
-          opacity: hasData ? 1 : 0
+          alignItems: 'flex-start'
         }}>
-        <Animated.View
-          onLayout={animations.onBlockLayout}
-          style={[animations.blockStyle, { alignItems: 'flex-start' }]}>
+        {!hasData ? (
+          <ChartHeaderSkeleton />
+        ) : (
           <Animated.View
-            onLayout={animations.onPriceLayout}
-            style={animations.priceStyle}>
-            {onPriceHeaderPress ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="View token details"
-                onPress={onPriceHeaderPress}>
+            onLayout={animations.onBlockLayout}
+            style={[animations.blockStyle, { alignItems: 'flex-start' }]}>
+            <Animated.View
+              onLayout={animations.onPriceLayout}
+              style={animations.priceStyle}>
+              {onPriceHeaderPress ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="View token details"
+                  onPress={onPriceHeaderPress}>
+                  <Text variant="heading3">{priceText}</Text>
+                  <Animated.View
+                    style={[
+                      {
+                        position: 'absolute',
+                        left: '100%',
+                        top: 0,
+                        bottom: 0,
+                        marginLeft: 4,
+                        justifyContent: 'center'
+                      },
+                      animations.chevronStyle
+                    ]}>
+                    <Icons.Navigation.ChevronRight
+                      color={theme.colors.$textSecondary}
+                      width={20}
+                      height={20}
+                    />
+                  </Animated.View>
+                </Pressable>
+              ) : (
                 <Text variant="heading3">{priceText}</Text>
-                <Animated.View
-                  style={[
-                    {
-                      position: 'absolute',
-                      left: '100%',
-                      top: 0,
-                      bottom: 0,
-                      marginLeft: 4,
-                      justifyContent: 'center'
-                    },
-                    animations.chevronStyle
-                  ]}>
-                  <Icons.Navigation.ChevronRight
-                    color={theme.colors.$textSecondary}
-                    width={20}
-                    height={20}
-                  />
-                </Animated.View>
-              </Pressable>
-            ) : (
-              <Text variant="heading3">{priceText}</Text>
-            )}
+              )}
+            </Animated.View>
+            <Animated.View
+              onLayout={animations.onSubtitleLayout}
+              style={animations.subtitleStyle}>
+              <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+                {subtitleText}
+              </Text>
+            </Animated.View>
+            <Animated.View
+              onLayout={animations.onDeltaLayout}
+              style={animations.deltaStyle}>
+              <PriceChangeIndicator
+                status={displayed?.status ?? PriceChangeStatus.Neutral}
+                formattedPrice={displayed?.deltaPriceText ?? formatPrice(0)}
+                formattedPercent={displayed?.deltaPctText ?? '0.00%'}
+                textVariant="buttonSmall"
+                percentSx={{ fontSize: 14, lineHeight: 18 }}
+                priceSx={{ fontSize: 14, lineHeight: 18 }}
+              />
+            </Animated.View>
           </Animated.View>
-          <Animated.View
-            onLayout={animations.onSubtitleLayout}
-            style={animations.subtitleStyle}>
-            <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
-              {subtitleText}
-            </Text>
-          </Animated.View>
-          <Animated.View
-            onLayout={animations.onDeltaLayout}
-            style={animations.deltaStyle}>
-            <PriceChangeIndicator
-              status={displayed?.status ?? PriceChangeStatus.Neutral}
-              formattedPrice={displayed?.deltaPriceText ?? formatPrice(0)}
-              formattedPercent={displayed?.deltaPctText ?? '0.00%'}
-              textVariant="buttonSmall"
-              percentSx={{ fontSize: 14, lineHeight: 18 }}
-              priceSx={{ fontSize: 14, lineHeight: 18 }}
-            />
-          </Animated.View>
-        </Animated.View>
+        )}
       </View>
     )
   }

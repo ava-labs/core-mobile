@@ -18,10 +18,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 
 export type OnTabChange = OnTabChangeCallback<string>
@@ -126,7 +123,6 @@ const ContentWrapper = ({
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
@@ -154,20 +150,20 @@ const ContentWrapper = ({
 
   return (
     <View
-      style={[
-        {
-          justifyContent: 'center',
-          alignItems: 'center',
-          height:
-            frame.height -
-            header.height -
-            headerHeight -
-            insets.bottom -
-            tabBarHeight -
-            extraOffset
-        }
-      ]}>
-      <Animated.View style={animatedStyle}>{children}</Animated.View>
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%'
+      }}>
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            paddingBottom: headerHeight + insets.bottom + extraOffset
+          }
+        ]}>
+        {children}
+      </Animated.View>
     </View>
   )
 }

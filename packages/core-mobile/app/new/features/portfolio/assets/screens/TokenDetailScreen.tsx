@@ -19,7 +19,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import { tokenIds } from 'consts/tokenIds'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -28,6 +27,7 @@ import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { tokenIds } from 'consts/tokenIds'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
@@ -85,14 +85,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const insets = useSafeAreaInsets()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [_, setSelectedToken] = useSendSelectedToken()
-  const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
+  const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
   const [titleLayout, setTitleLayout] = useState<LayoutRectangle | undefined>()
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const [tokenPriceChartLayout, setTokenPriceChartLayout] = useState<
     LayoutRectangle | undefined
   >()
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
@@ -153,7 +150,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   )
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
-    setTokenHeaderLayout(event.nativeEvent.layout)
+    setHeaderLayout(event.nativeEvent.layout)
   }, [])
 
   const handleTitleLayout = useCallback((event: LayoutChangeEvent): void => {
@@ -163,13 +160,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleSegmentedControlLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setSegmentedControlLayout(event.nativeEvent.layout)
-    },
-    []
-  )
-
-  const handleTokenPriceChartLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setTokenPriceChartLayout(event.nativeEvent.layout)
     },
     []
   )
@@ -376,17 +366,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             paddingVertical: 24
           }}
         />
-        {isPriceChartBlocked ? null : (
-          <View onLayout={handleTokenPriceChartLayout}>
-            <TokenPriceChart
-              symbol={token?.symbol ?? ''}
-              coingeckoId={tokenCoingeckoId}
-              width={frame.width}
-              onPriceHeaderPress={
-                trackTokenId ? handleOpenTrackTokenDetail : undefined
-              }
-            />
-          </View>
+        {isPriceChartBlocked || isXpToken ? null : (
+          <TokenPriceChart
+            symbol={token?.symbol ?? ''}
+            coingeckoId={tokenCoingeckoId}
+            width={frame.width}
+            onPriceHeaderPress={
+              trackTokenId ? handleOpenTrackTokenDetail : undefined
+            }
+          />
         )}
       </View>
     )
@@ -403,7 +391,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isPrivacyModeEnabled,
     actionButtons,
     isPriceChartBlocked,
-    handleTokenPriceChartLayout,
+    isXpToken,
     tokenCoingeckoId,
     frame.width,
     trackTokenId,
@@ -412,19 +400,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight + (tokenPriceChartLayout?.height ?? 0),
-      android:
-        frame.height -
-        headerHeight +
-        (tokenHeaderLayout?.height ?? 0) +
-        (tokenPriceChartLayout?.height ?? 0)
+      ios: frame.height - headerHeight,
+      android: frame.height + (headerLayout?.height ?? 0) - insets.top
     })
-  }, [
-    frame.height,
-    headerHeight,
-    tokenPriceChartLayout?.height,
-    tokenHeaderLayout?.height
-  ])
+  }, [frame.height, headerHeight, headerLayout?.height, insets.top])
 
   const contentContainerStyle = useMemo(() => {
     return {
@@ -439,6 +418,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       component: (
         <TransactionHistory
           token={token}
+          extraOffset={250}
           handleExplorerLink={handleExplorerLink}
           containerStyle={contentContainerStyle}
         />
