@@ -22,15 +22,35 @@ import {
   getSolanaCaip2ChainId
 } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/api/constants'
-import { DerivationPath } from '@avalabs/core-wallets-sdk'
-import { emptyAddresses } from 'utils/publicKeys'
+import { DerivationPath, getAddressDerivationPath } from '@avalabs/core-wallets-sdk'
+import { emptyAddresses, Curve } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
+import {
+  deriveAddressesForEvm,
+  deriveAddressesForBTC,
+  deriveAddressesForAvax,
+  deriveAddressesForSVM
+} from 'react-native-nitro-avalabs-crypto'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
+
+const hexToUint8 = (input: string): Uint8Array => {
+  const h =
+    input.startsWith('0x') || input.startsWith('0X') ? input.slice(2) : input
+  if (h.length % 2 !== 0) {
+    throw new Error('hexToUint8: odd-length hex string')
+  }
+  const out = new Uint8Array(h.length / 2)
+  for (let i = 0; i < out.length; i++) {
+    out[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16)
+  }
+  return out
+}
 
 const isDev = typeof __DEV__ === 'boolean' && __DEV__
 
@@ -142,6 +162,92 @@ class ModuleManager {
       })
       return addresses
     })
+  }
+
+  /**
+   * Batch variant of deriveAddresses. Validates that accountIndices is a
+   * consecutive ascending run when length > 1, gathers per-index pubkeys from
+   * WalletService, and dispatches the four native batch encoders in parallel.
+   * Returns one address record per accountIndex, aligned by position.
+   */
+  deriveAllAddresses = async ({
+    walletId,
+    walletType,
+    accountIndices,
+    network
+  }: {
+    walletId: string
+    walletType: WalletType
+    accountIndices: number[]
+    network: Network
+  }): Promise<Record<NetworkVMType, string>[]> => {
+    if (accountIndices.length === 0) return []
+
+    if (accountIndices.length > 1) {
+      for (let i = 1; i < accountIndices.length; i++) {
+        const prev = accountIndices[i - 1]
+        const curr = accountIndices[i]
+        if (curr === undefined || prev === undefined || curr !== prev + 1) {
+          throw new Error(
+            `deriveAllAddresses: accountIndices must be consecutive ascending integers; got gap at position ${i} (${prev} -> ${curr})`
+          )
+        }
+      }
+    }
+
+    const pathSpec =
+      walletType !== WalletType.LEDGER &&
+      walletType !== WalletType.LEDGER_LIVE
+        ? undefined
+        : walletType === WalletType.LEDGER
+        ? DerivationPath.BIP44
+        : DerivationPath.LedgerLive
+
+    const pubkeyTriples = await Promise.all(
+      accountIndices.map(async accountIndex => {
+        const svmPath = getAddressDerivationPath(
+          accountIndex,
+          'SVM',
+          pathSpec ? { pathSpec } : undefined
+        )
+        const [{ evm, xp }, svmHex] = await Promise.all([
+          WalletService.getPublicKey(walletId, walletType, accountIndex),
+          WalletService.getPublicKeyFor({
+            walletId,
+            walletType,
+            derivationPath: svmPath,
+            curve: Curve.ED25519
+          })
+        ])
+        return {
+          evm: hexToUint8(evm),
+          avax: hexToUint8(xp ?? evm),
+          svm: hexToUint8(svmHex)
+        }
+      })
+    )
+
+    const evmPubkeys = pubkeyTriples.map(t => t.evm)
+    const avaxPubkeys = pubkeyTriples.map(t => t.avax)
+    const svmPubkeys = pubkeyTriples.map(t => t.svm)
+    const isTestnet = Boolean(network.isTestnet)
+
+    const [evmAddrs, btcAddrs, avaxAddrs, svmAddrs] = await Promise.all([
+      Promise.resolve(deriveAddressesForEvm(evmPubkeys)),
+      Promise.resolve(deriveAddressesForBTC(evmPubkeys, isTestnet)),
+      Promise.resolve(deriveAddressesForAvax(avaxPubkeys, evmPubkeys, isTestnet)),
+      Promise.resolve(deriveAddressesForSVM(svmPubkeys))
+    ])
+
+    return accountIndices.map((_, i) => ({
+      [NetworkVMType.EVM]: evmAddrs[i] ?? '',
+      [NetworkVMType.BITCOIN]: btcAddrs[i] ?? '',
+      [NetworkVMType.AVM]: avaxAddrs[i]?.avm ?? '',
+      [NetworkVMType.PVM]: avaxAddrs[i]?.pvm ?? '',
+      [NetworkVMType.CoreEth]: avaxAddrs[i]?.coreEth ?? '',
+      [NetworkVMType.SVM]: svmAddrs[i] ?? '',
+      [NetworkVMType.HVM]: ''
+    } as Record<NetworkVMType, string>))
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
