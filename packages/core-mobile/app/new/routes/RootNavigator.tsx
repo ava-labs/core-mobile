@@ -80,57 +80,56 @@ export function RootNavigator(): JSX.Element {
           headerShown: false
         }}>
         {/* verified and wallet active */}
-        <Stack.Protected
-          guard={
-            !shouldRenderOnlyPinScreen &&
-            walletState !== WalletState.NONEXISTENT
-          }>
-          <Stack.Screen
-            name="(signedIn)"
-            options={{
-              headerShown: false,
-              animation: 'none',
-              gestureEnabled: false
-            }}
-          />
-          <Stack.Screen
-            name="sessionExpired"
-            options={{
-              ...modalScreensOptions,
-              gestureEnabled: false
-            }}
-          />
-        </Stack.Protected>
+        {!shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT && (
+          <>
+            <Stack.Screen
+              name="(signedIn)"
+              options={{
+                headerShown: false,
+                animation: 'none',
+                gestureEnabled: false
+              }}
+            />
+            <Stack.Screen
+              name="sessionExpired"
+              options={{
+                ...modalScreensOptions,
+                gestureEnabled: false
+              }}
+            />
+          </>
+        )}
 
         {/* should render only pin screen */}
-        <Stack.Protected
-          guard={
-            shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT
-          }>
-          <Stack.Screen
-            name="loginWithPinOrBiometry"
-            options={{
-              animation: 'none',
-              presentation: 'fullScreenModal',
-              headerShown: false,
-              gestureEnabled: false
-            }}
-          />
-          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-        </Stack.Protected>
+        {shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT && (
+          <>
+            <Stack.Screen
+              name="loginWithPinOrBiometry"
+              options={{
+                animation: 'none',
+                presentation: 'fullScreenModal',
+                headerShown: false,
+                gestureEnabled: false
+              }}
+            />
+            <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+          </>
+        )}
 
         {/* wallet nonexistent */}
-        <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
-          <Stack.Screen name="signup" options={{ animation: 'none' }} />
-          <Stack.Screen
-            name="onboarding"
-            options={{ ...stackScreensOptions, headerShown: true }}
-          />
-          <Stack.Screen
-            name="accessWallet"
-            options={{ ...stackScreensOptions, headerShown: true }}
-          />
-        </Stack.Protected>
+        {walletState === WalletState.NONEXISTENT && (
+          <>
+            <Stack.Screen name="signup" options={{ animation: 'none' }} />
+            <Stack.Screen
+              name="onboarding"
+              options={{ ...stackScreensOptions, headerShown: true }}
+            />
+            <Stack.Screen
+              name="accessWallet"
+              options={{ ...stackScreensOptions, headerShown: true }}
+            />
+          </>
+        )}
 
         <Stack.Screen name="+not-found" />
       </Stack>
