@@ -19,17 +19,45 @@ phases:
       - echo "DEVICEFARM_LOG_DIR=$DEVICEFARM_LOG_DIR"
       - echo "--- Check app file ---"
       - ls -la "$DEVICEFARM_APP_PATH" 2>/dev/null && echo "App file exists" || echo "WARNING: App file NOT FOUND at $DEVICEFARM_APP_PATH"
-      - echo "--- Setting up Node ---"
-      - which devicefarm-cli && devicefarm-cli use node 20 || (echo "devicefarm-cli not found, using system node" && node --version)
+      - echo "--- Setting up Node 20 (Mac host) ---"
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          echo "Using devicefarm-cli"
+          devicefarm-cli use node 20
+        else
+          echo "Mac host detected — downloading Node 20 binary"
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            NODE_ARCH="darwin-arm64"
+          else
+            NODE_ARCH="darwin-x64"
+          fi
+          NODE_VERSION="20.18.0"
+          NODE_TAR="/tmp/node-${NODE_VERSION}.tar.gz"
+          NODE_DIR="/tmp/node-v${NODE_VERSION}-${NODE_ARCH}"
+          if [ ! -d "$NODE_DIR" ]; then
+            curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz" -o "$NODE_TAR"
+            tar -xzf "$NODE_TAR" -C /tmp/
+          fi
+          export PATH="${NODE_DIR}/bin:$PATH"
+          echo "Node path: $(which node)"
+        fi
       - node --version
       - npm --version
-      - echo "--- Setting up Appium ---"
-      - which devicefarm-cli && devicefarm-cli use appium 3 || echo "Skipping devicefarm-cli appium setup"
-      - appium --version 2>/dev/null || echo "WARNING: appium not found in PATH"
-      - echo "--- Installing xcuitest driver ---"
+      - echo "--- Setting up Appium 3 ---"
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          devicefarm-cli use appium 3
+        else
+          echo "Installing Appium 3 via npm (Mac host)"
+          npm install -g appium@3 2>&1 | tail -5
+        fi
+      - appium --version
+      - echo "--- Installing latest xcuitest driver (iOS 26 support) ---"
       - appium driver list 2>/dev/null || true
-      - appium driver install xcuitest 2>/dev/null || echo "xcuitest already installed or install failed (continuing)"
-      - appium driver list 2>/dev/null || true
+      - appium driver uninstall xcuitest 2>/dev/null || true
+      - appium driver install xcuitest@latest
+      - appium driver list
       - export APPIUM_BASE_PATH=/wd/hub
       - echo "APPIUM_BASE_PATH=$APPIUM_BASE_PATH"
       - echo "--- Test package contents ---"
@@ -53,6 +81,11 @@ phases:
   pre_test:
     commands:
       - echo "=== PRE_TEST PHASE START ==="
+      - |-
+        ARCH=$(uname -m)
+        NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
+        NODE_DIR="/tmp/node-v20.18.0-${NODE_ARCH}"
+        [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
       - echo "APPIUM_BASE_PATH=${APPIUM_BASE_PATH}"
       - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
       - echo "DEVICEFARM_DEVICE_UDID=$DEVICEFARM_DEVICE_UDID"
@@ -93,6 +126,11 @@ phases:
   test:
     commands:
       - echo "=== TEST PHASE START ==="
+      - |-
+        ARCH=$(uname -m)
+        NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
+        NODE_DIR="/tmp/node-v20.18.0-${NODE_ARCH}"
+        [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
       - |
         if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
           cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
