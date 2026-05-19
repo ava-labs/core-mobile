@@ -4,24 +4,61 @@ phases:
 
   install:
     commands:
-      - devicefarm-cli use node 20
+      - echo "=== INSTALL PHASE START ==="
+      - echo "--- Host environment ---"
+      - uname -a
+      - sw_vers 2>/dev/null || echo "(not macOS)"
+      - whoami
+      - echo "--- Device Farm env vars ---"
+      - echo "DEVICEFARM_DEVICE_NAME=$DEVICEFARM_DEVICE_NAME"
+      - echo "DEVICEFARM_DEVICE_PLATFORM_NAME=$DEVICEFARM_DEVICE_PLATFORM_NAME"
+      - echo "DEVICEFARM_DEVICE_OS_VERSION=$DEVICEFARM_DEVICE_OS_VERSION"
+      - echo "DEVICEFARM_DEVICE_UDID=$DEVICEFARM_DEVICE_UDID"
+      - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
+      - echo "DEVICEFARM_TEST_PACKAGE_PATH=$DEVICEFARM_TEST_PACKAGE_PATH"
+      - echo "DEVICEFARM_LOG_DIR=$DEVICEFARM_LOG_DIR"
+      - echo "--- Check app file ---"
+      - ls -la "$DEVICEFARM_APP_PATH" 2>/dev/null && echo "App file exists" || echo "WARNING: App file NOT FOUND at $DEVICEFARM_APP_PATH"
+      - echo "--- Setting up Node ---"
+      - which devicefarm-cli && devicefarm-cli use node 20 || (echo "devicefarm-cli not found, using system node" && node --version)
       - node --version
-      - devicefarm-cli use appium 3
-      - appium --version
-      - appium driver install xcuitest || true
+      - npm --version
+      - echo "--- Setting up Appium ---"
+      - which devicefarm-cli && devicefarm-cli use appium 3 || echo "Skipping devicefarm-cli appium setup"
+      - appium --version 2>/dev/null || echo "WARNING: appium not found in PATH"
+      - echo "--- Installing xcuitest driver ---"
+      - appium driver list 2>/dev/null || true
+      - appium driver install xcuitest 2>/dev/null || echo "xcuitest already installed or install failed (continuing)"
+      - appium driver list 2>/dev/null || true
       - export APPIUM_BASE_PATH=/wd/hub
-      - cd $DEVICEFARM_TEST_PACKAGE_PATH
+      - echo "APPIUM_BASE_PATH=$APPIUM_BASE_PATH"
+      - echo "--- Test package contents ---"
+      - ls -la $DEVICEFARM_TEST_PACKAGE_PATH
       - |
-        if [ -d "e2e-appium" ]; then
-          cd e2e-appium
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
+          echo "Found nested e2e-appium dir, entering it"
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        else
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH"
         fi
-      - npm ci --omit=dev
-      - npm list --depth=0 || true
+        ls -la
+        echo "--- Installing npm dependencies ---"
+        npm ci --omit=dev
+        echo "--- Installed packages ---"
+        npm list --depth=0 || true
+        echo "--- Spec files found ---"
+        find . -path "*/specs/**/*.ts" | head -20
+        echo "=== INSTALL PHASE DONE ==="
 
   pre_test:
     commands:
+      - echo "=== PRE_TEST PHASE START ==="
+      - echo "APPIUM_BASE_PATH=${APPIUM_BASE_PATH}"
+      - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
+      - echo "DEVICEFARM_DEVICE_UDID=$DEVICEFARM_DEVICE_UDID"
+      - echo "--- Starting Appium server ---"
       - |-
-        appium --base-path=$APPIUM_BASE_PATH --log-timestamp \
+        appium --base-path=/wd/hub --log-timestamp \
           --log-no-colors --relaxed-security --default-capabilities \
           "{\"appium:deviceName\": \"$DEVICEFARM_DEVICE_NAME\", \
           \"platformName\": \"$DEVICEFARM_DEVICE_PLATFORM_NAME\", \
@@ -30,43 +67,54 @@ phases:
           \"appium:platformVersion\": \"$DEVICEFARM_DEVICE_OS_VERSION\", \
           \"appium:automationName\": \"XCUITest\"}" \
           >> $DEVICEFARM_LOG_DIR/appium.log 2>&1 &
+      - echo "Appium PID=$!"
       - |-
         appium_initialization_time=0;
-        until curl --silent --fail "http://0.0.0.0:4723${APPIUM_BASE_PATH}/status"; do
+        until curl --silent --fail "http://0.0.0.0:4723/wd/hub/status"; do
           if [[ $appium_initialization_time -gt 30 ]]; then
-            echo "Appium did not start within 30 seconds. Exiting...";
+            echo "ERROR: Appium did not start within 30 seconds";
+            echo "--- Appium log tail ---";
+            tail -50 $DEVICEFARM_LOG_DIR/appium.log || true;
             exit 1;
           fi;
           appium_initialization_time=$((appium_initialization_time + 1));
-          echo "Waiting for Appium to start on port 4723...";
+          echo "Waiting for Appium... ($appium_initialization_time/30)";
           sleep 1;
         done;
-      - export AWS_DEVICE_FARM_APPIUM_SERVER_URL="http://0.0.0.0:4723${APPIUM_BASE_PATH}"
+        echo "Appium is ready"
+      - export AWS_DEVICE_FARM_APPIUM_SERVER_URL="http://0.0.0.0:4723/wd/hub"
       - export AWS_DEVICE_FARM_APP_PATH="$DEVICEFARM_APP_PATH"
       - export PLATFORM="$DEVICEFARM_DEVICE_PLATFORM_NAME"
       - export DEVICEFARM_DEVICE_NAME="$DEVICEFARM_DEVICE_NAME"
       - export DEVICEFARM_DEVICE_OS_VERSION="$DEVICEFARM_DEVICE_OS_VERSION"
       - export DEVICEFARM_DEVICE_UDID="$DEVICEFARM_DEVICE_UDID"
+      - echo "=== PRE_TEST PHASE DONE ==="
 
   test:
     commands:
-      - cd $DEVICEFARM_TEST_PACKAGE_PATH
+      - echo "=== TEST PHASE START ==="
       - |
-        if [ -d "e2e-appium" ]; then
-          cd e2e-appium
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        else
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH"
         fi
-      - echo "Starting the Appium NodeJS test"
-      - node --version
-      - npm --version
-      - test -f .df_env && source .df_env || true
-      - npm test
+        echo "Working dir: $(pwd)"
+        echo "--- .df_env contents (if exists) ---"
+        test -f .df_env && cat .df_env || echo ".df_env not found"
+        source .df_env 2>/dev/null || true
+        echo "SPEC_FILE=$SPEC_FILE"
+        echo "E2E_MNEMONIC set: $([ -n "$E2E_MNEMONIC" ] && echo YES || echo NO)"
+        echo "--- Running npm test ---"
+        npm test
+      - echo "=== TEST PHASE DONE ==="
 
   post_test:
     commands:
-      - echo "Test execution completed"
+      - echo "=== POST_TEST PHASE ==="
+      - echo "--- Appium log (last 100 lines) ---"
+      - tail -100 $DEVICEFARM_LOG_DIR/appium.log 2>/dev/null || echo "No appium log"
       - ls -la $DEVICEFARM_LOG_DIR || true
-      - echo "Test package contents:"
-      - ls -la $DEVICEFARM_TEST_PACKAGE_PATH || true
 
 artifacts:
   - $DEVICEFARM_LOG_DIR

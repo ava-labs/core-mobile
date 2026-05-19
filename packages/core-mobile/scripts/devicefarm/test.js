@@ -48,6 +48,8 @@ const {
   CreateUploadCommand,
   GetUploadCommand,
   GetProjectCommand,
+  GetDevicePoolCommand,
+  ListDevicePoolDevicesCommand,
   GetRunCommand,
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
@@ -156,6 +158,29 @@ const deviceFarmClient = new DeviceFarmClient({ region: config.region })
  * Fails fast with a clear error if the IAM user cannot access the project.
  * Does not verify CreateUpload/ScheduleRun; those are required separately (see README).
  */
+async function inspectDevicePool(devicePoolArn) {
+  console.log('🔍 Inspecting device pool...')
+  try {
+    const poolRes = await deviceFarmClient.send(new GetDevicePoolCommand({ arn: devicePoolArn }))
+    const pool = poolRes.devicePool
+    console.log(`   Pool name: ${pool?.name}`)
+    console.log(`   Pool type: ${pool?.type}`)
+    console.log(`   Pool rules: ${JSON.stringify(pool?.rules, null, 2)}`)
+
+    const devicesRes = await deviceFarmClient.send(new ListDevicePoolDevicesCommand({ arn: devicePoolArn }))
+    const devices = devicesRes.devices || []
+    console.log(`   Devices in pool (${devices.length}):`)
+    devices.forEach(d => {
+      console.log(`     - ${d.name} | ${d.platform} | OS: ${d.os} | Available: ${d.availability}`)
+    })
+    if (devices.length === 0) {
+      console.log('   ⚠️  No devices found in pool!')
+    }
+  } catch (err) {
+    console.warn(`   ⚠️  Could not inspect device pool: ${err.message}`)
+  }
+}
+
 async function verifyProjectAccess(projectArn) {
   console.log('🔐 Verifying AWS credentials and project access...')
   try {
@@ -451,6 +476,7 @@ async function main() {
     console.log('')
 
     await verifyProjectAccess(config.projectArn)
+    await inspectDevicePool(config.devicePoolArn)
 
     for (const [label, p] of [
       ['app', config.appPath],
