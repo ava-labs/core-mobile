@@ -32,7 +32,7 @@ phases:
           else
             NODE_ARCH="darwin-x64"
           fi
-          NODE_VERSION="20.18.0"
+          NODE_VERSION="22.15.0"
           NODE_TAR="/tmp/node-${NODE_VERSION}.tar.gz"
           NODE_DIR="/tmp/node-v${NODE_VERSION}-${NODE_ARCH}"
           if [ ! -d "$NODE_DIR" ]; then
@@ -84,7 +84,7 @@ phases:
       - |-
         ARCH=$(uname -m)
         NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
-        NODE_DIR="/tmp/node-v20.18.0-${NODE_ARCH}"
+        NODE_DIR="/tmp/node-v22.15.0-${NODE_ARCH}"
         [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
       - echo "APPIUM_BASE_PATH=${APPIUM_BASE_PATH}"
       - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
@@ -129,7 +129,7 @@ phases:
       - |-
         ARCH=$(uname -m)
         NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
-        NODE_DIR="/tmp/node-v20.18.0-${NODE_ARCH}"
+        NODE_DIR="/tmp/node-v22.15.0-${NODE_ARCH}"
         [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
       - |
         if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
