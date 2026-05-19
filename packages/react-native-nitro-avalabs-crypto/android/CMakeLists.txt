@@ -53,79 +53,51 @@ message(STATUS "  Path: ${SECP256K1_LIB}")
 include_directories("${SECP256K1_INCLUDE_DIR}")
 
 # ------------------------------------------------------------------------------
-# 4. OpenSSL Configuration (Prefab from Gradle)
+# 4. OpenSSL Configuration (Prefab from Gradle) — REQUIRED
 # ------------------------------------------------------------------------------
+# OpenSSL is a hard requirement: batch-derivation headers (address_derivation.hpp,
+# slip0010.hpp, base58.hpp) include OpenSSL headers unconditionally. Fail the
+# build here rather than letting compilation fail with a cryptic missing-header
+# error later.
 message(STATUS "")
 message(STATUS "=== OpenSSL Configuration ===")
 
-set(OPENSSL_FOUND FALSE)
 set(CRYPTO_LIB "")
+set(SSL_LIB "")
 
-# Try to find openssl package via Prefab (lowercase package name)
+# Try lowercase package name first (Prefab convention used by io.github.ronickg:openssl)
 find_package(openssl QUIET CONFIG)
 
-if(openssl_FOUND)
-    message(STATUS "✓ openssl package found via Prefab")
-    
-    # Check for crypto target (required for Ed25519)
-    if(TARGET openssl::crypto)
-        set(CRYPTO_LIB openssl::crypto)
-        set(OPENSSL_FOUND TRUE)
-        message(STATUS "  ✓ openssl::crypto target available")
-    else()
-        message(WARNING "  ✗ openssl::crypto target not found")
-    endif()
-    
-    # Check for ssl target (optional, not needed for Ed25519)
+if(openssl_FOUND AND TARGET openssl::crypto)
+    set(CRYPTO_LIB openssl::crypto)
+    message(STATUS "✓ openssl::crypto target available (lowercase package)")
     if(TARGET openssl::ssl)
         set(SSL_LIB openssl::ssl)
-        message(STATUS "  ✓ openssl::ssl target available")
     endif()
 else()
-    # Fallback: Try uppercase OpenSSL package
-    message(STATUS "Trying uppercase OpenSSL package...")
+    # Fallback: uppercase OpenSSL package
     find_package(OpenSSL QUIET)
-    
-    if(OpenSSL_FOUND)
-        message(STATUS "✓ OpenSSL package found via Prefab")
-        
-        if(TARGET OpenSSL::Crypto)
-            set(CRYPTO_LIB OpenSSL::Crypto)
-            set(OPENSSL_FOUND TRUE)
-            message(STATUS "  ✓ OpenSSL::Crypto target available")
-        endif()
-        
+    if(OpenSSL_FOUND AND TARGET OpenSSL::Crypto)
+        set(CRYPTO_LIB OpenSSL::Crypto)
+        message(STATUS "✓ OpenSSL::Crypto target available (uppercase package)")
         if(TARGET OpenSSL::SSL)
             set(SSL_LIB OpenSSL::SSL)
-            message(STATUS "  ✓ OpenSSL::SSL target available")
         endif()
-    else()
-        message(WARNING "✗ OpenSSL NOT found via Prefab")
     endif()
 endif()
 
-# Status summary
-message(STATUS "")
-if(OPENSSL_FOUND)
-    message(STATUS "=== OpenSSL Status: ENABLED ✓ ===")
-    message(STATUS "Crypto library: ${CRYPTO_LIB}")
-    message(STATUS "Ed25519 getExtendedPublicKey: Native (fast)")
-    message(STATUS "=================================")
-else()
-    message(WARNING "=== OpenSSL Status: DISABLED ✗ ===")
-    message(WARNING "Ed25519 getExtendedPublicKey: JS fallback")
-    message(WARNING "")
-    message(WARNING "To enable native Ed25519 support:")
-    message(WARNING "  1. Ensure android/build.gradle has:")
-    message(WARNING "     buildFeatures { prefab true }")
-    message(WARNING "  2. Ensure dependencies include:")
-    message(WARNING "     implementation 'io.github.ronickg:openssl:3.6.0-1'")
-    message(WARNING "  3. Run: cd android && ./gradlew clean build")
-    message(WARNING "==================================")
-    
-    # Add compile definition so C++ code knows OpenSSL is unavailable
-    target_compile_definitions(${PACKAGE_NAME} PRIVATE OPENSSL_NOT_AVAILABLE)
+if(NOT CRYPTO_LIB)
+    message(FATAL_ERROR
+        "OpenSSL is required to build NitroAvalabsCrypto but was not found via Prefab.\n"
+        "To fix:\n"
+        "  1. Ensure android/build.gradle has:\n"
+        "       buildFeatures { prefab true }\n"
+        "  2. Ensure dependencies include:\n"
+        "       implementation 'io.github.ronickg:openssl:3.6.0-1'\n"
+        "  3. Run: cd android && ./gradlew clean build")
 endif()
+
+message(STATUS "Crypto library: ${CRYPTO_LIB}")
 
 # ------------------------------------------------------------------------------
 # 5. Link Libraries
@@ -137,16 +109,12 @@ target_link_libraries(
     android
 )
 
-# Link OpenSSL if found
-if(OPENSSL_FOUND AND CRYPTO_LIB)
-    target_link_libraries(${PACKAGE_NAME} ${CRYPTO_LIB})
-    message(STATUS "✓ Linked: ${CRYPTO_LIB}")
-    
-    # Optionally link SSL if available (not required for Ed25519)
-    if(SSL_LIB)
-        target_link_libraries(${PACKAGE_NAME} ${SSL_LIB})
-        message(STATUS "✓ Linked: ${SSL_LIB}")
-    endif()
+# Link OpenSSL (required)
+target_link_libraries(${PACKAGE_NAME} ${CRYPTO_LIB})
+message(STATUS "✓ Linked: ${CRYPTO_LIB}")
+if(SSL_LIB)
+    target_link_libraries(${PACKAGE_NAME} ${SSL_LIB})
+    message(STATUS "✓ Linked: ${SSL_LIB}")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -158,9 +126,5 @@ message(STATUS "Package:      ${PACKAGE_NAME}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Android ABI:  ${ANDROID_ABI}")
 message(STATUS "SECP256K1:    ✓")
-if(OPENSSL_FOUND)
-    message(STATUS "OpenSSL:      ✓ (Ed25519 native)")
-else()
-    message(STATUS "OpenSSL:      ✗ (Ed25519 JS fallback)")
-endif()
+message(STATUS "OpenSSL:      ✓ (required)")
 message(STATUS "=====================")
