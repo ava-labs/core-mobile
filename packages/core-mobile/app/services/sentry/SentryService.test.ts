@@ -6,7 +6,8 @@ import * as Sentry from '@sentry/react-native'
 
 const mockScope = {
   setContext: jest.fn(),
-  setTags: jest.fn()
+  setTags: jest.fn(),
+  setFingerprint: jest.fn()
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +53,7 @@ describe('SentryService', () => {
     jest.clearAllMocks()
     mockScope.setContext.mockClear()
     mockScope.setTags.mockClear()
+    mockScope.setFingerprint.mockClear()
   })
 
   // -------------------------------------------------------------------------
@@ -201,6 +203,30 @@ describe('SentryService', () => {
         service.captureMessage('msg')
 
         expect(mockScope.setTags).not.toHaveBeenCalled()
+      })
+
+      it('sets the fingerprint on the scope when a non-empty fingerprint is provided', () => {
+        service.captureMessage('msg', undefined, undefined, [
+          'useFeeEstimation',
+          '0xeda86850'
+        ])
+
+        expect(mockScope.setFingerprint).toHaveBeenCalledWith([
+          'useFeeEstimation',
+          '0xeda86850'
+        ])
+      })
+
+      it('does not call setFingerprint when no fingerprint is provided', () => {
+        service.captureMessage('msg')
+
+        expect(mockScope.setFingerprint).not.toHaveBeenCalled()
+      })
+
+      it('does not call setFingerprint when fingerprint is an empty array', () => {
+        service.captureMessage('msg', undefined, undefined, [])
+
+        expect(mockScope.setFingerprint).not.toHaveBeenCalled()
       })
 
       it('converts bigint values in context to strings', () => {
