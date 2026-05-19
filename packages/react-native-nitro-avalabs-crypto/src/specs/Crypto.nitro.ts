@@ -32,6 +32,17 @@ export interface ExtendedPublicKeyResult {
   pointBytes: Uint8Array
 }
 
+/**
+ * Addresses for one account derived from the Avalanche-path secp256k1 pubkey
+ * (AVM + PVM) and the EVM-path secp256k1 pubkey (CoreEth). Returned by
+ * deriveAddressesForAvax — the two pubkey arrays must be aligned by index.
+ */
+export interface DerivedAvaxAddresses {
+  avm: string // X-{bech32}
+  pvm: string // P-{bech32}
+  coreEth: string // C-{bech32}
+}
+
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // existing methods
   getPublicKeyFromString(secretKey: string, isCompressed?: boolean): ArrayBuffer
@@ -102,4 +113,37 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
    * @returns Extended public key object with all components
    */
   getExtendedPublicKey(secretKey: HexLike): ExtendedPublicKey
+
+  /**
+   * Batch-encode EVM (0x-prefixed EIP-55) addresses from compressed secp256k1
+   * pubkeys. One address per input pubkey. Returns an array aligned with
+   * `pubkeys`. Throws if any pubkey is not exactly 33 bytes.
+   */
+  deriveAddressesForEvm(pubkeys: ArrayBuffer[]): string[]
+
+  /**
+   * Batch-encode BTC P2WPKH bech32 addresses (bc1… / tb1…) from compressed
+   * secp256k1 pubkeys (same EVM path as `deriveAddressesForEvm`). Returns one
+   * address per input pubkey.
+   */
+  deriveAddressesForBTC(pubkeys: ArrayBuffer[], isTestnet: boolean): string[]
+
+  /**
+   * Batch-encode Avalanche addresses for one account each: AVM (X-…),
+   * PVM (P-…), and CoreEth (C-…). The two arrays MUST be the same length and
+   * aligned by index — `avaxPubkeys[i]` is the m/44'/9000'/{i}'/0/0 pubkey,
+   * `evmPubkeys[i]` is the m/44'/60'/0'/0/{i} pubkey used for CoreEth.
+   * HRP: `avax` on mainnet, `fuji` on testnet.
+   */
+  deriveAddressesForAvax(
+    avaxPubkeys: ArrayBuffer[],
+    evmPubkeys: ArrayBuffer[],
+    isTestnet: boolean
+  ): DerivedAvaxAddresses[]
+
+  /**
+   * Batch-encode Solana addresses (Base58 of the raw Ed25519 public key) from
+   * 32-byte Ed25519 pubkeys. Returns one address per input pubkey.
+   */
+  deriveAddressesForSVM(pubkeys: ArrayBuffer[]): string[]
 }
