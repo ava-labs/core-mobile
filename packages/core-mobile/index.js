@@ -1,12 +1,8 @@
 import { enableFreeze } from 'react-native-screens'
-import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 
-// Disable react-native-screens freezing on Android only. The combination of
-// freezing and the <Stack.Protected guard> swap pattern in RootNavigator
-// broke native view composition on Android release builds, leaving warm-
-// background notification taps stuck on a blank screen. iOS keeps freezing
-// for the memory/perf benefit; only Android needs the opt-out.
-enableFreeze(Platform.OS !== 'android')
+enableFreeze(true)
+
+import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'

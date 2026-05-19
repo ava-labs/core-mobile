@@ -91,18 +91,14 @@ export const DeeplinkContextProvider = ({
       handleNotificationCallback
     )
 
-    // Two trigger channels for warm-background press drain, both idempotent:
-    //
-    //  1. AppState 'active' transition — covers the "stash happens before
-    //     active" race (notifee headless task fires first, then app resumes).
-    //  2. NotificationsService.onPendingBackgroundPressArrived callback —
-    //     covers the "active happens before stash" race (Android release
-    //     builds were observed firing AppState='active' up to ~770ms BEFORE
-    //     the headless callback during CP-14006 device verification, leaving
-    //     the press stashed forever with no listener to drain it).
-    //
-    // Both paths call handlePendingBackgroundPress; consume is one-shot so
-    // whichever fires first wins, the other becomes a no-op.
+    // The notifee background event handler is registered once in `index.js`
+    // (notifee only supports a single handler). When a background PRESS
+    // occurs while the app is alive but minimized, that headless handler
+    // stashes the notification data; on the next AppState 'active'
+    // transition we drain it here — analytics capture + deeplink callback
+    // both happen inside NotificationsService.handlePendingBackgroundPress
+    // so they run in a React-mounted context with PostHog configured.
+    // Cold-start press is handled separately via getInitialNotification.
     const appStateSub = AppState.addEventListener('change', state => {
       if (state !== 'active') return
       NotificationsService.handlePendingBackgroundPress(
@@ -110,14 +106,9 @@ export const DeeplinkContextProvider = ({
       )
     })
 
-    NotificationsService.setOnPendingBackgroundPressArrived(
-      handleNotificationCallback
-    )
-
     return () => {
       unsubscribeForegroundEvent()
       appStateSub.remove()
-      NotificationsService.setOnPendingBackgroundPressArrived(undefined)
     }
   }, [handleNotificationCallback, isAllNotificationsBlocked])
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Platform } from 'react-native'
 import {
   modalScreensOptions,
   stackNavigatorScreenOptions,
@@ -19,37 +18,15 @@ import { currentRouteStore } from './store'
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
-  // Derive initial value from current redux state so the first frame already
-  // has the correct guard. Previously this was hard-coded to `true`, which
-  // forced a PIN-only → signedIn group swap on every fresh mount (including
-  // warm-background reactivation after notifee.onBackgroundEvent), producing
-  // a transient blank flash as <Stack.Protected> tore down one group and
-  // mounted the other.
-  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] = useState(
-    () => !appIsReady || walletState !== WalletState.ACTIVE
-  )
+  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
+    useState(true)
 
   useEffect(() => {
-    if (!appIsReady) return
+    // set shouldRenderOnlyPinScreen to false once wallet is unlocked
+    // do nothing if app is not ready (as we need to sync wallet state after rehydration)
+    // or if we have already set shouldRenderOnlyPinScreen to false
+    if (!appIsReady || shouldRenderOnlyPinScreen === false) return
 
-    // On Android, the PinScreenOverlay is wrapped in
-    // react-native-screens' FullWindowOverlay, which is iOS-only and
-    // silently falls back to a plain absolute-positioned <View> on Android.
-    // That fallback does NOT reliably stack above the signedIn group, so
-    // a warm-background resume into walletState=INACTIVE was rendering a
-    // blank screen (the overlay UI was mounted — bio auth still fired —
-    // but its pixels were never composited on top). Toggle the PIN-only
-    // group instead so a real Stack.Screen renders fullscreen.
-    if (Platform.OS === 'android') {
-      const next = walletState !== WalletState.ACTIVE
-      setShouldRenderOnlyPinScreen(next)
-      return
-    }
-
-    // iOS keeps the existing overlay UX (FullWindowOverlay is a real
-    // native overlay there): once unlocked, never flip back to the PIN-only
-    // group — the PinScreenOverlay covers the signedIn group on lock.
-    if (shouldRenderOnlyPinScreen === false) return
     setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
   }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
 
@@ -80,56 +57,57 @@ export function RootNavigator(): JSX.Element {
           headerShown: false
         }}>
         {/* verified and wallet active */}
-        {!shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT && (
-          <>
-            <Stack.Screen
-              name="(signedIn)"
-              options={{
-                headerShown: false,
-                animation: 'none',
-                gestureEnabled: false
-              }}
-            />
-            <Stack.Screen
-              name="sessionExpired"
-              options={{
-                ...modalScreensOptions,
-                gestureEnabled: false
-              }}
-            />
-          </>
-        )}
+        <Stack.Protected
+          guard={
+            !shouldRenderOnlyPinScreen &&
+            walletState !== WalletState.NONEXISTENT
+          }>
+          <Stack.Screen
+            name="(signedIn)"
+            options={{
+              headerShown: false,
+              animation: 'none',
+              gestureEnabled: false
+            }}
+          />
+          <Stack.Screen
+            name="sessionExpired"
+            options={{
+              ...modalScreensOptions,
+              gestureEnabled: false
+            }}
+          />
+        </Stack.Protected>
 
         {/* should render only pin screen */}
-        {shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT && (
-          <>
-            <Stack.Screen
-              name="loginWithPinOrBiometry"
-              options={{
-                animation: 'none',
-                presentation: 'fullScreenModal',
-                headerShown: false,
-                gestureEnabled: false
-              }}
-            />
-            <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-          </>
-        )}
+        <Stack.Protected
+          guard={
+            shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT
+          }>
+          <Stack.Screen
+            name="loginWithPinOrBiometry"
+            options={{
+              animation: 'none',
+              presentation: 'fullScreenModal',
+              headerShown: false,
+              gestureEnabled: false
+            }}
+          />
+          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+        </Stack.Protected>
 
         {/* wallet nonexistent */}
-        {walletState === WalletState.NONEXISTENT && (
-          <>
-            <Stack.Screen name="signup" options={{ animation: 'none' }} />
-            <Stack.Screen
-              name="onboarding"
-              options={{ ...stackScreensOptions, headerShown: true }}
-            />
-            <Stack.Screen
-              name="accessWallet"
-              options={{ ...stackScreensOptions, headerShown: true }}
-            />
-          </>
-        )}
+        <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
+          <Stack.Screen name="signup" options={{ animation: 'none' }} />
+          <Stack.Screen
+            name="onboarding"
+            options={{ ...stackScreensOptions, headerShown: true }}
+          />
+          <Stack.Screen
+            name="accessWallet"
+            options={{ ...stackScreensOptions, headerShown: true }}
+          />
+        </Stack.Protected>
 
         <Stack.Screen name="+not-found" />
       </Stack>

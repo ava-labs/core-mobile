@@ -15,7 +15,7 @@ import {
   NotificationData
 } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
-import { AppState, Linking, Platform } from 'react-native'
+import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   ChannelId,
@@ -62,28 +62,6 @@ class NotificationsService {
    * registered handler — it would log a warning instead.
    */
   private backgroundHandlerRegistered = false
-
-  /**
-   * Callback registered by the React-mounted DeeplinkContext to receive a
-   * stashed background press AS SOON AS it lands, without waiting for the
-   * next AppState 'active' edge.
-   *
-   * This is needed because notifee's headless onBackgroundEvent on Android
-   * release builds can fire *after* AppState has already transitioned to
-   * 'active' (observed up to ~770 ms late during CP-14006 device
-   * verification). When that happens the DeeplinkContext AppState listener
-   * has already drained an empty `pendingBackgroundPress` and won't fire
-   * again — leaving the press stashed forever and the app on a blank screen.
-   *
-   * With this callback the background handler can drain the press itself
-   * the moment it stashes, as long as the React tree is mounted and the
-   * app is already active. `consumePendingBackgroundPress` is idempotent
-   * so the original AppState listener path stays safe as a fallback for
-   * the opposite race (stash before AppState 'active').
-   */
-  private onPendingBackgroundPressArrived:
-    | HandleNotificationCallback
-    | undefined
 
   async getNotificationSettings(): Promise<AuthorizationStatus> {
     const settings = await notifee.getNotificationSettings()
@@ -310,67 +288,27 @@ class NotificationsService {
       // headless task as an unhandled rejection.
       try {
         if (type !== EventType.PRESS) return
-        await this.handleBackgroundPress(detail)
+
+        // Mirror the foreground PRESS handler — decrement the badge for every
+        // tap regardless of app state. Without this, taps that resume the app
+        // from background never clear their own badge, which leaves the badge
+        // permanently inflated even after the user reads the notification.
+        await this.decrementBadgeCount(1)
+
+        if (detail?.notification?.id) {
+          await this.cancelTriggerNotification(detail.notification.id)
+        }
+
+        const data = detail?.notification?.data as NotificationData | undefined
+        if (typeof data?.url !== 'string') return
+
+        this.pendingBackgroundPress = data
       } catch (reason) {
         Logger.error(
           `[NotificationsService.ts][registerBackgroundNotificationHandler]${reason}`
         )
       }
     })
-  }
-
-  /**
-   * Body of the notifee background PRESS handler, extracted to keep the
-   * registration callback simple.
-   *
-   * Stashes the press synchronously before any await (see CP-14006 device
-   * verification — Android release builds were observed firing
-   * AppState='active' BEFORE the headless callback by up to ~770 ms, so a
-   * slow stash would leave the press unhandled forever). When the app is
-   * already active by the time we land here, drains directly through the
-   * React-mounted callback because the DeeplinkContext AppState listener
-   * has already missed its edge. Side effects (badge decrement, trigger
-   * cancellation) run after the stash so they can never delay it.
-   */
-  private handleBackgroundPress = async (
-    detail: EventDetail | undefined
-  ): Promise<void> => {
-    const data = detail?.notification?.data as NotificationData | undefined
-    this.stashAndMaybeDrainBackgroundPress(data)
-
-    await this.decrementBadgeCount(1)
-    if (detail?.notification?.id) {
-      await this.cancelTriggerNotification(detail.notification.id)
-    }
-  }
-
-  private stashAndMaybeDrainBackgroundPress = (
-    data: NotificationData | undefined
-  ): void => {
-    if (typeof data?.url !== 'string') {
-      return
-    }
-
-    this.pendingBackgroundPress = data
-
-    if (AppState.currentState !== 'active') return
-
-    const cb = this.onPendingBackgroundPressArrived
-    if (cb) this.handlePendingBackgroundPress(cb)
-  }
-
-  /**
-   * Lets the React-mounted DeeplinkContext register a callback that the
-   * background event handler can invoke directly when it stashes a press
-   * while the app is already active. See {@link onPendingBackgroundPressArrived}
-   * for why this is necessary.
-   *
-   * Pass `undefined` to unregister on unmount.
-   */
-  setOnPendingBackgroundPressArrived = (
-    callback: HandleNotificationCallback | undefined
-  ): void => {
-    this.onPendingBackgroundPressArrived = callback
   }
 
   /**
@@ -400,9 +338,7 @@ class NotificationsService {
     callback: HandleNotificationCallback
   ): void => {
     const data = this.consumePendingBackgroundPress()
-    if (typeof data?.url !== 'string') {
-      return
-    }
+    if (typeof data?.url !== 'string') return
 
     const channelId = resolveChannelId({ data })
     AnalyticsService.capture('PushNotificationPressed', {
