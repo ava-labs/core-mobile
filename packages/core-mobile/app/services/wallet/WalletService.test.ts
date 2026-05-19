@@ -3,6 +3,7 @@ import { WalletType } from 'services/wallet/types'
 import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import WalletFactory from './WalletFactory'
 import WalletService from './WalletService'
+import { clearAddressesCache } from './getAddressesCache'
 
 const avmWithActivityResponse: GetAddressesResponse = {
   networkType: 'AVM',
@@ -156,5 +157,352 @@ describe('WalletService.hasActivityFromXpubXP', () => {
         isTestnet: false
       })
     ).resolves.toBe(true)
+  })
+})
+
+describe('WalletService.getAddresses retry behavior', () => {
+  // Each test owns its own postV1GetAddresses mock impl. We force a hard
+  // reset so a closure-captured `calls` counter or hanging promise from a
+  // prior test cannot bleed into the next one — that bleed is what makes
+  // these tests appear to "time out" or surface a TypeError on slow CI.
+  beforeEach(() => {
+    clearAddressesCache()
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+    postV1GetAddresses.mockReset()
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+    jest.restoreAllMocks()
+  })
+
+  it('retries postV1GetAddresses up to three times on transient HTTP failure', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-retry')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    let calls = 0
+    postV1GetAddresses.mockImplementation(async () => {
+      calls += 1
+      if (calls < 3) {
+        // Mimic hey-api shape on a 5xx response: parsed body with error field.
+        return { data: undefined, error: { status: 503, message: 'upstream' } }
+      }
+      return { data: avmWithActivityResponse }
+    })
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-retry',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // Drain all queued backoff timers + microtasks until the promise settles.
+    // `runAllTimersAsync` is more robust on slow CI than `advanceTimersByTimeAsync`
+    // with hand-tuned values, which can drop interleaved microtasks.
+    await jest.runAllTimersAsync()
+
+    const result = await promise
+    expect(result).toEqual(avmWithActivityResponse)
+    expect(calls).toBe(3)
+  })
+
+  it('preserves upstream error message when retries are exhausted', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-exhaust')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockImplementation(async () => ({
+      data: undefined,
+      error: { status: 503, message: 'profile-api down' }
+    }))
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-exhaust',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    // Catch the rejection ourselves so an unhandled-rejection warning can't
+    // race the assertion. Then drain all retries.
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/profile-api down/)
+  })
+
+  it('does NOT retry on non-transient (4xx) error', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-4xx')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockImplementation(async () => ({
+      data: undefined,
+      error: { status: 401, message: 'unauthorized' }
+    }))
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-4xx',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/unauthorized/)
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT retry on unrecognized body shape (deterministic validation error)', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-shape')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Successful HTTP response but body fails the schema check —
+    // retrying won't recover, so the helper must give up immediately.
+    postV1GetAddresses.mockResolvedValue({
+      data: { not: 'a valid GetAddressesResponse' }
+    })
+
+    const promise = WalletService.getAddressesFromXpubXP({
+      walletId: 'wallet-shape',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM,
+      isTestnet: false,
+      onlyWithActivity: false
+    })
+
+    const settled = promise.catch(err => err)
+    await jest.runAllTimersAsync()
+    const err = await settled
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toMatch(/unrecognized body shape/)
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('WalletService.getAddresses cache behavior', () => {
+  // No fake timers in this block — none of these tests exercise the
+  // backoff, and fake timers add microtask-flush brittleness on slow CI.
+  beforeEach(() => {
+    clearAddressesCache()
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+    postV1GetAddresses.mockReset()
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('returns the cached value on the second call without re-calling postV1GetAddresses', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-cache')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockResolvedValue({ data: avmWithActivityResponse })
+
+    const args = {
+      walletId: 'wallet-cache',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const first = await WalletService.getAddressesFromXpubXP(args)
+    const second = await WalletService.getAddressesFromXpubXP(args)
+
+    expect(first).toEqual(avmWithActivityResponse)
+    expect(second).toEqual(avmWithActivityResponse)
+    // getRawXpubXP is called both times (cheap), but the API is hit only once.
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+
+  it('clearAddressesCache forces re-fetch', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-clear')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    postV1GetAddresses.mockResolvedValue({ data: avmWithActivityResponse })
+
+    const args = {
+      walletId: 'wallet-clear',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    await WalletService.getAddressesFromXpubXP(args)
+    clearAddressesCache()
+    await WalletService.getAddressesFromXpubXP(args)
+
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(2)
+  })
+
+  it('does NOT cache failed responses', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-fail')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    let calls = 0
+    postV1GetAddresses.mockImplementation(async () => {
+      calls += 1
+      if (calls === 1)
+        return { data: undefined, error: { status: 401, message: 'auth' } }
+      return { data: avmWithActivityResponse }
+    })
+
+    const args = {
+      walletId: 'wallet-fail',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    await expect(WalletService.getAddressesFromXpubXP(args)).rejects.toThrow(
+      /auth/
+    )
+    await expect(WalletService.getAddressesFromXpubXP(args)).resolves.toEqual(
+      avmWithActivityResponse
+    )
+
+    expect(calls).toBe(2)
+  })
+
+  it('de-dups concurrent calls with the same key — only one API call fires', async () => {
+    jest
+      .spyOn(WalletService, 'getRawXpubXP')
+      .mockResolvedValue('xpub-concurrent')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Hold the API mock unresolved until we have both callers in flight.
+    let resolveApi: (value: { data: GetAddressesResponse }) => void = () => {
+      /* set below */
+    }
+    postV1GetAddresses.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveApi = resolve
+        })
+    )
+
+    const args = {
+      walletId: 'wallet-concurrent',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const first = WalletService.getAddressesFromXpubXP(args)
+    const second = WalletService.getAddressesFromXpubXP(args)
+
+    // Flush microtasks so both callers reach the in-flight registration
+    // (each first awaits the mocked getRawXpubXP before hitting the cache).
+    await Promise.resolve()
+    await Promise.resolve()
+
+    // Both callers are in flight; only one API call should have fired.
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+
+    // Resolve the single API call and confirm both promises receive the value.
+    resolveApi({ data: avmWithActivityResponse })
+
+    const [a, b] = await Promise.all([first, second])
+    expect(a).toEqual(avmWithActivityResponse)
+    expect(b).toEqual(avmWithActivityResponse)
+    expect(postV1GetAddresses).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT populate the cache if clearAddressesCache fires mid-fetch', async () => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-race')
+
+    const { postV1GetAddresses } = jest.requireMock(
+      'utils/api/generated/profileApi.client'
+    )
+
+    // Hold the API resolution until we release it manually, so we can clear
+    // the cache while the retry promise is still in flight.
+    let resolveApi: (value: { data: GetAddressesResponse }) => void = () => {
+      /* set below */
+    }
+    postV1GetAddresses.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveApi = resolve
+        })
+    )
+
+    const args = {
+      walletId: 'wallet-race',
+      walletType: WalletType.MNEMONIC,
+      accountIndex: 0,
+      networkType: NetworkVMType.AVM as const,
+      isTestnet: false,
+      onlyWithActivity: false
+    }
+
+    const fetchInFlight = WalletService.getAddressesFromXpubXP(args)
+
+    // Let both `getRawXpubXP` and the in-flight registration settle, then
+    // simulate an app-lock by clearing the cache while the API is mid-flight.
+    await Promise.resolve()
+    await Promise.resolve()
+    clearAddressesCache()
+
+    // Resolve the in-flight API call. Its body should NOT be cached because
+    // the epoch advanced between fetch-start and fetch-resolve.
+    resolveApi({ data: avmWithActivityResponse })
+    const result = await fetchInFlight
+    expect(result).toEqual(avmWithActivityResponse)
+
+    // Subsequent call should hit the API again, not return a stale cache hit.
+    let secondCallFired = false
+    postV1GetAddresses.mockImplementation(async () => {
+      secondCallFired = true
+      return { data: avmWithActivityResponse }
+    })
+
+    await WalletService.getAddressesFromXpubXP(args)
+    expect(secondCallFired).toBe(true)
   })
 })

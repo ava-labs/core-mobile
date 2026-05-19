@@ -146,7 +146,7 @@ describe('handleNotificationPress', () => {
     expect(mockCallback).toHaveBeenCalledWith(mockDetail.notification.data)
   })
 
-  it('captures PushNotificationPressed (appState=foreground, handler=notifee) when the foreground PRESS has a deeplink url', async () => {
+  it('captures PushNotificationPressed (isColdStart=false, handler=notifee) when the foreground PRESS has a deeplink url', async () => {
     const mockDetail = {
       notification: {
         id: 'testNodeId',
@@ -163,7 +163,7 @@ describe('handleNotificationPress', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'foreground',
+        isColdStart: false,
         handler: 'notifee'
       }
     )
@@ -271,11 +271,43 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'notifee'
       }
     )
     expect(callback).toHaveBeenCalledWith(data)
+  })
+
+  it('classifies a BALANCE_CHANGES notifee cold-start press as the BALANCE_CHANGES channel (not miscellaneous)', async () => {
+    // Regression: this case was observed during CP-14006 device verification.
+    // BALANCE_CHANGES notifications retrieved via `notifee.getInitialNotification`
+    // were falling through to DEFAULT_ANDROID_CHANNEL because the notifee
+    // data payload was missing both `channelId` and `event`. The fix stamps
+    // both fields in `FCMService.#extractDeepLinkData` so this test asserts
+    // the resolved channel travels end-to-end.
+    const data = {
+      url: 'core://portfolio',
+      event: 'BALANCES_RECEIVED',
+      channelId: ChannelId.BALANCE_CHANGES,
+      accountAddress: '0xabc',
+      chainId: '43114',
+      transactionHash: '0xdeadbeef'
+    }
+    // iOS notifee notifications have no `android.channelId` — pass undefined
+    // to exercise the `data.channelId` precedence in `resolveChannelId`.
+    setNotifeeInitial(buildNotifeeInitial(data, undefined))
+
+    await NotificationsService.getInitialNotification(callback)
+
+    expect(AnalyticsService.capture).toHaveBeenCalledWith(
+      'PushNotificationPressed',
+      {
+        channelId: ChannelId.BALANCE_CHANGES,
+        deeplinkUrl: 'core://portfolio',
+        isColdStart: true,
+        handler: 'notifee'
+      }
+    )
   })
 
   it('captures press from FCM initial notification when notifee initial is null (legacy notification payload path)', async () => {
@@ -293,7 +325,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'fcm'
       }
     )
@@ -319,7 +351,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRICE_ALERTS,
         deeplinkUrl: 'core://watchlist',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'fcm'
       }
     )
@@ -341,7 +373,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRICE_ALERTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'fcm'
       }
     )
@@ -387,7 +419,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'notifee'
       }
     )
@@ -405,7 +437,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRICE_ALERTS,
         deeplinkUrl: 'core://watchlist',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'notifee'
       }
     )
@@ -422,7 +454,7 @@ describe('getInitialNotification', () => {
       {
         channelId: DEFAULT_ANDROID_CHANNEL,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'notifee'
       }
     )
@@ -442,7 +474,7 @@ describe('getInitialNotification', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'cold_start',
+        isColdStart: true,
         handler: 'fcm'
       }
     )
@@ -642,7 +674,7 @@ describe('handlePendingBackgroundPress', () => {
     NotificationsService.consumePendingBackgroundPress()
   })
 
-  it('captures PushNotificationPressed (appState=background, handler=notifee) and invokes the callback when a press is pending', () => {
+  it('captures PushNotificationPressed (isColdStart=false, handler=notifee) and invokes the callback when a press is pending', () => {
     const data = { url: 'core://portfolio', event: 'PRODUCT_ANNOUNCEMENTS' }
     setPendingBackgroundPress(data)
     const callback = jest.fn()
@@ -654,7 +686,7 @@ describe('handlePendingBackgroundPress', () => {
       {
         channelId: ChannelId.PRODUCT_ANNOUNCEMENTS,
         deeplinkUrl: 'core://portfolio',
-        appState: 'background',
+        isColdStart: false,
         handler: 'notifee'
       }
     )
@@ -672,7 +704,7 @@ describe('handlePendingBackgroundPress', () => {
       {
         channelId: DEFAULT_ANDROID_CHANNEL,
         deeplinkUrl: 'core://portfolio',
-        appState: 'background',
+        isColdStart: false,
         handler: 'notifee'
       }
     )
