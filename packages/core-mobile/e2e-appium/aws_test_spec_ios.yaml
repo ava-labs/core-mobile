@@ -53,19 +53,20 @@ phases:
           npm install -g appium@3 2>&1 | tail -5
         fi
       - appium --version
-      - echo "--- Setting up xcuitest driver ---"
+      - echo "--- Setting up xcuitest driver (Appium 3 compatible) ---"
       - appium driver list 2>/dev/null || true
       - |-
         if which devicefarm-cli > /dev/null 2>&1; then
           echo "devicefarm-cli available — xcuitest already configured by Device Farm"
-        elif appium driver list 2>/dev/null | grep -qi "xcuitest"; then
-          echo "xcuitest already installed — leaving as-is"
-          appium driver list 2>/dev/null || true
         else
-          echo "xcuitest not found — installing stable version"
-          appium driver install xcuitest
-          appium driver list
+          echo "Upgrading xcuitest to Appium 3 compatible version (>=7.35.1)..."
+          appium driver update xcuitest 2>/dev/null \
+            || appium driver install xcuitest@latest 2>/dev/null \
+            || echo "WARNING: xcuitest update failed"
+          appium driver list 2>/dev/null || true
         fi
+      - echo "--- Code signing identities on this host ---"
+      - security find-identity -v -p codesigning 2>/dev/null || echo "No identities found"
       - export APPIUM_BASE_PATH=/wd/hub
       - echo "APPIUM_BASE_PATH=$APPIUM_BASE_PATH"
       - echo "--- Test package contents ---"
@@ -129,6 +130,16 @@ phases:
       - export DEVICEFARM_DEVICE_NAME="$DEVICEFARM_DEVICE_NAME"
       - export DEVICEFARM_DEVICE_OS_VERSION="$DEVICEFARM_DEVICE_OS_VERSION"
       - export DEVICEFARM_DEVICE_UDID="$DEVICEFARM_DEVICE_UDID"
+      - |-
+        TEAM_ID=$(security find-identity -v -p codesigning 2>/dev/null | grep -Eo '\([A-Z0-9]{10}\)' | tr -d '()' | head -1)
+        echo "WDA signing team ID: ${TEAM_ID:-not found}"
+        if [ -n "$TEAM_ID" ]; then
+          DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+          echo "export XCODE_ORG_ID=\"${TEAM_ID}\"" >> "${DF_ENV_DIR}/.df_env"
+          echo "WDA signing configured with team $TEAM_ID"
+        else
+          echo "WARNING: No signing identity — WDA build will fail"
+        fi
       - echo "=== PRE_TEST PHASE DONE ==="
 
   test:

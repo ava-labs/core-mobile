@@ -102,6 +102,12 @@ const allCaps = [
     'appium:wdaLaunchTimeout': 360000,
     'appium:wdaConnectionTimeout': 360000,
     'appium:usePrebuiltWDA': false,
+    ...(process.env.XCODE_ORG_ID
+      ? {
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:xcodeSigningId': 'Apple Development'
+        }
+      : {}),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
