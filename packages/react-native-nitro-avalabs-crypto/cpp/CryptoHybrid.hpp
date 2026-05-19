@@ -67,6 +67,20 @@ namespace margelo::nitro::nitroavalabscrypto {
         ExtendedPublicKey getExtendedPublicKey(
                 const BufferOrString &secretKey) override;
 
+        std::vector<std::string> deriveAddressesForEvm(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys) override;
+
+        std::vector<std::string> deriveAddressesForBTC(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys,
+                bool isTestnet) override;
+
+        std::vector<DerivedAvaxAddresses> deriveAddressesForAvax(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &avaxPubkeys,
+                const std::vector<std::shared_ptr<ArrayBuffer>> &evmPubkeys,
+                bool isTestnet) override;
+
+        std::vector<std::string> deriveAddressesForSVM(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys) override;
 
     protected:
         // If your nitrogen requires it, you can override loadHybridMethods(),
@@ -88,6 +102,11 @@ namespace margelo::nitro::nitroavalabscrypto {
         static secp256k1_pubkey parsePubkey(const std::vector<uint8_t> &in);
 
         static std::shared_ptr<ArrayBuffer> toAB(const std::vector<uint8_t> &v);
+
+        static std::vector<uint8_t> abToBytes(
+                const std::shared_ptr<ArrayBuffer> &ab,
+                const char *what,
+                size_t expectedSize);
     };
 
 } // namespace margelo::nitro::nitroavalabscrypto
