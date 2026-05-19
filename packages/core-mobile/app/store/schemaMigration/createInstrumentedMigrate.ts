@@ -12,12 +12,8 @@ type Migrate = (
 
 /**
  * Drop-in replacement for `redux-persist`'s `createMigrate` that records
- * the first failing migration in `useSchemaMigrationFailure` and reports
- * it to Sentry before re-rejecting. Re-rejection preserves Redux Persist
- * semantics (the persistor stays unbootstrapped on failure); the provider
- * reads the failure record and re-throws during render so the top-level
- * `Sentry.ErrorBoundary` renders the global error fallback instead of
- * the rehydrated app.
+ * the first failing migration in `useSchemaMigrationFailure`, reports it
+ * to Sentry, and re-throws.
  *
  * Each migration is wrapped so the failure record carries the *exact*
  * version that threw (not the target version), which is the more useful

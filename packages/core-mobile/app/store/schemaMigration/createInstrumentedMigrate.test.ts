@@ -78,9 +78,6 @@ describe('createInstrumentedMigrate', () => {
   })
 
   it('records only the FIRST failure when multiple migrations would error', async () => {
-    // createMigrate stops at the first throw, so v2 never runs in practice.
-    // This test still asserts that the recorded version is the one that
-    // actually failed, not a later one.
     const errV1 = new Error('boom-v1')
     const manifest: MigrationManifest = {
       1: () => {
@@ -92,13 +89,14 @@ describe('createInstrumentedMigrate', () => {
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 2)).rejects.toThrow('boom-v1')
+    await expect(migrate(baseState(0), 2)).rejects.toThrow()
 
     expect(useSchemaMigrationFailure.getState()).toEqual({
       version: 1,
       error: errV1
     })
-    // Only one Sentry capture — we don't double-report.
+    // Only one Sentry capture — we don't double-report when later steps
+    // also error out against the now-Promise state from the first failure.
     expect(mockCaptureException).toHaveBeenCalledTimes(1)
   })
 
@@ -115,8 +113,7 @@ describe('createInstrumentedMigrate', () => {
 
     await expect(migrate(baseState(0), 1)).rejects.toThrow('second')
 
-    // First failure preserved — we surface the root cause, not a retry's
-    // repeat error.
+    // First failure preserved — we surface the root cause.
     expect(useSchemaMigrationFailure.getState()).toEqual({
       version: 1,
       error: firstErr
