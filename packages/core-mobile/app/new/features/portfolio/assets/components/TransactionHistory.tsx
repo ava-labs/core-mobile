@@ -43,15 +43,12 @@ interface Props {
     hash?: string,
     hashType?: 'account' | 'tx'
   ) => void
-  /** Optional node rendered above the filter/sort widget at the top of the list. */
-  preFilter?: React.ReactNode
 }
 
 const TransactionHistory: FC<Props> = ({
   token,
   handleExplorerLink,
-  containerStyle,
-  preFilter
+  containerStyle
 }): React.JSX.Element => {
   const header = useHeaderMeasurements()
   const { getNetwork } = useNetworks()
@@ -198,16 +195,13 @@ const TransactionHistory: FC<Props> = ({
 
   const renderHeader = useCallback(() => {
     return (
-      <>
-        {preFilter}
-        <DropdownSelections
-          filter={filter}
-          sort={sort}
-          sx={{ paddingHorizontal: 16, paddingTop: 10 }}
-        />
-      </>
+      <DropdownSelections
+        filter={filter}
+        sort={sort}
+        sx={{ paddingHorizontal: 16, paddingTop: 10 }}
+      />
     )
-  }, [filter, sort, preFilter])
+  }, [filter, sort])
 
   const overrideProps = {
     contentContainerStyle: {

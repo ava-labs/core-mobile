@@ -376,6 +376,18 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             paddingVertical: 24
           }}
         />
+        {isPriceChartBlocked ? null : (
+          <View onLayout={handleTokenPriceChartLayout}>
+            <TokenPriceChart
+              symbol={token?.symbol ?? ''}
+              coingeckoId={tokenCoingeckoId}
+              width={frame.width}
+              onPriceHeaderPress={
+                trackTokenId ? handleOpenTrackTokenDetail : undefined
+              }
+            />
+          </View>
+        )}
       </View>
     )
   }, [
@@ -389,28 +401,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     isPrivacyModeEnabled,
-    actionButtons
-  ])
-
-  const tokenPriceChartElement = useMemo(() => {
-    return (
-      <View onLayout={handleTokenPriceChartLayout}>
-        {isPriceChartBlocked ? null : (
-          <TokenPriceChart
-            symbol={token?.symbol ?? ''}
-            coingeckoId={tokenCoingeckoId}
-            width={frame.width}
-            onPriceHeaderPress={
-              trackTokenId ? handleOpenTrackTokenDetail : undefined
-            }
-          />
-        )}
-      </View>
-    )
-  }, [
+    actionButtons,
     isPriceChartBlocked,
     handleTokenPriceChartLayout,
-    token?.symbol,
     tokenCoingeckoId,
     frame.width,
     trackTokenId,
@@ -448,7 +441,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           token={token}
           handleExplorerLink={handleExplorerLink}
           containerStyle={contentContainerStyle}
-          preFilter={tokenPriceChartElement}
         />
       )
     }
@@ -462,13 +454,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [
-    token,
-    handleExplorerLink,
-    contentContainerStyle,
-    isXpToken,
-    tokenPriceChartElement
-  ])
+  }, [token, handleExplorerLink, contentContainerStyle, isXpToken])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (
