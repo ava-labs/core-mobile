@@ -3,6 +3,7 @@ import Keychain from 'react-native-keychain'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { configureEncryptedStore } from 'store'
+import { useSchemaMigrationFailure } from 'store/schemaMigration/schemaMigrationFailureStore'
 import Aes from 'react-native-aes-crypto'
 
 type EncryptionKey = string | null
@@ -11,9 +12,22 @@ const MAC_KEY = 'sec-store-provider-mac'
 
 /**
  * Set up the encrypted redux store.
+ *
+ * If `redux-persist` migration rejects on rehydration, the failure is
+ * captured in `useSchemaMigrationFailure` (via
+ * `createInstrumentedMigrate`). We re-throw it during render so the
+ * top-level `Sentry.ErrorBoundary` in `ContextApp.tsx` catches it and
+ * shows the global error fallback. Reloading from that fallback restarts
+ * the app and re-runs migrations; we deliberately do not auto-reset the
+ * persisted blob.
  */
 export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
   const encryptedStore = useEncryptedStore()
+  const [migrationFailure] = useSchemaMigrationFailure()
+
+  if (migrationFailure) {
+    throw migrationFailure.error
+  }
 
   if (!encryptedStore) return null
 
@@ -26,10 +40,6 @@ export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
   )
 }
 
-/**
- * Memoize the store.
- * @private
- */
 const useEncryptedStore = (): ReturnType<
   typeof configureEncryptedStore
 > | null => {
@@ -44,7 +54,7 @@ const useEncryptedStore = (): ReturnType<
       if (!encryptionKey || !macKey) return
       setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
     })()
-  }, []) // only once!
+  }, [])
 
   return encryptedStore
 }
