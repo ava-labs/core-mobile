@@ -1,18 +1,17 @@
-import * as Sentry from '@sentry/react-native'
 import { MigrationManifest, PersistedState } from 'redux-persist'
+import SentryService from 'services/sentry/SentryService'
 import { createInstrumentedMigrate } from './createInstrumentedMigrate'
 import { useSchemaMigrationFailure } from './schemaMigrationFailureStore'
 
-jest.mock('@sentry/react-native', () => ({
-  captureException: jest.fn(),
-  init: jest.fn(),
-  reactNavigationIntegration: jest.fn(() => ({})),
-  withScope: jest.fn(),
-  getGlobalScope: jest.fn(() => ({ setUser: jest.fn() })),
-  addBreadcrumb: jest.fn()
+jest.mock('services/sentry/SentryService', () => ({
+  __esModule: true,
+  default: {
+    captureException: jest.fn(),
+    isAvailable: true
+  }
 }))
 
-const mockCaptureException = Sentry.captureException as jest.Mock
+const mockCaptureException = SentryService.captureException as jest.Mock
 
 const baseState = (version: number): PersistedState => ({
   _persist: { version, rehydrated: false }
@@ -51,11 +50,9 @@ describe('createInstrumentedMigrate', () => {
     const failure = useSchemaMigrationFailure.getState()
     expect(failure).toEqual({ version: 1, error: err })
     expect(mockCaptureException).toHaveBeenCalledWith(
+      'Schema migration failure',
       err,
-      expect.objectContaining({
-        tags: { system: 'schemaMigration' },
-        extra: { version: 1 }
-      })
+      { system: 'schemaMigration', version: '1' }
     )
   })
 
@@ -129,7 +126,8 @@ describe('createInstrumentedMigrate', () => {
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 1)).rejects.toBeDefined()
+    await expect(migrate(baseState(0), 1)).rejects.toBeInstanceOf(Error)
+    await expect(migrate(baseState(0), 1)).rejects.toThrow('plain-string-throw')
 
     const failure = useSchemaMigrationFailure.getState()
     expect(failure?.error).toBeInstanceOf(Error)

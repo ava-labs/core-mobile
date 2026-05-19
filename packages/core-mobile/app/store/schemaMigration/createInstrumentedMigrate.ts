@@ -1,5 +1,5 @@
-import * as Sentry from '@sentry/react-native'
 import { createMigrate, MigrationManifest, PersistedState } from 'redux-persist'
+import SentryService from 'services/sentry/SentryService'
 import { SentryTag } from 'services/sentry/types'
 import { useSchemaMigrationFailure } from './schemaMigrationFailureStore'
 
@@ -32,25 +32,26 @@ export const createInstrumentedMigrate = (
       try {
         return await migrate(state)
       } catch (err) {
-        recordFailure(Number(version), err)
-        throw err
+        // Normalize first so downstream consumers (redux-persist `migrateErr`,
+        // dev console, the failure store) always see a proper message + stack.
+        const error = err instanceof Error ? err : new Error(String(err))
+        recordFailure(Number(version), error)
+        throw error
       }
     }) as MigrationManifest[string]
   }
   return createMigrate(wrapped, config)
 }
 
-const recordFailure = (version: number, err: unknown): void => {
-  const error = err instanceof Error ? err : new Error(String(err))
-
+const recordFailure = (version: number, error: Error): void => {
   // Avoid stomping on the first failure if a later layer also rejects —
   // the first one is the root cause we want to surface.
   if (useSchemaMigrationFailure.getState() !== null) return
 
   useSchemaMigrationFailure.setState({ error, version })
 
-  Sentry.captureException(error, {
-    tags: { system: SentryTag.SchemaMigration },
-    extra: { version }
+  SentryService.captureException('Schema migration failure', error, {
+    system: SentryTag.SchemaMigration,
+    version: String(version)
   })
 }
