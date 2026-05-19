@@ -1199,7 +1199,7 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
-    - XCODE_EXPORT: ad-hoc
+    - XCODE_EXPORT: development
       opts:
         is_expand: false
     - IOS_SCHEME: AvaxWallet
