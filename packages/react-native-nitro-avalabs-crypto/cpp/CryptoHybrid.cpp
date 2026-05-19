@@ -1,8 +1,16 @@
 #include "CryptoHybrid.hpp"
+#include "address_derivation.hpp"
+#include "slip0010.hpp"
+#include "scope_guard.hpp"
+#include "base58.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
 #include <algorithm>
+#include <atomic>
 #include <cctype>
+#include <exception>
+#include <mutex>
 #include <stdexcept>
+#include <thread>
 
 #ifndef OPENSSL_NOT_AVAILABLE
 
@@ -40,6 +48,60 @@ namespace margelo::nitro::nitroavalabscrypto {
             c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
             if (c >= 'a' && c <= 'f') return static_cast<uint8_t>(10 + (c - 'a'));
             throw std::invalid_argument("Invalid hex character");
+        }
+
+        using detail::ScopeGuard;
+
+        template <typename Fn>
+        inline void parallelFor(size_t n, Fn &&fn) {
+            constexpr size_t kSmallBatchSerial = 2;
+            constexpr size_t kMaxWorkers = 4;
+
+            if (n <= kSmallBatchSerial) {
+                for (size_t i = 0; i < n; ++i) fn(i);
+                return;
+            }
+
+            const size_t hw =
+                std::max<size_t>(1, std::thread::hardware_concurrency());
+            const size_t numWorkers = std::min({hw, n, kMaxWorkers});
+
+            if (numWorkers <= 1) {
+                for (size_t i = 0; i < n; ++i) fn(i);
+                return;
+            }
+
+            std::vector<std::thread> workers;
+            workers.reserve(numWorkers);
+            std::atomic<bool> failed{false};
+            std::mutex errMutex;
+            std::exception_ptr errPtr;
+
+            std::atomic<size_t> next{0};
+            for (size_t w = 0; w < numWorkers; ++w) {
+                workers.emplace_back([&]() {
+                    try {
+                        for (;;) {
+                            if (failed.load(std::memory_order_relaxed)) return;
+                            const size_t i =
+                                next.fetch_add(1, std::memory_order_relaxed);
+                            if (i >= n) return;
+                            fn(i);
+                        }
+                    } catch (...) {
+                        if (!failed.exchange(true)) {
+                            std::lock_guard<std::mutex> g(errMutex);
+                            errPtr = std::current_exception();
+                        }
+                    }
+                });
+            }
+
+            for (auto &t : workers) t.join();
+
+            if (errPtr) {
+                std::rethrow_exception(errPtr);
+            }
         }
     }
 
@@ -113,6 +175,22 @@ namespace margelo::nitro::nitroavalabscrypto {
         auto ab = ArrayBuffer::allocate(v.size());
         std::memcpy(ab->data(), v.data(), v.size());
         return ab;
+    }
+
+    std::vector<uint8_t> CryptoHybrid::abToBytes(
+            const std::shared_ptr<ArrayBuffer> &ab,
+            const char *what,
+            size_t expectedSize) {
+        if (!ab) {
+            throw std::invalid_argument(std::string(what) + ": ArrayBuffer is null");
+        }
+        if (ab->size() != expectedSize) {
+            throw std::invalid_argument(
+                std::string(what) + ": expected " + std::to_string(expectedSize) +
+                " bytes, got " + std::to_string(ab->size()));
+        }
+        const auto *p = reinterpret_cast<const uint8_t *>(ab->data());
+        return std::vector<uint8_t>(p, p + expectedSize);
     }
 
 /* ---------- getPublicKey* (ECDSA-style pubkey from 32-byte seckey) ---------- */
@@ -410,6 +488,70 @@ namespace margelo::nitro::nitroavalabscrypto {
 
         return ExtendedPublicKey(headAB, prefixAB, scalarStr, pointBytesAB);
 #endif // OPENSSL_NOT_AVAILABLE
+    }
+
+/* -------------------- Batch address derivation methods -------------------- */
+
+    std::vector<std::string> CryptoHybrid::deriveAddressesForEvm(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys) {
+        const size_t n = pubkeys.size();
+        std::vector<std::string> out(n);
+        auto *c = ctx();
+        parallelFor(n, [&](size_t i) {
+            auto bytes = abToBytes(pubkeys[i], "deriveAddressesForEvm.pubkey", 33);
+            out[i] = evm_address_from_pubkey(c, bytes);
+        });
+        return out;
+    }
+
+    std::vector<std::string> CryptoHybrid::deriveAddressesForBTC(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys,
+            bool isTestnet) {
+        const size_t n = pubkeys.size();
+        std::vector<std::string> out(n);
+        parallelFor(n, [&](size_t i) {
+            auto bytes = abToBytes(pubkeys[i], "deriveAddressesForBTC.pubkey", 33);
+            out[i] = btc_address_from_pubkey(bytes, isTestnet);
+        });
+        return out;
+    }
+
+    std::vector<DerivedAvaxAddresses> CryptoHybrid::deriveAddressesForAvax(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &avaxPubkeys,
+            const std::vector<std::shared_ptr<ArrayBuffer>> &evmPubkeys,
+            bool isTestnet) {
+        if (avaxPubkeys.size() != evmPubkeys.size()) {
+            throw std::invalid_argument(
+                "deriveAddressesForAvax: avaxPubkeys and evmPubkeys must be the same length");
+        }
+        const size_t n = avaxPubkeys.size();
+        const std::string hrp = isTestnet ? "fuji" : "avax";
+        std::vector<DerivedAvaxAddresses> out(n);
+        parallelFor(n, [&](size_t i) {
+            auto avax = abToBytes(avaxPubkeys[i], "deriveAddressesForAvax.avaxPubkey", 33);
+            auto evm  = abToBytes(evmPubkeys[i],  "deriveAddressesForAvax.evmPubkey",  33);
+
+            auto avax_bech32 = avalanche_bech32_from_pubkey(avax, hrp);
+            auto evm_bech32  = avalanche_bech32_from_pubkey(evm,  hrp);
+
+            DerivedAvaxAddresses entry;
+            entry.avm     = "X-" + avax_bech32;
+            entry.pvm     = "P-" + avax_bech32;
+            entry.coreEth = "C-" + evm_bech32;
+            out[i] = std::move(entry);
+        });
+        return out;
+    }
+
+    std::vector<std::string> CryptoHybrid::deriveAddressesForSVM(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &pubkeys) {
+        const size_t n = pubkeys.size();
+        std::vector<std::string> out(n);
+        parallelFor(n, [&](size_t i) {
+            auto bytes = abToBytes(pubkeys[i], "deriveAddressesForSVM.pubkey", 32);
+            out[i] = base58_encode(bytes);
+        });
+        return out;
     }
 
 } // namespace margelo::nitro::nitroavalabscrypto
