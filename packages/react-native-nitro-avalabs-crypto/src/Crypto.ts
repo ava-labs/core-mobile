@@ -1,9 +1,16 @@
 /* eslint-disable no-bitwise */
 import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
-import type { Crypto, ExtendedPublicKeyResult } from './specs/Crypto.nitro'
+import type {
+  Crypto,
+  DerivedAvaxAddresses,
+  ExtendedPublicKeyResult
+} from './specs/Crypto.nitro'
 
-export type { ExtendedPublicKeyResult } from './specs/Crypto.nitro'
+export type {
+  DerivedAvaxAddresses,
+  ExtendedPublicKeyResult
+} from './specs/Crypto.nitro'
 
 // Native hybrid object
 const NativeCrypto = NitroModules.createHybridObject<Crypto>('Crypto')
@@ -361,4 +368,46 @@ export function getExtendedPublicKey(
     point: { toRawBytes: () => pointBytes },
     pointBytes: pointBytes
   }
+}
+
+/** Batch-encode EVM addresses from 33-byte compressed secp256k1 pubkeys. */
+export function deriveAddressesForEvm(
+  pubkeys: Array<Uint8Array | ArrayBuffer>
+): string[] {
+  return NativeCrypto.deriveAddressesForEvm(pubkeys.map(toArrayBuffer))
+}
+
+/** Batch-encode BTC P2WPKH bech32 addresses from 33-byte compressed pubkeys. */
+export function deriveAddressesForBTC(
+  pubkeys: Array<Uint8Array | ArrayBuffer>,
+  isTestnet: boolean
+): string[] {
+  return NativeCrypto.deriveAddressesForBTC(
+    pubkeys.map(toArrayBuffer),
+    isTestnet
+  )
+}
+
+/**
+ * Batch-encode Avalanche X/P/CoreEth addresses for the given (avax, evm)
+ * pubkey pairs. Inputs must be aligned: avaxPubkeys[i] and evmPubkeys[i] are
+ * the two pubkeys for the same account index.
+ */
+export function deriveAddressesForAvax(
+  avaxPubkeys: Array<Uint8Array | ArrayBuffer>,
+  evmPubkeys: Array<Uint8Array | ArrayBuffer>,
+  isTestnet: boolean
+): DerivedAvaxAddresses[] {
+  return NativeCrypto.deriveAddressesForAvax(
+    avaxPubkeys.map(toArrayBuffer),
+    evmPubkeys.map(toArrayBuffer),
+    isTestnet
+  )
+}
+
+/** Batch-encode Solana Base58 addresses from 32-byte Ed25519 pubkeys. */
+export function deriveAddressesForSVM(
+  pubkeys: Array<Uint8Array | ArrayBuffer>
+): string[] {
+  return NativeCrypto.deriveAddressesForSVM(pubkeys.map(toArrayBuffer))
 }
