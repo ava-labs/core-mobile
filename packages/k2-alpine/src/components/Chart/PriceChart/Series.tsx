@@ -1,9 +1,62 @@
-import { Line, RoundedRect, vec } from '@shopify/react-native-skia'
+import {
+  Line,
+  LinearGradient,
+  Path,
+  RoundedRect,
+  type SkPath,
+  vec
+} from '@shopify/react-native-skia'
 import React, { FC, memo } from 'react'
+import Animated, {
+  SharedValue,
+  useAnimatedStyle
+} from 'react-native-reanimated'
+import { useTheme } from '../../../hooks'
+import {
+  AREA_GRADIENT_BOTTOM_ALPHA,
+  AREA_GRADIENT_TOP_ALPHA
+} from './constants'
 import { indexToX, priceToY } from './helpers'
 import { OhlcCandle } from './types'
 
-type Props = {
+type AreaSeriesProps = {
+  /** Closed path for the gradient fill. */
+  areaPath: SkPath
+  /** Open path for the stroke. */
+  linePath: SkPath
+  color: string
+  topY: number
+  bottomY: number
+  strokeWidth?: number
+}
+
+/** Skia primitives — must be a child of a `<Canvas>`. */
+export const AreaSeries: FC<AreaSeriesProps> = memo(
+  ({ areaPath, linePath, color, topY, bottomY, strokeWidth = 2.5 }) => (
+    <>
+      <Path path={areaPath} style="fill">
+        <LinearGradient
+          start={vec(0, topY)}
+          end={vec(0, bottomY)}
+          colors={[
+            `${color}${AREA_GRADIENT_TOP_ALPHA}`,
+            `${color}${AREA_GRADIENT_BOTTOM_ALPHA}`
+          ]}
+        />
+      </Path>
+      <Path
+        path={linePath}
+        color={color}
+        style="stroke"
+        strokeWidth={strokeWidth}
+        strokeJoin="round"
+        strokeCap="round"
+      />
+    </>
+  )
+)
+
+type CandlesProps = {
   candles: OhlcCandle[]
   innerWidth: number
   chartInset: number
@@ -17,7 +70,7 @@ type Props = {
   downColor: string
 }
 
-export const Candles: FC<Props> = memo(
+export const Candles: FC<CandlesProps> = memo(
   ({
     candles,
     innerWidth,
@@ -91,3 +144,48 @@ export const Candles: FC<Props> = memo(
     </>
   )
 )
+
+type LineChartDotProps = {
+  x: SharedValue<number>
+  y: SharedValue<number>
+  isActive: SharedValue<boolean>
+  size?: number
+  color?: string
+}
+
+export const LineChartDot: FC<LineChartDotProps> = ({
+  x,
+  y,
+  isActive,
+  size = 9,
+  color: colorProp
+}) => {
+  const { theme } = useTheme()
+  const color = colorProp ?? theme.colors.$textPrimary ?? '#000'
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: isActive.value ? 1 : 0,
+    transform: [
+      { translateX: x.value - size / 2 },
+      { translateY: y.value - size / 2 }
+    ]
+  }))
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: color
+        },
+        animatedStyle
+      ]}
+    />
+  )
+}

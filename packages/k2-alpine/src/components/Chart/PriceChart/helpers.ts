@@ -110,7 +110,7 @@ export const traceSmoothLine = (
   }
 }
 
-export type CandleDisplayStrings = {
+type CandleDisplayStrings = {
   priceText: string
   timeText: string
   deltaPriceText: string

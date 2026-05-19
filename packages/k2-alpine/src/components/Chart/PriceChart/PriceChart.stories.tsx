@@ -122,7 +122,6 @@ export const All = (): JSX.Element => {
             height={235}
             mode={chartType}
             state={state}
-            onRetry={() => setState('loaded')}
           />
         </View>
 

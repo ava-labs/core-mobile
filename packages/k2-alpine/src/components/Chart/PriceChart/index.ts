@@ -2,7 +2,6 @@ export { PriceChart } from './PriceChart'
 export { ChartHeader } from './ChartHeader'
 export type {
   OhlcCandle,
-  OhlcvResponse,
   ChartRange,
   PriceChartMode,
   ChartState

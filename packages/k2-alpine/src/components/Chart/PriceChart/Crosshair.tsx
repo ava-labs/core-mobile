@@ -13,22 +13,18 @@ type Props = {
   x: SharedValue<number>
   isActive: SharedValue<boolean>
   height: number
-  topOffset?: number
   /** Pixel amount to shrink the line from the bottom — used to stop the
    * crosshair at the top of the highlighted volume bar. */
   bottomInset?: SharedValue<number>
   width?: number
 }
 
-const DEFAULT_CROSSHAIR_WIDTH = 3
-
 export const Crosshair: FC<Props> = ({
   x,
   isActive,
   height,
-  topOffset = 0,
   bottomInset,
-  width = DEFAULT_CROSSHAIR_WIDTH
+  width = 3
 }) => {
   const { theme } = useTheme()
   const color = theme.colors.$textPrimary ?? '#000'
@@ -59,7 +55,7 @@ export const Crosshair: FC<Props> = ({
       style={[
         {
           position: 'absolute',
-          top: topOffset,
+          top: 0,
           left: 0,
           width,
           borderRadius: width / 2,

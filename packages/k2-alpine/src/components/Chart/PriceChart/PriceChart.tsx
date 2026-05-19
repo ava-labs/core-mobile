@@ -7,7 +7,7 @@ import {
   useFont
 } from '@shopify/react-native-skia'
 import React, { FC, useEffect, useMemo } from 'react'
-import { ActivityIndicator, Pressable, View } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
@@ -20,8 +20,6 @@ import Animated, {
 import { useTheme } from '../../../hooks'
 import { colors as baseColors } from '../../../theme/tokens/colors'
 import { Text } from '../../Primitives'
-import { AreaSeries } from './AreaSeries'
-import { Candles } from './Candles'
 import { ChartFooter } from './ChartFooter'
 import {
   CANDLE_BODY_WIDTH_RATIO,
@@ -31,7 +29,6 @@ import {
   VOLUME_ROW_HEIGHT
 } from './constants'
 import { Crosshair } from './Crosshair'
-import { LineChartDot } from './LineChartDot'
 import {
   indexToX,
   priceToY,
@@ -40,6 +37,7 @@ import {
   traceSmoothLine,
   yAxisTicks
 } from './helpers'
+import { AreaSeries, Candles, LineChartDot } from './Series'
 import { ChartState, OhlcCandle, PriceChartMode } from './types'
 import { VolumeRow } from './VolumeRow'
 import { YAxisLabels } from './YAxisLabels'
@@ -48,9 +46,7 @@ type Props = {
   candles: OhlcCandle[]
   width: number
   height: number
-  volumeRowHeight?: number
   state?: ChartState
-  onRetry?: () => void
   mode?: PriceChartMode
   /** When provided, the chart writes its press-and-hold state into these
    * SharedValues so a parent can coordinate sibling UI without re-rendering
@@ -70,14 +66,12 @@ const renderPlaceholderState = ({
   state,
   candles,
   width,
-  height,
-  onRetry
+  height
 }: {
   state: ChartState
   candles: OhlcCandle[]
   width: number
   height: number
-  onRetry?: () => void
 }): React.ReactElement | null => {
   const containerStyle = {
     width,
@@ -98,17 +92,10 @@ const renderPlaceholderState = ({
   }
   if (state === 'error') {
     return (
-      <View style={{ ...containerStyle, gap: 8 }}>
+      <View style={containerStyle}>
         <Text variant="caption" sx={{ color: '$textSecondary' }}>
           Couldn't load chart data
         </Text>
-        {onRetry && (
-          <Pressable onPress={onRetry}>
-            <Text variant="caption" sx={{ color: '$textPrimary' }}>
-              Retry
-            </Text>
-          </Pressable>
-        )}
       </View>
     )
   }
@@ -119,9 +106,7 @@ export const PriceChart: FC<Props> = ({
   candles,
   width,
   height,
-  volumeRowHeight,
   state = 'loaded',
-  onRetry,
   mode = 'candlestick',
   externalIsActive,
   externalActiveIndex,
@@ -155,7 +140,7 @@ export const PriceChart: FC<Props> = ({
   // scaling stay locked across modes. The canvas spans the full chart
   // area (candle body + volume band) so both line/area and candles can
   // stay mounted and swap via opacity without resizing the Canvas.
-  const volH = volumeRowHeight ?? VOLUME_ROW_HEIGHT
+  const volH = VOLUME_ROW_HEIGHT
   const candleH = Math.max(0, height - volH - footerH)
   const priceTopPadding = PRICE_TOP_PADDING
   const priceAreaH = Math.max(0, candleH - priceTopPadding)
@@ -433,8 +418,7 @@ export const PriceChart: FC<Props> = ({
     state,
     candles,
     width,
-    height,
-    onRetry
+    height
   })
   if (placeholder) return placeholder
 
@@ -518,7 +502,6 @@ export const PriceChart: FC<Props> = ({
             isActive={isActive}
             height={candleH + volH}
             bottomInset={showVolume ? animatedBarHeight : undefined}
-            width={3}
           />
           {mode === 'line' && (
             <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
