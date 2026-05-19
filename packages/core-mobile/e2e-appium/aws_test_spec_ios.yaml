@@ -53,11 +53,19 @@ phases:
           npm install -g appium@3 2>&1 | tail -5
         fi
       - appium --version
-      - echo "--- Installing latest xcuitest driver (iOS 26 support) ---"
+      - echo "--- Setting up xcuitest driver ---"
       - appium driver list 2>/dev/null || true
-      - appium driver uninstall xcuitest 2>/dev/null || true
-      - appium driver install xcuitest@latest
-      - appium driver list
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          echo "devicefarm-cli available — xcuitest already configured by Device Farm"
+        elif appium driver list 2>/dev/null | grep -qi "xcuitest"; then
+          echo "xcuitest already installed — leaving as-is"
+          appium driver list 2>/dev/null || true
+        else
+          echo "xcuitest not found — installing stable version"
+          appium driver install xcuitest
+          appium driver list
+        fi
       - export APPIUM_BASE_PATH=/wd/hub
       - echo "APPIUM_BASE_PATH=$APPIUM_BASE_PATH"
       - echo "--- Test package contents ---"
