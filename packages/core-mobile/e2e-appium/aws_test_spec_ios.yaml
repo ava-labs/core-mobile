@@ -146,39 +146,18 @@ phases:
           echo "WARNING: No signing identity — WDA build will fail"
         fi
       - |-
-        echo "--- Building WDA with -allowProvisioningUpdates ---"
-        TEAM_ID=$(security find-identity -v -p codesigning 2>/dev/null | grep -Eo '\([A-Z0-9]{10}\)' | tr -d '()' | head -1)
-        WDA_XCODEPROJ=$(find /Users/device-farm/.appium -name "WebDriverAgent.xcodeproj" 2>/dev/null | head -1)
-        echo "Team ID: ${TEAM_ID:-NOT FOUND}"
-        echo "WDA xcodeproj: ${WDA_XCODEPROJ:-NOT FOUND}"
-        if [ -n "$WDA_XCODEPROJ" ] && [ -n "$TEAM_ID" ]; then
-          WDA_DERIVED_DATA="/tmp/wda-build-$$"
-          mkdir -p "$WDA_DERIVED_DATA"
-          echo "Building WDA to: $WDA_DERIVED_DATA"
-          xcodebuild build-for-testing \
-            -project "$WDA_XCODEPROJ" \
-            -scheme WebDriverAgentRunner \
-            -destination "id=$DEVICEFARM_DEVICE_UDID" \
-            -derivedDataPath "$WDA_DERIVED_DATA" \
-            -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            "CODE_SIGN_IDENTITY=iPhone Developer" \
-            GCC_TREAT_WARNINGS_AS_ERRORS=0 \
-            COMPILER_INDEX_STORE_ENABLE=NO \
-            2>&1 | tail -100
-          BUILD_CODE=$?
-          echo "xcodebuild exit code: $BUILD_CODE"
-          if [ $BUILD_CODE -eq 0 ]; then
-            DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
-            printf '\nexport WDA_DERIVED_DATA_PATH="%s"\n' "$WDA_DERIVED_DATA" >> "${DF_ENV_DIR}/.df_env"
-            echo "WDA built — exported WDA_DERIVED_DATA_PATH to .df_env"
-          else
-            echo "WARNING: WDA build failed (code $BUILD_CODE) — xcuitest will attempt its own build"
-          fi
+        echo "--- Setting up Device Farm pre-signed WDA ---"
+        env | grep -i 'DEVICEFARM_WDA_DERIVED_DATA_PATH' 2>/dev/null || echo "No pre-signed WDA env vars found"
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        WDA_PATH="${DEVICEFARM_WDA_DERIVED_DATA_PATH_V9:-$DEVICEFARM_WDA_DERIVED_DATA_PATH}"
+        if [ -n "$WDA_PATH" ]; then
+          echo "Pre-signed WDA path: $WDA_PATH"
+          echo "--- WDA Build/Products contents ---"
+          ls "$WDA_PATH/Build/Products/" 2>/dev/null || echo "WARNING: expected products dir not found"
+          printf '\nexport WDA_DERIVED_DATA_PATH="%s"\n' "$WDA_PATH" >> "${DF_ENV_DIR}/.df_env"
+          echo "Exported WDA_DERIVED_DATA_PATH to .df_env"
         else
-          echo "ERROR: WDA xcodeproj or team ID not found — xcuitest will attempt its own build"
+          echo "WARNING: No Device Farm pre-signed WDA available"
         fi
       - echo "=== PRE_TEST PHASE DONE ==="
 
