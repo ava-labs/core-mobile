@@ -38,12 +38,15 @@ const defaultParams = {
 
 describe('computeAccountBalance', () => {
   describe('isLoadingBalance', () => {
-    it('returns true when enabledNetworksCount is 0', () => {
+    it('returns false when enabledNetworksCount is 0 (account supports no enabled networks)', () => {
+      // CP-14303: when an account cannot produce balance entries for any
+      // enabled network (e.g. all unsupported by the wallet type) we should
+      // show $0 instead of spinning forever.
       const result = computeAccountBalance({
         ...defaultParams,
         enabledNetworksCount: 0
       })
-      expect(result.isLoadingBalance).toBe(true)
+      expect(result.isLoadingBalance).toBe(false)
     })
 
     it('returns false when isError is true', () => {
@@ -71,7 +74,20 @@ describe('computeAccountBalance', () => {
       expect(result.isLoadingBalance).toBe(true)
     })
 
-    it('returns false when all networks have loaded', () => {
+    it('returns false when all enabled networks have loaded', () => {
+      const result = computeAccountBalance({
+        ...defaultParams,
+        enabledNetworksCount: 2,
+        accountBalances: [makeBalance(), makeBalance({ chainId: 43113 })]
+      })
+      expect(result.isLoadingBalance).toBe(false)
+    })
+
+    it('returns false when enabledNetworksCount excludes an unsupported network (Keystone + SVM)', () => {
+      // CP-14303: Keystone wallets can never produce a Solana balance entry,
+      // so the wallet card considers the account loaded once it has the
+      // entries it actually supports — even if the globally enabled set is
+      // larger.
       const result = computeAccountBalance({
         ...defaultParams,
         enabledNetworksCount: 2,
