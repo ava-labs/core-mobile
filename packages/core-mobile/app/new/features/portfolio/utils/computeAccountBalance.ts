@@ -15,6 +15,13 @@ export interface AccountBalanceData {
 /**
  * Pure function that computes balance data for a single account.
  * No hooks — safe to call in a loop or inside useMemo.
+ *
+ * `enabledNetworksCount` is the number of enabled networks for which this
+ * specific account can produce balance entries (computed via
+ * `getEnabledNetworksForAccount`). Using a per-account count is required so
+ * that wallets which cannot derive an address for every globally-enabled
+ * network (e.g. Keystone for Solana) don't get stuck on an infinite spinner
+ * waiting for balance entries that will never arrive — see CP-14303.
  */
 export function computeAccountBalance({
   accountBalances,
@@ -34,12 +41,9 @@ export function computeAccountBalance({
   isError: boolean
 }): AccountBalanceData {
   const isLoadingBalance =
-    enabledNetworksCount === 0
-      ? true
-      : isError
-      ? false
-      : accountBalances.length === 0 ||
-        accountBalances.length < enabledNetworksCount
+    !isError &&
+    enabledNetworksCount > 0 &&
+    accountBalances.length < enabledNetworksCount
 
   const hasBalanceData = accountBalances.length > 0
 
