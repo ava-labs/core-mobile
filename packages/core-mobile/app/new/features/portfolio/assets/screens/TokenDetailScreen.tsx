@@ -416,6 +416,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       component: (
         <TransactionHistory
           token={token}
+          // necessary for the empty list to be close to the filters / sort instead of centered on the available space
           extraOffset={250}
           handleExplorerLink={handleExplorerLink}
           containerStyle={contentContainerStyle}

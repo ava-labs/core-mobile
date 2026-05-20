@@ -11,15 +11,6 @@ export type OhlcCandle = {
 
 export type ChartRange = '1H' | '1D' | '1W' | '1M' | '3M' | '1Y'
 
-export type OhlcvResponse = {
-  coinId: string
-  range: ChartRange
-  vsCurrency: string
-  granularity: string
-  lastUpdatedAt: number
-  candles: OhlcCandle[]
-}
-
 export const CHART_RANGES: readonly ChartRange[] = [
   '1D',
   '1W',

@@ -1,8 +1,0 @@
-{
-  "coinId": "long-tail-token",
-  "range": "1D",
-  "vsCurrency": "usd",
-  "granularity": "15m",
-  "lastUpdatedAt": 1746000000000,
-  "candles": []
-}

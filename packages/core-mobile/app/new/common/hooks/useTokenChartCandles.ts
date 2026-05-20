@@ -66,7 +66,6 @@ const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
 
 // Approximate OHLC: upstream only provides close prices, so `open` is the
 // first close in the bucket and `close` is the last. Volume always null.
-// Real OHLCV comes with CP-14267.
 const bucketPointsIntoCandles = (
   points: PriceDataPoint[],
   bucketCount: number
