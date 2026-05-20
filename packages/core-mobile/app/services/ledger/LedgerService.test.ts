@@ -1066,15 +1066,30 @@ describe('LedgerService', () => {
       )
 
       expect(spy).toHaveBeenCalledTimes(3)
-      expect(spy).toHaveBeenCalledWith(0, false, LedgerDerivationPathType.BIP44, {
-        skipAppCheck: true
-      })
-      expect(spy).toHaveBeenCalledWith(1, false, LedgerDerivationPathType.BIP44, {
-        skipAppCheck: true
-      })
-      expect(spy).toHaveBeenCalledWith(2, false, LedgerDerivationPathType.BIP44, {
-        skipAppCheck: true
-      })
+      expect(spy).toHaveBeenCalledWith(
+        0,
+        false,
+        LedgerDerivationPathType.BIP44,
+        {
+          skipAppCheck: true
+        }
+      )
+      expect(spy).toHaveBeenCalledWith(
+        1,
+        false,
+        LedgerDerivationPathType.BIP44,
+        {
+          skipAppCheck: true
+        }
+      )
+      expect(spy).toHaveBeenCalledWith(
+        2,
+        false,
+        LedgerDerivationPathType.BIP44,
+        {
+          skipAppCheck: true
+        }
+      )
       expect(result).toHaveLength(3)
       expect(result[0]?.addresses.evm).toBe('0xEVM0')
       expect(result[2]?.addresses.evm).toBe('0xEVM2')
