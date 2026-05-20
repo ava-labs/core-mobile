@@ -6,6 +6,7 @@ import {
 import {
   AvalancheCaip2ChainId,
   BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
   ChainId,
@@ -25,9 +26,13 @@ import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import ModuleManager from 'vmModule/ModuleManager'
 import {
   AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK,
   NETWORK_P,
+  NETWORK_P_TEST,
   NETWORK_SOLANA,
-  NETWORK_X
+  NETWORK_SOLANA_DEVNET,
+  NETWORK_X,
+  NETWORK_X_TEST
 } from 'services/network/consts'
 
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
@@ -686,27 +691,42 @@ class AccountsService {
     await ModuleManager.init()
 
     const network = { isTestnet: !!isDeveloperMode } as Network
+    // Match the activity-probing network constants to the derivation
+    // environment.  Without this, developer mode would derive fuji/tb1/devnet
+    // addresses and then probe mainnet balance/glacier endpoints — funded
+    // testnet accounts would be silently skipped as inactive.
+    const evmNetwork = isDeveloperMode
+      ? AVALANCHE_TESTNET_NETWORK
+      : AVALANCHE_MAINNET_NETWORK
+    const bitcoinNetwork = isDeveloperMode
+      ? BITCOIN_TEST_NETWORK
+      : BITCOIN_NETWORK
+    const solanaNetwork = isDeveloperMode
+      ? NETWORK_SOLANA_DEVNET
+      : NETWORK_SOLANA
+    const avmNetwork = isDeveloperMode ? NETWORK_X_TEST : NETWORK_X
+    const pvmNetwork = isDeveloperMode ? NETWORK_P_TEST : NETWORK_P
     // Skip Solana module + vmNetwork construction when the Posthog gate is
     // off — saves the loadModuleByNetwork round-trip and downstream activity
     // probes have no module to call against.
     const [evmModule, bitcoinModule, solanaModule, avalancheModule] =
       await Promise.all([
-        ModuleManager.loadModuleByNetwork(AVALANCHE_MAINNET_NETWORK),
-        ModuleManager.loadModuleByNetwork(BITCOIN_NETWORK),
+        ModuleManager.loadModuleByNetwork(evmNetwork),
+        ModuleManager.loadModuleByNetwork(bitcoinNetwork),
         isSolanaSupportBlocked
           ? Promise.resolve(undefined)
-          : ModuleManager.loadModuleByNetwork(NETWORK_SOLANA),
-        ModuleManager.loadModuleByNetwork(NETWORK_X)
+          : ModuleManager.loadModuleByNetwork(solanaNetwork),
+        ModuleManager.loadModuleByNetwork(avmNetwork)
       ])
 
     const vmNetworks = {
-      evm: mapToVmNetwork(AVALANCHE_MAINNET_NETWORK),
-      bitcoin: mapToVmNetwork(BITCOIN_NETWORK),
+      evm: mapToVmNetwork(evmNetwork),
+      bitcoin: mapToVmNetwork(bitcoinNetwork),
       solana: isSolanaSupportBlocked
         ? undefined
-        : mapToVmNetwork(NETWORK_SOLANA),
-      avm: mapToVmNetwork(NETWORK_X),
-      pvm: mapToVmNetwork(NETWORK_P)
+        : mapToVmNetwork(solanaNetwork),
+      avm: mapToVmNetwork(avmNetwork),
+      pvm: mapToVmNetwork(pvmNetwork)
     }
 
     while (i < startIndex + maxScan) {
