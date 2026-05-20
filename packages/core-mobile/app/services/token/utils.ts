@@ -45,7 +45,8 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
 }
 
 export const transformMartketChartRawPrices = (
-  pricesRaw: [number, number][]
+  pricesRaw: [number, number][],
+  totalVolumesRaw?: [number, number][] | null
 ): ChartData => {
   const dates = pricesRaw.map(value => value[0])
   const prices = pricesRaw.map(value => value[1])
@@ -69,9 +70,11 @@ export const transformMartketChartRawPrices = (
       diffValue,
       percentChange
     },
-    dataPoints: pricesRaw.map(tu => {
-      return { date: new Date(tu[0]), value: tu[1] }
-    })
+    dataPoints: pricesRaw.map((tu, i) => ({
+      date: new Date(tu[0]),
+      value: tu[1],
+      volume: totalVolumesRaw?.[i]?.[1] ?? null
+    }))
   }
 }
 

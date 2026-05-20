@@ -72,6 +72,14 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPriceChartBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PRICE_CHART] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 /**
  * Parses a PostHog feature-var string as an integer.
  * Falls back to the compiled-in default only when the flag is absent (NaN).

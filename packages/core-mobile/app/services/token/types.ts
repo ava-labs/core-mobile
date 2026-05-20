@@ -30,7 +30,8 @@ export const ChartDataSchema = object({
     date: string()
       .or(date())
       .transform((arg: string | Date) => new Date(arg)),
-    value: number()
+    value: number(),
+    volume: number().nullable().optional()
   }).array()
 })
 
