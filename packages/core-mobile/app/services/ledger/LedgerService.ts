@@ -821,13 +821,19 @@ class LedgerService {
   }
 
   // Get all addresses from Avalanche app (EVM, AVM, Bitcoin)
+  // When skipAppCheck is true the caller has already verified the Avalanche
+  // app is open — this avoids a redundant waitForApp APDU inside loops
+  // (CP-14062).
   async getAllAddresses(
     startIndex: number,
     count: number,
     isTestnet: boolean,
-    derivationPathType?: LedgerDerivationPathType
+    derivationPathType?: LedgerDerivationPathType,
+    { skipAppCheck = false }: { skipAppCheck?: boolean } = {}
   ): Promise<AddressInfo[]> {
-    await this.ensureAppReady(LedgerAppType.AVALANCHE)
+    if (!skipAppCheck) {
+      await this.ensureAppReady(LedgerAppType.AVALANCHE)
+    }
 
     return this.withTransport(async transport => {
       const avalancheApp = new AppAvalanche(transport)
@@ -1080,7 +1086,8 @@ class LedgerService {
   async getAvalancheKeys(
     accountIndex: number,
     isTestnet: boolean,
-    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
+    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44,
+    { skipAppCheck = false }: { skipAppCheck?: boolean } = {}
   ): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
@@ -1089,7 +1096,8 @@ class LedgerService {
       accountIndex,
       1,
       isTestnet,
-      derivationPath
+      derivationPath,
+      { skipAppCheck }
     )
 
     const findAddress = (type: LedgerAddressType): string =>
@@ -1218,11 +1226,20 @@ class LedgerService {
     isTestnet: boolean,
     derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
   ): Promise<(AvalancheKey | null)[]> {
+    if (count <= 0) return []
+
+    // Ensure the Avalanche app is open and ready once before the loop instead
+    // of on every iteration (CP-14062). Loop body uses skipAppCheck: true so
+    // each getAvalancheKeys call skips the redundant waitForApp APDU.
+    await this.ensureAppReady(LedgerAppType.AVALANCHE)
+
     const results: (AvalancheKey | null)[] = []
 
     for (let i = 0; i < count; i++) {
       try {
-        const keys = await this.getAvalancheKeys(i, isTestnet, derivationPath)
+        const keys = await this.getAvalancheKeys(i, isTestnet, derivationPath, {
+          skipAppCheck: true
+        })
         results.push(keys)
       } catch (error) {
         if (i === 0) {
@@ -1324,15 +1341,38 @@ class LedgerService {
    */
   async getExtendedPublicKeysForRange(
     startIndex: number,
-    count: number
+    count: number,
+    signal?: AbortSignal
   ): Promise<
     Array<{ evm: ExtendedPublicKey; avalanche: ExtendedPublicKey } | null>
   > {
+    if (count <= 0) return []
+    if (signal?.aborted) {
+      Logger.info('getExtendedPublicKeysForRange: aborted before app open')
+      return []
+    }
+
     // Ensure the Avalanche app is open and ready once before the loop.
     // ensureAppReady() sends openApp when the cached state doesn't match
     // and always runs waitForApp, so onboarding doesn't stall waiting for
     // the user to manually open the app. Loop body uses skipAppCheck: true.
-    await this.ensureAppReady(LedgerAppType.AVALANCHE)
+    //
+    // Wrap in try/catch matching getSolanaKeysForRange: if the caller
+    // aborted while waitForApp was pending, return [] rather than surfacing
+    // an "app not open" error that the caller can't distinguish from a real
+    // device failure.
+    try {
+      await this.ensureAppReady(LedgerAppType.AVALANCHE, signal)
+    } catch (error) {
+      if (signal?.aborted) {
+        Logger.info(
+          'getExtendedPublicKeysForRange: aborted while waiting for app'
+        )
+        return []
+      }
+
+      throw error
+    }
 
     const results: Array<{
       evm: ExtendedPublicKey
@@ -1340,6 +1380,11 @@ class LedgerService {
     } | null> = []
 
     for (let i = startIndex; i < startIndex + count; i++) {
+      if (signal?.aborted) {
+        Logger.info(`getExtendedPublicKeysForRange: aborting before index ${i}`)
+        break
+      }
+
       try {
         const xpubs = await this.getExtendedPublicKeys(
           i,
@@ -1348,6 +1393,12 @@ class LedgerService {
         )
         results.push(xpubs)
       } catch (error) {
+        if (signal?.aborted) {
+          Logger.info(
+            `getExtendedPublicKeysForRange: aborting at index ${i} (post-error)`
+          )
+          break
+        }
         Logger.error(
           `Failed to get extended public keys for index ${i}, skipping`,
           error

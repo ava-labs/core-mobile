@@ -1,4 +1,6 @@
 import AccountsService from 'services/account/AccountsService'
+import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -22,8 +24,6 @@ import {
 import { transactionSnackbar } from 'common/utils/toast'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { mnemonicToSeed } from 'bip39'
-import { deriveAllAddressesFromSeed } from 'react-native-nitro-avalabs-crypto'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { discoverLedgerAccountsFromXpubs } from 'new/features/ledger/utils/discoverLedgerAccountsFromXpubs'
@@ -38,7 +38,7 @@ import {
   setLedgerAddresses,
   selectLedgerAddressesByWalletId
 } from './slice'
-import { Account, AccountCollection, LedgerAddressesCollection } from './types'
+import { AccountCollection, LedgerAddressesCollection } from './types'
 import {
   canMigrateActiveAccounts,
   canRederiveAccountAddresses,
@@ -213,149 +213,24 @@ const initAccounts = async (
       listenerApi,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
-      startIndex: numberOfAccounts
+      startIndex: numberOfAccounts,
+      isDeveloperMode
     })
   }
 }
 
-// Native path for mnemonic wallets: batch all account indices into a
-// single deriveAllAddressesFromSeed call on a native thread (CP-14062).
-// Returns true if native derivation succeeded, false to fall back to JS.
-//
-// `isSolanaSupportBlocked` is honored here: when set, `addressSVM` is
-// cleared on every result, matching the JS fallback path
-// (`ModuleManager.deriveAddresses`) which omits the Solana module entirely
-// when the Posthog feature is disabled. Without this, mnemonic users in
-// Solana-blocked configurations would end up with eagerly-derived SVM
-// addresses bypassing the gate enforced elsewhere
-// (e.g. `migrateSolanaAddressesIfNeeded`).
-const reloadMnemonicWalletNative = async ({
-  walletId,
-  accounts,
-  isDeveloperMode,
-  isSolanaSupportBlocked
-}: {
-  walletId: string
-  accounts: Account[]
-  isDeveloperMode: boolean
-  isSolanaSupportBlocked: boolean
-}): Promise<AccountCollection | undefined> => {
-  // Hoisted so the finally block can overwrite the cleartext seed bytes on
-  // every exit (success, fallback, or throw). Two buffers need cleansing:
-  //   (1) `seedBuffer` — the ArrayBuffer copy we hand to the Nitro bridge.
-  //   (2) `seed` — the Node Buffer returned by bip39.mnemonicToSeed, which
-  //       carries the same cleartext bytes in a separate underlying buffer.
-  // Filling only (1) leaves (2) live until GC. The JS heap can't be
-  // OPENSSL_cleansed from C++, and any pbkdf2 intermediates inside bip39 are
-  // out of reach, but zeroing both references here bounds the cleartext
-  // window to this function's lifetime. Same caveat as bigintToArrayBuffer32's
-  // docstring in Crypto.ts.
-  let seedBuffer: ArrayBuffer | undefined
-  let seed: Buffer | undefined
-  try {
-    const secret = await BiometricsSDK.loadWalletSecret(walletId)
-    if (!secret.success) return undefined
-
-    seed = await mnemonicToSeed(secret.value)
-    seedBuffer = seed.buffer.slice(
-      seed.byteOffset,
-      seed.byteOffset + seed.byteLength
-    ) as ArrayBuffer
-
-    const indices = accounts.map(a => a.index)
-    const nativeResults = await deriveAllAddressesFromSeed(
-      seedBuffer,
-      indices,
-      isDeveloperMode
-    )
-
-    // A short native array (any account missing its derived addresses) would
-    // cause the for-loop below to skip entries, and the caller dispatches
-    // setAccounts(...) which replaces the entire collection — silently
-    // dropping accounts from Redux. Refuse the partial result and let the JS
-    // fallback path recompute everything instead.
-    if (nativeResults.length !== accounts.length) {
-      Logger.error(
-        `Native reloadAccounts returned ${nativeResults.length} results for ${accounts.length} indices, falling back to JS`
-      )
-      return undefined
-    }
-
-    const reloadedAccounts: AccountCollection = {}
-    for (let k = 0; k < accounts.length; k++) {
-      const account = accounts[k]
-      const r = nativeResults[k]
-      if (!account || !r) continue
-
-      // Spread the original account first so non-address fields (e.g.
-      // `active`, custom flags, or any future-added Account properties)
-      // survive the native fast-path. Then overwrite only the address
-      // fields with the freshly-derived values. This keeps the native
-      // path field-for-field equivalent to the JS fallback in
-      // AccountsService.reloadAccounts, which preserves the full account
-      // object.
-      reloadedAccounts[account.id] = {
-        ...account,
-        addressBTC: r.btc,
-        addressC: r.evm || account.addressC,
-        addressAVM: r.avm,
-        addressPVM: r.pvm,
-        addressCoreEth: r.coreEth,
-        addressSVM: isSolanaSupportBlocked ? '' : r.solana
-      }
-    }
-
-    return reloadedAccounts
-  } catch (error) {
-    Logger.error(
-      'Native reloadAccounts failed for mnemonic wallet, falling back to JS',
-      error
-    )
-    return undefined
-  } finally {
-    if (seedBuffer) {
-      new Uint8Array(seedBuffer).fill(0)
-    }
-    if (seed) {
-      seed.fill(0)
-    }
-  }
-}
-
-// Reload addresses for all wallets.  For mnemonic wallets, uses the native
-// Nitro module to derive all addresses in a single off-thread call (CP-14062).
+// reload addresses
 const reloadAccounts = async (
   _action: unknown,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
-
-    // Skip wallets with no accounts (transient state during reload, or
-    // seedless edge cases). Both branches below would otherwise dispatch
-    // setAccounts({}), which can wipe the wallet's accounts in Redux
-    // depending on reducer semantics.
-    if (accounts.length === 0) continue
-
-    if (wallet.type === WalletType.MNEMONIC) {
-      const nativeResult = await reloadMnemonicWalletNative({
-        walletId: wallet.id,
-        accounts,
-        isDeveloperMode,
-        isSolanaSupportBlocked
-      })
-      if (nativeResult) {
-        listenerApi.dispatch(setAccounts(nativeResult))
-        continue
-      }
-    }
-
-    // Fallback for non-mnemonic wallets (Ledger, Seedless, Keystone, etc.)
     const ledgerAddresses = selectLedgerAddressesByWalletId(state, wallet.id)
+    //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
     for (const account of accounts) {
       accountsCollection[account.id] = account
@@ -419,6 +294,7 @@ const migrateActiveAccountsIfNeeded = async (
 }
 
 const migrateSolanaAddressesIfNeeded = async (
+  action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   // Re-read state to see accounts created by Phase 1.
@@ -441,8 +317,10 @@ const migrateSolanaAddressesIfNeeded = async (
     if (seedlessWallet && hasSeedlessAccountsWithoutSVM) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
-    // reload only when there are accounts without Solana addresses
-    const action = { type: 'migrateSolanaAddressesIfNeeded' }
+    // reload only when there are accounts without Solana addresses;
+    // forward the orchestrator's triggering action so reloadAccounts'
+    // ignored `_action` slot stays type-honest instead of a synthesized
+    // literal that never enters Redux.
     await reloadAccounts(action, listenerApi)
   }
 }
@@ -542,14 +420,24 @@ const onAppUnlockedOrchestrator = async (
     await handleInitAccountsIfNeeded(_action, listenerApi)
   } catch (error) {
     Logger.error('[onAppUnlocked] Phase 1 failed', error)
+    SentryService.captureException(
+      '[onAppUnlocked] Phase 1 (init/migrate accounts) failed',
+      error,
+      { source: SentryTag.AccountService }
+    )
   }
 
   // Phase 2: Derive missing Solana addresses and reload
   try {
     Logger.info('[onAppUnlocked] Phase 2: migrate Solana addresses')
-    await migrateSolanaAddressesIfNeeded(listenerApi)
+    await migrateSolanaAddressesIfNeeded(_action, listenerApi)
   } catch (error) {
     Logger.error('[onAppUnlocked] Phase 2 failed', error)
+    SentryService.captureException(
+      '[onAppUnlocked] Phase 2 (migrate Solana addresses) failed',
+      error,
+      { source: SentryTag.AccountService }
+    )
   }
 
   // Phase 3: Re-derive missing AVM/PVM addresses
@@ -558,6 +446,11 @@ const onAppUnlockedOrchestrator = async (
     await rederiveAvmPvmAddressesIfNeeded(listenerApi)
   } catch (error) {
     Logger.error('[onAppUnlocked] Phase 3 failed', error)
+    SentryService.captureException(
+      '[onAppUnlocked] Phase 3 (rederive AVM/PVM) failed',
+      error,
+      { source: SentryTag.AccountService }
+    )
   }
 }
 

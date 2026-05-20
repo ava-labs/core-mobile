@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks'
+import { networks } from 'bitcoinjs-lib'
 import { CoreAccountType } from '@avalabs/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { useSelector } from 'react-redux'
@@ -19,10 +20,11 @@ jest.mock('store/account', () => ({
   selectAccounts: jest.fn()
 }))
 
-// Mock the native Nitro crypto module — the hook now derives every
-// secp256k1 address in C++ via deriveAllAddressesFromPrivateKey.
-jest.mock('react-native-nitro-avalabs-crypto', () => ({
-  deriveAllAddressesFromPrivateKey: jest.fn()
+// Mock the core-wallets-sdk functions
+jest.mock('@avalabs/core-wallets-sdk', () => ({
+  getBtcAddressFromPubKey: jest.fn(),
+  getEvmAddressFromPubKey: jest.fn(),
+  getPublicKeyFromPrivateKey: jest.fn()
 }))
 
 // Mock the core-utils-sdk
@@ -41,13 +43,9 @@ jest.mock('utils/Logger', () => ({
 }))
 
 describe('useDeriveAddresses', () => {
+  const mockPublicKey = 'mock-public-key'
   const mockEvmAddress = '0x1234567890123456789012345678901234567890'
   const mockBtcAddress = 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
-  const mockTestnetBtcAddress = 'tb1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
-  const mockAvmAddress = 'X-avax1mockxavmaddress'
-  const mockPvmAddress = 'P-avax1mockpvmaddress'
-  const mockCoreEthAddress = 'C-avax1mockcorethaddress'
-  const mockSvmAddress = '7vT2YkkAcCFR4dBHbKLuFePZUchA3aDZUYrQk83eYTBL'
   const mockUuid = 'mock-uuid-1234'
   const validPrivateKey =
     'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
@@ -75,26 +73,20 @@ describe('useDeriveAddresses', () => {
       return selector({ account: { accounts: mockAccountsData } })
     })
 
-    // Setup default mocks — native call returns the full secp256k1 address
-    // set; the hook reads .evm and .btc.
+    // Setup default mocks
     const {
-      deriveAllAddressesFromPrivateKey
-    } = require('react-native-nitro-avalabs-crypto')
+      getBtcAddressFromPubKey,
+      getEvmAddressFromPubKey,
+      getPublicKeyFromPrivateKey
+    } = require('@avalabs/core-wallets-sdk')
+
     const { strip0x } = require('@avalabs/core-utils-sdk')
     const { uuid } = require('utils/uuid')
 
     strip0x.mockImplementation((key: string) => key.replace('0x', ''))
-    deriveAllAddressesFromPrivateKey.mockImplementation(
-      (_pk: string, isTestnet: boolean) => ({
-        accountIndex: 0,
-        evm: mockEvmAddress,
-        btc: isTestnet ? mockTestnetBtcAddress : mockBtcAddress,
-        avm: mockAvmAddress,
-        pvm: mockPvmAddress,
-        coreEth: mockCoreEthAddress,
-        solana: mockSvmAddress
-      })
-    )
+    getPublicKeyFromPrivateKey.mockReturnValue(mockPublicKey)
+    getEvmAddressFromPubKey.mockReturnValue(mockEvmAddress)
+    getBtcAddressFromPubKey.mockReturnValue(mockBtcAddress)
     uuid.mockReturnValue(mockUuid)
   })
 
@@ -136,12 +128,16 @@ describe('useDeriveAddresses', () => {
       })
 
       const {
-        deriveAllAddressesFromPrivateKey
-      } = require('react-native-nitro-avalabs-crypto')
+        getBtcAddressFromPubKey,
+        getEvmAddressFromPubKey,
+        getPublicKeyFromPrivateKey
+      } = require('@avalabs/core-wallets-sdk')
 
-      expect(deriveAllAddressesFromPrivateKey).toHaveBeenCalledWith(
-        validPrivateKey,
-        false
+      expect(getPublicKeyFromPrivateKey).toHaveBeenCalledWith(validPrivateKey)
+      expect(getEvmAddressFromPubKey).toHaveBeenCalledWith(mockPublicKey)
+      expect(getBtcAddressFromPubKey).toHaveBeenCalledWith(
+        mockPublicKey,
+        networks.bitcoin
       )
 
       expect(result.current.derivedAddresses).toEqual([
@@ -157,10 +153,9 @@ describe('useDeriveAddresses', () => {
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: mockEvmAddress,
         addressBTC: mockBtcAddress,
-        addressAVM: mockAvmAddress,
-        addressPVM: mockPvmAddress,
-        addressCoreEth: mockCoreEthAddress,
-        addressSVM: mockSvmAddress
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: mockEvmAddress
       })
 
       expect(result.current.showDerivedInfo).toBe(true)
@@ -175,18 +170,16 @@ describe('useDeriveAddresses', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      const {
-        deriveAllAddressesFromPrivateKey
-      } = require('react-native-nitro-avalabs-crypto')
+      const { getBtcAddressFromPubKey } = require('@avalabs/core-wallets-sdk')
 
-      expect(deriveAllAddressesFromPrivateKey).toHaveBeenCalledWith(
-        validPrivateKey,
-        true
+      expect(getBtcAddressFromPubKey).toHaveBeenCalledWith(
+        mockPublicKey,
+        networks.testnet
       )
 
       expect(result.current.derivedAddresses).toEqual([
         { address: mockEvmAddress, symbol: 'AVAX' },
-        { address: mockTestnetBtcAddress, symbol: 'BTC' }
+        { address: mockBtcAddress, symbol: 'BTC' }
       ])
 
       expect(result.current.showDerivedInfo).toBe(true)
@@ -229,12 +222,12 @@ describe('useDeriveAddresses', () => {
 
     it('should handle derivation errors gracefully', async () => {
       const {
-        deriveAllAddressesFromPrivateKey
-      } = require('react-native-nitro-avalabs-crypto')
+        getPublicKeyFromPrivateKey
+      } = require('@avalabs/core-wallets-sdk')
       const Logger = require('utils/Logger')
 
       // Mock function to throw an error
-      deriveAllAddressesFromPrivateKey.mockImplementation(() => {
+      getPublicKeyFromPrivateKey.mockImplementation(() => {
         throw new Error('Invalid private key')
       })
 
@@ -268,9 +261,9 @@ describe('useDeriveAddresses', () => {
       expect(result.current.showDerivedInfo).toBe(false)
 
       const {
-        deriveAllAddressesFromPrivateKey
-      } = require('react-native-nitro-avalabs-crypto')
-      expect(deriveAllAddressesFromPrivateKey).not.toHaveBeenCalled()
+        getPublicKeyFromPrivateKey
+      } = require('@avalabs/core-wallets-sdk')
+      expect(getPublicKeyFromPrivateKey).not.toHaveBeenCalled()
     })
 
     it('should not show derived info for whitespace-only private key', () => {
@@ -346,18 +339,16 @@ describe('useDeriveAddresses', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      const {
-        deriveAllAddressesFromPrivateKey
-      } = require('react-native-nitro-avalabs-crypto')
+      const { getBtcAddressFromPubKey } = require('@avalabs/core-wallets-sdk')
 
       // First call should be for mainnet
-      expect(deriveAllAddressesFromPrivateKey).toHaveBeenCalledWith(
-        validPrivateKey,
-        false
+      expect(getBtcAddressFromPubKey).toHaveBeenCalledWith(
+        mockPublicKey,
+        networks.bitcoin
       )
 
       // Clear previous calls
-      deriveAllAddressesFromPrivateKey.mockClear()
+      getBtcAddressFromPubKey.mockClear()
 
       // Update to testnet
       act(() => {
@@ -372,9 +363,9 @@ describe('useDeriveAddresses', () => {
       })
 
       // Should now be called with testnet
-      expect(deriveAllAddressesFromPrivateKey).toHaveBeenCalledWith(
-        validPrivateKey,
-        true
+      expect(getBtcAddressFromPubKey).toHaveBeenCalledWith(
+        mockPublicKey,
+        networks.testnet
       )
     })
   })
@@ -448,17 +439,13 @@ describe('useDeriveAddresses', () => {
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: expect.any(String),
         addressBTC: expect.any(String),
-        addressAVM: expect.any(String),
-        addressPVM: expect.any(String),
-        addressCoreEth: expect.any(String),
-        addressSVM: expect.any(String)
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: expect.any(String)
       })
 
-      // EVM hex (addressC) and Avalanche bech32 (addressCoreEth) are
-      // different encodings of the same secp256k1 pubkey — `0x…` vs
-      // `C-{bech32}` — so they should NOT be equal.
-      expect(tempAccount?.addressC).not.toBe(tempAccount?.addressCoreEth)
-      expect(tempAccount?.addressCoreEth).toMatch(/^C-/)
+      // addressC and addressCoreEth should be the same
+      expect(tempAccount?.addressC).toBe(tempAccount?.addressCoreEth)
     })
   })
 })

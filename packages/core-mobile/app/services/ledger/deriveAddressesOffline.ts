@@ -162,29 +162,23 @@ export async function deriveAddressesBatch(
       'Native deriveAddressesFromXpubs failed, falling back to JS',
       error
     )
-    // Fallback: derive one at a time using the JS implementation.
-    // A single bad xpub (or thrown derivePublicKey) must not poison the whole
-    // batch — failed indices are omitted from the map so callers can still use
-    // every account that derived successfully.
+    // Fallback derives one index at a time using the JS implementation.
+    // Mirrors the native side's all-or-nothing contract: any per-index
+    // failure propagates so callers can rely on every requested index being
+    // present in the returned map, or none at all.
     const map = new Map<number, DerivedAddresses>()
     for (let i = 0; i < accountIndices.length; i++) {
-      const accountIndex = accountIndices[i]!
-      try {
-        map.set(
-          accountIndex,
-          deriveAddressesFromXpub(
-            evmXpub,
-            avalancheXpubs[i]!,
-            isTestnet,
-            accountIndex
-          )
-        )
-      } catch (perIndexError) {
-        Logger.error(
-          `JS fallback derivation failed for account index ${accountIndex}`,
-          perIndexError
+      const accountIndex = accountIndices[i]
+      const avalancheXpub = avalancheXpubs[i]
+      if (accountIndex === undefined || avalancheXpub === undefined) {
+        throw new Error(
+          `deriveAddressesBatch fallback: missing input at offset ${i}`
         )
       }
+      map.set(
+        accountIndex,
+        deriveAddressesFromXpub(evmXpub, avalancheXpub, isTestnet, accountIndex)
+      )
     }
     return map
   }

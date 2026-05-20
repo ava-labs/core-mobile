@@ -20,6 +20,9 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
+import { AddressDerivationBenchmark } from 'features/accountSettings/components/AddressDerivationBenchmark'
+import { ModuleManagerDeriveBenchmark } from 'features/accountSettings/components/ModuleManagerDeriveBenchmark'
+import { XpubDerivationBenchmark } from 'features/accountSettings/components/XpubDerivationBenchmark'
 import { AdvancedSettings } from 'features/accountSettings/components/AdvancedSettings'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import { Support } from 'features/accountSettings/components/Support'
@@ -280,6 +283,10 @@ const AccountSettingsScreen = (): JSX.Element => {
               Delete wallet
             </Text>
           </TouchableOpacity>
+          {/* BENCH (cp14062-bench): remove before merge */}
+          <AddressDerivationBenchmark />
+          <ModuleManagerDeriveBenchmark />
+          <XpubDerivationBenchmark />
         </View>
 
         {/* Footer */}

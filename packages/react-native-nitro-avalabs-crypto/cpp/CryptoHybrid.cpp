@@ -1,6 +1,5 @@
 #include "CryptoHybrid.hpp"
 #include "address_derivation.hpp"
-#include "slip0010.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/ThreadPool.hpp>
@@ -33,9 +32,9 @@ namespace margelo::nitro::nitroavalabscrypto {
         secp256k1_context *g_ctx = nullptr;
 
         // Use the shared scope guard from scope_guard.hpp (transitively
-        // included via address_derivation.hpp / slip0010.hpp). The previous
-        // local definition has been removed to keep the template in one
-        // place and avoid drift between callers.
+        // included via address_derivation.hpp). The previous local
+        // definition has been removed to keep the template in one place
+        // and avoid drift between callers.
         using detail::ScopeGuard;
 
         // Validate that every element of a JS number[] (bridged as
@@ -67,6 +66,24 @@ namespace margelo::nitro::nitroavalabscrypto {
                         "accountIndices[" + std::to_string(i) +
                         "] is invalid: must be a finite integer in [0, 2^31-1]");
                 }
+            }
+        }
+
+        // Bound the per-call batch size for the synchronous per-chain
+        // address-derivation methods. They block the JS thread for the
+        // duration of the call (no Promise::async), so a buggy or hostile
+        // caller passing N=10k+ pubkeys would freeze the UI for seconds.
+        // Mirrors `MAX_ACCOUNT_INDICES_PER_CALL` used by the async
+        // `deriveAddressesFromXpubs`. Real wallets never come close to
+        // 1024 accounts in one request — bump if a legitimate use case
+        // ever needs more.
+        inline void validatePubkeyBatchSize(size_t n, const char *what) {
+            if (n > MAX_ACCOUNT_INDICES_PER_CALL) {
+                throw std::invalid_argument(
+                    std::string(what) + ": batch size " + std::to_string(n) +
+                    " exceeds maximum of " +
+                    std::to_string(MAX_ACCOUNT_INDICES_PER_CALL) +
+                    " — split into multiple calls if you genuinely need this many");
             }
         }
 
@@ -208,6 +225,13 @@ namespace margelo::nitro::nitroavalabscrypto {
         // use after init, which is what we rely on inside `parallelFor`.
         std::call_once(g_once, [] {
             g_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
+            // Throw before std::call_once marks the flag completed — the throw
+            // propagates out of call_once and leaves the once-flag un-set, so
+            // a subsequent call retries initialization rather than dereferencing
+            // a cached nullptr.
+            if (g_ctx == nullptr) {
+                throw std::runtime_error("secp256k1_context_create failed");
+            }
             // Randomize the context to protect against side-channel attacks.
             // ScopeGuard ensures the seed buffer is cleansed on every exit path
             // — including the early return below if RAND_bytes fails — so the
@@ -251,6 +275,12 @@ namespace margelo::nitro::nitroavalabscrypto {
             const auto &ab = std::get<std::shared_ptr<ArrayBuffer>>(v);
             if (!ab) throw std::invalid_argument("ArrayBuffer is null");
             auto *p = reinterpret_cast<const uint8_t *>(ab->data());
+            // Borrowed ArrayBuffers can return nullptr from data() after JS GC
+            // (NitroModules/ArrayBuffer.hpp). Constructing a vector from a null
+            // pointer + non-zero size is UB; reject explicitly.
+            if (p == nullptr && ab->size() > 0) {
+                throw std::invalid_argument("ArrayBuffer has null data");
+            }
             return std::vector<uint8_t>(p, p + ab->size());
         }
     }
@@ -657,157 +687,132 @@ namespace margelo::nitro::nitroavalabscrypto {
         });
     }
 
-/* ---------- All Addresses From Seed (secp256k1 + Ed25519, async) --------- */
+    // -----------------------------------------------------------------------
+    // Per-chain address derivation from already-derived pubkeys
+    //
+    // Each of the four entry points below is a thin wrapper around the
+    // existing helpers in address_derivation.hpp. They exist so callers that
+    // already hold a per-chain compressed pubkey (e.g. via
+    // wallet.getPublicKeyFor) can skip the BIP32/BIP44 derivation entirely
+    // and pay only the address-encode cost. Synchronous — the work is one
+    // hash + bech32/EIP-55 + (for EVM) one libsecp256k1 decompress per call.
+    // -----------------------------------------------------------------------
 
-    std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>
-    CryptoHybrid::deriveAllAddressesFromSeed(
-            const std::shared_ptr<ArrayBuffer> &seed,
-            const std::vector<double> &accountIndices,
-            bool isTestnet) {
-
-        if (!seed || seed->size() != 64) {
-            throw std::invalid_argument("seed must be a 64-byte ArrayBuffer");
+    namespace {
+        // Copy a JS-owned ArrayBuffer into a heap vector. The Nitro
+        // ArrayBuffer pointer can race with JS GC across thread hops, but
+        // these methods are synchronous on the JS thread so we copy once and
+        // hand the bytes to the encoder helpers (which take vectors).
+        inline std::vector<uint8_t> abToVec(
+                const std::shared_ptr<ArrayBuffer> &buf, const char *what) {
+            if (!buf || buf->data() == nullptr) {
+                throw std::invalid_argument(
+                    std::string(what) + ": publicKey is null");
+            }
+            return std::vector<uint8_t>(
+                buf->data(), buf->data() + buf->size());
         }
-        validateAccountIndices(accountIndices);
 
-        // Heap-allocate the cleansing buffer behind a shared_ptr so the
-        // lambda below remains CopyConstructible: Nitro's Promise::async
-        // wraps its callable in std::function<T()>, which can't hold a
-        // move-only target.  The CleansingArray's destructor still fires
-        // (and zeros the seed) when the last copy of the lambda is
-        // released, so the cleanse-on-promise-discard guarantee is
-        // preserved on every exit path (success, throw, never-dispatched).
-        auto seedBuf = std::make_shared<detail::CleansingArray<64>>();
-        std::memcpy(seedBuf->data(), seed->data(), 64);
-
-        return Promise<std::vector<DerivedAllAddresses>>::async(
-            [seedBuf, accountIndices, isTestnet]() {
-
-            const auto &seedBytes = *seedBuf;
-
-            // The per-step guards below still cover the derived
-            // intermediates (master, evm_xpub, sol_master), which are
-            // stack-local inside this lambda and only exist if the lambda
-            // actually runs.
-            auto *sctx = CryptoHybrid::ctx();
-
-            // BIP32 master from seed (once)
-            auto master = bip32_master_from_seed(seedBytes.data(), seedBytes.size());
-            ScopeGuard cleanupMaster([&] {
-                OPENSSL_cleanse(master.key.data(), master.key.size());
-                OPENSSL_cleanse(master.chain_code.data(), master.chain_code.size());
-            });
-
-            // EVM xpub at m/44'/60'/0' (once — shared across all accounts).
-            // bip32_derive_hardened_xpub_path cleanses the intermediate
-            // private key internally on every exit path (incl. exception
-            // unwind), so there's no secret material to manage here.
-            auto evm_xpub = bip32_derive_hardened_xpub_path(
-                sctx, master, {44, 60, 0});
-
-            // SLIP-0010 master for Solana (once — shared across all accounts)
-            auto sol_master = slip0010_master_key(seedBytes.data(), seedBytes.size());
-            ScopeGuard cleanupSolana([&] {
-                OPENSSL_cleanse(sol_master.secret.data(), sol_master.secret.size());
-                OPENSSL_cleanse(sol_master.chain_code.data(), sol_master.chain_code.size());
-            });
-
-            const size_t n = accountIndices.size();
-            std::vector<DerivedAllAddresses> results(n);
-
-            auto deriveOne = [&](size_t i) {
-                auto idx = accountIndices[i];
-                auto index = static_cast<uint32_t>(idx);
-
-                // secp256k1 addresses (EVM, BTC, AVM, PVM, CoreEth)
-                auto addrs = derive_all_addresses_for_index(
-                    sctx, master, evm_xpub, isTestnet, index);
-
-                // Solana address (SLIP-0010 Ed25519) — uses pre-computed master
-                auto solana = solana_address_from_master(sol_master, index);
-
-                results[i] = DerivedAllAddresses(
-                    idx,
-                    std::move(addrs.evm),
-                    std::move(addrs.btc),
-                    std::move(addrs.avm),
-                    std::move(addrs.pvm),
-                    std::move(addrs.coreEth),
-                    std::move(solana));
-            };
-
-            // `master`, `evm_xpub`, and `sol_master` are read-only from here
-            // (each derivation copies master state before mutating it), so
-            // per-account work is independent and parallel-safe.
-            parallelFor(n, deriveOne);
-
-            return results;
-        });
+        inline std::vector<uint8_t> requireCompressedSecp256k1(
+                const std::shared_ptr<ArrayBuffer> &buf, const char *what) {
+            auto v = abToVec(buf, what);
+            if (v.size() != 33) {
+                throw std::invalid_argument(
+                    std::string(what) +
+                    ": expected 33-byte compressed secp256k1 pubkey, got " +
+                    std::to_string(v.size()) + " bytes");
+            }
+            // First byte must be 0x02 or 0x03 (compressed pubkey prefix).
+            // libsecp256k1 will reject otherwise but we catch it early with
+            // a clear message so callers see what went wrong.
+            if (v[0] != 0x02 && v[0] != 0x03) {
+                throw std::invalid_argument(
+                    std::string(what) +
+                    ": compressed pubkey must start with 0x02 or 0x03");
+            }
+            return v;
+        }
     }
 
-/* ------- All Addresses From a Raw Private Key — secp256k1 + Ed25519 ------ */
-/* Used by the imported-private-key flow.  The same 32 bytes feed two
- * different curves:
- *
- *   - secp256k1 (BIP-32 / SEC1) → EVM, BTC, AVM, PVM, CoreEth
- *   - Ed25519 (RFC 8032 §5.1.5)  → Solana
- *
- * There is no derivation tree — the raw secret is used directly on each
- * curve, mirroring Core Extension's WalletService PrivateKey path. */
-
-    DerivedAllAddresses CryptoHybrid::deriveAllAddressesFromPrivateKey(
-            const std::shared_ptr<ArrayBuffer> &privateKey,
-            bool isTestnet) {
-
-        if (!privateKey || privateKey->size() != 32) {
-            throw std::invalid_argument("privateKey must be a 32-byte ArrayBuffer");
-        }
-
-        // Copy the secret out of the JS-owned ArrayBuffer into a local
-        // std::array so we can OPENSSL_cleanse our copy on every return path
-        // — including exception unwind from any of the encoder helpers.
-        std::array<uint8_t, 32> sk{};
-        std::memcpy(sk.data(), privateKey->data(), 32);
-        ScopeGuard cleanseSk([&] { OPENSSL_cleanse(sk.data(), sk.size()); });
-
+    std::vector<std::string> CryptoHybrid::deriveAddressesForEvm(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys) {
+        validatePubkeyBatchSize(publicKeys.size(), "deriveAddressesForEvm");
         auto *sctx = CryptoHybrid::ctx();
-
-        // ---- secp256k1: EVM / BTC / AVM / PVM / CoreEth ----
-        if (secp256k1_ec_seckey_verify(sctx, sk.data()) != 1) {
-            throw std::invalid_argument("Invalid secret key");
+        std::vector<std::string> out;
+        out.reserve(publicKeys.size());
+        for (const auto &buf : publicKeys) {
+            auto pk = requireCompressedSecp256k1(buf, "deriveAddressesForEvm");
+            out.push_back(evm_address_from_pubkey(sctx, pk));
         }
+        return out;
+    }
 
-        secp256k1_pubkey pk{};
-        if (secp256k1_ec_pubkey_create(sctx, &pk, sk.data()) != 1) {
-            throw std::runtime_error("secp256k1_ec_pubkey_create failed");
+    std::vector<std::string> CryptoHybrid::deriveAddressesForSvm(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys) {
+        validatePubkeyBatchSize(publicKeys.size(), "deriveAddressesForSvm");
+        std::vector<std::string> out;
+        out.reserve(publicKeys.size());
+        for (const auto &buf : publicKeys) {
+            auto pk = abToVec(buf, "deriveAddressesForSvm");
+            if (pk.size() != 32) {
+                throw std::invalid_argument(
+                    "deriveAddressesForSvm: expected 32-byte Ed25519 pubkey, got " +
+                    std::to_string(pk.size()) + " bytes");
+            }
+            out.push_back(base58_encode(pk));
         }
+        return out;
+    }
 
-        auto compressed = serializePubkey(pk, true);
+    std::vector<std::string> CryptoHybrid::deriveAddressesForBtc(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys,
+            bool isTestnet) {
+        validatePubkeyBatchSize(publicKeys.size(), "deriveAddressesForBtc");
+        std::vector<std::string> out;
+        out.reserve(publicKeys.size());
+        for (const auto &buf : publicKeys) {
+            auto pk = requireCompressedSecp256k1(buf, "deriveAddressesForBtc");
+            out.push_back(btc_address_from_pubkey(pk, isTestnet));
+        }
+        return out;
+    }
+
+    std::vector<DerivedAvalancheAddresses> CryptoHybrid::deriveAddressesForAvalanche(
+            const std::vector<std::shared_ptr<ArrayBuffer>> &avalanchePublicKeys,
+            const std::vector<std::shared_ptr<ArrayBuffer>> &evmPublicKeys,
+            bool isTestnet) {
+        if (avalanchePublicKeys.size() != evmPublicKeys.size()) {
+            throw std::invalid_argument(
+                "deriveAddressesForAvalanche: avalanchePublicKeys and "
+                "evmPublicKeys must have the same length");
+        }
+        validatePubkeyBatchSize(
+            avalanchePublicKeys.size(), "deriveAddressesForAvalanche");
 
         const std::string avax_hrp = isTestnet ? "fuji" : "avax";
-        auto evm = evm_address_from_pubkey(sctx, compressed);
-        auto btc = btc_address_from_pubkey(compressed, isTestnet);
-        auto avax_bech32 = avalanche_bech32_from_pubkey(compressed, avax_hrp);
 
-        // ---- Ed25519: Solana ----
-        // ed25519_public_key (slip0010.hpp) wraps OpenSSL's raw Ed25519 API
-        // — EVP_PKEY_new_raw_private_key + EVP_PKEY_get_raw_public_key —
-        // which is RFC 8032 §5.1.5 (SHA-512 + clamp + scalar × base) in one
-        // call.  Matches `@noble/curves/ed25519`.getPublicKey(secret) and
-        // therefore matches `PrivateKeyWallet.getPublicKeyFor(Curve.ED25519)`
-        // and `SolanaSigner` byte-for-byte.
-        auto ed_pub = ed25519_public_key(sk);
-        std::string solana = base58_encode(
-            std::vector<uint8_t>(ed_pub.begin(), ed_pub.end()));
+        std::vector<DerivedAvalancheAddresses> out;
+        out.reserve(avalanchePublicKeys.size());
+        for (size_t i = 0; i < avalanchePublicKeys.size(); ++i) {
+            auto avax_pk = requireCompressedSecp256k1(
+                avalanchePublicKeys[i],
+                "deriveAddressesForAvalanche (avalanchePublicKey)");
+            auto evm_pk = requireCompressedSecp256k1(
+                evmPublicKeys[i],
+                "deriveAddressesForAvalanche (evmPublicKey)");
 
-        return DerivedAllAddresses(
-            0.0,  // accountIndex N/A for a raw imported key — kept for ABI parity
-            std::move(evm),
-            std::move(btc),
-            "X-" + avax_bech32,
-            "P-" + avax_bech32,
-            "C-" + avax_bech32,
-            std::move(solana));
+            // X-/P- share the same bech32 body (Hash160(avax pubkey)).
+            auto avax_bech32 = avalanche_bech32_from_pubkey(avax_pk, avax_hrp);
+            // CoreEth uses the EVM pubkey with the avax/fuji HRP — matches
+            // derive_addresses_for_index in address_derivation.hpp.
+            auto core_eth_bech32 = avalanche_bech32_from_pubkey(evm_pk, avax_hrp);
+
+            out.emplace_back(
+                "X-" + avax_bech32,
+                "P-" + avax_bech32,
+                "C-" + core_eth_bech32);
+        }
+        return out;
     }
 
 } // namespace margelo::nitro::nitroavalabscrypto

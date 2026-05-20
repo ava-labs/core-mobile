@@ -84,6 +84,15 @@ export class WalletDerivedDataCache {
     this.walletCreationInFlight.delete(walletId)
   }
 
+  // Clear only the derived pubkey/xpub caches for a wallet, leaving the
+  // wallet instance intact. Useful for measurements that want a cold
+  // derivation cache without paying the one-time cost of re-decrypting
+  // the mnemonic from biometrics.
+  clearPublicKeys(walletId: string): void {
+    this.publicKeyCache.delete(walletId)
+    this.xpubCache.delete(walletId)
+  }
+
   clearAll(): void {
     this.publicKeyCache.clear()
     this.xpubCache.clear()
