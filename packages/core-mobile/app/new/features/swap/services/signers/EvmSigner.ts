@@ -195,7 +195,11 @@ const dispatchAsBatch = async (
 
 // Awaited by signEachManually between non-final txs to prevent the
 // "exceeds allowance" race when the approve hasn't mined before the
-// swap's estimateGas runs.
+// swap's estimateGas runs. Pre-CP-14211 the Fusion SDK awaited the
+// approve receipt itself (Markr's individual-sign branch); exposing
+// `signBatch` flipped the SDK into the batch branch which delegates
+// ordering to us, so we must replicate the wait on every intermediate
+// per-tx step.
 export type WaitForReceipt = (
   chainId: number,
   txHash: `0x${string}`
@@ -304,10 +308,13 @@ export function createEvmSigner(
     manualReviewReason?: string
   ): Promise<`0x${string}`[]> => {
     const hashes: `0x${string}`[] = []
-    // Only wait for receipts when we know this is a Quick Swaps batch
-    // fallback. Legacy non-bypass paths haven't waited historically and
-    // we don't want to add latency to them.
-    const isFallback = manualReviewReason !== undefined
+    // Wait between intermediate steps on every per-tx path. CP-14211
+    // moved the approve/swap pair from Markr's SDK-internal individual-sign
+    // branch (which awaited the receipt itself) onto our `signBatch`, so
+    // the wait now has to live here for the non-atomic fallback too —
+    // not just the manual-review fallback. Without this, the swap's
+    // pre-broadcast estimateGas can race the approve's confirmation and
+    // surface a false "Swap failed" toast (CP-14283).
     for (let i = 0; i < transactions.length; i++) {
       const tx = transactions[i]
       if (!tx) continue
@@ -317,7 +324,7 @@ export function createEvmSigner(
         isIntermediate
       })
       hashes.push(hash)
-      if (isIntermediate && isFallback) {
+      if (isIntermediate) {
         await maybeWaitForReceipt(tx.chainId, hash)
       }
     }
