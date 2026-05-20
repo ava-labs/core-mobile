@@ -137,11 +137,9 @@ phases:
           DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
           printf '\nexport XCODE_ORG_ID="%s"\n' "${TEAM_ID}" >> "${DF_ENV_DIR}/.df_env"
           XCCONFIG_FILE="/tmp/wda-signing.xcconfig"
-          cat > "$XCCONFIG_FILE" << EOF
-DEVELOPMENT_TEAM = ${TEAM_ID}
-CODE_SIGN_IDENTITY = iPhone Developer
-CODE_SIGN_STYLE = Automatic
-EOF
+          printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = iPhone Developer\nCODE_SIGN_STYLE = Automatic\n' "${TEAM_ID}" > "$XCCONFIG_FILE"
+          echo "--- xcconfig contents ---"
+          cat "$XCCONFIG_FILE"
           printf '\nexport XCODE_CONFIG_FILE="%s"\n' "$XCCONFIG_FILE" >> "${DF_ENV_DIR}/.df_env"
           echo "WDA signing configured with team $TEAM_ID (xcconfig: $XCCONFIG_FILE)"
         else

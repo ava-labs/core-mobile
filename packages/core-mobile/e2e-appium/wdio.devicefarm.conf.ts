@@ -94,11 +94,11 @@ const allCaps = [
     ...(process.env.XCODE_CONFIG_FILE
       ? { 'appium:xcodeConfigFile': process.env.XCODE_CONFIG_FILE }
       : process.env.XCODE_ORG_ID
-        ? {
-            'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
-            'appium:xcodeSigningId': 'iPhone Developer'
-          }
-        : {}),
+      ? {
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:xcodeSigningId': 'iPhone Developer'
+        }
+      : {}),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
