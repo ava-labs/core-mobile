@@ -13,27 +13,12 @@ type Input = {
 }
 
 type Output = {
-  /** Formatted current price. Falls back to `UNKNOWN_AMOUNT` ("–"). */
   formattedPrice: string
-  /** Formatted absolute 24h change. `undefined` when the value is missing or
-   * effectively zero — callers should render their own placeholder. */
   formattedPriceChange: string | undefined
-  /** Formatted percent change. `undefined` when missing. */
   formattedPercent: string | undefined
   status: PriceChangeStatus
 }
 
-/**
- * Shared formatting for a token's current price + 24h change indicator.
- * Mirrors the pattern used by `MarketListItem` so screens stay consistent:
- *
- * - Price → `formatCurrency({ boostSmallNumberPrecision: true })`, falling
- *   back to `UNKNOWN_AMOUNT`.
- * - Absolute change → same formatter, returning `undefined` when effectively
- *   zero (avoids a "0.00" flash).
- * - Percent → `Math.abs(value).toFixed(2) + '%'`, `undefined` when missing.
- * - Status → sign of the absolute change.
- */
 export const useTokenPriceDisplay = ({
   currentPrice,
   priceChange24h,
@@ -57,6 +42,8 @@ export const useTokenPriceDisplay = ({
 
   const formattedPriceChange = useMemo(() => {
     const absPriceChange = Math.abs(priceChange)
+    // Sub-threshold movements would format as "0.00"; drop them so callers
+    // can render their own placeholder instead.
     if (isEffectivelyZero(absPriceChange)) return undefined
     return formatCurrency({
       amount: absPriceChange,
@@ -68,18 +55,17 @@ export const useTokenPriceDisplay = ({
   const formattedPercent = useMemo(
     () =>
       priceChangePercentage24h
-        ? Math.abs(priceChangePercentage24h).toFixed(2).toString() + '%'
+        ? `${Math.abs(priceChangePercentage24h).toFixed(2)}%`
         : undefined,
     [priceChangePercentage24h]
   )
 
-  const status = priceChange
-    ? priceChange > 0
+  const status =
+    priceChange > 0
       ? PriceChangeStatus.Up
       : priceChange < 0
       ? PriceChangeStatus.Down
       : PriceChangeStatus.Neutral
-    : PriceChangeStatus.Neutral
 
   return { formattedPrice, formattedPriceChange, formattedPercent, status }
 }

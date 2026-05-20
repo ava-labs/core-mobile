@@ -139,9 +139,6 @@ export const TokenPriceChart: FC<Props> = ({
   const coingeckoId = marketToken?.coingeckoId ?? undefined
   const symbol = token?.symbol ?? ''
 
-  // Merge the held-token data (priceInCurrency / priceChanges / change24)
-  // with the watchlist market token, then format using the shared display
-  // hook so the chart header stays consistent with the rest of the app.
   const {
     formattedPrice,
     formattedPriceChange,
@@ -170,9 +167,9 @@ export const TokenPriceChart: FC<Props> = ({
     currency
   })
 
-  // While the watchlist is still loading and we don't yet have a coingeckoId,
-  // surface a loading state instead of "empty" so the chart shows a spinner
-  // rather than the "No data" placeholder during the cold-start window.
+  // Cold-start window: watchlist hasn't resolved the coingeckoId yet, so the
+  // chart hook returns "empty". Show the spinner instead of the "No data"
+  // placeholder until the watchlist settles.
   const { isLoadingTopTokens, isLoadingTrendingTokens } = useWatchlist()
   const effectiveState =
     !coingeckoId && (isLoadingTopTokens || isLoadingTrendingTokens)

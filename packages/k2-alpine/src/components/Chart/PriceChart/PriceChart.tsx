@@ -48,17 +48,14 @@ type Props = {
   height: number
   state?: ChartState
   mode?: PriceChartMode
-  /** When provided, the chart writes its press-and-hold state into these
-   * SharedValues so a parent can coordinate sibling UI without re-rendering
-   * (e.g. fading an idle-state price header). */
+  /** Crosshair state mirrored into the parent so it can drive sibling UI
+   * (e.g. fading the idle price header) without re-rendering this chart. */
   externalIsActive?: SharedValue<boolean>
   externalActiveIndex?: SharedValue<number | null>
   externalCrosshairX?: SharedValue<number>
-  /** Locale + currency-aware money formatter for y-axis labels. */
   formatPrice?: (amount: number) => string
-  /** Locale + currency-aware compact formatter for the volume label. */
   formatVolume?: (volume: number) => string
-  /** Background refetch (e.g., on range change). Dims the chart and shows a spinner overlay. */
+  /** Background refetch — dims the chart and shows the spinner overlay. */
   isFetching?: boolean
 }
 
@@ -79,8 +76,8 @@ const renderPlaceholderState = ({
     justifyContent: 'center' as const,
     alignItems: 'center' as const
   }
-  // 'loading' falls through to the main render so we get a stable layout
-  // with a spinner overlay and fade-in instead of swapping layouts.
+  // 'loading' falls through so the main layout stays mounted under the
+  // spinner overlay — avoids a layout swap mid-fade.
   if (state === 'empty' && candles.length === 0) {
     return (
       <View style={containerStyle}>
@@ -136,18 +133,15 @@ export const PriceChart: FC<Props> = ({
   )
   const showVolume = mode === 'candlestick' && hasVolumeData
   const footerH = CHART_FOOTER_HEIGHT
-  // Volume slot is always reserved in the math so gridlines + candle
-  // scaling stay locked across modes. The canvas spans the full chart
-  // area (candle body + volume band) so both line/area and candles can
-  // stay mounted and swap via opacity without resizing the Canvas.
+  // Reserve the volume slot in the math even when hidden so gridlines and
+  // candle scaling stay locked across mode toggles.
   const volH = VOLUME_ROW_HEIGHT
   const candleH = Math.max(0, height - volH - footerH)
   const priceTopPadding = PRICE_TOP_PADDING
   const priceAreaH = Math.max(0, candleH - priceTopPadding)
   const canvasH = candleH + volH
-  // Area fill extends below the bottom gridline into the volume-row band
-  // for visual continuity in line mode (the line itself still hugs the
-  // gridlines via `priceAreaH`).
+  // Area fill bleeds into the volume band for visual continuity in line
+  // mode; the line itself still hugs the gridlines via `priceAreaH`.
   const areaBottomY = priceTopPadding + priceAreaH + volH
 
   const modeAnim = useSharedValue(mode === 'candlestick' ? 1 : 0)
@@ -178,8 +172,6 @@ export const PriceChart: FC<Props> = ({
     opacity: chartContentOpacity.value
   }))
 
-  // Spinner fades in/out symmetrically with the chart content opacity, so the
-  // hand-off between loading and loaded states stays smooth.
   const spinnerOpacity = useSharedValue(0)
   useEffect(() => {
     const target = state === 'loading' || isFetching ? 1 : 0

@@ -145,19 +145,12 @@ type Props = {
   crosshairX: SharedValue<number>
   isActive: SharedValue<boolean>
   containerWidth: number
-  /** When provided, renders a chevron next to the price; tapping the price row fires it. */
   onPriceHeaderPress?: () => void
-  /** Locale + currency-aware money formatter used for the crosshair-active
-   * state (when the user is dragging across candles). Falls back to `$X.XX`. */
   formatPrice?: (amount: number) => string
-  /** When true and candles are empty, shows a skeleton instead of hiding. */
   isLoading?: boolean
-  /** Formatted price for the idle (non-crosshair) state. When omitted, falls
-   * back to the last candle's close price formatted via `formatPrice`. */
+  /** Idle-state (non-crosshair) values. The crosshair-active state reads
+   * from the candle at the active index regardless of these. */
   priceText?: string
-  /** Pre-formatted props forwarded to `PriceChangeIndicator` for the idle
-   * (non-crosshair) state. When omitted, the indicator is computed from the
-   * candles' close-vs-first-open delta. */
   priceChange?: {
     status: PriceChangeStatus
     formattedPrice?: string
@@ -168,8 +161,6 @@ type Props = {
 const defaultFormatPrice = (amount: number): string =>
   `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`
 
-/** Long en-dash placeholder shown when no price source resolves. Mirrors the
- * design system's `UNKNOWN_AMOUNT` token. */
 const UNKNOWN_PRICE_TEXT = '–'
 
 const SKELETON_WIDTH = 160
@@ -227,11 +218,6 @@ export const ChartHeader: FC<Props> = memo(
     const lastCandle = formatted[formatted.length - 1]
     const active = idx !== null ? formatted[idx] : undefined
 
-    // Idle (non-crosshair) state uses the values the caller passes in (so the
-    // header stays in sync with whatever live source drives the rest of the
-    // app), falling back to candle-derived values when the caller doesn't
-    // supply them. Crosshair-active state always reads the candle at the
-    // active index.
     const priceText =
       active?.priceText ??
       idlePriceText ??

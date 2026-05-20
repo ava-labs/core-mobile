@@ -126,11 +126,9 @@ export const useTokenChartCandles = ({
     placeholderData: keepPreviousData
   })
 
-  // Track the range that the current `data` actually came from. While
-  // `data` is the placeholder (previous range's points), the bucketing
-  // needs to use the previous range's bucket count — otherwise we
-  // re-bucket old points with the new range's count and the chart flickers
-  // a different shape before the new data lands.
+  // While `data` is the previous range's placeholder, bucket it with that
+  // range's count — otherwise the shape briefly re-renders with the new
+  // count before the new data arrives.
   const dataRangeRef = useRef(range)
   useEffect(() => {
     if (!isPlaceholderData) dataRangeRef.current = range
