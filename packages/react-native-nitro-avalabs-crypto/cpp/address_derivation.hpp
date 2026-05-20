@@ -41,6 +41,13 @@ inline std::vector<uint8_t> sha256(const uint8_t *data, size_t len) {
     if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
         throw std::runtime_error("sha256: digest finalization failed");
     }
+    // Defense against an unexpected provider/algorithm returning a shorter
+    // digest: bail loudly instead of returning a 32-byte vector whose tail
+    // is uninitialized and would silently derive wrong addresses.
+    if (md_len != 32) {
+        throw std::runtime_error(
+            "sha256: unexpected digest length " + std::to_string(md_len));
+    }
     return out;
 }
 
@@ -59,6 +66,12 @@ inline std::vector<uint8_t> ripemd160(const uint8_t *data, size_t len) {
     unsigned int md_len = 0;
     if (EVP_DigestFinal_ex(mdctx, out.data(), &md_len) != 1) {
         throw std::runtime_error("ripemd160: digest finalization failed");
+    }
+    // Same guard as sha256: a non-20-byte digest from a swapped provider
+    // would leave the tail of `out` uninitialized.
+    if (md_len != 20) {
+        throw std::runtime_error(
+            "ripemd160: unexpected digest length " + std::to_string(md_len));
     }
     return out;
 }
@@ -79,6 +92,13 @@ inline std::vector<uint8_t> hmac_sha512(const uint8_t *key, size_t key_len,
     if (HMAC(EVP_sha512(), key, static_cast<int>(key_len),
              data, data_len, out.data(), &out_len) == nullptr) {
         throw std::runtime_error("hmac_sha512: HMAC failed");
+    }
+    // Same guard as sha256/ripemd160: defend against a swapped provider
+    // returning a short digest by failing loudly rather than letting BIP32
+    // derivation continue on a partially-uninitialized I.
+    if (out_len != 64) {
+        throw std::runtime_error(
+            "hmac_sha512: unexpected digest length " + std::to_string(out_len));
     }
     return out;
 }
@@ -102,6 +122,21 @@ inline BIP32PublicKey bip32_derive_public_child(
         throw std::invalid_argument("Cannot derive hardened child from public key");
     }
 
+    // Refuse to derive from a malformed parent. parse_xpub already validates
+    // these sizes, but a future caller constructing a BIP32PublicKey by hand
+    // (or a stale value reused across paths) would otherwise read OOB in the
+    // memcpy below or hand a wrong-size chain_code to HMAC.
+    if (parent.key.size() != 33) {
+        throw std::invalid_argument(
+            "bip32_derive_public_child: parent.key must be 33 bytes, got " +
+            std::to_string(parent.key.size()));
+    }
+    if (parent.chain_code.size() != 32) {
+        throw std::invalid_argument(
+            "bip32_derive_public_child: parent.chain_code must be 32 bytes, got " +
+            std::to_string(parent.chain_code.size()));
+    }
+
     // data = compressed_pubkey (33) || ser32(index) (4)
     std::vector<uint8_t> data(37);
     std::memcpy(data.data(), parent.key.data(), 33);
@@ -112,6 +147,14 @@ inline BIP32PublicKey bip32_derive_public_child(
 
     auto I = hmac_sha512(parent.chain_code.data(), parent.chain_code.size(),
                           data.data(), data.size());
+
+    // hmac_sha512 enforces a 64-byte output internally, but assert here too
+    // so the IL/IR slicing below has a local invariant a reader can verify.
+    if (I.size() != 64) {
+        throw std::runtime_error(
+            "bip32_derive_public_child: hmac_sha512 returned " +
+            std::to_string(I.size()) + " bytes, expected 64");
+    }
 
     // IL = I[0..32], IR = I[32..64]
     std::vector<uint8_t> IL(I.begin(), I.begin() + 32);
