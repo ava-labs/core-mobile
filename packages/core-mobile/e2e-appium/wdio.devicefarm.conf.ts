@@ -90,13 +90,23 @@ const allCaps = [
     'appium:wdaStartupRetryInterval': 30000,
     'appium:wdaLaunchTimeout': 360000,
     'appium:wdaConnectionTimeout': 360000,
-    'appium:usePrebuiltWDA': false,
+    ...(process.env.WDA_DERIVED_DATA_PATH
+      ? {
+          'appium:usePrebuiltWDA': true,
+          'appium:derivedDataPath': process.env.WDA_DERIVED_DATA_PATH
+        }
+      : { 'appium:usePrebuiltWDA': false }),
     ...(process.env.XCODE_CONFIG_FILE
-      ? { 'appium:xcodeConfigFile': process.env.XCODE_CONFIG_FILE }
+      ? {
+          'appium:xcodeConfigFile': process.env.XCODE_CONFIG_FILE,
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:allowProvisioningUpdates': true
+        }
       : process.env.XCODE_ORG_ID
       ? {
           'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
-          'appium:xcodeSigningId': 'iPhone Developer'
+          'appium:xcodeSigningId': 'iPhone Developer',
+          'appium:allowProvisioningUpdates': true
         }
       : {}),
     'appium:shouldUseSingletonTestManager': false,

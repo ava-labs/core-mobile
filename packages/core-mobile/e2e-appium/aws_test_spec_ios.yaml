@@ -137,7 +137,7 @@ phases:
           DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
           printf '\nexport XCODE_ORG_ID="%s"\n' "${TEAM_ID}" >> "${DF_ENV_DIR}/.df_env"
           XCCONFIG_FILE="/tmp/wda-signing.xcconfig"
-          printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = iPhone Developer\nCODE_SIGN_STYLE = Automatic\n' "${TEAM_ID}" > "$XCCONFIG_FILE"
+          printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = iPhone Developer\nCODE_SIGN_STYLE = Automatic\nIPHONEOS_DEPLOYMENT_TARGET = 16.0\n' "${TEAM_ID}" > "$XCCONFIG_FILE"
           echo "--- xcconfig contents ---"
           cat "$XCCONFIG_FILE"
           printf '\nexport XCODE_CONFIG_FILE="%s"\n' "$XCCONFIG_FILE" >> "${DF_ENV_DIR}/.df_env"
@@ -145,6 +145,20 @@ phases:
         else
           echo "WARNING: No signing identity — WDA build will fail"
         fi
+      - |-
+        echo "--- Checking for Device Farm pre-signed WDA ---"
+        env | grep -i 'DEVICEFARM_APPIUM_WDA\|WDA_DERIVED' 2>/dev/null || echo "No pre-signed WDA env vars found"
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        for V in 10 9 8 7; do
+          VARNAME="DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH_V${V}"
+          VARVAL=$(printenv "$VARNAME" 2>/dev/null)
+          if [ -n "$VARVAL" ]; then
+            echo "Found pre-signed WDA V${V} at: $VARVAL"
+            printf '\nexport WDA_DERIVED_DATA_PATH="%s"\n' "$VARVAL" >> "${DF_ENV_DIR}/.df_env"
+            echo "Exported WDA_DERIVED_DATA_PATH to .df_env"
+            break
+          fi
+        done
       - echo "=== PRE_TEST PHASE DONE ==="
 
   test:
