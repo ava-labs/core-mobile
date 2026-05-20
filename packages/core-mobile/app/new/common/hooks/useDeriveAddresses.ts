@@ -1,11 +1,17 @@
 import { strip0x } from '@avalabs/core-utils-sdk'
+import {
+  getBtcAddressFromPubKey,
+  getEvmAddressFromPubKey,
+  getPublicKeyFromPrivateKey
+} from '@avalabs/core-wallets-sdk'
 import { CoreAccountType } from '@avalabs/types'
-import { deriveAllAddressesFromPrivateKey } from 'react-native-nitro-avalabs-crypto'
+import { networks } from 'bitcoinjs-lib'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { selectAccounts } from 'store/account'
 import { ImportedAccount } from 'store/account/types'
+import { RootState } from 'store/types'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 
@@ -27,7 +33,15 @@ export const useDeriveAddresses = (
     useState<ImportedAccount | null>(null)
   const [showDerivedInfo, setShowDerivedInfo] = useState(false)
 
-  const accounts = useSelector(selectAccounts)
+  // Select only the scalar count we need; selecting the whole accounts map
+  // would re-create deriveAddresses on every unrelated account-slice update
+  // (rename, add non-imported, etc.) and re-run the derivation effect.
+  const importedAccountsCount = useSelector(
+    (state: RootState) =>
+      Object.values(selectAccounts(state)).filter(
+        account => account.type === CoreAccountType.IMPORTED
+      ).length
+  )
 
   const deriveAddresses = useCallback(async (): Promise<void> => {
     setDerivedAddresses([])
@@ -39,19 +53,15 @@ export const useDeriveAddresses = (
         throw new Error('Invalid private key')
       }
 
-      const {
-        evm: addressC,
-        btc: addressBTC,
-        avm: addressAVM,
-        pvm: addressPVM,
-        coreEth: addressCoreEth,
-        solana: addressSVM
-      } = deriveAllAddressesFromPrivateKey(strippedPk, isTestnet)
+      const publicKey = getPublicKeyFromPrivateKey(strippedPk)
 
-      const accountsCount =
-        Object.values(accounts).filter(
-          account => account.type === CoreAccountType.IMPORTED
-        ).length + 1
+      const addressC = getEvmAddressFromPubKey(publicKey)
+      const addressBTC = getBtcAddressFromPubKey(
+        publicKey,
+        isTestnet ? networks.testnet : networks.bitcoin
+      )
+
+      const accountsCount = importedAccountsCount + 1
 
       const newTempAccountData = {
         id: uuid(),
@@ -61,10 +71,9 @@ export const useDeriveAddresses = (
         walletId: CORE_MOBILE_WALLET_ID,
         addressC,
         addressBTC,
-        addressAVM,
-        addressPVM,
-        addressCoreEth,
-        addressSVM
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: addressC
       } as ImportedAccount
       setTempAccountDetails(newTempAccountData)
 
@@ -83,7 +92,7 @@ export const useDeriveAddresses = (
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
-  }, [isTestnet, privateKey, accounts])
+  }, [isTestnet, privateKey, importedAccountsCount])
 
   useEffect(() => {
     if (privateKey !== '') {

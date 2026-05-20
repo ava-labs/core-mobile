@@ -3,13 +3,13 @@ import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
 import type {
   Crypto,
-  DerivedAllAddresses,
+  DerivedAvalancheAddresses,
   DerivedSecp256k1Addresses,
   ExtendedPublicKeyResult
 } from './specs/Crypto.nitro'
 
 export type {
-  DerivedAllAddresses,
+  DerivedAvalancheAddresses,
   DerivedSecp256k1Addresses,
   ExtendedPublicKeyResult
 } from './specs/Crypto.nitro'
@@ -100,16 +100,6 @@ function bigintToArrayBuffer32(n: bigint): ArrayBuffer {
   }
   return out.buffer
 }
-
-/** bigint → 64-char hex string (left-padded). Throws if it doesn't fit.
- * 
-function bigintToHex64(n: bigint): string {
-  if (n < 0n) throw new TypeError('Secret key must be non-negative')
-  const hex = n.toString(16)
-  if (hex.length > 64) throw new RangeError('bigint does not fit into 32 bytes')
-  return hex.padStart(64, '0').toLowerCase()
-}
-*/
 
 /**
  * Public JS API — accepts Uint8Array | ArrayBuffer | string | bigint.
@@ -486,6 +476,12 @@ export function deriveAddressesFromXpubs(
   isTestnet: boolean,
   accountIndices: number[]
 ): Promise<DerivedSecp256k1Addresses[]> {
+  if (avalancheXpubs.length !== accountIndices.length) {
+    throw new RangeError(
+      `deriveAddressesFromXpubs: avalancheXpubs (${avalancheXpubs.length}) and accountIndices (${accountIndices.length}) must have the same length`
+    )
+  }
+  ensureBatchSize('deriveAddressesFromXpubs', accountIndices.length)
   return NativeCrypto.deriveAddressesFromXpubs(
     evmXpub,
     avalancheXpubs,
@@ -494,53 +490,140 @@ export function deriveAddressesFromXpubs(
   )
 }
 
-/**
- * Derive ALL addresses (secp256k1 + Ed25519) from a BIP39 seed in one
- * native call.  The JS thread does zero crypto work.
- *
- * All-or-nothing contract: the returned array is meaningful ONLY when the
- * Promise resolves. On rejection, no partially-populated array is observable
- * from JS — see `deriveAddressesFromXpubs` above for the full rationale.
- * Callers can rely on `results.length === accountIndices.length` and every
- * slot being populated whenever the await succeeds.
- *
- * @param seed           64-byte BIP39 seed (ArrayBuffer)
- * @param accountIndices account indices to derive (max 1024 per call; the
- *                       native module throws std::invalid_argument above
- *                       this — real wallets never come close)
- * @param isTestnet      true → fuji/tb1; false → avax/bc1
- * @returns one DerivedAllAddresses per index
- */
-export function deriveAllAddressesFromSeed(
-  seed: ArrayBuffer,
-  accountIndices: number[],
-  isTestnet: boolean
-): Promise<DerivedAllAddresses[]> {
-  return NativeCrypto.deriveAllAddressesFromSeed(
-    seed,
-    accountIndices,
-    isTestnet
-  )
+// ---------------------------------------------------------------------------
+// Per-chain address derivation from already-derived pubkeys
+//
+// Each accepts a public key as hex string / ArrayBuffer / Uint8Array (so the
+// caller can hand the raw bytes from `wallet.getPublicKeyFor` — which returns
+// a hex string — without manual conversion). Lengths are enforced both here
+// and on the native side so a wrong-size pubkey fails fast with a clear
+// message.
+// ---------------------------------------------------------------------------
+
+function ensureLen(
+  name: string,
+  expected: number,
+  ab: ArrayBuffer
+): ArrayBuffer {
+  if (ab.byteLength !== expected) {
+    throw new TypeError(
+      `${name} must be ${expected} bytes, got ${ab.byteLength}`
+    )
+  }
+  return ab
+}
+
+export type PubKeyLike = string | ArrayBuffer | Uint8Array
+
+// Hard upper bound on batch size for the per-chain derive functions.
+// Mirrors `MAX_ACCOUNT_INDICES_PER_CALL = 1024` in the C++ side
+// (CryptoHybrid.cpp). The native methods are synchronous and block the
+// JS thread, so a buggy or hostile caller passing N >> 1024 would freeze
+// the UI for seconds. This JS-side guard rejects before the bridge
+// crossing; the native side still validates as defense-in-depth.
+const MAX_BATCH_SIZE = 1024
+
+function ensureBatchSize(name: string, n: number): void {
+  if (n > MAX_BATCH_SIZE) {
+    throw new RangeError(
+      `${name}: batch size ${n} exceeds maximum of ${MAX_BATCH_SIZE} — split into multiple calls if you genuinely need this many`
+    )
+  }
 }
 
 /**
- * Derive ALL addresses (secp256k1 + Ed25519) from a single 32-byte raw
- * private key.  Used by the imported-private-key flow: the same 32 bytes
- * feed both curves — secp256k1 for EVM / BTC / Avalanche chains, Ed25519
- * (RFC 8032 §5.1.5) for Solana.  No BIP-32 / SLIP-0010 derivation tree.
+ * Derive EVM (EIP-55) addresses from a batch of compressed secp256k1 pubkeys.
  *
- * Accepts the secret as a hex string, ArrayBuffer, or Uint8Array; converts
- * to a tight 32-byte ArrayBuffer before crossing the bridge.
+ * Results are returned in the same order as `publicKeys`, so callers can map
+ * each address back to its source publicKey/accountIndex by position.
  *
- * @param privateKey  32-byte secret (hex with optional 0x prefix,
- *                    ArrayBuffer, or Uint8Array)
- * @param isTestnet   true → fuji HRP + tb1 BTC prefix; false → avax + bc1
- * @returns           one DerivedAllAddresses (accountIndex always 0)
+ * @param publicKeys array of 33-byte compressed pubkeys (each hex /
+ *                   ArrayBuffer / Uint8Array)
+ * @returns array of 0x-prefixed EIP-55 addresses, one per input
  */
-export function deriveAllAddressesFromPrivateKey(
-  privateKey: string | ArrayBuffer | Uint8Array,
+export function deriveAddressesForEvm(
+  publicKeys: readonly PubKeyLike[]
+): string[] {
+  ensureBatchSize('deriveAddressesForEvm', publicKeys.length)
+  const abs = publicKeys.map(pk =>
+    ensureLen('publicKey', 33, hexLikeToArrayBuffer(pk))
+  )
+  return NativeCrypto.deriveAddressesForEvm(abs)
+}
+
+/**
+ * Derive Solana (base58 Ed25519) addresses from a batch of 32-byte Ed25519
+ * pubkeys. Results align with input order.
+ *
+ * @param publicKeys array of 32-byte Ed25519 pubkeys (hex / ArrayBuffer /
+ *                   Uint8Array)
+ * @returns array of base58-encoded addresses, one per input
+ */
+export function deriveAddressesForSvm(
+  publicKeys: readonly PubKeyLike[]
+): string[] {
+  ensureBatchSize('deriveAddressesForSvm', publicKeys.length)
+  const abs = publicKeys.map(pk =>
+    ensureLen('publicKey', 32, hexLikeToArrayBuffer(pk))
+  )
+  return NativeCrypto.deriveAddressesForSvm(abs)
+}
+
+/**
+ * Derive Bitcoin P2WPKH bech32 addresses from a batch of compressed
+ * secp256k1 pubkeys. In this codebase BTC reuses the EVM derivation path so
+ * the same pubkey works for both. Results align with input order.
+ *
+ * @param publicKeys array of 33-byte compressed pubkeys (hex / ArrayBuffer /
+ *                   Uint8Array)
+ * @param isTestnet  true → tb1…; false → bc1…
+ * @returns array of bech32 addresses, one per input
+ */
+export function deriveAddressesForBtc(
+  publicKeys: readonly PubKeyLike[],
   isTestnet: boolean
-): DerivedAllAddresses {
-  const ab = ensure32('privateKey', hexLikeToArrayBuffer(privateKey))
-  return NativeCrypto.deriveAllAddressesFromPrivateKey(ab, isTestnet)
+): string[] {
+  ensureBatchSize('deriveAddressesForBtc', publicKeys.length)
+  const abs = publicKeys.map(pk =>
+    ensureLen('publicKey', 33, hexLikeToArrayBuffer(pk))
+  )
+  return NativeCrypto.deriveAddressesForBtc(abs, isTestnet)
+}
+
+/**
+ * Derive Avalanche-network address bundles (X-, P-, CoreEth bech32) from a
+ * batch of pubkey pairs.
+ *
+ * - X-/P-:   from `avalanchePublicKeys[i]` (m/44'/9000'/{i}'/0/0)
+ * - CoreEth: from `evmPublicKeys[i]`       (m/44'/60'/0'/0/{i}) with avax/fuji HRP
+ *
+ * The two arrays must have the same length; results align with that order so
+ * callers can map each bundle back to its source pubkeys/accountIndex by
+ * position.
+ *
+ * @param avalanchePublicKeys array of 33-byte compressed secp256k1 pubkeys at
+ *                            m/44'/9000'/… (hex / ArrayBuffer / Uint8Array)
+ * @param evmPublicKeys       array of 33-byte compressed secp256k1 pubkeys at
+ *                            m/44'/60'/…  (hex / ArrayBuffer / Uint8Array)
+ * @param isTestnet           true → fuji HRP; false → avax HRP
+ * @returns array of { x, p, coreEth } bundles, one per pair
+ */
+export function deriveAddressesForAvalanche(
+  avalanchePublicKeys: readonly PubKeyLike[],
+  evmPublicKeys: readonly PubKeyLike[],
+  isTestnet: boolean
+): DerivedAvalancheAddresses[] {
+  if (avalanchePublicKeys.length !== evmPublicKeys.length) {
+    throw new TypeError(
+      `deriveAddressesForAvalanche: avalanchePublicKeys (${avalanchePublicKeys.length}) and evmPublicKeys (${evmPublicKeys.length}) must have the same length`
+    )
+  }
+  ensureBatchSize('deriveAddressesForAvalanche', avalanchePublicKeys.length)
+  const avaxAbs = avalanchePublicKeys.map(pk =>
+    ensureLen('avalanchePublicKey', 33, hexLikeToArrayBuffer(pk))
+  )
+  const evmAbs = evmPublicKeys.map(pk =>
+    ensureLen('evmPublicKey', 33, hexLikeToArrayBuffer(pk))
+  )
+  return NativeCrypto.deriveAddressesForAvalanche(avaxAbs, evmAbs, isTestnet)
 }

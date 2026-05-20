@@ -193,9 +193,12 @@ async function extractBatch(
  * keeps the worker pool fully fed without contention.
  *
  * Each call is awaited through extractBatch, which catches per-batch
- * rejections and returns an empty map so a single-network failure still
- * lets the other network's results flow through — matching the prior
- * parallel behavior.
+ * rejections and returns an empty map so logging still happens. The mapping
+ * loop below requires BOTH mainnet and testnet entries to emit an index —
+ * a single-network failure therefore drops every index for this batch
+ * (downstream consumers expect mainnet+testnet as a pair). The empty-map
+ * fallback exists so the loop body doesn't throw on `.get()` and so the
+ * unaffected network's rejection log isn't suppressed by an upstream throw.
  */
 async function deriveAndMapBatch(params: {
   evmAccountXpub: string
@@ -245,27 +248,19 @@ async function deriveAndMapBatch(params: {
     const index = validIndices[i]
     const xpubXP = avalancheXpubsForBatch[i]
     if (index === undefined || xpubXP === undefined) continue
-    try {
-      const mainnet = mainnetBatch.get(index)
-      const testnet = testnetBatch.get(index)
-      if (!mainnet || !testnet) continue
 
-      addressesByIndex.set(index, { mainnet, testnet })
-      derivedAccounts.push({
-        index,
-        addressC: mainnet.evm,
-        addressBTC: mainnet.btc,
-        xpubXP,
-        addressSVM: solanaAddresses[index] ?? undefined
-      })
-    } catch (error) {
-      // Isolate per-index mapping failures so one bad index doesn't drop
-      // the whole batch.
-      Logger.error(
-        `Failed to map batch-derived Ledger addresses for index ${index}`,
-        error
-      )
-    }
+    const mainnet = mainnetBatch.get(index)
+    const testnet = testnetBatch.get(index)
+    if (!mainnet || !testnet) continue
+
+    addressesByIndex.set(index, { mainnet, testnet })
+    derivedAccounts.push({
+      index,
+      addressC: mainnet.evm,
+      addressBTC: mainnet.btc,
+      xpubXP,
+      addressSVM: solanaAddresses[index] ?? undefined
+    })
   }
 
   return { derivedAccounts, addressesByIndex }
