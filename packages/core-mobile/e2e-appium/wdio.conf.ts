@@ -105,7 +105,8 @@ const allCaps = [
     ...(process.env.XCODE_ORG_ID
       ? {
           'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
-          'appium:xcodeSigningId': 'Apple Development'
+          'appium:xcodeSigningId': 'iPhone Developer',
+          'appium:allowProvisioningUpdates': true
         }
       : {}),
     'appium:shouldUseSingletonTestManager': false,
