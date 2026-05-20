@@ -274,14 +274,19 @@ namespace margelo::nitro::nitroavalabscrypto {
         } else {
             const auto &ab = std::get<std::shared_ptr<ArrayBuffer>>(v);
             if (!ab) throw std::invalid_argument("ArrayBuffer is null");
+            const auto size = ab->size();
+            if (size == 0) {
+                return {};
+            }
             auto *p = reinterpret_cast<const uint8_t *>(ab->data());
             // Borrowed ArrayBuffers can return nullptr from data() after JS GC
             // (NitroModules/ArrayBuffer.hpp). Constructing a vector from a null
-            // pointer + non-zero size is UB; reject explicitly.
-            if (p == nullptr && ab->size() > 0) {
+            // pointer + non-zero size is UB; reject explicitly. Empty buffers
+            // are handled above so we never perform pointer arithmetic on null.
+            if (p == nullptr) {
                 throw std::invalid_argument("ArrayBuffer has null data");
             }
-            return std::vector<uint8_t>(p, p + ab->size());
+            return std::vector<uint8_t>(p, p + size);
         }
     }
 
