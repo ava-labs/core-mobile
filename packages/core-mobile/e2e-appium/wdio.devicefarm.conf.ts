@@ -95,20 +95,21 @@ const allCaps = [
           'appium:usePrebuiltWDA': true,
           'appium:derivedDataPath': process.env.WDA_DERIVED_DATA_PATH
         }
-      : { 'appium:usePrebuiltWDA': false }),
-    ...(process.env.XCODE_CONFIG_FILE
+      : process.env.XCODE_CONFIG_FILE
       ? {
+          'appium:usePrebuiltWDA': false,
           'appium:xcodeConfigFile': process.env.XCODE_CONFIG_FILE,
           'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
           'appium:allowProvisioningUpdates': true
         }
       : process.env.XCODE_ORG_ID
       ? {
+          'appium:usePrebuiltWDA': false,
           'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
           'appium:xcodeSigningId': 'iPhone Developer',
           'appium:allowProvisioningUpdates': true
         }
-      : {}),
+      : { 'appium:usePrebuiltWDA': false }),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
