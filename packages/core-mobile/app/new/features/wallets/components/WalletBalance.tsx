@@ -27,7 +27,12 @@ interface WalletBalanceProps {
   isRefreshing: boolean
   walletBalancesData: AdjustedNormalizedBalancesForAccounts
   isBalancesError: boolean
-  enabledNetworksCount: number
+  /**
+   * Map from accountId to the number of enabled networks that account can
+   * actually produce balance entries for (see CP-14303). The wallet total
+   * is considered loaded when every account has at least that many entries.
+   */
+  enabledNetworksCountByAccount: Record<string, number>
   enabledNetworksMap: Networks
   enabledChainIds: number[]
   isDeveloperMode: boolean
@@ -40,7 +45,7 @@ const WalletBalanceComponent = ({
   isRefreshing,
   walletBalancesData,
   isBalancesError,
-  enabledNetworksCount,
+  enabledNetworksCountByAccount,
   enabledNetworksMap,
   enabledChainIds,
   isDeveloperMode,
@@ -55,14 +60,14 @@ const WalletBalanceComponent = ({
   const { formatCurrency } = useFormatCurrency()
 
   const { isLoading, balanceTotalInCurrency } = useMemo(() => {
-    const accountEntries = Object.values(walletBalancesData)
+    const accountEntries = Object.entries(walletBalancesData)
 
     let loading = accountEntries.length === 0
     let total = 0
-    for (const accountBalances of accountEntries) {
+    for (const [accountId, accountBalances] of accountEntries) {
       const result = computeAccountBalance({
         accountBalances: accountBalances ?? emptyAccountBalances,
-        enabledNetworksCount,
+        enabledNetworksCount: enabledNetworksCountByAccount[accountId] ?? 0,
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
@@ -76,7 +81,7 @@ const WalletBalanceComponent = ({
     return { isLoading: loading, balanceTotalInCurrency: total }
   }, [
     walletBalancesData,
-    enabledNetworksCount,
+    enabledNetworksCountByAccount,
     enabledNetworksMap,
     enabledChainIds,
     isDeveloperMode,

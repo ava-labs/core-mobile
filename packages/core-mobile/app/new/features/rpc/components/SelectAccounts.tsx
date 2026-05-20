@@ -17,6 +17,7 @@ import {
   computeAccountBalance,
   AccountBalanceData
 } from 'features/portfolio/utils/computeAccountBalance'
+import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -71,7 +72,10 @@ export const SelectAccounts = ({
     for (const account of Object.values(accounts)) {
       result[account.id] = computeAccountBalance({
         accountBalances: balancesData[account.id] ?? emptyAccountBalances,
-        enabledNetworksCount: enabledNetworks.length,
+        enabledNetworksCount: getEnabledNetworksForAccount(
+          account,
+          enabledNetworks
+        ).length,
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
@@ -84,7 +88,7 @@ export const SelectAccounts = ({
     accounts,
     balancesData,
     isBalancesError,
-    enabledNetworks.length,
+    enabledNetworks,
     enabledNetworksMap,
     enabledChainIds,
     isDeveloperMode,
