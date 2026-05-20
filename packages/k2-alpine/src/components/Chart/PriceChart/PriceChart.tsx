@@ -177,7 +177,20 @@ export const PriceChart: FC<Props> = ({
   const chartContentStyle = useAnimatedStyle(() => ({
     opacity: chartContentOpacity.value
   }))
-  const showSpinner = state === 'loading' || isFetching
+
+  // Spinner fades in/out symmetrically with the chart content opacity, so the
+  // hand-off between loading and loaded states stays smooth.
+  const spinnerOpacity = useSharedValue(0)
+  useEffect(() => {
+    const target = state === 'loading' || isFetching ? 1 : 0
+    spinnerOpacity.value = withTiming(target, {
+      duration: target === 0 ? 180 : 200,
+      easing: Easing.out(Easing.quad)
+    })
+  }, [state, isFetching, spinnerOpacity])
+  const spinnerStyle = useAnimatedStyle(() => ({
+    opacity: spinnerOpacity.value
+  }))
 
   // Shared between the gridline path and the y-axis labels so each label
   // stays locked to its dashed line (including the edge-clamping below).
@@ -507,10 +520,10 @@ export const PriceChart: FC<Props> = ({
             <LineChartDot x={crosshairX} y={activeLineY} isActive={isActive} />
           )}
         </Animated.View>
-        {showSpinner && (
-          <View
-            pointerEvents="none"
-            style={{
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
               position: 'absolute',
               top: 0,
               left: 0,
@@ -518,10 +531,11 @@ export const PriceChart: FC<Props> = ({
               bottom: 0,
               justifyContent: 'center',
               alignItems: 'center'
-            }}>
-            <ActivityIndicator />
-          </View>
-        )}
+            },
+            spinnerStyle
+          ]}>
+          <ActivityIndicator />
+        </Animated.View>
       </View>
     </GestureDetector>
   )

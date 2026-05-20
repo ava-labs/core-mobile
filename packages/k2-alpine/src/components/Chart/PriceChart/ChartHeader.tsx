@@ -147,12 +147,30 @@ type Props = {
   containerWidth: number
   /** When provided, renders a chevron next to the price; tapping the price row fires it. */
   onPriceHeaderPress?: () => void
-  /** Locale + currency-aware money formatter. Falls back to `$X.XX` when omitted. */
+  /** Locale + currency-aware money formatter used for the crosshair-active
+   * state (when the user is dragging across candles). Falls back to `$X.XX`. */
   formatPrice?: (amount: number) => string
+  /** When true and candles are empty, shows a skeleton instead of hiding. */
+  isLoading?: boolean
+  /** Formatted price for the idle (non-crosshair) state. When omitted, falls
+   * back to the last candle's close price formatted via `formatPrice`. */
+  priceText?: string
+  /** Pre-formatted props forwarded to `PriceChangeIndicator` for the idle
+   * (non-crosshair) state. When omitted, the indicator is computed from the
+   * candles' close-vs-first-open delta. */
+  priceChange?: {
+    status: PriceChangeStatus
+    formattedPrice?: string
+    formattedPercent?: string
+  }
 }
 
 const defaultFormatPrice = (amount: number): string =>
   `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`
+
+/** Long en-dash placeholder shown when no price source resolves. Mirrors the
+ * design system's `UNKNOWN_AMOUNT` token. */
+const UNKNOWN_PRICE_TEXT = '–'
 
 const SKELETON_WIDTH = 160
 const SKELETON_HEIGHT = 62
@@ -188,7 +206,10 @@ export const ChartHeader: FC<Props> = memo(
     isActive,
     containerWidth,
     onPriceHeaderPress,
-    formatPrice = defaultFormatPrice
+    formatPrice = defaultFormatPrice,
+    isLoading = false,
+    priceText: idlePriceText,
+    priceChange: idlePriceChange
   }) => {
     const { theme } = useTheme()
     const idx = useActiveIndex(activeIndex)
@@ -203,15 +224,34 @@ export const ChartHeader: FC<Props> = memo(
       [candles, formatPrice]
     )
 
-    const idleStrings = formatted[formatted.length - 1]
+    const lastCandle = formatted[formatted.length - 1]
     const active = idx !== null ? formatted[idx] : undefined
-    const displayed = active ?? idleStrings
-    const priceText = displayed?.priceText ?? formatPrice(0)
-    const subtitleText = active ? active.timeText : `Current price of ${symbol}`
 
-    // While candles are empty (initial load / range fetch) show a skeleton
-    // so a placeholder "$0.00 / 0.00%" never flashes before real data.
-    const hasData = candles.length > 0
+    // Idle (non-crosshair) state uses the values the caller passes in (so the
+    // header stays in sync with whatever live source drives the rest of the
+    // app), falling back to candle-derived values when the caller doesn't
+    // supply them. Crosshair-active state always reads the candle at the
+    // active index.
+    const priceText =
+      active?.priceText ??
+      idlePriceText ??
+      lastCandle?.priceText ??
+      UNKNOWN_PRICE_TEXT
+    const subtitleText = active ? active.timeText : `Current price of ${symbol}`
+    const indicator = active
+      ? {
+          status: active.status,
+          formattedPrice: active.deltaPriceText,
+          formattedPercent: active.deltaPctText
+        }
+      : idlePriceChange ??
+        (lastCandle
+          ? {
+              status: lastCandle.status,
+              formattedPrice: lastCandle.deltaPriceText,
+              formattedPercent: lastCandle.deltaPctText
+            }
+          : undefined)
 
     return (
       <View
@@ -219,7 +259,7 @@ export const ChartHeader: FC<Props> = memo(
           paddingHorizontal: 16,
           alignItems: 'flex-start'
         }}>
-        {!hasData ? (
+        {isLoading ? (
           <ChartHeaderSkeleton />
         ) : (
           <Animated.View
@@ -267,14 +307,20 @@ export const ChartHeader: FC<Props> = memo(
             <Animated.View
               onLayout={animations.onDeltaLayout}
               style={animations.deltaStyle}>
-              <PriceChangeIndicator
-                status={displayed?.status ?? PriceChangeStatus.Neutral}
-                formattedPrice={displayed?.deltaPriceText ?? formatPrice(0)}
-                formattedPercent={displayed?.deltaPctText ?? '0.00%'}
-                textVariant="buttonSmall"
-                percentSx={{ fontSize: 14, lineHeight: 18 }}
-                priceSx={{ fontSize: 14, lineHeight: 18 }}
-              />
+              {indicator ? (
+                <PriceChangeIndicator
+                  status={indicator.status}
+                  formattedPrice={indicator.formattedPrice}
+                  formattedPercent={indicator.formattedPercent}
+                  textVariant="buttonSmall"
+                  percentSx={{ fontSize: 14, lineHeight: 18 }}
+                  priceSx={{ fontSize: 14, lineHeight: 18 }}
+                />
+              ) : (
+                <Text variant="buttonSmall" sx={{ color: '$textSecondary' }}>
+                  {'-'}
+                </Text>
+              )}
             </Animated.View>
           </Animated.View>
         )}

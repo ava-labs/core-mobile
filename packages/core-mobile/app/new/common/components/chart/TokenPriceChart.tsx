@@ -11,6 +11,9 @@ import {
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
+import { useMarketToken } from 'common/hooks/useMarketToken'
+import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, {
   FC,
   memo,
@@ -22,12 +25,13 @@ import React, {
 import { Pressable } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
+import { LocalTokenWithBalance } from 'store/balance'
 import { selectChartType, setChartType } from 'store/chartPreferences/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 
 type Props = {
-  symbol: string
-  coingeckoId: string | undefined
+  /** The held token whose price + chart to render. */
+  token: LocalTokenWithBalance | undefined
   width: number
   height?: number
   initialRange?: ChartRange
@@ -103,8 +107,7 @@ const ChartRangeSelector: FC<{
 })
 
 export const TokenPriceChart: FC<Props> = ({
-  symbol,
-  coingeckoId,
+  token,
   width,
   height = 235,
   initialRange = '1D',
@@ -132,11 +135,49 @@ export const TokenPriceChart: FC<Props> = ({
 
   const [range, setRange] = useState<ChartRange>(initialRange)
 
+  const marketToken = useMarketToken({ token })
+  const coingeckoId = marketToken?.coingeckoId ?? undefined
+  const symbol = token?.symbol ?? ''
+
+  // Merge the held-token data (priceInCurrency / priceChanges / change24)
+  // with the watchlist market token, then format using the shared display
+  // hook so the chart header stays consistent with the rest of the app.
+  const {
+    formattedPrice,
+    formattedPriceChange,
+    formattedPercent,
+    status: priceChangeStatus
+  } = useTokenPriceDisplay({
+    currentPrice: token?.priceInCurrency ?? marketToken?.currentPrice,
+    priceChange24h: token?.priceChanges?.value ?? marketToken?.priceChange24h,
+    priceChangePercentage24h:
+      token?.priceChanges?.percentage ??
+      token?.change24 ??
+      marketToken?.priceChangePercentage24h
+  })
+  const headerPriceChange =
+    formattedPriceChange === undefined && formattedPercent === undefined
+      ? undefined
+      : {
+          status: priceChangeStatus,
+          formattedPrice: formattedPriceChange,
+          formattedPercent
+        }
+
   const { candles, state, isFetching } = useTokenChartCandles({
     coingeckoId,
     range,
     currency
   })
+
+  // While the watchlist is still loading and we don't yet have a coingeckoId,
+  // surface a loading state instead of "empty" so the chart shows a spinner
+  // rather than the "No data" placeholder during the cold-start window.
+  const { isLoadingTopTokens, isLoadingTrendingTokens } = useWatchlist()
+  const effectiveState =
+    !coingeckoId && (isLoadingTopTokens || isLoadingTrendingTokens)
+      ? ('loading' as const)
+      : state
 
   const isActive = useSharedValue(false)
   const activeIndex = useSharedValue<number | null>(null)
@@ -153,13 +194,16 @@ export const TokenPriceChart: FC<Props> = ({
         containerWidth={width}
         onPriceHeaderPress={onPriceHeaderPress}
         formatPrice={formatPrice}
+        isLoading={effectiveState === 'loading'}
+        priceText={formattedPrice}
+        priceChange={headerPriceChange}
       />
       <PriceChart
         candles={candles}
         width={width}
         height={height}
         mode={chartType}
-        state={state}
+        state={effectiveState}
         isFetching={isFetching}
         externalIsActive={isActive}
         externalActiveIndex={activeIndex}
