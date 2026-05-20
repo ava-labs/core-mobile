@@ -13,11 +13,15 @@ import { getAddressByNetwork } from 'store/account/utils'
  * to spin forever on the My wallets screen because they can never produce
  * a balance entry for every globally-enabled network. See CP-14303.
  *
- * Address presence is resolved through `getAddressByNetwork` — the same
- * helper the balance pipeline (`BalanceService`,
- * `buildRequestItemsForAccounts`) uses to decide whether to issue a
- * balance request for an account+network pair, so this stays consistent
- * with what the backend is actually asked for.
+ * Address presence is resolved through `getAddressByNetwork`, mirroring
+ * the address-based gating `buildRequestItemsForAccounts` applies to
+ * EVM, BTC, and SVM balance requests. Avalanche X/P requests are gated
+ * separately (by `xpub` / xpAddresses, not `getAddressByNetwork`), so
+ * X/P entries from the address-based check here can be wider than what
+ * the backend is actually asked for — accounts whose `addressAVM`/
+ * `addressPVM` are populated should also have either xpub or
+ * xpAddresses available, but treat the mapping as a close approximation
+ * rather than a strict equivalence.
  */
 export function getEnabledNetworksForAccount(
   account: Account,
