@@ -1,7 +1,5 @@
-import { strip0x } from '@avalabs/core-utils-sdk'
 import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { deriveAllAddressesFromPrivateKey } from 'react-native-nitro-avalabs-crypto'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletFactory from 'services/wallet/WalletFactory'
@@ -65,6 +63,8 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
   `${reducerName}/importPrivateKeyWalletAndAccount`,
   async ({ accountDetails, accountSecret }, thunkApi) => {
     const dispatch = thunkApi.dispatch
+    const state = thunkApi.getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
 
     const newWalletId = uuid()
 
@@ -78,35 +78,21 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    // Re-derive addresses against the *current* developer-mode flag.
-    // `accountDetails.address*` were produced by `useDeriveAddresses` when
-    // the screen rendered, but the user can toggle developer mode between
-    // then and now — persisting the stale addresses would import the wallet
-    // onto the wrong network. The native call is synchronous and only does
-    // bech32/HRP encoding (no BIP-32 derivation for a raw private key), so
-    // this is essentially free compared to fanning out via ModuleManager.
-    const isDeveloperMode = selectIsDeveloperMode(thunkApi.getState())
-    const {
-      evm: addressC,
-      btc: addressBTC,
-      avm: addressAVM,
-      pvm: addressPVM,
-      coreEth: addressCoreEth,
-      solana: addressSVM
-    } = deriveAllAddressesFromPrivateKey(
-      strip0x(accountSecret),
-      isDeveloperMode
-    )
+    const addresses = await AccountsService.getAddresses({
+      walletId: newWalletId,
+      walletType: WalletType.PRIVATE_KEY,
+      isTestnet: isDeveloperMode
+    })
 
     const accountToImport: ImportedAccount = {
       ...accountDetails,
       walletId: newWalletId,
-      addressC,
-      addressBTC,
-      addressAVM,
-      addressPVM,
-      addressCoreEth,
-      addressSVM
+      addressC: addresses.EVM,
+      addressBTC: addresses.BITCOIN,
+      addressAVM: addresses.AVM,
+      addressPVM: addresses.PVM,
+      addressSVM: addresses.SVM,
+      addressCoreEth: addresses.CoreEth
     }
 
     thunkApi.dispatch(setAccount(accountToImport))

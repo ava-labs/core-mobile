@@ -23,8 +23,16 @@ import {
 } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/api/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
-import { emptyAddresses } from 'utils/publicKeys'
+import { Curve, emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
+import { getAddressDerivationPath } from 'services/wallet/utils'
+import {
+  deriveAddressesForAvalanche,
+  deriveAddressesForBtc,
+  deriveAddressesForEvm,
+  deriveAddressesForSvm
+} from 'react-native-nitro-avalabs-crypto'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -142,6 +150,120 @@ class ModuleManager {
       })
       return addresses
     })
+  }
+
+  /**
+   * Batched per-chain address derivation for a list of accountIndices.
+   *
+   * Mirrors the per-module flow (derivationPath → pubkey via
+   * WalletService.getPublicKeyFor → address) but pays the bridge cost once
+   * per chain instead of once per chain × accountIndex. EVM/BTC/CoreEth all
+   * share the m/44'/60'/… leaf pubkey; AVM/PVM use the m/44'/9000'/… pubkey
+   * (CoreEth bech32 is the EVM pubkey under the avax/fuji HRP); SVM uses
+   * its own m/44'/501'/… Ed25519 pubkey.
+   *
+   * Result array is aligned with `accountIndices` and also carries
+   * `accountIndex` per entry, so callers can map address ↔ accountIndex
+   * either by position or by lookup.
+   */
+  deriveAllAddresses = async ({
+    walletId,
+    walletType,
+    accountIndices,
+    network
+  }: {
+    walletId: string
+    walletType: WalletType
+    accountIndices: number[]
+    network: Network
+  }): Promise<
+    Array<{ accountIndex: number; addresses: Record<NetworkVMType, string> }>
+  > => {
+    if (accountIndices.length === 0) return []
+
+    const isTestnet = network.isTestnet ?? false
+    const derivationPathType = DerivationPath.BIP44
+
+    // Step 1 — derivation paths per chain per accountIndex.
+    const evmPaths = accountIndices.map(accountIndex =>
+      getAddressDerivationPath({
+        accountIndex,
+        vmType: NetworkVMType.EVM,
+        derivationPathType
+      })
+    )
+    const avmPaths = accountIndices.map(accountIndex =>
+      getAddressDerivationPath({
+        accountIndex,
+        vmType: NetworkVMType.AVM,
+        derivationPathType
+      })
+    )
+    const svmPaths = accountIndices.map(accountIndex =>
+      getAddressDerivationPath({
+        accountIndex,
+        vmType: NetworkVMType.SVM,
+        derivationPathType
+      })
+    )
+
+    // Step 2 — pubkey fetches. All concurrent; WalletService caches by
+    // (walletId, path, curve) so repeat callers hit the warm path.
+    const [evmHex, avmHex, svmHex] = await Promise.all([
+      Promise.all(
+        evmPaths.map(derivationPath =>
+          WalletService.getPublicKeyFor({
+            walletId,
+            walletType,
+            derivationPath,
+            curve: Curve.SECP256K1
+          })
+        )
+      ),
+      Promise.all(
+        avmPaths.map(derivationPath =>
+          WalletService.getPublicKeyFor({
+            walletId,
+            walletType,
+            derivationPath,
+            curve: Curve.SECP256K1
+          })
+        )
+      ),
+      Promise.all(
+        svmPaths.map(derivationPath =>
+          WalletService.getPublicKeyFor({
+            walletId,
+            walletType,
+            derivationPath,
+            curve: Curve.ED25519
+          })
+        )
+      )
+    ])
+
+    // Step 3 — one native call per chain. Each returns an array aligned
+    // with `accountIndices`. The JS wrapper accepts hex pubkeys directly,
+    // so we hand the hex strings straight through without an intermediate
+    // ArrayBuffer copy.
+    const evmAddresses = deriveAddressesForEvm(evmHex)
+    const btcAddresses = deriveAddressesForBtc(evmHex, isTestnet)
+    const avaxBundles = deriveAddressesForAvalanche(avmHex, evmHex, isTestnet)
+    const svmAddresses = deriveAddressesForSvm(svmHex)
+
+    // Step 4 — zip into per-account records keyed by accountIndex.
+    return accountIndices.map((accountIndex, i) => ({
+      accountIndex,
+      addresses: {
+        ...emptyAddresses(),
+        [NetworkVMType.EVM]: evmAddresses[i] ?? '',
+        [NetworkVMType.BITCOIN]: btcAddresses[i] ?? '',
+        [NetworkVMType.AVM]: avaxBundles[i]?.x ?? '',
+        [NetworkVMType.PVM]: avaxBundles[i]?.p ?? '',
+        [NetworkVMType.CoreEth]: avaxBundles[i]?.coreEth ?? '',
+        [NetworkVMType.SVM]: svmAddresses[i] ?? ''
+      }
+    }))
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {

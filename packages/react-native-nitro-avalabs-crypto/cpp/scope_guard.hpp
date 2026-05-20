@@ -1,10 +1,6 @@
 #pragma once
 
-#include <array>
-#include <cstdint>
 #include <utility>
-
-#include <openssl/crypto.h>
 
 namespace margelo::nitro::nitroavalabscrypto::detail {
 
@@ -62,67 +58,6 @@ struct ScopeGuard {
 
     ScopeGuard(const ScopeGuard &) = delete;
     ScopeGuard &operator=(const ScopeGuard &) = delete;
-};
-
-// ---------------------------------------------------------------------------
-// CleansingArray<N> — fixed-size byte buffer that OPENSSL_cleanses on
-// destruction.
-//
-// Use this instead of std::array / std::vector when the buffer holds
-// secret material whose cleansing must survive paths a manual
-// ScopeGuard can't cover — most notably async lambdas whose execution
-// is not guaranteed.  Because Nitro's Promise::async wraps the callable
-// in std::function<T()>, which requires CopyConstructible, you must
-// hold the buffer behind a shared_ptr (the CleansingArray itself is
-// move-only by design):
-//
-//   auto buf = std::make_shared<CleansingArray<64>>();
-//   // ... fill via buf->data() ...
-//   Promise<T>::async([buf]() {
-//       use(buf->data(), buf->size());
-//       // No explicit cleanse needed — the CleansingArray's destructor
-//       // fires when the last copy of the lambda is released, whether
-//       // the lambda runs to completion, throws, or never runs at all
-//       // (e.g. process teardown / promise discarded before dispatch).
-//   });
-//
-// Move semantics: the source is cleansed immediately after the move so
-// only the live owner retains the secret bytes.  Copies are deleted —
-// duplicating secret material is almost always a bug.
-// ---------------------------------------------------------------------------
-
-template<size_t N>
-class CleansingArray {
-public:
-    CleansingArray() = default;
-
-    ~CleansingArray() noexcept {
-        OPENSSL_cleanse(buf_.data(), N);
-    }
-
-    CleansingArray(CleansingArray &&other) noexcept {
-        buf_ = other.buf_;
-        OPENSSL_cleanse(other.buf_.data(), N);
-    }
-
-    CleansingArray &operator=(CleansingArray &&other) noexcept {
-        if (this != &other) {
-            OPENSSL_cleanse(buf_.data(), N);
-            buf_ = other.buf_;
-            OPENSSL_cleanse(other.buf_.data(), N);
-        }
-        return *this;
-    }
-
-    CleansingArray(const CleansingArray &) = delete;
-    CleansingArray &operator=(const CleansingArray &) = delete;
-
-    uint8_t *data() noexcept { return buf_.data(); }
-    const uint8_t *data() const noexcept { return buf_.data(); }
-    constexpr size_t size() const noexcept { return N; }
-
-private:
-    std::array<uint8_t, N> buf_{};
 };
 
 } // namespace margelo::nitro::nitroavalabscrypto::detail

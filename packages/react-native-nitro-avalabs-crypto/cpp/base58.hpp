@@ -14,8 +14,7 @@
 // Behaviour is unchanged on every build we target, but builds with
 // `-Wdeprecated-declarations` will warn here.  Migrating to `EVP_Digest`
 // is purely future-proofing; defer until / unless OpenSSL drops the legacy
-// API entirely.  Same note applies to `HMAC()` in address_derivation.hpp
-// and slip0010.hpp.
+// API entirely.  Same note applies to `HMAC()` in address_derivation.hpp.
 
 namespace margelo::nitro::nitroavalabscrypto {
 

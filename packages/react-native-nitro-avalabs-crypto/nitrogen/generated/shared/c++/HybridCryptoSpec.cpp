@@ -23,8 +23,10 @@ namespace margelo::nitro::nitroavalabscrypto {
       prototype.registerHybridMethod("verifySchnorr", &HybridCryptoSpec::verifySchnorr);
       prototype.registerHybridMethod("getExtendedPublicKey", &HybridCryptoSpec::getExtendedPublicKey);
       prototype.registerHybridMethod("deriveAddressesFromXpubs", &HybridCryptoSpec::deriveAddressesFromXpubs);
-      prototype.registerHybridMethod("deriveAllAddressesFromPrivateKey", &HybridCryptoSpec::deriveAllAddressesFromPrivateKey);
-      prototype.registerHybridMethod("deriveAllAddressesFromSeed", &HybridCryptoSpec::deriveAllAddressesFromSeed);
+      prototype.registerHybridMethod("deriveAddressesForEvm", &HybridCryptoSpec::deriveAddressesForEvm);
+      prototype.registerHybridMethod("deriveAddressesForSvm", &HybridCryptoSpec::deriveAddressesForSvm);
+      prototype.registerHybridMethod("deriveAddressesForBtc", &HybridCryptoSpec::deriveAddressesForBtc);
+      prototype.registerHybridMethod("deriveAddressesForAvalanche", &HybridCryptoSpec::deriveAddressesForAvalanche);
     });
   }
 

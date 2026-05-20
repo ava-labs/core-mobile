@@ -114,7 +114,8 @@ export const discoverRemainingActiveAccounts = async ({
   startIndex,
   onAccountCreated,
   scanWindow,
-  isSolanaSupportBlocked
+  isSolanaSupportBlocked,
+  isDeveloperMode
 }: {
   walletId: string
   walletType: WalletType
@@ -122,6 +123,7 @@ export const discoverRemainingActiveAccounts = async ({
   onAccountCreated?: (account: Account) => void
   scanWindow?: number
   isSolanaSupportBlocked: boolean
+  isDeveloperMode?: boolean
 }): Promise<{ accounts: AccountCollection; accountIds: string[] }> => {
   const toastId = uuid()
   const shouldShowToast = walletType !== WalletType.SEEDLESS
@@ -138,7 +140,8 @@ export const discoverRemainingActiveAccounts = async ({
         startIndex,
         onAccountCreated,
         scanWindow,
-        isSolanaSupportBlocked
+        isSolanaSupportBlocked,
+        isDeveloperMode
       })
 
     const accountIds = Object.keys(accounts)
@@ -182,13 +185,15 @@ export const migrateRemainingActiveAccounts = async ({
   walletId,
   walletType,
   startIndex,
-  scanWindow
+  scanWindow,
+  isDeveloperMode
 }: {
   listenerApi: AppListenerEffectAPI
   walletId: string
   walletType: WalletType
   startIndex: number
   scanWindow?: number
+  isDeveloperMode?: boolean
 }): Promise<void> => {
   const { getState, dispatch } = listenerApi
   dispatch(setIsMigratingActiveAccounts(true))
@@ -246,6 +251,7 @@ export const migrateRemainingActiveAccounts = async ({
       startIndex,
       scanWindow,
       isSolanaSupportBlocked,
+      isDeveloperMode,
       onAccountCreated: isSeedless
         ? undefined
         : account => {

@@ -17,8 +17,8 @@
 namespace margelo::nitro::nitroavalabscrypto { struct ExtendedPublicKey; }
 // Forward declaration of `DerivedSecp256k1Addresses` to properly resolve imports.
 namespace margelo::nitro::nitroavalabscrypto { struct DerivedSecp256k1Addresses; }
-// Forward declaration of `DerivedAllAddresses` to properly resolve imports.
-namespace margelo::nitro::nitroavalabscrypto { struct DerivedAllAddresses; }
+// Forward declaration of `DerivedAvalancheAddresses` to properly resolve imports.
+namespace margelo::nitro::nitroavalabscrypto { struct DerivedAvalancheAddresses; }
 
 #include <NitroModules/ArrayBuffer.hpp>
 #include <string>
@@ -28,7 +28,7 @@ namespace margelo::nitro::nitroavalabscrypto { struct DerivedAllAddresses; }
 #include "DerivedSecp256k1Addresses.hpp"
 #include <vector>
 #include <NitroModules/Promise.hpp>
-#include "DerivedAllAddresses.hpp"
+#include "DerivedAvalancheAddresses.hpp"
 
 namespace margelo::nitro::nitroavalabscrypto {
 
@@ -70,8 +70,10 @@ namespace margelo::nitro::nitroavalabscrypto {
       virtual bool verifySchnorr(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& publicKey, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& messageHash, const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& signature) = 0;
       virtual ExtendedPublicKey getExtendedPublicKey(const std::variant<std::shared_ptr<ArrayBuffer>, std::string>& secretKey) = 0;
       virtual std::shared_ptr<Promise<std::vector<DerivedSecp256k1Addresses>>> deriveAddressesFromXpubs(const std::string& evmXpub, const std::vector<std::string>& avalancheXpubs, bool isTestnet, const std::vector<double>& accountIndices) = 0;
-      virtual DerivedAllAddresses deriveAllAddressesFromPrivateKey(const std::shared_ptr<ArrayBuffer>& privateKey, bool isTestnet) = 0;
-      virtual std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>> deriveAllAddressesFromSeed(const std::shared_ptr<ArrayBuffer>& seed, const std::vector<double>& accountIndices, bool isTestnet) = 0;
+      virtual std::vector<std::string> deriveAddressesForEvm(const std::vector<std::shared_ptr<ArrayBuffer>>& publicKeys) = 0;
+      virtual std::vector<std::string> deriveAddressesForSvm(const std::vector<std::shared_ptr<ArrayBuffer>>& publicKeys) = 0;
+      virtual std::vector<std::string> deriveAddressesForBtc(const std::vector<std::shared_ptr<ArrayBuffer>>& publicKeys, bool isTestnet) = 0;
+      virtual std::vector<DerivedAvalancheAddresses> deriveAddressesForAvalanche(const std::vector<std::shared_ptr<ArrayBuffer>>& avalanchePublicKeys, const std::vector<std::shared_ptr<ArrayBuffer>>& evmPublicKeys, bool isTestnet) = 0;
 
     protected:
       // Hybrid Setup

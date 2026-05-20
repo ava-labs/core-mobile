@@ -18,7 +18,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { isEvmPublicKey } from 'utils/publicKeys'
+import { emptyAddresses, isEvmPublicKey } from 'utils/publicKeys'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -38,9 +38,6 @@ import { SentryTag } from 'services/sentry/types'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import WalletService from 'services/wallet/WalletService'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import { mnemonicToSeed } from 'bip39'
-import { deriveAllAddressesFromSeed } from 'react-native-nitro-avalabs-crypto'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import {
   AvalancheXpGetBalancesRequestItem,
@@ -60,7 +57,6 @@ type DiscoveredSeedBasedAccount = {
 
 const DEFAULT_ACTIVITY_SCAN_WINDOW = 6
 const INITIAL_ACTIVITY_SCAN_WINDOW = 2
-const MAX_PARALLEL_ADDRESS_DERIVATIONS = 3
 const MAX_PARALLEL_ACTIVITY_CHECKS = 3
 const MAX_PARALLEL_XPUB_LOOKUPS = 3
 const TRANSACTION_HISTORY_PAGE_SIZE = 1
@@ -276,16 +272,60 @@ class AccountsService {
     const reloadedAccounts: AccountCollection = {}
     const isLedgerWallet =
       walletType === WalletType.LEDGER || walletType === WalletType.LEDGER_LIVE
+    const accountEntries = Object.entries(accounts)
 
-    for (const [key, account] of Object.entries(accounts)) {
-      const addresses = await this.getAccountAddresses({
-        account,
-        ledgerAddressesCollection,
-        isLedgerWallet,
+    // For non-Ledger wallets, derive addresses for all accounts in one
+    // ModuleManager.deriveAllAddresses call instead of N sequential
+    // getAddresses calls. Ledger wallets reuse stored addresses (no
+    // derivation), so they stay on the per-account getAccountAddresses
+    // path which just plucks from ledgerAddressesCollection.
+    let derivedByIndex: Map<number, Record<NetworkVMType, string>> | undefined
+    if (!isLedgerWallet && accountEntries.length > 0) {
+      const batch = await ModuleManager.deriveAllAddresses({
         walletId,
         walletType,
-        isTestnet
+        accountIndices: accountEntries.map(([, account]) => account.index),
+        network: { isTestnet } as Network
       })
+      // Defensive: deriveAllAddresses contracts to return one entry per
+      // requested index, but enforce it at the boundary so a contract
+      // violation throws here instead of silently overwriting account
+      // addresses with `emptyAddresses()` in the loop below. Only EVM
+      // would otherwise surface (via resolveAddressC's Sentry log);
+      // BTC/AVM/PVM/SVM would zero out and persist with no signal.
+      if (batch.length !== accountEntries.length) {
+        throw new Error(
+          `reloadAccounts: deriveAllAddresses returned ${batch.length} entries for ${accountEntries.length} accounts`
+        )
+      }
+      derivedByIndex = new Map(
+        batch.map(entry => [entry.accountIndex, entry.addresses])
+      )
+    }
+
+    for (const [key, account] of accountEntries) {
+      let addresses: Record<NetworkVMType, string>
+      if (isLedgerWallet) {
+        addresses = await this.getAccountAddresses({
+          account,
+          ledgerAddressesCollection,
+          isLedgerWallet,
+          walletId,
+          walletType,
+          isTestnet
+        })
+      } else {
+        // Companion to the length check above — if a specific index is
+        // missing from the batch result, treat it as a contract violation
+        // rather than silently substituting empty addresses.
+        const derived = derivedByIndex?.get(account.index)
+        if (!derived) {
+          throw new Error(
+            `reloadAccounts: no derived addresses for accountIndex ${account.index}`
+          )
+        }
+        addresses = derived
+      }
 
       const addressC = this.resolveAddressC({
         derived: addresses[NetworkVMType.EVM],
@@ -426,12 +466,14 @@ class AccountsService {
       isTestnet
     } as Network
 
-    return await ModuleManager.deriveAddresses({
+    const results = await ModuleManager.deriveAllAddresses({
       walletId,
       walletType,
-      accountIndex,
+      accountIndices: [accountIndex ?? 0],
       network
     })
+
+    return results[0]?.addresses ?? emptyAddresses()
   }
 
   async getAccountName({
@@ -455,7 +497,8 @@ class AccountsService {
     startIndex,
     onAccountCreated,
     scanWindow,
-    isSolanaSupportBlocked
+    isSolanaSupportBlocked,
+    isDeveloperMode
   }: {
     walletId: string
     walletType: WalletType
@@ -463,6 +506,7 @@ class AccountsService {
     onAccountCreated?: (account: Account) => void
     scanWindow?: number
     isSolanaSupportBlocked: boolean
+    isDeveloperMode?: boolean
   }): Promise<{ accounts: AccountCollection; completedCleanly: boolean }> {
     /**
      * note:
@@ -480,6 +524,7 @@ class AccountsService {
         walletType,
         startIndex,
         isSolanaSupportBlocked,
+        isDeveloperMode,
         ...(scanWindow !== undefined && { scanWindow })
       })
 
@@ -490,7 +535,8 @@ class AccountsService {
         discoveredAccounts: discovery.accounts,
         startIndex,
         walletId,
-        walletType
+        walletType,
+        isDeveloperMode
       })
 
       for (const discoveredAccount of contiguousAccounts) {
@@ -546,12 +592,14 @@ class AccountsService {
     discoveredAccounts,
     startIndex,
     walletId,
-    walletType
+    walletType,
+    isDeveloperMode
   }: {
     discoveredAccounts: DiscoveredSeedBasedAccount[]
     startIndex: number
     walletId: string
     walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
+    isDeveloperMode?: boolean
   }): Promise<DiscoveredSeedBasedAccount[]> {
     if (discoveredAccounts.length === 0) {
       return discoveredAccounts
@@ -559,21 +607,45 @@ class AccountsService {
 
     const maxIndex = Math.max(...discoveredAccounts.map(a => a.index))
     const byIndex = new Map(discoveredAccounts.map(a => [a.index, a]))
-    const contiguous: DiscoveredSeedBasedAccount[] = []
 
+    // Collect every missing index first, then batch-derive them all in
+    // one ModuleManager.deriveAllAddresses call instead of N sequential
+    // getAddresses calls. Most discoveries have zero gaps, so this loop
+    // is a no-op in the hot path; when gaps exist (e.g. transient
+    // 'unknown' activity probes leaving non-contiguous indices), we
+    // collapse N round-trips into 1.
+    const gapIndices: number[] = []
+    for (let idx = startIndex; idx <= maxIndex; idx++) {
+      if (!byIndex.has(idx)) gapIndices.push(idx)
+    }
+
+    const gapAddressesByIndex = new Map<number, Record<NetworkVMType, string>>()
+    if (gapIndices.length > 0) {
+      const batch = await ModuleManager.deriveAllAddresses({
+        walletId,
+        walletType,
+        accountIndices: gapIndices,
+        network: { isTestnet: !!isDeveloperMode } as Network
+      })
+      batch.forEach(entry => {
+        gapAddressesByIndex.set(entry.accountIndex, entry.addresses)
+      })
+    }
+
+    const contiguous: DiscoveredSeedBasedAccount[] = []
     for (let idx = startIndex; idx <= maxIndex; idx++) {
       const existing = byIndex.get(idx)
       if (existing) {
         contiguous.push(existing)
-      } else {
-        const addresses = await this.getAddresses({
-          walletId,
-          walletType,
-          accountIndex: idx,
-          isTestnet: false
-        })
-        contiguous.push({ id: `scan-${idx}`, index: idx, addresses })
+        continue
       }
+      const addresses = gapAddressesByIndex.get(idx)
+      if (!addresses) {
+        throw new Error(
+          `fillDiscoveredAccountGaps: missing gap addresses for index ${idx}`
+        )
+      }
+      contiguous.push({ id: `scan-${idx}`, index: idx, addresses })
     }
 
     return contiguous
@@ -587,7 +659,8 @@ class AccountsService {
     startIndex = 1, // start from 1 because we assume the first account is always active
     maxScan = 1000,
     scanWindow = DEFAULT_ACTIVITY_SCAN_WINDOW,
-    isSolanaSupportBlocked
+    isSolanaSupportBlocked,
+    isDeveloperMode
   }: {
     walletId: string
     walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
@@ -596,6 +669,7 @@ class AccountsService {
     maxScan?: number
     scanWindow?: number
     isSolanaSupportBlocked: boolean
+    isDeveloperMode?: boolean
   }): Promise<{
     accounts: DiscoveredSeedBasedAccount[]
     completedCleanly: boolean
@@ -611,293 +685,153 @@ class AccountsService {
 
     await ModuleManager.init()
 
-    const network = { isTestnet: false } as Network
+    const network = { isTestnet: !!isDeveloperMode } as Network
+    // Skip Solana module + vmNetwork construction when the Posthog gate is
+    // off — saves the loadModuleByNetwork round-trip and downstream activity
+    // probes have no module to call against.
     const [evmModule, bitcoinModule, solanaModule, avalancheModule] =
       await Promise.all([
         ModuleManager.loadModuleByNetwork(AVALANCHE_MAINNET_NETWORK),
         ModuleManager.loadModuleByNetwork(BITCOIN_NETWORK),
-        ModuleManager.loadModuleByNetwork(NETWORK_SOLANA),
+        isSolanaSupportBlocked
+          ? Promise.resolve(undefined)
+          : ModuleManager.loadModuleByNetwork(NETWORK_SOLANA),
         ModuleManager.loadModuleByNetwork(NETWORK_X)
       ])
 
     const vmNetworks = {
       evm: mapToVmNetwork(AVALANCHE_MAINNET_NETWORK),
       bitcoin: mapToVmNetwork(BITCOIN_NETWORK),
-      solana: mapToVmNetwork(NETWORK_SOLANA),
+      solana: isSolanaSupportBlocked
+        ? undefined
+        : mapToVmNetwork(NETWORK_SOLANA),
       avm: mapToVmNetwork(NETWORK_X),
       pvm: mapToVmNetwork(NETWORK_P)
     }
 
-    // For mnemonic wallets, cache the seed so the per-account task can use
-    // a single native call (deriveAllAddressesFromSeed) that does ALL crypto
-    // on a native background thread — zero JS thread crypto work (CP-14062).
-    //
-    // Cleartext-window cleansing covers two distinct buffers:
-    //   (1) `seedBuffer` — the ArrayBuffer copy we pass across the Nitro
-    //       bridge. The .slice() above produces an independent buffer the
-    //       caller owns; we zero it in the finally below.
-    //   (2) `seed` — the Node Buffer returned by bip39.mnemonicToSeed,
-    //       backed by its own ArrayBuffer (possibly a slice of bip39's pbkdf2
-    //       output pool). Filling only (1) leaves the cleartext bytes in (2)
-    //       live until GC. We hoist `seed` here so the same finally block can
-    //       zero both, bounding the cleartext window to this function's
-    //       lifetime regardless of which path it takes.
-    //
-    // Caveat unchanged from bigintToArrayBuffer32 in Crypto.ts: the JS heap
-    // can't be OPENSSL_cleansed from C++, and any pbkdf2 intermediates that
-    // bip39 made internally are out of our reach.
-    let seedBuffer: ArrayBuffer | undefined
-    let seed: Buffer | undefined
-    // Separate state flag from data: `useNativeBatch` gates the per-window
-    // native path. Flipped to false on first native failure so subsequent
-    // windows fall through to the JS path. The buffer references are kept
-    // until the outer finally cleanses them — they are not used as flags.
-    let useNativeBatch = false
-    if (walletType === WalletType.MNEMONIC) {
+    while (i < startIndex + maxScan) {
+      const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
+      const windowSize = windowEnd - i
+      const windowIndices = Array.from({ length: windowSize }, (_, k) => i + k)
+
+      // Batched derive: all-or-nothing per window. Per-account isolation
+      // isn't meaningful — the realistic failure modes (wallet locked,
+      // factory unavailable) fail every slot anyway. On failure we log,
+      // mark the discovery as stopped due to error, and exit.
+      let windowAccounts: DiscoveredSeedBasedAccount[]
       try {
-        const secret = await BiometricsSDK.loadWalletSecret(walletId)
-        if (secret.success) {
-          seed = await mnemonicToSeed(secret.value)
-          seedBuffer = seed.buffer.slice(
-            seed.byteOffset,
-            seed.byteOffset + seed.byteLength
-          ) as ArrayBuffer
-          useNativeBatch = true
-        }
-      } catch (error) {
-        Logger.error(
-          'Failed to load seed for native path, using JS fallback',
-          error
-        )
+        const batch = await ModuleManager.deriveAllAddresses({
+          walletId,
+          walletType,
+          accountIndices: windowIndices,
+          network
+        })
+        windowAccounts = windowIndices.map((index, k) => {
+          const entry = batch[k]
+          if (!entry) {
+            throw new Error(
+              `deriveAllAddresses returned no result for window slot ${k}`
+            )
+          }
+          // When the Solana gate is off, drop the SVM address before it
+          // flows into the balance batch (Solana namespace request) and
+          // the secondary activity probe. The probe itself is already
+          // gated; clearing here also keeps SVM out of the balance call
+          // in getSeedBasedBalanceActiveAccountIds.
+          const addresses = isSolanaSupportBlocked
+            ? { ...entry.addresses, [NetworkVMType.SVM]: '' }
+            : entry.addresses
+          return { id: `scan-${index}`, index, addresses }
+        })
+      } catch (reason) {
+        Logger.error('Error deriving addresses for account activity scan', {
+          windowIndices,
+          reason
+        })
+        stoppedDueToError = true
+        break
       }
-    }
 
-    try {
-      while (i < startIndex + maxScan) {
-        const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
-        const windowSize = windowEnd - i
-
-        const windowIndices = Array.from(
-          { length: windowSize },
-          (_, k) => i + k
-        )
-
-        // Native path for mnemonic wallets: derive the entire window in one
-        // native call (single Promise round-trip, single seed copy) instead of
-        // per-account calls that underutilize the batching (CP-14062).
-        // On native failure, flip useNativeBatch off so subsequent windows
-        // fall through to the JS path; discovery still completes.
-        let nativeResults:
-          | PromiseSettledResult<Record<NetworkVMType, string>>[]
-          | undefined
-
-        if (useNativeBatch && seedBuffer) {
-          try {
-            const results = await deriveAllAddressesFromSeed(
-              seedBuffer,
-              windowIndices,
-              !!network.isTestnet
-            )
-
-            nativeResults = windowIndices.map((accountIndex, k) => {
-              const r = results[k]
-              if (!r) {
-                // A missing slot means the native call returned fewer
-                // results than requested for this window. Treat it as a
-                // per-account failure so downstream activity detection
-                // doesn't misclassify it as "valid but inactive" — the JS
-                // fallback path returns status: 'rejected' for per-account
-                // failures, so mirror that here.
-                return {
-                  status: 'rejected' as const,
-                  reason: new Error(
-                    `Native deriveAllAddressesFromSeed returned no result for accountIndex ${accountIndex} (window slot ${k})`
-                  )
-                }
-              }
-              return {
-                status: 'fulfilled' as const,
-                value: {
-                  [NetworkVMType.EVM]: r.evm,
-                  [NetworkVMType.BITCOIN]: r.btc,
-                  [NetworkVMType.AVM]: r.avm,
-                  [NetworkVMType.PVM]: r.pvm,
-                  [NetworkVMType.CoreEth]: r.coreEth,
-                  // Honor the Solana support Posthog gate: when blocked,
-                  // clear the natively-derived SVM address so it isn't
-                  // eagerly persisted onto discovered accounts. The JS
-                  // fallback path (ModuleManager.deriveAddresses) achieves
-                  // the same by omitting the Solana module entirely.
-                  [NetworkVMType.SVM]: isSolanaSupportBlocked ? '' : r.solana,
-                  [NetworkVMType.HVM]: ''
-                }
-              }
-            })
-          } catch (error) {
-            Logger.error(
-              'Native deriveAllAddressesFromSeed failed, falling back to JS',
-              error
-            )
-            // Disable the native path for this and all subsequent windows so
-            // discovery can complete via the JS fallback. Cleanse the seed
-            // bytes eagerly to shrink the cleartext window — the outer
-            // finally still runs, but `.fill(0)` is idempotent.
-            useNativeBatch = false
-            new Uint8Array(seedBuffer).fill(0)
-            if (seed) {
-              seed.fill(0)
-            }
-          }
-        }
-
-        const addressResults: PromiseSettledResult<
-          Record<NetworkVMType, string>
-        >[] =
-          nativeResults ??
-          (await runWithConcurrency({
-            items: windowIndices,
-            concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
-            task: async accountIndex => {
-              try {
-                return {
-                  status: 'fulfilled',
-                  value: await ModuleManager.deriveAddresses({
-                    walletId,
-                    walletType,
-                    accountIndex,
-                    network
-                  })
-                } as PromiseSettledResult<Record<NetworkVMType, string>>
-              } catch (reason) {
-                return {
-                  status: 'rejected',
-                  reason
-                } as PromiseSettledResult<Record<NetworkVMType, string>>
-              }
-            }
-          }))
-
-        const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
-          if (result.status !== 'fulfilled') {
-            return []
-          }
-
-          return [
-            {
-              id: `scan-${i + k}`,
-              index: i + k,
-              addresses: result.value
-            }
-          ]
+      const balanceActiveAccountIds =
+        await this.getSeedBasedBalanceActiveAccountIds({
+          walletId,
+          walletType,
+          accounts: windowAccounts
         })
 
-        const balanceActiveAccountIds =
-          await this.getSeedBasedBalanceActiveAccountIds({
+      let shouldStop = false
+      let foundActiveInWindow = false
+
+      await processInOrderWithConcurrency({
+        count: windowAccounts.length,
+        concurrency: Math.min(MAX_PARALLEL_ACTIVITY_CHECKS, windowSize),
+        task: async k => {
+          const account = windowAccounts[k]
+          if (!account) {
+            return 'unknown' as const
+          }
+
+          if (balanceActiveAccountIds.has(account.id)) {
+            return 'active' as const
+          }
+
+          return this.getSeedBasedActivityStatus({
             walletId,
             walletType,
-            accounts: discoveredWindowAccounts
+            accountIndex: account.index,
+            addresses: account.addresses,
+            modules: {
+              evmModule,
+              bitcoinModule,
+              solanaModule,
+              avalancheModule
+            },
+            vmNetworks
           })
+        },
+        onResult: async (status, k) => {
+          if (status === 'unknown') {
+            stoppedDueToError = true
+            shouldStop = true
+            return false
+          }
 
-        let shouldStop = false
-        let foundActiveInWindow = false
-
-        await processInOrderWithConcurrency({
-          count: addressResults.length,
-          concurrency: Math.min(MAX_PARALLEL_ACTIVITY_CHECKS, windowSize),
-          task: async k => {
-            const result = addressResults[k]
-
-            if (!result) {
-              return 'unknown' as const
-            }
-
-            if (result?.status === 'rejected') {
-              Logger.error(
-                'Error deriving addresses for account activity scan',
-                {
-                  accountIndex: i + k,
-                  reason: result.reason
-                }
-              )
-              return 'unknown' as const
-            }
-
-            const discoveredAccountId = `scan-${i + k}`
-            if (balanceActiveAccountIds.has(discoveredAccountId)) {
-              return 'active' as const
-            }
-
-            return this.getSeedBasedActivityStatus({
-              walletId,
-              walletType,
-              accountIndex: i + k,
-              addresses: result.value,
-              modules: {
-                evmModule,
-                bitcoinModule,
-                solanaModule,
-                avalancheModule
-              },
-              vmNetworks
-            })
-          },
-          onResult: async (status, k) => {
-            const addressResult = addressResults[k]
-
-            if (status === 'unknown') {
+          if (status === 'active') {
+            const account = windowAccounts[k]
+            if (!account) {
               stoppedDueToError = true
               shouldStop = true
               return false
             }
-
-            if (status === 'active') {
-              if (addressResult?.status !== 'fulfilled') {
-                stoppedDueToError = true
-                shouldStop = true
-                return false
-              }
-
-              foundActiveInWindow = true
-              discoveredAccounts.push({
-                id: `scan-${i + k}`,
-                index: i + k,
-                addresses: addressResult.value
-              })
-              consecutiveInactive = 0
-              return true
-            }
-
-            consecutiveInactive++
-            if (consecutiveInactive >= maxConsecutiveInactive) {
-              shouldStop = true
-              return false
-            }
-
+            foundActiveInWindow = true
+            discoveredAccounts.push(account)
+            consecutiveInactive = 0
             return true
           }
-        })
 
-        if (shouldStop) break
-        i = windowEnd
-        if (foundActiveInWindow) {
-          currentScanWindow = Math.min(
-            scanWindow,
-            Math.max(maxConsecutiveInactive, currentScanWindow * 2)
-          )
+          consecutiveInactive++
+          if (consecutiveInactive >= maxConsecutiveInactive) {
+            shouldStop = true
+            return false
+          }
+
+          return true
         }
-      }
+      })
 
-      return {
-        accounts: discoveredAccounts,
-        completedCleanly: !stoppedDueToError
+      if (shouldStop) break
+      i = windowEnd
+      if (foundActiveInWindow) {
+        currentScanWindow = Math.min(
+          scanWindow,
+          Math.max(maxConsecutiveInactive, currentScanWindow * 2)
+        )
       }
-    } finally {
-      if (seedBuffer) {
-        new Uint8Array(seedBuffer).fill(0)
-      }
-      if (seed) {
-        seed.fill(0)
-      }
+    }
+
+    return {
+      accounts: discoveredAccounts,
+      completedCleanly: !stoppedDueToError
     }
   }
 
@@ -1142,9 +1076,12 @@ class AccountsService {
       bitcoinModule: Awaited<
         ReturnType<typeof ModuleManager.loadModuleByNetwork>
       >
-      solanaModule: Awaited<
-        ReturnType<typeof ModuleManager.loadModuleByNetwork>
-      >
+      // Undefined when the Solana Posthog gate is off — see
+      // discoverSeedBasedActiveAccounts. The secondary probe below skips
+      // Solana when either the module or network is missing.
+      solanaModule:
+        | Awaited<ReturnType<typeof ModuleManager.loadModuleByNetwork>>
+        | undefined
       avalancheModule: Awaited<
         ReturnType<typeof ModuleManager.loadModuleByNetwork>
       >
@@ -1152,7 +1089,7 @@ class AccountsService {
     vmNetworks: {
       evm: ReturnType<typeof mapToVmNetwork>
       bitcoin: ReturnType<typeof mapToVmNetwork>
-      solana: ReturnType<typeof mapToVmNetwork>
+      solana: ReturnType<typeof mapToVmNetwork> | undefined
       avm: ReturnType<typeof mapToVmNetwork>
       pvm: ReturnType<typeof mapToVmNetwork>
     }
@@ -1183,18 +1120,25 @@ class AccountsService {
       return primaryProbe.hadError ? 'unknown' : 'inactive'
     }
 
-    const secondaryProbe = await this.runActivityProbes([
+    const secondaryProbes: Promise<boolean>[] = [
       this.hasTransactionHistory({
         module: modules.bitcoinModule,
         network: vmNetworks.bitcoin,
         address: addresses[NetworkVMType.BITCOIN]
-      }),
-      this.hasTransactionHistory({
-        module: modules.solanaModule,
-        network: vmNetworks.solana,
-        address: addresses[NetworkVMType.SVM]
       })
-    ])
+    ]
+    // Skip the Solana probe when the gate is off — both module and network
+    // are undefined in that case (see discoverSeedBasedActiveAccounts).
+    if (modules.solanaModule && vmNetworks.solana) {
+      secondaryProbes.push(
+        this.hasTransactionHistory({
+          module: modules.solanaModule,
+          network: vmNetworks.solana,
+          address: addresses[NetworkVMType.SVM]
+        })
+      )
+    }
+    const secondaryProbe = await this.runActivityProbes(secondaryProbes)
 
     if (secondaryProbe.isActive) {
       return 'active'

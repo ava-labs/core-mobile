@@ -46,17 +46,15 @@ export interface DerivedSecp256k1Addresses {
 }
 
 /**
- * All addresses for one account index derived from BIP39 seed.
- * Returned by deriveAllAddressesFromSeed.
+ * Avalanche-network address bundle returned by deriveAddressesForAvalanche.
+ * The C-chain bech32 deliberately uses the EVM-derived pubkey with the
+ * avax/fuji HRP — that's why the API takes an evmPublicKey alongside the
+ * avalanchePublicKey.
  */
-export interface DerivedAllAddresses {
-  accountIndex: number
-  evm: string // 0x-prefixed EIP-55 checksummed address
-  btc: string // bech32 P2WPKH (bc1… / tb1…)
-  avm: string // X-{bech32}
-  pvm: string // P-{bech32}
-  coreEth: string // C-{bech32}
-  solana: string // base58-encoded Ed25519 public key
+export interface DerivedAvalancheAddresses {
+  x: string // X-{bech32}, from avalanche pubkey
+  p: string // P-{bech32}, from avalanche pubkey
+  coreEth: string // C-{bech32}, from evm pubkey
 }
 
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
@@ -155,53 +153,70 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   ): Promise<DerivedSecp256k1Addresses[]>
 
   /**
-   * Derive ALL addresses (secp256k1 + Ed25519) from a single 32-byte raw
-   * private key.  Used by the imported-private-key flow, where the same
-   * 32-byte secret feeds both curves: secp256k1 for EVM / BTC / Avalanche
-   * chains, and Ed25519 for Solana (RFC 8032 §5.1.5 — SHA-512 + clamp +
-   * scalar × base, no SLIP-0010 derivation path since there is no seed).
+   * Derive EVM (EIP-55 checksummed) addresses from a batch of 33-byte
+   * compressed secp256k1 public keys.
    *
-   * Synchronous — single-key work is dominated by one secp256k1
-   * pubkey_create + one Ed25519 pubkey derivation + a few hashes (<1 ms in
-   * practice). Bridge overhead of an async Promise would dwarf it.
+   * Synchronous — per-pubkey work is keccak-256 + checksum (~50 µs).
+   * Results are returned in the same order as `publicKeys`, so callers can
+   * map address ↔ publicKey/accountIndex by position.
    *
-   * The returned `accountIndex` is always 0 — there is no derivation index
-   * for a raw imported key. The field is kept for ABI parity with the
-   * seed-based batch result.
-   *
-   * @param privateKey  32-byte ArrayBuffer holding the raw secret. The same
-   *                    bytes are interpreted as a secp256k1 scalar
-   *                    (validated against curve order) AND as an Ed25519
-   *                    secret (any bit pattern is valid after clamping).
-   * @param isTestnet   true → fuji HRP + tb1 BTC prefix; false → avax + bc1
-   * @returns one DerivedAllAddresses computed from the key
+   * @param publicKeys array of 33-byte compressed secp256k1 pubkeys
+   * @returns array of 0x-prefixed EIP-55 addresses, one per input
    */
-  deriveAllAddressesFromPrivateKey(
-    privateKey: ArrayBuffer,
-    isTestnet: boolean
-  ): DerivedAllAddresses
+  deriveAddressesForEvm(publicKeys: ArrayBuffer[]): string[]
 
   /**
-   * Derive ALL addresses (secp256k1 + Ed25519) for multiple account indices
-   * from a BIP39 seed in a single native call.  Runs entirely on a native
-   * background thread — the JS thread does zero crypto work.
+   * Derive Solana addresses (base58-encoded Ed25519 public keys) from a
+   * batch of 32-byte Ed25519 public keys.
    *
-   * Internally performs:
-   * - BIP32 root from seed (HMAC-SHA512, once)
-   * - EVM xpub at m/44'/60'/0' (hardened, once)
-   * - Per account: Avalanche xpub at m/44'/9000'/{i}' (hardened)
-   * - Per account: all secp256k1 addresses from xpubs
-   * - Per account: Solana via SLIP-0010 m/44'/501'/{i}'/0'
-   * - Seed bytes zeroed with OPENSSL_cleanse after use
+   * Synchronous — base58 encoding only.
+   * Results are returned in the same order as `publicKeys`.
    *
-   * @param seed           64-byte BIP39 seed (ArrayBuffer)
-   * @param accountIndices account indices to derive
-   * @param isTestnet      true → fuji/tb1; false → avax/bc1
-   * @returns one DerivedAllAddresses per index
+   * @param publicKeys array of 32-byte Ed25519 pubkeys
+   * @returns array of base58-encoded addresses, one per input
    */
-  deriveAllAddressesFromSeed(
-    seed: ArrayBuffer,
-    accountIndices: number[],
+  deriveAddressesForSvm(publicKeys: ArrayBuffer[]): string[]
+
+  /**
+   * Derive Bitcoin P2WPKH bech32 addresses from a batch of 33-byte
+   * compressed secp256k1 public keys.
+   *
+   * In this codebase BTC and EVM share the same derivation path
+   * (m/44'/60'/0'/0/{i}), so the same compressed pubkey works for both.
+   *
+   * Synchronous — Hash160 + bech32 (~30 µs per input).
+   * Results are returned in the same order as `publicKeys`.
+   *
+   * @param publicKeys array of 33-byte compressed secp256k1 pubkeys
+   * @param isTestnet  true → tb1… (testnet); false → bc1… (mainnet)
+   * @returns array of bech32 addresses, one per input
+   */
+  deriveAddressesForBtc(publicKeys: ArrayBuffer[], isTestnet: boolean): string[]
+
+  /**
+   * Derive Avalanche-network address bundles (X-, P-, C-bech32) from a
+   * batch of pubkey pairs supplied as two parallel arrays.
+   *
+   * - X-/P-:   computed from `avalanchePublicKeys[i]` (m/44'/9000'/{i}'/0/0)
+   * - CoreEth: computed from `evmPublicKeys[i]`       (m/44'/60'/0'/0/{i})
+   *
+   * The C-chain bech32 deliberately uses the EVM-derived pubkey with the
+   * avax/fuji HRP (see derive_addresses_for_index in address_derivation.hpp).
+   *
+   * `avalanchePublicKeys` and `evmPublicKeys` must have the same length;
+   * results are returned in that same order so callers can map by
+   * publicKey/accountIndex by position.
+   *
+   * Synchronous — 2× Hash160 + 3× bech32 (~80 µs per pair).
+   *
+   * @param avalanchePublicKeys array of 33-byte compressed secp256k1 pubkeys at m/44'/9000'/…
+   * @param evmPublicKeys       array of 33-byte compressed secp256k1 pubkeys at m/44'/60'/…
+   * @param isTestnet           true → fuji HRP; false → avax HRP
+   * @returns array of { x, p, coreEth } bech32 bundles, one per pair
+   */
+  deriveAddressesForAvalanche(
+    avalanchePublicKeys: ArrayBuffer[],
+    evmPublicKeys: ArrayBuffer[],
     isTestnet: boolean
-  ): Promise<DerivedAllAddresses[]>
+  ): DerivedAvalancheAddresses[]
 }

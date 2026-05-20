@@ -74,14 +74,24 @@ namespace margelo::nitro::nitroavalabscrypto {
                 bool isTestnet,
                 const std::vector<double> &accountIndices) override;
 
-        std::shared_ptr<Promise<std::vector<DerivedAllAddresses>>>
-        deriveAllAddressesFromSeed(
-                const std::shared_ptr<ArrayBuffer> &seed,
-                const std::vector<double> &accountIndices,
+        // ---- Per-chain address derivation from already-derived pubkeys ----
+        // Thin wrappers over the helpers in address_derivation.hpp. Caller
+        // already paid the BIP32/BIP44 cost via wallet.getPublicKeyFor.
+        // Each method takes a batch of pubkeys and returns parallel results
+        // so callers can map address ↔ publicKey/accountIndex by position.
+        std::vector<std::string> deriveAddressesForEvm(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys) override;
+
+        std::vector<std::string> deriveAddressesForSvm(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys) override;
+
+        std::vector<std::string> deriveAddressesForBtc(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &publicKeys,
                 bool isTestnet) override;
 
-        DerivedAllAddresses deriveAllAddressesFromPrivateKey(
-                const std::shared_ptr<ArrayBuffer> &privateKey,
+        std::vector<DerivedAvalancheAddresses> deriveAddressesForAvalanche(
+                const std::vector<std::shared_ptr<ArrayBuffer>> &avalanchePublicKeys,
+                const std::vector<std::shared_ptr<ArrayBuffer>> &evmPublicKeys,
                 bool isTestnet) override;
 
     protected:

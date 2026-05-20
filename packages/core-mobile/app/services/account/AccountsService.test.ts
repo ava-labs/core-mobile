@@ -11,7 +11,7 @@ jest.mock('vmModule/ModuleManager', () => ({
   default: {
     init: jest.fn(),
     loadModuleByNetwork: jest.fn(),
-    deriveAddresses: jest.fn()
+    deriveAllAddresses: jest.fn()
   }
 }))
 
@@ -173,19 +173,22 @@ describe('AccountsService', () => {
       ;(WalletService.getRawXpubXP as jest.Mock)
         .mockResolvedValueOnce('xpub-1')
         .mockResolvedValueOnce('xpub-2')
-      ;(ModuleManager.deriveAddresses as jest.Mock)
-        .mockResolvedValueOnce(
-          createAddresses({
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockResolvedValueOnce([
+        {
+          accountIndex: 1,
+          addresses: createAddresses({
             [NetworkVMType.EVM]: '0x111',
             [NetworkVMType.BITCOIN]: 'bc1-active'
           })
-        )
-        .mockResolvedValueOnce(
-          createAddresses({
+        },
+        {
+          accountIndex: 2,
+          addresses: createAddresses({
             [NetworkVMType.EVM]: '0x222',
             [NetworkVMType.BITCOIN]: 'bc1-inactive'
           })
-        )
+        }
+      ])
       ;(streamingBalanceApiClient.getBalances as jest.Mock).mockReturnValue(
         createBalanceStream({
           networkType: 'btc',
@@ -251,10 +254,14 @@ describe('AccountsService', () => {
 
     it('logs and falls back when the balance batch fails', async () => {
       ;(WalletService.getRawXpubXP as jest.Mock).mockResolvedValue('xpub-1')
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        createAddresses({
-          [NetworkVMType.EVM]: '0x111'
-        })
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockImplementation(
+        async ({ accountIndices }: { accountIndices: number[] }) =>
+          accountIndices.map(accountIndex => ({
+            accountIndex,
+            addresses: createAddresses({
+              [NetworkVMType.EVM]: '0x111'
+            })
+          }))
       )
       ;(streamingBalanceApiClient.getBalances as jest.Mock).mockImplementation(
         async function* () {
@@ -301,11 +308,14 @@ describe('AccountsService', () => {
 
     it('preserves consecutive inactivity across window boundaries', async () => {
       ;(WalletService.getRawXpubXP as jest.Mock).mockResolvedValue('xpub-1')
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockImplementation(
-        async ({ accountIndex }: { accountIndex: number }) =>
-          createAddresses({
-            [NetworkVMType.EVM]: `0x${accountIndex}`
-          })
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockImplementation(
+        async ({ accountIndices }: { accountIndices: number[] }) =>
+          accountIndices.map(accountIndex => ({
+            accountIndex,
+            addresses: createAddresses({
+              [NetworkVMType.EVM]: `0x${accountIndex}`
+            })
+          }))
       )
 
       jest
@@ -337,16 +347,19 @@ describe('AccountsService', () => {
         maxConsecutiveInactive: 2
       })
 
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(2)
+      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalledTimes(2)
     })
 
     it('starts with a smaller initial scan window even when the configured window is larger', async () => {
       ;(WalletService.getRawXpubXP as jest.Mock).mockResolvedValue('xpub-1')
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockImplementation(
-        async ({ accountIndex }: { accountIndex: number }) =>
-          createAddresses({
-            [NetworkVMType.EVM]: `0x${accountIndex}`
-          })
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockImplementation(
+        async ({ accountIndices }: { accountIndices: number[] }) =>
+          accountIndices.map(accountIndex => ({
+            accountIndex,
+            addresses: createAddresses({
+              [NetworkVMType.EVM]: `0x${accountIndex}`
+            })
+          }))
       )
 
       jest
@@ -378,17 +391,20 @@ describe('AccountsService', () => {
         maxConsecutiveInactive: 2
       })
 
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(2)
+      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalledTimes(1)
     })
 
     it('stops waiting for later prefetched probes once the inactivity threshold is reached', async () => {
       ;(WalletService.getRawXpubXP as jest.Mock).mockResolvedValue('xpub-1')
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockImplementation(
-        async ({ accountIndex }: { accountIndex: number }) =>
-          createAddresses({
-            [NetworkVMType.EVM]: `0x${accountIndex}`,
-            [NetworkVMType.BITCOIN]: `bc1-${accountIndex}`
-          })
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockImplementation(
+        async ({ accountIndices }: { accountIndices: number[] }) =>
+          accountIndices.map(accountIndex => ({
+            accountIndex,
+            addresses: createAddresses({
+              [NetworkVMType.EVM]: `0x${accountIndex}`,
+              [NetworkVMType.BITCOIN]: `bc1-${accountIndex}`
+            })
+          }))
       )
       ;(streamingBalanceApiClient.getBalances as jest.Mock)
         .mockReturnValueOnce(
@@ -501,25 +517,28 @@ describe('AccountsService', () => {
         .mockResolvedValueOnce('xpub-1')
         .mockResolvedValueOnce('xpub-2')
         .mockResolvedValueOnce('xpub-3')
-      ;(ModuleManager.deriveAddresses as jest.Mock)
-        .mockResolvedValueOnce(
-          createAddresses({
-            [NetworkVMType.EVM]: '0x111',
-            [NetworkVMType.BITCOIN]: 'bc1-active'
-          })
-        )
-        .mockResolvedValueOnce(
-          createAddresses({
-            [NetworkVMType.EVM]: '0x222',
-            [NetworkVMType.BITCOIN]: 'bc1-inactive-2'
-          })
-        )
-        .mockResolvedValueOnce(
-          createAddresses({
-            [NetworkVMType.EVM]: '0x333',
-            [NetworkVMType.BITCOIN]: 'bc1-inactive-3'
-          })
-        )
+      const evmByIndex: Record<number, string> = {
+        1: '0x111',
+        2: '0x222',
+        3: '0x333'
+      }
+      const btcByIndex: Record<number, string> = {
+        1: 'bc1-active',
+        2: 'bc1-inactive-2',
+        3: 'bc1-inactive-3'
+      }
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockImplementation(
+        async ({ accountIndices }: { accountIndices: number[] }) =>
+          accountIndices.map(accountIndex => ({
+            accountIndex,
+            addresses: createAddresses({
+              [NetworkVMType.EVM]:
+                evmByIndex[accountIndex] ?? `0x${accountIndex}`,
+              [NetworkVMType.BITCOIN]:
+                btcByIndex[accountIndex] ?? `bc1-${accountIndex}`
+            })
+          }))
+      )
       ;(streamingBalanceApiClient.getBalances as jest.Mock).mockReturnValue(
         createBalanceStream({
           networkType: 'btc',
@@ -559,7 +578,7 @@ describe('AccountsService', () => {
           addressBTC: 'bc1-active'
         })
       ])
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(6)
+      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalled()
     })
 
     it('fills index gaps so accounts are contiguous up to the highest active index', async () => {
@@ -600,13 +619,17 @@ describe('AccountsService', () => {
           completedCleanly: true
         })
 
-      // deriveAddresses will be called for the gap at index 2
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        createAddresses({
-          [NetworkVMType.EVM]: '0xGap2',
-          [NetworkVMType.BITCOIN]: 'bc1-gap-2'
-        })
-      )
+      // deriveAllAddresses will be called for the gap at index 2 (via
+      // AccountsService.getAddresses → ModuleManager.deriveAllAddresses).
+      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockResolvedValue([
+        {
+          accountIndex: 2,
+          addresses: createAddresses({
+            [NetworkVMType.EVM]: '0xGap2',
+            [NetworkVMType.BITCOIN]: 'bc1-gap-2'
+          })
+        }
+      ])
 
       const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -643,10 +666,10 @@ describe('AccountsService', () => {
         })
       )
 
-      // deriveAddresses should have been called once for gap index 2
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(1)
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledWith(
-        expect.objectContaining({ accountIndex: 2 })
+      // deriveAllAddresses should have been called once for gap index 2
+      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalledTimes(1)
+      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalledWith(
+        expect.objectContaining({ accountIndices: [2] })
       )
 
       discoverSpy.mockRestore()
