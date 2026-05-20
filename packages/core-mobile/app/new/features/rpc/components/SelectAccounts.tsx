@@ -67,15 +67,23 @@ export const SelectAccounts = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
 
+  const enabledNetworksCountByAccount = useMemo(() => {
+    const result: Record<string, number> = {}
+    for (const account of Object.values(accounts)) {
+      result[account.id] = getEnabledNetworksForAccount(
+        account,
+        enabledNetworks
+      ).length
+    }
+    return result
+  }, [accounts, enabledNetworks])
+
   const balancesByAccountId = useMemo(() => {
     const result: Record<string, AccountBalanceData> = {}
     for (const account of Object.values(accounts)) {
       result[account.id] = computeAccountBalance({
         accountBalances: balancesData[account.id] ?? emptyAccountBalances,
-        enabledNetworksCount: getEnabledNetworksForAccount(
-          account,
-          enabledNetworks
-        ).length,
+        enabledNetworksCount: enabledNetworksCountByAccount[account.id] ?? 0,
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
@@ -88,7 +96,7 @@ export const SelectAccounts = ({
     accounts,
     balancesData,
     isBalancesError,
-    enabledNetworks,
+    enabledNetworksCountByAccount,
     enabledNetworksMap,
     enabledChainIds,
     isDeveloperMode,

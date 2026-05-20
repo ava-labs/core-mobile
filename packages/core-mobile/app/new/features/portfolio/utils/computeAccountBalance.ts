@@ -40,11 +40,10 @@ export function computeAccountBalance({
   tokenVisibility: TokenVisibility
   isError: boolean
 }): AccountBalanceData {
-  const isLoadingBalance = isError
-    ? false
-    : enabledNetworksCount === 0
-    ? false
-    : accountBalances.length < enabledNetworksCount
+  const isLoadingBalance =
+    !isError &&
+    enabledNetworksCount > 0 &&
+    accountBalances.length < enabledNetworksCount
 
   const hasBalanceData = accountBalances.length > 0
 

@@ -68,6 +68,11 @@ const WalletBalanceComponent = ({
       const result = computeAccountBalance({
         accountBalances: accountBalances ?? emptyAccountBalances,
         enabledNetworksCount: enabledNetworksCountByAccount[accountId] ?? 0,
+        // `?? 0` is safe here: a count of 0 means the account supports no
+        // enabled networks, so computeAccountBalance treats it as fully
+        // loaded and contributes $0 to the total. An unknown accountId
+        // (e.g. a race where balances arrive before the map is populated)
+        // falls into the same bucket — show $0 rather than spin forever.
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
