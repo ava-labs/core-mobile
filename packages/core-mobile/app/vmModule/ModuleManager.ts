@@ -251,6 +251,24 @@ class ModuleManager {
     const avaxBundles = deriveAddressesForAvalanche(avmHex, evmHex, isTestnet)
     const svmAddresses = deriveAddressesForSvm(svmHex)
 
+    // Step 3b — fail closed on any per-chain length mismatch. The native
+    // batch contract is all-or-nothing, so a short array means a bridge or
+    // contract bug — silently substituting empty strings would persist
+    // wrong/missing addresses for those accounts.
+    const expected = accountIndices.length
+    if (
+      evmAddresses.length !== expected ||
+      btcAddresses.length !== expected ||
+      avaxBundles.length !== expected ||
+      svmAddresses.length !== expected
+    ) {
+      throw new Error(
+        `deriveAllAddresses: native batch length mismatch for ${expected} ` +
+          `accountIndices (evm=${evmAddresses.length}, btc=${btcAddresses.length}, ` +
+          `avax=${avaxBundles.length}, svm=${svmAddresses.length})`
+      )
+    }
+
     // Step 4 — zip into per-account records keyed by accountIndex.
     return accountIndices.map((accountIndex, i) => ({
       accountIndex,
