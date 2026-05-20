@@ -50,7 +50,7 @@ phases:
           devicefarm-cli use appium 3
         else
           echo "Installing Appium 3 via npm (Mac host)"
-          npm install -g appium@3 2>&1 | tail -5
+          npm install -g appium@3.1.2 2>&1 | tail -5
         fi
       - appium --version
       - echo "--- Setting up xcuitest driver (Appium 3 compatible) ---"
@@ -60,10 +60,10 @@ phases:
           echo "devicefarm-cli available — xcuitest already configured by Device Farm"
         else
           echo "Upgrading xcuitest to Appium 3 compatible version (>=7.35.1)..."
-          appium driver update xcuitest 2>/dev/null \
-            || appium driver install xcuitest@latest 2>/dev/null \
-            || echo "WARNING: xcuitest update failed"
-          appium driver list 2>/dev/null || true
+          appium driver uninstall xcuitest 2>&1 | tail -5 || true
+          appium driver install xcuitest@10.14.7 2>&1 | tail -10
+          echo "--- xcuitest driver after install ---"
+          appium driver list 2>&1 | tail -20
         fi
       - echo "--- Code signing identities on this host ---"
       - security find-identity -v -p codesigning 2>/dev/null || echo "No identities found"

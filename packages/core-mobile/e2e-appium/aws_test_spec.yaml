@@ -23,21 +23,14 @@ phases:
       - devicefarm-cli use node 20
       - node --version
 
-      # Use the devicefarm-cli to select a preinstalled major version of Appium.
-      - devicefarm-cli use appium 3
+      # Pin Appium to the same version used locally (3.1.2).
+      - npm install -g appium@3.1.2 2>&1 | tail -5
       - appium --version
 
-      # The Device Farm service automatically updates the preinstalled Appium versions over time to
-      # incorporate the latest minor and patch versions for each major version. If you wish to
-      # select a specific version of Appium, you can use NPM to install it.
-      # - npm install -g appium@3.0.0
-
-      # For Appium version 3, Device Farm automatically updates the preinstalled UIAutomator2 driver
-      # over time to incorporate the latest minor and patch versions for its major version 2. If you
-      # want to install a specific version of the driver, you can use the Appium extension CLI to
-      # uninstall the existing UIAutomator2 driver and install your desired version:
-      # - appium driver uninstall uiautomator2
-      # - appium driver install uiautomator2@2.34.0
+      # Pin uiautomator2 driver to the same version used locally (6.7.9).
+      - appium driver uninstall uiautomator2 2>&1 | tail -5 || true
+      - appium driver install uiautomator2@6.7.9 2>&1 | tail -10
+      - appium driver list 2>&1 | tail -10
 
       # We recommend setting the Appium server's base path explicitly for accepting commands.
       - export APPIUM_BASE_PATH=/wd/hub
