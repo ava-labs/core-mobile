@@ -55,7 +55,9 @@ type Props = {
   externalCrosshairX?: SharedValue<number>
   formatPrice?: (amount: number) => string
   formatVolume?: (volume: number) => string
-  /** Background refetch — dims the chart and shows the spinner overlay. */
+  /** User-initiated refetch (range/currency switch with placeholder data) —
+   * dims the chart and shows the spinner overlay. Silent background
+   * revalidations are not signalled here. */
   isFetching?: boolean
 }
 
@@ -146,7 +148,10 @@ export const PriceChart: FC<Props> = ({
 
   const modeAnim = useSharedValue(mode === 'candlestick' ? 1 : 0)
   useEffect(() => {
-    modeAnim.value = mode === 'candlestick' ? 1 : 0
+    modeAnim.value = withTiming(mode === 'candlestick' ? 1 : 0, {
+      duration: 220,
+      easing: Easing.out(Easing.quad)
+    })
   }, [mode, modeAnim])
   const candleOpacity = useDerivedValue(() => modeAnim.value)
   const lineOpacity = useDerivedValue(() => 1 - modeAnim.value)

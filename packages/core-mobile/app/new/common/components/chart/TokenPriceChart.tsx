@@ -60,7 +60,7 @@ const ChartTypeToggle: FC = memo(() => {
       accessibilityLabel={`Switch chart to ${
         isCandle ? 'line' : 'candlestick'
       } view`}
-      onPressIn={onPress}
+      onPress={onPress}
       style={{
         width: TOGGLE_SIZE,
         height: TOGGLE_SIZE,
@@ -79,7 +79,9 @@ const ChartRangeSelector: FC<{
   onChange: (range: ChartRange) => void
 }> = memo(({ value, onChange }) => {
   const { theme } = useTheme()
-  const selectedSegmentIndex = useSharedValue(CHART_RANGES.indexOf(value))
+  const selectedSegmentIndex = useSharedValue(
+    Math.max(0, CHART_RANGES.indexOf(value))
+  )
 
   useEffect(() => {
     const index = CHART_RANGES.indexOf(value)

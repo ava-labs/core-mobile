@@ -177,11 +177,12 @@ describe('formatVolume', () => {
 })
 
 describe('formatActiveTime', () => {
-  // Pick deterministic timestamps to avoid TZ drift.
-  // 2026-05-15T07:25:00Z and 2026-05-15T12:00:00Z (same UTC day).
-  const sameDayTs = new Date('2026-05-15T07:25:00Z').getTime()
-  const now = new Date('2026-05-15T12:00:00Z').getTime()
-  const earlierDayTs = new Date('2026-04-29T07:25:00Z').getTime()
+  // `formatActiveTime` uses local-time getters (getFullYear/Month/Date), so
+  // constructing the test timestamps from local components keeps the "Today"
+  // assertion stable regardless of the CI timezone.
+  const sameDayTs = new Date(2026, 4, 15, 7, 25, 0).getTime()
+  const now = new Date(2026, 4, 15, 12, 0, 0).getTime()
+  const earlierDayTs = new Date(2026, 3, 29, 7, 25, 0).getTime()
 
   it('uses "Today" prefix when the timestamp is on the same day as now', () => {
     expect(formatActiveTime(sameDayTs, now)).toContain('Today,')

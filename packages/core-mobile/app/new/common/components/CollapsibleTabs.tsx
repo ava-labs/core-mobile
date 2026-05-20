@@ -109,9 +109,9 @@ const ContentWrapper = ({
 }: {
   children: React.ReactNode
   /**
-   * Additional offset to subtract from content height calculation on Android.
-   * Useful when there are missing UI elements (like SegmentedControl)
-   * that need to be accounted for in the available content space.
+   * Extra bottom padding added to the inner wrapper. Useful when there are
+   * missing UI elements (like SegmentedControl) that would normally take
+   * space below the content.
    * @default 0
    */
   extraOffset?: number

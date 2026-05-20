@@ -65,7 +65,9 @@ const sliceToCandle = (slice: PriceDataPoint[]): OhlcCandle | null => {
 }
 
 // Approximate OHLC: upstream only provides close prices, so `open` is the
-// first close in the bucket and `close` is the last. Volume always null.
+// first close in the bucket and `close` is the last. Per-bucket volume is
+// summed when source points carry it (null when no point in the bucket has
+// a volume value).
 const bucketPointsIntoCandles = (
   points: PriceDataPoint[],
   bucketCount: number
