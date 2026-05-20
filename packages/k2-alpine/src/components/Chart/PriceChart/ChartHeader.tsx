@@ -181,8 +181,11 @@ const ChartHeaderSkeleton: FC = () => {
       viewBox={`0 0 ${SKELETON_WIDTH} ${SKELETON_HEIGHT}`}
       backgroundColor={backgroundColor}
       foregroundColor={foregroundColor}>
+      {/* price (heading3) */}
       <Rect x="0" y="0" rx="6" ry="6" width="140" height="22" />
+      {/* subtitle (subtitle2) */}
       <Rect x="0" y="28" rx="6" ry="6" width="120" height="12" />
+      {/* delta indicator (buttonSmall) */}
       <Rect x="0" y="46" rx="6" ry="6" width="100" height="14" />
     </ContentLoader>
   )
