@@ -135,7 +135,7 @@ phases:
         echo "WDA signing team ID: ${TEAM_ID:-not found}"
         if [ -n "$TEAM_ID" ]; then
           DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
-          echo "export XCODE_ORG_ID=\"${TEAM_ID}\"" >> "${DF_ENV_DIR}/.df_env"
+          printf '\nexport XCODE_ORG_ID="%s"\n' "${TEAM_ID}" >> "${DF_ENV_DIR}/.df_env"
           echo "WDA signing configured with team $TEAM_ID"
         else
           echo "WARNING: No signing identity — WDA build will fail"
