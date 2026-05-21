@@ -522,6 +522,7 @@ __metadata:
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
     "@keystonehq/animated-qr": 0.10.0
+    "@keystonehq/bc-ur-registry-avalanche": 0.1.4
     "@keystonehq/keystone-sdk": 0.11.7
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
@@ -10149,6 +10150,16 @@ __metadata:
     "@keystonehq/bc-ur-registry": ^0.6.4
     uuid: ^8.3.2
   checksum: 0a967f318343022dc1201561bb3cd7f5a889135bf65bb48e959153802207b0693dd9a1f6cc653eb40e0dc8e3675471df4584dc287ff7a2b7e6d6d128e38a52d4
+  languageName: node
+  linkType: hard
+
+"@keystonehq/bc-ur-registry-avalanche@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@keystonehq/bc-ur-registry-avalanche@npm:0.1.4"
+  dependencies:
+    "@keystonehq/bc-ur-registry": ^0.6.4
+    uuid: ^8.3.2
+  checksum: 3efe62fdc5b57d0513ac433c72b97ac97e6cffef2fa986fa55a32df0a97192ce38f5943902fd227ad2f619079dfec7ca9ce134ae080bf05839b150c3a5e39c46
   languageName: node
   linkType: hard
 

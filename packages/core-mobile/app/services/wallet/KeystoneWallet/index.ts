@@ -225,18 +225,28 @@ export default class KeystoneWallet implements Wallet {
     const tx = transaction.tx
     const isEvmChain = tx.getVM() === 'EVM'
 
+    // bc-ur-registry-avalanche@0.1.x takes explicit derivation paths instead
+    // of (xpub, walletIndex). For Keystone QR we have a single account-0 xpub,
+    // so we sign at the depth-5 path matching the address mobile derives —
+    // m/44'/{60|9000}'/0'/0/<accountIndex>. Firmware 2.4.2 advertises this
+    // pattern via `account.x&p` on the AVAX entry.
+    const signingPath = isEvmChain
+      ? `${EVM_DERIVATION_PATH}/0/${accountIndex}`
+      : `${AVAX_DERIVATION_PATH}/0/${accountIndex}`
+
     const requestUR = AvalancheSignRequest.constructAvalancheRequest(
       Buffer.from(tx.toBytes()),
-      this.mfp,
-      isEvmChain ? this.xpub : this.xpubXP,
-      accountIndex
+      [signingPath],
+      [],
+      this.mfp
     ).toUR()
 
     return await signer(requestUR, ['avax-signature'], cbor => {
       const response = AvalancheSignature.fromCBOR(cbor)
-      const sig = response.getSignature()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tx.addSignature(sig as any)
+      response.getSignatures().forEach(sig => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tx.addSignature(sig as any)
+      })
       return Promise.resolve(JSON.stringify(tx.toJSON()))
     })
   }
