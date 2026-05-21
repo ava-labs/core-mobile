@@ -161,17 +161,23 @@ const deviceFarmClient = new DeviceFarmClient({ region: config.region })
 async function inspectDevicePool(devicePoolArn) {
   console.log('🔍 Inspecting device pool...')
   try {
-    const poolRes = await deviceFarmClient.send(new GetDevicePoolCommand({ arn: devicePoolArn }))
+    const poolRes = await deviceFarmClient.send(
+      new GetDevicePoolCommand({ arn: devicePoolArn })
+    )
     const pool = poolRes.devicePool
     console.log(`   Pool name: ${pool?.name}`)
     console.log(`   Pool type: ${pool?.type}`)
     console.log(`   Pool rules: ${JSON.stringify(pool?.rules, null, 2)}`)
 
-    const devicesRes = await deviceFarmClient.send(new ListDevicePoolDevicesCommand({ arn: devicePoolArn }))
+    const devicesRes = await deviceFarmClient.send(
+      new ListDevicePoolDevicesCommand({ arn: devicePoolArn })
+    )
     const devices = devicesRes.devices || []
     console.log(`   Devices in pool (${devices.length}):`)
     devices.forEach(d => {
-      console.log(`     - ${d.name} | ${d.platform} | OS: ${d.os} | Available: ${d.availability}`)
+      console.log(
+        `     - ${d.name} | ${d.platform} | OS: ${d.os} | Available: ${d.availability}`
+      )
     })
     if (devices.length === 0) {
       console.log('   ⚠️  No devices found in pool!')
