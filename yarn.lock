@@ -522,7 +522,7 @@ __metadata:
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
     "@keystonehq/animated-qr": 0.10.0
-    "@keystonehq/keystone-sdk": 0.11.3
+    "@keystonehq/keystone-sdk": 0.11.7
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@ledgerhq/hw-app-eth": 6.45.18
@@ -10289,6 +10289,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@keystonehq/bc-ur-registry-zcash@npm:0.1.2":
+  version: 0.1.2
+  resolution: "@keystonehq/bc-ur-registry-zcash@npm:0.1.2"
+  dependencies:
+    "@keystonehq/bc-ur-registry": ^0.7.0
+    uuid: ^9.0.0
+  checksum: 6399e2dde02a099fae4ff4c5e51ec571185e3e4af7207d4ab54a712182f635bd55a120170acde169ecde0791205bde0351809581bea4c6b8df28470c551c2e32
+  languageName: node
+  linkType: hard
+
 "@keystonehq/bc-ur-registry@npm:^0.6.4":
   version: 0.6.4
   resolution: "@keystonehq/bc-ur-registry@npm:0.6.4"
@@ -10311,12 +10321,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keystonehq/keystone-sdk@npm:0.11.3":
-  version: 0.11.3
-  resolution: "@keystonehq/keystone-sdk@npm:0.11.3"
+"@keystonehq/bc-ur-registry@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "@keystonehq/bc-ur-registry@npm:0.7.1"
+  dependencies:
+    "@ngraveio/bc-ur": ^1.1.5
+    bs58check: ^2.1.2
+    tslib: ^2.3.0
+  checksum: c9feff038ee8c056bbc169e4464095b559546c78f2d5961233aa84a6f9a01dd53944d17d3871b2c6708eca306741ab6dcf305acd0a742a35e2e48965a9088625
+  languageName: node
+  linkType: hard
+
+"@keystonehq/keystone-sdk@npm:0.11.7":
+  version: 0.11.7
+  resolution: "@keystonehq/keystone-sdk@npm:0.11.7"
   dependencies:
     "@bufbuild/protobuf": ^1.2.0
-    "@keystonehq/bc-ur-registry": ^0.7.0
+    "@keystonehq/bc-ur-registry": ^0.7.1
     "@keystonehq/bc-ur-registry-aptos": ^0.6.3
     "@keystonehq/bc-ur-registry-arweave": ^0.5.3
     "@keystonehq/bc-ur-registry-avalanche": ^0.0.4
@@ -10332,6 +10353,7 @@ __metadata:
     "@keystonehq/bc-ur-registry-stellar": ^0.0.4
     "@keystonehq/bc-ur-registry-sui": 0.4.0-alpha.0
     "@keystonehq/bc-ur-registry-ton": ^0.1.2
+    "@keystonehq/bc-ur-registry-zcash": 0.1.2
     "@ngraveio/bc-ur": ^1.1.6
     "@noble/hashes": ^1.5.0
     bs58check: ^3.0.1
@@ -10339,7 +10361,7 @@ __metadata:
     pako: ^2.1.0
     ripple-binary-codec: ^1.4.3
     uuid: ^9.0.0
-  checksum: c4acc2e14853ba70d8ab53a79ac4426bccb6c1a6b391f428cc2942ab8c0fbbfb34dde38ebe691ccf0c76a6b7ac5cd3fac4f170a59371813e94bcea749f466287
+  checksum: 8f894ea69c689f37864496e6b0c10c553f6a0e90546318492e457395e9447e598bc1459cf452776c4f07b6ef8b208dda9e6fdaab984e6d2d36b8f1c8c6d0c08d
   languageName: node
   linkType: hard
 
@@ -36971,7 +36993,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
+  checksum: 57322e733d20b38881da9514a1ebb03a24a2457ed59683e4f714630c2a0ab29eb9981ad9acb02d7b7b32d7a0f5c02791146fc23c13a39c8254f7d0437844dcb4
   languageName: node
   linkType: hard
 
