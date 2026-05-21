@@ -162,10 +162,15 @@ async function discoverFromXpubs(
 }
 
 /**
- * Await a batch derivation, returning the resolved map or an empty map if
- * the batch rejected. Logs the rejection independently so a single-network
- * failure surfaces in logs even though the downstream loop would skip those
- * indices anyway.
+ * Await a batch derivation and attach a per-network label to the log on
+ * failure. Rethrows so `deriveAndMapBatch` (and ultimately
+ * `discoverLedgerAccountsFromXpubs`) reject with the original error.
+ *
+ * Swallowing here would silently turn a real derivation failure
+ * (deriveAddressesBatch rejects only when both the native call AND the JS
+ * fallback failed) into an empty result that the caller cannot tell apart
+ * from "no funded accounts", suppressing the chance to retry or surface a
+ * user-visible error.
  */
 async function extractBatch(
   batch: Promise<Map<number, DerivedAddresses>>,
@@ -175,7 +180,7 @@ async function extractBatch(
     return await batch
   } catch (error) {
     Logger.error(`${label} batch derivation failed for Ledger discovery`, error)
-    return new Map<number, DerivedAddresses>()
+    throw error
   }
 }
 
@@ -192,13 +197,16 @@ async function extractBatch(
  * crypto state anyway (only bech32/HRP differs), so back-to-back execution
  * keeps the worker pool fully fed without contention.
  *
- * Each call is awaited through extractBatch, which catches per-batch
- * rejections and returns an empty map so logging still happens. The mapping
- * loop below requires BOTH mainnet and testnet entries to emit an index —
- * a single-network failure therefore drops every index for this batch
- * (downstream consumers expect mainnet+testnet as a pair). The empty-map
- * fallback exists so the loop body doesn't throw on `.get()` and so the
- * unaffected network's rejection log isn't suppressed by an upstream throw.
+ * Each call is awaited through extractBatch, which tags the rejection with
+ * the network label and rethrows. A real derivation failure on either
+ * network propagates out of this function (and out of
+ * discoverLedgerAccountsFromXpubs) so the caller can tell "discovery
+ * failed" apart from "no funded accounts" — silently returning [] would
+ * collapse those two states into one.
+ *
+ * The downstream mapping loop still requires both `mainnet` and `testnet`
+ * entries to emit an index; that's a property of the both-resolved happy
+ * path, not a fallback for partial failure.
  */
 async function deriveAndMapBatch(params: {
   evmAccountXpub: string
