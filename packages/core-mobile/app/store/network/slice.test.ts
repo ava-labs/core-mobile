@@ -647,6 +647,16 @@ describe('network slice', () => {
       })
     })
 
+    describe('defaultEnabledL2ChainIds membership (CP-14282)', () => {
+      it('includes BNB Smart Chain (56) so it renders in the primary section', () => {
+        expect(defaultEnabledL2ChainIds).toContain(56)
+      })
+
+      it('includes Polygon (137) so it renders in the primary section', () => {
+        expect(defaultEnabledL2ChainIds).toContain(137)
+      })
+    })
+
     describe('always enabled chainIds', () => {
       it('should not allow toggling off always enabled chains', () => {
         alwaysEnabledChainIds.forEach(chainId => {

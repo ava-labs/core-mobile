@@ -2,7 +2,7 @@ import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -18,10 +18,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 
 export type OnTabChange = OnTabChangeCallback<string>
@@ -112,9 +109,9 @@ const ContentWrapper = ({
 }: {
   children: React.ReactNode
   /**
-   * Additional offset to subtract from content height calculation on Android.
-   * Useful when there are missing UI elements (like SegmentedControl)
-   * that need to be accounted for in the available content space.
+   * Extra bottom padding added to the inner wrapper. Useful when there are
+   * missing UI elements (like SegmentedControl) that would normally take
+   * space below the content.
    * @default 0
    */
   extraOffset?: number
@@ -126,7 +123,6 @@ const ContentWrapper = ({
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
@@ -154,28 +150,20 @@ const ContentWrapper = ({
 
   return (
     <View
-      style={[
-        Platform.OS === 'ios'
-          ? {
-              // iOS works with 100%, but android needs specific height
-              height: '100%',
-              paddingBottom: header.height - tabBarHeight + insets.bottom
-            }
-          : {
-              height:
-                frame.height -
-                header.height -
-                headerHeight -
-                insets.bottom -
-                tabBarHeight -
-                extraOffset
-            },
-        {
-          justifyContent: 'center',
-          alignItems: 'center'
-        }
-      ]}>
-      <Animated.View style={animatedStyle}>{children}</Animated.View>
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%'
+      }}>
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            paddingBottom: headerHeight + insets.bottom + extraOffset
+          }
+        ]}>
+        {children}
+      </Animated.View>
     </View>
   )
 }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import {
   Charts,
   defaultChartData,
@@ -6,11 +6,7 @@ import {
   selectIsWatchlistFavorite
 } from 'store/watchlist'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { formatCurrency } from 'utils/FormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { isEffectivelyZero } from 'features/track/utils/utils'
+import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
 import { MarketGridView } from './MarketGridView'
 import { MarketListView } from './MarketListView'
 
@@ -27,53 +23,12 @@ export const MarketListItem = ({
   isGridView?: boolean
   onPress: () => void
 }): React.JSX.Element => {
-  const currency = useSelector(selectSelectedCurrency)
-
-  const formattedPrice = useMemo(
-    () =>
-      token.currentPrice
-        ? formatCurrency({
-            amount: token.currentPrice,
-            currency,
-            boostSmallNumberPrecision: true
-          })
-        : UNKNOWN_AMOUNT,
-    [currency, token.currentPrice]
-  )
-
-  const priceChange = token.priceChange24h ?? 0
-
-  const formattedPriceChange = useMemo(() => {
-    const absPriceChange = Math.abs(priceChange)
-
-    // for effectively zero price changes, return undefined
-    // this is to avoid displaying "0.00" in the price change column
-    if (isEffectivelyZero(absPriceChange)) {
-      return undefined
-    }
-
-    return formatCurrency({
-      amount: Math.abs(priceChange),
-      currency,
-      boostSmallNumberPrecision: true
+  const { formattedPrice, formattedPriceChange, formattedPercent, status } =
+    useTokenPriceDisplay({
+      currentPrice: token.currentPrice,
+      priceChange24h: token.priceChange24h,
+      priceChangePercentage24h: token.priceChangePercentage24h
     })
-  }, [currency, priceChange])
-
-  const formattedPercent = useMemo(
-    () =>
-      token.priceChangePercentage24h
-        ? Math.abs(token.priceChangePercentage24h)?.toFixed(2).toString() + '%'
-        : undefined,
-    [token.priceChangePercentage24h]
-  )
-
-  const status = priceChange
-    ? priceChange > 0
-      ? PriceChangeStatus.Up
-      : priceChange < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-    : PriceChangeStatus.Neutral
 
   const isFavorite = useSelector(selectIsWatchlistFavorite(token.id))
   const chartData = charts[token.id] ?? defaultChartData

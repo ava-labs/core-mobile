@@ -12,10 +12,25 @@ index 38df065..c780667 100644
  export type CollapsibleRef<T extends TabName = TabName> = RefHandler<T> | undefined;
  export type TabBarProps<T extends TabName = TabName> = {
 diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-index 9ec4cfe..3a068c9 100644
+index 9ec4cfe..f9de19c 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -227,7 +227,9 @@ export const Container = React.memo(
+@@ -1,11 +1,13 @@
+ import React from 'react'
+-import { StyleSheet, useWindowDimensions, View } from 'react-native'
++import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
++import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+ import PagerView from 'react-native-pager-view'
+ import Animated, {
+   useAnimatedReaction,
+   useAnimatedStyle,
+   useDerivedValue,
+   useSharedValue,
++  withDecay,
+   withDelay,
+   withTiming,
+   useFrameCallback,
+@@ -227,7 +229,9 @@ export const Container = React.memo(
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
@@ -26,7 +41,66 @@ index 9ec4cfe..3a068c9 100644
          if (timeSinceFirstFrame > 1500) {
            scheduleOnRN(toggleSyncScrollFrame, false)
          }
-@@ -343,9 +345,24 @@ export const Container = React.memo(
+@@ -325,6 +329,58 @@ export const Container = React.memo(
+         },
+       })
+ 
++      // Forward vertical pans on the header to the focused tab's scrollable so
++      // the header can be collapsed by swiping anywhere on it. Horizontal pans
++      // and short presses pass through so nested gestures (e.g. a chart's
++      // crosshair drag) can still claim them.
++      //
++      // `headerScrollOffset` is the single source of truth driven by the
++      // gesture: onStart resyncs it from the actual scroll position, onChange
++      // writes the new target, onEnd hands the value to `withDecay` so the
++      // scroll continues with momentum after the user lifts their finger. A
++      // `useAnimatedReaction` forwards every change to the focused tab's
++      // scrollable via `scrollToImpl`.
++      const headerScrollOffset = useSharedValue(0)
++      useAnimatedReaction(
++        () => headerScrollOffset.value,
++        (value, prev) => {
++          if (prev === null || value === prev) return
++          const focusedName = focusedTab.value
++          const ref = refMap[focusedName]
++          if (!ref) return
++          scrollToImpl(ref, 0, value - contentInset, false)
++        }
++      )
++      const headerPanGesture = React.useMemo(
++        () =>
++          Gesture.Pan()
++            .activeOffsetY([-5, 5])
++            .failOffsetX([-10, 10])
++            .onStart(() => {
++              'worklet'
++              headerScrollOffset.value = scrollYCurrent.value
++            })
++            .onChange((e) => {
++              'worklet'
++              headerScrollOffset.value = Math.max(
++                0,
++                headerScrollOffset.value - e.changeY
++              )
++            })
++            .onEnd((e) => {
++              'worklet'
++              // Per-platform deceleration matches each OS's native scroll
++              // feel: iOS uses ~0.998 (long, gentle tail), Android uses ~0.985
++              // (short, decisive). The native scrollable handles the visible
++              // clamp at top/bottom, so no explicit `clamp` is needed.
++              headerScrollOffset.value = withDecay({
++                velocity: -e.velocityY,
++                deceleration: Platform.OS === 'ios' ? 0.998 : 0.985,
++              })
++            }),
++        [contentInset, focusedTab, refMap, scrollYCurrent, headerScrollOffset]
++      )
++
+       React.useImperativeHandle(
+         ref,
+         () => ({
+@@ -343,9 +399,24 @@ export const Container = React.memo(
            getCurrentIndex: () => {
              return index.value
            },
@@ -52,6 +126,47 @@ index 9ec4cfe..3a068c9 100644
        )
  
        return (
+@@ -391,22 +462,24 @@ export const Container = React.memo(
+                 !cancelTranslation && stylez,
+               ]}
+             >
+-              <View
+-                style={[styles.container, styles.headerContainer]}
+-                onLayout={getHeaderHeight}
+-                pointerEvents="box-none"
+-              >
+-                {renderHeader &&
+-                  renderHeader({
+-                    containerRef,
+-                    index,
+-                    tabNames: tabNamesArray,
+-                    focusedTab,
+-                    indexDecimal,
+-                    onTabPress,
+-                    tabProps,
+-                  })}
+-              </View>
++              <GestureDetector gesture={headerPanGesture}>
++                <View
++                  style={[styles.container, styles.headerContainer]}
++                  onLayout={getHeaderHeight}
++                  pointerEvents="box-none"
++                >
++                  {renderHeader &&
++                    renderHeader({
++                      containerRef,
++                      index,
++                      tabNames: tabNamesArray,
++                      focusedTab,
++                      indexDecimal,
++                      onTabPress,
++                      tabProps,
++                    })}
++                </View>
++              </GestureDetector>
+               <View
+                 style={[styles.container, styles.tabBarContainer]}
+                 onLayout={getTabBarHeight}
 diff --git a/node_modules/react-native-collapsible-tab-view/src/types.ts b/node_modules/react-native-collapsible-tab-view/src/types.ts
 index 00fbafc..dee894c 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/types.ts

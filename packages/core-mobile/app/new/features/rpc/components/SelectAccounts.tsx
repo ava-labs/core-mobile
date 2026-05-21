@@ -17,6 +17,7 @@ import {
   computeAccountBalance,
   AccountBalanceData
 } from 'features/portfolio/utils/computeAccountBalance'
+import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -66,12 +67,23 @@ export const SelectAccounts = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
 
+  const enabledNetworksCountByAccount = useMemo(() => {
+    const result: Record<string, number> = {}
+    for (const account of Object.values(accounts)) {
+      result[account.id] = getEnabledNetworksForAccount(
+        account,
+        enabledNetworks
+      ).length
+    }
+    return result
+  }, [accounts, enabledNetworks])
+
   const balancesByAccountId = useMemo(() => {
     const result: Record<string, AccountBalanceData> = {}
     for (const account of Object.values(accounts)) {
       result[account.id] = computeAccountBalance({
         accountBalances: balancesData[account.id] ?? emptyAccountBalances,
-        enabledNetworksCount: enabledNetworks.length,
+        enabledNetworksCount: enabledNetworksCountByAccount[account.id] ?? 0,
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
@@ -84,7 +96,7 @@ export const SelectAccounts = ({
     accounts,
     balancesData,
     isBalancesError,
-    enabledNetworks.length,
+    enabledNetworksCountByAccount,
     enabledNetworksMap,
     enabledChainIds,
     isDeveloperMode,

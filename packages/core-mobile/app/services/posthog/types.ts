@@ -43,7 +43,8 @@ export enum FeatureGates {
   FUSION_QUICK_SWAPS = 'fusion-quick-swaps',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   INJECTED_PROVIDER = 'injected-provider',
-  PREDICTIONS = 'predictions'
+  PREDICTIONS = 'predictions',
+  PRICE_CHART = 'price-chart'
 }
 
 export enum FeatureVars {

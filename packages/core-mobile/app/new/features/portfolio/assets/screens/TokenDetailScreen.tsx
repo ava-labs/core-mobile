@@ -11,6 +11,7 @@ import {
 } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
@@ -18,7 +19,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import { tokenIds } from 'consts/tokenIds'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -27,6 +27,7 @@ import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { tokenIds } from 'consts/tokenIds'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
@@ -43,6 +44,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useMarketToken } from 'common/hooks/useMarketToken'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -62,48 +64,61 @@ import { AVAX_P_ID } from 'services/balance/const'
 import { selectActiveAccount } from 'store/account/slice'
 import {
   selectIsFusionEnabled,
-  selectIsMeldOfframpBlocked
+  selectIsMeldOfframpBlocked,
+  selectIsPriceChartBlocked
 } from 'store/posthog'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 
+export enum TokenDetailTab {
+  Assets = 'Assets',
+  Activity = 'Activity'
+}
+
+const SEGMENT_ITEMS = [
+  { title: TokenDetailTab.Assets },
+  { title: TokenDetailTab.Activity }
+]
+
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const hasXpAddresses = useHasXpAddresses()
+  const { openUrl } = useInAppBrowser()
   const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
+  const { navigateToBuy, isBuyable } = useBuy()
+  const { navigateToWithdraw, isWithdrawable } = useWithdraw()
+  const { formatCurrency } = useFormatCurrency()
+
   const frame = useWindowDimensions()
   const headerHeight = useEffectiveHeaderHeight()
   const insets = useSafeAreaInsets()
+  const hasXpAddresses = useHasXpAddresses()
+
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [_, setSelectedToken] = useSendSelectedToken()
-  const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
+  const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
   const [titleLayout, setTitleLayout] = useState<LayoutRectangle | undefined>()
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const isFusionEnabled = useSelector(selectIsFusionEnabled)
-  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
   }>()
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-
   const erc20ContractTokens = useErc20ContractTokens()
   // Keep zero balance tokens visible so the page doesn't crash after sending max balance
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { formatCurrency } = useFormatCurrency()
 
   const token = useMemo(() => {
     return filteredTokenList.find(
@@ -111,46 +126,25 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     )
   }, [chainId, filteredTokenList, localId])
 
+  const marketToken = useMarketToken({ token })
+  const trackTokenId = marketToken?.id
+  const tokenName = token?.name ?? ''
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
 
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isPriceChartBlocked = useSelector(selectIsPriceChartBlocked)
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-
   const activeAccount = useSelector(selectActiveAccount)
-
   const isBalanceAccurate = useIsBalanceAccurateByNetwork(
     activeAccount,
     token?.networkChainId
   )
-
   const isBalanceLoading = useIsLoadingBalancesForAccount(
     activeAccount,
     token?.networkChainId
-  )
-
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
-    setTokenHeaderLayout(event.nativeEvent.layout)
-  }, [])
-
-  const handleTitleLayout = useCallback((event: LayoutChangeEvent): void => {
-    setTitleLayout(event.nativeEvent.layout)
-  }, [])
-
-  const handleSegmentedControlLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setSegmentedControlLayout(event.nativeEvent.layout)
-    },
-    []
-  )
-
-  const tokenName = token?.name ?? ''
-
-  const { navigateToBuy, isBuyable } = useBuy()
-  const { navigateToWithdraw, isWithdrawable } = useWithdraw()
-
-  const header = useMemo(
-    () => <NavigationTitleHeader title={tokenName} />,
-    [tokenName]
   )
 
   const isTokenStakable = useMemo(
@@ -175,6 +169,30 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       token?.networkChainId === ChainId.AVALANCHE_TEST_P
     )
   }, [token?.networkChainId])
+
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
+    setHeaderLayout(event.nativeEvent.layout)
+  }, [])
+
+  const handleTitleLayout = useCallback((event: LayoutChangeEvent): void => {
+    setTitleLayout(event.nativeEvent.layout)
+  }, [])
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleOpenTrackTokenDetail = useCallback(() => {
+    if (!trackTokenId) return
+    navigate({
+      // @ts-ignore route is defined under (modals)/trackTokenDetail
+      pathname: '/trackTokenDetail',
+      params: { tokenId: trackTokenId }
+    })
+  }, [navigate, trackTokenId])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
@@ -246,6 +264,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isSwapUIDisabledForNetwork
   ])
 
+  const header = useMemo(
+    () => <NavigationTitleHeader title={tokenName} />,
+    [tokenName]
+  )
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
     targetLayout: titleLayout
@@ -264,8 +287,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       withoutCurrencySuffix: true
     })
   }, [token?.balanceInCurrency, formatCurrency])
-
-  const { openUrl } = useInAppBrowser()
 
   const handleExplorerLink = useCallback(
     (
@@ -341,13 +362,19 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         <ActionButtons
           buttons={actionButtons}
           contentContainerStyle={{
-            padding: 16
+            paddingHorizontal: 16,
+            paddingVertical: 24
           }}
         />
-        {/* TODO: add after design is finalized */}
-        {/* <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-          <TokenPriceCard token={token} />
-        </View> */}
+        {isPriceChartBlocked || isXpToken ? null : (
+          <TokenPriceChart
+            token={token}
+            width={frame.width}
+            onPriceHeaderPress={
+              trackTokenId ? handleOpenTrackTokenDetail : undefined
+            }
+          />
+        )}
       </View>
     )
   }, [
@@ -361,22 +388,27 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     isPrivacyModeEnabled,
-    actionButtons
+    actionButtons,
+    isPriceChartBlocked,
+    isXpToken,
+    frame.width,
+    trackTokenId,
+    handleOpenTrackTokenDetail
   ])
 
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios: frame.height - headerHeight,
-      android: frame.height - headerHeight + (tokenHeaderLayout?.height ?? 0)
+      android: frame.height + (headerLayout?.height ?? 0) - insets.top
     })
-  }, [frame.height, headerHeight, tokenHeaderLayout?.height])
+  }, [frame.height, headerHeight, headerLayout?.height, insets.top])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
+      paddingBottom: insets.bottom + (segmentedControlLayout?.height ?? 0),
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight, insets.bottom])
 
   const tabs = useMemo(() => {
     const activityTab = {
@@ -384,6 +416,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       component: (
         <TransactionHistory
           token={token}
+          // necessary for the empty list to be close to the filters / sort instead of centered on the available space
+          extraOffset={250}
           handleExplorerLink={handleExplorerLink}
           containerStyle={contentContainerStyle}
         />
@@ -458,13 +492,3 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     </BlurredBarsContentLayout>
   )
 }
-
-export enum TokenDetailTab {
-  Assets = 'Assets',
-  Activity = 'Activity'
-}
-
-const SEGMENT_ITEMS = [
-  { title: TokenDetailTab.Assets },
-  { title: TokenDetailTab.Activity }
-]

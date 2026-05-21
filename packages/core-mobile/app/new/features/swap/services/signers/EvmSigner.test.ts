@@ -151,6 +151,7 @@ describe('createEvmSigner.signBatch', () => {
       ]
     ] as const)(
       'marks %s token native when assetX.type is NATIVE (no address)',
+      // eslint-disable-next-line max-params
       async (_side, override, nativeField, addressField) => {
         const ctx = await callBatch(override)
         expect(ctx[nativeField]).toBe(true)
@@ -178,7 +179,7 @@ describe('createEvmSigner.signBatch', () => {
     })
   })
 
-  it('falls back to per-tx sign() when Quick Swaps is OFF (without receipt wait)', async () => {
+  it('falls back to per-tx sign() with receipt wait when Quick Swaps is OFF', async () => {
     const request = jest
       .fn<Promise<string>, [unknown]>()
       .mockResolvedValueOnce('0xhashA')
@@ -198,8 +199,12 @@ describe('createEvmSigner.signBatch', () => {
 
     expect(result).toEqual(['0xhashA', '0xhashB'])
     expect(request).toHaveBeenCalledTimes(2)
-    // Legacy path: no receipt wait between txs (preserves pre-Quick-Swaps latency)
-    expect(waitForReceipt).not.toHaveBeenCalled()
+    // Pre-CP-14211 the Fusion SDK awaited the approve receipt itself (Markr's
+    // Branch B); exposing `signBatch` flipped the SDK into Branch A which
+    // delegates ordering to us. The receipt wait must run on every
+    // intermediate per-tx step, not only on the manual-review fallback.
+    expect(waitForReceipt).toHaveBeenCalledTimes(1)
+    expect(waitForReceipt).toHaveBeenCalledWith(expect.any(Number), '0xhashA')
     expect(
       request.mock.calls.every(
         c =>
