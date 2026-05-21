@@ -800,6 +800,7 @@ class AccountsService {
             walletType,
             accountIndex: account.index,
             addresses: account.addresses,
+            isTestnet: !!isDeveloperMode,
             modules: {
               evmModule,
               bitcoinModule,
@@ -1085,12 +1086,14 @@ class AccountsService {
     addresses,
     modules,
     vmNetworks,
+    isTestnet,
     includeSecondaryProbes = true
   }: {
     walletId: string
     walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
     accountIndex: number
     addresses: Record<NetworkVMType, string>
+    isTestnet: boolean
     modules: {
       evmModule: Awaited<ReturnType<typeof ModuleManager.loadModuleByNetwork>>
       bitcoinModule: Awaited<
@@ -1128,7 +1131,8 @@ class AccountsService {
         addresses,
         avalancheModule: modules.avalancheModule,
         avmNetwork: vmNetworks.avm,
-        pvmNetwork: vmNetworks.pvm
+        pvmNetwork: vmNetworks.pvm,
+        isTestnet
       })
     ])
 
@@ -1176,7 +1180,8 @@ class AccountsService {
     addresses,
     avalancheModule,
     avmNetwork,
-    pvmNetwork
+    pvmNetwork,
+    isTestnet
   }: {
     walletId: string
     walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
@@ -1187,6 +1192,7 @@ class AccountsService {
     >
     avmNetwork: ReturnType<typeof mapToVmNetwork>
     pvmNetwork: ReturnType<typeof mapToVmNetwork>
+    isTestnet: boolean
   }): Promise<boolean> {
     const canUseXpActivityLookup =
       walletType === WalletType.MNEMONIC ||
@@ -1197,7 +1203,7 @@ class AccountsService {
         walletId,
         walletType,
         accountIndex,
-        isTestnet: false
+        isTestnet
       })
     }
 
