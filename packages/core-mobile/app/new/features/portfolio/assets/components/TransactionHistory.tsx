@@ -38,6 +38,7 @@ const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 interface Props {
   token?: LocalTokenWithBalance
   containerStyle: ViewStyle
+  extraOffset: number
   handleExplorerLink: (
     explorerLink: string,
     hash?: string,
@@ -48,7 +49,8 @@ interface Props {
 const TransactionHistory: FC<Props> = ({
   token,
   handleExplorerLink,
-  containerStyle
+  containerStyle,
+  extraOffset
 }): React.JSX.Element => {
   const header = useHeaderMeasurements()
   const { getNetwork } = useNetworks()
@@ -187,11 +189,11 @@ const TransactionHistory: FC<Props> = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={extraOffset}>
         {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [renderEmptyComponent])
+  }, [extraOffset, renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
     return (
@@ -223,6 +225,7 @@ const TransactionHistory: FC<Props> = ({
         xpToken={token}
         handleExplorerLink={handleExplorerLink}
         overrideProps={overrideProps}
+        containerStyle={containerStyle}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}
