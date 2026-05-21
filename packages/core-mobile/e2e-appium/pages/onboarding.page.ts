@@ -122,8 +122,8 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
-    // Device Farm uses E2E builds and doesn't have Metro bundler
+    if (process.env.E2E === 'true') return
+
     const isE2EBuild =
       process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
     const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
@@ -141,7 +141,6 @@ class OnboardingPage {
         await actions.waitFor(dismissBtn, 30000)
         await actions.dragAndDrop(dismissBtn, [0, 1500])
         console.log('Dismissed Metro dev menu')
-
       } catch (e) {
         console.log('Metro dev menu not found or already dismissed')
       }
@@ -149,7 +148,8 @@ class OnboardingPage {
   }
 
   async exitMetroAfterLogin() {
-    // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
+    if (process.env.E2E === 'true') return
+
     const isE2EBuild =
       process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
     const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
@@ -165,11 +165,7 @@ class OnboardingPage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    if (driver.isAndroid) {
-      await actions.type(this.recoveryPhraseInput, recoveryPhrase)
-    } else {
-      await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
-    }
+    await actions.type(this.recoveryPhraseInput, recoveryPhrase)
     await actions.tap(this.enterRecoveryPhraseTitle)
   }
 

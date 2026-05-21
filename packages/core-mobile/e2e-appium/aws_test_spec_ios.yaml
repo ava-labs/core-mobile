@@ -159,6 +159,10 @@ phases:
         else
           echo "WARNING: No Device Farm pre-signed WDA available"
         fi
+      - |-
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        printf '\nexport E2E="true"\n' >> "${DF_ENV_DIR}/.df_env"
+        echo "Exported E2E=true to .df_env"
       - echo "=== PRE_TEST PHASE DONE ==="
 
   test:
@@ -176,11 +180,12 @@ phases:
           cd "$DEVICEFARM_TEST_PACKAGE_PATH"
         fi
         echo "Working dir: $(pwd)"
-        echo "--- .df_env contents (if exists) ---"
-        test -f .df_env && cat .df_env || echo ".df_env not found"
+        echo "--- .df_env keys (if exists) ---"
+        test -f .df_env && grep -oE '^export [A-Z_]+' .df_env || echo ".df_env not found"
         source .df_env 2>/dev/null || true
         echo "SPEC_FILE=$SPEC_FILE"
         echo "E2E_MNEMONIC set: $([ -n "$E2E_MNEMONIC" ] && echo YES || echo NO)"
+        echo "E2E set: $([ -n "$E2E" ] && echo YES || echo NO)"
         echo "--- Running npm test ---"
         npm test
       - echo "=== TEST PHASE DONE ==="

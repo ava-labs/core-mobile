@@ -176,7 +176,7 @@ export const config: WebdriverIO.Config = {
         ]
       ]
     : [],
-  logLevel: 'info', // More verbose for Device Farm debugging
+  logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
   specFileRetries: 0,
