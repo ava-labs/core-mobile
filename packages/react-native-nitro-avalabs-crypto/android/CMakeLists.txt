@@ -56,9 +56,8 @@ include_directories("${SECP256K1_INCLUDE_DIR}")
 # 4. OpenSSL Configuration (Prefab from Gradle) — REQUIRED
 # ------------------------------------------------------------------------------
 # OpenSSL is a hard requirement: batch-derivation headers (address_derivation.hpp,
-# slip0010.hpp, base58.hpp) include OpenSSL headers unconditionally. Fail the
-# build here rather than letting compilation fail with a cryptic missing-header
-# error later.
+ # base58.hpp) include OpenSSL headers unconditionally. Fail the build here
+ # rather than letting compilation fail with a cryptic missing-header error later.
 message(STATUS "")
 message(STATUS "=== OpenSSL Configuration ===")
 
