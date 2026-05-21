@@ -189,14 +189,3 @@ phases:
         echo "--- Running npm test ---"
         npm test
       - echo "=== TEST PHASE DONE ==="
-
-  post_test:
-    commands:
-      - echo "=== POST_TEST PHASE ==="
-      - echo "--- Appium log (last 100 lines) ---"
-      - tail -100 $DEVICEFARM_LOG_DIR/appium.log 2>/dev/null || echo "No appium log"
-      - ls -la $DEVICEFARM_LOG_DIR || true
-
-artifacts:
-  - $DEVICEFARM_LOG_DIR
-  - $DEVICEFARM_TEST_PACKAGE_PATH
