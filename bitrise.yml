@@ -761,9 +761,6 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
-    - SPEC_FILE: specs/onboarding/**/*.ts
-      opts:
-        is_expand: false
     steps:
     - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
         title: AWS Device Farm — upload & schedule run
@@ -807,9 +804,6 @@ workflows:
       opts:
         is_expand: false
     - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - SPEC_FILE: specs/onboarding/**/*.ts
       opts:
         is_expand: false
     steps:
