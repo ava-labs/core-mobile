@@ -39,8 +39,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
-  [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
-  [FeatureGates.IN_APP_DEFI_BORROW]: false,
   [FeatureGates.IN_APP_REVIEW]: true,
   [FeatureGates.GASLESS_INSTANT]: true,
   [FeatureGates.NEST_EGG_CAMPAIGN]: false,
@@ -55,7 +53,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
   [FeatureGates.INJECTED_PROVIDER]: false,
   [FeatureGates.PREDICTIONS]: false,
-  [FeatureGates.PRICE_CHART]: false
+  [FeatureGates.PRICE_CHART]: false,
+  [FeatureGates.FAST_STAKE_ENABLED]: false
 }
 
 export const initialState = {

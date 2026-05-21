@@ -14,7 +14,7 @@ import {
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
 
-export const NewStakeHomeScreen = (): JSX.Element => {
+export const StakeHomeScreenV2 = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
@@ -75,8 +75,8 @@ export const NewStakeHomeScreen = (): JSX.Element => {
             <Text variant="heading2">Stake</Text>
             {isEmpty && (
               <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-                Lock AVAX in the network for a set period of time and generate
-                staking rewards.
+                Stake your AVAX and earn rewards for securing the Avalanche
+                Network
               </Text>
             )}
           </Animated.View>

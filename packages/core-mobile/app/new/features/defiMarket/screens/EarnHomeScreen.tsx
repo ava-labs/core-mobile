@@ -41,7 +41,7 @@ import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import DepositTabScreen from './DepositTabScreen'
 import BorrowTabScreen from './BorrowTabScreen'
 
-export const NewEarnHomeScreen = (): JSX.Element => {
+export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
 
   useFocusEffect(

@@ -1,1 +1,1 @@
-export { NewEarnHomeScreen as default } from 'features/defiMarket/screens/NewEarnHomeScreen'
+export { EarnHomeScreen as default } from 'features/defiMarket/screens/EarnHomeScreen'

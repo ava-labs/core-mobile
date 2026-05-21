@@ -21,13 +21,13 @@ export const handleDeeplink = ({
   deeplink,
   dispatch,
   isEarnBlocked,
-  isInAppDefiBorrowBlocked,
+  isInAppDefiBlocked,
   openUrl
 }: {
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
-  isInAppDefiBorrowBlocked: boolean
+  isInAppDefiBlocked: boolean
   openUrl: (history: Pick<History, 'url' | 'title'>) => void
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
@@ -80,12 +80,12 @@ export const handleDeeplink = ({
       } else if (action === ACTIONS.OnrampCompleted) {
         closeInAppBrowser()
         dismissMeldStack(action, searchParams)
-      } else if (action === 'activity' && !isInAppDefiBorrowBlocked) {
-        // When borrow feature is enabled, Activity is moved to Portfolio sub-tab
+      } else if (action === 'activity' && !isInAppDefiBlocked) {
+        // When in-app DeFi is enabled, Activity is moved to Portfolio sub-tab
         // Redirect activity deeplinks to Portfolio
         navigateFromDeeplinkUrl('/portfolio')
-      } else if (action === 'earn' && isInAppDefiBorrowBlocked) {
-        // When borrow feature is disabled, redirect earn deeplinks to stake
+      } else if (action === 'earn' && isInAppDefiBlocked) {
+        // When in-app DeFi is disabled, redirect earn deeplinks to stake
         navigateFromDeeplinkUrl('/stake')
       } else {
         const baseUrl = deeplink.url.split('?')[0]?.toLowerCase()
