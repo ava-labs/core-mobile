@@ -100,7 +100,8 @@ export const StakeHomeScreen = (): JSX.Element => {
                   key={item.id}
                   size="large"
                   isSelected={item.id === filter.selected}
-                  onPress={() => filter.onSelected(item.id)}>
+                  onPress={() => filter.onSelected(item.id)}
+                  style={{ minWidth: 40 }}>
                   {item.title}
                 </Chip>
               ))}

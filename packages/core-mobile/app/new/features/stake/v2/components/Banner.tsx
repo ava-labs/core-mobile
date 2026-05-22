@@ -4,6 +4,8 @@ import {
   Card,
   Icons,
   CircularProgress,
+  Separator,
+  SxProp,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -15,6 +17,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useStakingParams from 'hooks/earn/useStakingParams'
+import { isOnGoing } from 'utils/earn/status'
+import { getEarnedRewardAmount, getEstimatedRewardAmount } from '../../utils'
 
 export const Banner = (): JSX.Element | undefined => {
   const { theme } = useTheme()
@@ -27,6 +31,40 @@ export const Banner = (): JSX.Element | undefined => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networkToken: pChainNetworkToken } =
     NetworkService.getAvalancheNetworkP(isDeveloperMode)
+
+  // Pending rewards = sum of estimated rewards across currently-active stakes.
+  // We can't use the P-chain "unlocked unstaked" balance because that includes
+  // returned principal, not just reward.
+  const pendingRewards = useMemo(() => {
+    const zero = new TokenUnit(
+      0n,
+      pChainNetworkToken.decimals,
+      pChainNetworkToken.symbol
+    )
+    if (!data) return zero
+    const now = new Date()
+    return data.reduce((acc, stake) => {
+      if (!isOnGoing(stake, now)) return acc
+      const reward = getEstimatedRewardAmount(stake, pChainNetworkToken)
+      return reward ? acc.add(reward) : acc
+    }, zero)
+  }, [data, pChainNetworkToken])
+
+  // No dedicated API for total lifetime rewards yet — sum reward UTXOs across
+  // the user's stakes. `getEarnedRewardAmount` returns undefined for stakes
+  // that haven't paid out yet (active / rejected), so they're skipped here.
+  const totalLifetimeRewards = useMemo(() => {
+    const zero = new TokenUnit(
+      0n,
+      pChainNetworkToken.decimals,
+      pChainNetworkToken.symbol
+    )
+    if (!data) return zero
+    return data.reduce((acc, stake) => {
+      const reward = getEarnedRewardAmount(stake, pChainNetworkToken)
+      return reward ? acc.add(reward) : acc
+    }, zero)
+  }, [data, pChainNetworkToken])
 
   const stakedInAvax = useMemo(() => {
     const unlockedStakedInNAvax = pChainBalance?.balancePerType.unlockedStaked
@@ -100,19 +138,79 @@ export const Banner = (): JSX.Element | undefined => {
       }}>
       <Card
         sx={{
-          paddingVertical: 12,
+          paddingVertical: 14,
           paddingHorizontal: 18,
           paddingRight: 20,
-          flexDirection: 'row',
-          gap: 15,
-          alignItems: 'center'
+          // Card defaults to alignItems: 'center' which collapses the Separator
+          // (it has no intrinsic width). Stretch children so the divider spans
+          // the full card width.
+          alignItems: 'stretch'
         }}>
-        <CircularProgress progress={percentage} />
-        <Text variant="body2" sx={{ flexShrink: 1 }}>
-          {formattedTotalStaked} AVAX are currently staked out of{' '}
-          {formattedTotalAvailable} AVAX available
-        </Text>
+        <View sx={{ flexDirection: 'row' }}>
+          <RewardColumn
+            amount={pendingRewards.toDisplay()}
+            label="Pending rewards"
+            sx={{ flex: 0.4 }}
+          />
+          <RewardColumn
+            amount={totalLifetimeRewards.toDisplay()}
+            label="Total lifetime rewards"
+            sx={{ flex: 0.6 }}
+          />
+        </View>
+
+        <Separator sx={{ marginVertical: 12 }} />
+
+        <View sx={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
+          <CircularProgress progress={percentage} />
+          <Text variant="body2" sx={{ flexShrink: 1 }}>
+            {formattedTotalStaked} AVAX are currently staked out of{' '}
+            {formattedTotalAvailable} AVAX available
+          </Text>
+        </View>
       </Card>
+    </View>
+  )
+}
+
+const RewardColumn = ({
+  amount,
+  label,
+  sx
+}: {
+  amount: string
+  label: string
+  sx?: SxProp
+}): JSX.Element => {
+  return (
+    <View sx={sx}>
+      <Text
+        sx={{
+          fontFamily: 'Inter-SemiBold',
+          fontSize: 21,
+          lineHeight: 24,
+          letterSpacing: -0.5,
+          color: '$textPrimary'
+        }}>
+        {amount}
+        <Text
+          sx={{
+            fontFamily: 'Inter-Medium',
+            fontSize: 14,
+            lineHeight: 24,
+            color: '$textPrimary'
+          }}>
+          {' AVAX'}
+        </Text>
+      </Text>
+      <Text
+        variant="caption"
+        sx={{
+          fontFamily: 'Inter-Medium',
+          color: '$textSecondary'
+        }}>
+        {label}
+      </Text>
     </View>
   )
 }
