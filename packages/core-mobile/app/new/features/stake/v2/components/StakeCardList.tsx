@@ -149,6 +149,8 @@ export const StakeCardList = ({
             stakeIsActive ? getActiveStakeProgress(stake, now) : undefined
           }
           motion={motion}
+          // 'delegating' and 'validating' badges will be added as follow-up
+          // work; for now every active stake is surfaced as a fast stake.
           badge={stakeIsActive ? 'fastStake' : undefined}
           width={CARD_WIDTH}
           onPress={() => handlePressStake(stake.txHash)}
@@ -255,7 +257,11 @@ export const StakeCardList = ({
       masonry
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
-      keyExtractor={(_, index) => index.toString()}
+      keyExtractor={(item, index) =>
+        item === StaticCard.Add
+          ? 'add-card'
+          : (item as PChainTransaction).txHash ?? index.toString()
+      }
       removeClippedSubviews={true}
       extraData={{ isDark: theme.isDark, motion }}
       onRefresh={onRefresh}
