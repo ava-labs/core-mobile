@@ -248,7 +248,7 @@ export const TokenPriceChart: FC<Props> = ({
       if (!hasActiveCandleListener || idx === prev) return
       scheduleOnRN(handleActiveIndex, idx)
     },
-    [hasActiveCandleListener]
+    [hasActiveCandleListener, handleActiveIndex]
   )
 
   return (
