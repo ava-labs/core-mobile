@@ -67,6 +67,15 @@ export const ProgressWave = ({
 
   // create path based on amplitude and phase
   const animatedProps = useAnimatedProps(() => {
+    // Guard: before the wrapper View is measured (or if the host card has a
+    // degenerate size), waveWidth/height are 0 and the path math below would
+    // produce `NaN` values. RNSVG rejects those, throwing
+    // `InvalidNumber: M 0 0 L 0 NaN ...` during a re-render. Return a no-op
+    // path until we have a real measurement.
+    if (waveWidth === 0 || height === 0) {
+      return { d: 'M 0 0 Z' }
+    }
+
     const A = amplitude.value
     const φ = phase.value
 
@@ -157,7 +166,7 @@ export const ProgressWave = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseConstant, motion])
 
-  if (height === 0) {
+  if (width <= 0 || height <= 0) {
     return <></>
   }
 
