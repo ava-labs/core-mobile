@@ -530,10 +530,10 @@ export const PriceChart: FC<Props> = ({
           style={[
             {
               position: 'absolute',
-              top: 0,
+              top: priceTopPadding,
               left: 0,
               right: 0,
-              bottom: 0,
+              height: priceAreaH,
               justifyContent: 'center',
               alignItems: 'center'
             },

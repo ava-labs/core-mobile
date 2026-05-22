@@ -161,7 +161,10 @@ type Props = {
 const defaultFormatPrice = (amount: number): string =>
   `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`
 
-const UNKNOWN_PRICE_TEXT = '–'
+// Reuse `formatPrice` so the currency symbol matches the rest of the header
+// (e.g. "$–", "€–", "£–"). Strip digits, dots and commas, leave the symbol.
+const formatUnknownPrice = (formatPrice: (amount: number) => string): string =>
+  formatPrice(0).replace(/[\d.,]+/g, '–')
 
 const SKELETON_WIDTH = 160
 const SKELETON_HEIGHT = 62
@@ -225,7 +228,7 @@ export const ChartHeader: FC<Props> = memo(
       active?.priceText ??
       idlePriceText ??
       lastCandle?.priceText ??
-      UNKNOWN_PRICE_TEXT
+      formatUnknownPrice(formatPrice)
     const subtitleText = active ? active.timeText : `Current price of ${symbol}`
     const indicator = active
       ? {

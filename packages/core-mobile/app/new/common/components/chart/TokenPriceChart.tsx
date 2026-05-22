@@ -14,6 +14,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
 import { useMarketToken } from 'common/hooks/useMarketToken'
 import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, {
   FC,
@@ -263,7 +264,9 @@ export const TokenPriceChart: FC<Props> = ({
           onPriceHeaderPress={onPriceHeaderPress}
           formatPrice={formatPrice}
           isLoading={effectiveState === 'loading'}
-          priceText={formattedPrice}
+          priceText={
+            formattedPrice === UNKNOWN_AMOUNT ? undefined : formattedPrice
+          }
         />
       )}
       <PriceChart
