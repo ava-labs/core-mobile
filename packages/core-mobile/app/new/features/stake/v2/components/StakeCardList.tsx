@@ -239,9 +239,18 @@ export const StakeCardList = ({
     setSelectedSort(sort.selected as SortOrder)
   }, [sort.selected])
 
-  const headerComponent = useCallback(() => {
-    return renderHeader({ isEmpty, filter, sort })
-  }, [renderHeader, isEmpty, filter, sort])
+  // Pass the header as a JSX element rather than a component reference.
+  // FlashList instantiates a function passed to `ListHeaderComponent` as
+  // `<HeaderComponent />`, so a new function identity (which happens every
+  // time `filter`/`sort` change here) reads as a new component *type* and
+  // unmounts/remounts the entire header subtree — including <Banner />,
+  // which retriggers the CircularProgress mount animation. Reconciling by
+  // element type instead keeps the Banner instance alive across filter
+  // changes.
+  const headerElement = useMemo(
+    () => renderHeader({ isEmpty, filter, sort }),
+    [renderHeader, isEmpty, filter, sort]
+  )
 
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
@@ -249,7 +258,6 @@ export const StakeCardList = ({
 
   return (
     <FlashList
-      key={`stake-card-list-${filter.selected}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}
@@ -266,7 +274,7 @@ export const StakeCardList = ({
       extraData={{ isDark: theme.isDark, motion }}
       onRefresh={onRefresh}
       refreshing={isRefreshing}
-      ListHeaderComponent={headerComponent}
+      ListHeaderComponent={headerElement}
       // Negative margin cancels the contentContainer's paddingHorizontal for
       // the header, so its existing paddingHorizontal: 16 still aligns to the
       // screen edge instead of being indented by the column padding.
