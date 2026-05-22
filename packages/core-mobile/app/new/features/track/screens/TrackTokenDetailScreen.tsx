@@ -4,6 +4,7 @@ import {
   GroupList,
   GroupListItem,
   Icons,
+  OhlcCandle,
   SegmentedControl,
   showAlert,
   Text,
@@ -62,7 +63,11 @@ const DEFAULT_DEBOUNCE_MILLISECONDS = 500
 
 // Maps the chart's range labels to the day count `useTokenDetails` understands
 // so its computed `ranges` (which drives Track's header) stays in sync with
-// whatever range the chart is showing.
+// whatever range the chart is showing. Note: `1H` is in the `ChartRange` type
+// but isn't currently exposed in `CHART_RANGES`, so this entry is unreachable
+// today — kept for type completeness. If 1H is ever surfaced, the header
+// delta will need a range-specific calc instead (CoinGecko's smallest
+// "days" granularity is 1, which is 24h — not 1h).
 const CHART_RANGE_TO_DAYS: Record<ChartRange, number> = {
   '1H': 1,
   '1D': 1,
@@ -151,40 +156,27 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     []
   )
 
-  // Crosshair SharedValues are lifted up so we can drive the
-  // SelectedChartDataIndicator overlay + the header fade in/out.
+  // Crosshair SharedValues are lifted up so we can drive the header fade
+  // in/out. The active candle itself comes back via `onActiveCandleChange`
+  // — that's the chart's own bucketed data (different length/order from
+  // `useTokenDetails`'s raw `chartData`), so reading it via the callback
+  // avoids index-misalignment bugs.
   const chartIsActive = useSharedValue(false)
-  const chartActiveIndex = useSharedValue<number | null>(null)
   const chartCrosshairX = useSharedValue(0)
 
-  // Look up the selected chart point on the JS thread — `scheduleOnRN`
-  // serializes its arguments across threads, which would strip the `Date`
-  // prototype from the point and break `SelectedChartDataIndicator`.
-  const updateSelectedData = useCallback(
-    (idx: number | null) => {
-      if (idx === null) {
-        setSelectedData(undefined)
-        return
-      }
-      const point = chartData?.[idx]
-      if (point) setSelectedData(point)
-    },
-    [chartData]
-  )
+  const handleActiveCandleChange = useCallback((candle: OhlcCandle | null) => {
+    if (!candle) {
+      setSelectedData(undefined)
+      return
+    }
+    setSelectedData({ value: candle.close, date: new Date(candle.ts) })
+  }, [])
 
   useAnimatedReaction(
     () => chartIsActive.value,
     (active, prev) => {
       if (active === prev) return
       scheduleOnRN(setIsChartInteracting, active)
-    }
-  )
-
-  useAnimatedReaction(
-    () => chartActiveIndex.value,
-    (idx, prev) => {
-      if (idx === prev) return
-      scheduleOnRN(updateSelectedData, idx)
     }
   )
 
@@ -567,8 +559,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             range={chartRange}
             onRangeChange={handleChartRangeChange}
             externalIsActive={chartIsActive}
-            externalActiveIndex={chartActiveIndex}
             externalCrosshairX={chartCrosshairX}
+            onActiveCandleChange={handleActiveCandleChange}
           />
         </View>
       )}

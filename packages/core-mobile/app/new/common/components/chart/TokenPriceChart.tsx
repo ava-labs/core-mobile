@@ -3,6 +3,7 @@ import {
   ChartHeader,
   ChartRange,
   Icons,
+  OhlcCandle,
   PriceChart,
   SegmentedControl,
   useTheme,
@@ -23,13 +24,17 @@ import React, {
   useState
 } from 'react'
 import { Pressable } from 'react-native'
-import { useSharedValue } from 'react-native-reanimated'
+import {
+  SharedValue,
+  useAnimatedReaction,
+  useSharedValue
+} from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useDispatch, useSelector } from 'react-redux'
 import { LocalTokenWithBalance } from 'store/balance'
 import { selectChartType, setChartType } from 'store/chartPreferences/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { MarketToken } from 'store/watchlist'
-import { SharedValue } from 'react-native-reanimated'
 
 type Props = {
   /** Held token to render (Portfolio path). Resolves marketToken via
@@ -56,6 +61,11 @@ type Props = {
   externalIsActive?: SharedValue<boolean>
   externalActiveIndex?: SharedValue<number | null>
   externalCrosshairX?: SharedValue<number>
+  /** Fires on the JS thread with the candle at the crosshair index — or
+   * `null` when the crosshair deactivates. Use this instead of looking up
+   * the active candle yourself, because the chart's candles are bucketed
+   * by `useTokenChartCandles` and won't match the raw source data. */
+  onActiveCandleChange?: (candle: OhlcCandle | null) => void
 }
 
 const TOGGLE_SIZE = 36
@@ -158,7 +168,8 @@ export const TokenPriceChart: FC<Props> = ({
   hideHeader = false,
   externalIsActive,
   externalActiveIndex,
-  externalCrosshairX
+  externalCrosshairX,
+  onActiveCandleChange
 }) => {
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -229,6 +240,31 @@ export const TokenPriceChart: FC<Props> = ({
   const isActive = externalIsActive ?? internalIsActive
   const activeIndex = externalActiveIndex ?? internalActiveIndex
   const crosshairX = externalCrosshairX ?? internalCrosshairX
+
+  // Bridge the active-index SharedValue back to JS so the parent can show
+  // an overlay with the right candle. The lookup happens on the JS thread
+  // — `scheduleOnRN` serializes its args across threads, which would strip
+  // the candle's structure into a POJO; passing the index keeps things
+  // simple and lets the consumer's callback receive the real object.
+  const handleActiveIndex = useCallback(
+    (idx: number | null) => {
+      if (!onActiveCandleChange) return
+      if (idx === null) {
+        onActiveCandleChange(null)
+        return
+      }
+      const candle = candles[idx]
+      onActiveCandleChange(candle ?? null)
+    },
+    [candles, onActiveCandleChange]
+  )
+  useAnimatedReaction(
+    () => activeIndex.value,
+    (idx, prev) => {
+      if (idx === prev) return
+      scheduleOnRN(handleActiveIndex, idx)
+    }
+  )
 
   return (
     <View style={{ paddingBottom: 18, gap: 12 }}>
