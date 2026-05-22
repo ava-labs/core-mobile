@@ -1,13 +1,15 @@
 import {
-  alpha,
   BaseCard,
+  Motion,
   Separator,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React from 'react'
-import { Platform } from 'react-native'
+import React, { useState } from 'react'
+import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
+import { ProgressWave } from './ProgressWave'
+import { StakeBadge, StakeBadgeKind } from './StakeBadge'
 
 export type StakeCardVariant = 'active' | 'completed'
 
@@ -23,6 +25,12 @@ export interface StakeCardProps {
   nodeId: string
   /** Pre-formatted end date, e.g. "01/06/2026" */
   endDate: string
+  /** 0..1 staking progress. Only used for variant='active' to drive the wave fill. */
+  progress?: number
+  /** Optional accelerometer motion driver for the wave animation. */
+  motion?: Motion
+  /** Optional badge label shown only on active cards (fastStake / delegating / validating). */
+  badge?: StakeBadgeKind
   width?: number
   onPress?: () => void
 }
@@ -36,11 +44,24 @@ export const StakeCard = ({
   stakedUsdValue,
   nodeId,
   endDate,
+  progress,
+  motion,
+  badge,
   width = DEFAULT_WIDTH,
   onPress
 }: StakeCardProps): JSX.Element => {
   const { theme } = useTheme()
   const isCompleted = variant === 'completed'
+  const showWave = !isCompleted && progress !== undefined
+
+  const [waveSize, setWaveSize] = useState({ width: 0, height: 0 })
+
+  const handleWaveLayout = (e: LayoutChangeEvent): void => {
+    const { width: w, height: h } = e.nativeEvent.layout
+    if (w !== waveSize.width || h !== waveSize.height) {
+      setWaveSize({ width: w, height: h })
+    }
+  }
 
   return (
     <BaseCard
@@ -50,6 +71,19 @@ export const StakeCard = ({
         paddingVertical: 20,
         paddingHorizontal: 18
       }}>
+      {showWave && (
+        <View
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+          onLayout={handleWaveLayout}>
+          <ProgressWave
+            width={waveSize.width}
+            height={waveSize.height}
+            progress={progress}
+            motion={motion}
+          />
+        </View>
+      )}
       <View sx={{ gap: 10, alignItems: 'flex-start' }}>
         <Text
           sx={{
@@ -60,7 +94,7 @@ export const StakeCard = ({
           }}>
           {title}
         </Text>
-        {!isCompleted && <FastStakeBadge />}
+        {!isCompleted && badge && <StakeBadge kind={badge} />}
       </View>
 
       <View sx={{ marginTop: 24, gap: 1 }}>
@@ -123,31 +157,6 @@ export const StakeCard = ({
         }
       />
     </BaseCard>
-  )
-}
-
-const FastStakeBadge = (): JSX.Element => {
-  const { theme } = useTheme()
-  return (
-    <View
-      sx={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 999,
-        // 10% of $textPrimary — semi-transparent so the wave animation
-        // behind the card can show through. Adapts to light/dark automatically:
-        //   light: rgba(40,40,46,0.1)   (neutral-850 @ 10%)
-        //   dark:  rgba(255,255,255,0.1) (white @ 10%)
-        backgroundColor: alpha(theme.colors.$textPrimary, 0.1)
-      }}>
-      <Text sx={{ fontSize: 11 }}>⚡</Text>
-      <Text variant="buttonSmall" sx={{ color: theme.colors.$textPrimary }}>
-        Fast stake
-      </Text>
-    </View>
   )
 }
 

@@ -59,7 +59,7 @@ export const StakeHomeScreen = (): JSX.Element => {
   }, [tabBarHeight, tabHeight])
 
   const renderHeader = useCallback(
-    ({ filter }: StakeCardListHeaderProps): JSX.Element => {
+    ({ isEmpty, filter }: StakeCardListHeaderProps): JSX.Element => {
       return (
         <View
           sx={{
@@ -85,25 +85,27 @@ export const StakeHomeScreen = (): JSX.Element => {
             </Text>
           </Animated.View>
           <Banner />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            sx={{ marginTop: 20 }}
-            contentContainerStyle={{
-              flexDirection: 'row',
-              gap: 8,
-              paddingHorizontal: 16
-            }}>
-            {filter.data[0]?.items.map(item => (
-              <Chip
-                key={item.id}
-                size="large"
-                isSelected={item.id === filter.selected}
-                onPress={() => filter.onSelected(item.id)}>
-                {item.title}
-              </Chip>
-            ))}
-          </ScrollView>
+          {!isEmpty && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              sx={{ marginTop: 20 }}
+              contentContainerStyle={{
+                flexDirection: 'row',
+                gap: 8,
+                paddingHorizontal: 16
+              }}>
+              {filter.data[0]?.items.map(item => (
+                <Chip
+                  key={item.id}
+                  size="large"
+                  isSelected={item.id === filter.selected}
+                  onPress={() => filter.onSelected(item.id)}>
+                  {item.title}
+                </Chip>
+              ))}
+            </ScrollView>
+          )}
         </View>
       )
     },

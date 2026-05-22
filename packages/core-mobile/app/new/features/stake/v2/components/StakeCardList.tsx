@@ -1,5 +1,12 @@
 import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
-import { AddCard, GRID_GAP, SCREEN_WIDTH, useTheme } from '@avalabs/k2-alpine'
+import {
+  AddCard,
+  GRID_GAP,
+  SCREEN_WIDTH,
+  useMotion,
+  useTheme
+} from '@avalabs/k2-alpine'
+import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -10,8 +17,10 @@ import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  AppState,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   StyleProp,
   ViewStyle
 } from 'react-native'
@@ -21,9 +30,10 @@ import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
+import { truncateNodeId } from 'utils/Utils'
 import { useAddStake } from '../../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../../hooks/useStakeFilterAndSort'
-import { getStakedAmount } from '../../utils'
+import { getActiveStakeProgress, getStakedAmount } from '../../utils'
 import { getStakeTitle } from '../utils'
 import { StakeCard } from './StakeCard'
 
@@ -47,6 +57,14 @@ export const StakeCardList = ({
   renderHeader
 }: StakeCardListProps): JSX.Element => {
   const { navigate } = useRouter()
+  const [appState, setAppState] = useState(AppState.currentState)
+  const isFocused = useIsFocused()
+  const isMotionActive = useMemo(
+    () =>
+      appState === 'active' && isFocused && Platform.OS === 'ios' && isActive,
+    [appState, isFocused, isActive]
+  )
+  const motion = useMotion(isMotionActive)
 
   const [selectedSort, setSelectedSort] = useState<SortOrder>(SortOrder.DESC)
   const {
@@ -125,8 +143,13 @@ export const StakeCardList = ({
           })}
           stakedAmount={stakedAmount}
           stakedUsdValue={stakedUsdValue}
-          nodeId={truncateNodeId(stake.nodeId)}
+          nodeId={truncateNodeId(stake.nodeId ?? '')}
           endDate={formatEndDate(stake.endTimestamp)}
+          progress={
+            stakeIsActive ? getActiveStakeProgress(stake, now) : undefined
+          }
+          motion={motion}
+          badge={stakeIsActive ? 'fastStake' : undefined}
           width={CARD_WIDTH}
           onPress={() => handlePressStake(stake.txHash)}
         />
@@ -137,7 +160,8 @@ export const StakeCardList = ({
       avaxPrice,
       formatTokenInCurrency,
       handlePressStake,
-      selectedCurrency
+      selectedCurrency,
+      motion
     ]
   )
 
@@ -193,6 +217,16 @@ export const StakeCardList = ({
   )
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      setAppState(nextAppState)
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
+
+  useEffect(() => {
     if (scrollOffsetRef.current && isActive && onScroll) {
       // Sync scroll position when tab becomes active
       onScroll(scrollOffsetRef.current.y)
@@ -223,7 +257,7 @@ export const StakeCardList = ({
       showsVerticalScrollIndicator={false}
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
-      extraData={{ isDark: theme.isDark }}
+      extraData={{ isDark: theme.isDark, motion }}
       onRefresh={onRefresh}
       refreshing={isRefreshing}
       ListHeaderComponent={headerComponent}
@@ -250,15 +284,6 @@ const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
  */
 const ensureCurrencySuffix = (formatted: string, currency: string): string =>
   formatted.endsWith(currency) ? formatted : `${formatted} ${currency}`
-
-const truncateNodeId = (nodeId?: string): string => {
-  if (!nodeId) return 'NodeID—'
-  // nodeId format: "NodeID-<id>"
-  const dashIndex = nodeId.indexOf('-')
-  const tail = dashIndex >= 0 ? nodeId.slice(dashIndex + 1) : nodeId
-  if (tail.length <= 5) return `NodeID-${tail}`
-  return `NodeID...${tail.slice(-5)}`
-}
 
 const formatEndDate = (endTimestamp?: number): string => {
   if (!endTimestamp) return '—'
