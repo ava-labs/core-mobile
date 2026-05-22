@@ -131,9 +131,11 @@ const AnimatedComponent = ({
       )}
       <View style={styles.innerWrapper}>
         {showArrow && (
-          <AnimateFadeScale>
-            <Arrow sx={arrowSx} status={status} size={arrowSize} />
-          </AnimateFadeScale>
+          <View style={styles.arrow}>
+            <AnimateFadeScale>
+              <Arrow sx={arrowSx} status={status} size={arrowSize} />
+            </AnimateFadeScale>
+          </View>
         )}
         {formattedPercent !== undefined && (
           <AnimatedText

@@ -1,8 +1,10 @@
 import React, { FC, useMemo } from 'react'
 import { View } from 'react-native'
 import Animated, {
+  Easing,
   SharedValue,
-  useAnimatedStyle
+  useAnimatedStyle,
+  withTiming
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
 import {
@@ -27,6 +29,7 @@ type Props = {
 
 const VOLUME_WIDTH = 140
 const EDGE_PADDING = 8
+const FADE_DURATION = 180
 
 export const ChartFooter: FC<Props> = ({
   candles,
@@ -49,8 +52,15 @@ export const ChartFooter: FC<Props> = ({
     return latest ? formatLastUpdate(latest.ts) : ''
   }, [candles])
 
+  // Smoothly cross-fade between "Last update: …" and the active-volume label
+  // when the crosshair toggles. In line/area mode (no volume), the idle text
+  // still fades out on crosshair-active so the chart stays uncluttered while
+  // the user is reading prices.
   const idleStyle = useAnimatedStyle(() => ({
-    opacity: showVolume && isActive.value ? 0 : 1
+    opacity: withTiming(isActive.value ? 0 : 1, {
+      duration: FADE_DURATION,
+      easing: Easing.out(Easing.quad)
+    })
   }))
   const activeStyle = useAnimatedStyle(() => {
     const target = x.value - VOLUME_WIDTH / 2
@@ -58,7 +68,10 @@ export const ChartFooter: FC<Props> = ({
     const max = width - VOLUME_WIDTH - EDGE_PADDING
     const clamped = Math.max(min, Math.min(max, target))
     return {
-      opacity: showVolume && isActive.value ? 1 : 0,
+      opacity: withTiming(showVolume && isActive.value ? 1 : 0, {
+        duration: FADE_DURATION,
+        easing: Easing.out(Easing.quad)
+      }),
       transform: [{ translateX: clamped }]
     }
   })

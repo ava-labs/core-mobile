@@ -28,14 +28,34 @@ import { useDispatch, useSelector } from 'react-redux'
 import { LocalTokenWithBalance } from 'store/balance'
 import { selectChartType, setChartType } from 'store/chartPreferences/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { MarketToken } from 'store/watchlist'
+import { SharedValue } from 'react-native-reanimated'
 
 type Props = {
-  /** The held token whose price + chart to render. */
-  token: LocalTokenWithBalance | undefined
+  /** Held token to render (Portfolio path). Resolves marketToken via
+   * `useMarketToken`. Ignored when `marketToken` is provided. */
+  token?: LocalTokenWithBalance | undefined
+  /** Directly-supplied watchlist token (Track path). Takes precedence over
+   * `token` — callers that already have one can avoid the extra lookup. */
+  marketToken?: MarketToken | undefined
   width: number
   height?: number
+  /** Initial range when range is uncontrolled. Ignored if `range` is set. */
   initialRange?: ChartRange
+  /** Controlled range value. Pair with `onRangeChange`. */
+  range?: ChartRange
+  onRangeChange?: (range: ChartRange) => void
   onPriceHeaderPress?: () => void
+  /** Skip rendering the built-in `ChartHeader` when the parent screen already
+   * shows its own token header (e.g. Track's `TokenHeader` with the rank
+   * badge). The chart's crosshair SharedValues are still exposed via the
+   * `external*` props so the parent can drive its own overlay. */
+  hideHeader?: boolean
+  /** Crosshair state mirrored out for the parent (e.g. to fade an overlay
+   * indicator). If omitted, the chart manages its own SharedValues. */
+  externalIsActive?: SharedValue<boolean>
+  externalActiveIndex?: SharedValue<number | null>
+  externalCrosshairX?: SharedValue<number>
 }
 
 const TOGGLE_SIZE = 36
@@ -108,12 +128,37 @@ const ChartRangeSelector: FC<{
   )
 })
 
+const useControlledRange = (
+  initialRange: ChartRange,
+  rangeProp: ChartRange | undefined,
+  onRangeChange?: (range: ChartRange) => void
+): [ChartRange, (next: ChartRange) => void] => {
+  const [internal, setInternal] = useState<ChartRange>(initialRange)
+  const isControlled = rangeProp !== undefined
+  const value = isControlled ? rangeProp : internal
+  const setValue = useCallback(
+    (next: ChartRange) => {
+      if (!isControlled) setInternal(next)
+      onRangeChange?.(next)
+    },
+    [isControlled, onRangeChange]
+  )
+  return [value, setValue]
+}
+
 export const TokenPriceChart: FC<Props> = ({
   token,
+  marketToken: marketTokenProp,
   width,
   height = 235,
   initialRange = '1D',
-  onPriceHeaderPress
+  range: rangeProp,
+  onRangeChange,
+  onPriceHeaderPress,
+  hideHeader = false,
+  externalIsActive,
+  externalActiveIndex,
+  externalCrosshairX
 }) => {
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -135,18 +180,26 @@ export const TokenPriceChart: FC<Props> = ({
     [formatCurrency]
   )
 
-  const [range, setRange] = useState<ChartRange>(initialRange)
+  const [range, handleRangeChange] = useControlledRange(
+    initialRange,
+    rangeProp,
+    onRangeChange
+  )
 
-  const marketToken = useMarketToken({ token })
+  // Prefer the caller-supplied marketToken (Track has one directly); fall back
+  // to resolving from the held token.
+  const resolvedMarketToken = useMarketToken({
+    token: marketTokenProp ? undefined : token
+  })
+  const marketToken = marketTokenProp ?? resolvedMarketToken
   const coingeckoId = marketToken?.coingeckoId ?? undefined
-  const symbol = token?.symbol ?? ''
+  const symbol = marketTokenProp?.symbol ?? token?.symbol ?? ''
 
-  const {
-    formattedPrice,
-    formattedPriceChange,
-    formattedPercent,
-    status: priceChangeStatus
-  } = useTokenPriceDisplay({
+  // Live current price for the big idle heading. The change indicator is
+  // *not* computed here — we let `ChartHeader` derive it range-relative from
+  // the candles in view so the percent + amount update whenever the user
+  // switches range (matches Track's behavior).
+  const { formattedPrice } = useTokenPriceDisplay({
     currentPrice: token?.priceInCurrency ?? marketToken?.currentPrice,
     priceChange24h: token?.priceChanges?.value ?? marketToken?.priceChange24h,
     priceChangePercentage24h:
@@ -154,14 +207,6 @@ export const TokenPriceChart: FC<Props> = ({
       token?.change24 ??
       marketToken?.priceChangePercentage24h
   })
-  const headerPriceChange =
-    formattedPriceChange === undefined && formattedPercent === undefined
-      ? undefined
-      : {
-          status: priceChangeStatus,
-          formattedPrice: formattedPriceChange,
-          formattedPercent
-        }
 
   const { candles, state, isFetching } = useTokenChartCandles({
     coingeckoId,
@@ -178,25 +223,29 @@ export const TokenPriceChart: FC<Props> = ({
       ? ('loading' as const)
       : state
 
-  const isActive = useSharedValue(false)
-  const activeIndex = useSharedValue<number | null>(null)
-  const crosshairX = useSharedValue(0)
+  const internalIsActive = useSharedValue(false)
+  const internalActiveIndex = useSharedValue<number | null>(null)
+  const internalCrosshairX = useSharedValue(0)
+  const isActive = externalIsActive ?? internalIsActive
+  const activeIndex = externalActiveIndex ?? internalActiveIndex
+  const crosshairX = externalCrosshairX ?? internalCrosshairX
 
   return (
     <View style={{ paddingBottom: 18, gap: 12 }}>
-      <ChartHeader
-        candles={candles}
-        symbol={symbol}
-        activeIndex={activeIndex}
-        crosshairX={crosshairX}
-        isActive={isActive}
-        containerWidth={width}
-        onPriceHeaderPress={onPriceHeaderPress}
-        formatPrice={formatPrice}
-        isLoading={effectiveState === 'loading'}
-        priceText={formattedPrice}
-        priceChange={headerPriceChange}
-      />
+      {!hideHeader && (
+        <ChartHeader
+          candles={candles}
+          symbol={symbol}
+          activeIndex={activeIndex}
+          crosshairX={crosshairX}
+          isActive={isActive}
+          containerWidth={width}
+          onPriceHeaderPress={onPriceHeaderPress}
+          formatPrice={formatPrice}
+          isLoading={effectiveState === 'loading'}
+          priceText={formattedPrice}
+        />
+      )}
       <PriceChart
         candles={candles}
         width={width}
@@ -218,7 +267,7 @@ export const TokenPriceChart: FC<Props> = ({
           alignItems: 'center'
         }}>
         <View sx={{ flex: 1 }}>
-          <ChartRangeSelector value={range} onChange={setRange} />
+          <ChartRangeSelector value={range} onChange={handleRangeChange} />
         </View>
         <ChartTypeToggle />
       </View>

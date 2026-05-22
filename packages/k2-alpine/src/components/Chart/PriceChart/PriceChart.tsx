@@ -22,6 +22,7 @@ import { colors as baseColors } from '../../../theme/tokens/colors'
 import { Text } from '../../Primitives'
 import { ChartFooter } from './ChartFooter'
 import {
+  CANDLE_BODY_MAX_WIDTH,
   CANDLE_BODY_WIDTH_RATIO,
   CHART_FOOTER_HEIGHT,
   CHART_INSET,
@@ -127,7 +128,12 @@ export const PriceChart: FC<Props> = ({
   const chartInset = mode === 'line' ? 0 : CHART_INSET
   const innerWidth = Math.max(0, width - 2 * chartInset)
   const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
-  const bodyWidth = slotWidth * CANDLE_BODY_WIDTH_RATIO
+  // Cap the body width so sparse data (e.g. only a handful of candles in
+  // view) doesn't render as fat blocks.
+  const bodyWidth = Math.min(
+    slotWidth * CANDLE_BODY_WIDTH_RATIO,
+    CANDLE_BODY_MAX_WIDTH
+  )
 
   const hasVolumeData = useMemo(
     () => candles.some(c => c.volume != null),

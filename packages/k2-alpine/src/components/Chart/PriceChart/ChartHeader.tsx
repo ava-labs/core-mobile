@@ -304,6 +304,7 @@ export const ChartHeader: FC<Props> = memo(
                   textVariant="buttonSmall"
                   percentSx={{ fontSize: 14, lineHeight: 18 }}
                   priceSx={{ fontSize: 14, lineHeight: 18 }}
+                  animated={active === undefined}
                 />
               ) : (
                 <Text variant="buttonSmall" sx={{ color: '$textSecondary' }}>
