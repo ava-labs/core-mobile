@@ -1,9 +1,11 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import Animated, {
   Easing,
   SharedValue,
+  useAnimatedReaction,
   useAnimatedStyle,
+  useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
@@ -52,26 +54,43 @@ export const ChartFooter: FC<Props> = ({
     return latest ? formatLastUpdate(latest.ts) : ''
   }, [candles])
 
-  // Smoothly cross-fade between "Last update: …" and the active-volume label
-  // when the crosshair toggles. In line/area mode (no volume), the idle text
-  // still fades out on crosshair-active so the chart stays uncluttered while
-  // the user is reading prices.
-  const idleStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isActive.value ? 0 : 1, {
+  // Opacity lives in its own SharedValue driven by reactions on `isActive` /
+  // `showVolume`, so the per-frame `translateX` in `activeStyle` doesn't
+  // restart the `withTiming` opacity animation every crosshair frame.
+  const idleOpacity = useSharedValue(1)
+  const activeOpacity = useSharedValue(0)
+  useAnimatedReaction(
+    () => isActive.value,
+    active => {
+      idleOpacity.value = withTiming(active ? 0 : 1, {
+        duration: FADE_DURATION,
+        easing: Easing.out(Easing.quad)
+      })
+      activeOpacity.value = withTiming(showVolume && active ? 1 : 0, {
+        duration: FADE_DURATION,
+        easing: Easing.out(Easing.quad)
+      })
+    },
+    [showVolume]
+  )
+  // `useAnimatedReaction` re-registers on dep change but doesn't auto-fire,
+  // so push `showVolume` flips through an effect.
+  useEffect(() => {
+    const active = isActive.value
+    activeOpacity.value = withTiming(showVolume && active ? 1 : 0, {
       duration: FADE_DURATION,
       easing: Easing.out(Easing.quad)
     })
-  }))
+  }, [showVolume, isActive, activeOpacity])
+
+  const idleStyle = useAnimatedStyle(() => ({ opacity: idleOpacity.value }))
   const activeStyle = useAnimatedStyle(() => {
     const target = x.value - VOLUME_WIDTH / 2
     const min = EDGE_PADDING
     const max = width - VOLUME_WIDTH - EDGE_PADDING
     const clamped = Math.max(min, Math.min(max, target))
     return {
-      opacity: withTiming(showVolume && isActive.value ? 1 : 0, {
-        duration: FADE_DURATION,
-        easing: Easing.out(Easing.quad)
-      }),
+      opacity: activeOpacity.value,
       transform: [{ translateX: clamped }]
     }
   })

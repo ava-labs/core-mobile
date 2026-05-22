@@ -61,13 +61,9 @@ const MAX_VALUE_WIDTH = '80%'
 const DELAY = 200
 const DEFAULT_DEBOUNCE_MILLISECONDS = 500
 
-// Maps the chart's range labels to the day count `useTokenDetails` understands
-// so its computed `ranges` (which drives Track's header) stays in sync with
-// whatever range the chart is showing. Note: `1H` is in the `ChartRange` type
-// but isn't currently exposed in `CHART_RANGES`, so this entry is unreachable
-// today — kept for type completeness. If 1H is ever surfaced, the header
-// delta will need a range-specific calc instead (CoinGecko's smallest
-// "days" granularity is 1, which is 24h — not 1h).
+// `1H` is unreachable today (not exposed via `CHART_RANGES`) — kept for
+// type completeness. If 1H is ever surfaced, the header delta will need a
+// range-specific calc since CoinGecko's smallest `days` is 1 (= 24h).
 const CHART_RANGE_TO_DAYS: Record<ChartRange, number> = {
   '1H': 1,
   '1D': 1,
@@ -117,9 +113,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const { navigateToBuy } = useBuy()
   const isPriceChartBlocked = useSelector(selectIsPriceChartBlocked)
 
-  // Chart range state lifted up from TokenPriceChart so we can sync the
-  // legacy useTokenDetails fetch (whose `ranges` powers TokenHeader's
-  // range-relative price delta) with the chart's selected range.
+  // `chartRange` here keeps `useTokenDetails.ranges` (TokenHeader's delta
+  // source) in sync with the chart's selected range.
   const [chartRange, setChartRange] = useState<ChartRange>('1D')
   const handleChartRangeChange = useCallback(
     (next: ChartRange) => {
@@ -129,7 +124,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     [changeChartDays]
   )
 
-  // Legacy chart fallback (flag OFF): old segmented-control range picker.
   const selectedSegmentIndex = useSharedValue(0)
   const debouncedHandleDataSelected = useDebouncedCallback(
     (index: number) =>
@@ -156,11 +150,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     []
   )
 
-  // Crosshair SharedValues are lifted up so we can drive the header fade
-  // in/out. The active candle itself comes back via `onActiveCandleChange`
-  // — that's the chart's own bucketed data (different length/order from
-  // `useTokenDetails`'s raw `chartData`), so reading it via the callback
-  // avoids index-misalignment bugs.
   const chartIsActive = useSharedValue(false)
   const chartCrosshairX = useSharedValue(0)
 
@@ -605,7 +594,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   )
 }
 
-// Legacy chart fallback: kept while the `price-chart` flag is OFF.
 const LEGACY_SEGMENT_INDEX_TO_DAYS: Record<number, number> = {
   0: 1, // 24H
   1: 7, // 1W

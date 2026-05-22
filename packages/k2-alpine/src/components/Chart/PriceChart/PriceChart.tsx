@@ -71,9 +71,8 @@ const renderPlaceholderState = ({
   width: number
   height: number
 }): React.ReactElement | null => {
-  // 'loading' and 'empty' fall through so the gridlines stay mounted under
-  // the spinner / "no data" overlay — avoids a layout swap mid-fade and
-  // gives users something to look at while waiting.
+  // `loading` and `empty` fall through to keep gridlines mounted under
+  // the spinner / overlay; only `error` swaps the layout.
   if (state === 'error') {
     return (
       <View
@@ -118,8 +117,6 @@ export const PriceChart: FC<Props> = ({
   const chartInset = mode === 'line' ? 0 : CHART_INSET
   const innerWidth = Math.max(0, width - 2 * chartInset)
   const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
-  // Cap the body width so sparse data (e.g. only a handful of candles in
-  // view) doesn't render as fat blocks.
   const bodyWidth = Math.min(
     slotWidth * CANDLE_BODY_WIDTH_RATIO,
     CANDLE_BODY_MAX_WIDTH
@@ -158,13 +155,11 @@ export const PriceChart: FC<Props> = ({
   const touchStartY = useSharedValue(0)
   const hasDecided = useSharedValue(false)
 
-  const chartContentOpacity = useSharedValue(0)
+  const chartContentOpacity = useSharedValue(1)
   useEffect(() => {
-    // Loading + empty both keep the layout mounted at full opacity so the
-    // gridlines stay visible behind the spinner / "no data" overlay — gives
-    // the user something to anchor on while a fetch is in flight or there's
-    // no data to draw. isFetching dims to 0.4 during a placeholder refetch
-    // so the previous range's chart visibly stales.
+    // Stay at full opacity while loading/empty so the gridlines remain
+    // visible behind the spinner / "no data" overlay. `isFetching` dims to
+    // 0.4 to visibly stale the previous range during a placeholder refetch.
     let target: number
     if (isFetching) target = 0.4
     else target = 1
@@ -191,10 +186,8 @@ export const PriceChart: FC<Props> = ({
 
   const hasCandles = candles.length > 0
 
-  // Shared between the gridline path and the y-axis labels so each label
-  // stays locked to its dashed line (including the edge-clamping below).
-  // When there are no candles, fall back to evenly-spaced placeholder
-  // positions so the empty-state grid still has structure.
+  // When `candles` is empty, evenly-spaced placeholder positions keep the
+  // empty-state grid intact (real labels are gated behind `hasCandles`).
   const tickPositions = useMemo(() => {
     if (!hasCandles) {
       const count = 3

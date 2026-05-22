@@ -37,34 +37,25 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { MarketToken } from 'store/watchlist'
 
 type Props = {
-  /** Held token to render (Portfolio path). Resolves marketToken via
-   * `useMarketToken`. Ignored when `marketToken` is provided. */
   token?: LocalTokenWithBalance | undefined
-  /** Directly-supplied watchlist token (Track path). Takes precedence over
-   * `token` — callers that already have one can avoid the extra lookup. */
+  /** Takes precedence over `token` and skips the `useMarketToken` lookup. */
   marketToken?: MarketToken | undefined
   width: number
   height?: number
-  /** Initial range when range is uncontrolled. Ignored if `range` is set. */
+  /** Ignored when `range` is provided (controlled mode). */
   initialRange?: ChartRange
-  /** Controlled range value. Pair with `onRangeChange`. */
   range?: ChartRange
   onRangeChange?: (range: ChartRange) => void
   onPriceHeaderPress?: () => void
-  /** Skip rendering the built-in `ChartHeader` when the parent screen already
-   * shows its own token header (e.g. Track's `TokenHeader` with the rank
-   * badge). The chart's crosshair SharedValues are still exposed via the
-   * `external*` props so the parent can drive its own overlay. */
+  /** Skip the built-in `ChartHeader` when the parent renders its own. The
+   * external SharedValues below stay populated regardless. */
   hideHeader?: boolean
-  /** Crosshair state mirrored out for the parent (e.g. to fade an overlay
-   * indicator). If omitted, the chart manages its own SharedValues. */
   externalIsActive?: SharedValue<boolean>
   externalActiveIndex?: SharedValue<number | null>
   externalCrosshairX?: SharedValue<number>
-  /** Fires on the JS thread with the candle at the crosshair index — or
-   * `null` when the crosshair deactivates. Use this instead of looking up
-   * the active candle yourself, because the chart's candles are bucketed
-   * by `useTokenChartCandles` and won't match the raw source data. */
+  /** Resolves the active candle from the chart's own (bucketed) `candles`,
+   * so the consumer doesn't index into the wrong array. Fires on the JS
+   * thread; `null` when the crosshair deactivates. */
   onActiveCandleChange?: (candle: OhlcCandle | null) => void
 }
 
@@ -197,8 +188,6 @@ export const TokenPriceChart: FC<Props> = ({
     onRangeChange
   )
 
-  // Prefer the caller-supplied marketToken (Track has one directly); fall back
-  // to resolving from the held token.
   const resolvedMarketToken = useMarketToken({
     token: marketTokenProp ? undefined : token
   })
@@ -206,10 +195,8 @@ export const TokenPriceChart: FC<Props> = ({
   const coingeckoId = marketToken?.coingeckoId ?? undefined
   const symbol = marketTokenProp?.symbol ?? token?.symbol ?? ''
 
-  // Live current price for the big idle heading. The change indicator is
-  // *not* computed here — we let `ChartHeader` derive it range-relative from
-  // the candles in view so the percent + amount update whenever the user
-  // switches range (matches Track's behavior).
+  // Only the live price is computed here; `ChartHeader` derives the delta
+  // range-relative from its candles so it updates per range switch.
   const { formattedPrice } = useTokenPriceDisplay({
     currentPrice: token?.priceInCurrency ?? marketToken?.currentPrice,
     priceChange24h: token?.priceChanges?.value ?? marketToken?.priceChange24h,
@@ -240,12 +227,6 @@ export const TokenPriceChart: FC<Props> = ({
   const isActive = externalIsActive ?? internalIsActive
   const activeIndex = externalActiveIndex ?? internalActiveIndex
   const crosshairX = externalCrosshairX ?? internalCrosshairX
-
-  // Bridge the active-index SharedValue back to JS so the parent can show
-  // an overlay with the right candle. The lookup happens on the JS thread
-  // — `scheduleOnRN` serializes its args across threads, which would strip
-  // the candle's structure into a POJO; passing the index keeps things
-  // simple and lets the consumer's callback receive the real object.
   const handleActiveIndex = useCallback(
     (idx: number | null) => {
       if (!onActiveCandleChange) return
@@ -258,12 +239,15 @@ export const TokenPriceChart: FC<Props> = ({
     },
     [candles, onActiveCandleChange]
   )
+  const hasActiveCandleListener = onActiveCandleChange !== undefined
   useAnimatedReaction(
     () => activeIndex.value,
     (idx, prev) => {
-      if (idx === prev) return
+      // Skip the UI→JS hop when no one is listening.
+      if (!hasActiveCandleListener || idx === prev) return
       scheduleOnRN(handleActiveIndex, idx)
-    }
+    },
+    [hasActiveCandleListener]
   )
 
   return (
