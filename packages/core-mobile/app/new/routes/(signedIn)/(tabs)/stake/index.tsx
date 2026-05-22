@@ -1,6 +1,6 @@
 import React from 'react'
 import { StakeHomeScreen } from 'features/stake/screens/StakeHomeScreen'
-import { StakeHomeScreenV2 } from 'features/stake/screens/StakeHomeScreenV2'
+import { StakeHomeScreen as StakeHomeScreenV2 } from 'features/stake/v2/screens/StakeHomeScreen'
 import { useSelector } from 'react-redux'
 import { selectIsFastStakeBlocked } from 'store/posthog'
 

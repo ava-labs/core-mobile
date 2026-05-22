@@ -618,6 +618,7 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
 }
 
 export const selectIsFastStakeBlocked = (state: RootState): boolean => {
+  return false
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.FAST_STAKE_ENABLED] ||

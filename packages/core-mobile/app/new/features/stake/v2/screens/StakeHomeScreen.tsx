@@ -1,7 +1,13 @@
-import { NavigationTitleHeader, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  Chip,
+  NavigationTitleHeader,
+  ScrollView,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { DropdownSelections } from 'common/components/DropdownSelections'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
@@ -14,7 +20,7 @@ import {
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
 
-export const StakeHomeScreenV2 = (): JSX.Element => {
+export const StakeHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
@@ -53,7 +59,7 @@ export const StakeHomeScreenV2 = (): JSX.Element => {
   }, [tabBarHeight, tabHeight])
 
   const renderHeader = useCallback(
-    ({ isEmpty, filter, sort }: StakeCardListHeaderProps): JSX.Element => {
+    ({ filter }: StakeCardListHeaderProps): JSX.Element => {
       return (
         <View
           sx={{
@@ -73,19 +79,31 @@ export const StakeHomeScreenV2 = (): JSX.Element => {
               animatedHeaderStyle
             ]}>
             <Text variant="heading2">Stake</Text>
-            {isEmpty && (
-              <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-                Stake your AVAX and earn rewards for securing the Avalanche
-                Network
-              </Text>
-            )}
+            <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+              Stake your AVAX and earn rewards for securing the Avalanche
+              Network
+            </Text>
           </Animated.View>
-          {isEmpty === false && <Banner />}
-          <DropdownSelections
-            filter={filter}
-            sort={sort}
-            sx={{ paddingHorizontal: 16, marginTop: 20 }}
-          />
+          <Banner />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            sx={{ marginTop: 20 }}
+            contentContainerStyle={{
+              flexDirection: 'row',
+              gap: 8,
+              paddingHorizontal: 16
+            }}>
+            {filter.data[0]?.items.map(item => (
+              <Chip
+                key={item.id}
+                size="large"
+                isSelected={item.id === filter.selected}
+                onPress={() => filter.onSelected(item.id)}>
+                {item.title}
+              </Chip>
+            ))}
+          </ScrollView>
         </View>
       )
     },
