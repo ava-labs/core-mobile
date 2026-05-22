@@ -58,6 +58,10 @@ type Props = {
    * so the consumer doesn't index into the wrong array. Fires on the JS
    * thread; `null` when the crosshair deactivates. */
   onActiveCandleChange?: (candle: OhlcCandle | null) => void
+  /** Open of the first candle in the current range — the baseline a
+   * sibling indicator should compare an active candle's price against
+   * (so both come from the same series). Fires when the candles change. */
+  onRangeBaselineChange?: (baselineOpen: number | null) => void
 }
 
 const TOGGLE_SIZE = 36
@@ -161,7 +165,8 @@ export const TokenPriceChart: FC<Props> = ({
   externalIsActive,
   externalActiveIndex,
   externalCrosshairX,
-  onActiveCandleChange
+  onActiveCandleChange,
+  onRangeBaselineChange
 }) => {
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -250,6 +255,11 @@ export const TokenPriceChart: FC<Props> = ({
     },
     [hasActiveCandleListener, handleActiveIndex]
   )
+
+  const rangeBaseline = candles[0]?.open ?? null
+  useEffect(() => {
+    onRangeBaselineChange?.(rangeBaseline)
+  }, [rangeBaseline, onRangeBaselineChange])
 
   return (
     <View style={{ paddingBottom: 18, gap: 12 }}>

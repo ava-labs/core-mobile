@@ -61,7 +61,7 @@ export const PriceChangeIndicator = ({
     ? `${signIndicator ?? signIndicatorText}${formattedPrice}`
     : undefined
 
-  const arrowSx = getArrowMargin(textVariant, status, formattedPercent)
+  const arrowSx = getArrowMargin(textVariant, formattedPercent)
 
   const arrowSize = textVariant === 'priceChangeIndicatorLarge' ? 20 : ICON_SIZE
 
@@ -259,19 +259,12 @@ const styles = StyleSheet.create({
 
 type TextVariants = 'buttonMedium' | 'buttonSmall' | 'priceChangeIndicatorLarge'
 
-function getArrowMarginBottom(
-  textVariant: TextVariants,
-  status: PriceChangeStatus
-): number {
-  if (textVariant === 'priceChangeIndicatorLarge') {
-    return 4
-  }
-
-  return textVariant === 'buttonMedium'
-    ? status === PriceChangeStatus.Up
-      ? 3
-      : 5
-    : 1
+function getArrowMarginBottom(textVariant: TextVariants): number {
+  // The `buttonMedium` / `buttonSmall` margins were a flex-end hack for an
+  // earlier layout; now that the arrow's wrapper uses `alignSelf: 'center'`,
+  // it lines up with the text glyphs on its own. The large variant still
+  // needs a small nudge to sit on its own baseline.
+  return textVariant === 'priceChangeIndicatorLarge' ? 4 : 0
 }
 
 function getArrowMarginLeft(
@@ -291,11 +284,10 @@ function getArrowMarginRight(textVariant: TextVariants): number {
 
 function getArrowMargin(
   textVariant: TextVariants,
-  status: PriceChangeStatus,
   formattedPercent: string | undefined
 ): SxProp {
   return {
-    marginBottom: getArrowMarginBottom(textVariant, status),
+    marginBottom: getArrowMarginBottom(textVariant),
     marginLeft: getArrowMarginLeft(textVariant, formattedPercent),
     marginRight: getArrowMarginRight(textVariant)
   }

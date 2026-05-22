@@ -152,6 +152,12 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const chartIsActive = useSharedValue(false)
   const chartCrosshairX = useSharedValue(0)
+  // Baseline for `SelectedChartDataIndicator`'s percent-change — sourced
+  // from the same candle series the indicator is reading the selected
+  // value from, so the math never mixes datasets.
+  const [chartRangeBaseline, setChartRangeBaseline] = useState<number | null>(
+    null
+  )
 
   const handleActiveCandleChange = useCallback((candle: OhlcCandle | null) => {
     if (!candle) {
@@ -455,7 +461,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             ]}>
             <SelectedChartDataIndicator
               selectedData={selectedData}
-              currentPrice={chartData?.[0]?.value}
+              currentPrice={
+                isPriceChartBlocked
+                  ? chartData?.[0]?.value
+                  : chartRangeBaseline ?? undefined
+              }
             />
           </Animated.View>
         )}
@@ -473,6 +483,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     selectedDataIndicatorOpacity,
     selectedData,
     chartData,
+    chartRangeBaseline,
+    isPriceChartBlocked,
     tokenInfo?.logoUri,
     tokenInfo?.name,
     tokenInfo?.symbol
@@ -550,6 +562,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             externalIsActive={chartIsActive}
             externalCrosshairX={chartCrosshairX}
             onActiveCandleChange={handleActiveCandleChange}
+            onRangeBaselineChange={setChartRangeBaseline}
           />
         </View>
       )}
