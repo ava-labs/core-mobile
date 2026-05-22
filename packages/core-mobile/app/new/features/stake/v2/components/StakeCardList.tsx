@@ -10,7 +10,10 @@ import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+import {
+  getListItemEnteringAnimation,
+  getListItemExitingAnimation
+} from 'common/utils/animations'
 import { format, fromUnixTime } from 'date-fns'
 import { useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
@@ -193,7 +196,8 @@ export const StakeCardList = ({
             marginBottom: 14,
             marginHorizontal: GRID_GAP / 2
           }}
-          entering={getListItemEnteringAnimation(index)}>
+          entering={getListItemEnteringAnimation(index)}
+          exiting={getListItemExitingAnimation(index)}>
           {content}
         </Animated.View>
       )
