@@ -1,11 +1,4 @@
-import {
-  alpha,
-  AnimatedPressable,
-  Icons,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { alpha, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import React, { useCallback } from 'react'
 import { TouchableOpacity } from 'react-native'
@@ -31,11 +24,12 @@ export const Positions = ({
 
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item, index }) => (
-      <AnimatedPressable
-        onPress={() => onPositionPress?.(item)}
-        style={{ marginRight: index === positions.length - 1 ? 0 : 12 }}>
-        <PositionCard position={item} />
-      </AnimatedPressable>
+      <View sx={{ marginRight: index === positions.length - 1 ? 0 : 12 }}>
+        <PositionCard
+          position={item}
+          onPress={onPositionPress ? () => onPositionPress(item) : undefined}
+        />
+      </View>
     ),
     [onPositionPress, positions.length]
   )

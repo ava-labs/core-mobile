@@ -2,11 +2,11 @@ import {
   Icons,
   NavigationTitleHeader,
   PriceChangeStatus,
+  StatusArrow,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { StatusArrow } from '@avalabs/k2-alpine/src/components/PriceChangeIndicator/PriceChangeIndicator'
 import { ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -74,9 +74,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   const positions = MY_POSITIONS_MOCK
 
-  const formattedOpen = formatCurrency({
-    amount: POSITIONS_SUMMARY_MOCK.openPositions
-  })
+  const formattedOpen = String(POSITIONS_SUMMARY_MOCK.openPositions)
   const formattedPnl = formatCurrency({ amount: POSITIONS_SUMMARY_MOCK.pnl })
   const pnlSign = POSITIONS_SUMMARY_MOCK.pnl >= 0 ? '+' : ''
   const formattedChange = `${POSITIONS_SUMMARY_MOCK.changePercent.toFixed(2)}%`

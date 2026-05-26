@@ -7,15 +7,16 @@ import {
   Icons,
   Pressable,
   PriceChangeStatus,
+  StatusArrow,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { StatusArrow } from '@avalabs/k2-alpine/src/components/PriceChangeIndicator/PriceChangeIndicator'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
+import { SvgProps } from 'react-native-svg'
 import Animated, {
   Easing,
   LinearTransition,
@@ -187,8 +188,16 @@ export const PositionCard = ({
             marginHorizontal: 12,
             gap: 10
           }}>
-          <ProtectionMetric label="Take Profit" value={formattedTakeProfit} />
-          <ProtectionMetric label="Stop Loss" value={formattedStopLoss} />
+          <ProtectionMetric
+            label="Take Profit"
+            value={formattedTakeProfit}
+            Icon={Icons.Custom.TakeProfit}
+          />
+          <ProtectionMetric
+            label="Stop Loss"
+            value={formattedStopLoss}
+            Icon={Icons.Custom.StopLoss}
+          />
         </View>
       </Pressable>
 
@@ -313,10 +322,12 @@ const PositionHeader = ({
 
 const ProtectionMetric = ({
   label,
-  value
+  value,
+  Icon
 }: {
   label: string
   value: string
+  Icon: React.FC<SvgProps>
 }): JSX.Element => {
   const { theme } = useTheme()
   return (
@@ -329,11 +340,7 @@ const ProtectionMetric = ({
         }}>
         {label}
       </Text>
-      <Icons.Custom.TakeProfit
-        width={8}
-        height={8}
-        color={theme.colors.$textPrimary}
-      />
+      <Icon width={8} height={8} color={theme.colors.$textPrimary} />
       <Text variant="caption" sx={{ fontFamily: 'Inter-Medium' }}>
         {value}
       </Text>

@@ -83,7 +83,7 @@ export const MY_POSITIONS_MOCK: Position[] = [
 ]
 
 export const POSITIONS_SUMMARY_MOCK: PositionsSummary = {
-  openPositions: 9.87,
+  openPositions: 3,
   changePercent: 0.75,
   changeStatus: PriceChangeStatus.Up,
   pnl: 0.75,

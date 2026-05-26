@@ -5,11 +5,11 @@ import {
   GroupListItem,
   Icons,
   PriceChangeStatus,
+  StatusArrow,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { StatusArrow } from '@avalabs/k2-alpine/src/components/PriceChangeIndicator/PriceChangeIndicator'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo } from 'react'

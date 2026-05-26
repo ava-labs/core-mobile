@@ -1,11 +1,11 @@
 import {
   alpha,
   PriceChangeStatus,
+  StatusArrow,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { StatusArrow } from '@avalabs/k2-alpine/src/components/PriceChangeIndicator/PriceChangeIndicator'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
