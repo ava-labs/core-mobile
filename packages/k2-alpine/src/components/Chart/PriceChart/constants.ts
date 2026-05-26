@@ -8,6 +8,7 @@ export const CHART_FOOTER_HEIGHT = 24
 export const PRICE_TOP_PADDING = 14
 
 export const CANDLE_BODY_WIDTH_RATIO = 0.6
+export const CANDLE_BODY_MAX_WIDTH = 8
 
 export const DURATIONS = {
   headerPress: 200,

@@ -5,11 +5,13 @@ import { useEffect, useMemo, useRef } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 
-// CoinGecko granularity by `days`: 1 → 5m, 2-90 → hourly, >90 → daily.
-// 1H uses the range endpoint (null here) to get 5-min data.
+// CoinGecko granularity by `days`: 2-90 → hourly, >90 → daily.
+// 1H and 1D use the range endpoint (null here) so we get 5-min data over a
+// fixed window (see RANGE_TO_WINDOW_SECONDS) — that's enough source points to
+// bucket into the target candle count without one-source-point-per-candle.
 const RANGE_TO_DAYS: Record<ChartRange, number | null> = {
   '1H': null,
-  '1D': 1,
+  '1D': null,
   '1W': 7,
   '1M': 30,
   '3M': 90,
@@ -18,14 +20,18 @@ const RANGE_TO_DAYS: Record<ChartRange, number | null> = {
 
 const RANGE_TO_CANDLE_COUNT: Record<ChartRange, number> = {
   '1H': 12,
-  '1D': 24,
+  '1D': 48,
   '1W': 48,
-  '1M': 30,
-  '3M': 48,
+  '1M': 60,
+  '3M': 60,
   '1Y': 52
 }
 
-const HOUR_RANGE_WINDOW_SECONDS = 2 * 60 * 60
+// Window passed to the range endpoint when `RANGE_TO_DAYS[range]` is null.
+const RANGE_TO_WINDOW_SECONDS: Partial<Record<ChartRange, number>> = {
+  '1H': 2 * 60 * 60,
+  '1D': 24 * 60 * 60
+}
 
 type PriceDataPoint = { date: Date; value: number; volume?: number | null }
 
@@ -105,7 +111,7 @@ export const useTokenChartCandles = ({
     queryFn: () => {
       if (days === null) {
         const toSec = Math.floor(Date.now() / 1000)
-        const fromSec = toSec - HOUR_RANGE_WINDOW_SECONDS
+        const fromSec = toSec - (RANGE_TO_WINDOW_SECONDS[range] ?? 0)
         return TokenService.getChartDataForCoinRange({
           coingeckoId: coingeckoId as string,
           from: fromSec,
