@@ -151,7 +151,7 @@ export const TradeFilters = ({
             flexDirection: 'row',
             gap: 8,
             paddingLeft: 16,
-            paddingTop: 20,
+            paddingTop: 16,
             paddingBottom: 12,
             paddingRight: 30
           }}>
@@ -205,7 +205,7 @@ export const TradeFilters = ({
           justifyContent: 'center',
           alignItems: 'center',
           gap: 6,
-          marginTop: 8,
+          marginTop: 4,
           paddingLeft: 10,
           paddingRight: 18,
           marginRight: 16

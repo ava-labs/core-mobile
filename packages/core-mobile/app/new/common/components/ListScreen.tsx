@@ -292,8 +292,9 @@ export const ListScreen = <T,>({
       ? keyboard.height + 16
       : insets.bottom + 16 + footerPadding
 
-    const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
+    const extraPadding = isModal
+      ? -insets.top - (Platform.OS === 'ios' ? 8 : 16)
+      : 8
 
     return [
       props?.contentContainerStyle,

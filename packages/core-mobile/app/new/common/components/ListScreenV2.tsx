@@ -338,8 +338,9 @@ export const ListScreenV2 = <T,>({
   const flashListMarginTop = isAndroidModal ? headerHeight : 0
 
   const overrideProps = useMemo(() => {
-    const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
+    const extraPadding = isModal
+      ? -insets.top - (Platform.OS === 'ios' ? 8 : 16)
+      : 8
 
     return {
       contentContainerStyle: {

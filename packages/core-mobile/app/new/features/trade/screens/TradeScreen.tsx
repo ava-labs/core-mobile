@@ -14,7 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -22,12 +22,15 @@ import {
   LayoutRectangle
 } from 'react-native'
 import type { TabBarProps } from 'react-native-collapsible-tab-view'
-import Animated, { useSharedValue } from 'react-native-reanimated'
+import { useSharedValue } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
 import { PredictionBalanceRow } from '../predictions/components/PredictionBalanceRow'
 import { PredictionsScreen } from '../predictions/screens/PredictionsScreen'
 
@@ -54,7 +57,12 @@ export function TradeScreen(): JSX.Element {
   const { theme } = useTheme()
   const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
+  const router = useRouter()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+
+  const hasViewedPerpsOnboarding = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.PERPETUALS_ONBOARDING)
+  )
 
   const selectedSegmentIndex = useSharedValue(0)
   const [selectedTab, setSelectedTab] = useState(0)
@@ -86,8 +94,12 @@ export function TradeScreen(): JSX.Element {
           tabViewRef.current?.setIndex(index)
         }
       })
+
+      if (index === 1 && !hasViewedPerpsOnboarding) {
+        router.navigate('/perpetualsOnboarding')
+      }
     },
-    [selectedSegmentIndex]
+    [selectedSegmentIndex, hasViewedPerpsOnboarding, router]
   )
 
   const tabTitle = selectedTab === 0 ? 'Predictions' : 'Perps'
@@ -122,7 +134,7 @@ export function TradeScreen(): JSX.Element {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       minHeight: tabHeight
     }
   }, [segmentedControlLayout?.height, tabHeight])
@@ -135,18 +147,7 @@ export function TradeScreen(): JSX.Element {
       },
       {
         tabName: 'Perps',
-        component: (
-          <Animated.View
-            testID="trade-perps"
-            entering={getListItemEnteringAnimation(10)}
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-            <Text>Perps</Text>
-          </Animated.View>
-        )
+        component: <PerpetualsScreen containerStyle={contentContainerStyle} />
       }
     ],
     [contentContainerStyle]
@@ -197,12 +198,15 @@ export function TradeScreen(): JSX.Element {
               marginTop: 14,
               marginHorizontal: 16
             }}>
-            <PredictionBalanceRow />
+            <PredictionBalanceRow
+              balance={10250000.23}
+              onBalancePress={() => router.navigate('/perpetualsBalance')}
+            />
           </View>
         </View>
       </View>
     ),
-    [tabTitle, tabDescription, theme.colors.$surfacePrimary]
+    [tabTitle, tabDescription, theme.colors.$surfacePrimary, router]
   )
 
   const renderSegmentedControl = useCallback(

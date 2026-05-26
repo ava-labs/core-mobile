@@ -132,7 +132,7 @@ const AnimatedComponent = ({
       <View style={styles.innerWrapper}>
         {showArrow && (
           <AnimateFadeScale>
-            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+            <StatusArrow sx={arrowSx} status={status} size={arrowSize} />
           </AnimateFadeScale>
         )}
         {formattedPercent !== undefined && (
@@ -180,7 +180,7 @@ const PlainComponent = ({
       <View style={styles.innerWrapper}>
         {showArrow && (
           <View style={styles.arrow}>
-            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+            <StatusArrow sx={arrowSx} status={status} size={arrowSize} />
           </View>
         )}
         {formattedPercent !== undefined && (
@@ -198,7 +198,7 @@ const PlainComponent = ({
   )
 }
 
-const Arrow = ({
+export const StatusArrow = ({
   sx,
   status,
   size
@@ -255,7 +255,11 @@ const styles = StyleSheet.create({
   arrow: { alignSelf: 'center' }
 })
 
-type TextVariants = 'buttonMedium' | 'buttonSmall' | 'priceChangeIndicatorLarge'
+type TextVariants =
+  | 'buttonMedium'
+  | 'buttonSmall'
+  | 'priceChangeIndicatorLarge'
+  | 'body1'
 
 function getArrowMarginBottom(
   textVariant: TextVariants,

@@ -107,6 +107,9 @@ import IconPrediction from '../../assets/icons/prediction.svg'
 import IconTrade from '../../assets/icons/trade.svg'
 import IconUnfold from '../../assets/icons/unfold.svg'
 import IconCandlestick from '../../assets/icons/candlestick.svg'
+import IconCandlesticks from '../../assets/icons/candlesticks.svg'
+import IconTakeProfit from '../../assets/icons/take_profit.svg'
+import IconStopLoss from '../../assets/icons/stop_loss.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -359,7 +362,10 @@ export const Icons = {
     Solana: SolanaLogo,
     MoneyBag: IconMoneyBag,
     Prediction: IconPrediction,
-    Candlestick: IconCandlestick
+    Candlestick: IconCandlestick,
+    Candlesticks: IconCandlesticks,
+    TakeProfit: IconTakeProfit,
+    StopLoss: IconStopLoss
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

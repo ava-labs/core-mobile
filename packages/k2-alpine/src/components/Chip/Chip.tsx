@@ -110,13 +110,11 @@ export const Chip = forwardRef<
 const sizeStyles = StyleSheet.create({
   large: {
     paddingHorizontal: 12,
-    minHeight: 27,
-    minWidth: 60
+    minHeight: 27
   },
   small: {
     paddingHorizontal: 10,
-    minHeight: 20,
-    minWidth: 57
+    minHeight: 20
   }
 })
 
