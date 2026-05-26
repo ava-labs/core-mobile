@@ -68,8 +68,9 @@ export const StakeCard = ({
       onPress={onPress}
       sx={{
         width,
-        paddingVertical: 20,
-        paddingHorizontal: 18
+        paddingTop: 20,
+        paddingHorizontal: 18,
+        paddingBottom: 16
       }}>
       {showWave && (
         <View
@@ -84,7 +85,7 @@ export const StakeCard = ({
           />
         </View>
       )}
-      <View sx={{ gap: 10, alignItems: 'flex-start' }}>
+      <View sx={{ gap: 8, alignItems: 'flex-start' }}>
         <Text
           sx={{
             fontFamily: 'Aeonik-Bold',
@@ -97,7 +98,7 @@ export const StakeCard = ({
         {!isCompleted && badge && <StakeBadge kind={badge} />}
       </View>
 
-      <View sx={{ marginTop: 24, gap: 1 }}>
+      <View sx={{ marginTop: 18, gap: 1 }}>
         <Text
           variant="caption"
           sx={{ color: '$textPrimary', fontFamily: 'Inter-Medium' }}>
@@ -114,7 +115,7 @@ export const StakeCard = ({
         </Text>
       </View>
 
-      <Separator sx={{ marginTop: 7, marginBottom: 7 }} />
+      <Separator sx={{ marginTop: 4, marginBottom: 6 }} />
       <DetailRow
         label="Node"
         value={
@@ -123,12 +124,12 @@ export const StakeCard = ({
           </Text>
         }
       />
-      <Separator sx={{ marginVertical: 7 }} />
+      <Separator sx={{ marginTop: 5, marginBottom: 6 }} />
       <DetailRow
         label={isCompleted ? 'Ended on' : 'Locked until'}
         value={endDate}
       />
-      <Separator sx={{ marginVertical: 7 }} />
+      <Separator sx={{ marginTop: 5, marginBottom: 6 }} />
       <DetailRow
         label="Status"
         value={
