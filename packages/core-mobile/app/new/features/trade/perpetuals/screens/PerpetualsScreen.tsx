@@ -20,7 +20,7 @@ import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PerpetualListItem } from '../components/PerpetualListItem'
 import { Positions } from '../components/Positions'
-import { PERP_MARKETS_MOCK, POSITIONS_MOCK } from '../mocks'
+import { PERP_MARKETS_MOCK } from '../mocks'
 import { PerpetualMarket } from '../types'
 
 const CHIPS = ['Trending', 'Volume', 'Change', 'Price']
@@ -51,6 +51,7 @@ export const PerpetualsScreen = ({
     PERPETUAL_FILTERS[0] as string
   )
   const filterScrollOffsetRef = useRef(0)
+  const positionsScrollOffsetRef = useRef(0)
 
   const handleSelectFilter = useCallback((chip: string) => {
     setSelectedFilter(chip)
@@ -132,7 +133,7 @@ export const PerpetualsScreen = ({
         sx={{
           gap: 20
         }}>
-        <Positions positions={POSITIONS_MOCK} />
+        <Positions scrollOffsetRef={positionsScrollOffsetRef} />
         <TradeFilters
           chips={CHIPS}
           selectedChip={selectedFilter}
