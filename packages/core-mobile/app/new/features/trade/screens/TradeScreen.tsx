@@ -5,6 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -16,7 +17,7 @@ import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigatio
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
 import type { TabBarProps } from 'react-native-collapsible-tab-view'
 import Animated, {
   interpolate,
@@ -74,11 +75,13 @@ export function TradeScreen(): JSX.Element {
 
   const header = useMemo(() => <NavigationTitleHeader title={title} />, [])
 
-  const { onScroll, scrollY } = useFadingHeaderNavigation({
-    header,
-    targetLayout: headerLayout,
-    shouldDelayBlurOniOS: true
-  })
+  const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
+    {
+      header,
+      targetLayout: headerLayout,
+      shouldDelayBlurOniOS: true
+    }
+  )
 
   const tabHeight = useMemo(
     () => frame.height - headerHeight,
@@ -181,6 +184,24 @@ export function TradeScreen(): JSX.Element {
         renderHeader={renderHeader}
         minHeaderHeight={MIN_HEADER_HEIGHT}
       />
+      {/* 
+        This is a workaround to display the header background + separator on Android.
+        Android returns a header height of 0, so we need to display the background + separator manually.
+      */}
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
+        </View>
+      )}
     </BlurredBarsContentLayout>
   )
 }
