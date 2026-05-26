@@ -18,9 +18,13 @@ import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { isOnGoing } from 'utils/earn/status'
-import { getEarnedRewardAmount, getEstimatedRewardAmount } from '../../utils'
+import {
+  createZeroTokenUnit,
+  getEarnedRewardAmount,
+  getEstimatedRewardAmount
+} from '../../utils'
 
-export const Banner = (): JSX.Element | undefined => {
+export const Banner = (): JSX.Element | null => {
   const { theme } = useTheme()
   const { data } = useStakes()
   const { minStakeAmount } = useStakingParams()
@@ -36,11 +40,7 @@ export const Banner = (): JSX.Element | undefined => {
   // We can't use the P-chain "unlocked unstaked" balance because that includes
   // returned principal, not just reward.
   const pendingRewards = useMemo(() => {
-    const zero = new TokenUnit(
-      0n,
-      pChainNetworkToken.decimals,
-      pChainNetworkToken.symbol
-    )
+    const zero = createZeroTokenUnit(pChainNetworkToken)
     if (!data) return zero
     const now = new Date()
     return data.reduce((acc, stake) => {
@@ -54,11 +54,7 @@ export const Banner = (): JSX.Element | undefined => {
   // the user's stakes. `getEarnedRewardAmount` returns undefined for stakes
   // that haven't paid out yet (active / rejected), so they're skipped here.
   const totalLifetimeRewards = useMemo(() => {
-    const zero = new TokenUnit(
-      0n,
-      pChainNetworkToken.decimals,
-      pChainNetworkToken.symbol
-    )
+    const zero = createZeroTokenUnit(pChainNetworkToken)
     if (!data) return zero
     return data.reduce((acc, stake) => {
       const reward = getEarnedRewardAmount(stake, pChainNetworkToken)
@@ -129,7 +125,7 @@ export const Banner = (): JSX.Element | undefined => {
   }
 
   if (!formattedTotalStaked || !formattedTotalAvailable) {
-    return undefined
+    return null
   }
 
   return (

@@ -43,7 +43,7 @@ export enum FeatureGates {
   INJECTED_PROVIDER = 'injected-provider',
   PREDICTIONS = 'predictions',
   PRICE_CHART = 'price-chart',
-  FAST_STAKE_ENABLED = 'fast_stake_enabled'
+  FAST_STAKE_ENABLED = 'fast-stake-enabled'
 }
 
 export enum FeatureVars {

@@ -14,6 +14,7 @@ import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { format, fromUnixTime } from 'date-fns'
 import { useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
@@ -124,7 +125,7 @@ export const StakeCardList = ({
       const stakedTokenUnit = getStakedAmount(stake, pChainNetworkToken)
       const stakedAmount = stakedTokenUnit
         ? `${stakedTokenUnit.toDisplay({ fixedDp: 2 })} AVAX`
-        : '— AVAX'
+        : `${UNKNOWN_AMOUNT} AVAX`
       const stakedUsdValue = stakedTokenUnit
         ? ensureCurrencySuffix(
             formatTokenInCurrency({
@@ -134,7 +135,7 @@ export const StakeCardList = ({
             }),
             selectedCurrency
           )
-        : '—'
+        : UNKNOWN_AMOUNT
 
       return (
         <StakeCard

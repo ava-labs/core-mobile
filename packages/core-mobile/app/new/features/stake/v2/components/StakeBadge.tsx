@@ -1,10 +1,10 @@
 import { alpha, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React, { ReactNode } from 'react'
 
-export type StakeBadgeKind = 'fastStake' | 'delegating' | 'validating'
+export type StakeBadgeType = 'fastStake' | 'delegating' | 'validating'
 
 interface StakeBadgeProps {
-  kind: StakeBadgeKind
+  kind: StakeBadgeType
 }
 
 interface BadgeConfig {
@@ -12,7 +12,7 @@ interface BadgeConfig {
   renderIcon?: (color: string) => ReactNode
 }
 
-const BADGES: Record<StakeBadgeKind, BadgeConfig> = {
+const BADGES: Record<StakeBadgeType, BadgeConfig> = {
   fastStake: {
     label: 'Fast stake',
     renderIcon: color => <Icons.Custom.ElectricBolt color={color} />

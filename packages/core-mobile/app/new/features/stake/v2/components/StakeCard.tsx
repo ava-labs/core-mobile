@@ -9,7 +9,7 @@ import {
 import React, { useState } from 'react'
 import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
-import { StakeBadge, StakeBadgeKind } from './StakeBadge'
+import { StakeBadge, StakeBadgeType } from './StakeBadge'
 
 export type StakeCardVariant = 'active' | 'completed'
 
@@ -30,7 +30,7 @@ export interface StakeCardProps {
   /** Optional accelerometer motion driver for the wave animation. */
   motion?: Motion
   /** Optional badge label shown only on active cards (fastStake / delegating / validating). */
-  badge?: StakeBadgeKind
+  badge?: StakeBadgeType
   width?: number
   onPress?: () => void
 }
