@@ -2,8 +2,9 @@ import { Image, SearchBar, Text } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PerpetualListItem } from '../components/PerpetualListItem'
 import { PERP_MARKETS_MOCK } from '../mocks'
 import { PerpetualMarket } from '../types'
@@ -24,6 +25,19 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
       market.symbol.toLowerCase().includes(trimmed)
     )
   }, [searchText])
+
+  // Debounce the analytics fire so we don't emit one event per keystroke.
+  useEffect(() => {
+    const trimmed = searchText.trim()
+    if (trimmed.length === 0) return
+    const timer = setTimeout(() => {
+      AnalyticsService.capture('PerpetualsSearched', {
+        query: trimmed,
+        resultCount: results.length
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchText, results.length])
 
   const renderItem: ListRenderItem<PerpetualMarket> = useCallback(
     ({ item, index }) => (

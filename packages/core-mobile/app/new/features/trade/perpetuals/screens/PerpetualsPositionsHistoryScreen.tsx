@@ -1,12 +1,17 @@
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { ListRenderItem } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionListItem } from '../components/PositionListItem'
 import { POSITIONS_HISTORY_MOCK } from '../mocks'
 import { PositionEntry } from '../types'
 
 export const PerpetualsPositionsHistoryScreen = (): JSX.Element => {
+  useEffect(() => {
+    AnalyticsService.capture('PerpetualsPositionsHistoryViewed')
+  }, [])
+
   const renderItem: ListRenderItem<PositionEntry> = useCallback(
     ({ item, index }) => (
       <PositionListItem entry={item} isFirst={index === 0} />

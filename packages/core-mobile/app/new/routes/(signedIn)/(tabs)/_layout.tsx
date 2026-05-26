@@ -18,8 +18,8 @@ import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
-  selectIsInAppDefiBorrowBlocked
-  // selectIsPredictionsBlocked
+  selectIsInAppDefiBorrowBlocked,
+  selectIsPerpetualsBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -66,7 +66,7 @@ export default function TabLayout(): JSX.Element {
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
-  // const isPredictionsBlocked = useSelector(selectIsPredictionsBlocked)
+  const isPerpetualsBlocked = useSelector(selectIsPerpetualsBlocked)
 
   // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
   const stakeTabTitle =
@@ -142,9 +142,7 @@ export default function TabLayout(): JSX.Element {
           title: 'Trade',
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
-          //TODO: uncomment when predictions is ready
-          // tabBarItemHidden: isPredictionsBlocked
-          tabBarItemHidden: false
+          tabBarItemHidden: isPerpetualsBlocked
         }}
       />
       <BottomTabs.Screen

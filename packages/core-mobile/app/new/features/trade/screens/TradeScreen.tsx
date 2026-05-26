@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { TradeBalance } from '../components/TradeBalance'
 import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
@@ -55,6 +56,10 @@ export function TradeScreen(): JSX.Element {
   const title = 'Perps'
   const description =
     'Trade perpetual futures long or short with leverage powered by Hyperliquid'
+
+  useEffect(() => {
+    AnalyticsService.capture('PerpetualsViewed')
+  }, [])
 
   useEffect(() => {
     if (!hasViewedPerpsOnboarding) {

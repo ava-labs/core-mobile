@@ -12,8 +12,9 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
 import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
@@ -22,6 +23,11 @@ export const PerpetualsOnboardingScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const router = useRouter()
+  const dismissedViaCtaRef = useRef(false)
+
+  useEffect(() => {
+    AnalyticsService.capture('PerpetualsOnboardingViewed')
+  }, [])
 
   // Mark the onboarding as viewed when the screen unmounts. This covers
   // both the "Let's go!" tap (which dismisses via router.back) and the
@@ -29,10 +35,14 @@ export const PerpetualsOnboardingScreen = (): JSX.Element => {
   useEffect(() => {
     return () => {
       dispatch(setViewOnce(ViewOnceKey.PERPETUALS_ONBOARDING))
+      AnalyticsService.capture('PerpetualsOnboardingDismissed', {
+        via: dismissedViaCtaRef.current ? 'cta' : 'gesture'
+      })
     }
   }, [dispatch])
 
   const handlePressNext = useCallback(() => {
+    dismissedViaCtaRef.current = true
     if (router.canGoBack()) {
       router.back()
     }

@@ -17,6 +17,7 @@ import {
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PerpetualListItem } from '../components/PerpetualListItem'
 import { Positions } from '../components/Positions'
 import { PERP_MARKETS_MOCK, POSITIONS_MOCK } from '../mocks'
@@ -53,6 +54,9 @@ export const PerpetualsScreen = ({
 
   const handleSelectFilter = useCallback((chip: string) => {
     setSelectedFilter(chip)
+    AnalyticsService.capture('PerpetualsFilterChanged', {
+      filter: chip as 'Trending' | 'Volume' | 'Change' | 'Price'
+    })
   }, [])
 
   const handleSearchPress = useCallback(() => {

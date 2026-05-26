@@ -17,6 +17,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
 import { SvgProps } from 'react-native-svg'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import Animated, {
   Easing,
   LinearTransition,
@@ -84,11 +85,16 @@ export const PositionCard = ({
       setExpanded(prev => {
         const next = !prev
         progress.value = withTiming(next ? 1 : 0, { duration: 250 })
+        if (next) {
+          AnalyticsService.capture('PerpetualsPositionExpanded', {
+            symbol: position.symbol
+          })
+        }
         return next
       })
     }
     onPress?.()
-  }, [expandable, onPress, progress])
+  }, [expandable, onPress, progress, position.symbol])
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${progress.value * 180}deg` }]

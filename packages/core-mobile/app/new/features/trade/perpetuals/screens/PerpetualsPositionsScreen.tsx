@@ -26,9 +26,10 @@ import {
   TradeFilterChip,
   TradeFilters
 } from 'features/trade/components/TradeFilters'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 import Animated from 'react-native-reanimated'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   useSafeAreaFrame,
   useSafeAreaInsets
@@ -51,8 +52,15 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   const filterScrollOffsetRef = useRef(0)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
+  useEffect(() => {
+    AnalyticsService.capture('PerpetualsPositionsViewed')
+  }, [])
+
   const handleSelectFilter = useCallback((chip: string) => {
     setSelectedFilter(chip)
+    AnalyticsService.capture('PerpetualsPositionsFilterChanged', {
+      filter: chip as 'All' | 'Closed' | 'Won' | 'Ending soon'
+    })
   }, [])
 
   const handleSearchPress = useCallback(() => {

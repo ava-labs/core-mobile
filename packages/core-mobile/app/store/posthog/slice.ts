@@ -633,6 +633,14 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPerpetualsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PERPETUALS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

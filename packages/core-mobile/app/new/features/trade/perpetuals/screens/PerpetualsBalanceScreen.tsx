@@ -10,7 +10,8 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const HERO_VALUE = 1234.45
 const WITHDRAWABLE = 856.78
@@ -27,6 +28,10 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
+
+  useEffect(() => {
+    AnalyticsService.capture('PerpetualsBalanceViewed')
+  }, [])
 
   const handlePositionsPress = useCallback(() => {
     router.navigate('/perpetualsBalance/positions')

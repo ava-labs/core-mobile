@@ -44,6 +44,7 @@ export enum FeatureGates {
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   INJECTED_PROVIDER = 'injected-provider',
   PREDICTIONS = 'predictions',
+  PERPETUALS = 'perpetuals',
   PRICE_CHART = 'price-chart'
 }
 

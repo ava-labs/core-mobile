@@ -2,7 +2,8 @@ import { Image, SearchBar, Text, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
 import { MY_POSITIONS_MOCK } from '../mocks'
 import { Position } from '../types'
@@ -21,6 +22,18 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
       position.symbol.toLowerCase().includes(trimmed)
     )
   }, [searchText])
+
+  useEffect(() => {
+    const trimmed = searchText.trim()
+    if (trimmed.length === 0) return
+    const timer = setTimeout(() => {
+      AnalyticsService.capture('PerpetualsPositionsSearched', {
+        query: trimmed,
+        resultCount: results.length
+      })
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchText, results.length])
 
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item }) => (

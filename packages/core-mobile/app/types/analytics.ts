@@ -425,7 +425,23 @@ export type AnalyticsEvents = {
 
   PredictionsSearched: { query: string; resultCount: number }
   PredictionsClicked: undefined
-  PerpsClicked: undefined
+
+  // Perpetuals
+  PerpetualsViewed: undefined
+  PerpetualsFilterChanged: {
+    filter: 'Trending' | 'Volume' | 'Change' | 'Price'
+  }
+  PerpetualsSearched: { query: string; resultCount: number }
+  PerpetualsOnboardingViewed: undefined
+  PerpetualsOnboardingDismissed: { via: 'cta' | 'gesture' }
+  PerpetualsBalanceViewed: undefined
+  PerpetualsPositionsViewed: undefined
+  PerpetualsPositionsFilterChanged: {
+    filter: 'All' | 'Closed' | 'Won' | 'Ending soon'
+  }
+  PerpetualsPositionExpanded: { symbol: string }
+  PerpetualsPositionsSearched: { query: string; resultCount: number }
+  PerpetualsPositionsHistoryViewed: undefined
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
