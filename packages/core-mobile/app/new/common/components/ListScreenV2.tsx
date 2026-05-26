@@ -335,7 +335,11 @@ export const ListScreenV2 = <T,>({
   ])
 
   const isAndroidModal = Platform.OS === 'android' && isModal
-  const flashListMarginTop = isAndroidModal ? headerHeight : 0
+  const flashListMarginTop = isAndroidModal
+    ? title.length === 0
+      ? 12
+      : headerHeight
+    : 0
 
   const overrideProps = useMemo(() => {
     const extraPadding = isModal
