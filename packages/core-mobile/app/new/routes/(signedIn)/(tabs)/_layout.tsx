@@ -18,7 +18,6 @@ import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
-  selectIsInAppDefiBorrowBlocked,
   selectIsPerpetualsBlocked
 } from 'store/posthog'
 
@@ -65,12 +64,7 @@ export default function TabLayout(): JSX.Element {
     }
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isPerpetualsBlocked = useSelector(selectIsPerpetualsBlocked)
-
-  // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
-  const stakeTabTitle =
-    isInAppDefiBorrowBlocked && !isInAppDefiBlocked ? 'Earn' : 'Stake'
 
   return (
     <BottomTabs
@@ -109,7 +103,7 @@ export default function TabLayout(): JSX.Element {
           name="stake"
           options={{
             tabBarButtonTestID: 'stake_tab',
-            title: stakeTabTitle,
+            title: 'Stake',
             tabBarIcon: () => stakeIcon,
             freezeOnBlur
           }}
@@ -122,8 +116,8 @@ export default function TabLayout(): JSX.Element {
           title: 'Earn',
           tabBarIcon: () => earnPngIcon,
           freezeOnBlur,
-          // Hide when borrow feature is disabled
-          tabBarItemHidden: isInAppDefiBorrowBlocked
+          // Hide when in-app DeFi is disabled
+          tabBarItemHidden: isInAppDefiBlocked
         }}
       />
       <BottomTabs.Screen
@@ -152,8 +146,8 @@ export default function TabLayout(): JSX.Element {
           title: 'Activity',
           tabBarIcon: () => activityIcon,
           freezeOnBlur,
-          // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
-          tabBarItemHidden: !isInAppDefiBorrowBlocked
+          // Hide when in-app DeFi is enabled (Activity moves to Portfolio sub-tab)
+          tabBarItemHidden: !isInAppDefiBlocked
         }}
       />
     </BottomTabs>

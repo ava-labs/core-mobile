@@ -56,7 +56,7 @@ import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsMeldOfframpBlocked,
-  selectIsInAppDefiBorrowBlocked,
+  selectIsInAppDefiBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -89,11 +89,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
-  // When borrow feature is enabled, Activity moves to Portfolio sub-tab
-  const segmentItems = isInAppDefiBorrowBlocked
+  // When in-app DeFi is enabled, Activity moves to Portfolio sub-tab
+  const segmentItems = isInAppDefiBlocked
     ? SEGMENT_ITEMS_DEFAULT
     : SEGMENT_ITEMS_WITH_ACTIVITY
 
@@ -527,8 +527,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       }
     ]
 
-    // When borrow feature is enabled, add Activity as a sub-tab
-    if (!isInAppDefiBorrowBlocked) {
+    // When in-app DeFi is enabled, add Activity as a sub-tab
+    if (!isInAppDefiBlocked) {
       baseTabs.push({
         tabName: 'Activity',
         component: <ActivityScreen containerStyle={contentContainerStyle} />
@@ -546,7 +546,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles,
-    isInAppDefiBorrowBlocked
+    isInAppDefiBlocked
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
