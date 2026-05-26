@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react'
 export type StakeBadgeType = 'fastStake' | 'delegating' | 'validating'
 
 interface StakeBadgeProps {
-  kind: StakeBadgeType
+  type: StakeBadgeType
 }
 
 interface BadgeConfig {
@@ -33,9 +33,9 @@ const BADGES: Record<StakeBadgeType, BadgeConfig> = {
  * - text:       `$textPrimary` in Inter-Medium 11px
  * - optional leading icon for kinds that have one (e.g. fastStake)
  */
-export const StakeBadge = ({ kind }: StakeBadgeProps): JSX.Element => {
+export const StakeBadge = ({ type }: StakeBadgeProps): JSX.Element => {
   const { theme } = useTheme()
-  const { label, renderIcon } = BADGES[kind]
+  const { label, renderIcon } = BADGES[type]
 
   return (
     <View
