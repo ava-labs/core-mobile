@@ -11,7 +11,7 @@ import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
   selectIsEarnBlocked,
-  selectIsInAppDefiBorrowBlocked,
+  selectIsInAppDefiBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
 import { selectAccounts, selectActiveAccount } from 'store/account'
@@ -133,7 +133,7 @@ export const NotificationsScreen = (): JSX.Element => {
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const accounts = useSelector(selectAccounts)
   const wallets = useSelector(selectWallets)
@@ -281,12 +281,12 @@ export const NotificationsScreen = (): JSX.Element => {
           },
           dispatch: action => action,
           isEarnBlocked,
-          isInAppDefiBorrowBlocked,
+          isInAppDefiBlocked,
           openUrl
         })
       }
     },
-    [openUrl, isEarnBlocked, isInAppDefiBorrowBlocked]
+    [openUrl, isEarnBlocked, isInAppDefiBlocked]
   )
 
   const renderFooter = useCallback(() => {
