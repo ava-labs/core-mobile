@@ -22,35 +22,15 @@ import {
   getSolanaCaip2ChainId
 } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/api/constants'
-import { DerivationPath, getAddressDerivationPath } from '@avalabs/core-wallets-sdk'
-import { emptyAddresses, Curve } from 'utils/publicKeys'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
+import { emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
-import {
-  deriveAddressesForEvm,
-  deriveAddressesForBTC,
-  deriveAddressesForAvax,
-  deriveAddressesForSVM
-} from 'react-native-nitro-avalabs-crypto'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
-
-const hexToUint8 = (input: string): Uint8Array => {
-  const h =
-    input.startsWith('0x') || input.startsWith('0X') ? input.slice(2) : input
-  if (h.length % 2 !== 0) {
-    throw new Error('hexToUint8: odd-length hex string')
-  }
-  const out = new Uint8Array(h.length / 2)
-  for (let i = 0; i < out.length; i++) {
-    out[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16)
-  }
-  return out
-}
 
 const isDev = typeof __DEV__ === 'boolean' && __DEV__
 
@@ -164,12 +144,6 @@ class ModuleManager {
     })
   }
 
-  /**
-   * Batch variant of deriveAddresses. Validates that accountIndices is a
-   * consecutive ascending run when length > 1, gathers per-index pubkeys from
-   * WalletService, and dispatches the four native batch encoders in parallel.
-   * Returns one address record per accountIndex, aligned by position.
-   */
   deriveAllAddresses = async ({
     walletId,
     walletType,
@@ -183,109 +157,34 @@ class ModuleManager {
   }): Promise<Record<NetworkVMType, string>[]> => {
     if (accountIndices.length === 0) return []
 
-    if (accountIndices.length > 1) {
-      for (let i = 1; i < accountIndices.length; i++) {
-        const prev = accountIndices[i - 1]
-        const curr = accountIndices[i]
-        if (curr === undefined || prev === undefined || curr !== prev + 1) {
-          throw new Error(
-            `deriveAllAddresses: accountIndices must be consecutive ascending integers; got gap at position ${i} (${prev} -> ${curr})`
-          )
-        }
-      }
-    }
+    const derivationPathType =
+      walletType === WalletType.LEDGER_LIVE
+        ? DerivationPath.LedgerLive
+        : DerivationPath.BIP44
+    const secretId = JSON.stringify({ walletId, walletType })
 
-    const pathSpec =
-      walletType !== WalletType.LEDGER &&
-      walletType !== WalletType.LEDGER_LIVE
-        ? undefined
-        : walletType === WalletType.LEDGER
-        ? DerivationPath.BIP44
-        : DerivationPath.LedgerLive
-
-    const pubkeyTriples = await Promise.all(
-      accountIndices.map(async accountIndex => {
-        // SVM path is positional in the SDK helper (accountIndex, vm, options?).
-        // The local services/wallet/utils.ts wrapper takes object args, but
-        // importing it here would create a cycle through ModuleManager itself.
-        const svmPath = getAddressDerivationPath(
-          accountIndex,
-          'SVM',
-          pathSpec ? { pathSpec } : undefined
-        )
-        const [{ evm, xp }, svmHex] = await Promise.all([
-          WalletService.getPublicKey(walletId, walletType, accountIndex),
-          WalletService.getPublicKeyFor({
-            walletId,
-            walletType,
-            derivationPath: svmPath,
-            curve: Curve.ED25519
-          })
-        ])
-        return {
-          evm: hexToUint8(evm),
-          // xp may be absent for wallet types that do not derive an Avalanche
-          // pubkey (e.g. some seedless flows). Returning the EVM pubkey here
-          // would silently produce wrong-but-valid AVM/PVM/CoreEth bech32
-          // strings — match the single-index path's silent-empty contract by
-          // signalling the absence with `undefined` and emitting empty strings
-          // for AVM/PVM/CoreEth below.
-          avax: xp !== undefined ? hexToUint8(xp) : undefined,
-          svm: hexToUint8(svmHex)
-        }
-      })
+    const perModuleResults = await Promise.allSettled(
+      this.modules.map(async module =>
+        module.deriveAddresses({
+          secretId,
+          accountIndices,
+          network,
+          derivationPathType
+        })
+      )
     )
 
-    // Build per-call inputs. For Avax we drop the indices that have no xp
-    // pubkey, then map back to the original positions on the way out.
-    const evmPubkeys = pubkeyTriples.map(t => t.evm)
-    const svmPubkeys = pubkeyTriples.map(t => t.svm)
-    const avaxSlots: Array<{ originalIndex: number; pubkey: Uint8Array }> = []
-    pubkeyTriples.forEach((t, i) => {
-      if (t.avax !== undefined) {
-        avaxSlots.push({ originalIndex: i, pubkey: t.avax })
-      }
-    })
-    const isTestnet = Boolean(network.isTestnet)
-
-    // Native batch encoders are synchronous; the JS-level Promise.all was
-    // cosmetic and read as if it parallelized them. Call them in sequence —
-    // the per-call C++ parallelFor is where the actual concurrency happens.
-    const evmAddrs = deriveAddressesForEvm(evmPubkeys)
-    const btcAddrs = deriveAddressesForBTC(evmPubkeys, isTestnet)
-    const avaxAddrs =
-      avaxSlots.length > 0
-        ? deriveAddressesForAvax(
-            avaxSlots.map(s => s.pubkey),
-            avaxSlots.map(s => evmPubkeys[s.originalIndex] as Uint8Array),
-            isTestnet
-          )
-        : []
-    const svmAddrs = deriveAddressesForSVM(svmPubkeys)
-
-    // Re-key Avax results back to the original `accountIndices` positions.
-    const avaxByOriginalIndex = new Map<
-      number,
-      { avm: string; pvm: string; coreEth: string }
-    >()
-    avaxAddrs.forEach((entry, k) => {
-      const slot = avaxSlots[k]
-      if (slot && entry) {
-        avaxByOriginalIndex.set(slot.originalIndex, entry)
-      }
-    })
-
     return accountIndices.map((_, i) => {
-      const avax = avaxByOriginalIndex.get(i)
-      return {
-        [NetworkVMType.EVM]: evmAddrs[i] ?? '',
-        [NetworkVMType.BITCOIN]: btcAddrs[i] ?? '',
-        [NetworkVMType.AVM]: avax?.avm ?? '',
-        [NetworkVMType.PVM]: avax?.pvm ?? '',
-        [NetworkVMType.CoreEth]: avax?.coreEth ?? '',
-        [NetworkVMType.SVM]: svmAddrs[i] ?? '',
-        [NetworkVMType.HVM]: ''
-      } as Record<NetworkVMType, string>
+      let addresses = emptyAddresses()
+      perModuleResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          const slot = result.value[i]
+          if (slot) {
+            addresses = { ...addresses, ...slot }
+          }
+        }
+      })
+      return addresses
     })
   }
 

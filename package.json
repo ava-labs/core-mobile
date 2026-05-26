@@ -14,7 +14,6 @@
     "test": "yarn workspaces foreach -p run test",
     "test:coverage": "yarn workspaces foreach -p run test:coverage",
     "core": "yarn workspace @avalabs/core-mobile",
-    "crypto": "yarn workspace react-native-nitro-avalabs-crypto",
     "k2": "yarn workspace @avalabs/k2-alpine"
   },
   "devDependencies": {

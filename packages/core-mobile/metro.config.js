@@ -25,6 +25,17 @@ function resolveNoblePackage(packageName, moduleName) {
   }
 }
 
+// Packages that ship a web-targeted `main` and only expose the RN entry
+// through their `exports` conditions — opt them into Metro's package-exports
+// resolution. (e.g. @avalabs/crypto-sdk's `main` requires @avalabs/crypto-wasm,
+// which is not installed in RN; the RN entry routes to @avalabs/crypto-nitro
+// via `exports`.)
+const PACKAGE_EXPORTS_OPT_IN = [
+  '@lombard.finance/sdk',
+  '@avalabs/fusion-sdk',
+  '@avalabs/crypto-sdk'
+]
+
 // Only redirect @noble/hashes subpaths that are patched for native crypto.
 // Non-crypto modules (_assert, utils, crypto) must resolve normally so
 // consumers expecting the v1.3.x API (e.g. ethereum-cryptography) don't break.
@@ -89,17 +100,7 @@ const baseConfig = {
           platform
         )
       }
-      // Enable package exports only for @lombard.finance/sdk
-      if (moduleName.startsWith('@lombard.finance/sdk')) {
-        const newContext = {
-          ...context,
-          unstable_enablePackageExports: true
-        }
-        return context.resolveRequest(newContext, moduleName, platform)
-      }
-
-      // Enable package exports only for @avalabs/fusion-sdk
-      if (moduleName.startsWith('@avalabs/fusion-sdk')) {
+      if (PACKAGE_EXPORTS_OPT_IN.some(pkg => moduleName.startsWith(pkg))) {
         const newContext = {
           ...context,
           unstable_enablePackageExports: true

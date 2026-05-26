@@ -18,7 +18,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { isEvmPublicKey } from 'utils/publicKeys'
+import { emptyAddresses, isEvmPublicKey } from 'utils/publicKeys'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -57,7 +57,6 @@ type DiscoveredSeedBasedAccount = {
 
 const DEFAULT_ACTIVITY_SCAN_WINDOW = 6
 const INITIAL_ACTIVITY_SCAN_WINDOW = 2
-const MAX_PARALLEL_ADDRESS_DERIVATIONS = 3
 const MAX_PARALLEL_ACTIVITY_CHECKS = 3
 const MAX_PARALLEL_XPUB_LOOKUPS = 3
 const TRANSACTION_HISTORY_PAGE_SIZE = 1
@@ -415,7 +414,7 @@ class AccountsService {
   }: {
     walletId: string
     walletType: WalletType
-    accountIndex?: number
+    accountIndex: number
     isTestnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     // all vm modules need is just the isTestnet flag
@@ -423,12 +422,14 @@ class AccountsService {
       isTestnet
     } as Network
 
-    return await ModuleManager.deriveAddresses({
+    const [addresses] = await ModuleManager.deriveAllAddresses({
       walletId,
       walletType,
-      accountIndex,
+      accountIndices: [accountIndex],
       network
     })
+
+    return addresses ?? emptyAddresses()
   }
 
   async getAccountName({
@@ -624,43 +625,27 @@ class AccountsService {
       const windowEnd = Math.min(i + currentScanWindow, startIndex + maxScan)
       const windowSize = windowEnd - i
 
-      // Bound derivation fan-out so discovery does not saturate the JS thread on mobile.
-      const addressResults = await runWithConcurrency({
-        items: Array.from({ length: windowSize }, (_, k) => i + k),
-        concurrency: Math.min(MAX_PARALLEL_ADDRESS_DERIVATIONS, windowSize),
-        task: async accountIndex => {
-          try {
-            return {
-              status: 'fulfilled',
-              value: await ModuleManager.deriveAddresses({
-                walletId,
-                walletType,
-                accountIndex,
-                network
-              })
-            } as PromiseSettledResult<Record<NetworkVMType, string>>
-          } catch (reason) {
-            return {
-              status: 'rejected',
-              reason
-            } as PromiseSettledResult<Record<NetworkVMType, string>>
-          }
-        }
-      })
+      const accountIndices = Array.from({ length: windowSize }, (_, k) => i + k)
 
-      const discoveredWindowAccounts = addressResults.flatMap((result, k) => {
-        if (result.status !== 'fulfilled') {
-          return []
-        }
+      let batchAddresses: (Record<NetworkVMType, string> | undefined)[]
+      try {
+        batchAddresses = await ModuleManager.deriveAllAddresses({
+          walletId,
+          walletType,
+          accountIndices,
+          network
+        })
+      } catch (reason) {
+        Logger.error('Error deriving addresses for account activity scan', {
+          accountIndices,
+          reason
+        })
+        batchAddresses = accountIndices.map(() => undefined)
+      }
 
-        return [
-          {
-            id: `scan-${i + k}`,
-            index: i + k,
-            addresses: result.value
-          }
-        ]
-      })
+      const discoveredWindowAccounts = batchAddresses.flatMap((addresses, k) =>
+        addresses ? [{ id: `scan-${i + k}`, index: i + k, addresses }] : []
+      )
 
       const balanceActiveAccountIds =
         await this.getSeedBasedBalanceActiveAccountIds({
@@ -673,22 +658,11 @@ class AccountsService {
       let foundActiveInWindow = false
 
       await processInOrderWithConcurrency({
-        count: addressResults.length,
+        count: batchAddresses.length,
         concurrency: Math.min(MAX_PARALLEL_ACTIVITY_CHECKS, windowSize),
         task: async k => {
-          const result = addressResults[k]
-
-          if (!result) {
-            return 'unknown' as const
-          }
-
-          if (result?.status === 'rejected') {
-            Logger.error('Error deriving addresses for account activity scan', {
-              accountIndex: i + k,
-              reason: result.reason
-            })
-            return 'unknown' as const
-          }
+          const addresses = batchAddresses[k]
+          if (!addresses) return 'unknown' as const
 
           const discoveredAccountId = `scan-${i + k}`
           if (balanceActiveAccountIds.has(discoveredAccountId)) {
@@ -699,7 +673,7 @@ class AccountsService {
             walletId,
             walletType,
             accountIndex: i + k,
-            addresses: result.value,
+            addresses,
             modules: {
               evmModule,
               bitcoinModule,
@@ -710,7 +684,7 @@ class AccountsService {
           })
         },
         onResult: async (status, k) => {
-          const addressResult = addressResults[k]
+          const addresses = batchAddresses[k]
 
           if (status === 'unknown') {
             stoppedDueToError = true
@@ -719,7 +693,7 @@ class AccountsService {
           }
 
           if (status === 'active') {
-            if (addressResult?.status !== 'fulfilled') {
+            if (!addresses) {
               stoppedDueToError = true
               shouldStop = true
               return false
@@ -729,7 +703,7 @@ class AccountsService {
             discoveredAccounts.push({
               id: `scan-${i + k}`,
               index: i + k,
-              addresses: addressResult.value
+              addresses
             })
             consecutiveInactive = 0
             return true

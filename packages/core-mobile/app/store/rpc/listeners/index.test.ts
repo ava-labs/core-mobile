@@ -81,6 +81,7 @@ const mockModule: Module = {
   getAddress: jest.fn(),
   getTokens: jest.fn(),
   deriveAddress: jest.fn(),
+  deriveAddresses: jest.fn(),
   buildDerivationPath: jest.fn(),
   onRpcRequest: mockOnRpcRequest
 }
