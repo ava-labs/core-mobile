@@ -22,6 +22,7 @@ import { colors as baseColors } from '../../../theme/tokens/colors'
 import { Text } from '../../Primitives'
 import { ChartFooter } from './ChartFooter'
 import {
+  CANDLE_BODY_MAX_WIDTH,
   CANDLE_BODY_WIDTH_RATIO,
   CHART_FOOTER_HEIGHT,
   CHART_INSET,
@@ -63,35 +64,24 @@ type Props = {
 
 const renderPlaceholderState = ({
   state,
-  candles,
   width,
   height
 }: {
   state: ChartState
-  candles: OhlcCandle[]
   width: number
   height: number
 }): React.ReactElement | null => {
-  const containerStyle = {
-    width,
-    height,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const
-  }
-  // 'loading' falls through so the main layout stays mounted under the
-  // spinner overlay — avoids a layout swap mid-fade.
-  if (state === 'empty' && candles.length === 0) {
-    return (
-      <View style={containerStyle}>
-        <Text variant="caption" sx={{ color: '$textSecondary' }}>
-          No data for this range
-        </Text>
-      </View>
-    )
-  }
+  // `loading` and `empty` fall through to keep gridlines mounted under
+  // the spinner / overlay; only `error` swaps the layout.
   if (state === 'error') {
     return (
-      <View style={containerStyle}>
+      <View
+        style={{
+          width,
+          height,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
         <Text variant="caption" sx={{ color: '$textSecondary' }}>
           Couldn't load chart data
         </Text>
@@ -127,7 +117,10 @@ export const PriceChart: FC<Props> = ({
   const chartInset = mode === 'line' ? 0 : CHART_INSET
   const innerWidth = Math.max(0, width - 2 * chartInset)
   const slotWidth = candles.length > 0 ? innerWidth / candles.length : 0
-  const bodyWidth = slotWidth * CANDLE_BODY_WIDTH_RATIO
+  const bodyWidth = Math.min(
+    slotWidth * CANDLE_BODY_WIDTH_RATIO,
+    CANDLE_BODY_MAX_WIDTH
+  )
 
   const hasVolumeData = useMemo(
     () => candles.some(c => c.volume != null),
@@ -162,17 +155,19 @@ export const PriceChart: FC<Props> = ({
   const touchStartY = useSharedValue(0)
   const hasDecided = useSharedValue(false)
 
-  const chartContentOpacity = useSharedValue(0)
+  const chartContentOpacity = useSharedValue(1)
   useEffect(() => {
+    // Stay at full opacity while loading/empty so the gridlines remain
+    // visible behind the spinner / "no data" overlay. `isFetching` dims to
+    // 0.4 to visibly stale the previous range during a placeholder refetch.
     let target: number
-    if (state !== 'loaded') target = 0
-    else if (isFetching) target = 0.4
+    if (isFetching) target = 0.4
     else target = 1
     chartContentOpacity.value = withTiming(target, {
-      duration: target === 0 ? 120 : 250,
+      duration: 250,
       easing: Easing.out(Easing.quad)
     })
-  }, [state, isFetching, chartContentOpacity])
+  }, [isFetching, chartContentOpacity])
   const chartContentStyle = useAnimatedStyle(() => ({
     opacity: chartContentOpacity.value
   }))
@@ -189,9 +184,19 @@ export const PriceChart: FC<Props> = ({
     opacity: spinnerOpacity.value
   }))
 
-  // Shared between the gridline path and the y-axis labels so each label
-  // stays locked to its dashed line (including the edge-clamping below).
+  const hasCandles = candles.length > 0
+
+  // When `candles` is empty, evenly-spaced placeholder positions keep the
+  // empty-state grid intact (real labels are gated behind `hasCandles`).
   const tickPositions = useMemo(() => {
+    if (!hasCandles) {
+      const count = 3
+      return Array.from({ length: count + 1 }, (_, i) => {
+        const rawY = (i / count) * priceAreaH
+        const clamped = Math.max(2, Math.min(priceAreaH - 3, rawY))
+        return { price: 0, y: clamped + priceTopPadding }
+      })
+    }
     const prices = yAxisTicks(minPrice, maxPrice, 3)
     return prices.map(price => {
       const rawY = priceToY({
@@ -204,7 +209,7 @@ export const PriceChart: FC<Props> = ({
       const clamped = Math.max(2, Math.min(priceAreaH - 3, rawY))
       return { price, y: clamped + priceTopPadding }
     })
-  }, [priceAreaH, minPrice, maxPrice, priceTopPadding])
+  }, [hasCandles, priceAreaH, minPrice, maxPrice, priceTopPadding])
 
   const gridPath = useMemo(() => {
     const p = Skia.Path.Make()
@@ -426,11 +431,12 @@ export const PriceChart: FC<Props> = ({
 
   const placeholder = renderPlaceholderState({
     state,
-    candles,
     width,
     height
   })
   if (placeholder) return placeholder
+
+  const isEmpty = state === 'empty' && !hasCandles
 
   return (
     <GestureDetector gesture={gesture}>
@@ -469,13 +475,15 @@ export const PriceChart: FC<Props> = ({
                   downColor={redColor}
                 />
               </Group>
-              <YAxisLabels
-                isActive={isActive}
-                ticks={tickPositions}
-                font={labelFont}
-                color={theme.colors.$textPrimary ?? '#000'}
-                formatPrice={formatPrice}
-              />
+              {hasCandles && (
+                <YAxisLabels
+                  isActive={isActive}
+                  ticks={tickPositions}
+                  font={labelFont}
+                  color={theme.colors.$textPrimary ?? '#000'}
+                  formatPrice={formatPrice}
+                />
+              )}
             </Canvas>
           </View>
           {showVolume && (
@@ -522,10 +530,10 @@ export const PriceChart: FC<Props> = ({
           style={[
             {
               position: 'absolute',
-              top: 0,
+              top: priceTopPadding,
               left: 0,
               right: 0,
-              bottom: 0,
+              height: priceAreaH,
               justifyContent: 'center',
               alignItems: 'center'
             },
@@ -533,6 +541,23 @@ export const PriceChart: FC<Props> = ({
           ]}>
           <ActivityIndicator />
         </Animated.View>
+        {isEmpty && (
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              top: priceTopPadding,
+              left: 0,
+              right: 0,
+              height: priceAreaH,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Text variant="caption" sx={{ color: '$textSecondary' }}>
+              No data for this range
+            </Text>
+          </View>
+        )}
       </View>
     </GestureDetector>
   )
