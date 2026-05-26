@@ -1,61 +1,45 @@
 import {
   alpha,
   NavigationTitleHeader,
-  SegmentedControl,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef,
-  OnTabChange
+  CollapsibleTabsRef
 } from 'common/components/CollapsibleTabs'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import {
-  InteractionManager,
-  LayoutChangeEvent,
-  LayoutRectangle
-} from 'react-native'
-import type { TabBarProps } from 'react-native-collapsible-tab-view'
-import { useSharedValue } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { AnalyticsEventName } from 'services/analytics/types'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import type { TabBarProps } from 'react-native-collapsible-tab-view'
+import Animated, {
+  interpolate,
+  useAnimatedStyle
+} from 'react-native-reanimated'
+import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
+import { TradeBalance } from '../components/TradeBalance'
 import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
-import { PredictionBalanceRow } from '../predictions/components/PredictionBalanceRow'
-import { PredictionsScreen } from '../predictions/screens/PredictionsScreen'
 
 const BALANCE_ROW_HEIGHT = 60
-const BALANCE_ROW_VERTICAL_MARGIN = 28 // 14 top + 14 bottom
+const BALANCE_ROW_VERTICAL_MARGIN = 28
 const MIN_HEADER_HEIGHT = BALANCE_ROW_HEIGHT + BALANCE_ROW_VERTICAL_MARGIN
-
-const SEGMENT_ITEMS = [{ title: 'Predictions' }, { title: 'Perps' }]
-
-const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
-  0: 'PredictionsClicked',
-  1: 'PerpsClicked'
-}
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
 }
 
-/**
- * Trade screen with a collapsible header and segmented navigation between
- * the Predictions and Perps tabs.
- */
 export function TradeScreen(): JSX.Element {
   const { theme } = useTheme()
   const headerHeight = useEffectiveHeaderHeight()
+  const tabBarHeight = useBottomTabBarHeight()
   const frame = useSafeAreaFrame()
   const router = useRouter()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -64,66 +48,30 @@ export function TradeScreen(): JSX.Element {
     selectHasBeenViewedOnce(ViewOnceKey.PERPETUALS_ONBOARDING)
   )
 
-  const selectedSegmentIndex = useSharedValue(0)
-  const [selectedTab, setSelectedTab] = useState(0)
-
-  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
+  const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
-  const handleSegmentedControlLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setSegmentedControlLayout(event.nativeEvent.layout)
-    },
-    []
-  )
+  const title = 'Perps'
+  const description =
+    'Trade perpetual futures long or short with leverage powered by Hyperliquid'
 
-  const handleSelectSegment = useCallback(
-    (index: number): void => {
-      const eventName = SEGMENT_EVENT_MAP[index]
+  useEffect(() => {
+    if (!hasViewedPerpsOnboarding) {
+      router.navigate('/perpetualsOnboarding')
+    }
+  }, [hasViewedPerpsOnboarding, router])
 
-      if (eventName) {
-        AnalyticsService.capture(eventName)
-      }
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setHeaderLayout({ x, y, width, height })
+  }, [])
 
-      selectedSegmentIndex.value = index
-      setSelectedTab(index)
+  const header = useMemo(() => <NavigationTitleHeader title={title} />, [])
 
-      InteractionManager.runAfterInteractions(() => {
-        if (tabViewRef.current?.getCurrentIndex() !== index) {
-          tabViewRef.current?.setIndex(index)
-        }
-      })
-
-      if (index === 1 && !hasViewedPerpsOnboarding) {
-        router.navigate('/perpetualsOnboarding')
-      }
-    },
-    [selectedSegmentIndex, hasViewedPerpsOnboarding, router]
-  )
-
-  const tabTitle = selectedTab === 0 ? 'Predictions' : 'Perps'
-  const tabDescription =
-    selectedTab === 0
-      ? 'Trade what happens next in global markets powered by Kalshi'
-      : 'Trade perpetual futures long or short with leverage powered by Hyperliquid'
-
-  const header = useMemo(
-    () => <NavigationTitleHeader title={tabTitle} />,
-    [tabTitle]
-  )
-
-  const { onScroll } = useFadingHeaderNavigation({
+  const { onScroll, scrollY } = useFadingHeaderNavigation({
     header,
-    // targetLayout: headerLayout,
-    /*
-     * there's a bug on the Predictions screen where the BlurView
-     * in the navigation header doesn't render correctly on initial load.
-     * To work around it, we delay the BlurView's rendering slightly
-     * so it captures the correct content behind it.
-     *
-     * note: we are also applying the same solution to the linear gradient bottom wrapper below
-     */
+    targetLayout: headerLayout,
     shouldDelayBlurOniOS: true
   })
 
@@ -134,17 +82,13 @@ export function TradeScreen(): JSX.Element {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
+      paddingBottom: tabBarHeight + 16,
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [tabBarHeight, tabHeight])
 
   const tabs = useMemo(
     () => [
-      {
-        tabName: 'Predictions',
-        component: <PredictionsScreen containerStyle={contentContainerStyle} />
-      },
       {
         tabName: 'Perps',
         component: <PerpetualsScreen containerStyle={contentContainerStyle} />
@@ -153,52 +97,58 @@ export function TradeScreen(): JSX.Element {
     [contentContainerStyle]
   )
 
-  const onTabChange: OnTabChange = useCallback(
-    data => {
-      if (selectedSegmentIndex.value === data.prevIndex) {
-        selectedSegmentIndex.value = data.index
-        setSelectedTab(data.index)
-      }
-    },
-    [selectedSegmentIndex]
-  )
+  const animatedGradientStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, 110], [0, 1])
+    return {
+      opacity
+    }
+  })
 
-  const renderContainerHeader = useCallback(
+  const renderHeader = useCallback(
     (): JSX.Element => (
       <View
         style={{
           paddingTop: 14,
           paddingBottom: 16
-        }}>
+        }}
+        onLayout={handleHeaderLayout}>
         <View style={{ paddingHorizontal: 16, gap: 8 }}>
-          <Text variant="heading2">{tabTitle}</Text>
+          <Text variant="heading2">{title}</Text>
           <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-            {tabDescription}
+            {description}
           </Text>
         </View>
         <View>
-          <LinearGradient
-            colors={[
-              theme.colors.$surfacePrimary,
-              alpha(theme.colors.$surfacePrimary, 0)
-            ]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 0, y: 1 }}
-            style={{
-              height: 90,
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0
-            }}
-          />
+          <Animated.View
+            style={[
+              animatedGradientStyle,
+              {
+                height: 110,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0
+              }
+            ]}>
+            <LinearGradient
+              colors={[
+                theme.colors.$surfacePrimary,
+                alpha(theme.colors.$surfacePrimary, 0)
+              ]}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 0, y: 1 }}
+              style={{
+                flex: 1
+              }}
+            />
+          </Animated.View>
 
           <View
             style={{
               marginTop: 14,
               marginHorizontal: 16
             }}>
-            <PredictionBalanceRow
+            <TradeBalance
               balance={10250000.23}
               onBalancePress={() => router.navigate('/perpetualsBalance')}
             />
@@ -206,23 +156,14 @@ export function TradeScreen(): JSX.Element {
         </View>
       </View>
     ),
-    [tabTitle, tabDescription, theme.colors.$surfacePrimary, router]
-  )
-
-  const renderSegmentedControl = useCallback(
-    (): JSX.Element => (
-      <SegmentedControl
-        dynamicItemWidth={false}
-        items={SEGMENT_ITEMS}
-        selectedSegmentIndex={selectedSegmentIndex}
-        onSelectSegment={handleSelectSegment}
-        style={{
-          marginHorizontal: 16,
-          marginBottom: 16
-        }}
-      />
-    ),
-    [handleSelectSegment, selectedSegmentIndex]
+    [
+      handleHeaderLayout,
+      title,
+      description,
+      animatedGradientStyle,
+      theme.colors.$surfacePrimary,
+      router
+    ]
   )
 
   return (
@@ -232,21 +173,9 @@ export function TradeScreen(): JSX.Element {
         renderTabBar={renderEmptyTabBar}
         tabs={tabs}
         onScrollY={onScroll}
-        onTabChange={onTabChange}
-        renderHeader={renderContainerHeader}
+        renderHeader={renderHeader}
         minHeaderHeight={MIN_HEADER_HEIGHT}
       />
-
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0
-        }}
-        onLayout={handleSegmentedControlLayout}>
-        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
-      </View>
     </BlurredBarsContentLayout>
   )
 }
