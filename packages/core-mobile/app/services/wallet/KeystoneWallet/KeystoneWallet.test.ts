@@ -10,9 +10,14 @@ jest.mock('@avalabs/core-wallets-sdk', () => ({
   }))
 }))
 
+const ACCOUNT_0_XPUB =
+  'xpub661MyMwAqRbcFFDMuFiGQmA1EqWxxgDLdtNvxxiucf9qkfoVrvwgnYyshxWoewWtkZ1aLhKoVDrpeDvn1YRqxX2szhGKi3UiSEv1hYRMF8q'
+
 const MockedKeystoneData: KeystoneDataStorageType = {
   evm: 'xpub661MyMwAqRbcGSmFWVZk2h773zMrcPFqDUWi7cFRpgPhfn7y9HEPzPsBDEXYxAWfAoGo7E7ijjYfB3xAY86MYzfvGLDHmcy2epZKNeDd4uQ',
-  xp: 'xpub661MyMwAqRbcFFDMuFiGQmA1EqWxxgDLdtNvxxiucf9qkfoVrvwgnYyshxWoewWtkZ1aLhKoVDrpeDvn1YRqxX2szhGKi3UiSEv1hYRMF8q',
+  xpByAccount: {
+    0: ACCOUNT_0_XPUB
+  },
   mfp: '1250b6bc'
 }
 
@@ -31,8 +36,14 @@ describe('KeystoneWallet', () => {
     expect(wallet.xpub).toEqual(MockedKeystoneData.evm)
   })
 
-  it('should have returned the xp xpub', async () => {
-    expect(wallet.xpubXP).toEqual(MockedKeystoneData.xp)
+  it('should have returned the xp xpub for account 0', async () => {
+    expect(wallet.getRawXpubXP(0)).toEqual(ACCOUNT_0_XPUB)
+  })
+
+  it('should throw when the xp xpub for a non-primary account has not been imported', async () => {
+    expect(() => wallet.getRawXpubXP(1)).toThrow(
+      /No AVAX xpub stored for account 1/
+    )
   })
 
   it('should have returned the mfp', async () => {
@@ -47,13 +58,23 @@ describe('KeystoneWallet', () => {
     expect(evmPublicKey).toEqual(
       '0341f20093c553b2aa95dd57449532b85480de93a9aaa225a391dcfe8679e33f50'
     )
+    // BIP44 AVAX: account at depth-3, address always at /0/0.
     const xpPublicKey = await wallet.getPublicKeyFor({
-      derivationPath: `m/44'/9000'/0'/0/1`,
+      derivationPath: `m/44'/9000'/0'/0/0`,
       curve: Curve.SECP256K1
     })
     expect(xpPublicKey).toEqual(
-      '034814b89f62338b37881a71ffe40cdd29752241560b861a7086ac711fa7a8fe79'
+      '038d6391a4806ad05b787f31ac592866f35f6fd8662b2f5f252f91d4f1fba45d29'
     )
+  })
+
+  it('should throw when deriving an AVAX pubkey for a non-primary account without its xpub', async () => {
+    await expect(
+      wallet.getPublicKeyFor({
+        derivationPath: `m/44'/9000'/1'/0/0`,
+        curve: Curve.SECP256K1
+      })
+    ).rejects.toThrow(/No AVAX xpub stored for account 1/)
   })
 
   describe('getSigner', () => {
@@ -65,6 +86,7 @@ describe('KeystoneWallet', () => {
       const result = await wallet.signBtcTransaction({
         accountIndex: 0,
         transaction: { inputs: [], outputs: [] },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         network: { vmName: 'BITCOIN' } as any,
         provider: new BitcoinProvider()
       })

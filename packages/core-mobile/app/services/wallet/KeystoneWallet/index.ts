@@ -52,18 +52,36 @@ import { convertTxData, makeBigIntLike } from 'services/wallet/utils'
 import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
 import { SignatureRSV } from '../types'
 
+// EVM uses a single shared xpub at m/44'/60'/0' (depth-5 derivation for
+// all EVM accounts: m/44'/60'/0'/0/<accountIndex>).
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
-export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
+// AVAX follows BIP44 with the account at depth-3:
+// m/44'/9000'/<accountIndex>'/0/0. The per-account xpub at depth-3 is
+// fetched from the Keystone device — at onboarding for account 0, and via
+// the generateKeyDerivationCall QR flow for additional accounts.
+const AVAX_BIP44_PREFIX = `m/44'/9000'`
+
+const avaxDerivationPathForAccount = (accountIndex: number): string =>
+  `${AVAX_BIP44_PREFIX}/${accountIndex}'/0/0`
+
+const parseAvaxAccountIndex = (path: string): number => {
+  // Expected shape: m/44'/9000'/<accountIndex>'(/...)
+  const match = path.match(/^m\/44'\/9000'\/(\d+)'/)
+  if (!match || match[1] === undefined) {
+    throw new Error(`Invalid AVAX derivation path: ${path}`)
+  }
+  return Number(match[1])
+}
 
 export default class KeystoneWallet implements Wallet {
   #mfp: string
   #xpub: string
-  #xpubXP: string
+  #xpubByAccount: Record<number, string>
 
   constructor(keystoneData: KeystoneDataStorageType) {
     this.#mfp = keystoneData.mfp
     this.#xpub = keystoneData.evm
-    this.#xpubXP = keystoneData.xp
+    this.#xpubByAccount = keystoneData.xpByAccount
   }
 
   public get xpub(): string {
@@ -71,14 +89,26 @@ export default class KeystoneWallet implements Wallet {
     return this.#xpub
   }
 
-  public get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
-    return this.#xpubXP
-  }
-
   public get mfp(): string {
     assertNotUndefined(this.#mfp, 'no master fingerprint available')
     return this.#mfp
+  }
+
+  /**
+   * Returns the AVAX xpub for the given BIP44 account index. Throws if the
+   * caller hasn't yet fetched that account's xpub from the device (only
+   * account 0 is populated at onboarding; additional accounts go through
+   * KeystoneService.addAccountXpub).
+   */
+  private getXpubXPForAccount(accountIndex: number): string {
+    const xpub = this.#xpubByAccount[accountIndex]
+    if (!xpub) {
+      throw new Error(
+        `No AVAX xpub stored for account ${accountIndex}. ` +
+          `Scan the Keystone QR for this account before deriving or signing.`
+      )
+    }
+    return xpub
   }
 
   public async signSvmTransaction(): Promise<string> {
@@ -94,9 +124,8 @@ export default class KeystoneWallet implements Wallet {
     return { r, s, v }
   }
 
-  // TODO pass correct account index after
-  public getRawXpubXP(): string {
-    return this.xpubXP
+  public getRawXpubXP(accountIndex: number): string {
+    return this.getXpubXPForAccount(accountIndex)
   }
 
   public async signMessage({
@@ -225,14 +254,15 @@ export default class KeystoneWallet implements Wallet {
     const tx = transaction.tx
     const isEvmChain = tx.getVM() === 'EVM'
 
-    // bc-ur-registry-avalanche@0.1.x takes explicit derivation paths instead
-    // of (xpub, walletIndex). For Keystone QR we have a single account-0 xpub,
-    // so we sign at the depth-5 path matching the address mobile derives —
-    // m/44'/{60|9000}'/0'/0/<accountIndex>. Firmware 2.4.2 advertises this
-    // pattern via `account.x&p` on the AVAX entry.
+    // bc-ur-registry-avalanche@0.1.x takes explicit derivation paths. EVM
+    // (including cross-chain Avalanche EVM) stays on the single-xpub depth-5
+    // pattern (m/44'/60'/0'/0/<accountIndex>). AVAX follows BIP44 with a
+    // per-account hardened path (m/44'/9000'/<accountIndex>'/0/0). The device
+    // signs at the path we specify regardless of which xpubs we hold locally,
+    // so we don't need the per-account xpub here — just the path.
     const signingPath = isEvmChain
       ? `${EVM_DERIVATION_PATH}/0/${accountIndex}`
-      : `${AVAX_DERIVATION_PATH}/0/${accountIndex}`
+      : avaxDerivationPathForAccount(accountIndex)
 
     const requestUR = AvalancheSignRequest.constructAvalancheRequest(
       Buffer.from(tx.toBytes()),
@@ -380,23 +410,27 @@ export default class KeystoneWallet implements Wallet {
   }
 
   private getPublicKey(path: string): Buffer {
-    const accountIndex = this.getAccountIndex(path)
-
     if (path.startsWith(EVM_DERIVATION_PATH)) {
-      return getAddressPublicKeyFromXPub(this.xpub, accountIndex)
+      // EVM depth-5: m/44'/60'/0'/0/<addressIndex> — derive child of the
+      // shared EVM xpub at the trailing index.
+      return getAddressPublicKeyFromXPub(this.xpub, this.getTrailingIndex(path))
     }
-    if (path.startsWith(AVAX_DERIVATION_PATH)) {
-      return Avalanche.getAddressPublicKeyFromXpub(this.xpubXP, accountIndex)
+    if (path.startsWith(`${AVAX_BIP44_PREFIX}/`)) {
+      // AVAX BIP44: m/44'/9000'/<accountIndex>'/0/0 — look up the account's
+      // own xpub at depth-3, then derive /0/0 to get the address pubkey.
+      const accountIndex = parseAvaxAccountIndex(path)
+      const xpub = this.getXpubXPForAccount(accountIndex)
+      return Avalanche.getAddressPublicKeyFromXpub(xpub, 0)
     }
     throw new Error(`Unknown path: ${path}`)
   }
 
-  private getAccountIndex(path: string): number {
-    const accountIndex = path.split('/').pop()
-    if (!accountIndex) {
+  private getTrailingIndex(path: string): number {
+    const tail = path.split('/').pop()
+    if (!tail) {
       throw new Error(`Invalid path: ${path}`)
     }
-    return Number(accountIndex)
+    return Number(tail)
   }
 
   public async getPublicKeyFor({

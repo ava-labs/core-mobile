@@ -36,6 +36,7 @@ import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
 import { SentryTag } from 'services/sentry/types'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
+import { requestKeystoneAccountXpub } from 'features/keystone/services/requestKeystoneAccountXpub'
 import WalletService from 'services/wallet/WalletService'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
@@ -386,6 +387,12 @@ class AccountsService {
       }
       // Returns both account and xpub data
       return wallet.addAccount({ index, isTestnet, walletId, name })
+    } else if (walletType === WalletType.KEYSTONE && index > 0) {
+      // Keystone QR mode keeps only the account-0 AVAX xpub in local storage
+      // after onboarding. Any non-primary account needs its own xpub at
+      // m/44'/9000'/<index>', fetched via the generateKeyDerivationCall QR
+      // exchange. Without it KeystoneWallet.getPublicKey would throw.
+      await requestKeystoneAccountXpub(index)
     }
 
     const addresses = await this.getAddresses({

@@ -185,7 +185,7 @@ const QRScanner: FC<Omit<KeystoneSignerParams, 'request' | 'onReject'>> = ({
       }}>
       <KeystoneQrScanner
         urTypes={responseURTypes}
-        onSuccess={ur => onApprove(ur.cbor).finally(navigation.goBack)}
+        onSuccess={ur => onApprove(ur.cbor, ur.type).finally(navigation.goBack)}
         info={
           'Place the QR code from your Keystone device in front of the camera.'
         }

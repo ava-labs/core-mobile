@@ -4,7 +4,7 @@ import { requestKeystoneSigner } from 'features/keystone/utils'
 export const signer = async (
   request: UR,
   responseURTypes: string[],
-  handleResult: (cbor: Buffer) => Promise<string>
+  handleResult: (cbor: Buffer, urType: string) => Promise<string>
 ): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     requestKeystoneSigner({
@@ -13,8 +13,8 @@ export const signer = async (
       onReject: (message?: string) => {
         reject(message ?? 'User rejected')
       },
-      onApprove: (cbor: Buffer) => {
-        return handleResult(cbor).then(resolve).catch(reject)
+      onApprove: (cbor: Buffer, urType: string) => {
+        return handleResult(cbor, urType).then(resolve).catch(reject)
       }
     })
   })
