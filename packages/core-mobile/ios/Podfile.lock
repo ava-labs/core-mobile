@@ -9,6 +9,10 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - AvalabsCryptoNitro (0.0.0-ray-crypto-core-20260521183935):
+    - NitroModules
+    - React-callinvoker
+    - React-jsi
   - boost (1.84.0)
   - BranchSDK (3.12.2)
   - CatCrypto (0.3.2)
@@ -544,37 +548,6 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - NitroAvalabsCrypto (0.0.1):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - NitroModules
-    - QuickCrypto
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-callinvoker
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
   - NitroFetch (0.1.6):
     - boost
     - DoubleConversion
@@ -4299,9 +4272,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - SDWebImage (5.21.6):
-    - SDWebImage/Core (= 5.21.6)
-  - SDWebImage/Core (5.21.6)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - SDWebImageAVIFCoder (0.11.1):
     - libavif/core (>= 0.11.0)
     - SDWebImage (~> 5.10)
@@ -4321,6 +4294,7 @@ PODS:
     - ZXingObjC/Core
 
 DEPENDENCIES:
+  - "AvalabsCryptoNitro (from `../node_modules/@avalabs/crypto-nitro`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - "DatadogSDKReactNative (from `../node_modules/@datadog/mobile-react-native`)"
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -4364,7 +4338,6 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
-  - NitroAvalabsCrypto (from `../../react-native-nitro-avalabs-crypto`)
   - NitroFetch (from `../node_modules/react-native-nitro-fetch`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
@@ -4539,6 +4512,8 @@ SPEC REPOS:
     - ZXingObjC
 
 EXTERNAL SOURCES:
+  AvalabsCryptoNitro:
+    :path: "../node_modules/@avalabs/crypto-nitro"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DatadogSDKReactNative:
@@ -4622,8 +4597,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  NitroAvalabsCrypto:
-    :path: "../../react-native-nitro-avalabs-crypto"
   NitroFetch:
     :path: "../node_modules/react-native-nitro-fetch"
   NitroMmkv:
@@ -4872,6 +4845,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  AvalabsCryptoNitro: c25081078149208a4e151e6ba7846f65d4fe1df5
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BranchSDK: db2c2ffa5b85ad3e202f73393ca794878afd3c52
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
@@ -4945,7 +4919,6 @@ SPEC CHECKSUMS:
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroAvalabsCrypto: c4e10642b6f40afe58a4641858d4896aaa6c90ef
   NitroFetch: 660adfb47f84b28db664f97b50e5dc28506ab6c1
   NitroMmkv: 8ed7ef6f41b91785fc580c975f68d6d675214767
   NitroModules: 107a9262c74fd84fa8e77ebd82a72980b6aa50b1
@@ -5070,7 +5043,7 @@ SPEC CHECKSUMS:
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
   RNSVG: 6f39605a4c4d200b11435c35bd077553c6b5963a
   RNWorklets: 416ef974c176d76634e34c0aeda83f6b67084a88
-  SDWebImage: 1bb6a1b84b6fe87b972a102bdc77dd589df33477
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
@@ -5080,6 +5053,6 @@ SPEC CHECKSUMS:
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 0dce8bbef998d19151fa97bd366a69e2734eaeeb
+PODFILE CHECKSUM: d9afebf7df20c90bddc0d9382debb4c851eda5a6
 
 COCOAPODS: 1.16.2

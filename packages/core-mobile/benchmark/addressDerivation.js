@@ -1,4 +1,9 @@
 /* eslint-disable no-console */
+
+// Compares sequential `ModuleManager.deriveAddresses` vs batch
+// `deriveAllAddresses`. Both share the same pubkey source, so the delta
+// isolates the per-module batch encoders.
+
 import { Alert } from 'react-native'
 import ModuleManager from 'vmModule/ModuleManager'
 import { selectActiveWallet } from 'store/wallet/slice'

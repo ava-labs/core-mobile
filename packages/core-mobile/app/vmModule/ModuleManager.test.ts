@@ -1,40 +1,40 @@
+import { EvmModule } from '@avalabs/evm-module'
+import { BitcoinModule } from '@avalabs/bitcoin-module'
+import { AvalancheModule } from '@avalabs/avalanche-module'
+import { SvmModule } from '@avalabs/svm-module'
 import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { WalletType } from 'services/wallet/types'
 import { VmModuleErrors } from './errors'
 
-jest.mock('react-native-nitro-avalabs-crypto', () => ({
-  deriveAddressesForEvm: jest.fn(
-    (pubkeys: unknown[]) => pubkeys.map((_, i) => `0xevm${i}`)
-  ),
-  deriveAddressesForBTC: jest.fn(
-    (pubkeys: unknown[], isTestnet: boolean) =>
-      pubkeys.map((_, i) => `${isTestnet ? 'tb1' : 'bc1'}btc${i}`)
-  ),
-  deriveAddressesForAvax: jest.fn((avaxPubkeys: unknown[]) =>
-    avaxPubkeys.map((_, i) => ({
-      avm: `X-avax${i}`,
-      pvm: `P-avax${i}`,
-      coreEth: `C-avax${i}`
-    }))
-  ),
-  deriveAddressesForSVM: jest.fn(
-    (pubkeys: unknown[]) => pubkeys.map((_, i) => `svm${i}`)
+// Keep real module instances so chainId/namespace lookups still hit real
+// manifests in the other tests; only stub the derivation pipeline.
+jest
+  .spyOn(EvmModule.prototype, 'deriveAddresses')
+  .mockImplementation(async ({ accountIndices }) =>
+    accountIndices.map((_, i) => ({ [NetworkVMType.EVM]: `0xevm${i}` }))
   )
-}))
-
-jest.mock('services/wallet/WalletService', () => ({
-  __esModule: true,
-  default: {
-    getPublicKey: jest.fn(
-      async (_walletId: string, _walletType: string, _accountIndex: number) => ({
-        evm: '02' + '11'.repeat(32),
-        xp: '02' + '22'.repeat(32)
-      })
-    ),
-    getPublicKeyFor: jest.fn(async () => '33'.repeat(32))
-  }
-}))
+jest
+  .spyOn(BitcoinModule.prototype, 'deriveAddresses')
+  .mockImplementation(async ({ accountIndices, network }) =>
+    accountIndices.map((_, i) => ({
+      [NetworkVMType.BITCOIN]: `${network.isTestnet ? 'tb1' : 'bc1'}btc${i}`
+    }))
+  )
+jest
+  .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+  .mockImplementation(async ({ accountIndices }) =>
+    accountIndices.map((_, i) => ({
+      [NetworkVMType.AVM]: `X-avax${i}`,
+      [NetworkVMType.PVM]: `P-avax${i}`,
+      [NetworkVMType.CoreEth]: `C-avax${i}`
+    }))
+  )
+jest
+  .spyOn(SvmModule.prototype, 'deriveAddresses')
+  .mockImplementation(async ({ accountIndices }) =>
+    accountIndices.map((_, i) => ({ [NetworkVMType.SVM]: `svm${i}` }))
+  )
 
 describe('ModuleManager', () => {
   describe('not initialized', () => {
@@ -118,10 +118,6 @@ describe('ModuleManager', () => {
   })
 
   describe('deriveAllAddresses', () => {
-    beforeEach(() => {
-      jest.clearAllMocks()
-    })
-
     it('returns an empty array when accountIndices is empty', async () => {
       const result = await ModuleManager.deriveAllAddresses({
         walletId: 'w1',
@@ -130,17 +126,6 @@ describe('ModuleManager', () => {
         network: { isTestnet: false } as Network
       })
       expect(result).toEqual([])
-    })
-
-    it('throws when accountIndices has a gap', async () => {
-      await expect(
-        ModuleManager.deriveAllAddresses({
-          walletId: 'w1',
-          walletType: WalletType.MNEMONIC,
-          accountIndices: [0, 1, 3],
-          network: { isTestnet: false } as Network
-        })
-      ).rejects.toThrow(/consecutive/)
     })
 
     it('passes a single index through and returns one record', async () => {
@@ -155,7 +140,7 @@ describe('ModuleManager', () => {
       expect(result[0]?.[NetworkVMType.CoreEth]).toBe('C-avax0')
     })
 
-    it('processes a consecutive batch and aligns results by index', async () => {
+    it('merges per-module batch results positionally', async () => {
       const result = await ModuleManager.deriveAllAddresses({
         walletId: 'w1',
         walletType: WalletType.MNEMONIC,
@@ -168,15 +153,17 @@ describe('ModuleManager', () => {
         'X-avax1',
         'X-avax2'
       ])
+      expect(result.map(r => r[NetworkVMType.SVM])).toEqual([
+        'svm0',
+        'svm1',
+        'svm2'
+      ])
     })
 
-    it('returns empty AVM/PVM/CoreEth when wallet exposes no xp pubkey', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const WalletService = require('services/wallet/WalletService').default
-      WalletService.getPublicKey.mockResolvedValueOnce({
-        evm: '02' + '11'.repeat(32)
-        // xp intentionally omitted
-      })
+    it('keeps remaining slots when a module rejects', async () => {
+      jest
+        .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+        .mockRejectedValueOnce(new Error('xp pubkey unavailable'))
 
       const result = await ModuleManager.deriveAllAddresses({
         walletId: 'w1',
@@ -188,7 +175,6 @@ describe('ModuleManager', () => {
       expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
       expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc0')
       expect(result[0]?.[NetworkVMType.SVM]).toBe('svm0')
-      // AVM/PVM/CoreEth all empty because the wallet did not expose xp
       expect(result[0]?.[NetworkVMType.AVM]).toBe('')
       expect(result[0]?.[NetworkVMType.PVM]).toBe('')
       expect(result[0]?.[NetworkVMType.CoreEth]).toBe('')

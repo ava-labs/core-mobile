@@ -81,6 +81,7 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
     const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,
       walletType: WalletType.PRIVATE_KEY,
+      accountIndex: 0,
       isTestnet: isDeveloperMode
     })
 
