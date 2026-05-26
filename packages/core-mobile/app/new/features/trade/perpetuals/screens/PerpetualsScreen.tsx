@@ -63,10 +63,6 @@ export const PerpetualsScreen = ({
     router.navigate('/perpetualsSearch')
   }, [router])
 
-  const handleMyPositionsPress = useCallback(() => {
-    router.navigate('/perpetualsPositions')
-  }, [router])
-
   const sortedMarkets = useMemo(() => {
     switch (selectedFilter) {
       case 'Volume':
@@ -136,11 +132,7 @@ export const PerpetualsScreen = ({
         sx={{
           gap: 20
         }}>
-        <Positions
-          positions={POSITIONS_MOCK}
-          onTitlePress={handleMyPositionsPress}
-          onPositionPress={handleMyPositionsPress}
-        />
+        <Positions positions={POSITIONS_MOCK} />
         <TradeFilters
           chips={CHIPS}
           selectedChip={selectedFilter}
@@ -150,12 +142,7 @@ export const PerpetualsScreen = ({
         />
       </View>
     ),
-    [
-      selectedFilter,
-      handleSelectFilter,
-      handleSearchPress,
-      handleMyPositionsPress
-    ]
+    [selectedFilter, handleSelectFilter, handleSearchPress]
   )
 
   return (
