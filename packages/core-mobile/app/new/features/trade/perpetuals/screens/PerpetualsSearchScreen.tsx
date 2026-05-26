@@ -1,9 +1,9 @@
 import { Image, SearchBar, Text } from '@avalabs/k2-alpine'
+import { ListRenderItem } from '@shopify/flash-list'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PerpetualListItem } from '../components/PerpetualListItem'
 import { PERP_MARKETS_MOCK } from '../mocks'
@@ -96,7 +96,7 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
   }, [searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title=""
       isModal
       data={results}
