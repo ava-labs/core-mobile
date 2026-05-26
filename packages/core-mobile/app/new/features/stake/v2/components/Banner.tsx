@@ -88,16 +88,17 @@ export const Banner = (): JSX.Element | undefined => {
   )
 
   const percentage = useMemo(() => {
-    if (
-      stakedInAvax === undefined ||
-      availableInAvax === undefined ||
-      stakedInAvax.isZero() ||
-      availableInAvax.isZero()
-    ) {
+    if (stakedInAvax === undefined || availableInAvax === undefined) {
       return 0
     }
 
     const totalAvailable = stakedInAvax.add(availableInAvax)
+    // Guard against division by zero only when nothing is staked AND nothing is
+    // free — e.g. "all funds staked" (availableInAvax = 0, stakedInAvax > 0)
+    // should render as 100%, not 0%.
+    if (totalAvailable.isZero()) {
+      return 0
+    }
     return stakedInAvax
       .div(totalAvailable)
       .toDisplay({ fixedDp: 2, asNumber: true })
