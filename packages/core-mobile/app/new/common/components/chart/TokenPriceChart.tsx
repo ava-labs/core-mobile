@@ -3,6 +3,7 @@ import {
   ChartHeader,
   ChartRange,
   Icons,
+  OhlcCandle,
   PriceChart,
   SegmentedControl,
   useTheme,
@@ -13,6 +14,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenChartCandles } from 'common/hooks/useTokenChartCandles'
 import { useMarketToken } from 'common/hooks/useMarketToken'
 import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, {
   FC,
@@ -23,19 +25,43 @@ import React, {
   useState
 } from 'react'
 import { Pressable } from 'react-native'
-import { useSharedValue } from 'react-native-reanimated'
+import {
+  SharedValue,
+  useAnimatedReaction,
+  useSharedValue
+} from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useDispatch, useSelector } from 'react-redux'
 import { LocalTokenWithBalance } from 'store/balance'
 import { selectChartType, setChartType } from 'store/chartPreferences/slice'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { MarketToken } from 'store/watchlist'
 
 type Props = {
-  /** The held token whose price + chart to render. */
-  token: LocalTokenWithBalance | undefined
+  token?: LocalTokenWithBalance | undefined
+  /** Takes precedence over `token` and skips the `useMarketToken` lookup. */
+  marketToken?: MarketToken | undefined
   width: number
   height?: number
+  /** Ignored when `range` is provided (controlled mode). */
   initialRange?: ChartRange
+  range?: ChartRange
+  onRangeChange?: (range: ChartRange) => void
   onPriceHeaderPress?: () => void
+  /** Skip the built-in `ChartHeader` when the parent renders its own. The
+   * external SharedValues below stay populated regardless. */
+  hideHeader?: boolean
+  externalIsActive?: SharedValue<boolean>
+  externalActiveIndex?: SharedValue<number | null>
+  externalCrosshairX?: SharedValue<number>
+  /** Resolves the active candle from the chart's own (bucketed) `candles`,
+   * so the consumer doesn't index into the wrong array. Fires on the JS
+   * thread; `null` when the crosshair deactivates. */
+  onActiveCandleChange?: (candle: OhlcCandle | null) => void
+  /** Open of the first candle in the current range — the baseline a
+   * sibling indicator should compare an active candle's price against
+   * (so both come from the same series). Fires when the candles change. */
+  onRangeBaselineChange?: (baselineOpen: number | null) => void
 }
 
 const TOGGLE_SIZE = 36
@@ -108,12 +134,39 @@ const ChartRangeSelector: FC<{
   )
 })
 
+const useControlledRange = (
+  initialRange: ChartRange,
+  rangeProp: ChartRange | undefined,
+  onRangeChange?: (range: ChartRange) => void
+): [ChartRange, (next: ChartRange) => void] => {
+  const [internal, setInternal] = useState<ChartRange>(initialRange)
+  const isControlled = rangeProp !== undefined
+  const value = isControlled ? rangeProp : internal
+  const setValue = useCallback(
+    (next: ChartRange) => {
+      if (!isControlled) setInternal(next)
+      onRangeChange?.(next)
+    },
+    [isControlled, onRangeChange]
+  )
+  return [value, setValue]
+}
+
 export const TokenPriceChart: FC<Props> = ({
   token,
+  marketToken: marketTokenProp,
   width,
   height = 235,
   initialRange = '1D',
-  onPriceHeaderPress
+  range: rangeProp,
+  onRangeChange,
+  onPriceHeaderPress,
+  hideHeader = false,
+  externalIsActive,
+  externalActiveIndex,
+  externalCrosshairX,
+  onActiveCandleChange,
+  onRangeBaselineChange
 }) => {
   const chartType = useSelector(selectChartType)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -135,18 +188,22 @@ export const TokenPriceChart: FC<Props> = ({
     [formatCurrency]
   )
 
-  const [range, setRange] = useState<ChartRange>(initialRange)
+  const [range, handleRangeChange] = useControlledRange(
+    initialRange,
+    rangeProp,
+    onRangeChange
+  )
 
-  const marketToken = useMarketToken({ token })
+  const resolvedMarketToken = useMarketToken({
+    token: marketTokenProp ? undefined : token
+  })
+  const marketToken = marketTokenProp ?? resolvedMarketToken
   const coingeckoId = marketToken?.coingeckoId ?? undefined
-  const symbol = token?.symbol ?? ''
+  const symbol = marketTokenProp?.symbol ?? token?.symbol ?? ''
 
-  const {
-    formattedPrice,
-    formattedPriceChange,
-    formattedPercent,
-    status: priceChangeStatus
-  } = useTokenPriceDisplay({
+  // Only the live price is computed here; `ChartHeader` derives the delta
+  // range-relative from its candles so it updates per range switch.
+  const { formattedPrice } = useTokenPriceDisplay({
     currentPrice: token?.priceInCurrency ?? marketToken?.currentPrice,
     priceChange24h: token?.priceChanges?.value ?? marketToken?.priceChange24h,
     priceChangePercentage24h:
@@ -154,14 +211,6 @@ export const TokenPriceChart: FC<Props> = ({
       token?.change24 ??
       marketToken?.priceChangePercentage24h
   })
-  const headerPriceChange =
-    formattedPriceChange === undefined && formattedPercent === undefined
-      ? undefined
-      : {
-          status: priceChangeStatus,
-          formattedPrice: formattedPriceChange,
-          formattedPercent
-        }
 
   const { candles, state, isFetching } = useTokenChartCandles({
     coingeckoId,
@@ -178,25 +227,58 @@ export const TokenPriceChart: FC<Props> = ({
       ? ('loading' as const)
       : state
 
-  const isActive = useSharedValue(false)
-  const activeIndex = useSharedValue<number | null>(null)
-  const crosshairX = useSharedValue(0)
+  const internalIsActive = useSharedValue(false)
+  const internalActiveIndex = useSharedValue<number | null>(null)
+  const internalCrosshairX = useSharedValue(0)
+  const isActive = externalIsActive ?? internalIsActive
+  const activeIndex = externalActiveIndex ?? internalActiveIndex
+  const crosshairX = externalCrosshairX ?? internalCrosshairX
+  const handleActiveIndex = useCallback(
+    (idx: number | null) => {
+      if (!onActiveCandleChange) return
+      if (idx === null) {
+        onActiveCandleChange(null)
+        return
+      }
+      const candle = candles[idx]
+      onActiveCandleChange(candle ?? null)
+    },
+    [candles, onActiveCandleChange]
+  )
+  const hasActiveCandleListener = onActiveCandleChange !== undefined
+  useAnimatedReaction(
+    () => activeIndex.value,
+    (idx, prev) => {
+      // Skip the UI→JS hop when no one is listening.
+      if (!hasActiveCandleListener || idx === prev) return
+      scheduleOnRN(handleActiveIndex, idx)
+    },
+    [hasActiveCandleListener, handleActiveIndex]
+  )
+
+  const rangeBaseline = candles[0]?.open ?? null
+  useEffect(() => {
+    onRangeBaselineChange?.(rangeBaseline)
+  }, [rangeBaseline, onRangeBaselineChange])
 
   return (
     <View style={{ paddingBottom: 18, gap: 12 }}>
-      <ChartHeader
-        candles={candles}
-        symbol={symbol}
-        activeIndex={activeIndex}
-        crosshairX={crosshairX}
-        isActive={isActive}
-        containerWidth={width}
-        onPriceHeaderPress={onPriceHeaderPress}
-        formatPrice={formatPrice}
-        isLoading={effectiveState === 'loading'}
-        priceText={formattedPrice}
-        priceChange={headerPriceChange}
-      />
+      {!hideHeader && (
+        <ChartHeader
+          candles={candles}
+          symbol={symbol}
+          activeIndex={activeIndex}
+          crosshairX={crosshairX}
+          isActive={isActive}
+          containerWidth={width}
+          onPriceHeaderPress={onPriceHeaderPress}
+          formatPrice={formatPrice}
+          isLoading={effectiveState === 'loading'}
+          priceText={
+            formattedPrice === UNKNOWN_AMOUNT ? undefined : formattedPrice
+          }
+        />
+      )}
       <PriceChart
         candles={candles}
         width={width}
@@ -218,7 +300,7 @@ export const TokenPriceChart: FC<Props> = ({
           alignItems: 'center'
         }}>
         <View sx={{ flex: 1 }}>
-          <ChartRangeSelector value={range} onChange={setRange} />
+          <ChartRangeSelector value={range} onChange={handleRangeChange} />
         </View>
         <ChartTypeToggle />
       </View>

@@ -1,8 +1,10 @@
 import {
   Card,
+  ChartRange,
   GroupList,
   GroupListItem,
   Icons,
+  OhlcCandle,
   SegmentedControl,
   showAlert,
   Text,
@@ -22,6 +24,7 @@ import { noop, truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
+import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
 import { tokenIds } from 'consts/tokenIds'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
@@ -36,14 +39,18 @@ import { SelectedChartDataIndicator } from 'features/track/components/SelectedCh
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, useWindowDimensions } from 'react-native'
 import Animated, {
   FadeIn,
+  useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { MarketType } from 'store/watchlist'
+import { selectIsPriceChartBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
@@ -53,6 +60,18 @@ import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 const MAX_VALUE_WIDTH = '80%'
 const DELAY = 200
 const DEFAULT_DEBOUNCE_MILLISECONDS = 500
+
+// `1H` is unreachable today (not exposed via `CHART_RANGES`) — kept for
+// type completeness. If 1H is ever surfaced, the header delta will need a
+// range-specific calc since CoinGecko's smallest `days` is 1 (= 24h).
+const CHART_RANGE_TO_DAYS: Record<ChartRange, number> = {
+  '1H': 1,
+  '1D': 1,
+  '1W': 7,
+  '1M': 30,
+  '3M': 90,
+  '1Y': 365
+}
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -72,6 +91,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value
   )
+  const { width: screenWidth } = useWindowDimensions()
   const [selectedData, setSelectedData] = useState<{
     value: number
     date: Date
@@ -91,8 +111,69 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   } = useTokenDetails({ tokenId, marketType })
 
   const { navigateToBuy } = useBuy()
+  const isPriceChartBlocked = useSelector(selectIsPriceChartBlocked)
+
+  // `chartRange` here keeps `useTokenDetails.ranges` (TokenHeader's delta
+  // source) in sync with the chart's selected range.
+  const [chartRange, setChartRange] = useState<ChartRange>('1D')
+  const handleChartRangeChange = useCallback(
+    (next: ChartRange) => {
+      setChartRange(next)
+      changeChartDays(CHART_RANGE_TO_DAYS[next])
+    },
+    [changeChartDays]
+  )
 
   const selectedSegmentIndex = useSharedValue(0)
+  const debouncedHandleDataSelected = useDebouncedCallback(
+    (index: number) =>
+      changeChartDays(LEGACY_SEGMENT_INDEX_TO_DAYS[index] ?? 1),
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  )
+  const handleSelectSegment = useCallback(
+    (index: number) => {
+      selectedSegmentIndex.value = index
+      debouncedHandleDataSelected(index)
+    },
+    [selectedSegmentIndex, debouncedHandleDataSelected]
+  )
+  const handleDataSelected = useCallback(
+    (point: { value: number; date: Date }) => setSelectedData(point),
+    []
+  )
+  const handleChartGestureStart = useCallback(
+    () => setIsChartInteracting(true),
+    []
+  )
+  const handleChartGestureEnd = useCallback(
+    () => setIsChartInteracting(false),
+    []
+  )
+
+  const chartIsActive = useSharedValue(false)
+  const chartCrosshairX = useSharedValue(0)
+  // Baseline for `SelectedChartDataIndicator`'s percent-change — sourced
+  // from the same candle series the indicator is reading the selected
+  // value from, so the math never mixes datasets.
+  const [chartRangeBaseline, setChartRangeBaseline] = useState<number | null>(
+    null
+  )
+
+  const handleActiveCandleChange = useCallback((candle: OhlcCandle | null) => {
+    if (!candle) {
+      setSelectedData(undefined)
+      return
+    }
+    setSelectedData({ value: candle.close, date: new Date(candle.ts) })
+  }, [])
+
+  useAnimatedReaction(
+    () => chartIsActive.value,
+    (active, prev) => {
+      if (active === prev) return
+      scheduleOnRN(setIsChartInteracting, active)
+    }
+  )
 
   const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
 
@@ -134,37 +215,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     },
     [formatCurrency]
   )
-
-  const handleDataSelected = useCallback(
-    (point: { value: number; date: Date }): void => {
-      setSelectedData(point)
-    },
-    []
-  )
-
-  const debouncedHandleDataSelected = useDebouncedCallback(
-    (index: number) =>
-      changeChartDays(
-        SEGMENT_INDEX_MAP[index] ?? 1 // default to 1 day if index is not found
-      ),
-    DEFAULT_DEBOUNCE_MILLISECONDS
-  )
-
-  const handleSelectSegment = useCallback(
-    (index: number) => {
-      selectedSegmentIndex.value = index
-      debouncedHandleDataSelected(index)
-    },
-    [selectedSegmentIndex, debouncedHandleDataSelected]
-  )
-
-  const handleChartGestureStart = useCallback((): void => {
-    setIsChartInteracting(true)
-  }, [])
-
-  const handleChartGestureEnd = useCallback((): void => {
-    setIsChartInteracting(false)
-  }, [])
 
   const handlePressAbout = useCallback((): void => {
     showAlert({
@@ -411,7 +461,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             ]}>
             <SelectedChartDataIndicator
               selectedData={selectedData}
-              currentPrice={chartData?.[0]?.value}
+              currentPrice={
+                isPriceChartBlocked
+                  ? chartData?.[0]?.value
+                  : chartRangeBaseline ?? undefined
+              }
             />
           </Animated.View>
         )}
@@ -429,6 +483,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     selectedDataIndicatorOpacity,
     selectedData,
     chartData,
+    chartRangeBaseline,
+    isPriceChartBlocked,
     tokenInfo?.logoUri,
     tokenInfo?.name,
     tokenInfo?.symbol
@@ -445,53 +501,70 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       isModal
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}>
-      <TokenDetailChart
-        ranges={ranges}
-        chartData={chartData}
-        negative={ranges.diffValue < 0}
-        onDataSelected={handleDataSelected}
-        onGestureStart={handleChartGestureStart}
-        onGestureEnd={handleChartGestureEnd}
-        isUpdatingChartData={isUpdatingChartData}
-      />
-
-      {lastUpdatedDate ? (
-        <View sx={styles.lastUpdatedContainer}>
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 3)}
-            style={{
-              alignSelf: 'center',
-              position: 'absolute'
-            }}>
-            <Animated.View
-              style={{
-                opacity: headerOpacity
-              }}>
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$textSecondary'
-                }}>
-                Last updated:{' '}
-                {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
-              </Text>
-            </Animated.View>
-          </Animated.View>
-        </View>
-      ) : (
-        <View sx={styles.lastUpdatedContainer} />
-      )}
-      {tokenInfo?.has24hChartDataOnly === false && (
-        <Animated.View entering={FadeIn.delay(DELAY * 3)}>
-          <SegmentedControl
-            type="thin"
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            style={styles.segmentedControl}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
+      {isPriceChartBlocked ? (
+        <>
+          <TokenDetailChart
+            ranges={ranges}
+            chartData={chartData}
+            negative={ranges.diffValue < 0}
+            onDataSelected={handleDataSelected}
+            onGestureStart={handleChartGestureStart}
+            onGestureEnd={handleChartGestureEnd}
+            isUpdatingChartData={isUpdatingChartData}
           />
-        </Animated.View>
+          {lastUpdatedDate ? (
+            <View sx={styles.lastUpdatedContainer}>
+              <Animated.View
+                entering={FadeIn.delay(DELAY * 3)}
+                style={{
+                  alignSelf: 'center',
+                  position: 'absolute'
+                }}>
+                <Animated.View
+                  style={{
+                    opacity: headerOpacity
+                  }}>
+                  <Text
+                    variant="caption"
+                    sx={{
+                      color: '$textSecondary'
+                    }}>
+                    Last updated:{' '}
+                    {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
+                  </Text>
+                </Animated.View>
+              </Animated.View>
+            </View>
+          ) : (
+            <View sx={styles.lastUpdatedContainer} />
+          )}
+          {tokenInfo?.has24hChartDataOnly === false && (
+            <Animated.View entering={FadeIn.delay(DELAY * 3)}>
+              <SegmentedControl
+                type="thin"
+                dynamicItemWidth={false}
+                items={LEGACY_SEGMENT_ITEMS}
+                style={styles.segmentedControl}
+                selectedSegmentIndex={selectedSegmentIndex}
+                onSelectSegment={handleSelectSegment}
+              />
+            </Animated.View>
+          )}
+        </>
+      ) : (
+        <View sx={{ paddingTop: 12 }}>
+          <TokenPriceChart
+            marketToken={token}
+            width={screenWidth}
+            hideHeader
+            range={chartRange}
+            onRangeChange={handleChartRangeChange}
+            externalIsActive={chartIsActive}
+            externalCrosshairX={chartCrosshairX}
+            onActiveCandleChange={handleActiveCandleChange}
+            onRangeBaselineChange={setChartRangeBaseline}
+          />
+        </View>
       )}
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
@@ -534,15 +607,14 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   )
 }
 
-const SEGMENT_INDEX_MAP: Record<number, number> = {
+const LEGACY_SEGMENT_INDEX_TO_DAYS: Record<number, number> = {
   0: 1, // 24H
   1: 7, // 1W
   2: 30, // 1M
   3: 90, // 3M
   4: 365 // 1Y
 }
-
-const SEGMENT_ITEMS = [
+const LEGACY_SEGMENT_ITEMS = [
   { title: '24H' },
   { title: '1W' },
   { title: '1M' },

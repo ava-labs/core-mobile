@@ -128,8 +128,8 @@ describe('useTokenChartCandles', () => {
       ])
     })
 
-    it('produces 24 candles from 24 sub-points for the 1D range', () => {
-      const points = Array.from({ length: 24 }, (_, i) =>
+    it('produces 48 candles from 48 sub-points for the 1D range', () => {
+      const points = Array.from({ length: 48 }, (_, i) =>
         makePoint(i * 60_000, 100 + i)
       )
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
@@ -142,7 +142,7 @@ describe('useTokenChartCandles', () => {
         })
       )
 
-      expect(result.current.candles.length).toBe(24)
+      expect(result.current.candles.length).toBe(48)
       const first = result.current.candles[0]
       expect(first).toEqual(
         expect.objectContaining({
@@ -156,8 +156,9 @@ describe('useTokenChartCandles', () => {
     })
 
     it('aggregates open/high/low/close per bucket correctly', () => {
+      // 96 source points bucketed into 48 candles (1D) = 2 points per bucket.
       const points: ReturnType<typeof makePoint>[] = []
-      for (let i = 0; i < 48; i++) {
+      for (let i = 0; i < 96; i++) {
         points.push(makePoint(i * 1000, i))
       }
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
@@ -170,7 +171,7 @@ describe('useTokenChartCandles', () => {
         })
       )
 
-      expect(result.current.candles.length).toBe(24)
+      expect(result.current.candles.length).toBe(48)
       expect(result.current.candles[0]).toEqual(
         expect.objectContaining({
           open: 0,
@@ -179,12 +180,12 @@ describe('useTokenChartCandles', () => {
           low: 0
         })
       )
-      expect(result.current.candles[23]).toEqual(
+      expect(result.current.candles[47]).toEqual(
         expect.objectContaining({
-          open: 46,
-          close: 47,
-          high: 47,
-          low: 46
+          open: 94,
+          close: 95,
+          high: 95,
+          low: 94
         })
       )
     })
@@ -205,8 +206,10 @@ describe('useTokenChartCandles', () => {
     })
 
     it('sums per-bucket volumes when source points carry volume', () => {
+      // 96 source points bucketed into 48 candles (1D) = 2 points per bucket,
+      // each carrying volume 10 → per-bucket volume 20.
       const points: ReturnType<typeof makePoint>[] = []
-      for (let i = 0; i < 48; i++) {
+      for (let i = 0; i < 96; i++) {
         points.push(makePoint(i * 1000, i, 10))
       }
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
@@ -219,7 +222,7 @@ describe('useTokenChartCandles', () => {
         })
       )
 
-      expect(result.current.candles.length).toBe(24)
+      expect(result.current.candles.length).toBe(48)
       expect(result.current.candles.every(c => c.volume === 20)).toBe(true)
     })
 

@@ -1,8 +1,12 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import Animated, {
+  Easing,
   SharedValue,
-  useAnimatedStyle
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
 import {
@@ -27,6 +31,7 @@ type Props = {
 
 const VOLUME_WIDTH = 140
 const EDGE_PADDING = 8
+const FADE_DURATION = 180
 
 export const ChartFooter: FC<Props> = ({
   candles,
@@ -49,16 +54,43 @@ export const ChartFooter: FC<Props> = ({
     return latest ? formatLastUpdate(latest.ts) : ''
   }, [candles])
 
-  const idleStyle = useAnimatedStyle(() => ({
-    opacity: showVolume && isActive.value ? 0 : 1
-  }))
+  // Opacity lives in its own SharedValue driven by reactions on `isActive` /
+  // `showVolume`, so the per-frame `translateX` in `activeStyle` doesn't
+  // restart the `withTiming` opacity animation every crosshair frame.
+  const idleOpacity = useSharedValue(1)
+  const activeOpacity = useSharedValue(0)
+  useAnimatedReaction(
+    () => isActive.value,
+    active => {
+      idleOpacity.value = withTiming(active ? 0 : 1, {
+        duration: FADE_DURATION,
+        easing: Easing.out(Easing.quad)
+      })
+      activeOpacity.value = withTiming(showVolume && active ? 1 : 0, {
+        duration: FADE_DURATION,
+        easing: Easing.out(Easing.quad)
+      })
+    },
+    [showVolume]
+  )
+  // `useAnimatedReaction` re-registers on dep change but doesn't auto-fire,
+  // so push `showVolume` flips through an effect.
+  useEffect(() => {
+    const active = isActive.value
+    activeOpacity.value = withTiming(showVolume && active ? 1 : 0, {
+      duration: FADE_DURATION,
+      easing: Easing.out(Easing.quad)
+    })
+  }, [showVolume, isActive, activeOpacity])
+
+  const idleStyle = useAnimatedStyle(() => ({ opacity: idleOpacity.value }))
   const activeStyle = useAnimatedStyle(() => {
     const target = x.value - VOLUME_WIDTH / 2
     const min = EDGE_PADDING
     const max = width - VOLUME_WIDTH - EDGE_PADDING
     const clamped = Math.max(min, Math.min(max, target))
     return {
-      opacity: showVolume && isActive.value ? 1 : 0,
+      opacity: activeOpacity.value,
       transform: [{ translateX: clamped }]
     }
   })
