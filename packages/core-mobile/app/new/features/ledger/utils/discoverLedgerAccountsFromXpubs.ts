@@ -16,11 +16,11 @@ import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import {
-  deriveAddressesFromXpub,
   deriveAddressesFromPublicKeys,
   DerivedAddresses
 } from 'services/ledger/deriveAddressesOffline'
 import { LedgerWalletSecretSchema } from '../utils'
+import { deriveLedgerAddressesFromXpubs } from './deriveLedgerAddressesFromXpubs'
 import {
   getActiveAccountIndices,
   LedgerDerivedAccount
@@ -123,9 +123,30 @@ async function discoverFromXpubs(
     return []
   }
 
+  const batchIndices: number[] = []
+  const batchAvalancheXpubs: string[] = []
+  for (const index of additionalIndices) {
+    const accountXpubs = xpubs[index]
+    if (!accountXpubs?.avalanche) continue
+    batchIndices.push(index)
+    batchAvalancheXpubs.push(accountXpubs.avalanche)
+  }
+
+  if (batchIndices.length === 0) {
+    Logger.info('No Avalanche xpubs found among additional indices')
+    return []
+  }
+
   Logger.info(
-    `Discovering Ledger accounts from ${additionalIndices.length} stored xpubs`
+    `Discovering Ledger accounts from ${batchIndices.length} stored xpubs`
   )
+
+  const batch = await deriveLedgerAddressesFromXpubs(
+    evmAccountXpub,
+    batchAvalancheXpubs,
+    batchIndices
+  )
+  if (!batch) return []
 
   const derivedAccounts: LedgerDerivedAccount[] = []
   const addressesByIndex = new Map<
@@ -133,36 +154,21 @@ async function discoverFromXpubs(
     { mainnet: DerivedAddresses; testnet: DerivedAddresses }
   >()
 
-  for (const index of additionalIndices) {
-    const accountXpubs = xpubs[index]
-    if (!accountXpubs?.avalanche) continue
+  for (let i = 0; i < batchIndices.length; i++) {
+    const index = batchIndices[i] as number
+    const mainnet = batch.mainnet[i]
+    const testnet = batch.testnet[i]
+    if (!mainnet || !testnet) continue
 
-    try {
-      const mainnet = deriveAddressesFromXpub(
-        evmAccountXpub,
-        accountXpubs.avalanche,
-        false,
-        index
-      )
-      const testnet = deriveAddressesFromXpub(
-        evmAccountXpub,
-        accountXpubs.avalanche,
-        true,
-        index
-      )
+    addressesByIndex.set(index, { mainnet, testnet })
 
-      addressesByIndex.set(index, { mainnet, testnet })
-
-      derivedAccounts.push({
-        index,
-        addressC: mainnet.evm,
-        addressBTC: mainnet.btc,
-        xpubXP: accountXpubs.avalanche,
-        addressSVM: solanaAddresses[index] ?? undefined
-      })
-    } catch (error) {
-      Logger.error(`Failed to derive addresses for index ${index}`, error)
-    }
+    derivedAccounts.push({
+      index,
+      addressC: mainnet.evm,
+      addressBTC: mainnet.btc,
+      xpubXP: batchAvalancheXpubs[i] as string,
+      addressSVM: solanaAddresses[index] ?? undefined
+    })
   }
 
   return buildDiscoveredAccounts({
