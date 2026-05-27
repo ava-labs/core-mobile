@@ -389,6 +389,15 @@ export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsRecurringSwapsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  return (
+    !featureFlags[FeatureGates.SWAP_RECURRING] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectIsLedgerSupportBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

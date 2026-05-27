@@ -24,6 +24,7 @@ export enum FeatureGates {
   MELD_OFFRAMP = 'meld-offramp',
   KEYSTONE = 'keystone',
   SWAP_SOLANA = 'swap-solana',
+  SWAP_RECURRING = 'swap-recurring',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
   LEDGER_SUPPORT = 'ledger-support',

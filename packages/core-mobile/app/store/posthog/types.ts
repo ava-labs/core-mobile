@@ -34,6 +34,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.MELD_OFFRAMP]: true,
   [FeatureGates.SOLANA_SUPPORT]: true,
   [FeatureGates.SWAP_SOLANA]: true,
+  [FeatureGates.SWAP_RECURRING]: false,
   [FeatureGates.IN_APP_UPDATE_ANDROID]: true,
   [FeatureGates.ENABLE_MELD_SANDBOX]: false,
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
