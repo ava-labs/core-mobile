@@ -6,11 +6,12 @@ import {
   PublicKeyInfo
 } from 'services/ledger/types'
 import {
-  deriveAddressesFromXpub,
-  deriveAddressesFromPublicKeys
+  deriveAddressesFromPublicKeys,
+  DerivedAddresses
 } from 'services/ledger/deriveAddressesOffline'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { Curve } from 'utils/publicKeys'
+import { deriveLedgerAddressesFromXpubs } from './deriveLedgerAddressesFromXpubs'
 
 export type NetworkKeys = {
   mainnet: Record<number, LedgerKeys>
@@ -22,25 +23,39 @@ export type NetworkKeys = {
  * opposite-network addresses offline. The "current" network comes from the
  * device; the "opposite" is derived from xpubs (BIP44) or raw public keys.
  */
-export function buildFirstAccountKeys(params: {
+export async function buildFirstAccountKeys(params: {
   firstAccountKeys: AvalancheKey
   isBIP44: boolean
   isDeveloperMode: boolean
   startIndex: number
-}): NetworkKeys {
+}): Promise<NetworkKeys> {
   const { firstAccountKeys, isBIP44, isDeveloperMode, startIndex } = params
 
-  const oppositeAddresses = isBIP44
-    ? deriveAddressesFromXpub(
-        firstAccountKeys.xpubs.evm,
-        firstAccountKeys.xpubs.avalanche,
-        !isDeveloperMode
-      )
-    : deriveAddressesFromPublicKeys(
-        firstAccountKeys.publicKeys[0]?.key ?? '',
-        firstAccountKeys.publicKeys[1]?.key ?? '',
-        !isDeveloperMode
-      )
+  let oppositeAddresses: DerivedAddresses
+  if (isBIP44) {
+    const batch = await deriveLedgerAddressesFromXpubs(
+      firstAccountKeys.xpubs.evm,
+      [firstAccountKeys.xpubs.avalanche],
+      [0]
+    )
+    // `!isDeveloperMode` was the old isTestnet flag — derive the opposite
+    // network from the device's current network.
+    const result = batch
+      ? isDeveloperMode
+        ? batch.mainnet[0]
+        : batch.testnet[0]
+      : undefined
+    if (!result) {
+      throw new Error('Failed to derive first-account opposite addresses')
+    }
+    oppositeAddresses = result
+  } else {
+    oppositeAddresses = deriveAddressesFromPublicKeys(
+      firstAccountKeys.publicKeys[0]?.key ?? '',
+      firstAccountKeys.publicKeys[1]?.key ?? '',
+      !isDeveloperMode
+    )
+  }
 
   const oppositeKey: AvalancheKey = {
     addresses: oppositeAddresses,
@@ -68,16 +83,14 @@ export function buildFirstAccountKeys(params: {
  * Each account shares the EVM xpub from account 0; the Avalanche xpub is
  * reconstructed from the raw public key + chain code returned by the device.
  */
-export function deriveBIP44RangeKeys(
+export async function deriveBIP44RangeKeys(
   xpubRange: Array<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   } | null>,
   evmAccount0Xpub: string
-): NetworkKeys {
-  const mainnet: Record<number, LedgerKeys> = {}
-  const testnet: Record<number, LedgerKeys> = {}
-
+): Promise<NetworkKeys> {
+  const indexed: Array<{ idx: number; avalancheXpub: string }> = []
   for (let i = 0; i < xpubRange.length; i++) {
     const xpubs = xpubRange[i]
     if (!xpubs) continue
@@ -87,19 +100,30 @@ export function deriveBIP44RangeKeys(
       xpubs.avalanche.key,
       xpubs.avalanche.chainCode
     )
+    indexed.push({ idx, avalancheXpub })
+  }
 
-    const mainnetAddresses = deriveAddressesFromXpub(
-      evmAccount0Xpub,
-      avalancheXpub,
-      false,
-      idx
-    )
-    const testnetAddresses = deriveAddressesFromXpub(
-      evmAccount0Xpub,
-      avalancheXpub,
-      true,
-      idx
-    )
+  const mainnet: Record<number, LedgerKeys> = {}
+  const testnet: Record<number, LedgerKeys> = {}
+
+  if (indexed.length === 0) return { mainnet, testnet }
+
+  const batch = await deriveLedgerAddressesFromXpubs(
+    evmAccount0Xpub,
+    indexed.map(e => e.avalancheXpub),
+    indexed.map(e => e.idx)
+  )
+  if (!batch) {
+    throw new Error('Failed to batch-derive BIP44 range addresses')
+  }
+
+  for (let j = 0; j < indexed.length; j++) {
+    const entry = indexed[j]
+    if (!entry) continue
+    const { idx, avalancheXpub } = entry
+    const mainnetAddresses = batch.mainnet[j]
+    const testnetAddresses = batch.testnet[j]
+    if (!mainnetAddresses || !testnetAddresses) continue
 
     const evmPubKey =
       derivePublicKey(evmAccount0Xpub, 0, idx)?.toString('hex') ?? ''
@@ -119,9 +143,7 @@ export function deriveBIP44RangeKeys(
       }
     ]
 
-    const buildKeys = (
-      addresses: ReturnType<typeof deriveAddressesFromXpub>
-    ): LedgerKeys => ({
+    const buildKeys = (addresses: DerivedAddresses): LedgerKeys => ({
       avalancheKeys: {
         addresses,
         xpubs: { evm: evmAccount0Xpub, avalanche: avalancheXpub },
@@ -217,7 +239,7 @@ export async function deriveRangeKeys(
       1,
       count - 1
     )
-    return deriveBIP44RangeKeys(xpubRange, evmAccount0Xpub)
+    return await deriveBIP44RangeKeys(xpubRange, evmAccount0Xpub)
   }
 
   const pubKeyRange = await LedgerService.getPublicKeysForRange(1, count - 1)
