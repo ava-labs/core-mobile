@@ -33,8 +33,12 @@ export const QuickSwaps = (): React.JSX.Element => {
           data={[
             {
               title: 'Quick swaps',
+              disableRowAccessibility: true,
               value: (
                 <Toggle
+                  testID={
+                    isEnabled ? 'quick_swaps_enabled' : 'quick_swaps_disabled'
+                  }
                   value={isEnabled}
                   onValueChange={onToggle}
                   disabled={!isAvailable}
