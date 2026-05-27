@@ -1,15 +1,13 @@
-import { View } from '@avalabs/k2-alpine'
 import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
-import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenHeader } from 'common/components/TokenHeader'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { SectionHeader } from 'features/activity/components/ActivityList'
 import { ActionButtons } from 'features/portfolio/assets/components/ActionButtons'
-import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
+import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
 import { useTokenDetailData } from 'features/portfolio/assets/hooks/useTokenDetailData'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useWindowDimensions } from 'react-native'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LocalTokenWithBalance } from 'store/balance'
 
@@ -18,10 +16,11 @@ type Props = {
 }
 
 /**
- * Token detail layout for non-XP tokens. Single scrollable surface
- * (`ScrollScreen`) with `TokenHeader` as the cross-fading hero, followed by
- * action buttons, price chart, filter/sort, and the activity items rendered
- * inline. No tabs, no swipe — just one column of content.
+ * Token detail layout for non-XP tokens. `ScrollScreen` owns the vertical
+ * scroll and pull-to-refresh; inside it, `TokenHeader`, action buttons, and
+ * the price chart render at the top, followed by `TransactionHistory` in
+ * `plain` mode (non-scrolling FlashList sized to content) for the activity
+ * list. The outer ScrollScreen handles all scrolling.
  */
 export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   const frame = useWindowDimensions()
@@ -42,75 +41,46 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
     activity
   } = useTokenDetailData(token)
 
-  const minActivityHeight =
-    frame.height - headerHeight - insets.bottom - insets.top
-
-  const tokenHeader = token ? (
-    <TokenHeader
-      token={token}
-      formattedBalance={formattedBalance}
-      currency={selectedCurrency}
-      errorMessage={
-        isBalanceAccurate ? undefined : 'Unable to load all balances'
-      }
-      isLoading={isBalanceLoading}
-      isPrivacyModeEnabled={isPrivacyModeEnabled}
-    />
-  ) : null
-
-  const inlineActivityItems = useMemo(() => {
-    if (activity.combinedData.length === 0) {
-      return (
-        <View
-          style={{
-            minHeight: minActivityHeight,
-            paddingBottom: insets.bottom,
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          {activity.renderEmptyState()}
-        </View>
-      )
-    }
+  const renderHeader = useCallback(() => {
+    if (!token) return null
     return (
-      <View
-        style={{
-          minHeight: minActivityHeight,
-          paddingBottom: insets.bottom
-        }}>
-        {activity.combinedData.map((item, index) => {
-          if (item.type === 'header') {
-            return (
-              <SectionHeader key={item.id} title={item.title} index={index} />
-            )
-          }
-          const tx = item.transaction
-          const nextItem = activity.combinedData[index + 1]
-          const showSeparator =
-            nextItem?.type !== 'header' &&
-            index !== activity.combinedData.length - 1
-          return (
-            <TokenActivityListItem
-              key={item.id}
-              tx={tx}
-              index={index}
-              onPress={() => handleExplorerLink(tx.explorerLink)}
-              showSeparator={showSeparator}
-            />
-          )
-        })}
-      </View>
+      <TokenHeader
+        token={token}
+        formattedBalance={formattedBalance}
+        currency={selectedCurrency}
+        errorMessage={
+          isBalanceAccurate ? undefined : 'Unable to load all balances'
+        }
+        isLoading={isBalanceLoading}
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+      />
     )
-  }, [activity, handleExplorerLink, insets.bottom, minActivityHeight])
+  }, [
+    token,
+    formattedBalance,
+    selectedCurrency,
+    isBalanceAccurate,
+    isBalanceLoading,
+    isPrivacyModeEnabled
+  ])
+
+  const containerStyle = useMemo(
+    () => ({
+      minHeight: frame.height - headerHeight - insets.top
+    }),
+    [frame.height, headerHeight, insets.top]
+  )
 
   return (
     <ScrollScreen
       navigationTitle={token?.name ?? ''}
-      renderHeader={() => (
-        <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-          {tokenHeader}
-        </View>
-      )}>
+      refreshControl={
+        <RefreshControl
+          refreshing={activity.isRefreshing}
+          onRefresh={activity.refresh}
+        />
+      }
+      renderHeader={renderHeader}>
       <ActionButtons
         buttons={actionButtons}
         contentContainerStyle={{
@@ -127,12 +97,13 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
           }
         />
       )}
-      <DropdownSelections
-        filter={activity.filter}
-        sort={activity.sort}
-        sx={{ paddingHorizontal: 16, paddingTop: 10 }}
+      <TransactionHistory
+        mode="plain"
+        token={token}
+        handleExplorerLink={handleExplorerLink}
+        activity={activity}
+        containerStyle={containerStyle}
       />
-      {inlineActivityItems}
     </ScrollScreen>
   )
 }

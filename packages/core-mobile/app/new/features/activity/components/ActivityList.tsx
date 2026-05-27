@@ -4,7 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
-import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
+import { FlashList, FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
@@ -23,7 +23,8 @@ export const ActivityList = ({
   refresh,
   handleExplorerLink,
   renderHeader,
-  renderEmpty
+  renderEmpty,
+  mode = 'collapsible'
 }: {
   data: ActivityListItem[]
   containerStyle?: ViewStyle
@@ -34,6 +35,14 @@ export const ActivityList = ({
   refresh: () => void
   renderHeader: () => React.ReactNode
   renderEmpty: () => React.ReactNode
+  /**
+   * `'collapsible'` (default): wire the list into a `CollapsibleTabs.Container`
+   * via `CollapsibleTabList` so scroll position drives the tab-view header.
+   *
+   * `'plain'`: render a non-scrolling `FlashList` for embedding inside a
+   * regular `ScrollView` (e.g. `ScrollScreen`). The parent owns scrolling.
+   */
+  mode?: 'collapsible' | 'plain'
 }): JSX.Element => {
   const { prices } = useWatchlist()
 
@@ -81,6 +90,23 @@ export const ActivityList = ({
   )
 
   const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
+
+  if (mode === 'plain') {
+    return (
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={containerStyle}
+        scrollEnabled={false}
+        nestedScrollEnabled={false}
+        extraData={{ prices }}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        overrideProps={overrideProps}
+      />
+    )
+  }
 
   return (
     <CollapsibleTabList

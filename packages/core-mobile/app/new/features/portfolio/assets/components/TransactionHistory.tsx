@@ -1,40 +1,49 @@
+import { View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ActivityList } from 'features/activity/components/ActivityList'
 import React, { FC, useCallback } from 'react'
-import { Platform, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenActivity } from '../hooks/useTokenActivity'
 
+type HandleExplorerLink = (
+  explorerLink: string,
+  hash?: string,
+  hashType?: 'account' | 'tx'
+) => void
+
 interface Props {
   token?: LocalTokenWithBalance
-  containerStyle: ViewStyle
-  extraOffset: number
-  handleExplorerLink: (
-    explorerLink: string,
-    hash?: string,
-    hashType?: 'account' | 'tx'
-  ) => void
+  handleExplorerLink: HandleExplorerLink
   /**
    * Activity data passed in by the parent (computed via `useTokenActivity`).
-   * Lifted out of this component so the parent can share the same activity
-   * state with sibling renderers — e.g. the non-XP `ScrollScreen` path on
-   * `TokenDetailScreen` reuses the same filter/sort state.
+   * Lifted out so sibling renderers can share the same filter/sort state.
    */
   activity: TokenActivity
+  /**
+   * `'collapsible'` (default): renders inside a `CollapsibleTabs.Container`
+   * via the tab-view-aware list. Used by the XP layout.
+   *
+   * `'plain'`: renders a non-scrolling list suitable for nesting inside a
+   * regular `ScrollView` (e.g. `ScrollScreen`). Used by the non-XP layout.
+   */
+  mode?: 'collapsible' | 'plain'
+  // Collapsible-mode only:
+  containerStyle?: ViewStyle
+  extraOffset?: number
 }
 
 const TransactionHistory: FC<Props> = ({
+  mode = 'collapsible',
   token,
   handleExplorerLink,
   containerStyle,
-  extraOffset,
+  extraOffset = 0,
   activity
 }): React.JSX.Element => {
-  const header = useHeaderMeasurements()
   const {
     combinedData,
     filter,
@@ -44,46 +53,50 @@ const TransactionHistory: FC<Props> = ({
     renderEmptyState
   } = activity
 
-  const renderEmpty = useCallback(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper extraOffset={extraOffset}>
-        {renderEmptyState()}
-      </CollapsibleTabs.ContentWrapper>
-    )
-  }, [extraOffset, renderEmptyState])
-
-  const renderHeader = useCallback(() => {
-    return (
+  const renderListHeader = useCallback(
+    () => (
       <DropdownSelections
         filter={filter}
         sort={sort}
         sx={{ paddingHorizontal: 16, paddingTop: 10 }}
       />
-    )
-  }, [filter, sort])
+    ),
+    [filter, sort]
+  )
 
-  const overrideProps = {
-    contentContainerStyle: {
-      overflow: 'visible',
-      paddingBottom: 16,
-      paddingTop: Platform.OS === 'android' ? header.height : 0,
-      ...containerStyle
+  const renderEmpty = useCallback(() => {
+    if (mode === 'plain') {
+      return (
+        <View
+          style={[
+            {
+              alignItems: 'center',
+              justifyContent: 'center'
+            },
+            containerStyle
+          ]}>
+          {renderEmptyState()}
+        </View>
+      )
     }
-  }
+    return (
+      <CollapsibleTabs.ContentWrapper extraOffset={extraOffset}>
+        {renderEmptyState()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [mode, extraOffset, renderEmptyState, containerStyle])
 
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      style={{
-        flex: 1
-      }}>
+      style={{ flex: 1 }}>
       <ActivityList
+        mode={mode}
         data={combinedData}
         xpToken={token}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={overrideProps}
         containerStyle={containerStyle}
-        renderHeader={renderHeader}
+        renderHeader={renderListHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}
         refresh={refresh}
