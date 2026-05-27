@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore } from '@reduxjs/toolkit'
-import { createMigrate, persistReducer, persistStore } from 'redux-persist'
-import { migrations } from 'store/migrations'
+import { persistReducer, persistStore } from 'redux-persist'
+import { migrations } from 'store/schemaMigration/schemaMigrations'
+import { createInstrumentedMigrate } from 'store/schemaMigration/createInstrumentedMigrate'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
 import reactotron from '../../ReactotronConfig'
@@ -87,7 +88,7 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
       AppBlacklistTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
-    migrate: createMigrate(migrations, { debug: __DEV__ }),
+    migrate: createInstrumentedMigrate(migrations, { debug: __DEV__ }),
     version: VERSION,
     throttle: STORAGE_WRITE_THROTTLE
   }
