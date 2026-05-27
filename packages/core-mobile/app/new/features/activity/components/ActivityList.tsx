@@ -99,7 +99,7 @@ export const ActivityList = ({
   )
 }
 
-const SectionHeader = ({
+export const SectionHeader = ({
   title,
   index
 }: {
