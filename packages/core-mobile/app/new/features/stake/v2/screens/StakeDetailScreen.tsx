@@ -10,6 +10,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -25,7 +26,7 @@ import {
 } from 'features/stake/utils'
 import { useStake } from 'hooks/earn/useStake'
 import { round } from 'lodash'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -35,6 +36,10 @@ import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 
 const HASH_LENGTH = 14
+// Tick `now` every minute while an active stake is open so time-sensitive
+// values ("Time to unlock", staking progress) advance without requiring the
+// user to leave and re-enter the screen.
+const NOW_TICK_INTERVAL_MS = 60_000
 
 export const StakeDetailScreen = (): React.JSX.Element => {
   const { txHash } = useLocalSearchParams<{ txHash: string }>()
@@ -46,11 +51,17 @@ export const StakeDetailScreen = (): React.JSX.Element => {
   const { openUrl } = useInAppBrowser()
   const { theme } = useTheme()
 
-  const now = useMemo(() => new Date(), [])
+  const [now, setNow] = useState(() => new Date())
   const isActive = useMemo(() => {
     if (!stake) return false
     return isOnGoing(stake, now)
   }, [stake, now])
+
+  useEffect(() => {
+    if (!isActive) return
+    const id = setInterval(() => setNow(new Date()), NOW_TICK_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [isActive])
 
   const progressPercent = useMemo(() => {
     if (!stake) return 0
@@ -167,10 +178,13 @@ export const StakeDetailScreen = (): React.JSX.Element => {
 
     items.push({
       title: 'Network fee',
+      // Custom marginVertical keeps the dual-line token+fiat readout
+      // vertically centered inside the GroupList row's 48px itemHeight.
+      // Reused on every StakeTokenUnitValue cell below.
       value: (
         <StakeTokenUnitValue
           value={networkFeeTokenUnit}
-          containerSx={{ marginVertical: 13 }}
+          containerSx={VALUE_CELL_CONTAINER_SX}
         />
       )
     })
@@ -192,25 +206,11 @@ export const StakeDetailScreen = (): React.JSX.Element => {
 
     items.push({
       title: 'Status',
-      value: (
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          {isActive && (
-            <View
-              sx={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: theme.colors.$textSuccess
-              }}
-            />
-          )}
-          <Text>{isActive ? 'Active' : 'Completed'}</Text>
-        </View>
-      )
+      value: <StakeStatusValue isActive={isActive} />
     })
 
     return items
-  }, [stake, isActive, theme.colors.$textSuccess])
+  }, [stake, isActive])
 
   // ── Card 5: Staked amount / (Estimated|Earned) reward / Estimated yield ─
   const rewardSection = useMemo<GroupListItem[]>(() => {
@@ -222,7 +222,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
       value: (
         <StakeTokenUnitValue
           value={stakedTokenUnit}
-          containerSx={{ marginVertical: 13 }}
+          containerSx={VALUE_CELL_CONTAINER_SX}
         />
       )
     })
@@ -233,7 +233,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
         <StakeTokenUnitValue
           value={rewardTokenUnit}
           isReward
-          containerSx={{ marginVertical: 13 }}
+          containerSx={VALUE_CELL_CONTAINER_SX}
         />
       )
     })
@@ -244,7 +244,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
       items.push({
         title: 'Estimated yield',
         value: (
-          <View sx={{ alignItems: 'flex-end', marginVertical: 13 }}>
+          <View sx={{ alignItems: 'flex-end', ...VALUE_CELL_CONTAINER_SX }}>
             <Text variant="body1" sx={{ color: '$textSuccess' }}>
               {apyDisplay}
             </Text>
@@ -259,6 +259,17 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     return items
   }, [stake, isActive, stakedTokenUnit, rewardTokenUnit, apyDisplay])
 
+  if (!stake) {
+    return (
+      <ScrollScreen
+        title="Stake details"
+        navigationTitle="Stake details"
+        contentContainerStyle={{ padding: 16 }}>
+        <LoadingState sx={{ flex: 1 }} />
+      </ScrollScreen>
+    )
+  }
+
   return (
     <ScrollScreen
       title="Stake details"
@@ -272,6 +283,13 @@ export const StakeDetailScreen = (): React.JSX.Element => {
             separatorMarginRight={16}
           />
         )}
+        {/*
+         * "Joined stack" — the ProgressDial Card and the lockSection
+         * GroupList form a single visual group: a 4px outer gap separates
+         * them, and tight `JOINED_STACK_RADIUS` corner radii on the inner
+         * edges make them read as one card with a divider. Both halves must
+         * use the same inner-edge radius to keep the seam aligned.
+         */}
         <View sx={{ gap: 4 }}>
           <Card
             sx={{
@@ -280,8 +298,8 @@ export const StakeDetailScreen = (): React.JSX.Element => {
               paddingHorizontal: 16,
               alignItems: 'stretch',
               borderRadius: 12,
-              borderBottomRightRadius: 4,
-              borderBottomLeftRadius: 4
+              borderBottomRightRadius: JOINED_STACK_RADIUS,
+              borderBottomLeftRadius: JOINED_STACK_RADIUS
             }}>
             <ProgressDial
               progress={progressPercent / 100}
@@ -293,7 +311,10 @@ export const StakeDetailScreen = (): React.JSX.Element => {
             <GroupList
               data={lockSection}
               itemHeight={48}
-              style={{ borderTopLeftRadius: 4, borderTopRightRadius: 4 }}
+              style={{
+                borderTopLeftRadius: JOINED_STACK_RADIUS,
+                borderTopRightRadius: JOINED_STACK_RADIUS
+              }}
               separatorMarginRight={16}
             />
           )}
@@ -334,5 +355,33 @@ export const StakeDetailScreen = (): React.JSX.Element => {
         )}
       </View>
     </ScrollScreen>
+  )
+}
+
+// Inner-edge corner radius shared by the ProgressDial Card and the GroupList
+// directly below it. See "Joined stack" comment above for the visual intent.
+const JOINED_STACK_RADIUS = 4
+
+// Custom marginVertical applied to cells that host a `StakeTokenUnitValue`
+// (or its inlined equivalent). Keeps the dual-line token+fiat readout
+// vertically centered inside the GroupList row's 48px itemHeight.
+const VALUE_CELL_CONTAINER_SX = { marginVertical: 13 } as const
+
+const StakeStatusValue = ({ isActive }: { isActive: boolean }): JSX.Element => {
+  const { theme } = useTheme()
+  return (
+    <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      {isActive && (
+        <View
+          sx={{
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: theme.colors.$textSuccess
+          }}
+        />
+      )}
+      <Text>{isActive ? 'Active' : 'Completed'}</Text>
+    </View>
   )
 }
