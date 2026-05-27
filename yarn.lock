@@ -343,9 +343,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-cp-14230-20260521193053":
-  version: 0.0.0-cp-14230-20260521193053
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-cp-14230-20260521193053"
+"@avalabs/avalanche-module@npm:0.0.0-cp-14230-20260527183954":
+  version: 0.0.0-cp-14230-20260527183954
+  resolution: "@avalabs/avalanche-module@npm:0.0.0-cp-14230-20260527183954"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.4
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
@@ -356,12 +356,12 @@ __metadata:
     "@avalabs/crypto-sdk": 0.0.0-ray-crypto-core-20260521183935
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260521193053
+    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260527183954
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: b4a150ed4630ec27db9b7ffdc214a6e05ce799fa0b818d47483480cdaadb709e8fa79754658f0bce2c0f53f6a4a73d17287f8485ed2c72c50b5c9053a3f291f1
+  checksum: be98e82570e5a3873a679e5c1e62992cc5f4fa181d2ddcf5f7d0b39ba25ea362208704eb94409e31d2481d1b84b9de5df49996bbeb76085ba98da69e9f223131
   languageName: node
   linkType: hard
 
@@ -378,21 +378,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:0.0.0-cp-14230-20260521193053":
-  version: 0.0.0-cp-14230-20260521193053
-  resolution: "@avalabs/bitcoin-module@npm:0.0.0-cp-14230-20260521193053"
+"@avalabs/bitcoin-module@npm:0.0.0-cp-14230-20260527183954":
+  version: 0.0.0-cp-14230-20260527183954
+  resolution: "@avalabs/bitcoin-module@npm:0.0.0-cp-14230-20260527183954"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
     "@avalabs/crypto-sdk": 0.0.0-ray-crypto-core-20260521183935
-    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260521193053
+    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260527183954
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: ae0e7f4216ebc8ef024f7daa90ee2f28fa389a93d54ec518846bc96846b0100888e7ca31c299729b695823f6ecce2ae527de7dc722f883fb4f6a055cdcdec0c5
+  checksum: 3a79ccd54312d068ae9ecfa6342e03d685e54e6666d6da222ed520fd570815967454900eeeae6de85fc38b0f52ecec72f7a1bbac29bf314961c941876dd86cd1
   languageName: node
   linkType: hard
 
@@ -465,25 +465,26 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-cp-14230-20260521193053
+    "@avalabs/avalanche-module": 0.0.0-cp-14230-20260527183954
     "@avalabs/avalanchejs": 5.1.0-alpha.4
-    "@avalabs/bitcoin-module": 0.0.0-cp-14230-20260521193053
+    "@avalabs/bitcoin-module": 0.0.0-cp-14230-20260527183954
     "@avalabs/bridge-unified": 4.4.1
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/crypto-nitro": 0.0.0-ray-crypto-core-20260521183935
-    "@avalabs/evm-module": 0.0.0-cp-14230-20260521193053
+    "@avalabs/crypto-nitro": 0.0.0-ray-crypto-core-20260527182529
+    "@avalabs/crypto-sdk": 0.0.0-ray-crypto-core-20260527182529
+    "@avalabs/evm-module": 0.0.0-cp-14230-20260527183954
     "@avalabs/fusion-sdk": 0.16.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/prediction-market-sdk": 0.3.0
-    "@avalabs/svm-module": 0.0.0-cp-14230-20260521193053
+    "@avalabs/svm-module": 0.0.0-cp-14230-20260527183954
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260521193053
+    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260527183954
     "@aws-sdk/client-device-farm": 3.986.0
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -680,6 +681,7 @@ __metadata:
     mocha: 11.7.5
     moment: 2.30.1
     msw: 1.3.2
+    nitrogen: 0.35.9
     node-fetch: 3.3.2
     patch-package: 8.0.0
     path-browserify: 1.0.1
@@ -853,9 +855,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/crypto-nitro@npm:0.0.0-ray-crypto-core-20260521183935":
-  version: 0.0.0-ray-crypto-core-20260521183935
-  resolution: "@avalabs/crypto-nitro@npm:0.0.0-ray-crypto-core-20260521183935"
+"@avalabs/crypto-nitro@npm:0.0.0-ray-crypto-core-20260527182529":
+  version: 0.0.0-ray-crypto-core-20260527182529
+  resolution: "@avalabs/crypto-nitro@npm:0.0.0-ray-crypto-core-20260527182529"
   peerDependencies:
     react: "*"
     react-native: "*"
@@ -867,7 +869,7 @@ __metadata:
       optional: true
     react-native-nitro-modules:
       optional: true
-  checksum: 1e2ae8c0189b6e7fdf21f3aadd93d92e6c3a8ef2d4e6c68651385f6918e010639e63de8e901abf68808f1a52f520469a5eb5df912469c3e6e1d6dc1e52093b5c
+  checksum: 6d122500c4ff14c88a99fa91d5b2ca06c73db3094d4f41005363e5baca8206a6205533a80c74482a621af2afce21c8fe4c009d60429b587458e6091ceae82da5
   languageName: node
   linkType: hard
 
@@ -886,9 +888,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-cp-14230-20260521193053":
-  version: 0.0.0-cp-14230-20260521193053
-  resolution: "@avalabs/evm-module@npm:0.0.0-cp-14230-20260521193053"
+"@avalabs/crypto-sdk@npm:0.0.0-ray-crypto-core-20260527182529":
+  version: 0.0.0-ray-crypto-core-20260527182529
+  resolution: "@avalabs/crypto-sdk@npm:0.0.0-ray-crypto-core-20260527182529"
+  peerDependencies:
+    "@avalabs/crypto-nitro": 0.0.0-ray-crypto-core-20260527182529
+    "@avalabs/crypto-wasm": 0.0.0-ray-crypto-core-20260527182529
+  peerDependenciesMeta:
+    "@avalabs/crypto-nitro":
+      optional: true
+    "@avalabs/crypto-wasm":
+      optional: true
+  checksum: 649ee58b368ad3676132a5310698c9d0b755ced01c11cedc35105071f65db4a61662a8aafedaefb040f28216ad6eb3ce16f8fa712e31a9943d28f7f5b9b3595b
+  languageName: node
+  linkType: hard
+
+"@avalabs/evm-module@npm:0.0.0-cp-14230-20260527183954":
+  version: 0.0.0-cp-14230-20260527183954
+  resolution: "@avalabs/evm-module@npm:0.0.0-cp-14230-20260527183954"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
@@ -898,7 +915,7 @@ __metadata:
     "@avalabs/crypto-sdk": 0.0.0-ray-crypto-core-20260521183935
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260521193053
+    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260527183954
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -908,7 +925,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: ac83b376f8543385a9297ecde364b4bbd2b9049cd1097471e727502201c3c930ad807b7fbf216d2b8ad6a8dfb0efdea5863c7b55377844212109049f0e6a94d9
+  checksum: 824c09185fa794b6a3bc9058e72938a589a2aaf94512f9f790a19e0838fbe156c013d248616a5700fe5f4da9ad08b6f05b2e98430fff7860f294806b4a28f017
   languageName: node
   linkType: hard
 
@@ -1051,16 +1068,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/svm-module@npm:0.0.0-cp-14230-20260521193053":
-  version: 0.0.0-cp-14230-20260521193053
-  resolution: "@avalabs/svm-module@npm:0.0.0-cp-14230-20260521193053"
+"@avalabs/svm-module@npm:0.0.0-cp-14230-20260527183954":
+  version: 0.0.0-cp-14230-20260527183954
+  resolution: "@avalabs/svm-module@npm:0.0.0-cp-14230-20260527183954"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
     "@avalabs/crypto-sdk": 0.0.0-ray-crypto-core-20260521183935
-    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260521193053
+    "@avalabs/vm-module-types": 0.0.0-cp-14230-20260527183954
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -1071,7 +1088,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 1373fc6470223db0e47e319446291ea5cc6324b72f2a8db650eb4ceaa14a58e59a1ddfbda1375397df6b6ceeb309e206e42f95dd1d3eb7a08184a979828e1d9e
+  checksum: f311859e117085a5863c736839477567163d4f4d40bd1976852c3ba00f534cc49d62c150fa4757b76ca6046778d9fe6160157df24da122fcb8563ec1fbb1dde0
   languageName: node
   linkType: hard
 
@@ -1088,9 +1105,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-cp-14230-20260521193053":
-  version: 0.0.0-cp-14230-20260521193053
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-cp-14230-20260521193053"
+"@avalabs/vm-module-types@npm:0.0.0-cp-14230-20260527183954":
+  version: 0.0.0-cp-14230-20260527183954
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-cp-14230-20260527183954"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
@@ -1101,7 +1118,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 259a0b595bf2e2cc706a0f7054bcfee8a3150a7c5b3d24cd7d5bab454f51035b309b563ac4f15e380e50d930098d48e6f6153e77071112dd49e2d2a5bb8d70b4
+  checksum: 86b666a6062c97c84c0e45b7e058b3d74c7abe89ee909cd6efb640ef5728ac8293fd0fcb0ec055c5a47ca243f2093aeb9f19c8741a47607c91c157576e7302fc
   languageName: node
   linkType: hard
 
@@ -16430,6 +16447,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ts-morph/common@npm:~0.29.0":
+  version: 0.29.0
+  resolution: "@ts-morph/common@npm:0.29.0"
+  dependencies:
+    minimatch: ^10.0.1
+    path-browserify: ^1.0.1
+    tinyglobby: ^0.2.14
+  checksum: 00bdc26260272482a914dbf44a80d0f411c68cf2553e1616cdfd5997e353ac1026fa255e2e8fecec21458380ca1aff998f49d985d9c726bf92f22058b178a6a5
+  languageName: node
+  linkType: hard
+
 "@tsconfig/node10@npm:^1.0.7":
   version: 1.0.9
   resolution: "@tsconfig/node10@npm:1.0.9"
@@ -20397,6 +20425,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"balanced-match@npm:^4.0.2":
+  version: 4.0.4
+  resolution: "balanced-match@npm:4.0.4"
+  checksum: fb07bb66a0959c2843fc055838047e2a95ccebb837c519614afb067ebfdf2fa967ca8d712c35ced07f2cd26fc6f07964230b094891315ad74f11eba3d53178a0
+  languageName: node
+  linkType: hard
+
 "bare-events@npm:^2.2.0":
   version: 2.2.2
   resolution: "bare-events@npm:2.2.2"
@@ -20980,6 +21015,15 @@ __metadata:
   dependencies:
     balanced-match: ^1.0.0
   checksum: a61e7cd2e8a8505e9f0036b3b6108ba5e926b4b55089eeb5550cd04a471fe216c96d4fe7e4c7f995c728c554ae20ddfc4244cad10aef255e72b62930afd233d1
+  languageName: node
+  linkType: hard
+
+"brace-expansion@npm:^5.0.5":
+  version: 5.0.6
+  resolution: "brace-expansion@npm:5.0.6"
+  dependencies:
+    balanced-match: ^4.0.2
+  checksum: b5a0e54a5d5f66d0acb88f297e1f3e74732f9c8a35ab6c87b96bd60f6e390697f099b747dd053b9017bd1a38225ff3f60632de09a723a99f2144740b7fbda66b
   languageName: node
   linkType: hard
 
@@ -21977,6 +22021,13 @@ __metadata:
   version: 4.6.0
   resolution: "co@npm:4.6.0"
   checksum: 5210d9223010eb95b29df06a91116f2cf7c8e0748a9013ed853b53f362ea0e822f1e5bb054fb3cefc645239a4cf966af1f6133a3b43f40d591f3b68ed6cf0510
+  languageName: node
+  linkType: hard
+
+"code-block-writer@npm:^13.0.3":
+  version: 13.0.3
+  resolution: "code-block-writer@npm:13.0.3"
+  checksum: 8e234f0ec2db9625d5efb9f05bdae79da6559bb4d9df94a6aa79a89a7b5ae25093b70d309fc5122840c9c07995cb14b4dd3f98a30f8878e3a3372e177df79454
   languageName: node
   linkType: hard
 
@@ -32712,6 +32763,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minimatch@npm:^10.0.1":
+  version: 10.2.5
+  resolution: "minimatch@npm:10.2.5"
+  dependencies:
+    brace-expansion: ^5.0.5
+  checksum: 000423875fecbc7da1d74bf63c9081363a71291ef2588c376c45647ac004582cb5bc8cc09ef84420b26bfb490f4d0818d328e78569c6228e20d90271283f73ba
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^10.0.3":
   version: 10.0.3
   resolution: "minimatch@npm:10.0.3"
@@ -33317,6 +33377,21 @@ __metadata:
   version: 2.0.2
   resolution: "netmask@npm:2.0.2"
   checksum: c65cb8d3f7ea5669edddb3217e4c96910a60d0d9a4b52d9847ff6b28b2d0277cd8464eee0ef85133cdee32605c57940cacdd04a9a019079b091b6bba4cb0ec22
+  languageName: node
+  linkType: hard
+
+"nitrogen@npm:0.35.9":
+  version: 0.35.9
+  resolution: "nitrogen@npm:0.35.9"
+  dependencies:
+    chalk: ^5.3.0
+    react-native-nitro-modules: ^0.35.9
+    ts-morph: ^28.0.0
+    yargs: ^18.0.0
+    zod: ^4.0.5
+  bin:
+    nitrogen: lib/index.js
+  checksum: 67a3cec80df18a7ef10cdc54b5034df48cede52d2a195772c2038a90fb124ca91e6d1c1fff1c738279698f060f64d6513e32e6357c795dafe586e1b89dc3105f
   languageName: node
   linkType: hard
 
@@ -34624,7 +34699,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-browserify@npm:1.0.1":
+"path-browserify@npm:1.0.1, path-browserify@npm:^1.0.1":
   version: 1.0.1
   resolution: "path-browserify@npm:1.0.1"
   checksum: c6d7fa376423fe35b95b2d67990060c3ee304fc815ff0a2dc1c6c3cfaff2bd0d572ee67e18f19d0ea3bbe32e8add2a05021132ac40509416459fffee35200699
@@ -34872,6 +34947,13 @@ __metadata:
   version: 4.0.3
   resolution: "picomatch@npm:4.0.3"
   checksum: 6817fb74eb745a71445debe1029768de55fd59a42b75606f478ee1d0dc1aa6e78b711d041a7c9d5550e042642029b7f373dc1a43b224c4b7f12d23436735dba0
+  languageName: node
+  linkType: hard
+
+"picomatch@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "picomatch@npm:4.0.4"
+  checksum: 76b387b5157951422fa6049a96bdd1695e39dd126cd99df34d343638dc5cdb8bcdc83fff288c23eddcf7c26657c35e3173d4d5f488c4f28b889b314472e0a662
   languageName: node
   linkType: hard
 
@@ -36391,6 +36473,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 19cf02168699bbeaa3bc45bf0af1eaa6877a5fde3b22adc759516d3a3103c77754d3e13a8fe6e16782d34d019fe61f4240a6abc5a483a23a93c998853416cc70
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:^0.35.9":
+  version: 0.35.9
+  resolution: "react-native-nitro-modules@npm:0.35.9"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 2c04481b132ae2fb247ae1658b426c04ddfb73ff7622716db2f5d316bc831ffb5c87fdedf65f39d5d8724daf5a56277d838936b49ec308f2e14f7208bbed130c
   languageName: node
   linkType: hard
 
@@ -40415,6 +40507,16 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"tinyglobby@npm:^0.2.14":
+  version: 0.2.16
+  resolution: "tinyglobby@npm:0.2.16"
+  dependencies:
+    fdir: ^6.5.0
+    picomatch: ^4.0.4
+  checksum: db9d22ce1deb1095720a683c492cd5e80da0f71fed21ed697e2752f6f298edd8a1249dab197c86a26f001c180594a81bf532400fe519791ed2a2cb57b03bc337
+  languageName: node
+  linkType: hard
+
 "tinyrainbow@npm:^1.2.0":
   version: 1.2.0
   resolution: "tinyrainbow@npm:1.2.0"
@@ -40693,6 +40795,16 @@ react-native-webview@ava-labs/react-native-webview:
   bin:
     ts-jest: cli.js
   checksum: 641f17ecb44caa987bc12feb87abbebc7cb0e4ba8725afe8208a14ec13ff0cce80fe47f79f3b8c37c7fe56e36fadee8314ed05c863b104bb7531bba71c3b9524
+  languageName: node
+  linkType: hard
+
+"ts-morph@npm:^28.0.0":
+  version: 28.0.0
+  resolution: "ts-morph@npm:28.0.0"
+  dependencies:
+    "@ts-morph/common": ~0.29.0
+    code-block-writer: ^13.0.3
+  checksum: 0c63f7af39a694a0bc569c4e496dbd5a13e6320926d841aea32979fd53e0847ca90e11660e195bfd7b4e4fd04115659fbe1baf336d195f9185a006d3769d898e
   languageName: node
   linkType: hard
 
@@ -43461,7 +43573,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"yargs@npm:18.0.0":
+"yargs@npm:18.0.0, yargs@npm:^18.0.0":
   version: 18.0.0
   resolution: "yargs@npm:18.0.0"
   dependencies:
@@ -43621,6 +43733,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 3.24.1
   resolution: "zod@npm:3.24.1"
   checksum: dcd5334725b29555593c186fd6505878bb7ccb4f5954f728d2de24bf71f9397492d83bdb69d5b8a376eb500a02273ae0691b57deb1eb8718df3f64c77cc5534a
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.0.5":
+  version: 4.4.3
+  resolution: "zod@npm:4.4.3"
+  checksum: bf236fdee7a5a5ec645eef5bfea3aad34e7df912931c2a23bc17e5b59882482751da42392916529da52ff9bc70f584797a5d496f1fb81f2d1a4c90fdd3922d2a
   languageName: node
   linkType: hard
 
