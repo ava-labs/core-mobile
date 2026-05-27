@@ -77,7 +77,7 @@ class Logger {
       console.groupEnd()
 
       if (this.shouldLogErrorToSentry) {
-        SentryService.captureException(message, value, tags)
+        SentryService.captureException(message, { value, tags })
       }
     }
   }
