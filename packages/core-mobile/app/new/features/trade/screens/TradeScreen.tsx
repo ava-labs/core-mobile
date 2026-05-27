@@ -78,8 +78,8 @@ export function TradeScreen(): JSX.Element {
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header,
-      targetLayout: headerLayout,
-      shouldDelayBlurOniOS: true
+      hasSeparator: false,
+      targetLayout: headerLayout
     }
   )
 
