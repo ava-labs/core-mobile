@@ -6,8 +6,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useState } from 'react'
-import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
+import React from 'react'
+import { Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
 import { StakeBadge, StakeBadgeType } from './StakeBadge'
 
@@ -36,6 +36,13 @@ export interface StakeCardProps {
 }
 
 const DEFAULT_WIDTH = 200
+/**
+ * Fixed baseline height shared by every V2 stake card variant (including the
+ * AddCard surfaced via `StakeCardList`). Cards with shorter content (e.g.
+ * completed cards) are floored to this height; cards with longer content
+ * grow past it via `minHeight`.
+ */
+export const BASE_CARD_HEIGHT = 210
 
 export const StakeCard = ({
   title,
@@ -54,32 +61,21 @@ export const StakeCard = ({
   const isCompleted = variant === 'completed'
   const showWave = !isCompleted && progress !== undefined
 
-  const [waveSize, setWaveSize] = useState({ width: 0, height: 0 })
-
-  const handleWaveLayout = (e: LayoutChangeEvent): void => {
-    const { width: w, height: h } = e.nativeEvent.layout
-    if (w !== waveSize.width || h !== waveSize.height) {
-      setWaveSize({ width: w, height: h })
-    }
-  }
-
   return (
     <BaseCard
       onPress={onPress}
       sx={{
         width,
+        minHeight: BASE_CARD_HEIGHT,
         paddingTop: 20,
         paddingHorizontal: 18,
         paddingBottom: 16
       }}>
       {showWave && (
-        <View
-          style={StyleSheet.absoluteFillObject}
-          pointerEvents="none"
-          onLayout={handleWaveLayout}>
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
           <ProgressWave
-            width={waveSize.width}
-            height={waveSize.height}
+            width={width}
+            height={BASE_CARD_HEIGHT}
             progress={progress}
             motion={motion}
           />

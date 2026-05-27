@@ -6,12 +6,13 @@ import { BaseCard, DEFAULT_CARD_WIDTH, getCardHeight } from './BaseCard'
 export const AddCard = ({
   onPress,
   width = DEFAULT_CARD_WIDTH,
+  height: heightOverride,
   disabled
 }: AddCardProps): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const height = getCardHeight(width)
+  const height = heightOverride ?? getCardHeight(width)
   const tintColor = disabled ? colors.$textSecondary : colors.$textPrimary
 
   return (
@@ -28,5 +29,7 @@ export const AddCard = ({
 export type AddCardProps = {
   onPress?: () => void
   width?: number
+  /** Optional explicit height override. Defaults to `getCardHeight(width)`. */
+  height?: number
   disabled?: boolean
 }
