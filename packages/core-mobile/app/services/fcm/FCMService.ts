@@ -231,7 +231,7 @@ class FCMService {
         },
         dispatch: action => action,
         isEarnBlocked: false,
-        isInAppDefiBorrowBlocked: false,
+        isInAppDefiBlocked: false,
         openUrl: link =>
           router.navigate({
             pathname: '/browser',

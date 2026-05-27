@@ -441,22 +441,6 @@ export const selectIsInAppDefiBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_IS_NEW] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsInAppDefiBorrowBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_BORROW] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -629,6 +613,14 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.PREDICTIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsFastStakeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.FAST_STAKE_ENABLED] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
