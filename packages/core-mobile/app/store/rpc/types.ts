@@ -217,7 +217,13 @@ export enum RequestContext {
   // creation time. The validator re-checks this so a kill-switch flip
   // refuses bypass even if a stale SWAP_AUTO_APPROVE context arrives
   // from a code path that didn't go through the live-state-aware signer.
-  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable'
+  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable',
+
+  // Recurring-swap (DCA) approval context. Present on both the ERC-20
+  // allowance approval and the first-fill eth_sendTransaction. The
+  // `step` discriminator separates the two so the post-confirmation
+  // listener (Task 21) knows when to persist a schedule.
+  RECURRING_SWAP = 'recurringSwap'
 }
 
 // Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass
@@ -238,4 +244,26 @@ export type SwapAutoApproveContext = {
   // value (not just a boolean) means we tolerate exactly the fee Markr
   // quoted, not a constant guess. Undefined or 0 = no fee.
   partnerFeeBps?: number
+}
+
+// Presence of `RECURRING_SWAP` in request.context signals a recurring
+// (DCA) swap. The `step` discriminator separates the ERC-20 allowance
+// approval from the first-fill eth_sendTransaction — both go through
+// ApprovalController via the same eth_sendTransaction pipeline.
+export type RecurringSwapApprovalContext = {
+  step: 'approve' | 'fill' // discriminator: ERC-20 allowance vs. first-fill tx
+  quoteUuid: string
+  fromTokenAddress: string
+  fromTokenSymbol: string
+  fromTokenDecimals: number
+  toTokenAddress: string
+  toTokenSymbol: string
+  toTokenDecimals: number
+  amountPerOrder: string // decimal string in fromToken's smallest unit
+  totalAmountIn: string // amount * numberOfOrders; the allowance amount
+  numberOfOrders: number // 365 if the user picked Unlimited
+  isUnlimited: boolean // true when the UI selected "Unlimited"
+  frequency: { unit: 'minute' | 'hour' | 'day' | 'week' | 'month'; value: number }
+  intervalSeconds: number
+  chainId: number
 }

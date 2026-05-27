@@ -2,7 +2,11 @@ import { z } from 'zod'
 import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { WalletType } from 'services/wallet/types'
-import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
+import {
+  RequestContext,
+  type RecurringSwapApprovalContext,
+  type SwapAutoApproveContext
+} from 'store/rpc/types'
 import {
   QUICK_SWAP_MAX_BUY_VALUES,
   QUICK_SWAPS_SOFTWARE_WALLET_TYPES
@@ -51,6 +55,49 @@ const readAutoApproveContext = (
   if (!parsed.success) {
     Logger.error(
       '[shared.readAutoApproveContext] malformed SWAP_AUTO_APPROVE context',
+      parsed.error
+    )
+    return undefined
+  }
+  return parsed.data
+}
+
+// Mirrors RecurringSwapApprovalContext. Strict shape + range bounds so
+// a malformed context fails closed at the validator boundary rather
+// than misbehaving downstream (e.g. in the post-confirmation listener
+// that persists the DCA schedule).
+export const recurringSwapApprovalContextSchema = z
+  .object({
+    step: z.enum(['approve', 'fill']),
+    quoteUuid: z.string().uuid(),
+    fromTokenAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+    fromTokenSymbol: z.string().min(1),
+    fromTokenDecimals: z.number().int().min(0).max(18),
+    toTokenAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+    toTokenSymbol: z.string().min(1),
+    toTokenDecimals: z.number().int().min(0).max(18),
+    amountPerOrder: z.string().regex(/^\d+$/),
+    totalAmountIn: z.string().regex(/^\d+$/),
+    numberOfOrders: z.number().int().min(2).max(365),
+    isUnlimited: z.boolean(),
+    frequency: z.object({
+      unit: z.enum(['minute', 'hour', 'day', 'week', 'month']),
+      value: z.number().int().min(1)
+    }),
+    intervalSeconds: z.number().int().min(60),
+    chainId: z.number().int().positive()
+  })
+  .strict()
+
+export const readRecurringSwapApprovalContext = (
+  request: RpcRequest
+): RecurringSwapApprovalContext | undefined => {
+  const value = readCtx(request)?.[RequestContext.RECURRING_SWAP]
+  if (value === null || typeof value !== 'object') return undefined
+  const parsed = recurringSwapApprovalContextSchema.safeParse(value)
+  if (!parsed.success) {
+    Logger.error(
+      '[shared.readRecurringSwapApprovalContext] malformed RECURRING_SWAP context',
       parsed.error
     )
     return undefined

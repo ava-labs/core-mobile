@@ -17,7 +17,11 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   }
 }))
 
-import { isBypassEligible, runValidateAndCapture } from './shared'
+import {
+  isBypassEligible,
+  recurringSwapApprovalContextSchema,
+  runValidateAndCapture
+} from './shared'
 
 const SRC_TOKEN = '0xAAA0000000000000000000000000000000000001'
 const DST_TOKEN = '0xBBB0000000000000000000000000000000000002'
@@ -399,5 +403,67 @@ describe('shared.runValidateAndCapture telemetry', () => {
   it('emits exactly ONE event per validate() call', async () => {
     await runShared({})
     expect(mockAnalyticsCapture).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('recurringSwapApprovalContextSchema', () => {
+  const valid = {
+    step: 'fill' as const,
+    quoteUuid: '6674c5b1-a014-420f-9e5e-f3c4a863061f',
+    fromTokenAddress: '0x' + 'a'.repeat(40),
+    fromTokenSymbol: 'LINK',
+    fromTokenDecimals: 18,
+    toTokenAddress: '0x' + 'b'.repeat(40),
+    toTokenSymbol: 'AVAX',
+    toTokenDecimals: 18,
+    amountPerOrder: '15000000000000000000',
+    totalAmountIn: '60000000000000000000',
+    numberOfOrders: 4,
+    isUnlimited: false,
+    frequency: { unit: 'week', value: 4 },
+    intervalSeconds: 2419200,
+    chainId: 43114
+  }
+
+  it('accepts a valid recurring approval context', () => {
+    expect(recurringSwapApprovalContextSchema.safeParse(valid).success).toBe(
+      true
+    )
+  })
+
+  it('rejects numberOfOrders below 2', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        numberOfOrders: 1
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects numberOfOrders above 365', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        numberOfOrders: 366
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects intervalSeconds below 60', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        intervalSeconds: 59
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects unknown frequency unit', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        frequency: { unit: 'year', value: 1 }
+      }).success
+    ).toBe(false)
   })
 })
