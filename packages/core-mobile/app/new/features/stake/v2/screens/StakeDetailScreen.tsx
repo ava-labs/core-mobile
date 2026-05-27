@@ -25,9 +25,10 @@ import {
   getStakedAmount
 } from 'features/stake/utils'
 import { useStake } from 'hooks/earn/useStake'
-import { round } from 'lodash'
+import { clamp, round } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectStakeAnnualPercentageYieldBPS } from 'store/posthog'
@@ -64,7 +65,12 @@ export const StakeDetailScreen = (): React.JSX.Element => {
   const progressPercent = useMemo(() => {
     if (!stake) return 0
     if (!isActive) return 100
-    return round(getActiveStakeProgress(stake, now) * 100, 0)
+    // `getActiveStakeProgress` is the raw (now - start) / (end - start)
+    // ratio, which can be negative for scheduled (future-start) stakes or
+    // exceed 1 for stakes with malformed timestamps. Clamp here so the
+    // numeric label stays consistent with the arc — `ProgressDial` only
+    // clamps its arc fill, not the value text passed in.
+    return clamp(round(getActiveStakeProgress(stake, now) * 100, 0), 0, 100)
   }, [stake, isActive, now])
 
   const networkFeeTokenUnit = useMemo(() => {
@@ -99,6 +105,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
       stake.txHash,
       'tx'
     )
+    AnalyticsService.capture('ExplorerLinkClicked')
     openUrl(url)
   }, [stake?.txHash, pChainNetwork.explorerUrl, openUrl])
 
