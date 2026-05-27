@@ -26,7 +26,7 @@ import {
 } from 'features/stake/utils'
 import { useStake } from 'hooks/earn/useStake'
 import { round } from 'lodash'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -34,34 +34,32 @@ import { selectStakeAnnualPercentageYieldBPS } from 'store/posthog'
 import { isOnGoing } from 'utils/earn/status'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
+import { StatusDot } from '../components/StatusDot'
 
 const HASH_LENGTH = 14
-// Tick `now` every minute while an active stake is open so time-sensitive
-// values ("Time to unlock", staking progress) advance without requiring the
-// user to leave and re-enter the screen.
-const NOW_TICK_INTERVAL_MS = 60_000
 
 export const StakeDetailScreen = (): React.JSX.Element => {
   const { txHash } = useLocalSearchParams<{ txHash: string }>()
   const stake = useStake(txHash)
   const isDevMode = useSelector(selectIsDeveloperMode)
   const apyBps = useSelector(selectStakeAnnualPercentageYieldBPS)
-  const pChainNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const pChainNetwork = useMemo(
+    () => NetworkService.getAvalancheNetworkP(isDevMode),
+    [isDevMode]
+  )
   const { networkToken: pChainNetworkToken } = pChainNetwork
   const { openUrl } = useInAppBrowser()
   const { theme } = useTheme()
 
-  const [now, setNow] = useState(() => new Date())
+  // Time-sensitive values ("Time to unlock", progress) snapshot when the
+  // screen mounts. They don't tick live — we accept that small staleness in
+  // exchange for fewer re-renders; users typically don't keep this screen
+  // open long enough for the drift to matter.
+  const now = useMemo(() => new Date(), [])
   const isActive = useMemo(() => {
     if (!stake) return false
     return isOnGoing(stake, now)
   }, [stake, now])
-
-  useEffect(() => {
-    if (!isActive) return
-    const id = setInterval(() => setNow(new Date()), NOW_TICK_INTERVAL_MS)
-    return () => clearInterval(id)
-  }, [isActive])
 
   const progressPercent = useMemo(() => {
     if (!stake) return 0
@@ -334,7 +332,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
           />
         )}
 
-        {stake?.txHash && pChainNetwork.explorerUrl && (
+        {stake.txHash && pChainNetwork.explorerUrl && (
           <View sx={{ alignItems: 'center', marginTop: 14 }}>
             <Button
               type="secondary"
@@ -371,16 +369,7 @@ const StakeStatusValue = ({ isActive }: { isActive: boolean }): JSX.Element => {
   const { theme } = useTheme()
   return (
     <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      {isActive && (
-        <View
-          sx={{
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: theme.colors.$textSuccess
-          }}
-        />
-      )}
+      {isActive && <StatusDot color={theme.colors.$textSuccess} />}
       <Text>{isActive ? 'Active' : 'Completed'}</Text>
     </View>
   )

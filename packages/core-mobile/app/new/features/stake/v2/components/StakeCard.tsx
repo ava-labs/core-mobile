@@ -6,10 +6,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import React, { useState } from 'react'
+import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
 import { StakeBadge, StakeBadgeType } from './StakeBadge'
+import { StatusDot } from './StatusDot'
 
 export type StakeCardVariant = 'active' | 'completed'
 
@@ -61,6 +62,17 @@ export const StakeCard = ({
   const isCompleted = variant === 'completed'
   const showWave = !isCompleted && progress !== undefined
 
+  // Measure the absolute-fill overlay so the wave tracks the card's actual
+  // rendered size (cards grow past BASE_CARD_HEIGHT when their content does)
+  // rather than getting clipped to the baseline height.
+  const [waveSize, setWaveSize] = useState({ width: 0, height: 0 })
+  const handleWaveLayout = (e: LayoutChangeEvent): void => {
+    const { width: w, height: h } = e.nativeEvent.layout
+    if (w !== waveSize.width || h !== waveSize.height) {
+      setWaveSize({ width: w, height: h })
+    }
+  }
+
   return (
     <BaseCard
       onPress={onPress}
@@ -72,10 +84,13 @@ export const StakeCard = ({
         paddingBottom: 16
       }}>
       {showWave && (
-        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        <View
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+          onLayout={handleWaveLayout}>
           <ProgressWave
-            width={width}
-            height={BASE_CARD_HEIGHT}
+            width={waveSize.width}
+            height={waveSize.height}
             progress={progress}
             motion={motion}
           />
@@ -133,14 +148,7 @@ export const StakeCard = ({
             'Completed'
           ) : (
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <View
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: theme.colors.$textSuccess
-                }}
-              />
+              <StatusDot size={5} color={theme.colors.$textSuccess} />
               <Text
                 variant="caption"
                 sx={{
