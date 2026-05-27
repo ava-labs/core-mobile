@@ -135,6 +135,9 @@ export const getEarnedRewardAmount = (
     : undefined
 }
 
+export const createZeroTokenUnit = (token: NetworkToken): TokenUnit =>
+  new TokenUnit(0n, token.decimals, token.symbol)
+
 export const convertToDurationInSeconds = (date: UTCDate): Seconds => {
   const stakeDurationMs = differenceInMilliseconds(date, new UTCDate())
 
