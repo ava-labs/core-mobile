@@ -78,7 +78,6 @@ export function TradeScreen(): JSX.Element {
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header,
-      hasSeparator: false,
       targetLayout: headerLayout
     }
   )
@@ -104,6 +103,10 @@ export function TradeScreen(): JSX.Element {
     ],
     [contentContainerStyle]
   )
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
 
   const animatedGradientStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, 110], [0, 1])
@@ -166,8 +169,7 @@ export function TradeScreen(): JSX.Element {
     ),
     [
       handleHeaderLayout,
-      title,
-      description,
+      animatedHeaderStyle,
       animatedGradientStyle,
       theme.colors.$surfacePrimary,
       router
@@ -197,9 +199,7 @@ export function TradeScreen(): JSX.Element {
             right: 0,
             height: headerHeight
           }}>
-          <BlurredBackgroundView
-            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
-          />
+          <BlurredBackgroundView />
         </View>
       )}
     </BlurredBarsContentLayout>
