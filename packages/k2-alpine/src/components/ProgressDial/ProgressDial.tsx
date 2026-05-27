@@ -1,10 +1,6 @@
 import { Canvas, Path, Skia } from '@shopify/react-native-skia'
 import React, { useEffect, useMemo } from 'react'
-import {
-  Easing,
-  useSharedValue,
-  withTiming
-} from 'react-native-reanimated'
+import { Easing, useSharedValue, withTiming } from 'react-native-reanimated'
 
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
