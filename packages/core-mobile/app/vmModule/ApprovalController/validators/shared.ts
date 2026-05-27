@@ -29,6 +29,10 @@ import Logger from 'utils/Logger'
 // from producing `slippagePercent + feePercent >= 1`, which would
 // negate the loss-tolerance check.
 const BPS_MAX = 10_000
+// Markr orchestrator caps recurring schedules at 365 orders. The UI's
+// "Unlimited" option maps to this cap at submit time, so the schema
+// also enforces it as the upper bound.
+const RECURRING_SWAP_MAX_ORDERS = 365
 const swapAutoApproveContextSchema = z
   .object({
     maxBuy: z.enum(QUICK_SWAP_MAX_BUY_VALUES).optional(),
@@ -78,7 +82,7 @@ export const recurringSwapApprovalContextSchema = z
     toTokenDecimals: z.number().int().min(0).max(18),
     amountPerOrder: z.string().regex(/^\d+$/),
     totalAmountIn: z.string().regex(/^\d+$/),
-    numberOfOrders: z.number().int().min(2).max(365),
+    numberOfOrders: z.number().int().min(2).max(RECURRING_SWAP_MAX_ORDERS),
     isUnlimited: z.boolean(),
     frequency: z.object({
       unit: z.enum(['minute', 'hour', 'day', 'week', 'month']),

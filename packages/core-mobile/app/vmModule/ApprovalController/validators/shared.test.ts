@@ -17,8 +17,10 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   }
 }))
 
+import Logger from 'utils/Logger'
 import {
   isBypassEligible,
+  readRecurringSwapApprovalContext,
   recurringSwapApprovalContextSchema,
   runValidateAndCapture
 } from './shared'
@@ -465,5 +467,202 @@ describe('recurringSwapApprovalContextSchema', () => {
         frequency: { unit: 'year', value: 1 }
       }).success
     ).toBe(false)
+  })
+
+  it('accepts step: "approve"', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        step: 'approve'
+      }).success
+    ).toBe(true)
+  })
+
+  it('rejects unknown keys (.strict)', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        unexpectedField: 'foo'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects invalid step enum value', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        step: 'cancel'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects non-UUID quoteUuid', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        quoteUuid: 'not-a-uuid'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects fromTokenAddress with wrong hex length', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenAddress: '0xabc'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects fromTokenAddress with non-hex characters', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenAddress: '0x' + 'z'.repeat(40)
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects empty fromTokenSymbol', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenSymbol: ''
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects negative fromTokenDecimals', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenDecimals: -1
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects fromTokenDecimals above 18', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenDecimals: 19
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects non-integer fromTokenDecimals', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        fromTokenDecimals: 6.5
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects amountPerOrder with decimal point', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        amountPerOrder: '15.5'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects negative amountPerOrder string', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        amountPerOrder: '-1'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects non-numeric totalAmountIn (e.g. hex literal)', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        totalAmountIn: '0xff'
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects frequency.value of zero', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        frequency: { unit: 'day', value: 0 }
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects chainId of zero', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        chainId: 0
+      }).success
+    ).toBe(false)
+  })
+
+  it('rejects negative chainId', () => {
+    expect(
+      recurringSwapApprovalContextSchema.safeParse({
+        ...valid,
+        chainId: -1
+      }).success
+    ).toBe(false)
+  })
+})
+
+describe('readRecurringSwapApprovalContext', () => {
+  const valid = {
+    step: 'fill' as const,
+    quoteUuid: '6674c5b1-a014-420f-9e5e-f3c4a863061f',
+    fromTokenAddress: '0x' + 'a'.repeat(40),
+    fromTokenSymbol: 'LINK',
+    fromTokenDecimals: 18,
+    toTokenAddress: '0x' + 'b'.repeat(40),
+    toTokenSymbol: 'AVAX',
+    toTokenDecimals: 18,
+    amountPerOrder: '15000000000000000000',
+    totalAmountIn: '60000000000000000000',
+    numberOfOrders: 4,
+    isUnlimited: false,
+    frequency: { unit: 'week' as const, value: 4 },
+    intervalSeconds: 2419200,
+    chainId: 43114
+  }
+
+  it('returns undefined when RECURRING_SWAP context is absent', () => {
+    const request = {
+      context: { walletType: WalletType.MNEMONIC }
+    } as unknown as RpcRequest
+    expect(readRecurringSwapApprovalContext(request)).toBeUndefined()
+  })
+
+  it('returns undefined and logs an error when context is malformed', () => {
+    const loggerSpy = jest.spyOn(Logger, 'error').mockImplementation(() => {
+      /* swallow in test */
+    })
+    const request = {
+      context: {
+        [RequestContext.RECURRING_SWAP]: {
+          step: 'fill',
+          numberOfOrders: 1 // below min, and other required fields missing
+        }
+      }
+    } as unknown as RpcRequest
+    expect(readRecurringSwapApprovalContext(request)).toBeUndefined()
+    expect(loggerSpy).toHaveBeenCalled()
+    loggerSpy.mockRestore()
+  })
+
+  it('returns the parsed typed object when context is valid', () => {
+    const request = {
+      context: {
+        [RequestContext.RECURRING_SWAP]: valid
+      }
+    } as unknown as RpcRequest
+    expect(readRecurringSwapApprovalContext(request)).toEqual(valid)
   })
 })

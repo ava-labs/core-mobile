@@ -246,10 +246,14 @@ export type SwapAutoApproveContext = {
   partnerFeeBps?: number
 }
 
-// Presence of `RECURRING_SWAP` in request.context signals a recurring
-// (DCA) swap. The `step` discriminator separates the ERC-20 allowance
-// approval from the first-fill eth_sendTransaction — both go through
-// ApprovalController via the same eth_sendTransaction pipeline.
+/**
+ * Recurring-swap approval context attached via RequestContext.RECURRING_SWAP.
+ * Present on both the ERC-20 allowance `eth_sendTransaction` and the first-fill
+ * `eth_sendTransaction` so the approval screen can render the same Recurrence
+ * details on each. The full payload travels through both steps so the
+ * tx-confirmation listener (CP-13663 Task 21) can persist the schedule from the
+ * `step: 'fill'` confirmation without re-fetching destination-token metadata.
+ */
 export type RecurringSwapApprovalContext = {
   step: 'approve' | 'fill' // discriminator: ERC-20 allowance vs. first-fill tx
   quoteUuid: string
