@@ -2,7 +2,7 @@ import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { StatusDot } from './StatusDot'
 
-export type StakeStatusValueSize = 'small' | 'large'
+type StakeStatusValueSize = 'small' | 'large'
 
 interface StakeStatusValueProps {
   isActive: boolean
@@ -53,7 +53,7 @@ export const StakeStatusValue = ({
         variant={config.textVariant}
         sx={{
           color: '$textSecondary',
-          ...(config.fontFamily ? { fontFamily: config.fontFamily } : {})
+          fontFamily: config.fontFamily
         }}>
         {isActive ? 'Active' : 'Completed'}
       </Text>
