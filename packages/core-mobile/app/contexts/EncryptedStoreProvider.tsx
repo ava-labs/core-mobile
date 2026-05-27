@@ -26,7 +26,7 @@ export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
   const [migrationFailure] = useSchemaMigrationFailure()
 
   if (migrationFailure) {
-    throw migrationFailure.error
+    throw migrationFailure
   }
 
   if (!encryptedStore) return null

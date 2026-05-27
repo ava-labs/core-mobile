@@ -1,24 +1,15 @@
 import { MigrationManifest, PersistedState } from 'redux-persist'
-import SentryService from 'services/sentry/SentryService'
 import { createInstrumentedMigrate } from './createInstrumentedMigrate'
-import { useSchemaMigrationFailure } from './schemaMigrationFailureStore'
-
-jest.mock('services/sentry/SentryService', () => ({
-  __esModule: true,
-  default: {
-    captureException: jest.fn(),
-    isAvailable: true
-  }
-}))
-
-const mockCaptureException = SentryService.captureException as jest.Mock
+import {
+  SchemaMigrationError,
+  useSchemaMigrationFailure
+} from './schemaMigrationFailureStore'
 
 const baseState = (version: number): PersistedState => ({
   _persist: { version, rehydrated: false }
 })
 
 beforeEach(() => {
-  jest.clearAllMocks()
   useSchemaMigrationFailure.setState(null)
 })
 
@@ -33,45 +24,47 @@ describe('createInstrumentedMigrate', () => {
 
     expect(result).toMatchObject({ foo: 'bar' })
     expect(useSchemaMigrationFailure.getState()).toBeNull()
-    expect(mockCaptureException).not.toHaveBeenCalled()
   })
 
-  it('captures the failing version + error and reports to Sentry on a sync throw', async () => {
-    const err = new Error('boom-v1')
+  it('wraps a sync throw in SchemaMigrationError with the failing version + cause', async () => {
+    const cause = new Error('boom-v1')
     const manifest: MigrationManifest = {
       1: () => {
-        throw err
+        throw cause
       }
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 1)).rejects.toThrow('boom-v1')
+    await expect(migrate(baseState(0), 1)).rejects.toBeInstanceOf(
+      SchemaMigrationError
+    )
+    await expect(migrate(baseState(0), 1)).rejects.toMatchObject({
+      version: 1,
+      cause,
+      message: 'boom-v1'
+    })
 
     const failure = useSchemaMigrationFailure.getState()
-    expect(failure).toEqual({ version: 1, error: err })
-    expect(mockCaptureException).toHaveBeenCalledWith(
-      'Schema migration failure',
-      err,
-      { system: 'schemaMigration', version: '1' }
-    )
+    expect(failure).toBeInstanceOf(SchemaMigrationError)
+    expect(failure?.version).toBe(1)
+    expect(failure?.cause).toBe(cause)
   })
 
-  it('captures the failing version + error on an async rejection', async () => {
-    const err = new Error('boom-v2')
+  it('wraps an async rejection in SchemaMigrationError', async () => {
+    const cause = new Error('boom-v2')
     const manifest: MigrationManifest = {
       1: state => state,
       2: async () => {
-        throw err
+        throw cause
       }
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 2)).rejects.toThrow('boom-v2')
-
-    expect(useSchemaMigrationFailure.getState()).toEqual({
+    await expect(migrate(baseState(0), 2)).rejects.toMatchObject({
       version: 2,
-      error: err
+      cause
     })
+    expect(useSchemaMigrationFailure.getState()?.version).toBe(2)
   })
 
   it('records only the FIRST failure when multiple migrations would error', async () => {
@@ -86,20 +79,19 @@ describe('createInstrumentedMigrate', () => {
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 2)).rejects.toThrow()
+    await expect(migrate(baseState(0), 2)).rejects.toBeInstanceOf(
+      SchemaMigrationError
+    )
 
-    expect(useSchemaMigrationFailure.getState()).toEqual({
-      version: 1,
-      error: errV1
-    })
-    // Only one Sentry capture — we don't double-report when later steps
-    // also error out against the now-Promise state from the first failure.
-    expect(mockCaptureException).toHaveBeenCalledTimes(1)
+    const failure = useSchemaMigrationFailure.getState()
+    expect(failure?.version).toBe(1)
+    expect(failure?.cause).toBe(errV1)
   })
 
   it('does not overwrite an existing failure record on a second failed run', async () => {
-    const firstErr = new Error('first')
-    useSchemaMigrationFailure.setState({ version: 1, error: firstErr })
+    const firstCause = new Error('first')
+    const seeded = new SchemaMigrationError(1, firstCause)
+    useSchemaMigrationFailure.setState(seeded)
 
     const manifest: MigrationManifest = {
       1: () => {
@@ -108,17 +100,15 @@ describe('createInstrumentedMigrate', () => {
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 1)).rejects.toThrow('second')
+    await expect(migrate(baseState(0), 1)).rejects.toBeInstanceOf(
+      SchemaMigrationError
+    )
 
     // First failure preserved — we surface the root cause.
-    expect(useSchemaMigrationFailure.getState()).toEqual({
-      version: 1,
-      error: firstErr
-    })
-    expect(mockCaptureException).not.toHaveBeenCalled()
+    expect(useSchemaMigrationFailure.getState()).toBe(seeded)
   })
 
-  it('coerces non-Error throws into Error before capturing', async () => {
+  it('coerces non-Error throws into an Error cause before wrapping', async () => {
     const manifest: MigrationManifest = {
       1: () => {
         throw 'plain-string-throw'
@@ -126,11 +116,12 @@ describe('createInstrumentedMigrate', () => {
     }
     const migrate = createInstrumentedMigrate(manifest, { debug: false })
 
-    await expect(migrate(baseState(0), 1)).rejects.toBeInstanceOf(Error)
-    await expect(migrate(baseState(0), 1)).rejects.toThrow('plain-string-throw')
+    await expect(migrate(baseState(0), 1)).rejects.toBeInstanceOf(
+      SchemaMigrationError
+    )
 
     const failure = useSchemaMigrationFailure.getState()
-    expect(failure?.error).toBeInstanceOf(Error)
-    expect(failure?.error.message).toContain('plain-string-throw')
+    expect(failure?.cause).toBeInstanceOf(Error)
+    expect((failure?.cause as Error).message).toContain('plain-string-throw')
   })
 })
