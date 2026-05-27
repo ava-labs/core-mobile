@@ -1,16 +1,9 @@
-import {
-  BaseCard,
-  Motion,
-  Separator,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { BaseCard, Motion, Separator, Text, View } from '@avalabs/k2-alpine'
 import React, { useState } from 'react'
 import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
 import { StakeBadge, StakeBadgeType } from './StakeBadge'
-import { StatusDot } from './StatusDot'
+import { StakeStatusValue } from './StakeStatusValue'
 
 export type StakeCardVariant = 'active' | 'completed'
 
@@ -58,7 +51,6 @@ export const StakeCard = ({
   width = DEFAULT_WIDTH,
   onPress
 }: StakeCardProps): JSX.Element => {
-  const { theme } = useTheme()
   const isCompleted = variant === 'completed'
   const showWave = !isCompleted && progress !== undefined
 
@@ -143,23 +135,7 @@ export const StakeCard = ({
       <Separator sx={{ marginTop: 5, marginBottom: 6 }} />
       <DetailRow
         label="Status"
-        value={
-          isCompleted ? (
-            'Completed'
-          ) : (
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <StatusDot size={5} color={theme.colors.$textSuccess} />
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$textSecondary',
-                  fontFamily: 'Inter-Medium'
-                }}>
-                Active
-              </Text>
-            </View>
-          )
-        }
+        value={<StakeStatusValue isActive={!isCompleted} size="small" />}
       />
     </BaseCard>
   )

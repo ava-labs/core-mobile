@@ -34,7 +34,7 @@ import { selectStakeAnnualPercentageYieldBPS } from 'store/posthog'
 import { isOnGoing } from 'utils/earn/status'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
-import { StatusDot } from '../components/StatusDot'
+import { StakeStatusValue } from '../components/StakeStatusValue'
 
 const HASH_LENGTH = 14
 
@@ -364,13 +364,3 @@ const JOINED_STACK_RADIUS = 4
 // (or its inlined equivalent). Keeps the dual-line token+fiat readout
 // vertically centered inside the GroupList row's 48px itemHeight.
 const VALUE_CELL_CONTAINER_SX = { marginVertical: 13 } as const
-
-const StakeStatusValue = ({ isActive }: { isActive: boolean }): JSX.Element => {
-  const { theme } = useTheme()
-  return (
-    <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      {isActive && <StatusDot color={theme.colors.$textSuccess} />}
-      <Text>{isActive ? 'Active' : 'Completed'}</Text>
-    </View>
-  )
-}
