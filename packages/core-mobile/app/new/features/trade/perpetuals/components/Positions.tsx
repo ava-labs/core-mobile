@@ -6,13 +6,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { FlashList, FlashListRef, ListRenderItem } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useState } from 'react'
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
-import { Pressable } from 'react-native-gesture-handler'
+import { Pressable, ScrollView } from 'react-native-gesture-handler'
 import { MY_POSITIONS_MOCK } from '../mocks'
-import { Position } from '../types'
 import { PositionCard } from './PositionCard'
 
 interface PositionsProps {
@@ -32,9 +30,10 @@ export const Positions = ({
   const router = useRouter()
 
   const positions = MY_POSITIONS_MOCK
-  const listRef = useRef<FlashListRef<Position>>(null)
 
-  const keyExtractor = useCallback((item: Position) => item.id, [])
+  // Capture the initial offset exactly once so re-renders don't re-apply
+  // `contentOffset` and yank the scroll position mid-interaction.
+  const [initialScrollX] = useState(() => scrollOffsetRef?.current ?? 0)
 
   const handlePositionsPress = useCallback(() => {
     router.navigate('/perpetualsPositions')
@@ -47,26 +46,6 @@ export const Positions = ({
       }
     },
     [scrollOffsetRef]
-  )
-
-  // After the list lays out its content, restore the saved offset.
-  // Runs once per mount.
-  const handleContentSizeChange = useCallback(() => {
-    const saved = scrollOffsetRef?.current ?? 0
-    if (saved > 0) {
-      listRef.current?.scrollToOffset({ offset: saved, animated: false })
-    }
-  }, [scrollOffsetRef])
-
-  const renderItem: ListRenderItem<Position> = useCallback(
-    ({ item, index }) => (
-      <AnimatedPressable
-        onPress={handlePositionsPress}
-        style={{ marginRight: index === positions.length - 1 ? 0 : 12 }}>
-        <PositionCard position={item} />
-      </AnimatedPressable>
-    ),
-    [handlePositionsPress, positions.length]
   )
 
   if (positions.length === 0) {
@@ -88,18 +67,22 @@ export const Positions = ({
           color={alpha(theme.colors.$textPrimary, 0.4)}
         />
       </Pressable>
-      <FlashList
-        ref={listRef}
+      <ScrollView
         horizontal
-        data={positions}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        onContentSizeChange={handleContentSizeChange}
-      />
+        contentOffset={{ x: initialScrollX, y: 0 }}>
+        {positions.map((position, index) => (
+          <AnimatedPressable
+            key={position.id}
+            onPress={handlePositionsPress}
+            style={{ marginRight: index === positions.length - 1 ? 0 : 12 }}>
+            <PositionCard position={position} />
+          </AnimatedPressable>
+        ))}
+      </ScrollView>
     </View>
   )
 }

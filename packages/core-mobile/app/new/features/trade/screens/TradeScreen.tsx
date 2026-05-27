@@ -33,6 +33,7 @@ import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
 const BALANCE_ROW_HEIGHT = 60
 const BALANCE_ROW_VERTICAL_MARGIN = 28
 const MIN_HEADER_HEIGHT = BALANCE_ROW_HEIGHT + BALANCE_ROW_VERTICAL_MARGIN
+const GRADIENT_HEIGHT = 110
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
@@ -109,7 +110,7 @@ export function TradeScreen(): JSX.Element {
   }))
 
   const animatedGradientStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, 110], [0, 1])
+    const opacity = interpolate(scrollY.value, [0, GRADIENT_HEIGHT], [0, 1])
     return {
       opacity
     }
@@ -123,18 +124,19 @@ export function TradeScreen(): JSX.Element {
           paddingBottom: 16
         }}
         onLayout={handleHeaderLayout}>
-        <View style={{ paddingHorizontal: 16, gap: 8 }}>
+        <Animated.View
+          style={[animatedHeaderStyle, { paddingHorizontal: 16, gap: 8 }]}>
           <Text variant="heading2">{title}</Text>
           <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
             {description}
           </Text>
-        </View>
+        </Animated.View>
         <View>
           <Animated.View
             style={[
               animatedGradientStyle,
               {
-                height: 110,
+                height: GRADIENT_HEIGHT,
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -169,6 +171,7 @@ export function TradeScreen(): JSX.Element {
     ),
     [
       handleHeaderLayout,
+      animatedHeaderStyle,
       animatedGradientStyle,
       theme.colors.$surfacePrimary,
       router

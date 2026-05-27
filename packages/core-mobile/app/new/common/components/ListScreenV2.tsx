@@ -337,7 +337,7 @@ export const ListScreenV2 = <T,>({
   const isAndroidModal = Platform.OS === 'android' && isModal
   const flashListMarginTop = isAndroidModal
     ? title.length === 0
-      ? 12
+      ? insets.top - 8
       : headerHeight
     : 0
 
