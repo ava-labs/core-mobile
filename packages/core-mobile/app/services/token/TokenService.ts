@@ -347,7 +347,9 @@ export class TokenService {
         currency
       })
     }
-    return rawData ? transformMartketChartRawPrices(rawData.prices) : undefined
+    return rawData
+      ? transformMartketChartRawPrices(rawData.prices, rawData.totalVolumes)
+      : undefined
   }
 
   private async fetchChartDataForCoin({
@@ -375,7 +377,9 @@ export class TokenService {
         days
       })
     }
-    return rawData ? transformMartketChartRawPrices(rawData.prices) : undefined
+    return rawData
+      ? transformMartketChartRawPrices(rawData.prices, rawData.totalVolumes)
+      : undefined
   }
 
   private async coinsMarket({

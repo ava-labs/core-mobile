@@ -35,6 +35,7 @@ import IconNotifications from '../../assets/icons/notifications.svg'
 import IconAlertError from '../../assets/icons/alert_error.svg'
 import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
+import IconElectricBolt from '../../assets/icons/electric_bolt.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutbound from '../../assets/icons/outbound_filled.svg'
@@ -106,6 +107,7 @@ import SolanaLogo from '../../assets/icons/solana_logo.svg'
 import IconPrediction from '../../assets/icons/prediction.svg'
 import IconTrade from '../../assets/icons/trade.svg'
 import IconUnfold from '../../assets/icons/unfold.svg'
+import IconCandlestick from '../../assets/icons/candlestick.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -302,6 +304,7 @@ export const Icons = {
     ArrowDown: IconArrowDown,
     Connect: IconWalletConnect,
     Compass: IconCompass,
+    ElectricBolt: IconElectricBolt,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     RedExclamation: IconRedExclamation,
@@ -357,7 +360,8 @@ export const Icons = {
     Avalanche: AvalancheLogo,
     Solana: SolanaLogo,
     MoneyBag: IconMoneyBag,
-    Prediction: IconPrediction
+    Prediction: IconPrediction,
+    Candlestick: IconCandlestick
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

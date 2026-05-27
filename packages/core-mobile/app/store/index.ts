@@ -27,6 +27,7 @@ import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
+import { chartPreferencesReducer as chartPreferences } from './chartPreferences/slice'
 
 const VERSION = 29
 const STORAGE_WRITE_THROTTLE = 200
@@ -55,6 +56,7 @@ const combinedReducer = combineReducers({
   settings,
   watchlist,
   portfolio,
+  chartPreferences,
 
   // apis
   [transactionApi.reducerPath]: transactionApi.reducer

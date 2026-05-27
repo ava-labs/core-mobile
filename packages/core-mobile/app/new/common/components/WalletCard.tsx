@@ -11,6 +11,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { computeAccountBalance } from 'features/portfolio/utils/computeAccountBalance'
+import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -84,6 +85,22 @@ const WalletCard = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
 
+  // Per-account count of enabled networks the account can actually produce
+  // balances for. Necessary because wallets like Keystone cannot derive an
+  // address for every globally enabled network (e.g. no Solana), so using
+  // the global enabled-networks count would cause an infinite spinner — see
+  // CP-14303.
+  const enabledNetworksCountByAccount = useMemo(() => {
+    const result: Record<string, number> = {}
+    for (const item of wallet.accounts) {
+      result[item.account.id] = getEnabledNetworksForAccount(
+        item.account,
+        enabledNetworks
+      ).length
+    }
+    return result
+  }, [wallet.accounts, enabledNetworks])
+
   const handleToggle = useCallback(() => {
     onToggleExpansion(wallet.id)
   }, [onToggleExpansion, wallet.id])
@@ -131,7 +148,8 @@ const WalletCard = ({
       const balResult = computeAccountBalance({
         accountBalances:
           walletBalancesData[item.account.id] ?? emptyAccountBalances,
-        enabledNetworksCount: enabledNetworks.length,
+        enabledNetworksCount:
+          enabledNetworksCountByAccount[item.account.id] ?? 0,
         enabledNetworksMap,
         enabledChainIds,
         isDeveloperMode,
@@ -162,7 +180,7 @@ const WalletCard = ({
     colors.$textSecondary,
     walletBalancesData,
     isBalancesError,
-    enabledNetworks.length,
+    enabledNetworksCountByAccount,
     enabledNetworksMap,
     enabledChainIds,
     isDeveloperMode,
@@ -307,7 +325,7 @@ const WalletCard = ({
             isRefreshing={isRefreshing}
             walletBalancesData={walletBalancesData}
             isBalancesError={isBalancesError}
-            enabledNetworksCount={enabledNetworks.length}
+            enabledNetworksCountByAccount={enabledNetworksCountByAccount}
             enabledNetworksMap={enabledNetworksMap}
             enabledChainIds={enabledChainIds}
             isDeveloperMode={isDeveloperMode}

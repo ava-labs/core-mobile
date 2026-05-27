@@ -14,7 +14,7 @@ import Logger from 'utils/Logger'
 import {
   selectIsEarnBlocked,
   selectIsAllNotificationsBlocked,
-  selectIsInAppDefiBorrowBlocked
+  selectIsInAppDefiBlocked
 } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
@@ -43,7 +43,7 @@ export const DeeplinkContextProvider = ({
   const isWalletActive = walletState === WalletState.ACTIVE
   const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isIdled = useSelector(selectIsIdled)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
@@ -156,7 +156,7 @@ export const DeeplinkContextProvider = ({
         deeplink: pendingDeepLink,
         dispatch,
         isEarnBlocked,
-        isInAppDefiBorrowBlocked,
+        isInAppDefiBlocked,
         openUrl
       })
       // once we used the url, we can expire it
@@ -167,7 +167,7 @@ export const DeeplinkContextProvider = ({
     pendingDeepLink,
     dispatch,
     isEarnBlocked,
-    isInAppDefiBorrowBlocked,
+    isInAppDefiBlocked,
     openUrl,
     isIdled
   ])

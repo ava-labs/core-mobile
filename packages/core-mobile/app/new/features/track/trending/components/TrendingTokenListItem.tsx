@@ -1,10 +1,7 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { MarketToken, selectIsWatchlistFavorite } from 'store/watchlist'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { formatCurrency } from 'utils/FormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { PriceChangeStatus } from '@avalabs/k2-alpine'
+import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
 import { TrendingTokenListView } from './TrendingTokenListView'
 
 export const TrendingTokenListItem = ({
@@ -20,37 +17,11 @@ export const TrendingTokenListItem = ({
   onBuyPress: () => void
   showBuyButton: boolean
 }): React.JSX.Element => {
-  const currency = useSelector(selectSelectedCurrency)
-
-  const formattedPrice = useMemo(
-    () =>
-      token.currentPrice
-        ? formatCurrency({
-            amount: token.currentPrice,
-            currency,
-            boostSmallNumberPrecision: true
-          })
-        : UNKNOWN_AMOUNT,
-    [currency, token.currentPrice]
-  )
-
-  const priceChange = token.priceChange24h ?? 0
-
-  const formattedPercent = useMemo(
-    () =>
-      token.priceChangePercentage24h
-        ? Math.abs(token.priceChangePercentage24h)?.toFixed(2).toString() + '%'
-        : undefined,
-    [token.priceChangePercentage24h]
-  )
-
-  const status = priceChange
-    ? priceChange > 0
-      ? PriceChangeStatus.Up
-      : priceChange < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-    : PriceChangeStatus.Neutral
+  const { formattedPrice, formattedPercent, status } = useTokenPriceDisplay({
+    currentPrice: token.currentPrice,
+    priceChange24h: token.priceChange24h,
+    priceChangePercentage24h: token.priceChangePercentage24h
+  })
 
   const isFavorite = useSelector(selectIsWatchlistFavorite(token.id))
 

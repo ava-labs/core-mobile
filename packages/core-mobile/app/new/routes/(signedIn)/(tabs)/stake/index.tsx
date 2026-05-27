@@ -1,28 +1,17 @@
 import React from 'react'
-import { EarnHomeScreen } from 'features/stake/screens/EarnHomeScreen'
-import { NewStakeHomeScreen } from 'features/stake/screens/NewStakeHomeScreen'
 import { StakeHomeScreen } from 'features/stake/screens/StakeHomeScreen'
+import { StakeHomeScreen as StakeHomeScreenV2 } from 'features/stake/v2/screens/StakeHomeScreen'
 import { useSelector } from 'react-redux'
-import {
-  selectIsInAppDefiBlocked,
-  selectIsInAppDefiBorrowBlocked
-} from 'store/posthog'
+import { selectIsFastStakeBlocked } from 'store/posthog'
 
 const HomeScreen = (): JSX.Element => {
-  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isFastStakeBlocked = useSelector(selectIsFastStakeBlocked)
 
-  // Borrow feature enabled: show new stake-only screen
-  if (!isInAppDefiBorrowBlocked) {
-    return <NewStakeHomeScreen />
+  // fast_stake_enabled flag on: show the new streamlined stake home screen
+  if (!isFastStakeBlocked) {
+    return <StakeHomeScreenV2 />
   }
 
-  // Borrow feature disabled + DeFi enabled: show original earn screen (Stake + Deposit)
-  if (!isInAppDefiBlocked) {
-    return <EarnHomeScreen />
-  }
-
-  // Borrow feature disabled + DeFi blocked: show original tab-based stake screen
   return <StakeHomeScreen />
 }
 

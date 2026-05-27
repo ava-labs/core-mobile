@@ -28,8 +28,6 @@ export enum FeatureGates {
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
-  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
-  IN_APP_DEFI_BORROW = 'in-app-defi-borrow',
   IN_APP_REVIEW = 'in-app-review',
   GASLESS_INSTANT = 'gasless-instant',
   NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
@@ -43,7 +41,9 @@ export enum FeatureGates {
   FUSION_QUICK_SWAPS = 'fusion-quick-swaps',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   INJECTED_PROVIDER = 'injected-provider',
-  PREDICTIONS = 'predictions'
+  PREDICTIONS = 'predictions',
+  PRICE_CHART = 'price-chart',
+  FAST_STAKE_ENABLED = 'fast-stake-enabled'
 }
 
 export enum FeatureVars {

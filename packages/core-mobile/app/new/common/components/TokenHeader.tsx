@@ -95,7 +95,10 @@ export const TokenHeader = ({
           ) : isPrivacyModeEnabled ? (
             <PrivacyModeAlert />
           ) : (
-            <Text testID="token_header_fiat_balance" variant="body2">
+            <Text
+              testID="token_header_fiat_balance"
+              variant="buttonSmall"
+              sx={{ fontSize: 14 }}>
               {formattedBalance} {currency}
             </Text>
           )}

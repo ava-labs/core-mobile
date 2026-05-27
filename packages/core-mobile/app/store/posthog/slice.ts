@@ -72,6 +72,14 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPriceChartBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PRICE_CHART] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 /**
  * Parses a PostHog feature-var string as an integer.
  * Falls back to the compiled-in default only when the flag is absent (NaN).
@@ -433,22 +441,6 @@ export const selectIsInAppDefiBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_IS_NEW] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsInAppDefiBorrowBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_BORROW] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -621,6 +613,14 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.PREDICTIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsFastStakeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.FAST_STAKE_ENABLED] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
