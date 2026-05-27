@@ -1,3 +1,4 @@
+import { View } from '@avalabs/k2-alpine'
 import { TokenPriceChart } from 'common/components/chart/TokenPriceChart'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenHeader } from 'common/components/TokenHeader'
@@ -44,16 +45,18 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   const renderHeader = useCallback(() => {
     if (!token) return null
     return (
-      <TokenHeader
-        token={token}
-        formattedBalance={formattedBalance}
-        currency={selectedCurrency}
-        errorMessage={
-          isBalanceAccurate ? undefined : 'Unable to load all balances'
-        }
-        isLoading={isBalanceLoading}
-        isPrivacyModeEnabled={isPrivacyModeEnabled}
-      />
+      <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
+        <TokenHeader
+          token={token}
+          formattedBalance={formattedBalance}
+          currency={selectedCurrency}
+          errorMessage={
+            isBalanceAccurate ? undefined : 'Unable to load all balances'
+          }
+          isLoading={isBalanceLoading}
+          isPrivacyModeEnabled={isPrivacyModeEnabled}
+        />
+      </View>
     )
   }, [
     token,
