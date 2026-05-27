@@ -89,16 +89,24 @@ const init = (): void => {
   }
 }
 
+type CaptureExceptionOptions = {
+  value?: unknown
+  tags?: Record<string, string>
+}
+
 const captureException = (
   message: string,
-  value?: unknown,
-  tags?: Record<string, string>
+  options: CaptureExceptionOptions = {}
 ): void => {
   if (!isAvailable) {
     return
   }
 
-  const send = (): void => {
+  const { value, tags } = options
+
+  Sentry.withScope(scope => {
+    if (tags) scope.setTags(tags)
+
     if (value instanceof Error) {
       Sentry.captureException(value, { extra: { message } })
     } else {
@@ -107,16 +115,7 @@ const captureException = (
         value !== undefined ? { extra: { value } } : undefined
       )
     }
-  }
-
-  if (tags) {
-    Sentry.withScope(scope => {
-      scope.setTags(tags)
-      send()
-    })
-  } else {
-    send()
-  }
+  })
 }
 
 /**
