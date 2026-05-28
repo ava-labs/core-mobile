@@ -9,14 +9,23 @@ import {
 } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  StyleProp,
-  ViewStyle
-} from 'react-native'
+import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue
+} from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
+
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView)
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient)
+
+// Distance (px) over which the right-edge fade interpolates from fully
+// visible to fully hidden as the scroll approaches the end.
+const FADE_OUT_RANGE = 24
 
 export type TradeFilterChip =
   | string
@@ -29,7 +38,7 @@ export type TradeFilterChip =
 // Pad so the chip doesn't sit flush with the visible edge after a
 // pull-into-view. Right pad is wider so the chip clears the fade gradient.
 const EDGE_PAD_LEFT = 16
-const EDGE_PAD_RIGHT = 50
+const EDGE_PAD_RIGHT = 16
 const FADE_GRADIENT_WIDTH = 42
 
 type ChipLayout = { x: number; width: number }
@@ -69,18 +78,55 @@ export const TradeFilters = ({
   const [containerWidth, setContainerWidth] = useState(0)
   const chipLayoutsRef = useRef<Map<string, ChipLayout>>(new Map())
 
-  const handleScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
-      const x = e.nativeEvent.contentOffset.x
+  // Shared values mirror the JS-side measurements so the gradient opacity
+  // can be driven on the UI thread without re-rendering on every scroll.
+  const scrollX = useSharedValue(initialScrollX)
+  const contentWidthSV = useSharedValue(0)
+  const containerWidthSV = useSharedValue(0)
+
+  const updateScrollRefs = useCallback(
+    (x: number): void => {
       scrollXRef.current = x
       if (scrollOffsetRef) scrollOffsetRef.current = x
     },
     [scrollOffsetRef]
   )
 
-  const handleContainerLayout = useCallback((e: LayoutChangeEvent): void => {
-    setContainerWidth(e.nativeEvent.layout.width)
-  }, [])
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: e => {
+      scrollX.value = e.contentOffset.x
+      scheduleOnRN(updateScrollRefs, e.contentOffset.x)
+    }
+  })
+
+  const handleContainerLayout = useCallback(
+    (e: LayoutChangeEvent): void => {
+      const w = e.nativeEvent.layout.width
+      setContainerWidth(w)
+      containerWidthSV.value = w
+    },
+    [containerWidthSV]
+  )
+
+  const handleContentSizeChange = useCallback(
+    (w: number): void => {
+      contentWidthSV.value = w
+    },
+    [contentWidthSV]
+  )
+
+  const gradientStyle = useAnimatedStyle(() => {
+    const maxScroll = Math.max(0, contentWidthSV.value - containerWidthSV.value)
+    const distanceFromEnd = Math.max(0, maxScroll - scrollX.value)
+    return {
+      opacity: interpolate(
+        distanceFromEnd,
+        [0, FADE_OUT_RANGE],
+        [0, 1],
+        Extrapolation.CLAMP
+      )
+    }
+  })
 
   const handleChipLayout = useCallback(
     (label: string, e: LayoutChangeEvent): void => {
@@ -140,12 +186,13 @@ export const TradeFilters = ({
         marginTop: -16
       }}>
       <View sx={{ flex: 1 }} onLayout={handleContainerLayout}>
-        <ScrollView
+        <AnimatedScrollView
           ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
+          onScroll={scrollHandler}
           scrollEventThrottle={16}
+          onContentSizeChange={handleContentSizeChange}
           contentOffset={{ x: initialScrollX, y: 0 }}
           contentContainerStyle={{
             flexDirection: 'row',
@@ -153,7 +200,7 @@ export const TradeFilters = ({
             paddingLeft: 16,
             paddingTop: 16,
             paddingBottom: 12,
-            paddingRight: 24
+            paddingRight: 16
           }}>
           {chips.map(chip => {
             const label = getChipLabel(chip)
@@ -175,17 +222,20 @@ export const TradeFilters = ({
               </View>
             )
           })}
-        </ScrollView>
+        </AnimatedScrollView>
 
-        <LinearGradient
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 16,
-            bottom: 12,
-            width: FADE_GRADIENT_WIDTH,
-            pointerEvents: 'none'
-          }}
+        <AnimatedLinearGradient
+          style={[
+            {
+              position: 'absolute',
+              right: 0,
+              top: 16,
+              bottom: 12,
+              width: FADE_GRADIENT_WIDTH,
+              pointerEvents: 'none'
+            },
+            gradientStyle
+          ]}
           colors={[
             theme.colors.$surfacePrimary,
             alpha(theme.colors.$surfacePrimary, 0)
