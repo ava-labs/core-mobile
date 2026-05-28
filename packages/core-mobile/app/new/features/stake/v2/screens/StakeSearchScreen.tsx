@@ -75,10 +75,16 @@ export const StakeSearchScreen = (): JSX.Element => {
 
   const { data: _data } = useStakes(selectedSort)
   const stakes = useMemo(() => _data ?? [], [_data])
+  // Distinguish "no stakes received yet" from "received an empty list" so we
+  // don't flash the cactus "No results found" panel during the initial fetch
+  // or while react-query refetches after a sort change.
+  const hasLoadedStakes = _data !== undefined
 
   // Single time snapshot — search results don't need to tick live and FlashList
   // recycles cells, so reusing one `now` avoids constructing a new Date per
-  // visible card per render.
+  // visible card per render. The trade-off is that a stake whose endTimestamp
+  // elapses while the modal is open keeps its mount-time active/completed
+  // classification; acceptable here because the modal is short-lived.
   const now = useMemo(() => new Date(), [])
 
   const trimmedQuery = deferredSearchText.trim()
@@ -160,9 +166,13 @@ export const StakeSearchScreen = (): JSX.Element => {
     }
   }, [])
 
-  const showZeroState = !hasQuery
-  const showResults = hasQuery && filteredStakes.length > 0
-  const showNoResults = hasQuery && !showResults
+  // While stakes haven't arrived yet keep the zero-state visible — the
+  // "Find stakes by date or node ID" prompt is a benign fallback that avoids
+  // misleading users with "No results found" before any real data is compared.
+  const showZeroState = !hasQuery || !hasLoadedStakes
+  const showResults = hasQuery && hasLoadedStakes && filteredStakes.length > 0
+  const showNoResults =
+    hasQuery && hasLoadedStakes && filteredStakes.length === 0
 
   return (
     <View
