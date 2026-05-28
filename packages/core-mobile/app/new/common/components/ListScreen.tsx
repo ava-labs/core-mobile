@@ -293,7 +293,11 @@ export const ListScreen = <T,>({
       : insets.bottom + 16 + footerPadding
 
     const extraPadding = isModal
-      ? -insets.top - (Platform.OS === 'ios' ? 8 : 16)
+      ? Platform.OS === 'ios'
+        ? 24
+        : title.length === 0
+        ? 24
+        : 0
       : 8
 
     return [
@@ -307,33 +311,39 @@ export const ListScreen = <T,>({
         paddingBottom,
         minHeight:
           frame.height +
-          contentHeaderHeight +
+          contentHeaderHeight -
           extraPadding -
           (shouldShowStickyHeader ? renderHeaderHeight : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
+    renderFooter,
+    footerHeight,
     keyboard.isVisible,
     keyboard.height,
     insets.bottom,
-    insets.top,
     isModal,
+    title.length,
     props?.contentContainerStyle,
     data.length,
     frame.height,
     contentHeaderHeight,
     shouldShowStickyHeader,
-    renderHeaderHeight,
-    renderFooter,
-    footerHeight
+    renderHeaderHeight
   ])
+
+  const isAndroidModal = Platform.OS === 'android' && isModal
 
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle]}>
         <View
           style={{
-            paddingTop: headerHeight + 16,
+            paddingTop: isAndroidModal
+              ? title.length === 0
+                ? insets.top + 8
+                : headerHeight + 16
+              : headerHeight + 16,
             paddingBottom: renderHeader ? 12 : 0
           }}>
           <Animated.View
