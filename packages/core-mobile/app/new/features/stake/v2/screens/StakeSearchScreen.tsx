@@ -15,14 +15,11 @@ import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, {
   useCallback,
@@ -34,17 +31,11 @@ import React, {
 import { AppState, Platform } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
-import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { truncateNodeId } from 'utils/Utils'
 import { STAKE_SORTS } from '../../hooks/useStakeFilterAndSort'
-import { getActiveStakeProgress, getStakedAmount } from '../../utils'
-import { StakeCard } from '../components/StakeCard'
-import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
-import { getStakeTitle } from '../utils'
+import { useStakeCardRenderer } from '../hooks/useStakeCardRenderer'
+import { formatEndDate } from '../utils/cardFormat'
 import magnifyingGlassIcon from '../../../../assets/icons/magnifying_glass.png'
 import cactusIcon from '../../../../assets/icons/cactus.png'
 
@@ -80,16 +71,6 @@ export const StakeSearchScreen = (): JSX.Element => {
     [appState, isFocused]
   )
   const motion = useMotion(isMotionActive)
-
-  const isDevMode = useSelector(selectIsDeveloperMode)
-  const pChainNetwork = useMemo(
-    () => NetworkService.getAvalancheNetworkP(isDevMode),
-    [isDevMode]
-  )
-  const { networkToken: pChainNetworkToken } = pChainNetwork
-  const avaxPrice = useAvaxPrice()
-  const { formatTokenInCurrency } = useFormatCurrency()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const { data: _data } = useStakes(selectedSort)
   const stakes = useMemo(() => _data ?? [], [_data])
@@ -143,62 +124,17 @@ export const StakeSearchScreen = (): JSX.Element => {
     [navigate]
   )
 
-  const renderStakeCard = useCallback(
-    (stake: PChainTransaction): JSX.Element => {
-      // `filteredStakes` has already guaranteed every stake here is either
-      // active or completed, so we can branch on `isOnGoing` directly.
-      const stakeIsActive = isOnGoing(stake, now)
-
-      const stakedTokenUnit = getStakedAmount(stake, pChainNetworkToken)
-      const stakedAmount = stakedTokenUnit
-        ? `${stakedTokenUnit.toDisplay({ fixedDp: 2 })} AVAX`
-        : `${UNKNOWN_AMOUNT} AVAX`
-      const stakedUsdValue = stakedTokenUnit
-        ? ensureCurrencySuffix(
-            formatTokenInCurrency({
-              amount: stakedTokenUnit
-                .mul(avaxPrice)
-                .toDisplay({ asNumber: true })
-            }),
-            selectedCurrency
-          )
-        : UNKNOWN_AMOUNT
-
-      return (
-        <StakeCard
-          variant={stakeIsActive ? 'active' : 'completed'}
-          title={getStakeTitle({
-            stake,
-            pChainNetworkToken,
-            isActive: stakeIsActive
-          })}
-          stakedAmount={stakedAmount}
-          stakedUsdValue={stakedUsdValue}
-          nodeId={truncateNodeId(stake.nodeId ?? '')}
-          endDate={formatEndDate(stake.endTimestamp)}
-          progress={
-            stakeIsActive ? getActiveStakeProgress(stake, now) : undefined
-          }
-          motion={motion}
-          badge={stakeIsActive ? 'fastStake' : undefined}
-          width={CARD_WIDTH}
-          onPress={() => handlePressStake(stake.txHash)}
-        />
-      )
-    },
-    [
-      now,
-      pChainNetworkToken,
-      avaxPrice,
-      formatTokenInCurrency,
-      selectedCurrency,
-      motion,
-      handlePressStake
-    ]
-  )
+  const renderStakeCard = useStakeCardRenderer({
+    now,
+    motion,
+    width: CARD_WIDTH,
+    onPressStake: handlePressStake
+  })
 
   const renderItem = useCallback(
     ({ item, index }: ListRenderItemInfo<PChainTransaction>): JSX.Element => {
+      // `filteredStakes` has pre-filtered to active/completed only, so the
+      // renderer is guaranteed to return a JSX element (never null) here.
       return (
         <Animated.View
           style={{

@@ -9,14 +9,11 @@ import {
 import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -28,18 +25,10 @@ import {
   ViewStyle
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
-import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { isCompleted, isOnGoing } from 'utils/earn/status'
-import { truncateNodeId } from 'utils/Utils'
 import { useAddStake } from '../../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../../hooks/useStakeFilterAndSort'
-import { getActiveStakeProgress, getStakedAmount } from '../../utils'
-import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
-import { getStakeTitle } from '../utils'
-import { BASE_CARD_HEIGHT, StakeCard } from './StakeCard'
+import { useStakeCardRenderer } from '../hooks/useStakeCardRenderer'
+import { BASE_CARD_HEIGHT } from './StakeCard'
 
 export interface StakeCardListHeaderProps {
   isEmpty: boolean
@@ -79,13 +68,6 @@ export const StakeCardList = ({
   } = useStakes(selectedSort)
   const stakes = useMemo(() => _data ?? [], [_data])
   const { theme } = useTheme()
-  const isDevMode = useSelector(selectIsDeveloperMode)
-  const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDevMode)
-
-  const avaxPrice = useAvaxPrice()
-  const { formatTokenInCurrency } = useFormatCurrency()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const isEmpty = stakes.length === 0
 
@@ -112,64 +94,17 @@ export const StakeCardList = ({
     [navigate]
   )
 
-  const renderStake = useCallback(
-    (stake: PChainTransaction): JSX.Element | null => {
-      const now = new Date()
-      const stakeIsCompleted = isCompleted(stake, now)
-      const stakeIsActive = isOnGoing(stake, now)
+  // Single time snapshot shared across all cards in this render. We don't
+  // tick this live — users typically don't keep the home screen open long
+  // enough for the small drift in "Locked until" / progress to matter.
+  const now = useMemo(() => new Date(), [])
 
-      if (!stakeIsCompleted && !stakeIsActive) {
-        return null
-      }
-
-      const stakedTokenUnit = getStakedAmount(stake, pChainNetworkToken)
-      const stakedAmount = stakedTokenUnit
-        ? `${stakedTokenUnit.toDisplay({ fixedDp: 2 })} AVAX`
-        : `${UNKNOWN_AMOUNT} AVAX`
-      const stakedUsdValue = stakedTokenUnit
-        ? ensureCurrencySuffix(
-            formatTokenInCurrency({
-              amount: stakedTokenUnit
-                .mul(avaxPrice)
-                .toDisplay({ asNumber: true })
-            }),
-            selectedCurrency
-          )
-        : UNKNOWN_AMOUNT
-
-      return (
-        <StakeCard
-          variant={stakeIsCompleted ? 'completed' : 'active'}
-          title={getStakeTitle({
-            stake,
-            pChainNetworkToken,
-            isActive: stakeIsActive
-          })}
-          stakedAmount={stakedAmount}
-          stakedUsdValue={stakedUsdValue}
-          nodeId={truncateNodeId(stake.nodeId ?? '')}
-          endDate={formatEndDate(stake.endTimestamp)}
-          progress={
-            stakeIsActive ? getActiveStakeProgress(stake, now) : undefined
-          }
-          motion={motion}
-          // 'delegating' and 'validating' badges will be added as follow-up
-          // work; for now every active stake is surfaced as a fast stake.
-          badge={stakeIsActive ? 'fastStake' : undefined}
-          width={CARD_WIDTH}
-          onPress={() => handlePressStake(stake.txHash)}
-        />
-      )
-    },
-    [
-      pChainNetworkToken,
-      avaxPrice,
-      formatTokenInCurrency,
-      handlePressStake,
-      selectedCurrency,
-      motion
-    ]
-  )
+  const renderStake = useStakeCardRenderer({
+    now,
+    motion,
+    width: CARD_WIDTH,
+    onPressStake: handlePressStake
+  })
 
   const renderItem = useCallback(
     ({
