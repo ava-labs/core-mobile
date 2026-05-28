@@ -202,10 +202,10 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 32,
+      paddingBottom: insets.bottom + 16,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [tabHeight, insets.bottom])
 
   const tabs = useMemo(
     () => [
