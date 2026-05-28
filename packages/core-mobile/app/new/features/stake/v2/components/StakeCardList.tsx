@@ -15,7 +15,6 @@ import {
   getListItemExitingAnimation
 } from 'common/utils/animations'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { format, fromUnixTime } from 'date-fns'
 import { useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakes } from 'hooks/earn/useStakes'
@@ -38,6 +37,7 @@ import { truncateNodeId } from 'utils/Utils'
 import { useAddStake } from '../../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../../hooks/useStakeFilterAndSort'
 import { getActiveStakeProgress, getStakedAmount } from '../../utils'
+import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
 import { getStakeTitle } from '../utils'
 import { BASE_CARD_HEIGHT, StakeCard } from './StakeCard'
 
@@ -294,18 +294,3 @@ enum StaticCard {
 }
 type StakeCardType = StaticCard | PChainTransaction
 const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
-
-/**
- * `formatTokenInCurrency` only emits a trailing currency code for currencies
- * whose symbol equals the ISO code (e.g. CHF, NOK). For currencies like USD
- * the result is just "$327.64" with no suffix. The V2 stake card design wants
- * an explicit suffix in every case ("$327.64 USD"), so append the code unless
- * it's already there to avoid duplicates like "327.64 CHF CHF".
- */
-const ensureCurrencySuffix = (formatted: string, currency: string): string =>
-  formatted.endsWith(currency) ? formatted : `${formatted} ${currency}`
-
-const formatEndDate = (endTimestamp?: number): string => {
-  if (!endTimestamp) return '—'
-  return format(fromUnixTime(endTimestamp), 'MM/dd/yyyy')
-}

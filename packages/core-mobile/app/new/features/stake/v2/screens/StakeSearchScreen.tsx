@@ -21,11 +21,16 @@ import {
   getListItemExitingAnimation
 } from 'common/utils/animations'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { format, fromUnixTime } from 'date-fns'
 import { useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakes } from 'hooks/earn/useStakes'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 import { AppState, Platform } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -38,10 +43,10 @@ import { truncateNodeId } from 'utils/Utils'
 import { STAKE_SORTS } from '../../hooks/useStakeFilterAndSort'
 import { getActiveStakeProgress, getStakedAmount } from '../../utils'
 import { StakeCard } from '../components/StakeCard'
+import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
 import { getStakeTitle } from '../utils'
-
-const magnifyingGlassIcon = require('../../../../assets/icons/magnifying_glass.png')
-const cactusIcon = require('../../../../assets/icons/cactus.png')
+import magnifyingGlassIcon from '../../../../assets/icons/magnifying_glass.png'
+import cactusIcon from '../../../../assets/icons/cactus.png'
 
 // Match the home screen card width: outer screen padding (16) on each side,
 // minus the GRID_GAP between the two columns, divided by 2.
@@ -63,6 +68,10 @@ export const StakeSearchScreen = (): JSX.Element => {
   const isFocused = useIsFocused()
 
   const [searchText, setSearchText] = useState('')
+  // Defer the filter input so keystrokes feel snappy even when the stake list
+  // is large — React renders the SearchBar with the latest text, then catches
+  // up on `filteredStakes` once the main thread is free.
+  const deferredSearchText = useDeferredValue(searchText)
   const [selectedSort, setSelectedSort] = useState<SortOrder>(SortOrder.DESC)
   const [appState, setAppState] = useState(AppState.currentState)
 
@@ -73,8 +82,11 @@ export const StakeSearchScreen = (): JSX.Element => {
   const motion = useMotion(isMotionActive)
 
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDevMode)
+  const pChainNetwork = useMemo(
+    () => NetworkService.getAvalancheNetworkP(isDevMode),
+    [isDevMode]
+  )
+  const { networkToken: pChainNetworkToken } = pChainNetwork
   const avaxPrice = useAvaxPrice()
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -82,13 +94,24 @@ export const StakeSearchScreen = (): JSX.Element => {
   const { data: _data } = useStakes(selectedSort)
   const stakes = useMemo(() => _data ?? [], [_data])
 
-  const trimmedQuery = searchText.trim()
+  // Single time snapshot — search results don't need to tick live and FlashList
+  // recycles cells, so reusing one `now` avoids constructing a new Date per
+  // visible card per render.
+  const now = useMemo(() => new Date(), [])
+
+  const trimmedQuery = deferredSearchText.trim()
   const hasQuery = trimmedQuery.length > 0
 
   const filteredStakes = useMemo(() => {
     if (!hasQuery) return []
     const q = trimmedQuery.toLowerCase()
     return stakes.filter(stake => {
+      // Drop stakes that aren't either currently active or completed — the
+      // card renderer can't display them anyway. Filtering here keeps the
+      // FlashList cell count aligned with the rendered count (important for
+      // `masonry` layout).
+      if (!isOnGoing(stake, now) && !isCompleted(stake, now)) return false
+
       const fullNodeId = (stake.nodeId ?? '').toLowerCase()
       const truncated = truncateNodeId(stake.nodeId ?? '').toLowerCase()
       const endDate = formatEndDate(stake.endTimestamp).toLowerCase()
@@ -96,7 +119,7 @@ export const StakeSearchScreen = (): JSX.Element => {
         fullNodeId.includes(q) || truncated.includes(q) || endDate.includes(q)
       )
     })
-  }, [stakes, trimmedQuery, hasQuery])
+  }, [stakes, trimmedQuery, hasQuery, now])
 
   const sortData = useMemo(() => {
     return STAKE_SORTS.map(s => ({
@@ -121,12 +144,10 @@ export const StakeSearchScreen = (): JSX.Element => {
   )
 
   const renderStakeCard = useCallback(
-    (stake: PChainTransaction): JSX.Element | null => {
-      const now = new Date()
-      const stakeIsCompleted = isCompleted(stake, now)
+    (stake: PChainTransaction): JSX.Element => {
+      // `filteredStakes` has already guaranteed every stake here is either
+      // active or completed, so we can branch on `isOnGoing` directly.
       const stakeIsActive = isOnGoing(stake, now)
-
-      if (!stakeIsCompleted && !stakeIsActive) return null
 
       const stakedTokenUnit = getStakedAmount(stake, pChainNetworkToken)
       const stakedAmount = stakedTokenUnit
@@ -145,7 +166,7 @@ export const StakeSearchScreen = (): JSX.Element => {
 
       return (
         <StakeCard
-          variant={stakeIsCompleted ? 'completed' : 'active'}
+          variant={stakeIsActive ? 'active' : 'completed'}
           title={getStakeTitle({
             stake,
             pChainNetworkToken,
@@ -166,6 +187,7 @@ export const StakeSearchScreen = (): JSX.Element => {
       )
     },
     [
+      now,
       pChainNetworkToken,
       avaxPrice,
       formatTokenInCurrency,
@@ -176,12 +198,7 @@ export const StakeSearchScreen = (): JSX.Element => {
   )
 
   const renderItem = useCallback(
-    ({
-      item,
-      index
-    }: ListRenderItemInfo<PChainTransaction>): JSX.Element | null => {
-      const content = renderStakeCard(item)
-      if (!content) return null
+    ({ item, index }: ListRenderItemInfo<PChainTransaction>): JSX.Element => {
       return (
         <Animated.View
           style={{
@@ -190,7 +207,7 @@ export const StakeSearchScreen = (): JSX.Element => {
           }}
           entering={getListItemEnteringAnimation(index)}
           exiting={getListItemExitingAnimation(index)}>
-          {content}
+          {renderStakeCard(item)}
         </Animated.View>
       )
     },
@@ -258,7 +275,6 @@ export const StakeSearchScreen = (): JSX.Element => {
             />
           }
           title={'Find stakes\nby date or node ID'}
-          description=""
         />
       )}
 
@@ -271,7 +287,6 @@ export const StakeSearchScreen = (): JSX.Element => {
           }}
           icon={<Image source={cactusIcon} sx={{ width: 42, height: 42 }} />}
           title="No results found"
-          description=""
         />
       )}
 
@@ -316,12 +331,4 @@ export const StakeSearchScreen = (): JSX.Element => {
       )}
     </View>
   )
-}
-
-const ensureCurrencySuffix = (formatted: string, currency: string): string =>
-  formatted.endsWith(currency) ? formatted : `${formatted} ${currency}`
-
-const formatEndDate = (endTimestamp?: number): string => {
-  if (!endTimestamp) return '—'
-  return format(fromUnixTime(endTimestamp), 'MM/dd/yyyy')
 }
