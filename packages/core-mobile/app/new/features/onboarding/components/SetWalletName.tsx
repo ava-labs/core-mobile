@@ -48,7 +48,6 @@ export const SetWalletName = ({
   const renderFooter = useCallback(() => {
     return (
       <Button
-        accessible={true}
         size="large"
         type="primary"
         onPress={handleNext}

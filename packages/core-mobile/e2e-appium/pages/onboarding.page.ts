@@ -177,7 +177,6 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnNameWallet() {
-    await actions.tap(this.nameWalletTitle)
     await actions.tap(this.nameWalletNextBtn)
   }
 

@@ -314,16 +314,25 @@ export const ScrollScreen = ({
     if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
-        const footerContent = (
-          <LinearGradientBottomWrapper>
-            <View
-              style={{
-                paddingHorizontal: 16,
-                paddingBottom: insets.bottom + 16
-              }}>
-              <View onLayout={handleFooterLayout}>{footer}</View>
-            </View>
-          </LinearGradientBottomWrapper>
+        const footerInner = (
+          <View
+            collapsable={false}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0
+            }}>
+            <LinearGradientBottomWrapper>
+              <View
+                style={{
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
+                }}>
+                <View onLayout={handleFooterLayout}>{footer}</View>
+              </View>
+            </LinearGradientBottomWrapper>
+          </View>
         )
 
         if (shouldAvoidKeyboard) {
@@ -339,23 +348,12 @@ export const ScrollScreen = ({
                 opened: insets.bottom
               }}
               style={{ minHeight: footerMinHeight }}>
-              {footerContent}
+              {footerInner}
             </KeyboardStickyView>
           )
         }
 
-        return (
-          <View
-            collapsable={false}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
-            }}>
-            {footerContent}
-          </View>
-        )
+        return footerInner
       }
     }
 
