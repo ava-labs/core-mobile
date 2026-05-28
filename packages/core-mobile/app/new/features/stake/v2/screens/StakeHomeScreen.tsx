@@ -1,5 +1,7 @@
 import {
+  AnimatedPressable,
   Chip,
+  Icons,
   NavigationTitleHeader,
   ScrollView,
   Text,
@@ -9,6 +11,7 @@ import {
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
@@ -25,6 +28,7 @@ export const StakeHomeScreen = (): JSX.Element => {
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
+  const { navigate } = useRouter()
 
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -58,6 +62,10 @@ export const StakeHomeScreen = (): JSX.Element => {
     }
   }, [tabBarHeight, tabHeight])
 
+  const handleSearchPress = useCallback(() => {
+    navigate({ pathname: '/stakeSearch' })
+  }, [navigate])
+
   const renderHeader = useCallback(
     ({ isEmpty, filter }: StakeCardListHeaderProps): JSX.Element => {
       return (
@@ -86,31 +94,75 @@ export const StakeHomeScreen = (): JSX.Element => {
           </Animated.View>
           <Banner />
           {!isEmpty && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              sx={{ marginTop: 20 }}
-              contentContainerStyle={{
+            <View
+              sx={{
                 flexDirection: 'row',
-                gap: 8,
-                paddingHorizontal: 16
+                alignItems: 'center',
+                marginTop: 20,
+                paddingRight: 16,
+                gap: 8
               }}>
-              {filter.data[0]?.items.map(item => (
-                <Chip
-                  key={item.id}
-                  size="large"
-                  isSelected={item.id === filter.selected}
-                  onPress={() => filter.onSelected(item.id)}
-                  style={{ minWidth: 40 }}>
-                  {item.title}
-                </Chip>
-              ))}
-            </ScrollView>
+              <View sx={{ flex: 1 }}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    flexDirection: 'row',
+                    gap: 8,
+                    paddingLeft: 16,
+                    paddingRight: 8
+                  }}>
+                  {filter.data[0]?.items.map(item => (
+                    <Chip
+                      key={item.id}
+                      size="large"
+                      isSelected={item.id === filter.selected}
+                      onPress={() => filter.onSelected(item.id)}
+                      style={{ minWidth: 40 }}>
+                      {item.title}
+                    </Chip>
+                  ))}
+                </ScrollView>
+              </View>
+              <AnimatedPressable
+                onPress={handleSearchPress}
+                accessibilityRole="button"
+                accessibilityLabel="Search stakes"
+                style={{
+                  backgroundColor: theme.colors.$surfaceSecondary,
+                  borderRadius: 1000,
+                  height: 27,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingHorizontal: 12
+                }}>
+                <Icons.Custom.Search
+                  color={theme.colors.$textPrimary}
+                  width={14}
+                  height={14}
+                />
+                <Text
+                  variant="buttonSmall"
+                  sx={{ color: theme.colors.$textSecondary }}>
+                  Search
+                </Text>
+              </AnimatedPressable>
+            </View>
           )}
         </View>
       )
     },
-    [theme.colors.$surfacePrimary, handleHeaderLayout, animatedHeaderStyle]
+    [
+      theme.colors.$surfacePrimary,
+      theme.colors.$surfaceSecondary,
+      theme.colors.$textPrimary,
+      theme.colors.$textSecondary,
+      handleHeaderLayout,
+      animatedHeaderStyle,
+      handleSearchPress
+    ]
   )
 
   return (
