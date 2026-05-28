@@ -77,31 +77,30 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - install-missing-android-tools@3:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
-    - script-runner@0:
-        title: Fix Android Env Vars
+    - android-build@1:
         inputs:
-        - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - script-runner@0:
-        title: Create Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - android-build-for-ui-testing@0:
-        inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
         - project_location: $ANDROID_PROJECT_LOCATION
+        - module: $ANDROID_MODULE
+        - build_type: apk
+        - cache_level: all
+        - variant: $ANDROID_BUILD_VARIANT
+        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - android_app: $BITRISE_APK_PATH
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
@@ -112,30 +111,11 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-    - script-runner@0:
-        title: Create Tests To Run Arrays
-        inputs:
-        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
-            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_1
-            TESTS_TO_RUN_GROUP_2=$TESTS_2
-            TESTS_TO_RUN_GROUP_3=$TESTS_3
-            TESTS_TO_RUN_GROUP_4=$TESTS_4
-            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
-        - api_level: "28"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_4
   _build-android-internal-for-testing:
     envs:
     - ENVIRONMENT: production
@@ -250,7 +230,7 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-archive@5.9.4:
+    - xcode-archive@6.0.1:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
@@ -276,7 +256,7 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
-    - IOS_SCHEME: AvaxWalletExternal
+    - IOS_SCHEME: AvaxWallet
       opts:
         is_expand: false
     - XCODE_EXPORT: ad-hoc
@@ -389,19 +369,6 @@ workflows:
             /root/.nvm/*
         - is_key_unique: "true"
         - key: node-20-{{ .OS }}-{{ .Arch }}
-  _run_android_core_web_tests:
-    steps:
-    - script-runner@0:
-        title: Detox
-        inputs:
-        - file_path: e2e/tests/plusIcon/walletConnect/android_core_web_test_runner.sh
-  _run_android_detox_tests:
-    steps:
-    - script-runner@0:
-        title: Detox
-        no_output_timeout: 450
-        inputs:
-        - file_path: scripts/bitrise/detox/androidE2ENoReuseAppState.sh
   _send-notification-slack:
     steps:
     - slack@3:
@@ -491,24 +458,6 @@ workflows:
         title: Update Android Datadog Dashboard
         inputs:
         - file_path: scripts/datadog/updateAndroidDashboard.sh
-  _upload-detox-artifacts:
-    steps:
-    - script-runner@0:
-        title: Copy Detox Artifacts
-        is_always_run: true
-        run_if: .IsBuildFailed
-        inputs:
-        - file_path: scripts/bitrise/detox/deployArtifacts.sh
-    - deploy-to-bitrise-io@2:
-        title: Deploy Detox Artifacts
-        is_always_run: true
-        run_if: .IsBuildFailed
-        inputs:
-        - zip_name: detox_artifacts
-        - notify_user_groups: none
-        - is_enable_public_page: "false"
-        - deploy_path: $BITRISE_DEPLOY_DIR/detox
-        - is_compress: "true"
   android:
     before_run:
     - _install-and-set-env
@@ -535,30 +484,6 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-  android-e2e:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android-external-for-testing
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: externalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
   android-internal:
     before_run:
     - _install-and-set-env
@@ -612,528 +537,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-  android-external-e2e-regression-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android-external-for-testing
-    - _update-android-datadog-dashboard
-    after_run:
-      - _pull_external_app_files
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: externalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    steps:
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-  android-internal-e2e-regression-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android-internal-for-testing
-    after_run:
-    - _upload-detox-artifacts
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    steps:
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-  android-internal-e2e-aws-regression-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android-internal-for-testing
-    after_run:
-    - _send-test-result-notification-slack
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    steps:
-    # In-repo step: uploads APK + Appium package + test spec via AWS SDK v3 (no deprecated marketplace steps).
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  # Pipeline stage 2+: pull signed APK from stage 1 (deploy-to-bitrise-io intermediate files).
-  # Do not use before_run _build-android-internal-for-testing here — the artifact must come from pull.
-  android-internal-e2e-aws-regression-from-pipeline:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    after_run:
-    - _send-test-result-notification-slack
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    steps:
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  ios-external-e2e-aws-regression-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios-external-for-testing
-    after_run:
-    - _send-test-result-notification-slack
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    steps:
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  # Pipeline stage 2+: pull signed IPA from stage 1 (deploy-to-bitrise-io intermediate files).
-  ios-external-e2e-aws-regression-from-pipeline:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    after_run:
-    - _send-test-result-notification-slack
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    steps:
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  aws-android-regression-test:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android-external-for-testing
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: externalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    - SPEC_FILE: specs/onboarding/newWallet.spec.ts
-      opts:
-        is_expand: false
-    steps:
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  aws-ios-regression-test:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios-external-for-testing
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_REGRESSION_RUN: "true"
-      opts:
-        is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    - IS_DEVICEFARM_RUN: "true"
-      opts:
-        is_expand: false
-    - SPEC_FILE: specs/onboarding/newWallet.spec.ts
-      opts:
-        is_expand: false
-    steps:
-    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
-        title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
-  android-e2e-run-pixel9:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    - _pull_external_app_files
-    after_run:
-    - _run_android_detox_tests
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_2
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "35"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_9
-    - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel8:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    - _pull_external_app_files
-    after_run:
-    - _run_android_detox_tests
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_1
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "35"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_8
-    - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel7:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    - _pull_external_app_files
-    after_run:
-    - _run_android_detox_tests
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_3
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7
-    - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel6:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    - _pull_external_app_files
-    after_run:
-    - _run_android_detox_tests
-    - _install-old-android-version
-    - _install-latest-android-version
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - PARAMETERIZED_TESTS: "true"
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_6
-    - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel5:
-    before_run:
-    - _install-and-set-env
-    - _pull_app_files
-    - _pull_external_app_files
-    after_run:
-    - _run_android_detox_tests
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - TESTS_TO_RUN: $TESTS_TO_RUN_GROUP_4
-      opts:
-        is_expand: false
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    steps:
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_5
-    - wait-for-android-emulator@1: {}
   ios:
     before_run:
     - _install-and-set-env
@@ -1166,13 +569,13 @@ workflows:
         - altool_options: --verbose
         - connection: api_key
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
-  ios-e2e:
+  ios-internal:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios-simulator
+    - _build-ios
     after_run:
-    - _upload-detox-artifacts
+    - _send-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -1183,16 +586,55 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
-    - IOS_SCHEME: AvaxWallet
+    - XCODE_EXPORT: app-store
       opts:
         is_expand: false
-    - APP_TITLE: Core Mobile
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    steps:
+    - deploy-to-bitrise-io@2:
+        is_always_run: true
+    - deploy-to-itunesconnect-application-loader@1:
+        inputs:
+        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
+        - altool_options: --verbose
+        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+        - connection: api_key
+  ios-internal-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-simulator
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
     - E2E: "true"
       opts:
         is_expand: false
-    - IS_EXTERNAL_BUILD: "true"
+    - POST_TO_TESTRAIL: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
   appium-smoke-setup:
@@ -1289,218 +731,88 @@ workflows:
         no_output_timeout: 300
         inputs:
         - file_path: scripts/bitrise/appium/androidInternalE2e.sh
-  ios-internal:
+  aws-android-regression-test:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios
-    after_run:
-    - _send-notification-slack
+    - _build-android-external-for-testing
     envs:
     - ENVIRONMENT: production
       opts:
         is_expand: false
-    - PLATFORM: iOS
+    - PLATFORM: Android
       opts:
         is_expand: false
-    - IOS_CONFIGURATION: Release
+    - ANDROID_BUILD_VARIANT: externalE2e
       opts:
         is_expand: false
-    - XCODE_EXPORT: app-store
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    steps:
-    - deploy-to-bitrise-io@2:
-        is_always_run: true
-    - deploy-to-itunesconnect-application-loader@1:
-        inputs:
-        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
-        - altool_options: --verbose
-        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
-        - connection: api_key
-  ios-internal-e2e:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios-simulator
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
+    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-  ios-internal-e2e-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _pull_app_files
-    after_run:
-    - _upload-detox-artifacts
-    - _send-test-result-notification-slack
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
-      opts:
-        is_expand: false 
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    steps:
-    - script-runner@0:
-        title: Create iOS Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createIosTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - script-runner@0:
-        title: Detox
-        no_output_timeout: 300
-        inputs:
-        - file_path: scripts/bitrise/detox/iosInternalE2e.sh
-  ios-internal-e2e-regression-run:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _pull_app_files
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - POST_TO_TESTRAIL: "true"
       opts:
         is_expand: false
     - IS_REGRESSION_RUN: "true"
       opts:
         is_expand: false
-    - IS_INTERNAL_BUILD: "true"
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
     steps:
-    - script-runner@0:
-        title: Create iOS Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createIosTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-          - IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
     - share-pipeline-variable@1:
-        no_output_timeout: 300
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - script-runner@0:
-          title: Detox
-          inputs:
-          - file_path: scripts/bitrise/detox/iosRegressionRunner.sh
-  ios-external-e2e-regression-run:
-      before_run:
-      - _install-and-set-env
-      - _set-version
-      - _pull_app_files
-      - _pull_external_app_files  
-      after_run:
-      - _upload-detox-artifacts
-      - _send-test-result-notification-slack
-      envs:
-      - ENVIRONMENT: production
-        opts:
-          is_expand: false
-      - PLATFORM: iOS
-        opts:
-          is_expand: false
-      - IOS_CONFIGURATION: Release
-        opts:
-          is_expand: false
-      - IOS_SCHEME: AvaxWalletExternal
-        opts:
-          is_expand: false
-      - APP_TITLE: Core Mobile 
-        opts:
-          is_expand: false
-      - E2E: "true"
-        opts:
-          is_expand: false
-      - POST_TO_TESTRAIL: "true"
-        opts:
-          is_expand: false 
-      - IS_REGRESSION_RUN: "true"
-        opts:
-          is_expand: false
-      - IS_EXTERNAL_BUILD: "true"
-        opts:
-          is_expand: false
-      steps:
-      - script-runner@0:
-          title: Detox
-          inputs:
-          - file_path: scripts/bitrise/detox/iosRegressionRunner.sh
-      - share-pipeline-variable@1:
-          inputs:
-          - variables: |-
-              IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-              TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+  aws-ios-regression-test:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-external-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - XCODE_EXPORT: ad-hoc
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    steps:
+    - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+        title: AWS Device Farm — upload & schedule run
+        no_output_timeout: 1800
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
+ 

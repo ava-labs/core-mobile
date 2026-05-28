@@ -31,7 +31,8 @@ module.exports = {
   },
   testPathIgnorePatterns: [
     '<rootDir>/e2e/tests/playwright/',
-    '<rootDir>/e2e-appium/'
+    '<rootDir>/e2e-appium/',
+    '<rootDir>/scripts/'
   ],
   setupFilesAfterEnv: [
     '<rootDir>/tests/jestSetup/posthog.js',

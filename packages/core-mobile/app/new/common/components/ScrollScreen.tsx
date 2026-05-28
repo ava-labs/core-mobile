@@ -338,7 +338,9 @@ export const ScrollScreen = ({
         if (shouldAvoidKeyboard) {
           const measuredFooterHeight = footerLayout?.height ?? 0
           const footerMinHeight =
-            measuredFooterHeight > 0 ? measuredFooterHeight : 88
+            measuredFooterHeight > 0
+              ? measuredFooterHeight + insets.bottom + 16
+              : 88
           return (
             <KeyboardStickyView
               enabled={!disableStickyFooter}
