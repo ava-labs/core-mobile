@@ -9,6 +9,8 @@ import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, useCallback, useMemo } from 'react'
+import { Platform } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import {
@@ -32,6 +34,7 @@ const TokenDetail: FC<Props> = ({
   isRefreshing,
   onRefresh
 }): React.JSX.Element => {
+  const header = useHeaderMeasurements()
   const getBalanceAndAssetName = useCallback(
     (item: string) => {
       const balance =
@@ -202,6 +205,9 @@ const TokenDetail: FC<Props> = ({
             <RefreshControl
               refreshing={isRefreshing ?? false}
               onRefresh={onRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : header?.height ?? 0
+              }
             />
           ) : undefined
         }

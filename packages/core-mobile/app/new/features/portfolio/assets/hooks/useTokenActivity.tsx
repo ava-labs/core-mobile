@@ -62,7 +62,7 @@ export const useTokenActivity = ({
 
   const network = useMemo(() => {
     return getNetwork(token?.networkChainId)
-  }, [token, getNetwork])
+  }, [token?.networkChainId, getNetwork])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
@@ -81,7 +81,7 @@ export const useTokenActivity = ({
         (tx.tokens[1]?.symbol && token.symbol === tx.tokens[1].symbol)
       )
     })
-  }, [token, transactions])
+  }, [token?.symbol, transactions])
 
   const lowValueFilteredTransactions = useLowValueFilteredActivityTransactions(
     transactionsBySymbol,

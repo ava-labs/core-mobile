@@ -151,6 +151,10 @@ export const useTokenDetailData = (
   }, [getNetwork, navigate, setSelectedToken, token])
 
   const actionButtons = useMemo<ActionButton[]>(() => {
+    // No buttons until the token has resolved — Swap/Send would otherwise
+    // navigate with undefined `fromTokenId` / `fromCaip2Id`.
+    if (!token) return []
+
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
