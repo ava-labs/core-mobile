@@ -1,0 +1,191 @@
+version: 0.1
+
+phases:
+
+  install:
+    commands:
+      - echo "=== INSTALL PHASE START ==="
+      - echo "--- Host environment ---"
+      - uname -a
+      - sw_vers 2>/dev/null || echo "(not macOS)"
+      - whoami
+      - echo "--- Device Farm env vars ---"
+      - echo "DEVICEFARM_DEVICE_NAME=$DEVICEFARM_DEVICE_NAME"
+      - echo "DEVICEFARM_DEVICE_PLATFORM_NAME=$DEVICEFARM_DEVICE_PLATFORM_NAME"
+      - echo "DEVICEFARM_DEVICE_OS_VERSION=$DEVICEFARM_DEVICE_OS_VERSION"
+      - echo "DEVICEFARM_DEVICE_UDID=$DEVICEFARM_DEVICE_UDID"
+      - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
+      - echo "DEVICEFARM_TEST_PACKAGE_PATH=$DEVICEFARM_TEST_PACKAGE_PATH"
+      - echo "DEVICEFARM_LOG_DIR=$DEVICEFARM_LOG_DIR"
+      - echo "--- Check app file ---"
+      - ls -la "$DEVICEFARM_APP_PATH" 2>/dev/null && echo "App file exists" || echo "WARNING: App file NOT FOUND at $DEVICEFARM_APP_PATH"
+      - echo "--- Setting up Node 20 (Mac host) ---"
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          echo "Using devicefarm-cli"
+          devicefarm-cli use node 20
+        else
+          echo "Mac host detected — downloading Node 20 binary"
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            NODE_ARCH="darwin-arm64"
+          else
+            NODE_ARCH="darwin-x64"
+          fi
+          NODE_VERSION="22.15.0"
+          NODE_TAR="/tmp/node-${NODE_VERSION}.tar.gz"
+          NODE_DIR="/tmp/node-v${NODE_VERSION}-${NODE_ARCH}"
+          if [ ! -d "$NODE_DIR" ]; then
+            curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.gz" -o "$NODE_TAR"
+            tar -xzf "$NODE_TAR" -C /tmp/
+          fi
+          export PATH="${NODE_DIR}/bin:$PATH"
+          echo "Node path: $(which node)"
+        fi
+      - node --version
+      - npm --version
+      - echo "--- Setting up Appium 3 ---"
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          devicefarm-cli use appium 3
+        else
+          echo "Installing Appium 3 via npm (Mac host)"
+          npm install -g appium@3.1.2 2>&1 | tail -5
+        fi
+      - appium --version
+      - echo "--- Setting up xcuitest driver (Appium 3 compatible) ---"
+      - appium driver list 2>/dev/null || true
+      - |-
+        if which devicefarm-cli > /dev/null 2>&1; then
+          echo "devicefarm-cli available — xcuitest already configured by Device Farm"
+        else
+          echo "Upgrading xcuitest to Appium 3 compatible version (>=7.35.1)..."
+          appium driver uninstall xcuitest 2>&1 | tail -5 || true
+          appium driver install xcuitest@10.14.7 2>&1 | tail -10
+          echo "--- xcuitest driver after install ---"
+          appium driver list 2>&1 | tail -20
+        fi
+      - echo "--- Code signing identities on this host ---"
+      - security find-identity -v -p codesigning 2>/dev/null || echo "No identities found"
+      - export APPIUM_BASE_PATH=/wd/hub
+      - echo "APPIUM_BASE_PATH=$APPIUM_BASE_PATH"
+      - echo "--- Test package contents ---"
+      - ls -la $DEVICEFARM_TEST_PACKAGE_PATH
+      - |
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
+          echo "Found nested e2e-appium dir, entering it"
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        else
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH"
+        fi
+        ls -la
+        echo "--- Installing npm dependencies ---"
+        npm ci --omit=dev
+        echo "--- Installed packages ---"
+        npm list --depth=0 || true
+        echo "--- Spec files found ---"
+        find . -path "*/specs/**/*.ts" | head -20
+        echo "=== INSTALL PHASE DONE ==="
+
+  pre_test:
+    commands:
+      - echo "=== PRE_TEST PHASE START ==="
+      - |-
+        ARCH=$(uname -m)
+        NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
+        NODE_DIR="/tmp/node-v22.15.0-${NODE_ARCH}"
+        [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
+      - echo "APPIUM_BASE_PATH=${APPIUM_BASE_PATH}"
+      - echo "DEVICEFARM_APP_PATH=$DEVICEFARM_APP_PATH"
+      - echo "DEVICEFARM_DEVICE_UDID=$DEVICEFARM_DEVICE_UDID"
+      - echo "--- Starting Appium server ---"
+      - |-
+        appium --base-path=/wd/hub --log-timestamp \
+          --log-no-colors --relaxed-security --default-capabilities \
+          "{\"appium:deviceName\": \"$DEVICEFARM_DEVICE_NAME\", \
+          \"platformName\": \"$DEVICEFARM_DEVICE_PLATFORM_NAME\", \
+          \"appium:app\": \"$DEVICEFARM_APP_PATH\", \
+          \"appium:udid\":\"$DEVICEFARM_DEVICE_UDID\", \
+          \"appium:platformVersion\": \"$DEVICEFARM_DEVICE_OS_VERSION\", \
+          \"appium:automationName\": \"XCUITest\"}" \
+          >> $DEVICEFARM_LOG_DIR/appium.log 2>&1 &
+      - echo "Appium PID=$!"
+      - |-
+        appium_initialization_time=0;
+        until curl --silent --fail "http://0.0.0.0:4723/wd/hub/status"; do
+          if [[ $appium_initialization_time -gt 30 ]]; then
+            echo "ERROR: Appium did not start within 30 seconds";
+            echo "--- Appium log tail ---";
+            tail -50 $DEVICEFARM_LOG_DIR/appium.log || true;
+            exit 1;
+          fi;
+          appium_initialization_time=$((appium_initialization_time + 1));
+          echo "Waiting for Appium... ($appium_initialization_time/30)";
+          sleep 1;
+        done;
+        echo "Appium is ready"
+      - export AWS_DEVICE_FARM_APPIUM_SERVER_URL="http://0.0.0.0:4723/wd/hub"
+      - export AWS_DEVICE_FARM_APP_PATH="$DEVICEFARM_APP_PATH"
+      - export PLATFORM="$DEVICEFARM_DEVICE_PLATFORM_NAME"
+      - export DEVICEFARM_DEVICE_NAME="$DEVICEFARM_DEVICE_NAME"
+      - export DEVICEFARM_DEVICE_OS_VERSION="$DEVICEFARM_DEVICE_OS_VERSION"
+      - export DEVICEFARM_DEVICE_UDID="$DEVICEFARM_DEVICE_UDID"
+      - |-
+        TEAM_ID=$(security find-identity -v -p codesigning 2>/dev/null | grep -Eo '\([A-Z0-9]{10}\)' | tr -d '()' | head -1)
+        echo "WDA signing team ID: ${TEAM_ID:-not found}"
+        if [ -n "$TEAM_ID" ]; then
+          DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+          printf '\nexport XCODE_ORG_ID="%s"\n' "${TEAM_ID}" >> "${DF_ENV_DIR}/.df_env"
+          XCCONFIG_FILE="/tmp/wda-signing.xcconfig"
+          printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = iPhone Developer\nCODE_SIGN_STYLE = Automatic\nIPHONEOS_DEPLOYMENT_TARGET = 16.0\n' "${TEAM_ID}" > "$XCCONFIG_FILE"
+          echo "--- xcconfig contents ---"
+          cat "$XCCONFIG_FILE"
+          printf '\nexport XCODE_CONFIG_FILE="%s"\n' "$XCCONFIG_FILE" >> "${DF_ENV_DIR}/.df_env"
+          echo "WDA signing configured with team $TEAM_ID (xcconfig: $XCCONFIG_FILE)"
+        else
+          echo "WARNING: No signing identity — WDA build will fail"
+        fi
+      - |-
+        echo "--- Setting up Device Farm pre-signed WDA ---"
+        env | grep -i 'DEVICEFARM_WDA_DERIVED_DATA_PATH' 2>/dev/null || echo "No pre-signed WDA env vars found"
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        WDA_PATH="${DEVICEFARM_WDA_DERIVED_DATA_PATH_V9:-$DEVICEFARM_WDA_DERIVED_DATA_PATH}"
+        if [ -n "$WDA_PATH" ]; then
+          echo "Pre-signed WDA path: $WDA_PATH"
+          echo "--- WDA Build/Products contents ---"
+          ls "$WDA_PATH/Build/Products/" 2>/dev/null || echo "WARNING: expected products dir not found"
+          printf '\nexport WDA_DERIVED_DATA_PATH="%s"\n' "$WDA_PATH" >> "${DF_ENV_DIR}/.df_env"
+          echo "Exported WDA_DERIVED_DATA_PATH to .df_env"
+        else
+          echo "WARNING: No Device Farm pre-signed WDA available"
+        fi
+      - |-
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        printf '\nexport E2E="true"\n' >> "${DF_ENV_DIR}/.df_env"
+        echo "Exported E2E=true to .df_env"
+      - echo "=== PRE_TEST PHASE DONE ==="
+
+  test:
+    commands:
+      - echo "=== TEST PHASE START ==="
+      - |-
+        ARCH=$(uname -m)
+        NODE_ARCH=$([ "$ARCH" = "arm64" ] && echo "darwin-arm64" || echo "darwin-x64")
+        NODE_DIR="/tmp/node-v22.15.0-${NODE_ARCH}"
+        [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
+      - |
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        else
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH"
+        fi
+        echo "Working dir: $(pwd)"
+        echo "--- .df_env keys (if exists) ---"
+        test -f .df_env && grep -oE '^export [A-Z_]+' .df_env || echo ".df_env not found"
+        source .df_env 2>/dev/null || true
+        echo "SPEC_FILE=$SPEC_FILE"
+        echo "E2E_MNEMONIC set: $([ -n "$E2E_MNEMONIC" ] && echo YES || echo NO)"
+        echo "E2E set: $([ -n "$E2E" ] && echo YES || echo NO)"
+        echo "--- Running npm test ---"
+        npm test
+      - echo "=== TEST PHASE DONE ==="

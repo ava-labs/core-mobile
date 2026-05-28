@@ -98,8 +98,17 @@ const allCaps = [
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
     'appium:wdaStartupRetries': 5,
-    'appium:wdaStartupRetryInterval': 20000,
+    'appium:wdaStartupRetryInterval': 30000,
+    'appium:wdaLaunchTimeout': 360000,
+    'appium:wdaConnectionTimeout': 360000,
     'appium:usePrebuiltWDA': false,
+    ...(process.env.XCODE_ORG_ID
+      ? {
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:xcodeSigningId': 'iPhone Developer',
+          'appium:allowProvisioningUpdates': true
+        }
+      : {}),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
@@ -172,7 +181,7 @@ export const config: WebdriverIO.Config = {
   bail: 0,
   waitforTimeout: 20000,
   specFileRetries: 0,
-  connectionRetryTimeout: 120000,
+  connectionRetryTimeout: 360000,
   connectionRetryCount: 2,
   framework: 'mocha',
   reporters: ['spec'],
@@ -189,7 +198,7 @@ export const config: WebdriverIO.Config = {
     const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
-    runId = await getTestRun(platform, isSmoke, isPerformance)
+    runId = await getTestRun(platform, isSmoke, isPerformance, isDeviceFarm)
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''
