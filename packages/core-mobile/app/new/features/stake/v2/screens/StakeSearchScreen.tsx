@@ -15,6 +15,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
+import Grabber from 'common/components/Grabber'
 import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
@@ -186,7 +187,14 @@ export const StakeSearchScreen = (): JSX.Element => {
           alignItems: 'center',
           gap: 16,
           paddingHorizontal: 16,
-          paddingTop: 16,
+          // On Android, compensate for the parent modal layout's
+          // `marginTop: -insets.top + 8` (see useModalScreensOptions). Without
+          // this the SearchBar renders above the visible viewport even though
+          // it still accepts input. iOS doesn't apply the negative marginTop
+          // and the pageSheet already insets from the status bar.
+          // Extra +12 leaves a visible gap below the Grabber (which sits at
+          // top: 9 on iOS / top: insets.top - 2 on Android, height 5).
+          paddingTop: Platform.OS === 'android' ? insets.top + 18 : 28,
           paddingBottom: 12
         }}>
         <View sx={{ flex: 1 }}>
@@ -222,6 +230,7 @@ export const StakeSearchScreen = (): JSX.Element => {
             />
           }
           title={'Find stakes\nby date or node ID'}
+          description=""
         />
       )}
 
@@ -234,8 +243,20 @@ export const StakeSearchScreen = (): JSX.Element => {
           }}
           icon={<Image source={cactusIcon} sx={{ width: 42, height: 42 }} />}
           title="No results found"
+          description=""
         />
       )}
+
+      <View
+        style={{
+          position: 'absolute',
+          top: Platform.OS === 'android' ? insets.top - 2 : 9,
+          left: 0,
+          right: 0,
+          zIndex: 1000
+        }}>
+        <Grabber />
+      </View>
 
       {showResults && (
         <FlashList
