@@ -21,17 +21,17 @@ import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
 import Keychain from 'react-native-keychain'
 import Logger from 'utils/Logger'
-import { initialState as watchlistInitialState } from './watchlist'
+import { initialState as watchlistInitialState } from '../watchlist'
 import {
   DefaultFeatureFlagConfig,
   initialState as posthogInitialState
-} from './posthog'
-import { initialState as browserFavoritesInitialState } from './browser/slices/favorites'
-import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
-import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
-import { ViewOnceKey } from './viewOnce'
-import { CollectibleVisibility, TokenVisibility } from './portfolio'
-import { QUICK_SWAPS_DEFAULT } from './settings/advanced/types'
+} from '../posthog'
+import { initialState as browserFavoritesInitialState } from '../browser/slices/favorites'
+import { getInitialState as browserTabsGetInitialState } from '../browser/slices/tabs'
+import { initialState as browserGlobalHistoryInitialState } from '../browser/slices/globalHistory'
+import { ViewOnceKey } from '../viewOnce'
+import { CollectibleVisibility, TokenVisibility } from '../portfolio'
+import { QUICK_SWAPS_DEFAULT } from '../settings/advanced/types'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
