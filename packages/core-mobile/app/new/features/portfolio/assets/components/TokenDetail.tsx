@@ -9,6 +9,9 @@ import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, useCallback, useMemo } from 'react'
+import { Platform } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import {
   assetPDisplayNames,
@@ -22,9 +25,16 @@ type XChainBalanceType = keyof XChainBalances
 
 interface Props {
   token?: LocalTokenWithBalance
+  isRefreshing?: boolean
+  onRefresh?: () => void
 }
 
-const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
+const TokenDetail: FC<Props> = ({
+  token,
+  isRefreshing,
+  onRefresh
+}): React.JSX.Element => {
+  const header = useHeaderMeasurements()
   const getBalanceAndAssetName = useCallback(
     (item: string) => {
       const balance =
@@ -190,6 +200,17 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         keyExtractor={item => item}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl
+              refreshing={isRefreshing ?? false}
+              onRefresh={onRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : header?.height ?? 0
+              }
+            />
+          ) : undefined
+        }
       />
     </Animated.View>
   )
