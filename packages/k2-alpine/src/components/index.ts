@@ -70,6 +70,7 @@ export type {
   CircularDialProps,
   PresetButton as CircularDialPresetButton
 } from './CircularDial/types'
+export * from './ProgressDial/ProgressDial'
 export * from './LeverageGauge/LeverageGauge'
 export type { LeverageGaugeProps } from './LeverageGauge/types'
 export * from './SlidingButton/SlidingButton'

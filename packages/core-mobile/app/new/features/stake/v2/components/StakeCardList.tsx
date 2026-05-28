@@ -39,7 +39,7 @@ import { useAddStake } from '../../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../../hooks/useStakeFilterAndSort'
 import { getActiveStakeProgress, getStakedAmount } from '../../utils'
 import { getStakeTitle } from '../utils'
-import { StakeCard } from './StakeCard'
+import { BASE_CARD_HEIGHT, StakeCard } from './StakeCard'
 
 export interface StakeCardListHeaderProps {
   isEmpty: boolean
@@ -181,6 +181,7 @@ export const StakeCardList = ({
         content = (
           <AddCard
             width={CARD_WIDTH}
+            height={BASE_CARD_HEIGHT}
             onPress={addStake}
             disabled={!canAddStake}
           />

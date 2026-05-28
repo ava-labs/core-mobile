@@ -8,11 +8,13 @@ import React from 'react'
 export const StakeTokenUnitValue = ({
   value,
   isReward,
-  textSx
+  textSx,
+  containerSx
 }: {
   value?: TokenUnit
   isReward?: boolean
   textSx?: SxProp
+  containerSx?: SxProp
 }): JSX.Element => {
   const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
@@ -22,7 +24,7 @@ export const StakeTokenUnitValue = ({
     : UNKNOWN_AMOUNT
 
   return (
-    <View sx={{ marginVertical: 15, alignItems: 'flex-end' }}>
+    <View sx={{ marginVertical: 15, alignItems: 'flex-end', ...containerSx }}>
       <Text
         variant="body1"
         sx={{ color: isReward ? '$textSuccess' : '$textPrimary', ...textSx }}>
