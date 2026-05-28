@@ -1,4 +1,5 @@
 import {
+  alpha,
   AnimatedPressable,
   Chip,
   Icons,
@@ -11,6 +12,7 @@ import {
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
@@ -22,6 +24,11 @@ import {
   StakeCardListHeaderProps
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
+
+// Width of the right-edge fade overlay on the chip scroll. Matches the
+// pattern used by TradeFilters so trailing chips fade into the screen
+// background instead of butting up against the Search button.
+const CHIP_FADE_WIDTH = 42
 
 export const StakeHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
@@ -102,7 +109,7 @@ export const StakeHomeScreen = (): JSX.Element => {
                 paddingRight: 16,
                 gap: 8
               }}>
-              <View sx={{ flex: 1 }}>
+              <View sx={{ flex: 1, overflow: 'hidden' }}>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -110,7 +117,7 @@ export const StakeHomeScreen = (): JSX.Element => {
                     flexDirection: 'row',
                     gap: 8,
                     paddingLeft: 16,
-                    paddingRight: 8
+                    paddingRight: CHIP_FADE_WIDTH
                   }}>
                   {filter.data[0]?.items.map(item => (
                     <Chip
@@ -123,6 +130,22 @@ export const StakeHomeScreen = (): JSX.Element => {
                     </Chip>
                   ))}
                 </ScrollView>
+                <LinearGradient
+                  pointerEvents="none"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: CHIP_FADE_WIDTH
+                  }}
+                  colors={[
+                    alpha(theme.colors.$surfacePrimary, 0),
+                    theme.colors.$surfacePrimary
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                />
               </View>
               <AnimatedPressable
                 onPress={handleSearchPress}
