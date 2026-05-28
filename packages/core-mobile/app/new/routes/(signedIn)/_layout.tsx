@@ -162,6 +162,10 @@ export default function WalletLayout(): JSX.Element {
             options={stackNavigatorScreenOptions}
           />
           <Stack.Screen
+            name="(modals)/stakeSearch"
+            options={secondaryModalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/claimStakeReward"
             options={modalScreensOptions}
           />
