@@ -56,12 +56,12 @@ export const MY_POSITIONS_MOCK: Position[] = [
     price: 1.74,
     pnl: -0.01,
     pnlStatus: PriceChangeStatus.Down,
-    takeProfit: 2000,
+    takeProfit: 1.5,
     stopLoss: 0,
-    liquidationPrice: 62.27,
+    liquidationPrice: 2.05,
     liquidationDistance: -3.8,
-    markPrice: 75.98,
-    entryPrice: 75.97,
+    markPrice: 1.74,
+    entryPrice: 1.74,
     funding: -0.0
   },
   {
@@ -187,7 +187,7 @@ export const PERP_MARKETS_MOCK: PerpetualMarket[] = [
     rank: 10,
     volume: 33800000,
     price: 6685.1,
-    changePercent: 1051,
+    changePercent: 1.051,
     changeStatus: PriceChangeStatus.Down,
     tags: ['20×', 'cash']
   },

@@ -1,6 +1,5 @@
 import {
   alpha,
-  ANIMATED,
   Button,
   GroupList,
   GroupListItem,
@@ -31,13 +30,13 @@ const CARD_WIDTH = 280
 
 interface PositionCardProps {
   position: Position
-  onPress?: () => void
   style?: { width?: number; marginRight?: number }
   /** When true, the card stretches to fill its container instead of using the
    * fixed carousel size (280×90). */
   fullWidth?: boolean
   /** When true, the card shows an expand chevron and can be tapped to reveal
-   * additional details + action buttons. */
+   * additional details + action buttons. Non-expandable cards have no internal
+   * press handler — the caller should wrap with their own Pressable. */
   expandable?: boolean
   defaultExpanded?: boolean
   onMarketClose?: () => void
@@ -47,7 +46,6 @@ interface PositionCardProps {
 
 export const PositionCard = ({
   position,
-  onPress,
   style,
   fullWidth = false,
   expandable = false,
@@ -80,21 +78,18 @@ export const PositionCard = ({
       ? 'None'
       : formatCurrency({ amount: position.stopLoss })
 
-  const handlePress = useCallback(() => {
-    if (expandable) {
-      setExpanded(prev => {
-        const next = !prev
-        progress.value = withTiming(next ? 1 : 0, { duration: 250 })
-        if (next) {
-          AnalyticsService.capture('PerpetualsPositionExpanded', {
-            symbol: position.symbol
-          })
-        }
-        return next
-      })
-    }
-    onPress?.()
-  }, [expandable, onPress, progress, position.symbol])
+  const handleExpandToggle = useCallback(() => {
+    setExpanded(prev => {
+      const next = !prev
+      progress.value = withTiming(next ? 1 : 0, { duration: 250 })
+      if (next) {
+        AnalyticsService.capture('PerpetualsPositionExpanded', {
+          symbol: position.symbol
+        })
+      }
+      return next
+    })
+  }, [progress, position.symbol])
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${progress.value * 180}deg` }]
@@ -152,12 +147,49 @@ export const PositionCard = ({
     [expandedHeight]
   )
 
+  // Height is assigned directly — the smooth expand/collapse is produced by
+  // `LinearTransition` on the outer `Animated.View`, not by interpolating
+  // height here.
   const expandedStyle = useAnimatedStyle(() => ({
-    height: withTiming(expanded ? expandedHeight.value : 0, {
-      ...ANIMATED.TIMING_CONFIG,
-      duration: 0
-    })
+    height: expanded ? expandedHeight.value : 0
   }))
+
+  const cardBody = (
+    <>
+      <PositionHeader
+        position={position}
+        sideLabel={sideLabel}
+        formattedPrice={formattedPrice}
+        formattedPnl={formattedPnl}
+        pnlColor={pnlColor}
+        showChevron={expandable}
+        chevronStyle={chevronStyle}
+      />
+
+      <View
+        sx={{
+          paddingBottom: 14,
+          paddingTop: 8,
+          marginTop: 14,
+          flexDirection: 'row',
+          borderTopWidth: 1,
+          borderColor: theme.colors.$borderPrimary,
+          marginHorizontal: 12,
+          gap: 10
+        }}>
+        <ProtectionMetric
+          label="Take Profit"
+          value={formattedTakeProfit}
+          Icon={Icons.Custom.TakeProfit}
+        />
+        <ProtectionMetric
+          label="Stop Loss"
+          value={formattedStopLoss}
+          Icon={Icons.Custom.StopLoss}
+        />
+      </View>
+    </>
+  )
 
   return (
     <Animated.View
@@ -172,40 +204,11 @@ export const PositionCard = ({
         },
         style
       ]}>
-      <Pressable onPress={handlePress}>
-        <PositionHeader
-          position={position}
-          sideLabel={sideLabel}
-          formattedPrice={formattedPrice}
-          formattedPnl={formattedPnl}
-          pnlColor={pnlColor}
-          showChevron={expandable}
-          chevronStyle={chevronStyle}
-        />
-
-        <View
-          sx={{
-            paddingBottom: 14,
-            paddingTop: 8,
-            marginTop: 14,
-            flexDirection: 'row',
-            borderTopWidth: 1,
-            borderColor: theme.colors.$borderPrimary,
-            marginHorizontal: 12,
-            gap: 10
-          }}>
-          <ProtectionMetric
-            label="Take Profit"
-            value={formattedTakeProfit}
-            Icon={Icons.Custom.TakeProfit}
-          />
-          <ProtectionMetric
-            label="Stop Loss"
-            value={formattedStopLoss}
-            Icon={Icons.Custom.StopLoss}
-          />
-        </View>
-      </Pressable>
+      {expandable ? (
+        <Pressable onPress={handleExpandToggle}>{cardBody}</Pressable>
+      ) : (
+        cardBody
+      )}
 
       {expandable ? (
         <Animated.View style={expandedStyle}>

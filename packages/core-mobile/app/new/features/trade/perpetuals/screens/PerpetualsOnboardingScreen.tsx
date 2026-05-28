@@ -11,7 +11,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useRouter } from 'expo-router'
+import { useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -23,23 +23,25 @@ export const PerpetualsOnboardingScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const router = useRouter()
+  const navigation = useNavigation()
   const dismissedViaCtaRef = useRef(false)
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsOnboardingViewed')
   }, [])
 
-  // Mark the onboarding as viewed when the screen unmounts. This covers
-  // both the "Let's go!" tap (which dismisses via router.back) and the
-  // user swiping the sheet down by gesture.
+  // Fire the "viewed once" flag + dismissed analytics only when the screen is
+  // actually being removed from the navigation stack — covers both the CTA
+  // tap (router.back) and the swipe-down gesture, but skips component
+  // unmounts caused by other lifecycle events (nav reset, app backgrounding).
   useEffect(() => {
-    return () => {
+    return navigation.addListener('beforeRemove', () => {
       dispatch(setViewOnce(ViewOnceKey.PERPETUALS_ONBOARDING))
       AnalyticsService.capture('PerpetualsOnboardingDismissed', {
         via: dismissedViaCtaRef.current ? 'cta' : 'gesture'
       })
-    }
-  }, [dispatch])
+    })
+  }, [navigation, dispatch])
 
   const handlePressNext = useCallback(() => {
     dismissedViaCtaRef.current = true

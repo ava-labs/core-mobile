@@ -139,7 +139,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
             }}>
             <SummaryStat label="Open positions" value={formattedOpen} />
             <SummaryStat
-              label="Lorem ipsum"
+              label="24h change"
               value={formattedChange}
               leftIcon={
                 <StatusArrow
@@ -149,7 +149,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
               }
             />
             <SummaryStat
-              label="Lorem ipsum"
+              label="Total P&L"
               value={`${pnlSign}${formattedPnl}`}
               valueColor={pnlColor}
             />
@@ -205,6 +205,10 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
 
   const tabHeight = useMemo(() => {
+    // Android reports headerHeight as 0 (see workaround for the absolutely-
+    // positioned header background below), so the Android branch uses
+    // additive geometry against frame.height + safe-area top, padded by 8 to
+    // keep the list scrollable under the blurred header overlay.
     return Platform.select({
       ios: frame.height - headerHeight - insets.top - insets.bottom,
       android: frame.height + headerHeight + insets.top + 8

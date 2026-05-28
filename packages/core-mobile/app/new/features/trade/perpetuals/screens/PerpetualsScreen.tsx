@@ -23,7 +23,12 @@ import { Positions } from '../components/Positions'
 import { PERP_MARKETS_MOCK } from '../mocks'
 import { PerpetualMarket } from '../types'
 
-const CHIPS = ['Trending', 'Volume', 'Change', 'Price']
+const PERPETUAL_FILTERS: TradeFilterChip[] = [
+  'Trending',
+  'Volume',
+  'Change',
+  'Price'
+]
 
 const signedChange = (market: PerpetualMarket): number =>
   market.changeStatus === PriceChangeStatus.Down
@@ -31,13 +36,6 @@ const signedChange = (market: PerpetualMarket): number =>
     : market.changeStatus === PriceChangeStatus.Up
     ? market.changePercent
     : 0
-
-const PERPETUAL_FILTERS: TradeFilterChip[] = [
-  'Trending',
-  'Volume',
-  'Change',
-  'Price'
-]
 
 export const PerpetualsScreen = ({
   containerStyle
@@ -135,7 +133,7 @@ export const PerpetualsScreen = ({
         }}>
         <Positions scrollOffsetRef={positionsScrollOffsetRef} />
         <TradeFilters
-          chips={CHIPS}
+          chips={PERPETUAL_FILTERS}
           selectedChip={selectedFilter}
           onSelectChip={handleSelectFilter}
           onSearchPress={handleSearchPress}
