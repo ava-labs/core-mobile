@@ -58,16 +58,8 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.nameWalletInput)
   }
 
-  get nameWalletTitle() {
-    return selectors.getByText(onboardingLoc.nameWalletTitle)
-  }
-
   get nameWalletNextBtn() {
     return selectors.getById(onboardingLoc.nameWalletNextBtn)
-  }
-
-  get nextText() {
-    return selectors.getByText(onboardingLoc.nextText)
   }
 
   get nextBtnOnAvatarScreen() {
