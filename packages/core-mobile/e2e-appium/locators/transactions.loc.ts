@@ -109,5 +109,8 @@ export default {
   reviewStakeTitle: `That's it!\nReview your stake`,
   claimNow: 'claim_now',
   maxBtn: 'Max',
-  fiatAmountInput: 'fiat_amount_input'
+  fiatAmountInput: 'fiat_amount_input',
+  slippageRow: 'list_item__Slippage',
+  slippage2Percent: '2%',
+  doneBtn: 'Done'
 }
