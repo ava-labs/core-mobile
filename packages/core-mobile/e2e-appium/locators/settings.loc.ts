@@ -108,5 +108,8 @@ export default {
   appIcon: 'App icon',
   appIconTitle: 'Customize',
   default: 'Default',
-  core: 'Core'
+  core: 'Core',
+  advancedSettings: 'list_item__Advanced settings',
+  quickSwapsEnabled: 'quick_swaps_enabled',
+  quickSwapsDisabled: 'quick_swaps_disabled'
 }

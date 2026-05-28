@@ -20,9 +20,7 @@ module.exports = {
     'android/app/build/**',
     'expo-env.d.ts',
     'ios/DerivedData',
-    'app/utils/api/generated/**',
-    // Ignored: large prettier/sonar debt; other e2e-appium/scripts/*.js are linted via override + e2e-appium/tsconfig.json
-    'e2e-appium/scripts/load-secrets-from-aws.js'
+    'app/utils/api/generated/**'
   ],
   overrides: [
     {

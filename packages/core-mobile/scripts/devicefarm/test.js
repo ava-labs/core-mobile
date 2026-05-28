@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable sonarjs/cognitive-complexity */
 
 /**
  * AWS Device Farm Test Runner using AWS SDK
@@ -48,6 +49,8 @@ const {
   CreateUploadCommand,
   GetUploadCommand,
   GetProjectCommand,
+  GetDevicePoolCommand,
+  ListDevicePoolDevicesCommand,
   GetRunCommand,
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
@@ -156,6 +159,35 @@ const deviceFarmClient = new DeviceFarmClient({ region: config.region })
  * Fails fast with a clear error if the IAM user cannot access the project.
  * Does not verify CreateUpload/ScheduleRun; those are required separately (see README).
  */
+async function inspectDevicePool(devicePoolArn) {
+  console.log('🔍 Inspecting device pool...')
+  try {
+    const poolRes = await deviceFarmClient.send(
+      new GetDevicePoolCommand({ arn: devicePoolArn })
+    )
+    const pool = poolRes.devicePool
+    console.log(`   Pool name: ${pool?.name}`)
+    console.log(`   Pool type: ${pool?.type}`)
+    console.log(`   Pool rules: ${JSON.stringify(pool?.rules, null, 2)}`)
+
+    const devicesRes = await deviceFarmClient.send(
+      new ListDevicePoolDevicesCommand({ arn: devicePoolArn })
+    )
+    const devices = devicesRes.devices || []
+    console.log(`   Devices in pool (${devices.length}):`)
+    devices.forEach(d => {
+      console.log(
+        `     - ${d.name} | ${d.platform} | OS: ${d.os} | Available: ${d.availability}`
+      )
+    })
+    if (devices.length === 0) {
+      console.log('   ⚠️  No devices found in pool!')
+    }
+  } catch (err) {
+    console.warn(`   ⚠️  Could not inspect device pool: ${err.message}`)
+  }
+}
+
 async function verifyProjectAccess(projectArn) {
   console.log('🔐 Verifying AWS credentials and project access...')
   try {
@@ -407,6 +439,33 @@ async function waitForRunCompletion(runArn) {
 }
 
 /**
+ * Write env vars into a .df_env file and add it to the test package zip.
+ * The yaml sources this file silently — values never appear in Device Farm logs.
+ */
+function injectEnvVarsIntoTestPackage(testPackagePath, envVars) {
+  if (Object.keys(envVars).length === 0) return
+
+  const { execFileSync } = require('child_process')
+  const envContent = Object.entries(envVars)
+    .map(([k, v]) => `export ${k}="${v}"`)
+    .join('\n')
+
+  const tmpEnvPath = path.join(path.dirname(testPackagePath), '.df_env')
+  fs.writeFileSync(tmpEnvPath, envContent)
+
+  try {
+    execFileSync('zip', ['-j', testPackagePath, tmpEnvPath])
+    console.log(
+      `✅ Env vars bundled into test package: ${Object.keys(envVars).join(
+        ', '
+      )}`
+    )
+  } finally {
+    fs.unlinkSync(tmpEnvPath)
+  }
+}
+
+/**
  * Main function to trigger test run
  */
 async function main() {
@@ -424,6 +483,7 @@ async function main() {
     console.log('')
 
     await verifyProjectAccess(config.projectArn)
+    await inspectDevicePool(config.devicePoolArn)
 
     for (const [label, p] of [
       ['app', config.appPath],
@@ -446,7 +506,22 @@ async function main() {
       path.basename(config.appPath)
     )
 
-    // 2. Upload test package
+    // 2. Bundle env vars into test package zip BEFORE uploading (values hidden from Device Farm logs)
+    const envVars = {}
+    if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
+    if (process.env.E2E) envVars.E2E = process.env.E2E
+    if (process.env.E2E_MNEMONIC)
+      envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.E2E_METAMASK_MNEMONIC)
+      envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
+    if (process.env.TESTRAIL_API_KEY)
+      envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
+    if (process.env.TESTRAIL_USERNAME)
+      envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
+
+    injectEnvVarsIntoTestPackage(config.testPackagePath, envVars)
+
+    // 3. Upload test package (now includes .df_env with env vars)
     const testPackageUploadArn = await uploadFile(
       config.testPackagePath,
       config.projectArn,
@@ -454,7 +529,7 @@ async function main() {
       'appium-tests.zip'
     )
 
-    // 3. Upload test spec (required; validated before main upload flow)
+    // 4. Upload test spec
     const testSpecUploadArn = await uploadFile(
       config.testSpecPath,
       config.projectArn,
@@ -470,10 +545,9 @@ async function main() {
 
     const testConfig = {
       type: 'APPIUM_NODE',
-      testPackageArn: testPackageUploadArn
+      testPackageArn: testPackageUploadArn,
+      testSpecArn: testSpecUploadArn
     }
-
-    testConfig.testSpecArn = testSpecUploadArn
 
     const scheduleRunCommand = new ScheduleRunCommand({
       projectArn: config.projectArn,

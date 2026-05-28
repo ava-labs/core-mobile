@@ -159,6 +159,10 @@ class TransactionsPage {
     return selectors.getByText(txLoc.maxBtn)
   }
 
+  get slippageRow() {
+    return selectors.getById(txLoc.slippageRow)
+  }
+
   async tapSelectTokenTitle() {
     await actions.tap(this.selectTokenTitle)
   }
@@ -197,6 +201,7 @@ class TransactionsPage {
   }
 
   async tapSwap() {
+    await actions.scrollTo(this.swapButton, 'up')
     await actions.waitFor(this.swapButton, 40000)
     await actions.tap(this.swapButton)
   }
@@ -550,6 +555,36 @@ class TransactionsPage {
 
   async tapMax() {
     await actions.tap(this.maxBtn)
+  }
+
+  async setSlippageTo2Percent() {
+    await actions.tap(this.slippageRow)
+    await actions.tap(selectors.getByText(txLoc.slippage2Percent))
+    await actions.tap(selectors.getByText(txLoc.doneBtn))
+  }
+
+  async quickSwapNoApprove(amount = '0.01') {
+    await this.dismissTransactionOnboarding()
+    // Enter amount first so a quote is fetched and the Slippage row becomes visible
+    await this.enterAmount(amount, this.swapAmountInput)
+    await actions.tap(this.swapText)
+    // Set slippage to 2% (waits up to 20 s for the Slippage row to appear)
+    await this.setSlippageTo2Percent()
+    // Tap Next — in QuickSwaps mode this executes the swap directly
+    await this.tapNext()
+  }
+
+  async verifyQuickSwapSuccess() {
+    const isApproveVisible = await actions.isElementVisible(
+      this.approveBtn,
+      3000
+    )
+    if (isApproveVisible) {
+      throw new Error(
+        'Approve button should not be visible — QuickSwaps must submit without manual approval'
+      )
+    }
+    await actions.waitForNotVisible(this.swapAmountInput, 60000)
   }
 }
 

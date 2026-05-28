@@ -86,9 +86,30 @@ const allCaps = [
       : {}),
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
-    'appium:wdaStartupRetries': 5,
-    'appium:wdaStartupRetryInterval': 20000,
-    'appium:usePrebuiltWDA': false,
+    'appium:wdaStartupRetries': 1,
+    'appium:wdaStartupRetryInterval': 30000,
+    'appium:wdaLaunchTimeout': 360000,
+    'appium:wdaConnectionTimeout': 360000,
+    ...(process.env.WDA_DERIVED_DATA_PATH
+      ? {
+          'appium:usePrebuiltWDA': true,
+          'appium:derivedDataPath': process.env.WDA_DERIVED_DATA_PATH
+        }
+      : process.env.XCODE_CONFIG_FILE
+      ? {
+          'appium:usePrebuiltWDA': false,
+          'appium:xcodeConfigFile': process.env.XCODE_CONFIG_FILE,
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:allowProvisioningUpdates': true
+        }
+      : process.env.XCODE_ORG_ID
+      ? {
+          'appium:usePrebuiltWDA': false,
+          'appium:xcodeOrgId': process.env.XCODE_ORG_ID,
+          'appium:xcodeSigningId': 'iPhone Developer',
+          'appium:allowProvisioningUpdates': true
+        }
+      : { 'appium:usePrebuiltWDA': false }),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
@@ -108,6 +129,9 @@ const caps = platformToRun
 
 /** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
 function getSpecs(): string[] {
+  if (process.env.SPEC_FILE) {
+    return [`./${process.env.SPEC_FILE}`]
+  }
   if (
     process.env.TEST_TYPE === 'performance' ||
     process.env.IS_PERFORMANCE === 'true'
@@ -121,10 +145,7 @@ export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
   specs: getSpecs(),
-  exclude: [
-    // 'path/to/excluded/files'
-    './specs/login.e2e.ts'
-  ],
+  exclude: [],
   maxInstances: 1,
   // AWS Device Farm manages Appium, so we connect to their server
   // For Device Farm, we use the full URL directly
@@ -155,12 +176,12 @@ export const config: WebdriverIO.Config = {
         ]
       ]
     : [],
-  logLevel: 'info', // More verbose for Device Farm debugging
+  logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
   specFileRetries: 0,
   connectionRetryTimeout: 120000,
-  connectionRetryCount: 2,
+  connectionRetryCount: 1,
   framework: 'mocha',
   reporters: ['spec'],
   capabilities: caps,
@@ -176,7 +197,7 @@ export const config: WebdriverIO.Config = {
     const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
-    runId = await getTestRun(platform, isSmoke, isPerformance)
+    runId = await getTestRun(platform, isSmoke, isPerformance, isDeviceFarm)
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''

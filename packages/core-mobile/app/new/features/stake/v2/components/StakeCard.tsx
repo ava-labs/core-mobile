@@ -1,15 +1,9 @@
-import {
-  BaseCard,
-  Motion,
-  Separator,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { BaseCard, Motion, Separator, Text, View } from '@avalabs/k2-alpine'
 import React, { useState } from 'react'
 import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
 import { StakeBadge, StakeBadgeType } from './StakeBadge'
+import { StakeStatusValue } from './StakeStatusValue'
 
 export type StakeCardVariant = 'active' | 'completed'
 
@@ -36,6 +30,13 @@ export interface StakeCardProps {
 }
 
 const DEFAULT_WIDTH = 200
+/**
+ * Fixed baseline height shared by every V2 stake card variant (including the
+ * AddCard surfaced via `StakeCardList`). Cards with shorter content (e.g.
+ * completed cards) are floored to this height; cards with longer content
+ * grow past it via `minHeight`.
+ */
+export const BASE_CARD_HEIGHT = 210
 
 export const StakeCard = ({
   title,
@@ -50,12 +51,13 @@ export const StakeCard = ({
   width = DEFAULT_WIDTH,
   onPress
 }: StakeCardProps): JSX.Element => {
-  const { theme } = useTheme()
   const isCompleted = variant === 'completed'
   const showWave = !isCompleted && progress !== undefined
 
+  // Measure the absolute-fill overlay so the wave tracks the card's actual
+  // rendered size (cards grow past BASE_CARD_HEIGHT when their content does)
+  // rather than getting clipped to the baseline height.
   const [waveSize, setWaveSize] = useState({ width: 0, height: 0 })
-
   const handleWaveLayout = (e: LayoutChangeEvent): void => {
     const { width: w, height: h } = e.nativeEvent.layout
     if (w !== waveSize.width || h !== waveSize.height) {
@@ -68,6 +70,7 @@ export const StakeCard = ({
       onPress={onPress}
       sx={{
         width,
+        minHeight: BASE_CARD_HEIGHT,
         paddingTop: 20,
         paddingHorizontal: 18,
         paddingBottom: 16
@@ -132,30 +135,7 @@ export const StakeCard = ({
       <Separator sx={{ marginTop: 5, marginBottom: 6 }} />
       <DetailRow
         label="Status"
-        value={
-          isCompleted ? (
-            'Completed'
-          ) : (
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <View
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: theme.colors.$textSuccess
-                }}
-              />
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$textSecondary',
-                  fontFamily: 'Inter-Medium'
-                }}>
-                Active
-              </Text>
-            </View>
-          )
-        }
+        value={<StakeStatusValue isActive={!isCompleted} size="small" />}
       />
     </BaseCard>
   )
