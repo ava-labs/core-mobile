@@ -77,7 +77,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
                 sx={{
                   color: colors.$textSecondary
                 }}
-                numberOfLines={1}
+                numberOfLines={2}
                 ellipsizeMode="tail">
                 {subtitle}
               </Text>
@@ -104,8 +104,12 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
                 : getDayString(timestamp, 'short')}
             </Text>
           )}
-          {accessoryType === 'chevron' && (
+          {accessoryType === 'chevron' ? (
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+          ) : (
+            // Reserve chevron's 6px slot so the timestamp column aligns
+            // whether the row has a chevron or not.
+            <View style={{ width: 6 }} />
           )}
         </View>
       </View>
