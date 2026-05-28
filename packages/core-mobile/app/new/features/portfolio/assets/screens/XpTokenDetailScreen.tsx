@@ -208,7 +208,13 @@ export const XpTokenDetailScreen = ({ token }: Props): JSX.Element => {
     () => [
       {
         tabName: TokenDetailTab.Assets,
-        component: <TokenDetail token={token} />
+        component: (
+          <TokenDetail
+            token={token}
+            isRefreshing={activity.isRefreshing}
+            onRefresh={activity.refresh}
+          />
+        )
       },
       {
         tabName: TokenDetailTab.Activity,

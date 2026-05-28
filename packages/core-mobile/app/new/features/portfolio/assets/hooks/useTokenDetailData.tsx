@@ -212,8 +212,6 @@ export const useTokenDetailData = (
 
   const activityRaw = useTokenActivity({ token, handleExplorerLink })
 
-  // Pull-to-refresh should refetch everything the screen displays: token
-  // balance, price chart data, and transaction activity.
   const queryClient = useQueryClient()
   const { refetch: refetchBalances, isRefetching: isRefetchingBalances } =
     useAccountBalances(activeAccount)
