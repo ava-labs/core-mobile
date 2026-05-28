@@ -18,17 +18,13 @@ type HandleExplorerLink = (
 interface Props {
   token?: LocalTokenWithBalance
   handleExplorerLink: HandleExplorerLink
-  /**
-   * Activity data passed in by the parent (computed via `useTokenActivity`).
-   * Lifted out so sibling renderers can share the same filter/sort state.
-   */
   activity: TokenActivity
   /**
    * `'collapsible'` (default): renders inside a `CollapsibleTabs.Container`
-   * via the tab-view-aware list. Used by the XP layout.
+   * via the tab-view-aware list.
    *
    * `'plain'`: renders a non-scrolling list suitable for nesting inside a
-   * regular `ScrollView` (e.g. `ScrollScreen`). Used by the non-XP layout.
+   * regular `ScrollView` (e.g. `ScrollScreen`).
    */
   mode?: 'collapsible' | 'plain'
   // Collapsible-mode only:

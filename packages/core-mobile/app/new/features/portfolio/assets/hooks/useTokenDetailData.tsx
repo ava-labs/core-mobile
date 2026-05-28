@@ -52,12 +52,6 @@ export type TokenDetailData = {
   activity: TokenActivity
 }
 
-/**
- * Everything both `XpTokenDetailScreen` and `NonXpTokenDetailScreen` need to
- * render a token detail page — formatted balance, action buttons, explorer
- * navigation, market lookup, and the filtered activity list. Lives at this
- * level so each layout file only contains layout, not data wiring.
- */
 export const useTokenDetailData = (
   token: LocalTokenWithBalance | undefined
 ): TokenDetailData => {

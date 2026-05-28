@@ -16,13 +16,6 @@ type Props = {
   token: LocalTokenWithBalance | undefined
 }
 
-/**
- * Token detail layout for non-XP tokens. `ScrollScreen` owns the vertical
- * scroll and pull-to-refresh; inside it, `TokenHeader`, action buttons, and
- * the price chart render at the top, followed by `TransactionHistory` in
- * `plain` mode (non-scrolling FlashList sized to content) for the activity
- * list. The outer ScrollScreen handles all scrolling.
- */
 export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   const frame = useWindowDimensions()
   const headerHeight = useEffectiveHeaderHeight()

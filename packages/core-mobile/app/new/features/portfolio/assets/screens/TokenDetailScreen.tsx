@@ -9,11 +9,6 @@ import React, { useMemo } from 'react'
 import { NonXpTokenDetailScreen } from './NonXpTokenDetailScreen'
 import { XpTokenDetailScreen } from './XpTokenDetailScreen'
 
-/**
- * Router for the token-detail page. Looks up the token by route params and
- * dispatches to the XP layout (collapsible Assets + Activity tabs) or the
- * non-XP layout (`ScrollScreen` with inline activity).
- */
 export const TokenDetailScreen = (): React.JSX.Element => {
   const { localId, chainId } = useLocalSearchParams<{
     localId: string

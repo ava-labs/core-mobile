@@ -47,18 +47,9 @@ export type TokenActivity = {
   isError: boolean
   isRefreshing: boolean
   refresh: () => void
-  /**
-   * Renders the appropriate empty/loading/error placeholder. Caller is
-   * responsible for layout (centering, wrapping, etc.).
-   */
   renderEmptyState: () => React.ReactNode
 }
 
-/**
- * Sources, filters, sorts and groups the activity for a token-detail view.
- * Used by `TransactionHistory` (XP token Activity tab) and by the non-XP
- * `TokenDetailScreen` (rendered inline inside a `ScrollScreen`).
- */
 export const useTokenActivity = ({
   token,
   handleExplorerLink

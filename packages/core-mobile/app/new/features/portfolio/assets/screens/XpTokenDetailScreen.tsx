@@ -48,11 +48,6 @@ type Props = {
   token: LocalTokenWithBalance
 }
 
-/**
- * Token detail layout for XP tokens (AVAX X-Chain / P-Chain). Renders the
- * Assets + Activity tabs inside a collapsible header; the in-content
- * `TokenHeader` cross-fades into the nav-bar title as the user scrolls.
- */
 export const XpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   const {
     theme: { colors }
