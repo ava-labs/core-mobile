@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
-import { ScrollView } from 'react-native'
+import { LayoutChangeEvent, ScrollView } from 'react-native'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   ActivityIndicator,
@@ -14,7 +14,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { ListScreenRef, ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { ListRenderItem } from '@shopify/flash-list'
@@ -28,6 +28,14 @@ import { useSwapTokens } from '../hooks/useSwapTokens'
 import { useTestnetToTokens } from '../hooks/useTestnetToTokens'
 import { getTokenKey } from '../utils/tokenKey'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
+
+type UnverifiedDivider = { type: 'unverifiedDivider' }
+type SwapTokenListItem = LocalTokenWithBalance | UnverifiedDivider
+
+const UNVERIFIED_DIVIDER: UnverifiedDivider = { type: 'unverifiedDivider' }
+
+const isDivider = (item: SwapTokenListItem): item is UnverifiedDivider =>
+  'type' in item && item.type === 'unverifiedDivider'
 
 export const SelectToSwapTokenScreen = ({
   selectedToken,
@@ -145,6 +153,80 @@ export const SelectToSwapTokenScreen = ({
     isDeveloperMode
   ])
 
+  // Track the divider row's y position within FlashList content so the sticky
+  // overlay banner can fade in once it scrolls behind the sticky header.
+  // NOTE: `onLayout` on a FlashList row reports y relative to the cell wrapper
+  // (it's always ~0), not relative to FlashList content. We use FlashList's
+  // ref-exposed `getLayout(index)` instead, which returns the correct content y.
+  const flatListRef = useRef<ListScreenRef<SwapTokenListItem> | null>(null)
+  const [dividerContentY, setDividerContentY] = useState<number>(0)
+
+  // Group tokens verified-first with an "Unverified tokens" divider before the
+  // unverified group. The pinned selected token (if any) stays at the very top
+  // regardless of verification, then the rest is grouped. A null/undefined
+  // isVerified is treated as verified — matches Core extension behavior and
+  // covers chains where the backend doesn't yet populate the field. Tokens
+  // the user already holds (balance > 0) are also treated as verified — they
+  // own it, so surfacing the "unverified" warning would just add noise.
+  const groupedResults = useMemo((): SwapTokenListItem[] => {
+    if (results.length === 0) return results
+
+    const head =
+      selectedToken &&
+      results[0]?.localId === selectedToken.localId &&
+      results[0]?.networkChainId === selectedToken.networkChainId
+        ? results.slice(0, 1)
+        : []
+    const rest = head.length > 0 ? results.slice(1) : results
+
+    const verified: LocalTokenWithBalance[] = []
+    const unverified: LocalTokenWithBalance[] = []
+    for (const token of rest) {
+      if (token.isVerified === false && !(token.balance > 0n))
+        unverified.push(token)
+      else verified.push(token)
+    }
+
+    if (unverified.length === 0) return [...head, ...verified]
+    return [...head, ...verified, UNVERIFIED_DIVIDER, ...unverified]
+  }, [results, selectedToken])
+
+  const dividerIndexInData = useMemo(
+    () => groupedResults.findIndex(isDivider),
+    [groupedResults]
+  )
+
+  // Pull the divider's actual content y via FlashList's ref. ListScreenV2
+  // prepends a HEADER_SENTINEL at index 0 of the FlashList data, so the
+  // divider's FlashList index = its index in groupedResults + 1.
+  const refreshDividerContentY = useCallback(() => {
+    const flashList = flatListRef.current?.scrollViewRef?.current
+    if (!flashList) return
+    if (dividerIndexInData < 0) {
+      setDividerContentY(prev => (prev === 0 ? prev : 0))
+      return
+    }
+    const layout = flashList.getLayout(dividerIndexInData + 1)
+    if (!layout || !layout.y) return
+    setDividerContentY(prev => (prev === layout.y ? prev : layout.y))
+  }, [dividerIndexInData])
+
+  // Re-measure when the list shape changes (pagination, search, etc.).
+  // If the layout isn't ready yet, the divider's own onLayout callback will
+  // catch the miss.
+  useEffect(() => {
+    refreshDividerContentY()
+  }, [refreshDividerContentY, groupedResults.length])
+
+  // The divider row's onLayout fires when it (re)renders — the moment its
+  // layout is guaranteed to be known by FlashList. Use it to refresh the y.
+  const handleDividerLayout = useCallback(
+    (_e: LayoutChangeEvent) => {
+      refreshDividerContentY()
+    },
+    [refreshDividerContentY]
+  )
+
   // Handle token selection
   const handleSelectToken = useCallback(
     (token: LocalTokenWithBalance) => {
@@ -223,12 +305,36 @@ export const SelectToSwapTokenScreen = ({
   }, [networks, selectedNetwork])
 
   // Render token item
-  const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
+  const renderItem: ListRenderItem<SwapTokenListItem> = useCallback(
     ({ item, index }) => {
+      if (isDivider(item)) {
+        // onLayout reports the divider's position within FlashList content;
+        // we use that to drive the sticky overlay banner shown above the list.
+        return (
+          <View
+            onLayout={handleDividerLayout}
+            testID="unverified_tokens_divider"
+            sx={{
+              paddingHorizontal: 16,
+              paddingTop: 32,
+              paddingBottom: 8,
+              backgroundColor: '$surfacePrimary'
+            }}>
+            <Text variant="heading3" sx={{ color: '$textPrimary' }}>
+              Unverified tokens
+            </Text>
+          </View>
+        )
+      }
+
       const isSelected =
         selectedToken?.localId === item.localId &&
         selectedToken.networkChainId === item.networkChainId
-      const isLastItem = index === results.length - 1
+      const nextItem = groupedResults[index + 1]
+      const isLastItem = index === groupedResults.length - 1
+      // Skip the row separator when the next item is the unverified divider —
+      // the divider already provides visual separation.
+      const showSeparator = !isLastItem && !(nextItem && isDivider(nextItem))
 
       return (
         <TouchableOpacity
@@ -264,7 +370,7 @@ export const SelectToSwapTokenScreen = ({
               <Icons.Custom.CheckSmall color={colors.$textPrimary} />
             )}
           </View>
-          {!isLastItem && (
+          {showSeparator && (
             <Separator
               sx={{
                 marginTop: 10,
@@ -276,8 +382,37 @@ export const SelectToSwapTokenScreen = ({
         </TouchableOpacity>
       )
     },
-    [selectedToken, results.length, handleSelectToken, colors]
+    [
+      selectedToken,
+      groupedResults,
+      handleSelectToken,
+      colors,
+      handleDividerLayout
+    ]
   )
+
+  // Sticky overlay banner that appears once the divider scrolls into the
+  // sticky header area. Uses tighter top padding than the in-list divider
+  // since the header above already provides visual separation.
+  const headerOverlay = useMemo(() => {
+    if (dividerContentY <= 0) return undefined
+    return {
+      triggerContentY: dividerContentY,
+      render: () => (
+        <View
+          sx={{
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 12,
+            backgroundColor: '$surfacePrimary'
+          }}>
+          <Text variant="heading3" sx={{ color: '$textPrimary' }}>
+            Unverified tokens
+          </Text>
+        </View>
+      )
+    }
+  }, [dividerContentY])
 
   // Render header with search and network selector
   const renderHeader = useCallback(
@@ -303,13 +438,20 @@ export const SelectToSwapTokenScreen = ({
 
   return (
     <ListScreenV2
+      flatListRef={flatListRef}
       title="Select a token"
-      data={results}
+      data={groupedResults}
       isModal
       renderItem={renderItem}
-      keyExtractor={(item: LocalTokenWithBalance) =>
-        `token-${item.localId}-${item.networkChainId}`
+      keyExtractor={(item: SwapTokenListItem) =>
+        isDivider(item)
+          ? 'unverified-tokens-divider'
+          : `token-${item.localId}-${item.networkChainId}`
       }
+      getItemType={(item: SwapTokenListItem) =>
+        isDivider(item) ? 'divider' : 'token'
+      }
+      headerOverlay={headerOverlay}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
       onEndReached={handleEndReached}

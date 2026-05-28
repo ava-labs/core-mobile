@@ -67,6 +67,9 @@ export const mapApiTokenToLocal = (
     priceInCurrency: balanceData?.priceInCurrency ?? 0,
 
     // Required fields for different token types
-    reputation: null
+    reputation: null,
+
+    // Verification flag from the token aggregator (null/undefined => treat as verified)
+    isVerified: apiToken.isVerified
   } as LocalTokenWithBalance
 }

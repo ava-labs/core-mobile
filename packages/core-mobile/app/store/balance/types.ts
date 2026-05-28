@@ -7,6 +7,7 @@ export type LocalTokenWithBalance = TokenWithBalance & {
   internalId?: string
   isDataAccurate: boolean
   networkChainId: number
+  isVerified?: boolean | null
 }
 
 export const assetPDisplayNames: Record<string, string> = {
