@@ -1,6 +1,6 @@
 import { SxProp } from 'dripsy'
 import React, { useEffect, useState } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -25,6 +25,7 @@ export const GroupList = ({
   textContainerSx,
   separatorMarginRight,
   subtitleVariant = 'mono',
+  style,
   testID
 }: {
   data: GroupListItem[]
@@ -35,6 +36,10 @@ export const GroupList = ({
   textContainerSx?: SxProp
   valueSx?: SxProp
   separatorMarginRight?: number
+  /** Style override for the outer Animated.View. Merged after the default
+   * container styles (full width, rounded surface), so callers can tweak
+   * margins, background, etc. */
+  style?: StyleProp<ViewStyle>
   testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
@@ -133,7 +138,8 @@ export const GroupList = ({
           borderRadius: 12,
           overflow: 'hidden',
           backgroundColor: theme.colors.$surfaceSecondary
-        }
+        },
+        style
       ]}>
       {data.map((item, index) => {
         const {
