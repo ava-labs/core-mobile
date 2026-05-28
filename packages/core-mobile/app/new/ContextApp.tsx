@@ -10,6 +10,8 @@ import React, { FC, PropsWithChildren } from 'react'
 import { ConfettiMethods } from 'react-native-fast-confetti'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
+import { SchemaMigrationError } from 'store/schemaMigration/schemaMigrationFailureStore'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
 import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
@@ -29,9 +31,24 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   </EncryptedStoreProvider>
 )
 
+const beforeCapture = (scope: Sentry.Scope, error: unknown): void => {
+  /**
+   * Tag schema-migration throws with the right Sentry metadata so the
+   * single boundary capture carries `system` + `version` context. Owning
+   * this here (rather than calling `captureException` from the migrate
+   * wrap) keeps reporting on a single path and avoids duplicate events.
+   */
+  if (error instanceof SchemaMigrationError) {
+    scope.setTag('system', SentryTag.SchemaMigration)
+    scope.setContext('details', { version: error.version })
+  }
+}
+
 const ContextApp = (): JSX.Element => {
   return (
-    <Sentry.ErrorBoundary fallback={TopLevelErrorFallback}>
+    <Sentry.ErrorBoundary
+      fallback={TopLevelErrorFallback}
+      beforeCapture={beforeCapture}>
       <ContextProviders>
         <RootSiblingParent>
           <App />

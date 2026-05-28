@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import { actions } from '../helpers/actions'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
@@ -293,6 +294,18 @@ class Settings {
 
   get hkd() {
     return selectors.getByText(settings.hkd)
+  }
+
+  get advancedSettingsBtn() {
+    return selectors.getById(settings.advancedSettings)
+  }
+
+  get quickSwapsEnabled() {
+    return selectors.getById(settings.quickSwapsEnabled)
+  }
+
+  get quickSwapsDisabled() {
+    return selectors.getById(settings.quickSwapsDisabled)
   }
 
   async verifyEmptyContacts() {
@@ -963,6 +976,24 @@ class Settings {
     const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
     await this.tapNotificationSwitch(isSwitchOn, notiType)
     await actions.isVisible(selectors.getById(`${notiType}_${toggled}_switch`))
+  }
+
+  async quickSwapOn(enable = true) {
+    await this.goSettings()
+    await actions.scrollTo(this.advancedSettingsBtn, 'down')
+    await actions.tap(this.advancedSettingsBtn)
+    const isCurrentlyEnabled = await actions.isElementVisible(
+      this.quickSwapsEnabled,
+      3000
+    )
+    if (isCurrentlyEnabled !== enable) {
+      const toggleToTap = enable
+        ? this.quickSwapsDisabled
+        : this.quickSwapsEnabled
+      await actions.longPress(toggleToTap)
+    }
+    await common.goBack()
+    await common.dismissBottomSheet()
   }
 }
 
