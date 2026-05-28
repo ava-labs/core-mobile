@@ -431,7 +431,6 @@ export type AnalyticsEvents = {
   PerpetualsFilterChanged: {
     filter: 'Trending' | 'Volume' | 'Change' | 'Price'
   }
-  PerpetualsSearched: { query: string; resultCount: number }
   PerpetualsOnboardingViewed: undefined
   PerpetualsOnboardingDismissed: { via: 'cta' | 'gesture' }
   PerpetualsBalanceViewed: undefined
