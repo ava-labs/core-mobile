@@ -257,7 +257,8 @@ export const ListScreen = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
+      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transformOrigin: 'bottom left'
     }
   })
 
