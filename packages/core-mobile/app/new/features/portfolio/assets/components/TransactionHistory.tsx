@@ -67,9 +67,9 @@ const TransactionHistory: FC<Props> = ({
           style={[
             {
               alignItems: 'center',
-              justifyContent: 'center'
-            },
-            containerStyle
+              justifyContent: 'center',
+              flex: 1
+            }
           ]}>
           {renderEmptyState()}
         </View>
@@ -80,7 +80,7 @@ const TransactionHistory: FC<Props> = ({
         {renderEmptyState()}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [mode, extraOffset, renderEmptyState, containerStyle])
+  }, [mode, extraOffset, renderEmptyState])
 
   return (
     <Animated.View

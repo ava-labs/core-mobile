@@ -1,8 +1,10 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useMarketToken } from 'common/hooks/useMarketToken'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { tokenIds } from 'consts/tokenIds'
 import { useRouter } from 'expo-router'
@@ -10,6 +12,7 @@ import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import { ActionButton } from 'features/portfolio/assets/components/ActionButtons'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useSendSelectedToken } from 'features/send/store'
@@ -207,7 +210,30 @@ export const useTokenDetailData = (
     isSwapUIDisabledForNetwork
   ])
 
-  const activity = useTokenActivity({ token, handleExplorerLink })
+  const activityRaw = useTokenActivity({ token, handleExplorerLink })
+
+  // Pull-to-refresh should refetch everything the screen displays: token
+  // balance, price chart data, and transaction activity.
+  const queryClient = useQueryClient()
+  const { refetch: refetchBalances, isRefetching: isRefetchingBalances } =
+    useAccountBalances(activeAccount)
+
+  const refreshAll = useCallback(() => {
+    activityRaw.refresh()
+    refetchBalances()
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.TOKEN_CHART_DATA]
+    })
+  }, [activityRaw, refetchBalances, queryClient])
+
+  const activity = useMemo<TokenActivity>(
+    () => ({
+      ...activityRaw,
+      refresh: refreshAll,
+      isRefreshing: activityRaw.isRefreshing || isRefetchingBalances
+    }),
+    [activityRaw, refreshAll, isRefetchingBalances]
+  )
 
   return {
     formattedBalance,

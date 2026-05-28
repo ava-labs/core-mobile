@@ -7,7 +7,7 @@ import { ActionButtons } from 'features/portfolio/assets/components/ActionButton
 import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
 import { useTokenDetailData } from 'features/portfolio/assets/hooks/useTokenDetailData'
 import React, { useCallback, useMemo } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
+import { useWindowDimensions } from 'react-native'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -72,7 +72,7 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
       navigationTitle={token?.name ?? ''}
       refreshControl={
         <RefreshControl
-          progressViewOffset={Platform.OS === 'ios' ? headerHeight : 0}
+          progressViewOffset={headerHeight}
           refreshing={activity.isRefreshing}
           onRefresh={activity.refresh}
         />
