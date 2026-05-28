@@ -1,4 +1,5 @@
 import {
+  BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
   Text,
@@ -385,8 +386,6 @@ export const ListScreenV2 = <T,>({
     return items
   }, [data])
 
-  const headerBgColor = backgroundColor ?? theme.colors.$surfacePrimary
-
   const headerContent = useMemo(() => {
     return (
       <View
@@ -409,10 +408,9 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
-              <View
+              <BlurViewWithFallback
                 style={{
-                  flex: 1,
-                  backgroundColor: headerBgColor
+                  flex: 1
                 }}
               />
             </Animated.View>
@@ -471,7 +469,6 @@ export const ListScreenV2 = <T,>({
     isAndroidModal,
     renderHeader,
     headerHeight,
-    headerBgColor,
     handleHeaderSentinelLayout,
     handleContentHeaderLayout,
     title,
@@ -604,6 +601,7 @@ export const ListScreenV2 = <T,>({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
+        stickyHeaderConfig={{ hideRelatedCell: true }}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
         {...restProps}
