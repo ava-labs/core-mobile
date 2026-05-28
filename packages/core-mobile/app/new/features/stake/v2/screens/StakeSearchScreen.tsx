@@ -45,12 +45,13 @@ const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
 
 /**
  * Modal search screen for stakes. Filters stakes by node ID (full or
- * truncated form) or by their formatted end date (MM/dd/yyyy). The
- * filter/sort/render logic intentionally does not reuse the home's
- * `StakeCardList` because that component bakes in the `AddCard` slot
- * and the chip filter row, which the search experience does not want.
- * The card-rendering math is duplicated as a contained block; if it
- * grows we should hoist it into a shared hook.
+ * truncated form) or by their formatted end date (MM/dd/yyyy).
+ *
+ * The screen intentionally doesn't reuse the home's `StakeCardList` — the
+ * search experience has no AddCard slot and no chip filter row — but the
+ * card cell itself is rendered through the shared `useStakeCardRenderer`
+ * hook, so any card-level changes (formatting, motion, status badge, etc.)
+ * automatically propagate to both surfaces.
  */
 export const StakeSearchScreen = (): JSX.Element => {
   const { back, canGoBack, navigate } = useRouter()
