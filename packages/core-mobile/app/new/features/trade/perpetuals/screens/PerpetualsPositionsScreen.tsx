@@ -27,7 +27,7 @@ import {
   TradeFilters
 } from 'features/trade/components/TradeFilters'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Platform } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -54,6 +54,15 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsPositionsViewed')
+  }, [])
+
+  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | undefined>(
+    undefined
+  )
+
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setHeaderLayout({ x, y, width, height })
   }, [])
 
   const handleSelectFilter = useCallback((chip: string) => {
@@ -99,8 +108,8 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   )
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    renderHeaderRight,
-    shouldDelayBlurOniOS: true
+    targetLayout: headerLayout,
+    renderHeaderRight
   })
 
   const renderHeader = useCallback(
@@ -109,7 +118,8 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
         style={{
           paddingTop: 14,
           gap: 20
-        }}>
+        }}
+        onLayout={handleHeaderLayout}>
         <View sx={{ paddingHorizontal: 16, gap: 8 }}>
           <Text variant="heading2">My positions</Text>
           <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
@@ -155,12 +165,13 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
       </View>
     ),
     [
+      handleHeaderLayout,
+      theme.colors.$surfaceSecondary,
       formattedOpen,
       formattedChange,
-      formattedPnl,
       pnlSign,
+      formattedPnl,
       pnlColor,
-      theme.colors.$surfaceSecondary,
       selectedFilter,
       handleSelectFilter,
       handleSearchPress
@@ -222,6 +233,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
               renderEmpty={renderEmpty}
               extraData={{ selectedFilter }}
               containerStyle={contentContainerStyle}
+              contentContainerStyle={contentContainerStyle}
               listKey="my-positions"
             />
           </Animated.View>

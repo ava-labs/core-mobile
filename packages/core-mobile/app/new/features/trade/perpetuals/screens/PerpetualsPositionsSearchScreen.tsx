@@ -71,6 +71,7 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
           }
           title={`Find your positions\nby name or symbol`}
           description=""
+          sx={{ flex: 1 }}
         />
       )
     }
@@ -79,6 +80,7 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
         icon={<Image source={cactusIcon} sx={{ width: 42, height: 42 }} />}
         title={'No results found'}
         description=""
+        sx={{ flex: 1 }}
       />
     )
   }, [searchText])

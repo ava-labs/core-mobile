@@ -133,6 +133,7 @@ export function TradeScreen(): JSX.Element {
         </Animated.View>
         <View>
           <Animated.View
+            pointerEvents="none"
             style={[
               animatedGradientStyle,
               {

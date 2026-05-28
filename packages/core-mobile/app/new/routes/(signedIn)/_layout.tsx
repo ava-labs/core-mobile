@@ -122,11 +122,11 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/perpetualsPositionsSearch"
-            options={secondaryModalScreensOptions}
+            options={modalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/perpetualsPositionsHistory"
-            options={secondaryModalScreensOptions}
+            options={modalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/perpetualsBalance"

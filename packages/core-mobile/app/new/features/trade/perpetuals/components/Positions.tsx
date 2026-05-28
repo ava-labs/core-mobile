@@ -8,8 +8,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
-import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
-import { Pressable, ScrollView } from 'react-native-gesture-handler'
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  TouchableOpacity
+} from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { MY_POSITIONS_MOCK } from '../mocks'
 import { PositionCard } from './PositionCard'
 
@@ -54,7 +58,7 @@ export const Positions = ({
 
   return (
     <View sx={{ gap: 8 }}>
-      <Pressable
+      <TouchableOpacity
         onPress={handlePositionsPress}
         style={{
           flexDirection: 'row',
@@ -66,7 +70,7 @@ export const Positions = ({
         <Icons.Navigation.ChevronRight
           color={alpha(theme.colors.$textPrimary, 0.4)}
         />
-      </Pressable>
+      </TouchableOpacity>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
