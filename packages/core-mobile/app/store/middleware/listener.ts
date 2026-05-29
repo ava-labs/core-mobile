@@ -17,7 +17,8 @@ import { AppAddListener, AppStartListening } from 'store/types'
 import { addCurrencyListeners } from 'store/settings/currency/listeners'
 import { addMeldListeners } from 'store/meld/listeners'
 import { addBranchListeners } from 'store/branch/listener'
-import { addNestEggListeners } from 'store/nestEgg/listeners'
+// Nest Egg disabled (CP-14058) — see addNestEggListeners call below
+// import { addNestEggListeners } from 'store/nestEgg/listeners'
 import { addFusionListeners } from 'new/features/swap/store/listeners'
 
 const listener = createListenerMiddleware({
@@ -61,7 +62,10 @@ addMeldListeners(startListening)
 
 addBranchListeners(startListening)
 
-addNestEggListeners(startListening)
+// Nest Egg disabled (CP-14058): feature unused and linked to a blank,
+// un-dismissable modal on iOS. Commented out (not removed) so it can be
+// re-enabled later.
+// addNestEggListeners(startListening)
 
 addFusionListeners(startListening)
 

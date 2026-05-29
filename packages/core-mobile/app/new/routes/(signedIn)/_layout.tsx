@@ -237,10 +237,13 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/solanaLaunch"
             options={modalScreensOptions}
           />
-          <Stack.Screen
+          {/* Nest Egg disabled (CP-14058): feature unused and linked to a
+              blank, un-dismissable modal on iOS. Commented out (not removed)
+              so it can be re-enabled later. */}
+          {/* <Stack.Screen
             name="(modals)/nestEggCampaign"
             options={modalScreensOptions}
-          />
+          /> */}
           <Stack.Screen
             name="(modals)/appUpdate"
             options={modalScreensOptions}
