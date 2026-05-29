@@ -238,7 +238,7 @@ export const StakeSearchScreen = (): JSX.Element => {
               sx={{ width: 42, height: 42 }}
             />
           }
-          title={'Find stakes\nby date or node ID'}
+          title={'Find stakes by date\n(mm/dd/yyyy) or node ID'}
           description=""
         />
       )}
