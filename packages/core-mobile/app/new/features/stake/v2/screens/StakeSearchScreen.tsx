@@ -127,7 +127,9 @@ export const StakeSearchScreen = (): JSX.Element => {
 
   const handlePressStake = useCallback(
     (txHash: string) => {
-      navigate({ pathname: '/stakeDetail', params: { txHash } })
+      // Push the detail onto this search modal's own stack (slides in over the
+      // results) rather than opening the global /stakeDetail modal.
+      navigate({ pathname: '/stakeSearch/stakeDetail', params: { txHash } })
     },
     [navigate]
   )
