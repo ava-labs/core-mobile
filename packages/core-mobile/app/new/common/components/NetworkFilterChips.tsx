@@ -49,17 +49,19 @@ export const NetworkFilterChips = ({
               isSelected={isSelected}
               onPress={() => onSelectNetwork(network)}
               renderLeft={() => (
-                <NetworkLogoWithChain
-                  network={network}
-                  networkSize={18}
-                  showChainLogo={false}
-                  outerBorderColor={theme.colors.$surfaceSecondary}
-                />
+                <View sx={{ marginTop: 4, marginLeft: 4, marginBottom: 4 }}>
+                  <NetworkLogoWithChain
+                    network={network}
+                    networkSize={19}
+                    showChainLogo={false}
+                    outerBorderColor={theme.colors.$surfaceSecondary}
+                  />
+                </View>
               )}
               style={{
-                paddingLeft: 6,
+                paddingLeft: 0,
                 paddingRight: 10,
-                gap: 4
+                gap: 5
               }}>
               {getNetworkDisplayName(network)}
             </Chip>
