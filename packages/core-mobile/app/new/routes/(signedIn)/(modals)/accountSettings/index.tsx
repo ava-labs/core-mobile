@@ -25,7 +25,7 @@ import { AppAppearance } from 'features/accountSettings/components/AppAppearance
 import { Support } from 'features/accountSettings/components/Support'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
 import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector, useStore } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectContacts } from 'store/addressBook'
 import {
@@ -39,10 +39,14 @@ import {
 import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 import { manualLockStore } from 'features/accountSettings/store'
+// Dev-only: the orphaned benchmark harness lives at the package root, outside
+// the module-resolver `./app` root, so it's imported relatively.
+import { addressDerivationBenchmark } from '../../../../../../benchmark/addressDerivation'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
+  const store = useStore()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
@@ -53,6 +57,12 @@ const AccountSettingsScreen = (): JSX.Element => {
   const { avatar } = useAvatar()
   const appUpdateStatus = useAppUpdateStatus()
   const { openUrl } = useInAppBrowser()
+
+  const handleRunDerivationBenchmark = useCallback((): void => {
+    // Compares sequential ModuleManager.deriveAddresses vs batch
+    // deriveAllAddresses. Requires a signed-in MNEMONIC wallet.
+    addressDerivationBenchmark(store)
+  }, [store])
 
   const handleLockWallet = useCallback((): void => {
     manualLockStore.setState({ wasManuallyLocked: true })
@@ -236,6 +246,20 @@ const AccountSettingsScreen = (): JSX.Element => {
             <Support onPressItem={handlePressAboutItem} />
             <About onPressItem={handlePressAboutItem} />
           </View>
+          <TouchableOpacity
+            sx={{
+              alignItems: 'center',
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              padding: 14
+            }}
+            onPress={handleRunDerivationBenchmark}>
+            <Text
+              variant="body1"
+              sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
+              Run address derivation benchmark
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             sx={{
               alignItems: 'center',
