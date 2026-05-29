@@ -148,19 +148,19 @@ describe('ModuleManager', () => {
         network: { isTestnet: false } as Network
       })
       expect(result).toHaveLength(3)
-      expect(result.map(r => r[NetworkVMType.AVM])).toEqual([
+      expect(result.map(r => r?.[NetworkVMType.AVM])).toEqual([
         'X-avax0',
         'X-avax1',
         'X-avax2'
       ])
-      expect(result.map(r => r[NetworkVMType.SVM])).toEqual([
+      expect(result.map(r => r?.[NetworkVMType.SVM])).toEqual([
         'svm0',
         'svm1',
         'svm2'
       ])
     })
 
-    it('keeps remaining slots when a module rejects', async () => {
+    it('returns undefined slots when a module rejects so partial failure is not masked', async () => {
       jest
         .spyOn(AvalancheModule.prototype, 'deriveAddresses')
         .mockRejectedValueOnce(new Error('xp pubkey unavailable'))
@@ -168,16 +168,14 @@ describe('ModuleManager', () => {
       const result = await ModuleManager.deriveAllAddresses({
         walletId: 'w1',
         walletType: WalletType.MNEMONIC,
-        accountIndices: [0],
+        accountIndices: [0, 1],
         network: { isTestnet: false } as Network
       })
-      expect(result).toHaveLength(1)
-      expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
-      expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc0')
-      expect(result[0]?.[NetworkVMType.SVM]).toBe('svm0')
-      expect(result[0]?.[NetworkVMType.AVM]).toBe('')
-      expect(result[0]?.[NetworkVMType.PVM]).toBe('')
-      expect(result[0]?.[NetworkVMType.CoreEth]).toBe('')
+      // A single module rejection means that chain is missing for every index
+      // in the batch, so no index can produce a complete record. We surface
+      // `undefined` rather than empty-string addresses so downstream
+      // `!addresses` guards engage instead of treating the account as valid.
+      expect(result).toEqual([undefined, undefined])
     })
   })
 })
