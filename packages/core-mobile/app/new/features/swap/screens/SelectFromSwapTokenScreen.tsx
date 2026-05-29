@@ -1,9 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react'
-import { ScrollView } from 'react-native'
-import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   ActivityIndicator,
-  Button,
   Icons,
   SCREEN_WIDTH,
   SearchBar,
@@ -15,6 +13,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { NetworkFilterChips } from 'common/components/NetworkFilterChips'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
@@ -106,39 +105,16 @@ export const SelectFromSwapTokenScreen = ({
     [setSelectedToken, canGoBack, back]
   )
 
-  const renderNetworkSelector = useCallback(() => {
-    if (!networks || networks.length <= 1) return null
-
-    return (
-      <ScrollView
-        testID="network_selector_scroll"
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8 }}>
-        {networks.map(network => (
-          <Button
-            key={network.chainId}
-            testID={`network_selector__${network.chainName}`}
-            size="small"
-            type={
-              network.chainId === selectedNetwork?.chainId
-                ? 'primary'
-                : 'secondary'
-            }
-            onPress={() => setSelectedNetwork(network)}
-            style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
-            {network.chainId === ChainId.AVALANCHE_MAINNET_ID
-              ? 'Avalanche (C-Chain)'
-              : network.chainId === ChainId.AVALANCHE_TESTNET_ID
-              ? 'Avalanche (C-Chain Testnet)'
-              : network.chainId === ChainId.SOLANA_MAINNET_ID
-              ? 'Solana '
-              : network.chainName}
-          </Button>
-        ))}
-      </ScrollView>
-    )
-  }, [networks, selectedNetwork])
+  const renderNetworkSelector = useCallback(
+    () => (
+      <NetworkFilterChips
+        networks={networks}
+        selectedNetwork={selectedNetwork}
+        onSelectNetwork={setSelectedNetwork}
+      />
+    ),
+    [networks, selectedNetwork]
+  )
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
     ({ item, index }) => {
