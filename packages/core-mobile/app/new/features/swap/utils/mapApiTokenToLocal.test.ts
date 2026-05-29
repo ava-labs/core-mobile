@@ -427,6 +427,49 @@ describe('mapApiTokenToLocal', () => {
       }
     })
 
+    it.each([
+      ['true', true],
+      ['false', false],
+      ['null', null]
+    ])('should propagate isVerified=%s from the API', (_label, value) => {
+      const apiToken: ApiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 18,
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null,
+        isVerified: value
+      }
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.isVerified).toBe(value)
+    })
+
+    it('should leave isVerified undefined when the API omits it', () => {
+      const apiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 18,
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
+      } as ApiToken
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.isVerified).toBeUndefined()
+    })
+
     it('should set description to same as name', () => {
       const apiToken: ApiToken = {
         symbol: 'AVAX',
