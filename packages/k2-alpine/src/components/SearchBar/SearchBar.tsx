@@ -1,5 +1,11 @@
 import debounce from 'lodash.debounce'
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { TextInput, TextInputProps, ViewStyle } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
@@ -41,19 +47,22 @@ const HEIGHT = 40
  * @constructor
  */
 
-export const SearchBar: FC<Props> = ({
-  onTextChanged,
-  searchText,
-  placeholder = 'Search',
-  useDebounce = false,
-  debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
-  textColor,
-  setSearchBarFocused,
-  containerStyle,
-  rightComponent,
-  useCancel,
-  ...rest
-}) => {
+export const SearchBar = forwardRef<TextInput, Props>(function SearchBar(
+  {
+    onTextChanged,
+    searchText,
+    placeholder = 'Search',
+    useDebounce = false,
+    debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
+    textColor,
+    setSearchBarFocused,
+    containerStyle,
+    rightComponent,
+    useCancel,
+    ...rest
+  },
+  ref
+) {
   const textInputRef = useRef<TextInput>(null)
   const {
     theme: { colors, isDark }
@@ -159,7 +168,17 @@ export const SearchBar: FC<Props> = ({
             autoCorrect={false}
             autoComplete="off"
             autoCapitalize="none"
-            ref={textInputRef}
+            ref={node => {
+              // Keep the internal ref (used by clear/blur) working while also
+              // exposing the underlying TextInput to callers via forwardRef
+              // (e.g. for imperative focus after a screen-enter transition).
+              textInputRef.current = node
+              if (typeof ref === 'function') {
+                ref(node)
+              } else if (ref) {
+                ref.current = node
+              }
+            }}
             style={{
               height: '100%',
               lineHeight: 16,
@@ -203,4 +222,4 @@ export const SearchBar: FC<Props> = ({
       )}
     </View>
   )
-}
+})

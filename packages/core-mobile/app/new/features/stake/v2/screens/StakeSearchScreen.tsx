@@ -20,6 +20,11 @@ import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
+import {
+  FORM_SHEET_FOCUS_BUFFER_MS,
+  useAfterScreenEnterTransition
+} from 'common/hooks/useAfterScreenEnterTransition'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, {
@@ -27,9 +32,10 @@ import React, {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
-import { AppState, Platform } from 'react-native'
+import { AppState, Platform, TextInput } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
@@ -60,6 +66,7 @@ export const StakeSearchScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const isFocused = useIsFocused()
 
+  const searchBarRef = useRef<TextInput>(null)
   const [searchText, setSearchText] = useState('')
   // Defer the filter input so keystrokes feel snappy even when the stake list
   // is large — React renders the SearchBar with the latest text, then catches
@@ -126,8 +133,14 @@ export const StakeSearchScreen = (): JSX.Element => {
   }, [back, canGoBack])
 
   const handlePressStake = useCallback(
-    (txHash: string) => {
-      navigate({ pathname: '/stakeDetail', params: { txHash } })
+    async (txHash: string) => {
+      // Dismiss the keyboard before navigating so it doesn't linger over (or
+      // fight the layout of) the pushed detail screen. On Android this waits
+      // for the keyboard to actually hide; on iOS it resolves immediately.
+      await dismissKeyboardIfNeeded()
+      // Push the detail onto this search modal's own stack (slides in over the
+      // results) rather than opening the global /stakeDetail modal.
+      navigate({ pathname: '/stakeSearch/stakeDetail', params: { txHash } })
     },
     [navigate]
   )
@@ -140,9 +153,16 @@ export const StakeSearchScreen = (): JSX.Element => {
   })
 
   const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<PChainTransaction>): JSX.Element => {
-      // `filteredStakes` has pre-filtered to active/completed only, so the
-      // renderer is guaranteed to return a JSX element (never null) here.
+    ({
+      item,
+      index
+    }: ListRenderItemInfo<PChainTransaction>): JSX.Element | null => {
+      // FlashList's `masonry` layout can briefly invoke `renderItem` with an
+      // `undefined` item when `data` shrinks between renders (e.g. while
+      // typing into the SearchBar narrows `filteredStakes`). Guard so we
+      // don't dereference an undefined stake before the next layout pass
+      // catches up.
+      if (!item) return null
       return (
         <Animated.View
           style={{
@@ -157,6 +177,14 @@ export const StakeSearchScreen = (): JSX.Element => {
     },
     [renderStakeCard]
   )
+
+  // Focus the SearchBar imperatively once the modal's enter transition has
+  // settled instead of relying on the native `autoFocus` prop. On iOS form
+  // sheets, autoFocus races the transition/keyboard and can drop focus or make
+  // the keyboard bounce; the buffer lets layout settle first.
+  useAfterScreenEnterTransition(() => searchBarRef.current?.focus(), {
+    layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
+  })
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -199,10 +227,10 @@ export const StakeSearchScreen = (): JSX.Element => {
         }}>
         <View sx={{ flex: 1 }}>
           <SearchBar
+            ref={searchBarRef}
             searchText={searchText}
             onTextChanged={setSearchText}
             placeholder="Search"
-            autoFocus
           />
         </View>
         <AnimatedPressable
@@ -229,7 +257,7 @@ export const StakeSearchScreen = (): JSX.Element => {
               sx={{ width: 42, height: 42 }}
             />
           }
-          title={'Find stakes\nby date or node ID'}
+          title={'Find stakes by date\n(mm/dd/yyyy) or node ID'}
           description=""
         />
       )}
@@ -260,6 +288,13 @@ export const StakeSearchScreen = (): JSX.Element => {
 
       {showResults && (
         <FlashList
+          // Remount the list on every query change. FlashList's masonry layout
+          // manager retains stale column heights across an in-place `data`
+          // swap, so the top rows stay unpainted until a scroll forces a
+          // layout recompute. Keying by the query gives each result set a
+          // fresh layout (and resets scroll to the top, which is the desired
+          // search UX).
+          key={trimmedQuery}
           data={filteredStakes}
           numColumns={2}
           masonry
@@ -267,8 +302,9 @@ export const StakeSearchScreen = (): JSX.Element => {
           ListHeaderComponent={
             <View
               sx={{
+                paddingTop: 4,
                 paddingHorizontal: GRID_GAP / 2,
-                paddingBottom: 12
+                paddingBottom: 16
               }}>
               <DropdownMenu
                 groups={sortData}
