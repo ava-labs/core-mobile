@@ -57,6 +57,7 @@ export const NetworkFilterChips = ({
                 />
               )}
               style={{
+                minHeight: 32,
                 paddingLeft: 4,
                 paddingRight: 10,
                 gap: 5
