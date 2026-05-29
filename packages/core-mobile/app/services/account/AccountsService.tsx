@@ -18,7 +18,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { emptyAddresses, isEvmPublicKey } from 'utils/publicKeys'
+import { isEvmPublicKey } from 'utils/publicKeys'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -429,7 +429,16 @@ class AccountsService {
       network
     })
 
-    return addresses ?? emptyAddresses()
+    // `deriveAllAddresses` returns `undefined` for an index when any module
+    // failed to derive its chain(s). Fail loudly here rather than persisting an
+    // account with empty-string addresses for the affected chains.
+    if (!addresses) {
+      throw new Error(
+        `Failed to derive addresses for account index ${accountIndex}`
+      )
+    }
+
+    return addresses
   }
 
   async getAccountName({

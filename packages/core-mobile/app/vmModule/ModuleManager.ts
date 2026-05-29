@@ -154,7 +154,7 @@ class ModuleManager {
     walletType: WalletType
     accountIndices: number[]
     network: Network
-  }): Promise<Record<NetworkVMType, string>[]> => {
+  }): Promise<(Record<NetworkVMType, string> | undefined)[]> => {
     if (accountIndices.length === 0) return []
 
     const derivationPathType =
@@ -173,6 +173,26 @@ class ModuleManager {
         })
       )
     )
+
+    // Each module derives one chain group across *all* indices, so a single
+    // rejection means that chain is missing for every index in this batch. We
+    // cannot produce a complete address record for any index, so signal the
+    // failure with `undefined` slots rather than masking it with empty-string
+    // addresses. Callers' `!addresses` guards then engage instead of treating
+    // a partially-derived account as valid.
+    const rejected = perModuleResults.filter(
+      (result): result is PromiseRejectedResult => result.status === 'rejected'
+    )
+    if (rejected.length > 0) {
+      rejected.forEach(result => {
+        Logger.error('Failed to derive addresses for one or more modules', {
+          accountIndices,
+          isTestnet: network.isTestnet,
+          reason: result.reason
+        })
+      })
+      return accountIndices.map(() => undefined)
+    }
 
     return accountIndices.map((_, i) => {
       let addresses = emptyAddresses()
