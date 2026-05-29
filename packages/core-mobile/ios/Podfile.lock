@@ -609,7 +609,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroModules (0.32.2):
+  - NitroModules (0.35.6):
     - boost
     - DoubleConversion
     - fast_float
@@ -4921,7 +4921,7 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroFetch: 660adfb47f84b28db664f97b50e5dc28506ab6c1
   NitroMmkv: 8ed7ef6f41b91785fc580c975f68d6d675214767
-  NitroModules: 107a9262c74fd84fa8e77ebd82a72980b6aa50b1
+  NitroModules: 70e2ff77a0b718e47d5bccd837fefe8a9aa20f50
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47

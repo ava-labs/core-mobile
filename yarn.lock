@@ -723,7 +723,7 @@ __metadata:
     react-native-mmkv: 4.1.1
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-fetch: 0.1.6
-    react-native-nitro-modules: 0.32.2
+    react-native-nitro-modules: 0.35.6
     react-native-os: 1.2.6
     react-native-pager-view: 6.9.1
     react-native-passkey: 3.3.2
@@ -36383,13 +36383,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.32.2":
-  version: 0.32.2
-  resolution: "react-native-nitro-modules@npm:0.32.2"
+"react-native-nitro-modules@npm:0.35.6":
+  version: 0.35.6
+  resolution: "react-native-nitro-modules@npm:0.35.6"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 19cf02168699bbeaa3bc45bf0af1eaa6877a5fde3b22adc759516d3a3103c77754d3e13a8fe6e16782d34d019fe61f4240a6abc5a483a23a93c998853416cc70
+  checksum: b057dc606c4717bff2447cff3efdeebf5cd7342fa11b3f51cfd420ccce1224d0b4be5999ea63c9856721520f1cbb50fba9372109f49a4c8b14202d7ab4d3b37e
   languageName: node
   linkType: hard
 
