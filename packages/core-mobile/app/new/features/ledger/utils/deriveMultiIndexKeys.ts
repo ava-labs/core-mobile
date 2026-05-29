@@ -36,10 +36,12 @@ export async function buildFirstAccountKeys(params: {
     const batch = await deriveLedgerAddressesFromXpubs(
       firstAccountKeys.xpubs.evm,
       [firstAccountKeys.xpubs.avalanche],
-      [0]
+      [startIndex]
     )
     // `!isDeveloperMode` was the old isTestnet flag — derive the opposite
     // network from the device's current network.
+    // Only one index is requested, so the positional result lives at [0]
+    // regardless of startIndex.
     const result = batch
       ? isDeveloperMode
         ? batch.mainnet[0]
