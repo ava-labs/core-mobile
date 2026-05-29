@@ -20,6 +20,11 @@ import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
+import {
+  FORM_SHEET_FOCUS_BUFFER_MS,
+  useAfterScreenEnterTransition
+} from 'common/hooks/useAfterScreenEnterTransition'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, {
@@ -27,9 +32,10 @@ import React, {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
-import { AppState, Platform } from 'react-native'
+import { AppState, Platform, TextInput } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
@@ -60,6 +66,7 @@ export const StakeSearchScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const isFocused = useIsFocused()
 
+  const searchBarRef = useRef<TextInput>(null)
   const [searchText, setSearchText] = useState('')
   // Defer the filter input so keystrokes feel snappy even when the stake list
   // is large — React renders the SearchBar with the latest text, then catches
@@ -126,7 +133,11 @@ export const StakeSearchScreen = (): JSX.Element => {
   }, [back, canGoBack])
 
   const handlePressStake = useCallback(
-    (txHash: string) => {
+    async (txHash: string) => {
+      // Dismiss the keyboard before navigating so it doesn't linger over (or
+      // fight the layout of) the pushed detail screen. On Android this waits
+      // for the keyboard to actually hide; on iOS it resolves immediately.
+      await dismissKeyboardIfNeeded()
       // Push the detail onto this search modal's own stack (slides in over the
       // results) rather than opening the global /stakeDetail modal.
       navigate({ pathname: '/stakeSearch/stakeDetail', params: { txHash } })
@@ -166,6 +177,14 @@ export const StakeSearchScreen = (): JSX.Element => {
     },
     [renderStakeCard]
   )
+
+  // Focus the SearchBar imperatively once the modal's enter transition has
+  // settled instead of relying on the native `autoFocus` prop. On iOS form
+  // sheets, autoFocus races the transition/keyboard and can drop focus or make
+  // the keyboard bounce; the buffer lets layout settle first.
+  useAfterScreenEnterTransition(() => searchBarRef.current?.focus(), {
+    layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
+  })
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -208,10 +227,10 @@ export const StakeSearchScreen = (): JSX.Element => {
         }}>
         <View sx={{ flex: 1 }}>
           <SearchBar
+            ref={searchBarRef}
             searchText={searchText}
             onTextChanged={setSearchText}
             placeholder="Search"
-            autoFocus
           />
         </View>
         <AnimatedPressable
