@@ -25,9 +25,10 @@ import {
   selectFusionTransferGasMarginBps
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { swapCompleted } from 'store/nestEgg'
+// Nest Egg disabled (CP-14058) — see swapCompleted dispatch below
+// import { swapCompleted } from 'store/nestEgg'
 import { ServiceType, type GasSettings } from '@avalabs/fusion-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
+// import { bigintToBig } from '@avalabs/core-utils-sdk' // Nest Egg disabled (CP-14058)
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -352,36 +353,40 @@ export const SwapContextProvider = ({
         })
       )
 
+      // Nest Egg disabled (CP-14058): feature unused and linked to a blank,
+      // un-dismissable modal on iOS. Commented out (not removed) so it can be
+      // re-enabled later.
+      //
       // Dispatch swapCompleted for Nest Egg qualification tracking.
       // Computed from `transfer.amountIn` (what actually swapped) not
       // the live `amount` state, so if the user changed the input
       // between submit and completion the analytics still reflect
       // reality. bigintToBig preserves precision that Number() would
       // lose on large amounts.
-      const swapTxHash = transfer.source?.txHash
-      if (
-        swapTxHash &&
-        transfer.amountIn &&
-        fromTokenData.priceInCurrency !== undefined &&
-        'decimals' in fromTokenData
-      ) {
-        const fromAmountUsd = bigintToBig(
-          BigInt(transfer.amountIn),
-          fromTokenData.decimals
-        )
-          .times(fromTokenData.priceInCurrency)
-          .toNumber()
-        dispatch(
-          swapCompleted({
-            txHash: swapTxHash,
-            chainId: Number(quote.sourceChain.chainId.split(':')[1]),
-            fromTokenSymbol: fromTokenData.symbol,
-            toTokenSymbol: toTokenData.symbol,
-            fromAmountUsd,
-            toAmountUsd: fromAmountUsd
-          })
-        )
-      }
+      // const swapTxHash = transfer.source?.txHash
+      // if (
+      //   swapTxHash &&
+      //   transfer.amountIn &&
+      //   fromTokenData.priceInCurrency !== undefined &&
+      //   'decimals' in fromTokenData
+      // ) {
+      //   const fromAmountUsd = bigintToBig(
+      //     BigInt(transfer.amountIn),
+      //     fromTokenData.decimals
+      //   )
+      //     .times(fromTokenData.priceInCurrency)
+      //     .toNumber()
+      //   dispatch(
+      //     swapCompleted({
+      //       txHash: swapTxHash,
+      //       chainId: Number(quote.sourceChain.chainId.split(':')[1]),
+      //       fromTokenSymbol: fromTokenData.symbol,
+      //       toTokenSymbol: toTokenData.symbol,
+      //       fromAmountUsd,
+      //       toAmountUsd: fromAmountUsd
+      //     })
+      //   )
+      // }
     },
     [dispatch, setTransfers, isQuickSwapsActive, feeSetting, maxBuy]
   )
