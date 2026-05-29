@@ -5,7 +5,8 @@ import {
   SessionProposalParams,
   EditContactParams,
   AddEthereumChainParams,
-  WatchAssetParams
+  WatchAssetParams,
+  InjectedAuthParams
 } from './types'
 
 // a simple in-memory cache (no reactivity or persistence support)
@@ -18,5 +19,6 @@ export const walletConnectCache = {
   editContactParams: createCache<EditContactParams>('edit contact'),
   addEthereumChainParams:
     createCache<AddEthereumChainParams>('add ethereum chain'),
-  watchAssetParams: createCache<WatchAssetParams>('watch asset')
+  watchAssetParams: createCache<WatchAssetParams>('watch asset'),
+  injectedAuthParams: createCache<InjectedAuthParams>('injected auth')
 }

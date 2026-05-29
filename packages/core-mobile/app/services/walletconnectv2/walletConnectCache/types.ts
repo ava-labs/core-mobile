@@ -18,6 +18,7 @@ import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/walle
 import { WalletWatchAssetRpcRequest } from 'store/rpc/handlers/chain/wallet_watchAsset/wallet_watchAsset'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
+import { PeerMeta } from 'store/rpc/types'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -76,4 +77,10 @@ export type AddEthereumChainParams = {
 export type WatchAssetParams = {
   request: WalletWatchAssetRpcRequest
   token: ERC20Token
+}
+
+export type InjectedAuthParams = {
+  peerMeta: PeerMeta
+  onApprove: (selectedAccounts: Account[]) => void
+  onReject: () => void
 }

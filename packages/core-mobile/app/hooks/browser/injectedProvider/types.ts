@@ -1,8 +1,10 @@
 import type { Dispatch } from '@reduxjs/toolkit'
+import type { NetworkVMType } from '@avalabs/core-chains-sdk'
 import type { Networks } from 'store/network/types'
 import type { TabId } from 'store/browser/types'
 import type { PeerMeta } from 'store/rpc/types'
 import type { Request as InAppRequest } from 'store/rpc/utils/createInAppRequest'
+import type { Account } from 'store/account'
 
 // Upper bound (1 MiB) on a single provider message from the WebView. The
 // payload is attacker-controlled — any page can call
@@ -51,4 +53,26 @@ export type RouterDeps = {
   trackPendingOrigin: (id: number, origin: string) => void
 
   getPeerMeta: () => PeerMeta
+  getActiveAccount: () => Account | undefined
+
+  // Permissions
+  hasPermission: (args: {
+    domain: string
+    address: string
+    vmType: NetworkVMType
+  }) => boolean
+  grantPermission: (args: {
+    domain: string
+    address: string
+    vmType: NetworkVMType
+  }) => void
+  revokePermission: (args: {
+    domain: string
+    address?: string
+    vmType?: NetworkVMType
+  }) => void
+
+  // Connect approval — hook implements: stash in cache + navigate + park a promise.
+  // Resolves with user-selected accounts, rejects with EIP-1193 user-rejected on cancel.
+  requestConnectApproval: (peerMeta: PeerMeta) => Promise<Account[]>
 }

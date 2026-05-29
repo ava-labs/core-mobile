@@ -22,14 +22,14 @@ const ConnectedSitesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
+  const { allApprovedDapps, killDapp, killAllDapps } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
 
   const disconnectDapp = useCallback(
-    async (topic: string): Promise<void> => {
-      killSession(topic)
+    async (dapp: Dapp): Promise<void> => {
+      killDapp(dapp)
     },
-    [killSession]
+    [killDapp]
   )
 
   const disconnectAll = useCallback(() => {
@@ -41,30 +41,57 @@ const ConnectedSitesScreen = (): JSX.Element => {
         {
           text: 'Disconnect',
           style: 'destructive',
-          onPress: () => killAllSessions()
+          onPress: () => killAllDapps()
         }
       ]
     })
-  }, [killAllSessions])
+  }, [killAllDapps])
+
+  const getDappDisplay = useCallback(
+    (
+      dapp: Dapp
+    ): {
+      name: string
+      url: string
+      peerMeta: {
+        name: string
+        description: string
+        url: string
+        icons: string[]
+      }
+    } => {
+      if (dapp.kind === 'wc') {
+        const { name, url } = dapp.session.peer.metadata
+        return { name, url, peerMeta: dapp.session.peer.metadata }
+      }
+      return {
+        name: dapp.domain,
+        url: dapp.domain,
+        peerMeta: {
+          name: dapp.domain,
+          description: '',
+          url: dapp.domain,
+          icons: []
+        }
+      }
+    },
+    []
+  )
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
       return allApprovedDapps
     }
-    return allApprovedDapps.filter(
-      dapp =>
-        dapp.dapp.peer.metadata.name
-          .toLowerCase()
-          .includes(searchText.toLowerCase()) ||
-        dapp.dapp.peer.metadata.url
-          .toLowerCase()
-          .includes(searchText.toLowerCase())
-    )
-  }, [allApprovedDapps, searchText])
+    const q = searchText.toLowerCase()
+    return allApprovedDapps.filter(dapp => {
+      const { name, url } = getDappDisplay(dapp)
+      return name.toLowerCase().includes(q) || url.toLowerCase().includes(q)
+    })
+  }, [allApprovedDapps, searchText, getDappDisplay])
 
   const renderItem = useCallback(
     (item: Dapp): React.JSX.Element => {
-      const { name, url } = item.dapp.peer.metadata
+      const { name, url, peerMeta } = getDappDisplay(item)
       return (
         <View
           sx={{
@@ -83,7 +110,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
               borderRadius: 12,
               backgroundColor: colors.$surfaceSecondary
             }}>
-            <DappLogo peerMeta={item.dapp.peer.metadata} size={32} />
+            <DappLogo peerMeta={peerMeta} size={32} />
             <View
               sx={{
                 flex: 1,
@@ -105,7 +132,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => disconnectDapp(item.dapp.topic)}
+              onPress={() => disconnectDapp(item)}
               sx={{
                 width: 100,
                 alignItems: 'center',
@@ -142,7 +169,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => disconnectDapp(item.dapp.topic)}
+            onPress={() => disconnectDapp(item)}
             sx={{
               width: 100,
               alignItems: 'center',
@@ -162,7 +189,8 @@ const ConnectedSitesScreen = (): JSX.Element => {
       colors.$borderPrimary,
       colors.$surfaceSecondary,
       colors.$textSecondary,
-      disconnectDapp
+      disconnectDapp,
+      getDappDisplay
     ]
   )
 
