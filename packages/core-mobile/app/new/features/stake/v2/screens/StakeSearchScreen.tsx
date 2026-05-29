@@ -140,9 +140,16 @@ export const StakeSearchScreen = (): JSX.Element => {
   })
 
   const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<PChainTransaction>): JSX.Element => {
-      // `filteredStakes` has pre-filtered to active/completed only, so the
-      // renderer is guaranteed to return a JSX element (never null) here.
+    ({
+      item,
+      index
+    }: ListRenderItemInfo<PChainTransaction>): JSX.Element | null => {
+      // FlashList's `masonry` layout can briefly invoke `renderItem` with an
+      // `undefined` item when `data` shrinks between renders (e.g. while
+      // typing into the SearchBar narrows `filteredStakes`). Guard so we
+      // don't dereference an undefined stake before the next layout pass
+      // catches up.
+      if (!item) return null
       return (
         <Animated.View
           style={{
@@ -260,6 +267,13 @@ export const StakeSearchScreen = (): JSX.Element => {
 
       {showResults && (
         <FlashList
+          // Remount the list on every query change. FlashList's masonry layout
+          // manager retains stale column heights across an in-place `data`
+          // swap, so the top rows stay unpainted until a scroll forces a
+          // layout recompute. Keying by the query gives each result set a
+          // fresh layout (and resets scroll to the top, which is the desired
+          // search UX).
+          key={trimmedQuery}
           data={filteredStakes}
           numColumns={2}
           masonry
@@ -267,8 +281,9 @@ export const StakeSearchScreen = (): JSX.Element => {
           ListHeaderComponent={
             <View
               sx={{
+                paddingTop: 4,
                 paddingHorizontal: GRID_GAP / 2,
-                paddingBottom: 12
+                paddingBottom: 16
               }}>
               <DropdownMenu
                 groups={sortData}
