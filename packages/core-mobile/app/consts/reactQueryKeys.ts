@@ -88,5 +88,6 @@ export enum ReactQueryKeys {
 
   // recurring swap
   RECURRING_INFO_CHAINS = 'recurringInfoChains',
-  RECURRING_ALLOWANCE = 'recurringAllowance'
+  RECURRING_ALLOWANCE = 'recurringAllowance',
+  RECURRING_SCHEDULES = 'recurringSchedules',
 }
