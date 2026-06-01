@@ -458,6 +458,12 @@ export type AnalyticsEvents = {
     encrypted: Omit<DappTxEventPayload, 'txHash'>
   }
 
+  // RECURRING SWAP (DCA)
+  RecurringSwapCancelledByUser: {
+    orderId: string
+    chainId: number
+  }
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { encrypted: { addressC: string } }
   NestEggSuccessModalViewed: { encrypted: { addressC: string } }

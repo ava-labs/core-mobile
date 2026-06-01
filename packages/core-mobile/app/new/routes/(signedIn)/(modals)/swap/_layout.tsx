@@ -34,6 +34,7 @@ export default function SwapLayout(): JSX.Element {
           <Stack.Screen name="recurring/frequency" />
           <Stack.Screen name="recurring/orders" />
           <Stack.Screen name="recurring/review" />
+          <Stack.Screen name="recurring/schedules" />
         </Stack>
       </RecurringSwapContextProvider>
     </SwapContextProvider>
