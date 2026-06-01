@@ -42,6 +42,7 @@ import { manualLockStore } from 'features/accountSettings/store'
 // Dev-only: the orphaned benchmark harness lives at the package root, outside
 // the module-resolver `./app` root, so it's imported relatively.
 import { addressDerivationBenchmark } from '../../../../../../benchmark/addressDerivation'
+import { ledgerAddressDerivationBenchmark } from '../../../../../../benchmark/ledgerAddressDerivation'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -63,6 +64,13 @@ const AccountSettingsScreen = (): JSX.Element => {
     // deriveAllAddresses. Requires a signed-in MNEMONIC wallet.
     addressDerivationBenchmark(store)
   }, [store])
+
+  const handleRunLedgerDerivationBenchmark = useCallback((): void => {
+    // Compares old per-index/per-network sequential Ledger BIP44 xpub
+    // derivation vs the new batched + parallel deriveLedgerAddressesFromXpubs.
+    // Device-free: uses hardcoded sample xpubs, no wallet required.
+    ledgerAddressDerivationBenchmark()
+  }, [])
 
   const handleLockWallet = useCallback((): void => {
     manualLockStore.setState({ wasManuallyLocked: true })
@@ -258,6 +266,20 @@ const AccountSettingsScreen = (): JSX.Element => {
               variant="body1"
               sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
               Run address derivation benchmark
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            sx={{
+              alignItems: 'center',
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              padding: 14
+            }}
+            onPress={handleRunLedgerDerivationBenchmark}>
+            <Text
+              variant="body1"
+              sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
+              Run Ledger derivation benchmark
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
