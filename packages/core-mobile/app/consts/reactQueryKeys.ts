@@ -84,5 +84,8 @@ export enum ReactQueryKeys {
   PREDICTIONS_SERIES = 'predictionsSeries',
   PREDICTIONS_MARKET_DETAIL = 'predictionsMarketDetail',
   PREDICTIONS_EVENT_DETAIL = 'predictionsEventDetail',
-  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes'
+  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes',
+
+  // recurring swap
+  RECURRING_INFO_CHAINS = 'recurringInfoChains'
 }
