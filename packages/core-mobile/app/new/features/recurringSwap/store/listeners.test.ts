@@ -24,6 +24,13 @@ jest.mock('services/analytics/AnalyticsService', () => ({
 }))
 const captureSpy = AnalyticsService.capture as jest.Mock
 
+// ─── Mock toast ────────────────────────────────────────────────────────────
+
+const mockShowSnackbar = jest.fn()
+jest.mock('new/common/utils/toast', () => ({
+  showSnackbar: (...args: unknown[]) => mockShowSnackbar(...args)
+}))
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 const BASE_RECURRING_CTX = {
@@ -100,6 +107,7 @@ describe('addRecurringSwapListeners', () => {
   beforeEach(() => {
     mockInvalidate.mockReset()
     captureSpy.mockReset()
+    mockShowSnackbar.mockReset()
     store = setupStore()
   })
 
@@ -133,6 +141,8 @@ describe('addRecurringSwapListeners', () => {
     expect(mockInvalidate).toHaveBeenCalledWith(
       expect.objectContaining({ queryKey: expect.any(Array) })
     )
+
+    expect(mockShowSnackbar).toHaveBeenCalledWith('Recurring swap scheduled')
   })
 
   it('ignores step=approve (allowance approval) — no analytics, no invalidate', async () => {

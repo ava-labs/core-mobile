@@ -89,6 +89,13 @@ const handleRecurringSwapFillConfirmed = async (
     intervalSeconds: ctx.intervalSeconds
   })
 
+  // Show a dedicated success toast. No double-toast risk: for Avalanche
+  // (the only chain Markr targets), ApprovalController fires "Transaction
+  // sent" optimistically at pending time and skips the confirmation-time
+  // toast (wasOptimistic guard). The listener fires after onInAppRequestSucceeded,
+  // so this is the only user-facing confirmation that the schedule is live.
+  showSnackbar('Recurring swap scheduled')
+
   queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
 }
 
