@@ -33,7 +33,12 @@ function resolveNoblePackage(packageName, moduleName) {
 const PACKAGE_EXPORTS_OPT_IN = [
   '@lombard.finance/sdk',
   '@avalabs/fusion-sdk',
-  '@avalabs/crypto-sdk'
+  '@avalabs/crypto-sdk',
+  // react-native-nitro-fetch imports 'web-streams-polyfill/polyfill', a subpath
+  // that only exists through the package's `exports` map. With package-exports
+  // disabled globally, Metro can't find it; opt this package in so the subpath
+  // resolves to dist/polyfill.js.
+  'web-streams-polyfill'
 ]
 
 // Only redirect @noble/hashes subpaths that are patched for native crypto.
@@ -90,6 +95,17 @@ const baseConfig = {
       ios: ['require', 'react-native']
     },
     resolveRequest: (context, moduleName, platform) => {
+      // react-native-nitro-fetch's off-thread path does a static
+      // require('react-native-worklets-core') guarded by try/catch. It's an
+      // OPTIONAL peer we don't install (we use reanimated's react-native-worklets
+      // instead) and never call the worklet API. Metro still collects the static
+      // require while building the graph, so the release bundle fails with
+      // "Unable to resolve module react-native-worklets-core". Stub it to an empty
+      // module; the runtime try/catch already degrades gracefully.
+      if (moduleName === 'react-native-worklets-core') {
+        return { type: 'empty' }
+      }
+
       // Handle @buoy-gg subpath exports manually since unstable_enablePackageExports is false
       const buoyMatch = moduleName.match(/^(@buoy-gg\/[^/]+)\/(.+)$/)
       if (buoyMatch) {
