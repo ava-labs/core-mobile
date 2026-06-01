@@ -4,6 +4,8 @@ import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
+import { readRecurringSwapApprovalContext } from 'vmModule/ApprovalController/validators/shared'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -63,6 +65,8 @@ const ApprovalScreen = ({
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
     : undefined
+
+  const recurringContext = readRecurringSwapApprovalContext(request)
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
@@ -466,6 +470,9 @@ const ApprovalScreen = ({
         disabled: submitting
       }}
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
+      {recurringContext?.step === 'fill' && (
+        <RecurrenceDetails context={recurringContext} />
+      )}
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
