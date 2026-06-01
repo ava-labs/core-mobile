@@ -720,9 +720,9 @@ __metadata:
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
-    react-native-mmkv: 4.1.1
+    react-native-mmkv: 4.3.1
     react-native-modal-datetime-picker: 18.0.0
-    react-native-nitro-fetch: 0.1.6
+    react-native-nitro-fetch: 0.2.0
     react-native-nitro-modules: 0.35.6
     react-native-os: 1.2.6
     react-native-pager-view: 6.9.1
@@ -36324,14 +36324,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mmkv@npm:4.1.1":
-  version: 4.1.1
-  resolution: "react-native-mmkv@npm:4.1.1"
+"react-native-mmkv@npm:4.3.1":
+  version: 4.3.1
+  resolution: "react-native-mmkv@npm:4.3.1"
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-nitro-modules: "*"
-  checksum: 27290aaa605e93098f9c74e3c9ccd9862e6a6118b8cd32bf2e787437667ef031b9709b4f18aabfa1bc3082ff6a3d924a7bd3edb539522d00f00c10d725cdd63d
+  checksum: 41f909a474e5142378484065a9778c2fec185bc82731a863d54db1b489226b33a260cd8a12b8007d9195f8813b781b8570592e55a33285257dc34dbff04a30ea
   languageName: node
   linkType: hard
 
@@ -36368,18 +36368,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-fetch@npm:0.1.6":
-  version: 0.1.6
-  resolution: "react-native-nitro-fetch@npm:0.1.6"
+"react-native-nitro-fetch@npm:0.2.0":
+  version: 0.2.0
+  resolution: "react-native-nitro-fetch@npm:0.2.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-    react-native-nitro-modules: ^0.29.2
+    react-native-nitro-modules: ^0.35.2
     react-native-worklets-core: ^1.6.0
   peerDependenciesMeta:
     react-native-worklets-core:
       optional: true
-  checksum: a46cce48b7b20af075aad995fed5b0c915d7bc7ec97d4f03212ac5ae808731f23d6265a36d5e23e9ccdb1525dfd3fb558d08ecad57dc0d87be069c005a67b5c7
+  checksum: 660ba3b39925bde04690e0c99586a79b0a4d178783938f4f2fa5223971026c796bfdcc0e3e69fe63cb2274c91ae6c243d1b2e059bd1eb9afb65da524f19e6f5c
   languageName: node
   linkType: hard
 
