@@ -1002,7 +1002,12 @@ export const SwapScreen = (): JSX.Element => {
       )
       navigate({
         pathname: '/swap/recurring/review',
-        params: { amountPerOrder: amountStr }
+        params: {
+          amountPerOrder: amountStr,
+          // Raw smallest-unit bigint string, used by the review screen to
+          // call useRecurringQuote without rounding/locale-parsing issues.
+          amountPerOrderRaw: fromTokenValue.toString()
+        }
       })
       return
     }
