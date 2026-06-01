@@ -89,7 +89,9 @@ describe('RecurringSwapService', () => {
 
     it('throws on non-2xx with the error body', async () => {
       fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: 'Quote expired!' }), { status: 400 })
+        new Response(JSON.stringify({ error: 'Quote expired!' }), {
+          status: 400
+        })
       )
 
       await expect(
@@ -112,7 +114,12 @@ describe('RecurringSwapService', () => {
     it('POSTs only { uuid, appId } to /recurring/swap', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ from: '0x0', to: '0x1', data: '0xfeed', value: '0' }),
+          JSON.stringify({
+            from: '0x0',
+            to: '0x1',
+            data: '0xfeed',
+            value: '0'
+          }),
           { status: 200 }
         )
       )

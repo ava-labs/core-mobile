@@ -95,6 +95,189 @@ import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+type SwapDetailItemsParams = {
+  isRecurring: boolean
+  activeQuote: { slippageBps?: number } | null
+  allQuotes: unknown[]
+  fromToken: LocalTokenWithBalance | undefined
+  toToken: LocalTokenWithBalance | undefined
+  rate: number
+  isMarkrRoute: boolean
+  autoSlippage: boolean
+  slippage: number
+  isSwapping: boolean
+  priceImpactItem: GroupListItem
+  handleSelectPricingDetails: () => void
+  handleSelectSlippageDetails: () => void
+}
+
+/**
+ * Builds the GroupList data items for the swap details section.
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function buildSwapDetailItems({
+  isRecurring,
+  activeQuote,
+  allQuotes,
+  fromToken,
+  toToken,
+  rate,
+  isMarkrRoute,
+  autoSlippage,
+  slippage,
+  isSwapping,
+  priceImpactItem,
+  handleSelectPricingDetails,
+  handleSelectSlippageDetails
+}: SwapDetailItemsParams): GroupListItem[] {
+  const items: GroupListItem[] = []
+
+  if (isRecurring) return items
+  if (!activeQuote || allQuotes.length === 0) return items
+
+  if (fromToken && toToken && rate) {
+    const haveMultipleQuotes = allQuotes.length > 1
+    items.push({
+      title: haveMultipleQuotes ? 'Pricing' : 'Rate',
+      value: `1 ${fromToken.symbol} = ${rate.toFixed(4)} ${toToken.symbol}`,
+      onPress: handleSelectPricingDetails
+    })
+  }
+
+  if (isMarkrRoute) {
+    const displayValue = getDisplaySlippageValue({
+      autoSlippage,
+      quoteSlippageBps: activeQuote?.slippageBps,
+      manualSlippage: slippage
+    })
+    items.push({
+      title: 'Slippage',
+      value: displayValue,
+      onPress: isSwapping ? undefined : handleSelectSlippageDetails
+    })
+    items.push(priceImpactItem)
+  }
+
+  return items
+}
+
+/**
+ * Computes the current swap validation error (or null if inputs are valid).
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function computeValidationError({
+  fromTokenValue,
+  debouncedFromTokenValue,
+  minimumTransferAmount,
+  fromToken,
+  feeValidationError
+}: {
+  fromTokenValue: bigint | undefined
+  debouncedFromTokenValue: bigint | undefined
+  minimumTransferAmount: bigint | null | undefined
+  fromToken: LocalTokenWithBalance | undefined
+  feeValidationError: FusionQuoteError | null | undefined
+}): FusionQuoteError | null {
+  if (fromTokenValue === undefined) return null
+  if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    return fusionErrors.enterAmount()
+  }
+  if (
+    minimumTransferAmount != null &&
+    debouncedFromTokenValue !== undefined &&
+    debouncedFromTokenValue > 0n &&
+    debouncedFromTokenValue < minimumTransferAmount &&
+    fromToken &&
+    'decimals' in fromToken
+  ) {
+    const formattedMin = `${formatTokenAmount(
+      bigintToBig(minimumTransferAmount, fromToken.decimals),
+      fromToken.decimals
+    )} ${fromToken.symbol}`
+    return fusionErrors.belowMinimumAmount(formattedMin)
+  }
+  if (
+    debouncedFromTokenValue !== undefined &&
+    fromToken !== undefined &&
+    debouncedFromTokenValue > fromToken.balance
+  ) {
+    return fusionErrors.exceedsBalance()
+  }
+  return feeValidationError ?? null
+}
+
+/**
+ * Builds the GroupListItem for the price-impact row.
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function buildPriceImpactItem({
+  priceImpact,
+  priceImpactSeverity,
+  priceImpactAvailability,
+  dangerColor,
+  secondaryColor
+}: {
+  priceImpact: number | undefined
+  priceImpactSeverity: PriceImpactSeverity | undefined
+  priceImpactAvailability: PriceImpactAvailability | 'unavailable'
+  dangerColor: string
+  secondaryColor: string
+}): GroupListItem {
+  if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
+    return {
+      title: PRICE_IMPACT_ROW_TITLE,
+      value: <ActivityIndicator size="small" />
+    }
+  }
+
+  let color: string
+  let displayText: string
+  let tooltipTitle: string
+  let tooltipDescription: string
+
+  if (priceImpactAvailability === 'unavailable') {
+    color = dangerColor
+    displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+    tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+    tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
+  } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
+    color = dangerColor
+    displayText = `${priceImpact?.toFixed(2)}% (High)`
+    tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
+    tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
+  } else if (priceImpactSeverity === PriceImpactSeverity.High) {
+    color = dangerColor
+    displayText = `${priceImpact?.toFixed(2)}% (High)`
+    tooltipTitle = PRICE_IMPACT_HIGH_TITLE
+    tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+  } else {
+    color = secondaryColor
+    displayText = priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
+    tooltipTitle = PRICE_IMPACT_ROW_TITLE
+    tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+  }
+
+  return {
+    title: PRICE_IMPACT_ROW_TITLE,
+    value: (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Tooltip
+          title={tooltipTitle}
+          description={tooltipDescription}
+          button={{ text: 'Dismiss' }}
+          size={18}
+        />
+        <Text variant="body1" style={{ color }}>
+          {displayText}
+        </Text>
+      </View>
+    )
+  }
+}
+
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complexity arises from React idioms (nested useEffect callbacks with inner fns); logic is decomposed into buildSwapDetailItems, buildPriceImpactItem, computeValidationError
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -339,39 +522,15 @@ export const SwapScreen = (): JSX.Element => {
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
-    if (fromTokenValue === undefined) {
-      setValidationError(null)
-      return
-    }
-    if (
-      debouncedFromTokenValue !== undefined &&
-      debouncedFromTokenValue === 0n
-    ) {
-      setValidationError(fusionErrors.enterAmount())
-    } else if (
-      minimumTransferAmount != null &&
-      debouncedFromTokenValue !== undefined &&
-      debouncedFromTokenValue > 0n &&
-      debouncedFromTokenValue < minimumTransferAmount &&
-      fromToken &&
-      'decimals' in fromToken
-    ) {
-      const formattedMin = `${formatTokenAmount(
-        bigintToBig(minimumTransferAmount, fromToken.decimals),
-        fromToken.decimals
-      )} ${fromToken.symbol}`
-      setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
-    } else if (
-      debouncedFromTokenValue !== undefined &&
-      fromToken !== undefined &&
-      debouncedFromTokenValue > fromToken.balance
-    ) {
-      setValidationError(fusionErrors.exceedsBalance())
-    } else if (feeValidationError) {
-      setValidationError(feeValidationError)
-    } else {
-      setValidationError(null)
-    }
+    setValidationError(
+      computeValidationError({
+        fromTokenValue,
+        debouncedFromTokenValue,
+        minimumTransferAmount,
+        fromToken,
+        feeValidationError
+      })
+    )
   }, [
     fromTokenValue,
     debouncedFromTokenValue,
@@ -611,117 +770,57 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
-  const priceImpactItem = useMemo((): GroupListItem => {
-    let color: string
-    let displayText: string
-    let tooltipTitle: string
-    let tooltipDescription: string
+  const priceImpactItem = useMemo(
+    (): GroupListItem =>
+      buildPriceImpactItem({
+        priceImpact,
+        priceImpactSeverity,
+        priceImpactAvailability,
+        dangerColor: theme.colors.$textDanger,
+        secondaryColor: theme.colors.$textSecondary
+      }),
+    [
+      priceImpact,
+      priceImpactSeverity,
+      priceImpactAvailability,
+      theme.colors.$textDanger,
+      theme.colors.$textSecondary
+    ]
+  )
 
-    if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
-      return {
-        title: PRICE_IMPACT_ROW_TITLE,
-        value: <ActivityIndicator size="small" />
-      }
-    }
-
-    if (priceImpactAvailability === 'unavailable') {
-      color = theme.colors.$textDanger
-      displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
-      tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
-      tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
-    } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
-      color = theme.colors.$textDanger
-      displayText = `${priceImpact?.toFixed(2)}% (High)`
-      tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
-      tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
-    } else if (priceImpactSeverity === PriceImpactSeverity.High) {
-      color = theme.colors.$textDanger
-      displayText = `${priceImpact?.toFixed(2)}% (High)`
-      tooltipTitle = PRICE_IMPACT_HIGH_TITLE
-      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
-    } else {
-      color = theme.colors.$textSecondary
-      displayText =
-        priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
-      tooltipTitle = PRICE_IMPACT_ROW_TITLE
-      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
-    }
-
-    return {
-      title: PRICE_IMPACT_ROW_TITLE,
-      value: (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Tooltip
-            title={tooltipTitle}
-            description={tooltipDescription}
-            button={{ text: 'Dismiss' }}
-            size={18}
-          />
-          <Text variant="body1" style={{ color }}>
-            {displayText}
-          </Text>
-        </View>
-      )
-    }
-  }, [
-    priceImpact,
-    priceImpactSeverity,
-    priceImpactAvailability,
-    theme.colors.$textDanger,
-    theme.colors.$textSecondary
-  ])
-
-  const data = useMemo(() => {
-    const items: GroupListItem[] = []
-
-    if (recurring.isRecurring) return items
-
-    if (!activeQuote || allQuotes.length === 0) {
-      return items
-    }
-
-    if (fromToken && toToken && rate) {
-      const haveMultipleQuotes = allQuotes.length > 1
-      items.push({
-        title: haveMultipleQuotes ? 'Pricing' : 'Rate',
-        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`,
-        onPress: handleSelectPricingDetails
-      })
-    }
-
-    if (isMarkrRoute) {
-      const displayValue = getDisplaySlippageValue({
+  const data = useMemo(
+    () =>
+      buildSwapDetailItems({
+        isRecurring: recurring.isRecurring,
+        activeQuote,
+        allQuotes,
+        fromToken,
+        toToken,
+        rate,
+        isMarkrRoute,
         autoSlippage,
-        quoteSlippageBps: activeQuote?.slippageBps,
-        manualSlippage: slippage
-      })
-      items.push({
-        title: 'Slippage',
-        value: displayValue,
-        onPress: isSwapping ? undefined : handleSelectSlippageDetails
-      })
-    }
-
-    if (isMarkrRoute) {
-      items.push(priceImpactItem)
-    }
-
-    return items
-  }, [
-    recurring.isRecurring,
-    fromToken,
-    toToken,
-    rate,
-    activeQuote,
-    allQuotes,
-    isMarkrRoute,
-    slippage,
-    autoSlippage,
-    isSwapping,
-    priceImpactItem,
-    handleSelectPricingDetails,
-    handleSelectSlippageDetails
-  ])
+        slippage,
+        isSwapping,
+        priceImpactItem,
+        handleSelectPricingDetails,
+        handleSelectSlippageDetails
+      }),
+    [
+      recurring.isRecurring,
+      fromToken,
+      toToken,
+      rate,
+      activeQuote,
+      allQuotes,
+      isMarkrRoute,
+      slippage,
+      autoSlippage,
+      isSwapping,
+      priceImpactItem,
+      handleSelectPricingDetails,
+      handleSelectSlippageDetails
+    ]
+  )
 
   // Prefer popping the parent stack; fall back to dismissing the whole modal
   // when this screen is the root of a modal stack (no back history).
@@ -765,7 +864,12 @@ export const SwapScreen = (): JSX.Element => {
     )
       return
     setAmount(debouncedFromTokenValue)
-  }, [recurring.isRecurring, debouncedFromTokenValue, minimumTransferAmount, setAmount])
+  }, [
+    recurring.isRecurring,
+    debouncedFromTokenValue,
+    minimumTransferAmount,
+    setAmount
+  ])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
@@ -1119,9 +1223,7 @@ export const SwapScreen = (): JSX.Element => {
       {showRecurringToggle && recurring.isRecurring && (
         <RecurringDetailsRows
           amountPerOrder={
-            fromTokenValue !== undefined &&
-            fromToken &&
-            'decimals' in fromToken
+            fromTokenValue !== undefined && fromToken && 'decimals' in fromToken
               ? formatTokenAmount(
                   bigintToBig(fromTokenValue, fromToken.decimals),
                   fromToken.decimals

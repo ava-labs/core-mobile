@@ -7,19 +7,35 @@ jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Text: ({ children, sx: _sx, variant: _v, ...rest }: { children?: any; sx?: unknown; variant?: string; [k: string]: unknown }) =>
+    Text: ({
+      children,
+      sx: _sx,
+      variant: _v,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      variant?: string
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.Text as any, rest as any, children),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    View: ({ children, sx: _sx, ...rest }: { children?: any; sx?: unknown; [k: string]: unknown }) =>
+
+    View: ({
+      children,
+      sx: _sx,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.View as any, rest as any, children),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     GroupList: ({ data }: { data: Array<{ title?: any; value?: any }> }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rn2 = require('react-native') as typeof import('react-native')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const r2 = require('react') as typeof import('react')
       return r2.createElement(
         rn2.View as any,
@@ -59,17 +75,14 @@ jest.mock('../contexts/RecurringSwapContext', () => ({
 }))
 
 // Import after mocks are registered.
-// eslint-disable-next-line import/first
+
 import { RecurringDetailsRows } from './RecurringDetailsRows'
 
 /**
  * Walk the rendered tree and collect all string leaf values.
  */
 function collectText(
-  node:
-    | renderer.ReactTestRendererJSON
-    | renderer.ReactTestRendererJSON[]
-    | null
+  node: renderer.ReactTestRendererJSON | renderer.ReactTestRendererJSON[] | null
 ): string[] {
   if (!node) return []
   const texts: string[] = []
@@ -127,9 +140,7 @@ describe('<RecurringDetailsRows />', () => {
   it('shows "Set" placeholder for frequency and number-of-orders when unset', async () => {
     let instance!: renderer.ReactTestRenderer
     await act(async () => {
-      instance = renderer.create(
-        <RecurringDetailsRows {...baseProps} />
-      )
+      instance = renderer.create(<RecurringDetailsRows {...baseProps} />)
     })
     const json = instance.toJSON() as
       | renderer.ReactTestRendererJSON
@@ -164,7 +175,10 @@ describe('<RecurringDetailsRows />', () => {
       | null
 
     expect(
-      containsText(json, 'You will swap 15 LINK for AVAX every 4 weeks, for 4 orders.')
+      containsText(
+        json,
+        'You will swap 15 LINK for AVAX every 4 weeks, for 4 orders.'
+      )
     ).toBe(true)
     expect(
       containsText(json, 'First swap executes immediately after approval.')

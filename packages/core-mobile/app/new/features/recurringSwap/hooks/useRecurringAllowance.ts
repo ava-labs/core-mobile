@@ -1,6 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { readErc20Allowance, fetchRouterAddress } from '../services/AllowanceService'
+import {
+  readErc20Allowance,
+  fetchRouterAddress
+} from '../services/AllowanceService'
 
 type Params = {
   ownerAddress: string | undefined
@@ -27,6 +30,7 @@ export function useRecurringAllowance(params: Params) {
 
   return useQuery({
     enabled,
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- params.totalAmountIn is included as a string (bigint is not JSON-serialisable); the raw field would be redundant
     queryKey: [
       ReactQueryKeys.RECURRING_ALLOWANCE,
       params.ownerAddress,

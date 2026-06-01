@@ -7,29 +7,41 @@ jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Text: ({ children, sx: _sx, ...rest }: { children?: any; sx?: unknown; [k: string]: unknown }) =>
+    Text: ({
+      children,
+      sx: _sx,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.Text as any, rest as any, children),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    View: ({ children, sx: _sx, ...rest }: { children?: any; sx?: unknown; [k: string]: unknown }) =>
+
+    View: ({
+      children,
+      sx: _sx,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.View as any, rest as any, children)
   }
 })
 
 // Import after mock is registered.
-// eslint-disable-next-line import/first
+
 import { RecurrenceDetails } from './RecurrenceDetails'
 
 /**
  * Walk the rendered tree and collect all string leaf values.
  */
 function collectText(
-  node:
-    | renderer.ReactTestRendererJSON
-    | renderer.ReactTestRendererJSON[]
-    | null
+  node: renderer.ReactTestRendererJSON | renderer.ReactTestRendererJSON[] | null
 ): string[] {
   if (!node) return []
   const texts: string[] = []
@@ -110,7 +122,10 @@ describe('<RecurrenceDetails />', () => {
     // formatter; match flexibly. The token symbols, frequency, and orders count
     // are pinned exactly.
     expect(
-      containsText(json, /15(\.0+)? LINK for AVAX every 4 weeks, for 4 orders\./)
+      containsText(
+        json,
+        /15(\.0+)? LINK for AVAX every 4 weeks, for 4 orders\./
+      )
     ).toBe(true)
     expect(
       containsText(json, 'First swap executes immediately after approval.')

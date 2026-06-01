@@ -82,7 +82,7 @@ export function FrequencyPickerScreen(): JSX.Element {
   const unitItems = useMemo(
     () => FREQUENCY_UNITS.map(u => pluralise(u, safeValue)),
     // Re-derive labels when value changes (plural form depends on value).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [safeValue]
   )
 
@@ -94,12 +94,9 @@ export function FrequencyPickerScreen(): JSX.Element {
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
-  const handleValueChange = useCallback(
-    (index: number) => {
-      setValue(index + 1)
-    },
-    []
-  )
+  const handleValueChange = useCallback((index: number) => {
+    setValue(index + 1)
+  }, [])
 
   const handleUnitChange = useCallback(
     (index: number) => {
@@ -177,4 +174,3 @@ export function FrequencyPickerScreen(): JSX.Element {
     </ScrollScreen>
   )
 }
-

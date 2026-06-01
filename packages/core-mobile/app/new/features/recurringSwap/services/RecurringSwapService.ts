@@ -26,7 +26,9 @@ export class RecurringSwapService implements IRecurringSwapService {
     this.#fetch = fetchImpl
   }
 
-  async recurringQuote(params: RecurringQuoteParams): Promise<RecurringQuoteResult> {
+  async recurringQuote(
+    params: RecurringQuoteParams
+  ): Promise<RecurringQuoteResult> {
     // Markr caps numberOfOrders at 365; the UI's "Unlimited" sentinel is
     // Infinity. Clamp here so the service is the single place that knows.
     const numberOfOrders = Number.isFinite(params.numberOfOrders)

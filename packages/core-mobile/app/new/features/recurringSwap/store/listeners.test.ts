@@ -14,7 +14,9 @@ import { addRecurringSwapListeners } from './listeners'
 
 const mockInvalidate = jest.fn()
 jest.mock('contexts/ReactQueryProvider', () => ({
-  queryClient: { invalidateQueries: (...args: unknown[]) => mockInvalidate(...args) }
+  queryClient: {
+    invalidateQueries: (...args: unknown[]) => mockInvalidate(...args)
+  }
 }))
 
 // ─── Mock AnalyticsService ─────────────────────────────────────────────────
@@ -118,7 +120,10 @@ describe('addRecurringSwapListeners', () => {
 
     // Simulate the VM module completing the tx
     store.dispatch(
-      onInAppRequestSucceeded({ requestId: fillRequest.data.id, txHash: '0xdeadbeef' })
+      onInAppRequestSucceeded({
+        requestId: fillRequest.data.id,
+        txHash: '0xdeadbeef'
+      })
     )
 
     // Flush the async listener chain: the effect awaits `take`, which
@@ -151,7 +156,10 @@ describe('addRecurringSwapListeners', () => {
     store.dispatch(onRequest(approveRequest as Parameters<typeof onRequest>[0]))
 
     store.dispatch(
-      onInAppRequestSucceeded({ requestId: approveRequest.data.id, txHash: '0xabc' })
+      onInAppRequestSucceeded({
+        requestId: approveRequest.data.id,
+        txHash: '0xabc'
+      })
     )
 
     await Promise.resolve()
@@ -183,7 +191,10 @@ describe('addRecurringSwapListeners', () => {
     store.dispatch(onRequest(plainRequest as Parameters<typeof onRequest>[0]))
 
     store.dispatch(
-      onInAppRequestSucceeded({ requestId: plainRequest.data.id, txHash: '0xfoo' })
+      onInAppRequestSucceeded({
+        requestId: plainRequest.data.id,
+        txHash: '0xfoo'
+      })
     )
 
     await Promise.resolve()

@@ -22,13 +22,20 @@ export function RecurrenceDetails({ context }: Props): JSX.Element {
 
   const summary =
     `You will swap ${amountFormatted} ${context.fromTokenSymbol} for ${context.toTokenSymbol} ` +
-    `every ${unitToLabel(context.frequency.unit, context.frequency.value)}, ${ordersClause}. ` +
+    `every ${unitToLabel(
+      context.frequency.unit,
+      context.frequency.value
+    )}, ${ordersClause}. ` +
     `First swap executes immediately after approval. ` +
     `Each swap requires sufficient balance, otherwise the swap will fail.`
 
   return (
     <View
-      sx={{ padding: 16, backgroundColor: '$surfaceSecondary', borderRadius: 12 }}>
+      sx={{
+        padding: 16,
+        backgroundColor: '$surfaceSecondary',
+        borderRadius: 12
+      }}>
       <Text variant="body1" sx={{ fontWeight: 'semibold', marginBottom: 4 }}>
         Scheduling recurring swap
       </Text>

@@ -11,30 +11,50 @@ jest.mock('../services/AllowanceService', () => ({
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+  <QueryClientProvider
+    client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
     {children}
   </QueryClientProvider>
 )
 
 describe('useRecurringAllowance', () => {
-  beforeEach(() => { mockReadAllowance.mockReset(); mockFetchRouter.mockReset() })
+  beforeEach(() => {
+    mockReadAllowance.mockReset()
+    mockFetchRouter.mockReset()
+  })
 
   it('reports needsApproval=true when allowance < totalAmountIn', async () => {
     mockFetchRouter.mockResolvedValueOnce('0xrouter')
     mockReadAllowance.mockResolvedValueOnce(50n)
     const { result, waitFor } = renderHook(
-      () => useRecurringAllowance({ ownerAddress: '0xabc', chainId: 43114, tokenIn: '0xtoken', totalAmountIn: 100n }),
+      () =>
+        useRecurringAllowance({
+          ownerAddress: '0xabc',
+          chainId: 43114,
+          tokenIn: '0xtoken',
+          totalAmountIn: 100n
+        }),
       { wrapper: wrap }
     )
     await waitFor(() => expect(result.current.data).toBeDefined())
-    expect(result.current.data).toMatchObject({ needsApproval: true, allowance: 50n, router: '0xrouter' })
+    expect(result.current.data).toMatchObject({
+      needsApproval: true,
+      allowance: 50n,
+      router: '0xrouter'
+    })
   })
 
   it('reports needsApproval=false when allowance >= totalAmountIn', async () => {
     mockFetchRouter.mockResolvedValueOnce('0xrouter')
     mockReadAllowance.mockResolvedValueOnce(200n)
     const { result, waitFor } = renderHook(
-      () => useRecurringAllowance({ ownerAddress: '0xabc', chainId: 43114, tokenIn: '0xtoken', totalAmountIn: 100n }),
+      () =>
+        useRecurringAllowance({
+          ownerAddress: '0xabc',
+          chainId: 43114,
+          tokenIn: '0xtoken',
+          totalAmountIn: 100n
+        }),
       { wrapper: wrap }
     )
     await waitFor(() => expect(result.current.data).toBeDefined())

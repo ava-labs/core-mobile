@@ -57,7 +57,12 @@ function shortenAddress(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
 }
 
-const STATUS_ORDER: ScheduleStatus[] = ['active', 'paused', 'completed', 'cancelled']
+const STATUS_ORDER: ScheduleStatus[] = [
+  'active',
+  'paused',
+  'completed',
+  'cancelled'
+]
 
 function sortSchedules(schedules: Schedule[]): Schedule[] {
   return [...schedules].sort(
@@ -74,14 +79,19 @@ type ScheduleCardProps = {
   onRemove: (s: Schedule) => void
 }
 
-function ScheduleCard({ schedule: s, onRemove }: ScheduleCardProps): JSX.Element {
+function ScheduleCard({
+  schedule: s,
+  onRemove
+}: ScheduleCardProps): JSX.Element {
   const isActionable = s.status === 'active' || s.status === 'paused'
 
   const groupData = useMemo((): GroupListItem[] => {
     const items: GroupListItem[] = [
       {
         title: 'Orders executed',
-        value: `${s.executedOrders} / ${s.numberOfOrders === 365 ? '∞' : s.numberOfOrders}`
+        value: `${s.executedOrders} / ${
+          s.numberOfOrders === 365 ? '∞' : s.numberOfOrders
+        }`
       },
       {
         title: 'Next swap scheduled',
@@ -124,19 +134,14 @@ function ScheduleCard({ schedule: s, onRemove }: ScheduleCardProps): JSX.Element
         </View>
       )}
 
-      <Text
-        variant="body2"
-        sx={{ color: '$textPrimary', textAlign: 'center' }}>
+      <Text variant="body2" sx={{ color: '$textPrimary', textAlign: 'center' }}>
         {formatSummary(s)}
       </Text>
 
       <GroupList data={groupData} separatorMarginRight={16} />
 
       {isActionable && (
-        <Button
-          type="secondary"
-          size="medium"
-          onPress={() => onRemove(s)}>
+        <Button type="secondary" size="medium" onPress={() => onRemove(s)}>
           Remove recurrence
         </Button>
       )}
@@ -167,9 +172,8 @@ export function RecurringSchedulesScreen(): JSX.Element {
 
   const activeCount = useMemo(
     () =>
-      schedules?.filter(
-        s => s.status === 'active' || s.status === 'paused'
-      ).length ?? 0,
+      schedules?.filter(s => s.status === 'active' || s.status === 'paused')
+        .length ?? 0,
     [schedules]
   )
 
@@ -203,7 +207,9 @@ export function RecurringSchedulesScreen(): JSX.Element {
     [cancel]
   )
 
-  const title = `${activeCount} recurring swap${activeCount === 1 ? '' : 's'} scheduled`
+  const title = `${activeCount} recurring swap${
+    activeCount === 1 ? '' : 's'
+  } scheduled`
 
   return (
     <ScrollScreen

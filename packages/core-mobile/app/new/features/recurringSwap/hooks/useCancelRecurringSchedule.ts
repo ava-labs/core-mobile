@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { QueryKey } from '@tanstack/react-query'
 import { showSnackbar } from 'common/utils/toast'
 import { getRecurringSchedulesService } from '../services/RecurringSchedulesService.singleton'
-import { RECURRING_SCHEDULES_QK } from './useRecurringSchedules'
 import type { RecurringSchedulesError } from '../services/RecurringSchedulesService'
 import type { Schedule } from '../types'
+import { RECURRING_SCHEDULES_QK } from './useRecurringSchedules'
 
 type SnapshotEntry = [QueryKey, Schedule[] | undefined]
 

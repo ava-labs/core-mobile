@@ -33,9 +33,7 @@ const AUTO_CANCEL_REASONS = new Set([
  * Returns undefined if the action is not an onRequest, the payload is not an
  * RpcRequest, or the context is missing / malformed.
  */
-const getRecurringSwapCtx = (
-  action: AnyAction
-) => {
+const getRecurringSwapCtx = (action: AnyAction) => {
   if (!onRequest.match(action)) return undefined
   // request.context is typed as Record<string, unknown> | undefined on the
   // local RpcRequest, which is structurally compatible with the vm-module
@@ -190,44 +188,54 @@ async function processSchedule(
 }
 
 /**
+ * Iterates all schedules, processes failures/completions, and persists dirty state.
+ * Extracted from handleQueryCacheEvent to reduce cognitive complexity.
+ */
+async function processAllSchedules(schedules: Schedule[]): Promise<void> {
+  const seenFailures = loadSeenFailures()
+  const autoCancelled = loadAutoCancelled()
+  let failuresDirty = false
+  let cancelledDirty = false
+
+  for (const schedule of schedules) {
+    const result = await processSchedule(schedule, seenFailures, autoCancelled)
+    if (result.failuresDirty) failuresDirty = true
+    if (result.cancelledDirty) cancelledDirty = true
+  }
+
+  if (failuresDirty) saveSeenFailures(seenFailures)
+  if (cancelledDirty) saveAutoCancelled(autoCancelled)
+}
+
+/**
+ * Handles a single React Query cache event for the RECURRING_SCHEDULES query.
+ * Extracted from the subscribe callback to reduce cognitive complexity.
+ */
+function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
+  if (
+    event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
+    event.type !== 'updated' ||
+    event.query.state.status !== 'success'
+  ) {
+    return
+  }
+
+  const schedules = event.query.state.data as Schedule[] | undefined
+  if (!schedules || schedules.length === 0) return
+
+  processAllSchedules(schedules).catch(err =>
+    Logger.error('[RecurringSwap] Failure watcher error', err)
+  )
+}
+
+/**
  * Subscribe to the React Query cache and watch all RECURRING_SCHEDULES queries
  * for new failures, auto-cancel triggers, and completion events.
  *
  * Call once at app startup (from `store/middleware/listener.ts`).
  */
 export function startRecurringFailureWatcher(): void {
-  queryClient.getQueryCache().subscribe((event: QueryCacheNotifyEvent) => {
-    if (
-      event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
-      event.type !== 'updated' ||
-      event.query.state.status !== 'success'
-    ) {
-      return
-    }
-
-    const schedules = event.query.state.data as Schedule[] | undefined
-    if (!schedules || schedules.length === 0) return
-
-    const seenFailures = loadSeenFailures()
-    const autoCancelled = loadAutoCancelled()
-    let failuresDirty = false
-    let cancelledDirty = false
-
-    // Process all schedules sequentially — fire-and-forget, errors logged inside
-    const run = async (): Promise<void> => {
-      for (const schedule of schedules) {
-        const result = await processSchedule(schedule, seenFailures, autoCancelled)
-        if (result.failuresDirty) failuresDirty = true
-        if (result.cancelledDirty) cancelledDirty = true
-      }
-      if (failuresDirty) saveSeenFailures(seenFailures)
-      if (cancelledDirty) saveAutoCancelled(autoCancelled)
-    }
-
-    run().catch(err =>
-      Logger.error('[RecurringSwap] Failure watcher error', err)
-    )
-  })
+  queryClient.getQueryCache().subscribe(handleQueryCacheEvent)
 }
 
 // ─── Registration ─────────────────────────────────────────────────────────────

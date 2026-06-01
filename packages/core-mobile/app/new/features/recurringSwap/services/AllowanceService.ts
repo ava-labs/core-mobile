@@ -17,15 +17,12 @@ type SpenderAddressResponse = {
  * Response shape: { chainId, address }
  */
 export async function fetchRouterAddress(chainId: number): Promise<string> {
-  const res = await fetch(
-    `${BASE_URL}/spender-address?chainId=${chainId}`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${BEARER_TOKEN}`
-      }
+  const res = await fetch(`${BASE_URL}/spender-address?chainId=${chainId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${BEARER_TOKEN}`
     }
-  )
+  })
 
   if (!res.ok) {
     throw new Error(
@@ -55,7 +52,9 @@ export async function readErc20Allowance({
   const networks = getNetworksFromCache({ includeSolana: false })
   const network = networks?.[chainId]
   if (!network) {
-    throw new Error(`readErc20Allowance: network not found for chainId ${chainId}`)
+    throw new Error(
+      `readErc20Allowance: network not found for chainId ${chainId}`
+    )
   }
 
   const provider = await getEvmProvider(network)

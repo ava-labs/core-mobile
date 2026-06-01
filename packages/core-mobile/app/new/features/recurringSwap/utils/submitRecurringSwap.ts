@@ -142,10 +142,7 @@ export async function submitRecurringSwap(
         {
           from: activeAccount.addressC,
           to: fromToken.address,
-          data: buildErc20ApproveCalldata(
-            router,
-            BigInt(quote.totalAmountIn)
-          ),
+          data: buildErc20ApproveCalldata(router, BigInt(quote.totalAmountIn)),
           value: '0x0'
         }
       ],

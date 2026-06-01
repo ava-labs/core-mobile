@@ -56,7 +56,9 @@ describe('seenFailures', () => {
 
   it('handles non-array JSON gracefully', () => {
     // Valid JSON but not an array — the cast to string[] gives wrong shape
-    mockMmkvStore['recurringSwap.seenFailures'] = JSON.stringify({ not: 'an array' })
+    mockMmkvStore['recurringSwap.seenFailures'] = JSON.stringify({
+      not: 'an array'
+    })
     // new Set({...}) iterates keys, which is fine but semantically wrong —
     // the important thing is that it does NOT throw
     expect(() => loadSeenFailures()).not.toThrow()

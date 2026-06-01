@@ -43,15 +43,21 @@ export function RecurringDetailsRows({
       numberOfOrders === UNLIMITED_ORDERS
         ? 'for an unlimited amount of time'
         : numberOfOrders === 1
-          ? 'for 1 order'
-          : `for ${numberOfOrders} orders`
+        ? 'for 1 order'
+        : `for ${numberOfOrders} orders`
     return (
       `You will swap ${amountPerOrder} ${fromTokenSymbol} for ${toTokenSymbol} every ${cadence}, ` +
       `${ordersClause}. ` +
       `First swap executes immediately after approval. ` +
       `Each swap requires sufficient balance, otherwise the swap will fail.`
     )
-  }, [frequency, numberOfOrders, amountPerOrder, fromTokenSymbol, toTokenSymbol])
+  }, [
+    frequency,
+    numberOfOrders,
+    amountPerOrder,
+    fromTokenSymbol,
+    toTokenSymbol
+  ])
 
   // Estimated total spend = amountPerOrder × N.
   // Suppressed when Unlimited per Figma.

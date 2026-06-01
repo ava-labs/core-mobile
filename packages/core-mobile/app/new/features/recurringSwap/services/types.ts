@@ -32,7 +32,7 @@ export type RecurringQuoteResult = {
   frequency: Frequency
   totalAmountIn: string // amount * numberOfOrders; the allowance to grant
   fees: RecurringQuoteFee[]
-  recommendedSlippage: number   // basis points, e.g. 50 = 0.5%
+  recommendedSlippage: number // basis points, e.g. 50 = 0.5%
   expiredAt: number // unix seconds
 }
 

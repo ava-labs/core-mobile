@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode
+} from 'react'
 import type { Frequency, NumberOfOrders } from '../types'
 
 type State = {
@@ -12,13 +18,26 @@ type State = {
 
 const Ctx = createContext<State | null>(null)
 
-export function RecurringSwapContextProvider({ children }: { children: ReactNode }) {
+export function RecurringSwapContextProvider({
+  children
+}: {
+  children: ReactNode
+}) {
   const [isRecurring, setIsRecurring] = useState(false)
   const [frequency, setFrequency] = useState<Frequency | undefined>(undefined)
-  const [numberOfOrders, setNumberOfOrders] = useState<NumberOfOrders | undefined>(undefined)
+  const [numberOfOrders, setNumberOfOrders] = useState<
+    NumberOfOrders | undefined
+  >(undefined)
 
   const value = useMemo<State>(
-    () => ({ isRecurring, setIsRecurring, frequency, setFrequency, numberOfOrders, setNumberOfOrders }),
+    () => ({
+      isRecurring,
+      setIsRecurring,
+      frequency,
+      setFrequency,
+      numberOfOrders,
+      setNumberOfOrders
+    }),
     [isRecurring, frequency, numberOfOrders]
   )
 
@@ -27,6 +46,9 @@ export function RecurringSwapContextProvider({ children }: { children: ReactNode
 
 export function useRecurringSwapContext(): State {
   const v = useContext(Ctx)
-  if (!v) throw new Error('useRecurringSwapContext must be used within a RecurringSwapContextProvider')
+  if (!v)
+    throw new Error(
+      'useRecurringSwapContext must be used within a RecurringSwapContextProvider'
+    )
   return v
 }

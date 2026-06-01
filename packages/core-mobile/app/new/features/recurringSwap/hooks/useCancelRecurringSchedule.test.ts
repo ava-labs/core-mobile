@@ -36,10 +36,9 @@ describe('useCancelRecurringSchedule', () => {
 
   it('calls cancel with orderId + address', async () => {
     mockCancel.mockResolvedValueOnce({ orderId: '0xdead', status: 'cancelled' })
-    const { result, waitFor } = renderHook(
-      () => useCancelRecurringSchedule(),
-      { wrapper: wrap }
-    )
+    const { result, waitFor } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
     await act(async () => {
       result.current.mutate({ orderId: '0xdead', address: '0xabc' })
     })
@@ -55,10 +54,9 @@ describe('useCancelRecurringSchedule', () => {
       kind: 'not_cancellable',
       message: 'already done'
     })
-    const { result, waitFor } = renderHook(
-      () => useCancelRecurringSchedule(),
-      { wrapper: wrap }
-    )
+    const { result, waitFor } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
     await act(async () => {
       result.current.mutate({ orderId: '0xdead', address: '0xabc' })
     })
@@ -73,10 +71,9 @@ describe('useCancelRecurringSchedule', () => {
       kind: 'not_found',
       message: 'not yours'
     })
-    const { result, waitFor } = renderHook(
-      () => useCancelRecurringSchedule(),
-      { wrapper: wrap }
-    )
+    const { result, waitFor } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
     await act(async () => {
       result.current.mutate({ orderId: '0xdead', address: '0xabc' })
     })

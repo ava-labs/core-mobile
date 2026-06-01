@@ -45,7 +45,10 @@ export class RecurringSchedulesService {
       headers: { Authorization: `Bearer ${this.#bearerToken}` }
     })
     if (res.status === 401) {
-      const e: RecurringSchedulesError = { kind: 'unauthorized', message: 'Bearer expired' }
+      const e: RecurringSchedulesError = {
+        kind: 'unauthorized',
+        message: 'Bearer expired'
+      }
       throw e
     }
     if (!res.ok) throw new Error(`recurring/orders ${res.status}`)
@@ -68,15 +71,24 @@ export class RecurringSchedulesService {
     if (res.status === 200) return (await res.json()) as Schedule
     const body = (await res.json().catch(() => ({}))) as { error?: string }
     if (res.status === 400) {
-      const e: RecurringSchedulesError = { kind: 'not_cancellable', message: body.error ?? 'Order is not cancellable' }
+      const e: RecurringSchedulesError = {
+        kind: 'not_cancellable',
+        message: body.error ?? 'Order is not cancellable'
+      }
       throw e
     }
     if (res.status === 404) {
-      const e: RecurringSchedulesError = { kind: 'not_found', message: 'Order not found for this address' }
+      const e: RecurringSchedulesError = {
+        kind: 'not_found',
+        message: 'Order not found for this address'
+      }
       throw e
     }
     if (res.status === 401) {
-      const e: RecurringSchedulesError = { kind: 'unauthorized', message: 'Bearer expired' }
+      const e: RecurringSchedulesError = {
+        kind: 'unauthorized',
+        message: 'Bearer expired'
+      }
       throw e
     }
     throw new Error(`recurring/cancel ${res.status}`)

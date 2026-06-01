@@ -1,6 +1,12 @@
 // Frequency units accepted by Markr's /recurring/quote and the wheel-picker UI.
-export const FREQUENCY_UNITS = ['minute', 'hour', 'day', 'week', 'month'] as const
-export type FrequencyUnit = (typeof FREQUENCY_UNITS)[number]
+export const FREQUENCY_UNITS = [
+  'minute',
+  'hour',
+  'day',
+  'week',
+  'month'
+] as const
+export type FrequencyUnit = typeof FREQUENCY_UNITS[number]
 
 export type Frequency = {
   unit: FrequencyUnit
@@ -10,7 +16,7 @@ export type Frequency = {
 // Sentinel for the "Unlimited" picker option. Stored in context as `Infinity`;
 // mapped to 365 (the Markr cap) at submit time. Keep this in one place so the
 // service is the only thing that knows about the deception.
-export const UNLIMITED_ORDERS: number = Infinity
+export const UNLIMITED_ORDERS = Infinity
 export type NumberOfOrders = number | typeof UNLIMITED_ORDERS
 
 // Lifecycle states defined by Markr (see RecurringOrder.status in OpenAPI v2.0.0).

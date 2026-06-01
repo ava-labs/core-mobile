@@ -40,12 +40,9 @@ jest.mock('utils/Logger', () => ({
 // ─── RecurringSchedulesService singleton mock ─────────────────────────────────
 
 const mockCancel = jest.fn()
-jest.mock(
-  '../services/RecurringSchedulesService.singleton',
-  () => ({
-    getRecurringSchedulesService: () => ({ cancel: mockCancel })
-  })
-)
+jest.mock('../services/RecurringSchedulesService.singleton', () => ({
+  getRecurringSchedulesService: () => ({ cancel: mockCancel })
+}))
 
 // ─── QueryClient mock ─────────────────────────────────────────────────────────
 
@@ -72,8 +69,8 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'new/common/utils/toast'
-import { startRecurringFailureWatcher } from './listeners'
 import type { Schedule } from '../types'
+import { startRecurringFailureWatcher } from './listeners'
 
 const captureSpy = AnalyticsService.capture as jest.Mock
 const showSnackbarSpy = showSnackbar as jest.Mock
@@ -281,7 +278,10 @@ describe('startRecurringFailureWatcher', () => {
     await flush()
 
     expect(mockCancel).not.toHaveBeenCalled()
-    expect(captureSpy).toHaveBeenCalledWith('RecurringSwapFailed', expect.any(Object))
+    expect(captureSpy).toHaveBeenCalledWith(
+      'RecurringSwapFailed',
+      expect.any(Object)
+    )
     expect(captureSpy).not.toHaveBeenCalledWith(
       'RecurringSwapAutoCancelled',
       expect.any(Object)
@@ -309,7 +309,10 @@ describe('startRecurringFailureWatcher', () => {
 
     expect(mockCancel).not.toHaveBeenCalled()
     // RecurringSwapFailed should still fire
-    expect(captureSpy).toHaveBeenCalledWith('RecurringSwapFailed', expect.any(Object))
+    expect(captureSpy).toHaveBeenCalledWith(
+      'RecurringSwapFailed',
+      expect.any(Object)
+    )
   })
 
   // ── 5. Completed analytics ────────────────────────────────────────────────
@@ -384,7 +387,10 @@ describe('startRecurringFailureWatcher', () => {
     expect(mockInvalidate).not.toHaveBeenCalled()
 
     // RecurringSwapFailed should still have fired
-    expect(captureSpy).toHaveBeenCalledWith('RecurringSwapFailed', expect.any(Object))
+    expect(captureSpy).toHaveBeenCalledWith(
+      'RecurringSwapFailed',
+      expect.any(Object)
+    )
 
     // Reset cancel to succeed on the retry
     mockCancel.mockResolvedValueOnce({ ...BASE_SCHEDULE, status: 'cancelled' })

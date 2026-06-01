@@ -6,18 +6,50 @@ jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    View: ({ children, sx: _sx, ...rest }: { children?: any; sx?: unknown; [k: string]: unknown }) =>
+    View: ({
+      children,
+      sx: _sx,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.View as any, rest as any, children),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Text: ({ children, sx: _sx, variant: _v, ...rest }: { children?: any; sx?: unknown; variant?: string; [k: string]: unknown }) =>
+
+    Text: ({
+      children,
+      sx: _sx,
+      variant: _v,
+      ...rest
+    }: {
+      children?: any
+      sx?: unknown
+      variant?: string
+      [k: string]: unknown
+    }) =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.createElement(rn.Text as any, rest as any, children),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Button: ({ children, onPress, type: _t, size: _s, ...rest }: { children?: any; onPress?: () => void; type?: string; size?: string; [k: string]: unknown }) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      r.createElement(rn.TouchableOpacity as any, { onPress, ...rest }, r.createElement(rn.Text as any, null, children)),
+
+    Button: ({
+      children,
+      onPress,
+      type: _t,
+      size: _s,
+      ...rest
+    }: {
+      children?: any
+      onPress?: () => void
+      type?: string
+      size?: string
+      [k: string]: unknown
+    }) =>
+      r.createElement(
+        rn.TouchableOpacity as any,
+        { onPress, ...rest },
+        r.createElement(rn.Text as any, null, children)
+      ),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     GroupList: ({ data }: { data: Array<{ title?: any; value?: any }> }) =>
       r.createElement(
@@ -40,7 +72,11 @@ jest.mock('@avalabs/k2-alpine', () => {
 
 // Mock expo-router
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ navigate: jest.fn(), back: jest.fn(), dismissAll: jest.fn() })
+  useRouter: () => ({
+    navigate: jest.fn(),
+    back: jest.fn(),
+    dismissAll: jest.fn()
+  })
 }))
 
 // Mock react-redux selectors
@@ -72,9 +108,16 @@ jest.mock('common/components/ScrollScreen', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ScrollScreen: ({ children, navigationTitle }: { children?: any; navigationTitle?: string }) =>
-      r.createElement(rn.View as any, null,
+    ScrollScreen: ({
+      children,
+      navigationTitle
+    }: {
+      children?: any
+      navigationTitle?: string
+    }) =>
+      r.createElement(
+        rn.View as any,
+        null,
         r.createElement(rn.Text as any, null, navigationTitle),
         children
       )
@@ -94,7 +137,7 @@ jest.mock('../hooks/useCancelRecurringSchedule', () => ({
 }))
 
 // Control schedules data per test
-let mockSchedulesData: import('../types').Schedule[] | undefined = undefined
+let mockSchedulesData: import('../types').Schedule[] | undefined
 
 jest.mock('../hooks/useRecurringSchedules', () => ({
   useRecurringSchedules: () => ({ data: mockSchedulesData, isLoading: false }),
@@ -102,25 +145,26 @@ jest.mock('../hooks/useRecurringSchedules', () => ({
 }))
 
 // Import AFTER mocks
-// eslint-disable-next-line import/first
-import { RecurringSchedulesScreen } from './RecurringSchedulesScreen'
-// eslint-disable-next-line import/first
+
 import type { Schedule } from '../types'
+import { RecurringSchedulesScreen } from './RecurringSchedulesScreen'
 
 /**
  * Walk the rendered tree and collect all string leaf values.
  */
 function collectText(
-  node:
-    | renderer.ReactTestRendererJSON
-    | renderer.ReactTestRendererJSON[]
-    | null
+  node: renderer.ReactTestRendererJSON | renderer.ReactTestRendererJSON[] | null
 ): string[] {
   if (!node) return []
   const texts: string[] = []
-  const walk = (n: renderer.ReactTestRendererJSON | string | null | undefined): void => {
+  const walk = (
+    n: renderer.ReactTestRendererJSON | string | null | undefined
+  ): void => {
     if (!n) return
-    if (typeof n === 'string') { texts.push(n); return }
+    if (typeof n === 'string') {
+      texts.push(n)
+      return
+    }
     if (n.children) n.children.forEach(walk)
   }
   if (Array.isArray(node)) node.forEach(walk)
@@ -129,7 +173,10 @@ function collectText(
 }
 
 function containsText(
-  json: renderer.ReactTestRendererJSON | renderer.ReactTestRendererJSON[] | null,
+  json:
+    | renderer.ReactTestRendererJSON
+    | renderer.ReactTestRendererJSON[]
+    | null,
   pattern: string | RegExp
 ): boolean {
   const all = collectText(json).join('')
@@ -183,7 +230,9 @@ describe('<RecurringSchedulesScreen />', () => {
   })
 
   it('does not render "Remove recurrence" button for completed schedule', async () => {
-    mockSchedulesData = [{ ...ACTIVE_SCHEDULE, status: 'completed', nextExecutionAt: null }]
+    mockSchedulesData = [
+      { ...ACTIVE_SCHEDULE, status: 'completed', nextExecutionAt: null }
+    ]
     let instance!: renderer.ReactTestRenderer
     await act(async () => {
       instance = renderer.create(<RecurringSchedulesScreen />)

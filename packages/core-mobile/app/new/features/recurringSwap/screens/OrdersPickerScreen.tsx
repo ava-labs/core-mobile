@@ -23,7 +23,9 @@ function labelToIndex(label: string): number {
   return idx >= 0 ? idx : DEFAULT_INDEX
 }
 
-function ordersToLabel(numberOfOrders: number | typeof UNLIMITED_ORDERS | undefined): string {
+function ordersToLabel(
+  numberOfOrders: number | typeof UNLIMITED_ORDERS | undefined
+): string {
   if (numberOfOrders === UNLIMITED_ORDERS) return 'Unlimited'
   if (numberOfOrders !== undefined) return String(numberOfOrders)
   return DEFAULT_LABEL

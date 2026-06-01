@@ -18,7 +18,10 @@ type Params = {
  * The runtime guards check both `address` and `decimals` before this cast,
  * eliminating NFT/native variants.
  */
-type AddressableToken = LocalTokenWithBalance & { address: string; decimals: number }
+type AddressableToken = LocalTokenWithBalance & {
+  address: string
+  decimals: number
+}
 
 const STALE_MS = 30_000
 
@@ -37,6 +40,7 @@ export function useRecurringQuote(params: Params) {
 
   return useQuery({
     enabled,
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- intentional fine-grained queryKey: we key on stable primitive sub-fields (networkChainId, localId, unit, value) rather than the whole object references to avoid redundant refetches when unrelated token properties change
     queryKey: [
       'recurringQuote',
       params.fromToken?.networkChainId,

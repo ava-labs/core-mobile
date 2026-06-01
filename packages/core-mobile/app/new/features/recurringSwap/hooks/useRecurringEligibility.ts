@@ -21,7 +21,8 @@ export function useRecurringEligibility(
 
   return useMemo<Eligibility>(() => {
     if (!ownerAddress) return { eligible: false, reason: 'no-evm-address' }
-    if (!fromToken || !toToken) return { eligible: false, reason: 'unsupported-token' }
+    if (!fromToken || !toToken)
+      return { eligible: false, reason: 'unsupported-token' }
     if (fromToken.networkChainId !== toToken.networkChainId) {
       return { eligible: false, reason: 'cross-chain' }
     }

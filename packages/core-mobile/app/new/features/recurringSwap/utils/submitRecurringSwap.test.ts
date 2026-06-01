@@ -1,6 +1,5 @@
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
-import { submitRecurringSwap } from './submitRecurringSwap'
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
 
@@ -22,14 +21,15 @@ import {
   readErc20Allowance
 } from '../services/AllowanceService'
 import { getRecurringSwapService } from '../services/RecurringSwapService.singleton'
+import { submitRecurringSwap } from './submitRecurringSwap'
 
 // ─── Test fixtures ────────────────────────────────────────────────────────────
 
 // Lowercase addresses are accepted by ethers (EIP-55 checksum is only enforced
 // when mixed-case is supplied). Using the well-known all-lowercase form here.
-const ROUTER    = '0x0000000000000000000000000000000000000001'
+const ROUTER = '0x0000000000000000000000000000000000000001'
 const FROM_ADDR = '0x0000000000000000000000000000000000000002'
-const TOKEN_IN  = '0x0000000000000000000000000000000000000003'
+const TOKEN_IN = '0x0000000000000000000000000000000000000003'
 const TOKEN_OUT = '0x0000000000000000000000000000000000000004'
 const FILL_ADDR = '0x0000000000000000000000000000000000000005'
 const FILL_TX = {
@@ -199,7 +199,9 @@ describe('submitRecurringSwap', () => {
     })
 
     it('calls recurringSwap exactly once', async () => {
-      const mockService = { recurringSwap: jest.fn().mockResolvedValue(FILL_TX) }
+      const mockService = {
+        recurringSwap: jest.fn().mockResolvedValue(FILL_TX)
+      }
       ;(getRecurringSwapService as jest.Mock).mockReturnValue(mockService)
 
       const params = makeParams()
@@ -209,7 +211,9 @@ describe('submitRecurringSwap', () => {
     })
 
     it('passes only { uuid, appId } to recurringSwap', async () => {
-      const mockService = { recurringSwap: jest.fn().mockResolvedValue(FILL_TX) }
+      const mockService = {
+        recurringSwap: jest.fn().mockResolvedValue(FILL_TX)
+      }
       ;(getRecurringSwapService as jest.Mock).mockReturnValue(mockService)
 
       const params = makeParams()

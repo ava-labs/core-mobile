@@ -267,7 +267,10 @@ export type RecurringSwapApprovalContext = {
   totalAmountIn: string // amount * numberOfOrders; the allowance amount
   numberOfOrders: number // 365 if the user picked Unlimited
   isUnlimited: boolean // true when the UI selected "Unlimited"
-  frequency: { unit: 'minute' | 'hour' | 'day' | 'week' | 'month'; value: number }
+  frequency: {
+    unit: 'minute' | 'hour' | 'day' | 'week' | 'month'
+    value: number
+  }
   intervalSeconds: number
   chainId: number
 }

@@ -76,7 +76,10 @@ export function RecurringSwapReviewScreen(): JSX.Element {
   // Falls back to the string passed from SwapScreen when the raw value is missing.
   const displayAmountPerOrder = useMemo(() => {
     if (amountPerOrder && amountPerOrder > 0n) {
-      return `${formatTokenAmount(bigintToBig(amountPerOrder, fromDecimals), fromDecimals)} ${fromSymbol}`
+      return `${formatTokenAmount(
+        bigintToBig(amountPerOrder, fromDecimals),
+        fromDecimals
+      )} ${fromSymbol}`
     }
     return amountPerOrderStr ? `${amountPerOrderStr} ${fromSymbol}` : '—'
   }, [amountPerOrder, amountPerOrderStr, fromDecimals, fromSymbol])
@@ -154,8 +157,8 @@ export function RecurringSwapReviewScreen(): JSX.Element {
     const ordersClause = isUnlimited
       ? 'for an unlimited amount of time'
       : numberOfOrders === 1
-        ? 'for 1 order'
-        : `for ${numberOfOrders} orders`
+      ? 'for 1 order'
+      : `for ${numberOfOrders} orders`
     return (
       `You will swap ${displayAmountPerOrder} for ${toSymbol} every ${cadence}, ` +
       `${ordersClause}. ` +
@@ -182,8 +185,11 @@ export function RecurringSwapReviewScreen(): JSX.Element {
       <RecurringDetailsRows
         amountPerOrder={
           amountPerOrder > 0n
-            ? formatTokenAmount(bigintToBig(amountPerOrder, fromDecimals), fromDecimals)
-            : (amountPerOrderStr ?? undefined)
+            ? formatTokenAmount(
+                bigintToBig(amountPerOrder, fromDecimals),
+                fromDecimals
+              )
+            : amountPerOrderStr ?? undefined
         }
         fromTokenSymbol={fromSymbol || undefined}
         toTokenSymbol={toSymbol || undefined}
