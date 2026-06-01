@@ -33,7 +33,11 @@ function resolveNoblePackage(packageName, moduleName) {
 const PACKAGE_EXPORTS_OPT_IN = [
   '@lombard.finance/sdk',
   '@avalabs/fusion-sdk',
-  '@avalabs/crypto-sdk'
+  '@avalabs/crypto-sdk',
+  // react-native-nitro-fetch imports 'web-streams-polyfill/polyfill', a subpath
+  // only exposed via the package's "exports" map (-> dist/polyfill.js). Package
+  // exports is disabled globally, so opt this package in to resolve the subpath.
+  'web-streams-polyfill'
 ]
 
 // Only redirect @noble/hashes subpaths that are patched for native crypto.
