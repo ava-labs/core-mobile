@@ -475,6 +475,29 @@ export type AnalyticsEvents = {
     intervalSeconds: number
   }
 
+  RecurringSwapFailed: {
+    orderId: string
+    chainId: number
+    executionIndex: number
+    reasons: string[]
+    tryCount: number
+    failedAt: number
+  }
+
+  RecurringSwapAutoCancelled: {
+    orderId: string
+    chainId: number
+    triggerReason: string
+    executedOrders: number
+    failedExecutionIndex: number
+  }
+
+  RecurringSwapCompleted: {
+    orderId: string
+    chainId: number
+    executedOrders: number
+  }
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { encrypted: { addressC: string } }
   NestEggSuccessModalViewed: { encrypted: { addressC: string } }
