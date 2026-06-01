@@ -19,6 +19,7 @@ import { addMeldListeners } from 'store/meld/listeners'
 import { addBranchListeners } from 'store/branch/listener'
 import { addNestEggListeners } from 'store/nestEgg/listeners'
 import { addFusionListeners } from 'new/features/swap/store/listeners'
+import { addRecurringSwapListeners } from 'new/features/recurringSwap/store/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -64,6 +65,8 @@ addBranchListeners(startListening)
 addNestEggListeners(startListening)
 
 addFusionListeners(startListening)
+
+addRecurringSwapListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

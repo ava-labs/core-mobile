@@ -464,6 +464,17 @@ export type AnalyticsEvents = {
     chainId: number
   }
 
+  RecurringSwapScheduled: {
+    scheduleUuid: string
+    chainId: number
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    amountPerOrder: string
+    numberOfOrders: number
+    isUnlimited: boolean
+    intervalSeconds: number
+  }
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { encrypted: { addressC: string } }
   NestEggSuccessModalViewed: { encrypted: { addressC: string } }
