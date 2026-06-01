@@ -9,6 +9,7 @@ import {
   GroupListItem,
   Separator,
   Text,
+  Toggle,
   Tooltip,
   useTheme,
   View
@@ -55,9 +56,14 @@ import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useToke
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
+  selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
   selectMarkrSwapMaxRetries
 } from 'store/posthog'
+import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
+import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
+import { RecurringDetailsRows } from 'features/recurringSwap/components/RecurringDetailsRows'
+import { ExistingSchedulesRow } from 'features/recurringSwap/components/ExistingSchedulesRow'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -194,6 +200,12 @@ export const SwapScreen = (): JSX.Element => {
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
+
+  const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const recurring = useRecurringSwapContext()
+  const evmAddress = activeAccount?.addressC
+  const eligibility = useRecurringEligibility(fromToken, toToken, evmAddress)
+  const showRecurringToggle = !isRecurringBlocked && eligibility.eligible
 
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
@@ -662,6 +674,8 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
+    if (recurring.isRecurring) return items
+
     if (!activeQuote || allQuotes.length === 0) {
       return items
     }
@@ -694,6 +708,7 @@ export const SwapScreen = (): JSX.Element => {
 
     return items
   }, [
+    recurring.isRecurring,
     fromToken,
     toToken,
     rate,
@@ -741,6 +756,7 @@ export const SwapScreen = (): JSX.Element => {
 
   // Trigger quote fetch when debounced amount settles, skip if below minimum
   const syncDebouncedAmount = useCallback(() => {
+    if (recurring.isRecurring) return // paused; recurring uses its own quote hook
     if (debouncedFromTokenValue === undefined) return
     if (
       minimumTransferAmount != null &&
@@ -749,11 +765,21 @@ export const SwapScreen = (): JSX.Element => {
     )
       return
     setAmount(debouncedFromTokenValue)
-  }, [debouncedFromTokenValue, minimumTransferAmount, setAmount])
+  }, [recurring.isRecurring, debouncedFromTokenValue, minimumTransferAmount, setAmount])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
+
+  // Reset recurring toggle if the user navigates away from an eligible pair
+  // (e.g. picks a cross-chain or unsupported destination). Without this, the
+  // toggle UI hides but the context flag stays true, silently pausing
+  // syncDebouncedAmount and leaving canSubmit in a stale state.
+  useEffect(() => {
+    if (!showRecurringToggle && recurring.isRecurring) {
+      recurring.setIsRecurring(false)
+    }
+  }, [showRecurringToggle, recurring.isRecurring, recurring.setIsRecurring])
 
   // Reset from amount only when the pay token changes, so we don't show a stale
   // Max value or a spurious error while the new max is loading.
@@ -957,21 +983,47 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [theme.isDark])
 
+  const isRecurringReady =
+    recurring.isRecurring &&
+    !!recurring.frequency &&
+    recurring.numberOfOrders !== undefined &&
+    !!fromToken &&
+    !!toToken &&
+    !!fromTokenValue
+
+  const canSubmit = recurring.isRecurring ? isRecurringReady : canSwap
+
+  const handleNext = useCallback(() => {
+    if (recurring.isRecurring) {
+      if (!fromTokenValue || !fromToken || !('decimals' in fromToken)) return
+      const amountStr = formatTokenAmount(
+        bigintToBig(fromTokenValue, fromToken.decimals),
+        fromToken.decimals
+      )
+      navigate({
+        pathname: '/swap/recurring/review',
+        params: { amountPerOrder: amountStr }
+      })
+      return
+    }
+    handleSwap()
+  }, [recurring.isRecurring, fromTokenValue, fromToken, navigate, handleSwap])
+
   const renderFooter = useCallback(() => {
     return (
       <>
         {isLombard && renderLombardLogo()}
         <Button
-          testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
+          testID={!canSubmit || isSwapping ? 'next_btn_disabled' : 'next_btn'}
           type="primary"
           size="large"
-          onPress={handleSwap}
-          disabled={!canSwap || isSwapping}>
+          onPress={handleNext}
+          disabled={!canSubmit || isSwapping}>
           {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
       </>
     )
-  }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
+  }, [canSubmit, handleNext, isSwapping, isLombard, renderLombardLogo])
 
   const renderFromAndToSections = useCallback(() => {
     if (isTokensLoading && !fromToken && !toToken) {
@@ -1040,6 +1092,46 @@ export const SwapScreen = (): JSX.Element => {
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}
       </View>
+      {!isRecurringBlocked && <ExistingSchedulesRow />}
+      {showRecurringToggle && (
+        <View sx={{ marginTop: 12 }}>
+          <GroupList
+            data={[
+              {
+                title: 'Make this a recurring swap',
+                value: (
+                  <Toggle
+                    value={recurring.isRecurring}
+                    onValueChange={recurring.setIsRecurring}
+                  />
+                )
+              }
+            ]}
+            separatorMarginRight={16}
+          />
+        </View>
+      )}
+      {showRecurringToggle && recurring.isRecurring && (
+        <RecurringDetailsRows
+          amountPerOrder={
+            fromTokenValue !== undefined &&
+            fromToken &&
+            'decimals' in fromToken
+              ? formatTokenAmount(
+                  bigintToBig(fromTokenValue, fromToken.decimals),
+                  fromToken.decimals
+                )
+              : undefined
+          }
+          fromTokenSymbol={fromToken?.symbol}
+          toTokenSymbol={toToken?.symbol}
+          fromTokenDecimals={
+            fromToken && 'decimals' in fromToken
+              ? fromToken.decimals
+              : undefined
+          }
+        />
+      )}
       <FeeDebugTable
         decimals={decimals}
         maxRawGasFee={maxRawGasFee}
