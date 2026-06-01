@@ -1,13 +1,6 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import {
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  StyleSheet,
-  ListRenderItemInfo
-} from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -15,12 +8,9 @@ import { useSwapContext } from 'features/swap/contexts/SwapContext'
 import { useRecurringSwapContext } from '../contexts/RecurringSwapContext'
 import { useRecurringEligibility } from '../hooks/useRecurringEligibility'
 import { FREQUENCY_UNITS, type Frequency, type FrequencyUnit } from '../types'
+import { DrumColumn } from '../components/DrumColumn'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const ITEM_HEIGHT = 48
-const VISIBLE_ITEMS = 5
-const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS
 
 /** Maximum value per unit (inclusive). */
 const MAX_VALUE: Record<FrequencyUnit, number> = {
@@ -48,123 +38,6 @@ function pluralise(unit: FrequencyUnit, value: number): string {
 
 function buildValueItems(unit: FrequencyUnit): string[] {
   return Array.from({ length: MAX_VALUE[unit] }, (_, i) => String(i + 1))
-}
-
-// ─── DrumColumn ───────────────────────────────────────────────────────────────
-
-interface DrumColumnProps {
-  items: string[]
-  selectedIndex: number
-  onIndexChange: (index: number) => void
-}
-
-/**
- * A single scrollable drum-roll column.
- * Uses FlatList with snapToInterval so each gesture snaps to an item boundary.
- * The selected item is centred in the PICKER_HEIGHT window.
- */
-function DrumColumn({
-  items,
-  selectedIndex,
-  onIndexChange
-}: DrumColumnProps): JSX.Element {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const listRef = useRef<FlatList<string>>(null)
-
-  const handleScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = e.nativeEvent.contentOffset.y
-      const index = Math.round(offsetY / ITEM_HEIGHT)
-      const clamped = Math.max(0, Math.min(index, items.length - 1))
-      onIndexChange(clamped)
-    },
-    [items.length, onIndexChange]
-  )
-
-  const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<string>) => {
-      const isSelected = index === selectedIndex
-      return (
-        <View
-          style={styles.drumItem}
-          sx={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: ITEM_HEIGHT
-          }}>
-          <Text
-            sx={{
-              fontSize: isSelected ? 20 : 16,
-              fontWeight: isSelected ? '600' : '400',
-              color: isSelected ? colors.$textPrimary : colors.$textSecondary,
-              lineHeight: ITEM_HEIGHT
-            }}>
-            {item}
-          </Text>
-        </View>
-      )
-    },
-    [selectedIndex, colors]
-  )
-
-  const getItemLayout = useCallback(
-    (_: ArrayLike<string> | null | undefined, index: number) => ({
-      length: ITEM_HEIGHT,
-      offset: ITEM_HEIGHT * index,
-      index
-    }),
-    []
-  )
-
-  const snapOffsets = useMemo(
-    () => items.map((_, i) => i * ITEM_HEIGHT),
-    [items]
-  )
-
-  // Scroll to the current selectedIndex synchronously after every layout so
-  // there is no one-frame flash of misaligned content when the selection changes.
-  useLayoutEffect(() => {
-    listRef.current?.scrollToOffset({
-      offset: selectedIndex * ITEM_HEIGHT,
-      animated: false
-    })
-  }, [selectedIndex])
-
-  return (
-    <View
-      style={{ height: PICKER_HEIGHT, overflow: 'hidden' }}
-      sx={{ flex: 1 }}>
-      {/* Selection highlight band */}
-      <View
-        pointerEvents="none"
-        style={[
-          styles.selectionBand,
-          {
-            top: ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-            backgroundColor: colors.$surfaceSecondary
-          }
-        ]}
-      />
-      <FlatList
-        ref={listRef}
-        data={items}
-        keyExtractor={(_, i) => String(i)}
-        renderItem={renderItem}
-        getItemLayout={getItemLayout}
-        snapToOffsets={snapOffsets}
-        decelerationRate="fast"
-        showsVerticalScrollIndicator={false}
-        onMomentumScrollEnd={handleScrollEnd}
-        onScrollEndDrag={handleScrollEnd}
-        contentContainerStyle={{
-          paddingTop: ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2),
-          paddingBottom: ITEM_HEIGHT * Math.floor(VISIBLE_ITEMS / 2)
-        }}
-      />
-    </View>
-  )
 }
 
 function formatDuration(seconds: number): string {
@@ -305,18 +178,3 @@ export function FrequencyPickerScreen(): JSX.Element {
   )
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  drumItem: {
-    height: ITEM_HEIGHT
-  },
-  selectionBand: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: ITEM_HEIGHT,
-    borderRadius: 8,
-    zIndex: 0
-  }
-})
