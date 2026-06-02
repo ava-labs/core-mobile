@@ -1,7 +1,12 @@
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Networks } from 'store/network/types'
+import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import { createInjectedProviderRouter } from './router'
 import { BrowserNetwork, RouterDeps } from './types'
+
+jest.mock('react-native-nitro-fetch', () => ({ fetch: jest.fn() }))
+
+const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
 
 jest.mock('store/browser/slices/tabs', () => ({
   setTabChainId: jest.fn((payload: { tabId: string; chainId: number }) => ({
@@ -406,10 +411,8 @@ describe('createInjectedProviderRouter', () => {
   })
 
   describe('proxyToRpc', () => {
-    const originalFetch = global.fetch
-
     afterEach(() => {
-      global.fetch = originalFetch
+      mockNitroFetch.mockReset()
     })
 
     it('returns internal error when rpcUrl is empty', async () => {
@@ -430,9 +433,9 @@ describe('createInjectedProviderRouter', () => {
 
     it('proxies result on successful RPC fetch', async () => {
       const { deps, sendResponse } = makeDeps()
-      global.fetch = jest.fn().mockResolvedValue({
+      mockNitroFetch.mockResolvedValue({
         json: async () => ({ result: '0xabc' })
-      }) as unknown as typeof fetch
+      } as unknown as Response)
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_blockNumber')
@@ -444,9 +447,9 @@ describe('createInjectedProviderRouter', () => {
     it('surfaces RPC error field', async () => {
       const { deps, sendResponse } = makeDeps()
       const rpcErr = { code: -32000, message: 'node error' }
-      global.fetch = jest.fn().mockResolvedValue({
+      mockNitroFetch.mockResolvedValue({
         json: async () => ({ error: rpcErr })
-      }) as unknown as typeof fetch
+      } as unknown as Response)
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_blockNumber')
@@ -457,9 +460,7 @@ describe('createInjectedProviderRouter', () => {
 
     it('returns internal error on fetch failure', async () => {
       const { deps, sendResponse } = makeDeps()
-      global.fetch = jest
-        .fn()
-        .mockRejectedValue(new Error('network down')) as unknown as typeof fetch
+      mockNitroFetch.mockRejectedValue(new Error('network down'))
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_blockNumber')

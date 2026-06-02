@@ -3,6 +3,7 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
+import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 
 const READ_ONLY_METHODS = new Set([
@@ -69,7 +70,9 @@ function parseProviderPayload(
   payload: string,
   respondWithError: (id: number, error: unknown) => void
 ): ProviderRequest | undefined {
-  if (payload.length > MAX_MESSAGE_SIZE) {
+  const byteLength = new TextEncoder().encode(payload).length
+
+  if (byteLength > MAX_MESSAGE_SIZE) {
     Logger.warn(
       `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
     )
@@ -97,9 +100,11 @@ function parseProviderPayload(
 
   if (!validateProviderRequest(parsed)) {
     Logger.error('[InjectedProvider] Malformed provider_request')
-    const maybeId = (parsed as Record<string, unknown>)?.id
-    if (typeof maybeId === 'number') {
-      respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
+    if (typeof parsed === 'object' && parsed !== null) {
+      const maybeId = (parsed as Record<string, unknown>).id
+      if (typeof maybeId === 'number') {
+        respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
+      }
     }
     return undefined
   }
@@ -147,7 +152,7 @@ export function createInjectedProviderRouter(
         params
       })
 
-      const response = await fetch(rpcUrl, {
+      const response = await nitroFetch(rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body

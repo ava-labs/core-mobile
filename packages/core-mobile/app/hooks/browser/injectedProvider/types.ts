@@ -4,6 +4,12 @@ import type { TabId } from 'store/browser/types'
 import type { PeerMeta } from 'store/rpc/types'
 import type { Request as InAppRequest } from 'store/rpc/utils/createInAppRequest'
 
+// Upper bound (1 MiB) on a single provider message from the WebView. The
+// payload is attacker-controlled — any page can call
+// `window.ReactNativeWebView.postMessage(...)` — so we reject oversized
+// messages before `JSON.parse` to avoid blocking the JS thread or OOMing the
+// app. Legitimate EVM RPC payloads are KB-scale, so this is a sanity ceiling,
+// not a functional limit.
 export const MAX_MESSAGE_SIZE = 1_048_576
 
 export type ProviderRequest = {
@@ -11,7 +17,7 @@ export type ProviderRequest = {
   origin?: string
   request: {
     method: string
-    params: unknown[]
+    params: unknown
   }
 }
 
@@ -43,5 +49,5 @@ export type RouterDeps = {
   getNativeOrigin: () => string | undefined
   trackPendingOrigin: (id: number, origin: string) => void
 
-  getPeerMeta: () => PeerMeta | undefined
+  getPeerMeta: () => PeerMeta
 }
