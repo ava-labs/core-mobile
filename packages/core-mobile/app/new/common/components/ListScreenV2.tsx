@@ -105,6 +105,19 @@ export interface ListScreenProps<T>
   renderListFooter?: () => React.ReactNode
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
+  /**
+   * Renders an absolute-positioned banner just below the sticky header that
+   * fades in once the user has scrolled past `triggerContentY` (a y-coordinate
+   * in FlashList content space, typically obtained via the FlashList ref's
+   * `getLayout(index)`). Useful for section labels that need to stick at the
+   * top of the list but can't be added to FlashList's `stickyHeaderIndices`
+   * (which only shows one sticky at a time and would push out the title/search
+   * header).
+   */
+  headerOverlay?: {
+    triggerContentY: number
+    render: () => React.ReactNode
+  }
   /** Optional ref to the flat list */
   flatListRef?: RefObject<ListScreenRef<T> | null>
 }
@@ -128,6 +141,7 @@ export const ListScreenV2 = <T,>({
   renderFooter,
   renderListFooter,
   shouldShowStickyHeader = true,
+  headerOverlay,
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
@@ -304,6 +318,60 @@ export const ListScreenV2 = <T,>({
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
       opacity: shouldShowStickyHeader ? opacity : 0
+    }
+  })
+
+  // Pull primitives out of `headerOverlay` so the worklet captures stable
+  // values — otherwise the whole object reference (new on each
+  // triggerContentY tick from the caller) would force Reanimated to
+  // recompile the worklet.
+  const hasHeaderOverlay = !!headerOverlay
+  const overlayTrigger = headerOverlay?.triggerContentY ?? 0
+  const headerOverlayAnimatedStyle = useAnimatedStyle(() => {
+    if (!hasHeaderOverlay || headerSentinelHeight === 0) {
+      return { opacity: 0 }
+    }
+    // The header's inner content translates up by `heightDelta` on scroll
+    // (see animatedHeaderContainerStyle below the title fade animation).
+    // The visible sticky bottom is therefore `headerSentinelHeight -
+    // heightDelta` once scrolled, which is where the overlay should sit.
+    const heightDelta = shouldShowStickyHeader
+      ? contentHeaderHeight + (isModal ? 16 : 20)
+      : 0
+    const visibleStickyBottom = headerSentinelHeight - heightDelta
+    const threshold = overlayTrigger - visibleStickyBottom
+
+    // Crossfade window — fade the overlay in/out over a ~24 px scroll range
+    // centered on the threshold so the banner hits half-opacity at the exact
+    // moment the in-list divider crosses the sticky edge. Without this, the
+    // divider scrolls under the header and the banner pops in afterward,
+    // producing a visible beat where neither label is on screen.
+    const FADE = 24
+    const opacity = interpolate(
+      scrollY.value,
+      [threshold - FADE / 2, threshold + FADE / 2],
+      [0, 1],
+      Extrapolation.CLAMP
+    )
+    // Ride the same translateY as the inner content so the overlay sits flush
+    // with the collapsed sticky bottom instead of the original natural
+    // bottom (which would leave a transparent gap where the title used to be).
+    const collapseTranslate = interpolate(
+      scrollY.value,
+      [0, contentHeaderHeight],
+      [0, -heightDelta],
+      Extrapolation.CLAMP
+    )
+    // A small bounded slide on entry adds motion to the dissolve.
+    const entranceTranslate = interpolate(
+      scrollY.value,
+      [threshold - FADE / 2, threshold + FADE / 2],
+      [-6, 0],
+      Extrapolation.CLAMP
+    )
+    return {
+      opacity,
+      transform: [{ translateY: collapseTranslate + entranceTranslate }]
     }
   })
 
@@ -621,6 +689,22 @@ export const ListScreenV2 = <T,>({
           restProps.style
         ])}
       />
+      {headerOverlay && (
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            {
+              position: 'absolute',
+              top: flashListMarginTop + headerSentinelHeight,
+              left: 0,
+              right: 0,
+              zIndex: 1
+            },
+            headerOverlayAnimatedStyle
+          ]}>
+          {headerOverlay.render()}
+        </Animated.View>
+      )}
       {renderGrabber()}
       {renderFooterContent()}
     </Animated.View>
