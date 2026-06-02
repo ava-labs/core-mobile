@@ -1,8 +1,15 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react'
 import { SxProp } from 'dripsy'
-import { View } from '../Primitives'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { ReturnKeyTypeOptions } from 'react-native'
 import { Button } from '../Button/Button'
+import { View } from '../Primitives'
 import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
+
+export interface FiatAmountInputPreset {
+  label: string
+  /** Numeric amount applied to the input when this preset is tapped. */
+  value: number
+}
 
 interface FiatAmountInputWidgetProps {
   currency: string
@@ -16,7 +23,33 @@ interface FiatAmountInputWidgetProps {
   sx?: SxProp
   disabled?: boolean
   autoFocus?: boolean
+  /**
+   * Render the default `$100 / $200 / $500` quick-amount buttons. Ignored
+   * when `presets` is provided — pass `presets` directly for custom labels
+   * and values (e.g. `25% / 50% / Max` against a known balance).
+   */
   enableAmountSelection?: boolean
+  /**
+   * Custom quick-amount buttons. Each preset's `label` is rendered as-is and
+   * tapping sets the input to `value`. When provided, overrides
+   * `enableAmountSelection` entirely.
+   */
+  presets?: readonly FiatAmountInputPreset[]
+  /**
+   * Where the subtext (`formatInSubTextNumber`) sits relative to the big
+   * amount. Defaults to `'top'` to keep the existing meld onramp/offramp
+   * layout untouched. Set to `'bottom'` for token-as-primary layouts where
+   * the converted fiat value reads as a subtitle.
+   */
+  subTextPosition?: 'top' | 'bottom'
+  /**
+   * Maximum font size (in px) for the trailing currency label (e.g. `USDC`).
+   * Useful for token-as-primary layouts where the currency tag should read
+   * as a subtitle next to the big amount instead of scaling alongside it.
+   * Omit to let the suffix scale with the main amount (existing behaviour).
+   */
+  trailingCurrencyMaxFontSize?: number
+  returnKeyType?: ReturnKeyTypeOptions
 }
 
 export const FiatAmountInputWidget = ({
@@ -31,31 +64,63 @@ export const FiatAmountInputWidget = ({
   sx,
   disabled,
   autoFocus,
-  enableAmountSelection
+  enableAmountSelection,
+  presets,
+  subTextPosition,
+  trailingCurrencyMaxFontSize,
+  returnKeyType
 }: FiatAmountInputWidgetProps): JSX.Element => {
+  const buildDefaultButtons = useCallback(
+    () => [
+      {
+        text: formatIntegerCurrency(100),
+        predefinedAmount: 100,
+        isSelected: false
+      },
+      {
+        text: formatIntegerCurrency(200),
+        predefinedAmount: 200,
+        isSelected: false
+      },
+      {
+        text: formatIntegerCurrency(500),
+        predefinedAmount: 500,
+        isSelected: false
+      }
+    ],
+    [formatIntegerCurrency]
+  )
+
+  const buildPresetButtons = useCallback(
+    (items: readonly FiatAmountInputPreset[]) =>
+      items.map(p => ({
+        text: p.label,
+        predefinedAmount: p.value,
+        isSelected: false
+      })),
+    []
+  )
+
+  const showButtons = presets !== undefined || enableAmountSelection === true
+
   const [predefinedAmountButtons, setPredefinedAmountButtons] = useState<
     { text: string; predefinedAmount: number; isSelected: boolean }[]
-  >(
-    enableAmountSelection
-      ? [
-          {
-            text: formatIntegerCurrency(100),
-            predefinedAmount: 100,
-            isSelected: false
-          },
-          {
-            text: formatIntegerCurrency(200),
-            predefinedAmount: 200,
-            isSelected: false
-          },
-          {
-            text: formatIntegerCurrency(500),
-            predefinedAmount: 500,
-            isSelected: false
-          }
-        ]
+  >(() =>
+    presets
+      ? buildPresetButtons(presets)
+      : enableAmountSelection
+      ? buildDefaultButtons()
       : []
   )
+
+  // Custom presets can change at runtime (e.g. `Max` recomputes when balance
+  // updates) — rebuild the button list when the caller hands us a new array.
+  useEffect(() => {
+    if (presets) {
+      setPredefinedAmountButtons(buildPresetButtons(presets))
+    }
+  }, [presets, buildPresetButtons])
+
   const textInputRef = useRef<FiatAmountInputHandle>(null)
 
   const handlePressPredefinedAmountButton = useCallback(
@@ -75,31 +140,33 @@ export const FiatAmountInputWidget = ({
 
   const handleChange = useCallback(
     (value: string): void => {
-      enableAmountSelection &&
+      if (showButtons) {
         setPredefinedAmountButtons(prevButtons =>
           prevButtons.map(b => ({
             ...b,
             isSelected: Number(value) === b.predefinedAmount
           }))
         )
+      }
 
       onChange?.(Number(value))
     },
-    [enableAmountSelection, onChange]
+    [showButtons, onChange]
   )
 
   useEffect(() => {
     if (amount === undefined || amount === 0) {
       textInputRef.current?.setValue('')
-      enableAmountSelection &&
+      if (showButtons) {
         setPredefinedAmountButtons(prevButtons =>
           prevButtons.map(b => ({
             ...b,
             isSelected: false
           }))
         )
+      }
     }
-  }, [amount, enableAmountSelection, textInputRef])
+  }, [amount, showButtons, textInputRef])
 
   return (
     <View sx={sx}>
@@ -121,8 +188,11 @@ export const FiatAmountInputWidget = ({
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
           formatInSubTextNumber={formatInSubTextNumber}
+          subTextPosition={subTextPosition}
+          returnKeyType={returnKeyType}
+          trailingCurrencyMaxFontSize={trailingCurrencyMaxFontSize}
         />
-        {enableAmountSelection && (
+        {showButtons && (
           <View sx={{ flexDirection: 'row', gap: 7, marginTop: 16 }}>
             {predefinedAmountButtons.map((button, index) => (
               <Button

@@ -8,20 +8,25 @@ import {
 } from '@avalabs/perps-sdk'
 import { useEffect, useState } from 'react'
 
-/**
- * Live market data for a single Hyperliquid perpetual.
- *
- * - `assetCtx` holds the real-time mark/oracle/volume snapshot. Seeded from the
- *   `info` REST endpoint on mount and refreshed over the `activeAssetCtx` WS
- *   channel.
- * - `universe` holds the per-coin metadata (max leverage, size precision). Comes
- *   from `getMetaAndAssetCtxs` once per mount — these values don't change
- *   intra-session.
- */
+// Hyperliquid perp prices are quoted with `MAX_PERP_DECIMALS - szDecimals`
+// fractional digits.
+const MAX_PERP_DECIMALS = 6
+
 export interface HyperliquidMarketContext {
+  /** Live mark/oracle/volume snapshot, refreshed over the WS `activeAssetCtx` channel. */
   assetCtx?: PerpsAssetCtx
+  /** Per-coin metadata (max leverage, size precision). Static for the session. */
   universe?: PerpUniverseEntry
+  /** Number of fractional digits to render for price values for this market. */
+  pxDecimals?: number
 }
+
+const pxDecimalsFor = (
+  entry: PerpUniverseEntry | undefined
+): number | undefined =>
+  entry === undefined
+    ? undefined
+    : Math.max(0, MAX_PERP_DECIMALS - entry.szDecimals)
 
 interface ActiveAssetCtxPayload {
   coin: string
@@ -38,30 +43,29 @@ export const useHyperliquidMarketContext = (
     const info = createInfoClient({ baseUrl: MAINNET_API_URL })
     const ws = createHyperliquidWsClient({ url: MAINNET_WS_URL })
 
-    // Initial REST snapshot — gives us universe metadata + assetCtx until the
-    // first WS tick lands.
+    // Seed from REST so universe + assetCtx are populated before the first WS tick.
     info
       .getMetaAndAssetCtxs()
       .then(([meta, ctxs]) => {
         if (cancelled) return
         const idx = meta.universe.findIndex(u => u.name === coin)
         if (idx < 0) return
-        setState({ universe: meta.universe[idx], assetCtx: ctxs[idx] })
+        const universe = meta.universe[idx]
+        setState({
+          universe,
+          assetCtx: ctxs[idx],
+          pxDecimals: pxDecimalsFor(universe)
+        })
       })
-      .catch(() => {
-        /* surface via UI later if needed; for now silent */
-      })
+      .catch(() => {})
 
     ws.connect()
-    const unsubscribe = ws.subscribe(
-      { type: 'activeAssetCtx', coin },
-      data => {
-        if (cancelled) return
-        const msg = data as ActiveAssetCtxPayload | undefined
-        if (!msg || msg.coin !== coin || !msg.ctx) return
-        setState(prev => ({ ...prev, assetCtx: msg.ctx }))
-      }
-    )
+    const unsubscribe = ws.subscribe({ type: 'activeAssetCtx', coin }, data => {
+      if (cancelled) return
+      const msg = data as ActiveAssetCtxPayload | undefined
+      if (!msg || msg.coin !== coin || !msg.ctx) return
+      setState(prev => ({ ...prev, assetCtx: msg.ctx }))
+    })
 
     return () => {
       cancelled = true
