@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
+import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import {
   selectAllNetworks,
   selectActiveNetwork,
@@ -10,6 +11,11 @@ import {
 } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
+
+// proxyToRpc calls nitroFetch; mock it explicitly (the root __mocks__ manual
+// mock also covers node_modules auto-mocking, but this keeps the intent local).
+jest.mock('react-native-nitro-fetch')
+const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -289,7 +295,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0x1' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         setupMocks({
           allNetworks: {
@@ -329,7 +335,7 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        expect(global.fetch).toHaveBeenCalledWith(
+        expect(mockNitroFetch).toHaveBeenCalledWith(
           'https://eth.rpc',
           expect.anything()
         )
@@ -1037,7 +1043,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0xABC' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1052,7 +1058,7 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(payload)
         })
 
-        expect(global.fetch).toHaveBeenCalledWith(
+        expect(mockNitroFetch).toHaveBeenCalledWith(
           'https://api.avax.network/ext/bc/C/rpc',
           expect.objectContaining({
             method: 'POST',
@@ -1067,7 +1073,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0xBalanceValue' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1096,7 +1102,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ error: rpcError })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1117,7 +1123,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('handles fetch failure gracefully', async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
+        mockNitroFetch.mockRejectedValue(new Error('Network error'))
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1166,7 +1172,7 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('No RPC URL configured')
         )
-        expect(global.fetch).not.toHaveBeenCalled()
+        expect(mockNitroFetch).not.toHaveBeenCalled()
       })
     })
 
