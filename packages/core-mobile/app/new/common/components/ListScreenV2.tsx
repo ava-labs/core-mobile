@@ -1,11 +1,11 @@
 import {
+  BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  Text,
-  useTheme
+  Text
 } from '@avalabs/k2-alpine'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -145,7 +145,6 @@ export const ListScreenV2 = <T,>({
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
-  const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
@@ -294,7 +293,8 @@ export const ListScreenV2 = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
+      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transformOrigin: 'bottom left'
     }
   })
 
@@ -403,11 +403,16 @@ export const ListScreenV2 = <T,>({
   ])
 
   const isAndroidModal = Platform.OS === 'android' && isModal
-  const flashListMarginTop = isAndroidModal ? headerHeight : 0
+  const flashListMarginTop = isAndroidModal
+    ? title.length === 0
+      ? insets.top - 8
+      : headerHeight
+    : 0
 
   const overrideProps = useMemo(() => {
-    const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
+    const extraPadding = isModal
+      ? -insets.top - (Platform.OS === 'ios' ? 8 : 16)
+      : 8
 
     return {
       contentContainerStyle: {
@@ -448,8 +453,6 @@ export const ListScreenV2 = <T,>({
     return items
   }, [data])
 
-  const headerBgColor = backgroundColor ?? theme.colors.$surfacePrimary
-
   const headerContent = useMemo(() => {
     return (
       <View
@@ -472,10 +475,9 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
-              <View
+              <BlurViewWithFallback
                 style={{
-                  flex: 1,
-                  backgroundColor: headerBgColor
+                  flex: 1
                 }}
               />
             </Animated.View>
@@ -534,7 +536,6 @@ export const ListScreenV2 = <T,>({
     isAndroidModal,
     renderHeader,
     headerHeight,
-    headerBgColor,
     handleHeaderSentinelLayout,
     handleContentHeaderLayout,
     title,
@@ -667,6 +668,7 @@ export const ListScreenV2 = <T,>({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
+        stickyHeaderConfig={{ hideRelatedCell: true }}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
         {...restProps}

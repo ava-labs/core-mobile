@@ -231,7 +231,8 @@ export const ScrollScreen = ({
     )
     return {
       opacity: 1 - targetHiddenProgress.value * 2,
-      transform: [{ scale }]
+      transform: [{ scale }],
+      transformOrigin: 'bottom left'
     }
   })
 

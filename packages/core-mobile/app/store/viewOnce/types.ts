@@ -14,7 +14,8 @@ export enum ViewOnceKey {
   SOLANA_LAUNCH,
   /** @deprecated */
   MIGRATE_TOKEN_FAVORITE_IDSv2,
-  NOTIFICATIONS_CLEANED_UP_ANDROID_16
+  NOTIFICATIONS_CLEANED_UP_ANDROID_16,
+  PERPETUALS_ONBOARDING
 }
 
 export type ViewOnceObjectType = {

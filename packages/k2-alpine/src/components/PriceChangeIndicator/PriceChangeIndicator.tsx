@@ -133,7 +133,7 @@ const AnimatedComponent = ({
         {showArrow && (
           <View style={styles.arrow}>
             <AnimateFadeScale>
-              <Arrow sx={arrowSx} status={status} size={arrowSize} />
+              <StatusArrow sx={arrowSx} status={status} size={arrowSize} />
             </AnimateFadeScale>
           </View>
         )}
@@ -182,7 +182,7 @@ const PlainComponent = ({
       <View style={styles.innerWrapper}>
         {showArrow && (
           <View style={styles.arrow}>
-            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+            <StatusArrow sx={arrowSx} status={status} size={arrowSize} />
           </View>
         )}
         {formattedPercent !== undefined && (
@@ -200,7 +200,7 @@ const PlainComponent = ({
   )
 }
 
-const Arrow = ({
+export const StatusArrow = ({
   sx,
   status,
   size
@@ -257,7 +257,11 @@ const styles = StyleSheet.create({
   arrow: { alignSelf: 'center' }
 })
 
-type TextVariants = 'buttonMedium' | 'buttonSmall' | 'priceChangeIndicatorLarge'
+type TextVariants =
+  | 'buttonMedium'
+  | 'buttonSmall'
+  | 'priceChangeIndicatorLarge'
+  | 'body1'
 
 function getArrowMarginBottom(textVariant: TextVariants): number {
   // The `buttonMedium` / `buttonSmall` margins were a flex-end hack for an

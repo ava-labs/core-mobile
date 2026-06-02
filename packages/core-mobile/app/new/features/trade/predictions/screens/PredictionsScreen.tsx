@@ -46,10 +46,6 @@ export const PredictionsScreen = ({
     [containerStyle]
   )
 
-  // Persists the filter strip's horizontal scroll across CollapsibleTabList's
-  // empty/non-empty switch — the underlying list swaps from FlashList to
-  // ScrollView when results disappear, which would otherwise unmount the
-  // header (and `TradeFilters` with it) and reset the strip to scrollX=0.
   const filterScrollOffsetRef = useRef(0)
 
   const onEndReached = useCallback(() => {
@@ -180,13 +176,6 @@ export const PredictionsScreen = ({
         onRefresh={refetch}
         onEndReached={onEndReached}
         isFetchingNextPage={isFetchingNextPage}
-        // FlashList enables maintainVisibleContentPosition by default,
-        // which makes the underlying ScrollView re-anchor on a previously
-        // visible item key when `data` changes. Filter-chip swaps replace
-        // the entire dataset, so the native anchor lands on a stale or
-        // mid-list item — Trending → Sports → Trending visibly jumps to
-        // the middle. Disable it: chip changes preserve numeric offset
-        // instead of anchoring to a no-longer-present item.
         maintainVisibleContentPosition={{ disabled: true }}
       />
     </Animated.View>

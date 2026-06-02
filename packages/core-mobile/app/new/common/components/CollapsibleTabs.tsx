@@ -60,9 +60,13 @@ export const CollapsibleTabsContainer = forwardRef<
 
     const pagerProps = useMemo(() => {
       return {
-        style: styles.overflow
+        style: styles.overflow,
+        // Disable swipe between tabs when there's only one tab. iOS PagerView
+        // shows a rubber-band/enlarge effect at the edge of a single-tab pager
+        // when scroll is enabled.
+        scrollEnabled: tabs.length > 1
       }
-    }, [])
+    }, [tabs.length])
 
     return (
       <Tabs.Container

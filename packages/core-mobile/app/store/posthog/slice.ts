@@ -617,6 +617,14 @@ export const selectIsPredictionsBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPerpetualsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PERPETUALS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectIsFastStakeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

@@ -17,8 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
-  selectIsInAppDefiBlocked
-  // selectIsPredictionsBlocked
+  selectIsInAppDefiBlocked,
+  selectIsPerpetualsBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -64,7 +64,7 @@ export default function TabLayout(): JSX.Element {
     }
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
-  // const isPredictionsBlocked = useSelector(selectIsPredictionsBlocked)
+  const isPerpetualsBlocked = useSelector(selectIsPerpetualsBlocked)
 
   return (
     <BottomTabs
@@ -136,9 +136,7 @@ export default function TabLayout(): JSX.Element {
           title: 'Trade',
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
-          //TODO: uncomment when predictions is ready
-          // tabBarItemHidden: isPredictionsBlocked
-          tabBarItemHidden: true
+          tabBarItemHidden: isPerpetualsBlocked
         }}
       />
       <BottomTabs.Screen
