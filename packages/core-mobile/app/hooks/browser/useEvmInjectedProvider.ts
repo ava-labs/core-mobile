@@ -14,13 +14,7 @@ import { serializeError } from '@metamask/rpc-errors'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 import { createInjectedProviderRouter } from './injectedProvider/router'
-import {
-  BrowserNetwork,
-  DomainMetadata,
-  MAX_MESSAGE_SIZE as ROUTER_MAX_MESSAGE_SIZE
-} from './injectedProvider/types'
-
-export const MAX_MESSAGE_SIZE = ROUTER_MAX_MESSAGE_SIZE
+import { BrowserNetwork, DomainMetadata } from './injectedProvider/types'
 
 function getOriginFromUrl(url: string): string | undefined {
   if (!url) return undefined
@@ -32,6 +26,14 @@ function getOriginFromUrl(url: string): string | undefined {
   }
 }
 
+type UseEvmInjectedProviderResult = {
+  providerShimJs: string
+  handleProviderMessage: (payload: string) => void
+  handleDomainMetadata: (payload: string) => void
+  emitEvent: (eventName: string, data: unknown) => void
+  dappMetadata: React.RefObject<DomainMetadata | null>
+  setCurrentUrl: (url: string) => void
+}
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
  *
@@ -42,7 +44,7 @@ function getOriginFromUrl(url: string): string | undefined {
 export function useEvmInjectedProvider(
   webViewRef: React.RefObject<RNWebView | null>,
   tabId: TabId
-) {
+): UseEvmInjectedProviderResult {
   const dispatch = useDispatch()
   const store = useStore<RootState>()
   const activeAccount = useSelector(selectActiveAccount)
