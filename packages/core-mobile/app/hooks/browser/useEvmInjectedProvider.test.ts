@@ -12,7 +12,9 @@ import {
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
-// react-native-nitro-fetch is auto-mocked via __mocks__; proxyToRpc uses it.
+// proxyToRpc calls nitroFetch; mock it explicitly (the root __mocks__ manual
+// mock also covers node_modules auto-mocking, but this keeps the intent local).
+jest.mock('react-native-nitro-fetch')
 const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
 
 jest.mock('react-redux', () => ({

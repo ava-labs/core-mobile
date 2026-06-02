@@ -70,9 +70,15 @@ function parseProviderPayload(
   payload: string,
   respondWithError: (id: number, error: unknown) => void
 ): ProviderRequest | undefined {
-  const byteLength = new TextEncoder().encode(payload).length
-
-  if (byteLength > MAX_MESSAGE_SIZE) {
+  // The cap is in bytes, but `payload.length` counts UTF-16 code units. A
+  // UTF-8 encoding is at most 3 bytes per code unit, so only when the cheap
+  // unit count could possibly exceed the cap do we pay for an exact byte
+  // measurement — keeping the hot path (frequent eth_blockNumber/eth_call
+  // polling) allocation-free for normal-sized messages.
+  if (
+    payload.length * 3 > MAX_MESSAGE_SIZE &&
+    new TextEncoder().encode(payload).length > MAX_MESSAGE_SIZE
+  ) {
     Logger.warn(
       `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
     )
