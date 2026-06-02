@@ -17,6 +17,7 @@ import { customTokenReducer as customToken } from './customToken/slice'
 import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
+import { permissionsReducer as permissions } from './permissions/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
 import { transactionApi } from './transaction'
@@ -42,6 +43,7 @@ const combinedReducer = combineReducers({
   account,
   notifications,
   addressBook,
+  permissions,
   customToken,
   posthog,
   wallet,

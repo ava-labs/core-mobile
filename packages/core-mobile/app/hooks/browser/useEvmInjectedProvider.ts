@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
-import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { selectTabChainId } from 'store/browser/slices/tabs'
@@ -11,10 +10,31 @@ import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { PeerMeta } from 'store/rpc/types'
 import { serializeError } from '@metamask/rpc-errors'
+import { router as appRouter } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import {
+  grantPermission as grantPermissionAction,
+  revokePermission as revokePermissionAction,
+  selectHasPermission
+} from 'store/permissions/slice'
+import type { RootState } from 'store/types'
+import type { Account } from 'store/account'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 import { createInjectedProviderRouter } from './injectedProvider/router'
+import {
+  CONNECT_PROMPT_TIMED_OUT_MESSAGE,
+  EIP1193_USER_REJECTED_CODE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  USER_REJECTED_REQUEST_MESSAGE
+} from './injectedProvider/errors'
 import { BrowserNetwork, DomainMetadata } from './injectedProvider/types'
+
+// If the connect-approval screen never mounts or never resolves (e.g. Metro
+// hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
+// parked promise after this interval so the dApp can surface an error and
+// the user isn't stuck with a spinning button.
+const CONNECT_APPROVAL_TIMEOUT_MS = 90_000
 
 function getOriginFromUrl(url: string): string | undefined {
   if (!url) return undefined
@@ -92,15 +112,12 @@ export function useEvmInjectedProvider(
     return '0x' + initialChainId.toString(16)
   }, [activeNetwork.vmName, initialChainId])
 
-  const evmAddress = activeAccount?.addressC ?? ''
-
   const providerShimJs = useMemo(() => {
     return buildEvmProviderShim({
       chainId: chainIdHex,
-      address: evmAddress,
       uuid: getInjectedProviderUuid()
     })
-  }, [chainIdHex, evmAddress])
+  }, [chainIdHex])
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {
@@ -190,12 +207,106 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
+  const activeAccountRef = useRef(activeAccount)
+
+  useEffect(() => {
+    activeAccountRef.current = activeAccount
+  }, [activeAccount])
+
+  // When this browser tab unmounts (tab closed), reject any parked connect
+  // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
+  // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
+  // when switching tabs, so this does not run on tab switch.
+  useEffect(() => {
+    return () => {
+      prevInflightConnectReject.current?.({
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+      prevInflightConnectReject.current = null
+    }
+  }, [])
+
+  // Tracks the reject fn of an in-flight connect approval so a later request
+  // (or an unmount) can unstick it. Writes and clears happen only inside
+  // requestConnectApproval.
+  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
+    null
+  )
+
+  const requestConnectApproval = useCallback(
+    (peerMeta: PeerMeta): Promise<Account[]> => {
+      // If a prior connect is still parked (screen never mounted, or a second
+      // request arrived before the first resolved), reject it so its dApp can
+      // unstick. Then replace the cache entry with our own settled-guarded
+      // callbacks.
+      prevInflightConnectReject.current?.({
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+      prevInflightConnectReject.current = null
+
+      return new Promise<Account[]>((resolve, reject) => {
+        let settled = false
+        const safeResolve = (selected: Account[]): void => {
+          if (settled) return
+          settled = true
+          // Only clear if the ref still points to THIS request's handler — a
+          // newer in-flight request would have overwritten it, and we must not
+          // clobber that one.
+          if (prevInflightConnectReject.current === safeReject) {
+            prevInflightConnectReject.current = null
+          }
+          resolve(selected)
+          // fallbackTimer would be no op, no need to maintain
+          clearTimeout(fallbackTimer)
+        }
+        const safeReject = (err: unknown): void => {
+          if (settled) return
+          settled = true
+          // Only clear if the ref still points to THIS request's handler — a
+          // newer in-flight request would have overwritten it, and we must not
+          // clobber that one.
+          if (prevInflightConnectReject.current === safeReject) {
+            prevInflightConnectReject.current = null
+          }
+          reject(err)
+          // fallbackTimer would be no op, no need to maintain
+          clearTimeout(fallbackTimer)
+        }
+        prevInflightConnectReject.current = safeReject
+
+        walletConnectCache.injectedAuthParams.set({
+          peerMeta,
+          onApprove: safeResolve,
+          onReject: () =>
+            safeReject({
+              code: EIP1193_USER_REJECTED_CODE,
+              message: USER_REJECTED_REQUEST_MESSAGE
+            })
+        })
+        appRouter.navigate('/authorizeInjectedDapp')
+
+        // Safety net: if the screen never mounts or calls back within 90s,
+        // reject so the dApp can surface an error instead of hanging.
+        const fallbackTimer = setTimeout(() => {
+          safeReject({
+            code: JSON_RPC_INTERNAL_ERROR_CODE,
+            message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
+          })
+        }, CONNECT_APPROVAL_TIMEOUT_MS)
+      })
+    },
+    []
+  )
+
   const router = useMemo(() => {
     // requestSigning closes over dispatch + store.getState (the latter was
     // added in CP-14159 so the in-app request payload can read the current
     // network state). Construct inside the memo so it always picks up the
     // latest references and rebuilds when dispatch changes.
     const requestSigning = createInAppRequest(dispatch, store.getState)
+
     return createInjectedProviderRouter({
       getBrowserNetwork: () => browserNetworkRef.current,
       setBrowserNetwork: net => {
@@ -211,23 +322,63 @@ export function useEvmInjectedProvider(
       trackPendingOrigin: (id, origin) => {
         pendingOrigins.current.set(id, origin)
       },
-      getPeerMeta
+      getPeerMeta,
+      getActiveAccount: () => activeAccountRef.current,
+      hasPermission: ({ domain, address, vmType }) =>
+        selectHasPermission({ domain, address, vmType })(store.getState()),
+      grantPermission: ({ domain, address, vmType }) =>
+        dispatch(grantPermissionAction({ domain, address, vmType })),
+      revokePermission: ({ domain, address, vmType }) =>
+        dispatch(revokePermissionAction({ domain, address, vmType })),
+      requestConnectApproval
     })
-  }, [dispatch, store, tabId, sendResponse, emitEvent, getPeerMeta])
+  }, [
+    dispatch,
+    store,
+    tabId,
+    sendResponse,
+    emitEvent,
+    getPeerMeta,
+    requestConnectApproval
+  ])
 
   const handleProviderMessage = useCallback(
     (payload: string) => router.handleProviderMessage(payload),
     [router]
   )
 
-  const handleDomainMetadata = useCallback((payload: string) => {
-    try {
-      dappMetadata.current = JSON.parse(payload)
-      Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
-    } catch {
-      Logger.error('[InjectedProvider] Invalid domain_metadata payload')
-    }
-  }, [])
+  const handleDomainMetadata = useCallback(
+    (payload: string) => {
+      try {
+        dappMetadata.current = JSON.parse(payload)
+        Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
+      } catch {
+        Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+      }
+
+      // Prime the shim's _accounts cache on page load: if the current origin
+      // already has an EVM grant for the active account, emit accountsChanged
+      // so dApps with auto-reconnect (wagmi autoConnect, etc.) see the
+      // connection immediately without prompting. If no grant exists, emit
+      // an empty array to keep the shim in sync (e.g. after the user revoked
+      // the grant from Connected Sites while the tab was open).
+      const origin = getOriginFromUrl(currentUrlRef.current)
+      const active = activeAccountRef.current
+      if (!origin || !active?.addressC) return
+      const granted = selectHasPermission({
+        domain: origin,
+        address: active.addressC,
+        vmType: NetworkVMType.EVM
+      })(store.getState())
+      const accounts = granted ? [active.addressC] : []
+      webViewRef.current?.injectJavaScript(
+        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
+          accounts
+        )}); true;`
+      )
+    },
+    [store, webViewRef]
+  )
 
   return {
     providerShimJs,

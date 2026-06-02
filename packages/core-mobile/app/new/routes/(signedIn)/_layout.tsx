@@ -103,6 +103,10 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/authorizeInjectedDapp"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/collectibleSend"
             options={modalScreensOptions}
           />
