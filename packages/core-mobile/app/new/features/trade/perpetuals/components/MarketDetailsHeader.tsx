@@ -1,22 +1,11 @@
-import {
-  PriceChangeIndicator,
-  PriceChangeStatus,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { PriceChangeIndicator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import type { PerpUniverseEntry, PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
+import { computePriceChange, formatPercent } from '../utils/priceChange'
 
 const DASH = '—'
-
-const parseNum = (s: string | undefined): number | undefined => {
-  if (s === undefined) return undefined
-  const n = Number(s)
-  return Number.isFinite(n) ? n : undefined
-}
 
 interface MarketDetailsHeaderProps {
   coin: string
@@ -32,29 +21,11 @@ export const MarketDetailsHeader = ({
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
 
-  const markPx = parseNum(assetCtx?.markPx)
-  const prevDayPx = parseNum(assetCtx?.prevDayPx)
-
-  const changePct =
-    markPx !== undefined && prevDayPx !== undefined && prevDayPx !== 0
-      ? ((markPx - prevDayPx) / prevDayPx) * 100
-      : undefined
-
-  const changeStatus =
-    changePct === undefined
-      ? PriceChangeStatus.Neutral
-      : changePct > 0
-      ? PriceChangeStatus.Up
-      : changePct < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
+  const { markPx, pct, status } = computePriceChange(assetCtx)
 
   const formattedPrice =
     markPx !== undefined ? formatCurrency({ amount: markPx }) : DASH
-  const formattedChangePct =
-    changePct === undefined
-      ? DASH
-      : `${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%`
+  const formattedChangePct = formatPercent(pct) ?? DASH
   const formattedLeverage =
     universe?.maxLeverage !== undefined ? `${universe.maxLeverage}×` : DASH
 
@@ -86,7 +57,7 @@ export const MarketDetailsHeader = ({
           <>
             <Text variant="heading2">{formattedPrice}</Text>
             <PriceChangeIndicator
-              status={changeStatus}
+              status={status}
               formattedPercent={formattedChangePct}
             />
           </>

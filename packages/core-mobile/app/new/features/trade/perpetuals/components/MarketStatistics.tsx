@@ -9,6 +9,7 @@ import type { PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
+import { computePriceChange, formatChangeRow } from '../utils/priceChange'
 
 const parseNum = (s: string | undefined): number | undefined => {
   if (s === undefined) return undefined
@@ -47,44 +48,14 @@ export const MarketStatistics = ({
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
 
-  const markPx = parseNum(assetCtx?.markPx)
+  const { delta, pct, status } = computePriceChange(assetCtx)
   const oraclePx = parseNum(assetCtx?.oraclePx)
-  const prevDayPx = parseNum(assetCtx?.prevDayPx)
   const openInterestNum = parseNum(assetCtx?.openInterest)
   const fundingNum = parseNum(assetCtx?.funding)
 
-  const changeDelta =
-    markPx !== undefined && prevDayPx !== undefined
-      ? markPx - prevDayPx
-      : undefined
-  const changePct =
-    markPx !== undefined && prevDayPx !== undefined && prevDayPx !== 0
-      ? ((markPx - prevDayPx) / prevDayPx) * 100
-      : undefined
-
-  const changeStatus =
-    changePct === undefined
-      ? PriceChangeStatus.Neutral
-      : changePct > 0
-      ? PriceChangeStatus.Up
-      : changePct < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-
-  const changeColor =
-    changeStatus === PriceChangeStatus.Up
-      ? theme.colors.$textSuccess
-      : changeStatus === PriceChangeStatus.Down
-      ? theme.colors.$textDanger
-      : theme.colors.$textPrimary
-
+  const changeColor = colorForStatus(status, theme.colors)
   // Negative funding pays longs → green, positive → red.
-  const fundingColor =
-    fundingNum === undefined || fundingNum === 0
-      ? theme.colors.$textPrimary
-      : fundingNum < 0
-      ? theme.colors.$textSuccess
-      : theme.colors.$textDanger
+  const fundingColor = colorForFunding(fundingNum, theme.colors)
 
   const muted = (text: string): JSX.Element => (
     <Text variant="body1" sx={{ color: '$textSecondary' }}>
@@ -97,25 +68,22 @@ export const MarketStatistics = ({
     </Text>
   )
 
+  const markPx = parseNum(assetCtx?.markPx)
   const mark =
     markPx !== undefined ? muted(formatCurrency({ amount: markPx })) : null
   const oracle =
     oraclePx !== undefined ? muted(formatCurrency({ amount: oraclePx })) : null
+  const changeRow = formatChangeRow(delta, pct)
   const change =
-    changeDelta !== undefined && changePct !== undefined
-      ? colored(
-          `${changeDelta > 0 ? '+' : ''}${changeDelta.toFixed(2)} / ${
-            changePct > 0 ? '+' : ''
-          }${changePct.toFixed(2)}%`,
-          changeColor
-        )
-      : null
+    changeRow !== undefined ? colored(changeRow, changeColor) : null
   const volume =
     assetCtx?.dayNtlVlm !== undefined
       ? muted(formatCurrency({ amount: assetCtx.dayNtlVlm }))
       : null
   const openInterest =
-    openInterestNum !== undefined ? muted(formatThousands(openInterestNum)) : null
+    openInterestNum !== undefined
+      ? muted(formatThousands(openInterestNum))
+      : null
   // HL funding is a per-hour decimal (e.g. 0.0001 = 0.01%/hr).
   const funding =
     fundingNum !== undefined
@@ -138,4 +106,23 @@ export const MarketStatistics = ({
   ]
 
   return <GroupList data={stats} />
+}
+
+type ThemeColors = ReturnType<typeof useTheme>['theme']['colors']
+
+const colorForStatus = (
+  status: PriceChangeStatus,
+  colors: ThemeColors
+): string => {
+  if (status === PriceChangeStatus.Up) return colors.$textSuccess
+  if (status === PriceChangeStatus.Down) return colors.$textDanger
+  return colors.$textPrimary
+}
+
+const colorForFunding = (
+  funding: number | undefined,
+  colors: ThemeColors
+): string => {
+  if (funding === undefined || funding === 0) return colors.$textPrimary
+  return funding < 0 ? colors.$textSuccess : colors.$textDanger
 }

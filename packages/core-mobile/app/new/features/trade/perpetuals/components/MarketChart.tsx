@@ -82,6 +82,7 @@ export const MarketChart = ({
       })();
       true;
     `)
+    mountedResolutionRef.current = resolution
   }, [resolution])
 
   // `resolution` is intentionally excluded from the memo deps: Android's

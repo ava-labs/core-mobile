@@ -113,13 +113,18 @@ export const FiatAmountInputWidget = ({
       : []
   )
 
-  // Custom presets can change at runtime (e.g. `Max` recomputes when balance
-  // updates) — rebuild the button list when the caller hands us a new array.
+  // Rebuild the button list when any input that drives it changes — custom
+  // `presets` (e.g. `Max` recomputed against a new balance) or a runtime
+  // toggle of `enableAmountSelection`.
   useEffect(() => {
-    if (presets) {
-      setPredefinedAmountButtons(buildPresetButtons(presets))
-    }
-  }, [presets, buildPresetButtons])
+    setPredefinedAmountButtons(
+      presets
+        ? buildPresetButtons(presets)
+        : enableAmountSelection
+        ? buildDefaultButtons()
+        : []
+    )
+  }, [presets, enableAmountSelection, buildPresetButtons, buildDefaultButtons])
 
   const textInputRef = useRef<FiatAmountInputHandle>(null)
 

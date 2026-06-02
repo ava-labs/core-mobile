@@ -57,7 +57,9 @@ export const useHyperliquidMarketContext = (
           pxDecimals: pxDecimalsFor(universe)
         })
       })
-      .catch(() => {})
+      .catch(() => {
+        // Silent — state stays empty so consumers render skeletons.
+      })
 
     ws.connect()
     const unsubscribe = ws.subscribe({ type: 'activeAssetCtx', coin }, data => {
