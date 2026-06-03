@@ -35,8 +35,6 @@ export const Positions = ({
 
   const positions = MY_POSITIONS_MOCK
 
-  // Capture the initial offset exactly once so re-renders don't re-apply
-  // `contentOffset` and yank the scroll position mid-interaction.
   const [initialScrollX] = useState(() => scrollOffsetRef?.current ?? 0)
 
   const handlePositionsPress = useCallback(() => {

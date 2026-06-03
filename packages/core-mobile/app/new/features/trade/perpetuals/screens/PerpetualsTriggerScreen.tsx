@@ -207,19 +207,15 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
 
         <GroupList
           titleSx={{ fontFamily: 'Inter-Regular' }}
+          valueSx={{
+            color: pnlColor,
+            fontSize: 16,
+            fontFamily: 'Inter-Medium'
+          }}
           data={[
             {
               title: copy.pnlLabel,
-              value: (
-                <Text
-                  sx={{
-                    color: pnlColor,
-                    fontSize: 16,
-                    fontFamily: 'Inter-Medium'
-                  }}>
-                  {formattedPnl}
-                </Text>
-              )
+              value: formattedPnl
             }
           ]}
         />

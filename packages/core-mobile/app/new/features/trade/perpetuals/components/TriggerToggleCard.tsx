@@ -20,8 +20,6 @@ interface TriggerToggleCardProps {
   onPressDrill: () => void
 }
 
-// Built as a bespoke card rather than a GroupList accordion: GroupList toggles
-// expansion on row press, which conflicts with driving it from the switch.
 export const TriggerToggleCard = ({
   title,
   subtitle,

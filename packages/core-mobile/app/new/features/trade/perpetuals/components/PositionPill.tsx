@@ -7,7 +7,6 @@ import type { OrderSide } from '../contexts/PlaceOrderContext'
 interface PositionPillProps {
   coin: string
   price: number
-  /** When set, renders the "Long ▲" / "Short ▼" direction on the right. */
   side?: OrderSide
 }
 

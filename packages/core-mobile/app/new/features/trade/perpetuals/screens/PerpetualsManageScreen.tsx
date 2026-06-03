@@ -116,7 +116,6 @@ export const PerpetualsManageScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ paddingTop: 8, gap: 10 }}>
-        {/* Position summary header */}
         <View
           sx={{
             backgroundColor: '$surfaceSecondary',
@@ -168,6 +167,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         </View>
 
         <GroupList
+          titleSx={{ fontFamily: 'Inter-Regular' }}
           data={[
             {
               title: 'Size',

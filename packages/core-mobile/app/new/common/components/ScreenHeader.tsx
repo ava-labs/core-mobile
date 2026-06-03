@@ -25,7 +25,9 @@ export default function ScreenHeader({
       {description !== undefined && (
         <View sx={{ marginTop: 6 }}>
           {typeof description === 'string' ? (
-            <Text variant="subtitle1">{description}</Text>
+            <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+              {description}
+            </Text>
           ) : (
             description
           )}
