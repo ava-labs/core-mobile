@@ -11,9 +11,29 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
-import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { type OrderSide, usePlaceOrder } from '../contexts/PlaceOrderContext'
 
 type TriggerKind = 'takeProfit' | 'stopLoss'
+
+// A take-profit only makes sense on the profitable side of entry (long: above,
+// short: below); a stop-loss on the losing side. Reject anything else so we
+// never store a price that contradicts the trigger.
+const isTriggerValid = ({
+  kind,
+  side,
+  price,
+  entryPrice
+}: {
+  kind: TriggerKind
+  side: OrderSide
+  price: number | undefined
+  entryPrice: number
+}): boolean => {
+  if (price === undefined || price <= 0 || entryPrice <= 0) return false
+  const above = price > entryPrice
+  if (kind === 'takeProfit') return side === 'long' ? above : !above
+  return side === 'long' ? !above : above
+}
 
 type ThemeColors = ReturnType<typeof useTheme>['theme']['colors']
 
@@ -113,6 +133,8 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     theme.colors.$textPrimary
   )
 
+  const valid = isTriggerValid({ kind, side, price, entryPrice })
+
   const handleDone = useCallback(() => {
     if (kind === 'takeProfit') {
       setTakeProfitPrice(price)
@@ -124,11 +146,15 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
 
   const renderFooter = useCallback(
     () => (
-      <Button type="primary" size="large" onPress={handleDone}>
+      <Button
+        type="primary"
+        size="large"
+        disabled={!valid}
+        onPress={handleDone}>
         Done
       </Button>
     ),
-    [handleDone]
+    [valid, handleDone]
   )
 
   const formattedPnl =

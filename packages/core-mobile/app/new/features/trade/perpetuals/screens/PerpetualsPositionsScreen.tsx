@@ -198,7 +198,9 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
           position.side
         }&entry=${position.entryPrice ?? position.price}&leverage=${
           position.leverage
-        }&pnl=${position.pnl}&tp=${position.takeProfit}&sl=${position.stopLoss}`
+        }&size=${position.size}&pnl=${position.pnl}&tp=${
+          position.takeProfit
+        }&sl=${position.stopLoss}`
       )
     },
     [router]

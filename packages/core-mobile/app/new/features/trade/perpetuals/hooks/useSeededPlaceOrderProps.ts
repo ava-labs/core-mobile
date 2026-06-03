@@ -43,23 +43,33 @@ export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
     sl?: string
   }>()
 
+  // Sanitize: a malformed deep link must never produce a non-positive price,
+  // out-of-range leverage, or negative collateral.
   const entryPrice =
-    toNumber(params.entry) ?? toNumber(params.price) ?? DEFAULT_ENTRY_PRICE
-  const leverage = toNumber(params.leverage)
-  const size = toNumber(params.size) ?? 0
+    toPositive(params.entry) ?? toPositive(params.price) ?? DEFAULT_ENTRY_PRICE
+  const maxLeverage = Math.max(
+    1,
+    toNumber(params.maxLeverage) ?? DEFAULT_MAX_LEVERAGE
+  )
+  const rawLeverage = toNumber(params.leverage)
+  const initialLeverage =
+    rawLeverage !== undefined
+      ? Math.min(Math.max(1, rawLeverage), maxLeverage)
+      : undefined
+  const size = Math.max(0, toNumber(params.size) ?? 0)
 
   return {
     coin: (params.coin ?? DEFAULT_COIN).toUpperCase(),
     side: (params.side === 'short' ? 'short' : 'long') as OrderSide,
     entryPrice,
     availableBalance: MOCK_AVAILABLE_BALANCE,
-    maxLeverage: toNumber(params.maxLeverage) ?? DEFAULT_MAX_LEVERAGE,
-    initialLeverage: leverage,
+    maxLeverage,
+    initialLeverage,
     // Collateral implied by the position, so the trigger screen's projected
     // P&L has a size to work with.
     initialAmount:
-      leverage !== undefined && leverage > 0
-        ? (size * entryPrice) / leverage
+      initialLeverage !== undefined && initialLeverage > 0
+        ? (size * entryPrice) / initialLeverage
         : undefined,
     initialTakeProfitPrice: toPositive(params.tp),
     initialStopLossPrice: toPositive(params.sl)
