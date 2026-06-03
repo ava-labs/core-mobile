@@ -1,3 +1,4 @@
+/* eslint-disable no-void */
 import assert from 'assert'
 import { ChainablePromiseElement } from 'webdriverio'
 import { selectors } from './selectors'
@@ -157,6 +158,26 @@ async function waitForNotVisible(
 
 async function getVisible(ele: ChainablePromiseElement) {
   return (await ele.isDisplayed()) || (await ele.isExisting())
+}
+
+/**
+ * Check if an element is within the visible viewport of a scroll container.
+ * Unlike isDisplayed(), this works correctly for React Native ScrollViews where
+ * off-screen elements still report as displayed.
+ */
+async function getVisibleInFrame(
+  ele: ChainablePromiseElement,
+  frame: ChainablePromiseElement
+): Promise<boolean> {
+  const frameLocation = await frame.getLocation()
+  const frameSize = await frame.getSize()
+  const eleLocation = await ele.getLocation()
+  return (
+    eleLocation.x >= frameLocation.x &&
+    eleLocation.x < frameLocation.x + frameSize.width &&
+    eleLocation.y >= frameLocation.y &&
+    eleLocation.y < frameLocation.y + frameSize.height
+  )
 }
 
 /**
@@ -335,6 +356,7 @@ async function dragAndDrop(
   targetOffset: [number, number],
   duration = 500
 ) {
+  console.log('drag and drop the element')
   await ele.dragAndDrop(
     {
       x: targetOffset[0],
@@ -539,5 +561,6 @@ export const actions = {
   waitForNotVisible,
   assertPerformance,
   isElementVisible,
-  isBiometricToggleOn
+  isBiometricToggleOn,
+  getVisibleInFrame
 }

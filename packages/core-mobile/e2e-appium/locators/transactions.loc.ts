@@ -97,7 +97,7 @@ export default {
   receiveCryptoTitle: 'Receive crypto',
   receiveCryptoSubtitle: 'To receive funds you can choose to share',
   receiveQrCode: 'receive_token_qr_code',
-  selectReceiveNetwork: 'select_receive_network',
+  receiveNetwork: 'select_receive_network',
   evmSupportedAddressText: 'evm_supported_address_text',
   countrySelector: 'list_item__Country',
   currencySelector: 'list_item__Currency',
