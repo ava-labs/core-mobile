@@ -385,6 +385,7 @@ export const ScrollScreen = ({
   }, [insets.top, isModal])
 
   const renderHeaderBackground = useCallback(() => {
+    if (hideHeaderBackground) return null
     return (
       <View
         pointerEvents="none"
