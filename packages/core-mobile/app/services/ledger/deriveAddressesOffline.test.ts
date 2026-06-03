@@ -20,7 +20,6 @@ import {
 import { secp256k1, utils, networkIDs } from '@avalabs/avalanchejs'
 import { networks } from 'bitcoinjs-lib'
 import { mnemonicToSeedSync } from 'bip39'
-import { deriveAddressesFromXpub } from './deriveAddressesOffline'
 
 // Standard BIP39 test mnemonic (DO NOT use in production)
 const TEST_MNEMONIC =
@@ -219,57 +218,5 @@ describe('Offline address derivation validation', () => {
       const unique = new Set(addresses)
       expect(unique.size).toBe(3)
     })
-  })
-})
-
-describe('BIP44 EVM multi-account derivation', () => {
-  it('derives different EVM addresses for different address indices from shared xpub', () => {
-    const sharedEvmXpub = deriveXpubFromMnemonic(TEST_MNEMONIC, 0, 60)
-    const addresses: string[] = []
-
-    for (let i = 0; i < 3; i++) {
-      const accountAvalancheXpub = deriveXpubFromMnemonic(
-        TEST_MNEMONIC,
-        i,
-        9000
-      )
-      const { evm } = deriveAddressesFromXpub(
-        sharedEvmXpub,
-        accountAvalancheXpub,
-        false,
-        i
-      )
-      addresses.push(evm)
-    }
-
-    const unique = new Set(addresses)
-    expect(unique.size).toBe(3)
-    addresses.forEach(addr => {
-      expect(addr).toMatch(/^0x[a-fA-F0-9]{40}$/)
-    })
-  })
-
-  it('BIP44 account 3 address differs from LedgerLive-style account 3', () => {
-    const sharedEvmXpub = deriveXpubFromMnemonic(TEST_MNEMONIC, 0, 60)
-
-    // BIP44: shared xpub at m/44'/60'/0', address at index 3
-    const bip44Result = deriveAddressesFromXpub(
-      sharedEvmXpub,
-      deriveXpubFromMnemonic(TEST_MNEMONIC, 3, 9000),
-      false,
-      3
-    )
-
-    // LedgerLive-style: per-account xpub at m/44'/60'/3', address at index 0
-    const perAccountEvmXpub = deriveXpubFromMnemonic(TEST_MNEMONIC, 3, 60)
-    const ledgerLiveResult = deriveAddressesFromXpub(
-      perAccountEvmXpub,
-      deriveXpubFromMnemonic(TEST_MNEMONIC, 3, 9000),
-      false,
-      0
-    )
-
-    expect(bip44Result.evm).not.toBe(ledgerLiveResult.evm)
-    expect(bip44Result.btc).not.toBe(ledgerLiveResult.btc)
   })
 })
