@@ -10,12 +10,10 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 import { LedgerDerivationPathType } from 'services/ledger/types'
-import {
-  deriveAddressesFromXpub,
-  DerivedAddresses
-} from 'services/ledger/deriveAddressesOffline'
+import { DerivedAddresses } from 'services/ledger/deriveAddressesOffline'
 import { Account } from 'store/account'
 import { LedgerWalletSecretSchema } from '../utils'
+import { deriveLedgerAddressesFromXpubs } from './deriveLedgerAddressesFromXpubs'
 
 export interface OfflineLedgerAccountResult {
   account: Account
@@ -73,18 +71,21 @@ export async function createLedgerAccountFromXpubs(
     return null
   }
 
-  const mainnetAddresses = deriveAddressesFromXpub(
+  const batch = await deriveLedgerAddressesFromXpubs(
     evmAccountXpub,
-    accountXpubs.avalanche,
-    false,
-    accountIndex
+    [accountXpubs.avalanche],
+    [accountIndex]
   )
-  const testnetAddresses = deriveAddressesFromXpub(
-    evmAccountXpub,
-    accountXpubs.avalanche,
-    true,
-    accountIndex
-  )
+  if (!batch) return null
+
+  const mainnetAddresses: DerivedAddresses | undefined = batch.mainnet[0]
+  const testnetAddresses: DerivedAddresses | undefined = batch.testnet[0]
+  if (!mainnetAddresses || !testnetAddresses) {
+    Logger.info(
+      `Offline derivation returned no result for index ${accountIndex}`
+    )
+    return null
+  }
 
   // Check for stored Solana address
   const solanaAddresses: Record<string, string> =

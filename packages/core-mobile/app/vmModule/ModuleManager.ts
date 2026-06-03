@@ -144,6 +144,70 @@ class ModuleManager {
     })
   }
 
+  deriveAllAddresses = async ({
+    walletId,
+    walletType,
+    accountIndices,
+    network
+  }: {
+    walletId: string
+    walletType: WalletType
+    accountIndices: number[]
+    network: Network
+  }): Promise<(Record<NetworkVMType, string> | undefined)[]> => {
+    if (accountIndices.length === 0) return []
+
+    const derivationPathType =
+      walletType === WalletType.LEDGER_LIVE
+        ? DerivationPath.LedgerLive
+        : DerivationPath.BIP44
+    const secretId = JSON.stringify({ walletId, walletType })
+
+    const perModuleResults = await Promise.allSettled(
+      this.modules.map(async module =>
+        module.deriveAddresses({
+          secretId,
+          accountIndices,
+          network,
+          derivationPathType
+        })
+      )
+    )
+
+    // Each module derives one chain group across *all* indices, so a single
+    // rejection means that chain is missing for every index in this batch. We
+    // cannot produce a complete address record for any index, so signal the
+    // failure with `undefined` slots rather than masking it with empty-string
+    // addresses. Callers' `!addresses` guards then engage instead of treating
+    // a partially-derived account as valid.
+    const rejected = perModuleResults.filter(
+      (result): result is PromiseRejectedResult => result.status === 'rejected'
+    )
+    if (rejected.length > 0) {
+      rejected.forEach(result => {
+        Logger.error('Failed to derive addresses for one or more modules', {
+          accountIndices,
+          isTestnet: network.isTestnet,
+          reason: result.reason
+        })
+      })
+      return accountIndices.map(() => undefined)
+    }
+
+    return accountIndices.map((_, i) => {
+      let addresses = emptyAddresses()
+      perModuleResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          const slot = result.value[i]
+          if (slot) {
+            addresses = { ...addresses, ...slot }
+          }
+        }
+      })
+      return addresses
+    })
+  }
+
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
     const module = await this.getModule(chainId)
 
