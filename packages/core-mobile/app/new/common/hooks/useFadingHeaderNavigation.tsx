@@ -29,7 +29,6 @@ export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   backgroundColor,
-  shouldHeaderHaveGrabber = false,
   hideHeaderBackground = false,
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
@@ -40,7 +39,6 @@ export const useFadingHeaderNavigation = ({
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
-  shouldHeaderHaveGrabber?: boolean
   hideHeaderBackground?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
@@ -174,7 +172,7 @@ export const useFadingHeaderNavigation = ({
       </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldHeaderHaveGrabber, header, handleLayout])
+  }, [header, handleLayout])
 
   // Return a stable function reference that returns the memoized component
   const headerTitle = useCallback(() => {

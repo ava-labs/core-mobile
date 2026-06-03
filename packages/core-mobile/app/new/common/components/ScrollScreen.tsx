@@ -192,11 +192,7 @@ export const ScrollScreen = ({
   } = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
     targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: isModal,
     hasParent,
-    // Modals always need the transparent (Pressable) header background so the
-    // grabber can receive drag gestures; non-modal callers can still opt in
-    // explicitly via the `hideHeaderBackground` prop.
     hideHeaderBackground: hideHeaderBackground || isModal,
     renderHeaderRight,
     showNavigationHeaderTitle

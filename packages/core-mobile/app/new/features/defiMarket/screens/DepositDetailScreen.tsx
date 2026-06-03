@@ -51,8 +51,7 @@ export function DepositDetailScreen(): JSX.Element {
 
   const { onScroll } = useFadingHeaderNavigation({
     header: navHeader,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: false
+    targetLayout: headerLayout
   })
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
