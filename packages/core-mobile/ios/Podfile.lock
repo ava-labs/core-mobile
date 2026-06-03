@@ -9,7 +9,7 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - AvalabsCryptoNitro (0.0.0-ray-crypto-core-20260601162312):
+  - AvalabsCryptoNitro (0.3.0):
     - NitroModules
     - React-callinvoker
     - React-jsi
@@ -4845,7 +4845,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
-  AvalabsCryptoNitro: e1511c7e86a69dfd23076479cf97c6da44a14bfe
+  AvalabsCryptoNitro: 83712bd56be42d90293278b834bc50c698540cfb
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BranchSDK: db2c2ffa5b85ad3e202f73393ca794878afd3c52
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
@@ -5053,6 +5053,6 @@ SPEC CHECKSUMS:
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 52bbed9956e8dfcc3e762a40f896ba3fc6025747
+PODFILE CHECKSUM: 2c5f4fc2b157df1d816f0c37dcfcbea8c2cbda1e
 
 COCOAPODS: 1.16.2

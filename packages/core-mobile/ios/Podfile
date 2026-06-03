@@ -14,38 +14,6 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-# Workaround: CocoaPods 1.16.x's resolver does not satisfy path-based pods
-# whose podspec declares a pre-release SemVer (e.g. `@avalabs/crypto-nitro`
-# at `0.0.0-ray-crypto-core-...`). React Native's `link_native_modules!`
-# registers autolinked pods with an implicit `>= 0` requirement, and
-# `Pod::Requirement#satisfied_by?` follows RubyGems semantics where `>= 0`
-# does not match pre-release versions. CocoaPods also forbids combining a
-# `:path =>` source with an explicit version constraint, so we can't fix it
-# at the Podfile level by syntax. For path-based external sources only one
-# version exists by definition, so the requirement filter is meaningless —
-# patch both the lazy `all_specifications` path (used by search_for) and
-# the `requirement_satisfied_by?` path so neither rejects the prerelease.
-require 'cocoapods/resolver/lazy_specification'
-require 'cocoapods/resolver'
-
-::Pod::Specification::Set::External.class_eval do
-  def all_specifications(_warn_for_multiple_pod_sources, _requirement)
-    [specification]
-  end
-end
-
-::Pod::Resolver.class_eval do
-  alias_method :_orig_requirement_satisfied_by?, :requirement_satisfied_by?
-  def requirement_satisfied_by?(requirement, activated, spec)
-    if requirement.respond_to?(:external_source) && requirement.external_source
-      # Path-based pods have exactly one version (the one in the podspec);
-      # any explicit requirement constraint is either absent or meaningless.
-      return spec_is_platform_compatible?(activated, requirement, spec)
-    end
-    _orig_requirement_satisfied_by?(requirement, activated, spec)
-  end
-end
-
 prepare_react_native_project!
 
 setup_permissions([
