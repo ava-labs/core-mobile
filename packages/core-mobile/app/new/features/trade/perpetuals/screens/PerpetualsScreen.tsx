@@ -80,9 +80,19 @@ export const PerpetualsScreen = ({
 
   const renderItem: ListRenderItem<PerpetualMarket> = useCallback(
     ({ item, index }) => (
-      <PerpetualListItem market={item} isFirst={index === 0} />
+      <PerpetualListItem
+        market={item}
+        isFirst={index === 0}
+        // TODO: route via the market detail screen (CP-14338) once merged;
+        // for now tap opens the place-order flow directly (defaults to Long).
+        onPress={() =>
+          router.navigate(
+            `/perpetualsPlaceOrder?coin=${item.symbol}&side=long&price=${item.price}`
+          )
+        }
+      />
     ),
-    []
+    [router]
   )
 
   const keyExtractor = useCallback((item: PerpetualMarket) => item.id, [])

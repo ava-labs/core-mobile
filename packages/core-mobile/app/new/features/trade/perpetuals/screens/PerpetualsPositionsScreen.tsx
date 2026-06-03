@@ -178,13 +178,46 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
     ]
   )
 
+  const openClose = useCallback(
+    (position: Position, kind: 'market' | 'limit') => {
+      router.navigate(
+        `/perpetualsClose?kind=${kind}&coin=${position.symbol}&side=${
+          position.side
+        }&price=${position.price}&entry=${
+          position.entryPrice ?? position.price
+        }&pnl=${position.pnl}`
+      )
+    },
+    [router]
+  )
+
+  const openManage = useCallback(
+    (position: Position) => {
+      router.navigate(
+        `/perpetualsManage?coin=${position.symbol}&side=${
+          position.side
+        }&entry=${position.entryPrice ?? position.price}&leverage=${
+          position.leverage
+        }&pnl=${position.pnl}&tp=${position.takeProfit}&sl=${position.stopLoss}`
+      )
+    },
+    [router]
+  )
+
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item, index }) => (
       <View sx={{ paddingHorizontal: 16, marginTop: index === 0 ? 0 : 10 }}>
-        <PositionCard position={item} fullWidth expandable />
+        <PositionCard
+          position={item}
+          fullWidth
+          expandable
+          onMarketClose={() => openClose(item, 'market')}
+          onLimitClose={() => openClose(item, 'limit')}
+          onManage={() => openManage(item)}
+        />
       </View>
     ),
-    []
+    [openClose, openManage]
   )
 
   const keyExtractor = useCallback((item: Position) => item.id, [])

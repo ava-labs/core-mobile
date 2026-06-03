@@ -13,12 +13,9 @@ export default function ScreenHeader({
   description?: string | JSX.Element
 }): JSX.Element {
   return (
-    <View>
+    <View style={{ marginRight: 10, marginTop: 8, marginBottom: 16 }}>
       <Text
         sx={{
-          marginRight: 10,
-          marginTop: 8,
-          marginBottom: 10,
           ...titleSx
         }}
         numberOfLines={titleNumberOfLines}
@@ -26,7 +23,7 @@ export default function ScreenHeader({
         {title}
       </Text>
       {description !== undefined && (
-        <View sx={{ marginTop: 8 }}>
+        <View sx={{ marginTop: 6 }}>
           {typeof description === 'string' ? (
             <Text variant="subtitle1">{description}</Text>
           ) : (
