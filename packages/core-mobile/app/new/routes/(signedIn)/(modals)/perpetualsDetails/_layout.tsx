@@ -1,13 +1,13 @@
 import { Stack } from 'common/components/Stack'
 import {
-  stackScreensOptions,
-  modalFirstScreenOptions
+  modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import React from 'react'
 
 export default function PerpetualsDetailsScreenLayout(): JSX.Element {
   return (
-    <Stack screenOptions={stackScreensOptions}>
+    <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
     </Stack>
   )

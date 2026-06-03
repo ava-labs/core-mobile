@@ -80,9 +80,17 @@ export const PerpetualsScreen = ({
 
   const renderItem: ListRenderItem<PerpetualMarket> = useCallback(
     ({ item, index }) => (
-      <PerpetualListItem market={item} isFirst={index === 0} />
+      <PerpetualListItem
+        market={item}
+        isFirst={index === 0}
+        onPress={() =>
+          router.navigate(
+            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
+          )
+        }
+      />
     ),
-    []
+    [router]
   )
 
   const keyExtractor = useCallback((item: PerpetualMarket) => item.id, [])
