@@ -194,7 +194,10 @@ export const ScrollScreen = ({
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: isModal,
     hasParent,
-    hideHeaderBackground: isModal,
+    // Modals always need the transparent (Pressable) header background so the
+    // grabber can receive drag gestures; non-modal callers can still opt in
+    // explicitly via the `hideHeaderBackground` prop.
+    hideHeaderBackground: hideHeaderBackground || isModal,
     renderHeaderRight,
     showNavigationHeaderTitle
   })
@@ -417,7 +420,7 @@ export const ScrollScreen = ({
       </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerHeight])
+  }, [headerHeight, hideHeaderBackground])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
