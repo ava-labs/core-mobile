@@ -9,7 +9,12 @@ import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { PeerMeta } from 'store/rpc/types'
-import { serializeError } from '@metamask/rpc-errors'
+import { rpcErrors, serializeError } from '@metamask/rpc-errors'
+import { RpcMethod } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
+import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { router as appRouter } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { approvalController } from 'vmModule/ApprovalController/ApprovalController'
@@ -32,7 +37,11 @@ import {
   JSON_RPC_INTERNAL_ERROR_CODE,
   USER_REJECTED_REQUEST_MESSAGE
 } from './injectedProvider/errors'
-import { BrowserNetwork, DomainMetadata } from './injectedProvider/types'
+import {
+  BrowserNetwork,
+  DomainMetadata,
+  RouterDeps
+} from './injectedProvider/types'
 
 // If the connect-approval screen never mounts or never resolves (e.g. Metro
 // hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
@@ -330,6 +339,65 @@ export function useEvmInjectedProvider(
     // latest references and rebuilds when dispatch changes.
     const requestSigning = createInAppRequest(dispatch, store.getState)
 
+    // Read-only RPC goes through the VM module — the same `module.onRpcRequest`
+    // path WalletConnect uses — so method classification and proxying come from
+    // the module manifest rather than a hand-maintained allowlist + raw fetch
+    // (CP-14384). Uses the per-tab browser network (which can diverge from the
+    // wallet's active network via wallet_switchEthereumChain), not the active one.
+    const requestReadOnly: RouterDeps['requestReadOnly'] = async ({
+      id,
+      method,
+      params,
+      chainId
+    }) => {
+      // Read networks from the store (not allNetworksRef) so a chain just added
+      // via wallet_addEthereumChain — which Redux has but the ref hasn't picked
+      // up until the next render — resolves without a stale-ref race.
+      const network = selectAllNetworks(store.getState())[chainId]
+      if (!network) {
+        throw rpcErrors.internal(`No network configured for chain ${chainId}`)
+      }
+      const caip2 = getEvmCaip2ChainId(chainId)
+      let module
+      try {
+        module = await ModuleManager.loadModule(caip2, method)
+      } catch (e) {
+        // Only an unsupported-method manifest rejection maps to methodNotFound;
+        // anything else (unsupported chainId, module init failure) is a real
+        // internal error and must not masquerade as -32601.
+        if (
+          e instanceof VmModuleErrors &&
+          e.name === ModuleErrors.UNSUPPORTED_METHOD
+        ) {
+          throw rpcErrors.methodNotFound(`Unsupported method: ${method}`)
+        }
+        Logger.error('[InjectedProvider] read-only module load failed', e)
+        throw rpcErrors.internal('Failed to load module for read-only request')
+      }
+      const peerMeta = getPeerMeta()
+      const response = await module.onRpcRequest(
+        {
+          requestId: String(id),
+          sessionId: String(tabId),
+          // Read-only methods aren't members of the RpcMethod (signing) enum,
+          // but the module proxies them at runtime — same cast the WC path makes.
+          method: method as RpcMethod,
+          chainId: caip2,
+          params,
+          dappInfo: {
+            name: peerMeta.name,
+            url: peerMeta.url,
+            icon: peerMeta.icons[0] ?? ''
+          }
+        },
+        mapToVmNetwork(network)
+      )
+      if ('error' in response) {
+        throw response.error
+      }
+      return response.result
+    }
+
     return createInjectedProviderRouter({
       getBrowserNetwork: () => browserNetworkRef.current,
       setBrowserNetwork: net => {
@@ -339,6 +407,7 @@ export function useEvmInjectedProvider(
       tabId,
       dispatch,
       requestSigning,
+      requestReadOnly,
       sendResponse,
       emitEvent,
       getNativeOrigin: () => getOriginFromUrl(currentUrlRef.current),

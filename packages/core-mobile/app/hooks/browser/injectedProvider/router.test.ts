@@ -1,7 +1,6 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Networks } from 'store/network/types'
-import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import type { Account } from 'store/account'
 import {
   EIP1193_USER_REJECTED_CODE,
@@ -10,10 +9,6 @@ import {
 } from './errors'
 import { createInjectedProviderRouter } from './router'
 import { BrowserNetwork, RouterDeps } from './types'
-
-jest.mock('react-native-nitro-fetch', () => ({ fetch: jest.fn() }))
-
-const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
 
 jest.mock('store/browser/slices/tabs', () => ({
   setTabChainId: jest.fn((payload: { tabId: string; chainId: number }) => ({
@@ -40,6 +35,7 @@ type MockDeps = {
   sendResponse: jest.Mock
   emitEvent: jest.Mock
   requestSigning: jest.Mock
+  requestReadOnly: jest.Mock
   dispatch: jest.Mock
   trackPendingOrigin: jest.Mock
   setBrowserNetworkSpy: jest.Mock
@@ -84,6 +80,7 @@ function makeDeps(overrides?: {
   const sendResponse = jest.fn()
   const emitEvent = jest.fn()
   const requestSigning = jest.fn()
+  const requestReadOnly = jest.fn().mockResolvedValue('0xreadonly')
   const dispatch = jest.fn()
   const trackPendingOrigin = jest.fn()
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
@@ -107,6 +104,7 @@ function makeDeps(overrides?: {
     tabId: overrides?.tabId ?? 'tab-1',
     dispatch,
     requestSigning,
+    requestReadOnly,
     sendResponse,
     emitEvent,
     getNativeOrigin: () =>
@@ -132,6 +130,7 @@ function makeDeps(overrides?: {
     sendResponse,
     emitEvent,
     requestSigning,
+    requestReadOnly,
     dispatch,
     trackPendingOrigin,
     hasPermission,
@@ -173,12 +172,24 @@ describe('createInjectedProviderRouter', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('dispatch', () => {
-    it('rejects unknown methods with methodNotFound', () => {
-      const { deps, sendResponse } = makeDeps()
+    it('routes unknown/non-signing methods to requestReadOnly and propagates its error', async () => {
+      // Method classification is no longer a static allowlist: anything not
+      // injected-specific or signing is handed to requestReadOnly, which
+      // validates against the module manifest and rejects unsupported methods
+      // with methodNotFound (-32601). The router just propagates that.
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      requestReadOnly.mockRejectedValueOnce({
+        code: -32601,
+        message: 'Unsupported method: totally_fake_method'
+      })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'totally_fake_method')
+      await new Promise(r => setImmediate(r))
 
+      expect(requestReadOnly).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'totally_fake_method' })
+      )
       expect(sendResponse).toHaveBeenCalledWith(
         1,
         expect.objectContaining({ code: -32601 }),
@@ -732,67 +743,36 @@ describe('createInjectedProviderRouter', () => {
     })
   })
 
-  describe('proxyToRpc', () => {
-    afterEach(() => {
-      mockNitroFetch.mockReset()
-    })
-
-    it('returns internal error when rpcUrl is empty', async () => {
-      const { deps, sendResponse } = makeDeps({
-        browserNetwork: { chainId: 1, rpcUrl: '' }
+  describe('read-only dispatch', () => {
+    it('delegates read-only methods to requestReadOnly with the per-tab chainId and resolves the result', async () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps({
+        browserNetwork: { chainId: 1, rpcUrl: 'https://eth.llamarpc.com' }
       })
+      requestReadOnly.mockResolvedValueOnce('0xabc')
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'eth_blockNumber')
+      send(router, 'eth_call', [{ to: '0x0' }])
       await new Promise(r => setImmediate(r))
 
-      expect(sendResponse).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ code: JSON_RPC_INTERNAL_ERROR_CODE }),
-        undefined
-      )
-    })
-
-    it('proxies result on successful RPC fetch', async () => {
-      const { deps, sendResponse } = makeDeps()
-      mockNitroFetch.mockResolvedValue({
-        json: async () => ({ result: '0xabc' })
-      } as unknown as Response)
-      const router = createInjectedProviderRouter(deps)
-
-      send(router, 'eth_blockNumber')
-      await new Promise(r => setImmediate(r))
-
+      expect(requestReadOnly).toHaveBeenCalledWith({
+        id: 1,
+        method: 'eth_call',
+        params: [{ to: '0x0' }],
+        chainId: 1
+      })
       expect(sendResponse).toHaveBeenCalledWith(1, null, '0xabc')
     })
 
-    it('surfaces RPC error field', async () => {
-      const { deps, sendResponse } = makeDeps()
+    it('propagates an RpcError-shaped rejection from requestReadOnly', async () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
       const rpcErr = { code: -32000, message: 'node error' }
-      mockNitroFetch.mockResolvedValue({
-        json: async () => ({ error: rpcErr })
-      } as unknown as Response)
+      requestReadOnly.mockRejectedValueOnce(rpcErr)
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_blockNumber')
       await new Promise(r => setImmediate(r))
 
       expect(sendResponse).toHaveBeenCalledWith(1, rpcErr, undefined)
-    })
-
-    it('returns internal error on fetch failure', async () => {
-      const { deps, sendResponse } = makeDeps()
-      mockNitroFetch.mockRejectedValue(new Error('network down'))
-      const router = createInjectedProviderRouter(deps)
-
-      send(router, 'eth_blockNumber')
-      await new Promise(r => setImmediate(r))
-
-      expect(sendResponse).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ code: JSON_RPC_INTERNAL_ERROR_CODE }),
-        undefined
-      )
     })
   })
 

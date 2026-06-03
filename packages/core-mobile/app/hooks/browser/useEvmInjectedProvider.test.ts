@@ -3,13 +3,13 @@ import { useSelector, useDispatch, useStore } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
-import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import {
   selectAllNetworks,
   selectActiveNetwork,
   setActive
 } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
 import {
   EIP1193_USER_REJECTED_CODE,
   JSON_RPC_INTERNAL_ERROR_CODE,
@@ -17,10 +17,21 @@ import {
 } from './injectedProvider/errors'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
-// proxyToRpc calls nitroFetch; mock it explicitly (the root __mocks__ manual
-// mock also covers node_modules auto-mocking, but this keeps the intent local).
-jest.mock('react-native-nitro-fetch')
-const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
+// Read-only RPC now routes through the VM module (CP-14384). Mock the module
+// loader + onRpcRequest so the read-only path can be asserted without a network.
+const mockOnRpcRequest = jest.fn()
+const mockLoadModule = jest.fn(async (..._args: unknown[]) => ({
+  onRpcRequest: mockOnRpcRequest
+}))
+jest.mock('vmModule/ModuleManager', () => ({
+  __esModule: true,
+  default: {
+    loadModule: (...args: unknown[]) => mockLoadModule(...args)
+  }
+}))
+jest.mock('vmModule/utils/mapToVmNetwork', () => ({
+  mapToVmNetwork: (network: unknown) => network
+}))
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -126,6 +137,10 @@ function setupMocks(
   const mockTabChainIdSelector = jest.fn(() => undefined)
   ;(selectTabChainId as jest.Mock).mockReturnValue(mockTabChainIdSelector)
 
+  // requestReadOnly resolves networks via selectAllNetworks(store.getState())
+  // (direct call, not useSelector), so the mock must return the map directly.
+  ;(selectAllNetworks as jest.Mock).mockReturnValue(allNetworks)
+
   mockUseSelector.mockImplementation(
     (selector: (state: unknown) => unknown) => {
       if (selector === (selectAllNetworks as unknown)) return allNetworks
@@ -161,6 +176,9 @@ describe('useEvmInjectedProvider', () => {
     jest.clearAllMocks()
     mockUseDispatch.mockReturnValue(mockDispatch)
     mockUseStore.mockReturnValue(mockStore)
+    // Default read-only path: module loads and resolves a result.
+    mockLoadModule.mockResolvedValue({ onRpcRequest: mockOnRpcRequest })
+    mockOnRpcRequest.mockResolvedValue({ result: '0x0' })
     setupMocks()
   })
 
@@ -306,12 +324,8 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('uses browser chain RPC URL for read-only methods after wallet_switchEthereumChain', async () => {
-        const mockResponse = {
-          ok: true,
-          json: jest.fn().mockResolvedValue({ result: '0x1' })
-        }
-        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
+      it('routes read-only methods to the browser chain after wallet_switchEthereumChain', async () => {
+        mockOnRpcRequest.mockResolvedValue({ result: '0x1' })
 
         setupMocks({
           allNetworks: {
@@ -339,7 +353,8 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        // Read-only call — should use chain 1's RPC, not Avalanche's
+        // Read-only call — should target chain 1 (the per-tab browser chain),
+        // not the wallet's active Avalanche chain.
         await act(async () => {
           result.current.handleProviderMessage(
             JSON.stringify({
@@ -349,9 +364,13 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        expect(mockNitroFetch).toHaveBeenCalledWith(
-          'https://eth.rpc',
-          expect.anything()
+        expect(mockLoadModule).toHaveBeenLastCalledWith(
+          'eip155:1',
+          'eth_blockNumber'
+        )
+        expect(mockOnRpcRequest).toHaveBeenCalledWith(
+          expect.objectContaining({ chainId: 'eip155:1' }),
+          expect.objectContaining({ chainId: 1, rpcUrl: 'https://eth.rpc' })
         )
       })
 
@@ -1025,40 +1044,37 @@ describe('useEvmInjectedProvider', () => {
         'eth_getBlockTransactionCountByNumber'
       ]
 
-      it.each(readOnlyMethods)('proxies %s to RPC node', async method => {
-        const mockResponse = {
-          ok: true,
-          json: jest.fn().mockResolvedValue({ result: '0xABC' })
-        }
-        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
+      it.each(readOnlyMethods)(
+        'routes %s through module.onRpcRequest',
+        async method => {
+          mockOnRpcRequest.mockResolvedValue({ result: '0xABC' })
 
-        const { result } = renderProvider()
+          const { result } = renderProvider()
 
-        const payload = JSON.stringify({
-          id: 100,
-          request: { method, params: [] }
-        })
-
-        await act(async () => {
-          result.current.handleProviderMessage(payload)
-        })
-
-        expect(mockNitroFetch).toHaveBeenCalledWith(
-          'https://api.avax.network/ext/bc/C/rpc',
-          expect.objectContaining({
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: expect.stringContaining(`"method":"${method}"`)
+          const payload = JSON.stringify({
+            id: 100,
+            request: { method, params: [] }
           })
-        )
-      })
+
+          await act(async () => {
+            result.current.handleProviderMessage(payload)
+          })
+
+          // Loaded by the active chain's caip2 id, validated against the manifest.
+          expect(mockLoadModule).toHaveBeenCalledWith('eip155:43114', method)
+          expect(mockOnRpcRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+              method,
+              chainId: 'eip155:43114',
+              params: []
+            }),
+            expect.objectContaining({ chainId: 43114 })
+          )
+        }
+      )
 
       it('returns RPC result to WebView', async () => {
-        const mockResponse = {
-          ok: true,
-          json: jest.fn().mockResolvedValue({ result: '0xBalanceValue' })
-        }
-        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
+        mockOnRpcRequest.mockResolvedValue({ result: '0xBalanceValue' })
 
         const { result } = renderProvider()
 
@@ -1083,11 +1099,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('returns RPC error to WebView', async () => {
         const rpcError = { code: -32000, message: 'execution reverted' }
-        const mockResponse = {
-          ok: true,
-          json: jest.fn().mockResolvedValue({ error: rpcError })
-        }
-        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
+        mockOnRpcRequest.mockResolvedValue({ error: rpcError })
 
         const { result } = renderProvider()
 
@@ -1105,8 +1117,8 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('handles fetch failure gracefully', async () => {
-        mockNitroFetch.mockRejectedValue(new Error('Network error'))
+      it('surfaces an internal error when the module call throws', async () => {
+        mockOnRpcRequest.mockRejectedValue(new Error('Network error'))
 
         const { result } = renderProvider()
 
@@ -1122,41 +1134,20 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
         )
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('RPC request failed')
-        )
-      })
-
-      it('handles missing RPC URL', async () => {
-        const emptyRpcNetwork = { ...mockActiveNetwork, rpcUrl: '' }
-        setupMocks({
-          network: emptyRpcNetwork as typeof mockActiveNetwork,
-          allNetworks: {
-            43114: emptyRpcNetwork,
-            1: { ...mockActiveNetwork, chainId: 1 }
-          }
-        })
-
-        const { result } = renderProvider()
-
-        const payload = JSON.stringify({
-          id: 104,
-          request: { method: 'eth_getBalance', params: ['0x1'] }
-        })
-
-        await act(async () => {
-          result.current.handleProviderMessage(payload)
-        })
-
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('No RPC URL configured')
-        )
-        expect(mockNitroFetch).not.toHaveBeenCalled()
       })
     })
 
     describe('unsupported methods', () => {
-      it('returns error -32601 for unknown methods', () => {
+      it('returns error -32601 when the module manifest rejects the method', async () => {
+        // loadModule throws UNSUPPORTED_METHOD for methods the manifest doesn't
+        // permit; the hook maps that to methodNotFound (-32601).
+        mockLoadModule.mockRejectedValueOnce(
+          new VmModuleErrors({
+            name: ModuleErrors.UNSUPPORTED_METHOD,
+            message: 'unsupported method'
+          })
+        )
+
         const { result } = renderProvider()
 
         const payload = JSON.stringify({
@@ -1164,7 +1155,7 @@ describe('useEvmInjectedProvider', () => {
           request: { method: 'eth_unknownMethod', params: [] }
         })
 
-        act(() => {
+        await act(async () => {
           result.current.handleProviderMessage(payload)
         })
 
@@ -1173,6 +1164,35 @@ describe('useEvmInjectedProvider', () => {
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('eth_unknownMethod')
+        )
+      })
+
+      it('returns an internal error (not -32601) when loadModule fails for a non-method reason', async () => {
+        // Unsupported chainId / module init failure must surface as a real
+        // internal error, not masquerade as methodNotFound.
+        mockLoadModule.mockRejectedValueOnce(
+          new VmModuleErrors({
+            name: ModuleErrors.UNSUPPORTED_CHAIN_ID,
+            message: 'unsupported chain'
+          })
+        )
+
+        const { result } = renderProvider()
+
+        const payload = JSON.stringify({
+          id: 201,
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":-32603')
+        )
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining('"code":-32601')
         )
       })
     })
@@ -1221,7 +1241,16 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('rejects unknown methods with -32601', () => {
+      it('rejects unknown methods with -32601', async () => {
+        // Unsupported methods are rejected by the module manifest (loadModule
+        // throws UNSUPPORTED_METHOD), which the hook maps to methodNotFound (-32601).
+        mockLoadModule.mockRejectedValueOnce(
+          new VmModuleErrors({
+            name: ModuleErrors.UNSUPPORTED_METHOD,
+            message: 'unsupported method'
+          })
+        )
+
         const { result } = renderProvider()
 
         const payload = JSON.stringify({
@@ -1229,7 +1258,7 @@ describe('useEvmInjectedProvider', () => {
           request: { method: 'eth_unknownMethod', params: [] }
         })
 
-        act(() => {
+        await act(async () => {
           result.current.handleProviderMessage(payload)
         })
 

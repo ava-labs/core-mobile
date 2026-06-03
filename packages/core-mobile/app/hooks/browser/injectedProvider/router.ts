@@ -4,32 +4,14 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
-import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import { isUserRejectedRpcError } from './errors'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 
-const READ_ONLY_METHODS = new Set([
-  'eth_blockNumber',
-  'eth_call',
-  'eth_estimateGas',
-  'eth_gasPrice',
-  'eth_getBalance',
-  'eth_getBlockByHash',
-  'eth_getBlockByNumber',
-  'eth_getCode',
-  'eth_getLogs',
-  'eth_getStorageAt',
-  'eth_getTransactionByHash',
-  'eth_getTransactionCount',
-  'eth_getTransactionReceipt',
-  'eth_maxPriorityFeePerGas',
-  'eth_feeHistory',
-  'web3_clientVersion',
-  'web3_sha3',
-  'eth_getBlockTransactionCountByHash',
-  'eth_getBlockTransactionCountByNumber'
-])
-
+// Injected-specific methods (connect / EIP-2255 permissions / chain management)
+// are handled directly in `dispatchMethod`. Signing methods route through
+// `requestSigning`. Everything else is treated as read-only and dispatched to
+// the VM module, which validates it against its manifest — so the read-only
+// allowlist is no longer hand-maintained here (CP-14384).
 const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
   [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
@@ -39,18 +21,6 @@ const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.SIGN_TYPED_DATA_V3]: RpcMethod.SIGN_TYPED_DATA_V3,
   [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
 }
-
-const ALLOWED_METHODS = new Set([
-  ...READ_ONLY_METHODS,
-  ...Object.keys(SIGNING_METHODS),
-  'eth_requestAccounts',
-  'wallet_requestPermissions',
-  'wallet_getPermissions',
-  'wallet_revokePermissions',
-  'wallet_switchEthereumChain',
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
 
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
@@ -156,6 +126,7 @@ export function createInjectedProviderRouter(
     tabId,
     dispatch,
     requestSigning,
+    requestReadOnly,
     sendResponse,
     emitEvent,
     getNativeOrigin,
@@ -186,41 +157,28 @@ export function createInjectedProviderRouter(
     }
   }
 
-  const proxyToRpc = async (
+  // Read-only methods (eth_call, eth_getBalance, …) are dispatched to the VM
+  // module — the same source WalletConnect uses — instead of a bespoke fetch +
+  // allowlist. The module classifies/validates the method against its manifest
+  // and proxies the request to the per-tab browser network's RPC endpoint.
+  const dispatchReadOnly = async (
     id: number,
     method: string,
     params: unknown[]
   ): Promise<void> => {
     try {
-      const rpcUrl = getBrowserNetwork().rpcUrl
-      if (!rpcUrl) {
-        sendResponse(id, rpcErrors.internal('No RPC URL configured'), undefined)
-        return
-      }
-
-      const body = JSON.stringify({
-        jsonrpc: '2.0',
+      const result = await requestReadOnly({
         id,
         method,
-        params
+        params,
+        chainId: getBrowserNetwork().chainId
       })
-
-      const response = await nitroFetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body
-      })
-
-      const json = await response.json()
-
-      if (json.error) {
-        sendResponse(id, json.error, undefined)
-      } else {
-        sendResponse(id, null, json.result)
-      }
+      sendResponse(id, null, result)
     } catch (e) {
-      Logger.error('[InjectedProvider] RPC proxy error', e)
-      sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
+      // requestReadOnly rejects with an RpcError for known cases (methodNotFound
+      // for unsupported methods, internal otherwise); any other thrown value is
+      // serialized by sendResponse, which preserves a numeric code when present.
+      sendResponse(id, e, undefined)
     }
   }
 
@@ -578,8 +536,11 @@ export function createInjectedProviderRouter(
       handleWatchAsset(id, params)
     } else if (method in SIGNING_METHODS) {
       dispatchSigningRequest(id, method, safeParams)
-    } else if (READ_ONLY_METHODS.has(method)) {
-      proxyToRpc(id, method, safeParams)
+    } else {
+      // Anything not injected-specific and not a signing method is treated as
+      // read-only and validated by the VM module's manifest (unsupported
+      // methods reject with methodNotFound).
+      dispatchReadOnly(id, method, safeParams)
     }
   }
 
@@ -627,14 +588,10 @@ export function createInjectedProviderRouter(
 
     Logger.trace(`[InjectedProvider] ${method}`, params)
 
-    if (!ALLOWED_METHODS.has(method)) {
-      sendResponse(
-        id,
-        rpcErrors.methodNotFound(`Unsupported method: ${method}`),
-        undefined
-      )
-      return
-    }
+    // Method validity is no longer gated by a static allowlist: injected and
+    // signing methods are handled explicitly in dispatchMethod, and read-only
+    // methods are validated by the VM module's manifest (unsupported →
+    // methodNotFound). Origin must still be verified first, below.
 
     // Every method requires a known native origin. Requests that arrive
     // before the WebView has reported its first URL, or from an iframe or
