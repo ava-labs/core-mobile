@@ -1527,6 +1527,26 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
+      it('injects accountsChanged([]) on reload when the active account is NOT granted', () => {
+        // Origin granted to a different address than the active account.
+        // Priming the granted set here would re-establish a phantom connection
+        // the injected signer can't honor, so we emit [] instead (CP-14382).
+        mockUseStore.mockReturnValue(withPermission('0xSomeOtherGrantedAddr'))
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+        )
+      })
+
       it('does not inject accountsChanged when origin is missing', () => {
         const { result } = renderProvider('')
         // currentUrlRef is never set, so origin stays ''
@@ -1557,6 +1577,142 @@ describe('useEvmInjectedProvider', () => {
           expect.stringContaining("__coreProviderEmit('accountsChanged'")
         )
       })
+    })
+  })
+
+  describe('active-account switch propagation (CP-14382)', () => {
+    const ORIGIN = 'https://opensea.io/'
+    const A = mockActiveAccount.addressC
+    const B = '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+    const C = '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
+    const accountA = mockActiveAccount
+    const accountB = { ...mockActiveAccount, addressC: B }
+    const accountC = { ...mockActiveAccount, addressC: C }
+
+    // A store whose grants for opensea.io cover exactly `addrs` (EVM).
+    const storeGranting = (addrs: string[]): ReturnType<typeof useStore> =>
+      ({
+        getState: () => ({
+          permissions: {
+            grants: {
+              'https://opensea.io': Object.fromEntries(
+                addrs.map(addr => [addr, ['EVM']])
+              )
+            }
+          }
+        }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn(() => () => undefined)
+      } as unknown as ReturnType<typeof useStore>)
+
+    it('emits [newActive, ...others] when switching to a granted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(`'accountsChanged', ["${B}","${A}"]`)
+      )
+    })
+
+    it('emits [] when switching to an ungranted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountC })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged', []")
+      )
+    })
+
+    it('re-emits the granted set when switching back from an ungranted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountC })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // Switch to ungranted-adjacent path then back to a granted account.
+      setupMocks({ account: accountA })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(`'accountsChanged', ["${B}","${A}"]`)
+      )
+    })
+
+    it('emits accountsChanged([]) after grants are revoked and the active account switches', () => {
+      // Origin starts connected to [A, B]; the first switch advertises that set.
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      setupMocks({ account: accountB })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      // Grants revoked (e.g. via Connected Sites), then the user switches
+      // accounts. The dApp's stale _accounts must be cleared with [] rather than
+      // left advertising the now-revoked set.
+      mockUseStore.mockReturnValue(storeGranting([]))
+      setupMocks({ account: accountA })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged', []")
+      )
+    })
+
+    it('does not re-emit [] for a never-connected origin already primed to []', () => {
+      // No grant at all: the page-load prime emits [] and seeds the dedupe ref,
+      // so a subsequent account switch must not produce a redundant emit.
+      mockUseStore.mockReturnValue(storeGranting([]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'x' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
+    })
+
+    it('suppresses duplicate emits for the same resolved accounts', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // First switch emits [A, B].
+      setupMocks({ account: { ...mockActiveAccount } })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      // New active object, same addressC → resolves to the same [A, B];
+      // must not re-emit.
+      setupMocks({ account: { ...mockActiveAccount } })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
     })
   })
 })

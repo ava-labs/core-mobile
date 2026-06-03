@@ -5,6 +5,7 @@ import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import { isUserRejectedRpcError } from './errors'
+import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 
 // Injected-specific methods (connect / EIP-2255 permissions / chain management)
@@ -148,7 +149,7 @@ export function createInjectedProviderRouter(
     trackPendingOrigin,
     getPeerMeta,
     getActiveAccount,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
@@ -329,19 +330,20 @@ export function createInjectedProviderRouter(
     }
   }
 
-  // EIP-2255: resolve permissions for the current origin against the active
-  // EVM account. Today only `eth_accounts` is supported — there is no notion
-  // of a restricted method beyond account access.
-  const resolveActiveAccountAddresses = (origin: string): string[] => {
-    const active = getActiveAccount()
-    if (!active?.addressC) return []
-    const granted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-    return granted ? [active.addressC] : []
-  }
+  // EIP-2255: the accounts/permissions to advertise for this origin. The
+  // injected signer is active-only, so we mirror the passive accountsChanged
+  // reconciliation here: if the wallet's active account is granted, return the
+  // granted set (active sorted first) — switching among granted accounts never
+  // re-prompts (multi-account, Phase 3c). If the active account is NOT granted,
+  // return [] so the connect/permission handlers don't tell the dApp it's
+  // connected to an address the active-only signer can't authorize (CP-14382).
+  // The shared helper keeps this identical to the hook's switch-effect / prime
+  // path, so the active and passive paths never disagree.
+  const resolveActiveConnectedAddresses = (origin: string): string[] =>
+    resolveActiveConnectedAccounts(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }),
+      getActiveAccount()?.addressC
+    )
 
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
@@ -363,15 +365,14 @@ export function createInjectedProviderRouter(
       return
     }
 
-    // Already connected: return without prompting.
-    if (
-      hasPermission({
-        domain: origin,
-        address: active.addressC,
-        vmType: NetworkVMType.EVM
-      })
-    ) {
-      sendResponse(id, null, [active.addressC])
+    // Short-circuit only when the active account is itself granted — return the
+    // granted set (active first) without prompting. If the active account is
+    // ungranted, fall through to the approval prompt rather than reporting a
+    // connection the active-only signer can't honor (keeps this consistent with
+    // the accountsChanged([]) reconciliation).
+    const connected = resolveActiveConnectedAddresses(origin)
+    if (connected.length > 0) {
+      sendResponse(id, null, connected)
       return
     }
 
@@ -425,14 +426,11 @@ export function createInjectedProviderRouter(
       return
     }
 
-    const alreadyGranted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-
-    if (alreadyGranted) {
-      sendResponse(id, null, buildAccountsPermission([active.addressC]))
+    // Same active-account gate as eth_requestAccounts: only short-circuit when
+    // the active account is granted; otherwise prompt.
+    const connected = resolveActiveConnectedAddresses(origin)
+    if (connected.length > 0) {
+      sendResponse(id, null, buildAccountsPermission(connected))
       return
     }
 
@@ -467,10 +465,13 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, [])
       return
     }
+    // Returns [] when the active account isn't granted, so a dApp that polls
+    // wallet_getPermissions sees a disconnected state consistent with the
+    // accountsChanged([]) reconciliation (never a phantom connection).
     sendResponse(
       id,
       null,
-      buildAccountsPermission(resolveActiveAccountAddresses(origin))
+      buildAccountsPermission(resolveActiveConnectedAddresses(origin))
     )
   }
 

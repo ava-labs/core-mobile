@@ -41,7 +41,7 @@ type MockDeps = {
   trackPendingOrigin: jest.Mock
   setBrowserNetworkSpy: jest.Mock
   currentNetwork: { value: BrowserNetwork }
-  hasPermission: jest.Mock
+  getGrantedAddresses: jest.Mock
   grantPermission: jest.Mock
   revokePermission: jest.Mock
   requestConnectApproval: jest.Mock
@@ -57,7 +57,7 @@ function makeDeps(overrides?: {
   nativeOrigin?: string | undefined
   tabId?: string
   activeAccount?: Account | undefined
-  hasPermission?: boolean
+  grantedAddresses?: string[]
 }): MockDeps {
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
@@ -87,7 +87,7 @@ function makeDeps(overrides?: {
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
     currentNetwork.value = net
   })
-  const hasPermission = jest.fn(() => overrides?.hasPermission ?? false)
+  const getGrantedAddresses = jest.fn(() => overrides?.grantedAddresses ?? [])
   const grantPermission = jest.fn()
   const revokePermission = jest.fn()
   const requestConnectApproval = jest.fn()
@@ -120,7 +120,7 @@ function makeDeps(overrides?: {
       icons: []
     }),
     getActiveAccount: () => activeAccount.value,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
@@ -134,7 +134,7 @@ function makeDeps(overrides?: {
     requestReadOnly,
     dispatch,
     trackPendingOrigin,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval,
@@ -507,7 +507,7 @@ describe('createInjectedProviderRouter', () => {
   describe('eth_requestAccounts', () => {
     it('returns the active address without prompting when already granted', async () => {
       const { deps, sendResponse, requestConnectApproval, grantPermission } =
-        makeDeps({ hasPermission: true })
+        makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_requestAccounts')
@@ -515,6 +515,43 @@ describe('createInjectedProviderRouter', () => {
 
       expect(requestConnectApproval).not.toHaveBeenCalled()
       expect(grantPermission).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
+    })
+
+    it('returns ALL granted addresses (active first) without prompting, not just the active one', async () => {
+      // Multi-account: switching the wallet's active account must not force a
+      // re-prompt — every previously-granted address is returned, active first.
+      const OTHER = '0xOtherGrantedAddr'
+      const { deps, sendResponse, requestConnectApproval } = makeDeps({
+        grantedAddresses: [OTHER, MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR, OTHER])
+    })
+
+    it('prompts (does NOT short-circuit) when the origin has grants but the active account is not among them', async () => {
+      // Reconciliation: the active-only signer can't authorize an ungranted
+      // active account, so eth_requestAccounts must prompt rather than report a
+      // connection to other granted addresses.
+      const { deps, sendResponse, requestConnectApproval, grantPermission } =
+        makeDeps({ grantedAddresses: ['0xOtherGrantedAddr'] })
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalled()
+      expect(grantPermission).toHaveBeenCalledWith({
+        domain: 'https://example.com',
+        address: MOCK_ADDR,
+        vmType: NetworkVMType.EVM
+      })
       expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
     })
 
@@ -590,7 +627,7 @@ describe('createInjectedProviderRouter', () => {
 
   describe('wallet_requestPermissions', () => {
     it('returns EIP-2255 permission object when already granted', async () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_requestPermissions')
@@ -629,11 +666,24 @@ describe('createInjectedProviderRouter', () => {
         expect.objectContaining({ parentCapability: 'eth_accounts' })
       ])
     })
+
+    it('prompts when the origin has grants but the active account is not among them', async () => {
+      const { deps, requestConnectApproval } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('wallet_getPermissions', () => {
     it('returns an EIP-2255 permission list when the active account is granted', () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
@@ -647,8 +697,22 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
-    it('returns an empty array when the active account is not granted', () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: false })
+    it('returns an empty array when there are no grants for the origin', () => {
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [] })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_getPermissions')
+
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+    })
+
+    it('returns [] when the origin has grants but the active account is not among them', () => {
+      // Reconciliation: a dApp polling wallet_getPermissions must see a
+      // disconnected state when the active-only signer is an ungranted account,
+      // not the other granted addresses.
+      const { deps, sendResponse } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
