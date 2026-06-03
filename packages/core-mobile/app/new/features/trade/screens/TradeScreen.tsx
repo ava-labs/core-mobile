@@ -174,8 +174,7 @@ export function TradeScreen(): JSX.Element {
       handleHeaderLayout,
       animatedHeaderStyle,
       animatedGradientStyle,
-      theme.colors.$surfacePrimary,
-      router
+      theme.colors.$surfacePrimary
     ]
   )
 

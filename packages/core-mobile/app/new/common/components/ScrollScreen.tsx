@@ -105,7 +105,7 @@ export const ScrollScreen = ({
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
-  hideHeaderBackground,
+  hideHeaderBackground = true,
   headerCenterOverlay,
   headerStyle,
   testID = 'bottom_sheet',
@@ -385,8 +385,6 @@ export const ScrollScreen = ({
   }, [insets.top, isModal])
 
   const renderHeaderBackground = useCallback(() => {
-    if (hideHeaderBackground) return null
-
     return (
       <View
         pointerEvents="none"
