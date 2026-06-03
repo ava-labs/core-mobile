@@ -690,8 +690,13 @@ export const ListScreenV2 = <T,>({
         ])}
       />
       {headerOverlay && (
+        // The overlay is a non-interactive label that sits directly on top of
+        // the first list row. It animates from opacity 0, and an opacity-0 view
+        // still intercepts touches — with "box-none" the opaque banner child
+        // swallowed taps on the first token (CP-14391). "none" lets every tap
+        // fall through to the list beneath, which is all the banner ever wants.
         <Animated.View
-          pointerEvents="box-none"
+          pointerEvents="none"
           style={[
             {
               position: 'absolute',
