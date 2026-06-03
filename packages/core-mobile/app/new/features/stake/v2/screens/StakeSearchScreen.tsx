@@ -154,7 +154,14 @@ export const StakeSearchScreen = (): JSX.Element => {
     }))
   }, [selectedSort])
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback(async () => {
+    // Wait for the keyboard to actually hide before navigating back. Calling
+    // `Keyboard.dismiss()` and `back()` synchronously works on the simulator
+    // but on a real Android device, when the results FlashList is mounted the
+    // screen unmounts before the dismiss animation finishes and the keyboard
+    // lingers. Awaiting `keyboardDidHide` (handled by dismissKeyboardIfNeeded)
+    // ensures it's gone first. iOS resolves immediately.
+    await dismissKeyboardIfNeeded()
     if (canGoBack()) back()
   }, [back, canGoBack])
 
