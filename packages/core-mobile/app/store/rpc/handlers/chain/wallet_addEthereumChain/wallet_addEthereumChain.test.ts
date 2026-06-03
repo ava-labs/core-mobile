@@ -188,6 +188,22 @@ describe('wallet_addEthereumChain handler', () => {
       expect(result).toEqual({ success: true, value: null })
     })
 
+    it('does not reject an already-existing chain even when its RPC URL is imperfect', async () => {
+      // A dApp re-adding a known chainId with a non-ideal URL (http/localhost)
+      // must still succeed — the trusted existing config is used and the
+      // supplied URL is ignored. URL validation only gates NEW chains.
+      const existingChainBadUrl = {
+        ...avalancheMainnetInfo,
+        rpcUrls: ['http://insecure.example.com']
+      }
+      const testRequest = createRequest([existingChainBadUrl])
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(result).toEqual({ success: true, value: null })
+      expect(router.navigate).not.toHaveBeenCalled()
+    })
+
     it('should return error when RPC url is missing', async () => {
       const { rpcUrls, ...ethMainnetInfoWithoutRpcUrl } = ethMainnetInfo
       const testRequest = createRequest([ethMainnetInfoWithoutRpcUrl])
@@ -225,11 +241,10 @@ describe('wallet_addEthereumChain handler', () => {
     })
 
     it('shows modal immediately without pre-validating the RPC URL', async () => {
-      // isValidRPCUrl must NOT be called in handle() — dApps like Aave time out
-      // and crash waiting for the async RPC check before the approval modal appears.
-      // The extension shows the modal first; we follow the same pattern.
-      mockIsValidRPCUrl.mockImplementationOnce(() => false)
-
+      // isValidRPCUrl (the async chainId probe) must NOT be called in handle()
+      // — dApps like Aave time out waiting for an approval modal if we block
+      // on the network call. Synchronous URL checks (HTTPS / private-IP) still
+      // run; the chainId probe is deferred to approve().
       const testRequest = createRequest([sepoliaMainnetInfo])
 
       const result = await handler.handle(testRequest, mockListenerApi)
@@ -237,6 +252,49 @@ describe('wallet_addEthereumChain handler', () => {
       expect(mockIsValidRPCUrl).not.toHaveBeenCalled()
       expect(router.navigate).toHaveBeenCalledWith('/addEthereumChain')
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
+    it('rejects non-HTTPS RPC URLs in handle() before opening the approval', async () => {
+      const httpChain = {
+        ...sepoliaMainnetInfo,
+        rpcUrls: ['http://rpc.sepolia.dev']
+      }
+      const testRequest = createRequest([httpChain])
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(router.navigate).not.toHaveBeenCalled()
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.code).toBe(-32602)
+        expect(result.error.message).toContain('HTTPS')
+      }
+    })
+
+    it('rejects localhost RPC URLs in handle()', async () => {
+      const localChain = {
+        ...sepoliaMainnetInfo,
+        rpcUrls: ['https://localhost:8545']
+      }
+      const testRequest = createRequest([localChain])
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(router.navigate).not.toHaveBeenCalled()
+      expect(result.success).toBe(false)
+    })
+
+    it('rejects private-IP RPC URLs in handle()', async () => {
+      const privateChain = {
+        ...sepoliaMainnetInfo,
+        rpcUrls: ['https://192.168.1.1/rpc']
+      }
+      const testRequest = createRequest([privateChain])
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(router.navigate).not.toHaveBeenCalled()
+      expect(result.success).toBe(false)
     })
 
     describe('when request contains isTestnet field', () => {
@@ -374,6 +432,54 @@ describe('wallet_addEthereumChain handler', () => {
       expect(mockDispatch).toHaveBeenCalledWith(toggleDeveloperMode())
 
       expect(result).toEqual({ success: true, value: null })
+    })
+
+    it('probes the RPC URL in approve() and rejects when chainId mismatches', async () => {
+      mockIsValidRPCUrl.mockImplementationOnce(() => false)
+
+      const testRequest = createRequest([sepoliaMainnetInfo])
+      const testNetwork = {
+        chainId: 11155111,
+        chainName: 'Sepolia',
+        description: '',
+        explorerUrl: 'https://sepolia.etherscan.io',
+        isTestnet: false,
+        logoUri: '',
+        mainnetChainId: 0,
+        networkToken: {
+          symbol: 'SEP',
+          name: 'SEP',
+          description: '',
+          decimals: 18,
+          logoUri: ''
+        },
+        platformChainId: '',
+        rpcUrl: 'https://rpc.sepolia.dev',
+        subnetId: '',
+        vmId: '',
+        vmName: 'EVM' as NetworkVMType
+      }
+
+      const result = await handler.approve(
+        {
+          request: testRequest,
+          data: { network: testNetwork, isExisting: false }
+        },
+        mockListenerApi
+      )
+
+      expect(mockIsValidRPCUrl).toHaveBeenCalledWith(
+        testNetwork.chainId,
+        testNetwork.rpcUrl
+      )
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        addCustomNetwork(testNetwork)
+      )
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.code).toBe(-32602)
+        expect(result.error.message).toContain(String(testNetwork.chainId))
+      }
     })
   })
 })
