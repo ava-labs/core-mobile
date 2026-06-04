@@ -36,6 +36,7 @@ import { isOnGoing } from 'utils/earn/status'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusValue } from '../components/StakeStatusValue'
+import { isFastStakeTx } from '../utils/isFastStakeTx'
 
 const HASH_LENGTH = 14
 
@@ -202,12 +203,17 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     if (!stake) return []
     const items: GroupListItem[] = []
 
-    // All stakes are assumed to be Fast stake for now (Delegate /
-    // Validate detection comes later when the underlying logic is defined).
-    items.push({
-      title: 'Stake type',
-      value: 'Fast stake'
-    })
+    // Only label as "Fast stake" when the underlying delegation tx carried a
+    // UTXO output to the convenience-fee escrow address (see
+    // `isFastStakeTx`). Plain delegations created via the advanced flow have
+    // no such output and stay unlabelled — the "Delegate" / "Validate"
+    // labels for those are follow-up work.
+    if (isFastStakeTx(stake, isDevMode)) {
+      items.push({
+        title: 'Stake type',
+        value: 'Fast stake'
+      })
+    }
 
     items.push({
       title: 'Status',
@@ -215,7 +221,7 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     })
 
     return items
-  }, [stake, isActive])
+  }, [stake, isActive, isDevMode])
 
   // ── Card 5: Staked amount / (Estimated|Earned) reward / Estimated yield ─
   const rewardSection = useMemo<GroupListItem[]>(() => {

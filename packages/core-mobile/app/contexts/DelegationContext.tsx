@@ -4,6 +4,7 @@ import {
   Operation
 } from 'services/earn/computeDelegationSteps/types'
 import { useDelegation } from 'hooks/earn/useDelegation'
+import { AdditionalDelegatorOutput } from 'services/wallet/types'
 
 export type ComputeSteps = (stakeAmount: bigint) => Promise<Step[]>
 
@@ -19,13 +20,19 @@ export type Delegate = ({
   startDate,
   endDate,
   nodeId,
-  onProgress
+  onProgress,
+  additionalOutputs
 }: {
   steps: Step[]
   startDate: Date
   endDate: Date
   nodeId: string
   onProgress?: OnDelegationProgress
+  /**
+   * Extra outputs bundled atomically with the delegation tx. Used by the
+   * Fast Stake fee flow; when omitted, the delegation has no extra outputs.
+   */
+  additionalOutputs?: readonly AdditionalDelegatorOutput[]
 }) => Promise<TransactionHash>
 
 interface DelegationContextState {

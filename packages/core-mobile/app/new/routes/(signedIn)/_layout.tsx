@@ -186,6 +186,10 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/addStakeV2"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/stakeDetail"
             options={stackNavigatorScreenOptions}
           />

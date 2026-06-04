@@ -633,6 +633,14 @@ export const selectIsFastStakeBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

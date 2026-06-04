@@ -47,7 +47,7 @@ import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { truncateNodeId } from 'utils/Utils'
-import { useLedgerStaking } from './useLedgerStaking'
+import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -327,7 +327,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         })
       }
     },
-    [back, isLedger, resetLedgerState]
+    [back, isLedger, resetLedgerState, nodeId]
   )
 
   // Use refs to break circular dependency between onFundsStuck and handleDelegate
