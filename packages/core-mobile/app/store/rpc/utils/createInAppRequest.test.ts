@@ -1,4 +1,7 @@
-import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
+import {
+  RpcError,
+  RpcMethod as VmModuleRpcMethod
+} from '@avalabs/vm-module-types'
 import { FeatureVars } from 'services/posthog/types'
 import { RootState } from 'store/types'
 import {
@@ -282,7 +285,10 @@ describe('createInAppRequest', () => {
         params: []
       })
 
-      const err = { code: 4001, message: 'user rejected' }
+      const err = {
+        code: 4001,
+        message: 'user rejected'
+      } as unknown as RpcError
       mockListenerEffects.forEach(effect =>
         effect(
           onInAppRequestFailed({ requestId: FIXED_REQUEST_ID, error: err })

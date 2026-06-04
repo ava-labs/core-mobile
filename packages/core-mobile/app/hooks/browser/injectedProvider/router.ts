@@ -176,8 +176,14 @@ export function createInjectedProviderRouter(
     return controller
   }
 
-  const clearInFlight = (id: number): void => {
-    inFlightRequests.delete(id)
+  const clearInFlight = (id: number, controller: AbortController): void => {
+    // Only delete if the entry still belongs to THIS request. If a later
+    // request reused the same JSON-RPC id (overwriting the entry), deleting
+    // unconditionally would drop the newer request's controller and break its
+    // cancellation/cleanup.
+    if (inFlightRequests.get(id)?.controller === controller) {
+      inFlightRequests.delete(id)
+    }
   }
 
   const proxyToRpc = async (
@@ -249,7 +255,7 @@ export function createInjectedProviderRouter(
     } catch (e) {
       sendResponse(id, e, undefined)
     } finally {
-      clearInFlight(id)
+      clearInFlight(id, controller)
     }
   }
 
@@ -340,7 +346,7 @@ export function createInjectedProviderRouter(
     } catch (e) {
       sendResponse(id, e, undefined)
     } finally {
-      clearInFlight(id)
+      clearInFlight(id, controller)
     }
   }
 
@@ -533,7 +539,7 @@ export function createInjectedProviderRouter(
         sendResponse(id, e, undefined)
       }
     } finally {
-      clearInFlight(id)
+      clearInFlight(id, controller)
     }
   }
 
