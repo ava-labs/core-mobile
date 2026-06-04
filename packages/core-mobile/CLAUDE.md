@@ -188,7 +188,7 @@ Key slices and their responsibilities:
 
 **Monorepo Context**
 - This is a package within a monorepo at `/Users/junghwan.jang/Workspace/core-mobile`
-- Workspace dependencies: `@avalabs/k2-alpine`, `react-native-nitro-avalabs-crypto`
+- Workspace dependency: `@avalabs/k2-alpine` (native crypto comes from the published `@avalabs/crypto-nitro` via `@avalabs/crypto-sdk`, not a workspace package)
 - Shared packages use `workspace:*` protocol
 
 **Build Configuration**

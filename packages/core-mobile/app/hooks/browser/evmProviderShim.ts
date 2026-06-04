@@ -17,6 +17,11 @@
  *   )
  */
 import {
+  BRIDGE_UNAVAILABLE_MESSAGE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  JSON_RPC_RESOURCE_UNAVAILABLE_CODE
+} from './injectedProvider/errors'
+import {
   INJECTED_PROVIDER_NAME,
   INJECTED_PROVIDER_RDNS,
   INJECTED_PROVIDER_ICON
@@ -24,11 +29,13 @@ import {
 
 export function buildEvmProviderShim({
   chainId,
-  address,
   uuid
 }: {
   chainId: string // hex, e.g. '0xa86a'
-  address: string // e.g. '0x1234...'
+  // Accepted for caller compatibility but intentionally NOT embedded: accounts
+  // are primed via __coreProviderEmit('accountsChanged', ...) after the user
+  // approves a connection, never pre-seeded into the shim. See tests.
+  address?: string
   uuid: string // stable UUIDv4 persisted across restarts
 }): string {
   return `(function() {
@@ -94,12 +101,17 @@ export function buildEvmProviderShim({
   var _listeners = {};
   var _pendingInteractive = {};
   var INTERACTIVE_METHODS = {
+    'eth_requestAccounts': true,
+    'wallet_requestPermissions': true,
     'wallet_addEthereumChain': true,
     'wallet_watchAsset': true
   };
   var _chainId = '${chainId}';
-  var _address = '${address}';
-  var _accounts = _address ? [_address] : [];
+  // _accounts is seeded empty. Native primes it via
+  // __coreProviderEmit('accountsChanged', [...]) on page load if the origin
+  // already has a permission grant; otherwise the dApp must call
+  // eth_requestAccounts to trigger the approval UI.
+  var _accounts = [];
 
   // ──────────────────────────────────────────────
   // 4. Native response / event bridge
@@ -168,40 +180,10 @@ export function buildEvmProviderShim({
       if (method === 'eth_coinbase') {
         return Promise.resolve(_accounts.length > 0 ? _accounts[0] : null);
       }
-      if (method === 'eth_requestAccounts') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() {
-          emit('accountsChanged', _accounts);
-        }, 0);
-        return Promise.resolve([_address]);
-      }
-      if (method === 'wallet_requestPermissions') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() { emit('accountsChanged', _accounts); }, 0);
-        return Promise.resolve([{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
-        }]);
-      }
-      if (method === 'wallet_getPermissions') {
-        var perms = _accounts.length > 0 ? [{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_accounts[0]] }]
-        }] : [];
-        return Promise.resolve(perms);
-      }
-      if (method === 'wallet_revokePermissions') {
-        _accounts = [];
-        provider.selectedAddress = null;
-        setTimeout(function() { emit('accountsChanged', []); }, 0);
-        return Promise.resolve(null);
-      }
+      // Connect + permission methods round-trip to native so the user is prompted
+      // (eth_requestAccounts, wallet_requestPermissions) or the permissions slice
+      // is consulted (wallet_getPermissions, wallet_revokePermissions). The shim
+      // keeps _accounts in sync via __coreProviderEmit on 'accountsChanged'.
 
       // wallet_switchEthereumChain: optimistically update local chain state
       // SYNCHRONOUSLY before the bridge round-trip.  This fires chainChanged
@@ -210,7 +192,7 @@ export function buildEvmProviderShim({
       // the React error #185 infinite-loop that occurs over an async bridge.
       if (method === 'wallet_switchEthereumChain') {
         if (_pendingInteractive['wallet_switchEthereumChain']) {
-          return Promise.reject({ code: -32002, message: 'wallet_switchEthereumChain already pending' });
+          return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'wallet_switchEthereumChain already pending' });
         }
         var swTargetChainId = (params[0] && params[0].chainId) || null;
         if (swTargetChainId && swTargetChainId !== _chainId) {
@@ -233,8 +215,8 @@ export function buildEvmProviderShim({
               // chainChanged(original), which ConnectKit's "ensure correct chain"
               // useEffect sees as a mismatch and re-calls switchChain — producing
               // React error #185 (infinite update loop). wagmi enters status:'error'
-              // from the 4001 rejection; keeping _chainId at target prevents the
-              // re-trigger. The dApp receives the 4001 and shows its rejection UX.
+              // from the EIP-1193 user-rejected rejection; keeping _chainId at target prevents the
+              // re-trigger. The dApp receives that rejection and shows its rejection UX.
               reject(e);
             }
           };
@@ -249,13 +231,13 @@ export function buildEvmProviderShim({
             }));
           } catch(swErr) {
             delete _pendingInteractive['wallet_switchEthereumChain'];
-            reject({ code: -32603, message: 'Bridge unavailable' });
+            reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
           }
         });
       }
 
       if (INTERACTIVE_METHODS[method] && _pendingInteractive[method]) {
-        return Promise.reject({ code: -32002, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
+        return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
       }
       var isInteractive = !!INTERACTIVE_METHODS[method];
       if (isInteractive) _pendingInteractive[method] = true;
@@ -288,7 +270,7 @@ export function buildEvmProviderShim({
         } catch(e) {
           delete _callbacks[id];
           if (isInteractive) delete _pendingInteractive[method];
-          reject({ code: -32603, message: 'Bridge unavailable' });
+          reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
         }
       });
     },
@@ -362,7 +344,7 @@ export function buildEvmProviderShim({
 
     chainId: _chainId,
     networkVersion: String(parseInt(_chainId, 16)),
-    selectedAddress: _address || null
+    selectedAddress: null
   };
 
   // ──────────────────────────────────────────────

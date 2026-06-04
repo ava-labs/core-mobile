@@ -201,7 +201,7 @@ export default function AppConnectionScreen({
         selectedDerivationPath
       )
 
-      const firstKeys = buildFirstAccountKeys({
+      const firstKeys = await buildFirstAccountKeys({
         firstAccountKeys,
         isBIP44,
         isDeveloperMode,

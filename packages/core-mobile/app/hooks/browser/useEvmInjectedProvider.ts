@@ -1,98 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
-import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
-import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { selectTabChainId } from 'store/browser/slices/tabs'
 import { TabId } from 'store/browser/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { PeerMeta } from 'store/rpc/types'
-import { RpcMethod } from '@avalabs/vm-module-types'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { rpcErrors, serializeError } from '@metamask/rpc-errors'
+import { serializeError } from '@metamask/rpc-errors'
+import { router as appRouter } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import {
+  grantPermission as grantPermissionAction,
+  revokePermission as revokePermissionAction,
+  selectHasPermission
+} from 'store/permissions/slice'
+import type { RootState } from 'store/types'
+import type { Account } from 'store/account'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
+import { createInjectedProviderRouter } from './injectedProvider/router'
+import {
+  CONNECT_PROMPT_TIMED_OUT_MESSAGE,
+  EIP1193_USER_REJECTED_CODE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  USER_REJECTED_REQUEST_MESSAGE
+} from './injectedProvider/errors'
+import { BrowserNetwork, DomainMetadata } from './injectedProvider/types'
 
-export const MAX_MESSAGE_SIZE = 1_048_576
-
-type ProviderRequest = {
-  id: number
-  origin?: string
-  request: {
-    method: string
-    params: unknown[]
-  }
-}
-
-type DomainMetadata = {
-  domain: string
-  name: string
-  icon: string
-  url: string
-}
-
-const READ_ONLY_METHODS = new Set([
-  'eth_blockNumber',
-  'eth_call',
-  'eth_estimateGas',
-  'eth_gasPrice',
-  'eth_getBalance',
-  'eth_getBlockByHash',
-  'eth_getBlockByNumber',
-  'eth_getCode',
-  'eth_getLogs',
-  'eth_getStorageAt',
-  'eth_getTransactionByHash',
-  'eth_getTransactionCount',
-  'eth_getTransactionReceipt',
-  'eth_maxPriorityFeePerGas',
-  'eth_feeHistory',
-  'web3_clientVersion',
-  'web3_sha3',
-  'eth_getBlockTransactionCountByHash',
-  'eth_getBlockTransactionCountByNumber'
-])
-
-const SIGNING_METHODS: Record<string, RpcMethod> = {
-  [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
-  [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
-  [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
-  [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,
-  [RpcMethod.SIGN_TYPED_DATA_V1]: RpcMethod.SIGN_TYPED_DATA_V1,
-  [RpcMethod.SIGN_TYPED_DATA_V3]: RpcMethod.SIGN_TYPED_DATA_V3,
-  [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
-}
-
-const ALLOWED_METHODS = new Set([
-  ...READ_ONLY_METHODS,
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_switchEthereumChain',
-  'wallet_addEthereumChain',
-  'wallet_revokePermissions',
-  'wallet_watchAsset'
-])
-
-// Methods that trigger a user-facing approval modal and therefore require a
-// verified native origin. Without one, the downstream generateInAppRequestPayload
-// would fall back to CORE_MOBILE_META and misattribute the request to Core —
-// the same spoofing class CP-14159 exists to prevent.
-const APPROVAL_METHODS = new Set([
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
-
-function validateProviderRequest(data: unknown): data is ProviderRequest {
-  if (typeof data !== 'object' || data === null) return false
-  const obj = data as Record<string, unknown>
-  if (typeof obj.id !== 'number') return false
-  if (typeof obj.request !== 'object' || obj.request === null) return false
-  const req = obj.request as Record<string, unknown>
-  return typeof req.method === 'string'
-}
+// If the connect-approval screen never mounts or never resolves (e.g. Metro
+// hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
+// parked promise after this interval so the dApp can surface an error and
+// the user isn't stuck with a spinning button.
+const CONNECT_APPROVAL_TIMEOUT_MS = 90_000
 
 function getOriginFromUrl(url: string): string | undefined {
   if (!url) return undefined
@@ -104,48 +46,14 @@ function getOriginFromUrl(url: string): string | undefined {
   }
 }
 
-function parseProviderPayload(
-  payload: string,
-  respondWithError: (id: number, error: unknown) => void
-): ProviderRequest | undefined {
-  if (payload.length > MAX_MESSAGE_SIZE) {
-    Logger.warn(
-      `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
-    )
-    try {
-      const { id } = JSON.parse(payload) as { id?: unknown }
-      if (typeof id === 'number') {
-        respondWithError(
-          id,
-          rpcErrors.invalidRequest('Message exceeds size limit')
-        )
-      }
-    } catch {
-      /* oversized and unparseable */
-    }
-    return undefined
-  }
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(payload)
-  } catch {
-    Logger.error('[InjectedProvider] Invalid JSON payload')
-    return undefined
-  }
-
-  if (!validateProviderRequest(parsed)) {
-    Logger.error('[InjectedProvider] Malformed provider_request')
-    const maybeId = (parsed as Record<string, unknown>)?.id
-    if (typeof maybeId === 'number') {
-      respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
-    }
-    return undefined
-  }
-
-  return parsed
+type UseEvmInjectedProviderResult = {
+  providerShimJs: string
+  handleProviderMessage: (payload: string) => void
+  handleDomainMetadata: (payload: string) => void
+  emitEvent: (eventName: string, data: unknown) => void
+  dappMetadata: React.RefObject<DomainMetadata | null>
+  setCurrentUrl: (url: string) => void
 }
-
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
  *
@@ -156,7 +64,7 @@ function parseProviderPayload(
 export function useEvmInjectedProvider(
   webViewRef: React.RefObject<RNWebView | null>,
   tabId: TabId
-) {
+): UseEvmInjectedProviderResult {
   const dispatch = useDispatch()
   const store = useStore<RootState>()
   const activeAccount = useSelector(selectActiveAccount)
@@ -168,10 +76,16 @@ export function useEvmInjectedProvider(
   const pendingOrigins = useRef<Map<number, string>>(new Map())
   const initialChainId = tabChainId ?? activeNetwork.chainId
   const initialNetwork = allNetworks[initialChainId] ?? activeNetwork
-  const browserNetworkRef = useRef({
+  const browserNetworkRef = useRef<BrowserNetwork>({
     chainId: initialChainId,
     rpcUrl: initialNetwork.rpcUrl
   })
+
+  // Refs kept current so the stable router can read latest values via getters
+  const allNetworksRef = useRef(allNetworks)
+  useEffect(() => {
+    allNetworksRef.current = allNetworks
+  }, [allNetworks])
 
   // When the tab has no persisted chainId, keep browserNetworkRef in sync with
   // the global active network so read-only RPC and signing requests are routed
@@ -198,15 +112,12 @@ export function useEvmInjectedProvider(
     return '0x' + initialChainId.toString(16)
   }, [activeNetwork.vmName, initialChainId])
 
-  const evmAddress = activeAccount?.addressC ?? ''
-
   const providerShimJs = useMemo(() => {
     return buildEvmProviderShim({
       chainId: chainIdHex,
-      address: evmAddress,
       uuid: getInjectedProviderUuid()
     })
-  }, [chainIdHex, evmAddress])
+  }, [chainIdHex])
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {
@@ -262,48 +173,14 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
-  const proxyToRpc = useCallback(
-    async (id: number, method: string, params: unknown[]) => {
-      try {
-        const rpcUrl = browserNetworkRef.current.rpcUrl
-        if (!rpcUrl) {
-          sendResponse(
-            id,
-            rpcErrors.internal('No RPC URL configured'),
-            undefined
-          )
-          return
-        }
-
-        const body = JSON.stringify({
-          jsonrpc: '2.0',
-          id,
-          method,
-          params
-        })
-
-        const response = await fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        })
-
-        const json = await response.json()
-
-        if (json.error) {
-          sendResponse(id, json.error, undefined)
-        } else {
-          sendResponse(id, null, json.result)
-        }
-      } catch (e) {
-        Logger.error('[InjectedProvider] RPC proxy error', e)
-        sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
-      }
-    },
-    [sendResponse]
-  )
-
-  const buildDappPeerMeta = useCallback((): PeerMeta => {
+  // Hardened per CP-14159: dApp name + url derive ONLY from the WebView's
+  // native top-level URL. The page-supplied domain_metadata cannot influence
+  // either field (would be a spoofing vector) — only the favicon is taken
+  // from it. When the native URL is unavailable we return a non-Core
+  // placeholder so the downstream generateInAppRequestPayload does NOT fall
+  // back to CORE_MOBILE_META (which would misattribute the request to
+  // https://core.app).
+  const getPeerMeta = useCallback((): PeerMeta => {
     const nativeUrl = currentUrlRef.current
     let hostname = ''
     if (nativeUrl) {
@@ -330,240 +207,178 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
-  const dispatchSigningRequest = useCallback(
-    async (id: number, method: string, params: unknown[]) => {
-      const rpcMethod = SIGNING_METHODS[method]
-      if (!rpcMethod) {
-        sendResponse(
-          id,
-          rpcErrors.methodNotFound(`Method not supported: ${method}`),
-          undefined
-        )
-        return
-      }
+  const activeAccountRef = useRef(activeAccount)
 
-      const caip2ChainId = getEvmCaip2ChainId(browserNetworkRef.current.chainId)
-      const request = createInAppRequest(dispatch, store.getState)
+  useEffect(() => {
+    activeAccountRef.current = activeAccount
+  }, [activeAccount])
 
-      try {
-        const result = await request({
-          method: rpcMethod,
-          params,
-          chainId: caip2ChainId,
-          peerMeta: buildDappPeerMeta()
-        })
-        sendResponse(id, null, result)
-      } catch (e) {
-        sendResponse(id, e, undefined)
-      }
-    },
-    [dispatch, sendResponse, buildDappPeerMeta]
-  )
-
-  const handleSwitchEthereumChain = useCallback(
-    (id: number, params: unknown[]) => {
-      const param = params[0] as { chainId?: string } | undefined
-      const hexChainId = param?.chainId
-      if (!hexChainId) {
-        sendResponse(
-          id,
-          rpcErrors.invalidParams('Missing chainId param'),
-          undefined
-        )
-        return
-      }
-      const requestedChainId = parseInt(hexChainId, 16)
-      if (isNaN(requestedChainId)) {
-        sendResponse(id, rpcErrors.invalidParams('Invalid chainId'), undefined)
-        return
-      }
-      if (!(String(requestedChainId) in allNetworks)) {
-        // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
-        // wallet_addEthereumChain flow instead. The shim already fired
-        // chainChanged(target) optimistically and will not roll it back, so
-        // wagmi's chain state stays at target — preventing ConnectKit from
-        // re-triggering switchChain in a loop (React error #185).
-        sendResponse(
-          id,
-          {
-            code: 4902,
-            message: `Chain ${requestedChainId} has not been added to your wallet.`
-          },
-          undefined
-        )
-        return
-      }
-      if (requestedChainId === browserNetworkRef.current.chainId) {
-        sendResponse(id, null, null)
-        return
-      }
-      // Persist the chain switch for this tab only (survives tab eviction/remount).
-      // browserNetworkRef ensures all subsequent RPC calls in this session are
-      // routed to the correct chain. The shim already fired chainChanged
-      // synchronously before the round-trip (prevents React #185 loop), so we
-      // do NOT re-emit it here.
-      const switchedNetwork = allNetworks[requestedChainId]
-      dispatch(setTabChainId({ tabId, chainId: requestedChainId }))
-      browserNetworkRef.current = {
-        chainId: requestedChainId,
-        rpcUrl: switchedNetwork?.rpcUrl ?? ''
-      }
-      sendResponse(id, null, null)
-    },
-    [sendResponse, allNetworks, dispatch, tabId]
-  )
-
-  const handleAddEthereumChain = useCallback(
-    async (id: number, params: unknown[]) => {
-      const addParam = params[0] as
-        | { chainId?: string; rpcUrls?: string[] }
-        | undefined
-      const addHexChainId = addParam?.chainId
-      const addRpcUrl = addParam?.rpcUrls?.[0]
-      const inAppRequest = createInAppRequest(dispatch, store.getState)
-      try {
-        await inAppRequest({
-          method: 'wallet_addEthereumChain' as unknown as RpcMethod,
-          params,
-          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
-          peerMeta: buildDappPeerMeta()
-        })
-        // User approved — switch browser chain to the new network and notify dApp
-        if (addHexChainId) {
-          const newChainId = parseInt(addHexChainId, 16)
-          if (!isNaN(newChainId)) {
-            const addedNetwork = allNetworks[newChainId]
-            browserNetworkRef.current = {
-              chainId: newChainId,
-              rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
-            }
-            dispatch(setTabChainId({ tabId, chainId: newChainId }))
-            emitEvent('chainChanged', addHexChainId)
-          }
-        }
-        sendResponse(id, null, null)
-      } catch (e) {
-        sendResponse(id, e, undefined)
-      }
-    },
-    [sendResponse, allNetworks, dispatch, emitEvent, buildDappPeerMeta, tabId]
-  )
-
-  const handleRevokePermissions = useCallback(
-    (id: number) => {
-      // Only emit accountsChanged([]) — NOT disconnect. Per EIP-1193,
-      // 'disconnect' means the provider lost network connectivity, not
-      // that the user revoked access. Emitting disconnect causes wagmi
-      // to mark the provider as offline and refuse to auto-reconnect.
-      emitEvent('accountsChanged', [])
-      sendResponse(id, null, null)
-    },
-    [emitEvent, sendResponse]
-  )
-
-  const handleWatchAsset = useCallback(
-    async (id: number, params: unknown[] | unknown) => {
-      // Normalize: some dApps send object form { type, options } instead of array
-      const normalizedParams = Array.isArray(params) ? params : [params]
-      const inAppRequest = createInAppRequest(dispatch, store.getState)
-      try {
-        const result = await inAppRequest({
-          method: 'wallet_watchAsset' as unknown as RpcMethod,
-          params: normalizedParams,
-          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
-          peerMeta: buildDappPeerMeta()
-        })
-        sendResponse(id, null, result)
-      } catch (e) {
-        // EIP-747: explicit user rejection (4001) returns false; all other
-        // errors (invalid params, internal) are surfaced as real RPC errors
-        if ((e as { code?: number })?.code === 4001) {
-          sendResponse(id, null, false)
-        } else {
-          sendResponse(id, e, undefined)
-        }
-      }
-    },
-    [sendResponse, dispatch, buildDappPeerMeta]
-  )
-
-  const handleProviderMessage = useCallback(
-    (payload: string) => {
-      const respondWithError = (id: number, error: unknown): void =>
-        sendResponse(id, error, undefined)
-
-      const parsed = parseProviderPayload(payload, respondWithError)
-      if (!parsed) return
-
-      const { id, origin: pageOrigin, request: rpc } = parsed
-      const { method, params } = rpc
-
-      const nativeOrigin = getOriginFromUrl(currentUrlRef.current)
-      if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
-        Logger.warn(
-          `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
-        )
-      }
-
-      Logger.trace(`[InjectedProvider] ${method}`, params)
-
-      if (!ALLOWED_METHODS.has(method)) {
-        sendResponse(
-          id,
-          rpcErrors.methodNotFound(`Unsupported method: ${method}`),
-          undefined
-        )
-        return
-      }
-
-      if (nativeOrigin) {
-        pendingOrigins.current.set(id, nativeOrigin)
-      } else if (APPROVAL_METHODS.has(method)) {
-        // Methods that surface an approval modal require a verified native
-        // origin. Without one, peerMeta would be undefined downstream and
-        // CORE_MOBILE_META would attribute the request to Core/core.app.
-        sendResponse(id, rpcErrors.internal('Origin unavailable'), undefined)
-        return
-      }
-
-      // Ensure params is always an array for handlers that expect one.
-      // wallet_watchAsset is the only method that legitimately accepts object-form
-      // params (some dApps send { type, options } instead of [{ type, options }]);
-      // its handler normalizes internally.
-      const safeParams = Array.isArray(params) ? params : []
-      if (method === 'wallet_switchEthereumChain') {
-        handleSwitchEthereumChain(id, safeParams)
-      } else if (method === 'wallet_addEthereumChain') {
-        handleAddEthereumChain(id, safeParams)
-      } else if (method === 'wallet_revokePermissions') {
-        handleRevokePermissions(id)
-      } else if (method === 'wallet_watchAsset') {
-        handleWatchAsset(id, params)
-      } else if (method in SIGNING_METHODS) {
-        dispatchSigningRequest(id, method, safeParams)
-      } else if (READ_ONLY_METHODS.has(method)) {
-        proxyToRpc(id, method, safeParams)
-      }
-    },
-    [
-      sendResponse,
-      proxyToRpc,
-      dispatchSigningRequest,
-      handleSwitchEthereumChain,
-      handleAddEthereumChain,
-      handleRevokePermissions,
-      handleWatchAsset
-    ]
-  )
-
-  const handleDomainMetadata = useCallback((payload: string) => {
-    try {
-      dappMetadata.current = JSON.parse(payload)
-      Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
-    } catch {
-      Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+  // When this browser tab unmounts (tab closed), reject any parked connect
+  // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
+  // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
+  // when switching tabs, so this does not run on tab switch.
+  useEffect(() => {
+    return () => {
+      prevInflightConnectReject.current?.({
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+      prevInflightConnectReject.current = null
     }
   }, [])
+
+  // Tracks the reject fn of an in-flight connect approval so a later request
+  // (or an unmount) can unstick it. Writes and clears happen only inside
+  // requestConnectApproval.
+  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
+    null
+  )
+
+  const requestConnectApproval = useCallback(
+    (peerMeta: PeerMeta): Promise<Account[]> => {
+      // If a prior connect is still parked (screen never mounted, or a second
+      // request arrived before the first resolved), reject it so its dApp can
+      // unstick. Then replace the cache entry with our own settled-guarded
+      // callbacks.
+      prevInflightConnectReject.current?.({
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+      prevInflightConnectReject.current = null
+
+      return new Promise<Account[]>((resolve, reject) => {
+        let settled = false
+        const safeResolve = (selected: Account[]): void => {
+          if (settled) return
+          settled = true
+          // Only clear if the ref still points to THIS request's handler — a
+          // newer in-flight request would have overwritten it, and we must not
+          // clobber that one.
+          if (prevInflightConnectReject.current === safeReject) {
+            prevInflightConnectReject.current = null
+          }
+          resolve(selected)
+          // fallbackTimer would be no op, no need to maintain
+          clearTimeout(fallbackTimer)
+        }
+        const safeReject = (err: unknown): void => {
+          if (settled) return
+          settled = true
+          // Only clear if the ref still points to THIS request's handler — a
+          // newer in-flight request would have overwritten it, and we must not
+          // clobber that one.
+          if (prevInflightConnectReject.current === safeReject) {
+            prevInflightConnectReject.current = null
+          }
+          reject(err)
+          // fallbackTimer would be no op, no need to maintain
+          clearTimeout(fallbackTimer)
+        }
+        prevInflightConnectReject.current = safeReject
+
+        walletConnectCache.injectedAuthParams.set({
+          peerMeta,
+          onApprove: safeResolve,
+          onReject: () =>
+            safeReject({
+              code: EIP1193_USER_REJECTED_CODE,
+              message: USER_REJECTED_REQUEST_MESSAGE
+            })
+        })
+        appRouter.navigate('/authorizeInjectedDapp')
+
+        // Safety net: if the screen never mounts or calls back within 90s,
+        // reject so the dApp can surface an error instead of hanging.
+        const fallbackTimer = setTimeout(() => {
+          safeReject({
+            code: JSON_RPC_INTERNAL_ERROR_CODE,
+            message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
+          })
+        }, CONNECT_APPROVAL_TIMEOUT_MS)
+      })
+    },
+    []
+  )
+
+  const router = useMemo(() => {
+    // requestSigning closes over dispatch + store.getState (the latter was
+    // added in CP-14159 so the in-app request payload can read the current
+    // network state). Construct inside the memo so it always picks up the
+    // latest references and rebuilds when dispatch changes.
+    const requestSigning = createInAppRequest(dispatch, store.getState)
+
+    return createInjectedProviderRouter({
+      getBrowserNetwork: () => browserNetworkRef.current,
+      setBrowserNetwork: net => {
+        browserNetworkRef.current = net
+      },
+      getAllNetworks: () => allNetworksRef.current,
+      tabId,
+      dispatch,
+      requestSigning,
+      sendResponse,
+      emitEvent,
+      getNativeOrigin: () => getOriginFromUrl(currentUrlRef.current),
+      trackPendingOrigin: (id, origin) => {
+        pendingOrigins.current.set(id, origin)
+      },
+      getPeerMeta,
+      getActiveAccount: () => activeAccountRef.current,
+      hasPermission: ({ domain, address, vmType }) =>
+        selectHasPermission({ domain, address, vmType })(store.getState()),
+      grantPermission: ({ domain, address, vmType }) =>
+        dispatch(grantPermissionAction({ domain, address, vmType })),
+      revokePermission: ({ domain, address, vmType }) =>
+        dispatch(revokePermissionAction({ domain, address, vmType })),
+      requestConnectApproval
+    })
+  }, [
+    dispatch,
+    store,
+    tabId,
+    sendResponse,
+    emitEvent,
+    getPeerMeta,
+    requestConnectApproval
+  ])
+
+  const handleProviderMessage = useCallback(
+    (payload: string) => router.handleProviderMessage(payload),
+    [router]
+  )
+
+  const handleDomainMetadata = useCallback(
+    (payload: string) => {
+      try {
+        dappMetadata.current = JSON.parse(payload)
+        Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
+      } catch {
+        Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+      }
+
+      // Prime the shim's _accounts cache on page load: if the current origin
+      // already has an EVM grant for the active account, emit accountsChanged
+      // so dApps with auto-reconnect (wagmi autoConnect, etc.) see the
+      // connection immediately without prompting. If no grant exists, emit
+      // an empty array to keep the shim in sync (e.g. after the user revoked
+      // the grant from Connected Sites while the tab was open).
+      const origin = getOriginFromUrl(currentUrlRef.current)
+      const active = activeAccountRef.current
+      if (!origin || !active?.addressC) return
+      const granted = selectHasPermission({
+        domain: origin,
+        address: active.addressC,
+        vmType: NetworkVMType.EVM
+      })(store.getState())
+      const accounts = granted ? [active.addressC] : []
+      webViewRef.current?.injectJavaScript(
+        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
+          accounts
+        )}); true;`
+      )
+    },
+    [store, webViewRef]
+  )
 
   return {
     providerShimJs,

@@ -1,23 +1,32 @@
 import { renderHook, act } from '@testing-library/react-hooks'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch, useStore } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
+import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import {
   selectAllNetworks,
   selectActiveNetwork,
   setActive
 } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import {
+  EIP1193_USER_REJECTED_CODE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  USER_REJECTED_REQUEST_MESSAGE
+} from './injectedProvider/errors'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
+
+// proxyToRpc calls nitroFetch; mock it explicitly (the root __mocks__ manual
+// mock also covers node_modules auto-mocking, but this keeps the intent local).
+jest.mock('react-native-nitro-fetch')
+const mockNitroFetch = nitroFetch as jest.MockedFunction<typeof nitroFetch>
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
   useDispatch: jest.fn(),
-  useStore: jest.fn(() => ({
-    getState: jest.fn(() => ({ posthog: { featureFlags: {} } }))
-  }))
+  useStore: jest.fn()
 }))
 
 jest.mock('store/network/slice', () => ({
@@ -48,8 +57,7 @@ jest.mock('utils/caip2ChainIds', () => ({
 
 jest.mock('./evmProviderShim', () => ({
   buildEvmProviderShim: jest.fn(
-    ({ chainId, address }: { chainId: string; address: string }) =>
-      `SHIM(${chainId},${address})`
+    ({ chainId }: { chainId: string }) => `SHIM(${chainId})`
   )
 }))
 
@@ -81,6 +89,13 @@ const mockAllNetworks = {
 
 const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>
 const mockUseDispatch = useDispatch as jest.MockedFunction<typeof useDispatch>
+const mockUseStore = useStore as jest.MockedFunction<typeof useStore>
+
+const mockStore = {
+  getState: () => ({ permissions: { grants: {} } }),
+  dispatch: jest.fn(),
+  subscribe: jest.fn(() => () => undefined)
+} as unknown as ReturnType<typeof useStore>
 
 function setupMocks(
   overrides: {
@@ -117,17 +132,16 @@ describe('useEvmInjectedProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseDispatch.mockReturnValue(mockDispatch)
+    mockUseStore.mockReturnValue(mockStore)
     setupMocks()
   })
 
   describe('providerShimJs', () => {
-    it('generates shim with active account and network', () => {
+    it('generates shim with active network chain', () => {
       const { result } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
-      expect(result.current.providerShimJs).toBe(
-        'SHIM(0xa86a,0xTestAddress1234567890)'
-      )
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
 
     it('uses fallback chain ID for non-EVM networks', () => {
@@ -137,17 +151,15 @@ describe('useEvmInjectedProvider', () => {
       const { result } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
-      expect(result.current.providerShimJs).toBe(
-        'SHIM(0x1,0xTestAddress1234567890)'
-      )
+      expect(result.current.providerShimJs).toBe('SHIM(0x1)')
     })
 
-    it('uses empty address when no active account', () => {
+    it('still generates shim when no active account', () => {
       setupMocks({ account: null })
       const { result } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
-      expect(result.current.providerShimJs).toBe('SHIM(0xa86a,)')
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
   })
 
@@ -289,7 +301,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0x1' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         setupMocks({
           allNetworks: {
@@ -329,7 +341,7 @@ describe('useEvmInjectedProvider', () => {
           )
         })
 
-        expect(global.fetch).toHaveBeenCalledWith(
+        expect(mockNitroFetch).toHaveBeenCalledWith(
           'https://eth.rpc',
           expect.anything()
         )
@@ -493,9 +505,10 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('does not emit chainChanged when wallet_addEthereumChain is rejected', async () => {
-        const mockRequest = jest
-          .fn()
-          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        const mockRequest = jest.fn().mockRejectedValue({
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
@@ -523,9 +536,10 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('responds with error when user rejects', async () => {
-        const mockRequest = jest
-          .fn()
-          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        const mockRequest = jest.fn().mockRejectedValue({
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
@@ -549,7 +563,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('"code":4001')
+          expect.stringContaining(`"code":${EIP1193_USER_REJECTED_CODE}`)
         )
       })
     })
@@ -658,9 +672,10 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('responds false (not an error) when user rejects, per EIP-747', async () => {
-        const mockRequest = jest
-          .fn()
-          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        const mockRequest = jest.fn().mockRejectedValue({
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
@@ -836,10 +851,11 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('responds with error code 4001 on user rejection', async () => {
-        const mockRequest = jest
-          .fn()
-          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+      it('responds with EIP-1193 user-rejected code on user rejection', async () => {
+        const mockRequest = jest.fn().mockRejectedValue({
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
@@ -866,7 +882,7 @@ describe('useEvmInjectedProvider', () => {
           expect.stringContaining('__coreProviderRespond(21,')
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('"code":4001')
+          expect.stringContaining(`"code":${EIP1193_USER_REJECTED_CODE}`)
         )
       })
 
@@ -885,7 +901,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('"code":-32603')
+          expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('Origin unavailable')
@@ -1037,7 +1053,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0xABC' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1052,7 +1068,7 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(payload)
         })
 
-        expect(global.fetch).toHaveBeenCalledWith(
+        expect(mockNitroFetch).toHaveBeenCalledWith(
           'https://api.avax.network/ext/bc/C/rpc',
           expect.objectContaining({
             method: 'POST',
@@ -1067,7 +1083,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ result: '0xBalanceValue' })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1096,7 +1112,7 @@ describe('useEvmInjectedProvider', () => {
           ok: true,
           json: jest.fn().mockResolvedValue({ error: rpcError })
         }
-        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+        mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1117,7 +1133,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('handles fetch failure gracefully', async () => {
-        global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
+        mockNitroFetch.mockRejectedValue(new Error('Network error'))
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1133,7 +1149,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('"code":-32603')
+          expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('RPC request failed')
@@ -1166,7 +1182,7 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('No RPC URL configured')
         )
-        expect(global.fetch).not.toHaveBeenCalled()
+        expect(mockNitroFetch).not.toHaveBeenCalled()
       })
     })
 
@@ -1378,6 +1394,104 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(result.current.dappMetadata.current).toBeNull()
+    })
+
+    describe('primes _accounts on page load', () => {
+      const metadata = JSON.stringify({
+        domain: 'opensea.io',
+        name: 'OpenSea',
+        icon: '',
+        url: 'https://opensea.io/'
+      })
+
+      const withPermission = (addr: string): ReturnType<typeof useStore> =>
+        ({
+          getState: () => ({
+            permissions: {
+              grants: {
+                'https://opensea.io': {
+                  [addr]: ['EVM']
+                }
+              }
+            }
+          }),
+          dispatch: jest.fn(),
+          subscribe: jest.fn(() => () => undefined)
+        } as unknown as ReturnType<typeof useStore>)
+
+      it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
+        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
+          )
+        )
+      })
+
+      it('injects accountsChanged([]) when no grant exists for the origin', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+        )
+      })
+
+      it('does not inject accountsChanged when origin is missing', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        // currentUrlRef is never set, so origin stays ''
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged'")
+        )
+      })
+
+      it('does not inject accountsChanged when there is no active account', () => {
+        setupMocks({ account: null })
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged'")
+        )
+      })
     })
   })
 })
