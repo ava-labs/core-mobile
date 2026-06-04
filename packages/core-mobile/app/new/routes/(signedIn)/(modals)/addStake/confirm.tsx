@@ -90,12 +90,14 @@ const StakeConfirmScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeWallet = useSelector(selectActiveWallet)
 
-  const validatorEndTimeUnix = useMemo(() => {
-    if (validator?.endTime) {
-      return Number(validator?.endTime)
-    }
-    return 0
-  }, [validator?.endTime])
+  // `undefined` while the validator is still resolving — the hook
+  // skips the validator-end-time clamp in that case and returns the
+  // user-selected end time as-is, instead of treating `0` as a real
+  // end time and collapsing to the Unix epoch.
+  const validatorEndTimeUnix = useMemo(
+    () => (validator?.endTime ? Number(validator.endTime) : undefined),
+    [validator?.endTime]
+  )
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakeEndTimeInMilliseconds, validatorEndTimeUnix)
 

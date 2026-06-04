@@ -117,12 +117,14 @@ const StakeConfirmScreen = ({
   const activeAccount = useSelector(selectActiveAccount)
   const activeWallet = useSelector(selectActiveWallet)
 
-  const validatorEndTimeUnix = useMemo(() => {
-    if (validator?.endTime) {
-      return Number(validator?.endTime)
-    }
-    return 0
-  }, [validator?.endTime])
+  // `undefined` while the validator is still resolving — the hook now
+  // skips the validator-end-time clamp in that case and returns the
+  // user-selected end time as-is, so no callers need an ad-hoc sentinel
+  // (e.g. `0`) here. Once the validator arrives, the clamp re-engages.
+  const validatorEndTimeUnix = useMemo(
+    () => (validator?.endTime ? Number(validator.endTime) : undefined),
+    [validator?.endTime]
+  )
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakeEndTimeInMilliseconds, validatorEndTimeUnix)
 
@@ -135,16 +137,14 @@ const StakeConfirmScreen = ({
   // `fast-stake-fee-enabled` flag is on — so the displayed reward stays
   // consistent with whether the fee is actually charged.
   //
-  // Gate `duration` on the validator being resolved: while the source is
-  // still fetching, `validatorEndTimeUnix` defaults to `0`, which
-  // `useValidateStakingEndTime` clamps to the Unix epoch and produces a
-  // negative `validatedStakingDuration`. That would feed garbage into the
-  // reward estimator and briefly surface a wrong "Estimated reward" value
-  // before settling. Holding `duration` until the validator resolves lets
-  // the reward row read "—" during loading.
+  // `validatedStakingDuration` is now safe to use before the validator
+  // resolves: with the `undefined` plumbing in `useValidateStakingEndTime`,
+  // the duration reflects the user-selected end time during the resolve
+  // window and switches to the validator-clamped end time once it arrives.
+  // No consumer-level gating needed here.
   const grossEstimatedReward = useStakeEstimatedReward({
     amount: stakeAmount,
-    duration: validator ? validatedStakingDuration : undefined,
+    duration: validatedStakingDuration,
     delegationFee: 0
   })
   const [isAlertVisible, setIsAlertVisible] = useState(false)
