@@ -367,7 +367,9 @@ export function useEvmInjectedProvider(
 
   // Publish the router to the ref so setCurrentUrl (defined above, fires
   // on nav events) can call cancelByOrigin without restructuring the memo.
-  routerRef.current = router
+  useEffect(() => {
+    routerRef.current = router
+  }, [router])
 
   const handleProviderMessage = useCallback(
     (payload: string) => router.handleProviderMessage(payload),
