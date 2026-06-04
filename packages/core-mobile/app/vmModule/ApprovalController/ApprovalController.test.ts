@@ -83,7 +83,14 @@ jest.mock('features/ledger/store', () => ({
   }
 }))
 jest.mock('new/routes/store', () => ({
-  currentRouteStore: { getState: jest.fn(() => ({ currentRoute: '' })) }
+  currentRouteStore: {
+    getState: jest.fn(() => ({
+      currentRoute: '',
+      topRoute: undefined,
+      setCurrentRoute: jest.fn(),
+      setTopRoute: jest.fn()
+    }))
+  }
 }))
 jest.mock('./onApprove', () => ({ onApprove: jest.fn() }))
 jest.mock('./onReject', () => ({ onReject: jest.fn() }))
@@ -779,7 +786,9 @@ describe('ApprovalController', () => {
     it('goes back when on the approval screen and canGoBack is true', () => {
       mockCurrentRouteStore.getState.mockReturnValue({
         currentRoute: '/approval',
-        setCurrentRoute: jest.fn()
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
       })
       mockRouter.canGoBack.mockReturnValue(true)
 
@@ -791,7 +800,9 @@ describe('ApprovalController', () => {
     it('goes back when on the ledgerReviewTransaction screen and canGoBack is true', () => {
       mockCurrentRouteStore.getState.mockReturnValue({
         currentRoute: '/ledgerReviewTransaction',
-        setCurrentRoute: jest.fn()
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
       })
       mockRouter.canGoBack.mockReturnValue(true)
 
@@ -803,7 +814,9 @@ describe('ApprovalController', () => {
     it('does not go back when canGoBack is false', () => {
       mockCurrentRouteStore.getState.mockReturnValue({
         currentRoute: '/approval',
-        setCurrentRoute: jest.fn()
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
       })
       mockRouter.canGoBack.mockReturnValue(false)
 
@@ -815,7 +828,9 @@ describe('ApprovalController', () => {
     it('does not go back when on an unrelated route', () => {
       mockCurrentRouteStore.getState.mockReturnValue({
         currentRoute: '/home',
-        setCurrentRoute: jest.fn()
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
       })
       mockRouter.canGoBack.mockReturnValue(true)
 

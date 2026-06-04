@@ -40,6 +40,7 @@ module.exports = {
     '<rootDir>/tests/jestSetup/firebase.js',
     '<rootDir>/tests/jestSetup/toast.js',
     '<rootDir>/tests/jestSetup/crypto.js',
+    '<rootDir>/tests/jestSetup/cryptoSdk.js',
     './node_modules/@react-native-google-signin/google-signin/jest/build/jest/setup.js'
   ],
   transformIgnorePatterns: [
@@ -61,6 +62,12 @@ module.exports = {
         '@notifee/react-native',
         '@invertase/react-native-apple-authentication',
         '@avalabs/vm-module-types',
+        '@avalabs/evm-module',
+        '@avalabs/bitcoin-module',
+        '@avalabs/avalanche-module',
+        '@avalabs/svm-module',
+        '@avalabs/crypto-sdk',
+        '@avalabs/crypto-nitro',
         '@avalabs/fusion-sdk',
         'camelcase-keys',
         'map-obj',

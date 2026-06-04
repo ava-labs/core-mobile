@@ -2,13 +2,17 @@
 import { Alert } from 'react-native'
 import { nobleVsQuickCryptoHashBenchmark } from './hashes'
 import { bip32Benchmark } from './bip32'
+import { addressDerivationBenchmark } from './addressDerivation'
 
-const benchmarks = [
-  { name: 'noble vs quick-crypto hash', fn: nobleVsQuickCryptoHashBenchmark },
-  { name: 'bip32', fn: bip32Benchmark }
-]
-
-export const runBenchmark = async () => {
+export const runBenchmark = async store => {
+  const benchmarks = [
+    { name: 'noble vs quick-crypto hash', fn: nobleVsQuickCryptoHashBenchmark },
+    { name: 'bip32', fn: bip32Benchmark },
+    {
+      name: 'address derivation (single vs batch)',
+      fn: () => addressDerivationBenchmark(store)
+    }
+  ]
   let index = 0
 
   const runNext = () => {
