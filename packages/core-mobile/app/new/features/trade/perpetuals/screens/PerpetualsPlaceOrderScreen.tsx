@@ -1,8 +1,10 @@
 import {
+  alpha,
   CircularDial,
   GroupList,
   SlidingButton,
   Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -12,9 +14,11 @@ import React, { useCallback, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
+  const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const [submitting, setSubmitting] = useState(false)
 
@@ -118,7 +122,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       navigationTitle="Place your bet"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8, gap: 20 }}>
+      <View sx={{ paddingTop: 8, gap: 20, paddingBottom: 8 }}>
         <View sx={{ gap: 8 }}>
           <PositionPill coin={coin} price={entryPrice} side={side} />
 
@@ -190,6 +194,22 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
             }
             onPressDrill={handleOpenStopLoss}
           />
+        </View>
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6
+          }}>
+          <Text
+            variant="caption"
+            sx={{
+              color: '$textSecondary'
+            }}>
+            Powered by
+          </Text>
+          <HyperliquidLogo color={alpha(theme.colors.$textPrimary, 0.6)} />
         </View>
       </View>
     </ScrollScreen>
