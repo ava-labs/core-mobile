@@ -87,7 +87,9 @@ export const PerpetualsScreen = ({
         // for now tap opens the place-order flow directly (defaults to Long).
         onPress={() =>
           router.navigate(
-            `/perpetualsPlaceOrder?coin=${item.symbol}&side=long&price=${item.price}`
+            `/perpetualsPlaceOrder?coin=${encodeURIComponent(
+              item.symbol
+            )}&side=long&price=${item.price}`
           )
         }
       />

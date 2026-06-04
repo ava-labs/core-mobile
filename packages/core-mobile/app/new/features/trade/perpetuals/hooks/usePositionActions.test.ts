@@ -23,19 +23,22 @@ const position = {
 describe('usePositionActions', () => {
   beforeEach(() => mockNavigate.mockClear())
 
-  it('builds the market-close URL', () => {
+  // notional = size × price; kept as an expression to match the hook exactly.
+  const value = 0.05 * 1973.1
+
+  it('builds the market-close URL with the position notional', () => {
     const { result } = renderHook(() => usePositionActions())
     result.current.marketClose(position)
     expect(mockNavigate).toHaveBeenCalledWith(
-      '/perpetualsClose?kind=market&coin=ETH&side=long&price=1973.1&entry=1970.4&pnl=12.5'
+      `/perpetualsClose?kind=market&coin=ETH&side=long&price=1973.1&entry=1970.4&value=${value}&pnl=12.5`
     )
   })
 
-  it('builds the limit-close URL', () => {
+  it('builds the limit-close URL with the position notional', () => {
     const { result } = renderHook(() => usePositionActions())
     result.current.limitClose(position)
     expect(mockNavigate).toHaveBeenCalledWith(
-      '/perpetualsClose?kind=limit&coin=ETH&side=long&price=1973.1&entry=1970.4&pnl=12.5'
+      `/perpetualsClose?kind=limit&coin=ETH&side=long&price=1973.1&entry=1970.4&value=${value}&pnl=12.5`
     )
   })
 

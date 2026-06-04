@@ -56,15 +56,21 @@ const useCloseParams = (): { kind: CloseKind } & CloseParams => {
     value?: string
     pnl?: string
   }>()
-  const price = Number(params.price) || DEFAULT_ENTRY_PRICE
+  // Finite parse so a legitimate `0` (e.g. flat pnl) isn't treated as missing.
+  const num = (value: string | undefined): number | undefined => {
+    if (value === undefined) return undefined
+    const n = Number(value)
+    return Number.isFinite(n) ? n : undefined
+  }
+  const price = num(params.price) ?? DEFAULT_ENTRY_PRICE
   return {
     kind: params.kind === 'limit' ? 'limit' : 'market',
     coin: (params.coin ?? DEFAULT_COIN).toUpperCase(),
     side: params.side === 'short' ? 'short' : 'long',
     price,
-    entryPrice: Number(params.entry) || price,
-    positionValue: Number(params.value) || MOCK_POSITION_VALUE,
-    totalPnl: Number(params.pnl) || MOCK_PNL
+    entryPrice: num(params.entry) ?? price,
+    positionValue: num(params.value) ?? MOCK_POSITION_VALUE,
+    totalPnl: num(params.pnl) ?? MOCK_PNL
   }
 }
 

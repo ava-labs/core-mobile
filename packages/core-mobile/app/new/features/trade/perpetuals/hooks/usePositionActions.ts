@@ -21,8 +21,11 @@ export const usePositionActions = (): PositionActions => {
     const close = (position: Position, kind: 'market' | 'limit'): void => {
       const coin = encodeURIComponent(position.symbol)
       const entry = position.entryPrice ?? position.price
+      // Notional value of the position, so the close dial is sized to the real
+      // position rather than the mock fallback.
+      const value = position.size * position.price
       router.navigate(
-        `/perpetualsClose?kind=${kind}&coin=${coin}&side=${position.side}&price=${position.price}&entry=${entry}&pnl=${position.pnl}`
+        `/perpetualsClose?kind=${kind}&coin=${coin}&side=${position.side}&price=${position.price}&entry=${entry}&value=${value}&pnl=${position.pnl}`
       )
     }
 
