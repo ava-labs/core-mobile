@@ -80,10 +80,16 @@ export const pnlColor = (
 }
 
 /**
- * A take-profit only makes sense on the profitable side of entry (long:
- * above, short: below); a stop-loss on the losing side. Anything else (or a
- * non-positive price) is rejected so we never store a contradictory trigger.
+ * The side of entry a trigger must sit on: a take-profit locks in profit
+ * (long: above, short: below); a stop-loss caps loss (long: below, short:
+ * above). The error message and the validity check both derive from this so
+ * they can't disagree.
  */
+export const requiredTriggerSide = (
+  kind: TriggerKind,
+  isLong: boolean
+): 'above' | 'below' => ((kind === 'takeProfit') === isLong ? 'above' : 'below')
+
 export const isTriggerValid = ({
   kind,
   isLong,
@@ -96,10 +102,9 @@ export const isTriggerValid = ({
   entryPrice: number
 }): boolean => {
   if (price === undefined || price <= 0 || entryPrice <= 0) return false
-  // Strict comparisons: a trigger exactly at entry is neither above nor below,
-  // so it can never lock profit / cap loss and must be rejected.
-  const above = price > entryPrice
-  const below = price < entryPrice
-  if (kind === 'takeProfit') return isLong ? above : below
-  return isLong ? below : above
+  // Strict: a trigger exactly at entry is neither above nor below, so it can
+  // never lock profit / cap loss and must be rejected.
+  return requiredTriggerSide(kind, isLong) === 'above'
+    ? price > entryPrice
+    : price < entryPrice
 }

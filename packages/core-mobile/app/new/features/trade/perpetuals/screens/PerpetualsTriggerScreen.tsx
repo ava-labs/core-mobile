@@ -19,6 +19,7 @@ import {
   pnlColor,
   positionSizeTokens,
   projectedPnl,
+  requiredTriggerSide,
   sanitizeDecimalInput,
   type TriggerKind
 } from '../utils/economics'
@@ -41,6 +42,8 @@ const COPY: Record<
   TriggerKind,
   {
     title: string
+    /** Short label used in the validation error, e.g. "Take profit". */
+    label: string
     subtitle: string
     /** A take-profit always projects a gain, a stop-loss always a loss. */
     pnlLabel: string
@@ -48,12 +51,14 @@ const COPY: Record<
 > = {
   takeProfit: {
     title: 'Add take profit',
+    label: 'Take profit',
     subtitle:
       'Price level at which your position automatically closes to lock in profits',
     pnlLabel: 'Projected profit'
   },
   stopLoss: {
     title: 'Add stop loss',
+    label: 'Stop loss',
     subtitle:
       'Price level at which your position automatically closes to cap your losses',
     pnlLabel: 'Projected loss'
@@ -116,6 +121,12 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   )
 
   const valid = isTriggerValid({ kind, isLong, price, entryPrice })
+  // Show the directional error once a price is entered on the wrong side.
+  const showError = price !== undefined && !valid
+  const errorMessage = `${copy.label} must be ${requiredTriggerSide(
+    kind,
+    isLong
+  )} entry price`
 
   const handleDone = useCallback(() => {
     if (kind === 'takeProfit') {
@@ -179,8 +190,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
               alignItems: 'center',
               justifyContent: 'center',
               borderTopLeftRadius: 4,
-              borderTopRightRadius: 4,
-              gap: 6
+              borderTopRightRadius: 4
             }}>
             <View>
               <AutoSizeTextInput
@@ -197,14 +207,20 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
                 testID="perpetuals_trigger_price"
               />
             </View>
-            <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
-              <Text
-                variant="subtitle2"
-                sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
-                {pctParts(pct).percent}
+            {showError ? (
+              <Text variant="subtitle2" sx={{ color: '$textDanger' }}>
+                {errorMessage}
               </Text>
-              {pctParts(pct).suffix}
-            </Text>
+            ) : (
+              <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
+                <Text
+                  variant="subtitle2"
+                  sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
+                  {pctParts(pct).percent}
+                </Text>
+                {pctParts(pct).suffix}
+              </Text>
+            )}
           </View>
         </View>
 

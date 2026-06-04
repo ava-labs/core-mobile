@@ -6,6 +6,7 @@ import {
   pnlColor,
   positionSizeTokens,
   projectedPnl,
+  requiredTriggerSide,
   sanitizeDecimalInput
 } from './economics'
 
@@ -109,6 +110,18 @@ describe('formatSigned', () => {
   it('omits the leading + when alwaysSign is false', () => {
     expect(formatSigned(5, fmt, { alwaysSign: false })).toBe('$5')
     expect(formatSigned(-5, fmt, { alwaysSign: false })).toBe('-$5')
+  })
+})
+
+describe('requiredTriggerSide', () => {
+  it('take-profit is above for long, below for short', () => {
+    expect(requiredTriggerSide('takeProfit', true)).toBe('above')
+    expect(requiredTriggerSide('takeProfit', false)).toBe('below')
+  })
+
+  it('stop-loss is below for long, above for short', () => {
+    expect(requiredTriggerSide('stopLoss', true)).toBe('below')
+    expect(requiredTriggerSide('stopLoss', false)).toBe('above')
   })
 })
 
