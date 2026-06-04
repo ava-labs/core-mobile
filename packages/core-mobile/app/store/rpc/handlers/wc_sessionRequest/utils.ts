@@ -46,9 +46,9 @@ const CORE_EXT_HOSTNAMES = [
   'dnoiacbfkodekgkjbpoagaljpbhaedmd' // blue build
 ]
 
-const CORE_WEB_URLS_REGEX = [
-  // core web preview deploys (ex. https://d0ce77c0-core-web-dev.avalabs.workers.dev)
-  'https://[a-zA-Z0-9]+-core-web-dev\\.avalabs\\.workers\\.dev'
+const CORE_WEB_HOSTNAME_REGEXES = [
+  // core web preview deploys (ex. d0ce77c0-core-web-dev.avalabs.workers.dev)
+  /^[a-zA-Z0-9]+-core-web-dev\.avalabs\.workers\.dev$/
 ]
 
 export const isCoreMethod = (method: string): boolean =>
@@ -74,9 +74,16 @@ export const isCoreDomain = (url: string): boolean => {
   const isCoreExt =
     CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
+  const isHttps = protocol === 'https:'
+  const isLocalhost =
+    (hostname === 'localhost' || hostname === '127.0.0.1') &&
+    (protocol === 'http:' || protocol === 'https:')
+
   const isCoreWeb =
-    CORE_WEB_HOSTNAMES.includes(hostname) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
+    isLocalhost ||
+    (isHttps &&
+      (CORE_WEB_HOSTNAMES.includes(hostname) ||
+        CORE_WEB_HOSTNAME_REGEXES.some(regex => regex.test(hostname))))
 
   return isCoreWeb || isCoreExt
 }
