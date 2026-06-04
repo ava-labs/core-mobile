@@ -23,11 +23,18 @@ import {
   type TriggerKind
 } from '../utils/economics'
 
-const pctCaption = (pct: number | undefined): string => {
-  if (pct === undefined) return 'Set a price target'
+// The percentage is colored by sign; the " above/below current price" suffix
+// stays in the secondary text color (per design).
+const pctParts = (
+  pct: number | undefined
+): { percent: string; suffix: string } => {
+  if (pct === undefined) return { percent: '', suffix: 'Set a price target' }
   const sign = pct >= 0 ? '+' : ''
   const direction = pct >= 0 ? 'above' : 'below'
-  return `${sign}${pct.toFixed(2)}% ${direction} current price`
+  return {
+    percent: `${sign}${pct.toFixed(2)}%`,
+    suffix: ` ${direction} current price`
+  }
 }
 
 const COPY: Record<
@@ -133,7 +140,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
 
   const formattedPnl =
     projected === undefined
-      ? '—'
+      ? '-'
       : formatSigned(projected, n => formatCurrency({ amount: n }), {
           alwaysSign: false
         })
@@ -170,12 +177,21 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
                 onChangeText={handleChangeText}
                 keyboardType="decimal-pad"
                 placeholder="0"
+                initialFontSize={60}
+                // Render the "$" smaller than the digits (it otherwise matches
+                // the full amount size).
+                suffixFontSizeMultiplier={0.9}
                 autoFocus
                 testID="perpetuals_trigger_price"
               />
             </View>
-            <Text variant="body2" sx={{ color: pctColor }}>
-              {pctCaption(pct)}
+            <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
+              <Text
+                variant="subtitle2"
+                sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
+                {pctParts(pct).percent}
+              </Text>
+              {pctParts(pct).suffix}
             </Text>
           </View>
         </View>
