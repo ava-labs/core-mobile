@@ -8,8 +8,9 @@ import {
 import type { PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
-import ContentLoader, { Rect } from 'react-content-loader/native'
+import { Rect } from 'react-content-loader/native'
 import { computePriceChange, formatChangeRow } from '../utils/priceChange'
+import { Skeleton } from './Skeleton'
 
 const parseNum = (s: string | undefined): number | undefined => {
   if (s === undefined) return undefined
@@ -23,20 +24,11 @@ const formatThousands = (n: number, fractionDigits = 2): string =>
     maximumFractionDigits: fractionDigits
   })
 
-const ValueSkeleton = ({ width = 90 }: { width?: number }): JSX.Element => {
-  const { theme } = useTheme()
-  return (
-    <ContentLoader
-      speed={1}
-      width={width}
-      height={20}
-      viewBox={`0 0 ${width} 20`}
-      backgroundColor={theme.isDark ? '#3E3E43' : '#F2F2F3'}
-      foregroundColor={theme.isDark ? '#69696D' : '#D9D9D9'}>
-      <Rect x="0" y="2" rx="6" ry="6" width={width} height="16" />
-    </ContentLoader>
-  )
-}
+const ValueSkeleton = ({ width = 90 }: { width?: number }): JSX.Element => (
+  <Skeleton width={width} height={20}>
+    <Rect x="0" y="2" rx="6" ry="6" width={width} height="16" />
+  </Skeleton>
+)
 
 interface MarketStatisticsProps {
   assetCtx?: PerpsAssetCtx

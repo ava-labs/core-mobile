@@ -34,6 +34,8 @@ const BALANCE_ROW_HEIGHT = 60
 const BALANCE_ROW_VERTICAL_MARGIN = 28
 const MIN_HEADER_HEIGHT = BALANCE_ROW_HEIGHT + BALANCE_ROW_VERTICAL_MARGIN
 const GRADIENT_HEIGHT = 110
+// TODO: replace with the real perps balance once the SDK is wired.
+const MOCK_TRADE_BALANCE = 10250000.23
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
@@ -162,10 +164,7 @@ export function TradeScreen(): JSX.Element {
               marginTop: 14,
               marginHorizontal: 16
             }}>
-            <TradeBalance
-              balance={10250000.23}
-              onBalancePress={() => router.navigate('/perpetualsBalance')}
-            />
+            <TradeBalance balance={MOCK_TRADE_BALANCE} />
           </View>
         </View>
       </View>

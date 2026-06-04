@@ -2,8 +2,9 @@ import { PriceChangeIndicator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import type { PerpUniverseEntry, PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
-import ContentLoader, { Rect } from 'react-content-loader/native'
+import { Rect } from 'react-content-loader/native'
 import { computePriceChange, formatPercent } from '../utils/priceChange'
+import { Skeleton } from './Skeleton'
 
 const DASH = '—'
 
@@ -43,16 +44,12 @@ export const MarketDetailsHeader = ({
           {coin}
         </Text>
         {assetCtx === undefined ? (
-          <ContentLoader
-            speed={1}
-            width={180}
-            height={52}
-            viewBox="0 0 180 52"
-            backgroundColor={theme.isDark ? '#3E3E43' : '#F2F2F3'}
-            foregroundColor={theme.isDark ? '#69696D' : '#D9D9D9'}>
+          <Skeleton width={180} height={52}>
+            {/* mark price (heading2) */}
             <Rect x="0" y="0" rx="6" ry="6" width="140" height="32" />
+            {/* 24h change indicator */}
             <Rect x="0" y="38" rx="6" ry="6" width="90" height="14" />
-          </ContentLoader>
+          </Skeleton>
         ) : (
           <>
             <Text variant="heading2">{formattedPrice}</Text>
@@ -65,15 +62,10 @@ export const MarketDetailsHeader = ({
       </View>
 
       {universe?.maxLeverage === undefined ? (
-        <ContentLoader
-          speed={1}
-          width={110}
-          height={68}
-          viewBox="0 0 110 68"
-          backgroundColor={theme.isDark ? '#3E3E43' : '#F2F2F3'}
-          foregroundColor={theme.isDark ? '#69696D' : '#D9D9D9'}>
+        <Skeleton width={110} height={68}>
+          {/* "Leverage up to Nx" badge box */}
           <Rect x="0" y="0" rx="12" ry="12" width="110" height="68" />
-        </ContentLoader>
+        </Skeleton>
       ) : (
         <View
           sx={{
