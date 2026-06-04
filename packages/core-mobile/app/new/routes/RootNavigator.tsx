@@ -35,8 +35,12 @@ export function RootNavigator(): JSX.Element {
       <Stack
         // @ts-ignore: to set the current route name globally
         screenListeners={({ navigation }) => {
-          const state =
-            navigation.getState().routes[navigation.getState().index]?.state
+          const rootState = navigation.getState()
+          const topRoute = rootState.routes[rootState.index]?.name
+          if (topRoute) {
+            currentRouteStore.getState().setTopRoute(topRoute)
+          }
+          const state = rootState.routes[rootState.index]?.state
           if (state && state.index !== undefined) {
             const currentRoute = state?.routes[state.index]?.name
             if (currentRoute) {
@@ -74,6 +78,11 @@ export function RootNavigator(): JSX.Element {
             name="sessionExpired"
             options={{
               ...modalScreensOptions,
+              // formSheet renders blank on iOS 26 when presented at root from a
+              // deep child route, which traps the user with no escape gestures.
+              // fullScreenModal bypasses the broken sheet presentation path and
+              // matches this screen's hard-blocking re-auth semantics anyway.
+              presentation: 'fullScreenModal',
               gestureEnabled: false
             }}
           />
