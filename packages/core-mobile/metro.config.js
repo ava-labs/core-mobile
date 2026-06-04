@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/cognitive-complexity */
 const path = require('path')
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
@@ -99,22 +98,8 @@ const baseConfig = {
         return context.resolveRequest(newContext, moduleName, platform)
       }
 
-      // Enable package exports only for @avalabs/fusion-sdk.
-      // On Android, force the CJS build to avoid dynamic import() failures:
-      // the ESM build uses import() which creates separate bundle chunks that
-      // Android emulator cannot fetch from localhost:8081 (it needs 10.0.2.2).
-      // The CJS build uses Promise.resolve().then(() => require()) instead,
-      // which Metro bundles statically and avoids the runtime fetch.
+      // Enable package exports only for @avalabs/fusion-sdk
       if (moduleName.startsWith('@avalabs/fusion-sdk')) {
-        if (platform === 'android' && moduleName === '@avalabs/fusion-sdk') {
-          return {
-            type: 'sourceFile',
-            filePath: path.resolve(
-              __dirname,
-              'node_modules/@avalabs/fusion-sdk/dist/mod.cjs'
-            )
-          }
-        }
         const newContext = {
           ...context,
           unstable_enablePackageExports: true
