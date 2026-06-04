@@ -597,14 +597,19 @@ const StakeConfirmScreen = ({
 
   // Once we leave the review state, hide the back button (and the iOS
   // native back chevron) — the only way out of the processing/success
-  // screens is swiping the modal down.
+  // screens is swiping the modal down. The effect always sets options
+  // both ways so a return to `idle` (e.g. after a non-ledger failure that
+  // calls `setIsSubmitting(false)`) restores the back affordance instead
+  // of leaving the user stranded on the review screen with no way out
+  // besides swiping down.
   useEffect(() => {
-    if (phase !== 'idle') {
-      navigation.setOptions({
-        headerLeft: () => null,
-        headerBackVisible: false
-      })
-    }
+    navigation.setOptions(
+      phase === 'idle'
+        ? // `undefined` tells react-navigation to fall back to the
+          // screen's declared options (or the navigator's defaults).
+          { headerLeft: undefined, headerBackVisible: true }
+        : { headerLeft: () => null, headerBackVisible: false }
+    )
   }, [phase, navigation])
 
   // Auto-close the entire stake flow shortly after success. Going back on
@@ -682,15 +687,19 @@ const StakeConfirmScreen = ({
     isStakeEndTimeValid
   ])
 
-  // Submit must wait for the fee context to be ready whenever a fee policy
-  // applies. Without this guard the user can slide-to-stake before the
-  // gross reward estimate resolves — `feeAdditionalOutputs` would be
-  // `undefined`, the tx would skip the convenience-fee escrow output
-  // entirely, and the analytics would record `convenienceFeeAvax: 0` even
-  // though the UI advertised a fee. When no policy applies, the screen
-  // submits as soon as a validator is available, matching the old
-  // behaviour for the advanced delegate flow.
-  const isFeeContextReady = !feePolicy || feeAdditionalOutputs !== undefined
+  // Submit must wait for the gross reward estimate to be available
+  // whenever a fee policy applies. Without this guard the user can
+  // slide-to-stake before the reward resolves — the tx would skip the
+  // convenience-fee escrow output and analytics would record
+  // `convenienceFeeAvax: 0` even though the UI advertised a fee.
+  //
+  // Gate on `grossEstimatedReward` rather than the derived
+  // `feeAdditionalOutputs` so we don't lock the CTA in the (degenerate)
+  // case where the reward genuinely rounds to 0 — there, no fee output is
+  // expected, but the submission itself is still valid. When no policy
+  // applies, the screen submits as soon as a validator is available,
+  // matching the old behaviour for the advanced delegate flow.
+  const isFeeContextReady = !feePolicy || grossEstimatedReward !== undefined
 
   const renderFooter = useCallback(() => {
     const ledgerFooter = renderLedgerFooter(steps.length)
