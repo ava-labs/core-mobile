@@ -17,12 +17,7 @@ import {
   useDelegationContext,
   OnDelegationProgress
 } from 'contexts/DelegationContext'
-import {
-  differenceInDays,
-  format,
-  getUnixTime,
-  secondsToMilliseconds
-} from 'date-fns'
+import { differenceInDays, format, getUnixTime } from 'date-fns'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
@@ -48,6 +43,8 @@ import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
 import { StakeReviewSource } from '../types'
+import { formatFeePercent } from '../utils/formatFeePercent'
+import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
 
 // Auto-dismiss delay after the stake succeeds.
 const SUCCESS_DISMISS_DELAY_MS = 2000
@@ -93,9 +90,20 @@ const StakeConfirmScreen = ({
   const { steps } = useDelegationContext()
   const { annualPercentageYieldBPS } = useStakingParams()
   const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime: string }>()
-  const stakeEndTimeInMilliseconds = useMemo(
-    () => new UTCDate(secondsToMilliseconds(Number(stakeEndTime))),
+  // Defensive parse — deep links / state restoration could land us here
+  // with a missing or non-numeric `stakeEndTime`. Falling through with a
+  // NaN would produce an Invalid Date and later crash inside `format()` /
+  // `differenceInDays()`. When invalid we surface a dismiss-the-flow alert
+  // below; the placeholder below keeps downstream date hooks running with
+  // a finite value until the alert dismisses the modal.
+  const parsedStakeEndTime = useMemo(
+    () => parseStakeEndTimeParam(stakeEndTime),
     [stakeEndTime]
+  )
+  const isStakeEndTimeValid = parsedStakeEndTime !== undefined
+  const stakeEndTimeInMilliseconds = useMemo(
+    () => parsedStakeEndTime ?? new UTCDate(Date.now()),
+    [parsedStakeEndTime]
   )
   const now = useNow()
 
@@ -203,10 +211,13 @@ const StakeConfirmScreen = ({
     }
   }, [feePolicy, convenienceFee])
 
-  // Percentage form of the fee rate for the caption / "Convenience fee"
-  // row. Only meaningful when there is a policy; otherwise the row is
-  // hidden entirely.
-  const convenienceFeePercent = feePolicy ? feePolicy.rate * 100 : 0
+  // Percentage form of the fee rate, formatted for display so that
+  // floating-point artifacts (e.g. `0.07 * 100 = 7.000000000000001`) don't
+  // leak into the caption. Empty when no policy applies — the caption /
+  // "Convenience fee" row are hidden in that case.
+  const convenienceFeePercent = feePolicy
+    ? formatFeePercent(feePolicy.rate)
+    : ''
 
   const refreshStakingBalances = useRefreshStakingBalances()
 
@@ -600,11 +611,35 @@ const StakeConfirmScreen = ({
     return () => clearTimeout(timeout)
   }, [phase, navigation])
 
+  // Invalid `stakeEndTime` route param (deep link / state restoration with
+  // a missing or NaN value). We can't proceed with a fake duration, so
+  // surface a dedicated alert and dismiss the modal as soon as the user
+  // acknowledges it. Distinct from the "No match found" path below because
+  // the user has no way to fix this from inside the flow.
+  useEffect(() => {
+    if (phase !== 'idle' || isAlertVisible || isStakeEndTimeValid) return
+    showAlert({
+      title: 'Invalid stake duration',
+      description:
+        'Something went wrong while loading this stake. Please start over.',
+      buttons: [
+        {
+          text: 'OK',
+          onPress: handleDismiss
+        }
+      ]
+    })
+    setIsAlertVisible(true)
+  }, [phase, isAlertVisible, isStakeEndTimeValid, handleDismiss])
+
   useEffect(() => {
     if (
       // Don't surface the "no match" alert once the stake is processing or done.
       phase === 'idle' &&
       !isAlertVisible &&
+      // Skip the no-match path when the route param itself is invalid; the
+      // dedicated invalid-duration alert above owns that case.
+      isStakeEndTimeValid &&
       // Wait for the source to finish its lookup before deciding nothing
       // matched — otherwise the alert flashes while the query is still in
       // flight.
@@ -635,8 +670,19 @@ const StakeConfirmScreen = ({
     handleStartOver,
     handleDismiss,
     isAlertVisible,
-    isFetchingValidator
+    isFetchingValidator,
+    isStakeEndTimeValid
   ])
+
+  // Submit must wait for the fee context to be ready whenever a fee policy
+  // applies. Without this guard the user can slide-to-stake before the
+  // gross reward estimate resolves — `feeAdditionalOutputs` would be
+  // `undefined`, the tx would skip the convenience-fee escrow output
+  // entirely, and the analytics would record `convenienceFeeAvax: 0` even
+  // though the UI advertised a fee. When no policy applies, the screen
+  // submits as soon as a validator is available, matching the old
+  // behaviour for the advanced delegate flow.
+  const isFeeContextReady = !feePolicy || feeAdditionalOutputs !== undefined
 
   const renderFooter = useCallback(() => {
     const ledgerFooter = renderLedgerFooter(steps.length)
@@ -647,7 +693,7 @@ const StakeConfirmScreen = ({
         mode="single"
         label="Slide to stake"
         loading={isIssueDelegationPending}
-        disabled={!validator || isIssueDelegationPending}
+        disabled={!validator || !isFeeContextReady || isIssueDelegationPending}
         onConfirm={() => handleDelegate()}
       />
     )
@@ -656,6 +702,7 @@ const StakeConfirmScreen = ({
     steps.length,
     isIssueDelegationPending,
     validator,
+    isFeeContextReady,
     handleDelegate
   ])
 
@@ -677,7 +724,12 @@ const StakeConfirmScreen = ({
             separatorMarginRight={16}
             itemHeight={48}
           />
-          {feePolicy && (
+          {/* Caption is gated on `grossEstimatedReward` so the copy
+              ("Rewards estimate includes...") only shows once an estimate
+              is actually rendered in the row above. Otherwise the
+              Estimated reward row reads "—" while the caption confidently
+              talks about a non-existent estimate. */}
+          {feePolicy && grossEstimatedReward && (
             <Text
               variant="caption"
               sx={{
