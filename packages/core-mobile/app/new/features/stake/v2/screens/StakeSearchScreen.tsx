@@ -35,7 +35,13 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { AppState, Platform, TextInput } from 'react-native'
+import {
+  AppState,
+  Platform,
+  ScrollView,
+  ScrollViewProps,
+  TextInput
+} from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
@@ -49,6 +55,26 @@ import cactusIcon from '../../../../assets/icons/cactus.png'
 // Match the home screen card width: outer screen padding (16) on each side,
 // minus the GRID_GAP between the two columns, divided by 2.
 const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
+
+// Scroll component for the results FlashList. On Android, `nestedScrollEnabled`
+// lets the list participate in the parent form sheet's nested scrolling so a
+// vertical swipe scrolls the list instead of being captured by the sheet's
+// drag-to-dismiss gesture (CP-14372).
+//
+// A plain ScrollView is used on purpose (NOT a keyboard-aware one): the search
+// input is autofocused, so a KeyboardAwareScrollView would translate the list
+// content up over the fixed SearchBar/Cancel header, hiding the search bar on
+// scroll and covering the Cancel/X taps.
+const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
+  (props, ref) => (
+    <ScrollView
+      {...props}
+      ref={ref}
+      nestedScrollEnabled={Platform.OS === 'android'}
+    />
+  )
+)
+RenderScrollComponent.displayName = 'StakeSearchScrollComponent'
 
 /**
  * Modal search screen for stakes. Filters stakes by node ID (full or
@@ -128,7 +154,14 @@ export const StakeSearchScreen = (): JSX.Element => {
     }))
   }, [selectedSort])
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback(async () => {
+    // Wait for the keyboard to actually hide before navigating back. Calling
+    // `Keyboard.dismiss()` and `back()` synchronously works on the simulator
+    // but on a real Android device, when the results FlashList is mounted the
+    // screen unmounts before the dismiss animation finishes and the keyboard
+    // lingers. Awaiting `keyboardDidHide` (handled by dismissKeyboardIfNeeded)
+    // ensures it's gone first. iOS resolves immediately.
+    await dismissKeyboardIfNeeded()
     if (canGoBack()) back()
   }, [back, canGoBack])
 
@@ -295,6 +328,7 @@ export const StakeSearchScreen = (): JSX.Element => {
           // fresh layout (and resets scroll to the top, which is the desired
           // search UX).
           key={trimmedQuery}
+          renderScrollComponent={RenderScrollComponent}
           data={filteredStakes}
           numColumns={2}
           masonry
