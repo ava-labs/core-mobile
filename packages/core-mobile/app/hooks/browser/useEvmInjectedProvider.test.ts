@@ -9,6 +9,7 @@ import {
   setActive
 } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
 import {
   EIP1193_USER_REJECTED_CODE,
@@ -53,6 +54,10 @@ jest.mock('store/browser/slices/tabs', () => ({
   selectTabChainId: jest.fn(() => jest.fn(() => undefined)),
   setTabChainId: jest.fn((payload: { tabId: string; chainId: number }) => ({
     type: 'browser/tabs/setTabChainId',
+    payload
+  })),
+  clearTabChainId: jest.fn((payload: { tabId: string }) => ({
+    type: 'browser/tabs/clearTabChainId',
     payload
   }))
 }))
@@ -140,12 +145,14 @@ function setupMocks(
     account?: typeof mockActiveAccount | null
     network?: typeof mockActiveNetwork
     allNetworks?: Record<number, unknown>
+    developerMode?: boolean
   } = {}
 ): void {
   const account =
     overrides.account === undefined ? mockActiveAccount : overrides.account
   const network = overrides.network ?? mockActiveNetwork
   const allNetworks = overrides.allNetworks ?? mockAllNetworks
+  const developerMode = overrides.developerMode ?? false
 
   const mockTabChainIdSelector = jest.fn(() => undefined)
   ;(selectTabChainId as jest.Mock).mockReturnValue(mockTabChainIdSelector)
@@ -158,6 +165,7 @@ function setupMocks(
     (selector: (state: unknown) => unknown) => {
       if (selector === (selectAllNetworks as unknown)) return allNetworks
       if (selector === (selectActiveNetwork as unknown)) return network
+      if (selector === (selectIsDeveloperMode as unknown)) return developerMode
       if (selector === mockTabChainIdSelector) return undefined
       const selectorStr = selector.toString()
       if (
@@ -1403,6 +1411,79 @@ describe('useEvmInjectedProvider', () => {
       )
       expect(chainChangedCalls).toHaveLength(0)
     })
+
+    it('emits disconnect (not chainChanged) when the active network is non-EVM (CP-13671)', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Switch the wallet's active network to a non-EVM chain (e.g. Bitcoin).
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('disconnect'")
+      )
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('re-emits chainChanged when returning to the SAME EVM chain after a non-EVM disconnect (CP-13671)', () => {
+      // Recovery path: entering non-EVM invalidates the cached chainId, so
+      // switching back to the original EVM chain still fires chainChanged and the
+      // dApp can reconnect (otherwise the equality guard would skip it).
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      // Go to a non-EVM network (emits disconnect, invalidates cached chain).
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+      mockInjectJavaScript.mockClear()
+
+      // Return to the SAME EVM chain (43114) we started on.
+      setupMocks({ network: mockActiveNetwork })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(1)
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0xa86a'")
+    })
+
+    it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {
+      setupMocks({ developerMode: false })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockDispatch.mockClear()
+
+      // Toggle testnet/developer mode on.
+      setupMocks({ developerMode: true })
+      rerender()
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'browser/tabs/clearTabChainId' })
+      )
+    })
   })
 
   describe('setCurrentUrl origin-change cleanup', () => {
@@ -1469,6 +1550,37 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(capturedSignal?.aborted).toBe(false)
+    })
+
+    it('re-primes accountsChanged on same-origin SPA navigation to a new path (CP-13772)', () => {
+      // Origin granted to the active account so priming yields a non-empty list.
+      mockUseStore.mockReturnValue({
+        getState: () => ({
+          permissions: {
+            grants: {
+              'https://uniswap.org': {
+                [mockActiveAccount.addressC]: ['EVM']
+              }
+            }
+          }
+        }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn(() => () => undefined)
+      } as unknown as ReturnType<typeof useStore>)
+
+      const { result } = renderProvider('https://uniswap.org')
+      mockInjectJavaScript.mockClear()
+
+      act(() => {
+        // SPA route change within the same origin (e.g. core.app -> /stake).
+        result.current.setCurrentUrl('https://uniswap.org/stake')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"]`
+        )
+      )
     })
   })
 

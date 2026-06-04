@@ -2,7 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
-import { selectTabChainId } from 'store/browser/slices/tabs'
+import { clearTabChainId, selectTabChainId } from 'store/browser/slices/tabs'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TabId } from 'store/browser/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
@@ -85,6 +86,7 @@ export function useEvmInjectedProvider(
   const activeNetwork = useSelector(selectActiveNetwork)
   const allNetworks = useSelector(selectAllNetworks, shallowEqual)
   const tabChainId = useSelector(selectTabChainId(tabId))
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const dappMetadata = useRef<DomainMetadata | null>(null)
   const currentUrlRef = useRef<string>('')
   const pendingOrigins = useRef<Map<number, string>>(new Map())
@@ -106,6 +108,21 @@ export function useEvmInjectedProvider(
   // to the correct chain after the user switches networks wallet-wide.
   useEffect(() => {
     if (tabChainId !== undefined) return
+    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM provider can't serve it,
+    // so tell the dApp it's disconnected rather than emitting a bogus EVM
+    // chainChanged for a non-EVM chainId (EIP-1193 disconnect, code 4901).
+    // CP-13671.
+    if (activeNetwork.vmName !== NetworkVMType.EVM) {
+      // Invalidate the cached EVM chain (sentinel 0 — no real EVM chainId) so
+      // returning to the SAME EVM chainId later still re-emits chainChanged.
+      // Otherwise the equality guard below would skip it and a dApp that reacted
+      // to this disconnect would never get a follow-up event to recover. CP-13671.
+      browserNetworkRef.current = { chainId: 0, rpcUrl: '' }
+      webViewRef.current?.injectJavaScript(
+        `window.__coreProviderEmit && window.__coreProviderEmit('disconnect', { code: 4901, message: 'Disconnected from chain' }); true;`
+      )
+      return
+    }
     if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
     browserNetworkRef.current = {
       chainId: activeNetwork.chainId,
@@ -117,9 +134,25 @@ export function useEvmInjectedProvider(
     )
   }, [activeNetwork, tabChainId, webViewRef])
 
+  // When developer (testnet) mode flips, drop any per-tab chain pin so the tab
+  // follows the wallet's active network for the NEW environment (the sync effect
+  // above then re-points browserNetworkRef + emits chainChanged). Otherwise the
+  // tab keeps signing with the prior environment's chainId and the RPC env check
+  // rejects every tx with "Invalid environment". CP-13775.
+  const prevDevModeRef = useRef(isDeveloperMode)
+  useEffect(() => {
+    if (prevDevModeRef.current === isDeveloperMode) return
+    prevDevModeRef.current = isDeveloperMode
+    dispatch(clearTabChainId({ tabId }))
+  }, [isDeveloperMode, dispatch, tabId])
+
   // Router is assigned below (after useMemo). setCurrentUrl may fire before
   // the router is constructed on first render, so we route through a ref.
   const routerRef = useRef<InjectedProviderRouter | null>(null)
+
+  // primeAccounts is defined later (it reads refs declared further down), so
+  // setCurrentUrl's SPA re-prime routes through a ref — same pattern as routerRef.
+  const primeAccountsRef = useRef<(() => void) | null>(null)
 
   // Tracks the reject fn of an in-flight connect approval so a later request
   // or an origin change can unstick it. Also used by requestConnectApproval
@@ -129,14 +162,14 @@ export function useEvmInjectedProvider(
   )
 
   const setCurrentUrl = useCallback((url: string) => {
-    const prevOrigin = getOriginFromUrl(currentUrlRef.current)
+    const prevUrl = currentUrlRef.current
+    const prevOrigin = getOriginFromUrl(prevUrl)
     currentUrlRef.current = url
     const newOrigin = getOriginFromUrl(url)
 
-    // Only cancel on actual origin change — within-origin SPA nav (nav_change
-    // messages firing on pushState/replaceState) keeps the tab connected to
-    // the same dApp, so stale approvals remain legitimate.
     if (prevOrigin && prevOrigin !== newOrigin) {
+      // Cross-origin navigation — cancel in-flight requests and unstick any
+      // parked approval tied to the prior page.
       routerRef.current?.cancelByOrigin(newOrigin)
       prevInflightConnectReject.current?.({
         code: EIP1193_USER_REJECTED_CODE,
@@ -144,6 +177,14 @@ export function useEvmInjectedProvider(
       })
       prevInflightConnectReject.current = null
       approvalController.handleGoBackIfNeeded()
+    } else if (prevOrigin && prevOrigin === newOrigin && prevUrl !== url) {
+      // Same-origin SPA navigation to a new URL (pushState/replaceState) — note
+      // prevOrigin must be set, so this excludes the initial page load (which is
+      // primed via domain_metadata). The one-time connect/accountsChanged events
+      // already fired on first load, so a provider consumer mounted by the new
+      // route sees no accounts and appears disconnected. Re-prime so it
+      // reconnects. CP-13772.
+      primeAccountsRef.current?.()
     }
   }, [])
 
@@ -498,6 +539,33 @@ export function useEvmInjectedProvider(
     [router]
   )
 
+  // Emit accountsChanged for the current origin's connected accounts: the
+  // granted addresses (active first) when the active account is granted,
+  // otherwise [] (CP-14382). Shared by page-load priming (handleDomainMetadata)
+  // and same-origin SPA navigation (setCurrentUrl, via primeAccountsRef) so a
+  // freshly-mounted provider consumer on a new route re-establishes the
+  // connection. The injected signer always signs with the active account, so
+  // priming the granted set while an ungranted account is active would
+  // re-establish a phantom connection — emit [] instead.
+  const primeAccounts = useCallback(() => {
+    const origin = getOriginFromUrl(currentUrlRef.current)
+    const active = activeAccountRef.current
+    if (!origin || !active?.addressC) return
+    const granted = selectGrantedAddressesForDomain({
+      domain: origin,
+      vmType: NetworkVMType.EVM
+    })(store.getState())
+    const accounts = resolveActiveConnectedAccounts(granted, active.addressC)
+    lastEmittedAccountsRef.current = JSON.stringify(accounts)
+    webViewRef.current?.injectJavaScript(
+      `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
+        accounts
+      )}); true;`
+    )
+  }, [store, webViewRef])
+  // Publish to the ref so setCurrentUrl (defined above) can re-prime on SPA nav.
+  primeAccountsRef.current = primeAccounts
+
   const handleDomainMetadata = useCallback(
     (payload: string) => {
       try {
@@ -506,32 +574,11 @@ export function useEvmInjectedProvider(
       } catch {
         Logger.error('[InjectedProvider] Invalid domain_metadata payload')
       }
-
       // Prime the shim's _accounts cache on page load so dApps with
-      // auto-reconnect (wagmi autoConnect, etc.) see the connection
-      // immediately without prompting. We emit the accounts the dApp may
-      // actually transact as: if the active account is in this origin's
-      // granted set, the granted addresses (active first); otherwise []. The
-      // injected signer always signs with the active account, so priming the
-      // granted set while an ungranted account is active would re-establish a
-      // phantom connection on reload (the gap An flagged on #3862) — emit []
-      // instead so the dApp reflects a disconnected state (CP-14382).
-      const origin = getOriginFromUrl(currentUrlRef.current)
-      const active = activeAccountRef.current
-      if (!origin || !active?.addressC) return
-      const granted = selectGrantedAddressesForDomain({
-        domain: origin,
-        vmType: NetworkVMType.EVM
-      })(store.getState())
-      const accounts = resolveActiveConnectedAccounts(granted, active.addressC)
-      lastEmittedAccountsRef.current = JSON.stringify(accounts)
-      webViewRef.current?.injectJavaScript(
-        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
-          accounts
-        )}); true;`
-      )
+      // auto-reconnect (wagmi autoConnect, etc.) see the connection immediately.
+      primeAccounts()
     },
-    [store, webViewRef]
+    [primeAccounts]
   )
 
   return {
