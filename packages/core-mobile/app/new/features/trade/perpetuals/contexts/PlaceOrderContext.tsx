@@ -5,6 +5,7 @@ import React, {
   useState,
   type ReactNode
 } from 'react'
+import { estimateLiquidationPrice } from '../utils/economics'
 
 export type OrderSide = 'long' | 'short'
 
@@ -48,18 +49,6 @@ export interface PlaceOrderProviderProps {
   initialTakeProfitPrice?: number
   initialStopLossPrice?: number
   children: ReactNode
-}
-
-// Isolated-margin liquidation approximation. Good enough for the UI-only
-// summary; the SDK will provide the authoritative value once wired.
-const estimateLiquidationPrice = (
-  entryPrice: number,
-  side: OrderSide,
-  leverage: number
-): number => {
-  if (leverage <= 0) return entryPrice
-  const delta = entryPrice / leverage
-  return side === 'long' ? entryPrice - delta : entryPrice + delta
 }
 
 export const PlaceOrderProvider = ({
@@ -108,7 +97,11 @@ export const PlaceOrderProvider = ({
       setStopLossEnabled,
       stopLossPrice,
       setStopLossPrice,
-      liquidationPrice: estimateLiquidationPrice(entryPrice, side, leverage)
+      liquidationPrice: estimateLiquidationPrice(
+        entryPrice,
+        leverage,
+        side === 'long'
+      )
     }),
     [
       coin,

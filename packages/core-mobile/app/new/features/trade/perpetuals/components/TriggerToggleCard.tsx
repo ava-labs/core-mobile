@@ -18,6 +18,7 @@ interface TriggerToggleCardProps {
   drillLabel: string
   drillValue?: string
   onPressDrill: () => void
+  testID?: string
 }
 
 export const TriggerToggleCard = ({
@@ -27,7 +28,8 @@ export const TriggerToggleCard = ({
   onToggle,
   drillLabel,
   drillValue,
-  onPressDrill
+  onPressDrill,
+  testID
 }: TriggerToggleCardProps): JSX.Element => {
   const { theme } = useTheme()
 
@@ -59,13 +61,19 @@ export const TriggerToggleCard = ({
             {subtitle}
           </Text>
         </View>
-        <Toggle value={enabled} onValueChange={onToggle} />
+        <Toggle
+          value={enabled}
+          onValueChange={onToggle}
+          testID={testID ? `${testID}__toggle` : undefined}
+        />
       </View>
 
       {enabled && (
         <>
           <Separator sx={{ marginHorizontal: 16 }} />
-          <TouchableOpacity onPress={onPressDrill}>
+          <TouchableOpacity
+            onPress={onPressDrill}
+            testID={testID ? `${testID}__drill` : undefined}>
             <View
               sx={{
                 flexDirection: 'row',

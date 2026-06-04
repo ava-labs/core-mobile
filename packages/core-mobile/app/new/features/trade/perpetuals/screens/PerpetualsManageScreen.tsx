@@ -13,6 +13,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useTriggerToggles } from '../hooks/useTriggerToggles'
+import { formatSigned, pnlColor } from '../utils/economics'
 
 export const PerpetualsManageScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -24,46 +26,14 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const size = Number(params.size) || 0
   const pnl = Number(params.pnl) || 0
 
-  const {
-    coin,
-    side,
-    entryPrice,
-    leverage,
-    takeProfitEnabled,
-    setTakeProfitEnabled,
-    takeProfitPrice,
-    setTakeProfitPrice,
-    stopLossEnabled,
-    setStopLossEnabled,
-    stopLossPrice,
-    setStopLossPrice
-  } = usePlaceOrder()
+  const { coin, side, entryPrice, leverage } = usePlaceOrder()
+  const { takeProfit, stopLoss } = useTriggerToggles()
 
   const isLong = side === 'long'
   const notional = size * entryPrice
   const pnlPct = notional > 0 ? (pnl / notional) * 100 : 0
-  const pnlColor =
-    pnl > 0
-      ? theme.colors.$textSuccess
-      : pnl < 0
-      ? theme.colors.$textDanger
-      : theme.colors.$textPrimary
-
-  const handleToggleTakeProfit = useCallback(
-    (next: boolean) => {
-      setTakeProfitEnabled(next)
-      if (!next) setTakeProfitPrice(undefined)
-    },
-    [setTakeProfitEnabled, setTakeProfitPrice]
-  )
-
-  const handleToggleStopLoss = useCallback(
-    (next: boolean) => {
-      setStopLossEnabled(next)
-      if (!next) setStopLossPrice(undefined)
-    },
-    [setStopLossEnabled, setStopLossPrice]
-  )
+  const profitColor = pnlColor(pnl, theme.colors, theme.colors.$textPrimary)
+  const formattedPnl = formatSigned(pnl, n => formatCurrency({ amount: n }))
 
   const handleOpenTakeProfit = useCallback(() => {
     router.navigate('/perpetualsManage/trigger?kind=takeProfit')
@@ -91,6 +61,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="secondary"
           size="large"
+          testID="perpetuals_manage_cancel"
           onPress={() => router.back()}
           style={{ flex: 1 }}>
           Cancel
@@ -99,6 +70,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
           type="primary"
           size="large"
           disabled={submitting}
+          testID="perpetuals_manage_update"
           onPress={handleUpdate}
           style={{ flex: 1 }}>
           Update position
@@ -158,10 +130,8 @@ export const PerpetualsManageScreen = (): JSX.Element => {
             <Text variant="buttonMedium">
               {formatCurrency({ amount: entryPrice })}
             </Text>
-            <Text variant="caption" sx={{ color: pnlColor }}>
-              {`${pnl >= 0 ? '+' : '-'}${formatCurrency({
-                amount: Math.abs(pnl)
-              })}`}
+            <Text variant="caption" sx={{ color: profitColor }}>
+              {formattedPnl}
             </Text>
           </View>
         </View>
@@ -184,10 +154,10 @@ export const PerpetualsManageScreen = (): JSX.Element => {
             {
               title: 'Estimated profit',
               value: (
-                <Text variant="body1" sx={{ color: pnlColor }}>
-                  {`${pnl >= 0 ? '+' : '-'}${formatCurrency({
-                    amount: Math.abs(pnl)
-                  })} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)`}
+                <Text variant="body1" sx={{ color: profitColor }}>
+                  {`${formattedPnl} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(
+                    1
+                  )}%)`}
                 </Text>
               )
             }
@@ -198,29 +168,23 @@ export const PerpetualsManageScreen = (): JSX.Element => {
           <TriggerToggleCard
             title="Set take profit"
             subtitle="Price target at which your position will automatically close and lock in your gains"
-            enabled={takeProfitEnabled}
-            onToggle={handleToggleTakeProfit}
+            enabled={takeProfit.enabled}
+            onToggle={takeProfit.onToggle}
             drillLabel="Price target"
-            drillValue={
-              takeProfitPrice !== undefined
-                ? formatCurrency({ amount: takeProfitPrice })
-                : undefined
-            }
+            drillValue={takeProfit.drillValue}
             onPressDrill={handleOpenTakeProfit}
+            testID="perpetuals_manage_take_profit"
           />
 
           <TriggerToggleCard
             title="Set stop loss"
             subtitle="Price level at which your position automatically closes to cap your losses"
-            enabled={stopLossEnabled}
-            onToggle={handleToggleStopLoss}
+            enabled={stopLoss.enabled}
+            onToggle={stopLoss.onToggle}
             drillLabel="Stop price"
-            drillValue={
-              stopLossPrice !== undefined
-                ? formatCurrency({ amount: stopLossPrice })
-                : undefined
-            }
+            drillValue={stopLoss.drillValue}
             onPressDrill={handleOpenStopLoss}
+            testID="perpetuals_manage_stop_loss"
           />
         </View>
       </View>

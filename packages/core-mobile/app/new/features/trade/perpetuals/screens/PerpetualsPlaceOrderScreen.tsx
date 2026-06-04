@@ -14,6 +14,7 @@ import React, { useCallback, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useTriggerToggles } from '../hooks/useTriggerToggles'
 import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
@@ -30,16 +31,9 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     amount,
     setAmount,
     leverage,
-    liquidationPrice,
-    takeProfitEnabled,
-    setTakeProfitEnabled,
-    takeProfitPrice,
-    setTakeProfitPrice,
-    stopLossEnabled,
-    setStopLossEnabled,
-    stopLossPrice,
-    setStopLossPrice
+    liquidationPrice
   } = usePlaceOrder()
+  const { takeProfit, stopLoss } = useTriggerToggles()
 
   const isLong = side === 'long'
   const directionLabel = isLong ? 'Long' : 'Short'
@@ -50,22 +44,6 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
   }, [router])
-
-  const handleToggleTakeProfit = useCallback(
-    (next: boolean) => {
-      setTakeProfitEnabled(next)
-      if (!next) setTakeProfitPrice(undefined)
-    },
-    [setTakeProfitEnabled, setTakeProfitPrice]
-  )
-
-  const handleToggleStopLoss = useCallback(
-    (next: boolean) => {
-      setStopLossEnabled(next)
-      if (!next) setStopLossPrice(undefined)
-    },
-    [setStopLossEnabled, setStopLossPrice]
-  )
 
   const handleOpenTakeProfit = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/trigger?kind=takeProfit')
@@ -95,6 +73,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         loading={submitting}
         disabled={amount <= 0}
         onConfirm={handleConfirm}
+        testID="perpetuals_place_order_confirm"
       />
     ),
     [directionLabel, submitting, amount, handleConfirm]
@@ -139,6 +118,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
                 max={availableBalance}
                 label="USD"
                 enableManualInput
+                testID="perpetuals_place_order_amount"
               />
             </View>
             <Text
@@ -170,29 +150,23 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
           <TriggerToggleCard
             title="Add take profit"
             subtitle="Price target at which your position will automatically close and lock in your gains"
-            enabled={takeProfitEnabled}
-            onToggle={handleToggleTakeProfit}
+            enabled={takeProfit.enabled}
+            onToggle={takeProfit.onToggle}
             drillLabel="Price target"
-            drillValue={
-              takeProfitPrice !== undefined
-                ? formatCurrency({ amount: takeProfitPrice })
-                : undefined
-            }
+            drillValue={takeProfit.drillValue}
             onPressDrill={handleOpenTakeProfit}
+            testID="perpetuals_place_order_take_profit"
           />
 
           <TriggerToggleCard
             title="Add stop loss"
             subtitle="Price level at which your position automatically closes to cap your losses"
-            enabled={stopLossEnabled}
-            onToggle={handleToggleStopLoss}
+            enabled={stopLoss.enabled}
+            onToggle={stopLoss.onToggle}
             drillLabel="Stop price"
-            drillValue={
-              stopLossPrice !== undefined
-                ? formatCurrency({ amount: stopLossPrice })
-                : undefined
-            }
+            drillValue={stopLoss.drillValue}
             onPressDrill={handleOpenStopLoss}
+            testID="perpetuals_place_order_stop_loss"
           />
         </View>
         <View

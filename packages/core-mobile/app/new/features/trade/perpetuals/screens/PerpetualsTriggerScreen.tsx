@@ -11,40 +11,17 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
-import { type OrderSide, usePlaceOrder } from '../contexts/PlaceOrderContext'
-
-type TriggerKind = 'takeProfit' | 'stopLoss'
-
-// A take-profit only makes sense on the profitable side of entry (long: above,
-// short: below); a stop-loss on the losing side. Reject anything else so we
-// never store a price that contradicts the trigger.
-const isTriggerValid = ({
-  kind,
-  side,
-  price,
-  entryPrice
-}: {
-  kind: TriggerKind
-  side: OrderSide
-  price: number | undefined
-  entryPrice: number
-}): boolean => {
-  if (price === undefined || price <= 0 || entryPrice <= 0) return false
-  const above = price > entryPrice
-  if (kind === 'takeProfit') return side === 'long' ? above : !above
-  return side === 'long' ? !above : above
-}
-
-type ThemeColors = ReturnType<typeof useTheme>['theme']['colors']
-
-const signColor = (
-  value: number | undefined,
-  colors: ThemeColors,
-  neutral: string
-): string => {
-  if (value === undefined || value === 0) return neutral
-  return value > 0 ? colors.$textSuccess : colors.$textDanger
-}
+import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import {
+  formatSigned,
+  isTriggerValid,
+  pctFromEntry,
+  pnlColor,
+  positionSizeTokens,
+  projectedPnl,
+  sanitizeDecimalInput,
+  type TriggerKind
+} from '../utils/economics'
 
 const pctCaption = (pct: number | undefined): string => {
   if (pct === undefined) return 'Set a price target'
@@ -96,6 +73,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     stopLossPrice,
     setStopLossPrice
   } = usePlaceOrder()
+  const isLong = side === 'long'
 
   const existing = kind === 'takeProfit' ? takeProfitPrice : stopLossPrice
   const [priceText, setPriceText] = useState(
@@ -103,7 +81,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   )
 
   const handleChangeText = useCallback((text: string) => {
-    setPriceText(text.replace(/[^0-9.]/g, ''))
+    setPriceText(sanitizeDecimalInput(text))
   }, [])
 
   const price = useMemo(() => {
@@ -112,28 +90,23 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     return Number.isFinite(parsed) ? parsed : undefined
   }, [priceText])
 
-  const pct =
-    price !== undefined && entryPrice > 0
-      ? ((price - entryPrice) / entryPrice) * 100
-      : undefined
+  const pct = price !== undefined ? pctFromEntry(price, entryPrice) : undefined
 
-  // Position size (in tokens) implied by the collateral + leverage.
-  const positionSizeTokens =
-    entryPrice > 0 ? (amount * leverage) / entryPrice : 0
+  const sizeTokens = positionSizeTokens(amount, leverage, entryPrice)
   // Needs both a trigger price and a sized position to mean anything.
-  const projectedPnl =
-    price !== undefined && positionSizeTokens > 0
-      ? (price - entryPrice) * positionSizeTokens * (side === 'long' ? 1 : -1)
+  const projected =
+    price !== undefined && sizeTokens > 0
+      ? projectedPnl({ exitPrice: price, entryPrice, sizeTokens, isLong })
       : undefined
 
-  const pctColor = signColor(pct, theme.colors, theme.colors.$textSecondary)
-  const pnlColor = signColor(
-    projectedPnl,
+  const pctColor = pnlColor(pct, theme.colors, theme.colors.$textSecondary)
+  const projectedColor = pnlColor(
+    projected,
     theme.colors,
     theme.colors.$textPrimary
   )
 
-  const valid = isTriggerValid({ kind, side, price, entryPrice })
+  const valid = isTriggerValid({ kind, isLong, price, entryPrice })
 
   const handleDone = useCallback(() => {
     if (kind === 'takeProfit') {
@@ -150,6 +123,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
         type="primary"
         size="large"
         disabled={!valid}
+        testID="perpetuals_trigger_done"
         onPress={handleDone}>
         Done
       </Button>
@@ -158,11 +132,11 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   )
 
   const formattedPnl =
-    projectedPnl === undefined
+    projected === undefined
       ? '—'
-      : `${projectedPnl >= 0 ? '' : '-'}${formatCurrency({
-          amount: Math.abs(projectedPnl)
-        })}`
+      : formatSigned(projected, n => formatCurrency({ amount: n }), {
+          alwaysSign: false
+        })
 
   return (
     <ScrollScreen
@@ -197,6 +171,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
                 keyboardType="decimal-pad"
                 placeholder="0"
                 autoFocus
+                testID="perpetuals_trigger_price"
               />
             </View>
             <Text variant="body2" sx={{ color: pctColor }}>
@@ -208,7 +183,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
         <GroupList
           titleSx={{ fontFamily: 'Inter-Regular' }}
           valueSx={{
-            color: pnlColor,
+            color: projectedColor,
             fontSize: 16,
             fontFamily: 'Inter-Medium'
           }}

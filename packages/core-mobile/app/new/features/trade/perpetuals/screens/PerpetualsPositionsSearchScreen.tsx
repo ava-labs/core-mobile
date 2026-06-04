@@ -1,11 +1,11 @@
 import { Image, SearchBar, Text, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
+import { usePositionActions } from '../hooks/usePositionActions'
 import { MY_POSITIONS_MOCK } from '../mocks'
 import { Position } from '../types'
 
@@ -13,7 +13,7 @@ const cactusIcon = require('../../../../assets/icons/cactus.png')
 
 export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
-  const router = useRouter()
+  const positionActions = usePositionActions()
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
@@ -36,33 +36,6 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
     return () => clearTimeout(timer)
   }, [searchText, results.length])
 
-  const handleManage = useCallback(
-    (position: Position) => {
-      router.navigate(
-        `/perpetualsManage?coin=${position.symbol}&side=${position.side}&entry=${position.entryPrice}&leverage=${position.leverage}&pnl=${position.pnl}&tp=${position.takeProfit}&sl=${position.stopLoss}`
-      )
-    },
-    [router]
-  )
-
-  const handleMarketClose = useCallback(
-    (position: Position) => {
-      router.navigate(
-        `/perpetualsClose?kind=market&coin=${position.symbol}&side=${position.side}&price=${position.price}&entry=${position.entryPrice}&pnl=${position.pnl}`
-      )
-    },
-    [router]
-  )
-
-  const handleLimitClose = useCallback(
-    (position: Position) => {
-      router.navigate(
-        `/perpetualsClose?kind=limit&coin=${position.symbol}&side=${position.side}&price=${position.price}&entry=${position.entryPrice}&pnl=${position.pnl}`
-      )
-    },
-    [router]
-  )
-
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item }) => (
       <View sx={{ paddingHorizontal: 16, paddingBottom: 10 }}>
@@ -70,13 +43,13 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
           position={item}
           fullWidth
           expandable
-          onManage={() => handleManage(item)}
-          onMarketClose={() => handleMarketClose(item)}
-          onLimitClose={() => handleLimitClose(item)}
+          onManage={() => positionActions.manage(item)}
+          onMarketClose={() => positionActions.marketClose(item)}
+          onLimitClose={() => positionActions.limitClose(item)}
         />
       </View>
     ),
-    []
+    [positionActions]
   )
 
   const keyExtractor = useCallback((item: Position) => item.id, [])

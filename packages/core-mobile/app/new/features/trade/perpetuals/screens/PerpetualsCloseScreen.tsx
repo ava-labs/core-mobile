@@ -15,6 +15,16 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
 import type { OrderSide } from '../contexts/PlaceOrderContext'
+import {
+  DEFAULT_COIN,
+  DEFAULT_ENTRY_PRICE,
+  formatSigned,
+  MOCK_PNL,
+  MOCK_POSITION_VALUE,
+  pnlColor,
+  projectedPnl,
+  sanitizeDecimalInput
+} from '../utils/economics'
 
 type CloseKind = 'market' | 'limit'
 
@@ -26,10 +36,6 @@ const MARKET_PRESETS: CircularDialPresetButton[] = [
 
 // Limit price presets, as a % above the current price.
 const LIMIT_OFFSETS = [5, 10, 25]
-
-// Mock position economics until the SDK's clearinghouseState is wired.
-const MOCK_POSITION_VALUE = 4.64
-const MOCK_PNL = 1.18
 
 interface CloseParams {
   coin: string
@@ -50,10 +56,10 @@ const useCloseParams = (): { kind: CloseKind } & CloseParams => {
     value?: string
     pnl?: string
   }>()
-  const price = Number(params.price) || 62.78
+  const price = Number(params.price) || DEFAULT_ENTRY_PRICE
   return {
     kind: params.kind === 'limit' ? 'limit' : 'market',
-    coin: (params.coin ?? 'NVDA').toUpperCase(),
+    coin: (params.coin ?? DEFAULT_COIN).toUpperCase(),
     side: params.side === 'short' ? 'short' : 'long',
     price,
     entryPrice: Number(params.entry) || price,
@@ -67,18 +73,11 @@ const DASH = '$-'
 const ProfitText = ({ value }: { value: number | undefined }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const color =
-    value === undefined || value === 0
-      ? theme.colors.$textPrimary
-      : value > 0
-      ? theme.colors.$textSuccess
-      : theme.colors.$textDanger
+  const color = pnlColor(value, theme.colors, theme.colors.$textPrimary)
   const text =
     value === undefined
       ? DASH
-      : `${value >= 0 ? '+' : '-'}${formatCurrency({
-          amount: Math.abs(value)
-        })}`
+      : formatSigned(value, n => formatCurrency({ amount: n }))
   return (
     <Text variant="body1" sx={{ color }}>
       {text}
@@ -123,6 +122,7 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
         loading={submitting}
         disabled={receive <= 0}
         onConfirm={submit}
+        testID="perpetuals_market_close_confirm"
       />
     ),
     [submitting, receive, submit]
@@ -150,6 +150,7 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
             label="Receive"
             presets={MARKET_PRESETS}
             enableManualInput
+            testID="perpetuals_market_close_amount"
           />
         </View>
         <GroupList
@@ -182,7 +183,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
   const [limitText, setLimitText] = useState('')
 
   const handleChangeText = useCallback((text: string) => {
-    setLimitText(text.replace(/[^0-9.]/g, ''))
+    setLimitText(sanitizeDecimalInput(text))
   }, [])
 
   const limitPrice =
@@ -194,7 +195,12 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
   const receive = limitPrice !== undefined ? sizeTokens * limitPrice : undefined
   const estimatedProfit =
     limitPrice !== undefined
-      ? sizeTokens * (limitPrice - entryPrice) * (side === 'long' ? 1 : -1)
+      ? projectedPnl({
+          exitPrice: limitPrice,
+          entryPrice,
+          sizeTokens,
+          isLong: side === 'long'
+        })
       : totalPnl
 
   const renderFooter = useCallback(
@@ -205,6 +211,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
         loading={submitting}
         disabled={limitPrice === undefined}
         onConfirm={submit}
+        testID="perpetuals_limit_close_confirm"
       />
     ),
     [submitting, limitPrice, submit]
@@ -241,6 +248,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
                 keyboardType="decimal-pad"
                 placeholder="0.00"
                 autoFocus
+                testID="perpetuals_limit_close_price"
               />
             </View>
           </View>
