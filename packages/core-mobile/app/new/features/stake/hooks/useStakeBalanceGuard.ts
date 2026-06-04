@@ -54,7 +54,7 @@ export const useStakeBalanceGuard = (): {
       showAlert(
         action
           ? {
-              title: `A minimum of ${minStakeAmount} AVAX required to ${action}`,
+              title: `A minimum of ${minStakeAmount} AVAX is required to ${action}`,
               description: 'Staking your AVAX allows you to earn more AVAX',
               buttons
             }

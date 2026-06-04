@@ -35,7 +35,7 @@ const StartStakingScreen = (): JSX.Element => {
   )
 
   const minStakeText = useMemo(
-    () => `Minimum stake : ${minStakeAmount.toDisplay()} AVAX`,
+    () => `Minimum stake: ${minStakeAmount.toDisplay()} AVAX`,
     [minStakeAmount]
   )
 

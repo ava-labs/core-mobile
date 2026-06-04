@@ -134,9 +134,17 @@ const StakeConfirmScreen = ({
   // baked in). The convenience fee is applied below — only when the
   // `fast-stake-fee-enabled` flag is on — so the displayed reward stays
   // consistent with whether the fee is actually charged.
+  //
+  // Gate `duration` on the validator being resolved: while the source is
+  // still fetching, `validatorEndTimeUnix` defaults to `0`, which
+  // `useValidateStakingEndTime` clamps to the Unix epoch and produces a
+  // negative `validatedStakingDuration`. That would feed garbage into the
+  // reward estimator and briefly surface a wrong "Estimated reward" value
+  // before settling. Holding `duration` until the validator resolves lets
+  // the reward row read "—" during loading.
   const grossEstimatedReward = useStakeEstimatedReward({
     amount: stakeAmount,
-    duration: validatedStakingDuration,
+    duration: validator ? validatedStakingDuration : undefined,
     delegationFee: 0
   })
   const [isAlertVisible, setIsAlertVisible] = useState(false)
