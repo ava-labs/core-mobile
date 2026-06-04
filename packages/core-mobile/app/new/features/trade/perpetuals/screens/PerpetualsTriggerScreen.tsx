@@ -77,8 +77,10 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     leverage,
     takeProfitPrice,
     setTakeProfitPrice,
+    setTakeProfitEnabled,
     stopLossPrice,
-    setStopLossPrice
+    setStopLossPrice,
+    setStopLossEnabled
   } = usePlaceOrder()
   const isLong = side === 'long'
 
@@ -118,11 +120,21 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   const handleDone = useCallback(() => {
     if (kind === 'takeProfit') {
       setTakeProfitPrice(price)
+      setTakeProfitEnabled(true)
     } else {
       setStopLossPrice(price)
+      setStopLossEnabled(true)
     }
     router.back()
-  }, [kind, price, setTakeProfitPrice, setStopLossPrice, router])
+  }, [
+    kind,
+    price,
+    setTakeProfitPrice,
+    setTakeProfitEnabled,
+    setStopLossPrice,
+    setStopLossEnabled,
+    router
+  ])
 
   const renderFooter = useCallback(
     () => (

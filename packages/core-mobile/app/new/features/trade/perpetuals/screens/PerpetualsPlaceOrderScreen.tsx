@@ -33,7 +33,6 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     leverage,
     liquidationPrice
   } = usePlaceOrder()
-  const { takeProfit, stopLoss } = useTriggerToggles()
 
   const isLong = side === 'long'
   const directionLabel = isLong ? 'Long' : 'Short'
@@ -52,6 +51,11 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const handleOpenStopLoss = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/trigger?kind=stopLoss')
   }, [router])
+
+  const { takeProfit, stopLoss } = useTriggerToggles({
+    openTakeProfit: handleOpenTakeProfit,
+    openStopLoss: handleOpenStopLoss
+  })
 
   const handleConfirm = useCallback(async () => {
     // UI-only: simulate the order submission. SDK wiring (marketOrder /

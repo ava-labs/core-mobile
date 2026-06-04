@@ -9,14 +9,23 @@ export interface TriggerToggleState {
   drillValue: string | undefined
 }
 
+interface TriggerOpenHandlers {
+  /** Opens the take-profit trigger screen (route differs per flow). */
+  openTakeProfit: () => void
+  openStopLoss: () => void
+}
+
 /**
  * The take-profit / stop-loss toggle behaviour shared by the place-order and
- * manage screens: flipping the switch enables the trigger (and clears its
- * price when turned off), and the drill-in row shows the set price. The
- * `onPressDrill` navigation stays in each screen since the trigger route
- * differs per flow.
+ * manage screens: flipping the switch on enables the trigger AND opens its
+ * price screen; flipping it off clears the price. The drill-in row shows the
+ * set price. The open navigation is injected since the trigger route differs
+ * per flow.
  */
-export const useTriggerToggles = (): {
+export const useTriggerToggles = ({
+  openTakeProfit,
+  openStopLoss
+}: TriggerOpenHandlers): {
   takeProfit: TriggerToggleState
   stopLoss: TriggerToggleState
 } => {
@@ -25,19 +34,26 @@ export const useTriggerToggles = (): {
     takeProfitEnabled,
     setTakeProfitEnabled,
     takeProfitPrice,
-    setTakeProfitPrice,
     stopLossEnabled,
     setStopLossEnabled,
-    stopLossPrice,
-    setStopLossPrice
+    stopLossPrice
   } = usePlaceOrder()
 
+  // Toggling on opens the price screen when no price is set yet (enabled only
+  // flips on once a price is confirmed, so backing out leaves it off); if a
+  // price already exists it just re-enables. Toggling off keeps the price so
+  // it's restored on re-enable.
   const takeProfit = useMemo<TriggerToggleState>(
     () => ({
       enabled: takeProfitEnabled,
       onToggle: next => {
-        setTakeProfitEnabled(next)
-        if (!next) setTakeProfitPrice(undefined)
+        if (!next) {
+          setTakeProfitEnabled(false)
+        } else if (takeProfitPrice !== undefined) {
+          setTakeProfitEnabled(true)
+        } else {
+          openTakeProfit()
+        }
       },
       drillValue:
         takeProfitPrice !== undefined
@@ -48,7 +64,7 @@ export const useTriggerToggles = (): {
       takeProfitEnabled,
       takeProfitPrice,
       setTakeProfitEnabled,
-      setTakeProfitPrice,
+      openTakeProfit,
       formatCurrency
     ]
   )
@@ -57,8 +73,13 @@ export const useTriggerToggles = (): {
     () => ({
       enabled: stopLossEnabled,
       onToggle: next => {
-        setStopLossEnabled(next)
-        if (!next) setStopLossPrice(undefined)
+        if (!next) {
+          setStopLossEnabled(false)
+        } else if (stopLossPrice !== undefined) {
+          setStopLossEnabled(true)
+        } else {
+          openStopLoss()
+        }
       },
       drillValue:
         stopLossPrice !== undefined
@@ -69,7 +90,7 @@ export const useTriggerToggles = (): {
       stopLossEnabled,
       stopLossPrice,
       setStopLossEnabled,
-      setStopLossPrice,
+      openStopLoss,
       formatCurrency
     ]
   )

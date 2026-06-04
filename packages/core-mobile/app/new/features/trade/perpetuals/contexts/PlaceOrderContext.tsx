@@ -22,6 +22,9 @@ interface PlaceOrderState {
   leverage: number
   setLeverage: (value: number) => void
 
+  // `enabled` is only ever set true once a price exists (see useTriggerToggles
+  // + the trigger screen's Done), so there's no dangling enabled-but-unset
+  // state. Disabling keeps the price so re-enabling restores it.
   takeProfitEnabled: boolean
   setTakeProfitEnabled: (value: boolean) => void
   takeProfitPrice: number | undefined

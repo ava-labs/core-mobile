@@ -262,7 +262,7 @@ export const ScrollScreen = ({
             collapsable={false}
             onLayout={handleHeaderLayout}
             style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
-            {title ? (
+            {hasTitle ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
                   title={title ?? ''}

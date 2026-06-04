@@ -27,7 +27,6 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const pnl = Number(params.pnl) || 0
 
   const { coin, side, entryPrice, leverage } = usePlaceOrder()
-  const { takeProfit, stopLoss } = useTriggerToggles()
 
   const isLong = side === 'long'
   const notional = size * entryPrice
@@ -42,6 +41,11 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const handleOpenStopLoss = useCallback(() => {
     router.navigate('/perpetualsManage/trigger?kind=stopLoss')
   }, [router])
+
+  const { takeProfit, stopLoss } = useTriggerToggles({
+    openTakeProfit: handleOpenTakeProfit,
+    openStopLoss: handleOpenStopLoss
+  })
 
   const handleUpdate = useCallback(async () => {
     // UI-only: simulate the update. SDK wiring (updateLeverage /

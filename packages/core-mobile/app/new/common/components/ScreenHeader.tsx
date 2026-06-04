@@ -12,18 +12,21 @@ export default function ScreenHeader({
   titleNumberOfLines?: number
   description?: string | JSX.Element
 }): JSX.Element {
+  const hasTitle = Boolean(title)
   return (
     <View style={{ marginRight: 10, marginTop: 8, marginBottom: 16 }}>
-      <Text
-        sx={{
-          ...titleSx
-        }}
-        numberOfLines={titleNumberOfLines}
-        variant="heading2">
-        {title}
-      </Text>
+      {hasTitle && (
+        <Text
+          sx={{
+            ...titleSx
+          }}
+          numberOfLines={titleNumberOfLines}
+          variant="heading2">
+          {title}
+        </Text>
+      )}
       {description !== undefined && (
-        <View sx={{ marginTop: 6 }}>
+        <View sx={{ marginTop: hasTitle ? 6 : 0 }}>
           {typeof description === 'string' ? (
             <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
               {description}
