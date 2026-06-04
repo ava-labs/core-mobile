@@ -160,6 +160,7 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
           />
         </View>
         <GroupList
+          titleSx={{ fontFamily: 'Inter-Regular' }}
           data={[
             {
               title: 'Receive',
@@ -290,6 +291,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
           </View>
         </View>
         <GroupList
+          titleSx={{ fontFamily: 'Inter-Regular' }}
           data={[
             {
               title: 'Receive',
