@@ -127,6 +127,9 @@ export const FiatAmountInputWidget = ({
   }, [presets, enableAmountSelection, buildPresetButtons, buildDefaultButtons])
 
   const textInputRef = useRef<FiatAmountInputHandle>(null)
+  // Tracks the previous amount so the reset effect only fires on an external
+  // reset (non-zero → 0), not while the user types a leading "0" / "0.".
+  const prevAmountRef = useRef(amount)
 
   const handlePressPredefinedAmountButton = useCallback(
     (predefinedAmount: number, index: number): void => {
@@ -160,7 +163,16 @@ export const FiatAmountInputWidget = ({
   )
 
   useEffect(() => {
-    if (amount === undefined || amount === 0) {
+    const prevAmount = prevAmountRef.current
+    prevAmountRef.current = amount
+    // Only treat 0/undefined as a reset when it comes from a non-zero value
+    // (an external clear). While the user types "0"/"0." the amount is already
+    // 0, so we must not wipe the field — otherwise values < 1 are impossible.
+    const isExternalReset =
+      (amount === undefined || amount === 0) &&
+      prevAmount !== undefined &&
+      prevAmount !== 0
+    if (isExternalReset) {
       textInputRef.current?.setValue('')
       if (showButtons) {
         setPredefinedAmountButtons(prevButtons =>

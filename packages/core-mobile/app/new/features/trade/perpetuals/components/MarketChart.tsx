@@ -71,6 +71,10 @@ export const MarketChart = ({
   }, [bundleUri])
 
   useEffect(() => {
+    // Wait for the widget: injecting before `chart-ready` is a no-op (the
+    // script bails on a missing `window.tvWidget`). Re-running once ready
+    // applies the latest resolution if the user changed range early.
+    if (!isChartReady) return
     if (resolution === mountedResolutionRef.current) return
     ref.current?.injectJavaScript(`
       (function () {
@@ -83,7 +87,7 @@ export const MarketChart = ({
       true;
     `)
     mountedResolutionRef.current = resolution
-  }, [resolution])
+  }, [resolution, isChartReady])
 
   // `resolution` is intentionally excluded from the memo deps: Android's
   // WebView reloads the page on any `source.uri` change (iOS doesn't), which

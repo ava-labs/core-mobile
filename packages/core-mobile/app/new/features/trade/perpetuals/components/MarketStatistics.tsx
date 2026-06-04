@@ -68,10 +68,13 @@ export const MarketStatistics = ({
   const changeRow = formatChangeRow(delta, pct)
   const change =
     changeRow !== undefined ? colored(changeRow, changeColor) : null
-  const volume =
-    assetCtx?.dayNtlVlm !== undefined
-      ? muted(formatCurrency({ amount: assetCtx.dayNtlVlm }))
-      : null
+  // `dayNtlVlm` is typed as number but coerce defensively, like the string
+  // fields, in case the HL API sends it as a string at runtime. `Number(undefined)`
+  // is NaN, so the finite check also covers the absent case.
+  const volumeNum = Number(assetCtx?.dayNtlVlm)
+  const volume = Number.isFinite(volumeNum)
+    ? muted(formatCurrency({ amount: volumeNum }))
+    : null
   const openInterest =
     openInterestNum !== undefined
       ? muted(formatThousands(openInterestNum))
