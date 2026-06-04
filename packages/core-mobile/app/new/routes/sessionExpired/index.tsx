@@ -1,16 +1,8 @@
 import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
 import { BackHandler } from 'react-native'
-import {
-  Button,
-  Icons,
-  SafeAreaView,
-  showAlert,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
-import { Space } from 'common/components/Space'
+import { Icons, SafeAreaView, showAlert, useTheme } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useDispatch } from 'react-redux'
@@ -103,33 +95,29 @@ const SessionExpiredScreen = (): React.JSX.Element => {
       .catch(e => {
         Logger.error('startRefreshSeedlessTokenFlow error', e)
         router.canDismiss() && router.dismiss()
-        dispatch(onLogOut)
+        dispatch(onLogOut())
       })
   }, [dispatch, unlock, mfaMethods, router])
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: 'space-between',
-        marginHorizontal: 16
-      }}>
-      <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-        <Icons.Action.Info color={colors.$textPrimary} width={36} height={36} />
-        <Space y={24} />
-        <Text variant={'heading5'}>Your session has timed out</Text>
-        <Space y={8} />
-        <Text variant={'body2'} style={{ textAlign: 'center' }}>
-          Tap Retry to continue
-        </Text>
-      </View>
-      <Button
-        size={'large'}
-        type={'primary'}
-        onPress={onRetry}
-        style={{ width: '100%', marginBottom: 16 }}>
-        Retry
-      </Button>
+    <SafeAreaView style={{ flex: 1, justifyContent: 'center' }}>
+      <ErrorState
+        icon={
+          <Icons.Action.Info
+            color={colors.$textPrimary}
+            width={56}
+            height={56}
+          />
+        }
+        title="Your session has timed out"
+        description="Tap Retry to continue"
+        button={{
+          title: 'Retry',
+          onPress: () => {
+            onRetry()
+          }
+        }}
+      />
     </SafeAreaView>
   )
 }

@@ -14,6 +14,7 @@ import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
 import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'
+import { currentRouteStore } from 'new/routes/store'
 import { selectSeedlessWallet } from 'store/wallet/slice'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 
@@ -57,6 +58,10 @@ const terminateSeedless = async (): Promise<void> => {
 }
 
 const handleTokenExpired = async (): Promise<void> => {
+  // Skip if the modal is already on screen — no need to re-trigger this logic.
+  if (currentRouteStore.getState().topRoute === 'sessionExpired') {
+    return
+  }
   Logger.error(
     '[SeedlessListeners] handleTokenExpired - navigating to /sessionExpired'
   )
