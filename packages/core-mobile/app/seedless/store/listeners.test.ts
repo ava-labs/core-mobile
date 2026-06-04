@@ -61,6 +61,12 @@ jest.mock('expo-router', () => ({
   }
 }))
 
+jest.mock('new/routes/store', () => ({
+  currentRouteStore: {
+    getState: jest.fn(() => ({ topRoute: undefined }))
+  }
+}))
+
 jest.mock('contexts/ReactQueryProvider', () => ({
   queryClient: {
     clear: jest.fn()
@@ -89,6 +95,7 @@ let store: ReturnType<typeof setupTestStore>
 
 describe('seedless - listeners', () => {
   beforeEach(() => {
+    jest.clearAllMocks()
     // reset store and stop all active listeners
     listenerMiddlewareInstance.clearListeners()
     store = setupTestStore()
@@ -146,5 +153,30 @@ describe('seedless - listeners', () => {
   it('should have signed out', async () => {
     store.dispatch(onLogOut())
     expect(GoogleSigninService.signOut).toHaveBeenCalled()
+  })
+
+  describe('onTokenExpired', () => {
+    it('navigates to /sessionExpired when the modal is not already on screen', async () => {
+      const { currentRouteStore } = require('new/routes/store')
+      const { router } = require('expo-router')
+      currentRouteStore.getState.mockReturnValue({ topRoute: '(signedIn)' })
+
+      store.dispatch(onTokenExpired())
+      // flush the listener microtask
+      await Promise.resolve()
+
+      expect(router.navigate).toHaveBeenCalledWith('/sessionExpired')
+    })
+
+    it('does not navigate when the modal is already on screen', async () => {
+      const { currentRouteStore } = require('new/routes/store')
+      const { router } = require('expo-router')
+      currentRouteStore.getState.mockReturnValue({ topRoute: 'sessionExpired' })
+
+      store.dispatch(onTokenExpired())
+      await Promise.resolve()
+
+      expect(router.navigate).not.toHaveBeenCalled()
+    })
   })
 })
