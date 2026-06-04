@@ -100,7 +100,7 @@ export const MarketStatistics = ({
     { title: 'Funding', value: funding ?? <ValueSkeleton width={80} /> }
   ]
 
-  return <GroupList data={stats} />
+  return <GroupList titleSx={{ fontFamily: 'Inter-Regular' }} data={stats} />
 }
 
 type ThemeColors = ReturnType<typeof useTheme>['theme']['colors']

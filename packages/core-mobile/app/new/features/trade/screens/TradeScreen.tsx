@@ -164,7 +164,13 @@ export function TradeScreen(): JSX.Element {
               marginTop: 14,
               marginHorizontal: 16
             }}>
-            <TradeBalance balance={MOCK_TRADE_BALANCE} />
+            <TradeBalance
+              balance={MOCK_TRADE_BALANCE}
+              onBalancePress={() => router.navigate('/perpetualsBalance')}
+              onWithdrawPress={() => router.navigate('/perpetualsWithdraw')}
+              onDepositPress={() => router.navigate('/perpetualsDeposit')}
+              onTopUpPress={() => router.navigate('/perpetualsDeposit')}
+            />
           </View>
         </View>
       </View>
@@ -173,7 +179,8 @@ export function TradeScreen(): JSX.Element {
       handleHeaderLayout,
       animatedHeaderStyle,
       animatedGradientStyle,
-      theme.colors.$surfacePrimary
+      theme.colors.$surfacePrimary,
+      router
     ]
   )
 

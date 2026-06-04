@@ -306,6 +306,13 @@
           widget.onChartReady(function () {
             try { widget.applyOverrides(overrides); } catch (_) {}
             try { widget.applyStudiesOverrides(TV_STUDIES_OVERRIDES); } catch (_) {}
+            // Signal the RN host that the chart is interactive so the
+            // loading overlay can fade out.
+            try {
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage('chart-ready');
+              }
+            } catch (_) {}
           });
         } catch (e) {
           document.getElementById('err').textContent = 'TV init error: ' + (e && e.message ? e.message : String(e));
