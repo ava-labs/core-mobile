@@ -182,7 +182,7 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
 
 const LimitCloseBody = (props: CloseParams): JSX.Element => {
   const { theme } = useTheme()
-  const { coin, side, price, entryPrice, positionValue, totalPnl } = props
+  const { coin, side, price, entryPrice, positionValue } = props
   const { formatCurrency } = useFormatCurrency()
   const { submitting, submit } = useCloseSubmit()
 
@@ -199,6 +199,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
 
   const sizeTokens = price > 0 ? positionValue / price : 0
   const receive = limitPrice !== undefined ? sizeTokens * limitPrice : undefined
+  // No estimate until a limit price is entered; ProfitText renders "$-".
   const estimatedProfit =
     limitPrice !== undefined
       ? projectedPnl({
@@ -207,7 +208,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
           sizeTokens,
           isLong: side === 'long'
         })
-      : totalPnl
+      : undefined
 
   const renderFooter = useCallback(
     () => (

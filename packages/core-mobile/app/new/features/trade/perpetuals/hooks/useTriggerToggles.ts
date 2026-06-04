@@ -18,8 +18,8 @@ interface TriggerOpenHandlers {
 /**
  * The take-profit / stop-loss toggle behaviour shared by the place-order and
  * manage screens: flipping the switch on enables the trigger AND opens its
- * price screen; flipping it off clears the price. The drill-in row shows the
- * set price. The open navigation is injected since the trigger route differs
+ * price screen; flipping it off keeps the price so re-enabling restores it. The
+ * drill-in row shows the set price. The open navigation is injected since the trigger route differs
  * per flow.
  */
 export const useTriggerToggles = ({
