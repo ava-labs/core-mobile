@@ -159,6 +159,20 @@ describe('isTriggerValid', () => {
     ).toBe(true)
   })
 
+  it('rejects a trigger exactly at entry (strict side)', () => {
+    expect(
+      isTriggerValid({
+        kind: 'takeProfit',
+        isLong: false,
+        price: 100,
+        entryPrice
+      })
+    ).toBe(false)
+    expect(
+      isTriggerValid({ kind: 'stopLoss', isLong: true, price: 100, entryPrice })
+    ).toBe(false)
+  })
+
   it('rejects undefined / non-positive prices', () => {
     expect(
       isTriggerValid({

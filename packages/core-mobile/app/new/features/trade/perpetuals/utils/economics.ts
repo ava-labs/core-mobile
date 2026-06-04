@@ -96,7 +96,10 @@ export const isTriggerValid = ({
   entryPrice: number
 }): boolean => {
   if (price === undefined || price <= 0 || entryPrice <= 0) return false
+  // Strict comparisons: a trigger exactly at entry is neither above nor below,
+  // so it can never lock profit / cap loss and must be rejected.
   const above = price > entryPrice
-  if (kind === 'takeProfit') return isLong ? above : !above
-  return isLong ? !above : above
+  const below = price < entryPrice
+  if (kind === 'takeProfit') return isLong ? above : below
+  return isLong ? below : above
 }

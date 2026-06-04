@@ -64,7 +64,11 @@ export const PlaceOrderProvider = ({
   children
 }: PlaceOrderProviderProps): JSX.Element => {
   const [amount, setAmount] = useState(initialAmount)
-  const [leverage, setLeverage] = useState(initialLeverage)
+  // Keep the starting leverage within the market's bounds even if the default
+  // (or a seeded value) exceeds a low maxLeverage.
+  const [leverage, setLeverage] = useState(
+    Math.min(Math.max(1, initialLeverage), Math.max(1, maxLeverage))
+  )
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )
