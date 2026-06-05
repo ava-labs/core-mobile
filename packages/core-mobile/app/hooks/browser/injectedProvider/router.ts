@@ -132,6 +132,18 @@ function parseProviderPayload(
 
 export type InjectedProviderRouter = {
   handleProviderMessage: (payload: string) => void
+  /**
+   * Aborts every in-flight abortable request whose origin does not match
+   * `currentOrigin`. Call when the WebView navigates to a new origin so stale
+   * signing / add-chain / watch-asset flows tied to the prior page cannot
+   * complete or broadcast.
+   */
+  cancelByOrigin: (currentOrigin: string | undefined) => void
+}
+
+type InFlightRequest = {
+  origin: string
+  controller: AbortController
 }
 
 export function createInjectedProviderRouter(
@@ -155,6 +167,24 @@ export function createInjectedProviderRouter(
     revokePermission,
     requestConnectApproval
   } = deps
+
+  const inFlightRequests = new Map<number, InFlightRequest>()
+
+  const registerInFlight = (id: number, origin: string): AbortController => {
+    const controller = new AbortController()
+    inFlightRequests.set(id, { origin, controller })
+    return controller
+  }
+
+  const clearInFlight = (id: number, controller: AbortController): void => {
+    // Only delete if the entry still belongs to THIS request. If a later
+    // request reused the same JSON-RPC id (overwriting the entry), deleting
+    // unconditionally would drop the newer request's controller and break its
+    // cancellation/cleanup.
+    if (inFlightRequests.get(id)?.controller === controller) {
+      inFlightRequests.delete(id)
+    }
+  }
 
   const proxyToRpc = async (
     id: number,
@@ -210,17 +240,25 @@ export function createInjectedProviderRouter(
     }
 
     const caip2ChainId = getEvmCaip2ChainId(getBrowserNetwork().chainId)
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
 
     try {
       const result = await requestSigning({
         method: rpcMethod,
         params,
         chainId: caip2ChainId,
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -284,12 +322,18 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       await requestSigning({
         method: 'wallet_addEthereumChain' as unknown as RpcMethod,
         params,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       // User approved — switch browser chain to the new network and notify dApp
       if (addHexChainId) {
@@ -307,6 +351,8 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, null)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -479,12 +525,18 @@ export function createInjectedProviderRouter(
   ): Promise<void> => {
     // Normalize: some dApps send object form { type, options } instead of array
     const normalizedParams = Array.isArray(params) ? params : [params]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({
         method: 'wallet_watchAsset' as unknown as RpcMethod,
         params: normalizedParams,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
@@ -495,6 +547,8 @@ export function createInjectedProviderRouter(
       } else {
         sendResponse(id, e, undefined)
       }
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -552,7 +606,18 @@ export function createInjectedProviderRouter(
     // can't verify the shim's claim without a native anchor, so 4100
     // "unauthorized" is the right response — not "invalidRequest," since
     // the payload itself is well-formed.
-    if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
+    //
+    // `origin` isn't type-checked by validateProviderRequest, so require a
+    // string here: a truthy non-string would otherwise always be `!==` the
+    // native origin and trip this branch with noisy logs / bogus rejections.
+    // A non-string origin is treated like an absent one — the request still
+    // gates on the trusted nativeOrigin below (the real anchor; pageOrigin is
+    // only the extra spoof-detection layer).
+    if (
+      typeof pageOrigin === 'string' &&
+      nativeOrigin &&
+      pageOrigin !== nativeOrigin
+    ) {
       Logger.warn(
         `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
@@ -589,5 +654,15 @@ export function createInjectedProviderRouter(
     dispatchMethod(id, method, params)
   }
 
-  return { handleProviderMessage }
+  const cancelByOrigin = (currentOrigin: string | undefined): void => {
+    if (inFlightRequests.size === 0) return
+    for (const [id, entry] of inFlightRequests.entries()) {
+      if (entry.origin !== currentOrigin) {
+        entry.controller.abort()
+        inFlightRequests.delete(id)
+      }
+    }
+  }
+
+  return { handleProviderMessage, cancelByOrigin }
 }

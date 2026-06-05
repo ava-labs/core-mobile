@@ -200,10 +200,14 @@ class ApprovalController implements VmModuleApprovalController {
 
   handleGoBackIfNeeded = (): void => {
     const currentRoute = currentRouteStore.getState().currentRoute
+    if (!router.canGoBack()) return
     if (
-      (currentRoute?.endsWith('ledgerReviewTransaction') ||
-        currentRoute?.endsWith('approval')) &&
-      router.canGoBack()
+      currentRoute?.endsWith('ledgerReviewTransaction') ||
+      currentRoute?.endsWith('approval') ||
+      currentRoute?.endsWith('addEthereumChain') ||
+      currentRoute?.endsWith('authorizeInjectedDapp') ||
+      currentRoute?.endsWith('authorizeDapp') ||
+      currentRoute?.endsWith('watchAsset')
     ) {
       router.back()
     }
