@@ -48,9 +48,11 @@ export type RouterDeps = {
 
   // Read-only RPC routed through the VM module (the same `module.onRpcRequest`
   // path WalletConnect uses) instead of a bespoke fetch + allowlist. Resolves
-  // with the JSON-RPC result; rejects with an RpcError-shaped `{ code, message }`
-  // (methodNotFound when the module manifest doesn't permit the method). The
-  // module manifest is the single source of read-only method classification.
+  // with the JSON-RPC result; rejects with an RpcError for the known cases
+  // (methodNotFound when the manifest doesn't permit the method, internal
+  // otherwise), but may also reject with other thrown values, which
+  // `sendResponse` serializes. The module manifest is the single source of
+  // read-only method classification.
   requestReadOnly: (args: {
     id: number
     method: string

@@ -350,10 +350,14 @@ export function useEvmInjectedProvider(
       params,
       chainId
     }) => {
-      // Read networks from the store (not allNetworksRef) so a chain just added
-      // via wallet_addEthereumChain — which Redux has but the ref hasn't picked
-      // up until the next render — resolves without a stale-ref race.
-      const network = selectAllNetworks(store.getState())[chainId]
+      // Prefer the ref (avoids re-allocating the merged network map on every
+      // read-only call — a hot path for polling dApps). Fall back to the store
+      // only on a miss: a chain just added via wallet_addEthereumChain that
+      // Redux has but the ref hasn't picked up yet. That keeps the common path
+      // allocation-free while still closing the stale-ref race.
+      const network =
+        allNetworksRef.current[chainId] ??
+        selectAllNetworks(store.getState())[chainId]
       if (!network) {
         throw rpcErrors.internal(`No network configured for chain ${chainId}`)
       }
