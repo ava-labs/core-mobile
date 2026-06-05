@@ -9,7 +9,7 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
-  - AvalabsCryptoNitro (0.3.0):
+  - AvalabsCryptoNitro (0.3.1):
     - NitroModules
     - React-callinvoker
     - React-jsi
@@ -4845,7 +4845,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
-  AvalabsCryptoNitro: 83712bd56be42d90293278b834bc50c698540cfb
+  AvalabsCryptoNitro: 63ea639d1667d69eeda5a66dba1a17eae840ee1e
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BranchSDK: db2c2ffa5b85ad3e202f73393ca794878afd3c52
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
