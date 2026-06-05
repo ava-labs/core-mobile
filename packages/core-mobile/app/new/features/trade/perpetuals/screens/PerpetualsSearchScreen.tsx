@@ -31,9 +31,9 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
         market={item}
         isFirst={index === 0}
         onPress={() => {
-          if (router.canGoBack()) {
-            router.back()
-          }
+          router.navigate(
+            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
+          )
         }}
       />
     ),

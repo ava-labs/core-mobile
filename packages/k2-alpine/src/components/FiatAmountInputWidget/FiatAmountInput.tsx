@@ -40,7 +40,23 @@ type FiatAmountInputProps = {
   autoFocus?: boolean
   placeholder?: string
   returnKeyType?: ReturnKeyTypeOptions
+  /**
+   * Where the subtext node (`formatInSubTextNumber`) renders relative to the
+   * big amount. Defaults to `'top'` to preserve the existing onramp/offramp
+   * layout where the converted token amount sits above the fiat input.
+   */
+  subTextPosition?: 'top' | 'bottom'
+  /**
+   * Maximum font size (in px) for the trailing currency label (e.g. `USDC`).
+   * When omitted, the suffix grows with the main amount (existing behaviour).
+   * When set, the suffix never exceeds this size — useful for token-as-primary
+   * layouts where the currency tag should read as a subtitle next to the big
+   * amount.
+   */
+  trailingCurrencyMaxFontSize?: number
 }
+
+const BIG_AMOUNT_FONT_SIZE = 60
 
 export const FiatAmountInput = forwardRef<
   FiatAmountInputHandle,
@@ -59,6 +75,8 @@ export const FiatAmountInput = forwardRef<
       editable,
       returnKeyType = 'done',
       autoFocus,
+      subTextPosition = 'top',
+      trailingCurrencyMaxFontSize,
       ...props
     },
     ref
@@ -147,13 +165,15 @@ export const FiatAmountInput = forwardRef<
       blur: () => textInputRef.current?.blur()
     }))
 
+    const subTextNode = formatInSubTextNumber?.(Number(inputAmount ?? 0))
+
     return (
       <View
         sx={{
           alignItems: 'center',
           ...sx
         }}>
-        {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
+        {subTextPosition === 'top' ? subTextNode : null}
         <TouchableWithoutFeedback accessible={false} onPress={handlePress}>
           <View
             accessible={false}
@@ -167,10 +187,15 @@ export const FiatAmountInput = forwardRef<
               value={value}
               testID="fiat_amount_input"
               onChangeText={handleValueChanged}
-              initialFontSize={60}
+              initialFontSize={BIG_AMOUNT_FONT_SIZE}
               textAlign="right"
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
+              suffixFontSizeMultiplier={
+                trailingCurrencyMaxFontSize !== undefined
+                  ? trailingCurrencyMaxFontSize / BIG_AMOUNT_FONT_SIZE
+                  : undefined
+              }
               placeholder={`${PLACEHOLDER}`}
               maxLength={maxLength}
               returnKeyType={returnKeyType}
@@ -186,6 +211,7 @@ export const FiatAmountInput = forwardRef<
             />
           </View>
         </TouchableWithoutFeedback>
+        {subTextPosition === 'bottom' ? subTextNode : null}
       </View>
     )
   }
@@ -200,5 +226,8 @@ function getCurrencySymbol(amountWithSymbol: string): string {
   const ScRe =
     /[$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]/
 
-  return amountWithSymbol.match(ScRe)?.[0] ?? '$'
+  // Empty string when no fiat symbol is detected — lets callers that format
+  // amounts with a token name (e.g. `"1.50 USDC"`) render without a spurious
+  // leading `$`.
+  return amountWithSymbol.match(ScRe)?.[0] ?? ''
 }
