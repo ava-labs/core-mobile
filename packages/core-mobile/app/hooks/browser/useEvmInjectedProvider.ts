@@ -287,8 +287,14 @@ export function useEvmInjectedProvider(
     const serialized = JSON.stringify(accounts)
     if (lastEmittedAccountsRef.current === serialized) return
     lastEmittedAccountsRef.current = serialized
+    // Origin-gate delivery (same guard as sendResponse): only inject if the page
+    // is still on the origin we resolved accounts for, so an account switch
+    // racing a cross-origin navigation (briefly-stale currentUrlRef) can't leak
+    // one origin's granted addresses to a different page.
     webViewRef.current?.injectJavaScript(
-      `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized}); true;`
+      `if(window.location.origin===${JSON.stringify(
+        origin
+      )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
     )
   }, [activeAccount, store, webViewRef])
 

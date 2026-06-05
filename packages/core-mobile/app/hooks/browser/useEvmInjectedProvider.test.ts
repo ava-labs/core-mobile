@@ -1620,6 +1620,26 @@ describe('useEvmInjectedProvider', () => {
       )
     })
 
+    it('origin-gates the accountsChanged emit to the resolved origin', () => {
+      // The injected JS must be wrapped in a window.location.origin check so an
+      // account switch racing a cross-origin nav can't leak addresses to a
+      // different page (same guard as sendResponse).
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'if(window.location.origin==="https://opensea.io")'
+        )
+      )
+    })
+
     it('emits [] when switching to an ungranted account', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })

@@ -379,7 +379,7 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta)
-      const addresses: string[] = []
+      let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue
         grantPermission({
@@ -387,17 +387,24 @@ export function createInjectedProviderRouter(
           address: account.addressC,
           vmType: NetworkVMType.EVM
         })
-        addresses.push(account.addressC)
+        anyGranted = true
       }
-      if (addresses.length === 0) {
+      // Advertise the reconciled set, not the raw selection. The injected signer
+      // is active-only, so report [active, ...granted] when the active account is
+      // among the grants, and reject otherwise — never tell the dApp it's
+      // connected to an address Core won't sign for (phantom connection,
+      // CP-14382). Grants for non-active selections still persist, so switching
+      // to one later connects without re-prompting.
+      const reconciled = resolveActiveConnectedAddresses(origin)
+      if (!anyGranted || reconciled.length === 0) {
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
         return
       }
       // Emit accountsChanged before resolving the Promise — matches
       // MetaMask/Rabby ordering so wagmi listeners see the event alongside
       // the resolution rather than one render later.
-      emitEvent('accountsChanged', addresses)
-      sendResponse(id, null, addresses)
+      emitEvent('accountsChanged', reconciled)
+      sendResponse(id, null, reconciled)
     } catch (e) {
       sendResponse(id, e, undefined)
     }
@@ -437,7 +444,7 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta)
-      const addresses: string[] = []
+      let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue
         grantPermission({
@@ -445,15 +452,20 @@ export function createInjectedProviderRouter(
           address: account.addressC,
           vmType: NetworkVMType.EVM
         })
-        addresses.push(account.addressC)
+        anyGranted = true
       }
-      if (addresses.length === 0) {
+      // Reconcile against the active account before returning permissions — same
+      // active-only reasoning as handleRequestAccounts: never return a permission
+      // set for an address the injected signer won't use (phantom connection,
+      // CP-14382).
+      const reconciled = resolveActiveConnectedAddresses(origin)
+      if (!anyGranted || reconciled.length === 0) {
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
         return
       }
       // Emit accountsChanged before resolving the Promise (see handleRequestAccounts).
-      emitEvent('accountsChanged', addresses)
-      sendResponse(id, null, buildAccountsPermission(addresses))
+      emitEvent('accountsChanged', reconciled)
+      sendResponse(id, null, buildAccountsPermission(reconciled))
     } catch (e) {
       sendResponse(id, e, undefined)
     }

@@ -87,8 +87,14 @@ function makeDeps(overrides?: {
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
     currentNetwork.value = net
   })
-  const getGrantedAddresses = jest.fn(() => overrides?.grantedAddresses ?? [])
-  const grantPermission = jest.fn()
+  // Back getGrantedAddresses with a live set that grantPermission mutates, so a
+  // grant during an approval flow is reflected when the handler re-reads the
+  // granted addresses to reconcile them against the active account.
+  const grantedSet = new Set<string>(overrides?.grantedAddresses ?? [])
+  const getGrantedAddresses = jest.fn(() => [...grantedSet])
+  const grantPermission = jest.fn(({ address }: { address: string }) =>
+    grantedSet.add(address)
+  )
   const revokePermission = jest.fn()
   const requestConnectApproval = jest.fn()
   const activeAccount = {
@@ -552,7 +558,37 @@ describe('createInjectedProviderRouter', () => {
         address: MOCK_ADDR,
         vmType: NetworkVMType.EVM
       })
-      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
+      // After granting the (active) selection, the advertised set is reconciled
+      // against the active account: the full granted set, active first.
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [
+        MOCK_ADDR,
+        '0xOtherGrantedAddr'
+      ])
+    })
+
+    it('rejects when the approved selection does not include the active account', async () => {
+      // Phantom-connection guard: the injected signer is active-only, so if the
+      // user approves only non-active accounts we must not advertise them — reject
+      // rather than report a connection Core won't sign for (CP-14382).
+      const { deps, sendResponse, requestConnectApproval, emitEvent } =
+        makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([
+        { addressC: '0xNonActiveSelected' } as Account
+      ])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: EIP1193_USER_REJECTED_CODE }),
+        undefined
+      )
+      expect(emitEvent).not.toHaveBeenCalledWith(
+        'accountsChanged',
+        expect.anything()
+      )
     })
 
     it('opens approval when not granted, grants, and returns selected accounts', async () => {
@@ -678,6 +714,25 @@ describe('createInjectedProviderRouter', () => {
       await new Promise(r => setImmediate(r))
 
       expect(requestConnectApproval).toHaveBeenCalledTimes(1)
+    })
+
+    it('rejects when the approved selection does not include the active account', async () => {
+      // Same phantom-connection guard as eth_requestAccounts: don't return a
+      // permission set for an address the active-only signer won't use.
+      const { deps, sendResponse, requestConnectApproval } = makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([
+        { addressC: '0xNonActiveSelected' } as Account
+      ])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: EIP1193_USER_REJECTED_CODE }),
+        undefined
+      )
     })
   })
 
