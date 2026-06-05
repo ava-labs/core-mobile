@@ -34,11 +34,10 @@ export const useAddStake = (): {
     if (!canAddStake) return
 
     if (isFastStakeEnabled) {
-      // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/addStakeV2' })
+      navigate('/addStakeV2')
     } else if (hasEnoughAvax) {
       // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/addStake' })
+      navigate('/addStake')
     } else {
       showNotEnoughAvaxAlert()
     }
