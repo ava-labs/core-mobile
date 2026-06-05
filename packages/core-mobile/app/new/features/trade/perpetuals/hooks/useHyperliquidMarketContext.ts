@@ -40,9 +40,9 @@ export const useHyperliquidMarketContext = (
 
   useEffect(() => {
     let cancelled = false
+    setState({})
     const info = createInfoClient({ baseUrl: MAINNET_API_URL })
     const ws = createHyperliquidWsClient({ url: MAINNET_WS_URL })
-
     // Seed from REST so universe + assetCtx are populated before the first WS tick.
     info
       .getMetaAndAssetCtxs()
