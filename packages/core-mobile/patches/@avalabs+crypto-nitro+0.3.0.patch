@@ -1,0 +1,23 @@
+diff --git a/node_modules/@avalabs/crypto-nitro/android/build.gradle b/node_modules/@avalabs/crypto-nitro/android/build.gradle
+index 5a7c700..749a2a4 100644
+--- a/node_modules/@avalabs/crypto-nitro/android/build.gradle
++++ b/node_modules/@avalabs/crypto-nitro/android/build.gradle
+@@ -36,11 +36,13 @@ android {
+       cmake {
+         cppFlags '-std=c++20', '-O3', '-fexceptions', '-frtti'
+         arguments '-DANDROID_STL=c++_shared'
+-        // crypto-core uses __int128 (64-bit only) and react-native-nitro-modules
+-        // ships prefab artifacts for the ABIs the consuming app builds for.
+-        // Limit to arm64-v8a; expand only when nitro-modules prefab + crypto-core
+-        // both support the additional ABI.
+-        abiFilters 'arm64-v8a'
++        // crypto-core uses __int128, which is supported on all 64-bit ABIs
++        // (arm64-v8a and x86_64) but not the 32-bit ones (armeabi-v7a, x86).
++        // react-native-nitro-modules builds from source for whatever ABIs the
++        // consuming app targets (default includes x86_64), and crypto-core /
++        // secp256k1 build cleanly on x86_64. x86_64 is required so the lib
++        // loads on Android emulators (e.g. CI/Bitrise), which are x86_64.
++        abiFilters 'arm64-v8a', 'x86_64'
+       }
+     }
+   }
