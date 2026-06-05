@@ -50,14 +50,14 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
     [isValid, handleSubmit]
   )
 
-  const presets = useMemo(
-    () => [
-      { label: '25%', value: AVAILABLE_USDC * 0.25 },
-      { label: '50%', value: AVAILABLE_USDC * 0.5 },
-      { label: 'Max', value: AVAILABLE_USDC }
-    ],
-    []
-  )
+  const presets = useMemo(() => {
+    const round = (n: number): number => Number(n.toFixed(5))
+    return [
+      { label: '25%', value: round(AVAILABLE_USDC * 0.25) },
+      { label: '50%', value: round(AVAILABLE_USDC * 0.5) },
+      { label: 'Max', value: round(AVAILABLE_USDC) }
+    ]
+  }, [])
 
   const formatInSubTextNumber = useCallback(
     (n: number): JSX.Element => (
