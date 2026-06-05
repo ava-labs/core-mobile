@@ -12,8 +12,14 @@ import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 // `requestSigning`. Everything else is treated as read-only and dispatched to
 // the VM module, which validates it against its manifest — so the read-only
 // allowlist is no longer hand-maintained here (CP-14384).
-const SIGNING_METHODS: Record<string, RpcMethod> = {
+//
+// This list must cover every EVM (eth_*/personal_*) method in the vm-module
+// RpcMethod enum: a signing method missing here silently falls through to the
+// read-only branch. A drift guard in router.test.ts cross-checks it against the
+// enum so it can't quietly fall out of sync.
+export const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
+  [RpcMethod.ETH_SEND_TRANSACTION_BATCH]: RpcMethod.ETH_SEND_TRANSACTION_BATCH,
   [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
   [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
   [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,

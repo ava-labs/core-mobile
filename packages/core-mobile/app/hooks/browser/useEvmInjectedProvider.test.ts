@@ -1135,6 +1135,32 @@ describe('useEvmInjectedProvider', () => {
           expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
         )
       })
+
+      it('returns an internal error and never loads the module when no network is configured for the chain', async () => {
+        // The browser/active chain isn't present in the network store (e.g. not
+        // yet synced, or removed). requestReadOnly must surface a real internal
+        // error up front rather than calling the module with a missing network.
+        setupMocks({ allNetworks: {} })
+
+        const { result } = renderProvider()
+
+        const payload = JSON.stringify({
+          id: 202,
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockLoadModule).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('No network configured')
+        )
+      })
     })
 
     describe('unsupported methods', () => {
