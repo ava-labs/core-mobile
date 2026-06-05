@@ -40,8 +40,7 @@ export function BorrowDetailContent({
 
   const { onScroll, animatedHeaderStyle, handleHeaderLayout } =
     useSimpleFadingHeader({
-      title: 'Borrow details',
-      shouldHeaderHaveGrabber: false
+      title: 'Borrow details'
     })
 
   const collateralDeposits = useMemo(() => {

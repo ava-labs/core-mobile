@@ -191,9 +191,8 @@ export const ScrollScreen = ({
   } = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
     targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: isModal,
     hasParent,
-    hideHeaderBackground,
+    hideHeaderBackground: hideHeaderBackground || isModal,
     renderHeaderRight,
     showNavigationHeaderTitle
   })
@@ -385,7 +384,6 @@ export const ScrollScreen = ({
 
   const renderHeaderBackground = useCallback(() => {
     if (hideHeaderBackground) return null
-
     return (
       <View
         pointerEvents="none"
