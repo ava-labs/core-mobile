@@ -292,10 +292,6 @@ class Settings {
     return selectors.getById(`contact__${contactName}__${address}`)
   }
 
-  get hkd() {
-    return selectors.getByText(settings.hkd)
-  }
-
   get advancedSettingsBtn() {
     return selectors.getById(settings.advancedSettings)
   }
