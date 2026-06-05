@@ -283,10 +283,6 @@ export default function WalletLayout(): JSX.Element {
             options={stackScreensOptions}
           />
           <Stack.Screen
-            name="(modals)/marketDetails"
-            options={modalScreensOptions}
-          />
-          <Stack.Screen
             name="(modals)/perpetualsDetails"
             options={modalScreensOptions}
           />
