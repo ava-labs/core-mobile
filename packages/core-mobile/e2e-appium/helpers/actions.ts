@@ -29,8 +29,8 @@ function firstFulfillment<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
       }
     }
 
-    void a.then(onFulfill, onReject)
-    void b.then(onFulfill, onReject)
+    a.then(onFulfill).catch(onReject)
+    b.then(onFulfill).catch(onReject)
   })
 }
 

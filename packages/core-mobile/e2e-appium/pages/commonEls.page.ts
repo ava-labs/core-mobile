@@ -266,10 +266,6 @@ class CommonElsPage {
     return selectors.getByText(commonEls.accountOne)
   }
 
-  get hkd() {
-    return selectors.getByText(commonEls.hkd)
-  }
-
   get successfullyAdded() {
     return selectors.getBySomeText(commonEls.successfullyAdded)
   }

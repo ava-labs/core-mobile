@@ -18,7 +18,7 @@ describe('Receive', () => {
   Object.entries(networkAndAddress).forEach(([network, address]) => {
     it(`should verify ${network} address`, async () => {
       if (network !== cl.evm) {
-        await txPage.selectNetwork(network)
+        await txPage.selectReceiveNetwork(network)
       }
       await txPage.verifyReceiveScreen(network, address.toLowerCase())
     })
