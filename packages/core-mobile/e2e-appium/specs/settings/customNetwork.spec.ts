@@ -10,6 +10,7 @@ describe('Settings', () => {
   before(async () => {
     await warmup()
     await settings.goNetworks()
+    await settings.tapNetworkSwitches(true)
   })
 
   it('Custom Networks - should add a custom network', async () => {

@@ -43,11 +43,11 @@ describe('Portfolio Assets', () => {
 
   it('ETH owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.ethereum)
-    await portfolioPage.verifyOwnedTokenDetail('Ether', tokens.eth)
+    await portfolioPage.verifyOwnedTokenDetail('Ethereum', tokens.eth)
   })
 
   it('Ethereum ERC20 owned token detail', async () => {
-    await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH)
+    await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcETH)
   })
 
   it('SOL owned token detail', async () => {

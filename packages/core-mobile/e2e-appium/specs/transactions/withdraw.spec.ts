@@ -16,17 +16,17 @@ describe('Withdraw', () => {
 
     // set locale via buy flow
     await txPage.verifyLocale(commonLoc.usa, commonLoc.usd)
-    await txPage.setLocale(commonLoc.southKorea, commonLoc.hkd)
+    await txPage.setLocale(commonLoc.uk, commonLoc.euro)
     await commons.dismissBottomSheet()
 
     // verify currency on settings
     await settingsPage.goSettings()
-    await settingsPage.verifySettingsRow(settingsLoc.currency, commonLoc.hkd)
+    await settingsPage.verifySettingsRow(settingsLoc.currency, commonLoc.euro)
     await commons.dismissBottomSheet()
 
     // verify locale and currency on withdraw flow
     await txPage.tapBuy()
-    await txPage.verifyLocale(commonLoc.southKorea, commonLoc.hkd)
+    await txPage.verifyLocale(commonLoc.uk, commonLoc.euro)
     await commons.dismissBottomSheet()
   })
 })
