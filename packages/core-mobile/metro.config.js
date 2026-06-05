@@ -83,7 +83,7 @@ const baseConfig = {
     extraNodeModules: {},
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
-    assetExts: assetExts.filter(ext => ext !== 'svg'),
+    assetExts: [...assetExts.filter(ext => ext !== 'svg'), 'html'],
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     // Prevents VM modules from bundling their own copy of @avalabs/core-wallets-sdk
     // which breaks instanceof checks for provider types

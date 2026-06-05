@@ -113,12 +113,12 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   )
 
   const handleWithdraw = useCallback(() => {
-    // TODO: wire withdraw action
-  }, [])
+    router.navigate('/perpetualsWithdraw')
+  }, [router])
 
   const handleTopUp = useCallback(() => {
-    // TODO: wire top-up action
-  }, [])
+    router.navigate('/perpetualsDeposit')
+  }, [router])
 
   const renderFooter = useCallback(
     () => (

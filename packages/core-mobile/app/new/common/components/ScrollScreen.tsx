@@ -453,10 +453,10 @@ export const ScrollScreen = ({
           {children}
         </KeyboardScrollView>
 
-        {renderGrabber()}
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
+        {renderGrabber()}
       </View>
     )
   }
