@@ -180,7 +180,7 @@ describe('createInjectedProviderRouter', () => {
       expect(trackPendingOrigin).toHaveBeenCalledWith(1, 'https://example.com')
     })
 
-    it('rejects signing methods when native origin is unavailable', () => {
+    it('rejects any method with unauthorized when native origin is unavailable', () => {
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)
 
@@ -189,8 +189,43 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
-          code: JSON_RPC_INTERNAL_ERROR_CODE,
+          code: 4100,
           message: expect.stringContaining('Origin unavailable')
+        }),
+        undefined
+      )
+    })
+
+    it('rejects non-signing read-only methods when native origin is unavailable', () => {
+      const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_blockNumber')
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('rejects with invalidRequest when shim-reported origin differs from native origin', () => {
+      const { deps, sendResponse } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://evil.example',
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          code: -32600,
+          message: expect.stringContaining('Origin mismatch')
         }),
         undefined
       )
@@ -369,8 +404,12 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
 
-    it('skips the slice write when origin is unknown, still emits accountsChanged', () => {
-      const { deps, emitEvent, revokePermission } = makeDeps({
+    it('rejects wallet_revokePermissions outright when origin is unknown', () => {
+      // Post-origin-hardening: no method proceeds without a verified native
+      // origin, including revoke. Returning 4100 makes the ambiguity explicit
+      // rather than silently emitting accountsChanged for an origin we can't
+      // identify.
+      const { deps, sendResponse, emitEvent, revokePermission } = makeDeps({
         nativeOrigin: undefined
       })
       const router = createInjectedProviderRouter(deps)
@@ -378,7 +417,15 @@ describe('createInjectedProviderRouter', () => {
       send(router, 'wallet_revokePermissions')
 
       expect(revokePermission).not.toHaveBeenCalled()
-      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [])
+      expect(emitEvent).not.toHaveBeenCalledWith(
+        'accountsChanged',
+        expect.anything()
+      )
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
     })
   })
 
@@ -534,13 +581,22 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, [])
     })
 
-    it('returns an empty array when origin is missing', () => {
+    it('rejects wallet_getPermissions with unauthorized when origin is missing', () => {
+      // The prior behavior of returning [] for unknown origin would let a
+      // page with no verified origin (e.g. about:blank, pre-navigation race)
+      // make the request and get a clean empty response. Post-hardening every
+      // method requires a native origin; this call is rejected upstream of
+      // the handler.
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
 
-      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
     })
   })
 

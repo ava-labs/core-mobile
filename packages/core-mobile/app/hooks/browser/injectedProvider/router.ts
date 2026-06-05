@@ -52,16 +52,6 @@ const ALLOWED_METHODS = new Set([
   'wallet_watchAsset'
 ])
 
-// CP-14159: methods that surface an approval modal require a verified native
-// origin. Without one, the downstream generateInAppRequestPayload falls back
-// to CORE_MOBILE_META and misattributes the request to core.app — the exact
-// spoofing class CP-14159 exists to prevent.
-const APPROVAL_METHODS = new Set<string>([
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
-
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
   if (addresses.length === 0) return []
@@ -550,10 +540,24 @@ export function createInjectedProviderRouter(
     const { method, params } = rpc
 
     const nativeOrigin = getNativeOrigin()
+
+    // Origin mismatch — the shim-reported origin disagrees with the origin
+    // tracked by the WebView's navigation state. Either a race during
+    // cross-origin navigation (rare) or a sign the page is trying to spoof
+    // its origin (hostile). Either way, refuse the request.
+    //
+    // Note: if the shim provides `pageOrigin` but `nativeOrigin` is missing
+    // (e.g., first RPC arrives before onNavigationStateChange has fired),
+    // we deliberately fall through to the `!nativeOrigin` gate below. We
+    // can't verify the shim's claim without a native anchor, so 4100
+    // "unauthorized" is the right response — not "invalidRequest," since
+    // the payload itself is well-formed.
     if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
       Logger.warn(
-        `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
+        `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
+      sendResponse(id, rpcErrors.invalidRequest('Origin mismatch'), undefined)
+      return
     }
 
     Logger.trace(`[InjectedProvider] ${method}`, params)
@@ -567,15 +571,20 @@ export function createInjectedProviderRouter(
       return
     }
 
-    if (nativeOrigin) {
-      trackPendingOrigin(id, nativeOrigin)
-    } else if (APPROVAL_METHODS.has(method)) {
-      // Any approval-class method (signing + addEthereumChain + watchAsset)
-      // requires a verified page origin — see CP-14159. Reject without one
-      // rather than letting peerMeta fall through to CORE_MOBILE_META.
-      sendResponse(id, rpcErrors.internal('Origin unavailable'), undefined)
+    // Every method requires a known native origin. Requests that arrive
+    // before the WebView has reported its first URL, or from an iframe or
+    // about:blank context, have no authoritative origin to gate on — reject
+    // rather than silently treat them as unscoped.
+    if (!nativeOrigin) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
       return
     }
+
+    trackPendingOrigin(id, nativeOrigin)
 
     dispatchMethod(id, method, params)
   }
