@@ -184,7 +184,6 @@ export const ListScreenV2 = <T,>({
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout,
-      shouldHeaderHaveGrabber: isModal,
       hideHeaderBackground: shouldShowStickyHeader,
       hasSeparator: shouldShowStickyHeader
         ? renderHeader
