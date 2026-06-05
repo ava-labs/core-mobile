@@ -295,6 +295,18 @@ export default function WalletLayout(): JSX.Element {
             options={stackScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/perpetualsDetails"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/perpetualsDeposit"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/perpetualsWithdraw"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/withdraw"
             options={modalScreensOptions}
           />

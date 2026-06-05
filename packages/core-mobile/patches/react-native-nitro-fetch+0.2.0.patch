@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-nitro-fetch/android/build.gradle b/node_modules/react-native-nitro-fetch/android/build.gradle
+index 9b326ff..b84e65a 100644
+--- a/node_modules/react-native-nitro-fetch/android/build.gradle
++++ b/node_modules/react-native-nitro-fetch/android/build.gradle
+@@ -33,6 +33,8 @@ def getExtOrIntegerDefault(name) {
+ android {
+   namespace "com.margelo.nitro.nitrofetch"
+ 
++  ndkVersion getExtOrDefault("ndkVersion")
++
+   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+ 
+   defaultConfig {

@@ -8,20 +8,6 @@ import {
 } from './deriveMultiIndexKeys'
 
 jest.mock('services/ledger/deriveAddressesOffline', () => ({
-  deriveAddressesFromXpub: jest.fn(
-    (
-      _evmXpub: string,
-      _avaxXpub: string,
-      isTestnet: boolean,
-      addressIndex?: number
-    ) => ({
-      evm: `evm-${isTestnet ? 'test' : 'main'}-${addressIndex ?? 0}`,
-      avm: `avm-${isTestnet ? 'test' : 'main'}-${addressIndex ?? 0}`,
-      pvm: `pvm-${isTestnet ? 'test' : 'main'}-${addressIndex ?? 0}`,
-      coreEth: `coreEth-${isTestnet ? 'test' : 'main'}-${addressIndex ?? 0}`,
-      btc: `btc-${isTestnet ? 'test' : 'main'}-${addressIndex ?? 0}`
-    })
-  ),
   deriveAddressesFromPublicKeys: jest.fn(
     (_evmPk: string, _avaxPk: string, isTestnet: boolean) => ({
       evm: `evm-pk-${isTestnet ? 'test' : 'main'}`,
@@ -29,6 +15,33 @@ jest.mock('services/ledger/deriveAddressesOffline', () => ({
       pvm: `pvm-pk-${isTestnet ? 'test' : 'main'}`,
       coreEth: `coreEth-pk-${isTestnet ? 'test' : 'main'}`,
       btc: `btc-pk-${isTestnet ? 'test' : 'main'}`
+    })
+  )
+}))
+
+jest.mock('./deriveLedgerAddressesFromXpubs', () => ({
+  deriveLedgerAddressesFromXpubs: jest.fn(
+    async (
+      _evmXpub: string,
+      _avalancheXpubs: readonly string[],
+      accountIndices: readonly number[]
+    ) => ({
+      mainnet: accountIndices.map(idx => ({
+        accountIndex: idx,
+        evm: `evm-main-${idx}`,
+        avm: `avm-main-${idx}`,
+        pvm: `pvm-main-${idx}`,
+        coreEth: `coreEth-main-${idx}`,
+        btc: `btc-main-${idx}`
+      })),
+      testnet: accountIndices.map(idx => ({
+        accountIndex: idx,
+        evm: `evm-test-${idx}`,
+        avm: `avm-test-${idx}`,
+        pvm: `pvm-test-${idx}`,
+        coreEth: `coreEth-test-${idx}`,
+        btc: `btc-test-${idx}`
+      }))
     })
   )
 }))
@@ -86,33 +99,33 @@ const makeAvalancheKey = (prefix: string): AvalancheKey => ({
 })
 
 describe('buildFirstAccountKeys', () => {
-  it('uses deriveAddressesFromXpub for BIP44 path', () => {
+  it('uses deriveLedgerAddressesFromXpubs for BIP44 path', async () => {
     const {
-      deriveAddressesFromXpub
-    } = require('services/ledger/deriveAddressesOffline')
+      deriveLedgerAddressesFromXpubs
+    } = require('./deriveLedgerAddressesFromXpubs')
 
-    const result = buildFirstAccountKeys({
+    const result = await buildFirstAccountKeys({
       firstAccountKeys: makeAvalancheKey('device'),
       isBIP44: true,
       isDeveloperMode: false,
       startIndex: 0
     })
 
-    expect(deriveAddressesFromXpub).toHaveBeenCalledWith(
+    expect(deriveLedgerAddressesFromXpubs).toHaveBeenCalledWith(
       'xpub-evm-0',
-      'xpub-avax-0',
-      true // !isDeveloperMode → opposite network is testnet
+      ['xpub-avax-0'],
+      [0]
     )
     expect(result.mainnet[0]).toBeDefined()
     expect(result.testnet[0]).toBeDefined()
   })
 
-  it('uses deriveAddressesFromPublicKeys for LedgerLive path', () => {
+  it('uses deriveAddressesFromPublicKeys for LedgerLive path', async () => {
     const {
       deriveAddressesFromPublicKeys
     } = require('services/ledger/deriveAddressesOffline')
 
-    buildFirstAccountKeys({
+    await buildFirstAccountKeys({
       firstAccountKeys: makeAvalancheKey('device'),
       isBIP44: false,
       isDeveloperMode: false,
@@ -126,8 +139,8 @@ describe('buildFirstAccountKeys', () => {
     )
   })
 
-  it('swaps mainnet/testnet when isDeveloperMode is true', () => {
-    const result = buildFirstAccountKeys({
+  it('swaps mainnet/testnet when isDeveloperMode is true', async () => {
+    const result = await buildFirstAccountKeys({
       firstAccountKeys: makeAvalancheKey('device'),
       isBIP44: true,
       isDeveloperMode: true,
@@ -140,8 +153,8 @@ describe('buildFirstAccountKeys', () => {
     expect(result.mainnet[0]?.avalancheKeys?.addresses.evm).toContain('evm-')
   })
 
-  it('uses the provided startIndex as the key', () => {
-    const result = buildFirstAccountKeys({
+  it('uses the provided startIndex as the key', async () => {
+    const result = await buildFirstAccountKeys({
       firstAccountKeys: makeAvalancheKey('device'),
       isBIP44: true,
       isDeveloperMode: false,
@@ -155,7 +168,7 @@ describe('buildFirstAccountKeys', () => {
 })
 
 describe('deriveBIP44RangeKeys', () => {
-  it('derives mainnet and testnet keys for each xpub entry', () => {
+  it('derives mainnet and testnet keys for each xpub entry', async () => {
     const xpubRange = [
       {
         evm: { path: "m/44'/60'/1'", key: 'evmkey1', chainCode: 'cc1' },
@@ -167,14 +180,14 @@ describe('deriveBIP44RangeKeys', () => {
       }
     ]
 
-    const result = deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
+    const result = await deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
 
     expect(result.mainnet[1]).toBeDefined()
     expect(result.testnet[1]).toBeDefined()
     expect(result.mainnet[1]?.solanaKeys).toEqual([])
   })
 
-  it('skips null entries in the xpub range', () => {
+  it('skips null entries in the xpub range', async () => {
     const xpubRange = [
       null,
       {
@@ -187,13 +200,13 @@ describe('deriveBIP44RangeKeys', () => {
       }
     ]
 
-    const result = deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
+    const result = await deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
 
     expect(result.mainnet[1]).toBeUndefined()
     expect(result.mainnet[2]).toBeDefined()
   })
 
-  it('sets correct derivation paths per account index', () => {
+  it('sets correct derivation paths per account index', async () => {
     const xpubRange = [
       {
         evm: { path: "m/44'/60'/1'", key: 'evmkey1', chainCode: 'cc1' },
@@ -205,15 +218,15 @@ describe('deriveBIP44RangeKeys', () => {
       }
     ]
 
-    const result = deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
+    const result = await deriveBIP44RangeKeys(xpubRange, 'xpub-evm-account0')
 
     const mainnetKeys = result.mainnet[1]?.avalancheKeys?.publicKeys ?? []
     expect(mainnetKeys[0]?.derivationPath).toBe("m/44'/60'/1'/0/0")
     expect(mainnetKeys[1]?.derivationPath).toBe("m/44'/9000'/1'/0/0")
   })
 
-  it('returns empty maps for empty xpub range', () => {
-    const result = deriveBIP44RangeKeys([], 'xpub-evm-account0')
+  it('returns empty maps for empty xpub range', async () => {
+    const result = await deriveBIP44RangeKeys([], 'xpub-evm-account0')
 
     expect(Object.keys(result.mainnet)).toHaveLength(0)
     expect(Object.keys(result.testnet)).toHaveLength(0)

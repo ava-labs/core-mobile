@@ -343,9 +343,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:3.8.1":
-  version: 3.8.1
-  resolution: "@avalabs/avalanche-module@npm:3.8.1"
+"@avalabs/avalanche-module@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@avalabs/avalanche-module@npm:3.9.0"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.4
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
@@ -353,14 +353,15 @@ __metadata:
     "@avalabs/core-etherscan-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
+    "@avalabs/crypto-sdk": 1.0.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 3.8.1
+    "@avalabs/vm-module-types": 3.9.0
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: c0e211ad117ff6d8e4a931223e75a75c3381a40967a35a695d34ad36ebf3886e932d2478b22f4c1d18a2cd2c0815f4dcaac6fb6ef9ba943495c5066ad69d80e7
+  checksum: 0a3bef1df73d062fc19cd950c26224e0fe1007010d17800b98a8b80056972b352a410be196641eff8ff93eb1e767ab537cc18e4fc8c4911eb028a46e589fc178
   languageName: node
   linkType: hard
 
@@ -377,20 +378,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:3.8.1":
-  version: 3.8.1
-  resolution: "@avalabs/bitcoin-module@npm:3.8.1"
+"@avalabs/bitcoin-module@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@avalabs/bitcoin-module@npm:3.9.0"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 3.8.1
+    "@avalabs/crypto-sdk": 1.0.0
+    "@avalabs/vm-module-types": 3.9.0
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 3d4f0ce64c62e3f8cc85339d154beb7a56e6420677f4b17d48c168323806c849f98fff1b626ecb84abad8177119e28f4dd268a7b1b2687516ff321f59c490a50
+  checksum: d122d92f99d5ea8c7f96805fe2ab156068b581161a5ce0fa43ba7599f4839fab412101cfcaabeb180be499634414054c5c1b29a3b4ba45f57df562af3b333abb
   languageName: node
   linkType: hard
 
@@ -463,24 +465,27 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 3.8.1
+    "@avalabs/avalanche-module": 3.9.0
     "@avalabs/avalanchejs": 5.1.0-alpha.4
-    "@avalabs/bitcoin-module": 3.8.1
+    "@avalabs/bitcoin-module": 3.9.0
     "@avalabs/bridge-unified": 4.4.1
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/evm-module": 3.8.1
+    "@avalabs/crypto-nitro": 0.3.0
+    "@avalabs/crypto-sdk": 1.0.0
+    "@avalabs/evm-module": 3.9.0
     "@avalabs/fusion-sdk": 0.16.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/k2-alpine": "workspace:*"
+    "@avalabs/perps-sdk": 0.0.0-feat-perps-sdk-20260521171718
     "@avalabs/prediction-market-sdk": 0.3.0
-    "@avalabs/svm-module": 3.8.1
+    "@avalabs/svm-module": 3.9.0
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 3.8.1
+    "@avalabs/vm-module-types": 3.9.0
     "@aws-sdk/client-device-farm": 3.986.0
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -530,6 +535,7 @@ __metadata:
     "@ledgerhq/react-native-hw-transport-ble": 6.37.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
+    "@msgpack/msgpack": ^3.0.0
     "@ngraveio/bc-ur": 1.1.13
     "@noble/curves": 1.9.7
     "@noble/hashes": 1.8.0
@@ -716,11 +722,10 @@ __metadata:
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
-    react-native-mmkv: 4.1.1
+    react-native-mmkv: 4.3.1
     react-native-modal-datetime-picker: 18.0.0
-    react-native-nitro-avalabs-crypto: "workspace:*"
-    react-native-nitro-fetch: 0.1.6
-    react-native-nitro-modules: 0.32.2
+    react-native-nitro-fetch: 0.2.0
+    react-native-nitro-modules: 0.35.6
     react-native-os: 1.2.6
     react-native-pager-view: 6.9.1
     react-native-passkey: 3.3.2
@@ -851,18 +856,50 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:3.8.1":
-  version: 3.8.1
-  resolution: "@avalabs/evm-module@npm:3.8.1"
+"@avalabs/crypto-nitro@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@avalabs/crypto-nitro@npm:0.3.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: ">=0.35.0"
+  peerDependenciesMeta:
+    react:
+      optional: true
+    react-native:
+      optional: true
+  checksum: ce648422169137bc84ad9c4b5b106a846b9fb7f1656a93e5869bdd4a72b2e62caf0261539d6db35f974d844fae0fbdd17ac3cad9e3cbddd2b1d876719baf091b
+  languageName: node
+  linkType: hard
+
+"@avalabs/crypto-sdk@npm:1.0.0":
+  version: 1.0.0
+  resolution: "@avalabs/crypto-sdk@npm:1.0.0"
+  peerDependencies:
+    "@avalabs/crypto-nitro": 0.3.0
+    "@avalabs/crypto-wasm": 0.3.0
+  peerDependenciesMeta:
+    "@avalabs/crypto-nitro":
+      optional: true
+    "@avalabs/crypto-wasm":
+      optional: true
+  checksum: 220ee0a071c91afbb412ff6d0c2b601517800d8b747568a056d00bca83dc7f4f77446a57b93d7913384d076452056dcc52cff6eda01d17eecf14a1c0922daa64
+  languageName: node
+  linkType: hard
+
+"@avalabs/evm-module@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@avalabs/evm-module@npm:3.9.0"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-etherscan-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
+    "@avalabs/crypto-sdk": 1.0.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
     "@avalabs/types": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 3.8.1
+    "@avalabs/vm-module-types": 3.9.0
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -872,7 +909,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: b91bfcf3ac38927395f64e8ebcff94a40825ef534ec1eb1c8323549d35dfdf1fe3bc5e7ce2fbca3663bbbef7eb5778408c3b8f7ae9efc9afe1f867ea0f4756ca
+  checksum: cf12237473467b58ae01681cb01b192ae47786b379806e0470a6a7ffcb3f9289b9e85085f8edae5f7a118a37a34575ab101ce4648b3f592852b3745888513be8
   languageName: node
   linkType: hard
 
@@ -1003,6 +1040,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@avalabs/perps-sdk@npm:0.0.0-feat-perps-sdk-20260521171718":
+  version: 0.0.0-feat-perps-sdk-20260521171718
+  resolution: "@avalabs/perps-sdk@npm:0.0.0-feat-perps-sdk-20260521171718"
+  peerDependencies:
+    "@msgpack/msgpack": ^3.0.0
+    viem: ^2.38.0
+    zod: ^4.1.0
+  checksum: 80072ea31c6d60e07596d2d8346f1a18e5c3bc87bff53990b77d8d4c53e3d53a4121766c719c1fec538fd66a741d56e245de1b0c6510c5d4a6a99d44b0c1d2df
+  languageName: node
+  linkType: hard
+
 "@avalabs/prediction-market-sdk@npm:0.3.0":
   version: 0.3.0
   resolution: "@avalabs/prediction-market-sdk@npm:0.3.0"
@@ -1015,15 +1063,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/svm-module@npm:3.8.1":
-  version: 3.8.1
-  resolution: "@avalabs/svm-module@npm:3.8.1"
+"@avalabs/svm-module@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@avalabs/svm-module@npm:3.9.0"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.87
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/vm-module-types": 3.8.1
+    "@avalabs/crypto-sdk": 1.0.0
+    "@avalabs/vm-module-types": 3.9.0
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -1034,7 +1083,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 9883af8b454b1ea8b8e76a41379e568b79947836f1f7b22fde8718ec7d9bd3fbc6a80ae8a9f8fb59553bf7c59f86a5645f32407c0e01f791b22a7d6844f09212
+  checksum: ca99f6a4a2df500c2a0781428dc30d0862e28b0c47dc4276f47e25f68cc1fc61cbbe96829024ed613cf71a780dc0cd6190337ecb213b632e5d2264047e1fa6ee
   languageName: node
   linkType: hard
 
@@ -1051,9 +1100,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:3.8.1":
-  version: 3.8.1
-  resolution: "@avalabs/vm-module-types@npm:3.8.1"
+"@avalabs/vm-module-types@npm:3.9.0":
+  version: 3.9.0
+  resolution: "@avalabs/vm-module-types@npm:3.9.0"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
@@ -1064,7 +1113,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: a562ca5fb9225e266049fcf86323068d7064232d92d79dd19cb8edb2189b212a4959fbfc7770ca443f93acf2a8907e5897781e2c40b2168137b94e72ae1812ed
+  checksum: 169683012377926a710924476b653fbe840c576fc44a509109e30eedca9b9d5148dbc8ac61a60364366ee1b1e85b809148fa4613db75a2b9a5e2c73f8322bf9b
   languageName: node
   linkType: hard
 
@@ -6225,17 +6274,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint-community/eslint-utils@npm:^4.7.0":
-  version: 4.9.0
-  resolution: "@eslint-community/eslint-utils@npm:4.9.0"
-  dependencies:
-    eslint-visitor-keys: ^3.4.3
-  peerDependencies:
-    eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
-  checksum: ae9b98eea006d1354368804b0116b8b45017a4e47b486d1b9cfa048a8ed3dc69b9b074eb2b2acb14034e6897c24048fd42b6a6816d9dc8bb9daad79db7d478d2
-  languageName: node
-  linkType: hard
-
 "@eslint-community/regexpp@npm:^4.10.0":
   version: 4.12.1
   resolution: "@eslint-community/regexpp@npm:4.12.1"
@@ -10957,6 +10995,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@msgpack/msgpack@npm:^3.0.0":
+  version: 3.1.3
+  resolution: "@msgpack/msgpack@npm:3.1.3"
+  checksum: b76416a5c52ec1364a78902a43b33d18d2813f469165fe5d4ad22d2b67f1269f7f2ee660a5fee764de117aa47116db61a84aa57cccb9007d7fc7abd01a78ef33
+  languageName: node
+  linkType: hard
+
 "@mswjs/cookies@npm:^0.2.2":
   version: 0.2.2
   resolution: "@mswjs/cookies@npm:0.2.2"
@@ -11032,10 +11077,10 @@ __metadata:
 
 "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.9.7
-  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=bf8fad&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=3e79f3&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/hashes": 1.8.0
-  checksum: e57ecfd2f1c3edbcf7466c52ccd42b380dcd8533ffb9ae5bdddfffab8885a4af89f3710aa434b4d391d8df5738f3531b41139938ddbc830782dc8c23c8fe9fe5
+  checksum: 41b6e661b48a64d00e5bc5d3694582226f5b7913f969bce48695a2e95a0deb7e07fce5a4c4ea5e0ccb09b0f9131f72627f2419bab398b2bd8c87c77ee8635cbd
   languageName: node
   linkType: hard
 
@@ -13493,40 +13538,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/eslint-config@npm:0.82.0":
-  version: 0.82.0
-  resolution: "@react-native/eslint-config@npm:0.82.0"
-  dependencies:
-    "@babel/core": ^7.25.2
-    "@babel/eslint-parser": ^7.25.1
-    "@react-native/eslint-plugin": 0.82.0
-    "@typescript-eslint/eslint-plugin": ^8.36.0
-    "@typescript-eslint/parser": ^8.36.0
-    eslint-config-prettier: ^8.5.0
-    eslint-plugin-eslint-comments: ^3.2.0
-    eslint-plugin-ft-flow: ^2.0.1
-    eslint-plugin-jest: ^29.0.1
-    eslint-plugin-react: ^7.30.1
-    eslint-plugin-react-hooks: ^5.2.0
-    eslint-plugin-react-native: ^4.0.0
-  peerDependencies:
-    eslint: ">=8"
-    prettier: ">=2"
-  checksum: 2728a97fa1f784e3ee154e3a00b3b08821cd8d2fef9354a58508076be98be43bd8f8084e95c6a8e23654e583990cb5bcedc70fb10608b63220168ea9176c0c90
-  languageName: node
-  linkType: hard
-
 "@react-native/eslint-plugin@npm:0.81.5":
   version: 0.81.5
   resolution: "@react-native/eslint-plugin@npm:0.81.5"
   checksum: 2560b0b1a5ffcae76121efd89b0579ddc62f1789dc98882eecb6198e1cec39da0a6f496eee771f5183d3d365aed5a6804da8debf43509717ad20f6a0e394245d
-  languageName: node
-  linkType: hard
-
-"@react-native/eslint-plugin@npm:0.82.0":
-  version: 0.82.0
-  resolution: "@react-native/eslint-plugin@npm:0.82.0"
-  checksum: b456cde2911a90745ab811a577535a4c8afe602ff4f706dce6812fd5c2d5de7d2e426e2fc240aac405675065fc622983db83c657f54ca33eeda6d6c6440d8cdc
   languageName: node
   linkType: hard
 
@@ -16434,17 +16449,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ts-morph/common@npm:~0.28.1":
-  version: 0.28.1
-  resolution: "@ts-morph/common@npm:0.28.1"
-  dependencies:
-    minimatch: ^10.0.1
-    path-browserify: ^1.0.1
-    tinyglobby: ^0.2.14
-  checksum: bc3e879ff55fe8fe460d49124d10f74aba4ec92c261b7f65d48153a107e1b733676bb89e1c55fa4e5c045fe055c6c5247f7d340aaf1db1a44ffaf32ca2a00ec5
-  languageName: node
-  linkType: hard
-
 "@tsconfig/node10@npm:^1.0.7":
   version: 1.0.9
   resolution: "@tsconfig/node10@npm:1.0.9"
@@ -17520,27 +17524,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^8.36.0":
-  version: 8.48.1
-  resolution: "@typescript-eslint/eslint-plugin@npm:8.48.1"
-  dependencies:
-    "@eslint-community/regexpp": ^4.10.0
-    "@typescript-eslint/scope-manager": 8.48.1
-    "@typescript-eslint/type-utils": 8.48.1
-    "@typescript-eslint/utils": 8.48.1
-    "@typescript-eslint/visitor-keys": 8.48.1
-    graphemer: ^1.4.0
-    ignore: ^7.0.0
-    natural-compare: ^1.4.0
-    ts-api-utils: ^2.1.0
-  peerDependencies:
-    "@typescript-eslint/parser": ^8.48.1
-    eslint: ^8.57.0 || ^9.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: cf5c0629396d315d7792a61913fa4f3e5580d2873ce3d4f8eb377e6ca57815a83bd8b38cab8e297028ee9246be14979d16423228cbbf8fb61472d6f6a664b13d
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/experimental-utils@npm:^5.0.0":
   version: 5.62.0
   resolution: "@typescript-eslint/experimental-utils@npm:5.62.0"
@@ -17587,35 +17570,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^8.36.0":
-  version: 8.48.1
-  resolution: "@typescript-eslint/parser@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/scope-manager": 8.48.1
-    "@typescript-eslint/types": 8.48.1
-    "@typescript-eslint/typescript-estree": 8.48.1
-    "@typescript-eslint/visitor-keys": 8.48.1
-    debug: ^4.3.4
-  peerDependencies:
-    eslint: ^8.57.0 || ^9.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: ba5734b59334fdfa178d3397e9931cfc01bf0b14a4b9935ef81072aef315c03d301a128eb1530f15a1f4c6cb83b4083cb36ab96e6f77fe6a589dac058d41e86e
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/project-service@npm:8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/project-service@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/tsconfig-utils": ^8.48.1
-    "@typescript-eslint/types": ^8.48.1
-    debug: ^4.3.4
-  peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: fd99c025e7223217c558a211ec8e0b6b4097b70836f51481e1e55e659eb88be76113db8239ac3626f96b384d4261d487ad6743c5cf8d5949ebf1bab072fd6055
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/scope-manager@npm:5.62.0":
   version: 5.62.0
   resolution: "@typescript-eslint/scope-manager@npm:5.62.0"
@@ -17643,25 +17597,6 @@ __metadata:
     "@typescript-eslint/types": 8.3.0
     "@typescript-eslint/visitor-keys": 8.3.0
   checksum: 2ccf0d965c0e812f21a156bdb551029d2777bf1e6528275ccb9b79f9a36e4c6803c94f4e98519095396d3e416a62dc2356fda7286a6feeec8af6b63154f158d9
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/scope-manager@npm:8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/scope-manager@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/types": 8.48.1
-    "@typescript-eslint/visitor-keys": 8.48.1
-  checksum: 62a52b83e4ea387c3d651f92e439678ec823fd1a4fe859b936b626d13e7c20960557d1dd5410d78542cc539f4588897b2e0a337051d97808cbe59b4fd51d44ea
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/tsconfig-utils@npm:8.48.1, @typescript-eslint/tsconfig-utils@npm:^8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/tsconfig-utils@npm:8.48.1"
-  peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 5c24e2dbe0f3771701f34a6614ca24bc4551e10c9d1426da66048477a00b2b017b47bc301e8d6b7c0eb0d27d6b8a073b137a31d22553015fdf03c61c1cc865e4
   languageName: node
   linkType: hard
 
@@ -17699,22 +17634,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/type-utils@npm:8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/type-utils@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/types": 8.48.1
-    "@typescript-eslint/typescript-estree": 8.48.1
-    "@typescript-eslint/utils": 8.48.1
-    debug: ^4.3.4
-    ts-api-utils: ^2.1.0
-  peerDependencies:
-    eslint: ^8.57.0 || ^9.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: d9bb428512c5b892fcce63eefae45e5982ab10a935cbc0eb2163ca5127634bf9ba47715b4a1c0735a067f2973e80cc363612e9fdfdcd5cae31262cd539ec8d02
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/types@npm:5.62.0":
   version: 5.62.0
   resolution: "@typescript-eslint/types@npm:5.62.0"
@@ -17733,13 +17652,6 @@ __metadata:
   version: 8.3.0
   resolution: "@typescript-eslint/types@npm:8.3.0"
   checksum: 6fa6be32dbb32899b0ccb6a5cf78bf85892efa87048e0d3939f706743d3c2ad4afab8228d588883ac314d4934a01bafc5e4043b6608ebb82290edf3bfc17f442
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/types@npm:8.48.1, @typescript-eslint/types@npm:^8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/types@npm:8.48.1"
-  checksum: 19e5f902bd1e0a51f43faef6ea0a2b88292283e8eee58237657876b8ad908d66645ac50fc37a0967e4f1f2799b11cec47d03c977b059b8542dcb12e16b7a9354
   languageName: node
   linkType: hard
 
@@ -17799,25 +17711,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/typescript-estree@npm:8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/typescript-estree@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/project-service": 8.48.1
-    "@typescript-eslint/tsconfig-utils": 8.48.1
-    "@typescript-eslint/types": 8.48.1
-    "@typescript-eslint/visitor-keys": 8.48.1
-    debug: ^4.3.4
-    minimatch: ^9.0.4
-    semver: ^7.6.0
-    tinyglobby: ^0.2.15
-    ts-api-utils: ^2.1.0
-  peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 1ff0b1ad4a71d6f8e81e5ca8d65333e8e9b53499f1e2b5a0295cbda062eebce0dcb021b1aac9b31c74096d26429f4b2109414d39d4ca4b531ee31f2c9e7895ec
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/utils@npm:5.62.0, @typescript-eslint/utils@npm:^5.10.0":
   version: 5.62.0
   resolution: "@typescript-eslint/utils@npm:5.62.0"
@@ -17847,21 +17740,6 @@ __metadata:
   peerDependencies:
     eslint: ^8.56.0
   checksum: 751dbc816dab8454b7dc6b26a56671dbec08e3f4ef94c2661ce1c0fc48fa2d05a64e03efe24cba2c22d03ba943cd3c5c7a5e1b7b03bbb446728aec1c640bd767
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/utils@npm:8.48.1, @typescript-eslint/utils@npm:^8.0.0":
-  version: 8.48.1
-  resolution: "@typescript-eslint/utils@npm:8.48.1"
-  dependencies:
-    "@eslint-community/eslint-utils": ^4.7.0
-    "@typescript-eslint/scope-manager": 8.48.1
-    "@typescript-eslint/types": 8.48.1
-    "@typescript-eslint/typescript-estree": 8.48.1
-  peerDependencies:
-    eslint: ^8.57.0 || ^9.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 5fcf70d05a087c8c449c231b165d825101b832d48569ebde33c4efd3451f38ef084a46019e5c91fc7d1b34638cdd18f4564890132bb13495f6eed9420b949563
   languageName: node
   linkType: hard
 
@@ -17906,16 +17784,6 @@ __metadata:
     "@typescript-eslint/types": 8.3.0
     eslint-visitor-keys: ^3.4.3
   checksum: 23a85ae0a3d693be1c9db92457727ab3f16cac3d1fb4950e29bfe2b0f4d186a755a71b2a347063cc94cf03b8dd1367502e0a60386eed71425f74c18fb686b0e8
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/visitor-keys@npm:8.48.1":
-  version: 8.48.1
-  resolution: "@typescript-eslint/visitor-keys@npm:8.48.1"
-  dependencies:
-    "@typescript-eslint/types": 8.48.1
-    eslint-visitor-keys: ^4.2.1
-  checksum: b93cc791ee3a9d47f2b66a5047b3912db358f75a752a19431df78e0263f795105fc224d073e6450a99593770a64fba47e063ade6525bb785817131e06978fd15
   languageName: node
   linkType: hard
 
@@ -22131,13 +21999,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"code-block-writer@npm:^13.0.3":
-  version: 13.0.3
-  resolution: "code-block-writer@npm:13.0.3"
-  checksum: 8e234f0ec2db9625d5efb9f05bdae79da6559bb4d9df94a6aa79a89a7b5ae25093b70d309fc5122840c9c07995cb14b4dd3f98a30f8878e3a3372e177df79454
-  languageName: node
-  linkType: hard
-
 "coinselect@npm:3.1.13, coinselect@npm:^3.1.13":
   version: 3.1.13
   resolution: "coinselect@npm:3.1.13"
@@ -25327,24 +25188,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jest@npm:^29.0.1":
-  version: 29.2.1
-  resolution: "eslint-plugin-jest@npm:29.2.1"
-  dependencies:
-    "@typescript-eslint/utils": ^8.0.0
-  peerDependencies:
-    "@typescript-eslint/eslint-plugin": ^8.0.0
-    eslint: ^8.57.0 || ^9.0.0
-    jest: "*"
-  peerDependenciesMeta:
-    "@typescript-eslint/eslint-plugin":
-      optional: true
-    jest:
-      optional: true
-  checksum: 9ff716495eac6e5f7b553f21a8b67f084ab39ac5fb6941d6a044f4a0238f90c73facae14ae8fe6ba44ce698f3a403a8ca997894f32fa968fda5793ae28d31c50
-  languageName: node
-  linkType: hard
-
 "eslint-plugin-prettier@npm:4.2.1, eslint-plugin-prettier@npm:^4.0.0":
   version: 4.2.1
   resolution: "eslint-plugin-prettier@npm:4.2.1"
@@ -25511,13 +25354,6 @@ __metadata:
   version: 3.4.3
   resolution: "eslint-visitor-keys@npm:3.4.3"
   checksum: 36e9ef87fca698b6fd7ca5ca35d7b2b6eeaaf106572e2f7fd31c12d3bfdaccdb587bba6d3621067e5aece31c8c3a348b93922ab8f7b2cbc6aaab5e1d89040c60
-  languageName: node
-  linkType: hard
-
-"eslint-visitor-keys@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "eslint-visitor-keys@npm:4.2.1"
-  checksum: 3a77e3f99a49109f6fb2c5b7784bc78f9743b834d238cdba4d66c602c6b52f19ed7bcd0a5c5dbbeae3a8689fd785e76c001799f53d2228b278282cf9f699fff5
   languageName: node
   linkType: hard
 
@@ -28720,13 +28556,6 @@ __metadata:
   version: 5.3.2
   resolution: "ignore@npm:5.3.2"
   checksum: 2acfd32a573260ea522ea0bfeff880af426d68f6831f973129e2ba7363f422923cf53aab62f8369cbf4667c7b25b6f8a3761b34ecdb284ea18e87a5262a865be
-  languageName: node
-  linkType: hard
-
-"ignore@npm:^7.0.0":
-  version: 7.0.5
-  resolution: "ignore@npm:7.0.5"
-  checksum: d0862bf64d3d58bf34d5fb0a9f725bec9ca5ce8cd1aecc8f28034269e8f69b8009ffd79ca3eda96962a6a444687781cd5efdb8c7c8ddc0a6996e36d31c217f14
   languageName: node
   linkType: hard
 
@@ -32902,21 +32731,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.0.1, minimatch@npm:^10.1.1":
-  version: 10.1.1
-  resolution: "minimatch@npm:10.1.1"
-  dependencies:
-    "@isaacs/brace-expansion": ^5.0.0
-  checksum: 8820c0be92994f57281f0a7a2cc4268dcc4b610f9a1ab666685716b4efe4b5898b43c835a8f22298875b31c7a278a5e3b7e253eee7c886546bb0b61fb94bca6b
-  languageName: node
-  linkType: hard
-
 "minimatch@npm:^10.0.3":
   version: 10.0.3
   resolution: "minimatch@npm:10.0.3"
   dependencies:
     "@isaacs/brace-expansion": ^5.0.0
   checksum: 20bfb708095a321cb43c20b78254e484cb7d23aad992e15ca3234a3331a70fa9cd7a50bc1a7c7b2b9c9890c37ff0685f8380028fcc28ea5e6de75b1d4f9374aa
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^10.1.1":
+  version: 10.1.1
+  resolution: "minimatch@npm:10.1.1"
+  dependencies:
+    "@isaacs/brace-expansion": ^5.0.0
+  checksum: 8820c0be92994f57281f0a7a2cc4268dcc4b610f9a1ab666685716b4efe4b5898b43c835a8f22298875b31c7a278a5e3b7e253eee7c886546bb0b61fb94bca6b
   languageName: node
   linkType: hard
 
@@ -33507,21 +33336,6 @@ __metadata:
   version: 2.0.2
   resolution: "netmask@npm:2.0.2"
   checksum: c65cb8d3f7ea5669edddb3217e4c96910a60d0d9a4b52d9847ff6b28b2d0277cd8464eee0ef85133cdee32605c57940cacdd04a9a019079b091b6bba4cb0ec22
-  languageName: node
-  linkType: hard
-
-"nitrogen@npm:0.32.0":
-  version: 0.32.0
-  resolution: "nitrogen@npm:0.32.0"
-  dependencies:
-    chalk: ^5.3.0
-    react-native-nitro-modules: ^0.32.0
-    ts-morph: ^27.0.0
-    yargs: ^18.0.0
-    zod: ^4.0.5
-  bin:
-    nitrogen: lib/index.js
-  checksum: b34f82b988ae4b8a39ea02dffb007330461df20d1935a0646618ab95eac4ba81b8ebb4099a4746df587aca56f3c3ee8ca21076519fd536765d7c9e687e464132
   languageName: node
   linkType: hard
 
@@ -34829,7 +34643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-browserify@npm:1.0.1, path-browserify@npm:^1.0.1":
+"path-browserify@npm:1.0.1":
   version: 1.0.1
   resolution: "path-browserify@npm:1.0.1"
   checksum: c6d7fa376423fe35b95b2d67990060c3ee304fc815ff0a2dc1c6c3cfaff2bd0d572ee67e18f19d0ea3bbe32e8add2a05021132ac40509416459fffee35200699
@@ -36530,14 +36344,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mmkv@npm:4.1.1":
-  version: 4.1.1
-  resolution: "react-native-mmkv@npm:4.1.1"
+"react-native-mmkv@npm:4.3.1":
+  version: 4.3.1
+  resolution: "react-native-mmkv@npm:4.3.1"
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-nitro-modules: "*"
-  checksum: 27290aaa605e93098f9c74e3c9ccd9862e6a6118b8cd32bf2e787437667ef031b9709b4f18aabfa1bc3082ff6a3d924a7bd3edb539522d00f00c10d725cdd63d
+  checksum: 41f909a474e5142378484065a9778c2fec185bc82731a863d54db1b489226b33a260cd8a12b8007d9195f8813b781b8570592e55a33285257dc34dbff04a30ea
   languageName: node
   linkType: hard
 
@@ -36574,51 +36388,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-avalabs-crypto@workspace:*, react-native-nitro-avalabs-crypto@workspace:packages/react-native-nitro-avalabs-crypto":
-  version: 0.0.0-use.local
-  resolution: "react-native-nitro-avalabs-crypto@workspace:packages/react-native-nitro-avalabs-crypto"
-  dependencies:
-    "@noble/curves": 1.9.0
-    "@react-native/babel-preset": 0.81.5
-    "@react-native/eslint-config": 0.82.0
-    "@rushstack/eslint-patch": 1.10.4
-    "@types/react": 19.1.10
-    eslint: 8.50.0
-    eslint-plugin-avalabs-mobile: "workspace:*"
-    nitrogen: 0.32.0
-    react: 19.1.0
-    react-native: 0.81.5
-    react-native-nitro-modules: 0.32.2
-    typescript: 5.8.3
+"react-native-nitro-fetch@npm:0.2.0":
+  version: 0.2.0
+  resolution: "react-native-nitro-fetch@npm:0.2.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-    react-native-nitro-modules: "*"
-  languageName: unknown
-  linkType: soft
-
-"react-native-nitro-fetch@npm:0.1.6":
-  version: 0.1.6
-  resolution: "react-native-nitro-fetch@npm:0.1.6"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-    react-native-nitro-modules: ^0.29.2
+    react-native-nitro-modules: ^0.35.2
     react-native-worklets-core: ^1.6.0
   peerDependenciesMeta:
     react-native-worklets-core:
       optional: true
-  checksum: a46cce48b7b20af075aad995fed5b0c915d7bc7ec97d4f03212ac5ae808731f23d6265a36d5e23e9ccdb1525dfd3fb558d08ecad57dc0d87be069c005a67b5c7
+  checksum: 660ba3b39925bde04690e0c99586a79b0a4d178783938f4f2fa5223971026c796bfdcc0e3e69fe63cb2274c91ae6c243d1b2e059bd1eb9afb65da524f19e6f5c
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.32.2, react-native-nitro-modules@npm:^0.32.0":
-  version: 0.32.2
-  resolution: "react-native-nitro-modules@npm:0.32.2"
+"react-native-nitro-modules@npm:0.35.6":
+  version: 0.35.6
+  resolution: "react-native-nitro-modules@npm:0.35.6"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 19cf02168699bbeaa3bc45bf0af1eaa6877a5fde3b22adc759516d3a3103c77754d3e13a8fe6e16782d34d019fe61f4240a6abc5a483a23a93c998853416cc70
+  checksum: b057dc606c4717bff2447cff3efdeebf5cd7342fa11b3f51cfd420ccce1224d0b4be5999ea63c9856721520f1cbb50fba9372109f49a4c8b14202d7ab4d3b37e
   languageName: node
   linkType: hard
 
@@ -40633,7 +40424,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:^0.2.11, tinyglobby@npm:^0.2.13, tinyglobby@npm:^0.2.14, tinyglobby@npm:^0.2.15":
+"tinyglobby@npm:^0.2.11, tinyglobby@npm:^0.2.13":
   version: 0.2.15
   resolution: "tinyglobby@npm:0.2.15"
   dependencies:
@@ -40791,15 +40582,6 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"ts-api-utils@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "ts-api-utils@npm:2.1.0"
-  peerDependencies:
-    typescript: ">=4.8.4"
-  checksum: 5b1ef89105654d93d67582308bd8dfe4bbf6874fccbcaa729b08fbb00a940fd4c691ca6d0d2b18c3c70878d9a7e503421b7cc473dbc3d0d54258b86401d4b15d
-  languageName: node
-  linkType: hard
-
 "ts-command-line-args@npm:^2.2.0":
   version: 2.5.1
   resolution: "ts-command-line-args@npm:2.5.1"
@@ -40930,16 +40712,6 @@ react-native-webview@ava-labs/react-native-webview:
   bin:
     ts-jest: cli.js
   checksum: 641f17ecb44caa987bc12feb87abbebc7cb0e4ba8725afe8208a14ec13ff0cce80fe47f79f3b8c37c7fe56e36fadee8314ed05c863b104bb7531bba71c3b9524
-  languageName: node
-  linkType: hard
-
-"ts-morph@npm:^27.0.0":
-  version: 27.0.2
-  resolution: "ts-morph@npm:27.0.2"
-  dependencies:
-    "@ts-morph/common": ~0.28.1
-    code-block-writer: ^13.0.3
-  checksum: 1ed2e89257d6f48fdce49bf51e1767787579220197efaa31ac25971c656c9a8a5a6bdd123042d16f83674eec119e4462a06f716187aec0b5e4740888ab5b73b7
   languageName: node
   linkType: hard
 
@@ -41401,16 +41173,6 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"typescript@npm:5.8.3":
-  version: 5.8.3
-  resolution: "typescript@npm:5.8.3"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: cb1d081c889a288b962d3c8ae18d337ad6ee88a8e81ae0103fa1fecbe923737f3ba1dbdb3e6d8b776c72bc73bfa6d8d850c0306eed1a51377d2fccdfd75d92c4
-  languageName: node
-  linkType: hard
-
 "typescript@npm:5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
@@ -41438,16 +41200,6 @@ react-native-webview@ava-labs/react-native-webview:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: ade87bce2363ee963eed0e4ca8a312ea02c81873ebd53609bc3f6dc0a57f6e61ad7e3fb8cbb7f7ab8b5081cbee801b023f7c4823ee70b1c447eae050e6c7622b
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@5.8.3#~builtin<compat/typescript>":
-  version: 5.8.3
-  resolution: "typescript@patch:typescript@npm%3A5.8.3#~builtin<compat/typescript>::version=5.8.3&hash=29ae49"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 1b503525a88ff0ff5952e95870971c4fb2118c17364d60302c21935dedcd6c37e6a0a692f350892bafcef6f4a16d09073fe461158547978d2f16fbe4cb18581c
   languageName: node
   linkType: hard
 
@@ -43728,7 +43480,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"yargs@npm:18.0.0, yargs@npm:^18.0.0":
+"yargs@npm:18.0.0":
   version: 18.0.0
   resolution: "yargs@npm:18.0.0"
   dependencies:
@@ -43888,13 +43640,6 @@ react-native-webview@ava-labs/react-native-webview:
   version: 3.24.1
   resolution: "zod@npm:3.24.1"
   checksum: dcd5334725b29555593c186fd6505878bb7ccb4f5954f728d2de24bf71f9397492d83bdb69d5b8a376eb500a02273ae0691b57deb1eb8718df3f64c77cc5534a
-  languageName: node
-  linkType: hard
-
-"zod@npm:^4.0.5":
-  version: 4.1.13
-  resolution: "zod@npm:4.1.13"
-  checksum: e5459280d46567df0adc188b0c687d425e616a206d4a73ee3bacf62d246f5546e24ef45790c7c4762d3ce7659c5e41052a29445d32d0d272410be9fe23162d03
   languageName: node
   linkType: hard
 
