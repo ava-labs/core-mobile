@@ -240,7 +240,10 @@ export function createInjectedProviderRouter(
     }
 
     const caip2ChainId = getEvmCaip2ChainId(getBrowserNetwork().chainId)
-    const origin = getNativeOrigin() ?? ''
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
     const controller = registerInFlight(id, origin)
 
     try {
@@ -319,7 +322,10 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
-    const origin = getNativeOrigin() ?? ''
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
     const controller = registerInFlight(id, origin)
     try {
       await requestSigning({
@@ -519,7 +525,10 @@ export function createInjectedProviderRouter(
   ): Promise<void> => {
     // Normalize: some dApps send object form { type, options } instead of array
     const normalizedParams = Array.isArray(params) ? params : [params]
-    const origin = getNativeOrigin() ?? ''
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
     const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({

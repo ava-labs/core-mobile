@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
@@ -365,9 +365,12 @@ export function useEvmInjectedProvider(
     requestConnectApproval
   ])
 
-  // Publish the router to the ref so setCurrentUrl (defined above, fires
-  // on nav events) can call cancelByOrigin without restructuring the memo.
-  useEffect(() => {
+  // Publish the router to the ref so setCurrentUrl (defined above, fires on nav
+  // events) can call cancelByOrigin. useLayoutEffect (not useEffect) so the ref
+  // is populated synchronously on commit, before any WebView navigation event
+  // can fire — otherwise an early cross-origin nav could run setCurrentUrl with
+  // a null ref and silently skip the security-sensitive cancellation.
+  useLayoutEffect(() => {
     routerRef.current = router
   }, [router])
 
