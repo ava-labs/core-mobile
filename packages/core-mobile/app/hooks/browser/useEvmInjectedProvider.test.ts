@@ -1877,5 +1877,76 @@ describe('useEvmInjectedProvider', () => {
         expect.stringContaining("'accountsChanged'")
       )
     })
+
+    // Build a store whose subscribe callback we can fire on demand, with a
+    // mutable `grants` so we can simulate a Connected Sites revoke (a fresh
+    // grants object, as Redux/Immer produces) with no active-account change.
+    const subscribableStore = (
+      initialGrants: Record<string, Record<string, string[]>>
+    ): {
+      store: ReturnType<typeof useStore>
+      revoke: (next: Record<string, Record<string, string[]>>) => void
+    } => {
+      let grants = initialGrants
+      let fire = (): void => undefined
+      const store = {
+        getState: () => ({ permissions: { grants } }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn((cb: () => void) => {
+          fire = cb
+          return () => undefined
+        })
+      } as unknown as ReturnType<typeof useStore>
+      return {
+        store,
+        revoke: next => {
+          grants = next
+          fire()
+        }
+      }
+    }
+
+    it('emits accountsChanged([]) immediately when grants are revoked from Connected Sites (no account switch)', () => {
+      const { store, revoke } = subscribableStore({
+        'https://opensea.io': { [A]: ['EVM'] }
+      })
+      mockUseStore.mockReturnValue(store)
+      setupMocks({ account: accountA })
+      const { result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // Prime so the dApp is seen connected to [A].
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Revoke from Connected Sites — active account unchanged.
+      act(() => revoke({}))
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+    })
+
+    it('does not emit on store changes that leave the origin grants unchanged', () => {
+      const grants = { 'https://opensea.io': { [A]: ['EVM'] } }
+      // Same grants object reference on the next store change (e.g. an unrelated
+      // slice updated) — must not produce a spurious accountsChanged.
+      const { store, revoke } = subscribableStore(grants)
+      mockUseStore.mockReturnValue(store)
+      setupMocks({ account: accountA })
+      const { result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      act(() => revoke(grants))
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
+    })
   })
 })

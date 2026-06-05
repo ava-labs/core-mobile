@@ -339,6 +339,40 @@ export function useEvmInjectedProvider(
     )
   }, [activeAccount, store, webViewRef])
 
+  // Connected Sites revokes a dApp from another screen without changing this
+  // tab's active account, so only a store subscription can react (CP-14382).
+  useEffect(() => {
+    let prevGrants = store.getState().permissions.grants
+    return store.subscribe(() => {
+      // store.subscribe fires on every dispatch — bail unless grants changed.
+      const grants = store.getState().permissions.grants
+      if (grants === prevGrants) return
+      prevGrants = grants
+
+      const origin = getOriginFromUrl(currentUrlRef.current)
+      if (!origin) return
+
+      // What this origin may transact as now: active-first, or [] if the active
+      // account is no longer granted.
+      const granted = selectGrantedAddressesForDomain({
+        domain: origin,
+        vmType: NetworkVMType.EVM
+      })(store.getState())
+      const accounts = resolveActiveConnectedAccounts(
+        granted,
+        activeAccountRef.current?.addressC
+      )
+
+      // Shared dedupe ref so this never double-fires with the switch/prime paths.
+      const serialized = JSON.stringify(accounts)
+      if (lastEmittedAccountsRef.current === serialized) return
+      lastEmittedAccountsRef.current = serialized
+      webViewRef.current?.injectJavaScript(
+        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized}); true;`
+      )
+    })
+  }, [store, webViewRef])
+
   // When this browser tab unmounts (tab closed), reject any parked connect
   // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
   // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
