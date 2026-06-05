@@ -101,7 +101,7 @@ export const FiatAmountInputWidget = ({
     []
   )
 
-  const showButtons = presets !== undefined || enableAmountSelection === true
+  const showButtons = (presets?.length ?? 0) > 0 || enableAmountSelection === true
 
   const [predefinedAmountButtons, setPredefinedAmountButtons] = useState<
     { text: string; predefinedAmount: number; isSelected: boolean }[]
