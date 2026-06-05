@@ -369,6 +369,13 @@ class AccountsService {
 
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(index)
+
+        // addAccount refreshes the pubkeys in SeedlessPubKeysStorage, but any
+        // SeedlessWallet instance cached in WalletDerivedDataCache still holds
+        // the pre-add `#addressPublicKeys` snapshot. Clear the cache so the
+        // getAddresses lookup below rebuilds the wallet with the new keys —
+        // otherwise the new account's chains resolve to empty addresses.
+        WalletFactory.cache.clearWallet(walletId)
       }
     } else if (
       walletType === WalletType.LEDGER ||
@@ -421,6 +428,18 @@ class AccountsService {
     const network = {
       isTestnet
     } as Network
+
+    // Seedless intentionally uses the singular per-index derivation path with
+    // its original lenient semantics (a failed module yields empty-string
+    // addresses for that chain rather than failing the whole account).
+    if (walletType === WalletType.SEEDLESS) {
+      return await ModuleManager.deriveAddresses({
+        walletId,
+        walletType,
+        accountIndex,
+        network
+      })
+    }
 
     const [addresses] = await ModuleManager.deriveAllAddresses({
       walletId,
