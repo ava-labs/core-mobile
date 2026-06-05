@@ -20,7 +20,7 @@ const DEFAULT_COIN = 'BTC'
 // TODO: replace with `clearinghouseState.withdrawable > 0` once the SDK's
 // per-user balance lookup is wired up. The footer switches between
 // `Slide to deposit` (no balance) and `Short / Long` (funded).
-const HAS_BALANCE = false
+const HAS_BALANCE = true
 
 const RANGES: readonly { label: string; resolution: TvResolution }[] = [
   { label: '24H', resolution: '60' },
@@ -59,12 +59,18 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   const handleDeposit = useCallback(() => {
     router.push('/perpetualsDeposit')
   }, [router])
+
   const handleShort = useCallback(() => {
-    // TODO: open short order flow
-  }, [])
+    router.push(
+      `/perpetualsPlaceOrder?coin=${encodeURIComponent(coin)}&side=short`
+    )
+  }, [coin, router])
+
   const handleLong = useCallback(() => {
-    // TODO: open long order flow
-  }, [])
+    router.push(
+      `/perpetualsPlaceOrder?coin=${encodeURIComponent(coin)}&side=long`
+    )
+  }, [coin, router])
 
   const renderFooter = useCallback(() => {
     if (!HAS_BALANCE) {

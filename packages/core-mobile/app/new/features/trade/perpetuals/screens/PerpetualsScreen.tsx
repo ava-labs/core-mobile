@@ -83,13 +83,9 @@ export const PerpetualsScreen = ({
       <PerpetualListItem
         market={item}
         isFirst={index === 0}
-        // TODO: route via the market detail screen (CP-14338) once merged;
-        // for now tap opens the place-order flow directly (defaults to Long).
         onPress={() =>
           router.navigate(
-            `/perpetualsPlaceOrder?coin=${encodeURIComponent(
-              item.symbol
-            )}&side=long&price=${item.price}`
+            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
           )
         }
       />
