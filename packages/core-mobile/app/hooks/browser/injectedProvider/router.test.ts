@@ -245,6 +245,31 @@ describe('createInjectedProviderRouter', () => {
         undefined
       )
     })
+
+    it('does not treat a non-string origin as a mismatch', () => {
+      // `origin` is not type-checked by validateProviderRequest. A truthy
+      // non-string value must not trip the mismatch branch — it's ignored and
+      // the request proceeds gated on the trusted nativeOrigin.
+      const { deps, sendResponse, trackPendingOrigin } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: { not: 'a string' },
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+      )
+
+      expect(sendResponse).not.toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+      expect(trackPendingOrigin).toHaveBeenCalledWith(1, 'https://example.com')
+    })
   })
 
   describe('payload parsing', () => {

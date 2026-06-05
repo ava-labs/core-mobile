@@ -597,7 +597,18 @@ export function createInjectedProviderRouter(
     // can't verify the shim's claim without a native anchor, so 4100
     // "unauthorized" is the right response — not "invalidRequest," since
     // the payload itself is well-formed.
-    if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
+    //
+    // `origin` isn't type-checked by validateProviderRequest, so require a
+    // string here: a truthy non-string would otherwise always be `!==` the
+    // native origin and trip this branch with noisy logs / bogus rejections.
+    // A non-string origin is treated like an absent one — the request still
+    // gates on the trusted nativeOrigin below (the real anchor; pageOrigin is
+    // only the extra spoof-detection layer).
+    if (
+      typeof pageOrigin === 'string' &&
+      nativeOrigin &&
+      pageOrigin !== nativeOrigin
+    ) {
       Logger.warn(
         `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
