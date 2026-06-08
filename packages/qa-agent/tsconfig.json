@@ -1,0 +1,10 @@
+{
+  "extends": "../../packages/tsconfig-mobile/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "commonjs",
+    "target": "es2020"
+  },
+  "include": ["src/**/*"]
+}
