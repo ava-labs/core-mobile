@@ -17,6 +17,12 @@ export type SeedParams = {
   side?: string
   price?: string
   entry?: string
+  /**
+   * Serialized `PerpUniverseEntry.maxLeverage` for the coin. At SDK-wiring
+   * time the navigation that opens this flow should source it from the market
+   * context's `universe?.maxLeverage` (the same field MarketDetailsHeader
+   * displays), not a literal.
+   */
   maxLeverage?: string
   leverage?: string
   size?: string

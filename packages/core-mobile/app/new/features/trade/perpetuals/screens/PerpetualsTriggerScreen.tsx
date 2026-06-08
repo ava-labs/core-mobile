@@ -207,21 +207,22 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
                 testID="perpetuals_trigger_price"
               />
             </View>
-            {showError ? (
-              <Text variant="subtitle2" sx={{ color: '$textDanger' }}>
-                {errorMessage}
+            <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
+              <Text
+                variant="subtitle2"
+                sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
+                {pctParts(pct).percent}
               </Text>
-            ) : (
-              <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
-                <Text
-                  variant="subtitle2"
-                  sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
-                  {pctParts(pct).percent}
-                </Text>
-                {pctParts(pct).suffix}
-              </Text>
-            )}
+              {pctParts(pct).suffix}
+            </Text>
           </View>
+          {showError ? (
+            <Text
+              variant="subtitle2"
+              sx={{ color: '$textDanger', textAlign: 'center' }}>
+              {errorMessage}
+            </Text>
+          ) : null}
         </View>
 
         <GroupList

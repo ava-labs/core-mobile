@@ -1,4 +1,6 @@
 import {
+  MAINNET_API_URL,
+  MAINNET_WS_URL,
   RESOLUTION_TO_INTERVAL,
   TV_RESOLUTIONS,
   type TvResolution
@@ -30,6 +32,8 @@ void chartHtmlAsset.downloadAsync().catch(() => {})
 const PRELOAD_JS = `
   window.__PERPS_TV_RESOLUTIONS = ${JSON.stringify(TV_RESOLUTIONS)};
   window.__PERPS_RES_TO_INTERVAL = ${JSON.stringify(RESOLUTION_TO_INTERVAL)};
+  window.__PERPS_API_URL = ${JSON.stringify(MAINNET_API_URL)};
+  window.__PERPS_WS_URL = ${JSON.stringify(MAINNET_WS_URL)};
   true;
 `
 

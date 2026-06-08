@@ -74,7 +74,8 @@ export const CircularDial: FC<CircularDialProps> = ({
   hapticsEnabled = true,
   testID,
   containerStyle,
-  canvasPadding = 0
+  canvasPadding = 0,
+  labelSx
 }) => {
   const {
     theme: { colors }
@@ -422,6 +423,7 @@ export const CircularDial: FC<CircularDialProps> = ({
               />
               <DialReadout
                 ref={readoutRef}
+                labelSx={labelSx}
                 value={value}
                 max={vMax}
                 decimals={vDecimals}
