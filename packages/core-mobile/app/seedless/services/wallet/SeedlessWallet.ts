@@ -363,8 +363,7 @@ export default class SeedlessWallet implements Wallet {
       )
     }
     const pubKeys = await SeedlessPubKeysStorage.retrieve()
-    const sourceKeys = pubKeys.length > 0 ? pubKeys : this.#addressPublicKeys
-    const publicKey = sourceKeys.find(findPublicKey(derivationPath, curve))
+    const publicKey = pubKeys.find(findPublicKey(derivationPath, curve))
 
     if (!publicKey) {
       throw new Error(
