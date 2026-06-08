@@ -160,7 +160,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       isModal
-      navigationTitle="How much do you want to withdraw?"
+      navigationTitle="Enter withdraw amount"
       contentContainerStyle={{ padding: 16, gap: 20 }}>
       <View sx={{ gap: 8, paddingTop: 8 }}>
         <Text variant="heading2">How much do you want to withdraw?</Text>

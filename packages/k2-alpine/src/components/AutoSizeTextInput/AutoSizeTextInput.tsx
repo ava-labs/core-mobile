@@ -324,7 +324,10 @@ export const AutoSizeTextInput = forwardRef<
 
       if (suffix) {
         return (
-          <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
+          <Pressable
+            onPress={focusTextInput}
+            onLayout={handleRightLayout}
+            style={{ alignSelf: 'flex-start' }}>
             <Animated.Text style={[suffixTextStyle, suffixStyle]}>
               {suffix}
             </Animated.Text>
@@ -406,7 +409,7 @@ const styles = StyleSheet.create({
   row: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: GAP_WIDTH
   },
