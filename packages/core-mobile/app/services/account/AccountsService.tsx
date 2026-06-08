@@ -367,15 +367,11 @@ class AccountsService {
           throw new Error('Expected SeedlessWallet instance')
         }
 
-        // prompt Core Seedless API to derive new keys
+        // prompt Core Seedless API to derive new keys. This refreshes
+        // SeedlessPubKeysStorage; getPublicKeyFor reads from that storage on
+        // every lookup, so the getAddresses calls below resolve the new keys
+        // even from a cached SeedlessWallet instance.
         await wallet.addAccount(index)
-
-        // addAccount refreshes the pubkeys in SeedlessPubKeysStorage, but any
-        // SeedlessWallet instance cached in WalletDerivedDataCache still holds
-        // the pre-add `#addressPublicKeys` snapshot. Clear the cache so the
-        // getAddresses lookup below rebuilds the wallet with the new keys —
-        // otherwise the new account's chains resolve to empty addresses.
-        WalletFactory.cache.clearWallet(walletId)
       }
     } else if (
       walletType === WalletType.LEDGER ||

@@ -39,26 +39,21 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
 import { getAddressDerivationPath } from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
-import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
+import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
-  #addressPublicKeys: AddressPublicKey[]
 
-  constructor(
-    client: cs.CubeSignerClient,
-    addressPublicKeys: AddressPublicKey[]
-  ) {
+  constructor(client: cs.CubeSignerClient) {
     this.#client = client
-    this.#addressPublicKeys = addressPublicKeys
   }
 
   private async getMnemonicId(): Promise<string> {
