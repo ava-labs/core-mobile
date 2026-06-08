@@ -21,6 +21,7 @@ import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
 import { xpChainToken } from 'utils/units/knownTokens'
 
 // we can't stake the full amount because of fees; when the user maxes out
@@ -28,10 +29,18 @@ import { xpChainToken } from 'utils/units/knownTokens'
 const STAKING_MAX_BALANCE_PERCENTAGE = 0.9999
 
 // P-chain AVAX has 9 decimals; used to convert the dial's plain number back
-// into a TokenUnit (the rest of the stake flow speaks TokenUnit).
+// into a TokenUnit (the rest of the stake flow speaks TokenUnit). We bridge
+// through a fixed-decimal string + big.js (`stringToBigint`) rather than
+// `avax * 1e9` so we never compound double-rounding error in the multiply —
+// the old path was only exact while `avax * 1e9` stayed under
+// Number.MAX_SAFE_INTEGER (~9M AVAX). `toFixed` caps at nAVAX precision so
+// big.js never has to round.
 const avaxToTokenUnit = (avax: number): TokenUnit =>
   new TokenUnit(
-    Math.round(avax * 10 ** xpChainToken.maxDecimals),
+    stringToBigint(
+      avax.toFixed(xpChainToken.maxDecimals),
+      xpChainToken.maxDecimals
+    ),
     xpChainToken.maxDecimals,
     xpChainToken.symbol
   )
