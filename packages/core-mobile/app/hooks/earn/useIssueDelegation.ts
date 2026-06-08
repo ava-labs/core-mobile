@@ -49,7 +49,16 @@ export const useIssueDelegation = ({
       additionalOutputs
     }: IssueDelegationParams) => {
       if (recomputeSteps) {
-        const newSteps = await computeSteps(stakeAmount.toSubUnit())
+        // Extra outputs (convenience fee) are funded from P-Chain inputs
+        // together with the stake, so the step computation needs their total
+        // to import/transfer enough. Sum them here and pass it through.
+        const additionalOutputAmount =
+          additionalOutputs?.reduce((sum, output) => sum + output.amount, 0n) ??
+          0n
+        const newSteps = await computeSteps(
+          stakeAmount.toSubUnit(),
+          additionalOutputAmount
+        )
         return delegate({
           steps: newSteps,
           startDate,

@@ -560,7 +560,12 @@ const StakeConfirmScreen = ({
           nodeId: validator.nodeID,
           startDate: minStartTime,
           endDate: validatedStakingEndTime,
-          recomputeSteps,
+          // The steps were first computed on the amount screen, before the
+          // convenience fee was known. When a fee applies, force a recompute
+          // so the import/transfer covers the extra escrow output too —
+          // otherwise the delegation tx can't fund it and fails with an
+          // insufficient-funds error (e.g. P-Chain balance == stake amount).
+          recomputeSteps: recomputeSteps || feeAdditionalOutputs !== undefined,
           onProgress,
           additionalOutputs: feeAdditionalOutputs
         })

@@ -85,7 +85,7 @@ export const useDelegation = (): {
   const pChainBalance = usePChainBalance()
 
   const computeSteps: ComputeSteps = useCallback(
-    async (stakeAmount: bigint) => {
+    async (stakeAmount: bigint, additionalOutputAmount = 0n) => {
       if (
         !activeAccount ||
         !activeAccount.addressPVM ||
@@ -110,6 +110,7 @@ export const useDelegation = (): {
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
         stakeAmount,
+        additionalOutputAmount,
         crossChainFeesMultiplier,
         avalancheEvmProvider,
         xpAddresses

@@ -6,7 +6,17 @@ import {
 import { useDelegation } from 'hooks/earn/useDelegation'
 import { AdditionalDelegatorOutput } from 'services/wallet/types'
 
-export type ComputeSteps = (stakeAmount: bigint) => Promise<Step[]>
+export type ComputeSteps = (
+  stakeAmount: bigint,
+  /**
+   * Total nAVAX of any extra outputs bundled atomically with the delegation
+   * tx (Fast Stake's convenience-fee escrow output). These outputs are funded
+   * from P-Chain inputs just like the stake, so the amount must be included
+   * when deciding how much to import/transfer. Defaults to 0n (no extra
+   * outputs) for flows that don't charge a fee.
+   */
+  additionalOutputAmount?: bigint
+) => Promise<Step[]>
 
 type TransactionHash = string
 
