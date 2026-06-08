@@ -14,15 +14,21 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { Route, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
+import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getMaximumStakeEndDate } from 'services/earn/utils'
+import { selectIsFastStakeFeeBlocked } from 'store/posthog'
+import { Seconds } from 'types/siUnits'
 import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
 import { xpChainToken } from 'utils/units/knownTokens'
+import { FAST_STAKE_FEE_RATE } from '../constants'
 
 // we can't stake the full amount because of fees; when the user maxes out
 // we stake 99.99% of the balance so there's room to cover fees.
@@ -85,6 +91,42 @@ const StakeAmountScreen = ({
     !amountNotEnough && !notEnoughBalance && !stakeAmount.isZero()
   const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
+
+  const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
+  const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
+
+  // This screen doesn't know the stake duration yet (it's picked on the next
+  // screen), so reserve room for the fee at the MAX duration (1y) — the
+  // worst case. Since the convenience fee is a fraction of the gross reward
+  // and the reward is linear in the stake, `fee / stake` is a constant
+  // multiplier (mirrors core-web's `feeMultiplier`). We probe it once at the
+  // minimum stake and the max duration; any shorter duration the user later
+  // picks yields a smaller fee, so the confirm step can always afford it.
+  const maxStakeDurationSeconds = useMemo(
+    () =>
+      Seconds(
+        Math.max(
+          0,
+          Math.floor((getMaximumStakeEndDate().getTime() - Date.now()) / 1000)
+        )
+      ),
+    []
+  )
+  const referenceReward = useStakeEstimatedReward({
+    amount: minStakeAmount,
+    // Skip the estimate (and its network round-trip) when the fee is off.
+    duration: isFastStakeFeeEnabled ? maxStakeDurationSeconds : undefined,
+    delegationFee: 0
+  })
+  const feeMultiplier = useMemo(() => {
+    if (!isFastStakeFeeEnabled) return 0
+    const reward = referenceReward?.estimatedTokenReward
+    const minStake = minStakeAmount.toDisplay({ asNumber: true })
+    if (!reward || minStake <= 0) return 0
+    return (
+      (reward.toDisplay({ asNumber: true }) * FAST_STAKE_FEE_RATE) / minStake
+    )
+  }, [isFastStakeFeeEnabled, referenceReward, minStakeAmount])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
@@ -154,12 +196,15 @@ const StakeAmountScreen = ({
     [stakeAmount]
   )
 
-  const dialMax = useMemo(
-    () =>
+  const dialMax = useMemo(() => {
+    // `* 0.9999` keeps the existing headroom for network fees; dividing by
+    // `(1 + feeMultiplier)` additionally reserves the convenience fee so
+    // `stake + fee` fits the balance (balance ≥ stake × (1 + feeMultiplier)).
+    const base =
       (cumulativeBalance?.toDisplay({ asNumber: true }) ?? 0) *
-      STAKING_MAX_BALANCE_PERCENTAGE,
-    [cumulativeBalance]
-  )
+      STAKING_MAX_BALANCE_PERCENTAGE
+    return base / (1 + feeMultiplier)
+  }, [cumulativeBalance, feeMultiplier])
 
   const dialMin = useMemo(
     () => minStakeAmount.toDisplay({ asNumber: true }),

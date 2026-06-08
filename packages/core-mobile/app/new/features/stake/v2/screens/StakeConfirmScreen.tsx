@@ -42,8 +42,10 @@ import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
+import { useStakeFundingPreflight } from '../hooks/useStakeFundingPreflight'
 import { StakeReviewSource } from '../types'
 import { formatFeePercent } from '../utils/formatFeePercent'
+import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
 import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
 
 // Auto-dismiss delay after the stake succeeds.
@@ -411,11 +413,7 @@ const StakeConfirmScreen = ({
       setIsSubmitting(false)
       resetLedgerState()
 
-      const isInsufficientFunds =
-        e.message.toLowerCase().includes('insufficient') ||
-        e.message.toLowerCase().includes('not enough')
-
-      if (isInsufficientFunds) {
+      if (isInsufficientFundsError(e)) {
         showAlert({
           title: 'Insufficient Funds',
           description:
@@ -706,18 +704,43 @@ const StakeConfirmScreen = ({
   // matching the old behaviour for the advanced delegate flow.
   const isFeeContextReady = !feePolicy || grossEstimatedReward !== undefined
 
+  // Pre-flight the funding (stake + convenience fee + network fees) before the
+  // user slides, so an unaffordable stake disables the CTA with an inline
+  // message instead of failing with an alert *after* the processing screen
+  // appears.
+  const { isCheckingFunding, hasInsufficientFunds } = useStakeFundingPreflight({
+    enabled: phase === 'idle' && validator !== undefined && isFeeContextReady,
+    stakeAmountNanoAvax: stakeAmount.toSubUnit(),
+    additionalOutputs: feeAdditionalOutputs
+  })
+
   const renderFooter = useCallback(() => {
     const ledgerFooter = renderLedgerFooter(steps.length)
     if (ledgerFooter) return ledgerFooter
 
     return (
-      <SlidingButton
-        mode="single"
-        label="Slide to stake"
-        loading={isIssueDelegationPending}
-        disabled={!validator || !isFeeContextReady || isIssueDelegationPending}
-        onConfirm={() => handleDelegate()}
-      />
+      <View sx={{ gap: 8 }}>
+        {hasInsufficientFunds && (
+          <Text
+            variant="caption"
+            sx={{ color: '$textDanger', textAlign: 'center' }}>
+            {`You don't have enough AVAX to cover the stake and its fee. Go back and lower the amount.`}
+          </Text>
+        )}
+        <SlidingButton
+          mode="single"
+          label="Slide to stake"
+          loading={isIssueDelegationPending}
+          disabled={
+            !validator ||
+            !isFeeContextReady ||
+            isIssueDelegationPending ||
+            isCheckingFunding ||
+            hasInsufficientFunds
+          }
+          onConfirm={() => handleDelegate()}
+        />
+      </View>
     )
   }, [
     renderLedgerFooter,
@@ -725,6 +748,8 @@ const StakeConfirmScreen = ({
     isIssueDelegationPending,
     validator,
     isFeeContextReady,
+    isCheckingFunding,
+    hasInsufficientFunds,
     handleDelegate
   ])
 
