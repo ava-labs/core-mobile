@@ -38,6 +38,54 @@ const signingMethodFor = (method: string): RpcMethod | undefined =>
     ? SIGNING_METHODS[method]
     : undefined
 
+const isEvmAddress = (value: unknown): value is string =>
+  typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value)
+
+// The account address(es) a signing request will be signed with, when the dApp
+// names one in the request. The approval screen resolves the signing account
+// from the address the request carries (selectAccountByAddress) — the tx
+// `from`, or the signer-address arg of a message-sign method — so the caller
+// must validate each against the origin's grants and never sign with an account
+// the dApp wasn't granted (An's repro: connected as account 2, then
+// eth_sendTransaction with from = account 1).
+//
+// Arg positions follow the EIP/MetaMask conventions the VM module parses:
+//   personal_sign(message, address)            → params[1]
+//   eth_sign(address, message)                 → params[0]
+//   eth_signTypedData / _v1 (typedData, addr)  → params[1]
+//   eth_signTypedData_v3 / _v4 (addr, data)    → params[0]
+//
+// NOTE eth_sendTransactionBatch is intentionally absent: its handler signs with
+// the wallet's *active account index* and ignores the per-tx `from`, so gating
+// on `from` would be both wrong and bypassable (a granted `from` with an
+// ungranted active account). It falls through to [] here so the caller gates on
+// the active account instead.
+//
+// Only well-formed addresses are returned: a malformed/unexpected param is
+// skipped (the caller falls back to the active account) so a parse mismatch can
+// never reject a valid request.
+const requestedSignerAddresses = (
+  method: RpcMethod,
+  params: unknown[]
+): string[] => {
+  switch (method) {
+    case RpcMethod.ETH_SEND_TRANSACTION: {
+      const from = (params[0] as { from?: unknown } | null | undefined)?.from
+      return isEvmAddress(from) ? [from] : []
+    }
+    case RpcMethod.PERSONAL_SIGN:
+    case RpcMethod.SIGN_TYPED_DATA:
+    case RpcMethod.SIGN_TYPED_DATA_V1:
+      return isEvmAddress(params[1]) ? [params[1]] : []
+    case RpcMethod.ETH_SIGN:
+    case RpcMethod.SIGN_TYPED_DATA_V3:
+    case RpcMethod.SIGN_TYPED_DATA_V4:
+      return isEvmAddress(params[0]) ? [params[0]] : []
+    default:
+      return []
+  }
+}
+
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
   if (addresses.length === 0) return []
@@ -234,16 +282,37 @@ export function createInjectedProviderRouter(
     // a synthetic '' so cancelByOrigin comparisons stay meaningful.
     if (!origin) return
 
-    // The injected signer always signs with the wallet's active account, so
-    // refuse to even prompt unless the dApp has been granted that account (i.e.
-    // it was told about it via connect / accountsChanged). Otherwise a page
-    // could trigger a signing approval for an account it was never connected to
-    // — and the dApp would only learn of the account by it being signed for.
-    // Reject up front, no prompt (CP-14382).
-    if (resolveActiveConnectedAddresses(origin).length === 0) {
+    // Every account this request will be signed with must be granted to the
+    // origin. The approval screen resolves the signer from the address the
+    // request carries (selectAccountByAddress) — the tx `from`, or a message-
+    // sign method's signer-address arg — falling back to the active account when
+    // none is given. Reject up front, no prompt, if any of those isn't granted:
+    // the injected provider must never sign — a tx OR a message (e.g. a Permit /
+    // signTypedData, which can authorize transfers off-chain) — with an account
+    // the dApp was never granted (An's repro: connected as account 2, then
+    // eth_sendTransaction with from = account 1). A granted account that isn't
+    // currently active is fine — the dApp has permission for it. CP-14382.
+    const grantedAddresses = new Set(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }).map(
+        addr => addr.toLowerCase()
+      )
+    )
+    const requestedSigners = requestedSignerAddresses(rpcMethod, params)
+    const signerAddresses =
+      requestedSigners.length > 0
+        ? requestedSigners
+        : [getActiveAccount()?.addressC].filter((addr): addr is string =>
+            Boolean(addr)
+          )
+    const allSignersGranted =
+      signerAddresses.length > 0 &&
+      signerAddresses.every(addr => grantedAddresses.has(addr.toLowerCase()))
+    if (!allSignersGranted) {
       sendResponse(
         id,
-        providerErrors.unauthorized('Account not connected to this origin'),
+        providerErrors.unauthorized(
+          'Account not granted access to this origin'
+        ),
         undefined
       )
       return
@@ -412,8 +481,23 @@ export function createInjectedProviderRouter(
       // CP-14382). Grants for non-active selections still persist, so switching
       // to one later connects without re-prompting.
       const reconciled = resolveActiveConnectedAddresses(origin)
-      if (!anyGranted || reconciled.length === 0) {
+      if (!anyGranted) {
+        // No account approved → genuine user rejection (4001).
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
+        return
+      }
+      if (reconciled.length === 0) {
+        // Approved, but the active account isn't among the grants: an
+        // authorization failure (the dApp would otherwise be told about an
+        // account the active-only signer can't honor), not a user cancel. Use
+        // 4100 so dApps treat it as "not connected" rather than "rejected".
+        sendResponse(
+          id,
+          providerErrors.unauthorized(
+            'Active account not granted for this origin'
+          ),
+          undefined
+        )
         return
       }
       // Emit accountsChanged before resolving the Promise — matches
@@ -475,8 +559,23 @@ export function createInjectedProviderRouter(
       // set for an address the injected signer won't use (phantom connection,
       // CP-14382).
       const reconciled = resolveActiveConnectedAddresses(origin)
-      if (!anyGranted || reconciled.length === 0) {
+      if (!anyGranted) {
+        // No account approved → genuine user rejection (4001).
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
+        return
+      }
+      if (reconciled.length === 0) {
+        // Approved, but the active account isn't among the grants: an
+        // authorization failure (the dApp would otherwise be told about an
+        // account the active-only signer can't honor), not a user cancel. Use
+        // 4100 so dApps treat it as "not connected" rather than "rejected".
+        sendResponse(
+          id,
+          providerErrors.unauthorized(
+            'Active account not granted for this origin'
+          ),
+          undefined
+        )
         return
       }
       // Emit accountsChanged before resolving the Promise (see handleRequestAccounts).

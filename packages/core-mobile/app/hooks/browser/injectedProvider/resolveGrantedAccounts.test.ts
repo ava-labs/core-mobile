@@ -28,13 +28,28 @@ describe('resolveGrantedAccounts', () => {
     ])
   })
 
-  it('is case-sensitive on the active-address comparison', () => {
-    // Documents current behavior — case normalization is intentionally
-    // deferred to the permissions slice.
-    expect(resolveGrantedAccounts(['0xABC', '0xDEF'], '0xabc')).toEqual([
+  it('matches the active address case-insensitively and sorts the stored grant first', () => {
+    // EVM addresses vary by hex casing; a lowercased active address must still
+    // match a mixed-case grant and be sorted first, preserving the stored
+    // casing in the output.
+    expect(resolveGrantedAccounts(['0xDEF', '0xABC'], '0xabc')).toEqual([
       '0xABC',
       '0xDEF'
     ])
+  })
+
+  it('de-dupes addresses that differ only by hex casing, keeping the first-seen casing', () => {
+    // Permissions are keyed by raw address string and not normalized on grant,
+    // so the same address can be stored twice under different casing.
+    expect(
+      resolveGrantedAccounts(['0xABC', '0xabc', '0xDEF'], undefined)
+    ).toEqual(['0xABC', '0xDEF'])
+  })
+
+  it('de-dupes case-insensitive duplicates before applying active-first ordering', () => {
+    expect(
+      resolveGrantedAccounts(['0xDEF', '0xABC', '0xabc'], '0xabc')
+    ).toEqual(['0xABC', '0xDEF'])
   })
 })
 
@@ -61,5 +76,13 @@ describe('resolveActiveConnectedAccounts', () => {
 
   it('returns [] when nothing is granted', () => {
     expect(resolveActiveConnectedAccounts([], '0xActive')).toEqual([])
+  })
+
+  it('treats the active address as granted regardless of hex casing', () => {
+    // The signing gate lowercases; connection state must agree, so an active
+    // address that differs from a stored grant only by casing is still granted.
+    expect(resolveActiveConnectedAccounts(['0xABC', '0xDEF'], '0xabc')).toEqual(
+      ['0xABC', '0xDEF']
+    )
   })
 })

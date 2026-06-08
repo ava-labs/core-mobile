@@ -122,6 +122,19 @@ const mockStore = {
   subscribe: jest.fn(() => () => undefined)
 } as unknown as ReturnType<typeof useStore>
 
+// Signing requires the resolved signer account to be granted for the origin.
+// Signing tests use this to grant the default active account for their origin.
+const grantStoreForOrigin = (origin: string): ReturnType<typeof useStore> =>
+  ({
+    getState: () => ({
+      permissions: {
+        grants: { [origin]: { [mockActiveAccount.addressC]: ['EVM'] } }
+      }
+    }),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(() => () => undefined)
+  } as unknown as ReturnType<typeof useStore>)
+
 function setupMocks(
   overrides: {
     account?: typeof mockActiveAccount | null
@@ -289,6 +302,8 @@ describe('useEvmInjectedProvider', () => {
       it('uses browser chain for signing after wallet_switchEthereumChain', async () => {
         const mockSignFn = jest.fn().mockResolvedValue('0xSig')
         mockCreateInAppRequest.mockReturnValue(mockSignFn)
+        // Signing requires the active account granted for the origin.
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
 
         const { result } = renderProvider()
 
@@ -738,6 +753,12 @@ describe('useEvmInjectedProvider', () => {
         }
       ]
 
+      // The signing gate requires the signer account to be granted for the
+      // origin; these tests render at https://example.com as the active account.
+      beforeEach(() => {
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
+      })
+
       it.each(signingMethods)(
         'dispatches $dappMethod through createInAppRequest',
         async ({ dappMethod, rpcMethod }) => {
@@ -783,6 +804,10 @@ describe('useEvmInjectedProvider', () => {
       it('derives peerMeta.name from the native URL hostname, not from page-supplied domain_metadata', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xSig')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
+        // Signing requires the active account granted for the (real) origin.
+        mockUseStore.mockReturnValue(
+          grantStoreForOrigin('https://malicious.example')
+        )
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1227,6 +1252,8 @@ describe('useEvmInjectedProvider', () => {
       it('defaults params to empty array for signing methods', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xResult')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
+        // Signing requires the active account granted for the origin.
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
 
         const { result } = renderProvider()
 
@@ -1391,6 +1418,8 @@ describe('useEvmInjectedProvider', () => {
         return new Promise(() => undefined)
       })
       mockCreateInAppRequest.mockReturnValue(mockRequest)
+      // Signing requires the active account granted for the origin.
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
 
       const { result } = renderProvider('https://uniswap.org')
 
@@ -1420,6 +1449,8 @@ describe('useEvmInjectedProvider', () => {
         return new Promise(() => undefined)
       })
       mockCreateInAppRequest.mockReturnValue(mockRequest)
+      // Signing requires the active account granted for the origin.
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
 
       const { result } = renderProvider('https://uniswap.org/swap')
 

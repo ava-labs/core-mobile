@@ -11,16 +11,35 @@
  * - Active address present in the granted set → active sorted first, other
  *   granted addresses follow in their original slice order.
  * - Active address not in the granted set → granted list returned as-is.
+ *
+ * Address matching is case-insensitive (EVM addresses vary by hex casing, and
+ * the signing gate lowercases) so connection state can't disagree with signing
+ * authorization over casing alone.
  */
 export function resolveGrantedAccounts(
   granted: string[],
   active: string | undefined
 ): string[] {
   if (granted.length === 0) return []
-  if (active && granted.includes(active)) {
-    return [active, ...granted.filter(addr => addr !== active)]
+  // De-dupe case-insensitively before ordering: permissions are keyed by the
+  // raw address string and not normalized on grant, so the same address can
+  // appear under different hex casing. Returning it twice via accountsChanged /
+  // EIP-2255 is non-standard and confuses dApps. Keep the first-seen casing.
+  const seen = new Set<string>()
+  const deduped = granted.filter(addr => {
+    const lower = addr.toLowerCase()
+    if (seen.has(lower)) return false
+    seen.add(lower)
+    return true
+  })
+  const activeLower = active?.toLowerCase()
+  const activeGranted = activeLower
+    ? deduped.find(addr => addr.toLowerCase() === activeLower)
+    : undefined
+  if (activeGranted) {
+    return [activeGranted, ...deduped.filter(addr => addr !== activeGranted)]
   }
-  return granted
+  return deduped
 }
 
 /**
@@ -40,6 +59,8 @@ export function resolveActiveConnectedAccounts(
   granted: string[],
   active: string | undefined
 ): string[] {
-  if (!active || !granted.includes(active)) return []
+  const activeLower = active?.toLowerCase()
+  if (!activeLower || !granted.some(addr => addr.toLowerCase() === activeLower))
+    return []
   return resolveGrantedAccounts(granted, active)
 }
