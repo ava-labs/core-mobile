@@ -146,6 +146,7 @@ function setupMocks(
     network?: typeof mockActiveNetwork
     allNetworks?: Record<number, unknown>
     developerMode?: boolean
+    tabChainId?: number
   } = {}
 ): void {
   const account =
@@ -153,8 +154,9 @@ function setupMocks(
   const network = overrides.network ?? mockActiveNetwork
   const allNetworks = overrides.allNetworks ?? mockAllNetworks
   const developerMode = overrides.developerMode ?? false
+  const tabChainId = overrides.tabChainId
 
-  const mockTabChainIdSelector = jest.fn(() => undefined)
+  const mockTabChainIdSelector = jest.fn(() => tabChainId)
   ;(selectTabChainId as jest.Mock).mockReturnValue(mockTabChainIdSelector)
 
   // requestReadOnly resolves networks via selectAllNetworks(store.getState())
@@ -166,7 +168,7 @@ function setupMocks(
       if (selector === (selectAllNetworks as unknown)) return allNetworks
       if (selector === (selectActiveNetwork as unknown)) return network
       if (selector === (selectIsDeveloperMode as unknown)) return developerMode
-      if (selector === mockTabChainIdSelector) return undefined
+      if (selector === mockTabChainIdSelector) return tabChainId
       const selectorStr = selector.toString()
       if (
         selectorStr.includes('activeAccount') ||
@@ -1438,6 +1440,36 @@ describe('useEvmInjectedProvider', () => {
       expect(chainChangedCalls).toHaveLength(0)
     })
 
+    it('does NOT disconnect a pinned tab when the active network flips to non-EVM (CP-13671)', () => {
+      // Per-tab insulation invariant: a tab that pinned its chain via
+      // wallet_switchEthereumChain must ignore wallet-wide network changes —
+      // including a flip to a non-EVM chain. This is what makes the per-tab
+      // model hold.
+      setupMocks({ tabChainId: 1 })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Wallet flips to a non-EVM chain; the pinned tab must not react.
+      setupMocks({
+        tabChainId: 1,
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('disconnect'")
+      )
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('chainChanged'")
+      )
+    })
+
     it('re-emits chainChanged when returning to the SAME EVM chain after a non-EVM disconnect (CP-13671)', () => {
       // Recovery path: entering non-EVM invalidates the cached chainId, so
       // switching back to the original EVM chain still fires chainChanged and the
@@ -1470,17 +1502,34 @@ describe('useEvmInjectedProvider', () => {
     })
 
     it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {
-      setupMocks({ developerMode: false })
+      setupMocks({ developerMode: false, tabChainId: 1 })
       const { rerender } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
       mockDispatch.mockClear()
 
       // Toggle testnet/developer mode on.
-      setupMocks({ developerMode: true })
+      setupMocks({ developerMode: true, tabChainId: 1 })
       rerender()
 
       expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'browser/tabs/clearTabChainId' })
+      )
+    })
+
+    it('does not dispatch clearTabChainId on a dev-mode flip when the tab has no pin', () => {
+      // Guard against a redundant store update/rerender on every toggle when
+      // there's nothing to clear.
+      setupMocks({ developerMode: false })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockDispatch.mockClear()
+
+      setupMocks({ developerMode: true })
+      rerender()
+
+      expect(mockDispatch).not.toHaveBeenCalledWith(
         expect.objectContaining({ type: 'browser/tabs/clearTabChainId' })
       )
     })

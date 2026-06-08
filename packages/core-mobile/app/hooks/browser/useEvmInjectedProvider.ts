@@ -143,8 +143,10 @@ export function useEvmInjectedProvider(
   useEffect(() => {
     if (prevDevModeRef.current === isDeveloperMode) return
     prevDevModeRef.current = isDeveloperMode
-    dispatch(clearTabChainId({ tabId }))
-  }, [isDeveloperMode, dispatch, tabId])
+    // Only clear an actual pin — dispatching for an un-pinned tab is a redundant
+    // store update + rerender on every dev-mode toggle.
+    if (tabChainId !== undefined) dispatch(clearTabChainId({ tabId }))
+  }, [isDeveloperMode, dispatch, tabId, tabChainId])
 
   // Router is assigned below (after useMemo). setCurrentUrl may fire before
   // the router is constructed on first render, so we route through a ref.
@@ -598,7 +600,12 @@ export function useEvmInjectedProvider(
     )
   }, [store, webViewRef])
   // Publish to the ref so setCurrentUrl (defined above) can re-prime on SPA nav.
-  primeAccountsRef.current = primeAccounts
+  // useLayoutEffect (not a render-phase assignment) to match routerRef: the ref
+  // must be set synchronously on commit, before a navigation event can fire
+  // setCurrentUrl and read it.
+  useLayoutEffect(() => {
+    primeAccountsRef.current = primeAccounts
+  }, [primeAccounts])
 
   const handleDomainMetadata = useCallback(
     (payload: string) => {
