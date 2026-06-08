@@ -851,7 +851,9 @@ describe('createInjectedProviderRouter', () => {
 
   describe('signing methods', () => {
     it('calls requestSigning with caip2 chain and peer meta, resolves with result', async () => {
-      const { deps, sendResponse, requestSigning } = makeDeps()
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       requestSigning.mockResolvedValueOnce('0xSig')
       const router = createInjectedProviderRouter(deps)
 
@@ -870,8 +872,30 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, '0xSig')
     })
 
+    it('rejects (4100) without prompting when the active account is not granted to the origin', async () => {
+      // The injected signer is active-only; if the dApp was never told about the
+      // active account, a signing request must reject up front, never prompt —
+      // otherwise the dApp would learn of the account by it being signed for.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
     it('propagates rejection from requestSigning', async () => {
-      const { deps, sendResponse, requestSigning } = makeDeps()
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       const err = {
         code: EIP1193_USER_REJECTED_CODE,
         message: USER_REJECTED_REQUEST_MESSAGE
@@ -886,7 +910,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('routes eth_sendTransactionBatch through requestSigning, not the read-only path', async () => {
-      const { deps, requestSigning, requestReadOnly } = makeDeps()
+      const { deps, requestSigning, requestReadOnly } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       requestSigning.mockResolvedValueOnce('0xBatch')
       const router = createInjectedProviderRouter(deps)
 
@@ -950,7 +976,9 @@ describe('createInjectedProviderRouter', () => {
 
   describe('cancelByOrigin', () => {
     it('aborts in-flight signing requests whose origin does not match the new origin', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       // Never resolves — simulates a signing request sitting on an approval
       // screen while the user navigates away.
       let capturedSignal: AbortSignal | undefined
@@ -974,7 +1002,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('does not abort requests whose origin matches the new origin', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       let capturedSignal: AbortSignal | undefined
       requestSigning.mockImplementationOnce(args => {
         capturedSignal = args.signal
@@ -1005,7 +1035,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('cleans up in-flight tracking after abort', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       const signals: AbortSignal[] = []
       requestSigning.mockImplementation(args => {
         if (args.signal) signals.push(args.signal)

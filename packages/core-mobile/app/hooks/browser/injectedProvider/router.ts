@@ -173,6 +173,21 @@ export function createInjectedProviderRouter(
     }
   }
 
+  // EIP-2255: the accounts/permissions to advertise for this origin. The
+  // injected signer is active-only, so we mirror the passive accountsChanged
+  // reconciliation here: if the wallet's active account is granted, return the
+  // granted set (active sorted first) — switching among granted accounts never
+  // re-prompts (multi-account, Phase 3c). If the active account is NOT granted,
+  // return [] so the connect/permission handlers don't tell the dApp it's
+  // connected to an address the active-only signer can't authorize (CP-14382).
+  // The shared helper keeps this identical to the hook's switch-effect / prime
+  // path, so the active and passive paths never disagree.
+  const resolveActiveConnectedAddresses = (origin: string): string[] =>
+    resolveActiveConnectedAccounts(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }),
+      getActiveAccount()?.addressC
+    )
+
   // Read-only methods (eth_call, eth_getBalance, …) are dispatched to the VM
   // module — the same source WalletConnect uses — instead of a bespoke fetch +
   // allowlist. The module classifies/validates the method against its manifest
@@ -218,6 +233,22 @@ export function createInjectedProviderRouter(
     // gated by handleProviderMessage (rejects 4100 when absent); never register
     // a synthetic '' so cancelByOrigin comparisons stay meaningful.
     if (!origin) return
+
+    // The injected signer always signs with the wallet's active account, so
+    // refuse to even prompt unless the dApp has been granted that account (i.e.
+    // it was told about it via connect / accountsChanged). Otherwise a page
+    // could trigger a signing approval for an account it was never connected to
+    // — and the dApp would only learn of the account by it being signed for.
+    // Reject up front, no prompt (CP-14382).
+    if (resolveActiveConnectedAddresses(origin).length === 0) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Account not connected to this origin'),
+        undefined
+      )
+      return
+    }
+
     const controller = registerInFlight(id, origin)
 
     try {
@@ -329,21 +360,6 @@ export function createInjectedProviderRouter(
       clearInFlight(id, controller)
     }
   }
-
-  // EIP-2255: the accounts/permissions to advertise for this origin. The
-  // injected signer is active-only, so we mirror the passive accountsChanged
-  // reconciliation here: if the wallet's active account is granted, return the
-  // granted set (active sorted first) — switching among granted accounts never
-  // re-prompts (multi-account, Phase 3c). If the active account is NOT granted,
-  // return [] so the connect/permission handlers don't tell the dApp it's
-  // connected to an address the active-only signer can't authorize (CP-14382).
-  // The shared helper keeps this identical to the hook's switch-effect / prime
-  // path, so the active and passive paths never disagree.
-  const resolveActiveConnectedAddresses = (origin: string): string[] =>
-    resolveActiveConnectedAccounts(
-      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }),
-      getActiveAccount()?.addressC
-    )
 
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
