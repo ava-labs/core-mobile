@@ -113,37 +113,6 @@ class ModuleManager {
    * @param param1 network
    * @returns EVM, AVM, PVM, SVM and Bitcoin addresses
    */
-  deriveAddresses = async ({
-    walletId,
-    walletType,
-    accountIndex,
-    network
-  }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex?: number
-    network: Network
-  }): Promise<Record<NetworkVMType, string>> => {
-    return Promise.allSettled(
-      this.modules.map(async module =>
-        module.deriveAddress({
-          secretId: JSON.stringify({ walletId, walletType }),
-          accountIndex,
-          network,
-          derivationPathType: DerivationPath.BIP44
-        })
-      )
-    ).then(results => {
-      let addresses = emptyAddresses()
-      results.forEach(result => {
-        if (result.status === 'fulfilled') {
-          addresses = { ...addresses, ...result.value }
-        }
-      })
-      return addresses
-    })
-  }
-
   deriveAllAddresses = async ({
     walletId,
     walletType,
