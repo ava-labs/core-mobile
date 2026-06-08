@@ -429,18 +429,6 @@ class AccountsService {
       isTestnet
     } as Network
 
-    // Seedless intentionally uses the singular per-index derivation path with
-    // its original lenient semantics (a failed module yields empty-string
-    // addresses for that chain rather than failing the whole account).
-    if (walletType === WalletType.SEEDLESS) {
-      return await ModuleManager.deriveAddresses({
-        walletId,
-        walletType,
-        accountIndex,
-        network
-      })
-    }
-
     const [addresses] = await ModuleManager.deriveAllAddresses({
       walletId,
       walletType,

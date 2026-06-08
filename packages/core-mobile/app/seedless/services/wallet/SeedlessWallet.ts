@@ -47,6 +47,7 @@ import { getAddressDerivationPath } from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
+import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
 
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
@@ -366,10 +367,8 @@ export default class SeedlessWallet implements Wallet {
         'derivationPath is required to get public key for SeedlessWallet'
       )
     }
-
-    const publicKey = this.#addressPublicKeys.find(
-      findPublicKey(derivationPath, curve)
-    )
+    const pubKeys = await SeedlessPubKeysStorage.retrieve()
+    const publicKey = pubKeys.find(findPublicKey(derivationPath, curve))
 
     if (!publicKey) {
       throw new Error(

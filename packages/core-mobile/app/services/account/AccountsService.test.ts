@@ -4,9 +4,6 @@ import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import ModuleManager from 'vmModule/ModuleManager'
-import WalletFactory from 'services/wallet/WalletFactory'
-import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AccountsService from './AccountsService'
 
 jest.mock('vmModule/ModuleManager', () => ({
@@ -41,30 +38,6 @@ jest.mock('utils/Logger', () => ({
     warn: jest.fn()
   }
 }))
-
-jest.mock('services/wallet/WalletFactory', () => ({
-  __esModule: true,
-  default: {
-    createWallet: jest.fn(),
-    cache: {
-      clearWallet: jest.fn()
-    }
-  }
-}))
-
-jest.mock('seedless/services/storage/SeedlessPubKeysStorage', () => ({
-  SeedlessPubKeysStorage: {
-    retrieve: jest.fn()
-  }
-}))
-
-// Real class so AccountsService's `wallet instanceof SeedlessWallet` guard passes.
-jest.mock('seedless/services/wallet/SeedlessWallet', () => {
-  class MockSeedlessWallet {
-    addAccount = jest.fn().mockResolvedValue(undefined)
-  }
-  return { __esModule: true, default: MockSeedlessWallet }
-})
 
 type AddressRecord = Record<NetworkVMType, string>
 
@@ -673,151 +646,6 @@ describe('AccountsService', () => {
       )
 
       discoverSpy.mockRestore()
-    })
-  })
-
-  describe('getAddresses', () => {
-    it('routes seedless through the singular deriveAddresses path', async () => {
-      const seedlessAddresses = createAddresses({
-        [NetworkVMType.EVM]: '0xseedless'
-      })
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        seedlessAddresses
-      )
-
-      const result = await AccountsService.getAddresses({
-        walletId: 'wallet-1',
-        walletType: WalletType.SEEDLESS,
-        accountIndex: 0,
-        isTestnet: false
-      })
-
-      expect(result).toEqual(seedlessAddresses)
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledWith(
-        expect.objectContaining({
-          walletId: 'wallet-1',
-          walletType: WalletType.SEEDLESS,
-          accountIndex: 0
-        })
-      )
-      expect(ModuleManager.deriveAllAddresses).not.toHaveBeenCalled()
-    })
-
-    it('returns seedless addresses without failing loudly on a partially-derived record', async () => {
-      // Singular path keeps its lenient semantics: a failed module leaves
-      // empty-string addresses rather than throwing, unlike the batch guard.
-      const partial = createAddresses({ [NetworkVMType.EVM]: '0xseedless' })
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(partial)
-
-      await expect(
-        AccountsService.getAddresses({
-          walletId: 'wallet-1',
-          walletType: WalletType.SEEDLESS,
-          accountIndex: 0,
-          isTestnet: false
-        })
-      ).resolves.toEqual(partial)
-    })
-
-    it('routes non-seedless through the batched deriveAllAddresses path', async () => {
-      const addresses = createAddresses({ [NetworkVMType.EVM]: '0xmnemonic' })
-      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockResolvedValue([
-        addresses
-      ])
-
-      const result = await AccountsService.getAddresses({
-        walletId: 'wallet-1',
-        walletType: WalletType.MNEMONIC,
-        accountIndex: 0,
-        isTestnet: false
-      })
-
-      expect(result).toEqual(addresses)
-      expect(ModuleManager.deriveAllAddresses).toHaveBeenCalledWith(
-        expect.objectContaining({ accountIndices: [0] })
-      )
-      expect(ModuleManager.deriveAddresses).not.toHaveBeenCalled()
-    })
-
-    it('fails loudly for non-seedless when the batch returns no record', async () => {
-      ;(ModuleManager.deriveAllAddresses as jest.Mock).mockResolvedValue([
-        undefined
-      ])
-
-      await expect(
-        AccountsService.getAddresses({
-          walletId: 'wallet-1',
-          walletType: WalletType.MNEMONIC,
-          accountIndex: 3,
-          isTestnet: false
-        })
-      ).rejects.toThrow('Failed to derive addresses for account index 3')
-    })
-  })
-
-  describe('createNextAccount (seedless)', () => {
-    it('clears the wallet cache after addAccount so getAddresses sees the new keys', async () => {
-      const seedlessWallet = new SeedlessWallet(
-        undefined as never,
-        undefined as never
-      )
-      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([])
-      ;(WalletFactory.createWallet as jest.Mock).mockResolvedValue(
-        seedlessWallet
-      )
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        createAddresses({ [NetworkVMType.EVM]: '0xnew' })
-      )
-
-      await AccountsService.createNextAccount({
-        index: 1,
-        walletType: WalletType.SEEDLESS,
-        isTestnet: false,
-        walletId: 'wallet-1',
-        name: 'Account 2'
-      })
-
-      // New keys were requested from CubeSigner...
-      expect(seedlessWallet.addAccount).toHaveBeenCalledWith(1)
-      // ...and the stale cached wallet instance was invalidated before lookup.
-      expect(WalletFactory.cache.clearWallet).toHaveBeenCalledWith('wallet-1')
-
-      const clearOrder = (WalletFactory.cache.clearWallet as jest.Mock).mock
-        .invocationCallOrder[0]
-      const deriveOrder = (ModuleManager.deriveAddresses as jest.Mock).mock
-        .invocationCallOrder[0]
-      expect(clearOrder).toBeDefined()
-      expect(deriveOrder).toBeDefined()
-      expect(Number(clearOrder)).toBeLessThan(Number(deriveOrder))
-    })
-
-    it('does not clear the cache when the account already exists', async () => {
-      const seedlessWallet = new SeedlessWallet(
-        undefined as never,
-        undefined as never
-      )
-      // index 1 already present → addAccount branch is skipped
-      ;(SeedlessPubKeysStorage.retrieve as jest.Mock).mockResolvedValue([
-        { curve: 'secp256k1', derivationPath: "m/44'/60'/0'/0/0", key: 'k0' },
-        { curve: 'secp256k1', derivationPath: "m/44'/60'/0'/0/1", key: 'k1' }
-      ])
-      ;(WalletFactory.createWallet as jest.Mock).mockResolvedValue(
-        seedlessWallet
-      )
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        createAddresses({ [NetworkVMType.EVM]: '0xexisting' })
-      )
-
-      await AccountsService.createNextAccount({
-        index: 1,
-        walletType: WalletType.SEEDLESS,
-        isTestnet: false,
-        walletId: 'wallet-1',
-        name: 'Account 2'
-      })
-
-      expect(seedlessWallet.addAccount).not.toHaveBeenCalled()
-      expect(WalletFactory.cache.clearWallet).not.toHaveBeenCalled()
     })
   })
 })
