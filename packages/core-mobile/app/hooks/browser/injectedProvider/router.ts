@@ -28,6 +28,15 @@ export const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
 }
 
+// `method` comes straight from the dApp, so an own-property check is required:
+// `method in SIGNING_METHODS` / `SIGNING_METHODS[method]` walk the prototype
+// chain, so names like `toString`, `constructor`, or `__proto__` would otherwise
+// hit the signing branch and call requestSigning with a non-RPC value.
+const signingMethodFor = (method: string): RpcMethod | undefined =>
+  Object.prototype.hasOwnProperty.call(SIGNING_METHODS, method)
+    ? SIGNING_METHODS[method]
+    : undefined
+
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
   if (addresses.length === 0) return []
@@ -193,7 +202,7 @@ export function createInjectedProviderRouter(
     method: string,
     params: unknown[]
   ): Promise<void> => {
-    const rpcMethod = SIGNING_METHODS[method]
+    const rpcMethod = signingMethodFor(method)
     if (!rpcMethod) {
       sendResponse(
         id,
@@ -540,7 +549,7 @@ export function createInjectedProviderRouter(
       handleRevokePermissions(id)
     } else if (method === 'wallet_watchAsset') {
       handleWatchAsset(id, params)
-    } else if (method in SIGNING_METHODS) {
+    } else if (signingMethodFor(method)) {
       dispatchSigningRequest(id, method, safeParams)
     } else {
       // Anything not injected-specific and not a signing method is treated as

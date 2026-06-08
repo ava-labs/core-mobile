@@ -198,6 +198,29 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
+    it('routes prototype-chain method names to read-only, never signing', async () => {
+      // `method` is dApp-controlled; signing detection must be an own-property
+      // check so inherited Object keys can't hit the signing branch and call
+      // requestSigning with a non-RPC value.
+      const { deps, requestSigning, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      for (const m of [
+        'toString',
+        'constructor',
+        '__proto__',
+        'hasOwnProperty'
+      ]) {
+        send(router, m)
+      }
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(requestReadOnly).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'toString' })
+      )
+    })
+
     it('tracks native origin for allowed methods', () => {
       const { deps, trackPendingOrigin } = makeDeps()
       const router = createInjectedProviderRouter(deps)
