@@ -171,7 +171,7 @@ export const TokenUnitInput = forwardRef<
               maxLength={maxLength}
               initialFontSize={60}
               suffix={token.symbol}
-              suffixSx={{
+              suffixStyle={{
                 marginBottom: 20
               }}
               /**

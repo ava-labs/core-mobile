@@ -1,6 +1,6 @@
 import { SxProp } from 'dripsy'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { ReturnKeyTypeOptions } from 'react-native'
+import { ReturnKeyTypeOptions, TextStyle } from 'react-native'
 import { Button } from '../Button/Button'
 import { View } from '../Primitives'
 import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
@@ -50,6 +50,8 @@ interface FiatAmountInputWidgetProps {
    */
   trailingCurrencyMaxFontSize?: number
   returnKeyType?: ReturnKeyTypeOptions
+  suffixStyle?: TextStyle
+  prefixStyle?: TextStyle
 }
 
 export const FiatAmountInputWidget = ({
@@ -68,7 +70,9 @@ export const FiatAmountInputWidget = ({
   presets,
   subTextPosition,
   trailingCurrencyMaxFontSize,
-  returnKeyType
+  returnKeyType,
+  suffixStyle,
+  prefixStyle
 }: FiatAmountInputWidgetProps): JSX.Element => {
   const buildDefaultButtons = useCallback(
     () => [
@@ -194,7 +198,6 @@ export const FiatAmountInputWidget = ({
           borderRadius: 12,
           alignItems: 'center',
           paddingTop: 32,
-          paddingHorizontal: 16,
           paddingBottom: 22
         }}>
         <FiatAmountInput
@@ -209,6 +212,8 @@ export const FiatAmountInputWidget = ({
           subTextPosition={subTextPosition}
           returnKeyType={returnKeyType}
           trailingCurrencyMaxFontSize={trailingCurrencyMaxFontSize}
+          suffixStyle={suffixStyle}
+          prefixStyle={prefixStyle}
         />
         {showButtons && (
           <View sx={{ flexDirection: 'row', gap: 7, marginTop: 16 }}>

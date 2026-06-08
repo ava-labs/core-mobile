@@ -37,10 +37,14 @@ interface TextInputProps extends _TextInputProps {
   renderLeft?: () => React.ReactNode
   /** Right component with no autoresizing */
   renderRight?: () => React.ReactNode
-  /** Left text style */
-  prefixSx?: TextStyle
-  /** Right text style */
-  suffixSx?: TextStyle
+  /**
+   * Style for the prefix (e.g. `$`).
+   */
+  prefixStyle?: TextStyle
+  /**
+   * Style for the suffix (e.g. `USDC`).
+   */
+  suffixStyle?: TextStyle
   /** Prefix fontSize multiplier */
   prefixFontSizeMultiplier?: number
   /** Suffix fontSize multiplier */
@@ -69,8 +73,8 @@ export const AutoSizeTextInput = forwardRef<
       suffix,
       textAlign,
       containerSx,
-      prefixSx,
-      suffixSx,
+      prefixStyle,
+      suffixStyle,
       suffixFontSizeMultiplier = 1,
       renderLeft,
       renderRight,
@@ -144,7 +148,7 @@ export const AutoSizeTextInput = forwardRef<
       return {
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedSuffixFontSize.value,
-        lineHeight: animatedSuffixFontSize.value * 1.1,
+        lineHeight: animatedSuffixFontSize.value,
         color: hasValue.value ? textColor : placeholderTextColor
       }
     })
@@ -294,7 +298,7 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
-            <Animated.Text style={[suffixTextStyle, prefixSx]}>
+            <Animated.Text style={[suffixTextStyle, prefixStyle]}>
               {prefix}
             </Animated.Text>
           </Pressable>
@@ -306,7 +310,7 @@ export const AutoSizeTextInput = forwardRef<
       focusTextInput,
       handleLeftLayout,
       suffixTextStyle,
-      prefixSx
+      prefixStyle
     ])
 
     const renderSuffix = useCallback(() => {
@@ -321,7 +325,7 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
-            <Animated.Text style={[suffixTextStyle, suffixSx]}>
+            <Animated.Text style={[suffixTextStyle, suffixStyle]}>
               {suffix}
             </Animated.Text>
           </Pressable>
@@ -332,7 +336,7 @@ export const AutoSizeTextInput = forwardRef<
       handleRightLayout,
       renderRight,
       suffix,
-      suffixSx,
+      suffixStyle,
       suffixTextStyle
     ])
 
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
   row: {
     width: '100%',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     gap: GAP_WIDTH
   },

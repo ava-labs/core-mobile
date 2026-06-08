@@ -182,6 +182,9 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
         subTextPosition="bottom"
         trailingCurrencyMaxFontSize={24}
         returnKeyType="none"
+        suffixStyle={{
+          marginTop: 5
+        }}
       />
 
       <GroupList data={availableRow} />

@@ -12,6 +12,7 @@ import {
   Platform,
   ReturnKeyTypeOptions,
   TextInput,
+  TextStyle,
   TouchableWithoutFeedback
 } from 'react-native'
 import {
@@ -54,6 +55,8 @@ type FiatAmountInputProps = {
    * amount.
    */
   trailingCurrencyMaxFontSize?: number
+  suffixStyle?: TextStyle
+  prefixStyle?: TextStyle
 }
 
 const BIG_AMOUNT_FONT_SIZE = 60
@@ -77,6 +80,8 @@ export const FiatAmountInput = forwardRef<
       autoFocus,
       subTextPosition = 'top',
       trailingCurrencyMaxFontSize,
+      suffixStyle,
+      prefixStyle,
       ...props
     },
     ref
@@ -196,6 +201,8 @@ export const FiatAmountInput = forwardRef<
                   ? trailingCurrencyMaxFontSize / BIG_AMOUNT_FONT_SIZE
                   : undefined
               }
+              suffixStyle={suffixStyle}
+              prefixStyle={prefixStyle}
               placeholder={`${PLACEHOLDER}`}
               maxLength={maxLength}
               returnKeyType={returnKeyType}
