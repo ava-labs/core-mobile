@@ -1,6 +1,7 @@
 import { Stack } from 'common/components/Stack'
 import {
   modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions,
   stackScreensOptions
 } from 'common/consts/screenOptions'
 import { PlaceOrderProvider } from 'features/trade/perpetuals/contexts/PlaceOrderContext'
@@ -12,7 +13,7 @@ export default function PerpetualsPlaceOrderLayout(): JSX.Element {
 
   return (
     <PlaceOrderProvider {...props}>
-      <Stack screenOptions={stackScreensOptions}>
+      <Stack screenOptions={modalStackNavigatorScreenOptions}>
         <Stack.Screen name="index" options={modalFirstScreenOptions} />
         <Stack.Screen name="leverage" options={stackScreensOptions} />
         <Stack.Screen name="trigger" options={stackScreensOptions} />

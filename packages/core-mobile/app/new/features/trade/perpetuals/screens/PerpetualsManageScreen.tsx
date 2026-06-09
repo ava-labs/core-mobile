@@ -23,8 +23,14 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const [submitting, setSubmitting] = useState(false)
 
   const params = useLocalSearchParams<{ size?: string; pnl?: string }>()
-  const size = Number(params.size) || 0
-  const pnl = Number(params.pnl) || 0
+  // Finite parse so deep-linked junk (e.g. `Infinity`) doesn't render as a
+  // value or poison `pnlPct` with `NaN`.
+  const toFinite = (value: string | undefined): number => {
+    const n = Number(value)
+    return Number.isFinite(n) ? n : 0
+  }
+  const size = toFinite(params.size)
+  const pnl = toFinite(params.pnl)
 
   const { coin, side, entryPrice, leverage } = usePlaceOrder()
 

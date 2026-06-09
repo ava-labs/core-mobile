@@ -349,6 +349,9 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
               right: 0,
               textAlign: 'center',
               fontSize: 13,
+              // Match the amount's invalid-state cue (danger when below the
+              // reference); `labelSx` can still override.
+              color: inputColor,
               ...labelSx
             }}>
             {label}

@@ -198,7 +198,8 @@ export const FiatAmountInputWidget = ({
           borderRadius: 12,
           alignItems: 'center',
           paddingTop: 32,
-          paddingBottom: 22
+          paddingBottom: 22,
+          paddingHorizontal: 16
         }}>
         <FiatAmountInput
           isAmountValid={isAmountValid}
@@ -216,7 +217,12 @@ export const FiatAmountInputWidget = ({
           prefixStyle={prefixStyle}
         />
         {showButtons && (
-          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 16 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 7,
+              marginTop: 16
+            }}>
             {predefinedAmountButtons.map((button, index) => (
               <Button
                 testID={`fiat_amount_button__${button.predefinedAmount}`}
