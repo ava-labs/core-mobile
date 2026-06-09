@@ -439,8 +439,10 @@ const StakeConfirmScreen = ({
         : undefined
       transactionSnackbar.success({ message: 'New Stake Added', explorerLink })
 
-      // Show the success screen instead of dismissing — the user closes the
-      // modal themselves (swipe down), which returns them to the stake home.
+      // Switch to the success screen; the whole flow then auto-dismisses
+      // after SUCCESS_DISMISS_DELAY_MS (see the effect below), returning the
+      // user to the stake home. They can also swipe the modal down to dismiss
+      // it earlier.
       setIsSuccess(true)
 
       dispatch(
