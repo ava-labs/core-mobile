@@ -142,4 +142,65 @@ describe('computeDelegationSteps', () => {
       }
     ])
   })
+
+  it('should fall through to the C-Chain transfer when P-Chain covers stake + fee but not the additional outputs', async () => {
+    // P-Chain (120) covers stake (100) + fee (10) but not the convenience
+    // fee output (50). Case 1 must reject so the shortfall is sourced from
+    // the C-Chain instead of failing later at delegation time.
+    ;(utils.getDelegationFee as jest.Mock).mockResolvedValue(10n)
+    ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(0n)
+    ;(utils.getExportCFee as jest.Mock).mockResolvedValue(5n)
+    ;(utils.getImportPFeePostCExport as jest.Mock).mockResolvedValue(5n)
+    ;(
+      utils.getDelegationFeePostCExportAndPImport as jest.Mock
+    ).mockResolvedValue(10n)
+
+    const steps = await computeDelegationSteps({
+      ...defaultParams,
+      additionalOutputAmount: 50n,
+      cChainBalance: new TokenUnit(200 * 10 ** 9, 9, 'AVAX'),
+      pChainBalance: {
+        balancePerType: { unlockedUnstaked: 120n }
+      } as TokenWithBalancePVM,
+      avalancheEvmProvider
+    })
+
+    // adjustedAllFees = ceil((5 + 5 + 10) * (1 + 4)) = 100
+    // transfer = |(stake 100 + additional 50) - pBalance 120| - atomic 0 + 100
+    //          = 30 + 100 = 130
+    expect(steps).toEqual([
+      { operation: 'exportC', amount: 130n, fee: 5n },
+      { operation: 'importP', fee: 5n },
+      { operation: 'delegate', amount: 100n, fee: 10n }
+    ])
+  })
+
+  it('should include the additional output amount in the C-Chain transfer amount', async () => {
+    ;(utils.getPChainAtomicBalance as jest.Mock).mockResolvedValue(0n)
+    ;(utils.getDelegationFee as jest.Mock).mockRejectedValue(new Error('error'))
+    ;(utils.getExportCFee as jest.Mock).mockResolvedValue(5n)
+    ;(utils.getImportPFeePostCExport as jest.Mock).mockResolvedValue(5n)
+    ;(
+      utils.getDelegationFeePostCExportAndPImport as jest.Mock
+    ).mockResolvedValue(10n)
+
+    const steps = await computeDelegationSteps({
+      ...defaultParams,
+      additionalOutputAmount: 40n,
+      cChainBalance: new TokenUnit(200 * 10 ** 9, 9, 'AVAX'),
+      pChainBalance: {
+        balancePerType: { unlockedUnstaked: 50n }
+      } as TokenWithBalancePVM,
+      avalancheEvmProvider
+    })
+
+    // adjustedAllFees = ceil((5 + 5 + 10) * (1 + 4)) = 100
+    // transfer = |(stake 100 + additional 40) - pBalance 50| - atomic 0 + 100
+    //          = 90 + 100 = 190
+    expect(steps).toEqual([
+      { operation: 'exportC', amount: 190n, fee: 5n },
+      { operation: 'importP', fee: 5n },
+      { operation: 'delegate', amount: 100n, fee: 10n }
+    ])
+  })
 })

@@ -1,5 +1,6 @@
 import { pvm } from '@avalabs/avalanchejs'
 import { PvmCapableAccount } from 'common/hooks/send/utils/types'
+import { AdditionalDelegatorOutput } from 'services/wallet/types'
 
 export type AddDelegatorTransactionProps = {
   account: PvmCapableAccount
@@ -14,6 +15,13 @@ export type AddDelegatorTransactionProps = {
   isTestnet: boolean
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
+  /**
+   * Optional extra outputs bundled atomically with the delegation tx.
+   * Forwarded as-is to `AvalancheWalletService.createAddDelegatorTx`.
+   * Used by the Fast Stake fee flow to escrow the convenience fee on the
+   * same tx as the delegation itself.
+   */
+  additionalOutputs?: readonly AdditionalDelegatorOutput[]
 }
 
 export type UnixTimeMs = number

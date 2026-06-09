@@ -44,7 +44,8 @@ export enum FeatureGates {
   PREDICTIONS = 'predictions',
   PRICE_CHART = 'price-chart',
   PERPETUALS = 'perpetuals',
-  FAST_STAKE_ENABLED = 'fast-stake-enabled'
+  FAST_STAKE_ENABLED = 'fast-stake-enabled',
+  FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled'
 }
 
 export enum FeatureVars {
