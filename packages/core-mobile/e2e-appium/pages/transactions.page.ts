@@ -119,8 +119,8 @@ class TransactionsPage {
     return selectors.getById(txLoc.receiveQrCode)
   }
 
-  get selectReceiveNetwork() {
-    return selectors.getById(txLoc.selectReceiveNetwork)
+  get receiveNetwork() {
+    return selectors.getById(txLoc.receiveNetwork)
   }
 
   get selectOtherTokenBtn() {
@@ -210,13 +210,28 @@ class TransactionsPage {
     await actions.tap(this.sendSelectTokenListBtn)
   }
 
-  async selectToken(tokenName: string, network?: string) {
-    const networkBtn = selectors.getById(`network_selector__${network}`)
-    if (network) {
-      if (!(await actions.getVisible(networkBtn))) {
-        await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
+  async selectNetwork(network: string) {
+    const expectedNetwork = selectors.getById(
+      `selected_network_selector__${network}`
+    )
+    if (!(await actions.getVisible(expectedNetwork))) {
+      const networkBtn = selectors.getById(`network_selector__${network}`)
+
+      while (!(await actions.getVisible(expectedNetwork))) {
+        await actions.dragAndDrop(this.networkSelectorScroll, [-500, 0])
+        try {
+          await actions.longPress(networkBtn)
+          await actions.waitFor(expectedNetwork)
+        } catch (e) {
+          console.log('Network not found')
+        }
       }
-      await actions.tap(networkBtn)
+    }
+  }
+
+  async selectToken(tokenName: string, network?: string) {
+    if (network) {
+      await this.selectNetwork(network)
     }
     await actions.type(this.searchBar, tokenName)
     try {
@@ -491,7 +506,7 @@ class TransactionsPage {
     await actions.waitFor(this.receiveCryptoTitle)
     await actions.isVisible(this.receiveCryptoSubtitle)
     await actions.isVisible(this.receiveQrCode)
-    await actions.isVisible(this.selectReceiveNetwork)
+    await actions.isVisible(this.receiveNetwork)
     await actions.isVisible(selectors.getById(`copy_btn__${network}`))
     await actions.isVisible(selectors.getById(`receive_address__${address}`))
     await actions.isVisible(selectors.getById(`receive_network__${network}`))
@@ -501,8 +516,8 @@ class TransactionsPage {
     }
   }
 
-  async selectNetwork(network: string) {
-    await actions.tap(this.selectReceiveNetwork)
+  async selectReceiveNetwork(network: string) {
+    await actions.tap(this.receiveNetwork)
     await actions.tap(selectors.getById(`select_network__${network}`))
   }
 
@@ -520,6 +535,7 @@ class TransactionsPage {
       await actions.tap(selectors.getById(`list_item__${token}`))
     }
     await actions.tap(selectors.getById(`fiat_amount_button__${randomAmount}`))
+    await actions.delay(1000)
     await actions.tap(this.nextBtn)
     await browserPage.tapClose()
     await commonElsPage.dismissBottomSheet()

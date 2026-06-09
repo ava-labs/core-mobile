@@ -292,10 +292,6 @@ class Settings {
     return selectors.getById(`contact__${contactName}__${address}`)
   }
 
-  get hkd() {
-    return selectors.getByText(settings.hkd)
-  }
-
   get advancedSettingsBtn() {
     return selectors.getById(settings.advancedSettings)
   }
@@ -611,7 +607,8 @@ class Settings {
 
   async verifyDefaultNetworks() {
     await actions.waitFor(this.addNetworkBtn)
-    for (const network of networks) {
+    const networksToVerify = networks.filter(network => network.data)
+    for (const network of networksToVerify) {
       await actions.isVisible(this.networkList(network.name))
       if (network.haveToggle) {
         await actions.isVisible(this.networkEnabled(network.name))

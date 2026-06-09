@@ -474,8 +474,8 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/crypto-nitro": 0.3.0
-    "@avalabs/crypto-sdk": 1.0.0
+    "@avalabs/crypto-nitro": 0.3.1
+    "@avalabs/crypto-sdk": 1.0.1
     "@avalabs/evm-module": 3.9.0
     "@avalabs/fusion-sdk": 0.16.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
@@ -856,9 +856,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/crypto-nitro@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@avalabs/crypto-nitro@npm:0.3.0"
+"@avalabs/crypto-nitro@npm:0.3.1":
+  version: 0.3.1
+  resolution: "@avalabs/crypto-nitro@npm:0.3.1"
   peerDependencies:
     react: "*"
     react-native: "*"
@@ -868,7 +868,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: ce648422169137bc84ad9c4b5b106a846b9fb7f1656a93e5869bdd4a72b2e62caf0261539d6db35f974d844fae0fbdd17ac3cad9e3cbddd2b1d876719baf091b
+  checksum: d0b13d23d1bed77f75e892f53f87b85394d28a2163ccfdc9afe13a0986aa41372f71187015a2ac8e92ee3c65d1c58a8e218f16d434eee578e07c3b2cba6fd5b3
   languageName: node
   linkType: hard
 
@@ -884,6 +884,21 @@ __metadata:
     "@avalabs/crypto-wasm":
       optional: true
   checksum: 220ee0a071c91afbb412ff6d0c2b601517800d8b747568a056d00bca83dc7f4f77446a57b93d7913384d076452056dcc52cff6eda01d17eecf14a1c0922daa64
+  languageName: node
+  linkType: hard
+
+"@avalabs/crypto-sdk@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@avalabs/crypto-sdk@npm:1.0.1"
+  peerDependencies:
+    "@avalabs/crypto-nitro": 0.3.1
+    "@avalabs/crypto-wasm": 0.3.0
+  peerDependenciesMeta:
+    "@avalabs/crypto-nitro":
+      optional: true
+    "@avalabs/crypto-wasm":
+      optional: true
+  checksum: 3e686832b170975099656722ad4a4815403b25cf4e828ba0880adc2b482101ff8a7ae94c34242de5f30e652f970070af7a0ecce4723b515eec74bf4c1e731e2f
   languageName: node
   linkType: hard
 
@@ -36762,7 +36777,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
+  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
   languageName: node
   linkType: hard
 

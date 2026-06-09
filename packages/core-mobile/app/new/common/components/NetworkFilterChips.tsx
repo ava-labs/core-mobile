@@ -43,7 +43,11 @@ export const NetworkFilterChips = ({
           // testID even though TouchableOpacity would accept it via ...rest.
           <View
             key={network.chainId}
-            testID={`network_selector__${network.chainName}`}>
+            testID={
+              isSelected
+                ? `selected_network_selector__${network.chainName}`
+                : `network_selector__${network.chainName}`
+            }>
             <Chip
               size="large"
               isSelected={isSelected}

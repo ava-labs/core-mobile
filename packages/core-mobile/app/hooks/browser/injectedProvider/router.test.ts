@@ -154,6 +154,21 @@ function send(
   )
 }
 
+// Like `send` but with an explicit request id — needed by tests that track
+// multiple concurrent in-flight requests (the router keys its abort map by id).
+function sendWithId(
+  router: ReturnType<typeof createInjectedProviderRouter>,
+  id: number,
+  request: { method: string; params?: unknown[] }
+): void {
+  router.handleProviderMessage(
+    JSON.stringify({
+      id,
+      request: { method: request.method, params: request.params ?? [] }
+    })
+  )
+}
+
 describe('createInjectedProviderRouter', () => {
   beforeEach(() => jest.clearAllMocks())
 
@@ -180,7 +195,7 @@ describe('createInjectedProviderRouter', () => {
       expect(trackPendingOrigin).toHaveBeenCalledWith(1, 'https://example.com')
     })
 
-    it('rejects signing methods when native origin is unavailable', () => {
+    it('rejects any method with unauthorized when native origin is unavailable', () => {
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)
 
@@ -189,11 +204,71 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
-          code: JSON_RPC_INTERNAL_ERROR_CODE,
+          code: 4100,
           message: expect.stringContaining('Origin unavailable')
         }),
         undefined
       )
+    })
+
+    it('rejects non-signing read-only methods when native origin is unavailable', () => {
+      const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_blockNumber')
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('rejects with invalidRequest when shim-reported origin differs from native origin', () => {
+      const { deps, sendResponse } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://evil.example',
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          code: -32600,
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+    })
+
+    it('does not treat a non-string origin as a mismatch', () => {
+      // `origin` is not type-checked by validateProviderRequest. A truthy
+      // non-string value must not trip the mismatch branch — it's ignored and
+      // the request proceeds gated on the trusted nativeOrigin.
+      const { deps, sendResponse, trackPendingOrigin } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: { not: 'a string' },
+          request: { method: 'eth_blockNumber', params: [] }
+        })
+      )
+
+      expect(sendResponse).not.toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+      expect(trackPendingOrigin).toHaveBeenCalledWith(1, 'https://example.com')
     })
   })
 
@@ -369,8 +444,12 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
 
-    it('skips the slice write when origin is unknown, still emits accountsChanged', () => {
-      const { deps, emitEvent, revokePermission } = makeDeps({
+    it('rejects wallet_revokePermissions outright when origin is unknown', () => {
+      // Post-origin-hardening: no method proceeds without a verified native
+      // origin, including revoke. Returning 4100 makes the ambiguity explicit
+      // rather than silently emitting accountsChanged for an origin we can't
+      // identify.
+      const { deps, sendResponse, emitEvent, revokePermission } = makeDeps({
         nativeOrigin: undefined
       })
       const router = createInjectedProviderRouter(deps)
@@ -378,7 +457,15 @@ describe('createInjectedProviderRouter', () => {
       send(router, 'wallet_revokePermissions')
 
       expect(revokePermission).not.toHaveBeenCalled()
-      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [])
+      expect(emitEvent).not.toHaveBeenCalledWith(
+        'accountsChanged',
+        expect.anything()
+      )
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
     })
   })
 
@@ -534,13 +621,22 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, [])
     })
 
-    it('returns an empty array when origin is missing', () => {
+    it('rejects wallet_getPermissions with unauthorized when origin is missing', () => {
+      // The prior behavior of returning [] for unknown origin would let a
+      // page with no verified origin (e.g. about:blank, pre-navigation race)
+      // make the request and get a clean empty response. Post-hardening every
+      // method requires a native origin; this call is rejected upstream of
+      // the handler.
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
 
-      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
     })
   })
 
@@ -608,12 +704,15 @@ describe('createInjectedProviderRouter', () => {
       send(router, 'personal_sign', ['0xMsg', '0xAddr'])
       await new Promise(r => setImmediate(r))
 
-      expect(requestSigning).toHaveBeenCalledWith({
-        method: 'personal_sign',
-        params: ['0xMsg', '0xAddr'],
-        chainId: 'eip155:43114',
-        peerMeta: expect.objectContaining({ name: 'example' })
-      })
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'personal_sign',
+          params: ['0xMsg', '0xAddr'],
+          chainId: 'eip155:43114',
+          peerMeta: expect.objectContaining({ name: 'example' }),
+          signal: expect.any(AbortSignal)
+        })
+      )
       expect(sendResponse).toHaveBeenCalledWith(1, null, '0xSig')
     })
 
@@ -694,6 +793,88 @@ describe('createInjectedProviderRouter', () => {
         expect.objectContaining({ code: JSON_RPC_INTERNAL_ERROR_CODE }),
         undefined
       )
+    })
+  })
+
+  describe('cancelByOrigin', () => {
+    it('aborts in-flight signing requests whose origin does not match the new origin', async () => {
+      const { deps, requestSigning } = makeDeps()
+      // Never resolves — simulates a signing request sitting on an approval
+      // screen while the user navigates away.
+      let capturedSignal: AbortSignal | undefined
+      requestSigning.mockImplementationOnce(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      sendWithId(router, 42, {
+        method: 'personal_sign',
+        params: ['0xMsg', '0xAddr']
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(capturedSignal?.aborted).toBe(false)
+
+      router.cancelByOrigin('https://other.example')
+
+      expect(capturedSignal?.aborted).toBe(true)
+    })
+
+    it('does not abort requests whose origin matches the new origin', async () => {
+      const { deps, requestSigning } = makeDeps()
+      let capturedSignal: AbortSignal | undefined
+      requestSigning.mockImplementationOnce(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      sendWithId(router, 42, {
+        method: 'personal_sign',
+        params: ['0xMsg', '0xAddr']
+      })
+      await new Promise(r => setImmediate(r))
+
+      // Same origin as makeDeps default — should NOT abort
+      router.cancelByOrigin('https://example.com')
+
+      expect(capturedSignal?.aborted).toBe(false)
+    })
+
+    it('is a no-op when there are no in-flight requests', () => {
+      const { deps } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      // Does not throw, does not emit anything
+      expect(() =>
+        router.cancelByOrigin('https://anywhere.example')
+      ).not.toThrow()
+    })
+
+    it('cleans up in-flight tracking after abort', async () => {
+      const { deps, requestSigning } = makeDeps()
+      const signals: AbortSignal[] = []
+      requestSigning.mockImplementation(args => {
+        if (args.signal) signals.push(args.signal)
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      sendWithId(router, 1, { method: 'personal_sign', params: ['a', 'b'] })
+      await new Promise(r => setImmediate(r))
+
+      router.cancelByOrigin('https://other.example')
+      expect(signals[0]?.aborted).toBe(true)
+
+      // A second cancel round should not re-abort the same controller.
+      // (If it did, reading .aborted still returns true, but the important
+      // thing is the entry was removed from the map.) Fire another request
+      // and confirm it gets its own independent signal.
+      sendWithId(router, 2, { method: 'personal_sign', params: ['c', 'd'] })
+      await new Promise(r => setImmediate(r))
+      expect(signals[1]).toBeDefined()
+      expect(signals[1]?.aborted).toBe(false)
     })
   })
 })

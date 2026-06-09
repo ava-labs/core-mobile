@@ -61,6 +61,20 @@ jest.mock('./evmProviderShim', () => ({
   )
 }))
 
+jest.mock('expo-router', () => ({
+  router: {
+    canGoBack: jest.fn(() => false),
+    back: jest.fn(),
+    navigate: jest.fn()
+  }
+}))
+
+jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
+  approvalController: {
+    handleGoBackIfNeeded: jest.fn()
+  }
+}))
+
 jest.mock('./getInjectedProviderUuid', () => ({
   getInjectedProviderUuid: () => 'test-uuid-1234'
 }))
@@ -128,6 +142,20 @@ function setupMocks(
   )
 }
 
+// Wraps renderHook and seeds a native origin by default. Tests that explicitly
+// want the no-origin path pass an empty string: `renderProvider('')`.
+function renderProvider(url = 'https://example.com') {
+  const hookReturn = renderHook(() =>
+    useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+  )
+  if (url) {
+    act(() => {
+      hookReturn.result.current.setCurrentUrl(url)
+    })
+  }
+  return hookReturn
+}
+
 describe('useEvmInjectedProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -138,9 +166,7 @@ describe('useEvmInjectedProvider', () => {
 
   describe('providerShimJs', () => {
     it('generates shim with active network chain', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
       expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
 
@@ -148,26 +174,20 @@ describe('useEvmInjectedProvider', () => {
       setupMocks({
         network: { ...mockActiveNetwork, vmName: NetworkVMType.BITCOIN }
       })
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
       expect(result.current.providerShimJs).toBe('SHIM(0x1)')
     })
 
     it('still generates shim when no active account', () => {
       setupMocks({ account: null })
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
       expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
   })
 
   describe('sendResponse', () => {
     it('injects __coreProviderRespond with result', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       act(() => {
         result.current.emitEvent('chainChanged', '0x1')
@@ -181,9 +201,7 @@ describe('useEvmInjectedProvider', () => {
 
   describe('emitEvent', () => {
     it('injects __coreProviderEmit with event name and data', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       act(() => {
         result.current.emitEvent('chainChanged', '0x1')
@@ -195,9 +213,7 @@ describe('useEvmInjectedProvider', () => {
     })
 
     it('injects accountsChanged with array data', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       act(() => {
         result.current.emitEvent('accountsChanged', ['0xNewAddr'])
@@ -211,9 +227,7 @@ describe('useEvmInjectedProvider', () => {
 
   describe('handleProviderMessage', () => {
     it('ignores invalid JSON payload', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       act(() => {
         result.current.handleProviderMessage('not-json')
@@ -224,9 +238,7 @@ describe('useEvmInjectedProvider', () => {
 
     describe('wallet_switchEthereumChain', () => {
       it('auto-approves, dispatches setTabChainId for the tab, and responds null', async () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -260,9 +272,7 @@ describe('useEvmInjectedProvider', () => {
         const mockSignFn = jest.fn().mockResolvedValue('0xSig')
         mockCreateInAppRequest.mockReturnValue(mockSignFn)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -314,9 +324,7 @@ describe('useEvmInjectedProvider', () => {
           }
         })
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         // Switch browser to chain 1 (auto-approved)
         await act(async () => {
@@ -348,9 +356,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('returns null immediately when requested chain is already active', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         // 43114 is the active chain
         const payload = JSON.stringify({
@@ -369,14 +375,12 @@ describe('useEvmInjectedProvider', () => {
           setTabChainId({ tabId: 'test-tab-id', chainId: 43114 })
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          'window.__coreProviderRespond(2, null, null); true;'
+          expect.stringContaining('__coreProviderRespond(2, null, null)')
         )
       })
 
       it('returns error 4902 when chain is not in wallet (shim no-rollback prevents wagmi re-trigger loop)', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 3,
@@ -399,9 +403,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('returns error when chainId param is missing', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 4,
@@ -426,9 +428,7 @@ describe('useEvmInjectedProvider', () => {
         const mockRequest = jest.fn().mockResolvedValue(null)
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -483,9 +483,7 @@ describe('useEvmInjectedProvider', () => {
         })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         await act(async () => {
           result.current.handleProviderMessage(
@@ -511,9 +509,7 @@ describe('useEvmInjectedProvider', () => {
         })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         await act(async () => {
           result.current.handleProviderMessage(
@@ -542,9 +538,7 @@ describe('useEvmInjectedProvider', () => {
         })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -570,9 +564,7 @@ describe('useEvmInjectedProvider', () => {
 
     describe('wallet_revokePermissions', () => {
       it('emits accountsChanged (not disconnect) then responds null', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 7,
@@ -612,9 +604,7 @@ describe('useEvmInjectedProvider', () => {
         const mockRequest = jest.fn().mockResolvedValue(true)
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -650,9 +640,7 @@ describe('useEvmInjectedProvider', () => {
         const mockRequest = jest.fn().mockResolvedValue(true)
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -678,9 +666,7 @@ describe('useEvmInjectedProvider', () => {
         })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -739,9 +725,7 @@ describe('useEvmInjectedProvider', () => {
           const mockRequest = jest.fn().mockResolvedValue('0xSignature')
           mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-          const { result } = renderHook(() =>
-            useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-          )
+          const { result } = renderProvider()
 
           act(() => {
             result.current.setCurrentUrl('https://example.com')
@@ -763,14 +747,17 @@ describe('useEvmInjectedProvider', () => {
             mockDispatch,
             expect.any(Function)
           )
-          expect(mockRequest).toHaveBeenCalledWith({
-            method: rpcMethod,
-            params: ['param1', 'param2'],
-            chainId: 'eip155:43114',
-            peerMeta: expect.objectContaining({
-              url: 'https://example.com'
+          expect(mockRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+              method: rpcMethod,
+              params: ['param1', 'param2'],
+              chainId: 'eip155:43114',
+              peerMeta: expect.objectContaining({
+                url: 'https://example.com'
+              }),
+              signal: expect.any(AbortSignal)
             })
-          })
+          )
         }
       )
 
@@ -826,9 +813,7 @@ describe('useEvmInjectedProvider', () => {
         const mockRequest = jest.fn().mockResolvedValue('0xSignatureResult')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -858,9 +843,7 @@ describe('useEvmInjectedProvider', () => {
         })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -887,9 +870,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('rejects signing when origin is unavailable', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider('')
 
         const payload = JSON.stringify({
           id: 22,
@@ -901,7 +882,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining(`"code":${JSON_RPC_INTERNAL_ERROR_CODE}`)
+          expect.stringContaining('"code":4100')
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining('Origin unavailable')
@@ -968,9 +949,7 @@ describe('useEvmInjectedProvider', () => {
           .mockRejectedValue({ code: 4902, message: 'Unrecognized chain ID' })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -999,9 +978,7 @@ describe('useEvmInjectedProvider', () => {
           .mockRejectedValue({ message: 'Something went wrong' })
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -1055,9 +1032,7 @@ describe('useEvmInjectedProvider', () => {
         }
         mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 100,
@@ -1085,9 +1060,7 @@ describe('useEvmInjectedProvider', () => {
         }
         mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 101,
@@ -1102,7 +1075,9 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          'window.__coreProviderRespond(101, null, "0xBalanceValue"); true;'
+          expect.stringContaining(
+            '__coreProviderRespond(101, null, "0xBalanceValue")'
+          )
         )
       })
 
@@ -1114,9 +1089,7 @@ describe('useEvmInjectedProvider', () => {
         }
         mockNitroFetch.mockResolvedValue(mockResponse as unknown as Response)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 102,
@@ -1135,9 +1108,7 @@ describe('useEvmInjectedProvider', () => {
       it('handles fetch failure gracefully', async () => {
         mockNitroFetch.mockRejectedValue(new Error('Network error'))
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 103,
@@ -1166,9 +1137,7 @@ describe('useEvmInjectedProvider', () => {
           }
         })
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 104,
@@ -1188,9 +1157,7 @@ describe('useEvmInjectedProvider', () => {
 
     describe('unsupported methods', () => {
       it('returns error -32601 for unknown methods', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 200,
@@ -1215,9 +1182,7 @@ describe('useEvmInjectedProvider', () => {
         const mockRequest = jest.fn().mockResolvedValue('0xResult')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         act(() => {
           result.current.setCurrentUrl('https://example.com')
@@ -1240,9 +1205,7 @@ describe('useEvmInjectedProvider', () => {
 
     describe('validation and security', () => {
       it('rejects malformed payloads with -32600', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 400,
@@ -1259,9 +1222,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('rejects unknown methods with -32601', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         const payload = JSON.stringify({
           id: 401,
@@ -1278,9 +1239,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('exposes setCurrentUrl', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
 
         expect(typeof result.current.setCurrentUrl).toBe('function')
       })
@@ -1364,11 +1323,72 @@ describe('useEvmInjectedProvider', () => {
     })
   })
 
+  describe('setCurrentUrl origin-change cleanup', () => {
+    it('aborts in-flight signing request when navigating cross-origin', async () => {
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
+      ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
+
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+      const { result } = renderProvider('https://uniswap.org')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      expect(capturedSignal?.aborted).toBe(false)
+
+      act(() => {
+        result.current.setCurrentUrl('https://opensea.io')
+      })
+
+      expect(capturedSignal?.aborted).toBe(true)
+      expect(mockApprovalController.handleGoBackIfNeeded).toHaveBeenCalled()
+    })
+
+    it('does NOT abort in-flight request on same-origin navigation (SPA route change)', async () => {
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+      const { result } = renderProvider('https://uniswap.org/swap')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      act(() => {
+        // Same origin, different path — mimics a SPA nav_change message
+        result.current.setCurrentUrl('https://uniswap.org/pool')
+      })
+
+      expect(capturedSignal?.aborted).toBe(false)
+    })
+  })
+
   describe('handleDomainMetadata', () => {
     it('stores valid domain metadata', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       const metadata = {
         domain: 'opensea.io',
@@ -1385,9 +1405,7 @@ describe('useEvmInjectedProvider', () => {
     })
 
     it('handles invalid JSON gracefully', () => {
-      const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-      )
+      const { result } = renderProvider()
 
       act(() => {
         result.current.handleDomainMetadata('invalid-json')
@@ -1421,9 +1439,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
         mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
         act(() => {
           result.current.setCurrentUrl('https://opensea.io/')
         })
@@ -1441,9 +1457,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('injects accountsChanged([]) when no grant exists for the origin', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
         act(() => {
           result.current.setCurrentUrl('https://opensea.io/')
         })
@@ -1459,9 +1473,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('does not inject accountsChanged when origin is missing', () => {
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider('')
         // currentUrlRef is never set, so origin stays ''
         mockInjectJavaScript.mockClear()
 
@@ -1476,9 +1488,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('does not inject accountsChanged when there is no active account', () => {
         setupMocks({ account: null })
-        const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
-        )
+        const { result } = renderProvider()
         act(() => {
           result.current.setCurrentUrl('https://opensea.io/')
         })

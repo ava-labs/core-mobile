@@ -52,16 +52,6 @@ const ALLOWED_METHODS = new Set([
   'wallet_watchAsset'
 ])
 
-// CP-14159: methods that surface an approval modal require a verified native
-// origin. Without one, the downstream generateInAppRequestPayload falls back
-// to CORE_MOBILE_META and misattributes the request to core.app — the exact
-// spoofing class CP-14159 exists to prevent.
-const APPROVAL_METHODS = new Set<string>([
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
-
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
   if (addresses.length === 0) return []
@@ -142,6 +132,18 @@ function parseProviderPayload(
 
 export type InjectedProviderRouter = {
   handleProviderMessage: (payload: string) => void
+  /**
+   * Aborts every in-flight abortable request whose origin does not match
+   * `currentOrigin`. Call when the WebView navigates to a new origin so stale
+   * signing / add-chain / watch-asset flows tied to the prior page cannot
+   * complete or broadcast.
+   */
+  cancelByOrigin: (currentOrigin: string | undefined) => void
+}
+
+type InFlightRequest = {
+  origin: string
+  controller: AbortController
 }
 
 export function createInjectedProviderRouter(
@@ -165,6 +167,24 @@ export function createInjectedProviderRouter(
     revokePermission,
     requestConnectApproval
   } = deps
+
+  const inFlightRequests = new Map<number, InFlightRequest>()
+
+  const registerInFlight = (id: number, origin: string): AbortController => {
+    const controller = new AbortController()
+    inFlightRequests.set(id, { origin, controller })
+    return controller
+  }
+
+  const clearInFlight = (id: number, controller: AbortController): void => {
+    // Only delete if the entry still belongs to THIS request. If a later
+    // request reused the same JSON-RPC id (overwriting the entry), deleting
+    // unconditionally would drop the newer request's controller and break its
+    // cancellation/cleanup.
+    if (inFlightRequests.get(id)?.controller === controller) {
+      inFlightRequests.delete(id)
+    }
+  }
 
   const proxyToRpc = async (
     id: number,
@@ -220,17 +240,25 @@ export function createInjectedProviderRouter(
     }
 
     const caip2ChainId = getEvmCaip2ChainId(getBrowserNetwork().chainId)
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
 
     try {
       const result = await requestSigning({
         method: rpcMethod,
         params,
         chainId: caip2ChainId,
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -294,12 +322,18 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       await requestSigning({
         method: 'wallet_addEthereumChain' as unknown as RpcMethod,
         params,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       // User approved — switch browser chain to the new network and notify dApp
       if (addHexChainId) {
@@ -317,6 +351,8 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, null)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -489,12 +525,18 @@ export function createInjectedProviderRouter(
   ): Promise<void> => {
     // Normalize: some dApps send object form { type, options } instead of array
     const normalizedParams = Array.isArray(params) ? params : [params]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({
         method: 'wallet_watchAsset' as unknown as RpcMethod,
         params: normalizedParams,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
@@ -505,6 +547,8 @@ export function createInjectedProviderRouter(
       } else {
         sendResponse(id, e, undefined)
       }
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -550,10 +594,35 @@ export function createInjectedProviderRouter(
     const { method, params } = rpc
 
     const nativeOrigin = getNativeOrigin()
-    if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
+
+    // Origin mismatch — the shim-reported origin disagrees with the origin
+    // tracked by the WebView's navigation state. Either a race during
+    // cross-origin navigation (rare) or a sign the page is trying to spoof
+    // its origin (hostile). Either way, refuse the request.
+    //
+    // Note: if the shim provides `pageOrigin` but `nativeOrigin` is missing
+    // (e.g., first RPC arrives before onNavigationStateChange has fired),
+    // we deliberately fall through to the `!nativeOrigin` gate below. We
+    // can't verify the shim's claim without a native anchor, so 4100
+    // "unauthorized" is the right response — not "invalidRequest," since
+    // the payload itself is well-formed.
+    //
+    // `origin` isn't type-checked by validateProviderRequest, so require a
+    // string here: a truthy non-string would otherwise always be `!==` the
+    // native origin and trip this branch with noisy logs / bogus rejections.
+    // A non-string origin is treated like an absent one — the request still
+    // gates on the trusted nativeOrigin below (the real anchor; pageOrigin is
+    // only the extra spoof-detection layer).
+    if (
+      typeof pageOrigin === 'string' &&
+      nativeOrigin &&
+      pageOrigin !== nativeOrigin
+    ) {
       Logger.warn(
-        `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
+        `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
+      sendResponse(id, rpcErrors.invalidRequest('Origin mismatch'), undefined)
+      return
     }
 
     Logger.trace(`[InjectedProvider] ${method}`, params)
@@ -567,18 +636,33 @@ export function createInjectedProviderRouter(
       return
     }
 
-    if (nativeOrigin) {
-      trackPendingOrigin(id, nativeOrigin)
-    } else if (APPROVAL_METHODS.has(method)) {
-      // Any approval-class method (signing + addEthereumChain + watchAsset)
-      // requires a verified page origin — see CP-14159. Reject without one
-      // rather than letting peerMeta fall through to CORE_MOBILE_META.
-      sendResponse(id, rpcErrors.internal('Origin unavailable'), undefined)
+    // Every method requires a known native origin. Requests that arrive
+    // before the WebView has reported its first URL, or from an iframe or
+    // about:blank context, have no authoritative origin to gate on — reject
+    // rather than silently treat them as unscoped.
+    if (!nativeOrigin) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
       return
     }
+
+    trackPendingOrigin(id, nativeOrigin)
 
     dispatchMethod(id, method, params)
   }
 
-  return { handleProviderMessage }
+  const cancelByOrigin = (currentOrigin: string | undefined): void => {
+    if (inFlightRequests.size === 0) return
+    for (const [id, entry] of inFlightRequests.entries()) {
+      if (entry.origin !== currentOrigin) {
+        entry.controller.abort()
+        inFlightRequests.delete(id)
+      }
+    }
+  }
+
+  return { handleProviderMessage, cancelByOrigin }
 }
