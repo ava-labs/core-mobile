@@ -11,6 +11,10 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
+  clearRequestSignal,
+  setRequestSignal
+} from 'store/rpc/utils/inFlightRequestSignals'
+import {
   isTxFeedbackEnabled,
   isInAppAvalancheRequest,
   isConfettiEnabled,
@@ -1307,6 +1311,173 @@ describe('ApprovalController', () => {
       )
       expect('error' in result).toBe(true)
       expect(mockSign).not.toHaveBeenCalled()
+    })
+  })
+
+  // ── cross-origin cancel bridge (CP-14422) ──────────────────────────────────
+  describe('requestApproval — cross-origin cancel bridge', () => {
+    const signingData = { type: 'eth_sendTransaction', data: {} } as never
+    const displayData = {} as never
+    const REQ_ID = 'req-1'
+
+    // Park an approval (as requestApproval does) and return the cached callbacks.
+    // Pass a signal to register the cancel bridge for this request.
+    const park = (
+      signal?: AbortSignal
+    ): {
+      onApprove: (p: unknown) => Promise<void>
+      onReject: (m?: string) => void
+    } => {
+      if (signal) setRequestSignal(REQ_ID, signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: REQ_ID, sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      return mockWalletConnectCacheSet.mock.calls[
+        mockWalletConnectCacheSet.mock.calls.length - 1
+      ][0]
+    }
+
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+
+    afterEach(() => clearRequestSignal(REQ_ID))
+
+    it('settles the parked promise via the real onReject when the request is aborted', () => {
+      const controller = new AbortController()
+      park(controller.signal)
+      mockOnReject.mockClear()
+
+      controller.abort()
+
+      expect(mockOnReject).toHaveBeenCalledWith(
+        expect.objectContaining({ resolve: expect.any(Function) })
+      )
+      // Dismissal stays with setCurrentUrl's handleGoBackIfNeeded — the bridge
+      // must NOT also pop the screen (would double router.back()).
+      expect(mockRouter.back).not.toHaveBeenCalled()
+    })
+
+    it('blocks a late Approve tap after the request was aborted', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      controller.abort()
+      mockOnApprove.mockClear()
+
+      await parked.onApprove({ walletType: WalletType.MNEMONIC })
+
+      expect(mockOnApprove).not.toHaveBeenCalled()
+    })
+
+    it('tears down Ledger BLE + clears the review store when aborted while Ledger is pending', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      // Enter the Ledger sheet (ledgerPending) — BLE connecting, not yet signing.
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+      mockSetReviewTransactionParams.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockDisconnect).toHaveBeenCalled()
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(null)
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('is a no-op when aborted after on-device Ledger signing has started', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      // Run the stored on-device onApprove → enters ledgerSigning (uncancellable).
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove()
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockOnReject).not.toHaveBeenCalled()
+      expect(mockDisconnect).not.toHaveBeenCalled()
+    })
+
+    it('does not bridge requests without a signal (WalletConnect / in-app)', () => {
+      const other = new AbortController()
+      setRequestSignal('some-other-id', other.signal)
+      park() // no signal registered for REQ_ID → no bridge
+      mockOnReject.mockClear()
+
+      other.abort()
+
+      expect(mockOnReject).not.toHaveBeenCalled()
+      clearRequestSignal('some-other-id')
+    })
+
+    it('cancels immediately and skips opening the modal if already aborted before parking', () => {
+      const controller = new AbortController()
+      controller.abort()
+      mockOnReject.mockClear()
+      mockRouter.navigate.mockClear()
+
+      park(controller.signal)
+
+      expect(mockOnReject).toHaveBeenCalled()
+      // No stale modal for a request that's already dead. (pre-park race)
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('stays cancellable during a retryable Ledger error (BLE torn down if aborted then)', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove() // on-device signing begins → ledgerSigning
+      // Device returns a retryable error → Retry/Cancel alert; phase must drop
+      // back to ledgerPending so a nav can still cancel + tear down BLE.
+      const onApproveArg =
+        mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0]
+      onApproveArg.resolve({ error: { message: 'retryable' } })
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockDisconnect).toHaveBeenCalled()
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('bridges overlapping requests independently (aborting one does not clobber the other)', () => {
+      const cA = new AbortController()
+      const cB = new AbortController()
+      setRequestSignal('req-A', cA.signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: 'req-A', sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      setRequestSignal('req-B', cB.signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: 'req-B', sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      mockOnReject.mockClear()
+
+      cA.abort()
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      mockOnReject.mockClear()
+      cB.abort() // would no-op if req-B's bridge had been clobbered by req-A
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      clearRequestSignal('req-A')
+      clearRequestSignal('req-B')
     })
   })
 })

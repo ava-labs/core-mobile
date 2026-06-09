@@ -13,6 +13,10 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
+  clearRequestSignal,
+  getRequestSignal
+} from 'store/rpc/utils/inFlightRequestSignals'
+import {
   isTxSendMethod,
   TxSendConfirmedEvent,
   TxSendFailedEvent
@@ -57,6 +61,19 @@ class ApprovalController implements VmModuleApprovalController {
   // so the two handlers can never disagree (e.g. if the upstream InfoAPI
   // cache expired or a refetch errored between the two callbacks).
   private optimisticGateMap = new BoundedMap<string, boolean>(20)
+
+  // Parked approvals a cross-origin browser nav can cancel, keyed by requestId
+  // (CP-14422). Keyed (not single-slot) so overlapping browser signing requests
+  // each keep their own cancel bridge. `phase` gates the uncancellable window:
+  // once Ledger on-device signing has begun, a nav must not cancel.
+  private activeApprovals = new BoundedMap<
+    string,
+    {
+      resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+      phase: 'parked' | 'ledgerPending' | 'ledgerSigning'
+      detach: () => void
+    }
+  >(10)
 
   async requestPublicKey({
     secretId,
@@ -213,6 +230,75 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
+  // Bridge a parked approval to its request's AbortSignal so a cross-origin
+  // browser nav (which aborts the request) settles the otherwise-orphaned
+  // approval promise. Only browser signing requests register a signal, so WC /
+  // signal-less in-app approvals are not affected. Returns true if the request
+  // was already aborted and cancelled synchronously, so the caller skips
+  // navigating to a modal that would immediately be stale. (CP-14422)
+  private registerCancelBridge(
+    requestId: string,
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+  ): boolean {
+    const signal = getRequestSignal(requestId)
+    if (!signal) return false
+
+    const onAbort = (): void => this.cancelParkedApproval(requestId)
+    const detach = (): void => {
+      signal.removeEventListener('abort', onAbort)
+      clearRequestSignal(requestId)
+    }
+    this.activeApprovals.set(requestId, { resolve, phase: 'parked', detach })
+
+    // Aborted in the window between request creation and parking the modal:
+    // cancel now and tell the caller not to open the modal.
+    if (signal.aborted) {
+      this.cancelParkedApproval(requestId)
+      return true
+    }
+    signal.addEventListener('abort', onAbort, { once: true })
+    return false
+  }
+
+  private setApprovalPhase(
+    requestId: string,
+    phase: 'parked' | 'ledgerPending' | 'ledgerSigning'
+  ): void {
+    const entry = this.activeApprovals.get(requestId)
+    if (entry) entry.phase = phase
+  }
+
+  private clearCancelBridge(requestId: string): void {
+    const entry = this.activeApprovals.get(requestId)
+    if (!entry) return
+    entry.detach()
+    this.activeApprovals.delete(requestId)
+  }
+
+  // Cancel a parked approval whose request was aborted. Runs the REAL reject so
+  // the orphaned promise settles and Ledger BLE + store are torn down; once
+  // on-device Ledger signing has begun (`ledgerSigning`) the cancel is a no-op.
+  //
+  // Screen DISMISSAL is intentionally NOT done here: the caller
+  // (setCurrentUrl's cross-origin branch) already calls `handleGoBackIfNeeded`
+  // — the generic dismissal for every modal type — right after aborting. Since
+  // the abort fires this synchronously, dismissing here too would double
+  // `router.back()`. Settlement and dismissal stay separate. (CP-14422)
+  private cancelParkedApproval(requestId: string): void {
+    const entry = this.activeApprovals.get(requestId)
+    if (!entry || entry.phase === 'ledgerSigning') return
+
+    // Mark cancelled so a late Approve tap can't sign/broadcast (guarded in the
+    // cache `onApprove`) and Ledger retry alerts stay suppressed.
+    this.userCancelledMap.set(requestId, true)
+    if (entry.phase === 'ledgerPending') {
+      this.handleLedgerOnReject({ resolve: entry.resolve })
+    } else {
+      onReject({ resolve: entry.resolve })
+    }
+    this.clearCancelBridge(requestId)
+  }
+
   private cacheSigningAddress(
     requestId: string,
     chainId: string,
@@ -237,6 +323,10 @@ class ApprovalController implements VmModuleApprovalController {
     signingData: ApprovalParams['signingData']
     resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
   }): void {
+    // Ledger sheet is up: still cancellable (BLE connecting), until on-device
+    // signing actually begins below. (CP-14422)
+    this.setApprovalPhase(requestId, 'ledgerPending')
+
     const resolveWithRetry = (
       value: ApprovalResponse | PromiseLike<ApprovalResponse>
     ): void => {
@@ -246,6 +336,12 @@ class ApprovalController implements VmModuleApprovalController {
           this.userCancelledMap.delete(requestId)
           return
         }
+
+        // On-device signing failed but is retryable; while the Retry/Cancel
+        // alert is up we're waiting on the user again, so a cross-origin nav
+        // must be able to cancel (tear down BLE + settle) — drop back out of
+        // the uncancellable `ledgerSigning` phase. (CP-14422)
+        this.setApprovalPhase(requestId, 'ledgerPending')
 
         handleLedgerErrorAndShowAlert({
           error: value.error,
@@ -258,6 +354,8 @@ class ApprovalController implements VmModuleApprovalController {
               this.userCancelledMap.delete(requestId)
               return
             }
+            // Retrying restarts on-device signing — uncancellable again.
+            this.setApprovalPhase(requestId, 'ledgerSigning')
             onApprove({
               ...params,
               signingData,
@@ -268,6 +366,7 @@ class ApprovalController implements VmModuleApprovalController {
             this.userCancelledMap.set(requestId, true)
             this.handleGoBackIfNeeded()
             this.handleLedgerOnReject({ resolve })
+            this.clearCancelBridge(requestId)
           }
         })
       } else {
@@ -275,24 +374,64 @@ class ApprovalController implements VmModuleApprovalController {
         ledgerParamsStore.getState().setReviewTransactionParams(null)
         this.handleGoBackIfNeeded()
         this.userCancelledMap.delete(requestId)
+        this.clearCancelBridge(requestId)
       }
     }
 
     ledgerParamsStore.getState().setReviewTransactionParams({
       rpcMethod: request.method,
       network: params.network,
-      onApprove: () =>
-        onApprove({
-          ...params,
-          signingData,
-          resolve: resolveWithRetry
-        }),
+      onApprove: () => {
+        // On-device signing begins — uncancellable from here. (CP-14422)
+        this.setApprovalPhase(requestId, 'ledgerSigning')
+        return onApprove({ ...params, signingData, resolve: resolveWithRetry })
+      },
       onReject: (_message?: string) => {
         this.userCancelledMap.set(requestId, true)
         this.handleLedgerOnReject({ resolve })
         this.handleGoBackIfNeeded()
+        this.clearCancelBridge(requestId)
       }
     })
+  }
+
+  private async handleApprovalApprove({
+    requestId,
+    request,
+    signingData,
+    resolve,
+    params
+  }: {
+    requestId: string
+    request: ApprovalParams['request']
+    signingData: ApprovalParams['signingData']
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+    params: OnApproveParams
+  }): Promise<void> {
+    // A cross-origin nav may have cancelled this request while the modal was
+    // up; a late Approve tap must not sign/broadcast. (CP-14422)
+    if (this.userCancelledMap.get(requestId)) return
+
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+      this.cacheSigningAddress(requestId, request.chainId, params.account)
+    }
+
+    if (
+      params.walletType === WalletType.LEDGER ||
+      params.walletType === WalletType.LEDGER_LIVE
+    ) {
+      this.handleLedgerApproval({
+        requestId,
+        request,
+        params,
+        signingData,
+        resolve
+      })
+    } else {
+      // Standard signing starts now — past the cancellable window.
+      this.clearCancelBridge(requestId)
+      await onApprove({ ...params, resolve, signingData })
+    }
   }
 
   async requestApproval(params: ApprovalParams): Promise<ApprovalResponse> {
@@ -320,28 +459,27 @@ class ApprovalController implements VmModuleApprovalController {
         request,
         displayData: enrichedDisplayData,
         signingData,
-        onApprove: async (params: OnApproveParams) => {
-          if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
-            this.cacheSigningAddress(requestId, request.chainId, params.account)
-          }
-
-          if (
-            params.walletType === WalletType.LEDGER ||
-            params.walletType === WalletType.LEDGER_LIVE
-          ) {
-            this.handleLedgerApproval({
-              requestId,
-              request,
-              params,
-              signingData,
-              resolve
-            })
-          } else {
-            return onApprove({ ...params, resolve, signingData })
-          }
-        },
-        onReject: (message?: string) => onReject({ resolve, message })
+        onApprove: (approveParams: OnApproveParams) =>
+          this.handleApprovalApprove({
+            requestId,
+            request,
+            signingData,
+            resolve,
+            params: approveParams
+          }),
+        onReject: (message?: string) => {
+          this.clearCancelBridge(requestId)
+          onReject({ resolve, message })
+        }
       })
+
+      // Settle (and clean up Ledger BLE) if this request is cancelled by a
+      // cross-origin nav while the modal is parked. No-op for non-browser
+      // requests (they register no AbortSignal). If the request was already
+      // aborted before we got here (nav landed in the pre-park window), it's
+      // cancelled synchronously — don't open a modal that's already stale.
+      // (CP-14422)
+      if (this.registerCancelBridge(requestId, resolve)) return
 
       router.navigate({
         pathname: '/approval',
