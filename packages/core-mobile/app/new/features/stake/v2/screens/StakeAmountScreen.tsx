@@ -214,10 +214,16 @@ const StakeAmountScreen = ({
     return base / (1 + feeMultiplier)
   }, [cumulativeBalance, feeMultiplier])
 
-  const dialMin = useMemo(
-    () => minStakeAmount.toDisplay({ asNumber: true }),
-    [minStakeAmount]
-  )
+  const dialMin = useMemo(() => {
+    const min = minStakeAmount.toDisplay({ asNumber: true })
+    // The dial requires `0 ≤ min ≤ max`. When the stakeable max dips below the
+    // minimum stake (low balance, or the fee reservation shrinking `dialMax`
+    // below the minimum — common on testnet where the fee multiplier is
+    // large), passing `min > max` makes the dial warn and drop the reference
+    // tick. Clamp so we never violate the contract; the screen still enforces
+    // the real minimum via validation.
+    return Math.min(min, dialMax)
+  }, [minStakeAmount, dialMax])
 
   if (fetchingBalance || cumulativeBalance === undefined) {
     return <ActivityIndicator sx={{ flex: 1 }} />
