@@ -34,6 +34,14 @@ import { FAST_STAKE_FEE_RATE } from '../constants'
 // we stake 99.99% of the balance so there's room to cover fees.
 const STAKING_MAX_BALANCE_PERCENTAGE = 0.9999
 
+// Dial granularity, matched to the 2-decimal input precision. Passing this
+// explicitly is important: without a `step` the dial floors it to
+// `max(0.1, max/1000)` = 0.1 for small balances, which both snaps the amount
+// to coarse 0.1 increments AND widens the preset-highlight tolerance
+// (`step / max`) to ~5% of the arc — wide enough that the minimum stake (~47%
+// of a ~2 AVAX max) lights up the "50%" chip. 0.01 keeps both tight.
+const STAKING_DIAL_STEP = 0.01
+
 // P-chain AVAX has 9 decimals; used to convert the dial's plain number back
 // into a TokenUnit (the rest of the stake flow speaks TokenUnit). We bridge
 // through a fixed-decimal string + big.js (`stringToBigint`) rather than
@@ -231,7 +239,14 @@ const StakeAmountScreen = ({
         }}>
         {errorMessage
           ? normalizeErrorMessage(errorMessage)
-          : `Balance: ${cumulativeBalance.toDisplay()} ${xpChainToken.symbol}`}
+          : // Show the stakeable max (balance minus the network-fee headroom
+            // and the reserved convenience fee), not the raw balance — this is
+            // the same figure the dial's `max`/percent presets are relative to,
+            // so "50%", "Max", etc. line up with the number shown here (mirrors
+            // core-web, which labels the adjusted max as the available amount).
+            `Available to stake: ${avaxToTokenUnit(dialMax).toDisplay()} ${
+              xpChainToken.symbol
+            }`}
       </Text>
     )
   }
@@ -256,6 +271,7 @@ const StakeAmountScreen = ({
           onChange={handleAmountChange}
           max={dialMax}
           min={dialMin}
+          step={STAKING_DIAL_STEP}
           decimals={2}
           maxDecimals={2}
           label={xpChainToken.symbol}
