@@ -17,9 +17,12 @@ import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContex
 
 const DEFAULT_COIN = 'BTC'
 
-// TODO: replace with `clearinghouseState.withdrawable > 0` once the SDK's
-// per-user balance lookup is wired up. The footer switches between
-// `Slide to deposit` (no balance) and `Short / Long` (funded).
+// TODO: revert to the real lookup before shipping — replace with
+// `clearinghouseState.withdrawable > 0` once the SDK's per-user balance
+// lookup is wired up. The footer switches between `Slide to deposit` (no
+// balance) and `Short / Long` (funded). Hardcoded `true` here forces the
+// funded branch so the order flow is reachable for this UI-only milestone;
+// it makes every user appear funded, so it must not ship as-is.
 const HAS_BALANCE = true
 
 const RANGES: readonly { label: string; resolution: TvResolution }[] = [

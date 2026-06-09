@@ -47,6 +47,47 @@ describe('resolveSeededPlaceOrderProps', () => {
     expect(props.initialAmount).toBe(0) // negative size floored
   })
 
+  it('ignores non-finite numeric params (Infinity/NaN)', () => {
+    const props = resolveSeededPlaceOrderProps({
+      price: 'Infinity',
+      entry: 'NaN',
+      maxLeverage: 'Infinity',
+      leverage: 'NaN',
+      size: 'Infinity'
+    })
+    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE)
+    expect(props.maxLeverage).toBe(DEFAULT_MAX_LEVERAGE)
+    expect(props.initialLeverage).toBeUndefined()
+    expect(props.initialAmount).toBeUndefined()
+  })
+
+  it('ignores non-numeric string params', () => {
+    const props = resolveSeededPlaceOrderProps({
+      price: 'abc',
+      maxLeverage: 'abc',
+      leverage: 'abc',
+      size: 'abc'
+    })
+    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE)
+    expect(props.maxLeverage).toBe(DEFAULT_MAX_LEVERAGE)
+    expect(props.initialLeverage).toBeUndefined()
+    expect(props.initialAmount).toBeUndefined()
+  })
+
+  it("treats the literal string 'undefined' tp/sl as absent", () => {
+    // usePositionActions interpolates `tp=${position.takeProfit}` directly, so
+    // an unset trigger serializes to the string "undefined" in the deep link.
+    const props = resolveSeededPlaceOrderProps({
+      entry: '100',
+      leverage: '2',
+      size: '3',
+      tp: 'undefined',
+      sl: 'undefined'
+    })
+    expect(props.initialTakeProfitPrice).toBeUndefined()
+    expect(props.initialStopLossPrice).toBeUndefined()
+  })
+
   it('defaults when params are absent', () => {
     const props = resolveSeededPlaceOrderProps({})
     expect(props.coin).toBe('NVDA')

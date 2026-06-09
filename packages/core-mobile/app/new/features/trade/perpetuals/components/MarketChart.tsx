@@ -29,6 +29,10 @@ void chartHtmlAsset.downloadAsync().catch(() => {})
 
 // SDK constants injected into the WebView before its inline script runs.
 // The HTML reads them off `window.__PERPS_*`.
+// TODO: the datafeed is pinned to mainnet Hyperliquid — it ignores the app's
+// network mode, so the chart shows mainnet data even in testnet. The SDK
+// doesn't expose testnet endpoints yet; make these network-aware when the real
+// data wiring lands (CP-14338).
 const PRELOAD_JS = `
   window.__PERPS_TV_RESOLUTIONS = ${JSON.stringify(TV_RESOLUTIONS)};
   window.__PERPS_RES_TO_INTERVAL = ${JSON.stringify(RESOLUTION_TO_INTERVAL)};
