@@ -301,6 +301,23 @@ export function useEvmInjectedProvider(
   // never emit a duplicate accountsChanged for the same set.
   const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
 
+  // Inject an accountsChanged emit gated on the page still being on `origin`
+  // (the same guard sendResponse uses). An emit racing a cross-origin
+  // navigation can find currentUrlRef briefly ahead of the JS context that
+  // injectJavaScript actually runs in, so without this gate one origin's
+  // granted addresses could leak into the next origin's page. Shared by every
+  // accountsChanged path (active-account switch, Connected Sites revoke, prime).
+  const injectAccountsChanged = useCallback(
+    (origin: string, serialized: string) => {
+      webViewRef.current?.injectJavaScript(
+        `if(window.location.origin===${JSON.stringify(
+          origin
+        )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
+      )
+    },
+    [webViewRef]
+  )
+
   // Propagate wallet active-account switches to the dApp. MetaMask users
   // expect the wallet's account selector to drive the dApp's connected
   // account — dApps in the in-app browser have no account picker of their own.
@@ -330,16 +347,8 @@ export function useEvmInjectedProvider(
     const serialized = JSON.stringify(accounts)
     if (lastEmittedAccountsRef.current === serialized) return
     lastEmittedAccountsRef.current = serialized
-    // Origin-gate delivery (same guard as sendResponse): only inject if the page
-    // is still on the origin we resolved accounts for, so an account switch
-    // racing a cross-origin navigation (briefly-stale currentUrlRef) can't leak
-    // one origin's granted addresses to a different page.
-    webViewRef.current?.injectJavaScript(
-      `if(window.location.origin===${JSON.stringify(
-        origin
-      )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
-    )
-  }, [activeAccount, store, webViewRef])
+    injectAccountsChanged(origin, serialized)
+  }, [activeAccount, store, injectAccountsChanged])
 
   // Connected Sites revokes a dApp from another screen without changing this
   // tab's active account, so only a store subscription can react (CP-14382).
@@ -369,11 +378,9 @@ export function useEvmInjectedProvider(
       const serialized = JSON.stringify(accounts)
       if (lastEmittedAccountsRef.current === serialized) return
       lastEmittedAccountsRef.current = serialized
-      webViewRef.current?.injectJavaScript(
-        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized}); true;`
-      )
+      injectAccountsChanged(origin, serialized)
     })
-  }, [store, webViewRef])
+  }, [store, injectAccountsChanged])
 
   // When this browser tab unmounts (tab closed), reject any parked connect
   // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
@@ -592,13 +599,10 @@ export function useEvmInjectedProvider(
       vmType: NetworkVMType.EVM
     })(store.getState())
     const accounts = resolveActiveConnectedAccounts(granted, active.addressC)
-    lastEmittedAccountsRef.current = JSON.stringify(accounts)
-    webViewRef.current?.injectJavaScript(
-      `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
-        accounts
-      )}); true;`
-    )
-  }, [store, webViewRef])
+    const serialized = JSON.stringify(accounts)
+    lastEmittedAccountsRef.current = serialized
+    injectAccountsChanged(origin, serialized)
+  }, [store, injectAccountsChanged])
   // Publish to the ref so setCurrentUrl (defined above) can re-prime on SPA nav.
   // useLayoutEffect (not a render-phase assignment) to match routerRef: the ref
   // must be set synchronously on commit, before a navigation event can fire

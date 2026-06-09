@@ -1703,6 +1703,28 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
+      it('origin-gates the prime emit to the current page origin', () => {
+        // The prime injection must be wrapped in a window.location.origin check
+        // so a prime racing a cross-origin nav can't leak the previous origin's
+        // granted accounts into the next origin's page.
+        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'if(window.location.origin==="https://opensea.io")'
+          )
+        )
+      })
+
       it('injects accountsChanged([]) when no grant exists for the origin', () => {
         const { result } = renderProvider()
         act(() => {
@@ -1974,6 +1996,13 @@ describe('useEvmInjectedProvider', () => {
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
         expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+      // ...and the emit is origin-gated so a revoke racing a cross-origin nav
+      // can't deliver into a different page (same guard as the switch/prime).
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'if(window.location.origin==="https://opensea.io")'
+        )
       )
     })
 

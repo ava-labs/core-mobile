@@ -50,18 +50,38 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('pre-connected state', () => {
-    it('always returns true from isConnected (EIP-1193: network connectivity, not account auth)', () => {
+  describe('connection state', () => {
+    it('starts connected (EIP-1193: network connectivity, not account auth)', () => {
       const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('var _connected = true')
       expect(shim).toContain('_isConnected: true')
     })
 
-    it('stays true even when address is empty', () => {
+    it('starts connected even when address is empty', () => {
       const shim = buildEvmProviderShim({
         ...defaultParams,
         address: ''
       })
-      expect(shim).toContain('_isConnected: true')
+      expect(shim).toContain('var _connected = true')
+    })
+
+    it('isConnected() returns the tracked flag, not a hard-coded true', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('return _connected;')
+    })
+
+    it('flips the flag false on a disconnect event and true on connect/chainChanged', () => {
+      // Native emits disconnect(4901) for a non-servable (non-EVM) chain and
+      // chainChanged when it recovers; isConnected() must follow (CP-13671).
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("eventName === 'disconnect'")
+      expect(shim).toContain('_connected = false;')
+      expect(shim).toContain("eventName === 'connect'")
+    })
+
+    it('keeps the legacy _isConnected property in sync with the flag', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('provider._isConnected = _connected;')
     })
 
     it('starts _accounts empty — native primes on load based on permissions', () => {
