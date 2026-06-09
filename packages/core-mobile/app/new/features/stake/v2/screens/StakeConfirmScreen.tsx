@@ -622,12 +622,13 @@ const StakeConfirmScreen = ({
           nodeId: validator.nodeID,
           startDate: minStartTime,
           endDate: validatedStakingEndTime,
-          // The steps were first computed on the amount screen, before the
-          // convenience fee was known. When a fee applies, force a recompute
-          // so the import/transfer covers the extra escrow output too —
-          // otherwise the delegation tx can't fund it and fails with an
-          // insufficient-funds error (e.g. P-Chain balance == stake amount).
-          recomputeSteps: recomputeSteps || feeAdditionalOutputs !== undefined,
+          // No forced recompute on the normal path: `useStakeFundingPreflight`
+          // already recomputed the steps with the convenience-fee output
+          // folded in (and gates the CTA until it succeeds), so the steps in
+          // context are fee-inclusive and current by the time the user slides.
+          // `recomputeSteps` is only set by explicit retry paths (e.g.
+          // funds-stuck), which pass it through here.
+          recomputeSteps,
           onProgress,
           additionalOutputs: feeAdditionalOutputs
         })
