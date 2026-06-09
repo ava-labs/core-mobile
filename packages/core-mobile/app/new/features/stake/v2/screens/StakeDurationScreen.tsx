@@ -133,7 +133,7 @@ const StakeDurationScreen = ({
       }
     })
   }, [estimatedRewards])
-  const estimatedCustomReward = useStakeEstimatedReward({
+  const { data: estimatedCustomReward } = useStakeEstimatedReward({
     amount: stakeAmount,
     duration:
       customEndDate === undefined

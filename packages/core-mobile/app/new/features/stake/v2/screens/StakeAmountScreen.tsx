@@ -112,7 +112,7 @@ const StakeAmountScreen = ({
       ),
     []
   )
-  const referenceReward = useStakeEstimatedReward({
+  const { data: referenceReward } = useStakeEstimatedReward({
     amount: minStakeAmount,
     // Skip the estimate (and its network round-trip) when the fee is off.
     duration: isFastStakeFeeEnabled ? maxStakeDurationSeconds : undefined,

@@ -52,6 +52,63 @@ import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
 const SUCCESS_DISMISS_DELAY_MS = 2000
 
 /**
+ * Footer for the reviewable state: the "Slide to stake" CTA plus a status
+ * line. When a fee applies the CTA stays disabled until the reward/fee
+ * estimate resolves (so we never submit a fee-less stake); if that estimate
+ * fails we surface an explicit error + Retry here instead of leaving the CTA
+ * silently and permanently disabled.
+ */
+const StakeReviewFooter = ({
+  hasInsufficientFunds,
+  showEstimateError,
+  onRetryEstimate,
+  isSubmitting,
+  isSubmitDisabled,
+  onConfirm
+}: {
+  hasInsufficientFunds: boolean
+  showEstimateError: boolean
+  onRetryEstimate: () => void
+  isSubmitting: boolean
+  isSubmitDisabled: boolean
+  onConfirm: () => void
+}): JSX.Element => {
+  return (
+    <View sx={{ gap: 12 }}>
+      {hasInsufficientFunds ? (
+        <Text
+          variant="caption"
+          sx={{ color: '$textDanger', textAlign: 'center' }}>
+          {`You don't have enough AVAX to cover the stake and its fee. Go back and lower the amount.`}
+        </Text>
+      ) : showEstimateError ? (
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12
+          }}>
+          <Text variant="caption" sx={{ color: '$textDanger', flexShrink: 1 }}>
+            {`We couldn't estimate the reward and fee. Check your connection and try again.`}
+          </Text>
+          <Button type="secondary" size="small" onPress={onRetryEstimate}>
+            Retry
+          </Button>
+        </View>
+      ) : null}
+      <SlidingButton
+        mode="single"
+        label="Slide to stake"
+        loading={isSubmitting}
+        disabled={isSubmitDisabled}
+        onConfirm={onConfirm}
+      />
+    </View>
+  )
+}
+
+/**
  * V2 "Almost done, review your stake..." screen.
  *
  * Designed to be shared across staking flows (Fast Stake today; the
@@ -91,7 +148,10 @@ const StakeConfirmScreen = ({
   const [stakeAmount] = useStakeAmount()
   const { steps } = useDelegationContext()
   const { annualPercentageYieldBPS } = useStakingParams()
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime: string }>()
+  // Optional in the type because deep links / state restoration can land here
+  // without the param — the defensive parsing below relies on it being
+  // possibly `undefined`, so the type must reflect that too.
+  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
   // Defensive parse — deep links / state restoration could land us here
   // with a missing or non-numeric `stakeEndTime`. Falling through with a
   // NaN would produce an Invalid Date and later crash inside `format()` /
@@ -144,7 +204,11 @@ const StakeConfirmScreen = ({
   // the duration reflects the user-selected end time during the resolve
   // window and switches to the validator-clamped end time once it arrives.
   // No consumer-level gating needed here.
-  const grossEstimatedReward = useStakeEstimatedReward({
+  const {
+    data: grossEstimatedReward,
+    isError: isRewardEstimateError,
+    refetch: retryRewardEstimate
+  } = useStakeEstimatedReward({
     amount: stakeAmount,
     duration: validatedStakingDuration,
     delegationFee: 0
@@ -719,37 +783,34 @@ const StakeConfirmScreen = ({
     if (ledgerFooter) return ledgerFooter
 
     return (
-      <View sx={{ gap: 8 }}>
-        {hasInsufficientFunds && (
-          <Text
-            variant="caption"
-            sx={{ color: '$textDanger', textAlign: 'center' }}>
-            {`You don't have enough AVAX to cover the stake and its fee. Go back and lower the amount.`}
-          </Text>
-        )}
-        <SlidingButton
-          mode="single"
-          label="Slide to stake"
-          loading={isIssueDelegationPending}
-          disabled={
-            !validator ||
-            !isFeeContextReady ||
-            isIssueDelegationPending ||
-            isCheckingFunding ||
-            hasInsufficientFunds
-          }
-          onConfirm={() => handleDelegate()}
-        />
-      </View>
+      <StakeReviewFooter
+        hasInsufficientFunds={hasInsufficientFunds}
+        // Only surface the estimate error when a fee actually applies — the
+        // CTA is gated on the reward estimate only in that case.
+        showEstimateError={feePolicy !== null && isRewardEstimateError}
+        onRetryEstimate={retryRewardEstimate}
+        isSubmitting={isIssueDelegationPending}
+        isSubmitDisabled={
+          !validator ||
+          !isFeeContextReady ||
+          isIssueDelegationPending ||
+          isCheckingFunding ||
+          hasInsufficientFunds
+        }
+        onConfirm={() => handleDelegate()}
+      />
     )
   }, [
     renderLedgerFooter,
     steps.length,
+    hasInsufficientFunds,
+    feePolicy,
+    isRewardEstimateError,
+    retryRewardEstimate,
     isIssueDelegationPending,
     validator,
     isFeeContextReady,
     isCheckingFunding,
-    hasInsufficientFunds,
     handleDelegate
   ])
 

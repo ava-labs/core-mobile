@@ -105,7 +105,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     return new Date(validatedStakingEndTime.getTime())
   }, [validatedStakingEndTime])
   // skip reward estimation until validator is loaded to avoid passing NaN delegationFee
-  const estimatedReward = useStakeEstimatedReward({
+  const { data: estimatedReward } = useStakeEstimatedReward({
     amount: stakeAmount,
     duration: validator ? validatedStakingDuration : undefined,
     delegationFee: Number(validator?.delegationFee ?? 0)

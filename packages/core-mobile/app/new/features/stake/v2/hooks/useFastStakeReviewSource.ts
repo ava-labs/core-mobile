@@ -28,7 +28,9 @@ import { useFastStakeNode } from './useFastStakeNode'
  */
 export const useFastStakeReviewSource = (): StakeReviewSource => {
   const [stakingAmount] = useStakeAmount()
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime: string }>()
+  // Optional in the type because the param can be missing at runtime (deep
+  // links / state restoration); the defensive parse below depends on that.
+  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
   // Defensive parse — missing / non-finite / non-positive params yield
   // `undefined` and surface as a source error below, instead of cascading a
   // NaN into the Glacier query (which would then produce a confusing
