@@ -367,7 +367,10 @@ class AccountsService {
           throw new Error('Expected SeedlessWallet instance')
         }
 
-        // prompt Core Seedless API to derive new keys
+        // prompt Core Seedless API to derive new keys. This refreshes
+        // SeedlessPubKeysStorage; getPublicKeyFor reads from that storage on
+        // every lookup, so the getAddresses calls below resolve the new keys
+        // even from a cached SeedlessWallet instance.
         await wallet.addAccount(index)
       }
     } else if (

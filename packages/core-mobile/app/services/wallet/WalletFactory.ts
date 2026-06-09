@@ -90,7 +90,7 @@ class WalletFactory {
 
         const client = await SeedlessService.session.getSignerClient()
 
-        return new SeedlessWallet(client, pubKeys)
+        return new SeedlessWallet(client)
       }
       case WalletType.MNEMONIC: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)

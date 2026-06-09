@@ -474,8 +474,8 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.87
     "@avalabs/core-utils-sdk": 3.1.0-alpha.87
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.87
-    "@avalabs/crypto-nitro": 0.3.1
-    "@avalabs/crypto-sdk": 1.0.1
+    "@avalabs/crypto-nitro": 0.3.2
+    "@avalabs/crypto-sdk": 1.0.2
     "@avalabs/evm-module": 3.9.0
     "@avalabs/fusion-sdk": 0.16.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.87
@@ -856,9 +856,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/crypto-nitro@npm:0.3.1":
-  version: 0.3.1
-  resolution: "@avalabs/crypto-nitro@npm:0.3.1"
+"@avalabs/crypto-nitro@npm:0.3.2":
+  version: 0.3.2
+  resolution: "@avalabs/crypto-nitro@npm:0.3.2"
   peerDependencies:
     react: "*"
     react-native: "*"
@@ -868,7 +868,7 @@ __metadata:
       optional: true
     react-native:
       optional: true
-  checksum: d0b13d23d1bed77f75e892f53f87b85394d28a2163ccfdc9afe13a0986aa41372f71187015a2ac8e92ee3c65d1c58a8e218f16d434eee578e07c3b2cba6fd5b3
+  checksum: b98a4681b8e4dff529daf6ff772c3b0e13245f87a9f7af407ac25d9dcc35ce0d17a4c347a65e30deab2b4d0a6c1286b0ff968cbf71d18b1bc66d16fcc338279e
   languageName: node
   linkType: hard
 
@@ -887,18 +887,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/crypto-sdk@npm:1.0.1":
-  version: 1.0.1
-  resolution: "@avalabs/crypto-sdk@npm:1.0.1"
+"@avalabs/crypto-sdk@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@avalabs/crypto-sdk@npm:1.0.2"
   peerDependencies:
-    "@avalabs/crypto-nitro": 0.3.1
-    "@avalabs/crypto-wasm": 0.3.0
+    "@avalabs/crypto-nitro": 0.3.2
+    "@avalabs/crypto-wasm": 0.3.1
   peerDependenciesMeta:
     "@avalabs/crypto-nitro":
       optional: true
     "@avalabs/crypto-wasm":
       optional: true
-  checksum: 3e686832b170975099656722ad4a4815403b25cf4e828ba0880adc2b482101ff8a7ae94c34242de5f30e652f970070af7a0ecce4723b515eec74bf4c1e731e2f
+  checksum: 7810c9d1e949119fad652c82db90f671f93024301fa0970a1d816319e322ef5c0f014c69d4867229fd223ff91f2ce51c76e1d183310bfa46959e5782c9c35a09
   languageName: node
   linkType: hard
 
