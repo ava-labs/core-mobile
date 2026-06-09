@@ -70,11 +70,16 @@ export type RouterDeps = {
   getActiveAccount: () => Account | undefined
 
   // Permissions
-  hasPermission: (args: {
+  /**
+   * Every address at `domain` granted for `vmType`. Used by
+   * `wallet_getPermissions` / `eth_requestAccounts` so that switching the
+   * active wallet account does not spuriously disconnect a dApp that was
+   * previously authorized for some other address.
+   */
+  getGrantedAddresses: (args: {
     domain: string
-    address: string
     vmType: NetworkVMType
-  }) => boolean
+  }) => string[]
   grantPermission: (args: {
     domain: string
     address: string

@@ -21,7 +21,7 @@ import { approvalController } from 'vmModule/ApprovalController/ApprovalControll
 import {
   grantPermission as grantPermissionAction,
   revokePermission as revokePermissionAction,
-  selectHasPermission
+  selectGrantedAddressesForDomain
 } from 'store/permissions/slice'
 import type { RootState } from 'store/types'
 import type { Account } from 'store/account'
@@ -31,6 +31,7 @@ import {
   createInjectedProviderRouter,
   InjectedProviderRouter
 } from './injectedProvider/router'
+import { resolveActiveConnectedAccounts } from './injectedProvider/resolveGrantedAccounts'
 import {
   CONNECT_PROMPT_TIMED_OUT_MESSAGE,
   EIP1193_USER_REJECTED_CODE,
@@ -252,6 +253,51 @@ export function useEvmInjectedProvider(
     activeAccountRef.current = activeAccount
   }, [activeAccount])
 
+  // Last accounts list advertised to the dApp (serialized). Shared by the
+  // page-load prime path and the active-account switch effect below so they
+  // never emit a duplicate accountsChanged for the same set.
+  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
+
+  // Propagate wallet active-account switches to the dApp. MetaMask users
+  // expect the wallet's account selector to drive the dApp's connected
+  // account — dApps in the in-app browser have no account picker of their own.
+  //   - new active IS granted at this origin → emit [active, ...otherGranted]
+  //     (active first) so the dApp follows the wallet.
+  //   - new active is NOT granted → emit [] so the dApp reflects a disconnected
+  //     state (transacting UI disabled). The injected signer always signs with
+  //     the active account, so we must never leave the dApp believing it can
+  //     transact as an account that won't actually sign (CP-14382).
+  // We don't short-circuit on an empty granted set: a revoke-then-switch (grants
+  // cleared via Connected Sites, then the user switches accounts) must still emit
+  // accountsChanged([]) to clear the dApp's stale _accounts, matching the prime
+  // path. A genuinely never-connected origin is already covered by the prime
+  // path's [] emit, so the dedupe below suppresses any redundant emit here.
+  useEffect(() => {
+    const origin = getOriginFromUrl(currentUrlRef.current)
+    if (!origin) return
+    const granted = selectGrantedAddressesForDomain({
+      domain: origin,
+      vmType: NetworkVMType.EVM
+    })(store.getState())
+
+    const accounts = resolveActiveConnectedAccounts(
+      granted,
+      activeAccount?.addressC
+    )
+    const serialized = JSON.stringify(accounts)
+    if (lastEmittedAccountsRef.current === serialized) return
+    lastEmittedAccountsRef.current = serialized
+    // Origin-gate delivery (same guard as sendResponse): only inject if the page
+    // is still on the origin we resolved accounts for, so an account switch
+    // racing a cross-origin navigation (briefly-stale currentUrlRef) can't leak
+    // one origin's granted addresses to a different page.
+    webViewRef.current?.injectJavaScript(
+      `if(window.location.origin===${JSON.stringify(
+        origin
+      )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
+    )
+  }, [activeAccount, store, webViewRef])
+
   // When this browser tab unmounts (tab closed), reject any parked connect
   // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
   // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
@@ -420,8 +466,8 @@ export function useEvmInjectedProvider(
       },
       getPeerMeta,
       getActiveAccount: () => activeAccountRef.current,
-      hasPermission: ({ domain, address, vmType }) =>
-        selectHasPermission({ domain, address, vmType })(store.getState()),
+      getGrantedAddresses: ({ domain, vmType }) =>
+        selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
       grantPermission: ({ domain, address, vmType }) =>
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
@@ -461,21 +507,24 @@ export function useEvmInjectedProvider(
         Logger.error('[InjectedProvider] Invalid domain_metadata payload')
       }
 
-      // Prime the shim's _accounts cache on page load: if the current origin
-      // already has an EVM grant for the active account, emit accountsChanged
-      // so dApps with auto-reconnect (wagmi autoConnect, etc.) see the
-      // connection immediately without prompting. If no grant exists, emit
-      // an empty array to keep the shim in sync (e.g. after the user revoked
-      // the grant from Connected Sites while the tab was open).
+      // Prime the shim's _accounts cache on page load so dApps with
+      // auto-reconnect (wagmi autoConnect, etc.) see the connection
+      // immediately without prompting. We emit the accounts the dApp may
+      // actually transact as: if the active account is in this origin's
+      // granted set, the granted addresses (active first); otherwise []. The
+      // injected signer always signs with the active account, so priming the
+      // granted set while an ungranted account is active would re-establish a
+      // phantom connection on reload (the gap An flagged on #3862) — emit []
+      // instead so the dApp reflects a disconnected state (CP-14382).
       const origin = getOriginFromUrl(currentUrlRef.current)
       const active = activeAccountRef.current
       if (!origin || !active?.addressC) return
-      const granted = selectHasPermission({
+      const granted = selectGrantedAddressesForDomain({
         domain: origin,
-        address: active.addressC,
         vmType: NetworkVMType.EVM
       })(store.getState())
-      const accounts = granted ? [active.addressC] : []
+      const accounts = resolveActiveConnectedAccounts(granted, active.addressC)
+      lastEmittedAccountsRef.current = JSON.stringify(accounts)
       webViewRef.current?.injectJavaScript(
         `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
           accounts

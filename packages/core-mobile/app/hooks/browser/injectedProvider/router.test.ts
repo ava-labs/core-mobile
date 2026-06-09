@@ -41,14 +41,18 @@ type MockDeps = {
   trackPendingOrigin: jest.Mock
   setBrowserNetworkSpy: jest.Mock
   currentNetwork: { value: BrowserNetwork }
-  hasPermission: jest.Mock
+  getGrantedAddresses: jest.Mock
   grantPermission: jest.Mock
   revokePermission: jest.Mock
   requestConnectApproval: jest.Mock
   activeAccount: { value: Account | undefined }
 }
 
-const MOCK_ADDR = '0xTestAddress1234567890'
+// A real 40-hex address — the signing gate validates `from`/signer args are
+// well-formed EVM addresses, so signer-grant tests need valid ones.
+const MOCK_ADDR = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+const OTHER_GRANTED_ADDR = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+const UNGRANTED_ADDR = '0xcccccccccccccccccccccccccccccccccccccccc'
 const MOCK_ACCOUNT = { addressC: MOCK_ADDR } as Account
 
 function makeDeps(overrides?: {
@@ -57,7 +61,7 @@ function makeDeps(overrides?: {
   nativeOrigin?: string | undefined
   tabId?: string
   activeAccount?: Account | undefined
-  hasPermission?: boolean
+  grantedAddresses?: string[]
 }): MockDeps {
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
@@ -87,8 +91,14 @@ function makeDeps(overrides?: {
   const setBrowserNetworkSpy = jest.fn((net: BrowserNetwork) => {
     currentNetwork.value = net
   })
-  const hasPermission = jest.fn(() => overrides?.hasPermission ?? false)
-  const grantPermission = jest.fn()
+  // Back getGrantedAddresses with a live set that grantPermission mutates, so a
+  // grant during an approval flow is reflected when the handler re-reads the
+  // granted addresses to reconcile them against the active account.
+  const grantedSet = new Set<string>(overrides?.grantedAddresses ?? [])
+  const getGrantedAddresses = jest.fn(() => [...grantedSet])
+  const grantPermission = jest.fn(({ address }: { address: string }) =>
+    grantedSet.add(address)
+  )
   const revokePermission = jest.fn()
   const requestConnectApproval = jest.fn()
   const activeAccount = {
@@ -120,7 +130,7 @@ function makeDeps(overrides?: {
       icons: []
     }),
     getActiveAccount: () => activeAccount.value,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
@@ -134,7 +144,7 @@ function makeDeps(overrides?: {
     requestReadOnly,
     dispatch,
     trackPendingOrigin,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval,
@@ -507,7 +517,7 @@ describe('createInjectedProviderRouter', () => {
   describe('eth_requestAccounts', () => {
     it('returns the active address without prompting when already granted', async () => {
       const { deps, sendResponse, requestConnectApproval, grantPermission } =
-        makeDeps({ hasPermission: true })
+        makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_requestAccounts')
@@ -516,6 +526,74 @@ describe('createInjectedProviderRouter', () => {
       expect(requestConnectApproval).not.toHaveBeenCalled()
       expect(grantPermission).not.toHaveBeenCalled()
       expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
+    })
+
+    it('returns ALL granted addresses (active first) without prompting, not just the active one', async () => {
+      // Multi-account: switching the wallet's active account must not force a
+      // re-prompt — every previously-granted address is returned, active first.
+      const OTHER = '0xOtherGrantedAddr'
+      const { deps, sendResponse, requestConnectApproval } = makeDeps({
+        grantedAddresses: [OTHER, MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR, OTHER])
+    })
+
+    it('prompts (does NOT short-circuit) when the origin has grants but the active account is not among them', async () => {
+      // Reconciliation: the active-only signer can't authorize an ungranted
+      // active account, so eth_requestAccounts must prompt rather than report a
+      // connection to other granted addresses.
+      const { deps, sendResponse, requestConnectApproval, grantPermission } =
+        makeDeps({ grantedAddresses: ['0xOtherGrantedAddr'] })
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalled()
+      expect(grantPermission).toHaveBeenCalledWith({
+        domain: 'https://example.com',
+        address: MOCK_ADDR,
+        vmType: NetworkVMType.EVM
+      })
+      // After granting the (active) selection, the advertised set is reconciled
+      // against the active account: the full granted set, active first.
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [
+        MOCK_ADDR,
+        '0xOtherGrantedAddr'
+      ])
+    })
+
+    it('rejects with unauthorized (4100) when the approved selection does not include the active account', async () => {
+      // Phantom-connection guard: the injected signer is active-only, so if the
+      // user approves only non-active accounts we must not advertise them. The
+      // user DID approve, so it's an authorization failure (4100), not a user
+      // cancel (4001) — dApps treat the two differently (CP-14382).
+      const { deps, sendResponse, requestConnectApproval, emitEvent } =
+        makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([
+        { addressC: '0xNonActiveSelected' } as Account
+      ])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+      expect(emitEvent).not.toHaveBeenCalledWith(
+        'accountsChanged',
+        expect.anything()
+      )
     })
 
     it('opens approval when not granted, grants, and returns selected accounts', async () => {
@@ -590,7 +668,7 @@ describe('createInjectedProviderRouter', () => {
 
   describe('wallet_requestPermissions', () => {
     it('returns EIP-2255 permission object when already granted', async () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_requestPermissions')
@@ -629,11 +707,44 @@ describe('createInjectedProviderRouter', () => {
         expect.objectContaining({ parentCapability: 'eth_accounts' })
       ])
     })
+
+    it('prompts when the origin has grants but the active account is not among them', async () => {
+      const { deps, requestConnectApproval } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
+      requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestConnectApproval).toHaveBeenCalledTimes(1)
+    })
+
+    it('rejects with unauthorized (4100) when the approved selection does not include the active account', async () => {
+      // Same phantom-connection guard as eth_requestAccounts: the user approved,
+      // but not the active account, so it's an authorization failure (4100), not
+      // a user cancel.
+      const { deps, sendResponse, requestConnectApproval } = makeDeps()
+      requestConnectApproval.mockResolvedValueOnce([
+        { addressC: '0xNonActiveSelected' } as Account
+      ])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_requestPermissions')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
   })
 
   describe('wallet_getPermissions', () => {
     it('returns an EIP-2255 permission list when the active account is granted', () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: true })
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [MOCK_ADDR] })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
@@ -647,8 +758,22 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
-    it('returns an empty array when the active account is not granted', () => {
-      const { deps, sendResponse } = makeDeps({ hasPermission: false })
+    it('returns an empty array when there are no grants for the origin', () => {
+      const { deps, sendResponse } = makeDeps({ grantedAddresses: [] })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'wallet_getPermissions')
+
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+    })
+
+    it('returns [] when the origin has grants but the active account is not among them', () => {
+      // Reconciliation: a dApp polling wallet_getPermissions must see a
+      // disconnected state when the active-only signer is an ungranted account,
+      // not the other granted addresses.
+      const { deps, sendResponse } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_getPermissions')
@@ -732,7 +857,9 @@ describe('createInjectedProviderRouter', () => {
 
   describe('signing methods', () => {
     it('calls requestSigning with caip2 chain and peer meta, resolves with result', async () => {
-      const { deps, sendResponse, requestSigning } = makeDeps()
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       requestSigning.mockResolvedValueOnce('0xSig')
       const router = createInjectedProviderRouter(deps)
 
@@ -751,8 +878,177 @@ describe('createInjectedProviderRouter', () => {
       expect(sendResponse).toHaveBeenCalledWith(1, null, '0xSig')
     })
 
+    it('rejects (4100) without prompting when the active account is not granted to the origin', async () => {
+      // The injected signer is active-only; if the dApp was never told about the
+      // active account, a signing request must reject up front, never prompt —
+      // otherwise the dApp would learn of the account by it being signed for.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: ['0xOtherGrantedAddr']
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('rejects eth_sendTransaction (4100) when `from` is an account not granted to the origin', async () => {
+      // An's repro: connected/active is the granted account, but the dApp sets
+      // `from` to a different, ungranted address. The signer resolves the
+      // account from `from`, so this must reject up front — no approval prompt —
+      // rather than sign with an account the dApp was never granted.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_sendTransaction', [
+        { from: UNGRANTED_ADDR, to: '0xdead', value: '0x0' }
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('allows eth_sendTransaction when `from` is the active account (hex case-insensitive)', async () => {
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      requestSigning.mockResolvedValueOnce('0xTxHash')
+      const router = createInjectedProviderRouter(deps)
+
+      // Same address, uppercased hex (checksum-style) — must still match.
+      send(router, 'eth_sendTransaction', [
+        { from: '0x' + MOCK_ADDR.slice(2).toUpperCase(), to: '0xdead' }
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalled()
+    })
+
+    it('allows eth_sendTransaction from a granted account that is not the active one', async () => {
+      // Multi-account: the dApp may transact from any account it was granted,
+      // not only the active one. The signer resolves that account from `from`.
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR, OTHER_GRANTED_ADDR] // active is MOCK_ADDR
+      })
+      requestSigning.mockResolvedValueOnce('0xTxHash')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_sendTransaction', [
+        { from: OTHER_GRANTED_ADDR, to: '0xdead', value: '0x0' }
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalled()
+    })
+
+    it('rejects eth_sendTransactionBatch (4100) when the active account is not granted, even if every tx `from` is granted', async () => {
+      // The batch handler signs with the active account index, not the per-tx
+      // `from` — so the gate must check the active account. Otherwise a dApp
+      // could set `from` to a granted address while the ungranted active account
+      // does the signing (the bypass Copilot flagged).
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [OTHER_GRANTED_ADDR] // active (MOCK_ADDR) NOT granted
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_sendTransactionBatch', [
+        [{ from: OTHER_GRANTED_ADDR, to: '0x0' }]
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('allows eth_sendTransactionBatch when the active account is granted, regardless of tx `from`', async () => {
+      // `from` is irrelevant for batch (the handler signs with the active
+      // account); only the active account's grant matters.
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR] // active is granted
+      })
+      requestSigning.mockResolvedValueOnce('0xBatch')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_sendTransactionBatch', [
+        [{ from: UNGRANTED_ADDR, to: '0x0' }]
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalled()
+    })
+
+    it('rejects personal_sign (4100) when the signer address arg is not granted', async () => {
+      // personal_sign(message, address) — params[1] is the signer. A Permit-
+      // style signature from an ungranted account is the same fund-loss class
+      // as a tx, so reject up front.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'personal_sign', ['0xdeadbeef', UNGRANTED_ADDR])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('allows personal_sign when the signer address arg is granted', async () => {
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      requestSigning.mockResolvedValueOnce('0xSig')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'personal_sign', ['0xdeadbeef', MOCK_ADDR])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalled()
+    })
+
+    it('rejects eth_signTypedData_v4 (4100) when the signer address arg is not granted', async () => {
+      // signTypedData_v4(address, typedData) — params[0] is the signer.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_signTypedData_v4', [UNGRANTED_ADDR, '{"types":{}}'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
     it('propagates rejection from requestSigning', async () => {
-      const { deps, sendResponse, requestSigning } = makeDeps()
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       const err = {
         code: EIP1193_USER_REJECTED_CODE,
         message: USER_REJECTED_REQUEST_MESSAGE
@@ -767,7 +1063,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('routes eth_sendTransactionBatch through requestSigning, not the read-only path', async () => {
-      const { deps, requestSigning, requestReadOnly } = makeDeps()
+      const { deps, requestSigning, requestReadOnly } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       requestSigning.mockResolvedValueOnce('0xBatch')
       const router = createInjectedProviderRouter(deps)
 
@@ -831,7 +1129,9 @@ describe('createInjectedProviderRouter', () => {
 
   describe('cancelByOrigin', () => {
     it('aborts in-flight signing requests whose origin does not match the new origin', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       // Never resolves — simulates a signing request sitting on an approval
       // screen while the user navigates away.
       let capturedSignal: AbortSignal | undefined
@@ -855,7 +1155,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('does not abort requests whose origin matches the new origin', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       let capturedSignal: AbortSignal | undefined
       requestSigning.mockImplementationOnce(args => {
         capturedSignal = args.signal
@@ -886,7 +1188,9 @@ describe('createInjectedProviderRouter', () => {
     })
 
     it('cleans up in-flight tracking after abort', async () => {
-      const { deps, requestSigning } = makeDeps()
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
       const signals: AbortSignal[] = []
       requestSigning.mockImplementation(args => {
         if (args.signal) signals.push(args.signal)
