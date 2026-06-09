@@ -46,7 +46,6 @@ export const TokenUnitInputWidget = ({
   }
   onChange?(amount: TokenUnit): void
   formatInCurrency(amount: TokenUnit): string
-  validateAmount?(amount: TokenUnit): Promise<void>
   accessory?: JSX.Element
   sx?: SxProp
   disabled?: boolean
