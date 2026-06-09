@@ -8,48 +8,35 @@ const client = axios.create({
 const APP_SLUG = process.env.BITRISE_APP_SLUG
 
 export type Platform = 'ios' | 'android'
-export type TestType = 'smoke' | 'regression' | 'performance'
+export type TestType = 'smoke' | 'regression-internal' | 'regression-external' | 'performance'
 
-function resolveWorkflow(testType: TestType, platform: Platform): string {
-  if (testType === 'regression') {
-    return platform === 'ios' ? 'aws-ios-regression-test' : 'aws-android-regression-test'
-  }
-  if (testType === 'smoke') {
-    return platform === 'ios' ? 'appium-ios-setup' : 'appium-android-setup'
-  }
-  // performance
-  return platform === 'ios' ? 'appium-ios-setup' : 'appium-android-setup'
+const PIPELINE_MAP: Record<TestType, string> = {
+  'smoke': 'smoke-runs',
+  'performance': 'performance-runs',
+  'regression-internal': 'full-regression-runs',
+  'regression-external': 'aws-full-regression-runs',
 }
 
 export async function triggerBuild(params: {
   testType: TestType
-  platform: Platform
   tag?: string
 }): Promise<{ buildUrl: string; buildSlug: string }> {
-  const workflow = resolveWorkflow(params.testType, params.platform)
+  const pipelineId = PIPELINE_MAP[params.testType]
 
   const environments: { mapped_to: string; value: string }[] = []
 
-  if (params.testType === 'smoke') {
-    environments.push({ mapped_to: 'IS_SMOKE', value: 'true' })
-  }
-  if (params.testType === 'performance') {
-    environments.push({ mapped_to: 'IS_PERFORMANCE', value: 'true' })
-  }
   if (params.tag) {
     environments.push({ mapped_to: 'CUSTOM_GREP_TAG', value: params.tag })
   }
 
-  const response = await client.post(`/apps/${APP_SLUG}/builds`, {
-    hook_info: { type: 'bitrise' },
-    build_params: {
-      workflow_id: workflow,
-      environments,
-    },
+  const response = await client.post(`/apps/${APP_SLUG}/pipeline-runs`, {
+    pipeline_id: pipelineId,
+    triggered_by: 'core-mobile-QAi',
+    environments,
   })
 
-  const buildSlug = response.data.build_slug
-  const buildUrl = `https://app.bitrise.io/build/${buildSlug}`
+  const buildSlug = response.data.id ?? response.data.pipeline_run_slug ?? ''
+  const buildUrl = `https://app.bitrise.io/pipeline-run/${buildSlug}`
   return { buildUrl, buildSlug }
 }
 
