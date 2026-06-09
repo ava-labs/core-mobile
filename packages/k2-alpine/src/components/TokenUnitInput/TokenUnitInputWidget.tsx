@@ -72,19 +72,23 @@ export const TokenUnitInputWidget = ({
   const textInputRef = useRef<TokenUnitInputHandle>(null)
 
   const handlePressButton = (button: AmountButton, index: number): void => {
-    const displayValue =
+    // Build the TokenUnit without a float round-trip: percentage presets come
+    // straight from `balance.mul` (bigint math), fixed presets round to the
+    // nearest subunit. Going through `displayValue * 10 ** decimals` could
+    // diverge by a subunit from the bigint parsing `TokenUnitInput` uses.
+    const valueUnit =
       button.value !== undefined
-        ? button.value
-        : balance.mul(button.percent ?? 0).toDisplay({ asNumber: true })
-    textInputRef.current?.setValue(displayValue.toString())
-
-    onChange?.(
-      new TokenUnit(
-        displayValue * 10 ** token.maxDecimals,
-        token.maxDecimals,
-        token.symbol
-      )
+        ? new TokenUnit(
+            Math.round(button.value * 10 ** token.maxDecimals),
+            token.maxDecimals,
+            token.symbol
+          )
+        : balance.mul(button.percent ?? 0)
+    textInputRef.current?.setValue(
+      valueUnit.toDisplay({ asNumber: true }).toString()
     )
+
+    onChange?.(valueUnit)
 
     setButtons(prevButtons =>
       prevButtons.map((b, i) =>

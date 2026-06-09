@@ -1,6 +1,6 @@
 import { SxProp } from 'dripsy'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { ReturnKeyTypeOptions, TextStyle } from 'react-native'
+import { ReturnKeyTypeOptions, StyleProp, TextStyle } from 'react-native'
 import { Button } from '../Button/Button'
 import { View } from '../Primitives'
 import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
@@ -43,8 +43,8 @@ interface FiatAmountInputWidgetProps {
    */
   subTextPosition?: 'top' | 'bottom'
   returnKeyType?: ReturnKeyTypeOptions
-  suffixStyle?: TextStyle
-  prefixStyle?: TextStyle
+  suffixStyle?: StyleProp<TextStyle>
+  prefixStyle?: StyleProp<TextStyle>
 }
 
 export const FiatAmountInputWidget = ({

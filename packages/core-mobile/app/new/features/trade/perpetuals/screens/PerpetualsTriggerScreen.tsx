@@ -223,6 +223,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
               formatInCurrency={formatInCurrency}
               formatInSubTextNumber={formatInSubTextNumber}
               subTextPosition="bottom"
+              returnKeyType="none"
             />
           </View>
           {showError ? (

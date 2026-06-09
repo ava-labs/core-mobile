@@ -101,9 +101,13 @@ export const AutoSizeTextInput = forwardRef<
     const lastTextWidthRef = useRef(0)
     const prevContainerWidthRef = useRef(0)
 
+    // Prefer the suffix multiplier when a suffix is present: prefix and suffix
+    // share one adornment font size, and a suffix (e.g. `USDC`) is the common
+    // "subtitle" case. Falls back to the prefix multiplier for prefix-only
+    // inputs (e.g. a leading `$`).
     const fontSizeMultiplier =
       initialFontSize *
-      (prefix ? prefixFontSizeMultiplier : suffixFontSizeMultiplier)
+      (suffix ? suffixFontSizeMultiplier : prefixFontSizeMultiplier)
     const hasValue = useSharedValue(false)
     const animatedFontSize = useSharedValue(initialFontSize)
     const animatedSuffixFontSize = useSharedValue(fontSizeMultiplier)
