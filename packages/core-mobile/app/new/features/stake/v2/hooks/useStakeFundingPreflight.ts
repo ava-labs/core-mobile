@@ -1,5 +1,5 @@
 import { useDelegationContext } from 'contexts/DelegationContext'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
 
@@ -37,11 +37,24 @@ export const useStakeFundingPreflight = ({
     [additionalOutputs]
   )
 
+  // Keep `computeSteps` in a ref so the effect doesn't re-run (and re-toggle
+  // the CTA) just because `computeSteps` got a new identity. It's recreated
+  // whenever its inputs change — notably the C-Chain base fee, which refetches
+  // on a 30s interval and returns a fresh `TokenUnit` each time, plus the
+  // `setSteps` call inside it re-renders this tree — so depending on it
+  // directly made the check (and the disabled state) flicker repeatedly. We
+  // only need to re-run when the actual inputs below change.
+  const computeStepsRef = useRef(computeSteps)
+  useEffect(() => {
+    computeStepsRef.current = computeSteps
+  }, [computeSteps])
+
   useEffect(() => {
     if (!enabled) return
     let cancelled = false
     setIsCheckingFunding(true)
-    computeSteps(stakeAmountNanoAvax, additionalOutputAmount)
+    computeStepsRef
+      .current(stakeAmountNanoAvax, additionalOutputAmount)
       .then(() => {
         if (!cancelled) setFundingError(null)
       })
@@ -54,7 +67,7 @@ export const useStakeFundingPreflight = ({
     return () => {
       cancelled = true
     }
-  }, [enabled, stakeAmountNanoAvax, additionalOutputAmount, computeSteps])
+  }, [enabled, stakeAmountNanoAvax, additionalOutputAmount])
 
   return {
     isCheckingFunding,
