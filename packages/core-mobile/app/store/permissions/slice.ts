@@ -98,6 +98,26 @@ export const selectAddressesForDomain =
     return Object.keys(domainGrants)
   }
 
+/**
+ * Returns every address under `domain` that has been granted access for the
+ * given `vmType`. Used by the injected provider to answer
+ * `wallet_getPermissions` / `eth_requestAccounts` with the full authorized
+ * set rather than only the currently-active account — so switching the
+ * wallet's active account does not force the user to re-grant the dApp.
+ */
+export const selectGrantedAddressesForDomain =
+  ({ domain, vmType }: { domain: Domain; vmType: NetworkVMType }) =>
+  (state: RootState): Address[] => {
+    const domainGrants = state.permissions.grants[domain]
+    if (!domainGrants) return []
+    const granted: Address[] = []
+    for (const address of Object.keys(domainGrants)) {
+      const vmTypes = domainGrants[address]
+      if (vmTypes?.includes(vmType)) granted.push(address)
+    }
+    return granted
+  }
+
 export const { grantPermission, revokePermission } = permissionsSlice.actions
 
 export const permissionsReducer = permissionsSlice.reducer

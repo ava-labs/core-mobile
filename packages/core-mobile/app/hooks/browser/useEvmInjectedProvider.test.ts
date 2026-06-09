@@ -122,6 +122,19 @@ const mockStore = {
   subscribe: jest.fn(() => () => undefined)
 } as unknown as ReturnType<typeof useStore>
 
+// Signing requires the resolved signer account to be granted for the origin.
+// Signing tests use this to grant the default active account for their origin.
+const grantStoreForOrigin = (origin: string): ReturnType<typeof useStore> =>
+  ({
+    getState: () => ({
+      permissions: {
+        grants: { [origin]: { [mockActiveAccount.addressC]: ['EVM'] } }
+      }
+    }),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(() => () => undefined)
+  } as unknown as ReturnType<typeof useStore>)
+
 function setupMocks(
   overrides: {
     account?: typeof mockActiveAccount | null
@@ -289,6 +302,8 @@ describe('useEvmInjectedProvider', () => {
       it('uses browser chain for signing after wallet_switchEthereumChain', async () => {
         const mockSignFn = jest.fn().mockResolvedValue('0xSig')
         mockCreateInAppRequest.mockReturnValue(mockSignFn)
+        // Signing requires the active account granted for the origin.
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
 
         const { result } = renderProvider()
 
@@ -738,6 +753,12 @@ describe('useEvmInjectedProvider', () => {
         }
       ]
 
+      // The signing gate requires the signer account to be granted for the
+      // origin; these tests render at https://example.com as the active account.
+      beforeEach(() => {
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
+      })
+
       it.each(signingMethods)(
         'dispatches $dappMethod through createInAppRequest',
         async ({ dappMethod, rpcMethod }) => {
@@ -783,6 +804,10 @@ describe('useEvmInjectedProvider', () => {
       it('derives peerMeta.name from the native URL hostname, not from page-supplied domain_metadata', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xSig')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
+        // Signing requires the active account granted for the (real) origin.
+        mockUseStore.mockReturnValue(
+          grantStoreForOrigin('https://malicious.example')
+        )
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1227,6 +1252,8 @@ describe('useEvmInjectedProvider', () => {
       it('defaults params to empty array for signing methods', async () => {
         const mockRequest = jest.fn().mockResolvedValue('0xResult')
         mockCreateInAppRequest.mockReturnValue(mockRequest)
+        // Signing requires the active account granted for the origin.
+        mockUseStore.mockReturnValue(grantStoreForOrigin('https://example.com'))
 
         const { result } = renderProvider()
 
@@ -1391,6 +1418,8 @@ describe('useEvmInjectedProvider', () => {
         return new Promise(() => undefined)
       })
       mockCreateInAppRequest.mockReturnValue(mockRequest)
+      // Signing requires the active account granted for the origin.
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
 
       const { result } = renderProvider('https://uniswap.org')
 
@@ -1420,6 +1449,8 @@ describe('useEvmInjectedProvider', () => {
         return new Promise(() => undefined)
       })
       mockCreateInAppRequest.mockReturnValue(mockRequest)
+      // Signing requires the active account granted for the origin.
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
 
       const { result } = renderProvider('https://uniswap.org/swap')
 
@@ -1527,6 +1558,26 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
+      it('injects accountsChanged([]) on reload when the active account is NOT granted', () => {
+        // Origin granted to a different address than the active account.
+        // Priming the granted set here would re-establish a phantom connection
+        // the injected signer can't honor, so we emit [] instead (CP-14382).
+        mockUseStore.mockReturnValue(withPermission('0xSomeOtherGrantedAddr'))
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+        )
+      })
+
       it('does not inject accountsChanged when origin is missing', () => {
         const { result } = renderProvider('')
         // currentUrlRef is never set, so origin stays ''
@@ -1557,6 +1608,162 @@ describe('useEvmInjectedProvider', () => {
           expect.stringContaining("__coreProviderEmit('accountsChanged'")
         )
       })
+    })
+  })
+
+  describe('active-account switch propagation (CP-14382)', () => {
+    const ORIGIN = 'https://opensea.io/'
+    const A = mockActiveAccount.addressC
+    const B = '0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'
+    const C = '0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
+    const accountA = mockActiveAccount
+    const accountB = { ...mockActiveAccount, addressC: B }
+    const accountC = { ...mockActiveAccount, addressC: C }
+
+    // A store whose grants for opensea.io cover exactly `addrs` (EVM).
+    const storeGranting = (addrs: string[]): ReturnType<typeof useStore> =>
+      ({
+        getState: () => ({
+          permissions: {
+            grants: {
+              'https://opensea.io': Object.fromEntries(
+                addrs.map(addr => [addr, ['EVM']])
+              )
+            }
+          }
+        }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn(() => () => undefined)
+      } as unknown as ReturnType<typeof useStore>)
+
+    it('emits [newActive, ...others] when switching to a granted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(`'accountsChanged', ["${B}","${A}"]`)
+      )
+    })
+
+    it('origin-gates the accountsChanged emit to the resolved origin', () => {
+      // The injected JS must be wrapped in a window.location.origin check so an
+      // account switch racing a cross-origin nav can't leak addresses to a
+      // different page (same guard as sendResponse).
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'if(window.location.origin==="https://opensea.io")'
+        )
+      )
+    })
+
+    it('emits [] when switching to an ungranted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountC })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged', []")
+      )
+    })
+
+    it('re-emits the granted set when switching back from an ungranted account', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountC })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // Switch to ungranted-adjacent path then back to a granted account.
+      setupMocks({ account: accountA })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(`'accountsChanged', ["${B}","${A}"]`)
+      )
+    })
+
+    it('emits accountsChanged([]) after grants are revoked and the active account switches', () => {
+      // Origin starts connected to [A, B]; the first switch advertises that set.
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      setupMocks({ account: accountB })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      // Grants revoked (e.g. via Connected Sites), then the user switches
+      // accounts. The dApp's stale _accounts must be cleared with [] rather than
+      // left advertising the now-revoked set.
+      mockUseStore.mockReturnValue(storeGranting([]))
+      setupMocks({ account: accountA })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged', []")
+      )
+    })
+
+    it('does not re-emit [] for a never-connected origin already primed to []', () => {
+      // No grant at all: the page-load prime emits [] and seeds the dedupe ref,
+      // so a subsequent account switch must not produce a redundant emit.
+      mockUseStore.mockReturnValue(storeGranting([]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'x' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      setupMocks({ account: accountB })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
+    })
+
+    it('suppresses duplicate emits for the same resolved accounts', () => {
+      mockUseStore.mockReturnValue(storeGranting([A, B]))
+      setupMocks({ account: accountA })
+      const { rerender, result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // First switch emits [A, B].
+      setupMocks({ account: { ...mockActiveAccount } })
+      act(() => rerender())
+      mockInjectJavaScript.mockClear()
+
+      // New active object, same addressC → resolves to the same [A, B];
+      // must not re-emit.
+      setupMocks({ account: { ...mockActiveAccount } })
+      act(() => rerender())
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
     })
   })
 })
