@@ -1,15 +1,26 @@
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   Button,
-  FiatAmountInputWidget,
   GroupList,
   type GroupListItem,
   Text,
+  TokenUnitInputWidget,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
+
+const USDC_DECIMALS = 6
+const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
+
+const toUsdc = (amount: number): TokenUnit =>
+  new TokenUnit(
+    Math.round(amount * 10 ** USDC_DECIMALS),
+    USDC_DECIMALS,
+    USDC_TOKEN.symbol
+  )
 
 // Stubs until we wire the real Hyperliquid clearinghouse-derived values.
 const AVAILABLE_USDC = 1234.45
@@ -19,12 +30,23 @@ const FEE_USDC = 0.5
 
 const formatUsdcAmount = (amount: number): string =>
   `${formatNumber(amount)} USDC`
-const formatUsdInteger = (amount: number): string => formatNumber(amount)
 const formatUsd = (amount: number): string => `$${formatNumber(amount)} USD`
 
 export const PerpetualsWithdrawScreen = (): JSX.Element => {
   const router = useRouter()
   const [amount, setAmount] = useState<number>(0)
+
+  const availableBalance = useMemo(() => toUsdc(AVAILABLE_USDC), [])
+
+  const handleAmountChange = useCallback((value: TokenUnit): void => {
+    setAmount(value.toDisplay({ asNumber: true }))
+  }, [])
+
+  const formatInCurrency = useCallback(
+    (value: TokenUnit): string =>
+      formatUsd(value.toDisplay({ asNumber: true })),
+    []
+  )
 
   const hasInput = amount > 0
   const exceedsBalance = amount > AVAILABLE_USDC
@@ -48,26 +70,6 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
       </Button>
     ),
     [isValid, handleSubmit]
-  )
-
-  const presets = useMemo(() => {
-    const round = (n: number): number => Number(n.toFixed(5))
-    return [
-      { label: '25%', value: round(AVAILABLE_USDC * 0.25) },
-      { label: '50%', value: round(AVAILABLE_USDC * 0.5) },
-      { label: 'Max', value: round(AVAILABLE_USDC) }
-    ]
-  }, [])
-
-  const formatInSubTextNumber = useCallback(
-    (n: number): JSX.Element => (
-      <Text
-        variant="caption"
-        sx={{ color: '$textSecondary', marginTop: -8, marginBottom: 8 }}>
-        {formatUsd(n)}
-      </Text>
-    ),
-    []
   )
 
   const mutedValue = useCallback(
@@ -169,23 +171,24 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
         </Text>
       </View>
 
-      <FiatAmountInputWidget
-        autoFocus
-        currency="USDC"
-        amount={amount}
-        isAmountValid={!exceedsBalance}
-        onChange={setAmount}
-        formatInCurrency={formatUsdcAmount}
-        formatIntegerCurrency={formatUsdInteger}
-        formatInSubTextNumber={formatInSubTextNumber}
-        presets={presets}
-        subTextPosition="bottom"
-        trailingCurrencyMaxFontSize={24}
-        returnKeyType="none"
-        suffixStyle={{
-          marginTop: 5
-        }}
-      />
+      <View sx={{ gap: 12, alignItems: 'center' }}>
+        <TokenUnitInputWidget
+          sx={{ width: '100%' }}
+          autoFocus
+          token={USDC_TOKEN}
+          balance={availableBalance}
+          amount={amount > 0 ? toUsdc(amount) : undefined}
+          onChange={handleAmountChange}
+          formatInCurrency={formatInCurrency}
+          valid={!exceedsBalance}
+        />
+
+        {exceedsBalance ? (
+          <Text variant="caption" sx={{ color: '$textDanger' }}>
+            {`Maximum withdrawal is ${formatUsdcAmount(AVAILABLE_USDC)}`}
+          </Text>
+        ) : null}
+      </View>
 
       <GroupList data={availableRow} />
       <GroupList data={breakdown} />

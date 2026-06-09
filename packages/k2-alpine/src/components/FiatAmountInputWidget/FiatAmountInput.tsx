@@ -11,6 +11,7 @@ import React, {
 import {
   Platform,
   ReturnKeyTypeOptions,
+  StyleProp,
   TextInput,
   TextStyle,
   TouchableWithoutFeedback
@@ -47,16 +48,8 @@ type FiatAmountInputProps = {
    * layout where the converted token amount sits above the fiat input.
    */
   subTextPosition?: 'top' | 'bottom'
-  /**
-   * Maximum font size (in px) for the trailing currency label (e.g. `USDC`).
-   * When omitted, the suffix grows with the main amount (existing behaviour).
-   * When set, the suffix never exceeds this size — useful for token-as-primary
-   * layouts where the currency tag should read as a subtitle next to the big
-   * amount.
-   */
-  trailingCurrencyMaxFontSize?: number
-  suffixStyle?: TextStyle
-  prefixStyle?: TextStyle
+  suffixStyle?: StyleProp<TextStyle>
+  prefixStyle?: StyleProp<TextStyle>
 }
 
 const BIG_AMOUNT_FONT_SIZE = 60
@@ -79,7 +72,6 @@ export const FiatAmountInput = forwardRef<
       returnKeyType = 'done',
       autoFocus,
       subTextPosition = 'top',
-      trailingCurrencyMaxFontSize,
       suffixStyle,
       prefixStyle,
       ...props
@@ -196,11 +188,7 @@ export const FiatAmountInput = forwardRef<
               textAlign="right"
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
-              suffixFontSizeMultiplier={
-                trailingCurrencyMaxFontSize !== undefined
-                  ? trailingCurrencyMaxFontSize / BIG_AMOUNT_FONT_SIZE
-                  : undefined
-              }
+              suffixFontSizeMultiplier={0.5}
               suffixStyle={suffixStyle}
               prefixStyle={prefixStyle}
               placeholder={`${PLACEHOLDER}`}

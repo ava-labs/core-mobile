@@ -42,13 +42,6 @@ interface FiatAmountInputWidgetProps {
    * the converted fiat value reads as a subtitle.
    */
   subTextPosition?: 'top' | 'bottom'
-  /**
-   * Maximum font size (in px) for the trailing currency label (e.g. `USDC`).
-   * Useful for token-as-primary layouts where the currency tag should read
-   * as a subtitle next to the big amount instead of scaling alongside it.
-   * Omit to let the suffix scale with the main amount (existing behaviour).
-   */
-  trailingCurrencyMaxFontSize?: number
   returnKeyType?: ReturnKeyTypeOptions
   suffixStyle?: TextStyle
   prefixStyle?: TextStyle
@@ -69,7 +62,6 @@ export const FiatAmountInputWidget = ({
   enableAmountSelection,
   presets,
   subTextPosition,
-  trailingCurrencyMaxFontSize,
   returnKeyType,
   suffixStyle,
   prefixStyle
@@ -212,8 +204,7 @@ export const FiatAmountInputWidget = ({
           formatInSubTextNumber={formatInSubTextNumber}
           subTextPosition={subTextPosition}
           returnKeyType={returnKeyType}
-          trailingCurrencyMaxFontSize={trailingCurrencyMaxFontSize}
-          suffixStyle={suffixStyle}
+          suffixStyle={[suffixStyle, { marginBottom: 20 }]}
           prefixStyle={prefixStyle}
         />
         {showButtons && (

@@ -1,6 +1,6 @@
 import {
-  AutoSizeTextInput,
   Button,
+  FiatAmountInput,
   GroupList,
   Text,
   useTheme,
@@ -10,6 +10,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { PositionPill } from '../components/PositionPill'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import {
@@ -20,7 +21,6 @@ import {
   positionSizeTokens,
   projectedPnl,
   requiredTriggerSide,
-  sanitizeDecimalInput,
   type TriggerKind
 } from '../utils/economics'
 
@@ -95,7 +95,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   )
 
   const handleChangeText = useCallback((text: string) => {
-    setPriceText(sanitizeDecimalInput(text))
+    setPriceText(text)
   }, [])
 
   const price = useMemo(() => {
@@ -118,6 +118,28 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     projected,
     theme.colors,
     theme.colors.$textPrimary
+  )
+
+  // Drives the leading "$" on the amount (the symbol FiatAmountInput extracts
+  // from this string); the value itself is shown by the input, not this.
+  const formatInCurrency = useCallback(
+    (n: number): string => `$${formatNumber(n)}`,
+    []
+  )
+
+  // The "+x% above/below current price" line under the amount.
+  const formatInSubTextNumber = useCallback(
+    (): JSX.Element => (
+      <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
+        <Text
+          variant="subtitle2"
+          sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
+          {pctParts(pct).percent}
+        </Text>
+        {pctParts(pct).suffix}
+      </Text>
+    ),
+    [pct, pctColor]
   )
 
   const valid = isTriggerValid({ kind, isLong, price, entryPrice })
@@ -192,29 +214,16 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
               borderTopLeftRadius: 4,
               borderTopRightRadius: 4
             }}>
-            <View>
-              <AutoSizeTextInput
-                prefix="$"
-                value={priceText}
-                onChangeText={handleChangeText}
-                keyboardType="decimal-pad"
-                placeholder="0"
-                initialFontSize={60}
-                // Render the "$" smaller than the digits (it otherwise matches
-                // the full amount size).
-                suffixFontSizeMultiplier={0.9}
-                autoFocus
-                testID="perpetuals_trigger_price"
-              />
-            </View>
-            <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
-              <Text
-                variant="subtitle2"
-                sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
-                {pctParts(pct).percent}
-              </Text>
-              {pctParts(pct).suffix}
-            </Text>
+            <FiatAmountInput
+              autoFocus
+              currency="USD"
+              amount={priceText}
+              isAmountValid={!showError}
+              onChange={handleChangeText}
+              formatInCurrency={formatInCurrency}
+              formatInSubTextNumber={formatInSubTextNumber}
+              subTextPosition="bottom"
+            />
           </View>
           {showError ? (
             <Text

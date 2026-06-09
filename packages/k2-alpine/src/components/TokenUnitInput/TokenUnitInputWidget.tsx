@@ -5,6 +5,24 @@ import { View } from '../Primitives'
 import { Button } from '../Button/Button'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
+export interface TokenUnitInputPreset {
+  label: string
+  /**
+   * Display amount applied to the input when this preset is tapped
+   * (e.g. `100` for 100 tokens).
+   */
+  value: number
+}
+
+// Internal button model. A button either applies a fixed display `value`
+// (custom `presets`) or a `percent` of the balance (default 25/50/Max).
+type AmountButton = {
+  text: string
+  isSelected: boolean
+  value?: number
+  percent?: number
+}
+
 export const TokenUnitInputWidget = ({
   balance,
   token,
@@ -15,7 +33,9 @@ export const TokenUnitInputWidget = ({
   accessory,
   sx,
   disabled,
-  autoFocus
+  autoFocus,
+  presets,
+  valid = true
 }: {
   amount?: TokenUnit
   maxPercentage?: number
@@ -31,34 +51,31 @@ export const TokenUnitInputWidget = ({
   sx?: SxProp
   disabled?: boolean
   autoFocus?: boolean
+  /** When false, the amount renders in the danger color. */
+  valid?: boolean
+  /**
+   * Custom quick-amount buttons rendered as fixed display amounts (e.g.
+   * `$100 / $250 / $500`). When provided, overrides the default
+   * `25% / 50% / Max` percentage buttons.
+   */
+  presets?: readonly TokenUnitInputPreset[]
 }): JSX.Element => {
-  const [percentageButtons, setPercentageButtons] = useState<
-    { text: string; percent: number; isSelected: boolean }[]
-  >([
-    {
-      text: '25%',
-      percent: 0.25,
-      isSelected: false
-    },
-    {
-      text: '50%',
-      percent: 0.5,
-      isSelected: false
-    },
-    {
-      text: 'Max',
-      percent: maxPercentage,
-      isSelected: false
-    }
-  ])
+  const [buttons, setButtons] = useState<AmountButton[]>(() =>
+    presets && presets.length > 0
+      ? presets.map(p => ({ text: p.label, value: p.value, isSelected: false }))
+      : [
+          { text: '25%', percent: 0.25, isSelected: false },
+          { text: '50%', percent: 0.5, isSelected: false },
+          { text: 'Max', percent: maxPercentage, isSelected: false }
+        ]
+  )
   const textInputRef = useRef<TokenUnitInputHandle>(null)
 
-  const handlePressPercentageButton = (
-    percent: number,
-    index: number
-  ): void => {
-    const value = balance.mul(percent)
-    const displayValue = value.toDisplay({ asNumber: true })
+  const handlePressButton = (button: AmountButton, index: number): void => {
+    const displayValue =
+      button.value !== undefined
+        ? button.value
+        : balance.mul(button.percent ?? 0).toDisplay({ asNumber: true })
     textInputRef.current?.setValue(displayValue.toString())
 
     onChange?.(
@@ -69,7 +86,7 @@ export const TokenUnitInputWidget = ({
       )
     )
 
-    setPercentageButtons(prevButtons =>
+    setButtons(prevButtons =>
       prevButtons.map((b, i) =>
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
       )
@@ -78,10 +95,13 @@ export const TokenUnitInputWidget = ({
 
   const handleChange = useCallback(
     async (value: TokenUnit): Promise<void> => {
-      setPercentageButtons(prevButtons =>
+      setButtons(prevButtons =>
         prevButtons.map(b => ({
           ...b,
-          isSelected: value.toDisplay() === balance.mul(b.percent).toDisplay()
+          isSelected:
+            b.value !== undefined
+              ? value.toDisplay({ asNumber: true }) === b.value
+              : value.toDisplay() === balance.mul(b.percent ?? 0).toDisplay()
         }))
       )
 
@@ -109,9 +129,11 @@ export const TokenUnitInputWidget = ({
           autoFocus={autoFocus}
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
+          returnKeyType="none"
+          valid={valid}
         />
         <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
-          {percentageButtons.map((button, index) => (
+          {buttons.map((button, index) => (
             <Button
               key={index}
               size="small"
@@ -121,7 +143,7 @@ export const TokenUnitInputWidget = ({
               }}
               disabled={disabled}
               onPress={() => {
-                handlePressPercentageButton(button.percent, index)
+                handlePressButton(button, index)
               }}>
               {button.text}
             </Button>
