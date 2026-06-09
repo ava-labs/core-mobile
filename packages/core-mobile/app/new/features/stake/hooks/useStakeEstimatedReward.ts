@@ -30,7 +30,7 @@ export type UseStakeEstimatedRewardResult = {
 
 /**
  *
- * @param amount nAVAX
+ * @param amount stake amount as a `TokenUnit`
  * @param duration between current datetime to validator end time
  * @param delegationFee
  */
@@ -90,6 +90,12 @@ export const useStakeEstimatedReward = ({
 
   useEffect(() => {
     if (!duration || !avalancheProvider) {
+      // Estimate is skipped for the current inputs — clear any stale flags so
+      // we don't strand consumers in a perpetual loading/error state (e.g. an
+      // in-flight estimate that gets cancelled here never runs its
+      // `setIsLoading(false)`).
+      setIsLoading(false)
+      setIsError(false)
       return undefined
     }
 
