@@ -1,23 +1,43 @@
 import { useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { getV2Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
-import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
-import { LocalTokenWithBalance } from 'store/balance'
-import { getChainIdFromCaip2, isSvmChainId } from 'utils/caip2ChainIds'
-import { selectActiveAccount } from 'store/account'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import {
+  TokenType as FusionTokenType,
+  dedupeBridgeableAssets
+} from '@avalabs/fusion-sdk'
+import type {
+  Asset,
+  AssetSearchQuery,
+  BridgeableUiAsset,
+  Caip2ChainId,
+  GetBridgeableAssetsResult
+} from '@avalabs/fusion-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
-import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import {
+  selectActiveAccount,
+  selectActiveAccountHasSolanaAddress
+} from 'store/account'
+import type { LocalTokenWithBalance } from 'store/balance'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
-import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
-import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  getCaip2ChainId,
+  getChainIdFromCaip2,
+  isSvmChainId
+} from 'utils/caip2ChainIds'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
+import FusionService from '../services/FusionService'
+import { mapSdkAssetToLocal } from '../utils/mapSdkAssetToLocal'
+import { toSwappableAsset } from '../utils/fusionTypeConverters'
+import {
+  useIsFusionServiceReady,
+  useSwapSelectedFromToken
+} from './useZustandStore'
 
 const STALE_TIME = 2 * 60 * 1000 // 2 minutes
-const PAGE_LIMIT = 50 // max tokens per page
-const EMPTY_SEARCH_PARAMS = {} // stable reference to avoid spurious query key changes
+const PAGE_LIMIT = 100 // max assets per page (SDK default)
+const EMPTY_SEARCH: AssetSearchQuery | undefined = undefined
 
 type UseSwapTokensResult = {
   tokens: LocalTokenWithBalance[]
@@ -28,105 +48,143 @@ type UseSwapTokensResult = {
   isFetchingNextPage: boolean
 }
 
+const toFusionSourceAsset = (
+  token: LocalTokenWithBalance
+): Asset | undefined => {
+  try {
+    return toSwappableAsset(token)
+  } catch {
+    return undefined
+  }
+}
+
+const getLocalIdFromAsset = (asset: BridgeableUiAsset): string =>
+  asset.type === FusionTokenType.NATIVE
+    ? `NATIVE-${asset.symbol}`
+    : asset.address.toLowerCase()
+
 /**
- * Fetches and prepares tokens for Swap token selection using the v2 API.
+ * Fetches the swap "to" token list for the given target chain using the
+ * Fusion SDK's paginated `getBridgeableAssets`. Same hook serves both mainnet
+ * and testnet — the SDK is the canonical source for swappable tokens regardless
+ * of network.
  *
- * This hook:
- * 1. Fetches paginated tokens from the /v2/tokens endpoint for the specified network
- * 2. Supports server-side keyword/address search via searchText param
- * 3. Merges API token data with user's balance data from their active account
- * 4. Native tokens are returned directly by the API (no manual injection)
- *
- * @param caip2Id - CAIP-2 chain identifier (e.g., "eip155:43114" for Avalanche C-Chain)
- * @param searchText - Optional search text; passed to API as keyword or address filter
+ * - Paginates via `useInfiniteQuery` (`fetchNextPage` triggers the next page).
+ * - Search is delegated to the SDK's `search` param (address or keyword).
+ * - Cross-service duplicates are merged via `dedupeBridgeableAssets` so an
+ *   asset reachable through multiple services (e.g. MARKR + AVALANCHE_CCT)
+ *   appears once.
+ * - Portfolio balances are merged in so user-held tokens show their balance.
  */
 export const useSwapTokens = (
-  caip2Id: string,
+  targetCaip2Id: string,
   searchText?: string
 ): UseSwapTokensResult => {
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const [isFusionServiceReady] = useIsFusionServiceReady()
+  const [selectedFromToken] = useSwapSelectedFromToken()
   const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
 
+  // Block Solana targets when the user lacks a Solana address or the swap
+  // module's Solana kill switch is on. Belt-and-suspenders with the
+  // `useSupportedChains` filter that hides Solana from the network tabs.
   const isSolanaBlocked = useMemo(
-    () => isSvmChainId(caip2Id) && (!hasSolanaAddress || isSolanaSwapBlocked),
-    [caip2Id, hasSolanaAddress, isSolanaSwapBlocked]
+    () =>
+      isSvmChainId(targetCaip2Id) && (!hasSolanaAddress || isSolanaSwapBlocked),
+    [targetCaip2Id, hasSolanaAddress, isSolanaSwapBlocked]
   )
 
-  const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
+  const targetChainId = useMemo(
+    () => (targetCaip2Id ? getChainIdFromCaip2(targetCaip2Id) : undefined),
+    [targetCaip2Id]
+  )
 
-  const { tokens: balances } = useTokensWithBalanceByNetworkForAccount(
+  const { tokens: portfolioTokens } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
-    chainId
+    targetChainId
   )
 
-  // Determine server-side search params
-  // Use a stable constant for the empty case so the query key doesn't change
-  // on every keystroke while the search term is still too short to send.
-  const searchParams = useMemo(() => {
+  const sourceAsset = useMemo(
+    () =>
+      selectedFromToken ? toFusionSourceAsset(selectedFromToken) : undefined,
+    [selectedFromToken]
+  )
+
+  const sourceChainId = useMemo(
+    () =>
+      selectedFromToken
+        ? (getCaip2ChainId(selectedFromToken.networkChainId) as Caip2ChainId)
+        : undefined,
+    [selectedFromToken]
+  )
+
+  // SDK-side search: address or keyword. Use a stable `undefined` for empty
+  // searches so the query key doesn't churn while typing too few characters.
+  const searchParam: AssetSearchQuery | undefined = useMemo(() => {
     const trimmed = searchText?.trim() ?? ''
-    if (trimmed.length < 2) return EMPTY_SEARCH_PARAMS
-    if (isAddressLikeSearch(trimmed, isDeveloperMode)) {
-      return { address: trimmed }
-    }
-    return { keyword: trimmed }
+    if (trimmed.length < 2) return EMPTY_SEARCH
+    return isAddressLikeSearch(trimmed, isDeveloperMode)
+      ? { type: 'address', value: trimmed }
+      : { type: 'keyword', value: trimmed }
   }, [searchText, isDeveloperMode])
 
   const query = useInfiniteQuery({
     queryKey: [
       ReactQueryKeys.FUSION_TOKENS,
-      caip2Id,
+      sourceChainId,
+      targetCaip2Id,
       isSolanaBlocked,
-      searchParams
+      sourceAsset,
+      searchParam
     ],
-    queryFn: async ({ pageParam }) => {
-      if (!caip2Id || isSolanaBlocked) return null
-
-      const response = await getV2Tokens({
-        client: tokenAggregatorApi,
-        query: {
-          caip2Id,
-          page: pageParam as number,
-          limit: PAGE_LIMIT,
-          ...searchParams
-        }
+    queryFn: async ({
+      pageParam
+    }): Promise<GetBridgeableAssetsResult | null> => {
+      // enabled guard ensures these are defined before queryFn runs
+      const asset = sourceAsset as Asset
+      const srcChainId = sourceChainId as Caip2ChainId
+      return FusionService.getBridgeableAssets({
+        sourceAsset: asset,
+        sourceChainId: srcChainId,
+        targetChainId: targetCaip2Id as Caip2ChainId,
+        page: pageParam as number,
+        limit: PAGE_LIMIT,
+        search: searchParam
       })
-
-      return response.data ?? null
     },
     initialPageParam: 1,
-    getNextPageParam: lastPage => {
-      if (!lastPage?.metadata) return undefined
-      const { currentPage, totalPages } = lastPage.metadata
-      return currentPage < totalPages ? currentPage + 1 : undefined
-    },
-    enabled: !!caip2Id && !isSolanaBlocked,
+    getNextPageParam: lastPage =>
+      lastPage?.meta.hasMore ? lastPage.meta.nextPage : undefined,
+    enabled:
+      isFusionServiceReady &&
+      !!sourceAsset &&
+      !!sourceChainId &&
+      !!targetCaip2Id &&
+      !isSolanaBlocked,
     staleTime: STALE_TIME
   })
 
   const tokens = useMemo((): LocalTokenWithBalance[] => {
-    if (!chainId || !query.data) return []
+    if (!targetChainId || !query.data) return []
 
-    // Flatten all pages into a single token array
-    const allApiTokens = query.data.pages.flatMap(
-      page => page?.data?.tokens ?? []
-    )
+    const allAssets = query.data.pages.flatMap(page => page?.assets ?? [])
+    const dedupedAssets = dedupeBridgeableAssets(allAssets)
 
-    // Build balance lookup by localId
     const balanceMap = new Map<string, LocalTokenWithBalance>()
-    balances?.forEach(balance => {
-      if (balance.localId) {
-        balanceMap.set(balance.localId.toLowerCase(), balance)
+    portfolioTokens?.forEach(token => {
+      if (token.localId) {
+        balanceMap.set(token.localId.toLowerCase(), token)
       }
     })
 
-    return allApiTokens.map(apiToken => {
-      const localId = getLocalTokenIdFromApi(apiToken)
+    return dedupedAssets.map(asset => {
+      const localId = getLocalIdFromAsset(asset)
       const balanceData = balanceMap.get(localId.toLowerCase())
-      return mapApiTokenToLocal(apiToken, chainId, balanceData)
+      return mapSdkAssetToLocal(asset, targetChainId, balanceData)
     })
-  }, [query.data, balances, chainId])
+  }, [query.data, portfolioTokens, targetChainId])
 
   return {
     tokens,
