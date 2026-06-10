@@ -12,8 +12,8 @@ import type { ApiToken } from '../types'
  *
  * Used by the MARKR service initializer's `getTargetChainAssets` callback —
  * Markr consumes the resulting list to compute swappable destinations from
- * a given source. Returns `undefined` for tokens whose chain namespace we
- * can't map (caller should filter these out).
+ * a given source. Returns `undefined` for non-native tokens missing an
+ * address (caller should filter these out).
  */
 export const mapApiTokenToAsset = (
   apiToken: ApiToken

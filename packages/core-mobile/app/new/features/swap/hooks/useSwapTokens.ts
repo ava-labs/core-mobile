@@ -186,9 +186,20 @@ export const useSwapTokens = (
     })
   }, [query.data, portfolioTokens, targetChainId])
 
+  // Report loading while FusionService is still initializing AND we have
+  // everything else needed to fetch — otherwise `query.isLoading` is false
+  // while the query is disabled, and the consumer would flash an empty state
+  // ("No tokens found") before the query is ever enabled.
+  const isWaitingOnFusionService =
+    !isFusionServiceReady &&
+    !!sourceAsset &&
+    !!sourceChainId &&
+    !!targetCaip2Id &&
+    !isSolanaBlocked
+
   return {
     tokens,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || isWaitingOnFusionService,
     error: query.error,
     fetchNextPage: query.fetchNextPage,
     hasNextPage: query.hasNextPage ?? false,
