@@ -13,6 +13,7 @@ import { TextInput } from 'react-native'
 import Animated, {
   cancelAnimation,
   SharedValue,
+  useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
   withTiming
@@ -22,7 +23,9 @@ import { alpha, clamp } from '../../utils'
 import { Text, View } from '../Primitives'
 import {
   commitDraftText,
+  formatNatural,
   sanitizeDecimalInput,
+  snapToStep,
   valueToProgress
 } from './helpers'
 
@@ -68,6 +71,8 @@ export type DialReadoutHandle = {
 type DialReadoutProps = {
   value: number
   max: number
+  /** Step the live (drag) display snaps to, matching committed values. */
+  step: number
   decimals: number
   /** Cap on the number of decimal places the user can type. */
   maxDecimals?: number
@@ -102,6 +107,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     {
       value,
       max,
+      step,
       decimals,
       maxDecimals,
       label,
@@ -125,6 +131,13 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     const [draft, setDraft] = useState<string | null>(null)
     const inputRef = useRef<TextInput>(null)
     const isEditing = draft !== null
+
+    // UI-thread mirror of `isEditing` so the display worklet can step aside
+    // and let the controlled draft own the text while the user types.
+    const isEditingSv = useSharedValue(false)
+    useEffect(() => {
+      isEditingSv.value = isEditing
+    }, [isEditing, isEditingSv])
 
     // Wider than step-derived `decimals` so typed precision beyond step
     // (e.g. `9999.42` with step=10) survives a blur. `naturalDigits`
@@ -154,6 +167,25 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       const clamped = value < 0 ? 0 : value > max ? max : value
       return naturalDigits(clamped, displayDecimals)
     }, [draft, value, max, displayDecimals])
+
+    // Drive the visible number from progressSv on the UI thread whenever the
+    // dial isn't being manually edited. This decouples the readout from the
+    // parent's controlled `value` round-trip, so a fast swipe-and-release
+    // lands on the final value instantly instead of lagging behind it or
+    // drifting as queued onChange echoes drain on the JS thread. While
+    // editing, return {} so the controlled draft owns the text.
+    const displayAnimatedProps = useAnimatedProps(() => {
+      if (isEditingSv.value) {
+        return {} as { text?: string; defaultValue?: string }
+      }
+      const raw = progressSv.value * max
+      // Snap to step only mid-drag so the live value ticks in clean step
+      // increments; idle / committed / manually-typed values are shown
+      // exactly (progressSv already holds the precise committed value).
+      const shown = isActive.value ? snapToStep(raw, step, max) : raw
+      const text = formatNatural(shown, displayDecimals)
+      return { text, defaultValue: text }
+    })
 
     // Re-measure only when text length changes — most drag updates
     // don't, and skipping the measurement avoids per-frame wobble.
@@ -377,7 +409,13 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
           pointerEvents={isEditing ? 'box-none' : 'none'}>
           <AnimatedTextInput
             ref={inputRef}
-            value={currentText}
+            // Controlled by the draft only while editing; otherwise left
+            // uncontrolled so `displayAnimatedProps` can drive the text on
+            // the UI thread without the parent's controlled `value` fighting
+            // it on every re-render. `defaultValue` seeds the first paint.
+            value={isEditing ? currentText : undefined}
+            defaultValue={currentText}
+            animatedProps={displayAnimatedProps}
             placeholder={placeholder ?? '0'}
             placeholderTextColor={alpha(colors.$textPrimary, 0.3)}
             onChangeText={handleChangeText}
