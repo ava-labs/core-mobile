@@ -128,3 +128,17 @@ On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part 
 - https://github.com/facebook/react-native/issues/54181
 - https://github.com/facebook/react-native/pull/55037
 - https://developer.apple.com/documentation/uikit/uiscrolledgeeffect
+
+### @shopify+flash-list+2.3.0.patch
+
+Fixes a sticky header (`stickyHeaderIndices`) at index 0 disappearing on iOS top overscroll. This affects all `ListScreenV2` modals, which use `stickyHeaderConfig={{ hideRelatedCell: true }}`.
+
+`StickyHeaders` only renders the overlay while `getLayout(stickyIndex).y (=0) <= scrollOffset + stickyHeaderOffset`. On an iOS top overscroll `scrollOffset` goes negative, so the binary search returns `-1`, the overlay returns `null`, and because `hideRelatedCell` also hides the in-flow cell, nothing renders — leaving an empty void where the header was. (Android uses stretch overscroll and keeps the offset `>= 0`, so it never hits this; the patch is a no-op there.)
+
+`dist/recyclerview/components/StickyHeaders.js`:
+
+1. Clamp the sticky-index lookup to `Math.max(0, getLastScrollOffset())` so index 0 stays the current sticky during overscroll and the overlay never nulls out. Only affects index selection; the push animation still uses `scrollY`.
+
+2. Add an `overscrollTranslateY` (`scrollY.interpolate([-100000, 0] → [100000, 0]`, clamped) as a second `translateY` transform on the overlay, so when `scrollY` is negative the pinned header rubber-bands down 1:1 with the content instead of staying rigidly fixed at the top. Clamps to `0` for normal scroll.
+
+Re-check on any `@shopify/flash-list` version bump (edits target `dist/`, since the package `main` is `dist/index.js`).
