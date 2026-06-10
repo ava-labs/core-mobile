@@ -219,13 +219,19 @@ export const CircularDial: FC<CircularDialProps> = ({
 
   const readoutRef = useRef<DialReadoutHandle>(null)
 
-  // Clears the settling guard once the post-release window elapses, but
-  // only if no newer interaction has opened its own window since (token
-  // check) — otherwise a stale timer from an earlier swipe could reopen
-  // prop sync mid-settle and let an echo through.
+  // Pending settle-window timer, so rapid repeated swipes cancel the prior
+  // one instead of piling up dozens of timeouts that all wake to no-op.
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clears the settling guard once the post-release window elapses. Cancels
+  // any in-flight window first; the token check is a belt-and-suspenders
+  // against a stale timer reopening prop sync mid-settle and letting an
+  // echo through.
   const clearSettlingSoon = useCallback(
     (token: number) => {
-      setTimeout(() => {
+      if (settleTimerRef.current !== null) clearTimeout(settleTimerRef.current)
+      settleTimerRef.current = setTimeout(() => {
+        settleTimerRef.current = null
         if (settleToken.value === token) isSettling.value = false
       }, SETTLE_WINDOW_MS)
     },
@@ -341,11 +347,13 @@ export const CircularDial: FC<CircularDialProps> = ({
     })
 
   // Emit onChange on step crossings while the dial is active so consumers —
-  // and the readout text/caption, driven by the parent's controlled
-  // `value` — track the value live. Throttled on the UI thread to
-  // EMIT_THROTTLE_MS via a leading-edge time gate (no trailing timer, so
-  // nothing is queued to fire after release); onEnd always emits the final
-  // snapped value, so throttled-away crossings are never lost.
+  // and parent-derived UI such as the fiat caption — track the value live.
+  // (The readout number itself is now driven by progressSv on the UI thread
+  // in DialReadout, so it no longer depends on this round-trip.) Throttled
+  // on the UI thread to EMIT_THROTTLE_MS via a leading-edge time gate (no
+  // trailing timer, so nothing is queued to fire after release); onEnd
+  // always emits the final snapped value, so throttled-away crossings are
+  // never lost.
   useAnimatedReaction(
     () => {
       const raw = progressSv.value * vMax
