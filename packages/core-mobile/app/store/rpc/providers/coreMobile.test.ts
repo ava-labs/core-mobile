@@ -24,22 +24,27 @@ const mockListenerApi = {
   getState: jest.fn().mockReturnValue({})
 } as unknown as AppListenerEffectAPI
 
+const DEFAULT_PEER_META: PeerMeta = {
+  name: 'Test Dapp',
+  description: 'Test dapp',
+  url: 'https://test.dapp.com',
+  icons: []
+}
+
 const makeMockRequest = (
   method: RpcMethod,
   chainId: string,
-  peerMeta: PeerMeta = {
-    name: 'Test Dapp',
-    description: 'Test dapp',
-    url: 'https://test.dapp.com',
-    icons: []
-  }
+  {
+    peerMeta = DEFAULT_PEER_META,
+    params = {}
+  }: { peerMeta?: PeerMeta; params?: unknown } = {}
 ): Parameters<typeof coreMobileProvider.onSuccess>[0]['request'] => ({
   method,
   data: {
     id: 1,
     topic: 'core-mobile-topic',
     params: {
-      request: { method, params: {} },
+      request: { method, params },
       chainId
     }
   },
@@ -74,6 +79,49 @@ describe('coreMobileProvider', () => {
             chainId: 'eip155:1',
             txHash: '0xdeadbeef'
           }
+        }
+      )
+    })
+
+    it('uses the tx `from` as the address, not the active account (granted non-active signer)', async () => {
+      const NON_ACTIVE_FROM = '0xAAAA000000000000000000000000000000000001'
+      const request = makeMockRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:1',
+        { params: [{ from: NON_ACTIVE_FROM, to: '0xbbbb', value: '0x0' }] }
+      )
+
+      await coreMobileProvider.onSuccess({
+        request,
+        result: '0xdeadbeef',
+        listenerApi: mockListenerApi
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'eth_sendTransaction_success',
+        { encrypted: expect.objectContaining({ address: NON_ACTIVE_FROM }) }
+      )
+    })
+
+    it('falls back to the active account when the tx `from` is missing', async () => {
+      const request = makeMockRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:1',
+        { params: [{ to: '0xbbbb', value: '0x0' }] }
+      )
+
+      await coreMobileProvider.onSuccess({
+        request,
+        result: '0xdeadbeef',
+        listenerApi: mockListenerApi
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'eth_sendTransaction_success',
+        {
+          encrypted: expect.objectContaining({
+            address: mockActiveAccount.addressC
+          })
         }
       )
     })
@@ -118,7 +166,7 @@ describe('coreMobileProvider', () => {
       const request = makeMockRequest(
         RpcMethod.ETH_SEND_TRANSACTION,
         'eip155:1',
-        CORE_MOBILE_META
+        { peerMeta: CORE_MOBILE_META }
       )
 
       await coreMobileProvider.onSuccess({
@@ -134,7 +182,14 @@ describe('coreMobileProvider', () => {
       const request = makeMockRequest(
         RpcMethod.ETH_SEND_TRANSACTION,
         'eip155:1',
-        { name: 'Unknown site', description: '', url: '', icons: [] }
+        {
+          peerMeta: {
+            name: 'Unknown site',
+            description: '',
+            url: '',
+            icons: []
+          }
+        }
       )
 
       await coreMobileProvider.onSuccess({
@@ -175,11 +230,9 @@ describe('coreMobileProvider', () => {
 
     it('still dispatches onInAppRequestSucceeded regardless of analytics', async () => {
       await coreMobileProvider.onSuccess({
-        request: makeMockRequest(
-          RpcMethod.ETH_SEND_TRANSACTION,
-          'eip155:1',
-          CORE_MOBILE_META
-        ),
+        request: makeMockRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:1', {
+          peerMeta: CORE_MOBILE_META
+        }),
         result: '0xdeadbeef',
         listenerApi: mockListenerApi
       })
