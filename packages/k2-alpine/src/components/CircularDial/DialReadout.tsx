@@ -1,4 +1,5 @@
 import { useFont } from '@shopify/react-native-skia'
+import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
@@ -87,6 +88,8 @@ type DialReadoutProps = {
   onCommit: (v: number) => void
   /** Prefix for the input's `testID`. Falls back to `circular-dial`. */
   testIDPrefix?: string
+  /** Style for the label */
+  labelSx?: SxProp
 }
 
 /* eslint-disable sonarjs/cognitive-complexity --
@@ -108,6 +111,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       referenceValue,
       progressSv,
       isActive,
+      labelSx,
       onChange,
       onCommit,
       testIDPrefix = 'circular-dial'
@@ -344,16 +348,18 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
         {label !== undefined && (
           <Text
             pointerEvents="none"
-            style={{
+            variant="caption"
+            sx={{
               position: 'absolute',
               bottom: labelBottom,
               left: 0,
               right: 0,
               textAlign: 'center',
-              fontFamily: 'Aeonik-Medium',
-              fontSize: 24,
-              lineHeight: 24,
-              color: inputColor
+              fontSize: 13,
+              // Match the amount's invalid-state cue (danger when below the
+              // reference); `labelSx` can still override.
+              color: inputColor,
+              ...labelSx
             }}>
             {label}
           </Text>

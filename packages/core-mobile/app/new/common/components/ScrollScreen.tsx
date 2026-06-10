@@ -2,8 +2,7 @@ import {
   BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  SxProp,
-  Text
+  SxProp
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -261,18 +260,18 @@ export const ScrollScreen = ({
             ref={headerRef}
             collapsable={false}
             onLayout={handleHeaderLayout}
-            style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
-            {title ? (
+            style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
+            {hasTitle ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
                   title={title ?? ''}
                   titleSx={titleSx}
                   titleNumberOfLines={4}
+                  description={subtitle}
                 />
               </Animated.View>
             ) : null}
 
-            {subtitle ? <Text variant="body1">{subtitle}</Text> : null}
             {!hasTitle && renderHeader?.()}
           </View>
 

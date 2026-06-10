@@ -12,6 +12,7 @@ import {
   LayoutChangeEvent,
   Platform,
   Pressable,
+  StyleProp,
   StyleSheet,
   TextInput,
   TextStyle
@@ -37,10 +38,14 @@ interface TextInputProps extends _TextInputProps {
   renderLeft?: () => React.ReactNode
   /** Right component with no autoresizing */
   renderRight?: () => React.ReactNode
-  /** Left text style */
-  prefixSx?: TextStyle
-  /** Right text style */
-  suffixSx?: TextStyle
+  /**
+   * Style for the prefix (e.g. `$`).
+   */
+  prefixStyle?: StyleProp<TextStyle>
+  /**
+   * Style for the suffix (e.g. `USDC`).
+   */
+  suffixStyle?: StyleProp<TextStyle>
   /** Prefix fontSize multiplier */
   prefixFontSizeMultiplier?: number
   /** Suffix fontSize multiplier */
@@ -69,8 +74,9 @@ export const AutoSizeTextInput = forwardRef<
       suffix,
       textAlign,
       containerSx,
-      prefixSx,
-      suffixSx,
+      prefixStyle,
+      suffixStyle,
+      prefixFontSizeMultiplier = 1,
       suffixFontSizeMultiplier = 1,
       renderLeft,
       renderRight,
@@ -95,11 +101,16 @@ export const AutoSizeTextInput = forwardRef<
     const lastTextWidthRef = useRef(0)
     const prevContainerWidthRef = useRef(0)
 
+    // Prefer the suffix multiplier when a suffix is present: prefix and suffix
+    // share one adornment font size, and a suffix (e.g. `USDC`) is the common
+    // "subtitle" case. Falls back to the prefix multiplier for prefix-only
+    // inputs (e.g. a leading `$`).
+    const fontSizeMultiplier =
+      initialFontSize *
+      (suffix ? suffixFontSizeMultiplier : prefixFontSizeMultiplier)
     const hasValue = useSharedValue(false)
     const animatedFontSize = useSharedValue(initialFontSize)
-    const animatedSuffixFontSize = useSharedValue(
-      initialFontSize * suffixFontSizeMultiplier
-    )
+    const animatedSuffixFontSize = useSharedValue(fontSizeMultiplier)
     const inputRef = useRef<TextInput>(null)
     const lastTextRef = useRef<string>('')
 
@@ -145,7 +156,8 @@ export const AutoSizeTextInput = forwardRef<
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedSuffixFontSize.value,
         lineHeight: animatedSuffixFontSize.value * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
+        color: hasValue.value ? textColor : placeholderTextColor,
+        includeFontPadding: false
       }
     })
 
@@ -172,34 +184,29 @@ export const AutoSizeTextInput = forwardRef<
         const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
 
         const ratio = (availableWidth / textWidth) * correctionFactor
-        let newFontSize = Math.round(animatedFontSize.value * ratio)
-        let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
-        newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
-        newSuffixFontSize = Math.max(
-          10,
-          Math.min(
-            initialFontSize * suffixFontSizeMultiplier,
-            newSuffixFontSize
-          )
-        )
+        let fontSize = Math.round(animatedFontSize.value * ratio)
+        let newFontSize = Math.round(animatedSuffixFontSize.value * ratio)
+        fontSize = Math.max(10, Math.min(initialFontSize, fontSize))
+        newFontSize = Math.max(10, Math.min(fontSizeMultiplier, newFontSize))
 
-        if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
-          animatedFontSize.value = newFontSize
+        if (Math.abs(fontSize - animatedFontSize.value) > 0.5) {
+          animatedFontSize.value = fontSize
         }
-        if (Math.abs(newSuffixFontSize - animatedSuffixFontSize.value) > 0.5) {
-          animatedSuffixFontSize.value = newSuffixFontSize
+
+        if (Math.abs(newFontSize - animatedSuffixFontSize.value) > 0.5) {
+          animatedSuffixFontSize.value = newFontSize
         }
       },
       [
+        renderLeft,
+        prefix,
+        renderRight,
+        suffix,
+        containerWidth,
         animatedFontSize,
         animatedSuffixFontSize,
-        containerWidth,
-        prefix,
-        suffix,
         initialFontSize,
-        renderLeft,
-        renderRight,
-        suffixFontSizeMultiplier
+        fontSizeMultiplier
       ]
     )
 
@@ -250,8 +257,7 @@ export const AutoSizeTextInput = forwardRef<
         // Short text fits at initial size — skip measurement and reset
         if (currentText.length < MIN_LENGTH_TO_RESIZE) {
           animatedFontSize.value = initialFontSize
-          animatedSuffixFontSize.value =
-            initialFontSize * suffixFontSizeMultiplier
+          animatedSuffixFontSize.value = fontSizeMultiplier
           return
         }
 
@@ -260,13 +266,13 @@ export const AutoSizeTextInput = forwardRef<
         }
       },
       [
-        containerWidth,
         value,
-        calculateAndUpdateFontSize,
+        containerWidth,
         animatedFontSize,
-        animatedSuffixFontSize,
         initialFontSize,
-        suffixFontSizeMultiplier
+        animatedSuffixFontSize,
+        fontSizeMultiplier,
+        calculateAndUpdateFontSize
       ]
     )
 
@@ -294,7 +300,7 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
-            <Animated.Text style={[suffixTextStyle, prefixSx]}>
+            <Animated.Text style={[suffixTextStyle, prefixStyle]}>
               {prefix}
             </Animated.Text>
           </Pressable>
@@ -306,7 +312,7 @@ export const AutoSizeTextInput = forwardRef<
       focusTextInput,
       handleLeftLayout,
       suffixTextStyle,
-      prefixSx
+      prefixStyle
     ])
 
     const renderSuffix = useCallback(() => {
@@ -321,7 +327,7 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
-            <Animated.Text style={[suffixTextStyle, suffixSx]}>
+            <Animated.Text style={[suffixTextStyle, suffixStyle]}>
               {suffix}
             </Animated.Text>
           </Pressable>
@@ -332,7 +338,7 @@ export const AutoSizeTextInput = forwardRef<
       handleRightLayout,
       renderRight,
       suffix,
-      suffixSx,
+      suffixStyle,
       suffixTextStyle
     ])
 
@@ -407,7 +413,13 @@ const styles = StyleSheet.create({
     gap: GAP_WIDTH
   },
   input: {
-    padding: 0
+    padding: 0,
+    // Android adds size-proportional font padding and positions the placeholder
+    // hint by its own gravity, so a small prefix/suffix and the big digits (or
+    // the empty-state hint) center on mismatched boxes. Tightening the line box
+    // and pinning vertical alignment keeps the glyphs aligned. No-op on iOS.
+    includeFontPadding: false,
+    textAlignVertical: 'center'
   },
   measurementContainer: {
     position: 'absolute',

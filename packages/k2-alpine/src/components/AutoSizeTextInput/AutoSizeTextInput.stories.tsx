@@ -55,7 +55,7 @@ export const All = (): JSX.Element => {
         <AutoSizeTextInput
           value={value}
           suffix="AVAX"
-          suffixSx={{
+          suffixStyle={{
             marginBottom: 20
           }}
           placeholder="0.00"
