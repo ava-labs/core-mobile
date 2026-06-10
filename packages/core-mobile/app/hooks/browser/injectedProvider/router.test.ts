@@ -703,7 +703,8 @@ describe('createInjectedProviderRouter', () => {
 
       expect(requestConnectApproval).toHaveBeenCalledTimes(1)
       // Threads the JSON-RPC id so the connect-approval registry can key by
-      // `${tabId}:${requestId}` (CP-14385).
+      // `${tabId}:${requestId}:${nonce}` (the nonce guarantees uniqueness —
+      // requestIds are reused after a page reload). (CP-14385)
       expect(requestConnectApproval).toHaveBeenCalledWith(
         expect.anything(),
         expect.any(Number)
