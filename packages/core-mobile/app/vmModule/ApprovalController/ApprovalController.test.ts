@@ -6,6 +6,7 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { router } from 'expo-router'
 import { currentRouteStore } from 'new/routes/store'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { CORE_MOBILE_META, CORE_MOBILE_TOPIC } from 'store/rpc/types'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -161,6 +162,40 @@ const makeDappRequest = (method: RpcMethod, chainId = 'eip155:1'): RpcRequest =>
     chainId,
     params: {},
     dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
+  } as unknown as RpcRequest)
+
+// An injected-browser dApp request: in-app session topic, but a REAL dApp url.
+// This is the case CP-13825 fixes — it must count toward MTU analytics.
+const makeInjectedDappRequest = (
+  method: RpcMethod,
+  chainId = 'eip155:1'
+): RpcRequest =>
+  ({
+    requestId: 'req-1',
+    sessionId: CORE_MOBILE_TOPIC,
+    method,
+    chainId,
+    params: {},
+    dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
+  } as unknown as RpcRequest)
+
+// A wallet-internal request (Send / Swap / Stake): carries CORE_MOBILE_META —
+// must NOT count toward dApp MTU analytics.
+const makeInternalRequest = (
+  method: RpcMethod,
+  chainId = 'eip155:1'
+): RpcRequest =>
+  ({
+    requestId: 'req-1',
+    sessionId: CORE_MOBILE_TOPIC,
+    method,
+    chainId,
+    params: {},
+    dappInfo: {
+      name: CORE_MOBILE_META.name,
+      url: CORE_MOBILE_META.url,
+      icon: ''
+    }
   } as unknown as RpcRequest)
 
 const mockAccount = {
@@ -525,16 +560,58 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does NOT fire analytics for in-app requests', () => {
-        mockIsInAppRequest.mockReturnValue(true)
+      it('does NOT fire analytics for wallet-internal requests (CORE_MOBILE_META)', () => {
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request: makeInternalRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        })
+
+        expect(AnalyticsService.capture).not.toHaveBeenCalled()
+      })
+
+      it('fires analytics for injected dApp requests (in-app topic, real url) — CP-13825', async () => {
+        const request = makeInjectedDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
 
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request
         })
 
-        expect(AnalyticsService.capture).not.toHaveBeenCalled()
+        // regression guard: the signer address is the cached one, not '' —
+        // proves the signing-address cache gate (CP-13825 3d) also moved.
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          {
+            encrypted: {
+              dAppUrl: DAPP_URL,
+              address: EVM_ADDRESS,
+              chainId: 'eip155:1',
+              txHash: TX_HASH
+            }
+          }
+        )
+      })
+
+      it('emits the actual signer for injected reqs, not the active account (granted non-active) — CP-13825', async () => {
+        const NON_ACTIVE_SIGNER = '0xAAAA000000000000000000000000000000000001'
+        const request = makeInjectedDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        // the injected router permits signing with a granted, non-active account;
+        // the cached address is the selected signer, which the event must reflect.
+        await populateSigningAddressCache(request, NON_ACTIVE_SIGNER)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          { encrypted: expect.objectContaining({ address: NON_ACTIVE_SIGNER }) }
+        )
       })
 
       it('uses getAddressForChainId to resolve the signing address', async () => {
@@ -603,9 +680,8 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does not cache signing address for in-app requests', async () => {
-        mockIsInAppRequest.mockReturnValue(true)
-        const request = makeRequest({ method: RpcMethod.ETH_SEND_TRANSACTION })
+      it('does not cache signing address for wallet-internal requests (CORE_MOBILE_META)', async () => {
+        const request = makeInternalRequest(RpcMethod.ETH_SEND_TRANSACTION)
 
         const signingData = { type: 'eth_sendTransaction', data: {} } as never
         const displayData = {} as never
@@ -626,6 +702,34 @@ describe('ApprovalController', () => {
         })
 
         expect(mockGetAddressForChainId).not.toHaveBeenCalled()
+      })
+
+      it('caches signing address for injected dApp requests — CP-13825', async () => {
+        const request = makeInjectedDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        mockGetAddressForChainId.mockReturnValue(EVM_ADDRESS)
+
+        const signingData = { type: 'eth_sendTransaction', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).toHaveBeenCalledWith(
+          request.chainId,
+          mockAccount
+        )
       })
 
       it('does not cache signing address for non-tx-send methods', async () => {
@@ -715,15 +819,35 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does NOT fire analytics for in-app requests', () => {
-        mockIsInAppRequest.mockReturnValue(true)
-
+      it('does NOT fire analytics for wallet-internal requests (CORE_MOBILE_META)', () => {
         approvalController.onTransactionReverted({
           txHash: TX_HASH,
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request: makeInternalRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
         expect(AnalyticsService.capture).not.toHaveBeenCalled()
+      })
+
+      it('fires _failed for injected dApp requests (in-app topic, real url) — CP-13825', async () => {
+        const request = makeInjectedDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionReverted({
+          txHash: TX_HASH,
+          request
+        })
+
+        expect(AnalyticsService.capture).toHaveBeenCalledWith(
+          'eth_sendTransaction_failed',
+          {
+            encrypted: {
+              dAppUrl: DAPP_URL,
+              address: EVM_ADDRESS,
+              chainId: 'eip155:1',
+              txHash: TX_HASH
+            }
+          }
+        )
       })
 
       it('always includes txHash in _failed payload (matches Extension behavior)', async () => {

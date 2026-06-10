@@ -12,6 +12,7 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { isDappOriginatedUrl } from 'store/rpc/utils/isDappOriginatedRequest'
 import {
   clearRequestSignal,
   getRequestSignal
@@ -138,7 +139,10 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void => {
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
@@ -195,7 +199,10 @@ class ApprovalController implements VmModuleApprovalController {
     // Clear any cached gate decision for this requestId so it doesn't linger.
     this.optimisticGateMap.delete(request.requestId)
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
@@ -486,7 +493,14 @@ class ApprovalController implements VmModuleApprovalController {
     // up; a late Approve tap must not sign/broadcast. (CP-14422)
     if (this.userCancelledMap.get(requestId)) return
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    // Cache the actual selected signer so onTransactionConfirmed /
+    // onTransactionReverted emit the real address for dApp txs — including
+    // the injected browser (which the !isInAppRequest gate excluded,
+    // making those events fire with an empty address). CP-13825.
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       this.cacheSigningAddress(requestId, request.chainId, params.account)
     }
 
