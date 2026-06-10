@@ -53,6 +53,11 @@ import {
   runRequestValidatorBypass
 } from './quickSwapsBypass'
 
+// Max concurrently-parked cancellable approvals. Entries are removed on every
+// normal settle (clearCancelBridge), so this is a defensive cap; eviction is
+// handled with full teardown via freeActiveApprovalCapacity. (CP-14422)
+const ACTIVE_APPROVALS_MAX = 10
+
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
   private signingAddressMap = new BoundedMap<string, string>(10)
@@ -73,7 +78,7 @@ class ApprovalController implements VmModuleApprovalController {
       phase: 'parked' | 'ledgerPending' | 'ledgerSigning'
       detach: () => void
     }
-  >(10)
+  >(ACTIVE_APPROVALS_MAX)
 
   async requestPublicKey({
     secretId,
@@ -248,6 +253,11 @@ class ApprovalController implements VmModuleApprovalController {
       signal.removeEventListener('abort', onAbort)
       clearRequestSignal(requestId)
     }
+    // Free a slot ourselves before inserting: BoundedMap would FIFO-evict the
+    // oldest via a plain delete() that skips detach() + promise settlement,
+    // leaking the abort listener + request signal and orphaning the parked
+    // promise. (CP-14422)
+    this.freeActiveApprovalCapacity(requestId)
     this.activeApprovals.set(requestId, { resolve, phase: 'parked', detach })
 
     // Aborted in the window between request creation and parking the modal:
@@ -258,6 +268,23 @@ class ApprovalController implements VmModuleApprovalController {
     }
     signal.addEventListener('abort', onAbort, { once: true })
     return false
+  }
+
+  // Make room for an incoming entry without BoundedMap's silent FIFO eviction,
+  // which would plain-delete the oldest and skip its detach()/settlement. Cancel
+  // the oldest parked approval instead so its abort listener + request signal are
+  // cleaned up and its promise is settled (rejected). A `ledgerSigning` oldest is
+  // left untouched by cancelParkedApproval (never cancel mid-device-signing); in
+  // that extraordinary case BoundedMap's own cap remains the backstop. (CP-14422)
+  private freeActiveApprovalCapacity(incomingKey: string): void {
+    if (
+      this.activeApprovals.has(incomingKey) ||
+      this.activeApprovals.size < ACTIVE_APPROVALS_MAX
+    ) {
+      return
+    }
+    const oldestKey = this.activeApprovals.keys().next().value
+    if (oldestKey !== undefined) this.cancelParkedApproval(oldestKey)
   }
 
   private setApprovalPhase(

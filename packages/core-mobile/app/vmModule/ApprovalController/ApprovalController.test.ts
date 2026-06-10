@@ -1479,5 +1479,53 @@ describe('ApprovalController', () => {
       clearRequestSignal('req-A')
       clearRequestSignal('req-B')
     })
+
+    it('evicts the oldest parked approval with full teardown when at capacity', () => {
+      // Fill activeApprovals to capacity (ACTIVE_APPROVALS_MAX = 10) with distinct
+      // browser signing requests, each with its own cancel bridge.
+      const controllers: AbortController[] = []
+      for (let i = 0; i < 10; i++) {
+        const c = new AbortController()
+        controllers.push(c)
+        setRequestSignal(`evict-${i}`, c.signal)
+        approvalController.requestApproval({
+          request: makeRequest({
+            requestId: `evict-${i}`,
+            sessionId: 'core-mobile'
+          }),
+          displayData,
+          signingData
+        })
+      }
+      mockOnReject.mockClear()
+
+      // An 11th request must evict the oldest (evict-0) — and that eviction must
+      // run the real teardown (settle the promise + detach), NOT BoundedMap's
+      // silent plain-delete that would leak the listener/signal. (CP-14422)
+      const overflow = new AbortController()
+      setRequestSignal('evict-10', overflow.signal)
+      approvalController.requestApproval({
+        request: makeRequest({
+          requestId: 'evict-10',
+          sessionId: 'core-mobile'
+        }),
+        displayData,
+        signingData
+      })
+
+      // Oldest was settled exactly once via the real onReject.
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      // Oldest's bridge was detached: re-aborting it is now a no-op.
+      mockOnReject.mockClear()
+      controllers[0]?.abort()
+      expect(mockOnReject).not.toHaveBeenCalled()
+
+      // A still-parked entry keeps its bridge — aborting it still cancels.
+      controllers[1]?.abort()
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      for (let i = 0; i <= 10; i++) clearRequestSignal(`evict-${i}`)
+    })
   })
 })
