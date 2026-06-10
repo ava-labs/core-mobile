@@ -16,8 +16,6 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { router as appRouter } from 'expo-router'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { approvalController } from 'vmModule/ApprovalController/ApprovalController'
 import {
   grantPermission as grantPermissionAction,
@@ -26,6 +24,8 @@ import {
 } from 'store/permissions/slice'
 import type { RootState } from 'store/types'
 import type { Account } from 'store/account'
+import { applyConnectNavEffect } from './injectedProvider/connectApprovalNavigation'
+import { connectApprovalRegistry } from './injectedProvider/connectApprovalRegistry'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 import {
@@ -156,39 +156,53 @@ export function useEvmInjectedProvider(
   // setCurrentUrl's SPA re-prime routes through a ref — same pattern as routerRef.
   const primeAccountsRef = useRef<(() => void) | null>(null)
 
-  // Tracks the reject fn of an in-flight connect approval so a later request
-  // or an origin change can unstick it. Also used by requestConnectApproval
-  // in the memo below.
-  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
-    null
+  // Tracks THIS tab's in-flight connect approval (its approvalId + reject fn) so
+  // a later same-tab request or an origin change can unstick it. Carries the
+  // approvalId so the identity guards in requestConnectApproval don't clobber a
+  // newer same-tab request. (CP-14385)
+  const prevInflightConnectReject = useRef<{
+    approvalId: string
+    reject: (err: unknown) => void
+  } | null>(null)
+
+  const setCurrentUrl = useCallback(
+    (url: string) => {
+      const prevUrl = currentUrlRef.current
+      const prevOrigin = getOriginFromUrl(prevUrl)
+      currentUrlRef.current = url
+      const newOrigin = getOriginFromUrl(url)
+
+      if (prevOrigin && prevOrigin !== newOrigin) {
+        // Cross-origin navigation — cancel in-flight requests and unstick any
+        // connect approval(s) this tab parked. The registry advances/dismisses
+        // the modal via the nav effect (handled === true). If it returned
+        // `none`, this tab's connect was queued (another tab's modal is active)
+        // OR there was no connect for this tab. Only fall back to the generic
+        // modal dismissal when NO connect is active — otherwise we'd wrongly pop
+        // another tab's connect modal; when none is active, a non-connect modal
+        // (e.g. signing) may be up and should be dismissed. (CP-14385)
+        routerRef.current?.cancelByOrigin(newOrigin)
+        const handled = applyConnectNavEffect(
+          connectApprovalRegistry.rejectByTab(tabId, {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          })
+        )
+        if (!handled && !connectApprovalRegistry.hasActive()) {
+          approvalController.handleGoBackIfNeeded()
+        }
+      } else if (prevOrigin && prevOrigin === newOrigin && prevUrl !== url) {
+        // Same-origin SPA navigation to a new URL (pushState/replaceState) — note
+        // prevOrigin must be set, so this excludes the initial page load (which is
+        // primed via domain_metadata). The one-time connect/accountsChanged events
+        // already fired on first load, so a provider consumer mounted by the new
+        // route sees no accounts and appears disconnected. Re-prime so it
+        // reconnects. CP-13772.
+        primeAccountsRef.current?.()
+      }
+    },
+    [tabId]
   )
-
-  const setCurrentUrl = useCallback((url: string) => {
-    const prevUrl = currentUrlRef.current
-    const prevOrigin = getOriginFromUrl(prevUrl)
-    currentUrlRef.current = url
-    const newOrigin = getOriginFromUrl(url)
-
-    if (prevOrigin && prevOrigin !== newOrigin) {
-      // Cross-origin navigation — cancel in-flight requests and unstick any
-      // parked approval tied to the prior page.
-      routerRef.current?.cancelByOrigin(newOrigin)
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
-      approvalController.handleGoBackIfNeeded()
-    } else if (prevOrigin && prevOrigin === newOrigin && prevUrl !== url) {
-      // Same-origin SPA navigation to a new URL (pushState/replaceState) — note
-      // prevOrigin must be set, so this excludes the initial page load (which is
-      // primed via domain_metadata). The one-time connect/accountsChanged events
-      // already fired on first load, so a provider consumer mounted by the new
-      // route sees no accounts and appears disconnected. Re-prime so it
-      // reconnects. CP-13772.
-      primeAccountsRef.current?.()
-    }
-  }, [])
 
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
@@ -382,84 +396,83 @@ export function useEvmInjectedProvider(
     })
   }, [store, injectAccountsChanged])
 
-  // When this browser tab unmounts (tab closed), reject any parked connect
-  // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
-  // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
-  // when switching tabs, so this does not run on tab switch.
+  // When this browser tab unmounts (tab closed), reject this tab's connect
+  // approval(s) with 4001 so the dApp's eth_requestAccounts promise settles
+  // instead of hanging until supersede or the 90s timeout, and advance/dismiss
+  // the modal if one of them was active. Inactive tabs stay mounted when
+  // switching tabs, so this does not run on tab switch. (CP-14385)
   useEffect(() => {
     return () => {
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
+      applyConnectNavEffect(
+        connectApprovalRegistry.rejectByTab(tabId, {
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
+      )
     }
-  }, [])
+  }, [tabId])
 
   const requestConnectApproval = useCallback(
-    (peerMeta: PeerMeta): Promise<Account[]> => {
-      // If a prior connect is still parked (screen never mounted, or a second
-      // request arrived before the first resolved), reject it so its dApp can
-      // unstick. Then replace the cache entry with our own settled-guarded
-      // callbacks.
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
-
+    (peerMeta: PeerMeta, requestId: number): Promise<Account[]> => {
       return new Promise<Account[]>((resolve, reject) => {
         let settled = false
+        // Clear this tab's ref only if it still points at THIS request — a newer
+        // same-tab request would have overwritten it, and we must not clobber it.
+        const clearOwnRef = (): void => {
+          if (prevInflightConnectReject.current?.reject === safeReject) {
+            prevInflightConnectReject.current = null
+          }
+        }
         const safeResolve = (selected: Account[]): void => {
           if (settled) return
           settled = true
-          // Only clear if the ref still points to THIS request's handler — a
-          // newer in-flight request would have overwritten it, and we must not
-          // clobber that one.
-          if (prevInflightConnectReject.current === safeReject) {
-            prevInflightConnectReject.current = null
-          }
+          clearOwnRef()
           resolve(selected)
-          // fallbackTimer would be no op, no need to maintain
           clearTimeout(fallbackTimer)
         }
         const safeReject = (err: unknown): void => {
           if (settled) return
           settled = true
-          // Only clear if the ref still points to THIS request's handler — a
-          // newer in-flight request would have overwritten it, and we must not
-          // clobber that one.
-          if (prevInflightConnectReject.current === safeReject) {
-            prevInflightConnectReject.current = null
-          }
+          clearOwnRef()
           reject(err)
-          // fallbackTimer would be no op, no need to maintain
           clearTimeout(fallbackTimer)
         }
-        prevInflightConnectReject.current = safeReject
 
-        walletConnectCache.injectedAuthParams.set({
-          peerMeta,
-          onApprove: safeResolve,
-          onReject: () =>
-            safeReject({
-              code: EIP1193_USER_REJECTED_CODE,
-              message: USER_REJECTED_REQUEST_MESSAGE
-            })
-        })
-        appRouter.navigate('/authorizeInjectedDapp')
+        // Register in the per-tab-keyed registry (replaces the single global
+        // cache slot). The registry mints a unique approvalId; a same-tab
+        // in-flight request is superseded in place (rejecting its promise, which
+        // clears this ref since it still points at the old request); a
+        // concurrent OTHER tab is queued — neither clobbers the other (CP-14385).
+        const { approvalId, effect } = connectApprovalRegistry.request(
+          {
+            tabId,
+            requestId,
+            peerMeta,
+            approve: safeResolve,
+            reject: safeReject
+          },
+          {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          }
+        )
+        prevInflightConnectReject.current = { approvalId, reject: safeReject }
+        applyConnectNavEffect(effect)
 
-        // Safety net: if the screen never mounts or calls back within 90s,
-        // reject so the dApp can surface an error instead of hanging.
+        // Safety net: if the screen never mounts or calls back within 90s, reject
+        // so the dApp can surface an error instead of hanging. Timer is per
+        // request, started at creation, so queued requests are bounded too.
         const fallbackTimer = setTimeout(() => {
-          safeReject({
-            code: JSON_RPC_INTERNAL_ERROR_CODE,
-            message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
-          })
+          applyConnectNavEffect(
+            connectApprovalRegistry.reject(approvalId, {
+              code: JSON_RPC_INTERNAL_ERROR_CODE,
+              message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
+            })
+          )
         }, CONNECT_APPROVAL_TIMEOUT_MS)
       })
     },
-    []
+    [tabId]
   )
 
   const router = useMemo(() => {

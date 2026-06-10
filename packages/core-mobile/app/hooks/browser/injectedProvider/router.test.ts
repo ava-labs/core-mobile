@@ -611,7 +611,8 @@ describe('createInjectedProviderRouter', () => {
       await new Promise(r => setImmediate(r))
 
       expect(requestConnectApproval).toHaveBeenCalledWith(
-        expect.objectContaining({ url: 'https://example.com' })
+        expect.objectContaining({ url: 'https://example.com' }),
+        expect.any(Number)
       )
       expect(grantPermission).toHaveBeenCalledWith({
         domain: 'https://example.com',
@@ -701,6 +702,12 @@ describe('createInjectedProviderRouter', () => {
       await new Promise(r => setImmediate(r))
 
       expect(requestConnectApproval).toHaveBeenCalledTimes(1)
+      // Threads the JSON-RPC id so the connect-approval registry can key by
+      // `${tabId}:${requestId}` (CP-14385).
+      expect(requestConnectApproval).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(Number)
+      )
       expect(grantPermission).toHaveBeenCalledTimes(1)
       const [[, , result]] = sendResponse.mock.calls
       expect(result).toEqual([
