@@ -24,6 +24,19 @@ jest.mock('../transformKeyInfosToPubkeys', () => ({
 }))
 jest.spyOn(SeedlessPubKeysStorage, 'save').mockResolvedValue()
 
+// getPublicKeyFor now reads keys from SeedlessPubKeysStorage rather than a
+// constructor snapshot, so the wallet's key lookups go through retrieve().
+const defaultPubKeys = [
+  {
+    curve: Curve.SECP256K1,
+    derivationPath: "m/44'/60'/0'/0/0",
+    key: 'testPublicKey'
+  }
+]
+const mockRetrieve = jest
+  .spyOn(SeedlessPubKeysStorage, 'retrieve')
+  .mockResolvedValue(defaultPubKeys)
+
 const sessionKeysList = async () => [
   {
     key_id: 'testId',
@@ -37,22 +50,15 @@ const sessionKeysList = async () => [
 describe('SeedlessWallet', () => {
   let wallet: SeedlessWallet
   beforeEach(() => {
-    wallet = new SeedlessWallet(
-      {
-        apiClient: {
-          identityProve: jest.fn(),
-          // @ts-ignore
-          sessionKeysList
-        }
-      },
-      [
-        {
-          curve: Curve.SECP256K1,
-          derivationPath: "m/44'/60'/0'/0/0",
-          key: 'testPublicKey'
-        }
-      ]
-    )
+    mockRetrieve.mockResolvedValue(defaultPubKeys)
+    wallet = new SeedlessWallet({
+      apiClient: {
+        identityProve: jest.fn(),
+        // @ts-ignore
+        sessionKeysList
+      }
+      // @ts-ignore
+    })
   })
   it('should have returned the mnemonic id', async () => {
     // @ts-ignore
@@ -60,22 +66,14 @@ describe('SeedlessWallet', () => {
     expect(mnemonicId).toEqual('testMnemonicId')
   })
   it('should have thrown for not found mnemonic id ', async () => {
-    wallet = new SeedlessWallet(
-      {
-        apiClient: {
-          identityProve: jest.fn(),
-          // @ts-ignore
-          sessionKeysList: () => []
-        }
-      },
-      [
-        {
-          curve: Curve.SECP256K1,
-          derivationPath: "m/44'/60'/0'/0/0",
-          key: 'testPublicKey'
-        }
-      ]
-    )
+    wallet = new SeedlessWallet({
+      apiClient: {
+        identityProve: jest.fn(),
+        // @ts-ignore
+        sessionKeysList: () => []
+      }
+      // @ts-ignore
+    })
     try {
       // @ts-ignore
       await wallet.getMnemonicId()
@@ -124,6 +122,33 @@ describe('SeedlessWallet', () => {
     }
   })
 
+  describe('getPublicKeyFor', () => {
+    it('returns the latest key from storage', async () => {
+      mockRetrieve.mockResolvedValue([
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'latestKeyFromStorage'
+        }
+      ])
+      const key = await wallet.getPublicKeyFor({
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: Curve.SECP256K1
+      })
+      expect(key).toEqual('latestKeyFromStorage')
+      expect(SeedlessPubKeysStorage.retrieve).toHaveBeenCalled()
+    })
+    it('throws when storage has no matching key', async () => {
+      mockRetrieve.mockResolvedValue([])
+      await expect(
+        wallet.getPublicKeyFor({
+          derivationPath: "m/44'/60'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+      ).rejects.toThrow('Public key not found')
+    })
+  })
+
   describe('addAccount', () => {
     it('should have called CoreSeedlessAPIService addAccount', async () => {
       await wallet.addAccount(1)
@@ -149,13 +174,7 @@ describe('SeedlessWallet', () => {
         }
       }
       // @ts-ignore
-      const walletWithMockClient = new SeedlessWallet(client, [
-        {
-          curve: Curve.SECP256K1,
-          derivationPath: "m/44'/60'/0'/0/0",
-          key: 'testPublicKey'
-        }
-      ])
+      const walletWithMockClient = new SeedlessWallet(client)
       try {
         await walletWithMockClient.addAccount(1)
       } catch (error) {
@@ -163,6 +182,15 @@ describe('SeedlessWallet', () => {
       }
     })
     it('should have thrown with unknown mnemonic id', async () => {
+      // Stored key doesn't match any session key, so the mnemonic id lookup
+      // finds nothing.
+      mockRetrieve.mockResolvedValue([
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testWrongPublicKey'
+        }
+      ])
       const client = {
         apiClient: {
           identityProve: jest.fn(),
@@ -170,13 +198,7 @@ describe('SeedlessWallet', () => {
         }
       }
       // @ts-ignore
-      const walletWithMockClient = new SeedlessWallet(client, [
-        {
-          curve: Curve.SECP256K1,
-          derivationPath: "m/44'/60'/0'/0/0",
-          key: 'testWrongPublicKey'
-        }
-      ])
+      const walletWithMockClient = new SeedlessWallet(client)
       try {
         await walletWithMockClient.addAccount(1)
       } catch (error) {

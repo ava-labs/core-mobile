@@ -121,10 +121,23 @@ export type AnalyticsEvents = {
   StakeClaimFail: undefined
   StakeClaimSuccess: undefined
   StakeCountStakes: { active: number; history: number; total: number }
-  StakeDelegationSuccess: { isAdvanced: boolean }
-  StakeDelegationFail: { isAdvanced: boolean }
+  StakeDelegationSuccess: {
+    isAdvanced: boolean
+    /**
+     * Convenience fee paid on this stake, in AVAX. Present whenever the
+     * flow applied a fee (regardless of flow — Fast Stake today, the
+     * delegate flow once it's wired up). Absent for flows that don't
+     * apply a fee at all, so analytics can distinguish "fee not paid"
+     * from "fee not applicable".
+     */
+    convenienceFeeAvax?: number
+  }
+  StakeDelegationFail: {
+    isAdvanced: boolean
+    convenienceFeeAvax?: number
+  }
   StakeIssueClaim: undefined
-  StakeIssueDelegation: undefined
+  StakeIssueDelegation: undefined | { convenienceFeeAvax: number }
   StakeOpened: undefined
   StakeOpenDurationSelect: undefined
   StakeTransactionStarted: {

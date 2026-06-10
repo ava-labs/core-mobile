@@ -2,12 +2,22 @@ import {
   Erc1155Token,
   Erc721Token,
   Glacier,
-  ListAddressChainsResponse
+  ListAddressChainsResponse,
+  ListValidatorDetailsResponse
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { CORE_HEADERS } from 'utils/api/constants'
 import { GlacierFetchHttpRequest } from './GlacierFetchHttpRequest'
+
+/**
+ * Parameter shape of the underlying Glacier SDK's `listValidators`. Pulled
+ * out as a named type so callers don't have to `Parameters<typeof ...>` it
+ * everywhere and so the surface stays decoupled from the SDK's namespacing.
+ */
+export type ListPrimaryNetworkValidatorsParams = Parameters<
+  Glacier['primaryNetwork']['listValidators']
+>[0]
 
 if (!Config.GLACIER_URL)
   Logger.warn(
@@ -95,6 +105,20 @@ class GlacierService {
     return this.glacierSdk.evmChains.listAddressChains({
       address
     })
+  }
+
+  /**
+   * Thin pass-through to Glacier's `primaryNetwork.listValidators`.
+   *
+   * Higher-level selection rules (e.g. the Fast Stake auto-selection
+   * defined in PRD FR-QS-5) live in their respective hooks, so this method
+   * stays a pure SDK wrapper that any caller can use with arbitrary query
+   * filters.
+   */
+  async listPrimaryNetworkValidators(
+    params: ListPrimaryNetworkValidatorsParams
+  ): Promise<ListValidatorDetailsResponse> {
+    return this.glacierSdk.primaryNetwork.listValidators(params)
   }
 }
 

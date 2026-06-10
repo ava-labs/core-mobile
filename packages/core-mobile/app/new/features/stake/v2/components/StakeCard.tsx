@@ -98,7 +98,7 @@ export const StakeCard = ({
           }}>
           {title}
         </Text>
-        {!isCompleted && badge && <StakeBadge type={badge} />}
+        {badge && <StakeBadge type={badge} />}
       </View>
 
       <View sx={{ marginTop: 18, gap: 1 }}>

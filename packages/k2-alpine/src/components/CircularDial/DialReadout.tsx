@@ -239,8 +239,15 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
             duration: TYPING_ANIM_MS
           })
         }
+        // Emit `onChange` live while typing (mirrors the drag behaviour)
+        // so consumers can react to the value as it's entered — not only
+        // on commit (blur/submit). `onCommit` still fires only on commit.
+        const live = next === '' || next === '.' ? 0 : Number(next)
+        if (Number.isFinite(live)) {
+          onChange(live)
+        }
       },
-      [max, maxDecimals, progressSv]
+      [max, maxDecimals, progressSv, onChange]
     )
 
     // Backstop that mirrors any non-typing draft change onto the

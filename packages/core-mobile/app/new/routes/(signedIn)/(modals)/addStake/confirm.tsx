@@ -47,7 +47,7 @@ import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { truncateNodeId } from 'utils/Utils'
-import { useLedgerStaking } from './useLedgerStaking'
+import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -90,12 +90,14 @@ const StakeConfirmScreen = (): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeWallet = useSelector(selectActiveWallet)
 
-  const validatorEndTimeUnix = useMemo(() => {
-    if (validator?.endTime) {
-      return Number(validator?.endTime)
-    }
-    return 0
-  }, [validator?.endTime])
+  // `undefined` while the validator is still resolving — the hook
+  // skips the validator-end-time clamp in that case and returns the
+  // user-selected end time as-is, instead of treating `0` as a real
+  // end time and collapsing to the Unix epoch.
+  const validatorEndTimeUnix = useMemo(
+    () => (validator?.endTime ? Number(validator.endTime) : undefined),
+    [validator?.endTime]
+  )
   const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakeEndTimeInMilliseconds, validatorEndTimeUnix)
 
@@ -103,7 +105,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     return new Date(validatedStakingEndTime.getTime())
   }, [validatedStakingEndTime])
   // skip reward estimation until validator is loaded to avoid passing NaN delegationFee
-  const estimatedReward = useStakeEstimatedReward({
+  const { data: estimatedReward } = useStakeEstimatedReward({
     amount: stakeAmount,
     duration: validator ? validatedStakingDuration : undefined,
     delegationFee: Number(validator?.delegationFee ?? 0)
@@ -327,7 +329,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         })
       }
     },
-    [back, isLedger, resetLedgerState]
+    [back, isLedger, resetLedgerState, nodeId]
   )
 
   // Use refs to break circular dependency between onFundsStuck and handleDelegate
