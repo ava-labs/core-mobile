@@ -2,6 +2,7 @@ import { addListener, createListenerMiddleware } from '@reduxjs/toolkit'
 import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
+import { addPermissionsListeners } from 'store/permissions/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
@@ -35,6 +36,8 @@ addAppListeners(startListening)
 addBalanceListeners(startListening)
 
 addAccountListeners(startListening)
+
+addPermissionsListeners(startListening)
 
 addNetworkListeners(startListening)
 
