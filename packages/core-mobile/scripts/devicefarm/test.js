@@ -50,7 +50,7 @@ const {
   GetUploadCommand,
   GetProjectCommand,
   GetDevicePoolCommand,
-  ListDevicePoolDevicesCommand,
+  GetDevicePoolCompatibleDevicesCommand,
   GetRunCommand,
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
@@ -161,6 +161,7 @@ const deviceFarmClient = new DeviceFarmClient({ region: config.region })
  */
 async function inspectDevicePool(devicePoolArn) {
   console.log('🔍 Inspecting device pool...')
+  let compatibleCount = null
   try {
     const poolRes = await deviceFarmClient.send(
       new GetDevicePoolCommand({ arn: devicePoolArn })
@@ -170,21 +171,31 @@ async function inspectDevicePool(devicePoolArn) {
     console.log(`   Pool type: ${pool?.type}`)
     console.log(`   Pool rules: ${JSON.stringify(pool?.rules, null, 2)}`)
 
-    const devicesRes = await deviceFarmClient.send(
-      new ListDevicePoolDevicesCommand({ arn: devicePoolArn })
+    const compatRes = await deviceFarmClient.send(
+      new GetDevicePoolCompatibleDevicesCommand({
+        devicePoolArn,
+        testType: 'APPIUM_NODE'
+      })
     )
-    const devices = devicesRes.devices || []
-    console.log(`   Devices in pool (${devices.length}):`)
-    devices.forEach(d => {
+    const compatible = (compatRes.compatibleDevices || []).filter(
+      d => d.compatible
+    )
+    compatibleCount = compatible.length
+    console.log(`   Compatible devices (${compatible.length}):`)
+    compatible.forEach(({ device }) => {
       console.log(
-        `     - ${d.name} | ${d.platform} | OS: ${d.os} | Available: ${d.availability}`
+        `     - ${device?.name} | ${device?.platform} | OS: ${device?.os} | Availability: ${device?.availability}`
       )
     })
-    if (devices.length === 0) {
-      console.log('   ⚠️  No devices found in pool!')
-    }
   } catch (err) {
+    // Inspection is best-effort (e.g. IAM may lack these read calls) — don't block the run.
     console.warn(`   ⚠️  Could not inspect device pool: ${err.message}`)
+  }
+  if (compatibleCount === 0) {
+    throw new Error(
+      'Device pool matched 0 compatible devices — the run would complete as SKIPPED without executing any tests. ' +
+        'Check the pool rules (e.g. OS_VERSION) against the devices actually enrolled in the fleet.'
+    )
   }
 }
 
@@ -378,8 +389,8 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-/** Outcomes that exit 0 after status COMPLETED */
-const SUCCESS_RESULTS = new Set(['PASSED', 'WARNED', 'SKIPPED'])
+/** Outcomes that exit 0 after status COMPLETED. SKIPPED is not success: it means no tests executed (typically an empty/incompatible device pool). */
+const SUCCESS_RESULTS = new Set(['PASSED', 'WARNED'])
 
 function parseWaitForCompletionTimeoutSec() {
   const rawTimeout = process.env.WAIT_FOR_COMPLETION_TIMEOUT_SEC
@@ -395,6 +406,11 @@ function handleCompletedDeviceFarmRun(run) {
   if (result && SUCCESS_RESULTS.has(result)) {
     console.log(`✅ Run finished successfully (${result})`)
     return
+  }
+  if (result === 'SKIPPED') {
+    throw new Error(
+      'Run completed with result SKIPPED — no tests were executed (likely no compatible/available devices in the pool)'
+    )
   }
   const detail = run?.message ? ': ' + run.message : ''
   throw new Error(`Run completed with result ${result ?? 'UNKNOWN'}${detail}`)

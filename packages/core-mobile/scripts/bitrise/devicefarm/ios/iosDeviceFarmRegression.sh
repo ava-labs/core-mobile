@@ -34,7 +34,9 @@ export DEVICEFARM_APP_PATH="$BITRISE_IPA_PATH"
 export DEVICEFARM_TEST_PACKAGE_PATH="$TEST_PACKAGE"
 export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM="ios"
-export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
+# Fire-and-forget by default: results reach TestRail from the device-side reporter,
+# so polling GetRun only kept the Bitrise machine billing while it waited.
+export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-false}"
 
 # 4. Extract only needed vars from env file
 if [ -f "$CORE_MOBILE_DIR/.env.production.e2e" ]; then
