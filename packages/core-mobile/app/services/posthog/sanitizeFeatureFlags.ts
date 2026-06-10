@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import { coerce, satisfies, validRange } from 'semver'
 import {
   FeatureGates,
@@ -52,8 +53,9 @@ export const sanitizeFeatureFlags = (
   if (value.featureFlagPayloads) {
     const version = coerce(appVersion)
 
-    // If we don't know the current Core version, default to whatever was returned by the API
-    if (!version) {
+    // If we don't know the current Core version, or it's a dev/test build (0.0.0),
+    // default to whatever was returned by the API without semver filtering
+    if (!version || version.version === '0.0.0') {
       return rawFlags
     }
 
