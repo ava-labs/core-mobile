@@ -502,8 +502,10 @@ workflows:
     - ANDROID_BUILD_VARIANT: internalRelease
       opts:
         is_expand: false
-    # internal-track testers are arm64 devices; skipping the other ABIs cuts native build time/cost
-    - ANDROID_GRADLE_ARGS: -PreactNativeArchitectures=arm64-v8a
+    # Must match @avalabs/crypto-nitro's hardcoded abiFilters (arm64-v8a, x86_64): nitro-modules
+    # honors this flag, so any ABI crypto-nitro builds beyond it fails to link. Dropping
+    # armeabi-v7a/x86 halves native compile; crypto never shipped .so for those ABIs anyway.
+    - ANDROID_GRADLE_ARGS: -PreactNativeArchitectures=arm64-v8a,x86_64
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
