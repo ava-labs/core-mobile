@@ -43,6 +43,7 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
+        - arguments: $ANDROID_GRADLE_ARGS
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -499,6 +500,10 @@ workflows:
       opts:
         is_expand: false
     - ANDROID_BUILD_VARIANT: internalRelease
+      opts:
+        is_expand: false
+    # internal-track testers are arm64 devices; skipping the other ABIs cuts native build time/cost
+    - ANDROID_GRADLE_ARGS: -PreactNativeArchitectures=arm64-v8a
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
