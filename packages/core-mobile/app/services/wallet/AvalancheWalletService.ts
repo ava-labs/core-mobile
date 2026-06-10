@@ -476,7 +476,7 @@ class AvalancheWalletService {
     })
   }
 
-  private async getReadOnlySigner({
+  public async getReadOnlySigner({
     account,
     isTestnet,
     xpAddresses
