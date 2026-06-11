@@ -35,7 +35,8 @@ const assertResponse: AssertResponseFn = value => {
 
 export const sanitizeFeatureFlags = (
   value: unknown,
-  appVersion?: string
+  appVersion?: string,
+  isE2E?: boolean
 ): FeatureFlags => {
   assertResponse(value)
 
@@ -51,11 +52,12 @@ export const sanitizeFeatureFlags = (
   }, {} as FeatureFlags)
 
   if (value.featureFlagPayloads) {
+    if (isE2E) return rawFlags
+
     const version = coerce(appVersion)
 
-    // If we don't know the current Core version, or it's a dev/test build (0.0.0),
-    // default to whatever was returned by the API without semver filtering
-    if (!version || version.version === '0.0.0') {
+    // If we don't know the current Core version, default to whatever was returned by the API
+    if (!version) {
       return rawFlags
     }
 
