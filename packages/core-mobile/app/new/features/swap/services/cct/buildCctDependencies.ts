@@ -3,7 +3,6 @@ import { selectActiveAccount } from 'store/account/slice'
 import type { XPAddressDictionary } from 'store/account/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectWalletById } from 'store/wallet/slice'
-import { WalletType } from 'services/wallet/types'
 import type { AppListenerEffectAPI } from 'store/types'
 import { createCctCallbacks } from './createCctCallbacks'
 
@@ -43,7 +42,7 @@ export const buildCctDependencies = (
       if (!wallet) return EMPTY_XP_ADDRESSES
       return getCachedXPAddresses({
         walletId: wallet.id,
-        walletType: wallet.type as WalletType,
+        walletType: wallet.type,
         account,
         isDeveloperMode: selectIsDeveloperMode(state)
       })
