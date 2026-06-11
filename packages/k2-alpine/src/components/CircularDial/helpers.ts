@@ -13,6 +13,20 @@ export const snapToStep = (v: number, step: number, max: number): number => {
   return Number((snapped - step).toFixed(decimals))
 }
 
+// Worklet form of the readout's natural-digit formatting: fixed to
+// `decimals`, then trailing zeros (and any dangling dot) stripped. No regex
+// so it stays UI-thread safe. Mirrors DialReadout's `naturalDigits` so the
+// progress-driven live display and the controlled-value display agree.
+export const formatNatural = (v: number, decimals: number): string => {
+  'worklet'
+  if (decimals <= 0) return `${Math.round(v)}`
+  const s = v.toFixed(decimals)
+  let end = s.length
+  while (end > 0 && s.charAt(end - 1) === '0') end -= 1
+  if (end > 0 && s.charAt(end - 1) === '.') end -= 1
+  return s.substring(0, end)
+}
+
 // Sweep convention: 180° (9 o'clock) at progress=0, 270° (12 o'clock)
 // at 0.5, 360° (3 o'clock) at progress=1.
 export const progressToPoint = ({
@@ -105,20 +119,29 @@ export const validateRange = ({
 // Skips syncing while a gesture / animation owns the dial, and dampens
 // echoes — when the diff is within one step, the incoming value is
 // likely our own onChange bubbling back as controlled state.
+//
+// `isSettling` extends that skip across the brief window just after a
+// drag releases: `isActive` flips false synchronously on the UI thread at
+// lift, but the JS thread is still draining stale mid-drag onChange echoes.
+// Those echoes differ from the snapped final by more than a step, so
+// without this guard they'd be re-synced into progressSv and jerk the arc
+// on their own after the finger is gone.
 export const shouldSyncExternalValue = ({
   value,
   currentValue,
   max,
   step,
-  isActive
+  isActive,
+  isSettling = false
 }: {
   value: number
   currentValue: number
   max: number
   step: number
   isActive: boolean
+  isSettling?: boolean
 }): { sync: false } | { sync: true; target: number } => {
-  if (isActive) return { sync: false }
+  if (isActive || isSettling) return { sync: false }
   const target = clamp(value, 0, max)
   const diff = Math.abs(currentValue - target)
   if (diff <= step) return { sync: false }
