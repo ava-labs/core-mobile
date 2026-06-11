@@ -255,6 +255,10 @@ export const CircularDial: FC<CircularDialProps> = ({
     })
     .onUpdate(event => {
       'worklet'
+      // Without a measured outer width the canvas-space conversion is wrong, so
+      // skip until onLayout has run (same guard onTouchesDown uses) rather than
+      // jump the dial to a bogus angle.
+      if (outerWidth.value <= 0) return
       // Absolute angular tracking: the knob follows the finger's angle around
       // the arc centre (Apple-dial style), so there's no swipe-direction →
       // value mapping that could invert between the two halves. event.x/y are

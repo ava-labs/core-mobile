@@ -51,8 +51,7 @@ export const valueToProgress = (value: number, max: number): number => {
 export const progressFromCanvasPoint = (dx: number, dy: number): number => {
   'worklet'
   if (dy >= 0) return dx < 0 ? 0 : 1
-  const progress = (Math.atan2(dy, dx) + Math.PI) / Math.PI
-  return progress < 0 ? 0 : progress > 1 ? 1 : progress
+  return clamp((Math.atan2(dy, dx) + Math.PI) / Math.PI, 0, 1)
 }
 
 // Never clamps the lower bound — users may still be typing their way
