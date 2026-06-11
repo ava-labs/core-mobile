@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { LayoutChangeEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import {
@@ -236,6 +236,16 @@ export const CircularDial: FC<CircularDialProps> = ({
       }, SETTLE_WINDOW_MS)
     },
     [isSettling, settleToken]
+  )
+
+  // Cancel a pending settle timer on unmount so it can't fire ~250ms later
+  // and write to shared values after the component is gone (mirrors the rAF
+  // cleanup in DialReadout).
+  useEffect(
+    () => () => {
+      if (settleTimerRef.current !== null) clearTimeout(settleTimerRef.current)
+    },
+    []
   )
 
   // manualActivation + direction-based commit: once total motion

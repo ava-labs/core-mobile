@@ -132,12 +132,13 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
     const inputRef = useRef<TextInput>(null)
     const isEditing = draft !== null
 
-    // UI-thread mirror of `isEditing` so the display worklet can step aside
-    // and let the controlled draft own the text while the user types.
+    // UI-thread mirror of editing state so the display worklet can step aside
+    // and let the controlled draft own the text while the user types. Set
+    // synchronously at the enter/exit points (startEdit / handleBlur) rather
+    // than via an effect — an effect trails `isEditing` by a frame, briefly
+    // letting both the controlled value and the animated text drive the input
+    // at the boundary.
     const isEditingSv = useSharedValue(false)
-    useEffect(() => {
-      isEditingSv.value = isEditing
-    }, [isEditing, isEditingSv])
 
     // Wider than step-derived `decimals` so typed precision beyond step
     // (e.g. `9999.42` with step=10) survives a blur. `naturalDigits`
@@ -216,6 +217,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       // typing and clobber the draft.
       cancelAnimation(progressSv)
       const initial = naturalDigits(clamp(value, 0, max), displayDecimals)
+      isEditingSv.value = true
       setDraft(initial)
     }, [
       enableManualInput,
@@ -224,6 +226,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       max,
       displayDecimals,
       isActive,
+      isEditingSv,
       progressSv
     ])
 
@@ -314,8 +317,9 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
           progressSv.value = valueToProgress(clamp(value, 0, max), max)
         }
       }
+      isEditingSv.value = false
       setDraft(null)
-    }, [draft, progressSv, onChange, onCommit, max, value])
+    }, [draft, progressSv, onChange, onCommit, max, value, isEditingSv])
 
     // While editing, roll external `value` changes into the draft
     // (covers drag/preset-while-editing). Skip when the draft
