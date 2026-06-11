@@ -100,6 +100,17 @@ describe('createCctCallbacks', () => {
         /no active account/
       )
     })
+
+    it('throws when addressCoreEth is empty (avoid handing the SDK an empty string)', () => {
+      const { getCoreEthAddress } = createCctCallbacks(
+        makeDeps({
+          getActiveAccount: () => makeAccount({ addressCoreEth: '' })
+        })
+      )
+      expect(() => getCoreEthAddress('0xabc' as any)).toThrow(
+        /addressCoreEth empty/
+      )
+    })
   })
 
   describe('UTXO and address callbacks', () => {

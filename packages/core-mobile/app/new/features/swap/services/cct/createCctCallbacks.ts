@@ -54,9 +54,11 @@ export type CctCallbacks = Pick<
  * - The UTXO callbacks delegate to the same wallet's `getUTXOs` /
  *   `getAtomicUTXOs` methods.
  *
- * All callbacks throw if the active account / wallet / xpAddresses aren't
- * available at call time — the consumer should gate enablement on those being
- * present before initializing the service.
+ * All callbacks throw if the active account isn't available at call time, or
+ * if the underlying XP addresses can't be derived (empty list / empty signing
+ * dictionary). `avalancheSendTx` additionally throws if no active wallet is
+ * available. The consumer should gate enablement on those being present
+ * before initializing the service.
  */
 export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   const getRequiredAccount = (): Account => {
@@ -137,7 +139,15 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   }
 
   const getCoreEthAddress: CctCallbacks['getCoreEthAddress'] = () => {
-    return getRequiredAccount().addressCoreEth
+    const { addressCoreEth } = getRequiredAccount()
+    if (!addressCoreEth) {
+      // Defensive: addressCoreEth is typed `string` on Account but can be
+      // empty for wallets that don't derive a Coreth bech32 address (some
+      // Ledger paths). Returning '' would only surface as an opaque SDK
+      // failure later — fail fast instead.
+      throw new Error('[cctCallbacks] addressCoreEth empty for active account')
+    }
+    return addressCoreEth
   }
 
   const getAtomicUtxos: CctCallbacks['getAtomicUtxos'] = async (
