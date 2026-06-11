@@ -13,9 +13,15 @@ export const useDialValue = ({
 }): {
   progressSv: SharedValue<number>
   isActive: SharedValue<boolean>
+  isSettling: SharedValue<boolean>
 } => {
   const progressSv = useSharedValue(valueToProgress(value, max))
   const isActive = useSharedValue(false)
+  // Held true for a short window after a drag releases so stale mid-drag
+  // onChange echoes still draining on the JS thread can't re-sync into
+  // progressSv and jerk the arc once the finger is gone. Owned by the
+  // gesture's onEnd / preset completion in CircularDial.
+  const isSettling = useSharedValue(false)
 
   useEffect(() => {
     const currentValue = progressSv.value * max
@@ -24,7 +30,8 @@ export const useDialValue = ({
       currentValue,
       max,
       step,
-      isActive: isActive.value
+      isActive: isActive.value,
+      isSettling: isSettling.value
     })
     if (decision.sync) {
       progressSv.value = valueToProgress(decision.target, max)
@@ -32,5 +39,5 @@ export const useDialValue = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, max, step])
 
-  return { progressSv, isActive }
+  return { progressSv, isActive, isSettling }
 }

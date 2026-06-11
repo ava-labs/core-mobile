@@ -2,6 +2,7 @@ import { clamp } from '../../utils/clamp'
 import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
   commitDraftText,
+  formatNatural,
   progressToPoint,
   sanitizeDecimalInput,
   shouldSyncExternalValue,
@@ -9,6 +10,14 @@ import {
   validateRange,
   valueToProgress
 } from './helpers'
+
+// Reference implementation the live display must agree with (DialReadout's
+// JS-thread formatter), so the progress-driven text never visually diverges
+// from the controlled-value text at the drag/idle handoff.
+const naturalDigitsRef = (v: number, decimals: number): string => {
+  if (decimals <= 0) return `${Math.round(v)}`
+  return v.toFixed(decimals).replace(/\.?0+$/, '')
+}
 
 describe('clamp', () => {
   it('returns the value when within range', () => {
@@ -69,6 +78,34 @@ describe('snapToStep', () => {
   })
   it('clamps negative inputs to 0', () => {
     expect(snapToStep(-5, 0.5, 100)).toBe(0)
+  })
+})
+
+describe('formatNatural', () => {
+  it('rounds to an integer when decimals <= 0', () => {
+    expect(formatNatural(5, 0)).toBe('5')
+    expect(formatNatural(5.4, 0)).toBe('5')
+    expect(formatNatural(5.6, 0)).toBe('6')
+  })
+  it('strips trailing zeros and a dangling dot', () => {
+    expect(formatNatural(5, 2)).toBe('5')
+    expect(formatNatural(5.5, 2)).toBe('5.5')
+    expect(formatNatural(5.05, 2)).toBe('5.05')
+    expect(formatNatural(0, 2)).toBe('0')
+  })
+  it('matches the reference naturalDigits formatter', () => {
+    const cases: [number, number][] = [
+      [0, 2],
+      [5, 2],
+      [5.5, 2],
+      [9999.42, 8],
+      [100, 0],
+      [0.1, 1],
+      [42.5, 0]
+    ]
+    cases.forEach(([v, d]) => {
+      expect(formatNatural(v, d)).toBe(naturalDigitsRef(v, d))
+    })
   })
 })
 
@@ -165,6 +202,31 @@ describe('shouldSyncExternalValue', () => {
       value: 80,
       currentValue: 10,
       isActive: false
+    })
+    expect(r).toEqual({ sync: true, target: 80 })
+  })
+  it('skips while settling, even when the value differs by more than a step', () => {
+    // Reproduces the post-release bug: after a fast swipe the dial flips
+    // isActive false on lift while stale onChange echoes are still draining
+    // on the JS thread. Those echoes differ from the snapped final by more
+    // than a step, so without a settling guard they'd be re-synced into
+    // progressSv and visibly jerk the arc on their own.
+    const r = shouldSyncExternalValue({
+      ...base,
+      value: 80,
+      currentValue: 10,
+      isActive: false,
+      isSettling: true
+    })
+    expect(r.sync).toBe(false)
+  })
+  it('resumes syncing once settling ends', () => {
+    const r = shouldSyncExternalValue({
+      ...base,
+      value: 80,
+      currentValue: 10,
+      isActive: false,
+      isSettling: false
     })
     expect(r).toEqual({ sync: true, target: 80 })
   })
