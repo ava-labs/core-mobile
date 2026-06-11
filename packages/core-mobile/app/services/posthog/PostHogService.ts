@@ -175,7 +175,7 @@ class PostHogService implements PostHogServiceInterface {
       return sanitizeFeatureFlags(
         responseJson,
         appVersion,
-        Config.E2E === 'true'
+        Config.E2E_MNEMONIC !== undefined
       )
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
