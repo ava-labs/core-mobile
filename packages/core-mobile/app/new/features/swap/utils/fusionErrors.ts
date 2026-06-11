@@ -49,6 +49,11 @@ export const fusionErrors = {
   unknownServiceType(serviceType: string): FusionQuoteError {
     return new FusionQuoteError(`Unknown service type: ${serviceType}`)
   },
+  cctDependenciesMissing(): FusionQuoteError {
+    return new FusionQuoteError(
+      'AVALANCHE_CCT enabled but cctDependencies not provided'
+    )
+  },
 
   // Type-conversion / validation errors
   erc721Unsupported(): FusionQuoteError {
