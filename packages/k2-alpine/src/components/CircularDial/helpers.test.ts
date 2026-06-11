@@ -2,6 +2,7 @@ import { clamp } from '../../utils/clamp'
 import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
   commitDraftText,
+  progressFromCanvasPoint,
   progressToPoint,
   sanitizeDecimalInput,
   shouldSyncExternalValue,
@@ -88,6 +89,33 @@ describe('progressToPoint', () => {
     const { x, y } = progressToPoint({ ...arc, progress: 1 })
     expect(x).toBeCloseTo(150)
     expect(y).toBeCloseTo(100)
+  })
+})
+
+describe('progressFromCanvasPoint', () => {
+  const r = 50
+  it('maps the arc ends and top', () => {
+    expect(progressFromCanvasPoint(-r, 0)).toBe(0) // left, 9 o'clock
+    expect(progressFromCanvasPoint(0, -r)).toBeCloseTo(0.5) // top, 12 o'clock
+    expect(progressFromCanvasPoint(r, 0)).toBe(1) // right, 3 o'clock
+  })
+  it('maps upper-semicircle points monotonically', () => {
+    // progress 0.25 sits at θ = 1.25π → (−0.707r, −0.707r)
+    expect(progressFromCanvasPoint(-0.707 * r, -0.707 * r)).toBeCloseTo(0.25, 2)
+    // progress 0.75 sits at θ = 1.75π → (0.707r, −0.707r)
+    expect(progressFromCanvasPoint(0.707 * r, -0.707 * r)).toBeCloseTo(0.75, 2)
+  })
+  it('pins points below the diameter to the nearer end (no atan2 seam jump)', () => {
+    expect(progressFromCanvasPoint(-r, r)).toBe(0) // below-left
+    expect(progressFromCanvasPoint(r, r)).toBe(1) // below-right
+    expect(progressFromCanvasPoint(-1, 5)).toBe(0)
+    expect(progressFromCanvasPoint(1, 5)).toBe(1)
+  })
+  it('is independent of distance from centre (angle only)', () => {
+    expect(progressFromCanvasPoint(-2 * r, -2 * r)).toBeCloseTo(
+      progressFromCanvasPoint(-0.1 * r, -0.1 * r),
+      5
+    )
   })
 })
 

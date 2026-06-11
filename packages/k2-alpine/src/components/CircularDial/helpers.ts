@@ -41,6 +41,20 @@ export const valueToProgress = (value: number, max: number): number => {
   return clamp(value / max, 0, 1)
 }
 
+// Maps a finger offset from the arc centre (dx, dy in canvas space, screen
+// y-down) to progress 0..1 along the upper semicircle: left end (−r, 0) → 0,
+// top (0, −r) → 0.5, right end (r, 0) → 1. The dial tracks the finger's angle
+// (Apple-dial style) rather than a swipe direction, so there is no up/down
+// mapping left to invert. Points on or below the horizontal diameter sit off
+// the arc and pin to the nearer end — `dy >= 0` (not `> 0`) so the exact left
+// end doesn't land on the +π side of the atan2 seam and jump to the far end.
+export const progressFromCanvasPoint = (dx: number, dy: number): number => {
+  'worklet'
+  if (dy >= 0) return dx < 0 ? 0 : 1
+  const progress = (Math.atan2(dy, dx) + Math.PI) / Math.PI
+  return progress < 0 ? 0 : progress > 1 ? 1 : progress
+}
+
 // Never clamps the lower bound — users may still be typing their way
 // toward a valid value (e.g. `"0.0…"`).
 export const sanitizeDecimalInput = (text: string, max: number): string => {
