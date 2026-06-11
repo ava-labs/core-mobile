@@ -1,4 +1,5 @@
 import type {
+  AvalancheCctInitializer,
   CompletedTransfer,
   FailedTransfer,
   GasSettings,
@@ -7,7 +8,6 @@ import type {
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
 import {
-  AvalancheCctInitializer,
   BitcoinFunctions,
   calculatePriceImpactFromQuote as _calculatePriceImpactFromQuote,
   createTransferManager,

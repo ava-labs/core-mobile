@@ -94,6 +94,8 @@ const shouldReinitializeFusion = (
       currentFeatures.isFusionMarkrEnabled ||
     prevFeatures.isFusionAvalancheEvmEnabled !==
       currentFeatures.isFusionAvalancheEvmEnabled ||
+    prevFeatures.isFusionAvalancheCctEnabled !==
+      currentFeatures.isFusionAvalancheCctEnabled ||
     prevFeatures.isFusionLombardBtcToBtcbEnabled !==
       currentFeatures.isFusionLombardBtcToBtcbEnabled ||
     prevFeatures.isFusionLombardBtcbToBtcEnabled !==

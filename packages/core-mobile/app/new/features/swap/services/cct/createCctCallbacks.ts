@@ -75,6 +75,14 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     const account = getRequiredAccount()
     const isTestnet = deps.getIsDeveloperMode()
     const { xpAddresses } = await deps.getXpAddresses()
+    if (xpAddresses.length === 0) {
+      // Defensive: getCachedXPAddresses normally fetches on a cold cache, so
+      // an empty list here means address derivation failed for this wallet
+      // (e.g. Keystone non-primary account). Refuse to build the wallet
+      // rather than silently producing an Avalanche.AddressWallet with no
+      // X/P addresses, which would return empty UTXOs and empty addresses.
+      throw new Error('[cctCallbacks] xpAddresses empty for active account')
+    }
     return AvalancheWalletService.getReadOnlySigner({
       account,
       isTestnet,
@@ -90,6 +98,15 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     const wallet = getRequiredWallet()
     const isTestnet = deps.getIsDeveloperMode()
     const { xpAddressDictionary } = await deps.getXpAddresses()
+    if (Object.keys(xpAddressDictionary).length === 0) {
+      // Defensive: an empty dictionary would make getInternalExternalAddrs
+      // return empty signing indices, and the wallet's signer could then
+      // fall back to default derivation paths and produce a signature that
+      // doesn't match the UTXO output owners. Fail fast.
+      throw new Error(
+        '[cctCallbacks] xpAddressDictionary empty for active account'
+      )
+    }
 
     // The Avalanche XP provider handles atomic txs for C, P, and X chains —
     // this matches the existing earn flow's network resolution. For X-only

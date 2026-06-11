@@ -70,7 +70,10 @@ const makeDeps = (
     getWallet: () => ({ id: account.walletId, type: WalletType.MNEMONIC }),
     getXpAddresses: async () => ({
       xpAddresses: ['fuji1aaa', 'fuji1bbb'],
-      xpAddressDictionary: {} as any
+      xpAddressDictionary: {
+        fuji1aaa: { space: 'e', index: 0 },
+        fuji1bbb: { space: 'i', index: 0 }
+      } as any
     }),
     ...overrides
   }
@@ -169,6 +172,22 @@ describe('createCctCallbacks', () => {
       )
       await expect(getAtomicUtxos('P', 'C')).rejects.toThrow(
         /no active account/
+      )
+    })
+
+    it('throws when xpAddresses is empty (refuses to build a signer with no XP addresses)', async () => {
+      const { getAtomicUtxos } = createCctCallbacks(
+        makeDeps({
+          getXpAddresses: async () => ({
+            xpAddresses: [],
+            xpAddressDictionary: {
+              fuji1aaa: { space: 'e', index: 0 }
+            } as any
+          })
+        })
+      )
+      await expect(getAtomicUtxos('P', 'C')).rejects.toThrow(
+        /xpAddresses empty/
       )
     })
   })
@@ -293,6 +312,26 @@ describe('createCctCallbacks', () => {
           unsignedTx: fakeUnsignedTx
         })
       ).rejects.toThrow(/no active account/)
+    })
+
+    it('throws when xpAddressDictionary is empty (would otherwise produce invalid signing indices)', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({
+          getXpAddresses: async () => ({
+            xpAddresses: ['fuji1aaa'],
+            xpAddressDictionary: {} as any
+          })
+        })
+      )
+      await expect(
+        avalancheSendTx({
+          baseFeeInNanoAvax: 1n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        })
+      ).rejects.toThrow(/xpAddressDictionary empty/)
+      expect(mockedWalletSign).not.toHaveBeenCalled()
     })
   })
 })
