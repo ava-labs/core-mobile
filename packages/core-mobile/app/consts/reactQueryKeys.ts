@@ -50,7 +50,6 @@ export enum ReactQueryKeys {
   // fusion
   FUSION_SUPPORTED_CHAINS = 'fusionSupportedChains',
   FUSION_TOKENS = 'fusionTokens',
-  FUSION_BRIDGEABLE_ASSETS = 'fusionBridgeableAssets',
   FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
 

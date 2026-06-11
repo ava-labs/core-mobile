@@ -55,7 +55,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.PREDICTIONS]: false,
   [FeatureGates.PERPETUALS]: false,
   [FeatureGates.PRICE_CHART]: false,
-  [FeatureGates.FAST_STAKE_ENABLED]: false
+  [FeatureGates.FAST_STAKE_ENABLED]: false,
+  [FeatureGates.FAST_STAKE_FEE_ENABLED]: false
 }
 
 export const initialState = {

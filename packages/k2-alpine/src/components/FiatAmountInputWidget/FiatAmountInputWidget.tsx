@@ -1,6 +1,6 @@
 import { SxProp } from 'dripsy'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { ReturnKeyTypeOptions } from 'react-native'
+import { ReturnKeyTypeOptions, StyleProp, TextStyle } from 'react-native'
 import { Button } from '../Button/Button'
 import { View } from '../Primitives'
 import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
@@ -42,14 +42,9 @@ interface FiatAmountInputWidgetProps {
    * the converted fiat value reads as a subtitle.
    */
   subTextPosition?: 'top' | 'bottom'
-  /**
-   * Maximum font size (in px) for the trailing currency label (e.g. `USDC`).
-   * Useful for token-as-primary layouts where the currency tag should read
-   * as a subtitle next to the big amount instead of scaling alongside it.
-   * Omit to let the suffix scale with the main amount (existing behaviour).
-   */
-  trailingCurrencyMaxFontSize?: number
   returnKeyType?: ReturnKeyTypeOptions
+  suffixStyle?: StyleProp<TextStyle>
+  prefixStyle?: StyleProp<TextStyle>
 }
 
 export const FiatAmountInputWidget = ({
@@ -67,8 +62,9 @@ export const FiatAmountInputWidget = ({
   enableAmountSelection,
   presets,
   subTextPosition,
-  trailingCurrencyMaxFontSize,
-  returnKeyType
+  returnKeyType,
+  suffixStyle,
+  prefixStyle
 }: FiatAmountInputWidgetProps): JSX.Element => {
   const buildDefaultButtons = useCallback(
     () => [
@@ -194,8 +190,8 @@ export const FiatAmountInputWidget = ({
           borderRadius: 12,
           alignItems: 'center',
           paddingTop: 32,
-          paddingHorizontal: 16,
-          paddingBottom: 22
+          paddingBottom: 22,
+          paddingHorizontal: 16
         }}>
         <FiatAmountInput
           isAmountValid={isAmountValid}
@@ -208,10 +204,16 @@ export const FiatAmountInputWidget = ({
           formatInSubTextNumber={formatInSubTextNumber}
           subTextPosition={subTextPosition}
           returnKeyType={returnKeyType}
-          trailingCurrencyMaxFontSize={trailingCurrencyMaxFontSize}
+          suffixStyle={[suffixStyle, { marginBottom: 20 }]}
+          prefixStyle={prefixStyle}
         />
         {showButtons && (
-          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 16 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 7,
+              marginTop: 16
+            }}>
             {predefinedAmountButtons.map((button, index) => (
               <Button
                 testID={`fiat_amount_button__${button.predefinedAmount}`}

@@ -24,6 +24,7 @@ const INSUFFICIENT_BALANCE_ERROR = new Error(
 
 export const computeDelegationSteps = async ({
   stakeAmount,
+  additionalOutputAmount = 0n,
   cChainBalance,
   pChainBalance,
   avaxXPNetwork,
@@ -38,6 +39,13 @@ export const computeDelegationSteps = async ({
   xpAddresses
 }: {
   stakeAmount: bigint
+  /**
+   * Total nAVAX of extra outputs bundled atomically with the delegation tx
+   * (Fast Stake's convenience-fee escrow output). Funded from P-Chain inputs
+   * alongside the stake, so it has to be covered by the P-Chain balance /
+   * cross-chain transfer just like the stake itself. Defaults to 0n.
+   */
+  additionalOutputAmount?: bigint
   avaxXPNetwork: Network
   account: PvmCapableAccount
   feeState: pvm.FeeState
@@ -72,7 +80,7 @@ export const computeDelegationSteps = async ({
           throw new Error('no P-Chain balance')
         }
 
-        // this will throw if P-Chain balance is not enough
+        // this will throw if P-Chain balance is not enough for stake + fee
         const delegationFee = await getDelegationFee({
           stakeAmount,
           account,
@@ -83,6 +91,19 @@ export const computeDelegationSteps = async ({
           pFeeAdjustmentThreshold,
           xpAddresses
         })
+
+        // `getDelegationFee` only validates stake + tx fee — it doesn't know
+        // about the extra outputs (convenience fee). Make sure the P-Chain
+        // balance also covers those; otherwise fall through to the import /
+        // C-Chain transfer cases so the missing amount can be sourced.
+        if (
+          availablePChainBalance <
+          stakeAmount + additionalOutputAmount + delegationFee
+        ) {
+          throw new Error(
+            'P-Chain balance not enough for stake, fee and additional outputs'
+          )
+        }
 
         return [
           {
@@ -121,6 +142,21 @@ export const computeDelegationSteps = async ({
           provider,
           xpAddresses
         })
+
+        // Total available after the import = current P-Chain balance + the
+        // imported atomic balance (less the import fee). The delegation must
+        // cover stake + extra outputs + its own fee. If the extra outputs
+        // tip it over, fall through to the C-Chain transfer case.
+        const availableAfterImport =
+          availablePChainBalance + pChainAtomicBalance - importPFee
+        if (
+          availableAfterImport <
+          stakeAmount + additionalOutputAmount + delegationFee
+        ) {
+          throw new Error(
+            'P-Chain balance after import not enough for stake, fee and additional outputs'
+          )
+        }
 
         return [
           { operation: Operation.IMPORT_P, fee: importPFee },
@@ -181,8 +217,14 @@ export const computeDelegationSteps = async ({
           )
         )
 
+        // The extra outputs (convenience fee) are funded from P-Chain inputs
+        // alongside the stake, so they're part of the principal that has to
+        // end up on the P-Chain. Fold them into the required amount before
+        // working out the shortfall to transfer from the C-Chain.
+        const requiredPChainAmount = stakeAmount + additionalOutputAmount
+
         const amountToTransfer =
-          bigIntDiff(stakeAmount, availablePChainBalance) -
+          bigIntDiff(requiredPChainAmount, availablePChainBalance) -
           pChainAtomicBalance +
           adjustedAllFees
 

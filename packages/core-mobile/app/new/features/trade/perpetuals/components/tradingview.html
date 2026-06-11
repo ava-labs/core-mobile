@@ -98,8 +98,12 @@
         'volume.volume ma:plot.display': 0
       };
 
-      var HL_REST = 'https://api.hyperliquid.xyz/info';
-      var HL_WS   = 'wss://api.hyperliquid.xyz/ws';
+      // URLs are injected by the RN host from the perps-sdk constants
+      // (window.__PERPS_API_URL is the base; REST info lives at `/info`).
+      // Fall back to the mainnet endpoints if injection didn't land.
+      var HL_API_BASE = window.__PERPS_API_URL || 'https://api.hyperliquid.xyz';
+      var HL_REST = HL_API_BASE.replace(/\/$/, '') + '/info';
+      var HL_WS   = window.__PERPS_WS_URL || 'wss://api.hyperliquid.xyz/ws';
 
       function intervalForRes(res) { return RES_TO_HL[res] || '1h'; }
 

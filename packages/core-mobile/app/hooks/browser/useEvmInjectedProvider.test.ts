@@ -9,6 +9,7 @@ import {
   setActive
 } from 'store/network/slice'
 import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
 import {
   EIP1193_USER_REJECTED_CODE,
@@ -53,6 +54,10 @@ jest.mock('store/browser/slices/tabs', () => ({
   selectTabChainId: jest.fn(() => jest.fn(() => undefined)),
   setTabChainId: jest.fn((payload: { tabId: string; chainId: number }) => ({
     type: 'browser/tabs/setTabChainId',
+    payload
+  })),
+  clearTabChainId: jest.fn((payload: { tabId: string }) => ({
+    type: 'browser/tabs/clearTabChainId',
     payload
   }))
 }))
@@ -140,14 +145,18 @@ function setupMocks(
     account?: typeof mockActiveAccount | null
     network?: typeof mockActiveNetwork
     allNetworks?: Record<number, unknown>
+    developerMode?: boolean
+    tabChainId?: number
   } = {}
 ): void {
   const account =
     overrides.account === undefined ? mockActiveAccount : overrides.account
   const network = overrides.network ?? mockActiveNetwork
   const allNetworks = overrides.allNetworks ?? mockAllNetworks
+  const developerMode = overrides.developerMode ?? false
+  const tabChainId = overrides.tabChainId
 
-  const mockTabChainIdSelector = jest.fn(() => undefined)
+  const mockTabChainIdSelector = jest.fn(() => tabChainId)
   ;(selectTabChainId as jest.Mock).mockReturnValue(mockTabChainIdSelector)
 
   // requestReadOnly resolves networks via selectAllNetworks(store.getState())
@@ -158,7 +167,8 @@ function setupMocks(
     (selector: (state: unknown) => unknown) => {
       if (selector === (selectAllNetworks as unknown)) return allNetworks
       if (selector === (selectActiveNetwork as unknown)) return network
-      if (selector === mockTabChainIdSelector) return undefined
+      if (selector === (selectIsDeveloperMode as unknown)) return developerMode
+      if (selector === mockTabChainIdSelector) return tabChainId
       const selectorStr = selector.toString()
       if (
         selectorStr.includes('activeAccount') ||
@@ -1403,6 +1413,126 @@ describe('useEvmInjectedProvider', () => {
       )
       expect(chainChangedCalls).toHaveLength(0)
     })
+
+    it('emits disconnect (not chainChanged) when the active network is non-EVM (CP-13671)', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Switch the wallet's active network to a non-EVM chain (e.g. Bitcoin).
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('disconnect'")
+      )
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('does NOT disconnect a pinned tab when the active network flips to non-EVM (CP-13671)', () => {
+      // Per-tab insulation invariant: a tab that pinned its chain via
+      // wallet_switchEthereumChain must ignore wallet-wide network changes —
+      // including a flip to a non-EVM chain. This is what makes the per-tab
+      // model hold.
+      setupMocks({ tabChainId: 1 })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Wallet flips to a non-EVM chain; the pinned tab must not react.
+      setupMocks({
+        tabChainId: 1,
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('disconnect'")
+      )
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('chainChanged'")
+      )
+    })
+
+    it('re-emits chainChanged when returning to the SAME EVM chain after a non-EVM disconnect (CP-13671)', () => {
+      // Recovery path: entering non-EVM invalidates the cached chainId, so
+      // switching back to the original EVM chain still fires chainChanged and the
+      // dApp can reconnect (otherwise the equality guard would skip it).
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      // Go to a non-EVM network (emits disconnect, invalidates cached chain).
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+      mockInjectJavaScript.mockClear()
+
+      // Return to the SAME EVM chain (43114) we started on.
+      setupMocks({ network: mockActiveNetwork })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(1)
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0xa86a'")
+    })
+
+    it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {
+      setupMocks({ developerMode: false, tabChainId: 1 })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockDispatch.mockClear()
+
+      // Toggle testnet/developer mode on.
+      setupMocks({ developerMode: true, tabChainId: 1 })
+      rerender()
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'browser/tabs/clearTabChainId' })
+      )
+    })
+
+    it('does not dispatch clearTabChainId on a dev-mode flip when the tab has no pin', () => {
+      // Guard against a redundant store update/rerender on every toggle when
+      // there's nothing to clear.
+      setupMocks({ developerMode: false })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockDispatch.mockClear()
+
+      setupMocks({ developerMode: true })
+      rerender()
+
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'browser/tabs/clearTabChainId' })
+      )
+    })
   })
 
   describe('setCurrentUrl origin-change cleanup', () => {
@@ -1469,6 +1599,37 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(capturedSignal?.aborted).toBe(false)
+    })
+
+    it('re-primes accountsChanged on same-origin SPA navigation to a new path (CP-13772)', () => {
+      // Origin granted to the active account so priming yields a non-empty list.
+      mockUseStore.mockReturnValue({
+        getState: () => ({
+          permissions: {
+            grants: {
+              'https://uniswap.org': {
+                [mockActiveAccount.addressC]: ['EVM']
+              }
+            }
+          }
+        }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn(() => () => undefined)
+      } as unknown as ReturnType<typeof useStore>)
+
+      const { result } = renderProvider('https://uniswap.org')
+      mockInjectJavaScript.mockClear()
+
+      act(() => {
+        // SPA route change within the same origin (e.g. core.app -> /stake).
+        result.current.setCurrentUrl('https://uniswap.org/stake')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"]`
+        )
+      )
     })
   })
 
@@ -1538,6 +1699,28 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining(
             `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
+          )
+        )
+      })
+
+      it('origin-gates the prime emit to the current page origin', () => {
+        // The prime injection must be wrapped in a window.location.origin check
+        // so a prime racing a cross-origin nav can't leak the previous origin's
+        // granted accounts into the next origin's page.
+        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+        const { result } = renderProvider()
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'if(window.location.origin==="https://opensea.io")'
           )
         )
       })
@@ -1760,6 +1943,84 @@ describe('useEvmInjectedProvider', () => {
       // must not re-emit.
       setupMocks({ account: { ...mockActiveAccount } })
       act(() => rerender())
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("'accountsChanged'")
+      )
+    })
+
+    // Build a store whose subscribe callback we can fire on demand, with a
+    // mutable `grants` so we can simulate a Connected Sites revoke (a fresh
+    // grants object, as Redux/Immer produces) with no active-account change.
+    const subscribableStore = (
+      initialGrants: Record<string, Record<string, string[]>>
+    ): {
+      store: ReturnType<typeof useStore>
+      revoke: (next: Record<string, Record<string, string[]>>) => void
+    } => {
+      let grants = initialGrants
+      let fire = (): void => undefined
+      const store = {
+        getState: () => ({ permissions: { grants } }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn((cb: () => void) => {
+          fire = cb
+          return () => undefined
+        })
+      } as unknown as ReturnType<typeof useStore>
+      return {
+        store,
+        revoke: next => {
+          grants = next
+          fire()
+        }
+      }
+    }
+
+    it('emits accountsChanged([]) immediately when grants are revoked from Connected Sites (no account switch)', () => {
+      const { store, revoke } = subscribableStore({
+        'https://opensea.io': { [A]: ['EVM'] }
+      })
+      mockUseStore.mockReturnValue(store)
+      setupMocks({ account: accountA })
+      const { result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      // Prime so the dApp is seen connected to [A].
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      // Revoke from Connected Sites — active account unchanged.
+      act(() => revoke({}))
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+      // ...and the emit is origin-gated so a revoke racing a cross-origin nav
+      // can't deliver into a different page (same guard as the switch/prime).
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'if(window.location.origin==="https://opensea.io")'
+        )
+      )
+    })
+
+    it('does not emit on store changes that leave the origin grants unchanged', () => {
+      const grants = { 'https://opensea.io': { [A]: ['EVM'] } }
+      // Same grants object reference on the next store change (e.g. an unrelated
+      // slice updated) — must not produce a spurious accountsChanged.
+      const { store, revoke } = subscribableStore(grants)
+      mockUseStore.mockReturnValue(store)
+      setupMocks({ account: accountA })
+      const { result } = renderProvider()
+      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() =>
+        result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
+      )
+      mockInjectJavaScript.mockClear()
+
+      act(() => revoke(grants))
 
       expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
         expect.stringContaining("'accountsChanged'")

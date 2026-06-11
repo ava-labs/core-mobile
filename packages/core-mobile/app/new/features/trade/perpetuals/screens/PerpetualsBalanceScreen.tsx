@@ -145,17 +145,11 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
-      title=""
-      subtitle=""
+      title="Available balance"
+      subtitle="An overview of your Hyperliquid account"
       navigationTitle="Available balance"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, gap: 10 }}>
-      <View sx={{ gap: 4, paddingBottom: 24 }}>
-        <Text variant="heading2">Available balance</Text>
-        <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-          An overview of your Hyperliquid account
-        </Text>
-      </View>
       <GroupList
         data={withdrawableRows}
         titleSx={{ fontFamily: 'Inter-Regular' }}
