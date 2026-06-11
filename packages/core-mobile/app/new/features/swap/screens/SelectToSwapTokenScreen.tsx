@@ -25,7 +25,6 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
-import { useTestnetToTokens } from '../hooks/useTestnetToTokens'
 import { getTokenKey } from '../utils/tokenKey'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
 
@@ -88,31 +87,16 @@ export const SelectToSwapTokenScreen = ({
     return ''
   }, [selectedNetwork])
 
-  // Mainnet: paginated token list from token aggregator API
+  // Paginated swap "to" tokens via the Fusion SDK. Same hook serves mainnet
+  // and testnet — the SDK owns routability for both. Search is delegated to
+  // the SDK's `search` param (no client-side filtering needed).
   const {
-    tokens: mainnetTokens,
-    isLoading: isLoadingMainnet,
+    tokens,
+    isLoading: isLoadingTokens,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useSwapTokens(isDeveloperMode ? '' : caip2Id, debouncedSearchText)
-
-  // Testnet: SDK-driven list via getBridgeableAssets (small set, no pagination)
-  const { tokens: testnetTokens, isLoading: isLoadingTestnet } =
-    useTestnetToTokens(isDeveloperMode ? caip2Id : '')
-
-  // Mainnet search is handled server-side via useSwapTokens; testnet needs
-  // client-side filtering since the SDK list is fetched in full without pagination.
-  const filteredTestnetTokens = useMemo(
-    () =>
-      testnetTokens.filter(t =>
-        tokenMatchesSearch(t, debouncedSearchText, isDeveloperMode)
-      ),
-    [testnetTokens, debouncedSearchText, isDeveloperMode]
-  )
-
-  const tokens = isDeveloperMode ? filteredTestnetTokens : mainnetTokens
-  const isLoadingTokens = isDeveloperMode ? isLoadingTestnet : isLoadingMainnet
+  } = useSwapTokens(caip2Id, debouncedSearchText)
 
   // Filter and sort tokens
   const baseResults = useFilteredSwapTokens({

@@ -3,6 +3,7 @@ import { RootState } from 'store/types'
 import {
   grantPermission,
   permissionsReducer,
+  revokeAllGrantsForAddresses,
   revokePermission,
   selectAddressesForDomain,
   selectConnectedDomains,
@@ -189,6 +190,98 @@ describe('permissions slice', () => {
         revokePermission({ domain: DOMAIN_UNI, address: '0xCCCC' })
       )
       expect(next2).toEqual(seeded)
+    })
+  })
+
+  describe('revokeAllGrantsForAddresses', () => {
+    const ADDR_C = '0xCCCC'
+    const seeded: PermissionsState = {
+      grants: {
+        [DOMAIN_UNI]: {
+          [ADDR_A]: [NetworkVMType.EVM, NetworkVMType.SVM],
+          [ADDR_B]: [NetworkVMType.EVM]
+        },
+        [DOMAIN_OS]: {
+          [ADDR_A]: [NetworkVMType.EVM]
+        }
+      }
+    }
+
+    it('removes one address everywhere and prunes domains it empties', () => {
+      const next = permissionsReducer(
+        seeded,
+        revokeAllGrantsForAddresses([ADDR_A])
+      )
+      // ADDR_A gone from both domains; DOMAIN_OS pruned (it only had ADDR_A).
+      expect(next.grants[DOMAIN_UNI]).toEqual({ [ADDR_B]: [NetworkVMType.EVM] })
+      expect(next.grants[DOMAIN_OS]).toBeUndefined()
+    })
+
+    it('revokes multiple addresses (e.g. an account spanning VMs) in one pass', () => {
+      const next = permissionsReducer(
+        seeded,
+        revokeAllGrantsForAddresses([ADDR_A, ADDR_B])
+      )
+      // Every grant for both addresses is gone → both domains pruned.
+      expect(next.grants).toEqual({})
+    })
+
+    it('de-dupes the address list (shared X/P addresses) without error', () => {
+      const next = permissionsReducer(
+        seeded,
+        revokeAllGrantsForAddresses([ADDR_A, ADDR_A])
+      )
+      expect(next.grants[DOMAIN_UNI]).toEqual({ [ADDR_B]: [NetworkVMType.EVM] })
+      expect(next.grants[DOMAIN_OS]).toBeUndefined()
+    })
+
+    it('matches EVM grant keys case-insensitively (checksummed vs lowercased)', () => {
+      const checksummed: PermissionsState = {
+        grants: {
+          [DOMAIN_UNI]: {
+            '0xAbCdEf0000000000000000000000000000000001': [NetworkVMType.EVM]
+          }
+        }
+      }
+      const next = permissionsReducer(
+        checksummed,
+        revokeAllGrantsForAddresses([
+          '0xabcdef0000000000000000000000000000000001'
+        ])
+      )
+      expect(next.grants[DOMAIN_UNI]).toBeUndefined()
+    })
+
+    it('matches case-sensitive (base58 Solana / BTC) addresses exactly — no case-fold collision', () => {
+      // Two DISTINCT base58 pubkeys that differ only by letter case must not
+      // cross-revoke (base58 is case-sensitive). Lowercasing both would wrongly
+      // collapse them.
+      const svmGranted = 'So1anaPubKeyAbc111111111111111111111111111'
+      const svmRemoved = 'so1anapubkeyABC111111111111111111111111111'
+      const state: PermissionsState = {
+        grants: { [DOMAIN_UNI]: { [svmGranted]: [NetworkVMType.SVM] } }
+      }
+      const next = permissionsReducer(
+        state,
+        revokeAllGrantsForAddresses([svmRemoved])
+      )
+      // The granted account's key is untouched (different address, case-sensitive).
+      expect(next.grants[DOMAIN_UNI]).toEqual({
+        [svmGranted]: [NetworkVMType.SVM]
+      })
+    })
+
+    it('is a no-op for an address with no grants', () => {
+      const next = permissionsReducer(
+        seeded,
+        revokeAllGrantsForAddresses([ADDR_C])
+      )
+      expect(next).toEqual(seeded)
+    })
+
+    it('is a no-op for an empty address list', () => {
+      const next = permissionsReducer(seeded, revokeAllGrantsForAddresses([]))
+      expect(next).toEqual(seeded)
     })
   })
 
