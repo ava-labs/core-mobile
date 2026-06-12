@@ -36,9 +36,7 @@ describe('Settings', () => {
 
   it('Import wallet - Seed Phrase wallet can add an account', async () => {
     await settings.tapAddAccountBtn('Wallet 2')
-    await actions.waitFor(
-      settings.manageAccountsAccountName('Wallet 2', 'Account 2')
-    )
+    await settings.verifyMyWalletsAccountName('Account 2', 'Wallet 2')
   })
 
   it('Import wallet - Seed Phrase wallet can get a private key', async () => {
@@ -50,9 +48,7 @@ describe('Settings', () => {
 
   it('Import wallet - Seed Phrase wallet can remove an account', async () => {
     await settings.tapRemoveAccount()
-    await actions.waitForNotVisible(
-      settings.manageAccountsAccountName('Wallet 2', 'Account 2')
-    )
+    await settings.verifyMywalletsAccountNameNotVisible('Account 2', 'Wallet 2')
   })
 
   it('Import wallet - Seed Phrase wallet can be removed', async () => {

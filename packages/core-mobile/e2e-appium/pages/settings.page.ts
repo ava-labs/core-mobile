@@ -461,9 +461,7 @@ class Settings {
 
   async tapWalletByName(walletName = 'Wallet 2', accountName = 'Account 1') {
     await actions.tap(this.manageAccountsWalletName(walletName))
-    await actions.isVisible(
-      this.manageAccountsAccountName(walletName, accountName)
-    )
+    await this.verifyMyWalletsAccountName(accountName, walletName)
   }
 
   async verifyAccountDetail(
@@ -777,6 +775,15 @@ class Settings {
     walletName = 'Wallet 1'
   ) {
     await actions.waitFor(
+      this.manageAccountsAccountName(walletName, accountName)
+    )
+  }
+
+  async verifyMywalletsAccountNameNotVisible(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
+    await actions.waitForNotVisible(
       this.manageAccountsAccountName(walletName, accountName)
     )
   }

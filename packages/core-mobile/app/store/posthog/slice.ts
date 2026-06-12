@@ -558,6 +558,16 @@ export const selectIsFusionAvalancheEvmEnabled = (
   )
 }
 
+export const selectIsFusionAvalancheCctEnabled = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_AVALANCHE_CCT] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
 export const selectIsFusionLombardBtcToBtcbEnabled = (
   state: RootState
 ): boolean => {
