@@ -86,7 +86,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       providerShimJs,
       handleProviderMessage,
       handleDomainMetadata,
-      setCurrentUrl
+      handleCommittedUrl
     } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
@@ -404,12 +404,16 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     )
 
     // Surfaces a URL we trust as actually-rendered to the user-facing URL bar
-    // and to the EVM provider's origin tracker. Idempotent per URL.
+    // and to the EVM provider's origin tracker. The address-bar/history sync
+    // is idempotent per URL, but the provider must be notified on every
+    // commit: a reload keeps the same URL yet creates a fresh document whose
+    // shim _accounts cache starts empty and needs re-priming.
     const syncCommittedUrl = (url: string, title?: string): void => {
       if (!url || url.startsWith('about:')) return
-      if (lastSyncedUrlRef.current === url) return
 
-      setCurrentUrl(url)
+      handleCommittedUrl(url)
+
+      if (lastSyncedUrlRef.current === url) return
       lastSyncedUrlRef.current = url
 
       dispatch(
