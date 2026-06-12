@@ -22,7 +22,8 @@ export function NetworkLogo({
   chainId,
   size,
   style,
-  asBadge = false
+  asBadge = false,
+  chainBadgeBorderColor = 'transparent'
 }: {
   logoUri: string | undefined
   chainId?: number
@@ -30,6 +31,14 @@ export function NetworkLogo({
   style?: StyleProp<ImageStyle>
   testID?: string
   asBadge?: boolean
+  /**
+   * Color of the ring drawn around the P/X letter badge inside the composite.
+   * Defaults to `'transparent'` — the ring still occupies space but is
+   * invisible. Pass the surrounding surface color (e.g.
+   * `theme.colors.$surfaceSecondary`) to create a visible gap between the
+   * AVAX logo and the letter badge.
+   */
+  chainBadgeBorderColor?: string
 }): JSX.Element {
   const {
     theme: { isDark }
@@ -63,10 +72,10 @@ export function NetworkLogo({
     // (NetworkBadge, TokenAmountRow) intentionally do not clip overflow so
     // this offset is visible.
     const offset = -Math.round(overlaySize / 3)
-    // A solid ring around the badge creates a visual gap between the letter
-    // and the AVAX logo. Using `$surfacePrimary` (white in light mode, dark
-    // in dark mode) so it reads clearly against both the red AVAX and the
-    // contrasting letter circle.
+    // Ring around the letter badge — color is provided by the consumer
+    // via `chainBadgeBorderColor` (defaults to `'transparent'` so the ring
+    // is invisible but still occupies space). Pass the surrounding surface
+    // color to make the gap visible.
     const ringWidth = Math.max(1, Math.round(overlaySize / 8))
     const innerSize = overlaySize - ringWidth * 2
     const LetterIcon = LetterIconForBadge
@@ -90,7 +99,7 @@ export function NetworkLogo({
             height: overlaySize,
             borderRadius: overlaySize / 2,
             borderWidth: ringWidth,
-            borderColor: '$surfacePrimary',
+            borderColor: chainBadgeBorderColor,
             overflow: 'hidden',
             justifyContent: 'center',
             alignItems: 'center'

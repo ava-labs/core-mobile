@@ -69,6 +69,7 @@ export const TokenAmountRow = ({
               logoUri={networkLogoUri}
               chainId={networkChainId}
               size={NETWORK_BADGE_SIZE}
+              chainBadgeBorderColor={colors.$surfaceSecondary}
               asBadge
             />
           </View>

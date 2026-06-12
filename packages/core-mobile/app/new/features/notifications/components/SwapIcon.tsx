@@ -47,6 +47,7 @@ export const SwapIcon: FC<SwapIconProps> = ({
             logoUri={networkLogoUri}
             chainId={networkChainId}
             borderColor={colors.$surfacePrimary}
+            chainBadgeBorderColor={colors.$surfacePrimary}
           />
         )}
       </View>
@@ -75,6 +76,7 @@ export const SwapIcon: FC<SwapIconProps> = ({
             logoUri={networkLogoUri}
             chainId={networkChainId}
             borderColor={colors.$surfacePrimary}
+            chainBadgeBorderColor={colors.$surfacePrimary}
           />
         )}
       </View>

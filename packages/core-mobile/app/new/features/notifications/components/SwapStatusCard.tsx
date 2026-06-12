@@ -72,6 +72,7 @@ export const SwapStatusCard = ({
             logoUri={networkLogoUri}
             chainId={networkChainId}
             size={20}
+            chainBadgeBorderColor={colors.$surfaceSecondary}
           />
           {networkName !== undefined && (
             <Text

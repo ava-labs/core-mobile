@@ -46,7 +46,12 @@ export const Network = ({
           justifyContent: 'flex-end'
         }}>
         {chainId !== undefined && (isPChain(chainId) || isXChain(chainId)) ? (
-          <NetworkLogo logoUri={logoUri} chainId={chainId} size={24} />
+          <NetworkLogo
+            logoUri={logoUri}
+            chainId={chainId}
+            size={24}
+            chainBadgeBorderColor={colors.$surfaceSecondary}
+          />
         ) : (
           <TokenLogo logoUri={logoUri} symbol={symbol} size={24} />
         )}
