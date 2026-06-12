@@ -8,6 +8,7 @@ const BADGE_OFFSET = 6
 
 type NetworkBadgeProps = {
   logoUri: string
+  chainId?: number
   borderColor: string
 }
 
@@ -19,6 +20,7 @@ type NetworkBadgeProps = {
  */
 export const NetworkBadge: FC<NetworkBadgeProps> = ({
   logoUri,
+  chainId,
   borderColor
 }) => {
   const badgeContainerSize = BADGE_SIZE + BADGE_BORDER_WIDTH * 2
@@ -35,10 +37,9 @@ export const NetworkBadge: FC<NetworkBadgeProps> = ({
         position: 'absolute',
         bottom: -BADGE_OFFSET,
         right: -BADGE_OFFSET,
-        backgroundColor: 'transparent',
-        overflow: 'hidden'
+        backgroundColor: 'transparent'
       }}>
-      <NetworkLogo logoUri={logoUri} size={BADGE_SIZE} />
+      <NetworkLogo logoUri={logoUri} chainId={chainId} size={BADGE_SIZE} />
     </View>
   )
 }

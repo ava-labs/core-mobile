@@ -8,6 +8,7 @@ type SwapStatusCardProps = {
   directionLabel: 'From' | 'To'
   networkName?: string
   networkLogoUri?: string
+  networkChainId?: number
   status: NotificationSwapStatus
   note?: string
   confirmations?: { count: number; required: number }
@@ -17,6 +18,7 @@ export const SwapStatusCard = ({
   directionLabel,
   networkName,
   networkLogoUri,
+  networkChainId,
   status,
   note,
   confirmations
@@ -66,7 +68,11 @@ export const SwapStatusCard = ({
           {directionLabel}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <NetworkLogo logoUri={networkLogoUri} size={20} />
+          <NetworkLogo
+            logoUri={networkLogoUri}
+            chainId={networkChainId}
+            size={20}
+          />
           {networkName !== undefined && (
             <Text
               variant="body1"

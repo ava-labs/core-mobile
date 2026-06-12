@@ -36,9 +36,11 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
   const fromSymbol = item.transfer.sourceAsset.symbol
   const toSymbol = item.transfer.targetAsset.symbol
 
-  const fromNetworkLogoUri = getNetworkByCaip2ChainId(
+  const fromNetwork = getNetworkByCaip2ChainId(
     item.transfer.sourceChain.chainId
-  )?.logoUri
+  )
+  const fromNetworkLogoUri = fromNetwork?.logoUri
+  const fromNetworkChainId = fromNetwork?.chainId
 
   const fromAmount = useMemo(() => {
     try {
@@ -123,7 +125,13 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
     <NotificationListItem
       title={title}
       subtitle={renderSubtitle()}
-      icon={<SwapIcon status={status} networkLogoUri={fromNetworkLogoUri} />}
+      icon={
+        <SwapIcon
+          status={status}
+          networkLogoUri={fromNetworkLogoUri}
+          networkChainId={fromNetworkChainId}
+        />
+      }
       timestamp={item.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}
