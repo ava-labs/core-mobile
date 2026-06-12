@@ -10,11 +10,13 @@ export const getNetworkDisplayName = (network: Network): string => {
     case ChainId.AVALANCHE_TESTNET_ID:
       return 'C-Chain Testnet'
     case ChainId.AVALANCHE_P:
-    case ChainId.AVALANCHE_TEST_P:
       return 'P-Chain'
+    case ChainId.AVALANCHE_TEST_P:
+      return 'P-Chain Testnet'
     case ChainId.AVALANCHE_X:
-    case ChainId.AVALANCHE_TEST_X:
       return 'X-Chain'
+    case ChainId.AVALANCHE_TEST_X:
+      return 'X-Chain Testnet'
     case ChainId.SOLANA_MAINNET_ID:
       return 'Solana'
     default:
@@ -34,11 +36,13 @@ export const getNetworkLongDisplayName = (network: Network): string => {
     case ChainId.AVALANCHE_TESTNET_ID:
       return 'Avalanche (C-Chain Testnet)'
     case ChainId.AVALANCHE_P:
-    case ChainId.AVALANCHE_TEST_P:
       return 'Avalanche (P-Chain)'
+    case ChainId.AVALANCHE_TEST_P:
+      return 'Avalanche (P-Chain Testnet)'
     case ChainId.AVALANCHE_X:
-    case ChainId.AVALANCHE_TEST_X:
       return 'Avalanche (X-Chain)'
+    case ChainId.AVALANCHE_TEST_X:
+      return 'Avalanche (X-Chain Testnet)'
     default:
       return network.chainName
   }
