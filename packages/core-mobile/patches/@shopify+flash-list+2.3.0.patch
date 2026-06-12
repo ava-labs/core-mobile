@@ -1,0 +1,58 @@
+diff --git a/node_modules/@shopify/flash-list/dist/recyclerview/components/StickyHeaders.js b/node_modules/@shopify/flash-list/dist/recyclerview/components/StickyHeaders.js
+index c38ac7a..898e14b 100644
+--- a/node_modules/@shopify/flash-list/dist/recyclerview/components/StickyHeaders.js
++++ b/node_modules/@shopify/flash-list/dist/recyclerview/components/StickyHeaders.js
+@@ -25,7 +25,13 @@ export const StickyHeaders = ({ stickyHeaderIndices, stickyHeaderOffset, renderI
+         if (legthInvalid) {
+             return;
+         }
+-        const adjustedScrollOffset = recyclerViewManager.getLastScrollOffset();
++        // PATCH: clamp to >= 0 so a sticky header at the top stays pinned during
++        // iOS top overscroll. Without this, a negative scroll offset makes the
++        // binary search return -1, the overlay returns null, and with
++        // stickyHeaderConfig.hideRelatedCell the in-flow cell is hidden too —
++        // leaving an empty void where the header was. Only affects index
++        // selection (push animation still uses scrollY).
++        const adjustedScrollOffset = Math.max(0, recyclerViewManager.getLastScrollOffset());
+         // Binary search for current sticky index
+         const currentIndexInArray = findCurrentStickyIndex(sortedIndices, adjustedScrollOffset + stickyHeaderOffset, (index) => recyclerViewManager.getLayout(index).y);
+         const newStickyIndex = (_a = sortedIndices[currentIndexInArray]) !== null && _a !== void 0 ? _a : -1;
+@@ -71,7 +77,7 @@ export const StickyHeaders = ({ stickyHeaderIndices, stickyHeaderOffset, renderI
+         },
+     }), [compute]);
+     const refHolder = useRef(new Map()).current;
+-    const { translateY, opacity } = useMemo(() => {
++    const { translateY, overscrollTranslateY, opacity } = useMemo(() => {
+         var _a, _b;
+         const currentStickyHeight = (_b = (_a = recyclerViewManager.tryGetLayout(currentStickyIndex)) === null || _a === void 0 ? void 0 : _a.height) !== null && _b !== void 0 ? _b : 0;
+         return {
+@@ -80,6 +86,15 @@ export const StickyHeaders = ({ stickyHeaderIndices, stickyHeaderOffset, renderI
+                 outputRange: [0, -currentStickyHeight],
+                 extrapolate: "clamp",
+             }),
++            // PATCH: follow the content down during iOS top overscroll. When
++            // scrollY is negative (overscroll), translate the pinned header down
++            // by the same distance so it rubber-bands with the list instead of
++            // staying rigidly stuck at the top. Clamps to 0 for normal scroll.
++            overscrollTranslateY: scrollY.interpolate({
++                inputRange: [-100000, 0],
++                outputRange: [100000, 0],
++                extrapolate: "clamp",
++            }),
+             opacity: stickyHeaderOffset > 0
+                 ? scrollY.interpolate({
+                     inputRange: [pushStartsAt, pushStartsAt + currentStickyHeight],
+@@ -103,11 +118,12 @@ export const StickyHeaders = ({ stickyHeaderIndices, stickyHeaderOffset, renderI
+                 left: 0,
+                 right: 0,
+                 zIndex: 2,
+-                transform: [{ translateY }],
++                transform: [{ translateY }, { translateY: overscrollTranslateY }],
+                 opacity,
+             } }, currentStickyIndex !== -1 && currentStickyIndex < data.length ? (React.createElement(ViewHolder, { index: currentStickyIndex, item: data[currentStickyIndex], renderItem: renderItem, layout: { x: 0, y: 0, width: 0, height: 0 }, refHolder: refHolder, extraData: extraData, trailingItem: null, target: "StickyHeader", hidden: false, inverted: inverted })) : null));
+     }, [
+         translateY,
++        overscrollTranslateY,
+         opacity,
+         currentStickyIndex,
+         data,
