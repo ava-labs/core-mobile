@@ -172,7 +172,11 @@ class PostHogService implements PostHogServiceInterface {
     try {
       const responseJson = await fetchWithPosthogFallback()
 
-      return sanitizeFeatureFlags(responseJson, appVersion)
+      return sanitizeFeatureFlags(
+        responseJson,
+        appVersion,
+        Config.E2E_MNEMONIC !== undefined
+      )
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }

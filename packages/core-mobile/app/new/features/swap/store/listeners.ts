@@ -11,6 +11,7 @@ import {
   selectIsFusionEnabled,
   selectIsFusionMarkrEnabled,
   selectIsFusionAvalancheEvmEnabled,
+  selectIsFusionAvalancheCctEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
   selectIsFusionLombardBtcbToBtcEnabled,
   selectFusionDisableCrossChainSwaps,
@@ -39,6 +40,7 @@ import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
 import { createSvmSigner } from '../services/signers/SvmSigner'
+import { buildCctDependencies } from '../services/cct/buildCctDependencies'
 import {
   useIsFusionServiceReady,
   useFusionServiceInitError,
@@ -58,6 +60,7 @@ const getFusionFeatureStates = (
   isFusionEnabled: boolean
   isFusionMarkrEnabled: boolean
   isFusionAvalancheEvmEnabled: boolean
+  isFusionAvalancheCctEnabled: boolean
   isFusionLombardBtcToBtcbEnabled: boolean
   isFusionLombardBtcbToBtcEnabled: boolean
   isFusionDisableCrossChainSwaps: boolean
@@ -66,6 +69,7 @@ const getFusionFeatureStates = (
   isFusionEnabled: selectIsFusionEnabled(state),
   isFusionMarkrEnabled: selectIsFusionMarkrEnabled(state),
   isFusionAvalancheEvmEnabled: selectIsFusionAvalancheEvmEnabled(state),
+  isFusionAvalancheCctEnabled: selectIsFusionAvalancheCctEnabled(state),
   isFusionLombardBtcToBtcbEnabled: selectIsFusionLombardBtcToBtcbEnabled(state),
   isFusionLombardBtcbToBtcEnabled: selectIsFusionLombardBtcbToBtcEnabled(state),
   isFusionDisableCrossChainSwaps: selectFusionDisableCrossChainSwaps(state),
@@ -90,6 +94,8 @@ const shouldReinitializeFusion = (
       currentFeatures.isFusionMarkrEnabled ||
     prevFeatures.isFusionAvalancheEvmEnabled !==
       currentFeatures.isFusionAvalancheEvmEnabled ||
+    prevFeatures.isFusionAvalancheCctEnabled !==
+      currentFeatures.isFusionAvalancheCctEnabled ||
     prevFeatures.isFusionLombardBtcToBtcbEnabled !==
       currentFeatures.isFusionLombardBtcToBtcbEnabled ||
     prevFeatures.isFusionLombardBtcbToBtcEnabled !==
@@ -205,6 +211,7 @@ export const initFusionService = async (
     const featureFlags = {
       'fusion-markr': featureStates.isFusionMarkrEnabled,
       'fusion-avalanche-evm': featureStates.isFusionAvalancheEvmEnabled,
+      'fusion-avalanche-cct': featureStates.isFusionAvalancheCctEnabled,
       'fusion-lombard-btc-to-btcb':
         featureStates.isFusionLombardBtcToBtcbEnabled,
       'fusion-lombard-btcb-to-btc':
@@ -217,6 +224,13 @@ export const initFusionService = async (
       featureStates.isDeveloperMode
     )
 
+    // CCT callbacks read live Redux + React Query state on each invocation so
+    // they always see the latest account / wallet / xpAddresses. The
+    // TransferManager doesn't need to be recreated when those change.
+    const cctDependencies = featureStates.isFusionAvalancheCctEnabled
+      ? buildCctDependencies(listenerApi)
+      : undefined
+
     // Initialize the service
     await FusionService.initWithFeatureFlags({
       bitcoinProvider,
@@ -227,7 +241,8 @@ export const initFusionService = async (
         evm: evmSigner,
         btc: btcSigner,
         svm: svmSigner
-      }
+      },
+      cctDependencies
     })
 
     // Mark as ready after successful init
