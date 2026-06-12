@@ -2,6 +2,7 @@ import { clamp } from '../../utils/clamp'
 import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
   commitDraftText,
+  formatNatural,
   progressFromCanvasPoint,
   progressToPoint,
   sanitizeDecimalInput,
@@ -10,6 +11,14 @@ import {
   validateRange,
   valueToProgress
 } from './helpers'
+
+// Reference implementation the live display must agree with (DialReadout's
+// JS-thread formatter), so the progress-driven text never visually diverges
+// from the controlled-value text at the drag/idle handoff.
+const naturalDigitsRef = (v: number, decimals: number): string => {
+  if (decimals <= 0) return `${Math.round(v)}`
+  return v.toFixed(decimals).replace(/\.?0+$/, '')
+}
 
 describe('clamp', () => {
   it('returns the value when within range', () => {
@@ -73,6 +82,34 @@ describe('snapToStep', () => {
   })
 })
 
+describe('formatNatural', () => {
+  it('rounds to an integer when decimals <= 0', () => {
+    expect(formatNatural(5, 0)).toBe('5')
+    expect(formatNatural(5.4, 0)).toBe('5')
+    expect(formatNatural(5.6, 0)).toBe('6')
+  })
+  it('strips trailing zeros and a dangling dot', () => {
+    expect(formatNatural(5, 2)).toBe('5')
+    expect(formatNatural(5.5, 2)).toBe('5.5')
+    expect(formatNatural(5.05, 2)).toBe('5.05')
+    expect(formatNatural(0, 2)).toBe('0')
+  })
+  it('matches the reference naturalDigits formatter', () => {
+    const cases: [number, number][] = [
+      [0, 2],
+      [5, 2],
+      [5.5, 2],
+      [9999.42, 8],
+      [100, 0],
+      [0.1, 1],
+      [42.5, 0]
+    ]
+    cases.forEach(([v, d]) => {
+      expect(formatNatural(v, d)).toBe(naturalDigitsRef(v, d))
+    })
+  })
+})
+
 describe('progressToPoint', () => {
   const arc = { cx: 100, cy: 100, radius: 50 }
   it('returns the left end at progress 0', () => {
@@ -95,25 +132,47 @@ describe('progressToPoint', () => {
 describe('progressFromCanvasPoint', () => {
   const r = 50
   it('maps the arc ends and top', () => {
-    expect(progressFromCanvasPoint(-r, 0)).toBe(0) // left, 9 o'clock
-    expect(progressFromCanvasPoint(0, -r)).toBeCloseTo(0.5) // top, 12 o'clock
-    expect(progressFromCanvasPoint(r, 0)).toBe(1) // right, 3 o'clock
+    expect(progressFromCanvasPoint(-r, 0, r)).toBe(0) // left, 9 o'clock
+    expect(progressFromCanvasPoint(0, -r, r)).toBeCloseTo(0.5) // top, 12 o'clock
+    expect(progressFromCanvasPoint(r, 0, r)).toBe(1) // right, 3 o'clock
   })
-  it('maps upper-semicircle points monotonically', () => {
+  it('maps upper-semicircle points monotonically (angle)', () => {
     // progress 0.25 sits at θ = 1.25π → (−0.707r, −0.707r)
-    expect(progressFromCanvasPoint(-0.707 * r, -0.707 * r)).toBeCloseTo(0.25, 2)
+    expect(progressFromCanvasPoint(-0.707 * r, -0.707 * r, r)).toBeCloseTo(
+      0.25,
+      2
+    )
     // progress 0.75 sits at θ = 1.75π → (0.707r, −0.707r)
-    expect(progressFromCanvasPoint(0.707 * r, -0.707 * r)).toBeCloseTo(0.75, 2)
+    expect(progressFromCanvasPoint(0.707 * r, -0.707 * r, r)).toBeCloseTo(
+      0.75,
+      2
+    )
   })
-  it('pins points below the diameter to the nearer end (no atan2 seam jump)', () => {
-    expect(progressFromCanvasPoint(-r, r)).toBe(0) // below-left
-    expect(progressFromCanvasPoint(r, r)).toBe(1) // below-right
-    expect(progressFromCanvasPoint(-1, 5)).toBe(0)
-    expect(progressFromCanvasPoint(1, 5)).toBe(1)
+  it('keeps tracking below the diameter by horizontal position (no end-snap)', () => {
+    // Out of bounds below: sweep smoothly by x instead of jumping to min/max.
+    expect(progressFromCanvasPoint(-r, r, r)).toBe(0) // below-left end
+    expect(progressFromCanvasPoint(0, r, r)).toBeCloseTo(0.5) // below centre → middle
+    expect(progressFromCanvasPoint(r, r, r)).toBe(1) // below-right end
+    expect(progressFromCanvasPoint(-0.5 * r, 999, r)).toBeCloseTo(0.25)
+    expect(progressFromCanvasPoint(0.5 * r, 999, r)).toBeCloseTo(0.75)
   })
-  it('is independent of distance from centre (angle only)', () => {
-    expect(progressFromCanvasPoint(-2 * r, -2 * r)).toBeCloseTo(
-      progressFromCanvasPoint(-0.1 * r, -0.1 * r),
+  it('agrees at the ends and centre across the diameter (continuous there)', () => {
+    expect(progressFromCanvasPoint(-r, -0.001, r)).toBeCloseTo(
+      progressFromCanvasPoint(-r, 0, r),
+      2
+    )
+    expect(progressFromCanvasPoint(0, -0.001, r)).toBeCloseTo(
+      progressFromCanvasPoint(0, 0, r),
+      2
+    )
+  })
+  it('clamps beyond the arc width', () => {
+    expect(progressFromCanvasPoint(-3 * r, r, r)).toBe(0)
+    expect(progressFromCanvasPoint(3 * r, r, r)).toBe(1)
+  })
+  it('angle branch is independent of distance from centre', () => {
+    expect(progressFromCanvasPoint(-2 * r, -2 * r, r)).toBeCloseTo(
+      progressFromCanvasPoint(-0.1 * r, -0.1 * r, r),
       5
     )
   })
@@ -193,6 +252,31 @@ describe('shouldSyncExternalValue', () => {
       value: 80,
       currentValue: 10,
       isActive: false
+    })
+    expect(r).toEqual({ sync: true, target: 80 })
+  })
+  it('skips while settling, even when the value differs by more than a step', () => {
+    // Reproduces the post-release bug: after a fast swipe the dial flips
+    // isActive false on lift while stale onChange echoes are still draining
+    // on the JS thread. Those echoes differ from the snapped final by more
+    // than a step, so without a settling guard they'd be re-synced into
+    // progressSv and visibly jerk the arc on their own.
+    const r = shouldSyncExternalValue({
+      ...base,
+      value: 80,
+      currentValue: 10,
+      isActive: false,
+      isSettling: true
+    })
+    expect(r.sync).toBe(false)
+  })
+  it('resumes syncing once settling ends', () => {
+    const r = shouldSyncExternalValue({
+      ...base,
+      value: 80,
+      currentValue: 10,
+      isActive: false,
+      isSettling: false
     })
     expect(r).toEqual({ sync: true, target: 80 })
   })
