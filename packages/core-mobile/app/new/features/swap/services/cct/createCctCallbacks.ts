@@ -2,14 +2,18 @@ import type {
   AvalancheCctInitializer,
   AvalancheSendTxParams
 } from '@avalabs/fusion-sdk'
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { utils } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
-import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
+import { WalletType } from 'services/wallet/types'
 import { Account, XPAddressDictionary } from 'store/account/types'
+import { Request } from 'store/rpc/utils/createInAppRequest'
+import { RequestContext } from 'store/rpc/types'
+import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 
 /**
  * Live state accessors the callbacks need at invocation time. Each is read on
@@ -29,6 +33,12 @@ export type CctCallbackDeps = {
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
   }>
+  /**
+   * Dispatches an in-app RPC request through the approval pipeline. Used by
+   * `avalancheSendTx` to surface an approval modal for each leg (export tx
+   * then import tx) — same path the X/P send flows use.
+   */
+  request: Request
 }
 
 export type CctCallbacks = Pick<
@@ -45,9 +55,10 @@ export type CctCallbacks = Pick<
  * Builds the six callbacks required by the Fusion SDK's
  * `AvalancheCctInitializer` from mobile's existing wallet/network primitives.
  *
- * - `avalancheSendTx` signs the SDK-built export/import tx via `WalletService`
- *   and broadcasts it via the Avalanche XP provider (same path the earn flow
- *   uses for staking exports/imports).
+ * - `avalancheSendTx` dispatches an `avalanche_sendTransaction` RPC request
+ *   for the SDK-built export/import tx so the user sees an approval modal
+ *   per leg (same pipeline the X/P send screens use). The handler signs and
+ *   broadcasts after approval and returns the resulting tx hash.
  * - The address callbacks read from the live wallet via
  *   `AvalancheWalletService.getReadOnlySigner` (which wraps
  *   `Avalanche.AddressWallet` from core-wallets-sdk).
@@ -94,10 +105,11 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
 
   const avalancheSendTx: CctCallbacks['avalancheSendTx'] = async ({
     chainAlias,
+    txType,
     unsignedTx
   }: AvalancheSendTxParams) => {
-    const account = getRequiredAccount()
-    const wallet = getRequiredWallet()
+    getRequiredAccount()
+    getRequiredWallet()
     const isTestnet = deps.getIsDeveloperMode()
     const { xpAddressDictionary } = await deps.getXpAddresses()
     if (Object.keys(xpAddressDictionary).length === 0) {
@@ -118,24 +130,38 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
         ? NetworkService.getAvalancheNetworkX(isTestnet)
         : NetworkService.getAvalancheNetworkP(isTestnet)
 
-    const signedTxJson = await WalletService.sign({
-      walletId: wallet.id,
-      walletType: wallet.type,
-      transaction: {
-        tx: unsignedTx,
-        ...getInternalExternalAddrs({
-          utxos: unsignedTx.utxos,
-          xpAddressDict: xpAddressDictionary,
-          isTestnet
-        })
-      } as AvalancheTransactionRequest,
-      accountIndex: account.index,
-      network
+    const manager = utils.getManagerForVM(unsignedTx.getVM())
+    const unsignedTxBytes = unsignedTx.toBytes()
+    const [codec] = manager.getCodecFromBuffer(unsignedTxBytes)
+
+    const params: AvalancheSendTransactionParams = {
+      transactionHex: utils.bufferToHex(unsignedTxBytes),
+      chainAlias,
+      utxos: unsignedTx.utxos.map(utxo =>
+        utils.bufferToHex(utxo.toBytes(codec))
+      ),
+      ...getInternalExternalAddrs({
+        utxos: unsignedTx.utxos,
+        xpAddressDict: xpAddressDictionary,
+        isTestnet
+      })
+    }
+
+    // Suppress the "Transaction sent / successful" toast for the export leg —
+    // a normal CCT swap is export → import, and the user should only see one
+    // success toast when the final import lands. Recovery quotes (import-only)
+    // still get the toast since the import is the only tx.
+    const context =
+      txType === 'export'
+        ? { [RequestContext.SUPPRESS_TX_FEEDBACK]: true }
+        : undefined
+
+    return deps.request({
+      method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+      params,
+      chainId: getAvalancheCaip2ChainId(network.chainId),
+      context
     })
-
-    const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
-
-    return NetworkService.sendTransaction({ signedTx, network })
   }
 
   const getCoreEthAddress: CctCallbacks['getCoreEthAddress'] = () => {

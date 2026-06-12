@@ -4,6 +4,7 @@ import type { XPAddressDictionary } from 'store/account/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { selectWalletById } from 'store/wallet/slice'
 import type { AppListenerEffectAPI } from 'store/types'
+import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { createCctCallbacks } from './createCctCallbacks'
 
 const EMPTY_XP_ADDRESSES = {
@@ -46,5 +47,6 @@ export const buildCctDependencies = (
         account,
         isDeveloperMode: selectIsDeveloperMode(state)
       })
-    }
+    },
+    request: createInAppRequest(listenerApi.dispatch, listenerApi.getState)
   })
