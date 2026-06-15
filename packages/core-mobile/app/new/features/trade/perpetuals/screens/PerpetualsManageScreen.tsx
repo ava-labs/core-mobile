@@ -11,6 +11,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
+import { ActivityIndicator } from 'react-native'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
@@ -32,7 +33,29 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const size = toFinite(params.size)
   const pnl = toFinite(params.pnl)
 
-  const { coin, side, entryPrice, leverage } = usePlaceOrder()
+  const {
+    coin,
+    side,
+    entryPrice,
+    leverage,
+    initialLeverage,
+    takeProfitEnabled,
+    takeProfitPrice,
+    initialTakeProfitPrice,
+    stopLossEnabled,
+    stopLossPrice,
+    initialStopLossPrice
+  } = usePlaceOrder()
+
+  // Has the user changed anything? True once any editable field diverges from
+  // its seeded value. `enabled` baselines off whether a price was seeded (see
+  // PlaceOrderContext).
+  const hasChanges =
+    leverage !== initialLeverage ||
+    takeProfitEnabled !== (initialTakeProfitPrice !== undefined) ||
+    takeProfitPrice !== initialTakeProfitPrice ||
+    stopLossEnabled !== (initialStopLossPrice !== undefined) ||
+    stopLossPrice !== initialStopLossPrice
 
   const isLong = side === 'long'
   const notional = size * entryPrice
@@ -79,15 +102,15 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="primary"
           size="large"
-          disabled={submitting}
+          disabled={!hasChanges || submitting}
           testID="perpetuals_manage_update"
           onPress={handleUpdate}
           style={{ flex: 1 }}>
-          Update position
+          {submitting ? <ActivityIndicator size="small" /> : 'Update position'}
         </Button>
       </View>
     ),
-    [router, submitting, handleUpdate]
+    [router, hasChanges, submitting, handleUpdate]
   )
 
   return (
