@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
-import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { createCctCallbacks, type CctCallbackDeps } from './createCctCallbacks'
 
 jest.mock('services/wallet/AvalancheWalletService', () => ({
@@ -12,20 +11,8 @@ jest.mock('services/wallet/AvalancheWalletService', () => ({
   default: { getReadOnlySigner: jest.fn() }
 }))
 
-jest.mock('services/network/NetworkService', () => ({
-  __esModule: true,
-  default: {
-    getAvalancheNetworkP: jest.fn(),
-    getAvalancheNetworkX: jest.fn()
-  }
-}))
-
 jest.mock('common/hooks/send/utils/getInternalExternalAddrs', () => ({
   getInternalExternalAddrs: jest.fn()
-}))
-
-jest.mock('utils/caip2ChainIds', () => ({
-  getAvalancheCaip2ChainId: jest.fn()
 }))
 
 jest.mock('@avalabs/avalanchejs', () => ({
@@ -39,17 +26,9 @@ jest.mock('@avalabs/avalanchejs', () => ({
   }
 }))
 
-const P_NETWORK = { name: 'P-network', chainId: 10 }
-const X_NETWORK = { name: 'X-network', chainId: 11 }
-
 const mockedGetReadOnlySigner =
   AvalancheWalletService.getReadOnlySigner as jest.Mock
-const mockedGetAvalancheNetworkP =
-  NetworkService.getAvalancheNetworkP as jest.Mock
-const mockedGetAvalancheNetworkX =
-  NetworkService.getAvalancheNetworkX as jest.Mock
 const mockedGetInternalExternalAddrs = getInternalExternalAddrs as jest.Mock
-const mockedGetAvalancheCaip2ChainId = getAvalancheCaip2ChainId as jest.Mock
 
 const makeAccount = (overrides: Record<string, unknown> = {}) =>
   ({
@@ -86,8 +65,6 @@ const makeDeps = (
 describe('createCctCallbacks', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockedGetAvalancheNetworkP.mockReturnValue(P_NETWORK)
-    mockedGetAvalancheNetworkX.mockReturnValue(X_NETWORK)
   })
 
   describe('getCoreEthAddress', () => {
@@ -223,12 +200,9 @@ describe('createCctCallbacks', () => {
         externalIndices: [0],
         internalIndices: [1]
       })
-      mockedGetAvalancheCaip2ChainId.mockImplementation(
-        (chainId: number) => `avalanche:caip2-${chainId}`
-      )
     })
 
-    it('dispatches AVALANCHE_SEND_TRANSACTION on the P network for chainAlias=P', async () => {
+    it('dispatches AVALANCHE_SEND_TRANSACTION with the P-Chain CAIP-2 for chainAlias=P', async () => {
       const { avalancheSendTx } = createCctCallbacks(
         makeDeps({ request: mockedRequest })
       )
@@ -240,13 +214,10 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(false)
-      expect(mockedGetAvalancheNetworkX).not.toHaveBeenCalled()
-
       expect(mockedRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
-          chainId: `avalanche:caip2-${P_NETWORK.chainId}`,
+          chainId: AvalancheCaip2ChainId.P,
           params: expect.objectContaining({
             chainAlias: 'P',
             externalIndices: [0],
@@ -257,7 +228,7 @@ describe('createCctCallbacks', () => {
       expect(txHash).toBe('0xTXHASH')
     })
 
-    it('uses the X network for chainAlias=X', async () => {
+    it('uses the X-Chain CAIP-2 for chainAlias=X', async () => {
       const { avalancheSendTx } = createCctCallbacks(
         makeDeps({ request: mockedRequest })
       )
@@ -269,14 +240,13 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkX).toHaveBeenCalledWith(false)
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
-        `avalanche:caip2-${X_NETWORK.chainId}`
+        AvalancheCaip2ChainId.X
       )
       expect(mockedRequest.mock.calls[0]?.[0].params.chainAlias).toBe('X')
     })
 
-    it('uses the P network for chainAlias=C (atomic gateway is on the XP RPC)', async () => {
+    it('uses the C-Chain AVAX-namespace CAIP-2 for chainAlias=C', async () => {
       const { avalancheSendTx } = createCctCallbacks(
         makeDeps({ request: mockedRequest })
       )
@@ -288,11 +258,13 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(false)
-      expect(mockedGetAvalancheNetworkX).not.toHaveBeenCalled()
+      expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
+        AvalancheCaip2ChainId.C
+      )
+      expect(mockedRequest.mock.calls[0]?.[0].params.chainAlias).toBe('C')
     })
 
-    it('passes isTestnet through to the network selector', async () => {
+    it('uses testnet CAIP-2 when developer mode is on', async () => {
       const { avalancheSendTx } = createCctCallbacks(
         makeDeps({
           getIsDeveloperMode: () => true,
@@ -307,7 +279,9 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(true)
+      expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
+        AvalancheCaip2ChainId.P_TESTNET
+      )
     })
 
     it('throws when no active wallet', async () => {

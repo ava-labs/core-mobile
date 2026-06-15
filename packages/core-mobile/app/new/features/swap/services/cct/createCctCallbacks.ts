@@ -8,12 +8,11 @@ import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import { Account, XPAddressDictionary } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RequestContext } from 'store/rpc/types'
-import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
+import { getAvalancheChainAliasCaip2 } from '../../utils/getAvalancheChainAliasCaip2'
 
 /**
  * Live state accessors the callbacks need at invocation time. Each is read on
@@ -122,13 +121,13 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
       )
     }
 
-    // The Avalanche XP provider handles atomic txs for C, P, and X chains —
-    // this matches the existing earn flow's network resolution. For X-only
-    // (non-atomic) calls we use the X network, otherwise stay on P.
-    const network =
-      chainAlias === 'X'
-        ? NetworkService.getAvalancheNetworkX(isTestnet)
-        : NetworkService.getAvalancheNetworkP(isTestnet)
+    // The request must route to the avalanche-module — which handles only
+    // the AVAX-namespace CAIP-2s. Pick the AVAX-namespace CAIP-2 for the
+    // actual leg's chain (P/X/C) so the approval row label, explorer URL,
+    // and network display match the leg. `chainAlias` in the params still
+    // drives the handler's parsing (EVM unsigned tx for 'C', AVM/PVM unpack
+    // for 'X'/'P').
+    const caip2ChainId = getAvalancheChainAliasCaip2(chainAlias, isTestnet)
 
     const manager = utils.getManagerForVM(unsignedTx.getVM())
     const unsignedTxBytes = unsignedTx.toBytes()
@@ -159,7 +158,7 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     return deps.request({
       method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
       params,
-      chainId: getAvalancheCaip2ChainId(network.chainId),
+      chainId: caip2ChainId,
       context
     })
   }
