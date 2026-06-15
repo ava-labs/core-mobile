@@ -328,10 +328,6 @@ export const ScrollScreen = ({
         )
 
         if (shouldAvoidKeyboard) {
-          // Pin the sticky view itself to the bottom and let footerContent give
-          // it height (the translateY keyboard-follow composes with absolute
-          // layout). The footer must stay within the wrapper's bounds or taps
-          // won't register on Android/Fabric (and therefore Appium).
           return (
             <KeyboardStickyView
               enabled={!disableStickyFooter}
