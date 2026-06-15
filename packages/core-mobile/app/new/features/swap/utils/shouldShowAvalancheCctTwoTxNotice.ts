@@ -17,8 +17,12 @@ export const shouldShowAvalancheCctTwoTxNotice = ({
 }: {
   quote: Quote | null | undefined
   isSeedlessWallet: boolean
-}): boolean =>
-  quote?.serviceType === ServiceType.AVALANCHE_CCT &&
-  quote.amountIn !== undefined &&
-  quote.amountIn > 0n &&
-  !isSeedlessWallet
+}): boolean => {
+  if (!quote) return false
+  return (
+    quote.serviceType === ServiceType.AVALANCHE_CCT &&
+    quote.amountIn !== undefined &&
+    quote.amountIn > 0n &&
+    !isSeedlessWallet
+  )
+}

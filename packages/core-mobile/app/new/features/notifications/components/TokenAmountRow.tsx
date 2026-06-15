@@ -34,9 +34,11 @@ export const TokenAmountRow = ({
   const badgeContainerSize = NETWORK_BADGE_SIZE + NETWORK_BADGE_BORDER * 2
   // Only show the chain badge for P-Chain or X-Chain native AVAX — those are
   // the cases where the badge meaningfully differentiates from the parent
-  // AVAX logo. For C-Chain (or non-Avalanche networks) the badge would just
-  // duplicate the main token logo.
+  // AVAX logo. For C-Chain (or non-Avalanche networks, or any non-AVAX
+  // asset that might land on P/X surfaces in the future) the badge would
+  // either duplicate the main token logo or claim AVAX-iness it doesn't have.
   const showChainBadge =
+    symbol === 'AVAX' &&
     networkChainId !== undefined &&
     (isPChain(networkChainId) || isXChain(networkChainId))
 

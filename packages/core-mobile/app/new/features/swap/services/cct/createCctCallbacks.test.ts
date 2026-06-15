@@ -4,6 +4,7 @@ import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { RequestContext } from 'store/rpc/types'
 import { createCctCallbacks, type CctCallbackDeps } from './createCctCallbacks'
 
 jest.mock('services/wallet/AvalancheWalletService', () => ({
@@ -262,6 +263,40 @@ describe('createCctCallbacks', () => {
         AvalancheCaip2ChainId.C
       )
       expect(mockedRequest.mock.calls[0]?.[0].params.chainAlias).toBe('C')
+    })
+
+    it('suppresses the tx-feedback toast on the export leg', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
+
+      await avalancheSendTx({
+        baseFeeInNanoAvax: 25n,
+        chainAlias: 'C',
+        txType: 'export',
+        unsignedTx: fakeUnsignedTx
+      })
+
+      expect(mockedRequest.mock.calls[0]?.[0].context).toEqual({
+        [RequestContext.SUPPRESS_TX_FEEDBACK]: true
+      })
+    })
+
+    it('lets the import leg surface its tx-feedback toast', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
+
+      await avalancheSendTx({
+        baseFeeInNanoAvax: 25n,
+        chainAlias: 'P',
+        txType: 'import',
+        unsignedTx: fakeUnsignedTx
+      })
+
+      // No SUPPRESS_TX_FEEDBACK flag so the final-leg success toast fires.
+      const context = mockedRequest.mock.calls[0]?.[0].context
+      expect(context).toBeUndefined()
     })
 
     it('uses testnet CAIP-2 when developer mode is on', async () => {
