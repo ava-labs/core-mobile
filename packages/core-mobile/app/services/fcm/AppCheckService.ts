@@ -8,7 +8,8 @@ import { isDebugOrInternalBuild } from 'utils/Utils'
 
 class AppCheckService {
   init = (): void => {
-    const shouldUseDebugProvider = isDebugOrInternalBuild()
+    const shouldUseDebugProvider =
+      isDebugOrInternalBuild() || process.env.E2E_MNEMONIC !== undefined
 
     const rnfbProvider = firebase
       .appCheck()
