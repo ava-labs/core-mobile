@@ -54,12 +54,17 @@ export const NetworkFilterChips = ({
                     networkSize={19}
                     showChainLogo={showChainLogo}
                     chainLogoSize={12}
-                    outerBorderColor={theme.colors.$surfacePrimary}
+                    outerBorderColor={
+                      isSelected
+                        ? theme.colors.$textPrimary
+                        : theme.colors.$surfacePrimary
+                    }
                     chainLogoStyle={{
                       width: 14,
                       height: 14,
                       borderWidth: 1
                     }}
+                    invertChainLogo={isSelected}
                   />
                 )
               }}
