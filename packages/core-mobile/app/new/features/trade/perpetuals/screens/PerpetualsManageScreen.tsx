@@ -97,6 +97,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="secondary"
           size="large"
+          disabled={submitting}
           testID="perpetuals_manage_cancel"
           onPress={() => router.back()}
           style={{ flex: 1 }}>
