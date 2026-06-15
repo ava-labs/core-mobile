@@ -1007,10 +1007,6 @@ export const SwapScreen = (): JSX.Element => {
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
-          backgroundColor: '$surfaceSecondary',
-          borderRadius: 16,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
           marginTop: 16
         }}>
         <Icons.Alert.ErrorOutline
