@@ -47,15 +47,18 @@ export const PerpetualsManageScreen = (): JSX.Element => {
     initialStopLossPrice
   } = usePlaceOrder()
 
-  // Has the user changed anything? True once any editable field diverges from
-  // its seeded value. `enabled` baselines off whether a price was seeded (see
-  // PlaceOrderContext).
+  // Has the user changed anything? Compare the *effective* TP/SL against the
+  // seeded baseline: a price only counts while its toggle is on, so disabling
+  // a trigger reverts to "no price" (undefined) and matches the seed again —
+  // even if a stale price value lingers in state.
+  const effectiveTakeProfitPrice = takeProfitEnabled
+    ? takeProfitPrice
+    : undefined
+  const effectiveStopLossPrice = stopLossEnabled ? stopLossPrice : undefined
   const hasChanges =
     leverage !== initialLeverage ||
-    takeProfitEnabled !== (initialTakeProfitPrice !== undefined) ||
-    takeProfitPrice !== initialTakeProfitPrice ||
-    stopLossEnabled !== (initialStopLossPrice !== undefined) ||
-    stopLossPrice !== initialStopLossPrice
+    effectiveTakeProfitPrice !== initialTakeProfitPrice ||
+    effectiveStopLossPrice !== initialStopLossPrice
 
   const isLong = side === 'long'
   const notional = size * entryPrice
