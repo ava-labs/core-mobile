@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
@@ -158,6 +159,7 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
       setStopLossPrice(price)
       setStopLossEnabled(true)
     }
+    dismissKeyboardIfNeeded()
     router.back()
   }, [
     kind,
