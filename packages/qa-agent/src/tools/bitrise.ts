@@ -17,8 +17,11 @@ const PIPELINE_MAP: Record<TestType, string> = {
   'regression-external': 'aws-full-regression-runs',
 }
 
+const RC_TAG_PATTERN = /^\d+\.\d+\.\d+-.+$/
+
 export async function triggerBuild(params: {
   testType: TestType
+  branch: string
   tag?: string
 }): Promise<{ buildUrl: string; buildSlug: string }> {
   const pipelineId = PIPELINE_MAP[params.testType]
@@ -29,10 +32,16 @@ export async function triggerBuild(params: {
     environments.push({ mapped_to: 'CUSTOM_GREP_TAG', value: params.tag })
   }
 
+  const isRcTag = RC_TAG_PATTERN.test(params.branch)
+  const buildTarget = isRcTag
+    ? { tag: params.branch }
+    : { branch: params.branch }
+
   const response = await client.post(`/apps/${APP_SLUG}/pipeline-runs`, {
     pipeline_id: pipelineId,
     triggered_by: 'core-mobile-QAi',
     environments,
+    ...buildTarget,
   })
 
   const buildSlug = response.data.id ?? response.data.pipeline_run_slug ?? ''

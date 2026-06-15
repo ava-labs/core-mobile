@@ -128,37 +128,46 @@ async function attachScreenshot(issueKey: string, screenshotPath: string): Promi
 export async function createBugTicket(params: {
   summary: string
   description: string
-}): Promise<{ ticketKey: string; ticketUrl: string; skipped: boolean }> {
-  const existingKey = await findOpenTicket(params.summary)
-  if (existingKey) {
-    return {
-      ticketKey: existingKey,
-      ticketUrl: `${process.env.JIRA_BASE_URL}/browse/${existingKey}`,
-      skipped: true,
-    }
+  priority: string
+  threadLink?: string
+}): Promise<{ ticketKey: string; ticketUrl: string }> {
+  const descriptionContent: object[] = [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: params.description }],
+    },
+  ]
+
+  if (params.threadLink) {
+    descriptionContent.push({
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Slack Thread: ', marks: [{ type: 'strong' }] },
+        {
+          type: 'text',
+          text: params.threadLink,
+          marks: [{ type: 'link', attrs: { href: params.threadLink } }],
+        },
+      ],
+    })
   }
 
   const response = await client.post('/rest/api/3/issue', {
     fields: {
       project: { key: process.env.JIRA_PROJECT_KEY },
       summary: params.summary,
-      description: {
-        type: 'doc',
-        version: 1,
-        content: [{
-          type: 'paragraph',
-          content: [{ type: 'text', text: params.description }],
-        }],
-      },
+      description: { type: 'doc', version: 1, content: descriptionContent },
       issuetype: { name: 'Bug' },
       labels: ['mobile-qai'],
       parent: { key: 'CP-32' },
+      components: [{ name: 'Mobile Application' }],
+      priority: { name: params.priority },
     },
   })
 
   const ticketKey = response.data.key
   const ticketUrl = `${process.env.JIRA_BASE_URL}/browse/${ticketKey}`
-  return { ticketKey, ticketUrl, skipped: false }
+  return { ticketKey, ticketUrl }
 }
 
 export async function createFailureTicket(params: CreateFailureTicketParams): Promise<{
@@ -186,6 +195,8 @@ export async function createFailureTicket(params: CreateFailureTicketParams): Pr
       issuetype: { name: 'Bug' },
       labels: ['mobile-qai', 'automation-failure'],
       parent: { key: 'CP-14439' },
+      components: [{ name: 'Mobile Application' }],
+      priority: { name: 'Medium' },
     },
   })
 
@@ -202,4 +213,26 @@ export async function createFailureTicket(params: CreateFailureTicketParams): Pr
   }
 
   return { ticketKey, ticketUrl, skipped: false }
+}
+
+export interface VersionTicket {
+  key: string
+  summary: string
+  status: string
+  url: string
+}
+
+export async function searchVersionTickets(version: string): Promise<VersionTicket[]> {
+  const jql = `project = ${process.env.JIRA_PROJECT_KEY} AND summary ~ "${version}" AND issuetype = Bug ORDER BY created DESC`
+  const response = await client.post('/rest/api/3/issue/search', {
+    jql,
+    maxResults: 30,
+    fields: ['summary', 'status'],
+  })
+  return (response.data.issues ?? []).map((issue: { key: string; fields: { summary: string; status: { name: string } } }) => ({
+    key: issue.key,
+    summary: issue.fields.summary,
+    status: issue.fields.status.name,
+    url: `${process.env.JIRA_BASE_URL}/browse/${issue.key}`,
+  }))
 }

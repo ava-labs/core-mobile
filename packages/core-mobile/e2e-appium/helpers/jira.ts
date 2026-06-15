@@ -170,7 +170,9 @@ export async function createFailureTicketIfNeeded(params: {
       ),
       issuetype: { name: 'Bug' },
       labels: ['mobile-qai', 'automation-failure'],
-      parent: { key: 'CP-14439' }
+      parent: { key: 'CP-14439' },
+      components: [{ name: 'Mobile Application' }],
+      priority: { name: 'Medium' }
     }
   })
 
