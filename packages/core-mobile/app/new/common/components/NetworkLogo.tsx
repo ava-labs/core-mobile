@@ -1,9 +1,9 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { Icons, useTheme, View as ThemedView } from '@avalabs/k2-alpine'
 import GlobeSVG from 'new/assets/globalSVG'
 import React from 'react'
 import { Image, ImageStyle, StyleProp, View, ViewStyle } from 'react-native'
 import { formatUriImageToPng } from 'utils/Contentful'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 
 /**
  * Displays the network's logo or a globe icon fallback.
@@ -49,13 +49,11 @@ export function NetworkLogo({
     height: size
   }
 
-  const isPChain =
-    chainId === ChainId.AVALANCHE_P || chainId === ChainId.AVALANCHE_TEST_P
-  const isXChain =
-    chainId === ChainId.AVALANCHE_X || chainId === ChainId.AVALANCHE_TEST_X
+  const isP = chainId !== undefined && isPChain(chainId)
+  const isX = chainId !== undefined && isXChain(chainId)
 
-  if (isPChain || isXChain) {
-    const LetterIconForBadge = isPChain
+  if (isP || isX) {
+    const LetterIcon = isP
       ? isDark
         ? Icons.TokenLogos.AVAX_P_DARK
         : Icons.TokenLogos.AVAX_P_LIGHT
@@ -64,7 +62,7 @@ export function NetworkLogo({
       : Icons.TokenLogos.AVAX_X_LIGHT
 
     if (asBadge) {
-      return <LetterIconForBadge width={size} height={size} testID={testID} />
+      return <LetterIcon width={size} height={size} testID={testID} />
     }
 
     const overlaySize = Math.max(8, Math.round(size * 0.55))
@@ -79,7 +77,6 @@ export function NetworkLogo({
     // color to make the gap visible.
     const ringWidth = Math.max(1, Math.round(overlaySize / 8))
     const innerSize = overlaySize - ringWidth * 2
-    const LetterIcon = LetterIconForBadge
     return (
       <ThemedView sx={{ width: size, height: size }} testID={testID}>
         <ThemedView

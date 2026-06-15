@@ -77,12 +77,6 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     return account
   }
 
-  const getRequiredWallet = (): { id: string; type: WalletType } => {
-    const wallet = deps.getWallet()
-    if (!wallet) throw new Error('[cctCallbacks] no active wallet')
-    return wallet
-  }
-
   const getReadOnlySigner = async (): Promise<Avalanche.AddressWallet> => {
     const account = getRequiredAccount()
     const isTestnet = deps.getIsDeveloperMode()
@@ -107,8 +101,6 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     txType,
     unsignedTx
   }: AvalancheSendTxParams) => {
-    getRequiredAccount()
-    getRequiredWallet()
     const isTestnet = deps.getIsDeveloperMode()
     const { xpAddressDictionary } = await deps.getXpAddresses()
     if (Object.keys(xpAddressDictionary).length === 0) {

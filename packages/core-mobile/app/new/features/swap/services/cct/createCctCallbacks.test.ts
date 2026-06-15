@@ -319,36 +319,6 @@ describe('createCctCallbacks', () => {
       )
     })
 
-    it('throws when no active wallet', async () => {
-      const { avalancheSendTx } = createCctCallbacks(
-        makeDeps({ getWallet: () => undefined, request: mockedRequest })
-      )
-      await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
-      ).rejects.toThrow(/no active wallet/)
-      expect(mockedRequest).not.toHaveBeenCalled()
-    })
-
-    it('throws when no active account', async () => {
-      const { avalancheSendTx } = createCctCallbacks(
-        makeDeps({ getActiveAccount: () => undefined, request: mockedRequest })
-      )
-      await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
-      ).rejects.toThrow(/no active account/)
-      expect(mockedRequest).not.toHaveBeenCalled()
-    })
-
     it('throws when xpAddressDictionary is empty (would otherwise produce invalid signing indices)', async () => {
       const { avalancheSendTx } = createCctCallbacks(
         makeDeps({
