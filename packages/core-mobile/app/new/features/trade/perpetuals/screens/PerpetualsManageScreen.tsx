@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -11,7 +12,6 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
-import { ActivityIndicator } from 'react-native'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
