@@ -22,6 +22,7 @@ export function NetworkLogo({
   chainId,
   size,
   style,
+  testID,
   asBadge = false,
   chainBadgeBorderColor = 'transparent'
 }: {
@@ -63,7 +64,7 @@ export function NetworkLogo({
       : Icons.TokenLogos.AVAX_X_LIGHT
 
     if (asBadge) {
-      return <LetterIconForBadge width={size} height={size} />
+      return <LetterIconForBadge width={size} height={size} testID={testID} />
     }
 
     const overlaySize = Math.max(8, Math.round(size * 0.55))
@@ -80,7 +81,7 @@ export function NetworkLogo({
     const innerSize = overlaySize - ringWidth * 2
     const LetterIcon = LetterIconForBadge
     return (
-      <ThemedView sx={{ width: size, height: size }}>
+      <ThemedView sx={{ width: size, height: size }} testID={testID}>
         <ThemedView
           sx={{
             width: size,
@@ -116,9 +117,10 @@ export function NetworkLogo({
         uri: formatUriImageToPng(logoUri, size)
       }}
       style={[baseStyle, style]}
+      testID={testID}
     />
   ) : (
-    <View style={[baseStyle, style as ViewStyle]}>
+    <View style={[baseStyle, style as ViewStyle]} testID={testID}>
       <GlobeSVG height={'100%'} testID="network_logo__globe_svg" />
     </View>
   )
