@@ -151,7 +151,8 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     isLong
   )} entry price`
 
-  const handleDone = useCallback(() => {
+  const handleDone = useCallback(async () => {
+    await dismissKeyboardIfNeeded()
     if (kind === 'takeProfit') {
       setTakeProfitPrice(price)
       setTakeProfitEnabled(true)
@@ -159,7 +160,6 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
       setStopLossPrice(price)
       setStopLossEnabled(true)
     }
-    dismissKeyboardIfNeeded()
     router.back()
   }, [
     kind,
