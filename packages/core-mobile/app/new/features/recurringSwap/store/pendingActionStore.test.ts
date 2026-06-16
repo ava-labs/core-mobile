@@ -27,6 +27,10 @@ describe('pendingActionStore', () => {
     Object.keys(mmkvStore).forEach(k => delete mmkvStore[k])
   })
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   it('markPending records the orderId + action type with the current timestamp', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)

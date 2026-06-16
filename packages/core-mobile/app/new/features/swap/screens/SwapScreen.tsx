@@ -402,7 +402,11 @@ export const SwapScreen = (): JSX.Element => {
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
   const recurring = useRecurringSwapContext()
   const evmAddress = activeAccount?.addressC
-  const eligibility = useRecurringEligibility(fromToken, toToken, evmAddress)
+  const eligibility = useRecurringEligibility(
+    isRecurringBlocked ? undefined : fromToken,
+    isRecurringBlocked ? undefined : toToken,
+    isRecurringBlocked ? undefined : evmAddress
+  )
   // Recurring per-token minimum sourced from `/info/chains` (via SDK eligibility
   // check, which keys on the source token address). Available whenever the pair
   // is supported, even before the user enters an amount.

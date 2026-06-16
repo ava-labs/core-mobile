@@ -5,6 +5,7 @@ import type {
   GasSettings,
   GetBridgeableAssetsProps,
   GetBridgeableAssetsResult,
+  RecurringNamespace,
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
 import {

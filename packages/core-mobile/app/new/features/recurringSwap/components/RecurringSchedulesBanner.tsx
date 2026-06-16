@@ -27,11 +27,12 @@ function RecurringSchedulesBannerImpl(): JSX.Element | null {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const chainId = activeNetwork?.chainId
+  const ownerAddress = isBlocked ? undefined : activeAccount?.addressC
+  const effectiveChainId = isBlocked ? undefined : chainId
   const { data: schedules } = useRecurringSchedules(
-    activeAccount?.addressC,
-    chainId
+    ownerAddress,
+    effectiveChainId
   )
-
   if (isBlocked) return null
 
   const count =
