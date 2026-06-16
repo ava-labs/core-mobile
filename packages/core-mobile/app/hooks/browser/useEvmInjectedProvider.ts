@@ -156,15 +156,6 @@ export function useEvmInjectedProvider(
   // setCurrentUrl's SPA re-prime routes through a ref — same pattern as routerRef.
   const primeAccountsRef = useRef<(() => void) | null>(null)
 
-  // Tracks THIS tab's in-flight connect approval (its approvalId + reject fn) so
-  // a later same-tab request or an origin change can unstick it. Carries the
-  // approvalId so the identity guards in requestConnectApproval don't clobber a
-  // newer same-tab request. (CP-14385)
-  const prevInflightConnectReject = useRef<{
-    approvalId: string
-    reject: (err: unknown) => void
-  } | null>(null)
-
   const setCurrentUrl = useCallback(
     (url: string) => {
       const prevUrl = currentUrlRef.current
@@ -416,32 +407,22 @@ export function useEvmInjectedProvider(
     (peerMeta: PeerMeta, requestId: number): Promise<Account[]> => {
       return new Promise<Account[]>((resolve, reject) => {
         let settled = false
-        // Clear this tab's ref only if it still points at THIS request — a newer
-        // same-tab request would have overwritten it, and we must not clobber it.
-        const clearOwnRef = (): void => {
-          if (prevInflightConnectReject.current?.reject === safeReject) {
-            prevInflightConnectReject.current = null
-          }
-        }
         const safeResolve = (selected: Account[]): void => {
           if (settled) return
           settled = true
-          clearOwnRef()
           resolve(selected)
           clearTimeout(fallbackTimer)
         }
         const safeReject = (err: unknown): void => {
           if (settled) return
           settled = true
-          clearOwnRef()
           reject(err)
           clearTimeout(fallbackTimer)
         }
 
         // Register in the per-tab-keyed registry (replaces the single global
         // cache slot). The registry mints a unique approvalId; a same-tab
-        // in-flight request is superseded in place (rejecting its promise, which
-        // clears this ref since it still points at the old request); a
+        // in-flight request is superseded in place (rejecting its promise); a
         // concurrent OTHER tab is queued — neither clobbers the other (CP-14385).
         const { approvalId, effect } = connectApprovalRegistry.request(
           {
@@ -456,7 +437,6 @@ export function useEvmInjectedProvider(
             message: USER_REJECTED_REQUEST_MESSAGE
           }
         )
-        prevInflightConnectReject.current = { approvalId, reject: safeReject }
         applyConnectNavEffect(effect)
 
         // Safety net: if the screen never mounts or calls back within 90s, reject
