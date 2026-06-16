@@ -55,6 +55,28 @@ export const valueToProgress = (value: number, max: number): number => {
   return clamp(value / max, 0, 1)
 }
 
+// Maps a finger offset from the arc centre (dx, dy in canvas space, screen
+// y-down; radius = arc radius) to progress 0..1 along the upper semicircle:
+// left end (−r, 0) → 0, top (0, −r) → 0.5, right end (r, 0) → 1. Above the
+// diameter the dial tracks the finger's angle (Apple-dial style) rather than a
+// swipe direction, so there's no up/down mapping to invert.
+//
+// On or below the diameter the finger is off the arc. Rather than pin to the
+// nearest end — which makes a drag that strays below hard-switch between min
+// and max as it crosses the centre — fall back to the finger's horizontal
+// position across the arc's width, so the value keeps sweeping smoothly while
+// out of bounds. The two branches agree at the ends and the centre (only the
+// off-axis interior differs), so crossing the diameter along the arc is smooth.
+export const progressFromCanvasPoint = (
+  dx: number,
+  dy: number,
+  radius: number
+): number => {
+  'worklet'
+  if (dy >= 0) return clamp((dx + radius) / (2 * radius), 0, 1)
+  return clamp((Math.atan2(dy, dx) + Math.PI) / Math.PI, 0, 1)
+}
+
 // Never clamps the lower bound — users may still be typing their way
 // toward a valid value (e.g. `"0.0…"`).
 export const sanitizeDecimalInput = (text: string, max: number): string => {

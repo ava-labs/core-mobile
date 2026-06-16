@@ -3,6 +3,7 @@ import { getStepDecimals } from '../../utils/getStepDecimals'
 import {
   commitDraftText,
   formatNatural,
+  progressFromCanvasPoint,
   progressToPoint,
   sanitizeDecimalInput,
   shouldSyncExternalValue,
@@ -125,6 +126,55 @@ describe('progressToPoint', () => {
     const { x, y } = progressToPoint({ ...arc, progress: 1 })
     expect(x).toBeCloseTo(150)
     expect(y).toBeCloseTo(100)
+  })
+})
+
+describe('progressFromCanvasPoint', () => {
+  const r = 50
+  it('maps the arc ends and top', () => {
+    expect(progressFromCanvasPoint(-r, 0, r)).toBe(0) // left, 9 o'clock
+    expect(progressFromCanvasPoint(0, -r, r)).toBeCloseTo(0.5) // top, 12 o'clock
+    expect(progressFromCanvasPoint(r, 0, r)).toBe(1) // right, 3 o'clock
+  })
+  it('maps upper-semicircle points monotonically (angle)', () => {
+    // progress 0.25 sits at θ = 1.25π → (−0.707r, −0.707r)
+    expect(progressFromCanvasPoint(-0.707 * r, -0.707 * r, r)).toBeCloseTo(
+      0.25,
+      2
+    )
+    // progress 0.75 sits at θ = 1.75π → (0.707r, −0.707r)
+    expect(progressFromCanvasPoint(0.707 * r, -0.707 * r, r)).toBeCloseTo(
+      0.75,
+      2
+    )
+  })
+  it('keeps tracking below the diameter by horizontal position (no end-snap)', () => {
+    // Out of bounds below: sweep smoothly by x instead of jumping to min/max.
+    expect(progressFromCanvasPoint(-r, r, r)).toBe(0) // below-left end
+    expect(progressFromCanvasPoint(0, r, r)).toBeCloseTo(0.5) // below centre → middle
+    expect(progressFromCanvasPoint(r, r, r)).toBe(1) // below-right end
+    expect(progressFromCanvasPoint(-0.5 * r, 999, r)).toBeCloseTo(0.25)
+    expect(progressFromCanvasPoint(0.5 * r, 999, r)).toBeCloseTo(0.75)
+  })
+  it('agrees at the ends and centre across the diameter (continuous there)', () => {
+    expect(progressFromCanvasPoint(-r, -0.001, r)).toBeCloseTo(
+      progressFromCanvasPoint(-r, 0, r),
+      2
+    )
+    expect(progressFromCanvasPoint(0, -0.001, r)).toBeCloseTo(
+      progressFromCanvasPoint(0, 0, r),
+      2
+    )
+  })
+  it('clamps beyond the arc width', () => {
+    expect(progressFromCanvasPoint(-3 * r, r, r)).toBe(0)
+    expect(progressFromCanvasPoint(3 * r, r, r)).toBe(1)
+  })
+  it('angle branch is independent of distance from centre', () => {
+    expect(progressFromCanvasPoint(-2 * r, -2 * r, r)).toBeCloseTo(
+      progressFromCanvasPoint(-0.1 * r, -0.1 * r, r),
+      5
+    )
   })
 })
 

@@ -27,7 +27,7 @@ import {
 } from './DialArc'
 import { DialPresets } from './DialPresets'
 import { DialReadout, DialReadoutHandle } from './DialReadout'
-import { snapToStep, validateRange } from './helpers'
+import { progressFromCanvasPoint, snapToStep, validateRange } from './helpers'
 import { useDialValue } from './useDialValue'
 import type { CircularDialProps, PresetButton } from './types'
 
@@ -54,6 +54,12 @@ const ACTIVATION_TAN = Math.tan((ACTIVATION_HALF_ANGLE_DEG * Math.PI) / 180)
 // should drive the dial rather than fall through to scroll. ~3× the
 // visible knob (KNOB_RADIUS=11) for a comfortable touch target.
 const KNOB_HIT_RADIUS = 32
+
+// When a drag starts off the knob, the knob has to travel to the finger's
+// angle. Easing that entry (and ongoing tracking) with a short withTiming —
+// the same chase DialReadout uses for typing — avoids a jarring teleport. A
+// knob-grab starts under the finger, so it skips this and tracks 1:1.
+const SNAP_CHASE_MS = 80
 
 // Cap on how often the dial emits onChange to the parent during a drag.
 // A fast swipe crosses a step every frame; emitting each one floods the
@@ -170,21 +176,6 @@ export const CircularDial: FC<CircularDialProps> = ({
   // isSettling — during rapid repeated swipes an older timer must not cut a
   // newer window short.
   const settleToken = useSharedValue(0)
-
-  // Track translation deltas from this anchor so tapping anywhere
-  // doesn't snap the knob — the knob only moves with finger motion
-  // after the first touch.
-  const gestureStartProgress = useSharedValue(0)
-
-  // Vertical weight of the arc tangent at the gesture's starting
-  // progress = cos θ where θ = π + p·π. At p=0.5 (top) it's 0 — pure
-  // X drives the dial. At p=1 (right edge) it's +1 — down adds
-  // forward. At p=0 (left edge) it's −1 — up adds forward. X is
-  // always full-strength so horizontal swipes feel uniform across
-  // the whole sweep (no "stuck" feeling at the curved ends); Y is
-  // weighted so it only contributes where the arc is actually
-  // moving vertically.
-  const startTangentY = useSharedValue(0)
 
   // First-touch coordinates, captured in onTouchesDown so the
   // direction-based activation logic in onTouchesMove can measure
@@ -313,21 +304,32 @@ export const CircularDial: FC<CircularDialProps> = ({
       // Zero so the first step crossing of this drag emits immediately
       // rather than waiting out a throttle window left over from before.
       lastEmitMs.value = 0
-      gestureStartProgress.value = progressSv.value
-      const startAngle = Math.PI + progressSv.value * Math.PI
-      startTangentY.value = Math.cos(startAngle)
     })
     .onUpdate(event => {
       'worklet'
-      // X drives the dial directly (always 100% efficient); Y is
-      // weighted by the tangent's vertical component so it
-      // contributes only where the arc is moving vertically. 2×
-      // ARC_RADIUS pixels of horizontal motion = full 0→1 sweep,
-      // matching the slider-like feel users expect.
-      const proj = event.translationX + event.translationY * startTangentY.value
-      const deltaProgress = proj / (2 * ARC_RADIUS)
-      const target = gestureStartProgress.value + deltaProgress
-      progressSv.value = target < 0 ? 0 : target > 1 ? 1 : target
+      // Without a measured outer width the canvas-space conversion is wrong, so
+      // skip until onLayout has run (same guard onTouchesDown uses) rather than
+      // jump the dial to a bogus angle.
+      if (outerWidth.value <= 0) return
+      // Absolute angular tracking: the knob follows the finger's angle around
+      // the arc centre (Apple-dial style), so there's no swipe-direction →
+      // value mapping that could invert between the two halves. event.x/y are
+      // view-relative (the pan is on the outer container); convert to canvas
+      // space the same way onTouchesDown does, then offset from the centre.
+      const canvasX = event.x - (outerWidth.value - CANVAS_WIDTH) / 2
+      const canvasY = event.y - canvasPadding
+      const target = progressFromCanvasPoint(
+        canvasX - ARC_CX,
+        canvasY - ARC_CY,
+        ARC_RADIUS
+      )
+      // Knob-grab tracks 1:1 for precision; an off-knob grab eases to the
+      // finger's angle so it doesn't teleport. Re-targeted each frame.
+      if (startedOnKnob.value) {
+        progressSv.value = target
+      } else {
+        progressSv.value = withTiming(target, { duration: SNAP_CHASE_MS })
+      }
     })
     .onEnd(() => {
       'worklet'
