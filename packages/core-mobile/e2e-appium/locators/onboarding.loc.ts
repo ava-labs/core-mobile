@@ -1,4 +1,6 @@
 export default {
+  continueWithGoogle: 'continueWithGoogle',
+  continueWithApple: 'continueWithApple',
   accessExistingWallet: 'accessExistingWallet',
   chooseWalletTitle: 'How would you like to access your existing wallet?',
   typeRecoverPhase: 'list_item__Type in a recovery phrase',

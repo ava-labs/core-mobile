@@ -24,6 +24,11 @@ async function detectAppState(): Promise<AppState> {
 export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
 ) {
+  if (process.env.IS_SEEDLESS === 'true') {
+    console.log('Starting the seedless onboarding...')
+    return warmupSeedless()
+  }
+
   // Validate mnemonic is provided
   if (!mnemonic) {
     throw new Error(
@@ -56,6 +61,102 @@ export default async function warmup(
   await onboardingPage.enterRecoveryPhrase(mnemonic)
   await onboardingPage.tapImport()
   // Enter PIN (this will also disable the biometrics toggle if needed)
+  await onboardingPage.enterPin()
+  await onboardingPage.tapNextBtnOnNameWallet()
+  await onboardingPage.tapNextBtnOnAvatarScreen()
+  await onboardingPage.tapLetsGo()
+  await onboardingPage.verifyLoggedIn()
+}
+
+function generateSeedlessIdToken(): string {
+  // Mirrors the approach in core-web's seedless.fixture.ts:
+  // signs a JWT locally using the test RSA private key registered with CubeSigner.
+  // CubeSigner verifies the signature against the JWKS hosted in S3 — no real Google login needed.
+  const { createPrivateKey, createSign } =
+    require('crypto') as typeof import('crypto')
+
+  const pk = process.env.TEST_OIDC_PRIVATE_KEY
+  const issuer = process.env.TEST_OIDC_ISSUER
+  const audience = process.env.TEST_OIDC_AUDIENCE
+  const sub = process.env.TEST_OIDC_SUB ?? 'test-seedless-user'
+  const email = process.env.TEST_OIDC_EMAIL ?? 'test-seedless@avalabs.org'
+
+  if (!pk || !issuer || !audience) {
+    throw new Error(
+      [
+        'Seedless warmup requires custom OIDC credentials.',
+        'Set TEST_OIDC_PRIVATE_KEY, TEST_OIDC_ISSUER, and TEST_OIDC_AUDIENCE.'
+      ].join('\n')
+    )
+  }
+
+  const base64 = pk
+    .replace(/-----BEGIN [^-]+-----|-----END [^-]+-----/g, '')
+    .replace(/\\n/g, '')
+    .replace(/[^A-Za-z0-9+/=]/g, '')
+  const pem = `-----BEGIN PRIVATE KEY-----\n${(
+    base64.match(/.{1,64}/g) ?? []
+  ).join('\n')}\n-----END PRIVATE KEY-----`
+  const privateKey = createPrivateKey(pem)
+
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: 'test-key-1' })
+  ).toString('base64url')
+  const now = Math.floor(Date.now() / 1000)
+  const payload = Buffer.from(
+    JSON.stringify({
+      iss: issuer,
+      aud: audience,
+      sub,
+      email,
+      iat: now,
+      exp: now + 3600
+    })
+  ).toString('base64url')
+
+  const data = `${header}.${payload}`
+  const signer = createSign('RSA-SHA256')
+  signer.update(data)
+  return `${data}.${signer.sign(privateKey).toString('base64url')}`
+}
+
+export async function warmupSeedless() {
+  await onboardingPage.exitMetro()
+
+  const state = await detectAppState()
+  console.log(`App state detected (seedless): ${state}`)
+
+  if (state === 'loggedIn') {
+    console.log('Already logged in (seedless), skipping onboarding')
+    return
+  }
+
+  if (state === 'locked') {
+    console.log('App is locked, entering PIN to unlock')
+    await onboardingPage.unlockEnterPin()
+    await onboardingPage.verifyLoggedIn()
+    return
+  }
+
+  const idToken = generateSeedlessIdToken()
+  const CSRF_STATE = 'appium-seedless-csrf-state'
+
+  // Bypass Google/Apple OAuth by triggering the app's seedless OAuth callback deep link directly
+  // with a JWT signed by the test private key registered with CubeSigner.
+  // App-side: 'core://seedless-login' must be added to DEEPLINK_WHITELIST and handled to call
+  // useSeedlessRegister with the provided id_token (same flow as post-Google-sign-in).
+  const deepLinkUrl = `core://seedless-login?id_token=${idToken}&state=${CSRF_STATE}&provider=google`
+  if (driver.isAndroid) {
+    const androidPackage = await driver.getCurrentPackage()
+    await driver.execute('mobile: deepLink', {
+      url: deepLinkUrl,
+      package: androidPackage
+    })
+  } else {
+    await driver.execute('mobile: deepLink', { url: deepLinkUrl })
+  }
+
+  // After deep link triggers seedless onboarding, complete PIN setup for new wallet
   await onboardingPage.enterPin()
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()

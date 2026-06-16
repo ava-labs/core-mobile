@@ -126,8 +126,10 @@ const caps = platformToRun
         (runIos && cap.platformName === 'iOS')
     )
 
-/** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
 function getSpecs(): string[] {
+  if (process.env.IS_SEEDLESS_TRANSACTIONS === 'true') {
+    return ['./specs/transactions/**/*.ts']
+  }
   if (
     process.env.TEST_TYPE === 'performance' ||
     process.env.IS_PERFORMANCE === 'true'
@@ -198,7 +200,15 @@ export const config: WebdriverIO.Config = {
     const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
-    runId = await getTestRun(platform, isSmoke, isPerformance, isDeviceFarm)
+    const isSeedlessTransactions =
+      process.env.IS_SEEDLESS_TRANSACTIONS === 'true'
+    runId = await getTestRun(
+      platform,
+      isSmoke,
+      isPerformance,
+      isDeviceFarm,
+      isSeedlessTransactions
+    )
     console.log(
       `------------Starting test run${
         isDeviceFarm ? ' on AWS Device Farm' : ''

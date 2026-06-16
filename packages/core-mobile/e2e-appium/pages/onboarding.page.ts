@@ -6,6 +6,14 @@ import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
 class OnboardingPage {
+  get continueWithGoogle() {
+    return selectors.getById(onboardingLoc.continueWithGoogle)
+  }
+
+  get continueWithApple() {
+    return selectors.getById(onboardingLoc.continueWithApple)
+  }
+
   get accessExistingWallet() {
     return selectors.getById(onboardingLoc.accessExistingWallet)
   }
