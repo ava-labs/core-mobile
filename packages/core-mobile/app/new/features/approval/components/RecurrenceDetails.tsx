@@ -47,7 +47,9 @@ export function RecurrenceDetails({ context }: Props): JSX.Element {
           backgroundColor: '$surfaceSecondary',
           borderRadius: 12
         }}>
-        <Text variant="body1" sx={{ fontWeight: 'semibold', marginBottom: 4 }}>
+        <Text
+          variant="body1"
+          sx={{ fontFamily: 'Inter-SemiBold', marginBottom: 4 }}>
           {copy.title}
         </Text>
         <Text variant="caption" sx={{ color: '$textSecondary' }}>
@@ -83,7 +85,9 @@ export function RecurrenceDetails({ context }: Props): JSX.Element {
         backgroundColor: '$surfaceSecondary',
         borderRadius: 12
       }}>
-      <Text variant="body1" sx={{ fontWeight: 'semibold', marginBottom: 4 }}>
+      <Text
+        variant="body1"
+        sx={{ fontFamily: 'Inter-SemiBold', marginBottom: 4 }}>
         Scheduling recurring swap
       </Text>
       <Text variant="caption" sx={{ color: '$textSecondary' }}>
