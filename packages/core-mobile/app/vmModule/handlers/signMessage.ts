@@ -11,6 +11,15 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { WalletType } from 'services/wallet/types'
 
+const EVM_SIGN_METHODS = new Set([
+  RpcMethod.ETH_SIGN,
+  RpcMethod.PERSONAL_SIGN,
+  RpcMethod.SIGN_TYPED_DATA,
+  RpcMethod.SIGN_TYPED_DATA_V1,
+  RpcMethod.SIGN_TYPED_DATA_V3,
+  RpcMethod.SIGN_TYPED_DATA_V4
+])
+
 export const signMessage = async ({
   walletId,
   walletType,
@@ -35,7 +44,8 @@ export const signMessage = async ({
       rpcMethod: method,
       data,
       accountIndex: account.index,
-      network
+      network,
+      fromAddress: EVM_SIGN_METHODS.has(method) ? account.addressC : undefined
     })
 
     resolve({

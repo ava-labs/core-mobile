@@ -12,7 +12,7 @@ import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
-  selectAccountByAddress,
+  selectAccountByAddressAndWalletId,
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
@@ -65,7 +65,10 @@ export const getAccountSelector = (
   walletId: string
 ): typeof selectActiveAccount => {
   if ('account' in signingData) {
-    return selectAccountByAddress(signingData.account)
+    // Scope to the active wallet that signs: an address from another wallet
+    // resolves to undefined (disabling approval) rather than being displayed
+    // while a different key signs
+    return selectAccountByAddressAndWalletId(walletId, signingData.account)
   }
   if (
     'accountIndex' in signingData &&

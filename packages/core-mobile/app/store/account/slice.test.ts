@@ -1,5 +1,9 @@
 import { RootState } from 'store/types'
-import { selectLedgerAddresses, selectLedgerAddressesByWalletId } from './slice'
+import {
+  selectAccountByAddressAndWalletId,
+  selectLedgerAddresses,
+  selectLedgerAddressesByWalletId
+} from './slice'
 import { LedgerAddresses } from './types'
 
 const makeLedgerAddress = (
@@ -170,5 +174,60 @@ describe('selectLedgerAddressesByWalletId', () => {
     } as unknown as Partial<RootState>)
 
     expect(selectLedgerAddressesByWalletId(state, 'w1')).toEqual([])
+  })
+})
+
+describe('selectAccountByAddressAndWalletId', () => {
+  // Same SVM address derived under two different wallets — the exact CP-14468
+  // scenario where a dApp-supplied pubkey could resolve to a non-active wallet.
+  const SVM_ADDRESS = 'SoLaNaPubKey1111111111111111111111111111111'
+  const accountW1 = {
+    id: 'w1-0',
+    walletId: 'w1',
+    index: 0,
+    addressC: '0xc1',
+    addressBTC: 'btc1',
+    addressSVM: SVM_ADDRESS
+  }
+  const accountW2 = {
+    id: 'w2-0',
+    walletId: 'w2',
+    index: 0,
+    addressC: '0xc2',
+    addressBTC: 'btc2',
+    addressSVM: SVM_ADDRESS
+  }
+
+  const stateWith = (...accounts: unknown[]): RootState =>
+    createMockState({
+      account: {
+        accounts: Object.fromEntries(
+          accounts.map(a => [(a as { id: string }).id, a])
+        ),
+        activeAccountId: '',
+        ledgerAddresses: {}
+      }
+    } as unknown as Partial<RootState>)
+
+  it('resolves the account when the address belongs to the given wallet', () => {
+    const state = stateWith(accountW1, accountW2)
+    expect(selectAccountByAddressAndWalletId('w1', SVM_ADDRESS)(state)).toEqual(
+      accountW1
+    )
+  })
+
+  it('returns undefined when the matching address belongs to a different wallet', () => {
+    // Only the non-active wallet holds the address — must NOT resolve to it.
+    const state = stateWith(accountW2)
+    expect(
+      selectAccountByAddressAndWalletId('w1', SVM_ADDRESS)(state)
+    ).toBeUndefined()
+  })
+
+  it('matches case-insensitively across address fields', () => {
+    const state = stateWith(accountW1)
+    expect(selectAccountByAddressAndWalletId('w1', '0xC1')(state)).toEqual(
+      accountW1
+    )
   })
 })
