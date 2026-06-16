@@ -797,6 +797,24 @@ describe('ApprovalController', () => {
       expect(mockRouter.back).toHaveBeenCalledTimes(1)
     })
 
+    it('goes back when on the injected connect modal group (dynamic [approvalId] child) and canGoBack is true', () => {
+      // CP-14385 moved the connect screen to a dynamic `[approvalId]` child, but
+      // RootNavigator stores the (signedIn) child = the modal GROUP name, so the
+      // route still ends with `authorizeInjectedDapp`. This guards that the
+      // dismissal (relied on for cross-origin nav cleanup) keeps matching.
+      mockCurrentRouteStore.getState.mockReturnValue({
+        currentRoute: '(modals)/authorizeInjectedDapp',
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
+      })
+      mockRouter.canGoBack.mockReturnValue(true)
+
+      approvalController.handleGoBackIfNeeded()
+
+      expect(mockRouter.back).toHaveBeenCalledTimes(1)
+    })
+
     it('goes back when on the ledgerReviewTransaction screen and canGoBack is true', () => {
       mockCurrentRouteStore.getState.mockReturnValue({
         currentRoute: '/ledgerReviewTransaction',
