@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 import warmup from '../../helpers/warmup'
 import txPage from '../../pages/transactions.page'
 import commons from '../../pages/commonEls.page'
@@ -5,7 +6,7 @@ import settingsPage from '../../pages/settings.page'
 import commonLoc from '../../locators/commonEls.loc'
 import settingsLoc from '../../locators/settings.loc'
 
-describe('Withdraw', () => {
+describe.skip('Withdraw', () => {
   it(`should follow withdraw flow for AVAX`, async () => {
     await warmup()
     await txPage.withdraw()

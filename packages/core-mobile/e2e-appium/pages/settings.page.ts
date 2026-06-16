@@ -1,5 +1,6 @@
 /* eslint-disable max-params */
 import { actions } from '../helpers/actions'
+import { getAndroidAppId } from '../helpers/warmup'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
 import commonElsLoc from '../locators/commonEls.loc'
@@ -879,7 +880,7 @@ class Settings {
       // resolve the launchable activity alias — use startActivity explicitly.
       await actions.delay(2000)
       if (driver.isAndroid) {
-        const appId = 'com.avaxwallet.internal'
+        const appId = getAndroidAppId()
         await driver.terminateApp(appId)
         await driver.activateApp(appId)
         await onboardingPage.exitMetroAfterLogin()
