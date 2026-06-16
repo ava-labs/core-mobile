@@ -285,6 +285,8 @@ class FusionService implements IFusionService {
   /**
    * Returns assets the user can swap to on the target chain for a given source asset and chain.
    * The MARKR service internally calls `getTargetChainAssets` and filters by supported routes.
+   *
+   * SDK 0.17.0 made this paginated — callers receive `{ assets, meta }` and pass `page` to advance.
    */
   async getBridgeableAssets(
     props: GetBridgeableAssetsProps
@@ -294,6 +296,25 @@ class FusionService implements IFusionService {
     } catch (error) {
       Logger.error('[FusionService] getBridgeableAssets failed', error)
       throw error
+    }
+  }
+
+  /**
+   * Returns the manager-level `recurring` namespace, or `null` when the
+   * TransferManager hasn't been initialized yet (`init()` never called, or
+   * thrown during init). The namespace itself is always present once the
+   * manager exists — fusion-sdk hoisted `recurring` from the Markr service
+   * to the manager (CP-14409), so we no longer reach in via `getService`.
+   * Consumers in `app/new/features/recurringSwap/` use this to call `quote`,
+   * `prepareFirstFill`, `listOrders`, `cancelOrder`, `getRouterAddress`,
+   * `checkEligibility`, `getRecurringChainInfo`.
+   */
+  get markrRecurring(): RecurringNamespace | null {
+    try {
+      return this.transferManager.recurring
+    } catch (error) {
+      Logger.error('[FusionService] markrRecurring access failed', error)
+      return null
     }
   }
 
