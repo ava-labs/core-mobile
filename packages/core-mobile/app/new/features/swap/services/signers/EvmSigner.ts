@@ -14,6 +14,10 @@ import { assert } from 'store/rpc/utils/assert'
 import Logger from 'utils/Logger'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
 import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
+import {
+  getActiveRecurringActionContext,
+  isRecurringAggregatorId
+} from 'features/recurringSwap/services/activeActionContext'
 import { BASIS_POINTS_DIVISOR } from '../../consts'
 import { buildRequestContext } from '../../utils/buildRequestContext'
 
@@ -232,6 +236,14 @@ export function createEvmSigner(
     // Markr (proves networkFees was loaded). The bypass skips the
     // modal's fee picker, so missing-fees would broadcast as 0.
     const hasUpstreamFees = typeof tx.maxFeePerGas === 'bigint'
+    // §A13: recurring synthetic Quotes have `serviceType === ServiceType.MARKR`
+    // (same as one-shot Markr swaps), so the existing serviceType gate alone
+    // would let recurring through. Exclude them explicitly — recurring TXs
+    // must always render the approval modal so the user sees the
+    // "Scheduling / Cancelling / Pausing / Unpausing recurring swap" preview.
+    const isRecurring = isRecurringAggregatorId(
+      stepDetails.quote.aggregator?.id
+    )
     // On batch fallback we suppress autoApprove on every per-tx call so
     // both the approve and the swap modal render the "Manual approval
     // required" banner — otherwise the swap could auto-approve silently
@@ -240,6 +252,7 @@ export function createEvmSigner(
       !manualReviewReason &&
       isQuickSwapsActive &&
       stepDetails.quote.serviceType === ServiceType.MARKR &&
+      !isRecurring &&
       !isApprove &&
       hasUpstreamFees &&
       !isCrossChainQuote(stepDetails.quote)
@@ -260,12 +273,30 @@ export function createEvmSigner(
           )
         }
       : baseContext
-    const requestContext = manualReviewReason
+    const contextWithManualReview = manualReviewReason
       ? {
           ...contextWithAutoApprove,
           [RequestContext.QUICK_SWAPS_MANUAL_REVIEW_REASON]: manualReviewReason
         }
       : contextWithAutoApprove
+
+    // §A13: when the SDK's synthetic `Quote` is from the recurring path
+    // (`aggregator.id` starts with `markr-recurring`), pull the rich
+    // display metadata from the per-action-type side-channel slot and
+    // attach it as RECURRING_SWAP so ApprovalScreen renders
+    // `<RecurrenceDetails />` above the standard tx details. The store is
+    // keyed by the action type derived from the aggregator id, so a
+    // concurrent fill + cancel can't stomp each other's previews on the
+    // second sign of a multi-tx flow.
+    const recurringActive = isRecurring
+      ? getActiveRecurringActionContext(stepDetails.quote.aggregator?.id)
+      : undefined
+    const requestContext = recurringActive
+      ? {
+          ...contextWithManualReview,
+          [RequestContext.RECURRING_SWAP]: recurringActive
+        }
+      : contextWithManualReview
 
     try {
       const result = await request({
@@ -371,6 +402,17 @@ export function createEvmSigner(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
       const isCrossChain = isCrossChainQuote(stepDetails.quote)
+      // §A13: recurring fills must never go through the Quick Swaps batch
+      // bypass — `dispatchAsBatch` attaches `SWAP_AUTO_APPROVE` and the
+      // batch validator would let a recurring fill auto-approve silently
+      // (creating a schedule + first fill without the user seeing the
+      // recurring preview). The sequential path uses `signOne`, which
+      // already excludes recurring from `shouldAttachAutoApprove` and
+      // injects `RECURRING_SWAP` context so `<RecurrenceDetails />`
+      // renders. Route recurring batches straight to sequential.
+      const isRecurring = isRecurringAggregatorId(
+        stepDetails.quote.aggregator?.id
+      )
       // The `eth_sendTransactionBatch` handler rejects batches with
       // fewer than 2 txs (the EVM module's Zod schema requires
       // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would
@@ -378,6 +420,7 @@ export function createEvmSigner(
       // marker and the swap would fail. Fall back to per-tx instead.
       if (
         !isQuickSwapsActive ||
+        isRecurring ||
         !allTxsHaveFees ||
         isCrossChain ||
         transactions.length < 2

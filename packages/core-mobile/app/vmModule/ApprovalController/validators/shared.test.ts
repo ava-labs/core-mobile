@@ -17,7 +17,12 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   }
 }))
 
-import { isBypassEligible, runValidateAndCapture } from './shared'
+import {
+  isBypassEligible,
+  MalformedRecurringSwapContextError,
+  readRecurringSwapApprovalContext,
+  runValidateAndCapture
+} from './shared'
 
 const SRC_TOKEN = '0xAAA0000000000000000000000000000000000001'
 const DST_TOKEN = '0xBBB0000000000000000000000000000000000002'
@@ -399,5 +404,48 @@ describe('shared.runValidateAndCapture telemetry', () => {
   it('emits exactly ONE event per validate() call', async () => {
     await runShared({})
     expect(mockAnalyticsCapture).toHaveBeenCalledTimes(1)
+  })
+})
+
+// EvmSigner.signOne still injects RECURRING_SWAP context onto the approval
+// request so the modal can render `<RecurrenceDetails />` above the standard
+// tx details (the SDK signs internally per Spec §A13, but mobile wraps each
+// `sign` call through ApprovalController). The validator boundary parses
+// that context; if it ever sees a malformed snapshot from a producer bug it
+// MUST throw rather than silently degrade — otherwise the user would sign
+// a recurring schedule shown as a one-shot swap.
+describe('readRecurringSwapApprovalContext', () => {
+  const makeReq = (recurringCtx: unknown): RpcRequest =>
+    ({
+      context: { [RequestContext.RECURRING_SWAP]: recurringCtx }
+    } as unknown as RpcRequest)
+
+  it('returns undefined when no context is present', () => {
+    expect(
+      readRecurringSwapApprovalContext({ context: {} } as unknown as RpcRequest)
+    ).toBeUndefined()
+  })
+
+  it('parses a valid fill context', () => {
+    const valid = {
+      type: 'fill' as const,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '1.00',
+      numberOfOrders: 4,
+      isUnlimited: false,
+      frequency: { unit: 'day', value: 1 }
+    }
+    expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
+  })
+
+  // Critical contract: silently returning undefined here would hide the
+  // RecurrenceDetails preview while the underlying recurring swap would
+  // still execute — user would sign a recurring schedule shown as a
+  // generic one-shot swap.
+  it('throws MalformedRecurringSwapContextError on a malformed payload', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(makeReq({ type: 'fill' }))
+    ).toThrow(MalformedRecurringSwapContextError)
   })
 })

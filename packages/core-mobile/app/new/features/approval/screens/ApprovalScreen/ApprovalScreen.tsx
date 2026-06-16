@@ -4,6 +4,8 @@ import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurringApprovalContext'
+import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -42,10 +44,31 @@ import {
   removeWebsiteItemIfNecessary
 } from './utils'
 
-const ApprovalScreen = ({
-  params: { request, displayData, signingData, onApprove, onReject }
+// Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
+// Splitting it out keeps the main render's cognitive complexity at its
+// pre-existing limit — the `if (isMalformed) return <></>` is a security
+// invariant (must short-circuit before Approve is reachable), not a render
+// branch we want inlined into the main component's JSX.
+const ApprovalScreen = (props: { params: ApprovalParams }): JSX.Element => {
+  const { recurringContext, isRecurringContextMalformed } =
+    useRecurringApprovalContext(props.params.request, props.params.onReject)
+  if (isRecurringContextMalformed) return <></>
+  return (
+    <ApprovalScreenInner
+      params={props.params}
+      recurringContext={recurringContext}
+    />
+  )
+}
+
+const ApprovalScreenInner = ({
+  params: { request, displayData, signingData, onApprove, onReject },
+  recurringContext
 }: {
   params: ApprovalParams
+  recurringContext: ReturnType<
+    typeof useRecurringApprovalContext
+  >['recurringContext']
 }): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
@@ -471,6 +494,7 @@ const ApprovalScreen = ({
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
+      {recurringContext && <RecurrenceDetails context={recurringContext} />}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
       {renderDetails()}
