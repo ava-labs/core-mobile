@@ -43,6 +43,7 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
+        - arguments: $ANDROID_GRADLE_ARGS
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -447,9 +448,11 @@ workflows:
         - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds; standalone builds skip this
+        # (sharing has no target and hard-fails), while pipeline failures still fail the build.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
-        - is_skippable: true
-        - variables: |- 
+        - variables: |-
             APP_VERSION=$APP_VERSION
             BUILD_NUMBER=$BUILD_NUMBER
   _update-android-datadog-dashboard:
@@ -499,6 +502,12 @@ workflows:
       opts:
         is_expand: false
     - ANDROID_BUILD_VARIANT: internalRelease
+      opts:
+        is_expand: false
+    # Must match @avalabs/crypto-nitro's hardcoded abiFilters (arm64-v8a, x86_64): nitro-modules
+    # honors this flag, so any ABI crypto-nitro builds beyond it fails to link. Dropping
+    # armeabi-v7a/x86 halves native compile; crypto never shipped .so for those ABIs anyway.
+    - ANDROID_GRADLE_ARGS: -PreactNativeArchitectures=arm64-v8a,x86_64
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
@@ -761,10 +770,13 @@ workflows:
     - IS_DEVICEFARM_RUN: "true"
       opts:
         is_expand: false
+    - WAIT_FOR_COMPLETION: "false"
+      opts:
+        is_expand: false
     steps:
     - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
         title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
+        no_output_timeout: 600
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
@@ -806,10 +818,13 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
+    - WAIT_FOR_COMPLETION: "false"
+      opts:
+        is_expand: false
     steps:
     - path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
         title: AWS Device Farm — upload & schedule run
-        no_output_timeout: 1800
+        no_output_timeout: 600
     - share-pipeline-variable@1:
         inputs:
         - variables: |-

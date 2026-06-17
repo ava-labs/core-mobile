@@ -8,7 +8,7 @@ import React from 'react'
 export default function AuthorizeInjectedDappLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
-      <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="[approvalId]" options={modalFirstScreenOptions} />
     </Stack>
   )
 }

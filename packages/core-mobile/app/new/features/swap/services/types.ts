@@ -17,6 +17,7 @@ import type {
   Fetch,
   SolanaSigner
 } from '@avalabs/fusion-sdk'
+import type { CctCallbacks } from './cct/createCctCallbacks'
 
 /**
  * The subset of PostHog feature flags consumed by FusionService.
@@ -25,6 +26,7 @@ export type FusionServiceFlags = Pick<
   FeatureFlags,
   | FeatureGates.FUSION_MARKR
   | FeatureGates.FUSION_AVALANCHE_EVM
+  | FeatureGates.FUSION_AVALANCHE_CCT
   | FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB
   | FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC
   | FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS
@@ -50,6 +52,12 @@ export interface FusionSigners {
 }
 
 /**
+ * Optional dependencies required only when the `AVALANCHE_CCT` service is
+ * enabled (the six callbacks the SDK's `AvalancheCctInitializer` consumes).
+ */
+export type FusionCctDependencies = CctCallbacks
+
+/**
  * Parameters for creating a Quoter instance
  * Extracts the parameter type from TransferManager's getQuoter method
  */
@@ -65,11 +73,13 @@ export interface IFusionService {
   init({
     bitcoinProvider,
     config,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     config: FusionConfig
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void>
 
   /**

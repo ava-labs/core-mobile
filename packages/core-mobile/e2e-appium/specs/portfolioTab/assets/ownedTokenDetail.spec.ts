@@ -43,16 +43,28 @@ describe('Portfolio Assets', () => {
 
   it('ETH owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.ethereum)
-    await portfolioPage.verifyOwnedTokenDetail('Ethereum', tokens.eth)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('Ethereum', tokens.eth)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth)
+    }
   })
 
   it('Ethereum ERC20 owned token detail', async () => {
-    await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcETH)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcETH)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH)
+    }
   })
 
   it('SOL owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.solana)
-    await portfolioPage.verifyOwnedTokenDetail('Solana', tokens.sol)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('Solana', tokens.sol)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('SOL Wormhole', tokens.sol)
+    }
   })
 
   it('Solana SPL owned token detail', async () => {

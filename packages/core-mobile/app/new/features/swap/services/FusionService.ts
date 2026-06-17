@@ -1,4 +1,5 @@
 import type {
+  AvalancheCctInitializer,
   CompletedTransfer,
   FailedTransfer,
   GasSettings,
@@ -33,6 +34,7 @@ import { MARKR_EVM_PARTNER_ID } from '../consts'
 import { isConcludedTransfer } from '../utils/transferStatus'
 import { fetchMarkrTargetChainAssets } from './fetchMarkrTargetChainAssets'
 import type {
+  FusionCctDependencies,
   FusionConfig,
   FusionServiceFlags,
   FusionSigners,
@@ -74,6 +76,10 @@ class FusionService implements IFusionService {
       services.push(ServiceType.AVALANCHE_EVM)
     }
 
+    if (featureFlags['fusion-avalanche-cct']) {
+      services.push(ServiceType.AVALANCHE_CCT)
+    }
+
     if (featureFlags['fusion-lombard-btc-to-btcb']) {
       services.push(ServiceType.LOMBARD_BTC_TO_BTCB)
     }
@@ -92,12 +98,14 @@ class FusionService implements IFusionService {
     btcFunctions,
     enabledServices,
     signers,
-    disableCrossChainSwaps
+    disableCrossChainSwaps,
+    cctDependencies
   }: {
     btcFunctions: BitcoinFunctions
     enabledServices: ServiceType[]
     signers: FusionSigners
     disableCrossChainSwaps: boolean
+    cctDependencies?: FusionCctDependencies
   }): ServiceInitializer[] {
     const initializers: ServiceInitializer[] = []
     for (const serviceType of enabledServices) {
@@ -119,6 +127,16 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm
           } satisfies EvmServiceInitializer)
+          break
+
+        case ServiceType.AVALANCHE_CCT:
+          if (!cctDependencies) {
+            throw fusionErrors.cctDependenciesMissing()
+          }
+          initializers.push({
+            type: serviceType,
+            ...cctDependencies
+          } satisfies AvalancheCctInitializer)
           break
 
         case ServiceType.LOMBARD_BTC_TO_BTCB:
@@ -150,18 +168,21 @@ class FusionService implements IFusionService {
   async init({
     bitcoinProvider,
     config,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     config: FusionConfig
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void> {
     try {
       const initializers = this.getServiceInitializers({
         btcFunctions: bitcoinProvider,
         enabledServices: config.enabledServices,
         signers,
-        disableCrossChainSwaps: config.disableCrossChainSwaps ?? false
+        disableCrossChainSwaps: config.disableCrossChainSwaps ?? false,
+        cctDependencies
       })
 
       // Ensure at least one service is enabled
@@ -209,13 +230,15 @@ class FusionService implements IFusionService {
     fetch,
     environment,
     featureFlags,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     fetch: Fetch
     environment: Environment
     featureFlags: FusionServiceFlags
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void> {
     const enabledServices = this.getEnabledServices(featureFlags)
     const disableCrossChainSwaps =
@@ -224,7 +247,8 @@ class FusionService implements IFusionService {
     return this.init({
       bitcoinProvider,
       config: { environment, enabledServices, fetch, disableCrossChainSwaps },
-      signers
+      signers,
+      cctDependencies
     })
   }
 

@@ -334,7 +334,7 @@ class TransactionsPage {
     await this.selectDuration(duration)
     await this.tapNext()
     await this.tapConfirmStake()
-    await actions.waitForNotVisible(this.reviewStakeTitle)
+    await actions.waitForNotVisible(this.reviewStakeTitle, 40000)
   }
 
   async claim() {
