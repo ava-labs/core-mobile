@@ -91,7 +91,14 @@ export type RouterDeps = {
     vmType?: NetworkVMType
   }) => void
 
-  // Connect approval — hook implements: stash in cache + navigate + park a promise.
-  // Resolves with user-selected accounts, rejects with EIP-1193 user-rejected on cancel.
-  requestConnectApproval: (peerMeta: PeerMeta) => Promise<Account[]>
+  // Connect approval — hook implements: register the request in the per-tab-keyed
+  // connect-approval registry (which mints a unique approvalId from tabId +
+  // requestId + a nonce) and navigate to the authorize screen. `requestId` is
+  // the JSON-RPC request id, passed as context (concurrent tabs are coordinated
+  // by the registry, CP-14385). Resolves with user-selected accounts, rejects
+  // with EIP-1193 user-rejected on cancel.
+  requestConnectApproval: (
+    peerMeta: PeerMeta,
+    requestId: number
+  ) => Promise<Account[]>
 }
