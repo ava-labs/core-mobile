@@ -1405,6 +1405,27 @@ describe('ApprovalController', () => {
       expect(mockDisconnect).not.toHaveBeenCalled()
     })
 
+    it('isLedgerSigningInProgress is false while only parked', () => {
+      const controller = new AbortController()
+      park(controller.signal)
+
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+    })
+
+    it('isLedgerSigningInProgress flips true once on-device Ledger signing begins', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      // Ledger sheet up (BLE connecting) — still cancellable, not signing yet.
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      // On-device signing begins → ledgerSigning (uncancellable).
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove()
+
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+    })
+
     it('does not bridge requests without a signal (WalletConnect / in-app)', () => {
       const other = new AbortController()
       setRequestSignal('some-other-id', other.signal)

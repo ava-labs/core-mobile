@@ -187,7 +187,16 @@ export function useEvmInjectedProvider(
             message: USER_REJECTED_REQUEST_MESSAGE
           })
         )
-        if (!handled && !connectApprovalRegistry.hasActive()) {
+        // Skip the generic pop while a signature is being confirmed on a Ledger:
+        // the cancel is already a no-op in that phase (the signing completes), so
+        // popping would just yank the review screen out from under the user
+        // mid-sign. The controller dismisses it itself once signing settles.
+        // (CP-14422)
+        if (
+          !handled &&
+          !connectApprovalRegistry.hasActive() &&
+          !approvalController.isLedgerSigningInProgress()
+        ) {
           approvalController.handleGoBackIfNeeded()
         }
       }

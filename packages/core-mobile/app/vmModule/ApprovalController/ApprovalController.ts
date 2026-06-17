@@ -220,6 +220,20 @@ class ApprovalController implements VmModuleApprovalController {
     onReject({ resolve })
   }
 
+  // True while any parked approval is mid on-device Ledger signing — the
+  // uncancellable window. `cancelParkedApproval` already no-ops in this phase so
+  // the signature completes; the cross-origin nav dismissal in `setCurrentUrl`
+  // checks this so it doesn't pop the `ledgerReviewTransaction` screen out from
+  // under a signature the user is still confirming on the device. Dismissals
+  // driven by the controller's own ledger lifecycle (completion / reject) call
+  // `handleGoBackIfNeeded` directly and are unaffected. (CP-14422)
+  isLedgerSigningInProgress = (): boolean => {
+    for (const entry of this.activeApprovals.values()) {
+      if (entry.phase === 'ledgerSigning') return true
+    }
+    return false
+  }
+
   handleGoBackIfNeeded = (): void => {
     const currentRoute = currentRouteStore.getState().currentRoute
     if (!router.canGoBack()) return
