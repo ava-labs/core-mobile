@@ -25,7 +25,7 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { AnimatedStyle } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -51,7 +51,7 @@ const DepositTabScreen = ({
 }: {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
   onHeaderLayout: (event: LayoutChangeEvent) => void
-  animatedHeaderStyle: { opacity: number }
+  animatedHeaderStyle: AnimatedStyle<ViewStyle>
   containerStyle?: StyleProp<ViewStyle>
   isActive: boolean
 }): JSX.Element => {

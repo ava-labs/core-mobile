@@ -20,7 +20,7 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { AnimatedStyle } from 'react-native-reanimated'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -34,7 +34,7 @@ import { BorrowPosition, BorrowSummary, MarketName } from '../../types'
 export interface BorrowTabScreenProps {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
   onHeaderLayout: (event: LayoutChangeEvent) => void
-  animatedHeaderStyle: { opacity: number }
+  animatedHeaderStyle: AnimatedStyle<ViewStyle>
   containerStyle?: StyleProp<ViewStyle>
   isActive: boolean
 }
