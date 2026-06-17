@@ -75,7 +75,7 @@ const recurringFrequencySchema = z
     // unit added upstream is automatically accepted by the validator
     // (avoids the silent drift bug of hand-mirroring the literal tuple).
     unit: z.enum(RECURRING_FREQUENCY_UNITS),
-    value: z.number().int().min(1)
+    value: z.number().int().min(1).max(RECURRING_FREQUENCY_VALUE_MAX)
   })
   .strict()
 
