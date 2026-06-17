@@ -31,12 +31,10 @@ export default function SwapLayout(): JSX.Element {
           />
           <Stack.Screen name="pricingDetails" />
           <Stack.Screen name="slippageDetails" />
-          {/* Recurring-swap screens (CP-14396 / CP-14399). Frequency and
-              number-of-orders are picked inline on the swap screen; only the
-              schedules list lives in its own stack. The review step is
-              intentionally skipped — pressing Next on the swap form goes
-              straight to the ApprovalController modal. */}
-          <Stack.Screen name="recurring/schedules" />
+          <Stack.Screen
+            name="recurring/schedules"
+            options={modalFirstScreenOptions}
+          />
         </Stack>
       </RecurringSwapContextProvider>
     </SwapContextProvider>
