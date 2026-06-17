@@ -36,6 +36,12 @@ interface PlaceOrderState {
   setStopLossPrice: (value: number | undefined) => void
 
   liquidationPrice: number
+
+  // Seeded baseline (effective, after clamping) so the Manage flow can tell
+  // whether the user has changed anything before enabling "Update position".
+  initialLeverage: number
+  initialTakeProfitPrice: number | undefined
+  initialStopLossPrice: number | undefined
 }
 
 const PlaceOrderContext = createContext<PlaceOrderState | undefined>(undefined)
@@ -69,9 +75,11 @@ export const PlaceOrderProvider = ({
   const [amount, setAmount] = useState(initialAmount)
   // Keep the starting leverage within the market's bounds even if the default
   // (or a seeded value) exceeds a low maxLeverage.
-  const [leverage, setLeverage] = useState(
-    Math.min(Math.max(1, initialLeverage), Math.max(1, maxLeverage))
+  const clampedInitialLeverage = Math.min(
+    Math.max(1, initialLeverage),
+    Math.max(1, maxLeverage)
   )
+  const [leverage, setLeverage] = useState(clampedInitialLeverage)
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )
@@ -108,7 +116,10 @@ export const PlaceOrderProvider = ({
         entryPrice,
         leverage,
         side === 'long'
-      )
+      ),
+      initialLeverage: clampedInitialLeverage,
+      initialTakeProfitPrice,
+      initialStopLossPrice
     }),
     [
       coin,
@@ -121,7 +132,10 @@ export const PlaceOrderProvider = ({
       takeProfitEnabled,
       takeProfitPrice,
       stopLossEnabled,
-      stopLossPrice
+      stopLossPrice,
+      clampedInitialLeverage,
+      initialTakeProfitPrice,
+      initialStopLossPrice
     ]
   )
 

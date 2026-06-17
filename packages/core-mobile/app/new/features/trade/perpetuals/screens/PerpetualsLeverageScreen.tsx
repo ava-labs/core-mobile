@@ -16,6 +16,10 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   // Local draft so gauge edits don't mutate the order until confirmed.
   const [draftLeverage, setDraftLeverage] = useState(leverage)
 
+  // Keep Done disabled until the user actually changes the leverage value,
+  // so it can't be tapped before a new value is ready to commit.
+  const isUnchanged = draftLeverage === leverage
+
   const handleConfirm = useCallback(() => {
     setLeverage(draftLeverage)
     router.back()
@@ -40,11 +44,12 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_leverage_done"
+        disabled={isUnchanged}
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [handleConfirm]
+    [handleConfirm, isUnchanged]
   )
 
   return (
