@@ -1,6 +1,6 @@
 import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
+import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useEffect } from 'react'
-import { Linking } from 'react-native'
 import { useSelector } from 'react-redux'
 import {
   selectIsSeedlessOnboardingAppleBlocked,
@@ -33,42 +33,6 @@ export default function Signup(): JSX.Element {
   useEffect(() => {
     isRegistering ? showLogoModal() : hideLogoModal()
   }, [hideLogoModal, isRegistering, showLogoModal])
-
-  // E2E only: bypass Google/Apple OAuth by handling core://seedless-login?id_token=<jwt>
-  // The Appium warmup triggers this deep link with a locally-signed JWT (same approach as core-web).
-  useEffect(() => {
-    if (Config.E2E !== 'true') return
-
-    const handleUrl = (url: string): void => {
-      if (!url.startsWith('core://seedless-login')) return
-      try {
-        const parsed = new URL(url)
-        const idToken = parsed.searchParams.get('id_token')
-        if (!idToken) return
-        resetSeedlessAuth()
-        register({
-          getOidcToken: () => Promise.resolve({ oidcToken: idToken }),
-          oidcProvider: OidcProviders.GOOGLE,
-          onRegisterMfaMethods: handleRegisterMfaMethods,
-          onVerifyMfaMethod: handleVerifyMfaMethod,
-          onAccountVerified: handleAccountVerified
-        }).catch(() => showSnackbar('Seedless E2E login failed'))
-      } catch {
-        // invalid URL
-      }
-    }
-
-    Linking.getInitialURL()
-      .then(url => {
-        if (url) handleUrl(url)
-      })
-      .catch(_e => {
-        /* ignore */
-      })
-    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url))
-    return () => sub.remove()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleSignupWithMnemonic = (): void => {
     router.navigate('/onboarding/mnemonic/termsAndConditions')
@@ -144,6 +108,21 @@ export default function Signup(): JSX.Element {
 
   const handleGoogleSignin = (): void => {
     resetSeedlessAuth()
+    // E2E: read JWT placed in clipboard by warmupSeedless(), skip Google OAuth UI
+    if (Config.E2E === 'true') {
+      Clipboard.getString()
+        .then(idToken => {
+          register({
+            getOidcToken: () => Promise.resolve({ oidcToken: idToken }),
+            oidcProvider: OidcProviders.GOOGLE,
+            onRegisterMfaMethods: handleRegisterMfaMethods,
+            onVerifyMfaMethod: handleVerifyMfaMethod,
+            onAccountVerified: handleAccountVerified
+          }).catch(() => showSnackbar('Seedless E2E login failed'))
+        })
+        .catch(() => showSnackbar('Seedless E2E: clipboard read failed'))
+      return
+    }
     register({
       getOidcToken: GoogleSigninService.signin,
       oidcProvider: OidcProviders.GOOGLE,

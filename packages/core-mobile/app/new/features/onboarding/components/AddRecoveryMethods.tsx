@@ -21,7 +21,7 @@ export const AddRecoveryMethods = ({
   const renderFooter = useCallback(() => {
     if (oidcAuth === undefined && allowsUserToAddLater) {
       return (
-        <Button type="tertiary" size="large" onPress={onSkip}>
+        <Button testID="skip_btn" type="tertiary" size="large" onPress={onSkip}>
           Skip
         </Button>
       )

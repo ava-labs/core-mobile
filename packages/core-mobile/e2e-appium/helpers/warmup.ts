@@ -78,8 +78,8 @@ function generateSeedlessIdToken(): string {
   const pk = process.env.TEST_OIDC_PRIVATE_KEY
   const issuer = process.env.TEST_OIDC_ISSUER
   const audience = process.env.TEST_OIDC_AUDIENCE
-  const sub = process.env.TEST_OIDC_SUB ?? 'test-seedless-user'
-  const email = process.env.TEST_OIDC_EMAIL ?? 'test-seedless@avalabs.org'
+  const sub = process.env.TEST_OIDC_SUB
+  const email = 'mobile-test-seedless@avalabs.org'
 
   if (!pk || !issuer || !audience) {
     throw new Error(
@@ -139,28 +139,34 @@ export async function warmupSeedless() {
   }
 
   const idToken = generateSeedlessIdToken()
-  const CSRF_STATE = 'appium-seedless-csrf-state'
 
-  // Bypass Google/Apple OAuth by triggering the app's seedless OAuth callback deep link directly
-  // with a JWT signed by the test private key registered with CubeSigner.
-  // App-side: 'core://seedless-login' must be added to DEEPLINK_WHITELIST and handled to call
-  // useSeedlessRegister with the provided id_token (same flow as post-Google-sign-in).
-  const deepLinkUrl = `core://seedless-login?id_token=${idToken}&state=${CSRF_STATE}&provider=google`
-  if (driver.isAndroid) {
-    const androidPackage = await driver.getCurrentPackage()
-    await driver.execute('mobile: deepLink', {
-      url: deepLinkUrl,
-      package: androidPackage
-    })
-  } else {
-    await driver.execute('mobile: deepLink', { url: deepLinkUrl })
-  }
+  // Place JWT in clipboard; app reads it in E2E mode when Continue with Google is tapped
+  // setClipboard requires base64-encoded content on Android
+  await driver.setClipboard(
+    Buffer.from(idToken).toString('base64'),
+    'plaintext'
+  )
+  await driver.pause(500)
 
-  // After deep link triggers seedless onboarding, complete PIN setup for new wallet
+  await actions.tap(onboardingPage.continueWithGoogle)
+  console.log('[seedless] tapped continueWithGoogle')
+
+  // Seedless onboarding: T&C → skip MFA → accept analytics → PIN → name → avatar → done
+  // Use direct taps (no wrong expectedEle that causes 20-second timeouts in seedless flow)
+  await actions.tap(onboardingPage.agreeAndContinue) // termsAndConditions
+  console.log('[seedless] tapped agreeAndContinue (T&C)')
+  await actions.tap(onboardingPage.skip) // addRecoveryMethods: skip TOTP/FIDO
+  console.log('[seedless] tapped skip (addRecoveryMethods)')
+  await actions.tap(onboardingPage.unlockBtn) // analyticsConsent: accept
+  console.log('[seedless] tapped unlockBtn (analyticsConsent)')
   await onboardingPage.enterPin()
+  console.log('[seedless] entered PIN')
   await onboardingPage.tapNextBtnOnNameWallet()
+  console.log('[seedless] tapped next on setWalletName')
   await onboardingPage.tapNextBtnOnAvatarScreen()
+  console.log('[seedless] tapped next on selectAvatar')
   await onboardingPage.tapLetsGo()
+  console.log('[seedless] tapped letsGo (confirmation)')
   await onboardingPage.verifyLoggedIn()
 }
 

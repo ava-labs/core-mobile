@@ -42,6 +42,10 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.unlockBtn)
   }
 
+  get skip() {
+    return selectors.getById(onboardingLoc.skip)
+  }
+
   get agreeAndContinue() {
     return selectors.getById(onboardingLoc.agreeAndContinue)
   }
@@ -191,6 +195,10 @@ class OnboardingPage {
 
   async tapUnlockBtn() {
     await actions.tap(this.unlockBtn, this.recoveryPhraseInput)
+  }
+
+  async tapSkip() {
+    await actions.tap(this.skip)
   }
 
   async tapAgreeAndContinue() {

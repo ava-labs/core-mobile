@@ -10,6 +10,7 @@ export default {
   unlockBtn: 'unlock_btn',
   agreeAndContinue: 'agreeAndContinueBtn',
   import: `import_btn`,
+  skip: 'skip_btn',
   enterPinSecondScreenTitle: 'Confirm your',
   enterPinFirstScreenTitle: 'Secure your wallet',
   pinInputField: 'pin_input',
