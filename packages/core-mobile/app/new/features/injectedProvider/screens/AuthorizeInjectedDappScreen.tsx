@@ -3,38 +3,73 @@ import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { showSnackbar } from 'new/common/utils/toast'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
-import { InjectedAuthParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { ActionSheet } from 'new/common/components/ActionSheet'
-import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { DappLogo } from 'common/components/DappLogo'
 import { Account } from 'store/account'
 import { SelectAccounts } from 'features/rpc/components/SelectAccounts'
+import { connectApprovalRegistry } from 'hooks/browser/injectedProvider/connectApprovalRegistry'
+import { applyConnectNavEffect } from 'hooks/browser/injectedProvider/connectApprovalNavigation'
+import {
+  EIP1193_USER_REJECTED_CODE,
+  USER_REJECTED_REQUEST_MESSAGE
+} from 'hooks/browser/injectedProvider/errors'
 
 const showNoActiveAccountMessage = (): void => {
   showSnackbar('There is no active account.')
 }
 
-const AuthorizeInjectedDappScreen = ({
-  params: { peerMeta, onApprove, onReject }
-}: {
-  params: InjectedAuthParams
-}): JSX.Element => {
+const dismissModal = (): void => {
+  if (router.canGoBack()) router.back()
+}
+
+const AuthorizeInjectedDappScreen = (): JSX.Element | null => {
+  const { approvalId } = useLocalSearchParams<{ approvalId: string }>()
   const activeAccount = useSelector(selectActiveAccount)
   const allAccounts = useSelector(selectAccounts)
   const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([])
   const approveDisabled = selectedAccounts.length === 0
 
+  // Reset selection when the route param changes — router.replace may reuse this
+  // component instance for the next queued approval, which must not inherit the
+  // prior dApp's selection / enabled confirm. (CP-14385 review)
+  useEffect(() => {
+    setSelectedAccounts([])
+  }, [approvalId])
+
   const rejectAndClose = useCallback(() => {
-    onReject()
-    router.canGoBack() && router.back()
-  }, [onReject])
+    if (!approvalId) {
+      dismissModal()
+      return
+    }
+    const navigated = applyConnectNavEffect(
+      connectApprovalRegistry.reject(approvalId, {
+        code: EIP1193_USER_REJECTED_CODE,
+        message: USER_REJECTED_REQUEST_MESSAGE
+      })
+    )
+    if (!navigated) dismissModal()
+  }, [approvalId])
 
   const approveAndClose = useCallback(() => {
-    onApprove(selectedAccounts)
-    router.canGoBack() && router.back()
-  }, [onApprove, selectedAccounts])
+    if (!approvalId) {
+      dismissModal()
+      return
+    }
+    const navigated = applyConnectNavEffect(
+      connectApprovalRegistry.resolve(approvalId, selectedAccounts)
+    )
+    if (!navigated) dismissModal()
+  }, [approvalId, selectedAccounts])
+
+  // The entry can already be gone by mount time (resolved / rejected / timed out
+  // before this screen mounted). Nothing to show → dismiss.
+  useEffect(() => {
+    if (approvalId && !connectApprovalRegistry.get(approvalId)) {
+      dismissModal()
+    }
+  }, [approvalId])
 
   useEffect(() => {
     if (!activeAccount) {
@@ -54,6 +89,10 @@ const AuthorizeInjectedDappScreen = ({
     },
     [selectedAccounts]
   )
+
+  const entry = approvalId ? connectApprovalRegistry.get(approvalId) : undefined
+  if (!entry) return null
+  const { peerMeta } = entry
 
   return (
     <ActionSheet
@@ -119,6 +158,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default withWalletConnectCache('injectedAuthParams')(
-  AuthorizeInjectedDappScreen
-)
+export default AuthorizeInjectedDappScreen
