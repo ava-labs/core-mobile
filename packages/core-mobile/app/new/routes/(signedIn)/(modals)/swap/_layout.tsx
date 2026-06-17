@@ -33,7 +33,18 @@ export default function SwapLayout(): JSX.Element {
           <Stack.Screen name="slippageDetails" />
           <Stack.Screen
             name="recurring/schedules"
-            options={modalFirstScreenOptions}
+            options={({ route }) => {
+              // Conditional header based on entry point (passed via the
+              // banner's `from` prop as a route param):
+              //   - `from === 'swap'` → user pushed the screen on top of
+              //      the swap form; keep the back button so they can
+              //      return to the form they were editing.
+              //   - default (Activity-tab entry) → schedules screen is
+              //      the first screen in this modal stack; hide the back
+              //      button (dismiss via the sheet close affordance).
+              const params = route.params as { from?: string } | undefined
+              return params?.from === 'swap' ? {} : modalFirstScreenOptions
+            }}
           />
         </Stack>
       </RecurringSwapContextProvider>

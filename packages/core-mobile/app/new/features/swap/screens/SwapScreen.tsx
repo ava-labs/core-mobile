@@ -1425,7 +1425,10 @@ export const SwapScreen = (): JSX.Element => {
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
         <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
+          {/* `from="swap"` threads through to the route param so the
+              schedules screen shows a back button (returns to this swap
+              form) instead of hiding it like the Activity-tab entry. */}
+          <RecurringSchedulesBanner from="swap" />
         </View>
       )}
       {renderFromAndToSections()}
@@ -1439,7 +1442,7 @@ export const SwapScreen = (): JSX.Element => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            marginTop: 8,
+            marginTop: 8
           }}>
           <Icons.Action.Info
             color={theme.colors.$textPrimary}
