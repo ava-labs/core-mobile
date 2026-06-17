@@ -10,6 +10,28 @@ export const RECURRING_SCHEDULES_QK = [
   ReactQueryKeys.RECURRING_SCHEDULES
 ] as const
 
+type Options = {
+  /**
+   * Poll interval in milliseconds. When set, the observer refetches
+   * `listOrders` on this cadence as long as the screen owning the observer
+   * is mounted (React Query handles pause-on-background + cleanup on
+   * unmount automatically).
+   *
+   * Only the management screen sets this — the banner / swap-modal
+   * observers leave it `false` so they don't generate background traffic
+   * when the user is on Activity / Swap without explicitly looking at
+   * recurring schedules.
+   */
+  refetchIntervalMs?: number | false
+  /**
+   * Override the default 5-minute `staleTime`. The management screen passes
+   * `0` so every mount refetches against Markr — the user is about to take
+   * destructive per-row actions and shouldn't tap Cancel against a stale
+   * snapshot. Banner / swap-modal observers omit it and keep the default.
+   */
+  staleTime?: number
+}
+
 /**
  * Lists recurring schedules for `(ownerAddress, chainId)` via the SDK.
  *
@@ -20,9 +42,11 @@ export const RECURRING_SCHEDULES_QK = [
  */
 export function useRecurringSchedules(
   ownerAddress: string | undefined,
-  chainId: number | undefined
+  chainId: number | undefined,
+  options: Options = {}
 ): UseQueryResult<readonly RecurringOrder[], Error> {
   const [isFusionServiceReady] = useIsFusionServiceReady()
+  const { refetchIntervalMs = false, staleTime = 5 * 60_000 } = options
 
   return useQuery<readonly RecurringOrder[]>({
     enabled:
@@ -31,8 +55,12 @@ export function useRecurringSchedules(
       ownerAddress !== '' &&
       chainId !== undefined,
     queryKey: [...RECURRING_SCHEDULES_QK, ownerAddress, chainId],
-    staleTime: 5 * 60_000,
+    staleTime,
     refetchOnWindowFocus: true,
+    // `refetchInterval` is per-observer in React Query — only the
+    // management screen passes a value here, so the banner observers stay
+    // event-driven (focus / unlock / staggered post-action invalidate).
+    refetchInterval: refetchIntervalMs,
     queryFn: async () => {
       const markrRecurring = FusionService.markrRecurring
       if (!markrRecurring) {

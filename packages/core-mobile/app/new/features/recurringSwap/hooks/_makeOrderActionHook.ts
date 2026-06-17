@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Address } from 'viem'
 import type { Chain, RecurringNamespace } from '@avalabs/fusion-sdk'
 import { isHttpError } from '@avalabs/fusion-sdk'
@@ -186,7 +186,15 @@ export function makeOrderActionHook(
       [run]
     )
 
-    return { isPending, mutate, mutateAsync: run }
+    // Memoize so the returned object's identity only changes when
+    // `isPending` flips. `run`/`mutate` are already stable (empty-deps
+    // useCallback), so this lets downstream `useCallback`s that close
+    // over `cancel`/`pause`/`unpause` stay stable too — see the screen's
+    // `confirmAndRun` deps for the consumer that benefits.
+    return useMemo(
+      () => ({ isPending, mutate, mutateAsync: run }),
+      [isPending, mutate, run]
+    )
   }
 }
 

@@ -34,6 +34,7 @@ import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
 import { toChain } from 'features/swap/utils/fusionTypeConverters'
 import { useRecurringSchedules } from '../hooks/useRecurringSchedules'
+import type { UseRecurringOrderAction } from '../hooks/_makeOrderActionHook'
 import { useCancelRecurringSchedule } from '../hooks/useCancelRecurringSchedule'
 import { usePauseRecurringSchedule } from '../hooks/usePauseRecurringSchedule'
 import { useUnpauseRecurringSchedule } from '../hooks/useUnpauseRecurringSchedule'
@@ -149,6 +150,16 @@ type ScheduleCardProps = {
   onRemove: ScheduleAction
   onPause: ScheduleAction
   onUnpause: ScheduleAction
+  /** False when the schedule's source chain can't be resolved (network
+   *  removed from the user's list, `toChain` failed). All action buttons
+   *  are disabled in that case — handlers would only surface a snackbar. */
+  isSourceChainAvailable: boolean
+  /** Hook-level pending flags (any row's cancel/pause/unpause in flight
+   *  on this screen). Closes the double-tap window between the confirm
+   *  alert dismissing and the per-row store entry flipping after broadcast. */
+  cancelInFlight: boolean
+  pauseInFlight: boolean
+  unpauseInFlight: boolean
 }
 
 function ScheduleCard({
@@ -157,7 +168,11 @@ function ScheduleCard({
   contractTokens,
   onRemove,
   onPause,
-  onUnpause
+  onUnpause,
+  isSourceChainAvailable,
+  cancelInFlight,
+  pauseInFlight,
+  unpauseInFlight
 }: ScheduleCardProps): JSX.Element {
   const {
     theme: { colors }
@@ -175,12 +190,30 @@ function ScheduleCard({
   // surface a confusing toast.
   const canCancel = isActive || isPaused
   // Pause needs the schedule to be active AND no pause/unpause already in
-  // flight; Unpause is the mirror condition for a paused schedule.
-  const canPause = isActive && !isPausing && !isCancelling
-  const canUnpause = isPaused && !isUnpausing && !isCancelling
+  // flight (per-row from the store, or screen-wide from the hook); Unpause
+  // is the mirror condition for a paused schedule. The hook-level
+  // `*InFlight` flags cover the brief window between the user confirming
+  // the native alert and the per-row entry being added in
+  // `pendingActionStore` after broadcast resolves.
+  const canPause =
+    isActive && !isPausing && !isCancelling && !pauseInFlight && !cancelInFlight
+  const canUnpause =
+    isPaused &&
+    !isUnpausing &&
+    !isCancelling &&
+    !unpauseInFlight &&
+    !cancelInFlight
   // While unpausing/pausing is mid-flight the cancel button is disabled to
   // prevent racing two on-chain TXs that mutate the same order.
-  const cancelDisabled = isCancelling || isPausing || isUnpausing || !canCancel
+  const cancelDisabled =
+    isCancelling ||
+    isPausing ||
+    isUnpausing ||
+    cancelInFlight ||
+    pauseInFlight ||
+    unpauseInFlight ||
+    !canCancel ||
+    !isSourceChainAvailable
 
   const [expanded, setExpanded] = useState(false)
   const chevronProgress = useSharedValue(0)
@@ -335,7 +368,7 @@ function ScheduleCard({
                 type="secondary"
                 size="medium"
                 style={{ flex: 1 }}
-                disabled={!canUnpause}
+                disabled={!canUnpause || !isSourceChainAvailable}
                 leftIcon={
                   isUnpausing ? (
                     <ActivityIndicator
@@ -352,7 +385,7 @@ function ScheduleCard({
                 type="secondary"
                 size="medium"
                 style={{ flex: 1 }}
-                disabled={!canPause}
+                disabled={!canPause || !isSourceChainAvailable}
                 leftIcon={
                   isPausing ? (
                     <ActivityIndicator
@@ -407,10 +440,31 @@ export function RecurringSchedulesScreen(): JSX.Element {
   const activeNetwork = useSelector(selectActiveNetwork)
   const chainId = activeNetwork?.chainId
 
-  const { data: schedules, isLoading } = useRecurringSchedules(
-    activeAccount?.addressC,
-    chainId
-  )
+  // Poll listOrders every 30s while this screen is mounted so the user sees
+  // server-side state changes (next-execution advancing after a fill,
+  // schedules completing, new failures indexed, cross-device cancellations)
+  // without having to leave and come back. React Query pauses the interval
+  // when the app backgrounds and resumes on foreground, and stops entirely
+  // when the screen unmounts — so this only costs traffic while the user
+  // is actually looking at the manage view. The banner / swap-modal
+  // observers don't pass an interval, so the shared cache stays
+  // event-driven elsewhere.
+  //
+  // `staleTime: 0` forces a refetch on every mount of this screen — the
+  // user is about to take destructive per-row actions and shouldn't tap
+  // Cancel against a snapshot that's up to 5 minutes old (the default
+  // banner staleTime). RQ's in-flight dedupe means concurrent mount /
+  // unlock-listener invalidates collapse to a single network call.
+  const {
+    data: schedules,
+    isLoading,
+    isError,
+    refetch
+  } = useRecurringSchedules(activeAccount?.addressC, chainId, {
+    refetchIntervalMs: 30_000,
+    staleTime: 0
+  })
+
   const contractTokens = useNetworkContractTokens(activeNetwork)
 
   const cancel = useCancelRecurringSchedule()
@@ -462,30 +516,60 @@ export function RecurringSchedulesScreen(): JSX.Element {
     [getNetwork]
   )
 
-  const handleRemove = useCallback(
-    (s: RecurringOrder, fromToken: ResolvedToken, toToken: ResolvedToken) => {
+  // Cancel / Pause / Unpause share the same shape: validate owner →
+  // resolve source chain → guard on missing network → confirm via native
+  // alert → fire-and-forget the SDK mutation (the hook signs + broadcasts
+  // internally via the evmSigner wired into FusionService, dispatching
+  // through ApprovalController so the user sees Core's in-app approval
+  // modal). Analytics + cache invalidation fire from the hook on
+  // broadcast resolution. Symbols thread through to the recurring-action
+  // side channel for the modal's preview block.
+  // The row tuple (schedule + two resolved tokens) is already the
+  // `ScheduleAction` shape used everywhere else in this screen; bundling
+  // them into an ad-hoc object just to satisfy max-params would obscure
+  // that, so suppress the rule across the arrow signature.
+  /* eslint-disable max-params */
+  const confirmAndRun = useCallback(
+    (
+      s: RecurringOrder,
+      fromToken: ResolvedToken,
+      toToken: ResolvedToken,
+      prompt: {
+        title: string
+        description: string
+        actionText: string
+        actionStyle?: 'destructive' | 'default'
+      },
+      mutation: UseRecurringOrderAction
+    ) => {
+      // Owner mismatch guard: the visible rows can briefly belong to a
+      // prior active account during an account switch (between the
+      // selector flip and the next listOrders refetch settling). If the
+      // user taps Cancel/Pause/Unpause in that window, the FusionService
+      // signer is already the new account's — signing for the old
+      // account's order would 401/403 with a generic "Try again" toast.
+      // Bail early with a clear message instead.
+      const owner = s.owner.toLowerCase()
+      const active = activeAccount?.addressC?.toLowerCase()
+      if (!active || owner !== active) {
+        showSnackbar('Switch to the schedule’s owner account to continue')
+        return
+      }
+
       const sourceChain = buildSourceChain(s)
       if (!sourceChain) {
         showSnackbar('Network not available — try again')
         return
       }
       showAlert({
-        title: 'Are you sure you want to cancel this recurring swap?',
-        description:
-          'Scheduled swaps may still execute while this action is confirmed.',
+        title: prompt.title,
+        description: prompt.description,
         buttons: [
           {
-            text: 'Remove',
-            style: 'destructive',
-            onPress: () => {
-              // Cancel is on-chain. The SDK signs and
-              // broadcasts internally via the evmSigner already wired into
-              // FusionService; that signer dispatches through
-              // ApprovalController so the user sees Core's in-app approval
-              // modal. Analytics + cache invalidation fire from the hook
-              // on broadcast resolution. Symbols thread through to the
-              // recurring-action side channel for the modal's preview block.
-              cancel.mutate({
+            text: prompt.actionText,
+            style: prompt.actionStyle ?? 'default',
+            onPress: () =>
+              mutation.mutate({
                 orderId: s.orderId,
                 address: s.owner,
                 sourceChain,
@@ -493,94 +577,66 @@ export function RecurringSchedulesScreen(): JSX.Element {
                 fromTokenSymbol: fromToken.symbol,
                 toTokenSymbol: toToken.symbol
               })
-            }
           },
-          {
-            text: 'Cancel',
-            style: 'default'
-          }
+          { text: 'Cancel', style: 'default' }
         ]
       })
     },
-    [cancel, buildSourceChain]
+    [buildSourceChain, activeAccount?.addressC]
+  )
+  /* eslint-enable max-params */
+
+  const handleRemove = useCallback<ScheduleAction>(
+    (s, fromToken, toToken) =>
+      confirmAndRun(
+        s,
+        fromToken,
+        toToken,
+        {
+          title: 'Are you sure you want to cancel this recurring swap?',
+          description:
+            'Scheduled swaps may still execute while this action is confirmed.',
+          actionText: 'Remove',
+          actionStyle: 'destructive'
+        },
+        cancel
+      ),
+    [confirmAndRun, cancel]
   )
 
-  // Pause and Unpause each gate behind a confirmation dialog so the user
-  // doesn't trigger an on-chain TX with one accidental tap (matches the
-  // pattern already used for Cancel above). Pause / Unpause aren't
-  // destructive — the action button uses `style: 'default'` rather than
-  // 'destructive'.
-  const handlePause = useCallback(
-    (s: RecurringOrder, fromToken: ResolvedToken, toToken: ResolvedToken) => {
-      const sourceChain = buildSourceChain(s)
-      if (!sourceChain) {
-        showSnackbar('Network not available — try again')
-        return
-      }
-      showAlert({
-        title: 'Pause this recurring swap?',
-        description:
-          'Existing token allowance is preserved, unpausing later does not require a new approval. ' +
-          'Scheduled swaps may still execute while this action is confirmed.',
-        buttons: [
-          {
-            text: 'Pause',
-            style: 'default',
-            onPress: () => {
-              pause.mutate({
-                orderId: s.orderId,
-                address: s.owner,
-                sourceChain,
-                chainId: s.chainId,
-                fromTokenSymbol: fromToken.symbol,
-                toTokenSymbol: toToken.symbol
-              })
-            }
-          },
-          {
-            text: 'Cancel',
-            style: 'default'
-          }
-        ]
-      })
-    },
-    [pause, buildSourceChain]
+  const handlePause = useCallback<ScheduleAction>(
+    (s, fromToken, toToken) =>
+      confirmAndRun(
+        s,
+        fromToken,
+        toToken,
+        {
+          title: 'Pause this recurring swap?',
+          description:
+            'Existing token allowance is preserved, unpausing later does not require a new approval. ' +
+            'Scheduled swaps may still execute while this action is confirmed.',
+          actionText: 'Pause'
+        },
+        pause
+      ),
+    [confirmAndRun, pause]
   )
 
-  const handleUnpause = useCallback(
-    (s: RecurringOrder, fromToken: ResolvedToken, toToken: ResolvedToken) => {
-      const sourceChain = buildSourceChain(s)
-      if (!sourceChain) {
-        showSnackbar('Network not available — try again')
-        return
-      }
-      showAlert({
-        title: 'Resume this recurring swap?',
-        description:
-          'Remaining fills will execute on the original cadence once this transaction confirms on-chain.',
-        buttons: [
-          {
-            text: 'Unpause',
-            style: 'default',
-            onPress: () => {
-              unpause.mutate({
-                orderId: s.orderId,
-                address: s.owner,
-                sourceChain,
-                chainId: s.chainId,
-                fromTokenSymbol: fromToken.symbol,
-                toTokenSymbol: toToken.symbol
-              })
-            }
-          },
-          {
-            text: 'Cancel',
-            style: 'default'
-          }
-        ]
-      })
-    },
-    [unpause, buildSourceChain]
+  const handleUnpause = useCallback<ScheduleAction>(
+    (s, fromToken, toToken) =>
+      confirmAndRun(
+        s,
+        fromToken,
+        toToken,
+        {
+          title: 'Resume this recurring swap?',
+          description:
+            'Remaining fills will execute on the original cadence once this transaction confirms on-chain.',
+          actionText: 'Unpause'
+        },
+        unpause
+      ),
+    [confirmAndRun, unpause]
   )
 
   const swapWord = `swap${manageableCount === 1 ? '' : 's'}`
@@ -602,7 +658,21 @@ export function RecurringSchedulesScreen(): JSX.Element {
           </Text>
         </View>
       )}
-      {!isLoading && manageableSchedules.length === 0 && (
+      {/* Distinguish "Markr fetch failed with no cached data" from "fetch
+          succeeded and you have zero schedules". The previous render
+          collapsed both into the empty state, which made a server
+          outage look like "your schedules disappeared". */}
+      {!isLoading && isError && manageableSchedules.length === 0 && (
+        <View sx={{ alignItems: 'center', paddingTop: 32, gap: 12 }}>
+          <Text variant="body2" sx={{ color: '$textSecondary' }}>
+            Couldn’t load recurring swaps.
+          </Text>
+          <Button type="secondary" size="medium" onPress={() => refetch()}>
+            Retry
+          </Button>
+        </View>
+      )}
+      {!isLoading && !isError && manageableSchedules.length === 0 && (
         <View sx={{ alignItems: 'center', paddingTop: 32 }}>
           <Text variant="body2" sx={{ color: '$textSecondary' }}>
             No recurring swaps found.
@@ -618,6 +688,14 @@ export function RecurringSchedulesScreen(): JSX.Element {
           onRemove={handleRemove}
           onPause={handlePause}
           onUnpause={handleUnpause}
+          // Pre-resolve the source chain once per row so the buttons can
+          // disable visually instead of relying on the post-tap snackbar.
+          // `buildSourceChain` is cheap (Redux lookup + a sync `toChain`),
+          // and runs inside the same memoized cycle as the parent render.
+          isSourceChainAvailable={buildSourceChain(s) !== undefined}
+          cancelInFlight={cancel.isPending}
+          pauseInFlight={pause.isPending}
+          unpauseInFlight={unpause.isPending}
         />
       ))}
     </ScrollScreen>
