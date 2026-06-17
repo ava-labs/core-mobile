@@ -1388,6 +1388,34 @@ describe('ApprovalController', () => {
       expect(mockOnReject).toHaveBeenCalled()
     })
 
+    it('drops out of ledgerSigning if the signing pipeline rejects without settling (no app-wide dismissal wedge)', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      const ledgerParams =
+        mockSetReviewTransactionParams.mock.calls[
+          mockSetReviewTransactionParams.mock.calls.length - 1
+        ][0]
+      // On-device signing begins, then the handler pipeline rejects WITHOUT ever
+      // calling resolve (e.g. a handler that throws before settling).
+      mockOnApprove.mockRejectedValueOnce(new Error('signing blew up'))
+      await ledgerParams.onApprove().catch(() => undefined)
+
+      // Phase must NOT be stuck in ledgerSigning — otherwise
+      // isLedgerSigningInProgress() stays true forever and every future
+      // cross-origin nav across all tabs silently stops dismissing the approval
+      // screen. (CP-14422)
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      // And the orphaned request is cancellable again (back in ledgerPending):
+      // a nav now tears down BLE + settles it.
+      mockOnReject.mockClear()
+      controller.abort()
+      await flushMicrotasks()
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
     it('is a no-op when aborted after on-device Ledger signing has started', async () => {
       const controller = new AbortController()
       const parked = park(controller.signal)
@@ -1452,17 +1480,27 @@ describe('ApprovalController', () => {
       clearRequestSignal('some-other-id')
     })
 
-    it('cancels immediately and skips opening the modal if already aborted before parking', () => {
+    it('cancels immediately and neither caches params nor opens a modal if already aborted before parking', () => {
       const controller = new AbortController()
       controller.abort()
+      setRequestSignal(REQ_ID, controller.signal)
       mockOnReject.mockClear()
       mockRouter.navigate.mockClear()
+      mockWalletConnectCacheSet.mockClear()
 
-      park(controller.signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: REQ_ID, sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
 
       expect(mockOnReject).toHaveBeenCalled()
       // No stale modal for a request that's already dead. (pre-park race)
       expect(mockRouter.navigate).not.toHaveBeenCalled()
+      // And we must NOT leave the parked callbacks (incl. the now-dead resolve
+      // closure) + request data sitting in the single-slot cache: nothing would
+      // consume/clear it since the approval screen never mounts. (CP-14422)
+      expect(mockWalletConnectCacheSet).not.toHaveBeenCalled()
     })
 
     it('stays cancellable during a retryable Ledger error (BLE torn down if aborted then)', async () => {

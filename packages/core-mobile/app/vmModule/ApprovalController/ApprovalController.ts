@@ -435,7 +435,19 @@ class ApprovalController implements VmModuleApprovalController {
       onApprove: () => {
         // On-device signing begins — uncancellable from here. (CP-14422)
         this.setApprovalPhase(requestId, 'ledgerSigning')
-        return onApprove({ ...params, signingData, resolve: resolveWithRetry })
+        // Defensive: a signing handler that rejects WITHOUT ever calling resolve
+        // would otherwise strand this entry in `ledgerSigning` — wedging
+        // isLedgerSigningInProgress() so cross-origin dismissal silently dies
+        // app-wide. Drop back to `ledgerPending` on such a throw so a nav can
+        // still cancel + tear down (and re-throw to preserve the UI's existing
+        // error handling). Promise.resolve wraps the (mockable) call so a
+        // non-promise return is handled too. (CP-14422)
+        return Promise.resolve(
+          onApprove({ ...params, signingData, resolve: resolveWithRetry })
+        ).catch(error => {
+          this.setApprovalPhase(requestId, 'ledgerPending')
+          throw error
+        })
       },
       onReject: (_message?: string) => {
         this.userCancelledMap.set(requestId, true)
@@ -506,6 +518,16 @@ class ApprovalController implements VmModuleApprovalController {
     })
 
     return new Promise<ApprovalResponse>(resolve => {
+      // Settle (and clean up Ledger BLE) if this request is cancelled by a
+      // cross-origin nav while the modal is parked. No-op for non-browser
+      // requests (they register no AbortSignal). If the request was already
+      // aborted before we got here (nav landed in the pre-park window), it's
+      // cancelled synchronously via the resolve we hand it — return BEFORE
+      // caching params or navigating, so we neither open a stale modal nor leave
+      // the parked callbacks (incl. this resolve closure) + request data sitting
+      // in the single-slot cache with nothing to consume/clear them. (CP-14422)
+      if (this.registerCancelBridge(requestId, resolve)) return
+
       walletConnectCache.approvalParams.set({
         request,
         displayData: enrichedDisplayData,
@@ -523,14 +545,6 @@ class ApprovalController implements VmModuleApprovalController {
           onReject({ resolve, message })
         }
       })
-
-      // Settle (and clean up Ledger BLE) if this request is cancelled by a
-      // cross-origin nav while the modal is parked. No-op for non-browser
-      // requests (they register no AbortSignal). If the request was already
-      // aborted before we got here (nav landed in the pre-park window), it's
-      // cancelled synchronously — don't open a modal that's already stale.
-      // (CP-14422)
-      if (this.registerCancelBridge(requestId, resolve)) return
 
       router.navigate({
         pathname: '/approval',
