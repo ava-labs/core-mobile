@@ -1,13 +1,11 @@
 import React from 'react'
 import { Text, View } from '@avalabs/k2-alpine'
 import type { RecurringSwapApprovalContext } from 'vmModule/ApprovalController/validators/shared'
+import { formatFrequencyShort } from 'features/recurringSwap/utils/formatFrequency'
 
 type Props = {
   context: RecurringSwapApprovalContext
 }
-
-const unitToLabel = (unit: string, value: number): string =>
-  `${value} ${unit}${value === 1 ? '' : 's'}`
 
 // Copy + headline for each non-fill recurring action. The fill variant has
 // its own richer summary built below.
@@ -69,12 +67,14 @@ export function RecurrenceDetails({ context }: Props): JSX.Element {
     ? 'for an unlimited amount of time'
     : `for ${context.numberOfOrders} orders`
 
+  // Reuse the canonical short-form frequency formatter from
+  // `recurringSwap/utils/formatFrequency` so this preview stays in sync
+  // with the manage screen's row summary (also `formatFrequencyShort`)
+  // and the picker's `formatFrequency`. Singular form is "week" (not
+  // "1 week"), which reads more naturally inside "every {…}, for N orders".
   const summary =
     `You will swap ${context.amountPerOrderFormatted} ${context.fromTokenSymbol} for ${context.toTokenSymbol} ` +
-    `every ${unitToLabel(
-      context.frequency.unit,
-      context.frequency.value
-    )}, ${ordersClause}. ` +
+    `every ${formatFrequencyShort(context.frequency)}, ${ordersClause}. ` +
     `First swap executes immediately after approval. ` +
     `Each swap requires sufficient balance, otherwise the swap will fail.`
 

@@ -65,7 +65,7 @@ const readAutoApproveContext = (
 // Slim schema for the display-only recurring-swap context that EvmSigner
 // (`features/swap/services/signers/EvmSigner.ts`) injects onto an
 // ApprovalController request when the SDK's synthetic Quote carries a
-// `markr-recurring*` aggregator id (Spec §A13.5). Strict zod validation at
+// `markr-recurring*` aggregator id. Strict zod validation at
 // the read boundary — a malformed snapshot throws so the caller can block
 // the approval rather than silently presenting a recurring schedule as a
 // one-shot swap.
@@ -79,16 +79,38 @@ const recurringFrequencySchema = z
   })
   .strict()
 
+// Wire sentinel the fusion-sdk's quote normalizer emits for "Unlimited"
+// schedules: see `markrRecurringQuote` in `@avalabs/fusion-sdk` —
+// `Infinity` (UI sentinel) is translated to `-1` before POST /recurring/quote,
+// and the response schema (`RecurringQuoteResponseSchema.numberOfOrders` =
+// `z.number().int()`) echoes it back unchanged. So `quote.numberOfOrders`
+// is `-1` on unlimited responses, which `submitRecurringSwap` forwards
+// verbatim into this side-channel context.
+const UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL = -1
+
 const recurringFillContextSchema = z
   .object({
     type: z.literal('fill'),
     fromTokenSymbol: z.string().min(1),
     toTokenSymbol: z.string().min(1),
     amountPerOrderFormatted: z.string().min(1),
-    // Markr's documented floor for finite schedules is 2 (a "1-order
-    // schedule" is just a one-shot swap). Matches the recurring details
-    // picker's `MIN_ORDERS = 2`.
-    numberOfOrders: z.number().int().min(2).max(RECURRING_FREQUENCY_VALUE_MAX),
+    // Either the wire sentinel for unlimited schedules (`-1`) or a finite
+    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented
+    // floor for finite schedules is 2 (a "1-order schedule" is just a
+    // one-shot swap) — matches the picker's `MIN_ORDERS = 2`. The
+    // cross-field refinement on the outer union enforces that `isUnlimited`
+    // and the sentinel agree.
+    numberOfOrders: z
+      .number()
+      .int()
+      .refine(
+        v =>
+          v === UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL ||
+          (v >= 2 && v <= RECURRING_FREQUENCY_VALUE_MAX),
+        {
+          message: `numberOfOrders must be ${UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL} (unlimited sentinel) or in [2, ${RECURRING_FREQUENCY_VALUE_MAX}]`
+        }
+      ),
     isUnlimited: z.boolean(),
     frequency: recurringFrequencySchema
   })
@@ -102,10 +124,24 @@ const recurringOrderActionContextSchema = z
   })
   .strict()
 
-export const recurringSwapApprovalContextSchema = z.discriminatedUnion('type', [
-  recurringFillContextSchema,
-  recurringOrderActionContextSchema
-])
+export const recurringSwapApprovalContextSchema = z
+  .discriminatedUnion('type', [
+    recurringFillContextSchema,
+    recurringOrderActionContextSchema
+  ])
+  .superRefine((data, ctx) => {
+    if (data.type !== 'fill') return
+    const isWireSentinel =
+      data.numberOfOrders === UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL
+    if (data.isUnlimited !== isWireSentinel) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['isUnlimited'],
+        message:
+          'isUnlimited must be true iff numberOfOrders is the unlimited wire sentinel (-1)'
+      })
+    }
+  })
 
 export type RecurringSwapApprovalContext = z.infer<
   typeof recurringSwapApprovalContextSchema

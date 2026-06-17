@@ -37,9 +37,9 @@ import {
  * Process one schedule snapshot. Mutates `seenFailures` in-place and returns
  * a `failuresDirty` flag so the caller can decide whether to persist.
  *
- * AC4 auto-cancel (silent HTTP cancel on repeated failures) was removed when
- * the SDK's cancel endpoint switched to on-chain calldata — a
- * silent listener can no longer sign + broadcast a TX without the user. The
+ * The silent HTTP auto-cancel on repeated failures was removed when the
+ * SDK's cancel endpoint switched to on-chain calldata — a silent listener
+ * can no longer sign + broadcast a TX without the user. The
  * listener still surfaces the failure snackbar in-app; completed/failed
  * analytics live in the notification sender service, not on mobile, because
  * the client only observes them when the app happens to be foregrounded.
@@ -147,13 +147,15 @@ function reconcilePendingActions(schedules: readonly RecurringOrder[]): void {
   const orderIds = Object.keys(pending)
   if (orderIds.length === 0) return
 
-  const byId = new Map(schedules.map(s => [s.orderId, s]))
+  const byId = new Map<string, RecurringOrder>(
+    schedules.map(s => [s.orderId, s])
+  )
   for (const orderId of orderIds) {
     if (isExpired(orderId)) {
       clearPending(orderId)
       continue
     }
-    const match = byId.get(orderId as `0x${string}`)
+    const match = byId.get(orderId)
     const entry = pending[orderId]
     if (!match || !entry) {
       clearPending(orderId)

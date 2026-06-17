@@ -409,7 +409,7 @@ describe('shared.runValidateAndCapture telemetry', () => {
 
 // EvmSigner.signOne still injects RECURRING_SWAP context onto the approval
 // request so the modal can render `<RecurrenceDetails />` above the standard
-// tx details (the SDK signs internally per Spec §A13, but mobile wraps each
+// tx details (the SDK signs internally, but mobile wraps each
 // `sign` call through ApprovalController). The validator boundary parses
 // that context; if it ever sees a malformed snapshot from a producer bug it
 // MUST throw rather than silently degrade — otherwise the user would sign
@@ -437,6 +437,75 @@ describe('readRecurringSwapApprovalContext', () => {
       frequency: { unit: 'day', value: 1 }
     }
     expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
+  })
+
+  // Regression for the unlimited DCA modal-auto-reject bug: the fusion-sdk's
+  // `markrRecurringQuote` normalizer translates the UI's `Infinity` sentinel
+  // to `-1` on the wire, and the response echoes that back unchanged.
+  // `submitRecurringSwap` forwards `quote.numberOfOrders` verbatim into this
+  // side-channel context, so the schema MUST accept `-1` when isUnlimited is
+  // true — otherwise the validator throws,
+  // `useRecurringApprovalContext` calls `onReject`, and the user can never
+  // confirm an unlimited schedule.
+  it('parses a valid unlimited fill context (numberOfOrders = -1 sentinel)', () => {
+    const valid = {
+      type: 'fill' as const,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '1.00',
+      numberOfOrders: -1,
+      isUnlimited: true,
+      frequency: { unit: 'day', value: 1 }
+    }
+    expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
+  })
+
+  it('rejects isUnlimited=true with a finite numberOfOrders (claim mismatch)', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: 4,
+          isUnlimited: true,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  it('rejects isUnlimited=false with the wire sentinel (claim mismatch)', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: -1,
+          isUnlimited: false,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  it('rejects out-of-range finite numberOfOrders', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: 1,
+          isUnlimited: false,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
   })
 
   // Critical contract: silently returning undefined here would hide the

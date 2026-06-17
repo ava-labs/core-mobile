@@ -1,18 +1,25 @@
 /**
  * Tests for startRecurringFailureWatcher() — the React Query cache subscriber
  * that detects new schedule failures and surfaces the in-app snackbar. The
- * silent AC4 auto-cancel was removed when cancel switched to on-chain calldata;
+ * silent HTTP auto-cancel was removed when cancel switched to on-chain calldata;
  * completed/failed analytics moved to the notification sender service because
  * the client only sees them when the app is foregrounded.
  */
 
 // ─── MMKV mock (must be before imports) ───────────────────────────────────────
 
-const mockMmkvStore: Record<string, string> = {}
+const mockMmkvStore: Record<string, string | boolean> = {}
 jest.mock('utils/mmkv/storages', () => ({
   commonStorage: {
-    getString: (k: string) => mockMmkvStore[k],
-    set: (k: string, v: string) => {
+    getString: (k: string) => {
+      const v = mockMmkvStore[k]
+      return typeof v === 'string' ? v : undefined
+    },
+    getBoolean: (k: string) => {
+      const v = mockMmkvStore[k]
+      return typeof v === 'boolean' ? v : undefined
+    },
+    set: (k: string, v: string | boolean) => {
       mockMmkvStore[k] = v
     }
   }
@@ -273,7 +280,7 @@ describe('startRecurringFailureWatcher', () => {
     expect(showSnackbarSpy).toHaveBeenCalledTimes(1)
   })
 
-  // ── 2. AC4 auto-cancel removed ────────────────────────────────────────────
+  // ── 2. Silent auto-cancel removed ─────────────────────────────────────────
   // The listener no longer dispatches any cancel — cancel is on-chain and
   // requires user signing. Failure detection still surfaces the in-app
   // snackbar; surfacing a "please cancel" affordance is mobile-side

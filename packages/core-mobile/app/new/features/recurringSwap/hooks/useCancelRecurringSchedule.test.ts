@@ -4,9 +4,9 @@ import { HttpError, type Chain } from '@avalabs/fusion-sdk'
 import React from 'react'
 import { useCancelRecurringSchedule } from './useCancelRecurringSchedule'
 
-// Post-§A13: the hook now calls `markrRecurring.executeCancellation` —
-// the SDK signs and broadcasts internally. No ApprovalController dispatch
-// from mobile, no calldata returned.
+// The hook calls `markrRecurring.executeCancellation` — the SDK signs and
+// broadcasts internally. No ApprovalController dispatch from mobile, no
+// calldata returned.
 const mockExecuteCancellation = jest.fn()
 const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
@@ -132,8 +132,8 @@ describe('useCancelRecurringSchedule', () => {
     // visible with a spinner instead of optimistically disappearing.
     expect(mockMarkPending).toHaveBeenCalledWith(CANCEL_ARGS.orderId, 'cancel')
 
-    // Analytics fire from the hook on success (pre-§A13 this was a
-    // separate listener).
+    // Analytics fire from the hook on success (previously this lived in a
+    // separate Redux listener watching the broadcast action).
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapCancelledByUser', {
       encrypted: {
         orderId: CANCEL_ARGS.orderId,

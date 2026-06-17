@@ -76,7 +76,11 @@ function shortenAddress(addr: string): string {
 
 type ResolvedToken = {
   symbol: string
-  decimals: number
+  // `null` when the token can't be matched against the active network's
+  // catalog (un-indexed / removed token). Callers must render a placeholder
+  // — defaulting to 18 here would silently format e.g. a 6-decimal USDC
+  // order (`1_000_000n`) as ~0 in the summary.
+  decimals: number | null
   logoUri?: string
 }
 
@@ -103,14 +107,14 @@ function resolveTokenInfo(
     const decimals =
       'decimals' in match && typeof match.decimals === 'number'
         ? match.decimals
-        : 18
+        : null
     return {
       symbol: match.symbol ?? shortenAddress(address),
       decimals,
       logoUri: match.logoUri
     }
   }
-  return { symbol: shortenAddress(address), decimals: 18 }
+  return { symbol: shortenAddress(address), decimals: null }
 }
 
 function formatSummary(
@@ -119,7 +123,19 @@ function formatSummary(
   toToken: ResolvedToken
 ): string {
   const cadence = formatFrequencyShort(s.frequency)
-  const amount = formatTokenAmount(bigintToBig(s.amount, fromToken.decimals))
+  // Default 2 max-fraction digits matches the rest of the app's
+  // `formatTokenAmount` usage. The 2nd-arg override would let some
+  // 18-decimal tokens render up to 18 fractional digits; we keep this
+  // preview in lock-step with send/swap previews instead.
+  //
+  // If the token isn't in the active network's catalog
+  // (`resolveTokenInfo` returns `decimals: null`), we'd otherwise lie
+  // about the amount — render an em-dash placeholder so the row remains
+  // useful (symbol + cadence + orders) without misrepresenting the size.
+  const amount =
+    fromToken.decimals === null
+      ? '—'
+      : formatTokenAmount(bigintToBig(s.amount, fromToken.decimals))
   const ordersClause =
     s.numberOfOrders === RECURRING_UNLIMITED_ORDERS_SENTINEL
       ? 'for ∞ orders'

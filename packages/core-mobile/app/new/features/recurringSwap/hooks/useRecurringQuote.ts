@@ -54,8 +54,15 @@ export function useRecurringQuote(
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- intentional fine-grained queryKey
     queryKey: [
       ReactQueryKeys.RECURRING_QUOTE,
+      // Both chains keyed even though Markr recurring is same-chain-only
+      // today (`RecurringChainInfo` is keyed by a single EVM chainId).
+      // `localId` for ERC-20s is just the contract address (no chain
+      // embedded), so keying both sides matches `useRecurringEligibility`'s
+      // explicit source/target chainId pattern and avoids a latent
+      // collision if cross-chain recurring is ever introduced.
       params.fromToken?.networkChainId,
       params.fromToken?.localId,
+      params.toToken?.networkChainId,
       params.toToken?.localId,
       params.amountPerOrder?.toString(),
       params.numberOfOrders === undefined

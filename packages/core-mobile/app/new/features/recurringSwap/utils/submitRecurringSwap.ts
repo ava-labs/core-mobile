@@ -151,6 +151,10 @@ export async function submitRecurringSwap(
   // otherwise a stale 'fill' could bleed into a later unrelated swap that
   // shares the prefix detector but predates a future SDK aggregator-id
   // change.
+  // Default 2 max-fraction digits matches the rest of the app's
+  // `formatTokenAmount` usage. Sub-cent amounts (e.g. 0.001 AVAX) will
+  // render as "0.00" by design — consistent with how send/swap previews
+  // format elsewhere, and not worth diverging just for this preview.
   const amountPerOrderFormatted = formatTokenAmount(
     bigintToBig(amountPerOrder, fromTokenDecimals)
   )
@@ -210,8 +214,9 @@ export async function submitRecurringSwap(
 
     // ── Post-broadcast effects ──────────────────────────────────────────────
     // These used to fire from a Redux listener watching the `step: 'fill'`
-    // `onInAppRequestSucceeded` action. After the §A13 pivot the SDK call's
-    // own resolution is the success signal; we fire the same effects here.
+    // `onInAppRequestSucceeded` action. Now that the SDK signs and broadcasts
+    // internally, the SDK call's own resolution is the success signal; we
+    // fire the same effects here.
 
     AnalyticsService.capture('RecurringSwapScheduled', {
       encrypted: {

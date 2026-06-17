@@ -30,9 +30,9 @@ export const useRecurringSchedulesListener = (
   // `unknown` and the `useEffect` cleanup contract rejects it. Use
   // `@ts-expect-error` (not `@ts-ignore`) so this suppression breaks
   // loudly the day redux's typings catch up.
-  // @ts-expect-error see comment above
   useEffect(() => {
-    return dispatch(
+    // @ts-expect-error see comment above
+    const unsubscribe: () => void = dispatch(
       addListener({
         actionCreator: onAppUnlocked,
         effect: () => {
@@ -40,5 +40,6 @@ export const useRecurringSchedulesListener = (
         }
       })
     )
+    return unsubscribe
   }, [dispatch, queryClient])
 }

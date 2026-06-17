@@ -70,6 +70,27 @@ describe('<RecurrenceDetails />', () => {
     ).toBe(true)
   })
 
+  // Harmonised with `formatFrequencyShort` (the canonical frequency
+  // formatter shared with the manage screen): a `value: 1` schedule
+  // reads as "every week" — not the old "every 1 week" form the local
+  // pluralizer produced before consolidation.
+  it('renders the singular frequency form ("every week", not "every 1 week")', async () => {
+    const ctx = {
+      ...fillCtx,
+      frequency: { unit: 'week' as const, value: 1 }
+    }
+    let instance!: renderer.ReactTestRenderer
+    await act(async () => {
+      instance = renderer.create(<RecurrenceDetails context={ctx} />)
+    })
+    const json = instance.toJSON() as
+      | renderer.ReactTestRendererJSON
+      | renderer.ReactTestRendererJSON[]
+      | null
+    expect(containsText(json, 'every week,')).toBe(true)
+    expect(containsText(json, 'every 1 week')).toBe(false)
+  })
+
   it('renders "for an unlimited amount of time" when isUnlimited', async () => {
     const ctx = { ...fillCtx, isUnlimited: true, numberOfOrders: 365 }
     let instance!: renderer.ReactTestRenderer

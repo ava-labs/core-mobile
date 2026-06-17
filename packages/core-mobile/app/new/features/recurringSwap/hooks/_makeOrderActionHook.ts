@@ -104,6 +104,11 @@ export function makeOrderActionHook(
     // Track mount state so `setIsPending(false)` (and any other deferred
     // state updates) don't fire after unmount.
     const isMountedRef = useRef(true)
+    // Re-entrancy guard: the disabled-button UX prevents most double-fires,
+    // but two `mutate` calls in the same tick still start two `run`s and
+    // the first to settle would flip `isPending` off mid-flight on the
+    // second. Drop calls while one is already in flight.
+    const inFlightRef = useRef(false)
     useEffect(
       () => () => {
         isMountedRef.current = false
@@ -119,6 +124,8 @@ export function makeOrderActionHook(
     // `mutate` reference that downstream `useCallback`s depend on.
 
     const run = useCallback(async (args: OrderActionArgs): Promise<void> => {
+      if (inFlightRef.current) return
+      inFlightRef.current = true
       if (isMountedRef.current) setIsPending(true)
       try {
         const markrRecurring = FusionService.markrRecurring
@@ -174,6 +181,7 @@ export function makeOrderActionHook(
         // Always release this action's slot — independent of fill / other
         // action-type slots — so a stale entry can't leak past this call.
         clearActiveRecurringActionContext(config.type)
+        inFlightRef.current = false
         if (isMountedRef.current) setIsPending(false)
       }
     }, [])

@@ -358,7 +358,9 @@ export function RecurringDetailsRows({
   // bigint × number-of-orders, then format. The previous version `parseFloat`-ed
   // a thousands-separated string ("1,234.56" → 1), which dropped totals by 1000x
   // for any amount ≥ 1000 tokens. Compute in the raw unit space, then format
-  // once via the shared `formatTokenAmount` helper.
+  // once via the shared `formatTokenAmount` helper — default 2 max-fraction
+  // digits matches the rest of the app's `formatTokenAmount` usage; sub-cent
+  // totals render as "0.00" the same as elsewhere.
   const totalSpend = useMemo(() => {
     if (
       amountPerOrder === undefined ||
@@ -371,8 +373,7 @@ export function RecurringDetailsRows({
     }
     const totalRaw = amountPerOrder * BigInt(numberOfOrders)
     return `${formatTokenAmount(
-      bigintToBig(totalRaw, fromTokenDecimals),
-      fromTokenDecimals
+      bigintToBig(totalRaw, fromTokenDecimals)
     )} ${fromTokenSymbol}`
   }, [amountPerOrder, numberOfOrders, fromTokenSymbol, fromTokenDecimals])
 
