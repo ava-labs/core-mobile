@@ -151,9 +151,7 @@ class PostHogService implements PostHogServiceInterface {
         }
 
         try {
-          const response = await fetcher(
-            `${process.env.PROXY_URL}/proxy/posthog`
-          )
+          const response = await fetcher(`${Config.PROXY_URL}/proxy/posthog`)
 
           if (!response.featureFlags) {
             throw new Error('No feature flags found in cached response')

@@ -6,7 +6,7 @@ import {
   useMotion,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import {

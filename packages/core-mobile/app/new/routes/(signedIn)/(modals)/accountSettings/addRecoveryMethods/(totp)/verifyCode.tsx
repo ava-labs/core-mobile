@@ -6,7 +6,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 export default function VerifyCode(): JSX.Element {
   const { verifiedTotpChallenge } = useRecoveryMethodsContext()

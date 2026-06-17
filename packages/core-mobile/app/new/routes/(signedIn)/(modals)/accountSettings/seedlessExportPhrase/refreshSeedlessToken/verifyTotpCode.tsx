@@ -5,7 +5,7 @@ import { Result } from 'types/result'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { useRouter } from 'expo-router'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const { sessionData, seedlessExportService, checkPendingExports } =

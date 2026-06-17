@@ -4,7 +4,7 @@ import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useWallet } from 'hooks/useWallet'
 

@@ -1,6 +1,6 @@
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect } from 'expo-router'
 import { ReactNode, useCallback, useRef } from 'react'
-import ViewShot from 'react-native-view-shot'
+import ViewShot, { ViewShotRef } from 'react-native-view-shot'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveTab, TabId } from 'store/browser'
@@ -12,7 +12,7 @@ export const BrowserSnapshot = ({
 }: {
   children: ReactNode
 }): ReactNode => {
-  const viewShotRef = useRef<ViewShot>(null)
+  const viewShotRef = useRef<ViewShotRef>(null)
   const dispatch = useDispatch()
   const activeTab = useSelector(selectActiveTab)
 

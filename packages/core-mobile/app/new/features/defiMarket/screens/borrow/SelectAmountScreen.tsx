@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'

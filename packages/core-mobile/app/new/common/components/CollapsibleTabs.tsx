@@ -1,6 +1,5 @@
-import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import {
@@ -8,16 +7,9 @@ import {
   OnTabChangeCallback,
   TabBarProps,
   Tabs,
-  useCurrentTabScrollY,
-  useHeaderMeasurements
+  useCurrentTabScrollY
 } from 'react-native-collapsible-tab-view'
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedReaction,
-  useAnimatedStyle,
-  withTiming
-} from 'react-native-reanimated'
+import { useAnimatedReaction } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 
@@ -33,6 +25,14 @@ export const CollapsibleTabsContainer = forwardRef<
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
     minHeaderHeight?: number
+    /**
+     * Reserve header space via layout `paddingTop` instead of the native iOS
+     * `contentInset` model. Defaults to `true` because the New Architecture
+     * (Fabric) clamps programmatic scrolling into a negative `contentInset`
+     * region, which breaks the iOS inset model on tab switch / remount (content
+     * renders under the header). The layout model needs no negative scroll.
+     */
+    useLayoutHeaderInset?: boolean
   }
 >(
   (
@@ -43,7 +43,8 @@ export const CollapsibleTabsContainer = forwardRef<
       onIndexChange,
       onTabChange,
       onScrollY,
-      minHeaderHeight
+      minHeaderHeight,
+      useLayoutHeaderInset = true
     },
     ref
   ): JSX.Element => {
@@ -78,7 +79,8 @@ export const CollapsibleTabsContainer = forwardRef<
         pagerProps={pagerProps}
         onTabChange={onTabChange}
         onIndexChange={onIndexChange}
-        minHeaderHeight={minHeaderHeight}>
+        minHeaderHeight={minHeaderHeight}
+        useLayoutHeaderInset={useLayoutHeaderInset}>
         {content}
       </Tabs.Container>
     )
@@ -108,66 +110,38 @@ const CollapsibleTabWrapper = ({
 
 const ContentWrapper = ({
   children,
-  animate = true,
   extraOffset = 0
 }: {
   children: React.ReactNode
   /**
-   * Extra bottom padding added to the inner wrapper. Useful when there are
-   * missing UI elements (like SegmentedControl) that would normally take
-   * space below the content.
+   * Extra bottom padding added to the wrapper. Useful when there are missing UI
+   * elements (like SegmentedControl) that would normally take space below the
+   * content.
    * @default 0
    */
   extraOffset?: number
   /**
-   * Whether to animate the content translation.
-   * @default true
+   * @deprecated No longer used. Kept for API compatibility. The previous
+   * translateY animation compensated for the native iOS `contentInset` model,
+   * which has been replaced by the layout (`paddingTop`) model.
    */
   animate?: boolean
 }): JSX.Element => {
-  const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
-  const header = useHeaderMeasurements()
-  const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const translateY = animate
-      ? interpolate(
-          scrollY.value,
-          [0, header.height],
-          [-48, tabBarHeight],
-          Extrapolation.CLAMP
-        )
-      : 0
-    return {
-      transform: [
-        {
-          translateY: withTiming(translateY, {
-            ...ANIMATED.TIMING_CONFIG,
-            duration: 250
-          })
-        }
-      ]
-    }
-  })
-
+  // With the layout-header-inset model the surrounding list reserves the header
+  // space via `paddingTop`, so the empty / loading / error content only needs to
+  // be centered in the remaining viewport (above the bottom tab bar / safe area).
   return (
     <View
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%'
+        height: '100%',
+        paddingBottom: insets.bottom + tabBarHeight + extraOffset
       }}>
-      <Animated.View
-        style={[
-          animatedStyle,
-          {
-            paddingBottom: headerHeight + insets.bottom + extraOffset
-          }
-        ]}>
-        {children}
-      </Animated.View>
+      {children}
     </View>
   )
 }

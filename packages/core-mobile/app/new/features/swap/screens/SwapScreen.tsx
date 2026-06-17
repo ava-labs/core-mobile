@@ -17,7 +17,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {

@@ -259,7 +259,7 @@ export const BidirectionalTrack = ({
         {/* Rest content: unfold chevrons */}
         <Animated.View
           style={[
-            StyleSheet.absoluteFillObject,
+            StyleSheet.absoluteFill,
             { alignItems: 'center', justifyContent: 'center' },
             restContentOpacity
           ]}
@@ -303,7 +303,7 @@ export const BidirectionalTrack = ({
         </Animated.View>
         <Animated.View
           style={[
-            StyleSheet.absoluteFillObject,
+            StyleSheet.absoluteFill,
             { alignItems: 'center', justifyContent: 'center' },
             spinnerStyle
           ]}
@@ -338,7 +338,7 @@ export const BidirectionalTrack = ({
         </Animated.View>
         <Animated.View
           style={[
-            StyleSheet.absoluteFillObject,
+            StyleSheet.absoluteFill,
             { alignItems: 'center', justifyContent: 'center' },
             spinnerStyle
           ]}

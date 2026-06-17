@@ -18,7 +18,7 @@ import {
 import React, { useCallback, useRef } from 'react'
 import { PixelRatio, Platform } from 'react-native'
 import Share from 'react-native-share'
-import ViewShot, { captureRef } from 'react-native-view-shot'
+import ViewShot, { captureRef, ViewShotRef } from 'react-native-view-shot'
 import { MarketType } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 
@@ -31,7 +31,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
 
   const { tokenInfo } = useTokenDetails({ tokenId, marketType })
 
-  const viewShotRef = useRef<ViewShot>(null)
+  const viewShotRef = useRef<ViewShotRef>(null)
 
   const actualViewWidth = SCREEN_WIDTH - 60
   const scale = actualViewWidth ? actualViewWidth / CHART_IMAGE_SIZE : 1

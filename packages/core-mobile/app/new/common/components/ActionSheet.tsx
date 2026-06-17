@@ -8,7 +8,7 @@ import { BackHandler } from 'react-native'
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import {
   ActionButtons,
   ActionButtonsProps

@@ -35,7 +35,11 @@ export default function Root(): JSX.Element | null {
     const subscription = RnAppearance.addChangeListener(
       ({ colorScheme: updatedColorSchemes }) => {
         if (selectedAppearance === Appearance.System && !isDeveloperMode) {
-          dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
+          dispatch(
+            setSelectedColorScheme(
+              updatedColorSchemes === 'dark' ? 'dark' : 'light'
+            )
+          )
           setStatusBarStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
         }
       }

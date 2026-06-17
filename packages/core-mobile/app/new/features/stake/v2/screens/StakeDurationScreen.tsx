@@ -11,7 +11,7 @@ import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
-import { Route, useRouter } from 'expo-router'
+import { Href, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import {
   DurationOptions,
@@ -57,7 +57,7 @@ const StakeDurationScreen = ({
   nextRoute
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
-  nextRoute: Route
+  nextRoute: string
 }): JSX.Element => {
   const { navigate } = useRouter()
 
@@ -185,7 +185,7 @@ const StakeDurationScreen = ({
       // can pick the matching params shape, and our `Route` union is
       // too broad for that narrowing. The template-literal form keeps
       // the route typed while letting `${string}` carry the query.
-      navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}`)
+      navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}` as Href)
     }
   }, [navigate, stakeEndTime, nextRoute])
 

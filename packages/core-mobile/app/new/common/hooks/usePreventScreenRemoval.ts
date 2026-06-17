@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 export const usePreventScreenRemoval = (shouldPrevent: boolean): void => {
   const navigation = useNavigation()

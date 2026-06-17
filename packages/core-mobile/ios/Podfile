@@ -39,7 +39,7 @@ setup_permissions([
   # 'StoreKit',
 ])
 
-platform :ios, '15.1'
+platform :ios, '16.4'
 
 # linkage = ENV['USE_FRAMEWORKS']
 # if linkage != nil
@@ -82,6 +82,7 @@ abstract_target 'common' do
 
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
+  pod 'RecaptchaInterop', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'
   
   target 'AvaxWallet' do

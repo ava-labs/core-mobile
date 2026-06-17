@@ -1,9 +1,7 @@
 diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
-index c593d9e..f9408e4 100644
 --- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
 +++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
-@@ -41,6 +41,10 @@ - (instancetype)initWithFrame:(CGRect)frame
-     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
+@@ -42,5 +42,9 @@
      self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
  
 +    if (@available(iOS 26.0, *)) {
@@ -14,10 +12,10 @@ index c593d9e..f9408e4 100644
      _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
        [weakSelf setPrivateDelegate:delegate];
 diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
-index 1494fd2..a8e8c42 100644
 --- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
 +++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
-@@ -434,6 +434,13 @@ - (void)updateProps:(const Props::Shared &)props oldProps:(const Props::Shared &
+@@ -449,5 +449,12 @@
+ 
    [super updateProps:props oldProps:oldProps];
  }
  
@@ -29,9 +27,7 @@ index 1494fd2..a8e8c42 100644
 +}
 +
  - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
- {
-   assert(std::dynamic_pointer_cast<const ScrollViewShadowNode::ConcreteState>(state));
-@@ -774,6 +781,8 @@ - (void)didMoveToWindow
+@@ -843,5 +843,7 @@
    if (!self.window) {
      // The view is being removed, ensure that the scroll end event is dispatched
      [self _handleScrollEndIfNeeded];
@@ -39,4 +35,3 @@ index 1494fd2..a8e8c42 100644
 +    [self _disableTopEdgeEffectIOS26];
    }
  }
- 
