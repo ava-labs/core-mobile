@@ -463,7 +463,7 @@ export function createInjectedProviderRouter(
 
     try {
       const peerMeta = getPeerMeta()
-      const selected = await requestConnectApproval(peerMeta)
+      const selected = await requestConnectApproval(peerMeta, id)
       let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue
@@ -543,7 +543,7 @@ export function createInjectedProviderRouter(
 
     try {
       const peerMeta = getPeerMeta()
-      const selected = await requestConnectApproval(peerMeta)
+      const selected = await requestConnectApproval(peerMeta, id)
       let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue

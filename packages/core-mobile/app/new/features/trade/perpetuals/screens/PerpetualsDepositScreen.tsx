@@ -1,5 +1,5 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Button, Text, TokenUnitInputWidget, View } from '@avalabs/k2-alpine'
+import { Button, Text, TokenUnitInputWidget } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -72,39 +72,32 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
     <ScrollScreen
       renderFooter={renderFooter}
       isModal
+      title="How much do you want to deposit?"
+      subtitle="Add funds to your balance to use to trade"
       navigationTitle="How much do you want to deposit?"
       shouldAvoidKeyboard
-      contentContainerStyle={{ padding: 16, gap: 24 }}>
-      <View sx={{ gap: 8, paddingTop: 8 }}>
-        <Text variant="heading2">How much do you want to deposit?</Text>
-        <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-          Add funds to your balance to use to trade
+      contentContainerStyle={{ padding: 16, gap: 12, alignItems: 'center' }}>
+      <TokenUnitInputWidget
+        sx={{ width: '100%' }}
+        autoFocus
+        token={USDC_TOKEN}
+        balance={walletBalance}
+        amount={amount > 0 ? toUsdc(amount) : undefined}
+        onChange={handleAmountChange}
+        formatInCurrency={formatInCurrency}
+        presets={DEPOSIT_PRESETS}
+        valid={!isBelowMin}
+      />
+
+      {isBelowMin ? (
+        <Text variant="caption" sx={{ color: '$textDanger' }}>
+          {`Minimum deposit is ${MIN_DEPOSIT_USDC} USDC`}
         </Text>
-      </View>
-
-      <View sx={{ gap: 12, alignItems: 'center' }}>
-        <TokenUnitInputWidget
-          sx={{ width: '100%' }}
-          autoFocus
-          token={USDC_TOKEN}
-          balance={walletBalance}
-          amount={amount > 0 ? toUsdc(amount) : undefined}
-          onChange={handleAmountChange}
-          formatInCurrency={formatInCurrency}
-          presets={DEPOSIT_PRESETS}
-          valid={!isBelowMin}
-        />
-
-        {isBelowMin ? (
-          <Text variant="caption" sx={{ color: '$textDanger' }}>
-            {`Minimum deposit is ${MIN_DEPOSIT_USDC} USDC`}
-          </Text>
-        ) : (
-          <Text variant="caption" sx={{ color: '$textPrimary' }}>
-            {`Balance: ${formatWalletUsdc(WALLET_USDC_BALANCE)}`}
-          </Text>
-        )}
-      </View>
+      ) : (
+        <Text variant="caption" sx={{ color: '$textPrimary' }}>
+          {`Balance: ${formatWalletUsdc(WALLET_USDC_BALANCE)}`}
+        </Text>
+      )}
     </ScrollScreen>
   )
 }

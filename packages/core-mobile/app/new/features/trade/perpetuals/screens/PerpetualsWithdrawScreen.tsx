@@ -162,15 +162,11 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       isModal
+      bottomOffset={-700}
+      title="How much do you want to withdraw?"
+      subtitle="Move trading funds from your balance to your wallet"
       navigationTitle="Enter withdraw amount"
       contentContainerStyle={{ padding: 16, gap: 20 }}>
-      <View sx={{ gap: 8, paddingTop: 8 }}>
-        <Text variant="heading2">How much do you want to withdraw?</Text>
-        <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-          Move trading funds from your balance to your wallet
-        </Text>
-      </View>
-
       <View sx={{ gap: 12, alignItems: 'center' }}>
         <TokenUnitInputWidget
           sx={{ width: '100%' }}
