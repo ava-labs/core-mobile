@@ -27,6 +27,9 @@ import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { selectIsWalletLedger } from 'store/wallet/slice'
+import { RootState } from 'store/types'
+import { selectAccountByAddress } from 'store/account/slice'
+import { selectWalletById } from 'store/wallet/slice'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -35,9 +38,11 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getAccountUnavailableMessage,
   getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
+  isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary
 } from './utils'
@@ -66,6 +71,24 @@ const ApprovalScreen = ({
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
+  // The request targets an account that isn't in the active wallet, so it can't
+  // be signed — surface a clear reason rather than just a disabled button.
+  const requestedAccountUnavailable = isRequestedAccountUnavailable(
+    signingData,
+    account
+  )
+  // Resolve which wallet owns the requested address (read-only, display only —
+  // never used for signing) so we can name it in the warning.
+  const requestedAddress =
+    'account' in signingData ? signingData.account : undefined
+  const owningAccount = useSelector((state: RootState) =>
+    requestedAccountUnavailable && requestedAddress
+      ? selectAccountByAddress(requestedAddress)(state)
+      : undefined
+  )
+  const owningWallet = useSelector((state: RootState) =>
+    owningAccount ? selectWalletById(owningAccount.walletId)(state) : undefined
+  )
 
   const [submitting, setSubmitting] = useState(false)
   const [gasLimit, setGasLimit] = useState<number | undefined>(
@@ -284,6 +307,21 @@ const ApprovalScreen = ({
     )
   }, [gaslessError])
 
+  const renderAccountUnavailableWarning =
+    useCallback((): JSX.Element | null => {
+      if (!requestedAccountUnavailable) return null
+
+      return (
+        <Warning
+          message={getAccountUnavailableMessage(
+            owningWallet?.name,
+            owningAccount?.name
+          )}
+          sx={{ marginBottom: 12, marginRight: 16 }}
+        />
+      )
+    }, [requestedAccountUnavailable, owningWallet?.name, owningAccount?.name])
+
   const renderDappInfo = useCallback(
     (dAppInfo: {
       name: string
@@ -467,6 +505,7 @@ const ApprovalScreen = ({
       }}
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
+      {renderAccountUnavailableWarning()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
       {renderSpendLimits()}

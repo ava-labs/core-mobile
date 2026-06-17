@@ -11,6 +11,7 @@ import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { Account } from 'store/account/types'
 import {
   selectAccountByAddressAndWalletId,
   selectAccountByIndex,
@@ -78,6 +79,30 @@ export const getAccountSelector = (
     return selectAccountByIndex(walletId, signingData.accountIndex)
   }
   return selectActiveAccount
+}
+
+// True when the request targets a specific account that isn't part of the active
+// wallet — `getAccountSelector` then resolves to undefined, disabling approval.
+// Used to explain to the user why they can't approve (CP-14468).
+export const isRequestedAccountUnavailable = (
+  signingData: SigningData,
+  resolvedAccount: Account | undefined
+): boolean => 'account' in signingData && !resolvedAccount
+
+// Message for the disabled-approval state. Names the owning account/wallet when
+// the requested address belongs to one of the user's other wallets, so they know
+// exactly where to switch; falls back to a generic hint otherwise (CP-14468).
+export const getAccountUnavailableMessage = (
+  walletName?: string,
+  accountName?: string
+): string => {
+  if (walletName && accountName) {
+    return `Your active wallet can't sign this - it's for "${accountName}" in "${walletName}". Switch to "${walletName}" to approve, or reject.`
+  }
+  if (walletName) {
+    return `Your active wallet can't sign this - this account belongs to "${walletName}". Switch to "${walletName}" to approve, or reject.`
+  }
+  return "Your active wallet can't sign this - this account belongs to a different wallet. Switch to that wallet to approve, or reject."
 }
 
 export const getInitialGasLimit = (data: SigningData): number | undefined => {

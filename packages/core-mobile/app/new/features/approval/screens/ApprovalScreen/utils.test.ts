@@ -7,10 +7,13 @@ import {
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RootState } from 'store/types'
+import { Account } from 'store/account/types'
 import {
   removeWebsiteItemIfNecessary,
   overrideContractItem,
-  getAccountSelector
+  getAccountSelector,
+  isRequestedAccountUnavailable,
+  getAccountUnavailableMessage
 } from './utils'
 
 // Mock the isInAppRequest function for controlled testing
@@ -264,5 +267,57 @@ describe('getAccountSelector', () => {
     // cross-wallet account.
     const selector = getAccountSelector(signingData, 'w1')
     expect(selector(stateWith(otherWalletAccount))).toBeUndefined()
+  })
+})
+
+describe('isRequestedAccountUnavailable', () => {
+  const account = { id: 'w1-0', walletId: 'w1' } as unknown as Account
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withAccount = { type: RpcMethod.SOLANA_SIGN_TRANSACTION } as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withoutAccount = { type: RpcMethod.AVALANCHE_SIGN_MESSAGE } as any
+
+  it('is true when an account is requested but none resolved (cross-wallet)', () => {
+    expect(
+      isRequestedAccountUnavailable(
+        { ...withAccount, account: 'addr' },
+        undefined
+      )
+    ).toBe(true)
+  })
+
+  it('is false when the requested account resolved', () => {
+    expect(
+      isRequestedAccountUnavailable(
+        { ...withAccount, account: 'addr' },
+        account
+      )
+    ).toBe(false)
+  })
+
+  it('is false when the request does not target a specific account', () => {
+    expect(isRequestedAccountUnavailable(withoutAccount, undefined)).toBe(false)
+  })
+})
+
+describe('getAccountUnavailableMessage', () => {
+  it('names both the account and the owning wallet when known', () => {
+    const message = getAccountUnavailableMessage('Wallet 2', 'Account 3')
+    expect(message).toContain('Wallet 2')
+    expect(message).toContain('Account 3')
+    expect(message).toContain('Switch to')
+  })
+
+  it('names just the wallet when the account name is unknown', () => {
+    const message = getAccountUnavailableMessage('Wallet 2')
+    expect(message).toContain('Wallet 2')
+    // No "<account> in <wallet>" phrasing without an account name.
+    expect(message).not.toContain(' in "')
+  })
+
+  it('falls back to a generic message when nothing is known', () => {
+    const message = getAccountUnavailableMessage()
+    expect(message).toContain('a different wallet')
+    expect(message).not.toContain('"')
   })
 })
