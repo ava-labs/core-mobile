@@ -11,7 +11,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'

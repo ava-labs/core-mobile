@@ -12,7 +12,7 @@ if (
   Config.ENVIRONMENT &&
   Config.DD_APPLICATION_ID &&
   Config.DD_SITE &&
-  process.env.CI
+  Config.CI
 ) {
   DataDogConfig = new DdSdkReactNativeConfiguration(
     Config.DD_CLIENT_TOKEN,

@@ -1,5 +1,5 @@
 import { Icons, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'

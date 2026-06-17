@@ -1,8 +1,11 @@
 import { ActivityIndicator, useTheme } from '@avalabs/k2-alpine'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import React, { useMemo } from 'react'
-import { Platform, RefreshControlProps, View, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControlProps, View, ViewStyle } from 'react-native'
+import {
+  useCollapsibleStyle,
+  useHeaderMeasurements
+} from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { CollapsibleTabs } from './CollapsibleTabs'
 
@@ -129,6 +132,13 @@ export function CollapsibleTabList<T>({
   const header = useHeaderMeasurements()
   const { theme } = useTheme()
   const collapsibleHeaderHeight = header?.height ?? 0
+  // The library computes the correct layout-model `paddingTop` (reserve header
+  // space) and `minHeight` (enough scroll range to fully collapse the header,
+  // even when the actual content is short). FlashList only forwards the
+  // library's `paddingTop` and drops its `minHeight`, and callers pass a
+  // `minHeight` tuned for the old native-contentInset model, so apply both
+  // explicitly here.
+  const { contentContainerStyle: collapsibleStyle } = useCollapsibleStyle()
 
   // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
   // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
@@ -150,7 +160,7 @@ export function CollapsibleTabList<T>({
       <RefreshControl
         refreshing={isRefreshing}
         onRefresh={onRefresh}
-        progressViewOffset={Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight}
+        progressViewOffset={collapsibleHeaderHeight}
       />
     ) as React.ReactElement<RefreshControlProps>
   }, [isRefreshing, onRefresh, collapsibleHeaderHeight])
@@ -160,9 +170,19 @@ export function CollapsibleTabList<T>({
       flexGrow: 1,
       ...additionalContentStyle,
       ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? collapsibleHeaderHeight : 0
+      // Reserve header space via layout on every platform (Fabric clamps the
+      // old native-contentInset negative scroll). Override any caller-provided
+      // `minHeight` with the library's value so the header can fully collapse
+      // even when the content is shorter than the viewport.
+      paddingTop: collapsibleStyle.paddingTop,
+      minHeight: collapsibleStyle.minHeight
     }),
-    [additionalContentStyle, containerStyle, collapsibleHeaderHeight]
+    [
+      additionalContentStyle,
+      containerStyle,
+      collapsibleStyle.paddingTop,
+      collapsibleStyle.minHeight
+    ]
   )
 
   const finalOverrideProps = useMemo(

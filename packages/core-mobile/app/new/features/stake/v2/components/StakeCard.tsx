@@ -77,7 +77,7 @@ export const StakeCard = ({
       }}>
       {showWave && (
         <View
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           pointerEvents="none"
           onLayout={handleWaveLayout}>
           <ProgressWave

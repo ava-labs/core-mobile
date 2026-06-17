@@ -25,7 +25,7 @@ const ALLOWED_BREADCRUMB_CATEGORIES = new Set<string>(
 // otherwise enable if not development
 const isAvailable =
   ((__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) ||
-    (!__DEV__ && process.env.E2E !== 'true')) &&
+    (!__DEV__ && Config.E2E !== 'true')) &&
   !!Config.SENTRY_DSN
 
 const navigationIntegration = Sentry.reactNavigationIntegration({

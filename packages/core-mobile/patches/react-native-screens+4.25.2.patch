@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+@@ -168,10 +168,19 @@
+         // We want to handle display cutout always, no matter the HeaderConfig prop values.
+         // If there are no cutout displays, we want to apply the additional padding to
+         // respect the status bar.
++        // Patched: fall back to the system status_bar_height resource when WindowInsets
++        // reports 0 (common on Android emulators without a display cutout).
++        var topInset = max(cutoutInsets.top, if (shouldApplyTopInset) systemBarInsets.top else 0)
++        if (topInset == 0 && shouldApplyTopInset) {
++            val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
++            if (resId > 0) {
++                topInset = resources.getDimensionPixelSize(resId)
++            }
++        }
+         val verticalInsets =
+             InsetsCompat.of(
+                 0,
+-                max(cutoutInsets.top, if (shouldApplyTopInset) systemBarInsets.top else 0),
++                topInset,
+                 0,
+                 max(cutoutInsets.bottom, 0),
+             )

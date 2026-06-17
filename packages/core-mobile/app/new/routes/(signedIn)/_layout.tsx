@@ -1,4 +1,4 @@
-import { usePreventRemove } from '@react-navigation/native'
+import { usePreventRemove } from 'expo-router/react-navigation'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import {

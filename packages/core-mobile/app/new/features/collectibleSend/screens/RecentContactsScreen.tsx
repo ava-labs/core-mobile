@@ -11,7 +11,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 

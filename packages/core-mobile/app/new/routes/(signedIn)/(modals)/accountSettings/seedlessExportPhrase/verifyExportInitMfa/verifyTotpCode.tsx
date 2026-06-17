@@ -6,7 +6,7 @@ import { useSeedlessMnemonicExportContext } from 'features/accountSettings/conte
 import { useRouter } from 'expo-router'
 import { UserExportInitResponse } from '@cubist-labs/cubesigner-sdk'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const {

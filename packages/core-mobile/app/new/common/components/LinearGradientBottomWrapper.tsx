@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     height: 60
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 0
   },
   backdropFill: {

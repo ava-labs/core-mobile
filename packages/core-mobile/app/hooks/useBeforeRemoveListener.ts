@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 export enum RemoveEvents {
   GO_BACK = 'GO_BACK',
@@ -10,7 +10,7 @@ export function useBeforeRemoveListener(
   callback: () => void,
   events: RemoveEvents[],
   preventDefault?: boolean
-) {
+): void {
   const { addListener, removeListener } = useNavigation()
 
   const innerCallback = useCallback(
