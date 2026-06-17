@@ -1225,7 +1225,8 @@ export const SwapScreen = (): JSX.Element => {
   // Returns false when any guard fails — caller does not advance.
   // eslint-disable-next-line sonarjs/cognitive-complexity -- chain of presence guards (recurringQuote/fromToken/toToken/etc.) drives the count over 15. Each guard is a flat boolean check; flattening into a single AND chain would be less readable.
   const submitRecurring = useCallback(async (): Promise<boolean> => {
-    if (!recurringQuote.data || !activeAccount) return false
+    if (!recurringQuote.data || !activeAccount || !activeAccount.addressC)
+      return false
     if (!fromToken || !toToken) return false
     if (!('decimals' in fromToken) || !('decimals' in toToken)) return false
     if (!recurring.frequency || recurring.numberOfOrders === undefined)
@@ -1248,7 +1249,7 @@ export const SwapScreen = (): JSX.Element => {
     try {
       await submitRecurringSwap({
         quote: recurringQuote.data,
-        fromAddress: activeAccount.addressC ?? '',
+        fromAddress: activeAccount.addressC,
         sourceChain,
         fromTokenSymbol: fromToken.symbol,
         fromTokenDecimals: fromToken.decimals,
