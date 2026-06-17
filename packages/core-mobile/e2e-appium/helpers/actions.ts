@@ -29,8 +29,8 @@ function firstFulfillment<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
       }
     }
 
-    void a.then(onFulfill, onReject)
-    void b.then(onFulfill, onReject)
+    a.then(onFulfill).catch(onReject)
+    b.then(onFulfill).catch(onReject)
   })
 }
 
@@ -469,18 +469,18 @@ async function typeSlowly(
     )
   }
 
-  if (driver.isAndroid) {
-    await driver.execute('mobile: type', { text: textToType })
-    await driver.pause(200)
-    return
-  }
-
   // Clear any existing value
   try {
     await element.clearValue()
     await driver.pause(200)
   } catch {
     // Continue anyway
+  }
+
+  if (driver.isAndroid) {
+    await driver.execute('mobile: type', { text: textToType })
+    await driver.pause(200)
+    return
   }
 
   // Character-by-character input so PIN fields / masked inputs get per-keystroke events (setValue alone can skip that).

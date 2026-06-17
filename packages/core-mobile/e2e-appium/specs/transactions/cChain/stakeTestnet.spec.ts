@@ -3,7 +3,7 @@ import txPage from '../../../pages/transactions.page'
 import settingsPage from '../../../pages/settings.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 
-describe('[Smoke] Stake on Testnet', () => {
+describe('Stake on Testnet', () => {
   it('should stake your AVAX', async () => {
     await warmup()
     await settingsPage.switchToTestnet()

@@ -23,6 +23,7 @@ jest.mock('@avalabs/fusion-sdk', () => ({
   ServiceType: {
     MARKR: 'MARKR',
     AVALANCHE_EVM: 'AVALANCHE_EVM',
+    AVALANCHE_CCT: 'AVALANCHE_CCT',
     LOMBARD_BTC_TO_BTCB: 'LOMBARD_BTC_TO_BTCB',
     LOMBARD_BTCB_TO_BTC: 'LOMBARD_BTCB_TO_BTC',
     WRAP_UNWRAP: 'WRAP_UNWRAP'
@@ -389,6 +390,133 @@ describe('FusionService', () => {
         (s: { type: string }) => s.type === ServiceType.MARKR
       )
       expect(markrInitializer).toMatchObject({ disableCrossChainSwaps: false })
+    })
+
+    describe('AVALANCHE_CCT', () => {
+      const mockCctDependencies = {
+        avalancheSendTx: jest.fn(),
+        getCoreEthAddress: jest.fn(),
+        getAtomicUtxos: jest.fn(),
+        getUtxos: jest.fn(),
+        getWalletAddressesForChainAlias: jest.fn(),
+        getWalletChangeAddressForChainAlias: jest.fn()
+      }
+
+      const mockManagerFactory = () => ({
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      })
+
+      it('enables AVALANCHE_CCT when the fusion-avalanche-cct flag is on', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        expect(call.serviceInitializers).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ type: ServiceType.AVALANCHE_CCT })
+          ])
+        )
+      })
+
+      it('throws cctDependenciesMissing when the flag is on but no cctDependencies are provided', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        // No cctDependencies provided — should throw before reaching the SDK.
+        await expect(
+          FusionService.initWithFeatureFlags({
+            bitcoinProvider: mockBitcoinProvider,
+            fetch: mockFetch,
+            environment: Environment.PROD,
+            featureFlags: featureFlags as FusionServiceFlags,
+            signers: mockSigners
+          })
+        ).rejects.toThrow(/cctDependencies not provided/)
+        expect(createTransferManager).not.toHaveBeenCalled()
+      })
+
+      it('produces an initializer carrying the six SDK callbacks when cctDependencies are provided', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        const cctInitializer = call.serviceInitializers.find(
+          (s: { type: string }) => s.type === ServiceType.AVALANCHE_CCT
+        )
+        expect(cctInitializer).toMatchObject({
+          type: ServiceType.AVALANCHE_CCT,
+          avalancheSendTx: mockCctDependencies.avalancheSendTx,
+          getCoreEthAddress: mockCctDependencies.getCoreEthAddress,
+          getAtomicUtxos: mockCctDependencies.getAtomicUtxos,
+          getUtxos: mockCctDependencies.getUtxos,
+          getWalletAddressesForChainAlias:
+            mockCctDependencies.getWalletAddressesForChainAlias,
+          getWalletChangeAddressForChainAlias:
+            mockCctDependencies.getWalletChangeAddressForChainAlias
+        })
+      })
+
+      it('does not register AVALANCHE_CCT when the flag is off', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-markr': true,
+          'fusion-avalanche-cct': false
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        const cctInitializer = call.serviceInitializers.find(
+          (s: { type: string }) => s.type === ServiceType.AVALANCHE_CCT
+        )
+        expect(cctInitializer).toBeUndefined()
+      })
     })
   })
 

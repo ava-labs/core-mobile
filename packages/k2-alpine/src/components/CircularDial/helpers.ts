@@ -13,6 +13,20 @@ export const snapToStep = (v: number, step: number, max: number): number => {
   return Number((snapped - step).toFixed(decimals))
 }
 
+// Worklet form of the readout's natural-digit formatting: fixed to
+// `decimals`, then trailing zeros (and any dangling dot) stripped. No regex
+// so it stays UI-thread safe. Mirrors DialReadout's `naturalDigits` so the
+// progress-driven live display and the controlled-value display agree.
+export const formatNatural = (v: number, decimals: number): string => {
+  'worklet'
+  if (decimals <= 0) return `${Math.round(v)}`
+  const s = v.toFixed(decimals)
+  let end = s.length
+  while (end > 0 && s.charAt(end - 1) === '0') end -= 1
+  if (end > 0 && s.charAt(end - 1) === '.') end -= 1
+  return s.substring(0, end)
+}
+
 // Sweep convention: 180° (9 o'clock) at progress=0, 270° (12 o'clock)
 // at 0.5, 360° (3 o'clock) at progress=1.
 export const progressToPoint = ({
@@ -39,6 +53,28 @@ export const valueToProgress = (value: number, max: number): number => {
   'worklet'
   if (max <= 0) return 0
   return clamp(value / max, 0, 1)
+}
+
+// Maps a finger offset from the arc centre (dx, dy in canvas space, screen
+// y-down; radius = arc radius) to progress 0..1 along the upper semicircle:
+// left end (−r, 0) → 0, top (0, −r) → 0.5, right end (r, 0) → 1. Above the
+// diameter the dial tracks the finger's angle (Apple-dial style) rather than a
+// swipe direction, so there's no up/down mapping to invert.
+//
+// On or below the diameter the finger is off the arc. Rather than pin to the
+// nearest end — which makes a drag that strays below hard-switch between min
+// and max as it crosses the centre — fall back to the finger's horizontal
+// position across the arc's width, so the value keeps sweeping smoothly while
+// out of bounds. The two branches agree at the ends and the centre (only the
+// off-axis interior differs), so crossing the diameter along the arc is smooth.
+export const progressFromCanvasPoint = (
+  dx: number,
+  dy: number,
+  radius: number
+): number => {
+  'worklet'
+  if (dy >= 0) return clamp((dx + radius) / (2 * radius), 0, 1)
+  return clamp((Math.atan2(dy, dx) + Math.PI) / Math.PI, 0, 1)
 }
 
 // Never clamps the lower bound — users may still be typing their way
@@ -105,20 +141,29 @@ export const validateRange = ({
 // Skips syncing while a gesture / animation owns the dial, and dampens
 // echoes — when the diff is within one step, the incoming value is
 // likely our own onChange bubbling back as controlled state.
+//
+// `isSettling` extends that skip across the brief window just after a
+// drag releases: `isActive` flips false synchronously on the UI thread at
+// lift, but the JS thread is still draining stale mid-drag onChange echoes.
+// Those echoes differ from the snapped final by more than a step, so
+// without this guard they'd be re-synced into progressSv and jerk the arc
+// on their own after the finger is gone.
 export const shouldSyncExternalValue = ({
   value,
   currentValue,
   max,
   step,
-  isActive
+  isActive,
+  isSettling = false
 }: {
   value: number
   currentValue: number
   max: number
   step: number
   isActive: boolean
+  isSettling?: boolean
 }): { sync: false } | { sync: true; target: number } => {
-  if (isActive) return { sync: false }
+  if (isActive || isSettling) return { sync: false }
   const target = clamp(value, 0, max)
   const diff = Math.abs(currentValue - target)
   if (diff <= step) return { sync: false }

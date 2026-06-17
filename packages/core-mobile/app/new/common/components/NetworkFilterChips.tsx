@@ -1,21 +1,10 @@
-import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { Chip, useTheme, View } from '@avalabs/k2-alpine'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { getNetworkDisplayName } from 'common/utils/getNetworkDisplayName'
 import React from 'react'
 import { ScrollView } from 'react-native'
-
-const getNetworkDisplayName = (network: Network): string => {
-  switch (network.chainId) {
-    case ChainId.AVALANCHE_MAINNET_ID:
-      return 'Avalanche (C-Chain)'
-    case ChainId.AVALANCHE_TESTNET_ID:
-      return 'Avalanche (C-Chain Testnet)'
-    case ChainId.SOLANA_MAINNET_ID:
-      return 'Solana'
-    default:
-      return network.chainName
-  }
-}
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 
 export const NetworkFilterChips = ({
   networks,
@@ -43,24 +32,47 @@ export const NetworkFilterChips = ({
           // testID even though TouchableOpacity would accept it via ...rest.
           <View
             key={network.chainId}
-            testID={`network_selector__${network.chainName}`}>
+            testID={
+              isSelected
+                ? `selected_network_selector__${network.chainName}`
+                : `network_selector__${network.chainName}`
+            }>
             <Chip
               size="large"
               isSelected={isSelected}
               onPress={() => onSelectNetwork(network)}
-              renderLeft={() => (
-                <NetworkLogoWithChain
-                  network={network}
-                  networkSize={19}
-                  showChainLogo={false}
-                  outerBorderColor={theme.colors.$surfaceSecondary}
-                />
-              )}
+              renderLeft={() => {
+                // P/X chains get a single-letter badge so users can tell them
+                // apart at a glance — `showChainLogo` triggers the existing
+                // isPChain/isXChain branches in NetworkLogoWithChain that
+                // render AVAX_P or AVAX_X (not the combined AVAX_XP).
+                const showChainLogo =
+                  isPChain(network.chainId) || isXChain(network.chainId)
+                return (
+                  <NetworkLogoWithChain
+                    network={network}
+                    networkSize={19}
+                    showChainLogo={showChainLogo}
+                    chainLogoSize={12}
+                    outerBorderColor={
+                      isSelected
+                        ? theme.colors.$textPrimary
+                        : theme.colors.$surfacePrimary
+                    }
+                    chainLogoStyle={{
+                      width: 14,
+                      height: 14,
+                      borderWidth: 1
+                    }}
+                    invertChainLogo={isSelected}
+                  />
+                )
+              }}
               style={{
-                minHeight: 32,
-                paddingLeft: 4,
-                paddingRight: 10,
-                gap: 5
+                minHeight: 36,
+                paddingLeft: 8,
+                paddingRight: 14,
+                gap: 8
               }}>
               {getNetworkDisplayName(network)}
             </Chip>

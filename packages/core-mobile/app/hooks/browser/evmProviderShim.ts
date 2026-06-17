@@ -113,6 +113,12 @@ export function buildEvmProviderShim({
   // eth_requestAccounts to trigger the approval UI.
   var _accounts = [];
 
+  // EIP-1193 connection state. Native emits disconnect(4901) when the active
+  // chain isn't a servable EVM chain (CP-13671) and chainChanged when it
+  // recovers; isConnected() must track that, since some dApps poll
+  // isConnected() and ignore the disconnect event.
+  var _connected = true;
+
   // ──────────────────────────────────────────────
   // 4. Native response / event bridge
   // ──────────────────────────────────────────────
@@ -135,11 +141,22 @@ export function buildEvmProviderShim({
       _chainId = data;
       provider.chainId = data;
       provider.networkVersion = String(parseInt(data, 16));
+      // Re-pointing to a servable EVM chain recovers from a CP-13671 disconnect.
+      _connected = true;
     }
     if (eventName === 'accountsChanged') {
       _accounts = data || [];
       provider.selectedAddress = _accounts.length > 0 ? _accounts[0] : null;
     }
+    if (eventName === 'connect') {
+      _connected = true;
+    }
+    if (eventName === 'disconnect') {
+      _connected = false;
+    }
+    // Keep the legacy _isConnected property in sync with the flag for dApps
+    // that read provider._isConnected directly instead of calling isConnected().
+    provider._isConnected = _connected;
     emit(eventName, data);
   };
 
@@ -335,7 +352,7 @@ export function buildEvmProviderShim({
     },
 
     isConnected: function() {
-      return true;
+      return _connected;
     },
 
     _metamask: {

@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { LayoutChangeEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import {
@@ -27,7 +27,7 @@ import {
 } from './DialArc'
 import { DialPresets } from './DialPresets'
 import { DialReadout, DialReadoutHandle } from './DialReadout'
-import { snapToStep, validateRange } from './helpers'
+import { progressFromCanvasPoint, snapToStep, validateRange } from './helpers'
 import { useDialValue } from './useDialValue'
 import type { CircularDialProps, PresetButton } from './types'
 
@@ -55,6 +55,24 @@ const ACTIVATION_TAN = Math.tan((ACTIVATION_HALF_ANGLE_DEG * Math.PI) / 180)
 // visible knob (KNOB_RADIUS=11) for a comfortable touch target.
 const KNOB_HIT_RADIUS = 32
 
+// When a drag starts off the knob, the knob has to travel to the finger's
+// angle. Easing that entry (and ongoing tracking) with a short withTiming —
+// the same chase DialReadout uses for typing — avoids a jarring teleport. A
+// knob-grab starts under the finger, so it skips this and tracks 1:1.
+const SNAP_CHASE_MS = 80
+
+// Cap on how often the dial emits onChange to the parent during a drag.
+// A fast swipe crosses a step every frame; emitting each one floods the
+// JS thread faster than the parent can render and builds a backlog that
+// drains *after* the finger lifts — making the value keep changing on its
+// own. ~80ms (≈12/s) is live enough for a readout/caption yet slow enough
+// that the parent keeps up and nothing is left queued to fire post-lift.
+const EMIT_THROTTLE_MS = 80
+
+// How long after release to keep blocking prop→progressSv sync, covering
+// the last in-flight throttled onChange echo as it drains on the JS thread.
+const SETTLE_WINDOW_MS = 250
+
 export const CircularDial: FC<CircularDialProps> = ({
   value,
   onChange,
@@ -74,7 +92,8 @@ export const CircularDial: FC<CircularDialProps> = ({
   hapticsEnabled = true,
   testID,
   containerStyle,
-  canvasPadding = 0
+  canvasPadding = 0,
+  labelSx
 }) => {
   const {
     theme: { colors }
@@ -143,27 +162,20 @@ export const CircularDial: FC<CircularDialProps> = ({
     [presets]
   )
 
-  const { progressSv, isActive } = useDialValue({
+  const { progressSv, isActive, isSettling } = useDialValue({
     value,
     max: vMax,
     step: vStep
   })
   const isDragging = useSharedValue(false)
 
-  // Track translation deltas from this anchor so tapping anywhere
-  // doesn't snap the knob — the knob only moves with finger motion
-  // after the first touch.
-  const gestureStartProgress = useSharedValue(0)
-
-  // Vertical weight of the arc tangent at the gesture's starting
-  // progress = cos θ where θ = π + p·π. At p=0.5 (top) it's 0 — pure
-  // X drives the dial. At p=1 (right edge) it's +1 — down adds
-  // forward. At p=0 (left edge) it's −1 — up adds forward. X is
-  // always full-strength so horizontal swipes feel uniform across
-  // the whole sweep (no "stuck" feeling at the curved ends); Y is
-  // weighted so it only contributes where the arc is actually
-  // moving vertically.
-  const startTangentY = useSharedValue(0)
+  // UI-thread timestamp of the last throttled onChange emission; gates the
+  // step-crossing reaction to EMIT_THROTTLE_MS. Reset on each gesture start.
+  const lastEmitMs = useSharedValue(0)
+  // Monotonic token so only the most recent settle window clears
+  // isSettling — during rapid repeated swipes an older timer must not cut a
+  // newer window short.
+  const settleToken = useSharedValue(0)
 
   // First-touch coordinates, captured in onTouchesDown so the
   // direction-based activation logic in onTouchesMove can measure
@@ -197,6 +209,35 @@ export const CircularDial: FC<CircularDialProps> = ({
   const TAP_SLOP = 10
 
   const readoutRef = useRef<DialReadoutHandle>(null)
+
+  // Pending settle-window timer, so rapid repeated swipes cancel the prior
+  // one instead of piling up dozens of timeouts that all wake to no-op.
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clears the settling guard once the post-release window elapses. Cancels
+  // any in-flight window first; the token check is a belt-and-suspenders
+  // against a stale timer reopening prop sync mid-settle and letting an
+  // echo through.
+  const clearSettlingSoon = useCallback(
+    (token: number) => {
+      if (settleTimerRef.current !== null) clearTimeout(settleTimerRef.current)
+      settleTimerRef.current = setTimeout(() => {
+        settleTimerRef.current = null
+        if (settleToken.value === token) isSettling.value = false
+      }, SETTLE_WINDOW_MS)
+    },
+    [isSettling, settleToken]
+  )
+
+  // Cancel a pending settle timer on unmount so it can't fire ~250ms later
+  // and write to shared values after the component is gone (mirrors the rAF
+  // cleanup in DialReadout).
+  useEffect(
+    () => () => {
+      if (settleTimerRef.current !== null) clearTimeout(settleTimerRef.current)
+    },
+    []
+  )
 
   // manualActivation + direction-based commit: once total motion
   // exceeds TAP_SLOP, activate as a pan iff horizontal motion
@@ -260,21 +301,35 @@ export const CircularDial: FC<CircularDialProps> = ({
       'worklet'
       isActive.value = true
       isDragging.value = true
-      gestureStartProgress.value = progressSv.value
-      const startAngle = Math.PI + progressSv.value * Math.PI
-      startTangentY.value = Math.cos(startAngle)
+      // Zero so the first step crossing of this drag emits immediately
+      // rather than waiting out a throttle window left over from before.
+      lastEmitMs.value = 0
     })
     .onUpdate(event => {
       'worklet'
-      // X drives the dial directly (always 100% efficient); Y is
-      // weighted by the tangent's vertical component so it
-      // contributes only where the arc is moving vertically. 2×
-      // ARC_RADIUS pixels of horizontal motion = full 0→1 sweep,
-      // matching the slider-like feel users expect.
-      const proj = event.translationX + event.translationY * startTangentY.value
-      const deltaProgress = proj / (2 * ARC_RADIUS)
-      const target = gestureStartProgress.value + deltaProgress
-      progressSv.value = target < 0 ? 0 : target > 1 ? 1 : target
+      // Without a measured outer width the canvas-space conversion is wrong, so
+      // skip until onLayout has run (same guard onTouchesDown uses) rather than
+      // jump the dial to a bogus angle.
+      if (outerWidth.value <= 0) return
+      // Absolute angular tracking: the knob follows the finger's angle around
+      // the arc centre (Apple-dial style), so there's no swipe-direction →
+      // value mapping that could invert between the two halves. event.x/y are
+      // view-relative (the pan is on the outer container); convert to canvas
+      // space the same way onTouchesDown does, then offset from the centre.
+      const canvasX = event.x - (outerWidth.value - CANVAS_WIDTH) / 2
+      const canvasY = event.y - canvasPadding
+      const target = progressFromCanvasPoint(
+        canvasX - ARC_CX,
+        canvasY - ARC_CY,
+        ARC_RADIUS
+      )
+      // Knob-grab tracks 1:1 for precision; an off-knob grab eases to the
+      // finger's angle so it doesn't teleport. Re-targeted each frame.
+      if (startedOnKnob.value) {
+        progressSv.value = target
+      } else {
+        progressSv.value = withTiming(target, { duration: SNAP_CHASE_MS })
+      }
     })
     .onEnd(() => {
       'worklet'
@@ -283,6 +338,12 @@ export const CircularDial: FC<CircularDialProps> = ({
       const raw = progressSv.value * vMax
       const snapped = snapToStep(raw, vStep, vMax)
       progressSv.value = snapped / vMax
+      // Open a settle window: isActive just flipped false, but the last
+      // throttled onChange echo may still be draining on the JS thread and
+      // would otherwise be re-synced back into progressSv, jerking the arc.
+      isSettling.value = true
+      settleToken.value += 1
+      scheduleOnRN(clearSettlingSoon, settleToken.value)
       scheduleOnRN(stableOnChange, snapped)
       scheduleOnRN(stableOnCommit, snapped)
     })
@@ -297,8 +358,14 @@ export const CircularDial: FC<CircularDialProps> = ({
       scheduleOnRN(handleTap)
     })
 
-  // Emit onChange on every step crossing while the dial is active so the
-  // readout text (driven by the parent's controlled `value`) updates live.
+  // Emit onChange on step crossings while the dial is active so consumers —
+  // and parent-derived UI such as the fiat caption — track the value live.
+  // (The readout number itself is now driven by progressSv on the UI thread
+  // in DialReadout, so it no longer depends on this round-trip.) Throttled
+  // on the UI thread to EMIT_THROTTLE_MS via a leading-edge time gate (no
+  // trailing timer, so nothing is queued to fire after release); onEnd
+  // always emits the final snapped value, so throttled-away crossings are
+  // never lost.
   useAnimatedReaction(
     () => {
       const raw = progressSv.value * vMax
@@ -308,8 +375,10 @@ export const CircularDial: FC<CircularDialProps> = ({
     (stepIdx, prev) => {
       if (prev === null || stepIdx === prev) return
       if (!isActive.value) return
-      const snapped = stepIdx * vStep
-      scheduleOnRN(stableOnChange, snapped)
+      const now = Date.now()
+      if (now - lastEmitMs.value < EMIT_THROTTLE_MS) return
+      lastEmitMs.value = now
+      scheduleOnRN(stableOnChange, stepIdx * vStep)
     }
   )
 
@@ -361,12 +430,20 @@ export const CircularDial: FC<CircularDialProps> = ({
           // ownership of `isActive`.
           if (!finished) return
           isActive.value = false
+          // Same post-commit settle window as a drag release, so the
+          // preset's own onChange echo can't bounce back into progressSv.
+          isSettling.value = true
+          settleToken.value += 1
+          scheduleOnRN(clearSettlingSoon, settleToken.value)
           scheduleOnRN(stableOnChange, snapped)
           scheduleOnRN(stableOnCommit, snapped)
         }
       )
     },
     [
+      clearSettlingSoon,
+      isSettling,
+      settleToken,
       hapticsEnabled,
       isActive,
       progressSv,
@@ -422,8 +499,10 @@ export const CircularDial: FC<CircularDialProps> = ({
               />
               <DialReadout
                 ref={readoutRef}
+                labelSx={labelSx}
                 value={value}
                 max={vMax}
+                step={vStep}
                 decimals={vDecimals}
                 maxDecimals={maxDecimals}
                 label={label}

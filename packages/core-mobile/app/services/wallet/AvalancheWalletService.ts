@@ -329,7 +329,8 @@ class AvalancheWalletService {
     rewardAddress,
     shouldValidateBurnedAmount = true,
     feeState,
-    xpAddresses
+    xpAddresses,
+    additionalOutputs
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -381,7 +382,13 @@ class AvalancheWalletService {
         weight: stakeAmountInNAvax,
         subnetId: PChainId._11111111111111111111111111111111LPO_YY,
         rewardAddresses: [rewardAddress],
-        feeState
+        feeState,
+        // Only forward when non-empty so the wallet-sdk's `additionalOutputs`
+        // path stays opt-in; passing an empty array would still trigger the
+        // extra-output handling on the builder.
+        ...(additionalOutputs && additionalOutputs.length > 0
+          ? { additionalOutputs }
+          : {})
       })
     } catch (error) {
       Logger.warn('unable to create add delegator tx', error)
@@ -469,7 +476,7 @@ class AvalancheWalletService {
     })
   }
 
-  private async getReadOnlySigner({
+  public async getReadOnlySigner({
     account,
     isTestnet,
     xpAddresses

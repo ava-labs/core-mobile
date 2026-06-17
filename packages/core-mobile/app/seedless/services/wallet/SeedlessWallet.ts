@@ -39,25 +39,21 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
 import { getAddressDerivationPath } from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
+import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
-  #addressPublicKeys: AddressPublicKey[]
 
-  constructor(
-    client: cs.CubeSignerClient,
-    addressPublicKeys: AddressPublicKey[]
-  ) {
+  constructor(client: cs.CubeSignerClient) {
     this.#client = client
-    this.#addressPublicKeys = addressPublicKeys
   }
 
   private async getMnemonicId(): Promise<string> {
@@ -366,10 +362,8 @@ export default class SeedlessWallet implements Wallet {
         'derivationPath is required to get public key for SeedlessWallet'
       )
     }
-
-    const publicKey = this.#addressPublicKeys.find(
-      findPublicKey(derivationPath, curve)
-    )
+    const pubKeys = await SeedlessPubKeysStorage.retrieve()
+    const publicKey = pubKeys.find(findPublicKey(derivationPath, curve))
 
     if (!publicKey) {
       throw new Error(

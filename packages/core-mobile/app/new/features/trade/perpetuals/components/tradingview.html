@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
+    #tv-chart { width: 100%; height: 100%; }
+    #err { padding: 16px; color: #f55; font-family: -apple-system, system-ui, sans-serif; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div id="tv-chart"></div>
+  <div id="err"></div>
+  <script
+    src="https://charting.core.app/charting_library.standalone.js"
+    onerror="document.getElementById('err').textContent = 'Failed to load TradingView Charting Library'"></script>
+  <script>
+    (function () {
+      var COIN = 'BTC';
+      var THEME = 'dark';
+      var BG = null;
+      var INITIAL_RES = '60';
+      var PRICESCALE = 100;
+      try {
+        var hash = (location.hash || '').replace(/^#/, '');
+        var coinMatch  = hash.match(/coin=([^&]+)/);
+        var themeMatch = hash.match(/theme=([^&]+)/);
+        var bgMatch    = hash.match(/bg=([^&]+)/);
+        var resMatch   = hash.match(/res=([^&]+)/);
+        var pxMatch    = hash.match(/px=([^&]+)/);
+        if (coinMatch && coinMatch[1])   COIN  = decodeURIComponent(coinMatch[1]);
+        if (themeMatch && themeMatch[1]) THEME = decodeURIComponent(themeMatch[1]) === 'light' ? 'light' : 'dark';
+        if (bgMatch && bgMatch[1])       BG    = decodeURIComponent(bgMatch[1]);
+        if (resMatch && resMatch[1])     INITIAL_RES = decodeURIComponent(resMatch[1]);
+        if (pxMatch && pxMatch[1]) {
+          var parsedPx = parseInt(decodeURIComponent(pxMatch[1]), 10);
+          if (Number.isFinite(parsedPx) && parsedPx > 0) PRICESCALE = parsedPx;
+        }
+      } catch (_) {}
+
+      var IS_LIGHT = THEME === 'light';
+      // Fallback to k2-alpine $surfacePrimary defaults.
+      if (!BG) BG = IS_LIGHT ? '#FFFFFF' : '#28282E';
+      // Match the host RN screen even before TV paints its panes.
+      document.body.style.backgroundColor = BG;
+
+      // SDK constants are injected by the RN host via
+      // `injectedJavaScriptBeforeContentLoaded`. Fall back to a minimal set if
+      // injection didn't land (e.g. older RN-WebView builds).
+      var SUPPORTED_RES = window.__PERPS_TV_RESOLUTIONS || ['60', '240', '1D', '1W', '1M'];
+      var RES_TO_HL = window.__PERPS_RES_TO_INTERVAL || {
+        '60': '1h', '240': '4h', '1D': '1d', '1W': '1w', '1M': '1M'
+      };
+
+      // Palette mirrors core-web's perps page (apps/core/app/perps/utils/palette.ts).
+      var PERPS_GREEN = '#1FA95E';
+      var PERPS_RED   = '#E84142';
+
+      function tvOverridesForTheme(isLight) {
+        var grid      = isLight ? 'rgba(40, 40, 46, 0.1)'  : 'rgba(255, 255, 255, 0.1)';
+        var axisText  = isLight ? 'rgba(40, 40, 46, 0.3)'  : 'rgba(255, 255, 255, 0.3)';
+        var crosshair = isLight ? 'rgba(40, 40, 46, 0.35)' : 'rgba(255, 255, 255, 0.35)';
+        return {
+          'paneProperties.backgroundType': 'solid',
+          'paneProperties.background': BG,
+          'paneProperties.vertGridProperties.color': grid,
+          'paneProperties.vertGridProperties.style': 2,
+          'paneProperties.horzGridProperties.color': grid,
+          'paneProperties.horzGridProperties.style': 2,
+          'paneProperties.crossHairProperties.color': crosshair,
+          'paneProperties.crossHairProperties.style': 2,
+          'paneProperties.separatorColor': grid,
+          'paneProperties.legendProperties.showBackground': false,
+          'paneProperties.legendProperties.showSeriesOHLC': true,
+          // Transparent: stops the axis from drawing a separator line.
+          'scalesProperties.lineColor': 'rgba(0,0,0,0)',
+          'scalesProperties.textColor': axisText,
+          'scalesProperties.fontSize': 11,
+          'mainSeriesProperties.statusViewStyle.fontSize': 11,
+          'mainSeriesProperties.statusViewStyle.showExchange': false,
+          'mainSeriesProperties.candleStyle.upColor': PERPS_GREEN,
+          'mainSeriesProperties.candleStyle.downColor': PERPS_RED,
+          'mainSeriesProperties.candleStyle.borderUpColor': PERPS_GREEN,
+          'mainSeriesProperties.candleStyle.borderDownColor': PERPS_RED,
+          'mainSeriesProperties.candleStyle.wickUpColor': PERPS_GREEN,
+          'mainSeriesProperties.candleStyle.wickDownColor': PERPS_RED,
+          'mainSeriesProperties.showPriceLine': true,
+          'mainSeriesProperties.priceLineWidth': 2
+        };
+      }
+
+      var TV_STUDIES_OVERRIDES = {
+        'volume.volume.plottype': 'columns',
+        'volume.volume.transparency': 70,
+        'volume.volume.color.0': PERPS_GREEN,
+        'volume.volume.color.1': PERPS_RED,
+        'volume.volume ma:plot.display': 0
+      };
+
+      // URLs are injected by the RN host from the perps-sdk constants
+      // (window.__PERPS_API_URL is the base; REST info lives at `/info`).
+      // Fall back to the mainnet endpoints if injection didn't land.
+      var HL_API_BASE = window.__PERPS_API_URL || 'https://api.hyperliquid.xyz';
+      var HL_REST = HL_API_BASE.replace(/\/$/, '') + '/info';
+      var HL_WS   = window.__PERPS_WS_URL || 'wss://api.hyperliquid.xyz/ws';
+
+      function intervalForRes(res) { return RES_TO_HL[res] || '1h'; }
+
+      function hlCandleToBar(c) {
+        return {
+          time: c.t,
+          open:   parseFloat(c.o),
+          high:   parseFloat(c.h),
+          low:    parseFloat(c.l),
+          close:  parseFloat(c.c),
+          volume: parseFloat(c.v)
+        };
+      }
+
+      function makeHyperliquidDatafeed() {
+        var listeners = {};
+        var ws = null;
+        var wsReady = false;
+        var queued = [];
+
+        function flushQueue() {
+          while (queued.length) ws.send(JSON.stringify(queued.shift()));
+        }
+        function sendOrQueue(msg) {
+          ensureWs();
+          if (wsReady) ws.send(JSON.stringify(msg));
+          else queued.push(msg);
+        }
+        function resubscribeAll() {
+          Object.keys(listeners).forEach(function (g) {
+            var l = listeners[g];
+            sendOrQueue({
+              method: 'subscribe',
+              subscription: { type: 'candle', coin: l.coin, interval: l.interval }
+            });
+          });
+        }
+        function ensureWs() {
+          if (ws) return;
+          ws = new WebSocket(HL_WS);
+          ws.onopen = function () { wsReady = true; flushQueue(); };
+          ws.onmessage = function (evt) {
+            try {
+              var msg = JSON.parse(evt.data);
+              if (msg.channel !== 'candle' || !msg.data) return;
+              var d = msg.data;
+              var bar = hlCandleToBar(d);
+              Object.keys(listeners).forEach(function (g) {
+                var l = listeners[g];
+                if (l.coin === d.s && l.interval === d.i) l.onTick(bar);
+              });
+            } catch (_) {}
+          };
+          ws.onclose = function () {
+            ws = null;
+            wsReady = false;
+            if (Object.keys(listeners).length === 0) return;
+            setTimeout(resubscribeAll, 1500);
+          };
+          ws.onerror = function () {};
+        }
+
+        return {
+          onReady: function (cb) {
+            setTimeout(function () {
+              cb({
+                supported_resolutions: SUPPORTED_RES,
+                supports_marks: false,
+                supports_time: true
+              });
+            }, 0);
+          },
+          searchSymbols: function (_q, _e, _t, cb) { cb([]); },
+          resolveSymbol: function (name, onResolve, _onError) {
+            setTimeout(function () {
+              onResolve({
+                name: name,
+                ticker: name,
+                description: name,
+                type: 'crypto',
+                session: '24x7',
+                timezone: 'Etc/UTC',
+                exchange: 'Hyperliquid',
+                listed_exchange: 'Hyperliquid',
+                format: 'price',
+                minmov: 1,
+                pricescale: PRICESCALE,
+                has_intraday: true,
+                supported_resolutions: SUPPORTED_RES,
+                volume_precision: 4,
+                data_status: 'streaming'
+              });
+            }, 0);
+          },
+          getBars: function (symbolInfo, resolution, periodParams, onResult, onError) {
+            var body = {
+              type: 'candleSnapshot',
+              req: {
+                coin: symbolInfo.name,
+                interval: intervalForRes(resolution),
+                startTime: periodParams.from * 1000,
+                endTime:   periodParams.to   * 1000
+              }
+            };
+            fetch(HL_REST, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (data) {
+                if (!Array.isArray(data) || data.length === 0) {
+                  onResult([], { noData: true });
+                  return;
+                }
+                var bars = data.map(hlCandleToBar);
+                onResult(bars, { noData: false });
+              })
+              .catch(function (e) {
+                if (onError) onError(String(e && e.message ? e.message : e));
+              });
+          },
+          subscribeBars: function (symbolInfo, resolution, onTick, listenerGuid) {
+            var interval = intervalForRes(resolution);
+            listeners[listenerGuid] = {
+              coin: symbolInfo.name,
+              interval: interval,
+              onTick: onTick
+            };
+            sendOrQueue({
+              method: 'subscribe',
+              subscription: { type: 'candle', coin: symbolInfo.name, interval: interval }
+            });
+          },
+          unsubscribeBars: function (listenerGuid) {
+            var l = listeners[listenerGuid];
+            if (!l) return;
+            delete listeners[listenerGuid];
+            if (wsReady) {
+              try {
+                ws.send(JSON.stringify({
+                  method: 'unsubscribe',
+                  subscription: { type: 'candle', coin: l.coin, interval: l.interval }
+                }));
+              } catch (_) {}
+            }
+          }
+        };
+      }
+
+      function bootstrap() {
+        if (!window.TradingView || !window.TradingView.widget) {
+          setTimeout(bootstrap, 50);
+          return;
+        }
+        try {
+          var overrides = tvOverridesForTheme(IS_LIGHT);
+          var widget = new window.TradingView.widget({
+            autosize: true,
+            symbol: COIN,
+            interval: INITIAL_RES,
+            container: 'tv-chart',
+            library_path: 'https://charting.core.app/',
+            locale: 'en',
+            theme: IS_LIGHT ? 'light' : 'dark',
+            toolbar_bg: BG,
+            custom_font_family: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            disabled_features: [
+              'use_localstorage_for_settings',
+              'header_widget',
+              'left_toolbar',
+              'timeframes_toolbar',
+              'legend_widget',
+              'border_around_the_chart',
+              'remove_library_container_border',
+              'time_scale_menu_button',
+              'control_bar',
+              'context_menus',
+              'popup_hints',
+              'display_market_status',
+              'widget_logo',
+              'main_series_scale_menu',
+              'long_press_floating_tooltip'
+            ],
+            charts_storage_url: '',
+            charts_storage_api_version: '1.1',
+            client_id: 'core-mobile',
+            user_id: 'public_user_id',
+            // Same color for foreground/background hides TV's built-in spinner
+            // and matches the host RN screen during widget boot.
+            loading_screen: {
+              backgroundColor: BG,
+              foregroundColor: BG
+            },
+            overrides: overrides,
+            studies_overrides: TV_STUDIES_OVERRIDES,
+            datafeed: makeHyperliquidDatafeed()
+          });
+
+          // Exposed for `WebView.injectJavaScript` calls from the RN host
+          // (e.g. setResolution on range-picker taps).
+          window.tvWidget = widget;
+
+          widget.onChartReady(function () {
+            try { widget.applyOverrides(overrides); } catch (_) {}
+            try { widget.applyStudiesOverrides(TV_STUDIES_OVERRIDES); } catch (_) {}
+            // Signal the RN host that the chart is interactive so the
+            // loading overlay can fade out.
+            try {
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage('chart-ready');
+              }
+            } catch (_) {}
+          });
+        } catch (e) {
+          document.getElementById('err').textContent = 'TV init error: ' + (e && e.message ? e.message : String(e));
+        }
+      }
+
+      bootstrap();
+    })();
+  </script>
+</body>
+</html>

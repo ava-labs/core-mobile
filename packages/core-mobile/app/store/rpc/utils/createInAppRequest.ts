@@ -1,4 +1,5 @@
 import { Dispatch, isAnyOf } from '@reduxjs/toolkit'
+import { providerErrors } from '@metamask/rpc-errors'
 import { addAppListener } from 'store/middleware/listener'
 import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
 import { selectSaeOverride } from 'store/posthog/slice'
@@ -6,7 +7,8 @@ import { RootState } from 'store/types'
 import {
   onInAppRequestFailed,
   onInAppRequestSucceeded,
-  onRequest
+  onRequest,
+  onRequestRejected
 } from '../slice'
 import { PeerMeta, RequestContext, RpcMethod } from '../types'
 import { generateInAppRequestPayload } from './generateInAppRequestPayload'
@@ -21,13 +23,22 @@ export type Request = ({
   params,
   chainId,
   context,
-  peerMeta
+  peerMeta,
+  signal
 }: {
   method: VmModuleRpcMethod
   params: unknown
   chainId?: string
   context?: Record<string, unknown>
   peerMeta?: PeerMeta
+  /**
+   * Optional AbortSignal. Aborting cancels the in-flight request by
+   * dispatching `onRequestRejected` (so any open handler — including
+   * `eth_sendTransaction` sitting on an approval screen — sees the rejection
+   * before it broadcasts) and rejects the returned Promise with
+   * `userRejectedRequest`.
+   */
+  signal?: AbortSignal
 }) => Promise<string>
 
 /**
@@ -61,7 +72,7 @@ export const createInAppRequest = (
   dispatch: Dispatch,
   getState: () => RootState
 ): Request => {
-  return ({ method, params, chainId, context, peerMeta }) => {
+  return ({ method, params, chainId, context, peerMeta, signal }) => {
     return new Promise((resolve, reject) => {
       // Snapshot the SAE override flag into context so downstream consumers
       // (gate util, ApprovalController) don't need to reach into redux from
@@ -80,27 +91,77 @@ export const createInAppRequest = (
         context: enrichedContext,
         peerMeta
       })
+
+      if (signal?.aborted) {
+        reject(providerErrors.userRejectedRequest())
+        return
+      }
+
       dispatch(onRequest(inAppRequest))
+
+      let settled = false
+      // Abort listener, detached on settle so it doesn't keep this closure
+      // attached to a long-lived `signal` (pattern: LedgerService.ts). A no-op
+      // default lets the success/fail paths call removeEventListener
+      // unconditionally — it's replaced below when a `signal` is provided.
+      let onAbort: () => void = () => undefined
 
       // wait for the success/fail action and resolve/reject accordingly
       const unsubscribe = dispatch(
         addAppListener({
           matcher: EVENTS_TO_SUBSCRIBE,
           effect: action => {
-            if (action.payload.requestId === inAppRequest.data.id) {
-              if (onInAppRequestSucceeded.match(action)) {
-                // @ts-ignore unsubcribe is a valid function
-                unsubscribe()
-                resolve(action.payload.txHash)
-              } else if (onInAppRequestFailed.match(action)) {
-                // @ts-ignore unsubcribe is a valid function
-                unsubscribe()
-                reject(action.payload.error)
-              }
+            if (action.payload.requestId !== inAppRequest.data.id) return
+            if (onInAppRequestSucceeded.match(action)) {
+              settled = true
+              // @ts-ignore unsubscribe is a valid function
+              unsubscribe()
+              signal?.removeEventListener('abort', onAbort)
+              resolve(action.payload.txHash)
+            } else if (onInAppRequestFailed.match(action)) {
+              settled = true
+              // @ts-ignore unsubscribe is a valid function
+              unsubscribe()
+              signal?.removeEventListener('abort', onAbort)
+              reject(action.payload.error)
             }
           }
         })
       )
+
+      if (signal) {
+        onAbort = () => {
+          if (settled) return
+          settled = true
+          // @ts-ignore unsubscribe is a valid function
+          unsubscribe()
+          // Propagate a rejection so any handler currently sitting on the
+          // approval screen (e.g. eth_sendTransaction) short-circuits
+          // before broadcasting. The handler's machinery will dispatch
+          // onInAppRequestFailed, but the listener above is already
+          // `settled` so our reject() only fires once.
+          //
+          // Known race (Phase 3 Stage B): if the user has already tapped
+          // Approve and `handleRequestInternally` has matched the approval
+          // action, the handler's `approve(...)` path (which signs and
+          // broadcasts) is already running and this dispatch is dropped.
+          // Fully closing the window requires plumbing AbortSignal into
+          // WalletService.sign and the VM-module broadcast path — out of
+          // scope for this phase. The window we DO close: user opens an
+          // approval modal but has NOT yet tapped Approve when navigation
+          // happens.
+          dispatch(
+            onRequestRejected({
+              request: inAppRequest,
+              error: providerErrors.userRejectedRequest() as Parameters<
+                typeof onRequestRejected
+              >[0]['error']
+            })
+          )
+          reject(providerErrors.userRejectedRequest())
+        }
+        signal.addEventListener('abort', onAbort, { once: true })
+      }
     })
   }
 }

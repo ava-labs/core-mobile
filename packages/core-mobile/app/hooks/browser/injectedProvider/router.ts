@@ -4,34 +4,23 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
-import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import { isUserRejectedRpcError } from './errors'
+import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 
-const READ_ONLY_METHODS = new Set([
-  'eth_blockNumber',
-  'eth_call',
-  'eth_estimateGas',
-  'eth_gasPrice',
-  'eth_getBalance',
-  'eth_getBlockByHash',
-  'eth_getBlockByNumber',
-  'eth_getCode',
-  'eth_getLogs',
-  'eth_getStorageAt',
-  'eth_getTransactionByHash',
-  'eth_getTransactionCount',
-  'eth_getTransactionReceipt',
-  'eth_maxPriorityFeePerGas',
-  'eth_feeHistory',
-  'web3_clientVersion',
-  'web3_sha3',
-  'eth_getBlockTransactionCountByHash',
-  'eth_getBlockTransactionCountByNumber'
-])
-
-const SIGNING_METHODS: Record<string, RpcMethod> = {
+// Injected-specific methods (connect / EIP-2255 permissions / chain management)
+// are handled directly in `dispatchMethod`. Signing methods route through
+// `requestSigning`. Everything else is treated as read-only and dispatched to
+// the VM module, which validates it against its manifest — so the read-only
+// allowlist is no longer hand-maintained here (CP-14384).
+//
+// This list must cover every EVM (eth_*/personal_*) method in the vm-module
+// RpcMethod enum: a signing method missing here silently falls through to the
+// read-only branch. A drift guard in router.test.ts cross-checks it against the
+// enum so it can't quietly fall out of sync.
+export const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
+  [RpcMethod.ETH_SEND_TRANSACTION_BATCH]: RpcMethod.ETH_SEND_TRANSACTION_BATCH,
   [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
   [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
   [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,
@@ -40,27 +29,62 @@ const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
 }
 
-const ALLOWED_METHODS = new Set([
-  ...READ_ONLY_METHODS,
-  ...Object.keys(SIGNING_METHODS),
-  'eth_requestAccounts',
-  'wallet_requestPermissions',
-  'wallet_getPermissions',
-  'wallet_revokePermissions',
-  'wallet_switchEthereumChain',
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
+// `method` comes straight from the dApp, so an own-property check is required:
+// `method in SIGNING_METHODS` / `SIGNING_METHODS[method]` walk the prototype
+// chain, so names like `toString`, `constructor`, or `__proto__` would otherwise
+// hit the signing branch and call requestSigning with a non-RPC value.
+const signingMethodFor = (method: string): RpcMethod | undefined =>
+  Object.prototype.hasOwnProperty.call(SIGNING_METHODS, method)
+    ? SIGNING_METHODS[method]
+    : undefined
 
-// CP-14159: methods that surface an approval modal require a verified native
-// origin. Without one, the downstream generateInAppRequestPayload falls back
-// to CORE_MOBILE_META and misattributes the request to core.app — the exact
-// spoofing class CP-14159 exists to prevent.
-const APPROVAL_METHODS = new Set<string>([
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_addEthereumChain',
-  'wallet_watchAsset'
-])
+const isEvmAddress = (value: unknown): value is string =>
+  typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value)
+
+// The account address(es) a signing request will be signed with, when the dApp
+// names one in the request. The approval screen resolves the signing account
+// from the address the request carries (selectAccountByAddress) — the tx
+// `from`, or the signer-address arg of a message-sign method — so the caller
+// must validate each against the origin's grants and never sign with an account
+// the dApp wasn't granted (An's repro: connected as account 2, then
+// eth_sendTransaction with from = account 1).
+//
+// Arg positions follow the EIP/MetaMask conventions the VM module parses:
+//   personal_sign(message, address)            → params[1]
+//   eth_sign(address, message)                 → params[0]
+//   eth_signTypedData / _v1 (typedData, addr)  → params[1]
+//   eth_signTypedData_v3 / _v4 (addr, data)    → params[0]
+//
+// NOTE eth_sendTransactionBatch is intentionally absent: its handler signs with
+// the wallet's *active account index* and ignores the per-tx `from`, so gating
+// on `from` would be both wrong and bypassable (a granted `from` with an
+// ungranted active account). It falls through to [] here so the caller gates on
+// the active account instead.
+//
+// Only well-formed addresses are returned: a malformed/unexpected param is
+// skipped (the caller falls back to the active account) so a parse mismatch can
+// never reject a valid request.
+const requestedSignerAddresses = (
+  method: RpcMethod,
+  params: unknown[]
+): string[] => {
+  switch (method) {
+    case RpcMethod.ETH_SEND_TRANSACTION: {
+      const from = (params[0] as { from?: unknown } | null | undefined)?.from
+      return isEvmAddress(from) ? [from] : []
+    }
+    case RpcMethod.PERSONAL_SIGN:
+    case RpcMethod.SIGN_TYPED_DATA:
+    case RpcMethod.SIGN_TYPED_DATA_V1:
+      return isEvmAddress(params[1]) ? [params[1]] : []
+    case RpcMethod.ETH_SIGN:
+    case RpcMethod.SIGN_TYPED_DATA_V3:
+    case RpcMethod.SIGN_TYPED_DATA_V4:
+      return isEvmAddress(params[0]) ? [params[0]] : []
+    default:
+      return []
+  }
+}
 
 // EIP-2255 — only eth_accounts is supported; no other restricted methods today.
 function buildAccountsPermission(addresses: string[]): unknown[] {
@@ -142,6 +166,18 @@ function parseProviderPayload(
 
 export type InjectedProviderRouter = {
   handleProviderMessage: (payload: string) => void
+  /**
+   * Aborts every in-flight abortable request whose origin does not match
+   * `currentOrigin`. Call when the WebView navigates to a new origin so stale
+   * signing / add-chain / watch-asset flows tied to the prior page cannot
+   * complete or broadcast.
+   */
+  cancelByOrigin: (currentOrigin: string | undefined) => void
+}
+
+type InFlightRequest = {
+  origin: string
+  controller: AbortController
 }
 
 export function createInjectedProviderRouter(
@@ -154,53 +190,74 @@ export function createInjectedProviderRouter(
     tabId,
     dispatch,
     requestSigning,
+    requestReadOnly,
     sendResponse,
     emitEvent,
     getNativeOrigin,
     trackPendingOrigin,
     getPeerMeta,
     getActiveAccount,
-    hasPermission,
+    getGrantedAddresses,
     grantPermission,
     revokePermission,
     requestConnectApproval
   } = deps
 
-  const proxyToRpc = async (
+  const inFlightRequests = new Map<number, InFlightRequest>()
+
+  const registerInFlight = (id: number, origin: string): AbortController => {
+    const controller = new AbortController()
+    inFlightRequests.set(id, { origin, controller })
+    return controller
+  }
+
+  const clearInFlight = (id: number, controller: AbortController): void => {
+    // Only delete if the entry still belongs to THIS request. If a later
+    // request reused the same JSON-RPC id (overwriting the entry), deleting
+    // unconditionally would drop the newer request's controller and break its
+    // cancellation/cleanup.
+    if (inFlightRequests.get(id)?.controller === controller) {
+      inFlightRequests.delete(id)
+    }
+  }
+
+  // EIP-2255: the accounts/permissions to advertise for this origin. The
+  // injected signer is active-only, so we mirror the passive accountsChanged
+  // reconciliation here: if the wallet's active account is granted, return the
+  // granted set (active sorted first) — switching among granted accounts never
+  // re-prompts (multi-account, Phase 3c). If the active account is NOT granted,
+  // return [] so the connect/permission handlers don't tell the dApp it's
+  // connected to an address the active-only signer can't authorize (CP-14382).
+  // The shared helper keeps this identical to the hook's switch-effect / prime
+  // path, so the active and passive paths never disagree.
+  const resolveActiveConnectedAddresses = (origin: string): string[] =>
+    resolveActiveConnectedAccounts(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }),
+      getActiveAccount()?.addressC
+    )
+
+  // Read-only methods (eth_call, eth_getBalance, …) are dispatched to the VM
+  // module — the same source WalletConnect uses — instead of a bespoke fetch +
+  // allowlist. The module classifies/validates the method against its manifest
+  // and proxies the request to the per-tab browser network's RPC endpoint.
+  const dispatchReadOnly = async (
     id: number,
     method: string,
     params: unknown[]
   ): Promise<void> => {
     try {
-      const rpcUrl = getBrowserNetwork().rpcUrl
-      if (!rpcUrl) {
-        sendResponse(id, rpcErrors.internal('No RPC URL configured'), undefined)
-        return
-      }
-
-      const body = JSON.stringify({
-        jsonrpc: '2.0',
+      const result = await requestReadOnly({
         id,
         method,
-        params
+        params,
+        chainId: getBrowserNetwork().chainId
       })
-
-      const response = await nitroFetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body
-      })
-
-      const json = await response.json()
-
-      if (json.error) {
-        sendResponse(id, json.error, undefined)
-      } else {
-        sendResponse(id, null, json.result)
-      }
+      sendResponse(id, null, result)
     } catch (e) {
-      Logger.error('[InjectedProvider] RPC proxy error', e)
-      sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
+      // requestReadOnly rejects with an RpcError for known cases (methodNotFound
+      // for unsupported methods, internal otherwise); any other thrown value is
+      // serialized by sendResponse, which preserves a numeric code when present.
+      sendResponse(id, e, undefined)
     }
   }
 
@@ -209,7 +266,7 @@ export function createInjectedProviderRouter(
     method: string,
     params: unknown[]
   ): Promise<void> => {
-    const rpcMethod = SIGNING_METHODS[method]
+    const rpcMethod = signingMethodFor(method)
     if (!rpcMethod) {
       sendResponse(
         id,
@@ -220,17 +277,62 @@ export function createInjectedProviderRouter(
     }
 
     const caip2ChainId = getEvmCaip2ChainId(getBrowserNetwork().chainId)
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+
+    // Every account this request will be signed with must be granted to the
+    // origin. The approval screen resolves the signer from the address the
+    // request carries (selectAccountByAddress) — the tx `from`, or a message-
+    // sign method's signer-address arg — falling back to the active account when
+    // none is given. Reject up front, no prompt, if any of those isn't granted:
+    // the injected provider must never sign — a tx OR a message (e.g. a Permit /
+    // signTypedData, which can authorize transfers off-chain) — with an account
+    // the dApp was never granted (An's repro: connected as account 2, then
+    // eth_sendTransaction with from = account 1). A granted account that isn't
+    // currently active is fine — the dApp has permission for it. CP-14382.
+    const grantedAddresses = new Set(
+      getGrantedAddresses({ domain: origin, vmType: NetworkVMType.EVM }).map(
+        addr => addr.toLowerCase()
+      )
+    )
+    const requestedSigners = requestedSignerAddresses(rpcMethod, params)
+    const signerAddresses =
+      requestedSigners.length > 0
+        ? requestedSigners
+        : [getActiveAccount()?.addressC].filter((addr): addr is string =>
+            Boolean(addr)
+          )
+    const allSignersGranted =
+      signerAddresses.length > 0 &&
+      signerAddresses.every(addr => grantedAddresses.has(addr.toLowerCase()))
+    if (!allSignersGranted) {
+      sendResponse(
+        id,
+        providerErrors.unauthorized(
+          'Account not granted access to this origin'
+        ),
+        undefined
+      )
+      return
+    }
+
+    const controller = registerInFlight(id, origin)
 
     try {
       const result = await requestSigning({
         method: rpcMethod,
         params,
         chainId: caip2ChainId,
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -294,12 +396,18 @@ export function createInjectedProviderRouter(
       | undefined
     const addHexChainId = addParam?.chainId
     const addRpcUrl = addParam?.rpcUrls?.[0]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       await requestSigning({
         method: 'wallet_addEthereumChain' as unknown as RpcMethod,
         params,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       // User approved — switch browser chain to the new network and notify dApp
       if (addHexChainId) {
@@ -317,21 +425,9 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, null)
     } catch (e) {
       sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
     }
-  }
-
-  // EIP-2255: resolve permissions for the current origin against the active
-  // EVM account. Today only `eth_accounts` is supported — there is no notion
-  // of a restricted method beyond account access.
-  const resolveActiveAccountAddresses = (origin: string): string[] => {
-    const active = getActiveAccount()
-    if (!active?.addressC) return []
-    const granted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-    return granted ? [active.addressC] : []
   }
 
   const handleRequestAccounts = async (id: number): Promise<void> => {
@@ -354,22 +450,21 @@ export function createInjectedProviderRouter(
       return
     }
 
-    // Already connected: return without prompting.
-    if (
-      hasPermission({
-        domain: origin,
-        address: active.addressC,
-        vmType: NetworkVMType.EVM
-      })
-    ) {
-      sendResponse(id, null, [active.addressC])
+    // Short-circuit only when the active account is itself granted — return the
+    // granted set (active first) without prompting. If the active account is
+    // ungranted, fall through to the approval prompt rather than reporting a
+    // connection the active-only signer can't honor (keeps this consistent with
+    // the accountsChanged([]) reconciliation).
+    const connected = resolveActiveConnectedAddresses(origin)
+    if (connected.length > 0) {
+      sendResponse(id, null, connected)
       return
     }
 
     try {
       const peerMeta = getPeerMeta()
-      const selected = await requestConnectApproval(peerMeta)
-      const addresses: string[] = []
+      const selected = await requestConnectApproval(peerMeta, id)
+      let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue
         grantPermission({
@@ -377,17 +472,39 @@ export function createInjectedProviderRouter(
           address: account.addressC,
           vmType: NetworkVMType.EVM
         })
-        addresses.push(account.addressC)
+        anyGranted = true
       }
-      if (addresses.length === 0) {
+      // Advertise the reconciled set, not the raw selection. The injected signer
+      // is active-only, so report [active, ...granted] when the active account is
+      // among the grants, and reject otherwise — never tell the dApp it's
+      // connected to an address Core won't sign for (phantom connection,
+      // CP-14382). Grants for non-active selections still persist, so switching
+      // to one later connects without re-prompting.
+      const reconciled = resolveActiveConnectedAddresses(origin)
+      if (!anyGranted) {
+        // No account approved → genuine user rejection (4001).
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
+        return
+      }
+      if (reconciled.length === 0) {
+        // Approved, but the active account isn't among the grants: an
+        // authorization failure (the dApp would otherwise be told about an
+        // account the active-only signer can't honor), not a user cancel. Use
+        // 4100 so dApps treat it as "not connected" rather than "rejected".
+        sendResponse(
+          id,
+          providerErrors.unauthorized(
+            'Active account not granted for this origin'
+          ),
+          undefined
+        )
         return
       }
       // Emit accountsChanged before resolving the Promise — matches
       // MetaMask/Rabby ordering so wagmi listeners see the event alongside
       // the resolution rather than one render later.
-      emitEvent('accountsChanged', addresses)
-      sendResponse(id, null, addresses)
+      emitEvent('accountsChanged', reconciled)
+      sendResponse(id, null, reconciled)
     } catch (e) {
       sendResponse(id, e, undefined)
     }
@@ -416,21 +533,18 @@ export function createInjectedProviderRouter(
       return
     }
 
-    const alreadyGranted = hasPermission({
-      domain: origin,
-      address: active.addressC,
-      vmType: NetworkVMType.EVM
-    })
-
-    if (alreadyGranted) {
-      sendResponse(id, null, buildAccountsPermission([active.addressC]))
+    // Same active-account gate as eth_requestAccounts: only short-circuit when
+    // the active account is granted; otherwise prompt.
+    const connected = resolveActiveConnectedAddresses(origin)
+    if (connected.length > 0) {
+      sendResponse(id, null, buildAccountsPermission(connected))
       return
     }
 
     try {
       const peerMeta = getPeerMeta()
-      const selected = await requestConnectApproval(peerMeta)
-      const addresses: string[] = []
+      const selected = await requestConnectApproval(peerMeta, id)
+      let anyGranted = false
       for (const account of selected) {
         if (!account.addressC) continue
         grantPermission({
@@ -438,15 +552,35 @@ export function createInjectedProviderRouter(
           address: account.addressC,
           vmType: NetworkVMType.EVM
         })
-        addresses.push(account.addressC)
+        anyGranted = true
       }
-      if (addresses.length === 0) {
+      // Reconcile against the active account before returning permissions — same
+      // active-only reasoning as handleRequestAccounts: never return a permission
+      // set for an address the injected signer won't use (phantom connection,
+      // CP-14382).
+      const reconciled = resolveActiveConnectedAddresses(origin)
+      if (!anyGranted) {
+        // No account approved → genuine user rejection (4001).
         sendResponse(id, providerErrors.userRejectedRequest(), undefined)
         return
       }
+      if (reconciled.length === 0) {
+        // Approved, but the active account isn't among the grants: an
+        // authorization failure (the dApp would otherwise be told about an
+        // account the active-only signer can't honor), not a user cancel. Use
+        // 4100 so dApps treat it as "not connected" rather than "rejected".
+        sendResponse(
+          id,
+          providerErrors.unauthorized(
+            'Active account not granted for this origin'
+          ),
+          undefined
+        )
+        return
+      }
       // Emit accountsChanged before resolving the Promise (see handleRequestAccounts).
-      emitEvent('accountsChanged', addresses)
-      sendResponse(id, null, buildAccountsPermission(addresses))
+      emitEvent('accountsChanged', reconciled)
+      sendResponse(id, null, buildAccountsPermission(reconciled))
     } catch (e) {
       sendResponse(id, e, undefined)
     }
@@ -458,10 +592,13 @@ export function createInjectedProviderRouter(
       sendResponse(id, null, [])
       return
     }
+    // Returns [] when the active account isn't granted, so a dApp that polls
+    // wallet_getPermissions sees a disconnected state consistent with the
+    // accountsChanged([]) reconciliation (never a phantom connection).
     sendResponse(
       id,
       null,
-      buildAccountsPermission(resolveActiveAccountAddresses(origin))
+      buildAccountsPermission(resolveActiveConnectedAddresses(origin))
     )
   }
 
@@ -489,12 +626,18 @@ export function createInjectedProviderRouter(
   ): Promise<void> => {
     // Normalize: some dApps send object form { type, options } instead of array
     const normalizedParams = Array.isArray(params) ? params : [params]
+    const origin = getNativeOrigin()
+    // gated by handleProviderMessage (rejects 4100 when absent); never register
+    // a synthetic '' so cancelByOrigin comparisons stay meaningful.
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({
         method: 'wallet_watchAsset' as unknown as RpcMethod,
         params: normalizedParams,
         chainId: getEvmCaip2ChainId(getBrowserNetwork().chainId),
-        peerMeta: getPeerMeta()
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
       })
       sendResponse(id, null, result)
     } catch (e) {
@@ -505,6 +648,8 @@ export function createInjectedProviderRouter(
       } else {
         sendResponse(id, e, undefined)
       }
+    } finally {
+      clearInFlight(id, controller)
     }
   }
 
@@ -532,10 +677,13 @@ export function createInjectedProviderRouter(
       handleRevokePermissions(id)
     } else if (method === 'wallet_watchAsset') {
       handleWatchAsset(id, params)
-    } else if (method in SIGNING_METHODS) {
+    } else if (signingMethodFor(method)) {
       dispatchSigningRequest(id, method, safeParams)
-    } else if (READ_ONLY_METHODS.has(method)) {
-      proxyToRpc(id, method, safeParams)
+    } else {
+      // Anything not injected-specific and not a signing method is treated as
+      // read-only and validated by the VM module's manifest (unsupported
+      // methods reject with methodNotFound).
+      dispatchReadOnly(id, method, safeParams)
     }
   }
 
@@ -550,35 +698,71 @@ export function createInjectedProviderRouter(
     const { method, params } = rpc
 
     const nativeOrigin = getNativeOrigin()
-    if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
+
+    // Origin mismatch — the shim-reported origin disagrees with the origin
+    // tracked by the WebView's navigation state. Either a race during
+    // cross-origin navigation (rare) or a sign the page is trying to spoof
+    // its origin (hostile). Either way, refuse the request.
+    //
+    // Note: if the shim provides `pageOrigin` but `nativeOrigin` is missing
+    // (e.g., first RPC arrives before onNavigationStateChange has fired),
+    // we deliberately fall through to the `!nativeOrigin` gate below. We
+    // can't verify the shim's claim without a native anchor, so 4100
+    // "unauthorized" is the right response — not "invalidRequest," since
+    // the payload itself is well-formed.
+    //
+    // `origin` isn't type-checked by validateProviderRequest, so require a
+    // string here: a truthy non-string would otherwise always be `!==` the
+    // native origin and trip this branch with noisy logs / bogus rejections.
+    // A non-string origin is treated like an absent one — the request still
+    // gates on the trusted nativeOrigin below (the real anchor; pageOrigin is
+    // only the extra spoof-detection layer).
+    if (
+      typeof pageOrigin === 'string' &&
+      nativeOrigin &&
+      pageOrigin !== nativeOrigin
+    ) {
       Logger.warn(
-        `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
+        `[InjectedProvider] Origin mismatch rejected: page=${pageOrigin} native=${nativeOrigin}`
       )
+      sendResponse(id, rpcErrors.invalidRequest('Origin mismatch'), undefined)
+      return
     }
 
     Logger.trace(`[InjectedProvider] ${method}`, params)
 
-    if (!ALLOWED_METHODS.has(method)) {
+    // Method validity is no longer gated by a static allowlist: injected and
+    // signing methods are handled explicitly in dispatchMethod, and read-only
+    // methods are validated by the VM module's manifest (unsupported →
+    // methodNotFound). Origin must still be verified first, below.
+
+    // Every method requires a known native origin. Requests that arrive
+    // before the WebView has reported its first URL, or from an iframe or
+    // about:blank context, have no authoritative origin to gate on — reject
+    // rather than silently treat them as unscoped.
+    if (!nativeOrigin) {
       sendResponse(
         id,
-        rpcErrors.methodNotFound(`Unsupported method: ${method}`),
+        providerErrors.unauthorized('Origin unavailable'),
         undefined
       )
       return
     }
 
-    if (nativeOrigin) {
-      trackPendingOrigin(id, nativeOrigin)
-    } else if (APPROVAL_METHODS.has(method)) {
-      // Any approval-class method (signing + addEthereumChain + watchAsset)
-      // requires a verified page origin — see CP-14159. Reject without one
-      // rather than letting peerMeta fall through to CORE_MOBILE_META.
-      sendResponse(id, rpcErrors.internal('Origin unavailable'), undefined)
-      return
-    }
+    trackPendingOrigin(id, nativeOrigin)
 
     dispatchMethod(id, method, params)
   }
 
-  return { handleProviderMessage }
+  const cancelByOrigin = (currentOrigin: string | undefined): void => {
+    if (inFlightRequests.size === 0) return
+    for (const [id, entry] of inFlightRequests.entries()) {
+      if (entry.origin !== currentOrigin) {
+        entry.controller.abort()
+        inFlightRequests.delete(id)
+      }
+    }
+  }
+
+  return { handleProviderMessage, cancelByOrigin }
 }

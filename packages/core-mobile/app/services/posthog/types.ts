@@ -35,6 +35,7 @@ export enum FeatureGates {
   FUSION = 'fusion',
   FUSION_MARKR = 'fusion-markr',
   FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
+  FUSION_AVALANCHE_CCT = 'fusion-avalanche-cct',
   FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
   FUSION_DISABLE_CROSS_CHAIN_SWAPS = 'fusion-disable-cross-chain-swaps',
@@ -44,7 +45,8 @@ export enum FeatureGates {
   PREDICTIONS = 'predictions',
   PRICE_CHART = 'price-chart',
   PERPETUALS = 'perpetuals',
-  FAST_STAKE_ENABLED = 'fast-stake-enabled'
+  FAST_STAKE_ENABLED = 'fast-stake-enabled',
+  FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled'
 }
 
 export enum FeatureVars {

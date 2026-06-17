@@ -1,5 +1,6 @@
 /* eslint-disable max-params */
 import { actions } from '../helpers/actions'
+import { getAndroidAppId } from '../helpers/warmup'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
 import commonElsLoc from '../locators/commonEls.loc'
@@ -292,10 +293,6 @@ class Settings {
     return selectors.getById(`contact__${contactName}__${address}`)
   }
 
-  get hkd() {
-    return selectors.getByText(settings.hkd)
-  }
-
   get advancedSettingsBtn() {
     return selectors.getById(settings.advancedSettings)
   }
@@ -465,9 +462,7 @@ class Settings {
 
   async tapWalletByName(walletName = 'Wallet 2', accountName = 'Account 1') {
     await actions.tap(this.manageAccountsWalletName(walletName))
-    await actions.isVisible(
-      this.manageAccountsAccountName(walletName, accountName)
-    )
+    await this.verifyMyWalletsAccountName(accountName, walletName)
   }
 
   async verifyAccountDetail(
@@ -611,7 +606,8 @@ class Settings {
 
   async verifyDefaultNetworks() {
     await actions.waitFor(this.addNetworkBtn)
-    for (const network of networks) {
+    const networksToVerify = networks.filter(network => network.data)
+    for (const network of networksToVerify) {
       await actions.isVisible(this.networkList(network.name))
       if (network.haveToggle) {
         await actions.isVisible(this.networkEnabled(network.name))
@@ -784,6 +780,15 @@ class Settings {
     )
   }
 
+  async verifyMywalletsAccountNameNotVisible(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
+    await actions.waitForNotVisible(
+      this.manageAccountsAccountName(walletName, accountName)
+    )
+  }
+
   async tapAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
     await actions.tap(this.manageAccountsAccountName(walletName, accountName))
   }
@@ -875,7 +880,7 @@ class Settings {
       // resolve the launchable activity alias — use startActivity explicitly.
       await actions.delay(2000)
       if (driver.isAndroid) {
-        const appId = 'com.avaxwallet.internal'
+        const appId = getAndroidAppId()
         await driver.terminateApp(appId)
         await driver.activateApp(appId)
         await onboardingPage.exitMetroAfterLogin()

@@ -68,18 +68,6 @@ const StakingTokenUnitInputWidgetStory = (): JSX.Element => {
     setStakeAmount(amount)
   }
 
-  const validateStakingAmount = useCallback(async (amount: TokenUnit) => {
-    if (!amount.isZero() && amount.lt(minStakeAmount)) {
-      throw new Error(
-        `Minimum amount to stake is ${minStakeAmount.toString()} AVAX`
-      )
-    } else if (amount.gt(balanceInAvax)) {
-      throw new Error(
-        'The specified staking amount exceeds the available balance'
-      )
-    }
-  }, [])
-
   // we can't stake the full amount because of fees
   // to give a good user experience, when user presses max
   // we will stake 99.99% of the balance
@@ -98,7 +86,6 @@ const StakingTokenUnitInputWidgetStory = (): JSX.Element => {
         formatInCurrency={testFormatInCurrency}
         onChange={handleChange}
         maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
-        validateAmount={validateStakingAmount}
       />
     </View>
   )
@@ -111,12 +98,6 @@ const SwapTokenUnitInputWidgetStory = (): JSX.Element => {
   const handleChange = (amount: TokenUnit): void => {
     setSwapAmount(amount)
   }
-
-  const validateSwapAmount = useCallback(async (amount: TokenUnit) => {
-    if (amount.gt(balanceInAvax)) {
-      throw new Error('The specified swap amount exceeds the available balance')
-    }
-  }, [])
 
   const renderAccessory = useCallback(() => {
     return <Icons.Custom.Switch color={theme.colors.$textPrimary} />
@@ -133,7 +114,6 @@ const SwapTokenUnitInputWidgetStory = (): JSX.Element => {
         balance={balanceInAvax}
         formatInCurrency={testFormatInCurrency}
         onChange={handleChange}
-        validateAmount={validateSwapAmount}
         accessory={renderAccessory()}
       />
     </View>
@@ -219,12 +199,6 @@ const balanceInAvax = new TokenUnit(
   xpChainToken.maxDecimals,
   xpChainToken.symbol
 )
-
-const minStakeAmount = new TokenUnit(
-  0,
-  xpChainToken.maxDecimals,
-  xpChainToken.symbol
-).add(25)
 
 const BalancesInAvax = [
   new TokenUnit(1000000000, xpChainToken.maxDecimals, xpChainToken.symbol),

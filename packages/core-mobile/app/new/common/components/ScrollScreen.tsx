@@ -2,8 +2,7 @@ import {
   BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  SxProp,
-  Text
+  SxProp
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -192,9 +191,8 @@ export const ScrollScreen = ({
   } = useFadingHeaderNavigation({
     header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
     targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: isModal,
     hasParent,
-    hideHeaderBackground,
+    hideHeaderBackground: hideHeaderBackground || isModal,
     renderHeaderRight,
     showNavigationHeaderTitle
   })
@@ -262,18 +260,18 @@ export const ScrollScreen = ({
             ref={headerRef}
             collapsable={false}
             onLayout={handleHeaderLayout}
-            style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
-            {title ? (
+            style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
+            {hasTitle ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
                   title={title ?? ''}
                   titleSx={titleSx}
                   titleNumberOfLines={4}
+                  description={subtitle}
                 />
               </Animated.View>
             ) : null}
 
-            {subtitle ? <Text variant="body1">{subtitle}</Text> : null}
             {!hasTitle && renderHeader?.()}
           </View>
 
@@ -315,7 +313,34 @@ export const ScrollScreen = ({
     if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
-        const footerInner = (
+        // Visual content only — sizes to its own height (not absolutely
+        // positioned), so whatever wraps it gets a real, non-zero height.
+        const footerContent = (
+          <LinearGradientBottomWrapper>
+            <View
+              style={{
+                paddingHorizontal: 16,
+                paddingBottom: insets.bottom + 16
+              }}>
+              <View onLayout={handleFooterLayout}>{footer}</View>
+            </View>
+          </LinearGradientBottomWrapper>
+        )
+
+        if (shouldAvoidKeyboard) {
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}
+              style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+              {footerContent}
+            </KeyboardStickyView>
+          )
+        }
+
+        return (
           <View
             collapsable={false}
             style={{
@@ -324,44 +349,15 @@ export const ScrollScreen = ({
               left: 0,
               right: 0
             }}>
-            <LinearGradientBottomWrapper>
-              <View
-                style={{
-                  paddingHorizontal: 16,
-                  paddingBottom: insets.bottom + 16
-                }}>
-                <View onLayout={handleFooterLayout}>{footer}</View>
-              </View>
-            </LinearGradientBottomWrapper>
+            {footerContent}
           </View>
         )
-
-        if (shouldAvoidKeyboard) {
-          const measuredFooterHeight = footerLayout?.height ?? 0
-          const footerMinHeight =
-            measuredFooterHeight > 0
-              ? measuredFooterHeight + insets.bottom + 16
-              : 88
-          return (
-            <KeyboardStickyView
-              enabled={!disableStickyFooter}
-              offset={{
-                opened: insets.bottom
-              }}
-              style={{ minHeight: footerMinHeight }}>
-              {footerInner}
-            </KeyboardStickyView>
-          )
-        }
-
-        return footerInner
       }
     }
 
     return null
   }, [
     renderFooter,
-    footerLayout?.height,
     insets.bottom,
     handleFooterLayout,
     shouldAvoidKeyboard,
@@ -386,7 +382,6 @@ export const ScrollScreen = ({
 
   const renderHeaderBackground = useCallback(() => {
     if (hideHeaderBackground) return null
-
     return (
       <View
         pointerEvents="none"
@@ -453,10 +448,10 @@ export const ScrollScreen = ({
           {children}
         </KeyboardScrollView>
 
-        {renderGrabber()}
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
+        {renderGrabber()}
       </View>
     )
   }
@@ -475,7 +470,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 32,
+            paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 48,
             paddingTop: headerHeight
           }
         ]}

@@ -23,7 +23,6 @@ import {
 } from 'services/ledger/LedgerBluetoothError'
 import LedgerService from 'services/ledger/LedgerService'
 import {
-  LedgerAppType,
   LedgerDerivationPathType,
   LedgerKeysByNetwork,
   LedgerMultiIndexKeys,
@@ -128,24 +127,10 @@ export default function AppConnectionScreen({
     }
   }, [])
 
-  // Auto-prompt "Open Solana?" on the Ledger device the moment the user lands
-  // on the Solana step. Without this, the device only prompts after the user
-  // taps Continue — by which time many users have already manually opened
-  // Solana, so `openApp` short-circuits and no system prompt is ever shown.
-  const hasPromptedSolanaOpenRef = useRef(false)
-  useEffect(() => {
-    if (
-      currentAppConnectionStep !== AppConnectionStep.SOLANA_CONNECT ||
-      hasPromptedSolanaOpenRef.current ||
-      !hasDeviceId
-    ) {
-      return
-    }
-    hasPromptedSolanaOpenRef.current = true
-    LedgerService.openApp(LedgerAppType.SOLANA).catch(err => {
-      Logger.info('Auto-openApp(Solana) failed (non-fatal)', err)
-    })
-  }, [currentAppConnectionStep, hasDeviceId])
+  // The device "Open Solana?" prompt is intentionally deferred until the user
+  // taps Continue: `handleConnectSolana` → getSolanaKeysForRange →
+  // ensureAppReady → openApp. Prompting eagerly on step entry meant the device
+  // asked even when the user went on to tap "Skip Solana".
 
   const headerCenterOverlay = useMemo(() => {
     if (!showProgressDots) return undefined

@@ -25,7 +25,6 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
-import { useTestnetToTokens } from '../hooks/useTestnetToTokens'
 import { getTokenKey } from '../utils/tokenKey'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
 
@@ -88,31 +87,16 @@ export const SelectToSwapTokenScreen = ({
     return ''
   }, [selectedNetwork])
 
-  // Mainnet: paginated token list from token aggregator API
+  // Paginated swap "to" tokens via the Fusion SDK. Same hook serves mainnet
+  // and testnet — the SDK owns routability for both. Search is delegated to
+  // the SDK's `search` param (no client-side filtering needed).
   const {
-    tokens: mainnetTokens,
-    isLoading: isLoadingMainnet,
+    tokens,
+    isLoading: isLoadingTokens,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useSwapTokens(isDeveloperMode ? '' : caip2Id, debouncedSearchText)
-
-  // Testnet: SDK-driven list via getBridgeableAssets (small set, no pagination)
-  const { tokens: testnetTokens, isLoading: isLoadingTestnet } =
-    useTestnetToTokens(isDeveloperMode ? caip2Id : '')
-
-  // Mainnet search is handled server-side via useSwapTokens; testnet needs
-  // client-side filtering since the SDK list is fetched in full without pagination.
-  const filteredTestnetTokens = useMemo(
-    () =>
-      testnetTokens.filter(t =>
-        tokenMatchesSearch(t, debouncedSearchText, isDeveloperMode)
-      ),
-    [testnetTokens, debouncedSearchText, isDeveloperMode]
-  )
-
-  const tokens = isDeveloperMode ? filteredTestnetTokens : mainnetTokens
-  const isLoadingTokens = isDeveloperMode ? isLoadingTestnet : isLoadingMainnet
+  } = useSwapTokens(caip2Id, debouncedSearchText)
 
   // Filter and sort tokens
   const baseResults = useFilteredSwapTokens({
@@ -139,10 +123,25 @@ export const SelectToSwapTokenScreen = ({
     )
       return filtered
 
-    // Pin the selected token to the top, deduplicating if it already appears in the list
-    const selectedKey = getTokenKey(selectedToken)
-    const withoutSelected = filtered.filter(t => getTokenKey(t) !== selectedKey)
-    return [selectedToken, ...withoutSelected]
+    // Pin the selected token to the top. Match against the list by localId +
+    // networkChainId rather than getTokenKey: a token selected from another
+    // source (portfolio, a previous session) can carry a different internalId
+    // than its counterpart in this API-driven list, so a getTokenKey comparison
+    // fails to dedupe and the token renders twice. Prefer the list's own object
+    // when present (keeps its key consistent with the rest of the list); only
+    // fall back to the external selected token when it isn't in the list.
+    const matchIndex = filtered.findIndex(
+      t =>
+        t.localId === selectedToken.localId &&
+        t.networkChainId === selectedToken.networkChainId
+    )
+    const pinned = matchIndex === -1 ? undefined : filtered[matchIndex]
+    if (!pinned) return [selectedToken, ...filtered]
+    return [
+      pinned,
+      ...filtered.slice(0, matchIndex),
+      ...filtered.slice(matchIndex + 1)
+    ]
   }, [
     baseResults,
     tokenFilter,
@@ -421,9 +420,7 @@ export const SelectToSwapTokenScreen = ({
       isModal
       renderItem={renderItem}
       keyExtractor={(item: SwapTokenListItem) =>
-        isDivider(item)
-          ? 'unverified-tokens-divider'
-          : `token-${item.localId}-${item.networkChainId}`
+        isDivider(item) ? 'unverified-tokens-divider' : getTokenKey(item)
       }
       getItemType={(item: SwapTokenListItem) =>
         isDivider(item) ? 'divider' : 'token'

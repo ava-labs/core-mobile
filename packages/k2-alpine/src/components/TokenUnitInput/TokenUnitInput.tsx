@@ -44,6 +44,8 @@ type TokenUnitInputProps = {
   onChange?(amount: TokenUnit): void
   autoFocus?: boolean
   returnKeyType?: ReturnKeyTypeOptions
+  /** When false, the amount renders in the danger color. */
+  valid?: boolean
 }
 
 export const TokenUnitInput = forwardRef<
@@ -59,9 +61,11 @@ export const TokenUnitInput = forwardRef<
       sx,
       editable,
       returnKeyType = 'done',
-      autoFocus
+      autoFocus,
+      valid = true
     },
     ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ) => {
     const {
       theme: { colors }
@@ -164,6 +168,7 @@ export const TokenUnitInput = forwardRef<
               editable={editable}
               placeholder={PLACEHOLDER}
               value={value}
+              valid={valid}
               textAlign="right"
               suffixFontSizeMultiplier={0.5}
               onChangeText={handleValueChanged}
@@ -171,8 +176,8 @@ export const TokenUnitInput = forwardRef<
               maxLength={maxLength}
               initialFontSize={60}
               suffix={token.symbol}
-              suffixSx={{
-                marginBottom: 20
+              suffixStyle={{
+                marginBottom: Platform.OS === 'ios' ? 20 : 26
               }}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.

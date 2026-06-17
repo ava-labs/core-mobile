@@ -107,7 +107,51 @@ describe('mapSdkAssetToLocal', () => {
 
       expect(result.type).toBe(TokenType.NATIVE)
       expect(result.symbol).toBe('AVAX')
-      expect(result.localId).toBe('NATIVE-AVAX')
+      // Lowercase to match the `tokenIds.AVAX = 'NATIVE-avax'` convention,
+      // otherwise the watchlist price fallback would never resolve.
+      expect(result.localId).toBe('NATIVE-avax')
+    })
+
+    it('keeps C-Chain native decimals untouched', () => {
+      const asset: Asset = {
+        type: FusionTokenType.NATIVE,
+        name: 'Avalanche',
+        symbol: 'AVAX',
+        decimals: 18,
+        logoUri: undefined
+      }
+
+      const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.decimals).toBe(18)
+    })
+
+    it('overrides native AVAX decimals to 9 for P-Chain targets (SDK quirk: getBridgeableAssets uses sourceChain to pick targetNativeAsset, so P→X returns the C-Chain asset with decimals=18)', () => {
+      const asset: Asset = {
+        type: FusionTokenType.NATIVE,
+        name: 'Avalanche',
+        symbol: 'AVAX',
+        decimals: 18,
+        logoUri: undefined
+      }
+
+      const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_P)
+
+      expect(result.decimals).toBe(9)
+    })
+
+    it('overrides native AVAX decimals to 9 for X-Chain targets', () => {
+      const asset: Asset = {
+        type: FusionTokenType.NATIVE,
+        name: 'Avalanche',
+        symbol: 'AVAX',
+        decimals: 18,
+        logoUri: undefined
+      }
+
+      const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_X)
+
+      expect(result.decimals).toBe(9)
     })
   })
 
