@@ -212,8 +212,29 @@ describe('useCancelRecurringSchedule', () => {
     expect(mockSnackbar).toHaveBeenCalledWith('Unable to remove')
   })
 
-  it('shows "Try again" when the signer rejects', async () => {
-    mockExecuteCancellation.mockRejectedValueOnce(new Error('user rejected'))
+  // User-rejection (tapping Reject or closing the modal) is the user's
+  // deliberate action — surfacing "Try again" here gives a false impression
+  // that the cancel attempt failed for a recoverable reason.
+  it('does NOT show a snackbar when the user rejects the approval modal', async () => {
+    mockExecuteCancellation.mockRejectedValueOnce(new Error('User rejected'))
+
+    const { result } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(CANCEL_ARGS)
+      } catch {
+        /* rethrown */
+      }
+    })
+
+    expect(mockSnackbar).not.toHaveBeenCalled()
+  })
+
+  it('shows "Try again" on a generic signer/network failure (not a user rejection)', async () => {
+    mockExecuteCancellation.mockRejectedValueOnce(new Error('RPC timeout'))
 
     const { result } = renderHook(() => useCancelRecurringSchedule(), {
       wrapper: wrap

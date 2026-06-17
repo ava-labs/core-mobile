@@ -168,8 +168,29 @@ describe('usePauseRecurringSchedule', () => {
     )
   })
 
-  it('shows "Try again" when the signer rejects', async () => {
-    mockExecutePause.mockRejectedValueOnce(new Error('user rejected'))
+  // User-rejection (tapping Reject or closing the modal) is the user's
+  // deliberate action — surfacing "Try again" here gives a false impression
+  // that the pause attempt failed for a recoverable reason.
+  it('does NOT show a snackbar when the user rejects the approval modal', async () => {
+    mockExecutePause.mockRejectedValueOnce(new Error('User rejected'))
+
+    const { result } = renderHook(() => usePauseRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(PAUSE_ARGS)
+      } catch {
+        /* rethrown */
+      }
+    })
+
+    expect(mockSnackbar).not.toHaveBeenCalled()
+  })
+
+  it('shows "Try again" on a generic signer/network failure (not a user rejection)', async () => {
+    mockExecutePause.mockRejectedValueOnce(new Error('RPC timeout'))
 
     const { result } = renderHook(() => usePauseRecurringSchedule(), {
       wrapper: wrap

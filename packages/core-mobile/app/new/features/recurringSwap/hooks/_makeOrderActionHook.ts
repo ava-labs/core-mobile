@@ -5,6 +5,7 @@ import { isHttpError } from '@avalabs/fusion-sdk'
 import { showSnackbar } from 'common/utils/toast'
 import FusionService from 'features/swap/services/FusionService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 import { pendingActionStore } from '../store/pendingActionStore'
 import {
   clearActiveRecurringActionContext,
@@ -167,7 +168,7 @@ export function makeOrderActionHook(
         // stack timers.
         scheduleStaggeredInvalidate(RECURRING_SCHEDULES_QK)
       } catch (err) {
-        showOrderActionErrorSnackbar(err, config.errorCopy)
+        showOrderActionErrorSnackbar(err, config.errorCopy, config.hookName)
         throw err
       } finally {
         // Always release this action's slot — independent of fill / other
@@ -189,10 +190,28 @@ export function makeOrderActionHook(
   }
 }
 
+// Matches the user-rejection detector in SwapScreen.submitRecurring. The
+// underlying signer throws an Error whose message starts with
+// "User rejected" / "User cancelled" / "User canceled" when the user taps
+// Reject (or closes the modal) on the in-app approval sheet. These aren't
+// failures we should surface — they're the user's deliberate action.
+function isUserRejectionError(err: unknown): boolean {
+  const message =
+    err instanceof Error ? err.message : typeof err === 'string' ? err : ''
+  return /User (rejected|cancel(l|led))/i.test(message)
+}
+
 function showOrderActionErrorSnackbar(
   err: unknown,
-  copy: ErrorSnackbarCopy
+  copy: ErrorSnackbarCopy,
+  hookName: string
 ): void {
+  if (isUserRejectionError(err)) {
+    // Log at info level so the path is observable but doesn't pipe to
+    // Sentry (Logger.error does). No toast — the user knows they rejected.
+    Logger.info(`[${hookName}] user-rejected`)
+    return
+  }
   if (isHttpError(err)) {
     if (err.status === 400) {
       showSnackbar(copy.notActionable)
