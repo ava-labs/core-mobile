@@ -6,12 +6,12 @@ import { actions } from '../../../helpers/actions'
 
 describe('Portfolio Assets', () => {
   const tokens = {
-    avax: ['Send', 'Swap', 'Buy', 'Withdraw', 'Stake'],
-    usdcCChain: ['Send', 'Swap', 'Buy', 'Withdraw'],
-    btc: ['Send', 'Swap', 'Buy', 'Withdraw'],
-    eth: ['Send', 'Buy', 'Swap', 'Withdraw'],
-    usdcETH: ['Send', 'Buy', 'Swap', 'Withdraw'],
-    sol: ['Send', 'Swap', 'Buy', 'Withdraw'],
+    avax: ['Send', 'Swap', 'Buy', 'Stake'],
+    usdcCChain: ['Send', 'Swap', 'Buy'],
+    btc: ['Send', 'Swap', 'Buy'],
+    eth: ['Send', 'Buy', 'Swap'],
+    usdcETH: ['Send', 'Buy', 'Swap'],
+    sol: ['Send', 'Swap', 'Buy'],
     orca: ['Send', 'Swap'],
     pchain: ['Send', 'Stake'],
     xchain: ['Send']
