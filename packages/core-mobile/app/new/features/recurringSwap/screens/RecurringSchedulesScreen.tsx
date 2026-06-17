@@ -505,9 +505,11 @@ export function RecurringSchedulesScreen(): JSX.Element {
     [cancel, buildSourceChain]
   )
 
-  // Pause / Unpause are non-destructive — no confirmation dialog. The hook
-  // surfaces error toasts on Markr 400/404 (already paused, completed, etc.)
-  // and the approval modal lets the user back out before signing.
+  // Pause and Unpause each gate behind a confirmation dialog so the user
+  // doesn't trigger an on-chain TX with one accidental tap (matches the
+  // pattern already used for Cancel above). Pause / Unpause aren't
+  // destructive — the action button uses `style: 'default'` rather than
+  // 'destructive'.
   const handlePause = useCallback(
     (s: RecurringOrder, fromToken: ResolvedToken, toToken: ResolvedToken) => {
       const sourceChain = buildSourceChain(s)
@@ -515,13 +517,31 @@ export function RecurringSchedulesScreen(): JSX.Element {
         showSnackbar('Network not available — try again')
         return
       }
-      pause.mutate({
-        orderId: s.orderId,
-        address: s.owner,
-        sourceChain,
-        chainId: s.chainId,
-        fromTokenSymbol: fromToken.symbol,
-        toTokenSymbol: toToken.symbol
+      showAlert({
+        title: 'Pause this recurring swap?',
+        description:
+          'Existing token allowance is preserved, unpausing later does not require a new approval. ' +
+          'Scheduled swaps may still execute while this action is confirmed.',
+        buttons: [
+          {
+            text: 'Pause',
+            style: 'default',
+            onPress: () => {
+              pause.mutate({
+                orderId: s.orderId,
+                address: s.owner,
+                sourceChain,
+                chainId: s.chainId,
+                fromTokenSymbol: fromToken.symbol,
+                toTokenSymbol: toToken.symbol
+              })
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'default'
+          }
+        ]
       })
     },
     [pause, buildSourceChain]
@@ -534,13 +554,30 @@ export function RecurringSchedulesScreen(): JSX.Element {
         showSnackbar('Network not available — try again')
         return
       }
-      unpause.mutate({
-        orderId: s.orderId,
-        address: s.owner,
-        sourceChain,
-        chainId: s.chainId,
-        fromTokenSymbol: fromToken.symbol,
-        toTokenSymbol: toToken.symbol
+      showAlert({
+        title: 'Resume this recurring swap?',
+        description:
+          'Remaining fills will execute on the original cadence once this transaction confirms on-chain.',
+        buttons: [
+          {
+            text: 'Unpause',
+            style: 'default',
+            onPress: () => {
+              unpause.mutate({
+                orderId: s.orderId,
+                address: s.owner,
+                sourceChain,
+                chainId: s.chainId,
+                fromTokenSymbol: fromToken.symbol,
+                toTokenSymbol: toToken.symbol
+              })
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'default'
+          }
+        ]
       })
     },
     [unpause, buildSourceChain]
