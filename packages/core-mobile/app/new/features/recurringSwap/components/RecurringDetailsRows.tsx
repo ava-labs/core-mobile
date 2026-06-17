@@ -216,7 +216,11 @@ export function RecurringDetailsRows({
           }
         ],
         buttons: [
-          { text: 'Cancel', onPress: dismissAlertWithTextInput },
+          {
+            text: 'Cancel',
+            style: 'destructive',
+            onPress: dismissAlertWithTextInput
+          },
           {
             text: 'Save',
             style: 'default',
@@ -246,13 +250,13 @@ export function RecurringDetailsRows({
   const promptCustomFrequencyUnit = useCallback(() => {
     showAlert({
       title: 'Custom frequency',
-      description: 'Choose a unit',
+      description: 'Select your custom swap frequency',
       buttons: [
         ...FREQUENCY_UNITS.map(u => ({
           text: UNIT_BUTTON_LABEL[u],
           onPress: () => promptCustomFrequencyValue(u)
         })),
-        { text: 'Cancel' }
+        { text: 'Cancel', style: 'destructive' }
       ]
     })
   }, [promptCustomFrequencyValue])
@@ -307,7 +311,11 @@ export function RecurringDetailsRows({
         }
       ],
       buttons: [
-        { text: 'Cancel', onPress: dismissAlertWithTextInput },
+        {
+          text: 'Cancel',
+          style: 'destructive',
+          onPress: dismissAlertWithTextInput
+        },
         {
           text: 'Save',
           style: 'default',

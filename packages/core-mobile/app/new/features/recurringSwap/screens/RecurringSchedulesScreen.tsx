@@ -615,7 +615,8 @@ export function RecurringSchedulesScreen(): JSX.Element {
           description:
             'Existing token allowance is preserved, unpausing later does not require a new approval. ' +
             'Scheduled swaps may still execute while this action is confirmed.',
-          actionText: 'Pause'
+          actionText: 'Pause',
+          actionStyle: 'destructive'
         },
         pause
       ),
@@ -632,7 +633,8 @@ export function RecurringSchedulesScreen(): JSX.Element {
           title: 'Resume this recurring swap?',
           description:
             'Remaining fills will execute on the original cadence once this transaction confirms on-chain.',
-          actionText: 'Unpause'
+          actionText: 'Unpause',
+          actionStyle: 'destructive'
         },
         unpause
       ),

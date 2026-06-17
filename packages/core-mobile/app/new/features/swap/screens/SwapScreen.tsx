@@ -1438,10 +1438,7 @@ export const SwapScreen = (): JSX.Element => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            padding: 12,
             marginTop: 8,
-            borderRadius: 12,
-            backgroundColor: '$surfaceSecondary'
           }}>
           <Icons.Action.Info
             color={theme.colors.$textPrimary}
