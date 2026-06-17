@@ -1263,6 +1263,7 @@ export const SwapScreen = (): JSX.Element => {
       // resolution is the success signal; no Redux listener in between).
       // Dismiss the modal stack so the user lands back where they came from.
       dismissAll()
+      return true
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       // User-rejection errors from the signer bubble up untouched. They're
@@ -1283,7 +1284,7 @@ export const SwapScreen = (): JSX.Element => {
     } finally {
       setRecurringSubmitting(false)
     }
-    return true
+    return false
   }, [
     recurringQuote.data,
     activeAccount,

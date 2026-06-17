@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import { TokenType } from '@avalabs/vm-module-types'
 import type { RecurringQuoteResponse } from '@avalabs/fusion-sdk'
@@ -28,7 +28,9 @@ const STALE_MS = 30_000
  * zustand store hands back new references on unrelated field changes, which
  * would otherwise refetch the quote on every render.
  */
-export function useRecurringQuote(params: Params) {
+export function useRecurringQuote(
+  params: Params
+): UseQueryResult<RecurringQuoteResponse, Error> {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   // Native tokens are usable (resolved to the zero sentinel in queryFn);
@@ -56,7 +58,9 @@ export function useRecurringQuote(params: Params) {
       params.fromToken?.localId,
       params.toToken?.localId,
       params.amountPerOrder?.toString(),
-      params.numberOfOrders,
+      params.numberOfOrders === undefined
+        ? undefined
+        : params.numberOfOrders.toString(),
       params.frequency?.unit,
       params.frequency?.value,
       params.slippageBps
@@ -69,26 +73,42 @@ export function useRecurringQuote(params: Params) {
           'useRecurringQuote: markrRecurring namespace not available'
         )
       }
-      const from = params.fromToken!
-      const to = params.toToken!
-      if (!('decimals' in from) || !('decimals' in to))
+      // Re-narrow the params the `enabled` gate already screens. RQ
+      // doesn't propagate `enabled`'s narrowing into `queryFn`, so without
+      // these guards the body would need non-null assertions on every
+      // field. An explicit invariant throw keeps the assumption legible
+      // and gives the type-checker something to work with.
+      const { fromToken, toToken, amountPerOrder, numberOfOrders, frequency } =
+        params
+      if (
+        fromToken === undefined ||
+        toToken === undefined ||
+        amountPerOrder === undefined ||
+        numberOfOrders === undefined ||
+        frequency === undefined
+      ) {
+        throw new Error(
+          'useRecurringQuote: queryFn fired with missing inputs (enabled bypassed?)'
+        )
+      }
+      if (!('decimals' in fromToken) || !('decimals' in toToken))
         throw new Error('Token missing decimals')
       // Native tokens carry `address: ""` on `LocalTokenWithBalance`; the
       // shared resolver substitutes the zero sentinel for natives and
       // returns null for unsupported variants (BTC/NFT/SPL) — `enabled`
       // already rejects those upstream, so an empty string here would
       // be a data bug and the SDK's zod parse will reject it.
-      const tokenIn = resolveRecurringTokenAddress(from) ?? ''
-      const tokenOut = resolveRecurringTokenAddress(to) ?? ''
+      const tokenIn = resolveRecurringTokenAddress(fromToken) ?? ''
+      const tokenOut = resolveRecurringTokenAddress(toToken) ?? ''
       return markrRecurring.quote({
-        chainId: from.networkChainId,
+        chainId: fromToken.networkChainId,
         tokenIn: tokenIn as Address,
-        tokenInDecimals: from.decimals,
+        tokenInDecimals: fromToken.decimals,
         tokenOut: tokenOut as Address,
-        tokenOutDecimals: to.decimals,
-        amount: params.amountPerOrder!,
-        numberOfOrders: params.numberOfOrders!,
-        frequency: params.frequency!,
+        tokenOutDecimals: toToken.decimals,
+        amount: amountPerOrder,
+        numberOfOrders,
+        frequency,
         slippage: params.slippageBps
       })
     }
