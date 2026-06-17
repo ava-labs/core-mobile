@@ -1403,6 +1403,12 @@ describe('ApprovalController', () => {
 
       expect(mockOnReject).not.toHaveBeenCalled()
       expect(mockDisconnect).not.toHaveBeenCalled()
+
+      // Settle the on-device signing so this ledgerSigning entry doesn't leak
+      // into the singleton and bleed into later tests' isLedgerSigningInProgress.
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
     })
 
     it('isLedgerSigningInProgress is false while only parked', () => {
@@ -1410,6 +1416,8 @@ describe('ApprovalController', () => {
       park(controller.signal)
 
       expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      controller.abort() // settle the parked entry so it doesn't linger
     })
 
     it('isLedgerSigningInProgress flips true once on-device Ledger signing begins', async () => {
@@ -1424,6 +1432,12 @@ describe('ApprovalController', () => {
       ledgerParams.onApprove()
 
       expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+
+      // Settle signing so the ledgerSigning entry is cleared (test isolation).
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
     })
 
     it('does not bridge requests without a signal (WalletConnect / in-app)', () => {
@@ -1546,7 +1560,77 @@ describe('ApprovalController', () => {
       controllers[1]?.abort()
       expect(mockOnReject).toHaveBeenCalledTimes(1)
 
+      // Settle the remaining parked entries (evict-2..9 + overflow evict-10) so
+      // nothing leaks into the singleton for later tests.
+      overflow.abort()
+      for (let i = 2; i < 10; i++) controllers[i]?.abort()
+
       for (let i = 0; i <= 10; i++) clearRequestSignal(`evict-${i}`)
+    })
+
+    it('keeps a ledgerSigning oldest and evicts the oldest cancellable entry at capacity (CP-14422)', async () => {
+      // Guard against contamination from a prior test leaking signing state.
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      mockDisconnect.mockResolvedValue(undefined)
+      const base = mockWalletConnectCacheSet.mock.calls.length
+      const controllers: AbortController[] = []
+      for (let i = 0; i < 10; i++) {
+        const c = new AbortController()
+        controllers.push(c)
+        setRequestSignal(`sign-${i}`, c.signal)
+        approvalController.requestApproval({
+          request: makeRequest({
+            requestId: `sign-${i}`,
+            sessionId: 'core-mobile'
+          }),
+          displayData,
+          signingData
+        })
+      }
+
+      // Drive the OLDEST (sign-0) into on-device signing → uncancellable.
+      await mockWalletConnectCacheSet.mock.calls[base][0].onApprove({
+        walletType: WalletType.LEDGER
+      })
+      mockSetReviewTransactionParams.mock.calls[
+        mockSetReviewTransactionParams.mock.calls.length - 1
+      ][0].onApprove()
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+      mockOnReject.mockClear()
+
+      // An 11th request at capacity. The oldest is ledgerSigning (uncancellable),
+      // so it must NOT be the eviction victim — picking it would no-op and fall
+      // through to BoundedMap's silent delete(), leaking its listener/signal and
+      // dropping the in-progress signing. The oldest *cancellable* entry (sign-1)
+      // is settled+detached instead. (CP-14422)
+      const overflow = new AbortController()
+      setRequestSignal('sign-10', overflow.signal)
+      approvalController.requestApproval({
+        request: makeRequest({
+          requestId: 'sign-10',
+          sessionId: 'core-mobile'
+        }),
+        displayData,
+        signingData
+      })
+
+      // The in-progress signing survived — not silently dropped.
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+      // Exactly one eviction settlement: the oldest cancellable victim (sign-1).
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+      // That victim's bridge was detached: re-aborting it is now a no-op.
+      mockOnReject.mockClear()
+      controllers[1]?.abort()
+      expect(mockOnReject).not.toHaveBeenCalled()
+
+      // Cleanup: settle sign-0's signing + drop the rest so nothing leaks.
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
+      overflow.abort()
+      for (let i = 2; i < 10; i++) controllers[i]?.abort()
+      for (let i = 0; i <= 10; i++) clearRequestSignal(`sign-${i}`)
     })
   })
 })

@@ -286,10 +286,16 @@ class ApprovalController implements VmModuleApprovalController {
 
   // Make room for an incoming entry without BoundedMap's silent FIFO eviction,
   // which would plain-delete the oldest and skip its detach()/settlement. Cancel
-  // the oldest parked approval instead so its abort listener + request signal are
-  // cleaned up and its promise is settled (rejected). A `ledgerSigning` oldest is
-  // left untouched by cancelParkedApproval (never cancel mid-device-signing); in
-  // that extraordinary case BoundedMap's own cap remains the backstop. (CP-14422)
+  // the oldest *cancellable* approval instead so its abort listener + request
+  // signal are cleaned up and its promise is settled (rejected).
+  //
+  // We must skip `ledgerSigning` entries: cancelParkedApproval no-ops on those
+  // (never cancel mid-device-signing), so picking one would leave the map full
+  // and let the subsequent set() fall through to BoundedMap's silent delete() —
+  // dropping the in-progress signing entry and leaking its listener/signal. With
+  // a single Ledger device at most one entry is ever ledgerSigning, so a
+  // cancellable victim effectively always exists; if somehow none does,
+  // BoundedMap's own cap remains the backstop. (CP-14422)
   private freeActiveApprovalCapacity(incomingKey: string): void {
     if (
       this.activeApprovals.has(incomingKey) ||
@@ -297,8 +303,12 @@ class ApprovalController implements VmModuleApprovalController {
     ) {
       return
     }
-    const oldestKey = this.activeApprovals.keys().next().value
-    if (oldestKey !== undefined) this.cancelParkedApproval(oldestKey)
+    for (const [key, entry] of this.activeApprovals) {
+      if (entry.phase !== 'ledgerSigning') {
+        this.cancelParkedApproval(key)
+        return
+      }
+    }
   }
 
   private setApprovalPhase(
