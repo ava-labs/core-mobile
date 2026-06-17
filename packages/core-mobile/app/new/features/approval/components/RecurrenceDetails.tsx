@@ -81,16 +81,16 @@ export function RecurrenceDetails({ context }: Props): JSX.Element {
   return (
     <View
       sx={{
-        padding: 16,
+        padding: 12,
         backgroundColor: '$surfaceSecondary',
         borderRadius: 12
       }}>
-      <Text
-        variant="body1"
-        sx={{ fontFamily: 'Inter-SemiBold', marginBottom: 4 }}>
+      <Text variant="body1" sx={{ fontSize: 16, lineHeight: 22 }}>
         Scheduling recurring swap
       </Text>
-      <Text variant="caption" sx={{ color: '$textSecondary' }}>
+      <Text
+        variant="caption"
+        sx={{ fontSize: 13, lineHeight: 16, color: '$textSecondary' }}>
         {summary}
       </Text>
     </View>
