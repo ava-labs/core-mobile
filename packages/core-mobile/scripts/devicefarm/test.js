@@ -512,6 +512,7 @@ async function main() {
     if (process.env.E2E) envVars.E2E = process.env.E2E
     if (process.env.E2E_MNEMONIC)
       envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.E2E_PK) envVars.E2E_PK = process.env.E2E_PK
     if (process.env.E2E_METAMASK_MNEMONIC)
       envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
     if (process.env.TESTRAIL_API_KEY)

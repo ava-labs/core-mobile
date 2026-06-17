@@ -246,30 +246,6 @@ export const config: WebdriverIO.Config = {
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
 
-    // Capture page source on test failure for debugging
-    if (!passed) {
-      try {
-        const fs = require('fs')
-        const pageSource = await driver.getPageSource()
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        const sanitizedTestName = test.title
-          .replace(/[^a-zA-Z0-9]/g, '_')
-          .substring(0, 50)
-        const outputDir = path.join(__dirname, 'page-source-failures')
-        if (!fs.existsSync(outputDir))
-          fs.mkdirSync(outputDir, { recursive: true })
-        const pageSourcePath = path.join(
-          outputDir,
-          `page-source-failure-${sanitizedTestName}-${timestamp}.xml`
-        )
-        fs.writeFileSync(pageSourcePath, pageSource)
-        console.log(`\n📄 Page source saved on test failure: ${pageSourcePath}`)
-      } catch (e: unknown) {
-        const saveError = e instanceof Error ? e.message : String(e)
-        console.error('Failed to save page source on test failure:', saveError)
-      }
-    }
-
     if (runId) {
       await addCaseToRun(runId, caseId)
       const resultId = await sendResult(runId, caseId, statusId, error)

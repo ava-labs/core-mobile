@@ -48,10 +48,10 @@ describe('Portfolio tab', () => {
     // Descending order
     await commonElsPage.selectDropdown('sort', 'Low to high balance')
     previousAmount = actions.getAmount(
-      await actions.getText(selectors.getById('list_fiat_balance__0'))
+      await actions.getText(selectors.getById('list_fiat_balance__1'))
     )
 
-    for (let i = 1; i < 3; i++) {
+    for (let i = 2; i < 4; i++) {
       const currentAmount = actions.getAmount(
         await actions.getText(selectors.getById(`list_fiat_balance__${i}`))
       )
