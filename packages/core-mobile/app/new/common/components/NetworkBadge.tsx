@@ -8,7 +8,20 @@ const BADGE_OFFSET = 6
 
 type NetworkBadgeProps = {
   logoUri: string
+  chainId?: number
   borderColor: string
+  /**
+   * Ring color for the P/X letter badge inside the composite, when chainId
+   * resolves to P-Chain or X-Chain. Defaults to `borderColor` so the inner
+   * ring matches the outer ring unless the caller wants something else.
+   */
+  chainBadgeBorderColor?: string
+  /**
+   * Forwarded to `NetworkLogo`. When true, P/X-Chain renders just the
+   * letter circle (no AVAX background) — useful for surfaces like the
+   * notification list where the composite is too busy at 16px.
+   */
+  asBadge?: boolean
 }
 
 /**
@@ -19,7 +32,10 @@ type NetworkBadgeProps = {
  */
 export const NetworkBadge: FC<NetworkBadgeProps> = ({
   logoUri,
-  borderColor
+  chainId,
+  borderColor,
+  chainBadgeBorderColor,
+  asBadge
 }) => {
   const badgeContainerSize = BADGE_SIZE + BADGE_BORDER_WIDTH * 2
   return (
@@ -35,10 +51,15 @@ export const NetworkBadge: FC<NetworkBadgeProps> = ({
         position: 'absolute',
         bottom: -BADGE_OFFSET,
         right: -BADGE_OFFSET,
-        backgroundColor: 'transparent',
-        overflow: 'hidden'
+        backgroundColor: 'transparent'
       }}>
-      <NetworkLogo logoUri={logoUri} size={BADGE_SIZE} />
+      <NetworkLogo
+        logoUri={logoUri}
+        chainId={chainId}
+        size={BADGE_SIZE}
+        chainBadgeBorderColor={chainBadgeBorderColor ?? borderColor}
+        asBadge={asBadge}
+      />
     </View>
   )
 }

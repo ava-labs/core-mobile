@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { UnsignedTx } from '@avalabs/avalanchejs'
+import { RpcMethod } from '@avalabs/vm-module-types'
+import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { RequestContext } from 'store/rpc/types'
 import { createCctCallbacks, type CctCallbackDeps } from './createCctCallbacks'
 
 jest.mock('services/wallet/AvalancheWalletService', () => ({
@@ -12,41 +12,24 @@ jest.mock('services/wallet/AvalancheWalletService', () => ({
   default: { getReadOnlySigner: jest.fn() }
 }))
 
-jest.mock('services/network/NetworkService', () => ({
-  __esModule: true,
-  default: {
-    getAvalancheNetworkP: jest.fn(),
-    getAvalancheNetworkX: jest.fn(),
-    sendTransaction: jest.fn()
-  }
-}))
-
-jest.mock('services/wallet/WalletService', () => ({
-  __esModule: true,
-  default: { sign: jest.fn() }
-}))
-
 jest.mock('common/hooks/send/utils/getInternalExternalAddrs', () => ({
   getInternalExternalAddrs: jest.fn()
 }))
 
 jest.mock('@avalabs/avalanchejs', () => ({
-  UnsignedTx: { fromJSON: jest.fn() }
+  utils: {
+    getManagerForVM: jest.fn(() => ({
+      getCodecFromBuffer: jest.fn(() => [{ codec: 'mock' }])
+    })),
+    bufferToHex: jest.fn((bytes: unknown) =>
+      typeof bytes === 'string' ? bytes : '0xmock'
+    )
+  }
 }))
-
-const P_NETWORK = { name: 'P-network' }
-const X_NETWORK = { name: 'X-network' }
 
 const mockedGetReadOnlySigner =
   AvalancheWalletService.getReadOnlySigner as jest.Mock
-const mockedGetAvalancheNetworkP =
-  NetworkService.getAvalancheNetworkP as jest.Mock
-const mockedGetAvalancheNetworkX =
-  NetworkService.getAvalancheNetworkX as jest.Mock
-const mockedSendTransaction = NetworkService.sendTransaction as jest.Mock
-const mockedWalletSign = WalletService.sign as jest.Mock
 const mockedGetInternalExternalAddrs = getInternalExternalAddrs as jest.Mock
-const mockedUnsignedTxFromJSON = UnsignedTx.fromJSON as jest.Mock
 
 const makeAccount = (overrides: Record<string, unknown> = {}) =>
   ({
@@ -75,6 +58,7 @@ const makeDeps = (
         fuji1bbb: { space: 'i', index: 0 }
       } as any
     }),
+    request: jest.fn(async () => 'mock-tx-hash') as any,
     ...overrides
   }
 }
@@ -82,8 +66,6 @@ const makeDeps = (
 describe('createCctCallbacks', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockedGetAvalancheNetworkP.mockReturnValue(P_NETWORK)
-    mockedGetAvalancheNetworkX.mockReturnValue(X_NETWORK)
   })
 
   describe('getCoreEthAddress', () => {
@@ -204,23 +186,27 @@ describe('createCctCallbacks', () => {
   })
 
   describe('avalancheSendTx', () => {
-    const fakeSignedTx = { signedTx: 'bytes' }
-    const fakeUnsignedTx = { utxos: ['utxo-a', 'utxo-b'] } as any
+    const fakeUtxo = { toBytes: () => '0xutxobytes' }
+    const fakeUnsignedTx = {
+      utxos: [fakeUtxo, fakeUtxo],
+      getVM: () => 'AVM',
+      toBytes: () => '0xtxbytes'
+    } as any
+
+    let mockedRequest: jest.Mock
 
     beforeEach(() => {
-      mockedWalletSign.mockResolvedValue('{"signed":"json"}')
-      mockedUnsignedTxFromJSON.mockReturnValue({
-        getSignedTx: () => fakeSignedTx
-      })
-      mockedSendTransaction.mockResolvedValue('0xTXHASH')
+      mockedRequest = jest.fn(async () => '0xTXHASH') as jest.Mock
       mockedGetInternalExternalAddrs.mockReturnValue({
         externalIndices: [0],
         internalIndices: [1]
       })
     })
 
-    it('signs and broadcasts via the P network for chainAlias=P', async () => {
-      const { avalancheSendTx } = createCctCallbacks(makeDeps())
+    it('dispatches AVALANCHE_SEND_TRANSACTION with the P-Chain CAIP-2 for chainAlias=P', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
 
       const txHash = await avalancheSendTx({
         baseFeeInNanoAvax: 25n,
@@ -229,32 +215,24 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(false)
-      expect(mockedGetAvalancheNetworkX).not.toHaveBeenCalled()
-
-      expect(mockedWalletSign).toHaveBeenCalledWith(
+      expect(mockedRequest).toHaveBeenCalledWith(
         expect.objectContaining({
-          walletId: 'wallet-1',
-          walletType: WalletType.MNEMONIC,
-          accountIndex: 0,
-          network: P_NETWORK,
-          transaction: expect.objectContaining({
-            tx: fakeUnsignedTx,
+          method: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          chainId: AvalancheCaip2ChainId.P,
+          params: expect.objectContaining({
+            chainAlias: 'P',
             externalIndices: [0],
             internalIndices: [1]
           })
         })
       )
-
-      expect(mockedSendTransaction).toHaveBeenCalledWith({
-        signedTx: fakeSignedTx,
-        network: P_NETWORK
-      })
       expect(txHash).toBe('0xTXHASH')
     })
 
-    it('uses the X network for chainAlias=X', async () => {
-      const { avalancheSendTx } = createCctCallbacks(makeDeps())
+    it('uses the X-Chain CAIP-2 for chainAlias=X', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
 
       await avalancheSendTx({
         baseFeeInNanoAvax: 25n,
@@ -263,13 +241,16 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkX).toHaveBeenCalledWith(false)
-      expect(mockedWalletSign.mock.calls[0]?.[0].network).toBe(X_NETWORK)
-      expect(mockedSendTransaction.mock.calls[0]?.[0].network).toBe(X_NETWORK)
+      expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
+        AvalancheCaip2ChainId.X
+      )
+      expect(mockedRequest.mock.calls[0]?.[0].params.chainAlias).toBe('X')
     })
 
-    it('uses the P network for chainAlias=C (atomic gateway is on the XP RPC)', async () => {
-      const { avalancheSendTx } = createCctCallbacks(makeDeps())
+    it('uses the C-Chain AVAX-namespace CAIP-2 for chainAlias=C', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
 
       await avalancheSendTx({
         baseFeeInNanoAvax: 25n,
@@ -278,13 +259,52 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(false)
-      expect(mockedGetAvalancheNetworkX).not.toHaveBeenCalled()
+      expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
+        AvalancheCaip2ChainId.C
+      )
+      expect(mockedRequest.mock.calls[0]?.[0].params.chainAlias).toBe('C')
     })
 
-    it('passes isTestnet through to the network selector', async () => {
+    it('suppresses the tx-feedback toast on the export leg', async () => {
       const { avalancheSendTx } = createCctCallbacks(
-        makeDeps({ getIsDeveloperMode: () => true })
+        makeDeps({ request: mockedRequest })
+      )
+
+      await avalancheSendTx({
+        baseFeeInNanoAvax: 25n,
+        chainAlias: 'C',
+        txType: 'export',
+        unsignedTx: fakeUnsignedTx
+      })
+
+      expect(mockedRequest.mock.calls[0]?.[0].context).toEqual({
+        [RequestContext.SUPPRESS_TX_FEEDBACK]: true
+      })
+    })
+
+    it('lets the import leg surface its tx-feedback toast', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({ request: mockedRequest })
+      )
+
+      await avalancheSendTx({
+        baseFeeInNanoAvax: 25n,
+        chainAlias: 'P',
+        txType: 'import',
+        unsignedTx: fakeUnsignedTx
+      })
+
+      // No SUPPRESS_TX_FEEDBACK flag so the final-leg success toast fires.
+      const context = mockedRequest.mock.calls[0]?.[0].context
+      expect(context).toBeUndefined()
+    })
+
+    it('uses testnet CAIP-2 when developer mode is on', async () => {
+      const { avalancheSendTx } = createCctCallbacks(
+        makeDeps({
+          getIsDeveloperMode: () => true,
+          request: mockedRequest
+        })
       )
 
       await avalancheSendTx({
@@ -294,35 +314,9 @@ describe('createCctCallbacks', () => {
         unsignedTx: fakeUnsignedTx
       })
 
-      expect(mockedGetAvalancheNetworkP).toHaveBeenCalledWith(true)
-    })
-
-    it('throws when no active wallet', async () => {
-      const { avalancheSendTx } = createCctCallbacks(
-        makeDeps({ getWallet: () => undefined })
+      expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
+        AvalancheCaip2ChainId.P_TESTNET
       )
-      await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
-      ).rejects.toThrow(/no active wallet/)
-    })
-
-    it('throws when no active account', async () => {
-      const { avalancheSendTx } = createCctCallbacks(
-        makeDeps({ getActiveAccount: () => undefined })
-      )
-      await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
-      ).rejects.toThrow(/no active account/)
     })
 
     it('throws when xpAddressDictionary is empty (would otherwise produce invalid signing indices)', async () => {
@@ -331,7 +325,8 @@ describe('createCctCallbacks', () => {
           getXpAddresses: async () => ({
             xpAddresses: ['fuji1aaa'],
             xpAddressDictionary: {} as any
-          })
+          }),
+          request: mockedRequest
         })
       )
       await expect(
@@ -342,7 +337,7 @@ describe('createCctCallbacks', () => {
           unsignedTx: fakeUnsignedTx
         })
       ).rejects.toThrow(/xpAddressDictionary empty/)
-      expect(mockedWalletSign).not.toHaveBeenCalled()
+      expect(mockedRequest).not.toHaveBeenCalled()
     })
   })
 })

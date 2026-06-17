@@ -7,6 +7,7 @@ import {
   Button,
   GroupList,
   GroupListItem,
+  Icons,
   Separator,
   Text,
   Tooltip,
@@ -48,6 +49,8 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -67,6 +70,9 @@ import {
   useFusionServiceInitError
 } from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
+import { clampToNAvax } from '../utils/clampToNAvax'
+import { isAvalancheCctRoute } from '../utils/isAvalancheCctRoute'
+import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -179,6 +185,8 @@ export const SwapScreen = (): JSX.Element => {
   } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
+  const activeWallet = useSelector(selectActiveWallet)
+  const isSeedlessWallet = activeWallet?.type === WalletType.SEEDLESS
   const accountTokens = useTokensWithBalanceForAccount({
     account: activeAccount
   })
@@ -403,11 +411,24 @@ export const SwapScreen = (): JSX.Element => {
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
-      setFromTokenValue(amount)
+      // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
+      // floor the trailing wei so what the user sees is what gets sent.
+      // Mirrors the staking flow's `toFixed(9)` clamp.
+      const decimals =
+        fromToken &&
+        'decimals' in fromToken &&
+        typeof fromToken.decimals === 'number'
+          ? fromToken.decimals
+          : undefined
+      const next =
+        isAvalancheCctRoute({ fromToken, toToken }) && decimals !== undefined
+          ? clampToNAvax(amount, decimals)
+          : amount
+      setFromTokenValue(next)
       setDestination(SwapSide.SELL)
       setUserClickedMax(false)
     },
-    [setDestination, setUserClickedMax]
+    [fromToken, toToken, setDestination, setUserClickedMax]
   )
 
   const handlePressMax = useCallback((): void => {
@@ -957,6 +978,11 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [theme.isDark])
 
+  const showCctTwoTxNotice = shouldShowAvalancheCctTwoTxNotice({
+    quote: activeQuote,
+    isSeedlessWallet
+  })
+
   const renderFooter = useCallback(() => {
     return (
       <>
@@ -972,6 +998,37 @@ export const SwapScreen = (): JSX.Element => {
       </>
     )
   }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
+
+  const renderCctTwoTxNotice = useCallback(() => {
+    if (!showCctTwoTxNotice) return null
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          alignItems: 'center',
+          marginTop: 16
+        }}>
+        <Icons.Alert.ErrorOutline
+          color={theme.colors.$textDanger}
+          width={24}
+          height={24}
+        />
+        <Text
+          sx={{
+            flexShrink: 1,
+            fontFamily: 'Inter-Medium',
+            fontSize: 15,
+            lineHeight: 20,
+            letterSpacing: 0,
+            color: '$textDanger'
+          }}>
+          This swap will require signing two transactions. One export and one
+          import.
+        </Text>
+      </View>
+    )
+  }, [showCctTwoTxNotice, theme.colors.$textDanger])
 
   const renderFromAndToSections = useCallback(() => {
     if (isTokensLoading && !fromToken && !toToken) {
@@ -1064,6 +1121,7 @@ export const SwapScreen = (): JSX.Element => {
             : 18
         }
       />
+      {renderCctTwoTxNotice()}
     </ScrollScreen>
   )
 }

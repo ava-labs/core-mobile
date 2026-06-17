@@ -346,6 +346,7 @@ const ApprovalScreen = ({
             logoUri={displayData.network.logoUri}
             symbol={symbol}
             name={displayData.network.name}
+            chainId={chainId}
           />
         </View>
       )
@@ -357,6 +358,7 @@ const ApprovalScreen = ({
           logoUri={displayData.network.logoUri}
           symbol={symbol}
           name={displayData.network.name}
+          chainId={chainId}
         />
       )
     }
@@ -364,7 +366,7 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }, [displayData.account, displayData.network, symbol])
+  }, [displayData.account, displayData.network, symbol, chainId])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
