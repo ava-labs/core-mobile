@@ -120,12 +120,6 @@ const ContentWrapper = ({
    * @default 0
    */
   extraOffset?: number
-  /**
-   * @deprecated No longer used. Kept for API compatibility. The previous
-   * translateY animation compensated for the native iOS `contentInset` model,
-   * which has been replaced by the layout (`paddingTop`) model.
-   */
-  animate?: boolean
 }): JSX.Element => {
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
