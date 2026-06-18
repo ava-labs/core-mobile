@@ -9,6 +9,7 @@ const ICON_SIZE = 36
 type SwapIconProps = {
   status: NotificationSwapStatus
   networkLogoUri?: string
+  networkChainId?: number
 }
 
 /**
@@ -18,7 +19,11 @@ type SwapIconProps = {
  *  - refunded    → grey circle with Restart icon + optional network badge
  *  - in_progress → grey circle with a continuously spinning sync icon + optional network badge
  */
-export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
+export const SwapIcon: FC<SwapIconProps> = ({
+  status,
+  networkLogoUri,
+  networkChainId
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -40,7 +45,10 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
         {networkLogoUri && (
           <NetworkBadge
             logoUri={networkLogoUri}
+            chainId={networkChainId}
             borderColor={colors.$surfacePrimary}
+            chainBadgeBorderColor={colors.$surfacePrimary}
+            asBadge
           />
         )}
       </View>
@@ -67,7 +75,10 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
         {networkLogoUri && (
           <NetworkBadge
             logoUri={networkLogoUri}
+            chainId={networkChainId}
             borderColor={colors.$surfacePrimary}
+            chainBadgeBorderColor={colors.$surfacePrimary}
+            asBadge
           />
         )}
       </View>

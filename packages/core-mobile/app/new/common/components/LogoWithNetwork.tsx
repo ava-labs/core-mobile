@@ -1,7 +1,8 @@
 import React from 'react'
-import { View } from '@avalabs/k2-alpine'
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 
 interface Props {
   token: { symbol: string; logoUri?: string; chainId?: number }
@@ -16,10 +17,55 @@ export const LogoWithNetwork = ({
   size = 'large',
   outerBorderColor
 }: Props): React.JSX.Element => {
+  const {
+    theme: { isDark }
+  } = useTheme()
   const width = size === 'small' ? 32 : size === 'medium' ? 36 : 42
   const networkLogoWidth = size === 'small' ? 10 : size === 'medium' ? 12 : 16
   const borderWidth = 2
   const offset = size === 'small' ? -2 : size === 'medium' ? -4 : -6
+
+  const renderNetworkBadge = (n: Network): React.JSX.Element => {
+    if (isPChain(n.chainId)) {
+      return isDark ? (
+        <Icons.TokenLogos.AVAX_P_DARK
+          testID="network_logo__p_chain"
+          width={networkLogoWidth}
+          height={networkLogoWidth}
+        />
+      ) : (
+        <Icons.TokenLogos.AVAX_P_LIGHT
+          testID="network_logo__p_chain"
+          width={networkLogoWidth}
+          height={networkLogoWidth}
+        />
+      )
+    }
+    if (isXChain(n.chainId)) {
+      return isDark ? (
+        <Icons.TokenLogos.AVAX_X_DARK
+          testID="network_logo__x_chain"
+          width={networkLogoWidth}
+          height={networkLogoWidth}
+        />
+      ) : (
+        <Icons.TokenLogos.AVAX_X_LIGHT
+          testID="network_logo__x_chain"
+          width={networkLogoWidth}
+          height={networkLogoWidth}
+        />
+      )
+    }
+    return (
+      <TokenLogo
+        size={networkLogoWidth}
+        symbol={n.networkToken.symbol}
+        chainId={n.chainId}
+        logoUri={n.logoUri}
+        isNetworkToken
+      />
+    )
+  }
 
   return (
     <View sx={{ width }}>
@@ -45,13 +91,7 @@ export const LogoWithNetwork = ({
             backgroundColor: 'transparent'
           }}
           testID={`network_logo__${network.chainName}`}>
-          <TokenLogo
-            size={networkLogoWidth}
-            symbol={network.networkToken.symbol}
-            chainId={network.chainId}
-            logoUri={network.logoUri}
-            isNetworkToken
-          />
+          {renderNetworkBadge(network)}
         </View>
       ) : undefined}
     </View>

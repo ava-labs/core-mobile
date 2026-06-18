@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -32,7 +33,32 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const size = toFinite(params.size)
   const pnl = toFinite(params.pnl)
 
-  const { coin, side, entryPrice, leverage } = usePlaceOrder()
+  const {
+    coin,
+    side,
+    entryPrice,
+    leverage,
+    initialLeverage,
+    takeProfitEnabled,
+    takeProfitPrice,
+    initialTakeProfitPrice,
+    stopLossEnabled,
+    stopLossPrice,
+    initialStopLossPrice
+  } = usePlaceOrder()
+
+  // Has the user changed anything? Compare the *effective* TP/SL against the
+  // seeded baseline: a price only counts while its toggle is on, so disabling
+  // a trigger reverts to "no price" (undefined) and matches the seed again —
+  // even if a stale price value lingers in state.
+  const effectiveTakeProfitPrice = takeProfitEnabled
+    ? takeProfitPrice
+    : undefined
+  const effectiveStopLossPrice = stopLossEnabled ? stopLossPrice : undefined
+  const hasChanges =
+    leverage !== initialLeverage ||
+    effectiveTakeProfitPrice !== initialTakeProfitPrice ||
+    effectiveStopLossPrice !== initialStopLossPrice
 
   const isLong = side === 'long'
   const notional = size * entryPrice
@@ -71,6 +97,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="secondary"
           size="large"
+          disabled={submitting}
           testID="perpetuals_manage_cancel"
           onPress={() => router.back()}
           style={{ flex: 1 }}>
@@ -79,15 +106,15 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="primary"
           size="large"
-          disabled={submitting}
+          disabled={!hasChanges || submitting}
           testID="perpetuals_manage_update"
           onPress={handleUpdate}
           style={{ flex: 1 }}>
-          Update position
+          {submitting ? <ActivityIndicator size="small" /> : 'Update position'}
         </Button>
       </View>
     ),
-    [router, submitting, handleUpdate]
+    [router, hasChanges, submitting, handleUpdate]
   )
 
   return (

@@ -523,6 +523,20 @@ async function main() {
       )
     )
 
+    // 2. Bundle env vars into test package zip BEFORE uploading (values hidden from Device Farm logs)
+    const envVars = {}
+    if (process.env.SPEC_FILE) envVars.SPEC_FILE = process.env.SPEC_FILE
+    if (process.env.E2E) envVars.E2E = process.env.E2E
+    if (process.env.E2E_MNEMONIC)
+      envVars.E2E_MNEMONIC = process.env.E2E_MNEMONIC
+    if (process.env.E2E_PK) envVars.E2E_PK = process.env.E2E_PK
+    if (process.env.E2E_METAMASK_MNEMONIC)
+      envVars.E2E_METAMASK_MNEMONIC = process.env.E2E_METAMASK_MNEMONIC
+    if (process.env.TESTRAIL_API_KEY)
+      envVars.TESTRAIL_API_KEY = process.env.TESTRAIL_API_KEY
+    if (process.env.TESTRAIL_USERNAME)
+      envVars.TESTRAIL_USERNAME = process.env.TESTRAIL_USERNAME
+
     injectEnvVarsIntoTestPackage(config.testPackagePath, envVars)
 
     // 3. Upload test package (now includes .df_env with env vars)

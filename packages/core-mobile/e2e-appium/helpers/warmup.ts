@@ -68,6 +68,7 @@ export default async function warmup(
   await onboardingPage.verifyLoggedIn()
 }
 
+
 function generateSeedlessIdToken(): string {
   // Mirrors the approach in core-web's seedless.fixture.ts:
   // signs a JWT locally using the test RSA private key registered with CubeSigner.
@@ -170,6 +171,16 @@ export async function warmupSeedless() {
   await onboardingPage.verifyLoggedIn()
 }
 
+export function getAndroidAppId(): string {
+  const caps = driver.capabilities as Record<string, string>
+  const appId = caps.appPackage || caps['appium:appPackage']
+  if (!appId)
+    throw new Error(
+      'Could not determine Android app package from session capabilities'
+    )
+  return appId
+}
+
 export async function killAndRestart() {
   if (driver.isIOS) {
     const appInfo = (await driver.execute('mobile: activeAppInfo')) as {
@@ -179,7 +190,7 @@ export async function killAndRestart() {
     await driver.execute('mobile: terminateApp', { bundleId })
     await driver.execute('mobile: activateApp', { bundleId })
   } else {
-    const appId = 'com.avaxwallet.internal'
+    const appId = getAndroidAppId()
     await driver.terminateApp(appId)
     await driver.activateApp(appId)
   }
