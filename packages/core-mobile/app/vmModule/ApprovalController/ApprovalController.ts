@@ -532,6 +532,10 @@ class ApprovalController implements VmModuleApprovalController {
         request,
         displayData: enrichedDisplayData,
         signingData,
+        // Hand the screen the request's signal so it can self-dismiss on mount
+        // if a cross-origin nav already cancelled it (the generic pop can race
+        // the mount and miss). Undefined for non-browser requests. (CP-14422)
+        signal: getRequestSignal(requestId),
         onApprove: (approveParams: OnApproveParams) =>
           this.handleApprovalApprove({
             requestId,

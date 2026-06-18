@@ -41,6 +41,14 @@ export type ApprovalParams = {
   request: RpcRequest
   displayData: DisplayData
   signingData: SigningData
+  /**
+   * The in-flight request's AbortSignal, present only for cancellable injected
+   * browser signing requests. A cross-origin nav can abort + settle the request
+   * in the window between navigating to the approval screen and the screen
+   * mounting, so the generic dismissal may miss; the screen reads this to
+   * self-dismiss on mount if its request is already cancelled. (CP-14422)
+   */
+  signal?: AbortSignal
   onApprove: ({
     walletId,
     walletType,

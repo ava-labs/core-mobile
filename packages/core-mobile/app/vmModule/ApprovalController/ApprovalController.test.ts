@@ -1439,6 +1439,23 @@ describe('ApprovalController', () => {
       )
     })
 
+    it('caches the request AbortSignal so the approval screen can self-dismiss on cancel', () => {
+      // The cross-origin nav can abort + settle the request in the window between
+      // navigate('/approval') and the screen mounting, so the generic pop may
+      // miss. Caching the signal lets the screen dismiss itself on mount if its
+      // request is already dead. (CP-14422)
+      const controller = new AbortController()
+      park(controller.signal)
+
+      const cached =
+        mockWalletConnectCacheSet.mock.calls[
+          mockWalletConnectCacheSet.mock.calls.length - 1
+        ][0]
+      expect(cached.signal).toBe(controller.signal)
+
+      controller.abort() // settle so nothing lingers
+    })
+
     it('isLedgerSigningInProgress is false while only parked', () => {
       const controller = new AbortController()
       park(controller.signal)
