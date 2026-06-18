@@ -158,7 +158,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="google"
             onPress={handleGoogleSignin}>
-            Continue with GoogleTEST
+            Continue with Google
           </Button>
         )}
         {shouldShowApple && (

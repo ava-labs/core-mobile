@@ -205,8 +205,8 @@ class OnboardingPage {
     await actions.tap(this.continueWithGoogle)
   }
 
-  async tapAgreeAndContinue() {
-    await actions.tap(this.agreeAndContinue, this.unlockBtn)
+  async tapAgreeAndContinue(expectedEle = this.unlockBtn) {
+    await actions.tap(this.agreeAndContinue, expectedEle)
   }
 
   async tapImport() {

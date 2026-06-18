@@ -134,7 +134,7 @@ export async function warmupSeedless() {
   await driver.pause(500)
 
   await onboardingPage.tapContinueWithGoogle()
-  await onboardingPage.tapAgreeAndContinue()
+  await onboardingPage.tapAgreeAndContinue(onboardingPage.skip)
   await onboardingPage.tapSkip()
   await onboardingPage.tapUnlockBtn()
   await onboardingPage.enterPin()
