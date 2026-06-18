@@ -23,6 +23,7 @@ export type SessionProposalParams = {
   request: WCSessionProposal
   namespaces: Record<string, ProposalTypes.RequiredNamespace>
   scanResponse?: SiteScanResponse
+  scanFailed?: boolean
 }
 
 export type OnApproveParams = {

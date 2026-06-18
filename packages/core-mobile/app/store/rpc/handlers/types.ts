@@ -43,4 +43,5 @@ export type SessionProposalV2Params = {
   request: WCSessionProposal
   namespaces: Record<string, ProposalTypes.RequiredNamespace>
   scanResponse?: SiteScanResponse
+  scanFailed?: boolean
 }

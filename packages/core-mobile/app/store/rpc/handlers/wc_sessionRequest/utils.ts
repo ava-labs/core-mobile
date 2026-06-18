@@ -44,9 +44,9 @@ const CORE_EXT_HOSTNAMES = [
   'dnoiacbfkodekgkjbpoagaljpbhaedmd' // blue build
 ]
 
-const CORE_WEB_URLS_REGEX = [
-  // core web preview deploys (ex. https://d0ce77c0-core-web-dev.avalabs.workers.dev)
-  'https://[a-zA-Z0-9]+-core-web-dev\\.avalabs\\.workers\\.dev'
+const CORE_WEB_HOSTNAMES_REGEX = [
+  // core web preview deploys (ex. d0ce77c0-core-web-dev.avalabs.workers.dev)
+  /^[a-zA-Z0-9]+-core-web-dev\.avalabs\.workers\.dev$/
 ]
 
 export const isCoreMethod = (method: string): boolean =>
@@ -79,7 +79,8 @@ export const isCoreDomain = (url: string): boolean => {
   const isCoreWeb =
     isLocalhost ||
     (protocol === 'https:' && CORE_WEB_HOSTNAMES.includes(hostname)) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
+    (protocol === 'https:' &&
+      CORE_WEB_HOSTNAMES_REGEX.some(regex => regex.test(hostname)))
 
   return isCoreWeb || isCoreExt
 }
@@ -96,7 +97,9 @@ export const isVerifiedCoreDomain = (
   try {
     const urlObj = new URL(origin)
     if (urlObj.protocol === 'chrome-extension:') {
-      return CORE_EXT_HOSTNAMES.includes(urlObj.hostname)
+      // INVALID means the browser's actual origin didn't match the claimed chrome-extension URL.
+      // UNKNOWN is expected for the real Core Extension (chrome-extension:// can't host the WC verify frame).
+      return validation !== 'INVALID' && CORE_EXT_HOSTNAMES.includes(urlObj.hostname)
     }
   } catch {
     return false
@@ -188,7 +191,7 @@ export const scanAndNavigateToSessionProposal = async ({
     navigateToSessionProposal({ request, namespaces, scanResponse })
   } catch (error) {
     Logger.error('[Blockaid] Failed to scan dApp', error)
-    navigateToSessionProposal({ request, namespaces })
+    navigateToSessionProposal({ request, namespaces, scanFailed: true })
   }
 }
 

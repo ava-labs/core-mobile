@@ -13,7 +13,14 @@ const chainInfoSchema = z.object({
       decimals: z.number()
     })
     .optional(),
-  rpcUrls: z.array(z.string()).optional(),
+  rpcUrls: z
+    .array(
+      z
+        .string()
+        .url()
+        .refine(u => u.startsWith('https://'), { message: 'RPC URL must use HTTPS' })
+    )
+    .optional(),
   isTestnet: z.boolean().optional()
 })
 
