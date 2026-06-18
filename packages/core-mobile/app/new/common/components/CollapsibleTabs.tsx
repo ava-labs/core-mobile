@@ -130,9 +130,9 @@ const ContentWrapper = ({
   return (
     <View
       style={{
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%',
         paddingBottom: insets.bottom + tabBarHeight + extraOffset
       }}>
       {children}
