@@ -139,7 +139,18 @@ const assertEvmTransactionSigner = (
   signedTx: string,
   expectedAddress: string
 ): void => {
-  const recovered = Transaction.from(signedTx).from
+  let recovered: string | null
+  try {
+    recovered = Transaction.from(signedTx).from
+  } catch (e) {
+    // A malformed signed payload can't be verified — fail closed with a stable,
+    // low-leakage message and keep the parse error in internal logs only.
+    Logger.error(
+      'EVM transaction signer verification: failed to parse signed tx',
+      e
+    )
+    throw new Error('EVM transaction signer verification failed')
+  }
   if (!recovered || recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
     // Log the addresses internally only — the thrown error is wrapped into an
     // RPC error returned to the dApp, so it must not embed account addresses.
