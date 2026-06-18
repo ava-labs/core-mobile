@@ -136,7 +136,7 @@ export default function TabLayout(): JSX.Element {
           title: 'Trade',
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
-          tabBarItemHidden: true
+          tabBarItemHidden: isPerpetualsBlocked
         }}
       />
       <BottomTabs.Screen
