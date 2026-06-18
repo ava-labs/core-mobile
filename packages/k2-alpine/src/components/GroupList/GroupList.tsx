@@ -54,11 +54,11 @@ export const GroupList = ({
 
   const handlePress = (item: GroupListItem, index: number): void => {
     if (item.accordion) {
-      const nextExpanded = !(expandedStates[index] ?? false)
-      setExpandedStates(prev =>
-        prev.map((value, i) => (i === index ? nextExpanded : value))
-      )
-      item.onAccordionToggle?.(nextExpanded)
+      setExpandedStates(prev => {
+        const nextExpanded = !(prev[index] ?? false)
+        item.onAccordionToggle?.(nextExpanded)
+        return prev.map((value, i) => (i === index ? nextExpanded : value))
+      })
     } else {
       item.onPress?.()
     }

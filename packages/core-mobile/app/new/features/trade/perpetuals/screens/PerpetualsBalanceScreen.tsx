@@ -32,14 +32,24 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
   const scrollViewRef = useRef<ScrollView>(null)
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
   }, [])
 
+  // Clear any pending scroll on unmount so it can't fire after teardown.
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    }
+  }, [])
+
   const handlePerformanceToggle = useCallback((expanded: boolean) => {
+    // Cancel any pending scroll (e.g. a quick collapse) before scheduling.
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
     if (expanded) {
-      setTimeout(
+      scrollTimeoutRef.current = setTimeout(
         () => scrollViewRef.current?.scrollToEnd({ animated: true }),
         ACCORDION_EXPAND_DURATION
       )
