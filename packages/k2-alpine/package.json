@@ -71,6 +71,7 @@
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/slider": "5.2.0",
     "@react-native-masked-view/masked-view": "0.3.2",
+    "@react-native/jest-preset": "0.85.3",
     "@rushstack/eslint-patch": "1.5.1",
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
