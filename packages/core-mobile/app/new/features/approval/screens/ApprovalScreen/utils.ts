@@ -97,12 +97,12 @@ export const getAccountUnavailableMessage = (
   accountName?: string
 ): string => {
   if (walletName && accountName) {
-    return `Your active wallet can't sign this - it's for "${accountName}" in "${walletName}". Switch to "${walletName}" to approve, or reject.`
+    return `Your active account can't sign this transaction. Switch to "${accountName}" in "${walletName}" to continue.`
   }
   if (walletName) {
-    return `Your active wallet can't sign this - this account belongs to "${walletName}". Switch to "${walletName}" to approve, or reject.`
+    return `Your active account can't sign this transaction. Switch to "${walletName}" to continue.`
   }
-  return "Your active wallet can't sign this - this account belongs to a different wallet. Switch to that wallet to approve, or reject."
+  return "Your active account can't sign this transaction. It belongs to a different wallet - switch to that wallet to continue."
 }
 
 export const getInitialGasLimit = (data: SigningData): number | undefined => {
