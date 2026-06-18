@@ -2,7 +2,6 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import { Platform } from 'react-native'
 import Aes from 'react-native-aes-crypto'
 import Keychain, {
-  BaseOptions,
   GetOptions,
   getSupportedBiometryType,
   hasGenericPassword,
@@ -70,8 +69,10 @@ export const bioSetOptions: SetOptions = {
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 }
 
-export const walletSecretOptions = (walletId: string): BaseOptions => ({
-  service: getWalletServiceKey(walletId)
+export const walletSecretOptions = (walletId: string): SetOptions => ({
+  service: getWalletServiceKey(walletId),
+  accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  securityLevel: iOS ? undefined : Keychain.SECURITY_LEVEL.SECURE_HARDWARE
 })
 
 class BiometricsSDK {
