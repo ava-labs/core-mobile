@@ -101,7 +101,8 @@
   "lavamoat": {
     "allowScripts": {
       "$root$": true,
-      "@storybook/react-native>@storybook/core-common>esbuild": false
+      "@storybook/react-native>@storybook/core-common>esbuild": false,
+      "@shopify/react-native-skia": false
     }
   }
 }
