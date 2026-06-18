@@ -25,8 +25,6 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { SessionProposalV2Params } from '../types'
 
 const CORE_WEB_HOSTNAMES = [
-  'localhost',
-  '127.0.0.1',
   'core.app',
   'staging.core.app',
   'develop.core.app',
@@ -74,11 +72,43 @@ export const isCoreDomain = (url: string): boolean => {
   const isCoreExt =
     CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
+  const isLocalhost =
+    (hostname === 'localhost' || hostname === '127.0.0.1') &&
+    (protocol === 'http:' || protocol === 'https:')
+
   const isCoreWeb =
-    CORE_WEB_HOSTNAMES.includes(hostname) ||
+    isLocalhost ||
+    (protocol === 'https:' && CORE_WEB_HOSTNAMES.includes(hostname)) ||
     CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
 
   return isCoreWeb || isCoreExt
+}
+
+export type VerifyContext = WCSessionProposal['data']['verifyContext']
+
+export const isVerifiedCoreDomain = (
+  verifyContext: VerifyContext | undefined
+): boolean => {
+  if (!verifyContext) return false
+
+  const { validation, origin } = verifyContext.verified
+
+  try {
+    const urlObj = new URL(origin)
+    if (urlObj.protocol === 'chrome-extension:') {
+      return CORE_EXT_HOSTNAMES.includes(urlObj.hostname)
+    }
+  } catch {
+    return false
+  }
+
+  // UNKNOWN = domain not registered with WC Verify (or Verify API unavailable).
+  // INVALID = origin does not match registered domain — likely spoofed.
+  if (validation !== 'VALID') {
+    return false
+  }
+
+  return isCoreDomain(origin)
 }
 
 export const isNetworkSupported = (
