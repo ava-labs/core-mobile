@@ -316,7 +316,7 @@ class ApprovalController implements VmModuleApprovalController {
     })
 
     return new Promise<ApprovalResponse>(resolve => {
-      walletConnectCache.approvalParams.set({
+      walletConnectCache.approvalParams.set(requestId, {
         request,
         displayData: enrichedDisplayData,
         signingData,
@@ -346,6 +346,7 @@ class ApprovalController implements VmModuleApprovalController {
       router.navigate({
         pathname: '/approval',
         params: {
+          requestId,
           presentationMode: isInAppRequest(request)
             ? NavigationPresentationMode.FORM_SHEET
             : undefined
