@@ -36,6 +36,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import {
   addHistoryForActiveTab,
+  addTab,
   goBackward,
   goForward as goForwardAction,
   goToDiscoverPage,
@@ -47,6 +48,7 @@ import { selectIsInjectedProviderBlocked } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
+import { isSameOriginSpaNavigation, isValidHttpUrl } from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -84,7 +86,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       providerShimJs,
       handleProviderMessage,
       handleDomainMetadata,
-      setCurrentUrl
+      handleCommittedUrl
     } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
@@ -362,6 +364,24 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
                 wrapper.payload
               )
               break
+            case 'window_open': {
+              // The page called window.open(); open it in a new tab instead
+              // of letting the WebView handle it. Routing through a new tab
+              // keeps the originating page's URL and rendered content in sync
+              // (prevents address-bar spoofing on Android, where the platform
+              // can advance the visited URL without replacing the page).
+              const targetUrl = wrapper.payload
+              if (typeof targetUrl === 'string' && isValidHttpUrl(targetUrl)) {
+                dispatch(addTab())
+                dispatch(
+                  addHistoryForActiveTab({
+                    title: targetUrl,
+                    url: targetUrl
+                  })
+                )
+              }
+              break
+            }
             default:
               break
           }
@@ -373,6 +393,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         Logger.trace('WebView onMessage')
       },
       [
+        dispatch,
         parseDescriptionAndFavicon,
         parsePageStyles,
         showWalletConnectDialog,
@@ -381,6 +402,31 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         urlToLoad
       ]
     )
+
+    // Surfaces a URL we trust as actually-rendered to the user-facing URL bar
+    // and to the EVM provider's origin tracker. The address-bar/history sync
+    // is idempotent per URL, but the provider must be notified on every
+    // commit: a reload keeps the same URL yet creates a fresh document whose
+    // shim _accounts cache starts empty and needs re-priming.
+    const syncCommittedUrl = (url: string, title?: string): void => {
+      if (!url || url.startsWith('about:')) return
+
+      handleCommittedUrl(url)
+
+      if (lastSyncedUrlRef.current === url) return
+      lastSyncedUrlRef.current = url
+
+      dispatch(
+        addHistoryForActiveTab({
+          title: title ?? url,
+          url
+        })
+      )
+
+      if (!inputRef?.current?.isFocused()) {
+        setUrlEntry(url)
+      }
+    }
 
     const onLoad = (event: WebViewNavigationEvent): void => {
       if (
@@ -393,8 +439,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         setError(undefined)
       }
 
-      // `onNavigationStateChange` is the single source of truth for history sync.
-      // Avoid double-dispatching history updates (can cause unnecessary rerenders/loops).
+      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android) —
+      // both fire only after the navigation has rendered, so this is the
+      // single trusted point at which we surface a cross-origin URL change.
+      // iOS's HistoryShim also routes pushState/replaceState through here so
+      // SPA URL changes on iOS land here too.
+      syncCommittedUrl(event.nativeEvent.url, event.nativeEvent.title)
     }
 
     const onNavigationStateChange = (navState: WebViewNavigation): void => {
@@ -407,29 +457,26 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         canGoForward: navState.canGoForward
       }
 
-      setCurrentUrl(navState.url ?? '')
+      const nextUrl = navState.url ?? ''
 
-      const nextUrl = navState.url
-      if (!nextUrl?.length || nextUrl.startsWith('about:')) return
-
-      // Sync once per URL. WebView (especially with swipe / SPAs / redirects) can emit multiple
-      // navigation state changes for the same URL; gating by `loading === false` can miss updates
-      // because the URL often changes while loading=true and then settles without another URL change.
-      if (lastSyncedUrlRef.current !== nextUrl) {
-        lastSyncedUrlRef.current = nextUrl
-
-        // Keep Redux history aligned with the actual WebView navigation stack
-        dispatch(
-          addHistoryForActiveTab({
-            title: navState.title ?? nextUrl,
-            url: nextUrl
-          })
-        )
-
-        // Only update the input value if the user isn't actively typing.
-        if (!inputRef?.current?.isFocused()) {
-          setUrlEntry(nextUrl)
-        }
+      // Only sync same-origin URL changes from this event — it fires off iOS
+      // WKWebView's provisional navigation and Android's
+      // doUpdateVisitedHistory, both of which can advance the URL before any
+      // response is received. A page can otherwise spoof the address bar by
+      // navigating to a URL that hangs (e.g.
+      // `location.href = 'https://google.com:9090'`). Cross-origin URL
+      // changes are deferred to `onLoad`, which only fires post-commit.
+      //
+      // Android pushState/replaceState only fires this event (no onLoad
+      // follows), so this branch is what surfaces SPA URL changes on Android.
+      // iOS routes pushState through the HistoryShim → onLoad path.
+      if (
+        isSameOriginSpaNavigation({
+          nextUrl,
+          lastSyncedUrl: lastSyncedUrlRef.current
+        })
+      ) {
+        syncCommittedUrl(nextUrl, navState.title)
       }
 
       // Cancel pending "no-op back" fallback only when the URL actually changes.
