@@ -168,13 +168,24 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }, [activeHistory?.url, urlToLoad])
 
     useEffect(() => {
-      //initiate deep link if user copies WC link to clipboard
-      if (clipboard.startsWith('wc:')) {
-        setPendingDeepLink({
-          url: clipboard,
-          origin: DeepLinkOrigin.ORIGIN_QR_CODE
-        } as DeepLink)
-      }
+      if (!clipboard.startsWith('wc:')) return
+      showAlert({
+        title: 'WalletConnect Link Detected',
+        description:
+          'A WalletConnect link was found in your clipboard. Would you like to connect?',
+        buttons: [
+          { text: 'Cancel' },
+          {
+            text: 'Connect',
+            onPress: () => {
+              setPendingDeepLink({
+                url: clipboard,
+                origin: DeepLinkOrigin.ORIGIN_QR_CODE
+              } as DeepLink)
+            }
+          }
+        ]
+      })
     }, [clipboard, setPendingDeepLink])
 
     const reload = (): void => {
