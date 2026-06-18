@@ -398,7 +398,9 @@
       "react-native-nitro-modules": true,
       "@avalabs/crypto-nitro": true,
       "@avalabs/crypto-nitro>react-native-nitro-modules": true,
-      "@avalabs/bridge-unified>@lombard.finance/sdk>@lombard.finance/sdk-common>vite>esbuild": false
+      "@avalabs/bridge-unified>@lombard.finance/sdk>@lombard.finance/sdk-common>vite>esbuild": false,
+      "@shopify/react-native-skia": false,
+      "@avalabs/k2-alpine>@shopify/react-native-skia": false
     }
   },
   "react-native": {
