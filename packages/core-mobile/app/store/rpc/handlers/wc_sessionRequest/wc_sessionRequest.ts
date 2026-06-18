@@ -25,7 +25,8 @@ import {
 import {
   CoreAccountAddresses,
   getAddressForChainId,
-  isCoreDomain,
+  isVerifiedCoreDomain,
+  VerifyContext,
   isCoreMethod,
   isNetworkSupported,
   NamespaceToApprove,
@@ -52,8 +53,10 @@ const supportedEvmMethods = [
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.WC_SESSION_REQUEST]
 
-  private getApprovedEvmMethods = (dappUrl: string): RpcMethod[] => {
-    const isCoreApp = isCoreDomain(dappUrl)
+  private getApprovedEvmMethods = (
+    verifyContext: VerifyContext | undefined
+  ): RpcMethod[] => {
+    const isCoreApp = isVerifiedCoreDomain(verifyContext)
 
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
@@ -207,7 +210,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
     const dappUrl = proposer.metadata.url
-    const isCoreApp = isCoreDomain(dappUrl)
+    const isCoreApp = isVerifiedCoreDomain(request.data.verifyContext)
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
     const normalizedOptional = normalizeNamespaces(
@@ -287,7 +290,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
 
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
-    const dappUrl = payload.request.data.params.proposer.metadata.url
+    const verifyContext = payload.request.data.verifyContext
 
     const namespacesToApprove = result.data.namespaces
 
@@ -310,7 +313,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
         // Use the namespace's own methods instead of mixing them
         const methods =
           namespace === BlockchainNamespace.EIP155
-            ? this.getApprovedEvmMethods(dappUrl)
+            ? this.getApprovedEvmMethods(verifyContext)
             : namespaceToApprove.methods
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)

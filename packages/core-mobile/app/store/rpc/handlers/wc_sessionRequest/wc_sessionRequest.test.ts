@@ -146,9 +146,30 @@ const testNonEVMNamespacesToApprove = {
   }
 }
 
+type TestVerifyContext = {
+  verified: {
+    origin: string
+    validation: 'UNKNOWN' | 'VALID' | 'INVALID'
+    verifyUrl: string
+  }
+}
+
+const unknownVerifyContext: TestVerifyContext = {
+  verified: { origin: '', validation: 'UNKNOWN', verifyUrl: '' }
+}
+
+const coreVerifyContext: TestVerifyContext = {
+  verified: {
+    origin: 'https://core.app',
+    validation: 'VALID',
+    verifyUrl: 'https://verify.walletconnect.com'
+  }
+}
+
 const createRequest = (
   requiredNamespaces: ProposalTypes.RequiredNamespaces,
-  dappUrl = 'https://core.app'
+  dappUrl = 'https://core.app',
+  verifyContext: TestVerifyContext = unknownVerifyContext
 ): WCSessionProposal => {
   return {
     provider: RpcProvider.WALLET_CONNECT,
@@ -176,13 +197,7 @@ const createRequest = (
           }
         }
       },
-      verifyContext: {
-        verified: {
-          origin: '',
-          validation: 'UNKNOWN' as 'UNKNOWN' | 'VALID' | 'INVALID',
-          verifyUrl: ''
-        }
-      }
+      verifyContext
     }
   }
 }
@@ -324,7 +339,11 @@ describe('session_request handler', () => {
     })
 
     it('should navigate to session proposal screen', async () => {
-      const testRequest = createRequest(validRequiredNamespaces)
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app',
+        coreVerifyContext
+      )
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -339,10 +358,27 @@ describe('session_request handler', () => {
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
 
+    it('should not add non-EVM namespaces when metadata.url is spoofed (UNKNOWN validation)', async () => {
+      const testRequest = createRequest(validRequiredNamespaces, 'https://core.app')
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(utils.navigateToSessionProposal).toHaveBeenCalledWith({
+        request: testRequest,
+        namespaces: testNamespacesToApprove
+      })
+
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
     it('should scan dApp and navigate to session proposal screen', async () => {
       mockIsBlockaidDappScanBlocked.mockReturnValue(false)
 
-      const testRequest = createRequest(validRequiredNamespaces)
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app',
+        coreVerifyContext
+      )
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -438,6 +474,50 @@ describe('session_request handler', () => {
       expect(result).toEqual({ success: true, value: expectedNamespaces })
     })
 
+    it('should not grant Core methods when metadata.url is spoofed (UNKNOWN validation)', async () => {
+      const testSelectedAccounts = [
+        {
+          addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+          addressBTC: 'btcAddress1',
+          addressAVM: 'avmAddress1',
+          addressPVM: 'pvmAddress1',
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: 'solanaAddress1'
+        }
+      ]
+
+      const testRequest = createRequest(validRequiredNamespaces, 'https://core.app')
+
+      const result = await handler.approve({
+        request: testRequest,
+        data: {
+          selectedAccounts: testSelectedAccounts,
+          namespaces: testNamespacesToApprove
+        }
+      })
+
+      expect(result).toEqual({
+        success: true,
+        value: {
+          eip155: expect.objectContaining({
+            methods: [
+              'eth_requestAccounts',
+              'eth_sendTransaction',
+              'eth_signTypedData_v3',
+              'eth_signTypedData_v4',
+              'eth_signTypedData_v1',
+              'eth_signTypedData',
+              'personal_sign',
+              'eth_sign',
+              'wallet_addEthereumChain',
+              'wallet_getEthereumChain',
+              'wallet_switchEthereumChain'
+            ]
+          })
+        }
+      })
+    })
+
     it('should return success with correct namespaces for a Core dApp', async () => {
       const testSelectedAccounts = [
         {
@@ -458,7 +538,11 @@ describe('session_request handler', () => {
         }
       ]
 
-      const testRequest = createRequest(validRequiredNamespaces)
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app',
+        coreVerifyContext
+      )
 
       const result = await handler.approve({
         request: testRequest,
@@ -619,7 +703,11 @@ describe('session_request handler', () => {
         }
       ]
 
-      const testRequest = createRequest(validRequiredNamespaces)
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app',
+        coreVerifyContext
+      )
 
       const result = await handler.approve({
         request: testRequest,
