@@ -49,10 +49,19 @@ import {
 // pre-existing limit — the `if (isMalformed) return <></>` is a security
 // invariant (must short-circuit before Approve is reachable), not a render
 // branch we want inlined into the main component's JSX.
-const ApprovalScreen = (props: { params: ApprovalParams }): JSX.Element => {
+const ApprovalScreen = (props: {
+  params: ApprovalParams
+}): JSX.Element | null => {
+  const rejectAndClose = useCallback(
+    (message?: string) => {
+      props.params.onReject(message)
+      if (router.canGoBack()) router.back()
+    },
+    [props.params.onReject]
+  )
   const { recurringContext, isRecurringContextMalformed } =
-    useRecurringApprovalContext(props.params.request, props.params.onReject)
-  if (isRecurringContextMalformed) return <></>
+    useRecurringApprovalContext(props.params.request, rejectAndClose)
+  if (isRecurringContextMalformed) return null
   return (
     <ApprovalScreenInner
       params={props.params}
