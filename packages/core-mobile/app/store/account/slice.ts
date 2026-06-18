@@ -114,7 +114,9 @@ export const selectAccountByAddressAndWalletId =
         acc.addressBTC.toLowerCase() === givenAddress ||
         acc.addressAVM?.toLowerCase() === givenAddress ||
         acc.addressPVM?.toLowerCase() === givenAddress ||
-        acc?.addressSVM?.toLowerCase() === givenAddress
+        // SVM addresses are base58 and case-sensitive — compare exactly so two
+        // distinct pubkeys differing only by case can't be conflated.
+        acc.addressSVM === address
       )
     })
   }

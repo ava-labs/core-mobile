@@ -6,19 +6,10 @@ import {
   MessageTypes,
   TypedDataV1
 } from '@avalabs/vm-module-types'
-import WalletService from 'services/wallet/WalletService'
+import WalletService, { isEvmSignMethod } from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { WalletType } from 'services/wallet/types'
-
-const EVM_SIGN_METHODS = new Set([
-  RpcMethod.ETH_SIGN,
-  RpcMethod.PERSONAL_SIGN,
-  RpcMethod.SIGN_TYPED_DATA,
-  RpcMethod.SIGN_TYPED_DATA_V1,
-  RpcMethod.SIGN_TYPED_DATA_V3,
-  RpcMethod.SIGN_TYPED_DATA_V4
-])
 
 export const signMessage = async ({
   walletId,
@@ -45,7 +36,7 @@ export const signMessage = async ({
       data,
       accountIndex: account.index,
       network,
-      fromAddress: EVM_SIGN_METHODS.has(method) ? account.addressC : undefined
+      fromAddress: isEvmSignMethod(method) ? account.addressC : undefined
     })
 
     resolve({

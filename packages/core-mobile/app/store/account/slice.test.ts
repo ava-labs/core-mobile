@@ -230,4 +230,12 @@ describe('selectAccountByAddressAndWalletId', () => {
       accountW1
     )
   })
+
+  it('matches SVM addresses case-sensitively (base58)', () => {
+    const state = stateWith(accountW1)
+    // A case-variant of the SVM pubkey is a different key and must not resolve.
+    expect(
+      selectAccountByAddressAndWalletId('w1', SVM_ADDRESS.toLowerCase())(state)
+    ).toBeUndefined()
+  })
 })

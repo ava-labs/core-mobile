@@ -129,7 +129,7 @@ const EVM_SIGN_METHODS = new Set([
   RpcMethod.SIGN_TYPED_DATA_V4
 ])
 
-const isEvmSignMethod = (method: RpcMethod): boolean =>
+export const isEvmSignMethod = (method: RpcMethod): boolean =>
   EVM_SIGN_METHODS.has(method)
 
 // Defense-in-depth: recover the signer from the produced signature and confirm it
@@ -141,11 +141,14 @@ const assertEvmTransactionSigner = (
 ): void => {
   const recovered = Transaction.from(signedTx).from
   if (!recovered || recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
-    throw new Error(
+    // Log the addresses internally only — the thrown error is wrapped into an
+    // RPC error returned to the dApp, so it must not embed account addresses.
+    Logger.error(
       `EVM transaction signer mismatch: recovered=${
         recovered ?? 'unknown'
       }, expected=${expectedAddress}`
     )
+    throw new Error('EVM transaction signer mismatch')
   }
 }
 
@@ -185,9 +188,12 @@ const assertEvmMessageSigner = ({
   }
 
   if (recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
-    throw new Error(
+    // Log the addresses internally only — the thrown error is wrapped into an
+    // RPC error returned to the dApp, so it must not embed account addresses.
+    Logger.error(
       `EVM message signer mismatch: recovered=${recovered}, expected=${expectedAddress}`
     )
+    throw new Error('EVM message signer mismatch')
   }
 }
 
