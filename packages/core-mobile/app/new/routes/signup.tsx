@@ -109,7 +109,7 @@ export default function Signup(): JSX.Element {
   const handleGoogleSignin = (): void => {
     resetSeedlessAuth()
     // E2E: read JWT placed in clipboard by warmupSeedless(), skip Google OAuth UI
-    if (Config.E2E === 'true') {
+    if (Config.E2E_MNEMONIC) {
       Clipboard.getString()
         .then(idToken => {
           register({
@@ -158,7 +158,7 @@ export default function Signup(): JSX.Element {
             disabled={isRegistering}
             leftIcon="google"
             onPress={handleGoogleSignin}>
-            Continue with Google
+            Continue with GoogleTEST
           </Button>
         )}
         {shouldShowApple && (
