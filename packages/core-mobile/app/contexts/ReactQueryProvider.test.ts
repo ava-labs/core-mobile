@@ -78,12 +78,9 @@ jest.mock('hooks/watchlist/useWatchlistListener', () => ({
 // (`store/app` -> accountSettings store -> `ZustandStorageKeys`) out of the
 // test environment, since `utils/mmkv` is mocked here to expose only
 // `queryStorage`.
-jest.mock(
-  'features/recurringSwap/hooks/useRecurringSchedulesListener',
-  () => ({
-    useRecurringSchedulesListener: jest.fn()
-  })
-)
+jest.mock('features/recurringSwap/hooks/useRecurringSchedulesListener', () => ({
+  useRecurringSchedulesListener: jest.fn()
+}))
 
 jest.mock('utils/Logger', () => ({
   error: jest.fn(),
