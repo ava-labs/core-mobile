@@ -1,4 +1,4 @@
-import { createCache } from 'utils/createCache'
+import { createCache, createKeyedCache } from 'utils/createCache'
 import {
   ApprovalParams,
   BatchApprovalScreenParams,
@@ -15,6 +15,7 @@ export const walletConnectCache = {
   sessionProposalParams: createCache<SessionProposalParams>('session proposal'),
   approvalParams: createCache<ApprovalParams>('approval'),
   batchApprovalParams: createCache<BatchApprovalScreenParams>('batch approval'),
+  approvalParams: createCache<ApprovalParams>('approval'),
   setDeveloperModeParams:
     createCache<SetDeveloperModeParams>('set developer mode'),
   editContactParams: createCache<EditContactParams>('edit contact'),
