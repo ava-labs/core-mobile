@@ -14,6 +14,7 @@ import {
   GroupListItem,
   Icons,
   showAlert,
+  SplitButton,
   Text,
   useTheme,
   View
@@ -142,7 +143,16 @@ function formatSummary(
       : s.numberOfOrders === 1
       ? 'for 1 order'
       : `for ${s.numberOfOrders} orders`
-  return `${amount} ${fromToken.symbol} swapped for ${toToken.symbol} every ${cadence}, ${ordersClause}`
+  return `${amount} ${fromToken.symbol} swapped for ${toToken.symbol}\nevery ${cadence}, ${ordersClause}`
+}
+
+// Non-`Active` statuses surface as a muted badge under the summary. `Active`
+// is the default running state so it has no badge. Markr's wire values are
+// lowercase (`paused` / `cancelled` / `completed`); render them title-cased.
+const STATUS_LABEL: Partial<Record<RecurringOrderStatus, string>> = {
+  [RecurringOrderStatus.Paused]: 'Paused',
+  [RecurringOrderStatus.Cancelled]: 'Cancelled',
+  [RecurringOrderStatus.Completed]: 'Completed'
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -368,6 +378,21 @@ function ScheduleCard({
           }}>
           {formatSummary(s, fromToken, toToken)}
         </Text>
+        {/* Status badge under the summary — visible regardless of expanded
+            state so a non-active row is obvious in the list view without
+            the user having to drill in. `Active` schedules render no
+            badge (that's the implicit default). */}
+        {STATUS_LABEL[s.status] && (
+          <Text
+            variant="body2"
+            sx={{
+              color: '$textSecondary',
+              textAlign: 'center',
+              marginTop: 4
+            }}>
+            {STATUS_LABEL[s.status]}
+          </Text>
+        )}
       </Pressable>
 
       {expanded && (
@@ -378,61 +403,23 @@ function ScheduleCard({
               acts as Unpause; while active, it acts as Pause. The intent
               after the on-chain TX confirms is reflected by the server
               `status` flip and the pending-action store clearing. */}
-          <View sx={{ flexDirection: 'row', gap: 12 }}>
-            {isPaused ? (
-              <Button
-                type="secondary"
-                size="medium"
-                style={{ flex: 1 }}
-                disabled={!canUnpause || !isSourceChainAvailable}
-                leftIcon={
-                  isUnpausing ? (
-                    <ActivityIndicator
-                      size="small"
-                      style={{ marginRight: 4 }}
-                    />
-                  ) : undefined
-                }
-                onPress={() => onUnpause(s, fromToken, toToken)}>
-                {isUnpausing ? 'Resuming' : 'Resume'}
-              </Button>
-            ) : (
-              <Button
-                type="secondary"
-                size="medium"
-                style={{ flex: 1 }}
-                disabled={!canPause || !isSourceChainAvailable}
-                leftIcon={
-                  isPausing ? (
-                    <ActivityIndicator
-                      size="small"
-                      style={{ marginRight: 4 }}
-                    />
-                  ) : undefined
-                }
-                onPress={() => onPause(s, fromToken, toToken)}>
-                {isPausing ? 'Pausing' : 'Pause'}
-              </Button>
-            )}
-            <Button
-              type="secondary"
-              size="medium"
-              style={{ flex: 1 }}
-              textStyle={{ color: colors.$textDanger }}
-              disabled={cancelDisabled}
-              leftIcon={
-                isCancelling ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={colors.$textDanger}
-                    style={{ marginRight: 4 }}
-                  />
-                ) : undefined
-              }
-              onPress={() => onRemove(s, fromToken, toToken)}>
-              {isCancelling ? 'Cancelling' : 'Cancel'}
-            </Button>
-          </View>
+          <ActionButtons
+            isPaused={isPaused}
+            isPausing={isPausing}
+            isUnpausing={isUnpausing}
+            isCancelling={isCancelling}
+            canPause={canPause}
+            canUnpause={canUnpause}
+            cancelDisabled={cancelDisabled}
+            isSourceChainAvailable={isSourceChainAvailable}
+            schedule={s}
+            fromToken={fromToken}
+            toToken={toToken}
+            onPause={onPause}
+            onUnpause={onUnpause}
+            onRemove={onRemove}
+            dangerColor={colors.$textDanger}
+          />
 
           <GroupList
             data={groupData}
@@ -445,6 +432,72 @@ function ScheduleCard({
       )}
     </Animated.View>
   )
+}
+
+// Pause/Resume + Cancel action pair. Extracted from `ScheduleCard` so the
+// per-side `<SplitButton>` config (status-dependent label, in-flight icon,
+// gating) lives in its own function — keeps `ScheduleCard`'s cognitive
+// complexity below the sonarjs cap without flattening into less-readable
+// state.
+type ActionButtonsProps = {
+  isPaused: boolean
+  isPausing: boolean
+  isUnpausing: boolean
+  isCancelling: boolean
+  canPause: boolean
+  canUnpause: boolean
+  cancelDisabled: boolean
+  isSourceChainAvailable: boolean
+  schedule: RecurringOrder
+  fromToken: ResolvedToken
+  toToken: ResolvedToken
+  onPause: ScheduleAction
+  onUnpause: ScheduleAction
+  onRemove: ScheduleAction
+  dangerColor: string
+}
+
+function ActionButtons({
+  isPaused,
+  isPausing,
+  isUnpausing,
+  isCancelling,
+  canPause,
+  canUnpause,
+  cancelDisabled,
+  isSourceChainAvailable,
+  schedule: s,
+  fromToken,
+  toToken,
+  onPause,
+  onUnpause,
+  onRemove,
+  dangerColor
+}: ActionButtonsProps): JSX.Element {
+  const pauseResume = isPaused
+    ? {
+        children: isUnpausing ? <ActivityIndicator size="small" /> : 'Resume',
+        disabled: !canUnpause || !isSourceChainAvailable,
+        onPress: () => onUnpause(s, fromToken, toToken)
+      }
+    : {
+        children: isPausing ? <ActivityIndicator size="small" /> : 'Pause',
+        disabled: !canPause || !isSourceChainAvailable,
+        onPress: () => onPause(s, fromToken, toToken)
+      }
+
+  const cancel = {
+    children: isCancelling ? (
+      <ActivityIndicator size="small" color={dangerColor} />
+    ) : (
+      'Cancel'
+    ),
+    disabled: cancelDisabled,
+    textStyle: { color: dangerColor },
+    onPress: () => onRemove(s, fromToken, toToken)
+  }
+
+  return <SplitButton left={pauseResume} right={cancel} />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
