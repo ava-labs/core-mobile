@@ -20,11 +20,11 @@ const ORDER_ACTION_COPY = {
     title: 'Pausing recurring swap',
     body: (from: string, to: string): string =>
       `Pauses the recurring ${from} → ${to} schedule. ` +
-      `Existing allowance is preserved — you can unpause later without re-approving. ` +
+      `Existing allowance is preserved — you can resume later without re-approving. ` +
       `The schedule may still execute one more fill until this transaction confirms on-chain.`
   },
   unpause: {
-    title: 'Unpausing recurring swap',
+    title: 'Resuming recurring swap',
     body: (from: string, to: string): string =>
       `Resumes the recurring ${from} → ${to} schedule. ` +
       `Remaining fills will execute on the original cadence once this transaction confirms on-chain.`

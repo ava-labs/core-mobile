@@ -579,7 +579,7 @@ export const SwapScreen = (): JSX.Element => {
       feeSymbol
     ).toDisplay()
 
-    return `a ${formatted} ${feeSymbol} schedule fee`
+    return `a ${formatted} ${feeSymbol} one-time schedule fee`
   }, [recurring.isRecurring, recurringQuote.data, nativeFromToken])
 
   const updateMissingTokenPrice = useCallback(

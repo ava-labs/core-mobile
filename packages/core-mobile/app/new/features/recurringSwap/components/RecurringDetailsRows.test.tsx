@@ -63,6 +63,7 @@ jest.mock('react-native-reanimated', () => {
 // Mock SDK constants & validator.
 jest.mock('@avalabs/fusion-sdk', () => ({
   RECURRING_FREQUENCY_VALUE_MAX: 365,
+  RECURRING_FREQUENCY_UNITS: ['minute', 'hour', 'day', 'week', 'month'],
   validateFrequency: () => ({ ok: true })
 }))
 

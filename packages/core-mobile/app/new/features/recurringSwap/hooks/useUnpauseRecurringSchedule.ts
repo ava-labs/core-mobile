@@ -10,7 +10,7 @@ export const useUnpauseRecurringSchedule = makeOrderActionHook({
   pickExecute: ns => ns.executeUnpause,
   analyticsEvent: 'RecurringSwapUnpausedByUser',
   errorCopy: {
-    notActionable: 'This schedule cannot be unpaused right now',
+    notActionable: 'This schedule cannot be resumed right now',
     notFound: 'Schedule not found',
     fallback: 'Try again'
   }

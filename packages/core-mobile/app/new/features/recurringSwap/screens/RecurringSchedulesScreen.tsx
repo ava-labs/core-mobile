@@ -394,7 +394,7 @@ function ScheduleCard({
                   ) : undefined
                 }
                 onPress={() => onUnpause(s, fromToken, toToken)}>
-                {isUnpausing ? 'Unpausing' : 'Unpause'}
+                {isUnpausing ? 'Resuming' : 'Resume'}
               </Button>
             ) : (
               <Button
@@ -649,7 +649,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
           title: 'Resume this recurring swap?',
           description:
             'Remaining fills will execute on the original cadence once this transaction confirms on-chain.',
-          actionText: 'Unpause',
+          actionText: 'Resume',
           actionStyle: 'destructive'
         },
         unpause

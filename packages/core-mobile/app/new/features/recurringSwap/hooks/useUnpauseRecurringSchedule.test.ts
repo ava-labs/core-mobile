@@ -132,7 +132,7 @@ describe('useUnpauseRecurringSchedule', () => {
     })
   })
 
-  it('maps HttpError(400) → "cannot be unpaused" toast', async () => {
+  it('maps HttpError(400) → "cannot be resumed" toast', async () => {
     mockExecuteUnpause.mockRejectedValueOnce(makeHttpError(400))
 
     const { result } = renderHook(() => useUnpauseRecurringSchedule(), {
@@ -148,7 +148,7 @@ describe('useUnpauseRecurringSchedule', () => {
     })
 
     expect(mockSnackbar).toHaveBeenCalledWith(
-      'This schedule cannot be unpaused right now'
+      'This schedule cannot be resumed right now'
     )
     expect(mockMarkPending).not.toHaveBeenCalled()
   })

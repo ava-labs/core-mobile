@@ -159,7 +159,7 @@ describe('<RecurrenceDetails />', () => {
       | renderer.ReactTestRendererJSON
       | renderer.ReactTestRendererJSON[]
       | null
-    expect(containsText(json, 'Unpausing recurring swap')).toBe(true)
+    expect(containsText(json, 'Resuming recurring swap')).toBe(true)
     expect(
       containsText(json, 'Resumes the recurring USDC → AVAX schedule.')
     ).toBe(true)

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Modal, Platform, Pressable } from 'react-native'
 import {
   Icons,
   Separator,
@@ -183,6 +184,12 @@ export function RecurringDetailsRows({
     : 300
 
   const [expandedRow, setExpandedRow] = useState<RowKey>(null)
+  // Android-only: drives the Material-style list dialog for the custom-
+  // frequency unit picker. iOS uses `Alert.alert` directly because RN's
+  // native iOS Alert renders >2 buttons as a vertical action sheet that
+  // already matches the iOS HIG.
+  const [androidUnitPickerVisible, setAndroidUnitPickerVisible] =
+    useState(false)
 
   const toggleRow = useCallback((row: Exclude<RowKey, null>) => {
     setExpandedRow(prev => (prev === row ? null : row))
@@ -247,19 +254,38 @@ export function RecurringDetailsRows({
     [frequency, minIntervalSeconds, setFrequency, collapse]
   )
 
+  // Custom-frequency unit picker. Step 1 of 2: pick a unit, then transition
+  // to a number-entry dialog (`promptCustomFrequencyValue`). Platform-
+  // branched because RN's `Alert.alert` on Android caps at 3 buttons:
+  //  - iOS: `showAlert` -> native `Alert.alert`, which renders > 2 buttons
+  //    as a vertically stacked native action sheet (HIG-compliant).
+  //  - Android: open a Material-style list dialog (title + tappable rows),
+  //    which is the platform-standard "pick one from N options" UI.
   const promptCustomFrequencyUnit = useCallback(() => {
+    if (Platform.OS === 'android') {
+      setAndroidUnitPickerVisible(true)
+      return
+    }
     showAlert({
       title: 'Custom frequency',
       description: 'Select your custom swap frequency',
       buttons: [
         ...FREQUENCY_UNITS.map(u => ({
           text: UNIT_BUTTON_LABEL[u],
-          onPress: () => promptCustomFrequencyValue(u)
+          onPress: (): void => promptCustomFrequencyValue(u)
         })),
         { text: 'Cancel', style: 'destructive' }
       ]
     })
   }, [promptCustomFrequencyValue])
+
+  const handleAndroidUnitPicked = useCallback(
+    (u: FrequencyUnit) => {
+      setAndroidUnitPickerVisible(false)
+      promptCustomFrequencyValue(u)
+    },
+    [promptCustomFrequencyValue]
+  )
 
   const handleSelectFreqChip = useCallback(
     (id: FreqChipId) => {
@@ -388,6 +414,11 @@ export function RecurringDetailsRows({
         overflow: 'hidden',
         backgroundColor: theme.colors.$surfaceSecondary
       }}>
+      <AndroidUnitListDialog
+        visible={androidUnitPickerVisible}
+        onSelect={handleAndroidUnitPicked}
+        onDismiss={() => setAndroidUnitPickerVisible(false)}
+      />
       <CollapsibleRow
         title="Frequency"
         value={formatFrequency(frequency)}
@@ -497,6 +528,115 @@ function CollapsibleRow({
         </Animated.View>
       )}
     </View>
+  )
+}
+
+// Android Material-style list dialog: title + tappable text rows. Mirrors
+// the platform-standard `AlertDialog.Builder.setItems(...)` UI that RN's
+// `Alert.alert` doesn't expose (RN only forwards positive / neutral /
+// negative buttons, capped at 3). Tapping the backdrop dismisses without
+// selecting — matches the Android system behaviour and removes the need
+// for an explicit Cancel row.
+function AndroidUnitListDialog({
+  visible,
+  onSelect,
+  onDismiss
+}: {
+  visible: boolean
+  onSelect: (unit: FrequencyUnit) => void
+  onDismiss: () => void
+}): JSX.Element {
+  const { theme } = useTheme()
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onDismiss}
+      statusBarTranslucent>
+      <Pressable
+        onPress={onDismiss}
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.45)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24
+        }}>
+        {/* Inner Pressable swallows backdrop taps so taps on the dialog
+            body don't dismiss. Width tracks Material's ~280dp min. */}
+        <Pressable
+          onPress={() => undefined}
+          style={{
+            width: '100%',
+            maxWidth: 360,
+            backgroundColor: theme.colors.$surfacePrimary,
+            borderRadius: 4,
+            paddingVertical: 16,
+            elevation: 24
+          }}>
+          <View sx={{ paddingHorizontal: 24, paddingVertical: 8 }}>
+            <Text
+              variant="heading6"
+              sx={{ fontSize: 20, fontFamily: 'Inter-SemiBold' }}>
+              Custom frequency
+            </Text>
+            <Text
+              variant="body2"
+              sx={{ color: '$textSecondary', marginTop: 4 }}>
+              Select your custom swap frequency
+            </Text>
+          </View>
+          <View sx={{ marginTop: 8 }}>
+            {FREQUENCY_UNITS.map(u => (
+              <TouchableOpacity
+                key={u}
+                onPress={() => onSelect(u)}
+                testID={`android_unit_${u}`}
+                sx={{
+                  paddingHorizontal: 24,
+                  paddingVertical: 14
+                }}>
+                <Text variant="body1" sx={{ fontSize: 16 }}>
+                  {UNIT_BUTTON_LABEL[u]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {/* Material text-button footer for the negative action. Sits
+              outside Android's `setItems` convention (which relies on
+              backdrop dismiss), but added back for discoverability. */}
+          <View
+            sx={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              paddingHorizontal: 8,
+              paddingTop: 8
+            }}>
+            <TouchableOpacity
+              onPress={onDismiss}
+              testID="android_unit_cancel"
+              sx={{
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 4
+              }}>
+              <Text
+                variant="buttonMedium"
+                sx={{
+                  fontSize: 14,
+                  fontFamily: 'Inter-SemiBold',
+                  textTransform: 'uppercase',
+                  color: '$textPrimary'
+                }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
   )
 }
 
