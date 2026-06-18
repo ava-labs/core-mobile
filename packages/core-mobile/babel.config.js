@@ -29,13 +29,11 @@ module.exports = {
     // via its `react-native` field), which breaks reanimated's Mutable/worklet
     // internals ("Tried to synchronously call a non-worklet function
     // `addListener` on the UI thread"). The preset excludes node_modules.
-    // TEMP TEST: `inline-dotenv` removed to check if its AST inlining breaks
-    // reanimated/worklets workletization (react-native-worklets #565 class
-    // bug: dotenv babel plugins hide functions from the worklet pass, causing
-    // "Tried to synchronously call a Remote Function `addListener`"). If this
-    // resolves the crash, migrate the few `process.env.*` reads to
-    // react-native-config (Config.*) and keep this removed.
-    // 'inline-dotenv',
+    // NOTE: `inline-dotenv` is intentionally NOT used. Its AST inlining hides
+    // functions from react-native-worklets' worklet pass, breaking
+    // workletization ("Tried to synchronously call a Remote Function
+    // `addListener`" — react-native-worklets #565). Env values are read via
+    // react-native-config (`Config.*`) instead of `process.env.*`.
     '@babel/plugin-transform-class-static-block',
     '@babel/plugin-transform-export-namespace-from'
     // NOTE: `react-native-worklets/plugin` is intentionally NOT listed here.

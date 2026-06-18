@@ -1,13 +1,5 @@
 import { useTheme } from '@avalabs/k2-alpine'
 import { DefaultTheme, ThemeProvider } from 'expo-router'
-/**
- * On SDK 56 expo-router vendors its own copy of react-navigation, while
- * `@bottom-tabs/react-navigation` (used by `BottomTabs`) consumes the external
- * `@react-navigation/native`. They have separate theme contexts, so we must
- * provide the navigation theme to BOTH — otherwise the native bottom tabs throw
- * "Couldn't find a theme. Is your component inside NavigationContainer...".
- */
-import { ThemeProvider as ReactNavigationThemeProvider } from '@react-navigation/native'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
@@ -46,13 +38,11 @@ const NavigationThemeProvider = ({
     colors.$textSuccess
   ])
 
-  return (
-    <ThemeProvider value={navContainerTheme}>
-      <ReactNavigationThemeProvider value={navContainerTheme}>
-        {children}
-      </ReactNavigationThemeProvider>
-    </ThemeProvider>
-  )
+  // A single expo-router `ThemeProvider` also themes the native bottom tabs:
+  // `metro.config.js` aliases `@react-navigation/native` to expo-router's
+  // vendored copy, so `@bottom-tabs/react-navigation` reads this same theme
+  // context (no separate provider needed).
+  return <ThemeProvider value={navContainerTheme}>{children}</ThemeProvider>
 }
 
 export default NavigationThemeProvider
