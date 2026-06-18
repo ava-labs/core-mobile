@@ -185,15 +185,17 @@ const CollectibleSkeleton = (): ReactNode => {
         width: '100%',
         height: '100%'
       }}>
-      <ContentLoader
-        speed={1}
-        width={layout.width}
-        height={layout.height}
-        viewBox={`0 0 ${layout.width} ${layout.height}`}
-        foregroundColor={isDark ? '#69696D' : '#D9D9D9'}
-        backgroundColor={isDark ? '#3E3E43' : '#F2F2F3'}>
-        <Rect x="0" y="0" width={layout.width} height={layout.height} />
-      </ContentLoader>
+      {layout.width > 0 && layout.height > 0 ? (
+        <ContentLoader
+          speed={1}
+          width={layout.width}
+          height={layout.height}
+          viewBox={`0 0 ${layout.width} ${layout.height}`}
+          foregroundColor={isDark ? '#69696D' : '#D9D9D9'}
+          backgroundColor={isDark ? '#3E3E43' : '#F2F2F3'}>
+          <Rect x="0" y="0" width={layout.width} height={layout.height} />
+        </ContentLoader>
+      ) : null}
     </View>
   )
 }
