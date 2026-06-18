@@ -480,4 +480,6 @@ const ApprovalScreen = ({
   )
 }
 
-export default withWalletConnectCache('approvalParams')(ApprovalScreen)
+export default withWalletConnectCache('approvalParams', {
+  requestIdParam: 'requestId'
+})(ApprovalScreen)
