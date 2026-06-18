@@ -136,7 +136,7 @@ export async function warmupSeedless() {
   await onboardingPage.tapContinueWithGoogle()
   await onboardingPage.tapAgreeAndContinue(onboardingPage.skip)
   await onboardingPage.tapSkip()
-  await onboardingPage.tapUnlockBtn()
+  await onboardingPage.tapUnlockBtn(onboardingPage.enterPinFirstScreenTitle)
   await onboardingPage.enterPin()
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()

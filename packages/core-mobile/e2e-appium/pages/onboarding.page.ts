@@ -193,8 +193,8 @@ class OnboardingPage {
     await actions.tap(this.letsGo)
   }
 
-  async tapUnlockBtn() {
-    await actions.tap(this.unlockBtn, this.recoveryPhraseInput)
+  async tapUnlockBtn(expectedEle = this.recoveryPhraseInput) {
+    await actions.tap(this.unlockBtn, expectedEle)
   }
 
   async tapSkip() {

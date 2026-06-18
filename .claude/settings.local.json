@@ -14,16 +14,7 @@
       "Bash(node_modules/.bin/tsc --noEmit --project e2e-appium/tsconfig.json)",
       "Bash(node packages/core-mobile/node_modules/.bin/tsc --noEmit --project packages/core-mobile/e2e-appium/tsconfig.json)",
       "Bash(echo \"EXIT: $?\")",
-      "mcp__ide__getDiagnostics",
-      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && head -20 {}')",
-      "Bash(gh pr *)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:api.github.com)",
-      "Bash(git -C /Users/eunji.song/core-mobile log --oneline qa/seedless-testing..HEAD)",
-      "Bash(git -C /Users/eunji.song/core-mobile log --oneline origin/main..HEAD)",
-      "Bash(chmod +x *)",
-      "Bash(yarn workspace *)",
-      "Bash(adb shell *)"
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
