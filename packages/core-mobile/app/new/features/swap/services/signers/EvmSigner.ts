@@ -236,7 +236,7 @@ export function createEvmSigner(
     // Markr (proves networkFees was loaded). The bypass skips the
     // modal's fee picker, so missing-fees would broadcast as 0.
     const hasUpstreamFees = typeof tx.maxFeePerGas === 'bigint'
-    // §A13: recurring synthetic Quotes have `serviceType === ServiceType.MARKR`
+    // Recurring synthetic Quotes have `serviceType === ServiceType.MARKR`
     // (same as one-shot Markr swaps), so the existing serviceType gate alone
     // would let recurring through. Exclude them explicitly — recurring TXs
     // must always render the approval modal so the user sees the
@@ -280,7 +280,7 @@ export function createEvmSigner(
         }
       : contextWithAutoApprove
 
-    // §A13: when the SDK's synthetic `Quote` is from the recurring path
+    // When the SDK's synthetic `Quote` is from the recurring path
     // (`aggregator.id` starts with `markr-recurring`), pull the rich
     // display metadata from the per-action-type side-channel slot and
     // attach it as RECURRING_SWAP so ApprovalScreen renders
@@ -402,7 +402,7 @@ export function createEvmSigner(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
       const isCrossChain = isCrossChainQuote(stepDetails.quote)
-      // §A13: recurring fills must never go through the Quick Swaps batch
+      // Recurring fills must never go through the Quick Swaps batch
       // bypass — `dispatchAsBatch` attaches `SWAP_AUTO_APPROVE` and the
       // batch validator would let a recurring fill auto-approve silently
       // (creating a schedule + first fill without the user seeing the

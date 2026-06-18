@@ -1259,9 +1259,9 @@ export const SwapScreen = (): JSX.Element => {
         amountPerOrder: fromTokenValue
       })
       // submitRecurringSwap fires the success snackbar + analytics +
-      // staggered query invalidations on its own (post-§A13 the SDK call's
-      // resolution is the success signal; no Redux listener in between).
-      // Dismiss the modal stack so the user lands back where they came from.
+      // staggered query invalidations on its own (the SDK call's resolution
+      // is the success signal; no Redux listener in between). Dismiss the
+      // modal stack so the user lands back where they came from.
       dismissAll()
       return true
     } catch (err) {

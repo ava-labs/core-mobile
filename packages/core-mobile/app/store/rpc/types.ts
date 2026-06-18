@@ -224,8 +224,8 @@ export enum RequestContext {
   // ApprovalScreen can render the "Scheduling / Cancelling / Pausing /
   // Unpausing recurring swap" preview block above the standard tx details.
   //
-  // Post-§A13 the SDK signs + broadcasts internally, so the value is no
-  // longer threaded in by the recurring submit/cancel/pause/unpause hooks
+  // The SDK signs + broadcasts internally, so the value is no longer
+  // threaded in by the recurring submit/cancel/pause/unpause hooks
   // directly via `useInAppRequest().request(...)`. Instead, the recurring
   // hooks stash a snapshot in `recurringSwap/services/activeActionContext`,
   // and `EvmSigner.signOne` injects it onto requests whose stepDetails
