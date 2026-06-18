@@ -20,7 +20,7 @@ const showNoActiveAccountMessage = (): void => {
 }
 
 const AuthorizeDappScreen = ({
-  params: { request, namespaces, scanResponse }
+  params: { request, namespaces, scanResponse, scanFailed }
 }: {
   params: SessionProposalParams
 }): JSX.Element => {
@@ -69,6 +69,12 @@ const AuthorizeDappScreen = ({
         type: AlertType.DANGER,
         message:
           'This application has been flagged as malicious, I understand the risk.'
+      }
+    : scanFailed
+    ? {
+        type: AlertType.WARNING,
+        message:
+          'Security scan unavailable. Proceed only if you trust this dApp.'
       }
     : undefined
 
