@@ -503,7 +503,16 @@ const ApprovalScreenInner = ({
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
-      {recurringContext && <RecurrenceDetails context={recurringContext} />}
+      {/* `RECURRING_SWAP` context is also injected by `EvmSigner.signOne` on
+          the preceding ERC-20 spend-limit approval (when the recurring fill
+          needs an allowance). Suppress the preview on that screen — the
+          "Scheduling recurring swap" block belongs on the actual fill
+          approval, not on the allowance step. `spendLimits.length > 0` is
+          the discriminator: a non-empty list means this modal is the
+          allowance approval, not the fill. */}
+      {recurringContext && spendLimits.length === 0 && (
+        <RecurrenceDetails context={recurringContext} />
+      )}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
       {renderDetails()}
