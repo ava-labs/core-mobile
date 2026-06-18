@@ -166,10 +166,9 @@ describe('submitRecurringSwap', () => {
       isUnlimited: false,
       frequency: { unit: 'week', value: 1 }
     })
-    // No finally-clear assertion: the slot is intentionally left in place
-    // so the dispatched request's captured snapshot still matches if the
-    // SDK fires a second signOne (e.g. swap leg after approve leg). The
-    // next recurring action's setActive overwrites unconditionally.
+    // No finally-clear assertion here: `submitRecurringSwap` clears the slot in
+    // its `finally` after the SDK call settles; this test only asserts the
+    // pre-call snapshot is set correctly.
   })
 
   it('marks isUnlimited=true in analytics when numberOfOrders is UNLIMITED_ORDERS', async () => {

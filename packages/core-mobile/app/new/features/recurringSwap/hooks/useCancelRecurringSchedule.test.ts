@@ -143,11 +143,9 @@ describe('useCancelRecurringSchedule', () => {
 
     // The hook must populate the recurring-action side channel BEFORE
     // invoking the SDK call so EvmSigner can inject the snapshot into
-    // the approval modal's request context. We deliberately do NOT clear
-    // the slot in a finally — the next setActive call from any future
-    // recurring action overwrites unconditionally, and clearing here would
-    // race with concurrent recurring flows whose second signOne call would
-    // then see undefined.
+    // the approval modal's request context. The hook clears the slot in its
+    // `finally` once the SDK call settles; this test only asserts the
+    // pre-call setActive payload.
     expect(mockSetActive).toHaveBeenCalledWith({
       type: 'cancel',
       fromTokenSymbol: CANCEL_ARGS.fromTokenSymbol,

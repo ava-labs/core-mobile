@@ -46,7 +46,7 @@ import {
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
 // Splitting it out keeps the main render's cognitive complexity at its
-// pre-existing limit — the `if (isMalformed) return <></>` is a security
+// pre-existing limit — the `if (isMalformed) return null` is a security
 // invariant (must short-circuit before Approve is reachable), not a render
 // branch we want inlined into the main component's JSX.
 const ApprovalScreen = (props: {
