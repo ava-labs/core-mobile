@@ -228,11 +228,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
 
     try {
       // make sure Core methods are only requested by either Core Web, Internal Playground or Localhost
-
-      const hasCoreMethod =
-        normalizedRequired[BlockchainNamespace.EIP155]?.methods.some(
-          isCoreMethod
-        ) ?? false
+      const allRequestedMethods = [
+        ...Object.values(normalizedRequired).flatMap(ns => ns.methods ?? []),
+        ...Object.values(normalizedOptional).flatMap(ns => ns.methods ?? [])
+      ]
+      const hasCoreMethod = allRequestedMethods.some(isCoreMethod)
 
       if (hasCoreMethod && !isCoreApp) {
         throw new Error('Requested method is not authorized')
@@ -291,6 +291,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const requiredNamespaces = payload.request.data.params.requiredNamespaces
 
     const verifyContext = payload.request.data.verifyContext
+    const isCoreApp = isVerifiedCoreDomain(verifyContext)
 
     const namespacesToApprove = result.data.namespaces
 
@@ -310,11 +311,15 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           continue
         }
 
-        // Use the namespace's own methods instead of mixing them
+        // Use the namespace's own methods instead of mixing them.
+        // For non-EIP155 namespaces, strip Core methods if this isn't a verified Core app
+        // (defense-in-depth: handle() already blocks such proposals, but belt-and-suspenders).
         const methods =
           namespace === BlockchainNamespace.EIP155
             ? this.getApprovedEvmMethods(verifyContext)
-            : namespaceToApprove.methods
+            : isCoreApp
+            ? namespaceToApprove.methods
+            : namespaceToApprove.methods.filter(m => !isCoreMethod(m))
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)
 
