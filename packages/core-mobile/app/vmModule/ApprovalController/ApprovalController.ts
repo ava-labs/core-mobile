@@ -564,7 +564,7 @@ class ApprovalController implements VmModuleApprovalController {
       // in the single-slot cache with nothing to consume/clear them. (CP-14422)
       if (this.registerCancelBridge(requestId, resolve)) return
 
-      walletConnectCache.approvalParams.set({
+      walletConnectCache.approvalParams.set(requestId, {
         request,
         displayData: enrichedDisplayData,
         signingData,
@@ -589,6 +589,7 @@ class ApprovalController implements VmModuleApprovalController {
       router.navigate({
         pathname: '/approval',
         params: {
+          requestId,
           presentationMode: isInAppRequest(request)
             ? NavigationPresentationMode.FORM_SHEET
             : undefined

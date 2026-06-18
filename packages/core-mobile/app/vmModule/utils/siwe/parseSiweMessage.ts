@@ -47,11 +47,19 @@ export function parseSiweMessage(message: string): SiweMessage | undefined {
     address: string
   }
 
-  const uri = extractField(message, 'URI')
-  const version = extractField(message, 'Version')
-  const chainId = extractField(message, 'Chain ID')
-  const nonce = extractField(message, 'Nonce')
-  const issuedAt = extractField(message, 'Issued At')
+  // Fields must be parsed only from the structured section that follows the
+  // optional statement. The structured section begins after the double newline
+  // that terminates the statement (or immediately after the header if there is
+  // no statement). Limiting extraction to this section prevents a malicious
+  // statement from injecting fake field values.
+  const structuredSection = extractStructuredSection(message, headerMatch[0])
+  if (!structuredSection) return undefined
+
+  const uri = extractField(structuredSection, 'URI')
+  const version = extractField(structuredSection, 'Version')
+  const chainId = extractField(structuredSection, 'Chain ID')
+  const nonce = extractField(structuredSection, 'Nonce')
+  const issuedAt = extractField(structuredSection, 'Issued At')
 
   if (!uri || !version || !chainId || !nonce || !issuedAt) return undefined
 
@@ -66,16 +74,35 @@ export function parseSiweMessage(message: string): SiweMessage | undefined {
     nonce,
     issuedAt,
     statement: statement || undefined,
-    expirationTime: extractField(message, 'Expiration Time') || undefined,
-    notBefore: extractField(message, 'Not Before') || undefined,
-    requestId: extractField(message, 'Request ID') || undefined,
-    resources: extractResources(message)
+    expirationTime:
+      extractField(structuredSection, 'Expiration Time') || undefined,
+    notBefore: extractField(structuredSection, 'Not Before') || undefined,
+    requestId: extractField(structuredSection, 'Request ID') || undefined,
+    resources: extractResources(structuredSection)
   }
 }
 
 function extractField(message: string, fieldName: string): string | undefined {
   const regex = new RegExp(`^${fieldName}: (.+)$`, 'm')
   return regex.exec(message)?.[1]?.trim()
+}
+
+function extractStructuredSection(
+  message: string,
+  headerText: string
+): string | undefined {
+  const afterHeader = message.slice(headerText.length)
+  // The structured fields start after \n\n (end of optional statement) or \nURI:
+  const doubleNewline = afterHeader.indexOf('\n\n')
+  if (doubleNewline !== -1) {
+    return afterHeader.slice(doubleNewline + 2)
+  }
+  // No statement — fields start after the leading newline following the address
+  const uriStart = afterHeader.indexOf('\nURI:')
+  if (uriStart !== -1) {
+    return afterHeader.slice(uriStart + 1)
+  }
+  return undefined
 }
 
 function extractStatement(
