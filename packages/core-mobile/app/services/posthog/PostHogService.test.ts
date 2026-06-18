@@ -77,7 +77,7 @@ describe('PostHogService', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch).toHaveBeenCalledWith(
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
+        `${Config.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -116,7 +116,7 @@ describe('PostHogService', () => {
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch).toHaveBeenNthCalledWith(
         1,
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
+        `${Config.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
