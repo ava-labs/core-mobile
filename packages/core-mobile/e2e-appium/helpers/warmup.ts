@@ -68,11 +68,7 @@ export default async function warmup(
   await onboardingPage.verifyLoggedIn()
 }
 
-
 function generateSeedlessIdToken(): string {
-  // Mirrors the approach in core-web's seedless.fixture.ts:
-  // signs a JWT locally using the test RSA private key registered with CubeSigner.
-  // CubeSigner verifies the signature against the JWKS hosted in S3 — no real Google login needed.
   const { createPrivateKey, createSign } =
     require('crypto') as typeof import('crypto')
 
@@ -127,18 +123,6 @@ export async function warmupSeedless() {
   const state = await detectAppState()
   console.log(`App state detected (seedless): ${state}`)
 
-  if (state === 'loggedIn') {
-    console.log('Already logged in (seedless), skipping onboarding')
-    return
-  }
-
-  if (state === 'locked') {
-    console.log('App is locked, entering PIN to unlock')
-    await onboardingPage.unlockEnterPin()
-    await onboardingPage.verifyLoggedIn()
-    return
-  }
-
   const idToken = generateSeedlessIdToken()
 
   // Place JWT in clipboard; app reads it in E2E mode when Continue with Google is tapped
@@ -149,25 +133,14 @@ export async function warmupSeedless() {
   )
   await driver.pause(500)
 
-  await actions.tap(onboardingPage.continueWithGoogle)
-  console.log('[seedless] tapped continueWithGoogle')
-
-  // Seedless onboarding: T&C → skip MFA → accept analytics → PIN → name → avatar → done
-  // Use direct taps (no wrong expectedEle that causes 20-second timeouts in seedless flow)
-  await actions.tap(onboardingPage.agreeAndContinue) // termsAndConditions
-  console.log('[seedless] tapped agreeAndContinue (T&C)')
-  await actions.tap(onboardingPage.skip) // addRecoveryMethods: skip TOTP/FIDO
-  console.log('[seedless] tapped skip (addRecoveryMethods)')
-  await actions.tap(onboardingPage.unlockBtn) // analyticsConsent: accept
-  console.log('[seedless] tapped unlockBtn (analyticsConsent)')
+  await onboardingPage.tapContinueWithGoogle()
+  await onboardingPage.tapAgreeAndContinue()
+  await onboardingPage.tapSkip()
+  await onboardingPage.tapUnlockBtn()
   await onboardingPage.enterPin()
-  console.log('[seedless] entered PIN')
   await onboardingPage.tapNextBtnOnNameWallet()
-  console.log('[seedless] tapped next on setWalletName')
   await onboardingPage.tapNextBtnOnAvatarScreen()
-  console.log('[seedless] tapped next on selectAvatar')
   await onboardingPage.tapLetsGo()
-  console.log('[seedless] tapped letsGo (confirmation)')
   await onboardingPage.verifyLoggedIn()
 }
 

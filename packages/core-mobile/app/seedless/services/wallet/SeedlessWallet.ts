@@ -58,31 +58,23 @@ export default class SeedlessWallet implements Wallet {
 
   private async getMnemonicId(): Promise<string> {
     const keys = await this.#client.apiClient.sessionKeysList()
+    // using the first account here since it always exists
+    const addressPublicKey = await this.getAddressPublicKey({
+      accountIndex: 0,
+      vmType: NetworkVMType.EVM
+    })
 
-    // Primary path: find mnemonic ID via a derived address key (works when
-    // at least one account has already been derived).
-    try {
-      const addressPublicKey = await this.getAddressPublicKey({
-        accountIndex: 0,
-        vmType: NetworkVMType.EVM
-      })
+    const activeAccountKey = keys.find(
+      key => strip0x(key.public_key) === addressPublicKey
+    )
 
-      const activeAccountKey = keys.find(
-        key => strip0x(key.public_key) === addressPublicKey
-      )
+    const mnemonicId = activeAccountKey?.derivation_info?.mnemonic_id
 
-      const mnemonicId = activeAccountKey?.derivation_info?.mnemonic_id
-      if (mnemonicId) return mnemonicId
-    } catch {
-      // No derived EVM key yet — fall through to mnemonic key lookup below.
+    if (!mnemonicId) {
+      throw new Error('Cannot retrieve the mnemonic id')
     }
 
-    // Fallback: for a brand-new account (no derived keys yet), read the
-    // mnemonic key ID directly from the session key list.
-    const mnemonicKey = keys.find(k => k.key_type === 'Mnemonic')
-    if (mnemonicKey) return mnemonicKey.key_id
-
-    throw new Error('Cannot retrieve the mnemonic id')
+    return mnemonicId
   }
 
   private async getSigningKeyByAddress(
@@ -143,6 +135,13 @@ export default class SeedlessWallet implements Wallet {
   }
 
   public async addAccount(accountIndex: number): Promise<void> {
+    if (accountIndex < 1) {
+      // To add a new account, we must already know at least one
+      // public key to be able to find the mnemonic ID, which we'll use
+      // to derive the next keys.
+      throw new Error('Account index must be greater than or equal to 1')
+    }
+
     const identityProof = await this.#client.apiClient.identityProve()
     const mnemonicId = await this.getMnemonicId()
 

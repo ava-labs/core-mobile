@@ -3,19 +3,6 @@ import { strip0x } from '@avalabs/core-utils-sdk'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
 import { toSegments } from 'utils/toSegments'
 
-// CubeSigner returns uncompressed secp256k1 keys (65 bytes, 04||x||y).
-// The crypto-nitro derive functions require compressed keys (33 bytes, 02/03||x).
-const compressSecp256k1 = (hexKey: string): string => {
-  // Only handle 65-byte uncompressed keys (130 hex chars starting with '04')
-  if (hexKey.length !== 130 || !hexKey.startsWith('04')) {
-    return hexKey
-  }
-  const x = hexKey.slice(2, 66)
-  const yLastByte = parseInt(hexKey.slice(-2), 16)
-  const prefix = yLastByte % 2 === 0 ? '02' : '03'
-  return prefix + x
-}
-
 type AccountKeySet = {
   evm?: cs.KeyInfo
   solana?: cs.KeyInfo
@@ -190,7 +177,7 @@ export const transformKeyInfosToPubKeys = (
     pubkeys.push({
       curve: Curve.SECP256K1,
       derivationPath: key.evm.derivation_info.derivation_path,
-      key: compressSecp256k1(strip0x(key.evm.public_key))
+      key: strip0x(key.evm.public_key)
     })
 
     // Only include AVA keys if they exist (may be empty if deriveMissingKeys hasn't been called yet)
@@ -214,7 +201,7 @@ export const transformKeyInfosToPubKeys = (
       pubkeys.push({
         curve: Curve.SECP256K1,
         derivationPath,
-        key: compressSecp256k1(strip0x(avaKey.public_key))
+        key: strip0x(avaKey.public_key)
       })
     })
 

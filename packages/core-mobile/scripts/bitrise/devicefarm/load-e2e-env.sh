@@ -11,7 +11,7 @@ if [ -f "$CORE_MOBILE_DIR/.env.production.e2e" ]; then
   E2E_MNEMONIC=$(grep '^E2E_MNEMONIC=' "$_env" | cut -d'=' -f2-)
   E2E_METAMASK_MNEMONIC=$(grep '^E2E_METAMASK_MNEMONIC=' "$_env" | cut -d'=' -f2-)
 
-  # Seedless / custom OIDC credentials (from 1Password via colleague)
+  # Seedless / custom OIDC credentials
   TEST_OIDC_PRIVATE_KEY=$(grep '^TEST_OIDC_PRIVATE_KEY=' "$_env" | cut -d'=' -f2-)
   TEST_OIDC_ISSUER=$(grep '^TEST_OIDC_ISSUER=' "$_env" | cut -d'=' -f2-)
   TEST_OIDC_AUDIENCE=$(grep '^TEST_OIDC_AUDIENCE=' "$_env" | cut -d'=' -f2-)
