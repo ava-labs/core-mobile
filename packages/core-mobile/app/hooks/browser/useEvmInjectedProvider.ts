@@ -191,13 +191,16 @@ export function useEvmInjectedProvider(
         // the cancel is already a no-op in that phase (the signing completes), so
         // popping would just yank the review screen out from under the user
         // mid-sign. The controller dismisses it itself once signing settles.
-        // (CP-14422)
+        // `excludeApproval`: the signing approval screen dismisses itself
+        // (event-driven on its request's abort), so popping it here too would
+        // double `router.back()` — and its async route tracking made this pop
+        // miss anyway. Other modal types still dismiss via this pop. (CP-14422)
         if (
           !handled &&
           !connectApprovalRegistry.hasActive() &&
           !approvalController.isLedgerSigningInProgress()
         ) {
-          approvalController.handleGoBackIfNeeded()
+          approvalController.handleGoBackIfNeeded({ excludeApproval: true })
         }
       }
 

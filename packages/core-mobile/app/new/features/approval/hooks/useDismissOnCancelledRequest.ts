@@ -2,29 +2,37 @@ import { useEffect } from 'react'
 import { router } from 'expo-router'
 
 /**
- * Dismiss the approval screen on mount if its injected signing request was
- * already cancelled by a cross-origin navigation.
+ * Dismiss the approval screen when its injected signing request is cancelled by
+ * a cross-origin navigation (the request's `AbortSignal` fires).
  *
- * A cross-origin nav aborts + settles the request and fires the generic
- * `handleGoBackIfNeeded` pop in `setCurrentUrl`. But that pop can run in the
- * window between `router.navigate('/approval')` and this screen actually
- * mounting (the route's `currentRoute` is set asynchronously), so it misses and
- * the defunct sheet lingers. Reacting to the request's own `AbortSignal` makes
- * dismissal request-scoped (never pops another request's sheet) and robust to
- * that mount-vs-pop race.
- *
- * Mount-time only by design: a nav that aborts the request while this screen is
- * already mounted is handled by `setCurrentUrl`'s pop (the screen is the current
- * route, so it lands), and adding a live `abort` listener here would race that
- * pop into a double `router.back()`. (CP-14422)
+ * Why event-driven and not the generic `handleGoBackIfNeeded` pop in
+ * `setCurrentUrl`: that pop is edge-triggered and gated on the route store's
+ * `currentRoute`, which React Navigation updates asynchronously. The abort can
+ * land before the screen mounts (pop fires too early, `currentRoute` not yet
+ * `approval`) OR just after it mounts but before `currentRoute` catches up —
+ * either way the pop misses and the defunct sheet lingers. Reacting to the
+ * request's own signal dismisses regardless of timing, and is request-scoped
+ * (never pops another request's sheet). `setCurrentUrl` excludes the `approval`
+ * route from its pop so the two don't double `router.back()`. (CP-14422)
  */
 export const useDismissOnCancelledRequest = (signal?: AbortSignal): void => {
   useEffect(() => {
-    if (signal?.aborted && router.canGoBack()) {
-      router.back()
+    if (!signal) return
+
+    let dismissed = false
+    const dismiss = (): void => {
+      if (dismissed) return
+      dismissed = true
+      if (router.canGoBack()) router.back()
     }
-    // Run once on mount for this request's signal; see docblock for why we don't
-    // subscribe to later aborts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    // Aborted before the screen mounted — dismiss now; otherwise dismiss when it
+    // aborts later.
+    if (signal.aborted) {
+      dismiss()
+      return
+    }
+    signal.addEventListener('abort', dismiss, { once: true })
+    return () => signal.removeEventListener('abort', dismiss)
+  }, [signal])
 }

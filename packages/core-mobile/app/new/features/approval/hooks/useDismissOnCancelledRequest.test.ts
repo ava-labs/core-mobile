@@ -24,6 +24,27 @@ describe('useDismissOnCancelledRequest', () => {
     expect(mockBack).toHaveBeenCalledTimes(1)
   })
 
+  it('dismisses when the signal aborts after mount', () => {
+    const controller = new AbortController()
+
+    renderHook(() => useDismissOnCancelledRequest(controller.signal))
+    expect(mockBack).not.toHaveBeenCalled()
+
+    controller.abort()
+
+    expect(mockBack).toHaveBeenCalledTimes(1)
+  })
+
+  it('dismisses at most once', () => {
+    const controller = new AbortController()
+
+    renderHook(() => useDismissOnCancelledRequest(controller.signal))
+    controller.abort()
+    controller.abort()
+
+    expect(mockBack).toHaveBeenCalledTimes(1)
+  })
+
   it('does not dismiss when the signal is not aborted', () => {
     const controller = new AbortController()
 

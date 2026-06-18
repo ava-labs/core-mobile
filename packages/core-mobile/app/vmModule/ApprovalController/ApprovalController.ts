@@ -210,14 +210,19 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  handleLedgerOnReject = async ({
+  handleLedgerOnReject = ({
     resolve
   }: {
     resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
-  }): Promise<void> => {
-    ledgerParamsStore.getState().setReviewTransactionParams(null)
-    await LedgerService.disconnect().catch()
+  }): void => {
+    // Settle the request promise FIRST so a slow or hung BLE disconnect can't
+    // delay the rejection — the cross-origin abort path exists to settle
+    // orphaned promises promptly, and no caller needs the Ledger torn down
+    // before the reject. Clear the review store and disconnect BLE
+    // fire-and-forget. (CP-14422)
     onReject({ resolve })
+    ledgerParamsStore.getState().setReviewTransactionParams(null)
+    LedgerService.disconnect().catch(() => undefined)
   }
 
   // True while any parked approval is mid on-device Ledger signing — the
@@ -234,12 +239,18 @@ class ApprovalController implements VmModuleApprovalController {
     return false
   }
 
-  handleGoBackIfNeeded = (): void => {
+  // `excludeApproval` skips the `approval` route: the approval screen now
+  // dismisses itself (event-driven on its request's AbortSignal) when a
+  // cross-origin nav cancels it, so the nav-path caller must NOT also pop it or
+  // the two race into a double `router.back()`. The controller's own ledger
+  // settle paths still pass no option, so they dismiss `approval` as before.
+  // (CP-14422)
+  handleGoBackIfNeeded = (options?: { excludeApproval?: boolean }): void => {
     const currentRoute = currentRouteStore.getState().currentRoute
     if (!router.canGoBack()) return
     if (
       currentRoute?.endsWith('ledgerReviewTransaction') ||
-      currentRoute?.endsWith('approval') ||
+      (!options?.excludeApproval && currentRoute?.endsWith('approval')) ||
       currentRoute?.endsWith('addEthereumChain') ||
       currentRoute?.endsWith('authorizeInjectedDapp') ||
       currentRoute?.endsWith('authorizeDapp') ||

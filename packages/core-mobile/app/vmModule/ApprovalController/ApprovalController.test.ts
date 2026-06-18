@@ -860,6 +860,37 @@ describe('ApprovalController', () => {
 
       expect(mockRouter.back).not.toHaveBeenCalled()
     })
+
+    it('does NOT pop the approval route when excludeApproval is set (screen self-dismisses)', () => {
+      // The cross-origin nav path passes excludeApproval: the approval screen
+      // owns its own dismissal via its request signal, so popping here too would
+      // double router.back(). (CP-14422)
+      mockCurrentRouteStore.getState.mockReturnValue({
+        currentRoute: '/approval',
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
+      })
+      mockRouter.canGoBack.mockReturnValue(true)
+
+      approvalController.handleGoBackIfNeeded({ excludeApproval: true })
+
+      expect(mockRouter.back).not.toHaveBeenCalled()
+    })
+
+    it('still pops non-approval modals when excludeApproval is set', () => {
+      mockCurrentRouteStore.getState.mockReturnValue({
+        currentRoute: '(modals)/addEthereumChain',
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
+      })
+      mockRouter.canGoBack.mockReturnValue(true)
+
+      approvalController.handleGoBackIfNeeded({ excludeApproval: true })
+
+      expect(mockRouter.back).toHaveBeenCalledTimes(1)
+    })
   })
 
   // ── requestApproval ───────────────────────────────────────────────────────
@@ -1413,6 +1444,22 @@ describe('ApprovalController', () => {
       mockOnReject.mockClear()
       controller.abort()
       await flushMicrotasks()
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('settles the parked promise immediately on abort even if Ledger BLE disconnect hangs', async () => {
+      // BLE disconnect that never resolves — settlement must not be gated behind
+      // it, or a hung disconnect would leave the dApp request hanging (the whole
+      // point of the abort path is prompt settlement). (CP-14422)
+      mockDisconnect.mockReturnValue(new Promise(() => undefined))
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      mockOnReject.mockClear()
+
+      controller.abort()
+      // No flush: the reject must have already fired synchronously, not be
+      // queued behind the (hanging) disconnect.
       expect(mockOnReject).toHaveBeenCalled()
     })
 
