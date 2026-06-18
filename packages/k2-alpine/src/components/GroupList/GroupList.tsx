@@ -54,9 +54,11 @@ export const GroupList = ({
 
   const handlePress = (item: GroupListItem, index: number): void => {
     if (item.accordion) {
+      const nextExpanded = !(expandedStates[index] ?? false)
       setExpandedStates(prev =>
-        prev.map((value, i) => (i === index ? !value : value))
+        prev.map((value, i) => (i === index ? nextExpanded : value))
       )
+      item.onAccordionToggle?.(nextExpanded)
     } else {
       item.onPress?.()
     }
@@ -264,6 +266,8 @@ export type GroupListItem = {
   bottomAccessory?: JSX.Element
   accordion?: JSX.Element
   expanded?: boolean
+  /** Called when an accordion row is toggled, with the resulting expanded state. */
+  onAccordionToggle?: (expanded: boolean) => void
   containerSx?: SxProp
   hideSeparator?: boolean
   /** When true, sets accessible={false} on the row so child testIDs (e.g. Toggle) are findable by Appium */

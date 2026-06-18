@@ -6,7 +6,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { forwardRef, useCallback, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -93,349 +93,390 @@ const KeyboardScrollView = Animated.createAnimatedComponent(
   KeyboardAwareScrollView
 )
 
-export const ScrollScreen = ({
-  title,
-  titleSx,
-  subtitle,
-  children,
-  hasParent,
-  isModal,
-  navigationTitle,
-  shouldAvoidKeyboard,
-  disableStickyFooter,
-  showNavigationHeaderTitle = true,
-  hideHeaderBackground,
-  headerCenterOverlay,
-  headerStyle,
-  testID = 'bottom_sheet',
-  renderHeader,
-  renderFooter,
-  renderHeaderRight,
-  onScrolledToEnd,
-  ...props
-}: ScrollScreenProps): JSX.Element => {
-  const insets = useSafeAreaInsets()
-  const headerHeight = useEffectiveHeaderHeight()
+export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
+  function ScrollScreen(
+    {
+      title,
+      titleSx,
+      subtitle,
+      children,
+      hasParent,
+      isModal,
+      navigationTitle,
+      shouldAvoidKeyboard,
+      disableStickyFooter,
+      showNavigationHeaderTitle = true,
+      hideHeaderBackground,
+      headerCenterOverlay,
+      headerStyle,
+      testID = 'bottom_sheet',
+      renderHeader,
+      renderFooter,
+      renderHeaderRight,
+      onScrolledToEnd,
+      ...props
+    },
+    ref
+  ): JSX.Element {
+    const insets = useSafeAreaInsets()
+    const headerHeight = useEffectiveHeaderHeight()
 
-  // scroll to end tracking
-  const scrollContentHeight = useRef(0)
-  const scrollViewHeight = useRef(0)
-  const hasReachedEndRef = useRef(false)
+    // scroll to end tracking
+    const scrollContentHeight = useRef(0)
+    const scrollViewHeight = useRef(0)
+    const hasReachedEndRef = useRef(false)
 
-  const SCROLL_END_THRESHOLD = 20
+    const SCROLL_END_THRESHOLD = 20
 
-  const checkScrolledToEnd = useCallback(
-    (contentOffsetY: number) => {
-      if (!onScrolledToEnd || hasReachedEndRef.current) return
+    const checkScrolledToEnd = useCallback(
+      (contentOffsetY: number) => {
+        if (!onScrolledToEnd || hasReachedEndRef.current) return
+
+        const maxScroll = scrollContentHeight.current - scrollViewHeight.current
+        const isAtEnd =
+          maxScroll <= 0 || contentOffsetY >= maxScroll - SCROLL_END_THRESHOLD
+
+        if (isAtEnd) {
+          hasReachedEndRef.current = true
+          onScrolledToEnd(true)
+        }
+      },
+      [onScrolledToEnd]
+    )
+
+    const checkScrollableAfterLayout = useCallback(() => {
+      if (!onScrolledToEnd) return
 
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-      const isAtEnd =
-        maxScroll <= 0 || contentOffsetY >= maxScroll - SCROLL_END_THRESHOLD
-
-      if (isAtEnd) {
+      if (maxScroll <= 0 && scrollContentHeight.current > 0) {
+        // content doesn't require scroll
         hasReachedEndRef.current = true
         onScrolledToEnd(true)
       }
-    },
-    [onScrolledToEnd]
-  )
+    }, [onScrolledToEnd])
 
-  const checkScrollableAfterLayout = useCallback(() => {
-    if (!onScrolledToEnd) return
+    const handleContentSizeChange = useCallback(
+      (_w: number, h: number) => {
+        const prevHeight = scrollContentHeight.current
+        scrollContentHeight.current = h
 
-    const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-    if (maxScroll <= 0 && scrollContentHeight.current > 0) {
-      // content doesn't require scroll
-      hasReachedEndRef.current = true
-      onScrolledToEnd(true)
-    }
-  }, [onScrolledToEnd])
+        if (!onScrolledToEnd) return
 
-  const handleContentSizeChange = useCallback(
-    (_w: number, h: number) => {
-      const prevHeight = scrollContentHeight.current
-      scrollContentHeight.current = h
-
-      if (!onScrolledToEnd) return
-
-      if (Math.abs(h - prevHeight) > 1) {
-        hasReachedEndRef.current = false
-        onScrolledToEnd(false)
-        checkScrollableAfterLayout()
-      }
-    },
-    [onScrolledToEnd, checkScrollableAfterLayout]
-  )
-
-  const handleScrollViewLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      scrollViewHeight.current = e.nativeEvent.layout.height
-      checkScrollableAfterLayout()
-    },
-    [checkScrollableAfterLayout]
-  )
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-
-  const [footerLayout, setFooterLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-
-  const headerRef = useRef<View>(null)
-
-  const {
-    onScroll: onFadingScroll,
-    scrollY,
-    targetHiddenProgress
-  } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
-    targetLayout: headerLayout,
-    hasParent,
-    hideHeaderBackground: hideHeaderBackground || isModal,
-    renderHeaderRight,
-    showNavigationHeaderTitle
-  })
-
-  const onScroll = useCallback(
-    (
-      event:
-        | NativeSyntheticEvent<NativeScrollEvent>
-        | NativeScrollEvent
-        | number
-    ) => {
-      onFadingScroll(event)
-
-      if (onScrolledToEnd) {
-        let offsetY = 0
-        if (typeof event === 'number') {
-          offsetY = event
-        } else if ('nativeEvent' in event) {
-          offsetY = event.nativeEvent.contentOffset.y
-        } else {
-          offsetY = event.contentOffset.y
+        if (Math.abs(h - prevHeight) > 1) {
+          hasReachedEndRef.current = false
+          onScrolledToEnd(false)
+          checkScrollableAfterLayout()
         }
-        checkScrolledToEnd(offsetY)
-      }
-    },
-    [onFadingScroll, onScrolledToEnd, checkScrolledToEnd]
-  )
-
-  const animatedHeaderStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [-headerHeight, 0, headerHeight],
-      [0.95, 1, 0.95]
+      },
+      [onScrolledToEnd, checkScrollableAfterLayout]
     )
-    return {
-      opacity: 1 - targetHiddenProgress.value * 2,
-      transform: [{ scale }],
-      transformOrigin: 'bottom left'
-    }
-  })
 
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    const { x, y, width, height } = event.nativeEvent.layout
-    setHeaderLayout({ x, y, width, height })
-  }, [])
+    const handleScrollViewLayout = useCallback(
+      (e: LayoutChangeEvent) => {
+        scrollViewHeight.current = e.nativeEvent.layout.height
+        checkScrollableAfterLayout()
+      },
+      [checkScrollableAfterLayout]
+    )
+    const [headerLayout, setHeaderLayout] = useState<
+      LayoutRectangle | undefined
+    >()
 
-  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
-    const { x, y, width, height } = event.nativeEvent.layout
-    setFooterLayout({ x, y, width, height })
-  }, [])
+    const [footerLayout, setFooterLayout] = useState<
+      LayoutRectangle | undefined
+    >()
 
-  const animatedBorderStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
-    return {
-      opacity
-    }
-  })
+    const headerRef = useRef<View>(null)
 
-  const renderHeaderContent = useCallback(() => {
-    if (title || subtitle || renderHeader) {
-      const hasTitle = Boolean(title || subtitle)
-      return (
-        <View collapsable={false}>
+    const {
+      onScroll: onFadingScroll,
+      scrollY,
+      targetHiddenProgress
+    } = useFadingHeaderNavigation({
+      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      targetLayout: headerLayout,
+      hasParent,
+      hideHeaderBackground: hideHeaderBackground || isModal,
+      renderHeaderRight,
+      showNavigationHeaderTitle
+    })
+
+    const onScroll = useCallback(
+      (
+        event:
+          | NativeSyntheticEvent<NativeScrollEvent>
+          | NativeScrollEvent
+          | number
+      ) => {
+        onFadingScroll(event)
+
+        if (onScrolledToEnd) {
+          let offsetY = 0
+          if (typeof event === 'number') {
+            offsetY = event
+          } else if ('nativeEvent' in event) {
+            offsetY = event.nativeEvent.contentOffset.y
+          } else {
+            offsetY = event.contentOffset.y
+          }
+          checkScrolledToEnd(offsetY)
+        }
+      },
+      [onFadingScroll, onScrolledToEnd, checkScrolledToEnd]
+    )
+
+    const animatedHeaderStyle = useAnimatedStyle(() => {
+      const scale = interpolate(
+        scrollY.value,
+        [-headerHeight, 0, headerHeight],
+        [0.95, 1, 0.95]
+      )
+      return {
+        opacity: 1 - targetHiddenProgress.value * 2,
+        transform: [{ scale }],
+        transformOrigin: 'bottom left'
+      }
+    })
+
+    const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout
+      setHeaderLayout({ x, y, width, height })
+    }, [])
+
+    const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout
+      setFooterLayout({ x, y, width, height })
+    }, [])
+
+    const animatedBorderStyle = useAnimatedStyle(() => {
+      const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
+      return {
+        opacity
+      }
+    })
+
+    const renderHeaderContent = useCallback(() => {
+      if (title || subtitle || renderHeader) {
+        const hasTitle = Boolean(title || subtitle)
+        return (
+          <View collapsable={false}>
+            <View
+              ref={headerRef}
+              collapsable={false}
+              onLayout={handleHeaderLayout}
+              style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
+              {hasTitle ? (
+                <Animated.View style={[animatedHeaderStyle]}>
+                  <ScreenHeader
+                    title={title ?? ''}
+                    titleSx={titleSx}
+                    titleNumberOfLines={4}
+                    description={subtitle}
+                  />
+                </Animated.View>
+              ) : null}
+
+              {!hasTitle && renderHeader?.()}
+            </View>
+
+            {hasTitle && renderHeader?.()}
+          </View>
+        )
+      } else {
+        // If we don't have a title or subtitle, we need to render an empty header
+        // so that the header height is not undefined
+        return (
           <View
             ref={headerRef}
             collapsable={false}
             onLayout={handleHeaderLayout}
-            style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
-            {hasTitle ? (
-              <Animated.View style={[animatedHeaderStyle]}>
-                <ScreenHeader
-                  title={title ?? ''}
-                  titleSx={titleSx}
-                  titleNumberOfLines={4}
-                  description={subtitle}
-                />
-              </Animated.View>
-            ) : null}
-
-            {!hasTitle && renderHeader?.()}
-          </View>
-
-          {hasTitle && renderHeader?.()}
-        </View>
-      )
-    } else {
-      // If we don't have a title or subtitle, we need to render an empty header
-      // so that the header height is not undefined
-      return (
-        <View
-          ref={headerRef}
-          collapsable={false}
-          onLayout={handleHeaderLayout}
-          style={[
-            headerStyle,
-            {
-              position: 'absolute',
-              minHeight: headerHeight,
-              pointerEvents: 'none'
-            }
-          ]}
-        />
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    headerRef,
-    headerHeight,
-    headerStyle,
-    handleHeaderLayout,
-    renderHeader,
-    subtitle,
-    title,
-    titleSx
-  ])
-
-  const renderFooterContent = useCallback(() => {
-    if (renderFooter) {
-      const footer = renderFooter()
-      if (footer) {
-        // Visual content only — sizes to its own height (not absolutely
-        // positioned), so whatever wraps it gets a real, non-zero height.
-        const footerContent = (
-          <LinearGradientBottomWrapper>
-            <View
-              style={{
-                paddingHorizontal: 16,
-                paddingBottom: insets.bottom + 16
-              }}>
-              <View onLayout={handleFooterLayout}>{footer}</View>
-            </View>
-          </LinearGradientBottomWrapper>
-        )
-
-        if (shouldAvoidKeyboard) {
-          return (
-            <KeyboardStickyView
-              enabled={!disableStickyFooter}
-              offset={{
-                opened: insets.bottom
-              }}
-              style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-              {footerContent}
-            </KeyboardStickyView>
-          )
-        }
-
-        return (
-          <View
-            collapsable={false}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
-            }}>
-            {footerContent}
-          </View>
+            style={[
+              headerStyle,
+              {
+                position: 'absolute',
+                minHeight: headerHeight,
+                pointerEvents: 'none'
+              }
+            ]}
+          />
         )
       }
-    }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+      headerRef,
+      headerHeight,
+      headerStyle,
+      handleHeaderLayout,
+      renderHeader,
+      subtitle,
+      title,
+      titleSx
+    ])
 
-    return null
-  }, [
-    renderFooter,
-    insets.bottom,
-    handleFooterLayout,
-    shouldAvoidKeyboard,
-    disableStickyFooter
-  ])
+    const renderFooterContent = useCallback(() => {
+      if (renderFooter) {
+        const footer = renderFooter()
+        if (footer) {
+          // Visual content only — sizes to its own height (not absolutely
+          // positioned), so whatever wraps it gets a real, non-zero height.
+          const footerContent = (
+            <LinearGradientBottomWrapper>
+              <View
+                style={{
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
+                }}>
+                <View onLayout={handleFooterLayout}>{footer}</View>
+              </View>
+            </LinearGradientBottomWrapper>
+          )
 
-  const renderGrabber = useCallback(() => {
-    if (isModal)
+          if (shouldAvoidKeyboard) {
+            return (
+              <KeyboardStickyView
+                enabled={!disableStickyFooter}
+                offset={{
+                  opened: insets.bottom
+                }}
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+                {footerContent}
+              </KeyboardStickyView>
+            )
+          }
+
+          return (
+            <View
+              collapsable={false}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0
+              }}>
+              {footerContent}
+            </View>
+          )
+        }
+      }
+
+      return null
+    }, [
+      renderFooter,
+      insets.bottom,
+      handleFooterLayout,
+      shouldAvoidKeyboard,
+      disableStickyFooter
+    ])
+
+    const renderGrabber = useCallback(() => {
+      if (isModal)
+        return (
+          <View
+            style={{
+              position: 'absolute',
+              top: Platform.OS === 'android' ? insets.top - 2 : 9,
+              left: 0,
+              right: 0,
+              zIndex: 1000
+            }}>
+            <Grabber />
+          </View>
+        )
+    }, [insets.top, isModal])
+
+    const renderHeaderBackground = useCallback(() => {
+      if (hideHeaderBackground) return null
       return (
         <View
+          pointerEvents="none"
           style={{
             position: 'absolute',
-            top: Platform.OS === 'android' ? insets.top - 2 : 9,
+            top: 0,
             left: 0,
             right: 0,
-            zIndex: 1000
+            bottom: 0,
+            height: headerHeight
           }}>
-          <Grabber />
+          <BlurViewWithFallback
+            style={{
+              flex: 1
+            }}
+          />
+          <Animated.View
+            style={[
+              animatedBorderStyle,
+              {
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0
+              }
+            ]}>
+            <Separator />
+          </Animated.View>
         </View>
       )
-  }, [insets.top, isModal])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [headerHeight, hideHeaderBackground])
 
-  const renderHeaderBackground = useCallback(() => {
-    if (hideHeaderBackground) return null
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: headerHeight
-        }}>
-        <BlurViewWithFallback
-          style={{
-            flex: 1
-          }}
-        />
-        <Animated.View
-          style={[
-            animatedBorderStyle,
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
+    // 90% of our screens reuse this component but only some need keyboard avoiding
+    // If you have an input on the screen, you need to enable this prop
+    if (shouldAvoidKeyboard) {
+      return (
+        <View style={{ flex: 1 }} collapsable={false}>
+          <KeyboardScrollView
+            ref={ref as never}
+            testID={testID}
+            extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            {...props}
+            style={{
+              flex: 1
+            }}
+            contentContainerStyle={[
+              props?.contentContainerStyle,
+              {
+                paddingBottom: disableStickyFooter
+                  ? insets.bottom + 32
+                  : (footerLayout?.height ?? 0) + 32,
+                paddingTop: headerHeight
+              }
+            ]}
+            onScroll={onScroll}
+            onContentSizeChange={
+              onScrolledToEnd ? handleContentSizeChange : undefined
             }
-          ]}>
-          <Separator />
-        </Animated.View>
-      </View>
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerHeight, hideHeaderBackground])
+            onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+            {renderHeaderContent()}
+            {children}
+          </KeyboardScrollView>
 
-  // 90% of our screens reuse this component but only some need keyboard avoiding
-  // If you have an input on the screen, you need to enable this prop
-  if (shouldAvoidKeyboard) {
+          {renderFooterContent()}
+          {renderHeaderBackground()}
+          {headerCenterOverlay}
+          {renderGrabber()}
+        </View>
+      )
+    }
+
+    // All of our screens have to be scrollable
+    // If we don't have an input on the screen then we should not enable keyboard avoiding
     return (
-      <View style={{ flex: 1 }} collapsable={false}>
-        <KeyboardScrollView
+      <View style={[{ flex: 1 }, props.style]} collapsable={false}>
+        <ScrollView
+          ref={ref}
           testID={testID}
-          extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
           {...props}
-          style={{
-            flex: 1
-          }}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: disableStickyFooter
-                ? insets.bottom + 32
-                : (footerLayout?.height ?? 0) + 32,
+              paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 48,
               paddingTop: headerHeight
             }
           ]}
@@ -446,7 +487,7 @@ export const ScrollScreen = ({
           onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
           {renderHeaderContent()}
           {children}
-        </KeyboardScrollView>
+        </ScrollView>
 
         {renderFooterContent()}
         {renderHeaderBackground()}
@@ -455,38 +496,6 @@ export const ScrollScreen = ({
       </View>
     )
   }
+)
 
-  // All of our screens have to be scrollable
-  // If we don't have an input on the screen then we should not enable keyboard avoiding
-  return (
-    <View style={[{ flex: 1 }, props.style]} collapsable={false}>
-      <ScrollView
-        testID={testID}
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        {...props}
-        contentContainerStyle={[
-          props?.contentContainerStyle,
-          {
-            paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 48,
-            paddingTop: headerHeight
-          }
-        ]}
-        onScroll={onScroll}
-        onContentSizeChange={
-          onScrolledToEnd ? handleContentSizeChange : undefined
-        }
-        onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
-        {renderHeaderContent()}
-        {children}
-      </ScrollView>
-
-      {renderFooterContent()}
-      {renderHeaderBackground()}
-      {headerCenterOverlay}
-      {renderGrabber()}
-    </View>
-  )
-}
+ScrollScreen.displayName = 'ScrollScreen'
