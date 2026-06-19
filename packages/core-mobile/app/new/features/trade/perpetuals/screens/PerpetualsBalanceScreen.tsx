@@ -32,7 +32,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
   const scrollViewRef = useRef<ScrollView>(null)
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
