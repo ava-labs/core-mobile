@@ -418,7 +418,14 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         canGoForward: navState.canGoForward
       }
 
-      setCurrentUrl(navState.url ?? '')
+      // Only update the native origin after the page has committed (loading=false).
+      // Calling setCurrentUrl while loading=true would prematurely shift nativeOrigin
+      // to the new URL, causing in-flight requests from the previous page to be
+      // rejected with "origin mismatch" and cancelling the approval modal before
+      // the new page is actually visible.
+      if (!navState.loading) {
+        setCurrentUrl(navState.url ?? '')
+      }
 
       const nextUrl = navState.url
       if (!nextUrl?.length || nextUrl.startsWith('about:')) return
