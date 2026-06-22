@@ -664,7 +664,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
         {
           title: 'Are you sure you want to cancel this recurring swap?',
           description:
-            'Scheduled swaps may still execute while this action is confirmed.',
+            'Scheduled swaps may still execute while this action is confirmed',
           actionText: 'Remove',
           actionStyle: 'destructive'
         },
@@ -682,8 +682,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
         {
           title: 'Pause this recurring swap?',
           description:
-            'Existing token allowance is preserved, unpausing later does not require a new approval. ' +
-            'Scheduled swaps may still execute while this action is confirmed.',
+            'You can resume at any time. Scheduled swaps may execute while this action is confirmed',
           actionText: 'Pause',
           actionStyle: 'destructive'
         },
