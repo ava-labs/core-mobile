@@ -1229,7 +1229,15 @@ export const SwapScreen = (): JSX.Element => {
         toTokenSymbol: toToken.symbol,
         frequency: recurring.frequency,
         numberOfOrders: recurring.numberOfOrders,
-        amountPerOrder: fromTokenValue
+        amountPerOrder: fromTokenValue,
+        // Threaded through so submitRecurringSwap can target its
+        // quote-expiry / SDK-rejection invalidations at the exact cached
+        // quote, not every recurring quote in the app.
+        fromTokenLocalId: fromToken.localId,
+        toTokenLocalId: toToken.localId,
+        fromTokenNetworkChainId: fromToken.networkChainId,
+        toTokenNetworkChainId: toToken.networkChainId,
+        slippageBps: recurringSlippageBps
       })
       // submitRecurringSwap fires the success snackbar + analytics +
       // staggered query invalidations on its own (the SDK call's resolution

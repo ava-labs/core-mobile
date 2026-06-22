@@ -18,6 +18,42 @@ type Params = {
   slippageBps?: number
 }
 
+/** Primitive shape of the recurring-quote queryKey — exposed so callers
+ *  outside the hook (e.g. `submitRecurringSwap`) can build the *exact* key
+ *  for targeted invalidations instead of the broad prefix `[RECURRING_QUOTE]`
+ *  that nukes every cached recurring quote. */
+export type RecurringQuoteKeyParts = {
+  fromTokenNetworkChainId: number | undefined
+  fromTokenLocalId: string | undefined
+  toTokenNetworkChainId: number | undefined
+  toTokenLocalId: string | undefined
+  amountPerOrder: bigint | undefined
+  numberOfOrders: NumberOfOrders | undefined
+  frequency: Frequency | undefined
+  slippageBps?: number
+}
+
+/** Single source of truth for the queryKey shape so the hook and any
+ *  external invalidators stay in lockstep. */
+export function buildRecurringQuoteQueryKey(
+  parts: RecurringQuoteKeyParts
+): readonly unknown[] {
+  return [
+    ReactQueryKeys.RECURRING_QUOTE,
+    parts.fromTokenNetworkChainId,
+    parts.fromTokenLocalId,
+    parts.toTokenNetworkChainId,
+    parts.toTokenLocalId,
+    parts.amountPerOrder?.toString(),
+    parts.numberOfOrders === undefined
+      ? undefined
+      : parts.numberOfOrders.toString(),
+    parts.frequency?.unit,
+    parts.frequency?.value,
+    parts.slippageBps
+  ]
+}
+
 const STALE_MS = 30_000
 
 /**
@@ -51,27 +87,23 @@ export function useRecurringQuote(
 
   return useQuery<RecurringQuoteResponse>({
     enabled,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- intentional fine-grained queryKey
-    queryKey: [
-      ReactQueryKeys.RECURRING_QUOTE,
-      // Both chains keyed even though Markr recurring is same-chain-only
-      // today (`RecurringChainInfo` is keyed by a single EVM chainId).
-      // `localId` for ERC-20s is just the contract address (no chain
-      // embedded), so keying both sides matches `useRecurringEligibility`'s
-      // explicit source/target chainId pattern and avoids a latent
-      // collision if cross-chain recurring is ever introduced.
-      params.fromToken?.networkChainId,
-      params.fromToken?.localId,
-      params.toToken?.networkChainId,
-      params.toToken?.localId,
-      params.amountPerOrder?.toString(),
-      params.numberOfOrders === undefined
-        ? undefined
-        : params.numberOfOrders.toString(),
-      params.frequency?.unit,
-      params.frequency?.value,
-      params.slippageBps
-    ],
+    // Both chains keyed even though Markr recurring is same-chain-only
+    // today (`RecurringChainInfo` is keyed by a single EVM chainId).
+    // `localId` for ERC-20s is just the contract address (no chain
+    // embedded), so keying both sides matches `useRecurringEligibility`'s
+    // explicit source/target chainId pattern and avoids a latent
+    // collision if cross-chain recurring is ever introduced.
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- intentional fine-grained queryKey; full `params` object would churn on unrelated swap-store ref changes
+    queryKey: buildRecurringQuoteQueryKey({
+      fromTokenNetworkChainId: params.fromToken?.networkChainId,
+      fromTokenLocalId: params.fromToken?.localId,
+      toTokenNetworkChainId: params.toToken?.networkChainId,
+      toTokenLocalId: params.toToken?.localId,
+      amountPerOrder: params.amountPerOrder,
+      numberOfOrders: params.numberOfOrders,
+      frequency: params.frequency,
+      slippageBps: params.slippageBps
+    }),
     staleTime: STALE_MS,
     queryFn: async () => {
       const markrRecurring = FusionService.markrRecurring

@@ -15,8 +15,8 @@ import FusionService from 'features/swap/services/FusionService'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
+import { buildRecurringQuoteQueryKey } from '../hooks/useRecurringQuote'
 import {
   clearActiveRecurringActionContext,
   setActiveRecurringActionContext
@@ -57,6 +57,15 @@ export type SubmitRecurringSwapParams = {
   frequency: Frequency
   numberOfOrders: NumberOfOrders
   amountPerOrder: bigint
+  // Identifiers needed to reconstruct the exact `useRecurringQuote` queryKey
+  // for scoped invalidations on quote-expiry / SDK boundary throws — without
+  // these we'd fall back to a `[RECURRING_QUOTE]` prefix invalidation that
+  // would nuke every cached recurring quote in the app.
+  fromTokenLocalId: string
+  toTokenLocalId: string
+  fromTokenNetworkChainId: number
+  toTokenNetworkChainId: number
+  slippageBps?: number
 }
 
 export type SubmitRecurringSwapResult = { txHash: Hex }
@@ -92,8 +101,28 @@ export async function submitRecurringSwap(
     toTokenSymbol,
     frequency,
     numberOfOrders,
-    amountPerOrder
+    amountPerOrder,
+    fromTokenLocalId,
+    toTokenLocalId,
+    fromTokenNetworkChainId,
+    toTokenNetworkChainId,
+    slippageBps
   } = params
+
+  // Exact key to invalidate just this quote on expiry / SDK rejection (and
+  // NOT every other recurring quote cached for different pairs/amounts).
+  // Must mirror `useRecurringQuote`'s queryKey shape — both go through
+  // `buildRecurringQuoteQueryKey` for that reason.
+  const expiredQuoteKey = buildRecurringQuoteQueryKey({
+    fromTokenNetworkChainId,
+    fromTokenLocalId,
+    toTokenNetworkChainId,
+    toTokenLocalId,
+    amountPerOrder,
+    numberOfOrders,
+    frequency,
+    slippageBps
+  })
   // Derive from the wire value (not the `UNLIMITED_ORDERS` UI sentinel) so the
   // `{ numberOfOrders, isUnlimited }` pair the side-channel context forwards
   // is internally consistent. The schema's `superRefine` rejects mismatched
@@ -136,7 +165,8 @@ export async function submitRecurringSwap(
   // generic "try again" copy).
   if (Date.now() >= quote.expiredAt * 1000) {
     queryClient.invalidateQueries({
-      queryKey: [ReactQueryKeys.RECURRING_QUOTE]
+      queryKey: expiredQuoteKey,
+      exact: true
     })
     throw new InvalidParamsError(
       ErrorReason.QUOTE_EXPIRED,
@@ -204,7 +234,8 @@ export async function submitRecurringSwap(
         // invalidating reasons that share this error class).
         Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — invalid params`, err)
         queryClient.invalidateQueries({
-          queryKey: [ReactQueryKeys.RECURRING_QUOTE]
+          queryKey: expiredQuoteKey,
+          exact: true
         })
       } else {
         Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — failed`, err)

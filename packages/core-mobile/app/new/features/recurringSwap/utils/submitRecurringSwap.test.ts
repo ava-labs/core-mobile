@@ -89,7 +89,13 @@ const baseParams = {
   toTokenSymbol: 'AVAX',
   frequency: { unit: 'week', value: 1 } as const,
   numberOfOrders: 4,
-  amountPerOrder: 1_000_000n
+  amountPerOrder: 1_000_000n,
+  // Keying fields needed for the targeted quote-expiry invalidation.
+  fromTokenLocalId: TOKEN_IN.toLowerCase(),
+  toTokenLocalId: 'NATIVE-avax',
+  fromTokenNetworkChainId: 43114,
+  toTokenNetworkChainId: 43114,
+  slippageBps: 50
 }
 
 describe('submitRecurringSwap', () => {
@@ -280,5 +286,37 @@ describe('submitRecurringSwap', () => {
     expect(mockCapture).not.toHaveBeenCalled()
     expect(mockSnackbar).not.toHaveBeenCalled()
     expect(mockInvalidateQueries).not.toHaveBeenCalled()
+  })
+
+  // Regression: previously the quote-expiry path invalidated by the bare
+  // `[RECURRING_QUOTE]` prefix, nuking every cached recurring quote in the
+  // app. The expiry invalidation must now be `exact`-keyed to the specific
+  // (pair, amount, orders, frequency, slippage) tuple that just expired.
+  it('invalidates only the expired quote (exact key) on pre-flight QUOTE_EXPIRED', async () => {
+    const EXPIRED_QUOTE: RecurringQuoteResponse = {
+      ...QUOTE,
+      expiredAt: Math.floor(Date.now() / 1000) - 1
+    }
+
+    await expect(
+      submitRecurringSwap({ ...baseParams, quote: EXPIRED_QUOTE })
+    ).rejects.toThrow('QUOTE_EXPIRED')
+
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({
+      queryKey: [
+        'recurringQuote',
+        43114,
+        TOKEN_IN.toLowerCase(),
+        43114,
+        'NATIVE-avax',
+        '1000000',
+        '4',
+        'week',
+        1,
+        50
+      ],
+      exact: true
+    })
   })
 })
