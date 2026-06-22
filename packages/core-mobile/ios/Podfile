@@ -82,6 +82,9 @@ abstract_target 'common' do
 
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
+  # FirebaseAppCheck's AppCheckCore (11.3.0+) added `RecaptchaInterop (~> 101.0)`
+  # as a new transitive dependency. With statically linked Firebase pods it must
+  # be declared with modular headers, otherwise it "does not define modules".
   pod 'RecaptchaInterop', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'
   

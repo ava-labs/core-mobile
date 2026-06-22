@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
-    "@babel/core": "^7.29.0",
+    "@babel/core": "7.29.7",
     "@lavamoat/allow-scripts": "3.2.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
