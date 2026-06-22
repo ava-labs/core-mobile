@@ -67,7 +67,7 @@ type UseEvmInjectedProviderResult = {
   handleDomainMetadata: (payload: string) => void
   emitEvent: (eventName: string, data: unknown) => void
   dappMetadata: React.RefObject<DomainMetadata | null>
-  setCurrentUrl: (url: string) => void
+  handleCommittedUrl: (url: string) => void
 }
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
@@ -148,15 +148,23 @@ export function useEvmInjectedProvider(
     if (tabChainId !== undefined) dispatch(clearTabChainId({ tabId }))
   }, [isDeveloperMode, dispatch, tabId, tabChainId])
 
-  // Router is assigned below (after useMemo). setCurrentUrl may fire before
+  // Router is assigned below (after useMemo). handleCommittedUrl may fire before
   // the router is constructed on first render, so we route through a ref.
   const routerRef = useRef<InjectedProviderRouter | null>(null)
 
   // primeAccounts is defined later (it reads refs declared further down), so
-  // setCurrentUrl's SPA re-prime routes through a ref — same pattern as routerRef.
+  // handleCommittedUrl routes its prime through a ref — same pattern as routerRef.
   const primeAccountsRef = useRef<(() => void) | null>(null)
 
-  const setCurrentUrl = useCallback(
+  // Handle a URL the WebView has actually committed and rendered (onLoad /
+  // same-origin SPA navigation). The provider origin is intentionally never
+  // seeded from provisional navigation events: a page can keep executing while a
+  // hanging cross-origin navigation is provisional, and would get its requests
+  // attributed to the destination origin (APPSEC-330 address-bar spoof vector).
+  // Priming runs here at every commit — not off domain_metadata — so the trusted
+  // origin is always set first; the cost is that origin-requiring RPCs fired
+  // before the first commit are rejected, and the prime recovers connected state.
+  const handleCommittedUrl = useCallback(
     (url: string) => {
       const prevUrl = currentUrlRef.current
       const prevOrigin = getOriginFromUrl(prevUrl)
@@ -182,15 +190,16 @@ export function useEvmInjectedProvider(
         if (!handled && !connectApprovalRegistry.hasActive()) {
           approvalController.handleGoBackIfNeeded()
         }
-      } else if (prevOrigin && prevOrigin === newOrigin && prevUrl !== url) {
-        // Same-origin SPA navigation to a new URL (pushState/replaceState) — note
-        // prevOrigin must be set, so this excludes the initial page load (which is
-        // primed via domain_metadata). The one-time connect/accountsChanged events
-        // already fired on first load, so a provider consumer mounted by the new
-        // route sees no accounts and appears disconnected. Re-prime so it
-        // reconnects. CP-13772.
-        primeAccountsRef.current?.()
       }
+
+      // Prime the shim's _accounts cache on every committed URL: the initial
+      // page load, cross-origin navigation, and same-origin SPA navigation
+      // (pushState/replaceState). domain_metadata no longer primes (it arrives
+      // before the navigation commits, when currentUrlRef may still hold the
+      // previous document's origin — priming there could leak the previous
+      // origin's grant to a cross-origin document), so commit time is the single
+      // prime point that re-establishes connected state. CP-13772.
+      primeAccountsRef.current?.()
     },
     [tabId]
   )
@@ -577,8 +586,8 @@ export function useEvmInjectedProvider(
 
   // Emit accountsChanged for the current origin's connected accounts: the
   // granted addresses (active first) when the active account is granted,
-  // otherwise [] (CP-14382). Shared by page-load priming (handleDomainMetadata)
-  // and same-origin SPA navigation (setCurrentUrl, via primeAccountsRef) so a
+  // otherwise [] (CP-14382). Driven by handleCommittedUrl (page load,
+  // cross-origin, and same-origin SPA navigation, via primeAccountsRef) so a
   // freshly-mounted provider consumer on a new route re-establishes the
   // connection. The injected signer always signs with the active account, so
   // priming the granted set while an ungranted account is active would
@@ -596,28 +605,29 @@ export function useEvmInjectedProvider(
     lastEmittedAccountsRef.current = serialized
     injectAccountsChanged(origin, serialized)
   }, [store, injectAccountsChanged])
-  // Publish to the ref so setCurrentUrl (defined above) can re-prime on SPA nav.
-  // useLayoutEffect (not a render-phase assignment) to match routerRef: the ref
-  // must be set synchronously on commit, before a navigation event can fire
-  // setCurrentUrl and read it.
+  // Publish to the ref so handleCommittedUrl (defined above) can prime on every
+  // committed URL. useLayoutEffect (not a render-phase assignment) to match
+  // routerRef: the ref must be set synchronously on commit, before a navigation
+  // event can fire handleCommittedUrl and read it.
   useLayoutEffect(() => {
     primeAccountsRef.current = primeAccounts
   }, [primeAccounts])
 
-  const handleDomainMetadata = useCallback(
-    (payload: string) => {
-      try {
-        dappMetadata.current = JSON.parse(payload)
-        Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
-      } catch {
-        Logger.error('[InjectedProvider] Invalid domain_metadata payload')
-      }
-      // Prime the shim's _accounts cache on page load so dApps with
-      // auto-reconnect (wagmi autoConnect, etc.) see the connection immediately.
-      primeAccounts()
-    },
-    [primeAccounts]
-  )
+  // Domain metadata is page-postable and arrives at the new document's
+  // DOMContentLoaded — before the navigation has committed from the native
+  // side, when currentUrlRef may still hold the PREVIOUS document's URL.
+  // Priming must therefore never run off this message (it would either no-op
+  // on first load or, worse, prime a cross-origin document with the previous
+  // origin's grant); only the favicon is kept. Priming is driven by
+  // handleCommittedUrl instead.
+  const handleDomainMetadata = useCallback((payload: string) => {
+    try {
+      dappMetadata.current = JSON.parse(payload)
+      Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
+    } catch {
+      Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+    }
+  }, [])
 
   return {
     providerShimJs,
@@ -625,6 +635,6 @@ export function useEvmInjectedProvider(
     handleDomainMetadata,
     emitEvent,
     dappMetadata,
-    setCurrentUrl
+    handleCommittedUrl
   }
 }
