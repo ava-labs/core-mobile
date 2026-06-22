@@ -358,6 +358,11 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("new Event('ethereum#initialized')")
     })
 
+    it('dispatches avalanche#initialized event so X/P dApps detect the provider (CP-13672)', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("new Event('avalanche#initialized')")
+    })
+
     it('emits EIP-1193 connect event once at initialisation', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("emit('connect', { chainId: _chainId })")

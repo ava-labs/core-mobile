@@ -425,6 +425,9 @@ export function buildEvmProviderShim({
   // 8. Legacy events & initial EIP-1193 connect
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
+  // window.avalanche aliases this same provider; announce it too so X/P dApps
+  // that wait on avalanche#initialized detect Core. (CP-13672)
+  window.dispatchEvent(new Event('avalanche#initialized'));
 
   // EIP-1193: signal initial network connectivity.
   // Fired once via macrotask so that page scripts registering
