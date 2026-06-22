@@ -36,6 +36,11 @@ module.exports = {
     // react-native-config (`Config.*`) instead of `process.env.*`.
     '@babel/plugin-transform-class-static-block',
     '@babel/plugin-transform-export-namespace-from'
+    // NOTE: the previous `overrides` block forcing
+    // `@babel/plugin-transform-private-methods` (loose) onto @tanstack / ethers
+    // / @avalabs/wallets-sdk was removed. RN 0.85's Hermes supports class
+    // private methods/fields natively, so transforming those node_modules is no
+    // longer required.
     // NOTE: `react-native-worklets/plugin` is intentionally NOT listed here.
     // babel-preset-expo (SDK 54+) auto-adds it when react-native-worklets is
     // installed. Listing it manually applies the worklet transform twice, which
