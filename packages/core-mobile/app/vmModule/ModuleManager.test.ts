@@ -30,11 +30,14 @@ jest
       [NetworkVMType.CoreEth]: `C-avax${i}`
     }))
   )
-jest
-  .spyOn(SvmModule.prototype, 'deriveAddresses')
-  .mockImplementation(async ({ accountIndices }) =>
-    accountIndices.map((_, i) => ({ [NetworkVMType.SVM]: `svm${i}` }))
-  )
+const mockSvmResolved = (): void => {
+  jest
+    .spyOn(SvmModule.prototype, 'deriveAddresses')
+    .mockImplementation(async ({ accountIndices }) =>
+      accountIndices.map((_, i) => ({ [NetworkVMType.SVM]: `svm${i}` }))
+    )
+}
+mockSvmResolved()
 
 describe('ModuleManager', () => {
   describe('not initialized', () => {
@@ -176,6 +179,51 @@ describe('ModuleManager', () => {
       // `undefined` rather than empty-string addresses so downstream
       // `!addresses` guards engage instead of treating the account as valid.
       expect(result).toEqual([undefined, undefined])
+    })
+
+    describe('Solana exclusion for Keystone', () => {
+      afterEach(() => {
+        // Restore the default resolving Solana mock so later tests are unaffected.
+        mockSvmResolved()
+      })
+
+      it('still derives a Keystone account when the Solana module rejects', async () => {
+        // Keystone hardware cannot derive Solana (ED25519) addresses, so the
+        // Solana module rejects. This must NOT discard the whole account.
+        jest
+          .spyOn(SvmModule.prototype, 'deriveAddresses')
+          .mockRejectedValue(new Error('ED25519 not supported'))
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.KEYSTONE,
+          accountIndices: [0],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toHaveLength(1)
+        expect(result[0]).toBeDefined()
+        expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
+        expect(result[0]?.[NetworkVMType.AVM]).toBe('X-avax0')
+        expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc0')
+        // Solana is not derivable for Keystone; the address is simply absent.
+        expect(result[0]?.[NetworkVMType.SVM]).toBeFalsy()
+      })
+
+      it('still fails closed when the Solana module rejects for a non-Keystone wallet', async () => {
+        jest
+          .spyOn(SvmModule.prototype, 'deriveAddresses')
+          .mockRejectedValue(new Error('transient svm failure'))
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.MNEMONIC,
+          accountIndices: [0],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toEqual([undefined])
+      })
     })
   })
 })

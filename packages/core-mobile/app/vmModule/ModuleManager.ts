@@ -132,8 +132,24 @@ class ModuleManager {
         : DerivationPath.BIP44
     const secretId = JSON.stringify({ walletId, walletType })
 
+    // Keystone hardware wallets only expose secp256k1 xpubs (EVM + Avalanche
+    // X/P); they cannot derive Solana (ED25519) addresses. Asking the Solana
+    // module to derive would reject, and the fail-closed handling below would
+    // then discard the entire account for every index. Exclude Solana for
+    // Keystone so the account is still created from its supported chains — the
+    // empty SVM address is handled at the UI layer (CP-14303).
+    const modules =
+      walletType === WalletType.KEYSTONE
+        ? this.modules.filter(
+            module =>
+              !module
+                .getManifest()
+                ?.network.namespaces.includes(BlockchainNamespace.SOLANA)
+          )
+        : this.modules
+
     const perModuleResults = await Promise.allSettled(
-      this.modules.map(async module =>
+      modules.map(async module =>
         module.deriveAddresses({
           secretId,
           accountIndices,
