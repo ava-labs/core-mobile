@@ -474,7 +474,11 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
+              {/* DEBUG_HEADER_BG (CP-14426): tints the in-list sticky header
+                  blur BLUE to tell it apart from the nav header background
+                  (RED) in a release build. Remove when investigation ends. */}
               <BlurViewWithFallback
+                backgroundColor="rgba(0,0,255,0.5)"
                 style={{
                   flex: 1
                 }}

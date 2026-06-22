@@ -124,7 +124,11 @@ export const useFadingHeaderNavigation = ({
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable style={{ flex: 1 }} />
+      // DEBUG_HEADER_BG (CP-14426): GREEN tint marks the *intended* hidden
+      // nav-header background. If you see green (not red) in the header region
+      // in release, the transparent Pressable is correctly mounted and the
+      // duplicate dark layer is coming from elsewhere. Remove when done.
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,255,0,0.5)' }} />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
