@@ -135,9 +135,9 @@ describe('useCancelRecurringSchedule', () => {
     // Analytics fire from the hook on success (previously this lived in a
     // separate Redux listener watching the broadcast action).
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapCancelledByUser', {
+      chainId: CANCEL_ARGS.chainId,
       encrypted: {
-        orderId: CANCEL_ARGS.orderId,
-        chainId: CANCEL_ARGS.chainId
+        orderId: CANCEL_ARGS.orderId
       }
     })
 

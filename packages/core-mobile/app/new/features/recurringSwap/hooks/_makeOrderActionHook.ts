@@ -161,9 +161,9 @@ export function makeOrderActionHook(
         pendingActionStore.getState().markPending(args.orderId, config.type)
 
         AnalyticsService.capture(config.analyticsEvent, {
+          chainId: args.chainId,
           encrypted: {
-            orderId: args.orderId,
-            chainId: args.chainId
+            orderId: args.orderId
           }
         })
 

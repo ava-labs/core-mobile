@@ -94,6 +94,9 @@ const isCrossChainQuote = (quote: Quote): boolean =>
   quote.sourceChain.chainId.toLowerCase() !==
   quote.targetChain.chainId.toLowerCase()
 
+const isRecurringQuote = (quote: Quote): boolean =>
+  isRecurringAggregatorId(quote.aggregator?.id)
+
 const isQuickSwapsManualReviewError = (err: unknown): boolean => {
   if (!err || typeof err !== 'object') return false
   const data = (err as { data?: unknown }).data
@@ -241,9 +244,7 @@ export function createEvmSigner(
     // would let recurring through. Exclude them explicitly — recurring TXs
     // must always render the approval modal so the user sees the
     // "Scheduling / Cancelling / Pausing / Unpausing recurring swap" preview.
-    const isRecurring = isRecurringAggregatorId(
-      stepDetails.quote.aggregator?.id
-    )
+    const isRecurring = isRecurringQuote(stepDetails.quote)
     // On batch fallback we suppress autoApprove on every per-tx call so
     // both the approve and the swap modal render the "Manual approval
     // required" banner — otherwise the swap could auto-approve silently
@@ -410,9 +411,7 @@ export function createEvmSigner(
       // already excludes recurring from `shouldAttachAutoApprove` and
       // injects `RECURRING_SWAP` context so `<RecurrenceDetails />`
       // renders. Route recurring batches straight to sequential.
-      const isRecurring = isRecurringAggregatorId(
-        stepDetails.quote.aggregator?.id
-      )
+      const isRecurring = isRecurringQuote(stepDetails.quote)
       // The `eth_sendTransactionBatch` handler rejects batches with
       // fewer than 2 txs (the EVM module's Zod schema requires
       // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would

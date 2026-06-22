@@ -133,7 +133,6 @@ const ORDERS_CHIPS: ChipOption<OrdersChipId>[] = [
 ]
 
 const MIN_ORDERS = 2
-const MAX_ORDERS = RECURRING_FREQUENCY_VALUE_MAX
 const DEFAULT_CUSTOM_ORDERS = 5
 const ORDERS_INPUT_KEY = 'orders_value'
 
@@ -323,12 +322,12 @@ export function RecurringDetailsRows({
     const seed =
       typeof numberOfOrders === 'number' &&
       numberOfOrders !== UNLIMITED_ORDERS &&
-      ![5, 10, 15, 20].includes(numberOfOrders)
+      !Object.values(ORDERS_PRESET).includes(numberOfOrders)
         ? numberOfOrders
         : DEFAULT_CUSTOM_ORDERS
     showAlertWithTextInput({
       title: 'Number of orders',
-      description: `Allowed range: ${MIN_ORDERS} - ${MAX_ORDERS}`,
+      description: `Allowed range: ${MIN_ORDERS} - ${RECURRING_FREQUENCY_VALUE_MAX}`,
       inputs: [
         {
           key: ORDERS_INPUT_KEY,
@@ -348,7 +347,11 @@ export function RecurringDetailsRows({
           shouldDisable: (values: Record<string, string>) => {
             const raw = values[ORDERS_INPUT_KEY]
             const n = raw ? parseInt(raw, 10) : NaN
-            return !Number.isFinite(n) || n < MIN_ORDERS || n > MAX_ORDERS
+            return (
+              !Number.isFinite(n) ||
+              n < MIN_ORDERS ||
+              n > RECURRING_FREQUENCY_VALUE_MAX
+            )
           },
           onPress: (values: Record<string, string>) => {
             const raw = values[ORDERS_INPUT_KEY]

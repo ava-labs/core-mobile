@@ -203,6 +203,52 @@ describe('startRecurringFailureWatcher', () => {
     expect(captureSpy).not.toHaveBeenCalled()
   })
 
+  // Regression: previously, N new failures in a single refetch fired N
+  // identical snackbars. The watcher now coalesces to one toast per refetch.
+  it('shows the failure snackbar only once even when multiple new failures arrive in a single refetch', async () => {
+    seedInitialObservation()
+    await flush()
+
+    const scheduleA: RecurringOrder = {
+      ...BASE_SCHEDULE,
+      orderId: '0xorderA',
+      failures: [
+        {
+          executionIndex: 1,
+          reasons: ['Quote expired before execution'],
+          tryCount: 3,
+          failedAt: 1_700_001_000
+        },
+        {
+          executionIndex: 2,
+          reasons: ['Slippage tolerance exceeded'],
+          tryCount: 3,
+          failedAt: 1_700_002_000
+        }
+      ]
+    }
+    const scheduleB: RecurringOrder = {
+      ...BASE_SCHEDULE,
+      orderId: '0xorderB',
+      failures: [
+        {
+          executionIndex: 1,
+          reasons: ['Quote expired before execution'],
+          tryCount: 3,
+          failedAt: 1_700_003_000
+        }
+      ]
+    }
+
+    fireQueryUpdate([scheduleA, scheduleB])
+    await flush()
+
+    expect(showSnackbarSpy).toHaveBeenCalledWith(
+      'Recurring swap execution failed'
+    )
+    expect(showSnackbarSpy).toHaveBeenCalledTimes(1)
+  })
+
   it('does NOT show the snackbar again for the same failure on a second update', async () => {
     seedInitialObservation()
     await flush()

@@ -517,4 +517,25 @@ describe('readRecurringSwapApprovalContext', () => {
       readRecurringSwapApprovalContext(makeReq({ type: 'fill' }))
     ).toThrow(MalformedRecurringSwapContextError)
   })
+
+  // Same security invariant applies when the producer ships a non-object
+  // payload (string, number, boolean, array). Previously these silently
+  // returned undefined and hid the recurring preview; they now flow into
+  // Zod and throw.
+  it.each<[string, unknown]>([
+    ['string', 'fill'],
+    ['number', 42],
+    ['boolean', true],
+    ['array', [{ type: 'fill' }]]
+  ])('throws on a non-object payload (%s)', (_label, payload) => {
+    expect(() => readRecurringSwapApprovalContext(makeReq(payload))).toThrow(
+      MalformedRecurringSwapContextError
+    )
+  })
+
+  // Explicit `null` is still treated as "absent" — matches the existing
+  // contract where a missing key returns undefined.
+  it('returns undefined when the context value is explicitly null', () => {
+    expect(readRecurringSwapApprovalContext(makeReq(null))).toBeUndefined()
+  })
 })

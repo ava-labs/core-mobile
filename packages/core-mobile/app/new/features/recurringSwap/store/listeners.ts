@@ -47,8 +47,9 @@ import {
 function processSchedule(
   schedule: RecurringOrder,
   seenFailures: Set<string>
-): { failuresDirty: boolean } {
+): { failuresDirty: boolean; newFailures: boolean } {
   let failuresDirty = false
+  let newFailures = false
 
   for (const failure of schedule.failures) {
     const key = makeFailureKey(schedule.orderId, failure.executionIndex)
@@ -56,11 +57,10 @@ function processSchedule(
 
     seenFailures.add(key)
     failuresDirty = true
-
-    showSnackbar('Recurring swap execution failed')
+    newFailures = true
   }
 
-  return { failuresDirty }
+  return { failuresDirty, newFailures }
 }
 
 /**
@@ -97,12 +97,15 @@ function processAllSchedules(
   }
 
   let failuresDirty = false
+  let anyNewFailure = false
   for (const schedule of schedules) {
     const result = processSchedule(schedule, seenFailures)
     if (result.failuresDirty) failuresDirty = true
+    if (result.newFailures) anyNewFailure = true
   }
 
   if (failuresDirty) saveSeenFailures(ownerAddress, chainId, seenFailures)
+  if (anyNewFailure) showSnackbar('Recurring swap execution failed')
 }
 
 /**

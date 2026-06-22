@@ -4,7 +4,8 @@ import {
   ApprovalRevertedError,
   ErrorReason,
   InvalidParamsError,
-  isInvalidParamsError
+  isInvalidParamsError,
+  RECURRING_UNLIMITED_ORDERS_SENTINEL
 } from '@avalabs/fusion-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { queryClient } from 'contexts/ReactQueryProvider'
@@ -21,7 +22,6 @@ import {
   setActiveRecurringActionContext
 } from '../services/activeActionContext'
 import type { Frequency, NumberOfOrders } from '../types'
-import { UNLIMITED_ORDERS } from '../types'
 import { scheduleStaggeredInvalidate } from './staggeredInvalidate'
 
 const LOG_TAG = '[RecurringSwap]'
@@ -94,7 +94,14 @@ export async function submitRecurringSwap(
     numberOfOrders,
     amountPerOrder
   } = params
-  const isUnlimited = numberOfOrders === UNLIMITED_ORDERS
+  // Derive from the wire value (not the `UNLIMITED_ORDERS` UI sentinel) so the
+  // `{ numberOfOrders, isUnlimited }` pair the side-channel context forwards
+  // is internally consistent. The schema's `superRefine` rejects mismatched
+  // pairs (auto-rejecting the approval), and the wire value is what actually
+  // gets signed — anchor on it so a stale/mismatched quote can't desync the
+  // two fields.
+  const isUnlimited =
+    quote.numberOfOrders === RECURRING_UNLIMITED_ORDERS_SENTINEL
 
   const overallStartedAt = Date.now()
   Logger.info(`${LOG_TAG} ▶️ submitRecurringSwap — START`, {
@@ -219,9 +226,9 @@ export async function submitRecurringSwap(
     // fire the same effects here.
 
     AnalyticsService.capture('RecurringSwapScheduled', {
+      chainId: quote.chainId,
       encrypted: {
         scheduleUuid: quote.uuid,
-        chainId: quote.chainId,
         fromTokenSymbol,
         toTokenSymbol,
         amountPerOrder: amountPerOrder.toString(),

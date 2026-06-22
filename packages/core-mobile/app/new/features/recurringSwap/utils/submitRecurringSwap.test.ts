@@ -131,9 +131,9 @@ describe('submitRecurringSwap', () => {
     await submitRecurringSwap(baseParams)
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapScheduled', {
+      chainId: QUOTE.chainId,
       encrypted: {
         scheduleUuid: QUOTE.uuid,
-        chainId: QUOTE.chainId,
         fromTokenSymbol: 'USDC',
         toTokenSymbol: 'AVAX',
         amountPerOrder: '1000000',
@@ -171,20 +171,78 @@ describe('submitRecurringSwap', () => {
     // pre-call snapshot is set correctly.
   })
 
-  it('marks isUnlimited=true in analytics when numberOfOrders is UNLIMITED_ORDERS', async () => {
+  // End-to-end "real unlimited" path: the user picked Unlimited and the
+  // fusion-sdk quote normalizer echoes back the wire sentinel (-1) on the
+  // response. `isUnlimited` is derived from `quote.numberOfOrders === -1` so
+  // the analytics snapshot and the side-channel context stay internally
+  // consistent with the wire value that's actually getting signed.
+  it('passes wire-sentinel numberOfOrders=-1 through to analytics + side-channel for unlimited quotes', async () => {
+    mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
+      txHash: '0xfill'
+    })
+
+    const UNLIMITED_QUOTE: RecurringQuoteResponse = {
+      ...QUOTE,
+      numberOfOrders: -1
+    }
+
+    await submitRecurringSwap({
+      ...baseParams,
+      quote: UNLIMITED_QUOTE,
+      numberOfOrders: UNLIMITED_ORDERS
+    })
+
+    expect(mockCapture).toHaveBeenCalledWith('RecurringSwapScheduled', {
+      chainId: UNLIMITED_QUOTE.chainId,
+      encrypted: {
+        scheduleUuid: UNLIMITED_QUOTE.uuid,
+        fromTokenSymbol: 'USDC',
+        toTokenSymbol: 'AVAX',
+        amountPerOrder: '1000000',
+        numberOfOrders: -1,
+        isUnlimited: true,
+        intervalSeconds: 604_800
+      }
+    })
+    expect(mockSetActive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'fill',
+        numberOfOrders: -1,
+        isUnlimited: true
+      })
+    )
+  })
+
+  // Mismatched-quote guard: if a stale/mismatched quote slips through where
+  // the caller asked for Unlimited but `quote.numberOfOrders` is finite,
+  // anchoring `isUnlimited` on the wire value keeps the `{ numberOfOrders,
+  // isUnlimited }` pair internally consistent so the side-channel schema
+  // doesn't reject it and auto-reject the approval. The signed wire value
+  // wins — what's about to be submitted is what gets previewed.
+  it('anchors isUnlimited on the quote wire value when UI param and quote disagree', async () => {
     mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
       txHash: '0xfill'
     })
 
     await submitRecurringSwap({
       ...baseParams,
+      // QUOTE.numberOfOrders is 4 (finite) — UI param disagrees.
       numberOfOrders: UNLIMITED_ORDERS
     })
 
     expect(mockCapture).toHaveBeenCalledWith(
       'RecurringSwapScheduled',
       expect.objectContaining({
-        encrypted: expect.objectContaining({ isUnlimited: true })
+        encrypted: expect.objectContaining({
+          numberOfOrders: QUOTE.numberOfOrders,
+          isUnlimited: false
+        })
+      })
+    )
+    expect(mockSetActive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        numberOfOrders: QUOTE.numberOfOrders,
+        isUnlimited: false
       })
     )
   })

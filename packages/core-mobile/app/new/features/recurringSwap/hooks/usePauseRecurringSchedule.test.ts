@@ -116,9 +116,9 @@ describe('usePauseRecurringSchedule', () => {
     expect(mockMarkPending).toHaveBeenCalledWith(PAUSE_ARGS.orderId, 'pause')
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapPausedByUser', {
+      chainId: PAUSE_ARGS.chainId,
       encrypted: {
-        orderId: PAUSE_ARGS.orderId,
-        chainId: PAUSE_ARGS.chainId
+        orderId: PAUSE_ARGS.orderId
       }
     })
 

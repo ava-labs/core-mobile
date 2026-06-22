@@ -119,9 +119,9 @@ describe('useUnpauseRecurringSchedule', () => {
     )
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapUnpausedByUser', {
+      chainId: UNPAUSE_ARGS.chainId,
       encrypted: {
-        orderId: UNPAUSE_ARGS.orderId,
-        chainId: UNPAUSE_ARGS.chainId
+        orderId: UNPAUSE_ARGS.orderId
       }
     })
 

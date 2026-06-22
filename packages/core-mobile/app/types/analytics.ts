@@ -488,9 +488,9 @@ export type AnalyticsEvents = {
 
   // RECURRING SWAPS (DCA)
   RecurringSwapScheduled: {
+    chainId: number
     encrypted: {
       scheduleUuid: string
-      chainId: number
       fromTokenSymbol: string
       toTokenSymbol: string
       amountPerOrder: string
@@ -500,21 +500,21 @@ export type AnalyticsEvents = {
     }
   }
   RecurringSwapCancelledByUser: {
+    chainId: number
     encrypted: {
       orderId: string
-      chainId: number
     }
   }
   RecurringSwapPausedByUser: {
+    chainId: number
     encrypted: {
       orderId: string
-      chainId: number
     }
   }
   RecurringSwapUnpausedByUser: {
+    chainId: number
     encrypted: {
       orderId: string
-      chainId: number
     }
   }
 

@@ -95,11 +95,11 @@ const recurringFillContextSchema = z
     toTokenSymbol: z.string().min(1),
     amountPerOrderFormatted: z.string().min(1),
     // Either the wire sentinel for unlimited schedules (`-1`) or a finite
-    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented
-    // floor for finite schedules is 2 (a "1-order schedule" is just a
-    // one-shot swap) — matches the picker's `MIN_ORDERS = 2`. The
-    // cross-field refinement on the outer union enforces that `isUnlimited`
-    // and the sentinel agree.
+    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented floor for
+    // finite schedules is 2 (a "1-order schedule" is just a one-shot swap)
+    // — matches the picker's `MIN_ORDERS = 2`. The cross-field refinement
+    // on the outer union enforces that `isUnlimited` and the sentinel
+    // agree.
     numberOfOrders: z
       .number()
       .int()
@@ -165,7 +165,12 @@ export const readRecurringSwapApprovalContext = (
   request: RpcRequest
 ): RecurringSwapApprovalContext | undefined => {
   const value = readCtx(request)?.[RequestContext.RECURRING_SWAP]
-  if (value === null || value === undefined || typeof value !== 'object') {
+  // Only nullish counts as "absent". A non-nullish non-object (string,
+  // number, boolean, array, …) is a malformed snapshot from the producer
+  // and MUST flow into Zod so the parse fails loudly — silently dropping
+  // it would hide the RecurrenceDetails preview while the underlying
+  // recurring swap still executes.
+  if (value === null || value === undefined) {
     return undefined
   }
   const parsed = recurringSwapApprovalContextSchema.safeParse(value)

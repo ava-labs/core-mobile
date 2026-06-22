@@ -102,5 +102,14 @@ export function useRecurringEligibility(
         reason: RecurringEligibilityReason.UnsupportedSourceChain
       }
     }
-  }, [isFusionServiceReady, fromToken, toToken, ownerAddress, amount])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional fine-grained deps; mirrors useRecurringQuote's primitive-keyed queryKey so the memo doesn't churn on unrelated swap-store ref changes
+  }, [
+    isFusionServiceReady,
+    fromToken?.networkChainId,
+    fromToken?.localId,
+    toToken?.networkChainId,
+    toToken?.localId,
+    ownerAddress,
+    amount
+  ])
 }
