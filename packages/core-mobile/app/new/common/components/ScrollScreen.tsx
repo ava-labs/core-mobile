@@ -104,6 +104,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       isModal,
       navigationTitle,
       shouldAvoidKeyboard,
+      // Default to the pre-1.21 spacer-view keyboard avoidance.
+      // keyboard-controller 1.21 changed `KeyboardAwareScrollView`'s default to
+      // `mode="insets"`, which only adjusts `contentInset` and doesn't move
+      // non-scrollable `flex: 1` layouts above the keyboard. Defaulting to
+      // "layout" keeps every screen behaving exactly as it did before the
+      // RN/keyboard-controller upgrade. Adopting "insets" should be an opt-in,
+      // per-screen change with its own QA.
+      mode = 'layout',
       disableStickyFooter,
       showNavigationHeaderTitle = true,
       hideHeaderBackground,
@@ -427,6 +435,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           <KeyboardScrollView
             ref={ref as never}
             testID={testID}
+            mode={mode}
             extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
