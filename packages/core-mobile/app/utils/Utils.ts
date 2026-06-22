@@ -140,8 +140,8 @@ export const isDebugOrInternalBuild = (): boolean => {
 
 /**
  * True when running an end-to-end (e2e) build. The e2e env files
- * (`.env.*.e2e`) are the only ones that define `E2E_MNEMONIC`, so its presence
- * reliably identifies an e2e build.
+ * (`.env.*.e2e`) are the only ones that define a non-empty `E2E_MNEMONIC`, so a
+ * truthy value reliably identifies an e2e build.
  */
 export const isE2EBuild = !!Config.E2E_MNEMONIC
 
