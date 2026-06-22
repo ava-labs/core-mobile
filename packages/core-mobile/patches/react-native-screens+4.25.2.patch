@@ -22,3 +22,24 @@ diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansi
                  0,
                  max(cutoutInsets.bottom, 0),
              )
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+@@ -440,7 +440,15 @@
+     internal fun createSheetExitAnimator(sheetAnimationContext: SheetAnimationContext): Animator =
+         screen.sheetAnimationCoordinator.createSheetExitAnimator(sheetAnimationContext)
+ 
+-    internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) =
+-        screen.sheetAnimationCoordinator.handleKeyboardInsetsProgress(insets)
++    internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {
++        // Patched(CP-14221): do NOT translate the form sheet with the keyboard.
++        // Keyboard avoidance is handled at the content level by
++        // react-native-keyboard-controller (KeyboardStickyView /
++        // KeyboardAwareScrollView). Letting the sheet move too double-handles it
++        // (the sheet AND the sticky footer both shift), which makes the modal
++        // expand to fill the top and misaligns the footer above the keyboard.
++        // This restores the pre-4.25 patched behavior whose original target
++        // functions were removed in the upstream keyboard-handling rewrite.
++    }
+ 
+     internal fun notifyKeyboardAnimationStart() = screen.sheetAnimationCoordinator.notifyKeyboardAnimationStart()
