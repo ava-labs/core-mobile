@@ -18,6 +18,23 @@ import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
 const isAvalancheMethod = (method: string): boolean =>
   method.toLowerCase().startsWith('avalanche_')
 
+// The first-party avalanche account methods (X/P). They resolve to dedicated RPC
+// handlers (handlerMap, keyed by these exact method strings — RpcMethod values
+// in store/rpc/types) that read wallet state and require no approval and no
+// per-address grant. Matched case-sensitively to mirror the exact handlerMap
+// keys: a mixed-case variant has no handler and is correctly methodNotFound (and
+// is already blocked from third parties by the case-insensitive gate). Signing
+// methods (avalanche_sendTransaction/…) are intentionally NOT here — they need
+// per-request CAIP-2 scope and route separately. CP-13672.
+const AVALANCHE_ACCOUNT_METHODS = new Set<string>([
+  'avalanche_getAccounts',
+  'avalanche_selectAccount',
+  'avalanche_getAccountPubKey'
+])
+
+const isAvalancheAccountMethod = (method: string): boolean =>
+  AVALANCHE_ACCOUNT_METHODS.has(method)
+
 // Injected-specific methods (connect / EIP-2255 permissions / chain management)
 // are handled directly in `dispatchMethod`. Signing methods route through
 // `requestSigning`. Everything else is treated as read-only and dispatched to
@@ -350,6 +367,45 @@ export function createInjectedProviderRouter(
         method: rpcMethod,
         params,
         chainId: caip2ChainId,
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
+      })
+      sendResponse(id, null, result)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
+    }
+  }
+
+  // First-party avalanche account methods (avalanche_getAccounts /
+  // _selectAccount / _getAccountPubKey). First-party access is already enforced
+  // in handleProviderMessage, so authorization is settled by the time we get
+  // here (D5 — the first-party origin IS the authorization; no per-address grant
+  // check like the EVM signing path runs). They go through the same in-app
+  // request bridge (`requestSigning` = createInAppRequest) as signing, but
+  // resolve to dedicated handlers that read wallet state with no approval. No
+  // chainId is passed: the handler is found by method, and these methods are
+  // network-independent. Registered as in-flight so a cross-origin navigation
+  // rejects the pending request (and the response is origin-gated by
+  // sendResponse regardless). Note: these handlers run synchronously with no
+  // approval step, so by the time an abort fires the work is already done — an
+  // abort cancels the pending RESPONSE, not e.g. an already-applied
+  // selectAccount switch. That's acceptable: the methods are first-party-only
+  // and benign (read state / switch the active account — no signing or funds).
+  // CP-13672.
+  const dispatchAvalancheAccountMethod = async (
+    id: number,
+    method: string,
+    params: unknown[]
+  ): Promise<void> => {
+    const origin = getNativeOrigin()
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
+    try {
+      const result = await requestSigning({
+        method: method as unknown as RpcMethod,
+        params,
         peerMeta: getPeerMeta(),
         signal: controller.signal
       })
@@ -702,6 +758,8 @@ export function createInjectedProviderRouter(
       handleRevokePermissions(id)
     } else if (method === 'wallet_watchAsset') {
       handleWatchAsset(id, params)
+    } else if (isAvalancheAccountMethod(method)) {
+      dispatchAvalancheAccountMethod(id, method, safeParams)
     } else if (signingMethodFor(method)) {
       dispatchSigningRequest(id, method, safeParams)
     } else {

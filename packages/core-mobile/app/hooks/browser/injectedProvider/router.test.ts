@@ -206,20 +206,21 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
-    it('lets avalanche_* from a first-party origin through the gate (reaches VM-module dispatch)', async () => {
+    it('lets avalanche_* from a first-party origin through the gate (routed to the in-app bridge)', async () => {
       // core.app (and the rest of the first-party allowlist) is trusted; the
-      // gate must not block it. Until the dedicated handlers land (later commits)
-      // it falls through to the read-only VM dispatch — the point here is only
-      // that the gate passes it through rather than rejecting it.
-      const { deps, requestReadOnly } = makeDeps({
+      // gate must not block it. The account methods route through the in-app
+      // request bridge (requestSigning) to their dedicated handlers — the point
+      // here is only that the gate passes it through rather than rejecting it.
+      const { deps, requestSigning } = makeDeps({
         nativeOrigin: 'https://core.app'
       })
+      requestSigning.mockResolvedValueOnce([])
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'avalanche_getAccounts')
       await new Promise(r => setImmediate(r))
 
-      expect(requestReadOnly).toHaveBeenCalledWith(
+      expect(requestSigning).toHaveBeenCalledWith(
         expect.objectContaining({ method: 'avalanche_getAccounts' })
       )
     })
@@ -259,6 +260,119 @@ describe('createInjectedProviderRouter', () => {
       expect(requestReadOnly).toHaveBeenCalledWith(
         expect.objectContaining({ method: 'eth_call' })
       )
+    })
+  })
+
+  describe('avalanche account methods (CP-13672)', () => {
+    it('routes avalanche_getAccounts through the in-app bridge and returns its result', async () => {
+      // First-party only (gated above). getAccounts returns ALL accounts + xpub
+      // detail (D1) — safe precisely because the origin is first-party. It runs
+      // through the in-app bridge to the dedicated handler (no approval, no
+      // per-address grant check), NOT the read-only VM path.
+      const accounts = [{ index: 0, addressC: MOCK_ADDR, active: true }]
+      const { deps, sendResponse, requestSigning, requestReadOnly } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce(accounts)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'avalanche_getAccounts', params: [] })
+      )
+      expect(requestReadOnly).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(1, null, accounts)
+    })
+
+    it('routes avalanche_selectAccount through the bridge with the account-id param', async () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce([])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_selectAccount', ['account-id-123'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'avalanche_selectAccount',
+          params: ['account-id-123']
+        })
+      )
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [])
+    })
+
+    it('routes avalanche_getAccountPubKey through the bridge', async () => {
+      const pubKey = { evm: '0xevmpub', xp: 'xppub' }
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce(pubKey)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccountPubKey')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'avalanche_getAccountPubKey' })
+      )
+      expect(sendResponse).toHaveBeenCalledWith(1, null, pubKey)
+    })
+
+    it('does not run the EVM signer-grant check for account methods (no per-address grant required)', async () => {
+      // Account methods are authorized by the first-party origin alone (D5), not
+      // by a per-(address,vmType) grant. A first-party origin with NO EVM grants
+      // must still be able to call them.
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app',
+        grantedAddresses: []
+      })
+      requestSigning.mockResolvedValueOnce([])
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'avalanche_getAccounts' })
+      )
+    })
+
+    it('rejects avalanche_selectAccount from a third-party origin without switching the account', async () => {
+      // The silent active-account switch must never be reachable by a
+      // third-party page: the gate rejects it before the bridge is ever called,
+      // so no account switch can be triggered.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://pangolin.exchange'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_selectAccount', ['account-id-123'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: -32601 }),
+        undefined
+      )
+    })
+
+    it('propagates a bridge error for an avalanche account method', async () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      const err = { code: -32000, message: 'handler failed' }
+      requestSigning.mockRejectedValueOnce(err)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(1, err, undefined)
     })
   })
 
