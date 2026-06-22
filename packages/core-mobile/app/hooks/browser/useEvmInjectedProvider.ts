@@ -108,19 +108,17 @@ export function useEvmInjectedProvider(
   // to the correct chain after the user switches networks wallet-wide.
   useEffect(() => {
     if (tabChainId !== undefined) return
-    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM provider can't serve it,
-    // so tell the dApp it's disconnected rather than emitting a bogus EVM
-    // chainChanged for a non-EVM chainId (EIP-1193 disconnect, code 4901).
-    // CP-13671.
+    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM surface can't represent
+    // it, but the injected provider object is shared (window.avalanche ===
+    // window.ethereum) and avalanche_* methods are network-independent. Emitting
+    // an EIP-1193 disconnect here would tell wagmi the whole provider is offline
+    // — and it would refuse to auto-reconnect (same hazard the revoke handler
+    // avoids) — killing the X/P surface too. So keep the provider alive: hold the
+    // last EVM browser chain (no sentinel reset) and emit nothing. The EVM
+    // surface resumes when an EVM network becomes active again (a real chain
+    // change fires chainChanged via the guard below; returning to the same chain
+    // is correctly a no-op since the dApp was never told it changed). CP-13672.
     if (activeNetwork.vmName !== NetworkVMType.EVM) {
-      // Invalidate the cached EVM chain (sentinel 0 — no real EVM chainId) so
-      // returning to the SAME EVM chainId later still re-emits chainChanged.
-      // Otherwise the equality guard below would skip it and a dApp that reacted
-      // to this disconnect would never get a follow-up event to recover. CP-13671.
-      browserNetworkRef.current = { chainId: 0, rpcUrl: '' }
-      webViewRef.current?.injectJavaScript(
-        `window.__coreProviderEmit && window.__coreProviderEmit('disconnect', { code: 4901, message: 'Disconnected from chain' }); true;`
-      )
       return
     }
     if (browserNetworkRef.current.chainId === activeNetwork.chainId) return

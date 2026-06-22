@@ -71,8 +71,11 @@ describe('buildEvmProviderShim', () => {
     })
 
     it('flips the flag false on a disconnect event and true on connect/chainChanged', () => {
-      // Native emits disconnect(4901) for a non-servable (non-EVM) chain and
-      // chainChanged when it recovers; isConnected() must follow (CP-13671).
+      // Standard EIP-1193 connection plumbing: isConnected() must follow a
+      // disconnect event (false) and connect/chainChanged (true). Native no
+      // longer emits disconnect for a non-EVM active network — the shared
+      // provider stays alive for avalanche_* (CP-13672) — but the shim still
+      // honors a real disconnect event per EIP-1193.
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("eventName === 'disconnect'")
       expect(shim).toContain('_connected = false;')
