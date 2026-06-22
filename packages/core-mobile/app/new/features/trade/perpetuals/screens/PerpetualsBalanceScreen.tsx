@@ -12,7 +12,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
+import type { ScrollView } from 'react-native-gesture-handler'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const HERO_VALUE = 1234.45
