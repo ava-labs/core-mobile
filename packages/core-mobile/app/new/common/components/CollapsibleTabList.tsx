@@ -2,10 +2,7 @@ import { ActivityIndicator, useTheme } from '@avalabs/k2-alpine'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import React, { useMemo } from 'react'
 import { RefreshControlProps, View, ViewStyle } from 'react-native'
-import {
-  useCollapsibleStyle,
-  useHeaderMeasurements
-} from 'react-native-collapsible-tab-view'
+import { useCollapsibleStyle } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { CollapsibleTabs } from './CollapsibleTabs'
 
@@ -129,9 +126,7 @@ export function CollapsibleTabList<T>({
   isFetchingNextPage = false,
   columnItems
 }: CollapsibleTabListProps<T>): JSX.Element {
-  const header = useHeaderMeasurements()
   const { theme } = useTheme()
-  const collapsibleHeaderHeight = header?.height ?? 0
   // The library computes the correct layout-model `paddingTop` (reserve header
   // space) and `minHeight` (enough scroll range to fully collapse the header,
   // even when the actual content is short). FlashList only forwards the
@@ -156,14 +151,14 @@ export function CollapsibleTabList<T>({
   const refreshControl = useMemo(() => {
     if (!onRefresh) return undefined
 
+    // Don't pass `progressViewOffset` here. The collapsible list clones this
+    // RefreshControl and injects the correct offset from `useCollapsibleStyle()`
+    // (matching the content container's top padding, incl. the tab bar). A
+    // caller-provided value would override it and misalign the spinner.
     return (
-      <RefreshControl
-        refreshing={isRefreshing}
-        onRefresh={onRefresh}
-        progressViewOffset={collapsibleHeaderHeight}
-      />
+      <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
     ) as React.ReactElement<RefreshControlProps>
-  }, [isRefreshing, onRefresh, collapsibleHeaderHeight])
+  }, [isRefreshing, onRefresh])
 
   const baseContentContainerStyle: ViewStyle = useMemo(
     () => ({
