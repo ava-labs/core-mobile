@@ -1,5 +1,5 @@
 import { SxProp } from 'dripsy'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
@@ -47,6 +47,21 @@ export const GroupList = ({
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
     data.map(i => i.expanded ?? false)
   )
+  const prevExpandedStatesRef = useRef(expandedStates)
+
+  // Emit onAccordionToggle after the state change is committed rather than from
+  // inside the state updater. The updater must stay pure (React may re-run it
+  // under concurrent rendering / StrictMode), so side effects belong here. We
+  // diff against the previously committed values, so the callback fires exactly
+  // once per actual toggle and never on mount.
+  useEffect(() => {
+    expandedStates.forEach((expanded, index) => {
+      if (expanded !== prevExpandedStatesRef.current[index]) {
+        data[index]?.onAccordionToggle?.(expanded)
+      }
+    })
+    prevExpandedStatesRef.current = expandedStates
+  }, [expandedStates, data])
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setTextMarginLeft(event.nativeEvent.layout.x)
@@ -54,8 +69,9 @@ export const GroupList = ({
 
   const handlePress = (item: GroupListItem, index: number): void => {
     if (item.accordion) {
+      // Pure updater: derive next state from prev, no side effects here.
       setExpandedStates(prev =>
-        prev.map((value, i) => (i === index ? !value : value))
+        prev.map((value, i) => (i === index ? !(prev[index] ?? false) : value))
       )
     } else {
       item.onPress?.()
@@ -264,6 +280,8 @@ export type GroupListItem = {
   bottomAccessory?: JSX.Element
   accordion?: JSX.Element
   expanded?: boolean
+  /** Called when an accordion row is toggled, with the resulting expanded state. */
+  onAccordionToggle?: (expanded: boolean) => void
   containerSx?: SxProp
   hideSeparator?: boolean
   /** When true, sets accessible={false} on the row so child testIDs (e.g. Toggle) are findable by Appium */

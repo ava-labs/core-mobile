@@ -12,7 +12,8 @@ import {
   prepareFaviconToLoad,
   isValidUrlWithProtocols,
   isValidHttpUrlRegexp,
-  isValidHttpsUrl
+  isValidHttpsUrl,
+  isSameOriginSpaNavigation
 } from './utils'
 
 describe('sortDeFiProtocolInformationListByTvl', () => {
@@ -200,6 +201,93 @@ describe('removeTrailingSlash', () => {
     const url = 'https://core.app'
     const result = removeTrailingSlash(url)
     expect(result).toStrictEqual('https://core.app')
+  })
+})
+
+describe('isSameOriginSpaNavigation', () => {
+  it('returns true for a same-origin path change (typical pushState)', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://app.example.com/verify',
+        lastSyncedUrl: 'https://app.example.com/'
+      })
+    ).toBe(true)
+  })
+
+  it('returns false for a cross-origin URL change', () => {
+    // The PoC: `location.href = "https://google.com:9090"` from
+    // https://attacker.com/. The provisional URL would otherwise surface to
+    // the address bar before the (hanging) navigation has any chance to
+    // commit. Deferring cross-origin sync to onLoad closes the spoof.
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://google.com:9090/',
+        lastSyncedUrl: 'https://attacker.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('treats different ports on the same host as cross-origin', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://google.com:9090/',
+        lastSyncedUrl: 'https://google.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('treats different schemes as cross-origin', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'http://app.example.com/',
+        lastSyncedUrl: 'https://app.example.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('returns false without a trust anchor', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://example.com/',
+        lastSyncedUrl: ''
+      })
+    ).toBe(false)
+  })
+
+  it('returns false when the URL is unchanged', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://example.com/',
+        lastSyncedUrl: 'https://example.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('ignores empty URLs', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: '',
+        lastSyncedUrl: 'https://example.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('ignores about: schemes', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'about:blank',
+        lastSyncedUrl: 'https://example.com/'
+      })
+    ).toBe(false)
+  })
+
+  it('returns false when the previous URL is unparseable', () => {
+    expect(
+      isSameOriginSpaNavigation({
+        nextUrl: 'https://example.com/',
+        lastSyncedUrl: 'not a url'
+      })
+    ).toBe(false)
   })
 })
 
