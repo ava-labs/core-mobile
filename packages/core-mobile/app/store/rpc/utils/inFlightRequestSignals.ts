@@ -1,3 +1,5 @@
+import { BoundedMap } from 'common/utils/boundedMap'
+
 /**
  * Side-channel mapping an in-flight in-app request id (`String(data.id)`) to its
  * AbortSignal.
@@ -16,8 +18,13 @@
  * browser router threads `controller.signal` into `requestSigning`), so only
  * those become cancellable here. WalletConnect and signal-less in-app approvals
  * register no signal and are untouched. (CP-14422)
+ *
+ * Bounded so a signal that's never claimed by an approval bridge (the rare case
+ * where a request is aborted before it ever reaches `requestApproval`) ages out
+ * via FIFO instead of lingering. Entries are normally removed when the approval
+ * bridge detaches or the request settles. (CP-14422)
  */
-const requestSignals = new Map<string, AbortSignal>()
+const requestSignals = new BoundedMap<string, AbortSignal>(20)
 
 export const setRequestSignal = (
   requestId: string,

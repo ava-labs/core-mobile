@@ -147,10 +147,12 @@ export const createInAppRequest = (
           unsubscribe()
           // Keep the aborted signal in the map so a requestApproval that hasn't
           // parked yet (abort landed in the pre-park window) still sees it and
-          // cancels itself instead of opening a stale modal. The approval
-          // bridge clears it when it claims the signal; this deferred clear is
-          // the fallback for when no approval ever parks. (CP-14422)
-          setTimeout(() => clearRequestSignal(requestKey), 0)
+          // cancels itself instead of opening a stale modal. Do NOT clear it on
+          // a timer here: a slow `requestApproval` (observed on iOS, where the
+          // approval parks AFTER the cross-origin nav) would otherwise find the
+          // signal already gone, park an uncancellable sheet, and leave it
+          // lingering. The approval bridge clears it when it claims the signal;
+          // the never-claimed case ages out via the bounded signal map. (CP-14422)
           // Propagate a rejection so any handler currently sitting on the
           // approval screen (e.g. eth_sendTransaction) short-circuits
           // before broadcasting. The handler's machinery will dispatch
