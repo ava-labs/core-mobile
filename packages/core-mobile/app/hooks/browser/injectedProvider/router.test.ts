@@ -182,6 +182,86 @@ function sendWithId(
 describe('createInjectedProviderRouter', () => {
   beforeEach(() => jest.clearAllMocks())
 
+  describe('first-party avalanche_* gate (CP-13672)', () => {
+    it('rejects avalanche_* from a third-party origin with methodNotFound, without dispatching to the VM module', async () => {
+      // Security gate: avalanche_* (X/P account management + signing) is
+      // first-party-only. A third-party origin must be rejected up front — and
+      // with methodNotFound, not a permission error, so the response is
+      // indistinguishable from the method simply not existing (a third-party
+      // page can't even probe for the capability). It must never reach the
+      // account/signing handlers behind the gate.
+      const { deps, sendResponse, requestReadOnly } = makeDeps({
+        nativeOrigin: 'https://pangolin.exchange'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestReadOnly).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: -32601 }),
+        undefined
+      )
+    })
+
+    it('lets avalanche_* from a first-party origin through the gate (reaches VM-module dispatch)', async () => {
+      // core.app (and the rest of the first-party allowlist) is trusted; the
+      // gate must not block it. Until the dedicated handlers land (later commits)
+      // it falls through to the read-only VM dispatch — the point here is only
+      // that the gate passes it through rather than rejecting it.
+      const { deps, requestReadOnly } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestReadOnly).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'avalanche_getAccounts' })
+      )
+    })
+
+    it('classifies avalanche_* case-insensitively so a mixed-case probe cannot evade the gate', async () => {
+      // The gate's method classifier must not be defeatable by casing. A
+      // third-party page sending `Avalanche_getAccounts` must still be gated
+      // (rejected, never dispatched) — closing any future mismatch between this
+      // classifier and a downstream handler that might match case-insensitively.
+      const { deps, sendResponse, requestReadOnly } = makeDeps({
+        nativeOrigin: 'https://pangolin.exchange'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'Avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(requestReadOnly).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: -32601 }),
+        undefined
+      )
+    })
+
+    it('does not gate EVM methods by origin (eth_call works from any origin)', async () => {
+      // The gate is scoped to avalanche_* only — it must not bleed into the EVM
+      // surface, which keeps its own per-origin grant model for third parties.
+      const { deps, requestReadOnly } = makeDeps({
+        nativeOrigin: 'https://pangolin.exchange'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_call', [{}])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestReadOnly).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'eth_call' })
+      )
+    })
+  })
+
   describe('dispatch', () => {
     it('routes unknown/non-signing methods to requestReadOnly and propagates its error', async () => {
       // Method classification is no longer a static allowlist: anything not

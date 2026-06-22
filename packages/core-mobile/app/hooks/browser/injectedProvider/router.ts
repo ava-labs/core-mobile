@@ -6,7 +6,17 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
+import { isFirstPartyOrigin } from './firstPartyDomains'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
+
+// avalanche_* methods (X/P account management + signing) are first-party-only.
+// A prefix classifies them: it conservatively covers every current and future
+// avalanche_* method, so a new one can't silently bypass the gate by not being
+// added to a hand-maintained list. Matched case-insensitively so a mixed-case
+// probe (`Avalanche_*`) can't evade the gate and reach a downstream handler that
+// might compare differently. CP-13672.
+const isAvalancheMethod = (method: string): boolean =>
+  method.toLowerCase().startsWith('avalanche_')
 
 // Injected-specific methods (connect / EIP-2255 permissions / chain management)
 // are handled directly in `dispatchMethod`. Signing methods route through
@@ -759,6 +769,25 @@ export function createInjectedProviderRouter(
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
+      return
+    }
+
+    // First-party gate (CP-13672): avalanche_* (X/P account management +
+    // signing) is restricted to Core's own surfaces (core.app / AvaCloud / dev).
+    // Any other origin is rejected here, BEFORE dispatchMethod, so an untrusted
+    // page can never reach the account/signing handlers behind the gate. We
+    // return methodNotFound rather than a permission error so the rejection is
+    // indistinguishable from the method not existing — a third-party page can't
+    // even detect that the capability is there. EVM methods are unaffected.
+    if (isAvalancheMethod(method) && !isFirstPartyOrigin(nativeOrigin)) {
+      Logger.warn(
+        `[InjectedProvider] avalanche_* rejected for non-first-party origin: ${nativeOrigin}`
+      )
+      sendResponse(
+        id,
+        rpcErrors.methodNotFound(`Method not supported: ${method}`),
         undefined
       )
       return
