@@ -558,30 +558,6 @@ export const SwapScreen = (): JSX.Element => {
     return `a ${basisPointsToPercentage(feeBps)} ${partnerName}`
   }, [activeQuote])
 
-  const schedulePhrase = useMemo(() => {
-    if (!recurring.isRecurring || !recurringQuote.data) return
-
-    const scheduleFee = recurringQuote.data.fees.find(
-      fee => fee.type === 'recurring' && !!fee.extra
-    )
-    if (!scheduleFee) return
-
-    const feeDecimals =
-      nativeFromToken && 'decimals' in nativeFromToken
-        ? nativeFromToken.decimals
-        : undefined
-    const feeSymbol = nativeFromToken?.symbol
-    if (feeDecimals === undefined || !feeSymbol) return
-
-    const formatted = new TokenUnit(
-      scheduleFee.amount,
-      feeDecimals,
-      feeSymbol
-    ).toDisplay()
-
-    return `a ${formatted} ${feeSymbol} one-time schedule fee`
-  }, [recurring.isRecurring, recurringQuote.data, nativeFromToken])
-
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
       if (token?.priceInCurrency !== 0) return
