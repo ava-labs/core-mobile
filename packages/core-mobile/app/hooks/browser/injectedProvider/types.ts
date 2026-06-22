@@ -69,6 +69,12 @@ export type RouterDeps = {
   getPeerMeta: () => PeerMeta
   getActiveAccount: () => Account | undefined
 
+  // Whether the wallet is in developer (testnet) mode. Avalanche signing routes
+  // by an AVAX-namespace CAIP-2 derived from the request's chainAlias, and that
+  // CAIP-2 must match the current environment (Fuji vs mainnet) so the right
+  // module/network is loaded. CP-13672.
+  getIsDeveloperMode: () => boolean
+
   // Permissions
   /**
    * Every address at `domain` granted for `vmType`. Used by

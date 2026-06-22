@@ -562,6 +562,7 @@ export function useEvmInjectedProvider(
       },
       getPeerMeta,
       getActiveAccount: () => activeAccountRef.current,
+      getIsDeveloperMode: () => selectIsDeveloperMode(store.getState()),
       getGrantedAddresses: ({ domain, vmType }) =>
         selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
       grantPermission: ({ domain, address, vmType }) =>

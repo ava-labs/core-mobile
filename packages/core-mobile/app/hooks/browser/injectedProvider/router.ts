@@ -2,7 +2,10 @@ import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import {
+  getEvmCaip2ChainId,
+  getAvalancheChainAliasCaip2
+} from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
@@ -34,6 +37,25 @@ const AVALANCHE_ACCOUNT_METHODS = new Set<string>([
 
 const isAvalancheAccountMethod = (method: string): boolean =>
   AVALANCHE_ACCOUNT_METHODS.has(method)
+
+// The first-party avalanche signing methods (X/P/C). Unlike the account methods,
+// these route to the Avalanche VM module (ModuleManager.loadModule by CAIP-2)
+// and go through the approval screen. They carry an OBJECT params with a
+// top-level `chainAlias` that selects the chain (X/P/C); the request's CAIP-2
+// scope is derived from it per-request (D3), NOT from the EVM browser network.
+// Exact case-sensitive match (same reasoning as the account set). CP-13672.
+const AVALANCHE_SIGNING_METHODS = new Set<string>([
+  'avalanche_sendTransaction',
+  'avalanche_signTransaction',
+  'avalanche_signMessage'
+])
+
+const isAvalancheSigningMethod = (method: string): boolean =>
+  AVALANCHE_SIGNING_METHODS.has(method)
+
+// The Avalanche Primary Network chain aliases a signing request may target.
+const isAvalancheChainAlias = (value: unknown): value is 'X' | 'P' | 'C' =>
+  value === 'X' || value === 'P' || value === 'C'
 
 // Injected-specific methods (connect / EIP-2255 permissions / chain management)
 // are handled directly in `dispatchMethod`. Signing methods route through
@@ -224,6 +246,7 @@ export function createInjectedProviderRouter(
     trackPendingOrigin,
     getPeerMeta,
     getActiveAccount,
+    getIsDeveloperMode,
     getGrantedAddresses,
     grantPermission,
     revokePermission,
@@ -406,6 +429,63 @@ export function createInjectedProviderRouter(
       const result = await requestSigning({
         method: method as unknown as RpcMethod,
         params,
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
+      })
+      sendResponse(id, null, result)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
+    }
+  }
+
+  // First-party avalanche signing (avalanche_sendTransaction / _signTransaction
+  // / _signMessage). First-party access is enforced in handleProviderMessage, so
+  // no per-address grant check runs (D5 — first-party origin IS the
+  // authorization; the EVM signer-grant gate does not apply to X/P). The request
+  // carries an OBJECT params with a top-level `chainAlias`; we derive the
+  // AVAX-namespace CAIP-2 from it (D3) — for the current dev-mode environment —
+  // and pass it as the request scope so ModuleManager loads the avalanche module
+  // (not the EVM one) and the approval screen shows the right chain. `params` is
+  // forwarded RAW (never the array-coerced safeParams) so `chainAlias` and the
+  // tx/message payload survive. Goes through the approval screen via the same
+  // in-app bridge as EVM signing. CP-13672.
+  const dispatchAvalancheSigningRequest = async (
+    id: number,
+    method: string,
+    params: unknown
+  ): Promise<void> => {
+    const chainAlias = (params as { chainAlias?: unknown } | null | undefined)
+      ?.chainAlias
+    if (!isAvalancheChainAlias(chainAlias)) {
+      sendResponse(
+        id,
+        rpcErrors.invalidParams(
+          'avalanche signing requires a chainAlias of X, P, or C'
+        ),
+        undefined
+      )
+      return
+    }
+    const origin = getNativeOrigin()
+    // gated upstream; never register a synthetic '' origin.
+    if (!origin) return
+
+    // Environment (Fuji vs mainnet) is read here at dispatch. The downstream
+    // handler re-reads dev mode when deriving the signer's XP addresses, so a
+    // dev-mode toggle in the tiny window mid-request would, at worst, fail the
+    // signature — never misdirect funds. Same two-read pattern as the WC path.
+    const caip2ChainId = getAvalancheChainAliasCaip2(
+      chainAlias,
+      getIsDeveloperMode()
+    )
+    const controller = registerInFlight(id, origin)
+    try {
+      const result = await requestSigning({
+        method: method as unknown as RpcMethod,
+        params,
+        chainId: caip2ChainId,
         peerMeta: getPeerMeta(),
         signal: controller.signal
       })
@@ -760,6 +840,10 @@ export function createInjectedProviderRouter(
       handleWatchAsset(id, params)
     } else if (isAvalancheAccountMethod(method)) {
       dispatchAvalancheAccountMethod(id, method, safeParams)
+    } else if (isAvalancheSigningMethod(method)) {
+      // RAW params (NOT safeParams): avalanche signing uses object params whose
+      // top-level chainAlias would be lost by the array coercion.
+      dispatchAvalancheSigningRequest(id, method, params)
     } else if (signingMethodFor(method)) {
       dispatchSigningRequest(id, method, safeParams)
     } else {

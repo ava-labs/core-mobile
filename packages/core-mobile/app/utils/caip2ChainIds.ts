@@ -7,6 +7,7 @@ import {
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
+import type { Avalanche } from '@avalabs/core-wallets-sdk'
 
 /**
  * Legacy Solana chain ID format used by some WalletConnect dApps. While the standard
@@ -110,6 +111,28 @@ export const getAvalancheCaip2ChainId = (
     return AvalancheCaip2ChainId.X_TESTNET
   }
   return undefined
+}
+
+/**
+ * Maps an Avalanche Primary Network chain alias (`'C' | 'P' | 'X'`) to its
+ * AVAX-namespace CAIP-2 chain id, honoring mainnet vs Fuji via `isTestnet`.
+ *
+ * Note C maps to the AVAX-namespace C-chain id (not an `eip155:*` id): the
+ * avalanche signing methods (avalanche_sendTransaction / _signTransaction)
+ * route to the avalanche-module by this CAIP-2 even for the C-chain leg — an
+ * EVM `eip155:*` id would land on the EVM module, which doesn't implement them.
+ */
+export const getAvalancheChainAliasCaip2 = (
+  chainAlias: Avalanche.ChainIDAlias,
+  isTestnet: boolean
+): AvalancheCaip2ChainId => {
+  if (chainAlias === 'X') {
+    return isTestnet ? AvalancheCaip2ChainId.X_TESTNET : AvalancheCaip2ChainId.X
+  }
+  if (chainAlias === 'P') {
+    return isTestnet ? AvalancheCaip2ChainId.P_TESTNET : AvalancheCaip2ChainId.P
+  }
+  return isTestnet ? AvalancheCaip2ChainId.C_TESTNET : AvalancheCaip2ChainId.C
 }
 
 export const getAvalancheChainId = (

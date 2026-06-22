@@ -19,7 +19,12 @@ jest.mock('store/browser/slices/tabs', () => ({
 }))
 
 jest.mock('utils/caip2ChainIds', () => ({
-  getEvmCaip2ChainId: (chainId: number) => `eip155:${chainId}`
+  getEvmCaip2ChainId: (chainId: number) => `eip155:${chainId}`,
+  // Recognizable stand-in so the avalanche signing tests can assert the router
+  // resolves scope from chainAlias + dev-mode (the real SDK caip2 values are
+  // covered by app/utils/caip2ChainIds.test.ts).
+  getAvalancheChainAliasCaip2: (chainAlias: string, isTestnet: boolean) =>
+    `avax:${chainAlias}${isTestnet ? '-testnet' : ''}`
 }))
 
 jest.mock('utils/Logger', () => ({
@@ -62,6 +67,7 @@ function makeDeps(overrides?: {
   tabId?: string
   activeAccount?: Account | undefined
   grantedAddresses?: string[]
+  isDeveloperMode?: boolean
 }): MockDeps {
   const currentNetwork = {
     value: overrides?.browserNetwork ?? {
@@ -130,6 +136,7 @@ function makeDeps(overrides?: {
       icons: []
     }),
     getActiveAccount: () => activeAccount.value,
+    getIsDeveloperMode: () => overrides?.isDeveloperMode ?? false,
     getGrantedAddresses,
     grantPermission,
     revokePermission,
@@ -157,7 +164,9 @@ function makeDeps(overrides?: {
 function send(
   router: ReturnType<typeof createInjectedProviderRouter>,
   method: string,
-  params: unknown[] = []
+  // `unknown` (not unknown[]): most methods take array params, but avalanche
+  // signing takes an object with a top-level chainAlias.
+  params: unknown = []
 ): void {
   router.handleProviderMessage(
     JSON.stringify({ id: 1, request: { method, params } })
@@ -370,6 +379,167 @@ describe('createInjectedProviderRouter', () => {
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'avalanche_getAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(sendResponse).toHaveBeenCalledWith(1, err, undefined)
+    })
+  })
+
+  describe('avalanche signing methods (CP-13672)', () => {
+    // avalanche signing requests carry an OBJECT params with a top-level
+    // chainAlias — sent raw (the dApp doesn't wrap it in an array). `send`
+    // forwards the params verbatim.
+    it('routes avalanche_sendTransaction with the CAIP-2 derived from chainAlias and the RAW object params', async () => {
+      const params = {
+        chainAlias: 'P',
+        transactionHex: '0xdeadbeef',
+        externalIndices: [],
+        internalIndices: []
+      }
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce('0xtxhash')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_sendTransaction', params)
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'avalanche_sendTransaction',
+          // RAW object params — chainAlias must survive (NOT array-coerced to []).
+          params,
+          chainId: 'avax:P',
+          signal: expect.any(AbortSignal)
+        })
+      )
+      expect(sendResponse).toHaveBeenCalledWith(1, null, '0xtxhash')
+    })
+
+    it('derives the X-chain CAIP-2 for avalanche_signTransaction with chainAlias X', async () => {
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce('0xsigned')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_signTransaction', {
+        chainAlias: 'X',
+        transactionHex: '0x01'
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'avalanche_signTransaction',
+          chainId: 'avax:X'
+        })
+      )
+    })
+
+    it('derives the C-chain (AVAX-namespace) CAIP-2 for avalanche_signMessage with chainAlias C', async () => {
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      requestSigning.mockResolvedValueOnce('0xsig')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_signMessage', {
+        chainAlias: 'C',
+        message: 'hello'
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'avalanche_signMessage',
+          chainId: 'avax:C'
+        })
+      )
+    })
+
+    it('uses the testnet CAIP-2 when the wallet is in developer mode', async () => {
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app',
+        isDeveloperMode: true
+      })
+      requestSigning.mockResolvedValueOnce('0xtxhash')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_sendTransaction', {
+        chainAlias: 'P',
+        transactionHex: '0x01'
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ chainId: 'avax:P-testnet' })
+      )
+    })
+
+    it('rejects with invalidParams (without signing) when chainAlias is missing or invalid', async () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      // missing chainAlias
+      send(router, 'avalanche_sendTransaction', {
+        transactionHex: '0x01'
+      })
+      // invalid chainAlias
+      sendWithId(router, 2, {
+        method: 'avalanche_sendTransaction',
+        params: [{ chainAlias: 'ETH', transactionHex: '0x01' }]
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: -32602 }),
+        undefined
+      )
+      expect(sendResponse).toHaveBeenCalledWith(
+        2,
+        expect.objectContaining({ code: -32602 }),
+        undefined
+      )
+    })
+
+    it('rejects avalanche_sendTransaction from a third-party origin (gate) without signing', async () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://pangolin.exchange'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_sendTransaction', {
+        chainAlias: 'P',
+        transactionHex: '0x01'
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: -32601 }),
+        undefined
+      )
+    })
+
+    it('propagates a signing error/rejection back to the dApp', async () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app'
+      })
+      const err = { code: 4001, message: 'User rejected' }
+      requestSigning.mockRejectedValueOnce(err)
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_sendTransaction', {
+        chainAlias: 'P',
+        transactionHex: '0x01'
+      })
       await new Promise(r => setImmediate(r))
 
       expect(sendResponse).toHaveBeenCalledWith(1, err, undefined)
