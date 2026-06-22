@@ -11,8 +11,10 @@ import { BoundedMap } from 'common/utils/boundedMap'
  * Why a side-channel and not a direct call / Redux subscription: the store
  * wiring transitively imports `ModuleManager` → `ApprovalController`, so the
  * controller can't import the store/listener middleware and `createInAppRequest`
- * can't import the controller without a require cycle. This module is a leaf
- * (imports nothing), so both sides can depend on it safely.
+ * can't import the controller without a require cycle. This module is a leaf in
+ * the store/vmModule dependency graph (it imports only the dependency-free
+ * `BoundedMap` util, nothing from those layers), so both sides can depend on it
+ * safely.
  *
  * Scope: only injected-provider signing requests pass an AbortSignal (the
  * browser router threads `controller.signal` into `requestSigning`), so only
