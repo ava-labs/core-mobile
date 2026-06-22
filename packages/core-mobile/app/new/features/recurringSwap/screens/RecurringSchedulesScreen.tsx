@@ -20,7 +20,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
-import { RECURRING_UNLIMITED_ORDERS_SENTINEL } from '@avalabs/fusion-sdk'
+import {
+  ERC_ZERO_ADDRESS,
+  RECURRING_UNLIMITED_ORDERS_SENTINEL
+} from '@avalabs/fusion-sdk'
 import type { Network } from '@avalabs/core-chains-sdk'
 import type { NetworkContractToken } from '@avalabs/vm-module-types'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -45,11 +48,7 @@ import {
   useIsPausePending,
   useIsUnpausePending
 } from '../store/pendingActionStore'
-import {
-  NATIVE_TOKEN_ADDRESS,
-  RecurringOrderStatus,
-  type RecurringOrder
-} from '../types'
+import { RecurringOrderStatus, type RecurringOrder } from '../types'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -94,7 +93,7 @@ function resolveTokenInfo(
   network: Network | undefined,
   contractTokens: readonly NetworkContractToken[]
 ): ResolvedToken {
-  const isNative = address.toLowerCase() === NATIVE_TOKEN_ADDRESS.toLowerCase()
+  const isNative = address.toLowerCase() === ERC_ZERO_ADDRESS.toLowerCase()
   if (isNative && network) {
     return {
       symbol: network.networkToken.symbol,

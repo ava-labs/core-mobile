@@ -1,6 +1,14 @@
 import {
   RECURRING_FREQUENCY_UNITS,
-  RecurringOrderStatus
+  RecurringOrderStatus,
+  // Mobile's `LocalTokenWithBalance` shape has `address: string` on every
+  // variant, but the value is `""` for native tokens (AVAX, ETH). Recurring
+  // callers substitute the zero address at the boundary so viem's
+  // `isAddressEqual` (eligibility) and the SDK's wire-shape zod parse
+  // (quote / submit) don't choke on the empty string. Re-export the SDK's
+  // own `ERC_ZERO_ADDRESS` under the recurring-feature alias so the literal
+  // only lives in one place (the SDK).
+  ERC_ZERO_ADDRESS
 } from '@avalabs/fusion-sdk'
 import type {
   RecurringFrequency,
@@ -40,16 +48,6 @@ export type ScheduleFailure = RecurringOrderFailure
 // it as a discriminator without re-importing from Infinity.
 export const UNLIMITED_ORDERS = Infinity
 export type NumberOfOrders = number | typeof UNLIMITED_ORDERS
-
-// Mobile's `LocalTokenWithBalance` shape has `address: string` on every
-// variant, but the value is `""` for native tokens (AVAX, ETH). Recurring
-// callers substitute the zero address at the boundary so viem's
-// `isAddressEqual` (eligibility) and the SDK's wire-shape zod parse
-// (quote / submit) don't choke on the empty string. Re-export the SDK's
-// own `ERC_ZERO_ADDRESS` under the recurring-feature alias so the literal
-// only lives in one place (the SDK).
-import { ERC_ZERO_ADDRESS } from '@avalabs/fusion-sdk'
-export { ERC_ZERO_ADDRESS as NATIVE_TOKEN_ADDRESS } from '@avalabs/fusion-sdk'
 
 /**
  * Resolves a `LocalTokenWithBalance` to the on-chain address recurring callers
