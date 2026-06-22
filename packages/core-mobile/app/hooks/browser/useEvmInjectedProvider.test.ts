@@ -1605,7 +1605,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       act(() => {
-        result.current.setCurrentUrl('https://opensea.io')
+        result.current.handleCommittedUrl('https://opensea.io')
       })
 
       // Settlement still no-ops in the controller for this phase, and the abort
