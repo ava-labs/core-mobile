@@ -55,7 +55,11 @@ const ApprovalScreen = (props: {
   const rejectAndClose = useCallback(
     (message?: string) => {
       props.params.onReject(message)
-      if (router.canGoBack()) router.back()
+      if (router.canGoBack()) {
+        router.back()
+      } else if (router.canDismiss()) {
+        router.dismissAll()
+      }
     },
     [props.params.onReject]
   )
