@@ -24,10 +24,8 @@ import {
 import { Transaction } from 'ethers'
 import {
   recoverPersonalSignature,
-  recoverTypedSignature,
-  SignTypedDataVersion
+  recoverTypedSignature
 } from '@metamask/eth-sig-util'
-import { isTypedData } from '@avalabs/evm-module'
 import { SentryTag, SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
@@ -35,6 +33,7 @@ import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import {
   getAddressDerivationPath,
+  getEvmTypedDataVersion,
   hasActiveDerivedAddresses,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
@@ -175,27 +174,28 @@ const assertEvmMessageSigner = ({
   expectedAddress: string
 }): void => {
   let recovered: string
-
-  if (
-    rpcMethod === RpcMethod.ETH_SIGN ||
-    rpcMethod === RpcMethod.PERSONAL_SIGN
-  ) {
-    recovered = recoverPersonalSignature({ data: data as string, signature })
-  } else {
-    const version =
-      rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
-        ? SignTypedDataVersion.V3
-        : rpcMethod === RpcMethod.SIGN_TYPED_DATA_V4
-        ? SignTypedDataVersion.V4
-        : isTypedData(data)
-        ? SignTypedDataVersion.V4
-        : SignTypedDataVersion.V1
-
-    recovered = recoverTypedSignature({
-      data: data as TypedData<MessageTypes>,
-      signature,
-      version
-    })
+  try {
+    if (
+      rpcMethod === RpcMethod.ETH_SIGN ||
+      rpcMethod === RpcMethod.PERSONAL_SIGN
+    ) {
+      recovered = recoverPersonalSignature({ data: data as string, signature })
+    } else {
+      recovered = recoverTypedSignature({
+        data: data as TypedData<MessageTypes>,
+        signature,
+        version: getEvmTypedDataVersion(
+          rpcMethod,
+          data as TypedDataV1 | TypedData<MessageTypes>
+        )
+      })
+    }
+  } catch (e) {
+    // Recovery can throw on a malformed/unexpected signed payload — fail closed
+    // with a stable, low-leakage message and keep the underlying error in
+    // internal logs only (mirrors assertEvmTransactionSigner).
+    Logger.error('EVM message signer verification: failed to recover signer', e)
+    throw new Error('EVM message signer verification failed')
   }
 
   if (recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
