@@ -18,6 +18,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
+import type { QuoteFees } from '@avalabs/fusion-sdk'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useQuoteFees } from '../hooks/useQuoteFees'
 import { AUTO_QUOTE_ID } from '../consts'
@@ -30,7 +31,8 @@ export const SwapPricingDetailsScreen = ({
   toToken,
   selectedQuote,
   allQuotes,
-  selectQuoteById
+  selectQuoteById,
+  extraFees
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
@@ -39,6 +41,11 @@ export const SwapPricingDetailsScreen = ({
   selectedQuote: Quote | null
   allQuotes: Quote[]
   selectQuoteById: (quoteId: string | null) => void
+  /** Additional fees not present on `selectedQuote.fees`. The recurring-swap
+   *  schedule fee lives on the recurring quote (not the active swap quote),
+   *  so the route layer threads it in here to surface it as a line item in
+   *  the "Fees" tooltip. */
+  extraFees?: QuoteFees
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -47,7 +54,12 @@ export const SwapPricingDetailsScreen = ({
   const [accordionResetKey, setAccordionResetKey] = useState(0)
 
   const { formatCurrency } = useFormatCurrency()
-  const totalFees = useQuoteFees(selectedQuote?.fees)
+  const mergedFees = useMemo<QuoteFees | undefined>(() => {
+    const base = selectedQuote?.fees
+    if (!extraFees?.length) return base
+    return base ? ([...base, ...extraFees] as QuoteFees) : extraFees
+  }, [selectedQuote?.fees, extraFees])
+  const totalFees = useQuoteFees(mergedFees)
 
   const formatInCurrency = useCallback(
     (

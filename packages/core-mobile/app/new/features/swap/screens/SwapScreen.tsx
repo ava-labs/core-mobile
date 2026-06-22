@@ -558,30 +558,6 @@ export const SwapScreen = (): JSX.Element => {
     return `a ${basisPointsToPercentage(feeBps)} ${partnerName}`
   }, [activeQuote])
 
-  const schedulePhrase = useMemo(() => {
-    if (!recurring.isRecurring || !recurringQuote.data) return
-
-    const scheduleFee = recurringQuote.data.fees.find(
-      fee => fee.type === 'recurring' && !!fee.extra
-    )
-    if (!scheduleFee) return
-
-    const feeDecimals =
-      nativeFromToken && 'decimals' in nativeFromToken
-        ? nativeFromToken.decimals
-        : undefined
-    const feeSymbol = nativeFromToken?.symbol
-    if (feeDecimals === undefined || !feeSymbol) return
-
-    const formatted = new TokenUnit(
-      scheduleFee.amount,
-      feeDecimals,
-      feeSymbol
-    ).toDisplay()
-
-    return `a ${formatted} ${feeSymbol} one-time schedule fee`
-  }, [recurring.isRecurring, recurringQuote.data, nativeFromToken])
-
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
       if (token?.priceInCurrency !== 0) return
@@ -1163,10 +1139,7 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const renderPartnerFee = useCallback(() => {
-    if (corePhrase === undefined && schedulePhrase === undefined) return null
-    const phrases = [corePhrase, schedulePhrase].filter(
-      (p): p is string => p !== undefined
-    )
+    if (corePhrase === undefined) return null
     return (
       <Text
         variant="caption"
@@ -1176,10 +1149,10 @@ export const SwapScreen = (): JSX.Element => {
           textAlign: 'center',
           paddingHorizontal: 16
         }}>
-        {`Quote includes ${phrases.join(' and ')}`}
+        {`Quote includes ${corePhrase}`}
       </Text>
     )
-  }, [corePhrase, schedulePhrase])
+  }, [corePhrase])
 
   const renderLombardLogo = useCallback(() => {
     return (
