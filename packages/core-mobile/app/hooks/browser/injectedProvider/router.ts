@@ -38,12 +38,13 @@ const AVALANCHE_ACCOUNT_METHODS = new Set<string>([
 const isAvalancheAccountMethod = (method: string): boolean =>
   AVALANCHE_ACCOUNT_METHODS.has(method)
 
-// The first-party avalanche signing methods (X/P/C). Unlike the account methods,
-// these route to the Avalanche VM module (ModuleManager.loadModule by CAIP-2)
-// and go through the approval screen. They carry an OBJECT params with a
-// top-level `chainAlias` that selects the chain (X/P/C); the request's CAIP-2
-// scope is derived from it per-request (D3), NOT from the EVM browser network.
-// Exact case-sensitive match (same reasoning as the account set). CP-13672.
+// The first-party avalanche signing methods. Unlike the account methods, these
+// route to the Avalanche VM module (ModuleManager.loadModule by CAIP-2) and go
+// through the approval screen, with a per-request CAIP-2 scope (D3), NOT the EVM
+// browser network. Param shapes differ by method (see dispatchAvalancheSigning-
+// Request): send/signTransaction carry an object with chainAlias; signMessage is
+// a [message, accountIndex] tuple. Exact case-sensitive match (same reasoning as
+// the account set). CP-13672.
 const AVALANCHE_SIGNING_METHODS = new Set<string>([
   'avalanche_sendTransaction',
   'avalanche_signTransaction',
@@ -443,43 +444,54 @@ export function createInjectedProviderRouter(
   // First-party avalanche signing (avalanche_sendTransaction / _signTransaction
   // / _signMessage). First-party access is enforced in handleProviderMessage, so
   // no per-address grant check runs (D5 — first-party origin IS the
-  // authorization; the EVM signer-grant gate does not apply to X/P). The request
-  // carries an OBJECT params with a top-level `chainAlias`; we derive the
-  // AVAX-namespace CAIP-2 from it (D3) — for the current dev-mode environment —
-  // and pass it as the request scope so ModuleManager loads the avalanche module
-  // (not the EVM one) and the approval screen shows the right chain. `params` is
-  // forwarded RAW (never the array-coerced safeParams) so `chainAlias` and the
-  // tx/message payload survive. Goes through the approval screen via the same
-  // in-app bridge as EVM signing. CP-13672.
+  // authorization; the EVM signer-grant gate does not apply to X/P). Routes
+  // through the approval screen via the same in-app bridge as EVM signing, with
+  // `params` forwarded RAW (never the array-coerced safeParams) so the payload
+  // survives. We pass an AVAX-namespace CAIP-2 as the request scope so
+  // ModuleManager loads the avalanche module (not the EVM one). CP-13672.
+  //
+  // The two method families carry DIFFERENT params:
+  //   • sendTransaction / signTransaction → OBJECT `{ chainAlias, transactionHex,
+  //     … }`; the chainAlias (X/P/C) selects the chain and drives the CAIP-2 (D3).
+  //   • signMessage → TUPLE `[message, accountIndex]` with NO chainAlias; the
+  //     signature is account-keyed (network-independent), so it routes with a
+  //     default avalanche scope (X) that only selects the module + approval label.
+  //
+  // Environment (Fuji vs mainnet) is read here at dispatch. The downstream handler
+  // re-reads dev mode when deriving the signer's XP addresses, so a dev-mode toggle
+  // in the tiny window mid-request would, at worst, fail the signature — never
+  // misdirect funds. Same two-read pattern as the WC path.
   const dispatchAvalancheSigningRequest = async (
     id: number,
     method: string,
     params: unknown
   ): Promise<void> => {
-    const chainAlias = (params as { chainAlias?: unknown } | null | undefined)
-      ?.chainAlias
-    if (!isAvalancheChainAlias(chainAlias)) {
-      sendResponse(
-        id,
-        rpcErrors.invalidParams(
-          'avalanche signing requires a chainAlias of X, P, or C'
-        ),
-        undefined
+    let caip2ChainId: string
+    if (method === 'avalanche_signMessage') {
+      caip2ChainId = getAvalancheChainAliasCaip2('X', getIsDeveloperMode())
+    } else {
+      const chainAlias = (params as { chainAlias?: unknown } | null | undefined)
+        ?.chainAlias
+      if (!isAvalancheChainAlias(chainAlias)) {
+        sendResponse(
+          id,
+          rpcErrors.invalidParams(
+            'avalanche_sendTransaction / avalanche_signTransaction require a chainAlias of X, P, or C'
+          ),
+          undefined
+        )
+        return
+      }
+      caip2ChainId = getAvalancheChainAliasCaip2(
+        chainAlias,
+        getIsDeveloperMode()
       )
-      return
     }
+
     const origin = getNativeOrigin()
     // gated upstream; never register a synthetic '' origin.
     if (!origin) return
 
-    // Environment (Fuji vs mainnet) is read here at dispatch. The downstream
-    // handler re-reads dev mode when deriving the signer's XP addresses, so a
-    // dev-mode toggle in the tiny window mid-request would, at worst, fail the
-    // signature — never misdirect funds. Same two-read pattern as the WC path.
-    const caip2ChainId = getAvalancheChainAliasCaip2(
-      chainAlias,
-      getIsDeveloperMode()
-    )
     const controller = registerInFlight(id, origin)
     try {
       const result = await requestSigning({

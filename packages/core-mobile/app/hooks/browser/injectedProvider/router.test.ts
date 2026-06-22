@@ -438,24 +438,45 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
-    it('derives the C-chain (AVAX-namespace) CAIP-2 for avalanche_signMessage with chainAlias C', async () => {
-      const { deps, requestSigning } = makeDeps({
+    it('routes avalanche_signMessage (tuple params [message, accountIndex], no chainAlias) with a default avalanche CAIP-2', async () => {
+      // Unlike send/signTransaction, avalanche_signMessage params are an ARRAY
+      // [message, accountIndex] with NO chainAlias. It must NOT be rejected for a
+      // missing chainAlias; the signature is account-keyed (network-independent),
+      // so it routes with a default avalanche scope (X) that only selects the
+      // avalanche module + the approval-screen network label.
+      const params = ['hello core', 0]
+      const { deps, sendResponse, requestSigning } = makeDeps({
         nativeOrigin: 'https://core.app'
       })
       requestSigning.mockResolvedValueOnce('0xsig')
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'avalanche_signMessage', {
-        chainAlias: 'C',
-        message: 'hello'
-      })
+      send(router, 'avalanche_signMessage', params)
       await new Promise(r => setImmediate(r))
 
       expect(requestSigning).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'avalanche_signMessage',
-          chainId: 'avax:C'
+          params, // raw tuple preserved, not rejected
+          chainId: 'avax:X'
         })
+      )
+      expect(sendResponse).toHaveBeenCalledWith(1, null, '0xsig')
+    })
+
+    it('honors developer mode for avalanche_signMessage default scope', async () => {
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://core.app',
+        isDeveloperMode: true
+      })
+      requestSigning.mockResolvedValueOnce('0xsig')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'avalanche_signMessage', ['hello', 0])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalledWith(
+        expect.objectContaining({ chainId: 'avax:X-testnet' })
       )
     })
 
