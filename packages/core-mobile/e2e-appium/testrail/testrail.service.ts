@@ -17,12 +17,15 @@ export async function getTestRun(
   platform: string,
   isSmoke: boolean,
   isPerformance: boolean,
-  isDeviceFarm = false
+  isDeviceFarm = false,
+  isSeedlessTransactions = false
 ) {
   const today = new Date().toISOString().split('T')[0]
 
   let runType: string
-  if (isPerformance) {
+  if (isSeedlessTransactions) {
+    runType = '[Seedless Transactions]'
+  } else if (isPerformance) {
     runType = '[VM Performance]'
   } else if (isSmoke) {
     runType = '[VM Smoke]'

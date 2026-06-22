@@ -11,9 +11,18 @@ elif [[ -d "${BITRISE_SOURCE_DIR}/scripts/bitrise/devicefarm" ]]; then
 fi
 
 
-# 2. Set regression script based on PLATFORM
+# 2. Set regression script based on PLATFORM and test type
 PLATFORM_LOWER="$(echo "${PLATFORM:-android}" | tr '[:upper:]' '[:lower:]')"
-if [[ "$PLATFORM_LOWER" == "ios" ]]; then
+
+if [[ "${IS_SEEDLESS_TRANSACTIONS:-false}" == "true" ]]; then
+  if [[ "$PLATFORM_LOWER" == "ios" ]]; then
+    REGRESSION_SCRIPT="${DEVICEFARM_SCRIPTS_DIR}/ios/iosSeedlessTransactionsRegression.sh"
+    echo "Test iOS - Seedless Transactions"
+  else
+    REGRESSION_SCRIPT="${DEVICEFARM_SCRIPTS_DIR}/android/androidSeedlessTransactionsRegression.sh"
+    echo "Test Android - Seedless Transactions"
+  fi
+elif [[ "$PLATFORM_LOWER" == "ios" ]]; then
   REGRESSION_SCRIPT="${DEVICEFARM_SCRIPTS_DIR}/ios/iosDeviceFarmRegression.sh"
   echo "Test iOS"
 else

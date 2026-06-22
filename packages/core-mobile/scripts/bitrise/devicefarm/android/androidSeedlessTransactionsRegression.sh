@@ -16,8 +16,7 @@ cd "$CORE_MOBILE_DIR"
 # 2. Set AWS region
 [ -z "${AWS_DEFAULT_REGION:-}" ] && [ -z "${AWS_REGION:-}" ] && export AWS_DEFAULT_REGION="us-west-2"
 
-
-# 3. Packageing tests is required before running tests
+# 3. Packaging tests is required before running tests
 echo "📦 Packaging tests..."
 yarn devicefarm:package
 
@@ -34,10 +33,19 @@ export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM="android"
 export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 
-# 4. Load all E2E env vars from shared helper
+# 4. Seedless test flags
+export IS_SEEDLESS="true"
+export IS_SEEDLESS_TRANSACTIONS="true"
+
+# 5. Load all E2E env vars from shared helper
 source "$_SCRIPT_DIR/../load-e2e-env.sh"
 
-# 5. Finally trigger test run
+if [ -z "${TEST_OIDC_PRIVATE_KEY:-}" ] || [ -z "${TEST_OIDC_ISSUER:-}" ] || [ -z "${TEST_OIDC_AUDIENCE:-}" ]; then
+  echo "❌ TEST_OIDC_PRIVATE_KEY, TEST_OIDC_ISSUER, TEST_OIDC_AUDIENCE must be set (in .env.production.e2e or Bitrise secrets)"
+  exit 1
+fi
+
+# 6. Finally trigger test run
 node scripts/devicefarm/test.js
 EXIT_CODE=$?
 cleanup_client_device_farm_tmp
