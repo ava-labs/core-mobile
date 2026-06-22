@@ -19,7 +19,6 @@ import {
   Platform
 } from 'react-native'
 import PagerView, {
-  PagerViewOnPageScrollEventData,
   PagerViewOnPageSelectedEventData
 } from 'react-native-pager-view'
 import Animated, {
@@ -114,20 +113,24 @@ export const EarnHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const handleSelectSegment = useCallback((index: number): void => {
-    pagerRef.current?.setPage(index)
-  }, [])
-
-  const handleTabChange = useCallback(
-    (e: NativeSyntheticEvent<PagerViewOnPageSelectedEventData>) => {
-      selectedSegmentIndex.value = e.nativeEvent.position
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      // Snap the shared value to the target index and let the SegmentedControl
+      // spring its indicator there. We intentionally do NOT drive the indicator
+      // from `onPageScroll`'s continuous offset: pager-view v8 (SwiftUI rewrite)
+      // emits offsets irregularly, so feeding them per-frame made the indicator
+      // stutter. Integer-driven + internal spring matches the other (smooth)
+      // segmented controls in the app.
+      selectedSegmentIndex.value = index
+      pagerRef.current?.setPage(index)
     },
     [selectedSegmentIndex]
   )
 
-  const handleTabScroll = useCallback(
-    (e: NativeSyntheticEvent<PagerViewOnPageScrollEventData>) => {
-      selectedSegmentIndex.value = e.nativeEvent.position + e.nativeEvent.offset
+  const handleTabChange = useCallback(
+    (e: NativeSyntheticEvent<PagerViewOnPageSelectedEventData>) => {
+      // Covers swipe gestures (and keeps the indicator in sync after a tap).
+      selectedSegmentIndex.value = e.nativeEvent.position
     },
     [selectedSegmentIndex]
   )
@@ -231,7 +234,6 @@ export const EarnHomeScreen = (): JSX.Element => {
         style={{ flex: 1 }}
         initialPage={0}
         onPageSelected={handleTabChange}
-        onPageScroll={handleTabScroll}
         offscreenPageLimit={1}
         pageMargin={Platform.OS === 'android' ? 0 : undefined}>
         {tabs.map(tab => (
