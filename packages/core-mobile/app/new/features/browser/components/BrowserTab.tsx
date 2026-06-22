@@ -474,7 +474,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         canGoForward: navState.canGoForward
       }
 
-      const nextUrl = navState.url ?? ''
+      if (!navState.loading) {
+        setCurrentUrl(navState.url ?? '')
+      }
 
       // Only sync same-origin URL changes from this event — it fires off iOS
       // WKWebView's provisional navigation and Android's
