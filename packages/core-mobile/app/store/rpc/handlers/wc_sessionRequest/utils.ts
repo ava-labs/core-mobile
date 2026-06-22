@@ -44,15 +44,7 @@ const CORE_EXT_HOSTNAMES = [
   'dnoiacbfkodekgkjbpoagaljpbhaedmd' // blue build
 ]
 
-<<<<<<< HEAD
 const CORE_WEB_HOSTNAME_REGEXES = [
-||||||| parent of 9f505813d (add regex fix)
-const CORE_WEB_URLS_REGEX = [
-  // core web preview deploys (ex. https://d0ce77c0-core-web-dev.avalabs.workers.dev)
-  'https://[a-zA-Z0-9]+-core-web-dev\\.avalabs\\.workers\\.dev'
-=======
-const CORE_WEB_HOSTNAMES_REGEX = [
->>>>>>> 9f505813d (add regex fix)
   // core web preview deploys (ex. d0ce77c0-core-web-dev.avalabs.workers.dev)
   /^[a-zA-Z0-9]+-core-web-dev\.avalabs\.workers\.dev$/
 ]
@@ -64,6 +56,31 @@ export const isCoreMethod = (method: string): boolean =>
     ...CORE_BTC_METHODS,
     ...CORE_WALLET_METHODS
   ].includes(method as RpcMethod)
+
+export const isLocalhost = (url: string): boolean => {
+  try {
+    const { hostname, protocol } = new URL(url)
+    return (
+      (hostname === 'localhost' || hostname === '127.0.0.1') &&
+      (protocol === 'http:' || protocol === 'https:')
+    )
+  } catch {
+    return false
+  }
+}
+
+export const isCoreWebDomain = (url: string): boolean => {
+  try {
+    const { hostname, protocol } = new URL(url)
+    return (
+      protocol === 'https:' &&
+      (CORE_WEB_HOSTNAMES.includes(hostname) ||
+        CORE_WEB_HOSTNAME_REGEXES.some(regex => regex.test(hostname)))
+    )
+  } catch {
+    return false
+  }
+}
 
 export const isCoreDomain = (url: string): boolean => {
   let hostname = ''
@@ -80,29 +97,7 @@ export const isCoreDomain = (url: string): boolean => {
   const isCoreExt =
     CORE_EXT_HOSTNAMES.includes(hostname) && protocol === 'chrome-extension:'
 
-  const isLocalhost =
-    (hostname === 'localhost' || hostname === '127.0.0.1') &&
-    (protocol === 'http:' || protocol === 'https:')
-
-  const isCoreWeb =
-    isLocalhost ||
-<<<<<<< HEAD
-    (isHttps &&
-      (CORE_WEB_HOSTNAMES.includes(hostname) ||
-        CORE_WEB_HOSTNAME_REGEXES.some(regex => regex.test(hostname))))
-||||||| parent of 06813d5bf (Domain Fix)
-    CORE_WEB_HOSTNAMES.includes(hostname) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
-||||||| parent of 9f505813d (add regex fix)
-    (protocol === 'https:' && CORE_WEB_HOSTNAMES.includes(hostname)) ||
-    CORE_WEB_URLS_REGEX.some(regex => new RegExp(regex).test(url))
-=======
-    (protocol === 'https:' && CORE_WEB_HOSTNAMES.includes(hostname)) ||
-    (protocol === 'https:' &&
-      CORE_WEB_HOSTNAMES_REGEX.some(regex => regex.test(hostname)))
->>>>>>> 9f505813d (add regex fix)
-
-  return isCoreWeb || isCoreExt
+  return isLocalhost(url) || isCoreWebDomain(url) || isCoreExt
 }
 
 export type VerifyContext = WCSessionProposal['data']['verifyContext']
