@@ -320,4 +320,14 @@ describe('getAccountUnavailableMessage', () => {
     expect(message).toContain('a different wallet')
     expect(message).not.toContain('"')
   })
+
+  it('uses request-neutral wording (shown for message signing too, not just txs)', () => {
+    for (const message of [
+      getAccountUnavailableMessage('Wallet 2', 'Account 3'),
+      getAccountUnavailableMessage('Wallet 2'),
+      getAccountUnavailableMessage()
+    ]) {
+      expect(message).not.toContain('transaction')
+    }
+  })
 })
