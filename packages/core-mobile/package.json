@@ -39,7 +39,7 @@
     "@avalabs/crypto-nitro": "0.3.2",
     "@avalabs/crypto-sdk": "1.0.2",
     "@avalabs/evm-module": "3.9.0",
-    "@avalabs/fusion-sdk": "0.20.0",
+    "@avalabs/fusion-sdk": "0.22.0",
     "@avalabs/glacier-sdk": "3.1.0-canary.672f5c3.0",
     "@avalabs/k2-alpine": "workspace:*",
     "@avalabs/perps-sdk": "0.0.0-feat-perps-sdk-20260521171718",

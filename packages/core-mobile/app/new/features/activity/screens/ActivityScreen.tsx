@@ -4,6 +4,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { RecurringSchedulesBanner } from 'new/features/recurringSwap/components/RecurringSchedulesBanner'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -87,18 +88,23 @@ export const ActivityScreen = ({
 
   const renderHeader = useCallback(() => {
     return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          gap: 16,
-          marginTop: 4,
-          marginBottom: 16,
-          paddingHorizontal: 16
-        }}>
-        <DropdownSelections filter={filter} />
-        <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
-      </View>
+      <>
+        <View
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 16,
+            marginTop: 4,
+            marginBottom: 16,
+            paddingHorizontal: 16
+          }}>
+          <DropdownSelections filter={filter} />
+          <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
+        </View>
+        <View sx={{ marginHorizontal: 16 }}>
+          <RecurringSchedulesBanner />
+        </View>
+      </>
     )
   }, [filter, network, networkFilterDropdown])
 

@@ -49,6 +49,7 @@ import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
 import IconSyncV2 from '../../assets/icons/sync_v2.svg'
+import IconRotateRight from '../../assets/icons/rotate_right.svg'
 import IconEllipse from '../../assets/icons/ellipse.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
@@ -274,6 +275,7 @@ export const Icons = {
   Notification: {
     Sync: IconSync,
     SyncV2: IconSyncV2,
+    RotateRight: IconRotateRight,
     Ellipse: IconEllipse
   },
   Social: {
