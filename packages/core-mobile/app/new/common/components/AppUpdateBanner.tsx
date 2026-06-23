@@ -43,22 +43,20 @@ export const AppUpdateBanner = (): JSX.Element => {
             contentFit="cover"
           />
         </View>
-        <View sx={{ flexShrink: 1, flexWrap: 'wrap' }}>
-          <View>
-            <Text
-              sx={{
-                fontFamily: 'Inter-Medium',
-                fontSize: 13,
-                lineHeight: 15
-              }}>
-              A newer version is available!
-            </Text>
-            <Text
-              variant="caption"
-              sx={{ color: '$textSecondary', fontSize: 13, lineHeight: 15 }}>
-              Update now for the best crypto experience
-            </Text>
-          </View>
+        <View sx={{ flex: 1 }}>
+          <Text
+            sx={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 13,
+              lineHeight: 15
+            }}>
+            A newer version is available!
+          </Text>
+          <Text
+            variant="caption"
+            sx={{ color: '$textSecondary', fontSize: 13, lineHeight: 15 }}>
+            Update now for the best crypto experience
+          </Text>
         </View>
       </View>
       <Button
