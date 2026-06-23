@@ -7,8 +7,10 @@ import {
   Button,
   GroupList,
   GroupListItem,
+  Icons,
   Separator,
   Text,
+  Toggle,
   Tooltip,
   useTheme,
   View
@@ -29,12 +31,15 @@ import {
 } from 'common/hooks/useAfterScreenEnterTransition'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { showSnackbar } from 'common/utils/toast'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useDebounce } from 'hooks/useDebounce'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { toChain } from 'features/swap/utils/fusionTypeConverters'
+import { isInvalidParamsError } from '@avalabs/fusion-sdk'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
@@ -48,6 +53,8 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -55,9 +62,16 @@ import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useToke
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
+  selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
   selectMarkrSwapMaxRetries
 } from 'store/posthog'
+import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
+import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
+import { useRecurringQuote } from 'features/recurringSwap/hooks/useRecurringQuote'
+import { RecurringDetailsRows } from 'features/recurringSwap/components/RecurringDetailsRows'
+import { RecurringSchedulesBanner } from 'features/recurringSwap/components/RecurringSchedulesBanner'
+import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -67,6 +81,9 @@ import {
   useFusionServiceInitError
 } from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
+import { clampToNAvax } from '../utils/clampToNAvax'
+import { isAvalancheCctRoute } from '../utils/isAvalancheCctRoute'
+import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -89,6 +106,191 @@ import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+type SwapDetailItemsParams = {
+  activeQuote: { slippageBps?: number } | null
+  allQuotes: unknown[]
+  fromToken: LocalTokenWithBalance | undefined
+  toToken: LocalTokenWithBalance | undefined
+  rate: number
+  isMarkrRoute: boolean
+  autoSlippage: boolean
+  slippage: number
+  isSwapping: boolean
+  priceImpactItem: GroupListItem
+  handleSelectPricingDetails: () => void
+  handleSelectSlippageDetails: () => void
+  // Markr's per-pair recurring recommendation (bps). When set, the recurring
+  // toggle is on and this overrides the one-time quote's slippage in the row.
+  recurringRecommendedSlippageBps?: number
+}
+
+/**
+ * Builds the GroupList data items for the swap details section.
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function buildSwapDetailItems({
+  activeQuote,
+  allQuotes,
+  fromToken,
+  toToken,
+  rate,
+  isMarkrRoute,
+  autoSlippage,
+  slippage,
+  isSwapping,
+  priceImpactItem,
+  handleSelectPricingDetails,
+  handleSelectSlippageDetails,
+  recurringRecommendedSlippageBps
+}: SwapDetailItemsParams): GroupListItem[] {
+  const items: GroupListItem[] = []
+
+  if (!activeQuote || allQuotes.length === 0) return items
+
+  if (fromToken && toToken && rate) {
+    const haveMultipleQuotes = allQuotes.length > 1
+    items.push({
+      title: haveMultipleQuotes ? 'Pricing' : 'Rate',
+      value: `1 ${fromToken.symbol} = ${rate.toFixed(4)} ${toToken.symbol}`,
+      onPress: handleSelectPricingDetails
+    })
+  }
+
+  if (isMarkrRoute) {
+    const displayValue = getDisplaySlippageValue({
+      autoSlippage,
+      quoteSlippageBps:
+        recurringRecommendedSlippageBps ?? activeQuote?.slippageBps,
+      manualSlippage: slippage
+    })
+    items.push({
+      title: 'Slippage',
+      value: displayValue,
+      onPress: isSwapping ? undefined : handleSelectSlippageDetails
+    })
+    items.push(priceImpactItem)
+  }
+
+  return items
+}
+
+/**
+ * Computes the current swap validation error (or null if inputs are valid).
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function computeValidationError({
+  fromTokenValue,
+  debouncedFromTokenValue,
+  minimumTransferAmount,
+  fromToken,
+  feeValidationError
+}: {
+  fromTokenValue: bigint | undefined
+  debouncedFromTokenValue: bigint | undefined
+  minimumTransferAmount: bigint | null | undefined
+  fromToken: LocalTokenWithBalance | undefined
+  feeValidationError: FusionQuoteError | null | undefined
+}): FusionQuoteError | null {
+  if (fromTokenValue === undefined) return null
+  if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    return fusionErrors.enterAmount()
+  }
+  if (
+    minimumTransferAmount != null &&
+    debouncedFromTokenValue !== undefined &&
+    debouncedFromTokenValue > 0n &&
+    debouncedFromTokenValue < minimumTransferAmount &&
+    fromToken &&
+    'decimals' in fromToken
+  ) {
+    const formattedMin = `${formatTokenAmount(
+      bigintToBig(minimumTransferAmount, fromToken.decimals),
+      fromToken.decimals
+    )} ${fromToken.symbol}`
+    return fusionErrors.belowMinimumAmount(formattedMin)
+  }
+  if (
+    debouncedFromTokenValue !== undefined &&
+    fromToken !== undefined &&
+    debouncedFromTokenValue > fromToken.balance
+  ) {
+    return fusionErrors.exceedsBalance()
+  }
+  return feeValidationError ?? null
+}
+
+/**
+ * Builds the GroupListItem for the price-impact row.
+ * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ */
+function buildPriceImpactItem({
+  priceImpact,
+  priceImpactSeverity,
+  priceImpactAvailability,
+  dangerColor,
+  secondaryColor
+}: {
+  priceImpact: number | undefined
+  priceImpactSeverity: PriceImpactSeverity | undefined
+  priceImpactAvailability: PriceImpactAvailability | 'unavailable'
+  dangerColor: string
+  secondaryColor: string
+}): GroupListItem {
+  if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
+    return {
+      title: PRICE_IMPACT_ROW_TITLE,
+      value: <ActivityIndicator size="small" />
+    }
+  }
+
+  let color: string
+  let displayText: string
+  let tooltipTitle: string
+  let tooltipDescription: string
+
+  if (priceImpactAvailability === 'unavailable') {
+    color = dangerColor
+    displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+    tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+    tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
+  } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
+    color = dangerColor
+    displayText = `${priceImpact?.toFixed(2)}% (High)`
+    tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
+    tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
+  } else if (priceImpactSeverity === PriceImpactSeverity.High) {
+    color = dangerColor
+    displayText = `${priceImpact?.toFixed(2)}% (High)`
+    tooltipTitle = PRICE_IMPACT_HIGH_TITLE
+    tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+  } else {
+    color = secondaryColor
+    displayText = priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
+    tooltipTitle = PRICE_IMPACT_ROW_TITLE
+    tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+  }
+
+  return {
+    title: PRICE_IMPACT_ROW_TITLE,
+    value: (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <Tooltip
+          title={tooltipTitle}
+          description={tooltipDescription}
+          button={{ text: 'Dismiss' }}
+          size={18}
+        />
+        <Text variant="body1" style={{ color }}>
+          {displayText}
+        </Text>
+      </View>
+    )
+  }
+}
+
+// eslint-disable-next-line sonarjs/cognitive-complexity -- complexity arises from React idioms (nested useEffect callbacks with inner fns); logic is decomposed into buildSwapDetailItems, buildPriceImpactItem, computeValidationError
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -179,6 +381,8 @@ export const SwapScreen = (): JSX.Element => {
   } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
+  const activeWallet = useSelector(selectActiveWallet)
+  const isSeedlessWallet = activeWallet?.type === WalletType.SEEDLESS
   const accountTokens = useTokensWithBalanceForAccount({
     account: activeAccount
   })
@@ -194,6 +398,56 @@ export const SwapScreen = (): JSX.Element => {
   const hasSolanaAddress = useSelector(selectActiveAccountHasSolanaAddress)
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
+
+  const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const recurring = useRecurringSwapContext()
+  const evmAddress = activeAccount?.addressC
+  const eligibility = useRecurringEligibility(
+    isRecurringBlocked ? undefined : fromToken,
+    isRecurringBlocked ? undefined : toToken,
+    isRecurringBlocked ? undefined : evmAddress
+  )
+  // Recurring per-token minimum sourced from `/info/chains` (via SDK eligibility
+  // check, which keys on the source token address). Available whenever the pair
+  // is supported, even before the user enters an amount.
+  const recurringMinimumTransferAmount = useMemo<bigint | null>(() => {
+    if (!eligibility.eligible) return null
+    try {
+      return BigInt(eligibility.minimumAmount)
+    } catch {
+      return null
+    }
+  }, [eligibility])
+  // Recurring on → validate against the supportedTokens minimum.
+  // Recurring off → validate against the active quote's one-shot minimum.
+  const effectiveMinimumTransferAmount = recurring.isRecurring
+    ? recurringMinimumTransferAmount
+    : minimumTransferAmount
+  // Toggle stays hidden until the user enters a non-zero amount (matches Figma
+  // "Recurring OFF" frame — the toggle row only appears beneath a populated
+  // swap card). The recurring flag itself is preserved when the amount is
+  // cleared so re-entering an amount restores the previous on/off choice.
+  const hasFromAmount = fromTokenValue !== undefined && fromTokenValue > 0n
+  const showRecurringToggle =
+    !isRecurringBlocked && eligibility.eligible && hasFromAmount
+  const [recurringSubmitting, setRecurringSubmitting] = useState(false)
+
+  // Subscribe to the recurring quote when the toggle is on so we have fresh
+  // calldata ready by the time the user presses Next. `slippage` in SwapContext
+  // is in percent (e.g. 2 = 2%); the hook expects basis points. With auto on we
+  // pass undefined to let the server pick recommendedSlippage.
+  const recurringSlippageBps =
+    autoSlippage || slippage === undefined
+      ? undefined
+      : Math.round(slippage * 100)
+  const recurringQuote = useRecurringQuote({
+    fromToken: recurring.isRecurring ? fromToken ?? undefined : undefined,
+    toToken: recurring.isRecurring ? toToken ?? undefined : undefined,
+    amountPerOrder: recurring.isRecurring ? fromTokenValue : undefined,
+    numberOfOrders: recurring.numberOfOrders,
+    frequency: recurring.frequency,
+    slippageBps: recurringSlippageBps
+  })
 
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
@@ -289,7 +543,7 @@ export const SwapScreen = (): JSX.Element => {
     !isPriceImpactCalculating &&
     !isPriceImpactTooHigh
 
-  const coreFeeMessage = useMemo(() => {
+  const corePhrase = useMemo(() => {
     if (!activeQuote) return
 
     // Fusion SDK Quote has partnerFeeBps directly
@@ -301,7 +555,7 @@ export const SwapScreen = (): JSX.Element => {
 
     if (!feeBps || !partnerName) return
 
-    return `Quote includes a ${basisPointsToPercentage(feeBps)} ${partnerName}`
+    return `a ${basisPointsToPercentage(feeBps)} ${partnerName}`
   }, [activeQuote])
 
   const updateMissingTokenPrice = useCallback(
@@ -327,43 +581,19 @@ export const SwapScreen = (): JSX.Element => {
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
-    if (fromTokenValue === undefined) {
-      setValidationError(null)
-      return
-    }
-    if (
-      debouncedFromTokenValue !== undefined &&
-      debouncedFromTokenValue === 0n
-    ) {
-      setValidationError(fusionErrors.enterAmount())
-    } else if (
-      minimumTransferAmount != null &&
-      debouncedFromTokenValue !== undefined &&
-      debouncedFromTokenValue > 0n &&
-      debouncedFromTokenValue < minimumTransferAmount &&
-      fromToken &&
-      'decimals' in fromToken
-    ) {
-      const formattedMin = `${formatTokenAmount(
-        bigintToBig(minimumTransferAmount, fromToken.decimals),
-        fromToken.decimals
-      )} ${fromToken.symbol}`
-      setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
-    } else if (
-      debouncedFromTokenValue !== undefined &&
-      fromToken !== undefined &&
-      debouncedFromTokenValue > fromToken.balance
-    ) {
-      setValidationError(fusionErrors.exceedsBalance())
-    } else if (feeValidationError) {
-      setValidationError(feeValidationError)
-    } else {
-      setValidationError(null)
-    }
+    setValidationError(
+      computeValidationError({
+        fromTokenValue,
+        debouncedFromTokenValue,
+        minimumTransferAmount: effectiveMinimumTransferAmount,
+        fromToken,
+        feeValidationError
+      })
+    )
   }, [
     fromTokenValue,
     debouncedFromTokenValue,
-    minimumTransferAmount,
+    effectiveMinimumTransferAmount,
     fromToken,
     feeValidationError
   ])
@@ -403,11 +633,24 @@ export const SwapScreen = (): JSX.Element => {
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
-      setFromTokenValue(amount)
+      // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
+      // floor the trailing wei so what the user sees is what gets sent.
+      // Mirrors the staking flow's `toFixed(9)` clamp.
+      const decimals =
+        fromToken &&
+        'decimals' in fromToken &&
+        typeof fromToken.decimals === 'number'
+          ? fromToken.decimals
+          : undefined
+      const next =
+        isAvalancheCctRoute({ fromToken, toToken }) && decimals !== undefined
+          ? clampToNAvax(amount, decimals)
+          : amount
+      setFromTokenValue(next)
       setDestination(SwapSide.SELL)
       setUserClickedMax(false)
     },
-    [setDestination, setUserClickedMax]
+    [fromToken, toToken, setDestination, setUserClickedMax]
   )
 
   const handlePressMax = useCallback((): void => {
@@ -599,114 +842,61 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
-  const priceImpactItem = useMemo((): GroupListItem => {
-    let color: string
-    let displayText: string
-    let tooltipTitle: string
-    let tooltipDescription: string
+  const priceImpactItem = useMemo(
+    (): GroupListItem =>
+      buildPriceImpactItem({
+        priceImpact,
+        priceImpactSeverity,
+        priceImpactAvailability,
+        dangerColor: theme.colors.$textDanger,
+        secondaryColor: theme.colors.$textSecondary
+      }),
+    [
+      priceImpact,
+      priceImpactSeverity,
+      priceImpactAvailability,
+      theme.colors.$textDanger,
+      theme.colors.$textSecondary
+    ]
+  )
 
-    if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
-      return {
-        title: PRICE_IMPACT_ROW_TITLE,
-        value: <ActivityIndicator size="small" />
-      }
-    }
+  const recurringRecommendedSlippageBps = recurring.isRecurring
+    ? recurringQuote.data?.recommendedSlippage
+    : undefined
 
-    if (priceImpactAvailability === 'unavailable') {
-      color = theme.colors.$textDanger
-      displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
-      tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
-      tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
-    } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
-      color = theme.colors.$textDanger
-      displayText = `${priceImpact?.toFixed(2)}% (High)`
-      tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
-      tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
-    } else if (priceImpactSeverity === PriceImpactSeverity.High) {
-      color = theme.colors.$textDanger
-      displayText = `${priceImpact?.toFixed(2)}% (High)`
-      tooltipTitle = PRICE_IMPACT_HIGH_TITLE
-      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
-    } else {
-      color = theme.colors.$textSecondary
-      displayText =
-        priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
-      tooltipTitle = PRICE_IMPACT_ROW_TITLE
-      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
-    }
-
-    return {
-      title: PRICE_IMPACT_ROW_TITLE,
-      value: (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Tooltip
-            title={tooltipTitle}
-            description={tooltipDescription}
-            button={{ text: 'Dismiss' }}
-            size={18}
-          />
-          <Text variant="body1" style={{ color }}>
-            {displayText}
-          </Text>
-        </View>
-      )
-    }
-  }, [
-    priceImpact,
-    priceImpactSeverity,
-    priceImpactAvailability,
-    theme.colors.$textDanger,
-    theme.colors.$textSecondary
-  ])
-
-  const data = useMemo(() => {
-    const items: GroupListItem[] = []
-
-    if (!activeQuote || allQuotes.length === 0) {
-      return items
-    }
-
-    if (fromToken && toToken && rate) {
-      const haveMultipleQuotes = allQuotes.length > 1
-      items.push({
-        title: haveMultipleQuotes ? 'Pricing' : 'Rate',
-        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`,
-        onPress: handleSelectPricingDetails
-      })
-    }
-
-    if (isMarkrRoute) {
-      const displayValue = getDisplaySlippageValue({
+  const data = useMemo(
+    () =>
+      buildSwapDetailItems({
+        activeQuote,
+        allQuotes,
+        fromToken,
+        toToken,
+        rate,
+        isMarkrRoute,
         autoSlippage,
-        quoteSlippageBps: activeQuote?.slippageBps,
-        manualSlippage: slippage
-      })
-      items.push({
-        title: 'Slippage',
-        value: displayValue,
-        onPress: isSwapping ? undefined : handleSelectSlippageDetails
-      })
-    }
-
-    if (isMarkrRoute) {
-      items.push(priceImpactItem)
-    }
-
-    return items
-  }, [
-    fromToken,
-    toToken,
-    rate,
-    activeQuote,
-    allQuotes,
-    isMarkrRoute,
-    slippage,
-    autoSlippage,
-    isSwapping,
-    priceImpactItem,
-    handleSelectPricingDetails,
-    handleSelectSlippageDetails
-  ])
+        slippage,
+        isSwapping,
+        priceImpactItem,
+        handleSelectPricingDetails,
+        handleSelectSlippageDetails,
+        recurringRecommendedSlippageBps
+      }),
+    [
+      fromToken,
+      toToken,
+      rate,
+      activeQuote,
+      allQuotes,
+      isMarkrRoute,
+      slippage,
+      autoSlippage,
+      isSwapping,
+      priceImpactItem,
+      handleSelectPricingDetails,
+      handleSelectSlippageDetails,
+      recurringRecommendedSlippageBps
+    ]
+  )
 
   // Prefer popping the parent stack; fall back to dismissing the whole modal
   // when this screen is the root of a modal stack (no back history).
@@ -741,6 +931,7 @@ export const SwapScreen = (): JSX.Element => {
 
   // Trigger quote fetch when debounced amount settles, skip if below minimum
   const syncDebouncedAmount = useCallback(() => {
+    if (recurring.isRecurring) return // paused; recurring uses its own quote hook
     if (debouncedFromTokenValue === undefined) return
     if (
       minimumTransferAmount != null &&
@@ -749,11 +940,33 @@ export const SwapScreen = (): JSX.Element => {
     )
       return
     setAmount(debouncedFromTokenValue)
-  }, [debouncedFromTokenValue, minimumTransferAmount, setAmount])
+  }, [
+    recurring.isRecurring,
+    debouncedFromTokenValue,
+    minimumTransferAmount,
+    setAmount
+  ])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
+
+  // Reset recurring toggle only when the pair becomes ineligible (e.g. user
+  // picks a cross-chain or unsupported destination) or the feature flag flips
+  // off. Clearing the amount intentionally does NOT reset the flag — the user's
+  // on/off choice persists until they manually toggle off or the token is no
+  // longer supported.
+  useEffect(() => {
+    const recurringDisallowed = isRecurringBlocked || !eligibility.eligible
+    if (recurringDisallowed && recurring.isRecurring) {
+      recurring.setIsRecurring(false)
+    }
+  }, [
+    isRecurringBlocked,
+    eligibility.eligible,
+    recurring.isRecurring,
+    recurring.setIsRecurring
+  ])
 
   // Reset from amount only when the pay token changes, so we don't show a stale
   // Max value or a spurious error while the new max is loading.
@@ -926,13 +1139,20 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const renderPartnerFee = useCallback(() => {
-    if (coreFeeMessage === undefined) return null
+    if (corePhrase === undefined) return null
     return (
-      <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
-        {coreFeeMessage}
+      <Text
+        variant="caption"
+        sx={{
+          marginTop: 12,
+          alignSelf: 'center',
+          textAlign: 'center',
+          paddingHorizontal: 16
+        }}>
+        {`Quote includes ${corePhrase}`}
       </Text>
     )
-  }, [coreFeeMessage])
+  }, [corePhrase])
 
   const renderLombardLogo = useCallback(() => {
     return (
@@ -957,21 +1177,169 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [theme.isDark])
 
+  const showCctTwoTxNotice = shouldShowAvalancheCctTwoTxNotice({
+    quote: activeQuote,
+    isSeedlessWallet
+  })
+
+  const isRecurringReady =
+    recurring.isRecurring &&
+    !!recurring.frequency &&
+    recurring.numberOfOrders !== undefined &&
+    !!fromToken &&
+    !!toToken &&
+    !!fromTokenValue &&
+    !!recurringQuote.data &&
+    !recurringSubmitting
+
+  const canSubmit = recurring.isRecurring ? isRecurringReady : canSwap
+
+  // Extracted so `handleNext` stays under the cognitive-complexity bar.
+  // Returns false when any guard fails — caller does not advance.
+  // eslint-disable-next-line sonarjs/cognitive-complexity -- chain of presence guards (recurringQuote/fromToken/toToken/etc.) drives the count over 15. Each guard is a flat boolean check; flattening into a single AND chain would be less readable.
+  const submitRecurring = useCallback(async (): Promise<boolean> => {
+    if (!recurringQuote.data || !activeAccount || !activeAccount.addressC)
+      return false
+    if (!fromToken || !toToken) return false
+    if (!('decimals' in fromToken) || !('decimals' in toToken)) return false
+    if (!recurring.frequency || recurring.numberOfOrders === undefined)
+      return false
+    if (fromTokenValue === undefined) return false
+    // The SDK's `executeFirstFill` needs a full `Chain` for the source
+    // network — `toChain` reads CAIP-2 chainId, rpcUrl, networkToken, and
+    // multicall off the active Avalanche EVM network from Redux.
+    const fromNetwork = getNetwork(fromToken.networkChainId)
+    if (!fromNetwork) return false
+    let sourceChain
+    try {
+      sourceChain = toChain(fromNetwork)
+    } catch (err) {
+      Logger.error('[RecurringSwap] toChain failed', err)
+      return false
+    }
+
+    setRecurringSubmitting(true)
+    try {
+      await submitRecurringSwap({
+        quote: recurringQuote.data,
+        fromAddress: activeAccount.addressC,
+        sourceChain,
+        fromTokenSymbol: fromToken.symbol,
+        fromTokenDecimals: fromToken.decimals,
+        toTokenSymbol: toToken.symbol,
+        frequency: recurring.frequency,
+        numberOfOrders: recurring.numberOfOrders,
+        amountPerOrder: fromTokenValue,
+        // Threaded through so submitRecurringSwap can target its
+        // quote-expiry / SDK-rejection invalidations at the exact cached
+        // quote, not every recurring quote in the app.
+        fromTokenLocalId: fromToken.localId,
+        toTokenLocalId: toToken.localId,
+        fromTokenNetworkChainId: fromToken.networkChainId,
+        toTokenNetworkChainId: toToken.networkChainId,
+        slippageBps: recurringSlippageBps
+      })
+      // submitRecurringSwap fires the success snackbar + analytics +
+      // staggered query invalidations on its own (the SDK call's resolution
+      // is the success signal; no Redux listener in between). Dismiss the
+      // modal stack so the user lands back where they came from.
+      dismissAll()
+      return true
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      // User-rejection errors from the signer bubble up untouched. They're
+      // not a bug — they're the user explicitly tapping Reject. Suppress
+      // both the failure toast AND the Logger.error (which pipes to
+      // Sentry) so rejections don't pollute the error telemetry.
+      if (/User (rejected|cancel(l|led))/i.test(message)) {
+        Logger.info('[RecurringSwap] submitRecurringSwap user-rejected')
+      } else if (isInvalidParamsError(err)) {
+        // Quote expired / sourceChain mismatch — surface a recoverable
+        // hint instead of the generic "try again" copy.
+        Logger.error('[RecurringSwap] submitRecurringSwap threw', err)
+        showSnackbar('Quote expired — please re-confirm and try again')
+      } else {
+        Logger.error('[RecurringSwap] submitRecurringSwap threw', err)
+        showSnackbar('Recurring swap failed — please try again')
+      }
+    } finally {
+      setRecurringSubmitting(false)
+    }
+    return false
+  }, [
+    recurringQuote.data,
+    activeAccount,
+    fromToken,
+    toToken,
+    recurring.frequency,
+    recurring.numberOfOrders,
+    fromTokenValue,
+    getNetwork,
+    dismissAll
+  ])
+
+  const handleNext = useCallback(() => {
+    if (recurring.isRecurring) {
+      void submitRecurring()
+      return
+    }
+    handleSwap()
+  }, [recurring.isRecurring, submitRecurring, handleSwap])
+
   const renderFooter = useCallback(() => {
+    const isBusy = isSwapping || recurringSubmitting
     return (
       <>
         {isLombard && renderLombardLogo()}
         <Button
-          testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
+          testID={!canSubmit || isBusy ? 'next_btn_disabled' : 'next_btn'}
           type="primary"
           size="large"
-          onPress={handleSwap}
-          disabled={!canSwap || isSwapping}>
-          {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
+          onPress={handleNext}
+          disabled={!canSubmit || isBusy}>
+          {isBusy ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
       </>
     )
-  }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
+  }, [
+    canSubmit,
+    handleNext,
+    isSwapping,
+    recurringSubmitting,
+    isLombard,
+    renderLombardLogo
+  ])
+
+  const renderCctTwoTxNotice = useCallback(() => {
+    if (!showCctTwoTxNotice) return null
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          alignItems: 'center',
+          marginTop: 16
+        }}>
+        <Icons.Alert.ErrorOutline
+          color={theme.colors.$textDanger}
+          width={24}
+          height={24}
+        />
+        <Text
+          sx={{
+            flexShrink: 1,
+            fontFamily: 'Inter-Medium',
+            fontSize: 15,
+            lineHeight: 20,
+            letterSpacing: 0,
+            color: '$textDanger'
+          }}>
+          This swap will require signing two transactions. One export and one
+          import.
+        </Text>
+      </View>
+    )
+  }, [showCctTwoTxNotice, theme.colors.$textDanger])
 
   const renderFromAndToSections = useCallback(() => {
     if (isTokensLoading && !fromToken && !toToken) {
@@ -1033,10 +1401,74 @@ export const SwapScreen = (): JSX.Element => {
       isModal
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Schedule-management entry point: surfaces above the new-swap flow so
+          users with existing schedules see + manage them before entering a
+          new pair. Self-hides via `count === 0` when there are none. */}
+      {!isRecurringBlocked && (
+        <View sx={{ marginBottom: 20 }}>
+          {/* `from="swap"` threads through to the route param so the
+              schedules screen shows a back button (returns to this swap
+              form) instead of hiding it like the Activity-tab entry. */}
+          <RecurringSchedulesBanner from="swap" />
+        </View>
+      )}
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
       {renderError()}
-      <View style={{ marginTop: 24 }}>
+      {/* Disclaimer banner — only when recurring is ON. Per Figma it sits
+          between the swap card and the toggle. */}
+      {showRecurringToggle && recurring.isRecurring && (
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 8
+          }}>
+          <Icons.Action.Info
+            color={theme.colors.$textPrimary}
+            width={20}
+            height={20}
+          />
+          <Text variant="body2" sx={{ color: '$textPrimary', flexShrink: 1 }}>
+            Swap rate is for the first swap, subsequent swaps will change
+            depending on the market
+          </Text>
+        </View>
+      )}
+      {/* Recurring toggle — rendered whenever the pair is eligible, regardless
+          of the on/off state (per Figma's "Recurring OFF" + "Recurring ON"
+          screens). Sits above the Pricing/Slippage/Price-impact rows. */}
+      {showRecurringToggle && (
+        <View sx={{ marginTop: 12 }}>
+          <GroupList
+            data={[
+              {
+                title: 'Make this a recurring swap',
+                value: (
+                  <Toggle
+                    value={recurring.isRecurring}
+                    onValueChange={recurring.setIsRecurring}
+                  />
+                )
+              }
+            ]}
+            separatorMarginRight={16}
+          />
+        </View>
+      )}
+      {showRecurringToggle && recurring.isRecurring && (
+        <RecurringDetailsRows
+          amountPerOrder={fromTokenValue}
+          fromTokenSymbol={fromToken?.symbol}
+          fromTokenDecimals={
+            fromToken && 'decimals' in fromToken
+              ? fromToken.decimals
+              : undefined
+          }
+        />
+      )}
+      <View style={{ marginTop: 12 }}>
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}
       </View>
@@ -1064,6 +1496,7 @@ export const SwapScreen = (): JSX.Element => {
             : 18
         }
       />
+      {renderCctTwoTxNotice()}
     </ScrollScreen>
   )
 }

@@ -3,6 +3,7 @@ import {
   Button,
   GroupList,
   GroupListItem,
+  Icons,
   Text,
   useTheme,
   View
@@ -10,7 +11,8 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import type { ScrollView } from 'react-native-gesture-handler'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const HERO_VALUE = 1234.45
@@ -23,14 +25,35 @@ const TOTAL_DEPOSITED = 2344.56
 const TOTAL_WITHDRAWN = 500.0
 const NET_DEPOSITS = 1844.56
 const NET_PNL = 418.43
+const ACCORDION_EXPAND_DURATION = 350
 
 export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
+  const scrollViewRef = useRef<ScrollView>(null)
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
+  }, [])
+
+  // Clear any pending scroll on unmount so it can't fire after teardown.
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    }
+  }, [])
+
+  const handlePerformanceToggle = useCallback((expanded: boolean) => {
+    // Cancel any pending scroll (e.g. a quick collapse) before scheduling.
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
+    if (expanded) {
+      scrollTimeoutRef.current = setTimeout(
+        () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+        ACCORDION_EXPAND_DURATION
+      )
+    }
   }, [])
 
   const handlePositionsPress = useCallback(() => {
@@ -62,6 +85,12 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         title: 'In active positions',
         subtitle: '3 positions',
         value: formatCurrency({ amount: IN_POSITIONS }),
+        accessory: (
+          <Icons.Navigation.ChevronRight
+            color={theme.colors.$textSecondary}
+            style={{ marginRight: -8 }}
+          />
+        ),
         onPress: handlePositionsPress
       },
       {
@@ -70,7 +99,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         value: formatCurrency({ amount: PENDING })
       }
     ],
-    [formatCurrency, handlePositionsPress]
+    [formatCurrency, handlePositionsPress, theme.colors.$textSecondary]
   )
 
   const performanceBreakdown = useMemo<GroupListItem[]>(
@@ -100,6 +129,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
       {
         title: 'Account performance',
         subtitle: 'All-time performance',
+        onAccordionToggle: handlePerformanceToggle,
         accordion: (
           <GroupList
             data={performanceBreakdown}
@@ -109,7 +139,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         )
       }
     ],
-    [performanceBreakdown]
+    [performanceBreakdown, handlePerformanceToggle]
   )
 
   const handleWithdraw = useCallback(() => {
@@ -144,6 +174,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
+      ref={scrollViewRef}
       isModal
       title="Available balance"
       subtitle="An overview of your Hyperliquid account"

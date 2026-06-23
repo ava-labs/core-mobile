@@ -94,6 +94,10 @@ interface SwapContextState {
   destination: SwapSide
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
+  /** Live source-token amount in smallest units. Exposed for consumers
+   *  (e.g. the pricing details modal) that need to recompute downstream
+   *  state (recurring quotes, fee breakdowns) outside the SwapScreen. */
+  amount: bigint | undefined
   setAmount: Dispatch<bigint | undefined>
   /**
    * True iff the source amount was most-recently set by the Max button.
@@ -567,6 +571,7 @@ export const SwapContextProvider = ({
     destination,
     setDestination,
     swapStatus,
+    amount,
     setAmount,
     userClickedMax,
     setUserClickedMax,

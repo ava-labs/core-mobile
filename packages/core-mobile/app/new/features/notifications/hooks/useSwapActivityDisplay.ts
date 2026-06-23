@@ -8,6 +8,7 @@ import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import type { Transfer } from '@avalabs/fusion-sdk'
+import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
 import {
@@ -51,6 +52,8 @@ export type SwapActivityDisplay = {
   toNetwork: string
   fromNetworkLogoUri?: string
   toNetworkLogoUri?: string
+  fromNetworkChainId?: number
+  toNetworkChainId?: number
   fromTokenLogoUri?: string
   toTokenLogoUri?: string
   /** Overall swap status (completed only when both chains are done). */
@@ -200,10 +203,16 @@ export function useSwapActivityDisplay(
       toAmount,
       fromAmountInCurrency,
       toAmountInCurrency,
-      fromNetwork: transfer.sourceChain.chainName,
-      toNetwork: transfer.targetChain.chainName,
+      fromNetwork: fromNetworkData
+        ? getNetworkLongDisplayName(fromNetworkData)
+        : transfer.sourceChain.chainName,
+      toNetwork: toNetworkData
+        ? getNetworkLongDisplayName(toNetworkData)
+        : transfer.targetChain.chainName,
       fromNetworkLogoUri: fromNetworkData?.logoUri,
       toNetworkLogoUri: toNetworkData?.logoUri,
+      fromNetworkChainId: fromNetworkData?.chainId,
+      toNetworkChainId: toNetworkData?.chainId,
       fromTokenLogoUri: item.fromToken.logoUri,
       toTokenLogoUri: item.toToken.logoUri,
       status: mapTransferToSwapStatus(transfer),

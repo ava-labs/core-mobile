@@ -1,4 +1,6 @@
 export default {
+  continueWithGoogle: 'continueWithGoogle',
+  continueWithApple: 'continueWithApple',
   accessExistingWallet: 'accessExistingWallet',
   chooseWalletTitle: 'How would you like to access your existing wallet?',
   typeRecoverPhase: 'list_item__Type in a recovery phrase',
@@ -8,6 +10,7 @@ export default {
   unlockBtn: 'unlock_btn',
   agreeAndContinue: 'agreeAndContinueBtn',
   import: `import_btn`,
+  skip: 'skip_btn',
   enterPinSecondScreenTitle: 'Confirm your',
   enterPinFirstScreenTitle: 'Secure your wallet',
   pinInputField: 'pin_input',

@@ -73,6 +73,13 @@ const EMIT_THROTTLE_MS = 80
 // the last in-flight throttled onChange echo as it drains on the JS thread.
 const SETTLE_WINDOW_MS = 250
 
+// Below the diameter the dial stops reading the finger's x (the horizontal
+// sweep there flings the value between min/max). Instead vertical travel
+// nudges the value relative to where the finger crossed the diameter, in the
+// direction that continues the arc (see scrubDir). Tuned so a full 0→1 change
+// takes ~4× the arc radius of vertical travel, gentle enough as a fine-tune.
+const SCRUB_PROGRESS_PER_PX = 1 / (4 * ARC_RADIUS)
+
 export const CircularDial: FC<CircularDialProps> = ({
   value,
   onChange,
@@ -193,6 +200,20 @@ export const CircularDial: FC<CircularDialProps> = ({
   // deliberate knob grab drags the dial in any direction, including
   // pure vertical — the parent scroll never claims a knob-grab.
   const startedOnKnob = useSharedValue(false)
+
+  // Below-diameter vertical-scrub state. `isScrubbing` latches on the first
+  // frame the finger is below the diameter; the anchors capture the value and
+  // finger height at that moment so subsequent vertical travel nudges the
+  // value from there. Cleared on each gesture start and the moment the finger
+  // climbs back above the diameter.
+  const isScrubbing = useSharedValue(false)
+  const scrubAnchorProgress = useSharedValue(0)
+  const scrubAnchorY = useSharedValue(0)
+  // Sign that keeps the scrub continuous with the arc at the crossing point.
+  // On the right half (3 o'clock = max) downward finger motion *increases* the
+  // value, on the left half it decreases it; latching the side avoids the
+  // value flipping direction the instant the finger crosses the diameter.
+  const scrubDir = useSharedValue(1)
   // Outer container width, captured via onLayout. Needed to convert
   // the touch's view-relative x into canvas-relative x (the canvas is
   // horizontally centered inside the outer container).
@@ -301,6 +322,9 @@ export const CircularDial: FC<CircularDialProps> = ({
       'worklet'
       isActive.value = true
       isDragging.value = true
+      // A fresh drag starts on the dial, never mid-scrub — clear any latch
+      // left from a prior gesture that ended below the diameter.
+      isScrubbing.value = false
       // Zero so the first step crossing of this drag emits immediately
       // rather than waiting out a throttle window left over from before.
       lastEmitMs.value = 0
@@ -318,6 +342,31 @@ export const CircularDial: FC<CircularDialProps> = ({
       // space the same way onTouchesDown does, then offset from the centre.
       const canvasX = event.x - (outerWidth.value - CANVAS_WIDTH) / 2
       const canvasY = event.y - canvasPadding
+      // Below the diameter, ignore the finger's x and drive the value purely
+      // from vertical travel relative to the crossing point. Direction follows
+      // the side the finger crossed on (latched in scrubDir) so the value
+      // doesn't flip at the diameter: on the right half down increases, on the
+      // left half down decreases. The endpoint knobs sit exactly on the
+      // diameter (dy === 0), so gate on strictly-below to keep tracking there.
+      if (canvasY - ARC_CY > 0) {
+        if (!isScrubbing.value) {
+          isScrubbing.value = true
+          scrubAnchorProgress.value = progressSv.value
+          scrubAnchorY.value = canvasY
+          scrubDir.value = canvasX - ARC_CX >= 0 ? 1 : -1
+        }
+        const deltaDown = canvasY - scrubAnchorY.value
+        progressSv.value = clamp(
+          scrubAnchorProgress.value +
+            scrubDir.value * deltaDown * SCRUB_PROGRESS_PER_PX,
+          0,
+          1
+        )
+        return
+      }
+      // Back above the diameter — drop the scrub latch and resume normal angle
+      // tracking, re-syncing to the finger's actual position.
+      isScrubbing.value = false
       const target = progressFromCanvasPoint(
         canvasX - ARC_CX,
         canvasY - ARC_CY,

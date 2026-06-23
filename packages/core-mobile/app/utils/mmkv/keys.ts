@@ -30,5 +30,6 @@ export enum ZustandStorageKeys {
   TRACK_SEARCH_VIEW = 'trackSearchView',
   LEDGER_WALLET_MAP = 'ledgerWalletMap',
   APP_REVIEW = 'appReview',
-  FUSION_TRANSFERS = 'fusionTransfers'
+  FUSION_TRANSFERS = 'fusionTransfers',
+  RECURRING_PENDING_ACTION = 'recurringPendingAction'
 }

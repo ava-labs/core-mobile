@@ -6,10 +6,7 @@ import { useSelector } from 'react-redux'
 import { selectNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isTokenMalicious } from 'utils/isTokenMalicious'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 
@@ -30,10 +27,19 @@ export const LogoWithNetwork = ({
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
 
+  const isPChainNative =
+    token.type === TokenType.NATIVE &&
+    network !== undefined &&
+    isPChain(network.chainId)
+  const isXChainNative =
+    token.type === TokenType.NATIVE &&
+    network !== undefined &&
+    isXChain(network.chainId)
+
   const shouldShowNetworkLogo =
     token.type !== TokenType.NATIVE ||
-    isTokenWithBalanceAVM(token) ||
-    isTokenWithBalancePVM(token) ||
+    isPChainNative ||
+    isXChainNative ||
     (network &&
       CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
       token.type === TokenType.NATIVE)
@@ -42,7 +48,7 @@ export const LogoWithNetwork = ({
     t: LocalTokenWithBalance,
     n: Network
   ): React.JSX.Element | undefined => {
-    if (isTokenWithBalancePVM(t)) {
+    if (t.type === TokenType.NATIVE && isPChain(n.chainId)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK
           testID="network_logo__p_chain"
@@ -57,7 +63,7 @@ export const LogoWithNetwork = ({
         />
       )
     }
-    if (isTokenWithBalanceAVM(t)) {
+    if (t.type === TokenType.NATIVE && isXChain(n.chainId)) {
       return isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK
           testID="network_logo__x_chain"

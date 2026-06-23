@@ -28,6 +28,7 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
+import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export type TokenInputWidgetRef = {
@@ -275,7 +276,7 @@ export const TokenInputWidget = forwardRef<
               <View
                 sx={{
                   flexDirection: 'row',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: 24,
                   justifyContent: 'space-between',
                   marginTop: -12
@@ -296,6 +297,11 @@ export const TokenInputWidget = forwardRef<
                         <ActivityIndicator size="small" />
                       </View>
                     ) : undefined)}
+                  {token && network && (
+                    <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+                      {`on ${getNetworkLongDisplayName(network)}`}
+                    </Text>
+                  )}
                 </View>
                 <View
                   sx={{

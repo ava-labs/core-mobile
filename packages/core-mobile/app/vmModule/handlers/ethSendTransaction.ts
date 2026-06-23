@@ -58,7 +58,19 @@ export const ethSendTransaction = async ({
     if (onSigned) {
       try {
         const shouldBroadcast = await onSigned()
-        if (!shouldBroadcast) return
+        if (!shouldBroadcast) {
+          // Gasless funding declined without throwing (e.g. gas station
+          // returned DO_NOT_RETRY). The upstream Promise chain
+          // (ApprovalController → vm-module onRpcRequest → EvmSigner →
+          // executeFirstFill) is awaiting this resolve — without it the
+          // recurring-swap submit hangs indefinitely.
+          resolve({
+            error: rpcErrors.internal({
+              message: 'Gasless funding failed'
+            })
+          })
+          return
+        }
       } catch (error) {
         Logger.error(
           `[ethSendTransaction] onSigned FAILED: ${

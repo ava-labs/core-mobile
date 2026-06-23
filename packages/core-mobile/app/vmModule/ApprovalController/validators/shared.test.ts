@@ -17,7 +17,12 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   }
 }))
 
-import { isBypassEligible, runValidateAndCapture } from './shared'
+import {
+  isBypassEligible,
+  MalformedRecurringSwapContextError,
+  readRecurringSwapApprovalContext,
+  runValidateAndCapture
+} from './shared'
 
 const SRC_TOKEN = '0xAAA0000000000000000000000000000000000001'
 const DST_TOKEN = '0xBBB0000000000000000000000000000000000002'
@@ -399,5 +404,138 @@ describe('shared.runValidateAndCapture telemetry', () => {
   it('emits exactly ONE event per validate() call', async () => {
     await runShared({})
     expect(mockAnalyticsCapture).toHaveBeenCalledTimes(1)
+  })
+})
+
+// EvmSigner.signOne still injects RECURRING_SWAP context onto the approval
+// request so the modal can render `<RecurrenceDetails />` above the standard
+// tx details (the SDK signs internally, but mobile wraps each
+// `sign` call through ApprovalController). The validator boundary parses
+// that context; if it ever sees a malformed snapshot from a producer bug it
+// MUST throw rather than silently degrade — otherwise the user would sign
+// a recurring schedule shown as a one-shot swap.
+describe('readRecurringSwapApprovalContext', () => {
+  const makeReq = (recurringCtx: unknown): RpcRequest =>
+    ({
+      context: { [RequestContext.RECURRING_SWAP]: recurringCtx }
+    } as unknown as RpcRequest)
+
+  it('returns undefined when no context is present', () => {
+    expect(
+      readRecurringSwapApprovalContext({ context: {} } as unknown as RpcRequest)
+    ).toBeUndefined()
+  })
+
+  it('parses a valid fill context', () => {
+    const valid = {
+      type: 'fill' as const,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '1.00',
+      numberOfOrders: 4,
+      isUnlimited: false,
+      frequency: { unit: 'day', value: 1 }
+    }
+    expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
+  })
+
+  // Regression for the unlimited DCA modal-auto-reject bug: the fusion-sdk's
+  // `markrRecurringQuote` normalizer translates the UI's `Infinity` sentinel
+  // to `-1` on the wire, and the response echoes that back unchanged.
+  // `submitRecurringSwap` forwards `quote.numberOfOrders` verbatim into this
+  // side-channel context, so the schema MUST accept `-1` when isUnlimited is
+  // true — otherwise the validator throws,
+  // `useRecurringApprovalContext` calls `onReject`, and the user can never
+  // confirm an unlimited schedule.
+  it('parses a valid unlimited fill context (numberOfOrders = -1 sentinel)', () => {
+    const valid = {
+      type: 'fill' as const,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '1.00',
+      numberOfOrders: -1,
+      isUnlimited: true,
+      frequency: { unit: 'day', value: 1 }
+    }
+    expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
+  })
+
+  it('rejects isUnlimited=true with a finite numberOfOrders (claim mismatch)', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: 4,
+          isUnlimited: true,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  it('rejects isUnlimited=false with the wire sentinel (claim mismatch)', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: -1,
+          isUnlimited: false,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  it('rejects out-of-range finite numberOfOrders', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(
+        makeReq({
+          type: 'fill',
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC',
+          amountPerOrderFormatted: '1.00',
+          numberOfOrders: 1,
+          isUnlimited: false,
+          frequency: { unit: 'day', value: 1 }
+        })
+      )
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  // Critical contract: silently returning undefined here would hide the
+  // RecurrenceDetails preview while the underlying recurring swap would
+  // still execute — user would sign a recurring schedule shown as a
+  // generic one-shot swap.
+  it('throws MalformedRecurringSwapContextError on a malformed payload', () => {
+    expect(() =>
+      readRecurringSwapApprovalContext(makeReq({ type: 'fill' }))
+    ).toThrow(MalformedRecurringSwapContextError)
+  })
+
+  // Same security invariant applies when the producer ships a non-object
+  // payload (string, number, boolean, array). Previously these silently
+  // returned undefined and hid the recurring preview; they now flow into
+  // Zod and throw.
+  it.each<[string, unknown]>([
+    ['string', 'fill'],
+    ['number', 42],
+    ['boolean', true],
+    ['array', [{ type: 'fill' }]]
+  ])('throws on a non-object payload (%s)', (_label, payload) => {
+    expect(() => readRecurringSwapApprovalContext(makeReq(payload))).toThrow(
+      MalformedRecurringSwapContextError
+    )
+  })
+
+  // Explicit `null` is still treated as "absent" — matches the existing
+  // contract where a missing key returns undefined.
+  it('returns undefined when the context value is explicitly null', () => {
+    expect(readRecurringSwapApprovalContext(makeReq(null))).toBeUndefined()
   })
 })

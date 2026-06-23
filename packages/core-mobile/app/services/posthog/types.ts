@@ -40,6 +40,7 @@ export enum FeatureGates {
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
   FUSION_DISABLE_CROSS_CHAIN_SWAPS = 'fusion-disable-cross-chain-swaps',
   FUSION_QUICK_SWAPS = 'fusion-quick-swaps',
+  SWAP_RECURRING = 'swap-recurring',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   INJECTED_PROVIDER = 'injected-provider',
   PREDICTIONS = 'predictions',

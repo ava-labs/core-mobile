@@ -1,4 +1,5 @@
 import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
+import Clipboard from '@react-native-clipboard/clipboard'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -16,6 +17,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
+import Config from 'react-native-config'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
@@ -106,6 +108,21 @@ export default function Signup(): JSX.Element {
 
   const handleGoogleSignin = (): void => {
     resetSeedlessAuth()
+    // E2E: read JWT placed in clipboard by warmupSeedless(), skip Google OAuth UI
+    if (Config.E2E_MNEMONIC) {
+      Clipboard.getString()
+        .then(idToken => {
+          register({
+            getOidcToken: () => Promise.resolve({ oidcToken: idToken }),
+            oidcProvider: OidcProviders.GOOGLE,
+            onRegisterMfaMethods: handleRegisterMfaMethods,
+            onVerifyMfaMethod: handleVerifyMfaMethod,
+            onAccountVerified: handleAccountVerified
+          }).catch(() => showSnackbar('Seedless E2E login failed'))
+        })
+        .catch(() => showSnackbar('Seedless E2E: clipboard read failed'))
+      return
+    }
     register({
       getOidcToken: GoogleSigninService.signin,
       oidcProvider: OidcProviders.GOOGLE,

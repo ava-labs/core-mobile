@@ -4,6 +4,8 @@ import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurringApprovalContext'
+import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -46,10 +48,44 @@ import {
   removeWebsiteItemIfNecessary
 } from './utils'
 
-const ApprovalScreen = ({
-  params: { request, displayData, signingData, onApprove, onReject }
+// Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
+// Splitting it out keeps the main render's cognitive complexity at its
+// pre-existing limit — the `if (isMalformed) return null` is a security
+// invariant (must short-circuit before Approve is reachable), not a render
+// branch we want inlined into the main component's JSX.
+const ApprovalScreen = (props: {
+  params: ApprovalParams
+}): JSX.Element | null => {
+  const rejectAndClose = useCallback(
+    (message?: string) => {
+      props.params.onReject(message)
+      if (router.canGoBack()) {
+        router.back()
+      } else if (router.canDismiss()) {
+        router.dismissAll()
+      }
+    },
+    [props.params.onReject]
+  )
+  const { recurringContext, isRecurringContextMalformed } =
+    useRecurringApprovalContext(props.params.request, rejectAndClose)
+  if (isRecurringContextMalformed) return null
+  return (
+    <ApprovalScreenInner
+      params={props.params}
+      recurringContext={recurringContext}
+    />
+  )
+}
+
+const ApprovalScreenInner = ({
+  params: { request, displayData, signingData, onApprove, onReject },
+  recurringContext
 }: {
   params: ApprovalParams
+  recurringContext: ReturnType<
+    typeof useRecurringApprovalContext
+  >['recurringContext']
 }): JSX.Element => {
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
@@ -383,6 +419,7 @@ const ApprovalScreen = ({
             logoUri={displayData.network.logoUri}
             symbol={symbol}
             name={displayData.network.name}
+            chainId={chainId}
           />
         </View>
       )
@@ -394,6 +431,7 @@ const ApprovalScreen = ({
           logoUri={displayData.network.logoUri}
           symbol={symbol}
           name={displayData.network.name}
+          chainId={chainId}
         />
       )
     }
@@ -401,7 +439,7 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }, [displayData.account, displayData.network, symbol])
+  }, [displayData.account, displayData.network, symbol, chainId])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
@@ -507,6 +545,16 @@ const ApprovalScreen = ({
       {renderAccountUnavailableWarning()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
+      {/* `RECURRING_SWAP` context is also injected by `EvmSigner.signOne` on
+          the preceding ERC-20 spend-limit approval (when the recurring fill
+          needs an allowance). Suppress the preview on that screen — the
+          "Scheduling recurring swap" block belongs on the actual fill
+          approval, not on the allowance step. `spendLimits.length > 0` is
+          the discriminator: a non-empty list means this modal is the
+          allowance approval, not the fill. */}
+      {recurringContext && spendLimits.length === 0 && (
+        <RecurrenceDetails context={recurringContext} />
+      )}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
       {renderDetails()}

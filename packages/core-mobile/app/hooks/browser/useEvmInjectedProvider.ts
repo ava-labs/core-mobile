@@ -16,8 +16,6 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { router as appRouter } from 'expo-router'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { approvalController } from 'vmModule/ApprovalController/ApprovalController'
 import {
   grantPermission as grantPermissionAction,
@@ -26,6 +24,8 @@ import {
 } from 'store/permissions/slice'
 import type { RootState } from 'store/types'
 import type { Account } from 'store/account'
+import { applyConnectNavEffect } from './injectedProvider/connectApprovalNavigation'
+import { connectApprovalRegistry } from './injectedProvider/connectApprovalRegistry'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 import {
@@ -67,7 +67,7 @@ type UseEvmInjectedProviderResult = {
   handleDomainMetadata: (payload: string) => void
   emitEvent: (eventName: string, data: unknown) => void
   dappMetadata: React.RefObject<DomainMetadata | null>
-  setCurrentUrl: (url: string) => void
+  handleCommittedUrl: (url: string) => void
 }
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
@@ -148,47 +148,61 @@ export function useEvmInjectedProvider(
     if (tabChainId !== undefined) dispatch(clearTabChainId({ tabId }))
   }, [isDeveloperMode, dispatch, tabId, tabChainId])
 
-  // Router is assigned below (after useMemo). setCurrentUrl may fire before
+  // Router is assigned below (after useMemo). handleCommittedUrl may fire before
   // the router is constructed on first render, so we route through a ref.
   const routerRef = useRef<InjectedProviderRouter | null>(null)
 
   // primeAccounts is defined later (it reads refs declared further down), so
-  // setCurrentUrl's SPA re-prime routes through a ref — same pattern as routerRef.
+  // handleCommittedUrl routes its prime through a ref — same pattern as routerRef.
   const primeAccountsRef = useRef<(() => void) | null>(null)
 
-  // Tracks the reject fn of an in-flight connect approval so a later request
-  // or an origin change can unstick it. Also used by requestConnectApproval
-  // in the memo below.
-  const prevInflightConnectReject = useRef<((err: unknown) => void) | null>(
-    null
-  )
+  // Handle a URL the WebView has actually committed and rendered (onLoad /
+  // same-origin SPA navigation). The provider origin is intentionally never
+  // seeded from provisional navigation events: a page can keep executing while a
+  // hanging cross-origin navigation is provisional, and would get its requests
+  // attributed to the destination origin (APPSEC-330 address-bar spoof vector).
+  // Priming runs here at every commit — not off domain_metadata — so the trusted
+  // origin is always set first; the cost is that origin-requiring RPCs fired
+  // before the first commit are rejected, and the prime recovers connected state.
+  const handleCommittedUrl = useCallback(
+    (url: string) => {
+      const prevUrl = currentUrlRef.current
+      const prevOrigin = getOriginFromUrl(prevUrl)
+      currentUrlRef.current = url
+      const newOrigin = getOriginFromUrl(url)
 
-  const setCurrentUrl = useCallback((url: string) => {
-    const prevUrl = currentUrlRef.current
-    const prevOrigin = getOriginFromUrl(prevUrl)
-    currentUrlRef.current = url
-    const newOrigin = getOriginFromUrl(url)
+      if (prevOrigin && prevOrigin !== newOrigin) {
+        // Cross-origin navigation — cancel in-flight requests and unstick any
+        // connect approval(s) this tab parked. The registry advances/dismisses
+        // the modal via the nav effect (handled === true). If it returned
+        // `none`, this tab's connect was queued (another tab's modal is active)
+        // OR there was no connect for this tab. Only fall back to the generic
+        // modal dismissal when NO connect is active — otherwise we'd wrongly pop
+        // another tab's connect modal; when none is active, a non-connect modal
+        // (e.g. signing) may be up and should be dismissed. (CP-14385)
+        routerRef.current?.cancelByOrigin(newOrigin)
+        const handled = applyConnectNavEffect(
+          connectApprovalRegistry.rejectByTab(tabId, {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          })
+        )
+        if (!handled && !connectApprovalRegistry.hasActive()) {
+          approvalController.handleGoBackIfNeeded()
+        }
+      }
 
-    if (prevOrigin && prevOrigin !== newOrigin) {
-      // Cross-origin navigation — cancel in-flight requests and unstick any
-      // parked approval tied to the prior page.
-      routerRef.current?.cancelByOrigin(newOrigin)
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
-      approvalController.handleGoBackIfNeeded()
-    } else if (prevOrigin && prevOrigin === newOrigin && prevUrl !== url) {
-      // Same-origin SPA navigation to a new URL (pushState/replaceState) — note
-      // prevOrigin must be set, so this excludes the initial page load (which is
-      // primed via domain_metadata). The one-time connect/accountsChanged events
-      // already fired on first load, so a provider consumer mounted by the new
-      // route sees no accounts and appears disconnected. Re-prime so it
-      // reconnects. CP-13772.
+      // Prime the shim's _accounts cache on every committed URL: the initial
+      // page load, cross-origin navigation, and same-origin SPA navigation
+      // (pushState/replaceState). domain_metadata no longer primes (it arrives
+      // before the navigation commits, when currentUrlRef may still hold the
+      // previous document's origin — priming there could leak the previous
+      // origin's grant to a cross-origin document), so commit time is the single
+      // prime point that re-establishes connected state. CP-13772.
       primeAccountsRef.current?.()
-    }
-  }, [])
+    },
+    [tabId]
+  )
 
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
@@ -382,84 +396,72 @@ export function useEvmInjectedProvider(
     })
   }, [store, injectAccountsChanged])
 
-  // When this browser tab unmounts (tab closed), reject any parked connect
-  // approval with 4001 so the dApp's eth_requestAccounts promise settles instead
-  // of hanging until supersede or the 90s timeout. Inactive tabs stay mounted
-  // when switching tabs, so this does not run on tab switch.
+  // When this browser tab unmounts (tab closed), reject this tab's connect
+  // approval(s) with 4001 so the dApp's eth_requestAccounts promise settles
+  // instead of hanging until supersede or the 90s timeout, and advance/dismiss
+  // the modal if one of them was active. Inactive tabs stay mounted when
+  // switching tabs, so this does not run on tab switch. (CP-14385)
   useEffect(() => {
     return () => {
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
+      applyConnectNavEffect(
+        connectApprovalRegistry.rejectByTab(tabId, {
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
+      )
     }
-  }, [])
+  }, [tabId])
 
   const requestConnectApproval = useCallback(
-    (peerMeta: PeerMeta): Promise<Account[]> => {
-      // If a prior connect is still parked (screen never mounted, or a second
-      // request arrived before the first resolved), reject it so its dApp can
-      // unstick. Then replace the cache entry with our own settled-guarded
-      // callbacks.
-      prevInflightConnectReject.current?.({
-        code: EIP1193_USER_REJECTED_CODE,
-        message: USER_REJECTED_REQUEST_MESSAGE
-      })
-      prevInflightConnectReject.current = null
-
+    (peerMeta: PeerMeta, requestId: number): Promise<Account[]> => {
       return new Promise<Account[]>((resolve, reject) => {
         let settled = false
         const safeResolve = (selected: Account[]): void => {
           if (settled) return
           settled = true
-          // Only clear if the ref still points to THIS request's handler — a
-          // newer in-flight request would have overwritten it, and we must not
-          // clobber that one.
-          if (prevInflightConnectReject.current === safeReject) {
-            prevInflightConnectReject.current = null
-          }
           resolve(selected)
-          // fallbackTimer would be no op, no need to maintain
           clearTimeout(fallbackTimer)
         }
         const safeReject = (err: unknown): void => {
           if (settled) return
           settled = true
-          // Only clear if the ref still points to THIS request's handler — a
-          // newer in-flight request would have overwritten it, and we must not
-          // clobber that one.
-          if (prevInflightConnectReject.current === safeReject) {
-            prevInflightConnectReject.current = null
-          }
           reject(err)
-          // fallbackTimer would be no op, no need to maintain
           clearTimeout(fallbackTimer)
         }
-        prevInflightConnectReject.current = safeReject
 
-        walletConnectCache.injectedAuthParams.set({
-          peerMeta,
-          onApprove: safeResolve,
-          onReject: () =>
-            safeReject({
-              code: EIP1193_USER_REJECTED_CODE,
-              message: USER_REJECTED_REQUEST_MESSAGE
-            })
-        })
-        appRouter.navigate('/authorizeInjectedDapp')
+        // Register in the per-tab-keyed registry (replaces the single global
+        // cache slot). The registry mints a unique approvalId; a same-tab
+        // in-flight request is superseded in place (rejecting its promise); a
+        // concurrent OTHER tab is queued — neither clobbers the other (CP-14385).
+        const { approvalId, effect } = connectApprovalRegistry.request(
+          {
+            tabId,
+            requestId,
+            peerMeta,
+            approve: safeResolve,
+            reject: safeReject
+          },
+          {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          }
+        )
+        applyConnectNavEffect(effect)
 
-        // Safety net: if the screen never mounts or calls back within 90s,
-        // reject so the dApp can surface an error instead of hanging.
+        // Safety net: if the screen never mounts or calls back within 90s, reject
+        // so the dApp can surface an error instead of hanging. Timer is per
+        // request, started at creation, so queued requests are bounded too.
         const fallbackTimer = setTimeout(() => {
-          safeReject({
-            code: JSON_RPC_INTERNAL_ERROR_CODE,
-            message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
-          })
+          applyConnectNavEffect(
+            connectApprovalRegistry.reject(approvalId, {
+              code: JSON_RPC_INTERNAL_ERROR_CODE,
+              message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
+            })
+          )
         }, CONNECT_APPROVAL_TIMEOUT_MS)
       })
     },
-    []
+    [tabId]
   )
 
   const router = useMemo(() => {
@@ -584,8 +586,8 @@ export function useEvmInjectedProvider(
 
   // Emit accountsChanged for the current origin's connected accounts: the
   // granted addresses (active first) when the active account is granted,
-  // otherwise [] (CP-14382). Shared by page-load priming (handleDomainMetadata)
-  // and same-origin SPA navigation (setCurrentUrl, via primeAccountsRef) so a
+  // otherwise [] (CP-14382). Driven by handleCommittedUrl (page load,
+  // cross-origin, and same-origin SPA navigation, via primeAccountsRef) so a
   // freshly-mounted provider consumer on a new route re-establishes the
   // connection. The injected signer always signs with the active account, so
   // priming the granted set while an ungranted account is active would
@@ -603,28 +605,29 @@ export function useEvmInjectedProvider(
     lastEmittedAccountsRef.current = serialized
     injectAccountsChanged(origin, serialized)
   }, [store, injectAccountsChanged])
-  // Publish to the ref so setCurrentUrl (defined above) can re-prime on SPA nav.
-  // useLayoutEffect (not a render-phase assignment) to match routerRef: the ref
-  // must be set synchronously on commit, before a navigation event can fire
-  // setCurrentUrl and read it.
+  // Publish to the ref so handleCommittedUrl (defined above) can prime on every
+  // committed URL. useLayoutEffect (not a render-phase assignment) to match
+  // routerRef: the ref must be set synchronously on commit, before a navigation
+  // event can fire handleCommittedUrl and read it.
   useLayoutEffect(() => {
     primeAccountsRef.current = primeAccounts
   }, [primeAccounts])
 
-  const handleDomainMetadata = useCallback(
-    (payload: string) => {
-      try {
-        dappMetadata.current = JSON.parse(payload)
-        Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
-      } catch {
-        Logger.error('[InjectedProvider] Invalid domain_metadata payload')
-      }
-      // Prime the shim's _accounts cache on page load so dApps with
-      // auto-reconnect (wagmi autoConnect, etc.) see the connection immediately.
-      primeAccounts()
-    },
-    [primeAccounts]
-  )
+  // Domain metadata is page-postable and arrives at the new document's
+  // DOMContentLoaded — before the navigation has committed from the native
+  // side, when currentUrlRef may still hold the PREVIOUS document's URL.
+  // Priming must therefore never run off this message (it would either no-op
+  // on first load or, worse, prime a cross-origin document with the previous
+  // origin's grant); only the favicon is kept. Priming is driven by
+  // handleCommittedUrl instead.
+  const handleDomainMetadata = useCallback((payload: string) => {
+    try {
+      dappMetadata.current = JSON.parse(payload)
+      Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
+    } catch {
+      Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+    }
+  }, [])
 
   return {
     providerShimJs,
@@ -632,6 +635,6 @@ export function useEvmInjectedProvider(
     handleDomainMetadata,
     emitEvent,
     dappMetadata,
-    setCurrentUrl
+    handleCommittedUrl
   }
 }

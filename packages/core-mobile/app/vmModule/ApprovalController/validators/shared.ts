@@ -1,5 +1,9 @@
 import { z } from 'zod'
 import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
+import {
+  RECURRING_FREQUENCY_UNITS,
+  RECURRING_FREQUENCY_VALUE_MAX
+} from '@avalabs/fusion-sdk'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { WalletType } from 'services/wallet/types'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
@@ -54,6 +58,128 @@ const readAutoApproveContext = (
       parsed.error
     )
     return undefined
+  }
+  return parsed.data
+}
+
+// Slim schema for the display-only recurring-swap context that EvmSigner
+// (`features/swap/services/signers/EvmSigner.ts`) injects onto an
+// ApprovalController request when the SDK's synthetic Quote carries a
+// `markr-recurring*` aggregator id. Strict zod validation at
+// the read boundary — a malformed snapshot throws so the caller can block
+// the approval rather than silently presenting a recurring schedule as a
+// one-shot swap.
+const recurringFrequencySchema = z
+  .object({
+    // Source the enum from the SDK's exported const so a new wire-level
+    // unit added upstream is automatically accepted by the validator
+    // (avoids the silent drift bug of hand-mirroring the literal tuple).
+    unit: z.enum(RECURRING_FREQUENCY_UNITS),
+    value: z.number().int().min(1).max(RECURRING_FREQUENCY_VALUE_MAX)
+  })
+  .strict()
+
+// Wire sentinel the fusion-sdk's quote normalizer emits for "Unlimited"
+// schedules: see `markrRecurringQuote` in `@avalabs/fusion-sdk` —
+// `Infinity` (UI sentinel) is translated to `-1` before POST /recurring/quote,
+// and the response schema (`RecurringQuoteResponseSchema.numberOfOrders` =
+// `z.number().int()`) echoes it back unchanged. So `quote.numberOfOrders`
+// is `-1` on unlimited responses, which `submitRecurringSwap` forwards
+// verbatim into this side-channel context.
+const UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL = -1
+
+const recurringFillContextSchema = z
+  .object({
+    type: z.literal('fill'),
+    fromTokenSymbol: z.string().min(1),
+    toTokenSymbol: z.string().min(1),
+    amountPerOrderFormatted: z.string().min(1),
+    // Either the wire sentinel for unlimited schedules (`-1`) or a finite
+    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented floor for
+    // finite schedules is 2 (a "1-order schedule" is just a one-shot swap)
+    // — matches the picker's `MIN_ORDERS = 2`. The cross-field refinement
+    // on the outer union enforces that `isUnlimited` and the sentinel
+    // agree.
+    numberOfOrders: z
+      .number()
+      .int()
+      .refine(
+        v =>
+          v === UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL ||
+          (v >= 2 && v <= RECURRING_FREQUENCY_VALUE_MAX),
+        {
+          message: `numberOfOrders must be ${UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL} (unlimited sentinel) or in [2, ${RECURRING_FREQUENCY_VALUE_MAX}]`
+        }
+      ),
+    isUnlimited: z.boolean(),
+    frequency: recurringFrequencySchema
+  })
+  .strict()
+
+const recurringOrderActionContextSchema = z
+  .object({
+    type: z.enum(['cancel', 'pause', 'unpause']),
+    fromTokenSymbol: z.string().min(1),
+    toTokenSymbol: z.string().min(1)
+  })
+  .strict()
+
+export const recurringSwapApprovalContextSchema = z
+  .discriminatedUnion('type', [
+    recurringFillContextSchema,
+    recurringOrderActionContextSchema
+  ])
+  .superRefine((data, ctx) => {
+    if (data.type !== 'fill') return
+    const isWireSentinel =
+      data.numberOfOrders === UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL
+    if (data.isUnlimited !== isWireSentinel) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['isUnlimited'],
+        message:
+          'isUnlimited must be true iff numberOfOrders is the unlimited wire sentinel (-1)'
+      })
+    }
+  })
+
+export type RecurringSwapApprovalContext = z.infer<
+  typeof recurringSwapApprovalContextSchema
+>
+
+// Thrown by `readRecurringSwapApprovalContext` when the request carries
+// a RECURRING_SWAP context that fails schema validation. The producer
+// (EvmSigner.signOne) is internal mobile code, so this signals a mobile
+// bug — but if it slips through, callers MUST refuse to render the
+// approval rather than degrading to a generic-swap UI.
+export class MalformedRecurringSwapContextError extends Error {
+  readonly zodError: z.ZodError
+  constructor(zodError: z.ZodError) {
+    super('Malformed RECURRING_SWAP context')
+    this.name = 'MalformedRecurringSwapContextError'
+    this.zodError = zodError
+  }
+}
+
+export const readRecurringSwapApprovalContext = (
+  request: RpcRequest
+): RecurringSwapApprovalContext | undefined => {
+  const value = readCtx(request)?.[RequestContext.RECURRING_SWAP]
+  // Only nullish counts as "absent". A non-nullish non-object (string,
+  // number, boolean, array, …) is a malformed snapshot from the producer
+  // and MUST flow into Zod so the parse fails loudly — silently dropping
+  // it would hide the RecurrenceDetails preview while the underlying
+  // recurring swap still executes.
+  if (value === null || value === undefined) {
+    return undefined
+  }
+  const parsed = recurringSwapApprovalContextSchema.safeParse(value)
+  if (!parsed.success) {
+    Logger.error(
+      '[shared.readRecurringSwapApprovalContext] malformed RECURRING_SWAP context',
+      parsed.error
+    )
+    throw new MalformedRecurringSwapContextError(parsed.error)
   }
   return parsed.data
 }
