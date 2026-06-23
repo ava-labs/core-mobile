@@ -43,3 +43,13 @@ diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansi
 +    }
  
      internal fun notifyKeyboardAnimationStart() = screen.sheetAnimationCoordinator.notifyKeyboardAnimationStart()
+@@ -452,7 +452,8 @@
+             bottomSheet: View,
+             newState: Int,
+         ) {
+-            if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
++            if (newState == BottomSheetBehavior.STATE_COLLAPSED ||
++                newState == BottomSheetBehavior.STATE_HIDDEN) {
+                 val isImeVisible =
+                     WindowInsetsCompat
+                         .toWindowInsetsCompat(bottomSheet.rootWindowInsets)
