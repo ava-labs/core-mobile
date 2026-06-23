@@ -2,7 +2,8 @@ import {
   BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  Text
+  Text,
+  useTheme
 } from '@avalabs/k2-alpine'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
@@ -145,6 +146,7 @@ export const ListScreenV2 = <T,>({
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
+  const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
@@ -474,11 +476,7 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
-              {/* DEBUG_HEADER_BG (CP-14426): tints the in-list sticky header
-                  blur BLUE to tell it apart from the nav header background
-                  (RED) in a release build. Remove when investigation ends. */}
               <BlurViewWithFallback
-                backgroundColor="rgba(0,0,255,0.5)"
                 style={{
                   flex: 1
                 }}
@@ -662,6 +660,27 @@ export const ListScreenV2 = <T,>({
     <Animated.View
       style={[{ flex: 1 }]}
       entering={getListItemEnteringAnimation(0)}>
+      {/* Android formsheet only: the FlashList is pushed down by
+          `flashListMarginTop` (= headerHeight) to clear the transparent
+          navigation header. That top strip has nothing opaque behind it, so it
+          exposed the formsheet's dim scrim — reading as a second, darker
+          background fading in over the header on scroll. Back the strip with
+          $surfacePrimary so it matches the (opaque) Android header fallback.
+          iOS is unaffected (flashListMarginTop is 0 and the header is a real
+          translucent blur, which must keep showing the list content behind it). */}
+      {isAndroidModal && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: flashListMarginTop,
+            backgroundColor: theme.colors.$surfacePrimary
+          }}
+        />
+      )}
       <FlashList
         ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}

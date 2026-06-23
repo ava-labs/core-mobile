@@ -6,12 +6,6 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 
-// DEBUG_HEADER_BG (CP-14426 duplicate-header-bg investigation): tints the
-// navigation header background RED so we can tell in a release build whether
-// this layer is painting at the same time as ListScreenV2's in-list sticky
-// blur. Delete everything tagged DEBUG_HEADER_BG when the investigation ends.
-const DEBUG_HEADER_BG_TINT: string | undefined = 'rgba(255,0,0,0.5)'
-
 const BlurredBackgroundView = ({
   separator,
   shouldDelayBlurOniOS = false,
@@ -47,7 +41,7 @@ const BlurredBackgroundView = ({
       )}
       <Animated.View style={[blurViewStyle, { flex: 1 }]}>
         <BlurViewWithFallback
-          backgroundColor={DEBUG_HEADER_BG_TINT ?? backgroundColor}
+          backgroundColor={backgroundColor}
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
           style={{
             flex: 1
