@@ -6,7 +6,15 @@ import {
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { removeWebsiteItemIfNecessary, overrideContractItem } from './utils'
+import { RootState } from 'store/types'
+import { Account } from 'store/account/types'
+import {
+  removeWebsiteItemIfNecessary,
+  overrideContractItem,
+  getAccountSelector,
+  isRequestedAccountUnavailable,
+  getAccountUnavailableMessage
+} from './utils'
 
 // Mock the isInAppRequest function for controlled testing
 jest.mock('store/rpc/utils/isInAppRequest', () => ({
@@ -206,5 +214,120 @@ describe('overrideContractItem', () => {
       }
     }
     expect(overrideContractItem(item, ethSendTxRequest)).toEqual(item)
+  })
+})
+
+describe('getAccountSelector', () => {
+  const SVM_ADDRESS = 'SoLaNaPubKey1111111111111111111111111111111'
+  // Active wallet 'w1' and a different wallet 'w2' that holds the SAME address —
+  // the CP-14468 scenario where a dApp pubkey could resolve cross-wallet.
+  const activeAccount = {
+    id: 'w1-0',
+    walletId: 'w1',
+    index: 0,
+    addressC: '0xc1',
+    addressBTC: 'btc1',
+    addressSVM: SVM_ADDRESS
+  }
+  const otherWalletAccount = {
+    id: 'w2-0',
+    walletId: 'w2',
+    index: 0,
+    addressC: '0xc2',
+    addressBTC: 'btc2',
+    addressSVM: SVM_ADDRESS
+  }
+
+  const stateWith = (...accounts: unknown[]): RootState =>
+    ({
+      account: {
+        accounts: Object.fromEntries(
+          accounts.map(a => [(a as { id: string }).id, a])
+        ),
+        activeAccountId: 'w1-0'
+      }
+    } as unknown as RootState)
+
+  const signingData = {
+    type: RpcMethod.SOLANA_SIGN_TRANSACTION,
+    account: SVM_ADDRESS,
+    data: 'serialized'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any
+
+  it('resolves the active wallet account that owns the address', () => {
+    const selector = getAccountSelector(signingData, 'w1')
+    expect(selector(stateWith(activeAccount, otherWalletAccount))).toEqual(
+      activeAccount
+    )
+  })
+
+  it('returns undefined when the address only exists in a non-active wallet', () => {
+    // Approval is disabled (account undefined) rather than displaying/signing a
+    // cross-wallet account.
+    const selector = getAccountSelector(signingData, 'w1')
+    expect(selector(stateWith(otherWalletAccount))).toBeUndefined()
+  })
+})
+
+describe('isRequestedAccountUnavailable', () => {
+  const account = { id: 'w1-0', walletId: 'w1' } as unknown as Account
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withAccount = { type: RpcMethod.SOLANA_SIGN_TRANSACTION } as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const withoutAccount = { type: RpcMethod.AVALANCHE_SIGN_MESSAGE } as any
+
+  it('is true when an account is requested but none resolved (cross-wallet)', () => {
+    expect(
+      isRequestedAccountUnavailable(
+        { ...withAccount, account: 'addr' },
+        undefined
+      )
+    ).toBe(true)
+  })
+
+  it('is false when the requested account resolved', () => {
+    expect(
+      isRequestedAccountUnavailable(
+        { ...withAccount, account: 'addr' },
+        account
+      )
+    ).toBe(false)
+  })
+
+  it('is false when the request does not target a specific account', () => {
+    expect(isRequestedAccountUnavailable(withoutAccount, undefined)).toBe(false)
+  })
+})
+
+describe('getAccountUnavailableMessage', () => {
+  it('names both the account and the owning wallet when known', () => {
+    const message = getAccountUnavailableMessage('Wallet 2', 'Account 3')
+    expect(message).toContain('Wallet 2')
+    expect(message).toContain('Account 3')
+    expect(message).toContain('Switch to')
+  })
+
+  it('names just the wallet when the account name is unknown', () => {
+    const message = getAccountUnavailableMessage('Wallet 2')
+    expect(message).toContain('Wallet 2')
+    // No "<account> in <wallet>" phrasing without an account name.
+    expect(message).not.toContain(' in "')
+  })
+
+  it('falls back to a generic message when nothing is known', () => {
+    const message = getAccountUnavailableMessage()
+    expect(message).toContain('a different wallet')
+    expect(message).not.toContain('"')
+  })
+
+  it('uses request-neutral wording (shown for message signing too, not just txs)', () => {
+    for (const message of [
+      getAccountUnavailableMessage('Wallet 2', 'Account 3'),
+      getAccountUnavailableMessage('Wallet 2'),
+      getAccountUnavailableMessage()
+    ]) {
+      expect(message).not.toContain('transaction')
+    }
   })
 })
