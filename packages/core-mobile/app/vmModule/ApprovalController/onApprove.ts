@@ -31,6 +31,18 @@ export const onApprove = async ({
   signingData: SigningData
   resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
 }): Promise<void> => {
+  // Signing always uses the active wallet (walletId). If the account resolved for
+  // display belongs to a different wallet, the signed address would differ from
+  // the one shown at approval time — reject rather than sign (CP-14468).
+  if (account.walletId !== walletId) {
+    resolve({
+      error: providerErrors.unauthorized(
+        'Cannot sign: account does not belong to the active wallet'
+      )
+    })
+    return
+  }
+
   switch (signingData.type) {
     case RpcMethod.BITCOIN_SEND_TRANSACTION: {
       btcSendTransaction({

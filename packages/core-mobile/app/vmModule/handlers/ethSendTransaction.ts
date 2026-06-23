@@ -48,7 +48,8 @@ export const ethSendTransaction = async ({
       walletType,
       transaction,
       accountIndex: account.index,
-      network
+      network,
+      fromAddress: account.addressC
     })
 
     // If onSigned is provided (gasless flow), call it after signing

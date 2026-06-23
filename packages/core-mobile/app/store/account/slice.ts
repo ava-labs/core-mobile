@@ -100,6 +100,27 @@ export const selectAccountByAddress =
     })
   }
 
+// Like selectAccountByAddress, but the result is guaranteed to belong to
+// `walletId` — so the displayed address can't diverge from the signer.
+export const selectAccountByAddressAndWalletId =
+  (walletId: string, address: string) =>
+  (state: RootState): Account | undefined => {
+    const givenAddress = address.toLowerCase()
+
+    return Object.values(state.account.accounts).find(acc => {
+      if (acc.walletId !== walletId) return false
+      return (
+        acc.addressC.toLowerCase() === givenAddress ||
+        acc.addressBTC.toLowerCase() === givenAddress ||
+        acc.addressAVM?.toLowerCase() === givenAddress ||
+        acc.addressPVM?.toLowerCase() === givenAddress ||
+        // SVM addresses are base58 and case-sensitive — compare exactly so two
+        // distinct pubkeys differing only by case can't be conflated.
+        acc.addressSVM === address
+      )
+    })
+  }
+
 export const selectAccountById =
   (id: string) =>
   (state: RootState): Account | undefined =>

@@ -11,8 +11,9 @@ import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { Account } from 'store/account/types'
 import {
-  selectAccountByAddress,
+  selectAccountByAddressAndWalletId,
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
@@ -65,7 +66,10 @@ export const getAccountSelector = (
   walletId: string
 ): typeof selectActiveAccount => {
   if ('account' in signingData) {
-    return selectAccountByAddress(signingData.account)
+    // Scope to the active wallet that signs: an address from another wallet
+    // resolves to undefined (disabling approval) rather than being displayed
+    // while a different key signs
+    return selectAccountByAddressAndWalletId(walletId, signingData.account)
   }
   if (
     'accountIndex' in signingData &&
@@ -75,6 +79,30 @@ export const getAccountSelector = (
     return selectAccountByIndex(walletId, signingData.accountIndex)
   }
   return selectActiveAccount
+}
+
+// True when the request targets a specific account that isn't part of the active
+// wallet — `getAccountSelector` then resolves to undefined, disabling approval.
+// Used to explain to the user why they can't approve (CP-14468).
+export const isRequestedAccountUnavailable = (
+  signingData: SigningData,
+  resolvedAccount: Account | undefined
+): boolean => 'account' in signingData && !resolvedAccount
+
+// Message for the disabled-approval state. Names the owning account/wallet when
+// the requested address belongs to one of the user's other wallets, so they know
+// exactly where to switch; falls back to a generic hint otherwise (CP-14468).
+export const getAccountUnavailableMessage = (
+  walletName?: string,
+  accountName?: string
+): string => {
+  if (walletName && accountName) {
+    return `Your active account can't sign this request. Switch to "${accountName}" in "${walletName}" to continue.`
+  }
+  if (walletName) {
+    return `Your active account can't sign this request. Switch to "${walletName}" to continue.`
+  }
+  return "Your active account can't sign this request. It belongs to a different wallet - switch to that wallet to continue."
 }
 
 export const getInitialGasLimit = (data: SigningData): number | undefined => {

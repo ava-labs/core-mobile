@@ -6,7 +6,7 @@ import {
   MessageTypes,
   TypedDataV1
 } from '@avalabs/vm-module-types'
-import WalletService from 'services/wallet/WalletService'
+import WalletService, { isEvmSignMethod } from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { WalletType } from 'services/wallet/types'
@@ -35,7 +35,8 @@ export const signMessage = async ({
       rpcMethod: method,
       data,
       accountIndex: account.index,
-      network
+      network,
+      fromAddress: isEvmSignMethod(method) ? account.addressC : undefined
     })
 
     resolve({
