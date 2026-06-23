@@ -183,8 +183,10 @@ const StakeDurationScreen = ({
       // pathname, params })` — Expo Router's typed `navigate({ pathname
       // })` overload requires `pathname` to be a single literal so it
       // can pick the matching params shape, and our `Route` union is
-      // too broad for that narrowing. The template-literal form keeps
-      // the route typed while letting `${string}` carry the query.
+      // too broad for that narrowing. Embedding the query in a template
+      // literal widens the result to `string`, so we cast it back to
+      // `Href` (no compile-time route validation here — `nextRoute` is a
+      // plain string provided by the caller).
       navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}` as Href)
     }
   }, [navigate, stakeEndTime, nextRoute])
