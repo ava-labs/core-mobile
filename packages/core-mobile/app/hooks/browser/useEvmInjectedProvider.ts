@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
+import { setActiveAccount as setActiveAccountThunk } from 'store/account/thunks'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { clearTabChainId, selectTabChainId } from 'store/browser/slices/tabs'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -271,9 +272,23 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
+  // Last accounts list advertised to the dApp (serialized). Shared by the
+  // page-load prime path, the active-account switch effect, and the connect
+  // handler's synchronous emit (via emitEvent below) so none of them emit a
+  // duplicate accountsChanged for the same set. Declared before emitEvent so
+  // emitEvent can keep it in sync.
+  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
+
   const emitEvent = useCallback(
     (eventName: string, data: unknown) => {
       const dataJson = JSON.stringify(data)
+      // Keep the accountsChanged dedupe coherent: the connect handler emits
+      // accountsChanged synchronously through here (before resolving, to match
+      // MetaMask ordering). When that connect also switched the active account,
+      // the switch effect below would otherwise re-emit the identical set a
+      // render later — recording it here lets that effect dedupe it. (CP-14385)
+      if (eventName === 'accountsChanged')
+        lastEmittedAccountsRef.current = dataJson
       const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
@@ -319,11 +334,6 @@ export function useEvmInjectedProvider(
   useEffect(() => {
     activeAccountRef.current = activeAccount
   }, [activeAccount])
-
-  // Last accounts list advertised to the dApp (serialized). Shared by the
-  // page-load prime path and the active-account switch effect below so they
-  // never emit a duplicate accountsChanged for the same set.
-  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
 
   // Inject an accountsChanged emit gated on the page still being on `origin`
   // (the same guard sendResponse uses). An emit racing a cross-origin
@@ -569,7 +579,17 @@ export function useEvmInjectedProvider(
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
         dispatch(revokePermissionAction({ domain, address, vmType })),
-      requestConnectApproval
+      requestConnectApproval,
+      setActiveAccount: async accountId => {
+        await dispatch(setActiveAccountThunk(accountId))
+        // Freshen activeAccountRef synchronously: the connect handler reconciles
+        // (via getActiveAccount → this ref) immediately after awaiting this, but
+        // the ref's effect won't have run yet for this render — without this the
+        // reconcile would still see the pre-switch active account and 4100. The
+        // thunk applies the switch synchronously, so the store is authoritative
+        // here. (CP-14385)
+        activeAccountRef.current = selectActiveAccount(store.getState())
+      }
     })
   }, [
     dispatch,

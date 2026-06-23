@@ -7,6 +7,7 @@ import {
   getAvalancheChainAliasCaip2
 } from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
+import type { Account } from 'store/account'
 import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
 import { isFirstPartyOrigin } from './firstPartyDomains'
@@ -251,7 +252,8 @@ export function createInjectedProviderRouter(
     getGrantedAddresses,
     grantPermission,
     revokePermission,
-    requestConnectApproval
+    requestConnectApproval,
+    setActiveAccount
   } = deps
 
   const inFlightRequests = new Map<number, InFlightRequest>()
@@ -603,6 +605,47 @@ export function createInjectedProviderRouter(
     }
   }
 
+  // Grant the user's connect selection, then — because the injected signer is
+  // active-only — make sure the wallet's active account is one of the granted
+  // accounts. If it isn't, switch the active account to the primary selection.
+  // Without this, connecting any account other than the current active one
+  // reconciles to nothing (4100), which dApps read as "not connected" and answer
+  // with an eth_requestAccounts reconnect loop. Returns whether anything was
+  // granted (false → genuine user rejection). (CP-14385)
+  //
+  // Note: the active account is global, so this is a deliberate, visible side
+  // effect — connecting a dApp to account N makes N the wallet's active account
+  // everywhere. A dApp open in another tab that hasn't granted N will see
+  // accountsChanged([]) (disconnected) on the switch; that is the existing
+  // active-only contract (CP-14382), not new behavior — switching accounts via
+  // the wallet's own selector already does the same.
+  const grantAndActivateSelection = async (
+    origin: string,
+    selected: Account[]
+  ): Promise<boolean> => {
+    let anyGranted = false
+    for (const account of selected) {
+      if (!account.addressC) continue
+      grantPermission({
+        domain: origin,
+        address: account.addressC,
+        vmType: NetworkVMType.EVM
+      })
+      anyGranted = true
+    }
+    if (!anyGranted) return false
+
+    const activeC = getActiveAccount()?.addressC?.toLowerCase()
+    const activeAmongSelection = selected.some(
+      account => account.addressC?.toLowerCase() === activeC
+    )
+    if (!activeAmongSelection) {
+      const primary = selected.find(account => account.addressC)
+      if (primary) await setActiveAccount(primary.id)
+    }
+    return anyGranted
+  }
+
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
@@ -637,22 +680,14 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta, id)
-      let anyGranted = false
-      for (const account of selected) {
-        if (!account.addressC) continue
-        grantPermission({
-          domain: origin,
-          address: account.addressC,
-          vmType: NetworkVMType.EVM
-        })
-        anyGranted = true
-      }
+      const anyGranted = await grantAndActivateSelection(origin, selected)
       // Advertise the reconciled set, not the raw selection. The injected signer
-      // is active-only, so report [active, ...granted] when the active account is
-      // among the grants, and reject otherwise — never tell the dApp it's
-      // connected to an address Core won't sign for (phantom connection,
-      // CP-14382). Grants for non-active selections still persist, so switching
-      // to one later connects without re-prompting.
+      // is active-only, so report [active, ...granted]. grantAndActivateSelection
+      // has already made the active account one of the grants (switching to the
+      // primary selection if needed), so this normally reconciles non-empty;
+      // the reconciled.length === 0 branch below stays as a safety net for the
+      // case where the switch couldn't apply. Grants for non-active selections
+      // still persist, so switching to one later connects without re-prompting.
       const reconciled = resolveActiveConnectedAddresses(origin)
       if (!anyGranted) {
         // No account approved → genuine user rejection (4001).
@@ -717,20 +752,11 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta, id)
-      let anyGranted = false
-      for (const account of selected) {
-        if (!account.addressC) continue
-        grantPermission({
-          domain: origin,
-          address: account.addressC,
-          vmType: NetworkVMType.EVM
-        })
-        anyGranted = true
-      }
+      const anyGranted = await grantAndActivateSelection(origin, selected)
       // Reconcile against the active account before returning permissions — same
-      // active-only reasoning as handleRequestAccounts: never return a permission
-      // set for an address the injected signer won't use (phantom connection,
-      // CP-14382).
+      // active-only reasoning as handleRequestAccounts: grantAndActivateSelection
+      // has switched the active account to the selection when needed, so this
+      // reconciles non-empty; the length === 0 branch stays as a safety net.
       const reconciled = resolveActiveConnectedAddresses(origin)
       if (!anyGranted) {
         // No account approved → genuine user rejection (4001).

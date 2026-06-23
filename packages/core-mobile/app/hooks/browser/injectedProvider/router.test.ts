@@ -50,6 +50,7 @@ type MockDeps = {
   grantPermission: jest.Mock
   revokePermission: jest.Mock
   requestConnectApproval: jest.Mock
+  setActiveAccount: jest.Mock
   activeAccount: { value: Account | undefined }
 }
 
@@ -107,6 +108,7 @@ function makeDeps(overrides?: {
   )
   const revokePermission = jest.fn()
   const requestConnectApproval = jest.fn()
+  const setActiveAccount = jest.fn(async () => undefined)
   const activeAccount = {
     value:
       overrides && 'activeAccount' in overrides
@@ -140,7 +142,8 @@ function makeDeps(overrides?: {
     getGrantedAddresses,
     grantPermission,
     revokePermission,
-    requestConnectApproval
+    requestConnectApproval,
+    setActiveAccount
   }
 
   return {
@@ -155,6 +158,7 @@ function makeDeps(overrides?: {
     grantPermission,
     revokePermission,
     requestConnectApproval,
+    setActiveAccount,
     activeAccount,
     setBrowserNetworkSpy,
     currentNetwork
@@ -955,30 +959,67 @@ describe('createInjectedProviderRouter', () => {
       ])
     })
 
-    it('rejects with unauthorized (4100) when the approved selection does not include the active account', async () => {
-      // Phantom-connection guard: the injected signer is active-only, so if the
-      // user approves only non-active accounts we must not advertise them. The
-      // user DID approve, so it's an authorization failure (4100), not a user
-      // cancel (4001) — dApps treat the two differently (CP-14382).
-      const { deps, sendResponse, requestConnectApproval, emitEvent } =
+    it('switches the wallet active account to the selection (instead of 4100) when the approved account is not the active one', async () => {
+      // The injected signer is active-only. If the user connects an account that
+      // isn't the wallet's active one, switch the active account to the primary
+      // selection so the connection reconciles to an account Core will actually
+      // sign with — rather than returning 4100, which dApps read as "not
+      // connected" and answer with an eth_requestAccounts reconnect loop. (CP-14385)
+      const {
+        deps,
+        sendResponse,
+        requestConnectApproval,
+        grantPermission,
+        setActiveAccount,
+        activeAccount,
+        emitEvent
+      } = makeDeps()
+      // active = MOCK_ACCOUNT (MOCK_ADDR); user picks a different account.
+      const SELECTED = { id: 'acc-2', addressC: OTHER_GRANTED_ADDR } as Account
+      requestConnectApproval.mockResolvedValueOnce([SELECTED])
+      // setActiveAccount flips the wallet's active account, as the real thunk does.
+      setActiveAccount.mockImplementation(async () => {
+        activeAccount.value = SELECTED
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_requestAccounts')
+      await new Promise(r => setImmediate(r))
+
+      expect(grantPermission).toHaveBeenCalledWith({
+        domain: 'https://example.com',
+        address: OTHER_GRANTED_ADDR,
+        vmType: NetworkVMType.EVM
+      })
+      expect(setActiveAccount).toHaveBeenCalledWith('acc-2')
+      // Reconciles to the now-active, granted account — no 4100, no loop.
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [OTHER_GRANTED_ADDR])
+      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [
+        OTHER_GRANTED_ADDR
+      ])
+    })
+
+    it('does NOT switch the active account when it is already among the selection', async () => {
+      // Least surprise: if the wallet's active account is one of the connected
+      // accounts, leave it active — only switch when it would otherwise reconcile
+      // to nothing. (CP-14385)
+      const { deps, sendResponse, requestConnectApproval, setActiveAccount } =
         makeDeps()
       requestConnectApproval.mockResolvedValueOnce([
-        { addressC: '0xNonActiveSelected' } as Account
+        { id: 'acc-1', addressC: MOCK_ADDR } as Account,
+        { id: 'acc-2', addressC: OTHER_GRANTED_ADDR } as Account
       ])
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'eth_requestAccounts')
       await new Promise(r => setImmediate(r))
 
-      expect(sendResponse).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ code: 4100 }),
-        undefined
-      )
-      expect(emitEvent).not.toHaveBeenCalledWith(
-        'accountsChanged',
-        expect.anything()
-      )
+      expect(setActiveAccount).not.toHaveBeenCalled()
+      // active (MOCK_ADDR) is granted → reconciled active-first.
+      expect(sendResponse).toHaveBeenCalledWith(1, null, [
+        MOCK_ADDR,
+        OTHER_GRANTED_ADDR
+      ])
     })
 
     it('opens approval when not granted, grants, and returns selected accounts', async () => {
@@ -1114,24 +1155,41 @@ describe('createInjectedProviderRouter', () => {
       expect(requestConnectApproval).toHaveBeenCalledTimes(1)
     })
 
-    it('rejects with unauthorized (4100) when the approved selection does not include the active account', async () => {
-      // Same phantom-connection guard as eth_requestAccounts: the user approved,
-      // but not the active account, so it's an authorization failure (4100), not
-      // a user cancel.
-      const { deps, sendResponse, requestConnectApproval } = makeDeps()
-      requestConnectApproval.mockResolvedValueOnce([
-        { addressC: '0xNonActiveSelected' } as Account
-      ])
+    it('switches the wallet active account to the selection (instead of 4100) when the approved account is not the active one', async () => {
+      // Same active-switch reconciliation as eth_requestAccounts: connect the
+      // selected account by making it active, rather than 4100 + reconnect loop.
+      // (CP-14385)
+      const {
+        deps,
+        sendResponse,
+        requestConnectApproval,
+        setActiveAccount,
+        activeAccount
+      } = makeDeps()
+      const SELECTED = { id: 'acc-2', addressC: OTHER_GRANTED_ADDR } as Account
+      requestConnectApproval.mockResolvedValueOnce([SELECTED])
+      setActiveAccount.mockImplementation(async () => {
+        activeAccount.value = SELECTED
+      })
       const router = createInjectedProviderRouter(deps)
 
       send(router, 'wallet_requestPermissions')
       await new Promise(r => setImmediate(r))
 
-      expect(sendResponse).toHaveBeenCalledWith(
-        1,
-        expect.objectContaining({ code: 4100 }),
-        undefined
-      )
+      expect(setActiveAccount).toHaveBeenCalledWith('acc-2')
+      const [[, error, result]] = sendResponse.mock.calls
+      expect(error).toBeNull()
+      expect(result).toEqual([
+        expect.objectContaining({
+          parentCapability: 'eth_accounts',
+          caveats: expect.arrayContaining([
+            expect.objectContaining({
+              type: 'restrictReturnedAccounts',
+              value: [OTHER_GRANTED_ADDR]
+            })
+          ])
+        })
+      ])
     })
   })
 
