@@ -139,6 +139,17 @@ function isPendingActionResolved(
       return order.status === RecurringOrderStatus.Paused
     case TransferSignatureReason.ResumeRecurringSwap:
       return order.status === RecurringOrderStatus.Active
+    default: {
+      // Exhaustiveness guard: a new RecurringOrderActionType must add its
+      // resolved-state case above. Without this, an unhandled type would
+      // silently return undefined (falsy) and the spinner would hang until
+      // the TTL backstop evicts it. Assigning to `never` makes that a
+      // compile error; the throw is the runtime backstop.
+      const unreachable: never = entry.type
+      throw new Error(
+        `isPendingActionResolved: unhandled action type ${String(unreachable)}`
+      )
+    }
   }
 }
 

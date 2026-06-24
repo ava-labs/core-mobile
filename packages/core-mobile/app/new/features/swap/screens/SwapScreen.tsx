@@ -971,12 +971,12 @@ export const SwapScreen = (): JSX.Element => {
     if (recurringDisallowed && recurring.isRecurring) {
       recurring.setIsRecurring(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isRecurringBlocked,
     eligibility.eligible,
     recurring.isRecurring,
-    recurring.setIsRecurring,
-    recurring
+    recurring.setIsRecurring
   ])
 
   // Reset from amount only when the pay token changes, so we don't show a stale

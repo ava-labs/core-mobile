@@ -159,14 +159,14 @@ async function watchActionTxReceipt({
     if (receipt && receipt.status === 0) {
       pendingActionStore.getState().clearPending(orderId)
       showSnackbar(errorCopy.reverted)
-      Logger.warn(
+      Logger.error(
         `[${hookName}] action TX ${txHash} reverted on chain ${chainId}; cleared pending entry for order ${orderId}`
       )
     }
   } catch (err) {
     // Timeout / RPC error — don't clear; the reconciler + TTL remain the
     // backstop in case a confirmation lands later.
-    Logger.warn(
+    Logger.error(
       `[${hookName}] action receipt watch did not confirm for order ${orderId}; leaving pending for reconciler/TTL`,
       err
     )
@@ -196,7 +196,14 @@ export function makeOrderActionHook(
     // the SchedulesScreen's stable `mutate` reference depends on).
     const { networks } = useNetworks()
     const networksRef = useRef(networks)
-    networksRef.current = networks
+    // Sync the ref in an effect, not in the render body — mutating a ref
+    // during render breaks render purity (a discarded concurrent render would
+    // still mutate it). `useRef(networks)` seeds the first render, and `run`
+    // only reads `networksRef.current` post-commit (on a user tap), so the
+    // effect-timed update is always in place by the time it's read.
+    useEffect(() => {
+      networksRef.current = networks
+    }, [networks])
     useEffect(
       () => () => {
         isMountedRef.current = false
@@ -333,7 +340,7 @@ export function makeOrderActionHook(
             ownerAddress: args.address,
             chainId: args.chainId
           })
-          Logger.warn(
+          Logger.error(
             `[${config.hookName}] action settled ambiguously after broadcast for order ${args.orderId}; keeping pending to block a double-submit`,
             err
           )

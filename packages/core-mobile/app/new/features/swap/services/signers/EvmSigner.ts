@@ -240,7 +240,7 @@ export function createEvmSigner(
     // (same as one-shot Markr swaps), so the existing serviceType gate alone
     // would let recurring through. Exclude them explicitly — recurring TXs
     // must always render the approval modal so the user sees the
-    // "Scheduling / Cancelling / Pausing / Unpausing recurring swap" preview.
+    // "Scheduling / Cancelling / Pausing / Resuming recurring swap" preview.
     const isRecurring = isRecurringTransferSignatureReason(
       stepDetails.currentSignatureReason
     )
@@ -280,8 +280,8 @@ export function createEvmSigner(
         }
       : contextWithAutoApprove
 
-    // When the SDK's synthetic `Quote` is from the recurring path
-    // (`aggregator.id` starts with `markr-recurring`), read the display
+    // When the step is a recurring one (detected via
+    // `currentSignatureReason`, see `isRecurring` above), read the display
     // metadata back off `stepDetails.signerContext` — the SDK forwards
     // whatever the originating execute call passed as `signerContext`
     // unchanged onto each step. Attach it as RECURRING_SWAP so
