@@ -87,6 +87,7 @@ import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheC
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
+import { computeCanSubmit } from '../utils/recurringSubmitGate'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
@@ -440,12 +441,22 @@ export const SwapScreen = (): JSX.Element => {
     autoSlippage || slippage === undefined
       ? undefined
       : Math.round(slippage * 100)
+  // Don't fetch a recurring quote until the user has picked BOTH a frequency
+  // and a number of orders — the `/recurring/quote` request requires them and
+  // a partially-configured fetch is wasted work (and noisy errors) while the
+  // user is still mid-configuration.
+  const isRecurringQuoteReady =
+    recurring.isRecurring &&
+    recurring.frequency !== undefined &&
+    recurring.numberOfOrders !== undefined
   const recurringQuote = useRecurringQuote({
-    fromToken: recurring.isRecurring ? fromToken ?? undefined : undefined,
-    toToken: recurring.isRecurring ? toToken ?? undefined : undefined,
-    amountPerOrder: recurring.isRecurring ? fromTokenValue : undefined,
-    numberOfOrders: recurring.numberOfOrders,
-    frequency: recurring.frequency,
+    fromToken: isRecurringQuoteReady && fromToken ? fromToken : undefined,
+    toToken: isRecurringQuoteReady && toToken ? toToken : undefined,
+    amountPerOrder: isRecurringQuoteReady ? fromTokenValue : undefined,
+    numberOfOrders: isRecurringQuoteReady
+      ? recurring.numberOfOrders
+      : undefined,
+    frequency: isRecurringQuoteReady ? recurring.frequency : undefined,
     slippageBps: recurringSlippageBps
   })
 
@@ -961,6 +972,7 @@ export const SwapScreen = (): JSX.Element => {
     if (recurringDisallowed && recurring.isRecurring) {
       recurring.setIsRecurring(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isRecurringBlocked,
     eligibility.eligible,
@@ -1182,17 +1194,29 @@ export const SwapScreen = (): JSX.Element => {
     isSeedlessWallet
   })
 
-  const isRecurringReady =
-    recurring.isRecurring &&
-    !!recurring.frequency &&
-    recurring.numberOfOrders !== undefined &&
-    !!fromToken &&
-    !!toToken &&
-    !!fromTokenValue &&
-    !!recurringQuote.data &&
-    !recurringSubmitting
-
-  const canSubmit = recurring.isRecurring ? isRecurringReady : canSwap
+  // Submit-gate logic lives in `recurringSubmitGate` so the recurring
+  // below-minimum guard is unit testable without the whole screen. It mirrors
+  // the one-shot `canSwap` gate: a blocking (non-warning) validation error must
+  // disable Next. Most importantly this covers below-minimum, which
+  // `computeValidationError` evaluates against the recurring per-token minimum
+  // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
+  // displayed but never reached `canSubmit`, and because the recurring quote
+  // succeeds below the minimum (`useRecurringQuote` only gates on a non-zero
+  // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
+  // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
+  // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
+  const canSubmit = computeCanSubmit({
+    isRecurring: recurring.isRecurring,
+    hasFrequency: !!recurring.frequency,
+    hasNumberOfOrders: recurring.numberOfOrders !== undefined,
+    hasFromToken: !!fromToken,
+    hasToToken: !!toToken,
+    hasFromTokenValue: !!fromTokenValue,
+    hasRecurringQuote: !!recurringQuote.data,
+    recurringSubmitting,
+    validationError,
+    canSwap
+  })
 
   // Extracted so `handleNext` stays under the cognitive-complexity bar.
   // Returns false when any guard fails — caller does not advance.
@@ -1275,12 +1299,13 @@ export const SwapScreen = (): JSX.Element => {
     recurring.numberOfOrders,
     fromTokenValue,
     getNetwork,
+    recurringSlippageBps,
     dismissAll
   ])
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (recurring.isRecurring) {
-      void submitRecurring()
+      await submitRecurring()
       return
     }
     handleSwap()
@@ -1406,10 +1431,7 @@ export const SwapScreen = (): JSX.Element => {
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
         <View sx={{ marginBottom: 20 }}>
-          {/* `from="swap"` threads through to the route param so the
-              schedules screen shows a back button (returns to this swap
-              form) instead of hiding it like the Activity-tab entry. */}
-          <RecurringSchedulesBanner from="swap" />
+          <RecurringSchedulesBanner />
         </View>
       )}
       {renderFromAndToSections()}

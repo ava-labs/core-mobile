@@ -17,7 +17,12 @@ jest.mock('utils/mmkv', () => ({
   zustandStorageMMKV: mockMMKV
 }))
 
-import { PENDING_ACTION_TTL_MS, pendingActionStore } from './pendingActionStore'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
+import {
+  PENDING_ACTION_TTL_MS,
+  migratePersistedPendingActionState,
+  pendingActionStore
+} from './pendingActionStore'
 
 const reset = (): void => pendingActionStore.setState({ pending: {} })
 
@@ -35,10 +40,20 @@ describe('pendingActionStore', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
 
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().pending).toEqual({
-      '0xabc': { type: 'cancel', addedAt: now }
+      '0xabc': {
+        type: TransferSignatureReason.CancelRecurringSwap,
+        addedAt: now,
+        ownerAddress: '0xowner',
+        chainId: 43114
+      }
     })
   })
 
@@ -46,17 +61,34 @@ describe('pendingActionStore', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
 
-    pendingActionStore.getState().markPending('0xabc', 'pause')
-    pendingActionStore.getState().markPending('0xabc', 'unpause')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.ResumeRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().pending['0xabc']).toEqual({
-      type: 'unpause',
-      addedAt: now
+      type: TransferSignatureReason.ResumeRecurringSwap,
+      addedAt: now,
+      ownerAddress: '0xowner',
+      chainId: 43114
     })
   })
 
   it('clearPending removes the entry; no-op for unknown orderIds', () => {
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
     pendingActionStore.getState().clearPending('0xabc')
     expect(pendingActionStore.getState().pending).toEqual({})
 
@@ -69,7 +101,12 @@ describe('pendingActionStore', () => {
   it('isExpired is false for absent entries and within-TTL entries', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().isExpired('0xabc', now)).toBe(false)
     expect(
@@ -85,12 +122,112 @@ describe('pendingActionStore', () => {
   it('isExpired is true once the TTL has elapsed', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
-    pendingActionStore.getState().markPending('0xabc', 'pause')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(
       pendingActionStore
         .getState()
         .isExpired('0xabc', now + PENDING_ACTION_TTL_MS)
     ).toBe(true)
+  })
+})
+
+describe('migratePersistedPendingActionState', () => {
+  it('clears all entries when the persisted version is pre-v3', () => {
+    // v1 shape: raw `Record<orderId, addedAt>` (number) — the listener
+    // reconciler has no way to read action type or scope from this.
+    const v1 = {
+      '0xabc': 1_700_000_000_000,
+      '0xdef': 1_700_000_000_001
+    }
+    expect(migratePersistedPendingActionState({ pending: v1 }, 1)).toEqual({
+      pending: {}
+    })
+
+    // v2 shape: pre-`ownerAddress`/`chainId` entries with the old
+    // `unpause` action type. Still can't be reconciled — clear them.
+    const v2 = {
+      '0xabc': {
+        type: 'unpause-recurring-swap',
+        addedAt: 1_700_000_000_000
+      }
+    }
+    expect(migratePersistedPendingActionState({ pending: v2 }, 2)).toEqual({
+      pending: {}
+    })
+  })
+
+  it('preserves well-formed v3 entries verbatim', () => {
+    const v3 = {
+      '0xabc': {
+        type: TransferSignatureReason.CancelRecurringSwap,
+        addedAt: 1_700_000_000_000,
+        ownerAddress: '0xowner',
+        chainId: 43114
+      }
+    }
+    expect(migratePersistedPendingActionState({ pending: v3 }, 3)).toEqual({
+      pending: v3
+    })
+  })
+
+  it('drops v3 entries missing any field the reconciler reads', () => {
+    const valid = {
+      type: TransferSignatureReason.PauseRecurringSwap,
+      addedAt: 1_700_000_000_000,
+      ownerAddress: '0xowner',
+      chainId: 43114
+    }
+    const persisted = {
+      '0xvalid': valid,
+      '0xnoOwner': { ...valid, ownerAddress: undefined },
+      '0xnoChain': { ...valid, chainId: undefined },
+      '0xnoType': { ...valid, type: undefined },
+      '0xnoTs': { ...valid, addedAt: undefined },
+      '0xwrongShape': 1_700_000_000_000,
+      '0xnull': null
+    }
+    expect(
+      migratePersistedPendingActionState({ pending: persisted }, 3)
+    ).toEqual({
+      pending: { '0xvalid': valid }
+    })
+  })
+
+  it('tolerates a missing/malformed `pending` field on v3 input', () => {
+    expect(migratePersistedPendingActionState({}, 3)).toEqual({ pending: {} })
+    expect(migratePersistedPendingActionState(null, 3)).toEqual({ pending: {} })
+    expect(
+      migratePersistedPendingActionState({ pending: 'not-a-map' }, 3)
+    ).toEqual({ pending: {} })
+  })
+
+  // A structurally-complete entry whose `type` is a junk string (corrupted
+  // store, or a future action value that shipped without a version bump) must
+  // be dropped — otherwise it survives migration and never resolves in
+  // `isPendingActionResolved` (no default branch), stranding the spinner
+  // until the TTL evicts it.
+  it('drops v3 entries whose `type` is not a real action value', () => {
+    const valid = {
+      type: TransferSignatureReason.ResumeRecurringSwap,
+      addedAt: 1_700_000_000_000,
+      ownerAddress: '0xowner',
+      chainId: 43114
+    }
+    const persisted = {
+      '0xvalid': valid,
+      '0xjunkType': { ...valid, type: 'totally-not-an-action' },
+      '0xemptyType': { ...valid, type: '' }
+    }
+    expect(
+      migratePersistedPendingActionState({ pending: persisted }, 3)
+    ).toEqual({
+      pending: { '0xvalid': valid }
+    })
   })
 })

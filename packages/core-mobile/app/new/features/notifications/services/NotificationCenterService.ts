@@ -34,6 +34,12 @@ function transformNotification(
   switch (response.type) {
     case 'BALANCE_CHANGES': {
       const parsed = BalanceChangesMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.error(
+          '[NotificationCenterService] BALANCE_CHANGES metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'BALANCE_CHANGES',
@@ -42,6 +48,12 @@ function transformNotification(
     }
     case 'PRICE_ALERTS': {
       const parsed = PriceAlertsMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.error(
+          '[NotificationCenterService] PRICE_ALERTS metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'PRICE_ALERTS',
@@ -67,11 +79,32 @@ function transformNotification(
       }
 
       const parsed = NewsMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.error(
+          '[NotificationCenterService] NEWS metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'NEWS',
         data: parsed.success ? parsed.data : undefined
       }
+    }
+    default: {
+      // Exhaustiveness guard: a new NotificationType must add its case above.
+      // Unreachable today — `response.type` is validated against the zod enum
+      // upstream (NotificationListResponseSchema in fetchNotifications), so an
+      // unknown type never reaches here. Assigning to `never` makes a future
+      // enum member a compile error; the throw (caught by fetchNotifications,
+      // which returns []) is the runtime backstop, replacing the previous
+      // implicit `undefined` return that would have leaked into the list.
+      const unreachable: never = response.type
+      throw new Error(
+        `transformNotification: unhandled notification type ${String(
+          unreachable
+        )}`
+      )
     }
   }
 }
@@ -106,9 +139,7 @@ class NotificationCenterService {
         return []
       }
 
-      return parsed.data.notifications
-        .map(transformNotification)
-        .filter(n => n.data !== undefined)
+      return parsed.data.notifications.map(transformNotification)
     } catch (error) {
       Logger.error(
         '[NotificationCenterService] fetchNotifications failed:',

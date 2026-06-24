@@ -73,15 +73,6 @@ jest.mock('hooks/watchlist/useWatchlistListener', () => ({
   useWatchlistListener: jest.fn()
 }))
 
-// Mock the recurring-schedules listener — like the other listener mocks
-// above, this is to keep `ReactQueryProvider`'s transitive import chain
-// (`store/app` -> accountSettings store -> `ZustandStorageKeys`) out of the
-// test environment, since `utils/mmkv` is mocked here to expose only
-// `queryStorage`.
-jest.mock('features/recurringSwap/hooks/useRecurringSchedulesListener', () => ({
-  useRecurringSchedulesListener: jest.fn()
-}))
-
 jest.mock('utils/Logger', () => ({
   error: jest.fn(),
   info: jest.fn()

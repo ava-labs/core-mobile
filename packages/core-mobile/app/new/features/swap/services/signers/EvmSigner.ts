@@ -15,9 +15,9 @@ import Logger from 'utils/Logger'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
 import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
 import {
-  getActiveRecurringActionContext,
-  isRecurringAggregatorId
-} from 'features/recurringSwap/services/activeActionContext'
+  isRecurringTransferSignatureReason,
+  readRecurringSignerContext
+} from 'features/recurringSwap/services/recurringSignerContext'
 import { BASIS_POINTS_DIVISOR } from '../../consts'
 import { buildRequestContext } from '../../utils/buildRequestContext'
 
@@ -93,9 +93,6 @@ const isApproveTx = (data: string | null | undefined): boolean => {
 const isCrossChainQuote = (quote: Quote): boolean =>
   quote.sourceChain.chainId.toLowerCase() !==
   quote.targetChain.chainId.toLowerCase()
-
-const isRecurringQuote = (quote: Quote): boolean =>
-  isRecurringAggregatorId(quote.aggregator?.id)
 
 const isQuickSwapsManualReviewError = (err: unknown): boolean => {
   if (!err || typeof err !== 'object') return false
@@ -243,8 +240,10 @@ export function createEvmSigner(
     // (same as one-shot Markr swaps), so the existing serviceType gate alone
     // would let recurring through. Exclude them explicitly — recurring TXs
     // must always render the approval modal so the user sees the
-    // "Scheduling / Cancelling / Pausing / Unpausing recurring swap" preview.
-    const isRecurring = isRecurringQuote(stepDetails.quote)
+    // "Scheduling / Cancelling / Pausing / Resuming recurring swap" preview.
+    const isRecurring = isRecurringTransferSignatureReason(
+      stepDetails.currentSignatureReason
+    )
     // On batch fallback we suppress autoApprove on every per-tx call so
     // both the approve and the swap modal render the "Manual approval
     // required" banner — otherwise the swap could auto-approve silently
@@ -281,16 +280,18 @@ export function createEvmSigner(
         }
       : contextWithAutoApprove
 
-    // When the SDK's synthetic `Quote` is from the recurring path
-    // (`aggregator.id` starts with `markr-recurring`), pull the rich
-    // display metadata from the per-action-type side-channel slot and
-    // attach it as RECURRING_SWAP so ApprovalScreen renders
-    // `<RecurrenceDetails />` above the standard tx details. The store is
-    // keyed by the action type derived from the aggregator id, so a
-    // concurrent fill + cancel can't stomp each other's previews on the
-    // second sign of a multi-tx flow.
+    // When the step is a recurring one (detected via
+    // `currentSignatureReason`, see `isRecurring` above), read the display
+    // metadata back off `stepDetails.signerContext` — the SDK forwards
+    // whatever the originating execute call passed as `signerContext`
+    // unchanged onto each step. Attach it as RECURRING_SWAP so
+    // ApprovalScreen renders `<RecurrenceDetails />` above the standard
+    // tx details. Riding the payload with the request itself means two
+    // concurrent same-type actions can no longer collide on a shared
+    // module-level slot (the failure mode the old `activeActionContext`
+    // map was defending against).
     const recurringActive = isRecurring
-      ? getActiveRecurringActionContext(stepDetails.quote.aggregator?.id)
+      ? readRecurringSignerContext(stepDetails)
       : undefined
     const requestContext = recurringActive
       ? {
@@ -411,7 +412,9 @@ export function createEvmSigner(
       // already excludes recurring from `shouldAttachAutoApprove` and
       // injects `RECURRING_SWAP` context so `<RecurrenceDetails />`
       // renders. Route recurring batches straight to sequential.
-      const isRecurring = isRecurringQuote(stepDetails.quote)
+      const isRecurring = isRecurringTransferSignatureReason(
+        stepDetails.currentSignatureReason
+      )
       // The `eth_sendTransactionBatch` handler rejects batches with
       // fewer than 2 txs (the EVM module's Zod schema requires
       // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would

@@ -1,3 +1,4 @@
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import { makeOrderActionHook } from './_makeOrderActionHook'
 
 // Cancel is an on-chain TX. The SDK signs and broadcasts
@@ -10,13 +11,14 @@ import { makeOrderActionHook } from './_makeOrderActionHook'
 // completed). HTTP 404 means Markr can't find it.
 
 export const useCancelRecurringSchedule = makeOrderActionHook({
-  type: 'cancel',
+  type: TransferSignatureReason.CancelRecurringSwap,
   hookName: 'useCancelRecurringSchedule',
   pickExecute: ns => ns.executeCancellation,
   analyticsEvent: 'RecurringSwapCancelledByUser',
   errorCopy: {
     notActionable: 'This schedule can no longer be cancelled',
     notFound: 'Unable to remove',
-    fallback: 'Try again'
+    fallback: 'Try again',
+    reverted: 'Cancel failed on-chain. Please try again'
   }
 })

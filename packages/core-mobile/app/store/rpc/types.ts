@@ -222,14 +222,14 @@ export enum RequestContext {
   // Carries display metadata (symbols, frequency, order count) for an
   // in-flight recurring-swap action through the ApprovalController so the
   // ApprovalScreen can render the "Scheduling / Cancelling / Pausing /
-  // Unpausing recurring swap" preview block above the standard tx details.
+  // Resuming recurring swap" preview block above the standard tx details.
   //
   // The SDK signs + broadcasts internally, so the value is no longer
-  // threaded in by the recurring submit/cancel/pause/unpause hooks
-  // directly via `useInAppRequest().request(...)`. Instead, the recurring
-  // hooks stash a snapshot in `recurringSwap/services/activeActionContext`,
-  // and `EvmSigner.signOne` injects it onto requests whose stepDetails
-  // carry a `markr-recurring*` aggregator id.
+  // threaded in by the recurring submit/cancel/pause/resume hooks via
+  // `useInAppRequest().request(...)`. Instead, producers pass display metadata
+  // through the SDK `signerContext` → `step.signerContext`, and
+  // `EvmSigner.signOne` injects it onto requests whose stepDetails carry a
+  // `markr-recurring*` aggregator id.
   RECURRING_SWAP = 'recurringSwap'
 }
 

@@ -1,4 +1,5 @@
 import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import { WalletType } from 'services/wallet/types'
 import {
   CORE_MOBILE_TOPIC,
@@ -426,14 +427,16 @@ describe('readRecurringSwapApprovalContext', () => {
     ).toBeUndefined()
   })
 
+  // Fill branch is identified structurally — it's the only shape with
+  // `frequency`, `numberOfOrders`, and `amountPerOrderFormatted`. The
+  // schema is a plain `z.union` (not `discriminatedUnion`) since neither
+  // branch carries a `type` discriminator anymore.
   it('parses a valid fill context', () => {
     const valid = {
-      type: 'fill' as const,
       fromTokenSymbol: 'AVAX',
       toTokenSymbol: 'USDC',
       amountPerOrderFormatted: '1.00',
       numberOfOrders: 4,
-      isUnlimited: false,
       frequency: { unit: 'day', value: 1 }
     }
     expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
@@ -443,65 +446,44 @@ describe('readRecurringSwapApprovalContext', () => {
   // `markrRecurringQuote` normalizer translates the UI's `Infinity` sentinel
   // to `-1` on the wire, and the response echoes that back unchanged.
   // `submitRecurringSwap` forwards `quote.numberOfOrders` verbatim into this
-  // side-channel context, so the schema MUST accept `-1` when isUnlimited is
-  // true — otherwise the validator throws,
-  // `useRecurringApprovalContext` calls `onReject`, and the user can never
-  // confirm an unlimited schedule.
+  // side-channel context, so the schema MUST accept `-1` — otherwise the
+  // validator throws, `useRecurringApprovalContext` calls `onReject`, and
+  // the user can never confirm an unlimited schedule.
   it('parses a valid unlimited fill context (numberOfOrders = -1 sentinel)', () => {
     const valid = {
-      type: 'fill' as const,
       fromTokenSymbol: 'AVAX',
       toTokenSymbol: 'USDC',
       amountPerOrderFormatted: '1.00',
       numberOfOrders: -1,
-      isUnlimited: true,
       frequency: { unit: 'day', value: 1 }
     }
     expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
   })
 
-  it('rejects isUnlimited=true with a finite numberOfOrders (claim mismatch)', () => {
-    expect(() =>
-      readRecurringSwapApprovalContext(
-        makeReq({
-          type: 'fill',
-          fromTokenSymbol: 'AVAX',
-          toTokenSymbol: 'USDC',
-          amountPerOrderFormatted: '1.00',
-          numberOfOrders: 4,
-          isUnlimited: true,
-          frequency: { unit: 'day', value: 1 }
-        })
-      )
-    ).toThrow(MalformedRecurringSwapContextError)
-  })
-
-  it('rejects isUnlimited=false with the wire sentinel (claim mismatch)', () => {
-    expect(() =>
-      readRecurringSwapApprovalContext(
-        makeReq({
-          type: 'fill',
-          fromTokenSymbol: 'AVAX',
-          toTokenSymbol: 'USDC',
-          amountPerOrderFormatted: '1.00',
-          numberOfOrders: -1,
-          isUnlimited: false,
-          frequency: { unit: 'day', value: 1 }
-        })
-      )
-    ).toThrow(MalformedRecurringSwapContextError)
+  // Order-action branch — `action` carries which of cancel/pause/resume
+  // the user is signing (the SDK signature-reason enum value) so the
+  // approval modal can pick the right copy.
+  it.each([
+    TransferSignatureReason.CancelRecurringSwap,
+    TransferSignatureReason.PauseRecurringSwap,
+    TransferSignatureReason.ResumeRecurringSwap
+  ])('parses a valid %s order-action context', action => {
+    const valid = {
+      action,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC'
+    }
+    expect(readRecurringSwapApprovalContext(makeReq(valid))).toEqual(valid)
   })
 
   it('rejects out-of-range finite numberOfOrders', () => {
     expect(() =>
       readRecurringSwapApprovalContext(
         makeReq({
-          type: 'fill',
           fromTokenSymbol: 'AVAX',
           toTokenSymbol: 'USDC',
           amountPerOrderFormatted: '1.00',
           numberOfOrders: 1,
-          isUnlimited: false,
           frequency: { unit: 'day', value: 1 }
         })
       )
@@ -514,7 +496,7 @@ describe('readRecurringSwapApprovalContext', () => {
   // generic one-shot swap.
   it('throws MalformedRecurringSwapContextError on a malformed payload', () => {
     expect(() =>
-      readRecurringSwapApprovalContext(makeReq({ type: 'fill' }))
+      readRecurringSwapApprovalContext(makeReq({ fromTokenSymbol: 'AVAX' }))
     ).toThrow(MalformedRecurringSwapContextError)
   })
 
@@ -526,7 +508,7 @@ describe('readRecurringSwapApprovalContext', () => {
     ['string', 'fill'],
     ['number', 42],
     ['boolean', true],
-    ['array', [{ type: 'fill' }]]
+    ['array', [{ action: TransferSignatureReason.CancelRecurringSwap }]]
   ])('throws on a non-object payload (%s)', (_label, payload) => {
     expect(() => readRecurringSwapApprovalContext(makeReq(payload))).toThrow(
       MalformedRecurringSwapContextError

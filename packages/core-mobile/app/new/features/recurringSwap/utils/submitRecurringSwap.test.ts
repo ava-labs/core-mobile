@@ -39,15 +39,6 @@ jest.mock('contexts/ReactQueryProvider', () => ({
   }
 }))
 
-const mockSetActive = jest.fn()
-const mockClearActive = jest.fn()
-jest.mock('../services/activeActionContext', () => ({
-  setActiveRecurringActionContext: (...args: unknown[]) =>
-    mockSetActive(...args),
-  clearActiveRecurringActionContext: (...args: unknown[]) =>
-    mockClearActive(...args)
-}))
-
 import { UNLIMITED_ORDERS } from '../types'
 import { submitRecurringSwap } from './submitRecurringSwap'
 
@@ -108,10 +99,9 @@ describe('submitRecurringSwap', () => {
     mockCapture.mockReset()
     mockSnackbar.mockReset()
     mockInvalidateQueries.mockReset()
-    mockSetActive.mockReset()
   })
 
-  it('delegates to markrRecurring.executeFirstFill with quote + fromAddress + sourceChain + signBatch fallback', async () => {
+  it('delegates to markrRecurring.executeFirstFill with quote + fromAddress + sourceChain + signBatch fallback + signerContext', async () => {
     mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
       txHash: '0xfill'
     })
@@ -125,7 +115,24 @@ describe('submitRecurringSwap', () => {
       fromAddress: FROM_ADDR,
       sourceChain: SOURCE_CHAIN,
       // Match `transferAsset`'s graceful one-click → sequential fallback.
-      fallbackToDefaultOnBatchFailure: true
+      fallbackToDefaultOnBatchFailure: true,
+      // The SDK forwards this verbatim onto `step.signerContext`, where
+      // EvmSigner.signOne tags it with the action type derived from
+      // `step.currentSignatureReason` (ScheduleRecurringSwap /
+      // AllowanceApproval both → 'fill') and attaches it as the approval
+      // modal's RECURRING_SWAP context. No `type` field on this payload —
+      // the discriminator lives on the SDK's authoritative signature
+      // reason, not duplicated by the producer.
+      signerContext: {
+        fromTokenSymbol: 'USDC',
+        toTokenSymbol: 'AVAX',
+        amountPerOrderFormatted: expect.stringMatching(/^1(\.0+)?$/),
+        // Wire value Markr signs — `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+        // (`-1`) for Unlimited or a finite count. "Unlimited?" is derived
+        // from this sentinel downstream; no separate boolean field.
+        numberOfOrders: QUOTE.numberOfOrders,
+        frequency: { unit: 'week', value: 1 }
+      }
     })
   })
 
@@ -144,7 +151,6 @@ describe('submitRecurringSwap', () => {
         toTokenSymbol: 'AVAX',
         amountPerOrder: '1000000',
         numberOfOrders: QUOTE.numberOfOrders,
-        isUnlimited: false,
         intervalSeconds: 604_800
       }
     })
@@ -154,35 +160,12 @@ describe('submitRecurringSwap', () => {
     expect(mockInvalidateQueries).toHaveBeenCalled()
   })
 
-  it('populates the recurring-action side channel with the fill snapshot before invoking the SDK', async () => {
-    mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
-      txHash: '0xfill'
-    })
-
-    await submitRecurringSwap(baseParams)
-
-    expect(mockSetActive).toHaveBeenCalledWith({
-      type: 'fill',
-      fromTokenSymbol: 'USDC',
-      toTokenSymbol: 'AVAX',
-      // 1_000_000 with 6 decimals → "1". formatTokenAmount may add
-      // trailing zeros depending on impl; use a regex to stay tolerant.
-      amountPerOrderFormatted: expect.stringMatching(/^1(\.0+)?$/),
-      numberOfOrders: QUOTE.numberOfOrders,
-      isUnlimited: false,
-      frequency: { unit: 'week', value: 1 }
-    })
-    // No finally-clear assertion here: `submitRecurringSwap` clears the slot in
-    // its `finally` after the SDK call settles; this test only asserts the
-    // pre-call snapshot is set correctly.
-  })
-
   // End-to-end "real unlimited" path: the user picked Unlimited and the
   // fusion-sdk quote normalizer echoes back the wire sentinel (-1) on the
-  // response. `isUnlimited` is derived from `quote.numberOfOrders === -1` so
-  // the analytics snapshot and the side-channel context stay internally
-  // consistent with the wire value that's actually getting signed.
-  it('passes wire-sentinel numberOfOrders=-1 through to analytics + side-channel for unlimited quotes', async () => {
+  // response. Analytics + signerContext both forward the sentinel
+  // verbatim — downstream consumers derive "unlimited?" from
+  // `numberOfOrders === -1`, no separate boolean.
+  it('passes wire-sentinel numberOfOrders=-1 through to analytics + signerContext for unlimited quotes', async () => {
     mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
       txHash: '0xfill'
     })
@@ -206,26 +189,24 @@ describe('submitRecurringSwap', () => {
         toTokenSymbol: 'AVAX',
         amountPerOrder: '1000000',
         numberOfOrders: -1,
-        isUnlimited: true,
         intervalSeconds: 604_800
       }
     })
-    expect(mockSetActive).toHaveBeenCalledWith(
+    expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: 'fill',
-        numberOfOrders: -1,
-        isUnlimited: true
+        signerContext: expect.objectContaining({
+          numberOfOrders: -1
+        })
       })
     )
   })
 
   // Mismatched-quote guard: if a stale/mismatched quote slips through where
   // the caller asked for Unlimited but `quote.numberOfOrders` is finite,
-  // anchoring `isUnlimited` on the wire value keeps the `{ numberOfOrders,
-  // isUnlimited }` pair internally consistent so the side-channel schema
-  // doesn't reject it and auto-reject the approval. The signed wire value
-  // wins — what's about to be submitted is what gets previewed.
-  it('anchors isUnlimited on the quote wire value when UI param and quote disagree', async () => {
+  // the signed wire value wins — what's about to be submitted is what
+  // gets previewed. The forwarded `numberOfOrders` mirrors the quote, not
+  // the UI sentinel.
+  it('anchors numberOfOrders on the quote wire value when UI param and quote disagree', async () => {
     mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
       txHash: '0xfill'
     })
@@ -240,15 +221,15 @@ describe('submitRecurringSwap', () => {
       'RecurringSwapScheduled',
       expect.objectContaining({
         encrypted: expect.objectContaining({
-          numberOfOrders: QUOTE.numberOfOrders,
-          isUnlimited: false
+          numberOfOrders: QUOTE.numberOfOrders
         })
       })
     )
-    expect(mockSetActive).toHaveBeenCalledWith(
+    expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(
       expect.objectContaining({
-        numberOfOrders: QUOTE.numberOfOrders,
-        isUnlimited: false
+        signerContext: expect.objectContaining({
+          numberOfOrders: QUOTE.numberOfOrders
+        })
       })
     )
   })

@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { AlertType, type RpcRequest } from '@avalabs/vm-module-types'
 import {
   RECURRING_FREQUENCY_UNITS,
-  RECURRING_FREQUENCY_VALUE_MAX
+  RECURRING_FREQUENCY_VALUE_MAX,
+  TransferSignatureReason
 } from '@avalabs/fusion-sdk'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { WalletType } from 'services/wallet/types'
@@ -90,16 +91,15 @@ const UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL = -1
 
 const recurringFillContextSchema = z
   .object({
-    type: z.literal('fill'),
     fromTokenSymbol: z.string().min(1),
     toTokenSymbol: z.string().min(1),
     amountPerOrderFormatted: z.string().min(1),
     // Either the wire sentinel for unlimited schedules (`-1`) or a finite
-    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented floor for
-    // finite schedules is 2 (a "1-order schedule" is just a one-shot swap)
-    // — matches the picker's `MIN_ORDERS = 2`. The cross-field refinement
-    // on the outer union enforces that `isUnlimited` and the sentinel
-    // agree.
+    // count in `[2, RECURRING_FREQUENCY_VALUE_MAX]`. Markr's documented floor
+    // for finite schedules is 2 (a "1-order schedule" is just a one-shot
+    // swap) — matches the picker's `MIN_ORDERS = 2`. "Unlimited?" is
+    // derived from this sentinel everywhere downstream — no separate
+    // boolean field, so the two can never disagree.
     numberOfOrders: z
       .number()
       .int()
@@ -111,37 +111,42 @@ const recurringFillContextSchema = z
           message: `numberOfOrders must be ${UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL} (unlimited sentinel) or in [2, ${RECURRING_FREQUENCY_VALUE_MAX}]`
         }
       ),
-    isUnlimited: z.boolean(),
     frequency: recurringFrequencySchema
   })
   .strict()
 
 const recurringOrderActionContextSchema = z
   .object({
-    type: z.enum(['cancel', 'pause', 'unpause']),
+    // Producer (`_makeOrderActionHook`) sets this from its own
+    // `config.type` — the SDK's `TransferSignatureReason` enum value
+    // for the action being signed. Not a tagged-union discriminator
+    // anymore (the union is structural — fills carry `frequency`,
+    // order actions don't); just the carrier the approval modal uses
+    // to pick cancel/pause/resume copy. The SDK's
+    // `currentSignatureReason` lives on `stepDetails` and isn't
+    // reachable from the approval screen, so the producer is the
+    // simplest source.
+    action: z.enum([
+      TransferSignatureReason.CancelRecurringSwap,
+      TransferSignatureReason.PauseRecurringSwap,
+      TransferSignatureReason.ResumeRecurringSwap
+    ]),
     fromTokenSymbol: z.string().min(1),
     toTokenSymbol: z.string().min(1)
   })
   .strict()
 
-export const recurringSwapApprovalContextSchema = z
-  .discriminatedUnion('type', [
-    recurringFillContextSchema,
-    recurringOrderActionContextSchema
-  ])
-  .superRefine((data, ctx) => {
-    if (data.type !== 'fill') return
-    const isWireSentinel =
-      data.numberOfOrders === UNLIMITED_NUMBER_OF_ORDERS_WIRE_SENTINEL
-    if (data.isUnlimited !== isWireSentinel) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['isUnlimited'],
-        message:
-          'isUnlimited must be true iff numberOfOrders is the unlimited wire sentinel (-1)'
-      })
-    }
-  })
+// Structural union (not `discriminatedUnion`) — the two branches no longer
+// carry a `type` discriminator. With `.strict()` on both branches the
+// shapes are disjoint (fill requires `frequency`/`numberOfOrders`/
+// `amountPerOrderFormatted`, all of which order-action rejects as unknown
+// fields), so each payload still matches exactly one branch at parse
+// time. Downstream code discriminates fill vs order-action structurally
+// (presence of `frequency`).
+export const recurringSwapApprovalContextSchema = z.union([
+  recurringFillContextSchema,
+  recurringOrderActionContextSchema
+])
 
 export type RecurringSwapApprovalContext = z.infer<
   typeof recurringSwapApprovalContextSchema

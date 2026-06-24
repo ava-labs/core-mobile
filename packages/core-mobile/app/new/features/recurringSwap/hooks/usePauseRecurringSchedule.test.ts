@@ -1,14 +1,28 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HttpError, type Chain } from '@avalabs/fusion-sdk'
+import {
+  HttpError,
+  TransferSignatureReason,
+  type Chain
+} from '@avalabs/fusion-sdk'
 import React from 'react'
 import { usePauseRecurringSchedule } from './usePauseRecurringSchedule'
 
 const mockExecutePause = jest.fn()
 const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
+const mockClearPending = jest.fn()
 const mockCapture = jest.fn()
 const mockInvalidateQueries = jest.fn()
+// Default: no network resolvable → the post-broadcast receipt watcher
+// early-returns, so it's inert for most tests. The revert test overrides
+// these to exercise the shared `_makeOrderActionHook` watcher with the
+// pause-specific `reverted` copy.
+const mockUseNetworks = jest.fn(() => ({
+  networks: {} as Record<number, unknown>
+}))
+const mockWaitForTransaction = jest.fn()
+const mockGetEvmProvider = jest.fn()
 
 jest.mock('features/swap/services/FusionService', () => ({
   __esModule: true,
@@ -36,17 +50,19 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 
 jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
-    getState: () => ({ markPending: mockMarkPending })
+    getState: () => ({
+      markPending: mockMarkPending,
+      clearPending: mockClearPending
+    })
   }
 }))
 
-const mockSetActive = jest.fn()
-const mockClearActive = jest.fn()
-jest.mock('../services/activeActionContext', () => ({
-  setActiveRecurringActionContext: (...args: unknown[]) =>
-    mockSetActive(...args),
-  clearActiveRecurringActionContext: (...args: unknown[]) =>
-    mockClearActive(...args)
+jest.mock('hooks/networks/useNetworks', () => ({
+  useNetworks: () => mockUseNetworks()
+}))
+
+jest.mock('services/network/utils/providerUtils', () => ({
+  getEvmProvider: (...args: unknown[]) => mockGetEvmProvider(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -86,9 +102,15 @@ describe('usePauseRecurringSchedule', () => {
     mockExecutePause.mockReset()
     mockSnackbar.mockReset()
     mockMarkPending.mockReset()
+    mockClearPending.mockReset()
     mockCapture.mockReset()
     mockInvalidateQueries.mockReset()
-    mockSetActive.mockReset()
+    mockUseNetworks.mockReturnValue({ networks: {} })
+    mockWaitForTransaction.mockReset()
+    mockGetEvmProvider.mockReset()
+    mockGetEvmProvider.mockResolvedValue({
+      waitForTransaction: mockWaitForTransaction
+    })
     jest.useFakeTimers()
   })
 
@@ -110,10 +132,23 @@ describe('usePauseRecurringSchedule', () => {
     expect(mockExecutePause).toHaveBeenCalledWith({
       orderId: PAUSE_ARGS.orderId,
       address: PAUSE_ARGS.address,
-      sourceChain: SOURCE_CHAIN
+      sourceChain: SOURCE_CHAIN,
+      // The SDK forwards this verbatim onto `step.signerContext`, where
+      // EvmSigner.signOne attaches it as the approval modal's
+      // RECURRING_SWAP context. `action` drives the pause-specific
+      // copy on the preview.
+      signerContext: {
+        action: TransferSignatureReason.PauseRecurringSwap,
+        fromTokenSymbol: PAUSE_ARGS.fromTokenSymbol,
+        toTokenSymbol: PAUSE_ARGS.toTokenSymbol
+      }
     })
 
-    expect(mockMarkPending).toHaveBeenCalledWith(PAUSE_ARGS.orderId, 'pause')
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      PAUSE_ARGS.orderId,
+      TransferSignatureReason.PauseRecurringSwap,
+      { ownerAddress: PAUSE_ARGS.address, chainId: PAUSE_ARGS.chainId }
+    )
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapPausedByUser', {
       chainId: PAUSE_ARGS.chainId,
@@ -121,12 +156,36 @@ describe('usePauseRecurringSchedule', () => {
         orderId: PAUSE_ARGS.orderId
       }
     })
+  })
 
-    expect(mockSetActive).toHaveBeenCalledWith({
-      type: 'pause',
-      fromTokenSymbol: PAUSE_ARGS.fromTokenSymbol,
-      toTokenSymbol: PAUSE_ARGS.toTokenSymbol
+  // Regression: the on-chain revert watcher lives in the shared
+  // `_makeOrderActionHook` builder, so each hook wires its own `reverted`
+  // copy. Without a per-hook assertion the pause string could be swapped by
+  // accident and nothing would notice. A status-0 receipt must clear the
+  // pending entry and surface the pause-specific failure snackbar.
+  it('clears the pending entry and surfaces the pause failure snackbar when the action TX reverts on-chain', async () => {
+    mockExecutePause.mockResolvedValueOnce({ txHash: '0xtxhash' })
+    mockUseNetworks.mockReturnValue({
+      networks: { [PAUSE_ARGS.chainId]: { vmName: 'EVM' } }
     })
+    mockWaitForTransaction.mockResolvedValueOnce({ status: 0 })
+
+    const { result } = renderHook(() => usePauseRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(PAUSE_ARGS)
+      // Flush the fire-and-forget watcher's microtask chain
+      // (getEvmProvider → waitForTransaction → clearPending/snackbar).
+      for (let i = 0; i < 5; i++) await Promise.resolve()
+    })
+
+    expect(mockWaitForTransaction).toHaveBeenCalledWith('0xtxhash', 1, 60_000)
+    expect(mockClearPending).toHaveBeenCalledWith(PAUSE_ARGS.orderId)
+    expect(mockSnackbar).toHaveBeenCalledWith(
+      'Pause failed on-chain. Please try again'
+    )
   })
 
   it('does NOT mark the order pending when executePause fails', async () => {
@@ -164,7 +223,7 @@ describe('usePauseRecurringSchedule', () => {
     })
 
     expect(mockSnackbar).toHaveBeenCalledWith(
-      'This schedule cannot be paused right now'
+      'This recurring schedule cannot be paused right now'
     )
   })
 
@@ -189,7 +248,11 @@ describe('usePauseRecurringSchedule', () => {
     expect(mockSnackbar).not.toHaveBeenCalled()
   })
 
-  it('shows "Try again" on a generic signer/network failure (not a user rejection)', async () => {
+  // A generic (non-HTTP, non-rejection) failure thrown out of `executePause`
+  // is ambiguous — the TX may already have broadcast. The shared hook keeps the
+  // order pending (blocking a double-submit) and suppresses the toast rather
+  // than showing "Try again" and re-enabling the button.
+  it('keeps the order pending without a toast on a generic (ambiguous) failure', async () => {
     mockExecutePause.mockRejectedValueOnce(new Error('RPC timeout'))
 
     const { result } = renderHook(() => usePauseRecurringSchedule(), {
@@ -204,6 +267,11 @@ describe('usePauseRecurringSchedule', () => {
       }
     })
 
-    expect(mockSnackbar).toHaveBeenCalledWith('Try again')
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      PAUSE_ARGS.orderId,
+      TransferSignatureReason.PauseRecurringSwap,
+      { ownerAddress: PAUSE_ARGS.address, chainId: PAUSE_ARGS.chainId }
+    )
+    expect(mockSnackbar).not.toHaveBeenCalled()
   })
 })

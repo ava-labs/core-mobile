@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsRecurringSwapsBlocked } from 'store/posthog'
@@ -10,14 +10,17 @@ import { RecurringSchedulesScreen } from 'features/recurringSwap/screens/Recurri
 // route is still a real path in the modal stack — anything that can drive
 // expo-router by URL (deep link, in-app navigation from old / cached state,
 // dev menu) could land here, render the management screen, and let a user
-// initiate cancel/pause/unpause TXs the feature flag was supposed to gate.
+// initiate cancel/pause/resume TXs the feature flag was supposed to gate.
 //
 // Pop back to wherever the user came from when blocked. If there's no
-// back history (deep-link landing), fall back to dismissing the swap modal
-// stack entirely — matches `SwapScreen.dismissOrGoBack`.
+// back history (deep-link landing), dismiss the whole modal stack.
 const RecurringSchedulesRoute = (): JSX.Element | null => {
   const router = useRouter()
   const isBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  // `orderId` is set when this screen is opened via a notification deep link
+  // (`core://recurringSwapSchedules?orderId=…`). The screen will auto-expand
+  // the matching card on mount.
+  const { orderId } = useLocalSearchParams<{ orderId?: string }>()
 
   useEffect(() => {
     if (!isBlocked) return
@@ -33,7 +36,7 @@ const RecurringSchedulesRoute = (): JSX.Element | null => {
   // `useRecurringSchedules` query before the navigation lands.
   if (isBlocked) return null
 
-  return <RecurringSchedulesScreen />
+  return <RecurringSchedulesScreen initialExpandedOrderId={orderId} />
 }
 
 export default RecurringSchedulesRoute

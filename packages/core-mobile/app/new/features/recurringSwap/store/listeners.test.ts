@@ -53,7 +53,18 @@ jest.mock('utils/Logger', () => ({
 // which destination status counts as "resolved"); the fake mirrors that shape
 // so the reconciler's `entry.type` switch sees real values.
 
-type PendingEntry = { type: 'cancel' | 'pause' | 'unpause'; addedAt: number }
+type PendingEntry = {
+  type:
+    | TransferSignatureReason.CancelRecurringSwap
+    | TransferSignatureReason.PauseRecurringSwap
+    | TransferSignatureReason.ResumeRecurringSwap
+  addedAt: number
+  // (account, chain) the action was issued under — the reconciler only
+  // touches entries matching the event's scope so a sibling account's
+  // listOrders success can't clear another account's in-flight entry.
+  ownerAddress: string
+  chainId: number
+}
 
 type PendingStoreFake = {
   pending: Record<string, PendingEntry>
@@ -100,8 +111,14 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
+import { onAppUnlocked } from 'store/app/slice'
+import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus, type RecurringOrder } from '../types'
-import { startRecurringFailureWatcher } from './listeners'
+import {
+  addRecurringSwapListeners,
+  startRecurringFailureWatcher
+} from './listeners'
 
 const captureSpy = AnalyticsService.capture as jest.Mock
 const showSnackbarSpy = showSnackbar as jest.Mock
@@ -415,17 +432,25 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   // ── 6. Pending-action reconciliation ─────────────────────────────────────
-  // Cancel / pause / unpause each have their own "resolved" destination
+  // Cancel / pause / resume each have their own "resolved" destination
   // status. The reconciler picks the right one off `entry.type` — the tests
   // below cover each branch plus the safety nets (order vanished, TTL).
 
-  const pendingEntry = (type: PendingEntry['type']): PendingEntry => ({
+  const pendingEntry = (
+    type: PendingEntry['type'],
+    ownerAddress = '0xowner1',
+    chainId = 43114
+  ): PendingEntry => ({
     type,
-    addedAt: Date.now()
+    addedAt: Date.now(),
+    ownerAddress,
+    chainId
   })
 
   it('clears pending-cancel entry once the order status flips to cancelled', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([
       { ...BASE_SCHEDULE, status: RecurringOrderStatus.Cancelled }
@@ -436,7 +461,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('keeps pending-cancel entry while the order is still reported as active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -447,9 +474,11 @@ describe('startRecurringFailureWatcher', () => {
   // Regression: a `status !== Active` check would clear the spinner the
   // moment the next refetch lands (the order was already Paused before
   // the cancel TX was even broadcast), flickering the row back to
-  // Pause/Unpause buttons until the actual Cancelled status indexes.
+  // Pause/Resume buttons until the actual Cancelled status indexes.
   it('keeps pending-cancel entry while the order is still reported as paused (cancel-from-Paused)', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -458,7 +487,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-pause entry once the order status flips to paused', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -467,7 +498,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('keeps pending-pause entry while the order is still reported as active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -475,8 +508,10 @@ describe('startRecurringFailureWatcher', () => {
     expect(mockPendingStoreState.clearPending).not.toHaveBeenCalled()
   })
 
-  it('clears pending-unpause entry once the order status flips back to active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('unpause') }
+  it('clears pending-resume entry once the order status flips back to active', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.ResumeRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -484,8 +519,10 @@ describe('startRecurringFailureWatcher', () => {
     expect(mockPendingStoreState.clearPending).toHaveBeenCalledWith('0xorder1')
   })
 
-  it('keeps pending-unpause entry while the order is still reported as paused', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('unpause') }
+  it('keeps pending-resume entry while the order is still reported as paused', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.ResumeRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -494,7 +531,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-action entry when the order vanishes from the response', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([])
     await flush()
@@ -503,12 +542,112 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-action entry once the TTL has elapsed even if the order is still in its starting state', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
     mockPendingStoreState.isExpired = jest.fn((id: string) => id === '0xorder1')
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
 
     expect(mockPendingStoreState.clearPending).toHaveBeenCalledWith('0xorder1')
+  })
+
+  // Regression (cross-account clobber): account A has an in-flight cancel on
+  // `0xorder1`. A listOrders success for account B (different owner, same
+  // chain) must NOT clear A's entry just because A's order isn't in B's list
+  // — the reconciler only acts on entries scoped to the event's
+  // (account, chain). Amplified in production by gcTime: Infinity keeping
+  // every account's query resident, so any later refetch re-triggered it.
+  it('does NOT clear a pending entry belonging to a different account when another account refetches', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(
+        TransferSignatureReason.CancelRecurringSwap,
+        '0xownerA',
+        43114
+      )
+    }
+
+    // Event for account B (queryKey owner '0xowner1') with an empty list.
+    fireQueryUpdate([])
+    await flush()
+
+    expect(mockPendingStoreState.clearPending).not.toHaveBeenCalled()
+  })
+
+  // Same account/chain, address casing differs (EIP-55 checksum vs lowercase):
+  // the scope match must be case-insensitive or the entry would never resolve.
+  it('clears a pending entry whose owner matches the event case-insensitively', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(
+        TransferSignatureReason.CancelRecurringSwap,
+        '0xOWNER1',
+        43114
+      )
+    }
+
+    fireQueryUpdate([
+      { ...BASE_SCHEDULE, status: RecurringOrderStatus.Cancelled }
+    ])
+    await flush()
+
+    expect(mockPendingStoreState.clearPending).toHaveBeenCalledWith('0xorder1')
+  })
+
+  // A different chain on the same account must also be out of scope.
+  it('does NOT clear a pending entry from a different chain when the event is for another chain', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(
+        TransferSignatureReason.CancelRecurringSwap,
+        '0xowner1',
+        1
+      )
+    }
+
+    fireQueryUpdate([])
+    await flush()
+
+    expect(mockPendingStoreState.clearPending).not.toHaveBeenCalled()
+  })
+})
+
+// ─── addRecurringSwapListeners ────────────────────────────────────────────────
+// The static listener-registration entrypoint mirrors `addFusionListeners`:
+// it wires the `onAppUnlocked` schedules invalidator into the redux
+// listener middleware *and* kicks off the React Query cache subscriber
+// (failure watcher + pending-action reconciler) registered above.
+
+describe('addRecurringSwapListeners', () => {
+  beforeEach(() => {
+    mockCacheSubscribers = []
+    mockInvalidate.mockReset()
+  })
+
+  it('registers an onAppUnlocked listener that invalidates the recurring-schedules cache', () => {
+    const startListening = jest.fn()
+
+    addRecurringSwapListeners(startListening as never)
+
+    const call = startListening.mock.calls.find(
+      c => c[0]?.actionCreator === onAppUnlocked
+    )
+    expect(call).toBeDefined()
+
+    const effect = call?.[0].effect
+    effect?.()
+
+    expect(mockInvalidate).toHaveBeenCalledWith({
+      queryKey: RECURRING_SCHEDULES_QK
+    })
+  })
+
+  it('starts the React Query cache subscriber', () => {
+    const startListening = jest.fn()
+
+    expect(mockCacheSubscribers).toHaveLength(0)
+
+    addRecurringSwapListeners(startListening as never)
+
+    expect(mockCacheSubscribers).toHaveLength(1)
   })
 })

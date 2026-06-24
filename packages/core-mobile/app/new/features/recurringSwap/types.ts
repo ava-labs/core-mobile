@@ -62,7 +62,8 @@ export function resolveRecurringTokenAddress(
   token: LocalTokenWithBalance
 ): string | null {
   if (token.type === TokenType.NATIVE) return ERC_ZERO_ADDRESS
-  if ('address' in token && token.address) return token.address
+  if (token.type === TokenType.ERC20 && 'address' in token && token.address)
+    return token.address
   return null
 }
 
@@ -81,8 +82,10 @@ export type SchedulePreview = {
   toTokenSymbol: string
   toTokenDecimals: number
   amountPerOrder: string
-  numberOfOrders: number // 365 (or whatever cap) if user picked Unlimited
-  isUnlimited: boolean
+  // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL` (`-1`)
+  // if the user picked Unlimited, else a finite count. Consumers derive
+  // "unlimited?" from this sentinel — no separate boolean field.
+  numberOfOrders: number
   frequency: RecurringFrequency
   intervalSeconds: number
   totalAmountIn: string

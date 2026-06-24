@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { useQuery, UseQueryResult, type QueryKey } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import type { RecurringOrder } from '@avalabs/fusion-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
@@ -9,6 +9,23 @@ import Logger from 'utils/Logger'
 export const RECURRING_SCHEDULES_QK = [
   ReactQueryKeys.RECURRING_SCHEDULES
 ] as const
+
+/**
+ * Canonical query key for one account/chain's `listOrders` query.
+ *
+ * The owner segment is lowercased so the key is stable regardless of EIP-55
+ * checksum casing: Markr echoes each order's `owner` in a casing that can
+ * differ from the wallet's stored `addressC` (see the case-insensitive owner
+ * compare in `RecurringSchedulesScreen`), and React Query hashes keys
+ * case-sensitively. Every reader AND every targeted invalidation (the
+ * immediate + staggered catch-up after an action) must build the key through
+ * this helper, or a checksum/lowercase mismatch would silently fail to match
+ * the active query.
+ */
+export const recurringSchedulesQueryKey = (
+  ownerAddress: string | undefined,
+  chainId: number | undefined
+): QueryKey => [...RECURRING_SCHEDULES_QK, ownerAddress?.toLowerCase(), chainId]
 
 type Options = {
   /**
@@ -54,7 +71,7 @@ export function useRecurringSchedules(
       ownerAddress !== undefined &&
       ownerAddress !== '' &&
       chainId !== undefined,
-    queryKey: [...RECURRING_SCHEDULES_QK, ownerAddress, chainId],
+    queryKey: recurringSchedulesQueryKey(ownerAddress, chainId),
     staleTime,
     refetchOnWindowFocus: true,
     // `refetchInterval` is per-observer in React Query — only the

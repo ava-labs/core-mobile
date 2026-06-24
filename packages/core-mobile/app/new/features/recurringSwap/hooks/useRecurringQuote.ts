@@ -1,6 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import type { Address } from 'viem'
-import { TokenType } from '@avalabs/vm-module-types'
 import type { RecurringQuoteResponse } from '@avalabs/fusion-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import type { LocalTokenWithBalance } from 'store/balance'
@@ -57,7 +56,7 @@ export function buildRecurringQuoteQueryKey(
 const STALE_MS = 30_000
 
 /**
- * Debounced wrapper around `FusionService.markrRecurring.quote(...)`.
+ * React Query wrapper around `FusionService.markrRecurring.quote(...)`.
  *
  * Query key intentionally keys on *stable primitive* sub-fields (networkChainId,
  * localId, frequency.unit/value) rather than the whole token objects — the swap
@@ -69,13 +68,14 @@ export function useRecurringQuote(
 ): UseQueryResult<RecurringQuoteResponse, Error> {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
-  // Native tokens are usable (resolved to the zero sentinel in queryFn);
-  // ERC-20s need a non-empty `address`. Everything else (NFTs / SPL) stays
-  // disabled.
+  // Usable iff the shared resolver yields an on-chain address: native tokens
+  // (zero sentinel) and ERC-20s (their `address`). Everything else — BTC,
+  // NFTs, SPL — resolves to `null` and stays disabled. Delegating to
+  // `resolveRecurringTokenAddress` keeps this gate in lockstep with the
+  // queryFn's address resolution, so an SPL token (non-empty Solana
+  // `address`) can't slip past the gate and then resolve to `''`.
   const isUsable = (t: LocalTokenWithBalance | undefined): boolean =>
-    !!t &&
-    (t.type === TokenType.NATIVE ||
-      ('address' in t && typeof t.address === 'string' && t.address.length > 0))
+    !!t && resolveRecurringTokenAddress(t) !== null
 
   const enabled =
     isFusionServiceReady &&
@@ -134,11 +134,18 @@ export function useRecurringQuote(
         throw new Error('Token missing decimals')
       // Native tokens carry `address: ""` on `LocalTokenWithBalance`; the
       // shared resolver substitutes the zero sentinel for natives and
-      // returns null for unsupported variants (BTC/NFT/SPL) — `enabled`
-      // already rejects those upstream, so an empty string here would
-      // be a data bug and the SDK's zod parse will reject it.
-      const tokenIn = resolveRecurringTokenAddress(fromToken) ?? ''
-      const tokenOut = resolveRecurringTokenAddress(toToken) ?? ''
+      // returns null for unsupported variants (BTC/NFT/SPL). `enabled` (via
+      // `isUsable`, which delegates to the same resolver) already rejects
+      // those upstream — so a null here would be a data bug. Throw the same
+      // invariant as the guards above rather than coercing to `''` (which
+      // would silently feed an empty address into the SDK's zod parse).
+      const tokenIn = resolveRecurringTokenAddress(fromToken)
+      const tokenOut = resolveRecurringTokenAddress(toToken)
+      if (tokenIn === null || tokenOut === null) {
+        throw new Error(
+          'useRecurringQuote: unsupported token type (enabled bypassed?)'
+        )
+      }
       return markrRecurring.quote({
         chainId: fromToken.networkChainId,
         tokenIn: tokenIn as Address,

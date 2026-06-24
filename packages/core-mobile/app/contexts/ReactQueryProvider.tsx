@@ -16,7 +16,6 @@ import { queryStorage } from 'utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { useNetworksListener } from 'hooks/networks/useNetworksListener'
-import { useRecurringSchedulesListener } from 'features/recurringSwap/hooks/useRecurringSchedulesListener'
 import { useWatchlistListener } from 'hooks/watchlist/useWatchlistListener'
 import Logger from 'utils/Logger'
 
@@ -118,12 +117,6 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
 
   // refetch networks on app unlock or developer mode toggle
   useNetworksListener(queryClient)
-
-  // invalidate recurring schedules on app unlock — `refetchOnWindowFocus`
-  // on the query already covers the foreground transition, but unlock
-  // (cold start / post-lock-timeout) can land while AppState is still
-  // 'active' and needs an explicit signal.
-  useRecurringSchedulesListener(queryClient)
 
   // refetch watchlist on developer mode toggle or watchlist fetch
   useWatchlistListener()
