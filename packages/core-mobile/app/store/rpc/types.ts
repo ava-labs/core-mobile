@@ -225,11 +225,11 @@ export enum RequestContext {
   // Unpausing recurring swap" preview block above the standard tx details.
   //
   // The SDK signs + broadcasts internally, so the value is no longer
-  // threaded in by the recurring submit/cancel/pause/resume hooks
-  // directly via `useInAppRequest().request(...)`. Instead, the recurring
-  // hooks stash a snapshot in `recurringSwap/services/activeActionContext`,
-  // and `EvmSigner.signOne` injects it onto requests whose stepDetails
-  // carry a `markr-recurring*` aggregator id.
+  // threaded in by the recurring submit/cancel/pause/resume hooks via
+  // `useInAppRequest().request(...)`. Instead, producers pass display metadata
+  // through the SDK `signerContext` → `step.signerContext`, and
+  // `EvmSigner.signOne` injects it onto requests whose stepDetails carry a
+  // `markr-recurring*` aggregator id.
   RECURRING_SWAP = 'recurringSwap'
 }
 
