@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Pressable } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
   LinearTransition,
@@ -28,6 +29,7 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import type { NetworkContractToken } from '@avalabs/vm-module-types'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectActiveAccount } from 'store/account'
@@ -41,12 +43,12 @@ import { useRecurringSchedules } from '../hooks/useRecurringSchedules'
 import type { UseRecurringOrderAction } from '../hooks/_makeOrderActionHook'
 import { useCancelRecurringSchedule } from '../hooks/useCancelRecurringSchedule'
 import { usePauseRecurringSchedule } from '../hooks/usePauseRecurringSchedule'
-import { useUnpauseRecurringSchedule } from '../hooks/useUnpauseRecurringSchedule'
+import { useResumeRecurringSchedule } from '../hooks/useResumeRecurringSchedule'
 import { formatFrequencyShort } from '../utils/formatFrequency'
 import {
   useIsCancelPending,
   useIsPausePending,
-  useIsUnpausePending
+  useIsResumePending
 } from '../store/pendingActionStore'
 import { RecurringOrderStatus, type RecurringOrder } from '../types'
 
@@ -159,9 +161,9 @@ const STATUS_LABEL: Partial<Record<RecurringOrderStatus, string>> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Handlers receive the schedule plus the resolved token symbols so the
-// parent can pass them into the recurring-action side channel — that's
-// what drives the `<RecurrenceDetails />` preview block on the in-app
-// approval modal (`RecurringSwap/services/activeActionContext.ts`).
+// parent can forward them through the SDK's `signerContext` field —
+// that's what drives the `<RecurrenceDetails />` preview block on the
+// in-app approval modal (`RecurringSwap/services/recurringSignerContext.ts`).
 type ScheduleAction = (
   s: RecurringOrder,
   fromToken: ResolvedToken,
@@ -174,17 +176,25 @@ type ScheduleCardProps = {
   contractTokens: readonly NetworkContractToken[]
   onRemove: ScheduleAction
   onPause: ScheduleAction
-  onUnpause: ScheduleAction
+  onResume: ScheduleAction
   /** False when the schedule's source chain can't be resolved (network
    *  removed from the user's list, `toChain` failed). All action buttons
    *  are disabled in that case — handlers would only surface a snackbar. */
   isSourceChainAvailable: boolean
-  /** Hook-level pending flags (any row's cancel/pause/unpause in flight
+  /** Hook-level pending flags (any row's cancel/pause/resume in flight
    *  on this screen). Closes the double-tap window between the confirm
    *  alert dismissing and the per-row store entry flipping after broadcast. */
   cancelInFlight: boolean
   pauseInFlight: boolean
-  unpauseInFlight: boolean
+  resumeInFlight: boolean
+  /** Seeds the card in the expanded state on mount. Set when the screen
+   *  is deep-linked to a specific orderId (notification → schedules) so
+   *  the matching card opens automatically. */
+  initialExpanded?: boolean
+  /** Reports the card's y-offset within the scroll content as soon as it
+   *  lays out. The screen uses this to scroll the deep-linked card into
+   *  view when it would otherwise be off-screen. */
+  onMeasureY?: (y: number) => void
 }
 
 function ScheduleCard({
@@ -193,11 +203,13 @@ function ScheduleCard({
   contractTokens,
   onRemove,
   onPause,
-  onUnpause,
+  onResume,
   isSourceChainAvailable,
   cancelInFlight,
   pauseInFlight,
-  unpauseInFlight
+  resumeInFlight,
+  initialExpanded = false,
+  onMeasureY
 }: ScheduleCardProps): JSX.Element {
   const {
     theme: { colors }
@@ -205,7 +217,7 @@ function ScheduleCard({
   const isUnlimited = s.numberOfOrders === RECURRING_UNLIMITED_ORDERS_SENTINEL
   const isCancelling = useIsCancelPending(s.orderId)
   const isPausing = useIsPausePending(s.orderId)
-  const isUnpausing = useIsUnpausePending(s.orderId)
+  const isResuming = useIsResumePending(s.orderId)
 
   const isPaused = s.status === RecurringOrderStatus.Paused
   const isActive = s.status === RecurringOrderStatus.Active
@@ -214,34 +226,34 @@ function ScheduleCard({
   // the button at the UI boundary so tapping a finished row doesn't
   // surface a confusing toast.
   const canCancel = isActive || isPaused
-  // Pause needs the schedule to be active AND no pause/unpause already in
-  // flight (per-row from the store, or screen-wide from the hook); Unpause
+  // Pause needs the schedule to be active AND no pause/resume already in
+  // flight (per-row from the store, or screen-wide from the hook); Resume
   // is the mirror condition for a paused schedule. The hook-level
   // `*InFlight` flags cover the brief window between the user confirming
   // the native alert and the per-row entry being added in
   // `pendingActionStore` after broadcast resolves.
   const canPause =
     isActive && !isPausing && !isCancelling && !pauseInFlight && !cancelInFlight
-  const canUnpause =
+  const canResume =
     isPaused &&
-    !isUnpausing &&
+    !isResuming &&
     !isCancelling &&
-    !unpauseInFlight &&
+    !resumeInFlight &&
     !cancelInFlight
   // While unpausing/pausing is mid-flight the cancel button is disabled to
   // prevent racing two on-chain TXs that mutate the same order.
   const cancelDisabled =
     isCancelling ||
     isPausing ||
-    isUnpausing ||
+    isResuming ||
     cancelInFlight ||
     pauseInFlight ||
-    unpauseInFlight ||
+    resumeInFlight ||
     !canCancel ||
     !isSourceChainAvailable
 
-  const [expanded, setExpanded] = useState(false)
-  const chevronProgress = useSharedValue(0)
+  const [expanded, setExpanded] = useState(initialExpanded)
+  const chevronProgress = useSharedValue(initialExpanded ? 1 : 0)
 
   const handleToggle = useCallback(() => {
     setExpanded(prev => {
@@ -311,6 +323,9 @@ function ScheduleCard({
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
+      onLayout={
+        onMeasureY ? e => onMeasureY(e.nativeEvent.layout.y) : undefined
+      }
       style={{
         backgroundColor: colors.$surfaceSecondary,
         borderRadius: 12,
@@ -396,26 +411,26 @@ function ScheduleCard({
 
       {expanded && (
         <View sx={{ marginTop: 12, gap: 12 }}>
-          {/* Pause / Unpause sits to the LEFT of Cancel. The
+          {/* Pause / Resume sits to the LEFT of Cancel. The
               button's label, spinner state, and action depend on whether
               the schedule is currently active or paused: while paused, it
-              acts as Unpause; while active, it acts as Pause. The intent
+              acts as Resume; while active, it acts as Pause. The intent
               after the on-chain TX confirms is reflected by the server
               `status` flip and the pending-action store clearing. */}
           <ActionButtons
             isPaused={isPaused}
             isPausing={isPausing}
-            isUnpausing={isUnpausing}
+            isResuming={isResuming}
             isCancelling={isCancelling}
             canPause={canPause}
-            canUnpause={canUnpause}
+            canResume={canResume}
             cancelDisabled={cancelDisabled}
             isSourceChainAvailable={isSourceChainAvailable}
             schedule={s}
             fromToken={fromToken}
             toToken={toToken}
             onPause={onPause}
-            onUnpause={onUnpause}
+            onResume={onResume}
             onRemove={onRemove}
             dangerColor={colors.$textDanger}
           />
@@ -441,17 +456,17 @@ function ScheduleCard({
 type ActionButtonsProps = {
   isPaused: boolean
   isPausing: boolean
-  isUnpausing: boolean
+  isResuming: boolean
   isCancelling: boolean
   canPause: boolean
-  canUnpause: boolean
+  canResume: boolean
   cancelDisabled: boolean
   isSourceChainAvailable: boolean
   schedule: RecurringOrder
   fromToken: ResolvedToken
   toToken: ResolvedToken
   onPause: ScheduleAction
-  onUnpause: ScheduleAction
+  onResume: ScheduleAction
   onRemove: ScheduleAction
   dangerColor: string
 }
@@ -459,25 +474,25 @@ type ActionButtonsProps = {
 function ActionButtons({
   isPaused,
   isPausing,
-  isUnpausing,
+  isResuming,
   isCancelling,
   canPause,
-  canUnpause,
+  canResume,
   cancelDisabled,
   isSourceChainAvailable,
   schedule: s,
   fromToken,
   toToken,
   onPause,
-  onUnpause,
+  onResume,
   onRemove,
   dangerColor
 }: ActionButtonsProps): JSX.Element {
   const pauseResume = isPaused
     ? {
-        children: isUnpausing ? <ActivityIndicator size="small" /> : 'Resume',
-        disabled: !canUnpause || !isSourceChainAvailable,
-        onPress: () => onUnpause(s, fromToken, toToken)
+        children: isResuming ? <ActivityIndicator size="small" /> : 'Resume',
+        disabled: !canResume || !isSourceChainAvailable,
+        onPress: () => onResume(s, fromToken, toToken)
       }
     : {
         children: isPausing ? <ActivityIndicator size="small" /> : 'Pause',
@@ -503,10 +518,25 @@ function ActionButtons({
 // Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function RecurringSchedulesScreen(): JSX.Element {
+export function RecurringSchedulesScreen({
+  initialExpandedOrderId
+}: {
+  /** When the screen mounts via a notification deep link
+   *  (`core://recurringSwapSchedules?orderId=…`), expand the matching card so
+   *  the user lands directly on the order the notification was about. */
+  initialExpandedOrderId?: string
+} = {}): JSX.Element {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const chainId = activeNetwork?.chainId
+  const headerHeight = useEffectiveHeaderHeight()
+
+  // Capture each card's measured y so we can scroll the deep-linked card
+  // into view if it falls below the fold. Ref-based instead of state to
+  // avoid re-rendering the whole list every time a card lays out.
+  const scrollRef = useRef<ScrollView>(null)
+  const cardYRef = useRef<Map<string, number>>(new Map())
+  const didScrollRef = useRef(false)
 
   // Poll listOrders every 30s while this screen is mounted so the user sees
   // server-side state changes (next-execution advancing after a fill,
@@ -537,11 +567,11 @@ export function RecurringSchedulesScreen(): JSX.Element {
 
   const cancel = useCancelRecurringSchedule()
   const pause = usePauseRecurringSchedule()
-  const unpause = useUnpauseRecurringSchedule()
+  const resume = useResumeRecurringSchedule()
   const { getNetwork } = useNetworks()
 
   // Include both Active and Paused — a paused schedule is still user-
-  // manageable (Unpause + Cancel) and should remain visible in the
+  // manageable (Resume + Cancel) and should remain visible in the
   // management screen. `cancelled` / `completed` orders are hidden.
   //
   // Sort: newest createdAt first. Markr's `createdAt` is seconds-resolution,
@@ -566,6 +596,57 @@ export function RecurringSchedulesScreen(): JSX.Element {
   }, [schedules])
   const manageableCount = manageableSchedules.length
 
+  // Scroll the deep-linked card into view. Triggered by the card's own
+  // `onLayout` so we don't fire before the card has been measured (which
+  // is itself gated on the schedules fetch resolving). `didScrollRef`
+  // ensures a single fire — subsequent layout passes (LinearTransition
+  // animations, badge changes) won't keep yanking the scroll position.
+  const handleCardMeasureY = useCallback(
+    (orderId: string, y: number) => {
+      cardYRef.current.set(orderId, y)
+      if (didScrollRef.current) return
+      if (orderId !== initialExpandedOrderId) return
+      didScrollRef.current = true
+      // Subtract the sticky-header height so the card lands just below it
+      // instead of behind it. Clamp at 0 — the first card sits near the
+      // top of the content already.
+      const target = Math.max(0, y - headerHeight)
+      // The card's `onLayout` can fire before the modal-presentation
+      // animation finishes, which would let `scrollTo`'s animated scroll
+      // complete behind the still-rising modal — the user lands already
+      // positioned at the deep-linked card without seeing the scroll.
+      // Defer to the next frame (so React's commit + the modal's first
+      // present frame have shipped), then wait out the bulk of iOS's
+      // sheet-presentation curve before kicking off the scroll so the
+      // animation is visible to the user.
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({ y: target, animated: true })
+        }, 250)
+      })
+    },
+    [initialExpandedOrderId, headerHeight]
+  )
+
+  // Deep-linked orderId may not show up in the manageable list — the order
+  // could be `cancelled` / `completed` (filtered out), belong to a different
+  // account, or not exist on the active chain. Surface a one-shot snackbar
+  // once the fetch settles so the user isn't left wondering why nothing
+  // expanded. Only fires when the fetch succeeded (an error already renders
+  // the Retry CTA inline).
+  const notFoundShownRef = useRef(false)
+  useEffect(() => {
+    if (!initialExpandedOrderId) return
+    if (isLoading || isError) return
+    if (notFoundShownRef.current) return
+    const found = manageableSchedules.some(
+      s => s.orderId === initialExpandedOrderId
+    )
+    if (found) return
+    notFoundShownRef.current = true
+    showSnackbar('Recurring schedule not found')
+  }, [initialExpandedOrderId, isLoading, isError, manageableSchedules])
+
   // Resolve the schedule's source `Chain` (CAIP-2 chainId + rpcUrl +
   // multicall) from the Redux network state. The SDK's `execute*` methods
   // need a full `Chain` rather than a numeric chainId so they can run the
@@ -584,7 +665,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
     [getNetwork]
   )
 
-  // Cancel / Pause / Unpause share the same shape: validate owner →
+  // Cancel / Pause / Resume share the same shape: validate owner →
   // resolve source chain → guard on missing network → confirm via native
   // alert → fire-and-forget the SDK mutation (the hook signs + broadcasts
   // internally via the evmSigner wired into FusionService, dispatching
@@ -613,7 +694,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
       // Owner mismatch guard: the visible rows can briefly belong to a
       // prior active account during an account switch (between the
       // selector flip and the next listOrders refetch settling). If the
-      // user taps Cancel/Pause/Unpause in that window, the FusionService
+      // user taps Cancel/Pause/Resume in that window, the FusionService
       // signer is already the new account's — signing for the old
       // account's order would 401/403 with a generic "Try again" toast.
       // Bail early with a clear message instead.
@@ -690,7 +771,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
     [confirmAndRun, pause]
   )
 
-  const handleUnpause = useCallback<ScheduleAction>(
+  const handleResume = useCallback<ScheduleAction>(
     (s, fromToken, toToken) =>
       confirmAndRun(
         s,
@@ -703,9 +784,9 @@ export function RecurringSchedulesScreen(): JSX.Element {
           actionText: 'Resume',
           actionStyle: 'destructive'
         },
-        unpause
+        resume
       ),
-    [confirmAndRun, unpause]
+    [confirmAndRun, resume]
   )
 
   const swapWord = `swap${manageableCount === 1 ? '' : 's'}`
@@ -716,6 +797,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
 
   return (
     <ScrollScreen
+      ref={scrollRef}
       title={title}
       navigationTitle={navigationTitle}
       isModal
@@ -756,7 +838,7 @@ export function RecurringSchedulesScreen(): JSX.Element {
           contractTokens={contractTokens}
           onRemove={handleRemove}
           onPause={handlePause}
-          onUnpause={handleUnpause}
+          onResume={handleResume}
           // Pre-resolve the source chain once per row so the buttons can
           // disable visually instead of relying on the post-tap snackbar.
           // `buildSourceChain` is cheap (Redux lookup + a sync `toChain`),
@@ -764,7 +846,9 @@ export function RecurringSchedulesScreen(): JSX.Element {
           isSourceChainAvailable={buildSourceChain(s) !== undefined}
           cancelInFlight={cancel.isPending}
           pauseInFlight={pause.isPending}
-          unpauseInFlight={unpause.isPending}
+          resumeInFlight={resume.isPending}
+          initialExpanded={s.orderId === initialExpandedOrderId}
+          onMeasureY={y => handleCardMeasureY(s.orderId, y)}
         />
       ))}
     </ScrollScreen>
