@@ -9,6 +9,7 @@ import { WalletType } from 'services/wallet/types'
 import { Linking } from 'react-native'
 import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
 import { showAlert } from '@avalabs/k2-alpine'
+import Logger from 'utils/Logger'
 
 export const KEYSTONE_SIGNING_ERROR_MESSAGE =
   'Failed to sign Avalanche transaction'
@@ -118,6 +119,15 @@ export const avalancheSendTransaction = async ({
       signedData: signedTransactionHex as Hex
     })
   } catch (error) {
+    Logger.error('[avalancheSendTransaction] sign failed', {
+      vm,
+      walletType,
+      externalIndices,
+      internalIndices,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    })
     resolve({
       error: rpcErrors.internal({
         message: 'Failed to sign avalanche transaction',
