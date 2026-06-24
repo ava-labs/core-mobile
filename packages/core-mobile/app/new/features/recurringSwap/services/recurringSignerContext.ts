@@ -3,7 +3,7 @@ import {
   type RecurringFrequency,
   type TransferStepDetails
 } from '@avalabs/fusion-sdk'
-import { RecurringOrderActionType } from '../store/pendingActionStore'
+import type { RecurringOrderActionType } from '../store/pendingActionStore'
 
 // Display metadata for an in-flight recurring action. Producers
 // (`submitRecurringSwap`, the order-action hooks) pass this on the
