@@ -86,6 +86,12 @@ export const CollectibleRenderer = memo(
       if (type === NftContentType.MP4)
         return (
           <Animated.View
+            // The native video view consumes touches on Android, so taps never
+            // reach the parent Pressable (e.g. the collectible grid/list item),
+            // making video items un-tappable. CollectibleRenderer is always a
+            // non-interactive preview (`hideControls: true`), so disable pointer
+            // events here to let taps fall through to the wrapping Pressable.
+            pointerEvents="none"
             style={[
               {
                 width: '100%',
