@@ -194,7 +194,11 @@ export const ListScreenV2 = <T,>({
       backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
-      renderHeaderRight
+      renderHeaderRight,
+      // Android formsheet modal: fill the transparent header strip with
+      // $surfacePrimary so the sheet's dim scrim doesn't show through it as a
+      // second, darker background over the header.
+      opaqueHeaderBackgroundOnAndroid: Platform.OS === 'android' && isModal
     }
   )
 
@@ -688,26 +692,6 @@ export const ListScreenV2 = <T,>({
           restProps.style
         ])}
       />
-      {/* DEBUG_STRIP_PROBE: loud opaque magenta, ON TOP of the FlashList,
-          covering the whole header zone. If the dark "second background" strip
-          turns magenta, it lives in this component's RN tree (reposition the
-          real fill). If it stays dark with magenta around it, the strip is
-          painted by a layer ABOVE this content (the transparent nav header
-          showing the scrim) and the fix belongs at the nav header. Remove after. */}
-      {isAndroidModal && (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: flashListMarginTop + headerSentinelHeight + 120,
-            backgroundColor: '#FF00FF',
-            zIndex: 999
-          }}
-        />
-      )}
       {headerOverlay && (
         // The overlay is a non-interactive label that sits directly on top of
         // the first list row. It animates from opacity 0, and an opacity-0 view
