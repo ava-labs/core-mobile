@@ -662,10 +662,11 @@ export class LedgerWallet implements Wallet {
   }
 
   /**
-   * Whether EVM signing for this network should use the Ledger Avalanche app
-   * (C-Chain or an Avalanche L1) rather than the Ethereum app. Shares
-   * getLedgerAppName with the approval UI so the app we prompt for and the app
-   * we sign with can never disagree.
+   * For the EVM signing flows, whether to use the Ledger Avalanche app rather
+   * than the Ethereum app. Mirrors the approval UI by delegating to
+   * getLedgerAppName(network) — which for EVM networks resolves to the Avalanche
+   * app on C-Chain and Avalanche L1s — so the app we prompt for and the app we
+   * sign with can never disagree.
    */
   private usesAvalancheApp(network?: Network): boolean {
     return getLedgerAppName(network) === LedgerAppType.AVALANCHE
@@ -688,7 +689,9 @@ export class LedgerWallet implements Wallet {
     // Route C-Chain and Avalanche L1s (EVM chains with a subnetId) to the
     // Avalanche app; all other EVM chains use the Ethereum app. getLedgerAppName
     // is the single source of truth shared with the approval UI.
-    const chainId = transaction.chainId ? Number(transaction.chainId) : 43114
+    const chainId = transaction.chainId
+      ? Number(transaction.chainId)
+      : network.chainId
     const isAvalanche = this.usesAvalancheApp(network)
     const appType = isAvalanche
       ? LedgerAppType.AVALANCHE
