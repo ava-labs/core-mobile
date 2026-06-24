@@ -1053,7 +1053,7 @@ describe('LedgerWallet', () => {
       await ledgerWallet.signEvmTransaction({
         accountIndex: 0,
         transaction: { ...baseTransaction, chainId: 43114 },
-        network: { chainId: 43114 } as Network,
+        network: { chainId: 43114, vmName: NetworkVMType.EVM } as Network,
         provider: mockProvider
       })
 
@@ -2149,8 +2149,11 @@ describe('LedgerWallet', () => {
 
     describe('handleSignedTypedData', () => {
       const derivationPath = "m/44'/60'/0'/0/0"
-      const ethNetwork = { chainId: 1 } as Network
-      const avaxNetwork = { chainId: 43114 } as Network
+      const ethNetwork = { chainId: 1, vmName: NetworkVMType.EVM } as Network
+      const avaxNetwork = {
+        chainId: 43114,
+        vmName: NetworkVMType.EVM
+      } as Network
 
       const validTypedData = {
         domain: { name: 'Test App', version: '1' },
