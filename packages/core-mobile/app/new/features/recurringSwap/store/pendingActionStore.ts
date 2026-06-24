@@ -29,6 +29,15 @@ export type RecurringOrderActionType =
 export interface PendingActionEntry {
   type: RecurringOrderActionType
   addedAt: number
+  // The (account, chain) the action was issued under. Markr order IDs are
+  // globally unique, so the map is still keyed by orderId alone — but the
+  // listeners-side reconciler runs per-query (one query == one account/chain)
+  // and must only clear entries scoped to the event's account/chain. Without
+  // this, a sibling account's listOrders success reconciles THIS account's
+  // pending order against the wrong list, finds it "missing", and clears the
+  // spinner mid-flight (re-enabling the buttons for a redundant second TX).
+  ownerAddress: string
+  chainId: number
 }
 
 export interface PendingActionState {
@@ -37,8 +46,14 @@ export interface PendingActionState {
   // action per orderId is allowed by the orchestrator (a paused order can't
   // be pause-spammed, an active order can't be cancel+pause concurrently),
   // so this is a single-entry map per id rather than a per-type sub-map.
+  // (account, chain) ride along inside the entry — see `ownerAddress`/`chainId`
+  // above — so the reconciler can scope its clears.
   pending: Record<string, PendingActionEntry>
-  markPending: (orderId: string, type: RecurringOrderActionType) => void
+  markPending: (
+    orderId: string,
+    type: RecurringOrderActionType,
+    scope: { ownerAddress: string; chainId: number }
+  ) => void
   clearPending: (orderId: string) => void
   isExpired: (orderId: string, nowMs?: number) => boolean
 }
@@ -48,11 +63,11 @@ export const pendingActionStore = create<PendingActionState>()(
     (set, get) => ({
       pending: {},
 
-      markPending: (orderId, type) => {
+      markPending: (orderId, type, { ownerAddress, chainId }) => {
         set(state => ({
           pending: {
             ...state.pending,
-            [orderId]: { type, addedAt: Date.now() }
+            [orderId]: { type, addedAt: Date.now(), ownerAddress, chainId }
           }
         }))
       },
@@ -85,7 +100,12 @@ export const pendingActionStore = create<PendingActionState>()(
       // 'unpause' entry persisted from a v1 client — acceptable given the
       // 10-min TTL: anything still pending at upgrade time would age out
       // before the next listOrders refetch reconciles anyway.
-      version: 2
+      //
+      // v3: entries gained `ownerAddress` + `chainId`. A v2 entry has neither,
+      // so it would never match an event's (account, chain) scope and could
+      // only be cleared by the TTL safety net. Bumping discards them up front
+      // — again a zero-impact migration given the 10-min TTL.
+      version: 3
     }
   )
 )

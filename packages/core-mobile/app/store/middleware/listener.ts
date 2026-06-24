@@ -21,7 +21,7 @@ import { addBranchListeners } from 'store/branch/listener'
 // Nest Egg disabled (CP-14058) — see addNestEggListeners call below
 // import { addNestEggListeners } from 'store/nestEgg/listeners'
 import { addFusionListeners } from 'new/features/swap/store/listeners'
-import { startRecurringFailureWatcher } from 'new/features/recurringSwap/store/listeners'
+import { addRecurringSwapListeners } from 'new/features/recurringSwap/store/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -73,12 +73,7 @@ addBranchListeners(startListening)
 
 addFusionListeners(startListening)
 
-// Recurring-swap step-based Redux listeners (fill / cancel / pause / resume)
-// were removed when the SDK started signing and broadcasting internally, so
-// the hooks resolve directly with `{ txHash }` and fire their own analytics +
-// invalidations. Only the failure-watcher / pending-action reconciler
-// subscriber remains.
-startRecurringFailureWatcher()
+addRecurringSwapListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

@@ -13,6 +13,10 @@ const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
 const mockCapture = jest.fn()
 const mockInvalidateQueries = jest.fn()
+// No network resolvable → the post-broadcast receipt watcher early-returns,
+// so it's inert here (the revert path is covered in the cancel hook test,
+// which exercises the shared `_makeOrderActionHook` watcher).
+const mockGetEvmProvider = jest.fn()
 
 // Markr's SDK still names the namespace method `executeUnpause`; only
 // our consumer-facing naming changed to "resume". This mock mirrors the
@@ -45,6 +49,14 @@ jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
     getState: () => ({ markPending: mockMarkPending })
   }
+}))
+
+jest.mock('hooks/networks/useNetworks', () => ({
+  useNetworks: () => ({ networks: {} })
+}))
+
+jest.mock('services/network/utils/providerUtils', () => ({
+  getEvmProvider: (...args: unknown[]) => mockGetEvmProvider(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -121,7 +133,8 @@ describe('useResumeRecurringSchedule', () => {
 
     expect(mockMarkPending).toHaveBeenCalledWith(
       RESUME_ARGS.orderId,
-      TransferSignatureReason.ResumeRecurringSwap
+      TransferSignatureReason.ResumeRecurringSwap,
+      { ownerAddress: RESUME_ARGS.address, chainId: RESUME_ARGS.chainId }
     )
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapResumedByUser', {

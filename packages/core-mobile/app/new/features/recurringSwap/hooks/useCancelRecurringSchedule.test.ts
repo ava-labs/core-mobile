@@ -14,8 +14,17 @@ import { useCancelRecurringSchedule } from './useCancelRecurringSchedule'
 const mockExecuteCancellation = jest.fn()
 const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
+const mockClearPending = jest.fn()
 const mockCapture = jest.fn()
 const mockInvalidateQueries = jest.fn()
+// Default: no network resolvable → the post-broadcast receipt watcher
+// early-returns, so it's inert for every existing test. The revert test
+// below overrides these to exercise the watch path.
+const mockUseNetworks = jest.fn(() => ({
+  networks: {} as Record<number, unknown>
+}))
+const mockWaitForTransaction = jest.fn()
+const mockGetEvmProvider = jest.fn()
 
 jest.mock('features/swap/services/FusionService', () => ({
   __esModule: true,
@@ -46,8 +55,21 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 // assertions below verify it's invoked with type 'cancel'.
 jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
-    getState: () => ({ markPending: mockMarkPending })
+    getState: () => ({
+      markPending: mockMarkPending,
+      clearPending: mockClearPending
+    })
   }
+}))
+
+// The hook reads the live networks map to resolve the source network for the
+// receipt watcher; `getEvmProvider` turns that into an EVM provider.
+jest.mock('hooks/networks/useNetworks', () => ({
+  useNetworks: () => mockUseNetworks()
+}))
+
+jest.mock('services/network/utils/providerUtils', () => ({
+  getEvmProvider: (...args: unknown[]) => mockGetEvmProvider(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -92,8 +114,15 @@ describe('useCancelRecurringSchedule', () => {
     mockExecuteCancellation.mockReset()
     mockSnackbar.mockReset()
     mockMarkPending.mockReset()
+    mockClearPending.mockReset()
     mockCapture.mockReset()
     mockInvalidateQueries.mockReset()
+    mockUseNetworks.mockReturnValue({ networks: {} })
+    mockWaitForTransaction.mockReset()
+    mockGetEvmProvider.mockReset()
+    mockGetEvmProvider.mockResolvedValue({
+      waitForTransaction: mockWaitForTransaction
+    })
     jest.useFakeTimers()
   })
 
@@ -134,7 +163,8 @@ describe('useCancelRecurringSchedule', () => {
     // so `listeners.ts` can switch on the exact cancel/pause/resume reason.
     expect(mockMarkPending).toHaveBeenCalledWith(
       CANCEL_ARGS.orderId,
-      TransferSignatureReason.CancelRecurringSwap
+      TransferSignatureReason.CancelRecurringSwap,
+      { ownerAddress: CANCEL_ARGS.address, chainId: CANCEL_ARGS.chainId }
     )
 
     // Analytics fire from the hook on success (previously this lived in a
@@ -145,6 +175,59 @@ describe('useCancelRecurringSchedule', () => {
         orderId: CANCEL_ARGS.orderId
       }
     })
+  })
+
+  // Regression: `executeCancellation` resolves at broadcast, and
+  // `RecurringOrderStatus` has no failed state — so a reverted action TX would
+  // never advance the status the reconciler keys on, stranding the spinner
+  // until the 10-min TTL. The post-broadcast receipt watcher must detect the
+  // revert (`receipt.status === 0`), clear the pending entry, and surface a
+  // failure snackbar.
+  it('clears the pending entry and surfaces a failure snackbar when the action TX reverts on-chain', async () => {
+    mockExecuteCancellation.mockResolvedValueOnce({ txHash: '0xtxhash' })
+    mockUseNetworks.mockReturnValue({
+      networks: { [CANCEL_ARGS.chainId]: { vmName: 'EVM' } }
+    })
+    mockWaitForTransaction.mockResolvedValueOnce({ status: 0 })
+
+    const { result } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(CANCEL_ARGS)
+      // Flush the fire-and-forget watcher's microtask chain
+      // (getEvmProvider → waitForTransaction → clearPending/snackbar).
+      for (let i = 0; i < 5; i++) await Promise.resolve()
+    })
+
+    expect(mockWaitForTransaction).toHaveBeenCalledWith('0xtxhash', 1, 60_000)
+    expect(mockClearPending).toHaveBeenCalledWith(CANCEL_ARGS.orderId)
+    expect(mockSnackbar).toHaveBeenCalledWith(
+      'Cancel failed on-chain. Please try again'
+    )
+  })
+
+  // A successful (status 1) receipt must NOT clear the entry — the reconciler
+  // owns the happy-path clear once Markr indexes the new status.
+  it('leaves the pending entry intact when the action TX confirms successfully', async () => {
+    mockExecuteCancellation.mockResolvedValueOnce({ txHash: '0xtxhash' })
+    mockUseNetworks.mockReturnValue({
+      networks: { [CANCEL_ARGS.chainId]: { vmName: 'EVM' } }
+    })
+    mockWaitForTransaction.mockResolvedValueOnce({ status: 1 })
+
+    const { result } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(CANCEL_ARGS)
+      for (let i = 0; i < 5; i++) await Promise.resolve()
+    })
+
+    expect(mockClearPending).not.toHaveBeenCalled()
+    expect(mockSnackbar).not.toHaveBeenCalled()
   })
 
   it('does NOT mark the order pending when executeCancellation rejects', async () => {
@@ -163,6 +246,38 @@ describe('useCancelRecurringSchedule', () => {
     })
 
     expect(mockMarkPending).not.toHaveBeenCalled()
+    expect(mockCapture).not.toHaveBeenCalled()
+  })
+
+  // Regression: `executeCancellation` signs AND broadcasts internally, so a
+  // non-HTTP, non-user-rejection error (e.g. a read timeout on the broadcast
+  // response) is ambiguous — the TX may already be in the mempool. Re-enabling
+  // the button would invite a double-submit, so the hook marks the order
+  // pending (spinner persists, blocking the re-tap) and suppresses the failure
+  // toast — it can't claim the action failed. The reconciler/TTL clears it.
+  it('keeps the order pending without a toast when executeCancellation rejects with an ambiguous (non-HTTP) error', async () => {
+    mockExecuteCancellation.mockRejectedValueOnce(
+      new Error('read timeout after broadcast')
+    )
+
+    const { result } = renderHook(() => useCancelRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      try {
+        await result.current.mutateAsync(CANCEL_ARGS)
+      } catch {
+        /* rethrown */
+      }
+    })
+
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      CANCEL_ARGS.orderId,
+      TransferSignatureReason.CancelRecurringSwap,
+      { ownerAddress: CANCEL_ARGS.address, chainId: CANCEL_ARGS.chainId }
+    )
+    expect(mockSnackbar).not.toHaveBeenCalled()
     expect(mockCapture).not.toHaveBeenCalled()
   })
 
@@ -223,23 +338,15 @@ describe('useCancelRecurringSchedule', () => {
     })
 
     expect(mockSnackbar).not.toHaveBeenCalled()
+    // ...and the user's deliberate rejection must NOT leave a pending spinner.
+    expect(mockMarkPending).not.toHaveBeenCalled()
   })
 
-  it('shows "Try again" on a generic signer/network failure (not a user rejection)', async () => {
-    mockExecuteCancellation.mockRejectedValueOnce(new Error('RPC timeout'))
-
-    const { result } = renderHook(() => useCancelRecurringSchedule(), {
-      wrapper: wrap
-    })
-
-    await act(async () => {
-      try {
-        await result.current.mutateAsync(CANCEL_ARGS)
-      } catch {
-        /* rethrown */
-      }
-    })
-
-    expect(mockSnackbar).toHaveBeenCalledWith('Try again')
-  })
+  // A generic signer/network failure thrown out of `executeCancellation` is
+  // ambiguous (the TX may have broadcast) — covered by the "keeps the order
+  // pending without a toast" regression above. The old behaviour of surfacing
+  // a "Try again" toast here was removed: re-enabling on an ambiguous error
+  // risks a double-submit. The `fallback` copy is still reached for failures
+  // that provably precede broadcast (e.g. the `markrRecurring` namespace being
+  // unavailable, which throws before `executeX` is ever called).
 })

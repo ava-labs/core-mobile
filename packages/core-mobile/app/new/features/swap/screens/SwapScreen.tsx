@@ -1182,6 +1182,18 @@ export const SwapScreen = (): JSX.Element => {
     isSeedlessWallet
   })
 
+  // Mirror the one-shot `canSwap` gate: a blocking (non-warning) validation
+  // error must disable Next. Most importantly this covers below-minimum, which
+  // `computeValidationError` evaluates against the recurring per-token minimum
+  // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
+  // displayed but never reached `canSubmit`, and because the recurring quote
+  // succeeds below the minimum (`useRecurringQuote` only gates on a non-zero
+  // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
+  // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
+  // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
+  const hasBlockingValidationError =
+    validationError !== null && validationError.isWarning !== true
+
   const isRecurringReady =
     recurring.isRecurring &&
     !!recurring.frequency &&
@@ -1190,7 +1202,8 @@ export const SwapScreen = (): JSX.Element => {
     !!toToken &&
     !!fromTokenValue &&
     !!recurringQuote.data &&
-    !recurringSubmitting
+    !recurringSubmitting &&
+    !hasBlockingValidationError
 
   const canSubmit = recurring.isRecurring ? isRecurringReady : canSwap
 

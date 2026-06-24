@@ -38,12 +38,17 @@ describe('pendingActionStore', () => {
 
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().pending).toEqual({
       '0xabc': {
         type: TransferSignatureReason.CancelRecurringSwap,
-        addedAt: now
+        addedAt: now,
+        ownerAddress: '0xowner',
+        chainId: 43114
       }
     })
   })
@@ -54,21 +59,32 @@ describe('pendingActionStore', () => {
 
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.ResumeRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.ResumeRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().pending['0xabc']).toEqual({
       type: TransferSignatureReason.ResumeRecurringSwap,
-      addedAt: now
+      addedAt: now,
+      ownerAddress: '0xowner',
+      chainId: 43114
     })
   })
 
   it('clearPending removes the entry; no-op for unknown orderIds', () => {
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
     pendingActionStore.getState().clearPending('0xabc')
     expect(pendingActionStore.getState().pending).toEqual({})
 
@@ -83,7 +99,10 @@ describe('pendingActionStore', () => {
     jest.spyOn(Date, 'now').mockReturnValue(now)
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(pendingActionStore.getState().isExpired('0xabc', now)).toBe(false)
     expect(
@@ -101,7 +120,10 @@ describe('pendingActionStore', () => {
     jest.spyOn(Date, 'now').mockReturnValue(now)
     pendingActionStore
       .getState()
-      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap)
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap, {
+        ownerAddress: '0xowner',
+        chainId: 43114
+      })
 
     expect(
       pendingActionStore

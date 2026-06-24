@@ -57,7 +57,7 @@ export function buildRecurringQuoteQueryKey(
 const STALE_MS = 30_000
 
 /**
- * Debounced wrapper around `FusionService.markrRecurring.quote(...)`.
+ * React Query wrapper around `FusionService.markrRecurring.quote(...)`.
  *
  * Query key intentionally keys on *stable primitive* sub-fields (networkChainId,
  * localId, frequency.unit/value) rather than the whole token objects — the swap

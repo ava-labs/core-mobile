@@ -17,6 +17,7 @@ export const usePauseRecurringSchedule = makeOrderActionHook({
   errorCopy: {
     notActionable: 'This recurring schedule cannot be paused right now',
     notFound: 'Recurring schedule not found',
-    fallback: 'Try again'
+    fallback: 'Try again',
+    reverted: 'Pause failed on-chain. Please try again'
   }
 })

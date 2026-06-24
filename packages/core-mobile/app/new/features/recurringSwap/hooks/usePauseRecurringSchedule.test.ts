@@ -13,6 +13,10 @@ const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
 const mockCapture = jest.fn()
 const mockInvalidateQueries = jest.fn()
+// No network resolvable → the post-broadcast receipt watcher early-returns,
+// so it's inert here (the revert path is covered in the cancel hook test,
+// which exercises the shared `_makeOrderActionHook` watcher).
+const mockGetEvmProvider = jest.fn()
 
 jest.mock('features/swap/services/FusionService', () => ({
   __esModule: true,
@@ -42,6 +46,14 @@ jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
     getState: () => ({ markPending: mockMarkPending })
   }
+}))
+
+jest.mock('hooks/networks/useNetworks', () => ({
+  useNetworks: () => ({ networks: {} })
+}))
+
+jest.mock('services/network/utils/providerUtils', () => ({
+  getEvmProvider: (...args: unknown[]) => mockGetEvmProvider(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -118,7 +130,8 @@ describe('usePauseRecurringSchedule', () => {
 
     expect(mockMarkPending).toHaveBeenCalledWith(
       PAUSE_ARGS.orderId,
-      TransferSignatureReason.PauseRecurringSwap
+      TransferSignatureReason.PauseRecurringSwap,
+      { ownerAddress: PAUSE_ARGS.address, chainId: PAUSE_ARGS.chainId }
     )
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapPausedByUser', {
@@ -189,7 +202,11 @@ describe('usePauseRecurringSchedule', () => {
     expect(mockSnackbar).not.toHaveBeenCalled()
   })
 
-  it('shows "Try again" on a generic signer/network failure (not a user rejection)', async () => {
+  // A generic (non-HTTP, non-rejection) failure thrown out of `executePause`
+  // is ambiguous — the TX may already have broadcast. The shared hook keeps the
+  // order pending (blocking a double-submit) and suppresses the toast rather
+  // than showing "Try again" and re-enabling the button.
+  it('keeps the order pending without a toast on a generic (ambiguous) failure', async () => {
     mockExecutePause.mockRejectedValueOnce(new Error('RPC timeout'))
 
     const { result } = renderHook(() => usePauseRecurringSchedule(), {
@@ -204,6 +221,11 @@ describe('usePauseRecurringSchedule', () => {
       }
     })
 
-    expect(mockSnackbar).toHaveBeenCalledWith('Try again')
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      PAUSE_ARGS.orderId,
+      TransferSignatureReason.PauseRecurringSwap,
+      { ownerAddress: PAUSE_ARGS.address, chainId: PAUSE_ARGS.chainId }
+    )
+    expect(mockSnackbar).not.toHaveBeenCalled()
   })
 })

@@ -14,7 +14,7 @@ import FusionService from 'features/swap/services/FusionService'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
-import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
+import { recurringSchedulesQueryKey } from '../hooks/useRecurringSchedules'
 import { buildRecurringQuoteQueryKey } from '../hooks/useRecurringQuote'
 import type { RecurringFillSignerContext } from '../services/recurringSignerContext'
 import type { Frequency, NumberOfOrders } from '../types'
@@ -266,8 +266,16 @@ export async function submitRecurringSwap(
   // user needing to navigate. The shared helper dedupes against any prior
   // pending batch for the same key (e.g. user submits, errors, retries) so
   // repeated calls don't stack timers.
-  queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
-  scheduleStaggeredInvalidate(RECURRING_SCHEDULES_QK)
+  //
+  // Scope to this (account, chain) rather than the bare `[RECURRING_SCHEDULES]`
+  // prefix: the staggered timers are module-scoped and outlive this call, so a
+  // firing up to 30s later must refetch the schedule's own account — not
+  // whatever account is active by then. The scoped key matches exactly the
+  // observers of this account's schedules (banner / manage screen) and never
+  // prefix-matches another account.
+  const schedulesKey = recurringSchedulesQueryKey(fromAddress, quote.chainId)
+  queryClient.invalidateQueries({ queryKey: schedulesKey })
+  scheduleStaggeredInvalidate(schedulesKey)
 
   return result
 }

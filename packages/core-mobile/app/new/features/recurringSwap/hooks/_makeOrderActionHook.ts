@@ -1,18 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Address } from 'viem'
-import type { Chain, RecurringNamespace } from '@avalabs/fusion-sdk'
+import type {
+  Chain,
+  RecurringExecuteResult,
+  RecurringNamespace
+} from '@avalabs/fusion-sdk'
 import { isHttpError } from '@avalabs/fusion-sdk'
+import type { Network } from '@avalabs/core-chains-sdk'
 import { showSnackbar } from 'common/utils/toast'
 import FusionService from 'features/swap/services/FusionService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 import {
   pendingActionStore,
   RecurringOrderActionType
 } from '../store/pendingActionStore'
 import type { RecurringOrderActionSignerContext } from '../services/recurringSignerContext'
 import { scheduleStaggeredInvalidate } from '../utils/staggeredInvalidate'
-import { RECURRING_SCHEDULES_QK } from './useRecurringSchedules'
+import { recurringSchedulesQueryKey } from './useRecurringSchedules'
+
+// Ceiling for the post-broadcast action-TX receipt wait. Mirrors the swap
+// signer's receipt wait (`features/swap/store/listeners.ts`): 1 confirmation,
+// 60s. Long enough for normal inclusion, short enough that a reverted/dropped
+// cancel/pause/resume surfaces an error well before the 10-min pending-action
+// TTL would otherwise strand the row on its "-ing" spinner.
+const ACTION_RECEIPT_TIMEOUT_MS = 60_000
 
 // Cancel / pause / resume are all on-chain TXs; the SDK signs + broadcasts
 // internally. The three hooks all follow the identical shape:
@@ -71,7 +85,7 @@ type ExecuteFn = (props: {
   // the approval modal's RECURRING_SWAP context. The approval-side schema uses
   // the payload's `action` field (cancel/pause/resume) to select the preview copy.
   signerContext: RecurringOrderActionSignerContext
-}) => Promise<unknown>
+}) => Promise<RecurringExecuteResult>
 
 type ErrorSnackbarCopy = {
   /** HTTP 400 — order isn't in a state the action accepts (e.g. cancelling
@@ -81,6 +95,12 @@ type ErrorSnackbarCopy = {
   notFound: string
   /** Anything else (network, signer rejection, unauthorised, etc.). */
   fallback: string
+  /** The action TX broadcast successfully but then reverted on-chain. Markr's
+   *  `RecurringOrderStatus` is a closed enum with no failed state, so the
+   *  status never advances and the reconciler can't clear the entry — without
+   *  surfacing this the row's "-ing" spinner would hang until the 10-min TTL.
+   *  The post-broadcast receipt watcher detects the revert and shows this. */
+  reverted: string
 }
 
 type OrderActionConfig = {
@@ -95,6 +115,62 @@ type OrderActionConfig = {
     | 'RecurringSwapPausedByUser'
     | 'RecurringSwapResumedByUser'
   errorCopy: ErrorSnackbarCopy
+}
+
+/**
+ * Background receipt watch for a broadcast cancel/pause/resume TX.
+ *
+ * `executeX` resolves at broadcast, and `RecurringOrderStatus` has no failed
+ * state, so a reverted/dropped action TX never advances the status the
+ * listeners-side reconciler keys on — its only escape would be the 10-min TTL,
+ * leaving the row stuck on its "-ing" spinner with no feedback. This waits for
+ * the receipt and, on an explicit on-chain revert (`status === 0`), clears the
+ * pending entry and surfaces a failure snackbar right away.
+ *
+ * Deliberately conservative about NOT clearing:
+ *   - No network resolvable for `chainId` → can't watch; leave to the TTL.
+ *   - Wait times out / RPC error → a late confirmation may still land, so
+ *     leave the entry for the reconciler (TTL remains the final backstop).
+ * Only a confirmed `status === 0` clears the entry here.
+ */
+async function watchActionTxReceipt({
+  orderId,
+  chainId,
+  txHash,
+  network,
+  errorCopy,
+  hookName
+}: {
+  orderId: string
+  chainId: number
+  txHash: `0x${string}`
+  network: Network | undefined
+  errorCopy: ErrorSnackbarCopy
+  hookName: string
+}): Promise<void> {
+  if (!network) return
+  try {
+    const provider = await getEvmProvider(network)
+    const receipt = await provider.waitForTransaction(
+      txHash,
+      1,
+      ACTION_RECEIPT_TIMEOUT_MS
+    )
+    if (receipt && receipt.status === 0) {
+      pendingActionStore.getState().clearPending(orderId)
+      showSnackbar(errorCopy.reverted)
+      Logger.warn(
+        `[${hookName}] action TX ${txHash} reverted on chain ${chainId}; cleared pending entry for order ${orderId}`
+      )
+    }
+  } catch (err) {
+    // Timeout / RPC error — don't clear; the reconciler + TTL remain the
+    // backstop in case a confirmation lands later.
+    Logger.warn(
+      `[${hookName}] action receipt watch did not confirm for order ${orderId}; leaving pending for reconciler/TTL`,
+      err
+    )
+  }
 }
 
 /**
@@ -114,6 +190,13 @@ export function makeOrderActionHook(
     // the first to settle would flip `isPending` off mid-flight on the
     // second. Drop calls while one is already in flight.
     const inFlightRef = useRef(false)
+    // The receipt watcher needs the source network for `args.chainId`, which
+    // is only known per-call. Hold the live networks map in a ref so the
+    // empty-deps `run` reads the latest without churning its identity (which
+    // the SchedulesScreen's stable `mutate` reference depends on).
+    const { networks } = useNetworks()
+    const networksRef = useRef(networks)
+    networksRef.current = networks
     useEffect(
       () => () => {
         isMountedRef.current = false
@@ -128,11 +211,18 @@ export function makeOrderActionHook(
     // identity unnecessarily and break the SchedulesScreen's stable
     // `mutate` reference that downstream `useCallback`s depend on.
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `config` is captured by the factory call (module import time) and is referentially stable; keeping `run` stable avoids downstream callback churn
     const run = useCallback(async (args: OrderActionArgs): Promise<void> => {
       if (inFlightRef.current) return
       inFlightRef.current = true
       if (isMountedRef.current) setIsPending(true)
+      // Flips to `true` the instant we hand off to the SDK's `executeX`, which
+      // signs *and broadcasts* internally. Used in the catch to tell a
+      // pre-broadcast failure (orchestrator 400, user rejection, missing
+      // namespace) — safe to re-enable the button — from a post-broadcast
+      // reject (e.g. the sendRawTransaction response read times out while the
+      // TX is already in the mempool) — where re-enabling invites a
+      // double-submit.
+      let didCallExecute = false
       try {
         const markrRecurring = FusionService.markrRecurring
         if (!markrRecurring) {
@@ -155,7 +245,10 @@ export function makeOrderActionHook(
           toTokenSymbol: args.toTokenSymbol
         }
         const execute = config.pickExecute(markrRecurring)
-        await execute({
+        // `executeX` resolves at *broadcast* (returns the txHash), NOT at
+        // on-chain confirmation — see the SDK's recurring `_namespace`.
+        didCallExecute = true
+        const { txHash } = await execute({
           orderId: args.orderId,
           address: args.address as Address,
           sourceChain: args.sourceChain,
@@ -167,7 +260,31 @@ export function makeOrderActionHook(
         // reports the destination status. The reconciler in listeners.ts
         // clears this entry once the server reflects the new state (or
         // the TTL elapses).
-        pendingActionStore.getState().markPending(args.orderId, config.type)
+        // Scope the entry to (account, chain) so the listeners-side reconciler
+        // only clears it when THIS account/chain's listOrders catches up — a
+        // sibling account's refetch must not clobber this in-flight action.
+        pendingActionStore.getState().markPending(args.orderId, config.type, {
+          ownerAddress: args.address,
+          chainId: args.chainId
+        })
+
+        // Because broadcast ≠ confirmation and `RecurringOrderStatus` has no
+        // failed state, a reverted/dropped action TX would never advance the
+        // status the reconciler keys on — the spinner would hang until the
+        // TTL. Watch the receipt in the background: on an explicit on-chain
+        // revert, clear the entry and surface a failure snackbar immediately.
+        // Fire-and-forget — confirmation may land after the screen unmounts,
+        // and the store/snackbar are module-level (no React state touched).
+        // The watcher swallows its own errors, so the no-op `.catch` only
+        // satisfies the floating-promise lint.
+        watchActionTxReceipt({
+          orderId: args.orderId,
+          chainId: args.chainId,
+          txHash,
+          network: networksRef.current[args.chainId],
+          errorCopy: config.errorCopy,
+          hookName: config.hookName
+        }).catch(() => undefined)
 
         AnalyticsService.capture(config.analyticsEvent, {
           chainId: args.chainId,
@@ -182,9 +299,47 @@ export function makeOrderActionHook(
         // catch-up invalidates and dedupes against any prior in-flight
         // batch for the same queryKey, so rapid repeat actions don't
         // stack timers.
-        scheduleStaggeredInvalidate(RECURRING_SCHEDULES_QK)
+        //
+        // Scope the key to THIS (account, chain) via the shared builder rather
+        // than the bare `[RECURRING_SCHEDULES]` prefix. The catch-up should
+        // refetch the account the action was for — not whatever account
+        // happens to be active when a timer fires up to 30s later. These timers
+        // are module-scoped and aren't cleared on unmount/account-switch; with
+        // the bare prefix a post-switch firing would refetch the *new*
+        // account's query, whereas the scoped key only ever touches the
+        // (now-inactive) query it was meant for — a harmless stale-mark, never
+        // a cross-account refetch. The builder lowercases the owner so this
+        // matches the query key even though `args.address` (Markr's per-order
+        // owner) may differ in checksum casing from the wallet's `addressC`.
+        scheduleStaggeredInvalidate(
+          recurringSchedulesQueryKey(args.address, args.chainId)
+        )
       } catch (err) {
-        showOrderActionErrorSnackbar(err, config.errorCopy, config.hookName)
+        // A user rejection or an `HttpError` (orchestrator 400/404 from the
+        // calldata fetch) can only happen *before* the TX broadcasts. Anything
+        // else thrown out of `executeX` is ambiguous: the raw TX may already be
+        // in the mempool even though the awaited promise rejected (e.g. a read
+        // timeout on the broadcast response). In that case, re-enabling the
+        // buttons would let the user re-tap and double-submit a second on-chain
+        // action. So mark the order pending instead — the spinner persists and
+        // blocks the re-tap, and the listeners-side reconciler (or the TTL)
+        // clears it once Markr reflects the result. No toast: we don't actually
+        // know it failed. (No txHash is available here, so the receipt watcher
+        // can't run — the reconciler/TTL is the sole backstop for this path.)
+        const mayHaveBroadcast =
+          didCallExecute && !isUserRejectionError(err) && !isHttpError(err)
+        if (mayHaveBroadcast) {
+          pendingActionStore.getState().markPending(args.orderId, config.type, {
+            ownerAddress: args.address,
+            chainId: args.chainId
+          })
+          Logger.warn(
+            `[${config.hookName}] action settled ambiguously after broadcast for order ${args.orderId}; keeping pending to block a double-submit`,
+            err
+          )
+        } else {
+          showOrderActionErrorSnackbar(err, config.errorCopy, config.hookName)
+        }
         throw err
       } finally {
         inFlightRef.current = false

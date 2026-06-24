@@ -18,6 +18,7 @@ export const useCancelRecurringSchedule = makeOrderActionHook({
   errorCopy: {
     notActionable: 'This schedule can no longer be cancelled',
     notFound: 'Unable to remove',
-    fallback: 'Try again'
+    fallback: 'Try again',
+    reverted: 'Cancel failed on-chain. Please try again'
   }
 })

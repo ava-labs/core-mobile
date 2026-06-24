@@ -3,6 +3,8 @@ import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
+import { onAppUnlocked } from 'store/app/slice'
+import type { AppStartListening } from 'store/types'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
 import type { RecurringOrder } from '../types'
@@ -145,12 +147,30 @@ function isPendingActionResolved(
  * whose server status has caught up, and evicts entries whose TTL has
  * elapsed — protects against a dropped/replaced action TX leaving the row
  * stuck on its "-ing" spinner forever.
+ *
+ * Scoped to the event's `(eventOwner, eventChainId)`: the cache subscriber
+ * fires once per RECURRING_SCHEDULES query and each query lists exactly one
+ * account/chain. The "order vanished from the list" clear is only meaningful
+ * for entries belonging to THAT account/chain — an entry for a *different*
+ * account is simply absent from this list, not gone. Reconciling it here
+ * (as the unscoped version did) wrongly cleared a sibling account's in-flight
+ * spinner, re-enabling its buttons mid-flight and inviting a redundant second
+ * on-chain action. `gcTime: Infinity` keeps every account's query resident,
+ * so the clobber recurred on any later refetch from either side.
+ *
+ * The TTL eviction stays account/chain-agnostic: it's a pure time-based
+ * safety net for stuck spinners, harmless to apply on any refetch.
  */
-function reconcilePendingActions(schedules: readonly RecurringOrder[]): void {
+function reconcilePendingActions(
+  schedules: readonly RecurringOrder[],
+  eventOwner: string,
+  eventChainId: number
+): void {
   const { pending, clearPending, isExpired } = pendingActionStore.getState()
   const orderIds = Object.keys(pending)
   if (orderIds.length === 0) return
 
+  const ownerKey = eventOwner.toLowerCase()
   const byId = new Map<string, RecurringOrder>(
     schedules.map(s => [s.orderId, s])
   )
@@ -159,9 +179,21 @@ function reconcilePendingActions(schedules: readonly RecurringOrder[]): void {
       clearPending(orderId)
       continue
     }
-    const match = byId.get(orderId)
     const entry = pending[orderId]
-    if (!match || !entry) {
+    if (!entry) continue
+    // Out of scope for this event — another account/chain owns this entry,
+    // so its absence from THIS list says nothing. Leave it untouched; its
+    // own query's refetch (or the TTL) will reconcile it. Address compare is
+    // case-insensitive so an EIP-55 checksum vs lowercase mismatch between
+    // the query key and the stored entry can't strand the spinner.
+    if (
+      entry.ownerAddress.toLowerCase() !== ownerKey ||
+      entry.chainId !== eventChainId
+    ) {
+      continue
+    }
+    const match = byId.get(orderId)
+    if (!match) {
       clearPending(orderId)
       continue
     }
@@ -207,7 +239,9 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
     // Always reconcile pending-action entries — even on empty responses we
     // need to drop entries for orders that have vanished from the list and
     // to enforce the TTL eviction. Covers cancel / pause / resume uniformly.
-    reconcilePendingActions(schedules ?? [])
+    // Scoped to this event's (account, chain) so a sibling account's refetch
+    // can't clear another account's in-flight entry.
+    reconcilePendingActions(schedules ?? [], ownerAddress, chainId)
 
     // Seed/process even on empty responses so the (account, chain) snapshot
     // is initialised once — subsequent refetches then hit the new-failure
@@ -230,8 +264,36 @@ export function startRecurringFailureWatcher(): () => void {
   return queryClient.getQueryCache().subscribe(handleQueryCacheEvent)
 }
 
-// `addRecurringSwapListeners` (the old Redux listener registration that
-// watched for step-discriminated `eth_sendTransaction` requests) is
-// intentionally NOT re-exported. The SDK now signs and broadcasts
-// internally, so the post-broadcast analytics + cache
-// invalidation effects live in the hooks themselves.
+/**
+ * Register all recurring-swap listeners — the Redux `onAppUnlocked` schedules
+ * invalidator and the React Query cache subscriber (failure watcher +
+ * pending-action reconciler).
+ *
+ * Mirrors `addFusionListeners`'s shape so all swap-related listener wiring
+ * lives in `store/listeners.ts` files registered uniformly by
+ * `store/middleware/listener.ts`, rather than half via Redux and half via a
+ * React hook mounted in `ReactQueryProvider`.
+ *
+ * The step-discriminated `eth_sendTransaction` listeners that previously
+ * lived here were removed when the SDK started signing + broadcasting
+ * internally — those post-broadcast analytics and cache invalidations now
+ * fire inline from the hooks themselves.
+ */
+export function addRecurringSwapListeners(
+  startListening: AppStartListening
+): void {
+  // `refetchOnWindowFocus: true` on `useRecurringSchedules` already covers
+  // AppState foregrounding, but NOT the WalletState LOCKED → ACTIVE
+  // transition (cold start, post-lock-timeout, re-auth), which can land
+  // while AppState === 'active' before the user is on a schedules-observing
+  // screen. Marking the query stale on unlock means the next mount of the
+  // banner / manage screen refetches against Markr.
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: () => {
+      queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
+    }
+  })
+
+  startRecurringFailureWatcher()
+}

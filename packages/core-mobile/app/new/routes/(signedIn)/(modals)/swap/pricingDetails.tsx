@@ -89,7 +89,8 @@ function useSchedulePricingState(
 
   const hasInputs =
     !!inputs.frequency && inputs.numberOfOrders !== undefined && !!inputs.amount
-  const wantsUpdatingPrompt = inputs.isRecurring && hasInputs && !extraFees
+  const wantsUpdatingPrompt =
+    inputs.isRecurring && hasInputs && recurringQuote.isFetching
 
   const [showUpdating, setShowUpdating] = useState(false)
   useEffect(() => {
