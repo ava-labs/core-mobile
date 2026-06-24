@@ -130,6 +130,7 @@ export function makeOrderActionHook(
     // identity unnecessarily and break the SchedulesScreen's stable
     // `mutate` reference that downstream `useCallback`s depend on.
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `config` is captured by the factory call (module import time) and is referentially stable; keeping `run` stable avoids downstream callback churn
     const run = useCallback(async (args: OrderActionArgs): Promise<void> => {
       if (inFlightRef.current) return
       inFlightRef.current = true
