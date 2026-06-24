@@ -1,7 +1,7 @@
 // First-party origins trusted to use Core's privileged `avalanche_*` methods
 // (X/P account management + signing). Mirrors the core-extension allowlist
-// (KNOWN_CORE_DOMAINS + AvaCloud, see packages/common/src/constants.ts) so the
-// two clients agree on what "first-party" means. CP-13672.
+// (its KNOWN_CORE_DOMAINS + AvaCloud) so the two clients agree on what
+// "first-party" means. CP-13672.
 //
 // Matching is host-based with SAFE subdomain matching — exact host, or a strict
 // suffix preceded by a dot (`host === d || host.endsWith('.' + d)`). We do NOT
