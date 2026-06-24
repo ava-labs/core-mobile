@@ -222,7 +222,7 @@ export enum RequestContext {
   // Carries display metadata (symbols, frequency, order count) for an
   // in-flight recurring-swap action through the ApprovalController so the
   // ApprovalScreen can render the "Scheduling / Cancelling / Pausing /
-  // Unpausing recurring swap" preview block above the standard tx details.
+  // Resuming recurring swap" preview block above the standard tx details.
   //
   // The SDK signs + broadcasts internally, so the value is no longer
   // threaded in by the recurring submit/cancel/pause/resume hooks via
