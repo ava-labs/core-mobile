@@ -81,13 +81,13 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     position: 'relative'
   }
   if (textVariant === 'subtitle2') {
-    style = { ...style, fontSize: 11, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 11, top: 4, fontFamily: 'Inter-SemiBold' }
   }
   if (textVariant === 'caption') {
-    style = { ...style, fontSize: 9, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 9, top: 4, fontFamily: 'Inter-SemiBold' }
   }
   if (textVariant === 'body1') {
-    style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 13, top: 4, fontFamily: 'Inter-SemiBold' }
   }
   if (textVariant === 'body2') {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
