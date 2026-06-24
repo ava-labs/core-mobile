@@ -27,6 +27,8 @@ import {
 } from 'utils/caip2ChainIds'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
+import { AVAX_P_ID, AVAX_X_ID } from 'services/balance/const'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import FusionService from '../services/FusionService'
 import { mapSdkAssetToLocal } from '../utils/mapSdkAssetToLocal'
 import { toSwappableAsset } from '../utils/fusionTypeConverters'
@@ -58,10 +60,19 @@ const toFusionSourceAsset = (
   }
 }
 
-const getLocalIdFromAsset = (asset: BridgeableUiAsset): string =>
-  asset.type === FusionTokenType.NATIVE
-    ? `NATIVE-${asset.symbol}`
-    : asset.address.toLowerCase()
+// Key used to match a Fusion asset against a portfolio balance entry.
+// Native P/X-Chain AVAX is stored in the portfolio under the dedicated
+// `AVAX-P` / `AVAX-X` ids (see BalanceService), not `NATIVE-AVAX`, so the
+// merge would otherwise miss and the balance would render as 0.
+const getBalanceLookupId = (
+  asset: BridgeableUiAsset,
+  targetChainId: number
+): string => {
+  if (asset.type !== FusionTokenType.NATIVE) return asset.address.toLowerCase()
+  if (isPChain(targetChainId)) return AVAX_P_ID
+  if (isXChain(targetChainId)) return AVAX_X_ID
+  return `NATIVE-${asset.symbol}`
+}
 
 /**
  * Fetches the swap "to" token list for the given target chain using the
@@ -180,8 +191,8 @@ export const useSwapTokens = (
     })
 
     return dedupedAssets.map(asset => {
-      const localId = getLocalIdFromAsset(asset)
-      const balanceData = balanceMap.get(localId.toLowerCase())
+      const lookupId = getBalanceLookupId(asset, targetChainId)
+      const balanceData = balanceMap.get(lookupId.toLowerCase())
       return mapSdkAssetToLocal(asset, targetChainId, balanceData)
     })
   }, [query.data, portfolioTokens, targetChainId])
