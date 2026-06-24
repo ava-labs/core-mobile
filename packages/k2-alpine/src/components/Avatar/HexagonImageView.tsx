@@ -1,6 +1,4 @@
-import MaskedView from '@react-native-masked-view/masked-view'
-import { Image } from 'expo-image'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
@@ -12,7 +10,13 @@ import Animated, {
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
-import Svg, { Path } from 'react-native-svg'
+import Svg, {
+  ClipPath,
+  Defs,
+  G,
+  Image as SvgImage,
+  Path
+} from 'react-native-svg'
 import { useTheme } from '../../hooks'
 import {
   colors,
@@ -42,15 +46,20 @@ export const HexagonImageView = ({
   showAddIcon?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
+  // react-native-svg requires unique ids when multiple instances render.
+  // useId() returns a string containing ":"; strip it to keep the id a safe,
+  // stable SVG identifier.
+  const clipId = `hexagon-clip-${useId().replace(/:/g, '')}`
   const selectedAnimation = useSharedValue(0)
   const selectedAnimatedStyle = useAnimatedStyle(() => ({
     opacity: selectedAnimation.value
   }))
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleLoadStart = (): void => {
-    setIsLoading(true)
-  }
+  const isSvgComponent = typeof source === 'function'
+  const hasValidSource = source !== null && source !== undefined
+  const isRasterSource = hasValidSource && !isSvgComponent
+
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLoadEnd = (): void => {
     setIsLoading(false)
@@ -63,45 +72,62 @@ export const HexagonImageView = ({
     })
   }, [isSelected, selectedAnimation])
 
-  const isSvgComponent = typeof source === 'function'
-  const hasValidSource = source !== null && source !== undefined
+  // react-native-svg's <Image> only exposes onLoad (no onLoadStart). Start in
+  // the loading state for raster sources and clear it once the image loads.
+  useEffect(() => {
+    if (hasLoading && isRasterSource) {
+      setIsLoading(true)
+    }
+  }, [hasLoading, isRasterSource, imageKey, source])
+
+  const backgroundFill = backgroundColor || theme.colors.$surfaceSecondary
+  const overlayColor = alpha(
+    theme.isDark ? colors.$neutralWhite : colors.$neutral850,
+    0.8
+  )
 
   return (
-    <MaskedView
-      maskElement={
-        <Svg width={height} height={height} viewBox={hexagonPath.viewBox}>
-          <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
-        </Svg>
-      }>
-      {hasValidSource ? (
-        isSvgComponent ? (
-          // If source is a local SVG component
-          React.createElement(source, { width: height, height: height })
-        ) : (
-          // If source is a regular image
-          <Image
-            key={`image-${imageKey ?? source}`}
-            recyclingKey={`image-recycling-${imageKey ?? source}`}
-            contentFit="cover"
-            source={source}
-            style={{ width: height, height: height, backgroundColor }}
-            onLoadStart={hasLoading ? handleLoadStart : undefined}
-            onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-            cachePolicy="memory-disk"
+    <View style={{ width: height, height: height }}>
+      {/* Hexagon-clipped background + avatar */}
+      <Svg width={height} height={height} viewBox={`0 0 ${height} ${height}`}>
+        <Defs>
+          <ClipPath id={clipId}>
+            <Path d={hexagonPath.path} transform={hexagonTransform(height)} />
+          </ClipPath>
+        </Defs>
+        <G clipPath={`url(#${clipId})`}>
+          <Path
+            d={hexagonPath.path}
+            transform={hexagonTransform(height)}
+            fill={backgroundFill}
           />
-        )
-      ) : (
-        // Render a placeholder background when no source is provided
-        <View
-          style={{
-            width: height,
-            height: height,
-            backgroundColor: backgroundColor || theme.colors.$surfaceSecondary
-          }}
-        />
-      )}
+          {hasValidSource &&
+            (isSvgComponent ? (
+              // Local SVG component: nest it inside the clipped group. Rendered
+              // at the full square so it fills the hexagon, matching the legacy
+              // square render exactly.
+              React.createElement(source, { width: height, height: height })
+            ) : (
+              // Raster image clipped via react-native-svg (drops expo-image
+              // caching; accepted tradeoff for the Fabric crash fix).
+              <SvgImage
+                key={`svg-image-${imageKey ?? ''}`}
+                href={source}
+                x={0}
+                y={0}
+                width={height}
+                height={height}
+                preserveAspectRatio="xMidYMid slice"
+                onLoad={hasLoading ? handleLoadEnd : undefined}
+              />
+            ))}
+        </G>
+      </Svg>
+
+      {/* Loading shimmer (raster only), hexagon-shaped */}
       {isLoading && (
         <LoadingView
+          height={height}
           style={{
             position: 'absolute',
             top: 0,
@@ -111,6 +137,8 @@ export const HexagonImageView = ({
           }}
         />
       )}
+
+      {/* Selected-state dark overlay (hexagon-shaped) + checkmark */}
       <Animated.View
         style={[
           {
@@ -119,17 +147,25 @@ export const HexagonImageView = ({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: alpha(
-              theme.isDark ? colors.$neutralWhite : colors.$neutral850,
-              0.8
-            ),
             alignItems: 'center',
             justifyContent: 'center'
           },
           selectedAnimatedStyle
         ]}>
+        <Svg
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          width={height}
+          height={height}
+          viewBox={`0 0 ${height} ${height}`}>
+          <Path
+            d={hexagonPath.path}
+            transform={hexagonTransform(height)}
+            fill={overlayColor}
+          />
+        </Svg>
         <Arrow key={theme.isDark ? 'dark' : 'light'} isSelected={isSelected} />
       </Animated.View>
+
       {showAddIcon && (
         <View
           style={{
@@ -148,8 +184,21 @@ export const HexagonImageView = ({
           />
         </View>
       )}
-    </MaskedView>
+    </View>
   )
+}
+
+// Places the hexagon path (authored in the 130 x 144 viewBox) inside a square
+// `height` x `height` viewport. The legacy MaskedView mask used an <Svg
+// viewBox="0 0 130 144"> with the default preserveAspectRatio "xMidYMid meet",
+// i.e. the hexagon was scaled UNIFORMLY to fit and centered — NOT stretched to
+// fill the width. Replicate that exactly (uniform scale + horizontal center) so
+// the clip matches HexagonBorder (which still uses the meet behavior) and
+// avatars aren't horizontally widened.
+const hexagonTransform = (height: number): string => {
+  const scale = height / 144
+  const translateX = (height - 130 * scale) / 2
+  return `translate(${translateX}, 0) scale(${scale})`
 }
 
 export const HexagonBorder = ({ height }: { height: number }): JSX.Element => {
@@ -242,7 +291,13 @@ const hexagonBorderPath = {
   viewBox: '0 0 130 144'
 }
 
-const LoadingView = ({ style }: { style: ViewStyle }): JSX.Element => {
+const LoadingView = ({
+  height,
+  style
+}: {
+  height: number
+  style: ViewStyle
+}): JSX.Element => {
   const backgroundAnimation = useSharedValue(0)
   const { theme } = useTheme()
 
@@ -253,17 +308,25 @@ const LoadingView = ({ style }: { style: ViewStyle }): JSX.Element => {
     )
   }, [backgroundAnimation])
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
+  const animatedProps = useAnimatedProps(() => ({
+    fill: interpolateColor(
       backgroundAnimation.value,
       [0, 1],
       [theme.colors.$surfacePrimary, theme.colors.$surfaceSecondary]
     )
+  }))
 
-    return {
-      backgroundColor
-    }
-  })
-
-  return <Animated.View style={[style, animatedStyle]} />
+  return (
+    <Svg
+      style={style}
+      width={height}
+      height={height}
+      viewBox={`0 0 ${height} ${height}`}>
+      <AnimatedPath
+        d={hexagonPath.path}
+        transform={hexagonTransform(height)}
+        animatedProps={animatedProps}
+      />
+    </Svg>
+  )
 }
