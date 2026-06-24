@@ -69,7 +69,7 @@ Three-section report:
 
 ```env
 # Anthropic
-ANTHROPIC_API_KEY=
+QA_ANTHROPIC_API_KEY=
 
 # Slack
 SLACK_BOT_TOKEN=xoxb-

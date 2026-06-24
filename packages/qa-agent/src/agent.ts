@@ -4,7 +4,7 @@ import { createFailureTicket, createBugTicket, searchVersionTickets, type Failed
 import { getDailyAutomationReport, getManualTestProgress } from './tools/testrail'
 import type { StoredMessage } from './store'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const anthropic = new Anthropic({ apiKey: process.env.QA_ANTHROPIC_API_KEY })
 
 const tools: Anthropic.Tool[] = [
   {
