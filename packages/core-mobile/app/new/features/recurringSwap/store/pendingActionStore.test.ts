@@ -17,6 +17,7 @@ jest.mock('utils/mmkv', () => ({
   zustandStorageMMKV: mockMMKV
 }))
 
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import { PENDING_ACTION_TTL_MS, pendingActionStore } from './pendingActionStore'
 
 const reset = (): void => pendingActionStore.setState({ pending: {} })
@@ -35,10 +36,15 @@ describe('pendingActionStore', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
 
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
 
     expect(pendingActionStore.getState().pending).toEqual({
-      '0xabc': { type: 'cancel', addedAt: now }
+      '0xabc': {
+        type: TransferSignatureReason.CancelRecurringSwap,
+        addedAt: now
+      }
     })
   })
 
@@ -46,17 +52,23 @@ describe('pendingActionStore', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
 
-    pendingActionStore.getState().markPending('0xabc', 'pause')
-    pendingActionStore.getState().markPending('0xabc', 'unpause')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap)
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.ResumeRecurringSwap)
 
     expect(pendingActionStore.getState().pending['0xabc']).toEqual({
-      type: 'unpause',
+      type: TransferSignatureReason.ResumeRecurringSwap,
       addedAt: now
     })
   })
 
   it('clearPending removes the entry; no-op for unknown orderIds', () => {
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
     pendingActionStore.getState().clearPending('0xabc')
     expect(pendingActionStore.getState().pending).toEqual({})
 
@@ -69,7 +81,9 @@ describe('pendingActionStore', () => {
   it('isExpired is false for absent entries and within-TTL entries', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
-    pendingActionStore.getState().markPending('0xabc', 'cancel')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.CancelRecurringSwap)
 
     expect(pendingActionStore.getState().isExpired('0xabc', now)).toBe(false)
     expect(
@@ -85,7 +99,9 @@ describe('pendingActionStore', () => {
   it('isExpired is true once the TTL has elapsed', () => {
     const now = 1_700_000_000_000
     jest.spyOn(Date, 'now').mockReturnValue(now)
-    pendingActionStore.getState().markPending('0xabc', 'pause')
+    pendingActionStore
+      .getState()
+      .markPending('0xabc', TransferSignatureReason.PauseRecurringSwap)
 
     expect(
       pendingActionStore

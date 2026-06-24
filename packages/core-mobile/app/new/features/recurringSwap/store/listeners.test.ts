@@ -53,7 +53,13 @@ jest.mock('utils/Logger', () => ({
 // which destination status counts as "resolved"); the fake mirrors that shape
 // so the reconciler's `entry.type` switch sees real values.
 
-type PendingEntry = { type: 'cancel' | 'pause' | 'unpause'; addedAt: number }
+type PendingEntry = {
+  type:
+    | TransferSignatureReason.CancelRecurringSwap
+    | TransferSignatureReason.PauseRecurringSwap
+    | TransferSignatureReason.ResumeRecurringSwap
+  addedAt: number
+}
 
 type PendingStoreFake = {
   pending: Record<string, PendingEntry>
@@ -100,6 +106,7 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import { RecurringOrderStatus, type RecurringOrder } from '../types'
 import { startRecurringFailureWatcher } from './listeners'
 
@@ -415,7 +422,7 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   // ── 6. Pending-action reconciliation ─────────────────────────────────────
-  // Cancel / pause / unpause each have their own "resolved" destination
+  // Cancel / pause / resume each have their own "resolved" destination
   // status. The reconciler picks the right one off `entry.type` — the tests
   // below cover each branch plus the safety nets (order vanished, TTL).
 
@@ -425,7 +432,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-cancel entry once the order status flips to cancelled', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([
       { ...BASE_SCHEDULE, status: RecurringOrderStatus.Cancelled }
@@ -436,7 +445,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('keeps pending-cancel entry while the order is still reported as active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -447,9 +458,11 @@ describe('startRecurringFailureWatcher', () => {
   // Regression: a `status !== Active` check would clear the spinner the
   // moment the next refetch lands (the order was already Paused before
   // the cancel TX was even broadcast), flickering the row back to
-  // Pause/Unpause buttons until the actual Cancelled status indexes.
+  // Pause/Resume buttons until the actual Cancelled status indexes.
   it('keeps pending-cancel entry while the order is still reported as paused (cancel-from-Paused)', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -458,7 +471,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-pause entry once the order status flips to paused', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -467,7 +482,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('keeps pending-pause entry while the order is still reported as active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -475,8 +492,10 @@ describe('startRecurringFailureWatcher', () => {
     expect(mockPendingStoreState.clearPending).not.toHaveBeenCalled()
   })
 
-  it('clears pending-unpause entry once the order status flips back to active', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('unpause') }
+  it('clears pending-resume entry once the order status flips back to active', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.ResumeRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])
     await flush()
@@ -484,8 +503,10 @@ describe('startRecurringFailureWatcher', () => {
     expect(mockPendingStoreState.clearPending).toHaveBeenCalledWith('0xorder1')
   })
 
-  it('keeps pending-unpause entry while the order is still reported as paused', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('unpause') }
+  it('keeps pending-resume entry while the order is still reported as paused', async () => {
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.ResumeRecurringSwap)
+    }
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Paused }])
     await flush()
@@ -494,7 +515,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-action entry when the order vanishes from the response', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('cancel') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.CancelRecurringSwap)
+    }
 
     fireQueryUpdate([])
     await flush()
@@ -503,7 +526,9 @@ describe('startRecurringFailureWatcher', () => {
   })
 
   it('clears pending-action entry once the TTL has elapsed even if the order is still in its starting state', async () => {
-    mockPendingStoreState.pending = { '0xorder1': pendingEntry('pause') }
+    mockPendingStoreState.pending = {
+      '0xorder1': pendingEntry(TransferSignatureReason.PauseRecurringSwap)
+    }
     mockPendingStoreState.isExpired = jest.fn((id: string) => id === '0xorder1')
 
     fireQueryUpdate([{ ...BASE_SCHEDULE, status: RecurringOrderStatus.Active }])

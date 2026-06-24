@@ -1,6 +1,10 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HttpError, type Chain } from '@avalabs/fusion-sdk'
+import {
+  HttpError,
+  TransferSignatureReason,
+  type Chain
+} from '@avalabs/fusion-sdk'
 import React from 'react'
 import { usePauseRecurringSchedule } from './usePauseRecurringSchedule'
 
@@ -38,15 +42,6 @@ jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
     getState: () => ({ markPending: mockMarkPending })
   }
-}))
-
-const mockSetActive = jest.fn()
-const mockClearActive = jest.fn()
-jest.mock('../services/activeActionContext', () => ({
-  setActiveRecurringActionContext: (...args: unknown[]) =>
-    mockSetActive(...args),
-  clearActiveRecurringActionContext: (...args: unknown[]) =>
-    mockClearActive(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -88,7 +83,6 @@ describe('usePauseRecurringSchedule', () => {
     mockMarkPending.mockReset()
     mockCapture.mockReset()
     mockInvalidateQueries.mockReset()
-    mockSetActive.mockReset()
     jest.useFakeTimers()
   })
 
@@ -110,22 +104,28 @@ describe('usePauseRecurringSchedule', () => {
     expect(mockExecutePause).toHaveBeenCalledWith({
       orderId: PAUSE_ARGS.orderId,
       address: PAUSE_ARGS.address,
-      sourceChain: SOURCE_CHAIN
+      sourceChain: SOURCE_CHAIN,
+      // The SDK forwards this verbatim onto `step.signerContext`, where
+      // EvmSigner.signOne attaches it as the approval modal's
+      // RECURRING_SWAP context. `action` drives the pause-specific
+      // copy on the preview.
+      signerContext: {
+        action: TransferSignatureReason.PauseRecurringSwap,
+        fromTokenSymbol: PAUSE_ARGS.fromTokenSymbol,
+        toTokenSymbol: PAUSE_ARGS.toTokenSymbol
+      }
     })
 
-    expect(mockMarkPending).toHaveBeenCalledWith(PAUSE_ARGS.orderId, 'pause')
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      PAUSE_ARGS.orderId,
+      TransferSignatureReason.PauseRecurringSwap
+    )
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapPausedByUser', {
       chainId: PAUSE_ARGS.chainId,
       encrypted: {
         orderId: PAUSE_ARGS.orderId
       }
-    })
-
-    expect(mockSetActive).toHaveBeenCalledWith({
-      type: 'pause',
-      fromTokenSymbol: PAUSE_ARGS.fromTokenSymbol,
-      toTokenSymbol: PAUSE_ARGS.toTokenSymbol
     })
   })
 

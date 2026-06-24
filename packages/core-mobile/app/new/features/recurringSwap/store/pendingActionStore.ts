@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 
-// Per Markr docs: cancel / pause / unpause are all on-chain TXs.
+// Per Markr docs: cancel / pause / resume are all on-chain TXs.
 // Markr only flips the order's `status` once it observes the on-chain
 // confirmation — typically a few seconds, occasionally longer. We
 // deliberately avoid optimistically patching the React Query cache: any
@@ -20,10 +21,13 @@ import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 
 export const PENDING_ACTION_TTL_MS = 10 * 60 * 1000
 
-export type PendingActionType = 'cancel' | 'pause' | 'unpause'
+export type RecurringOrderActionType =
+  | TransferSignatureReason.CancelRecurringSwap
+  | TransferSignatureReason.PauseRecurringSwap
+  | TransferSignatureReason.ResumeRecurringSwap
 
 export interface PendingActionEntry {
-  type: PendingActionType
+  type: RecurringOrderActionType
   addedAt: number
 }
 
@@ -34,7 +38,7 @@ export interface PendingActionState {
   // be pause-spammed, an active order can't be cancel+pause concurrently),
   // so this is a single-entry map per id rather than a per-type sub-map.
   pending: Record<string, PendingActionEntry>
-  markPending: (orderId: string, type: PendingActionType) => void
+  markPending: (orderId: string, type: RecurringOrderActionType) => void
   clearPending: (orderId: string) => void
   isExpired: (orderId: string, nowMs?: number) => boolean
 }
@@ -77,7 +81,11 @@ export const pendingActionStore = create<PendingActionState>()(
       // the next listOrders refetch reconciles regardless.
       name: ZustandStorageKeys.RECURRING_PENDING_ACTION,
       storage: zustandPersistStorage,
-      version: 1
+      // v2: `'unpause'` → `'resume'` rename. Bumping discards any in-flight
+      // 'unpause' entry persisted from a v1 client — acceptable given the
+      // 10-min TTL: anything still pending at upgrade time would age out
+      // before the next listOrders refetch reconciles anyway.
+      version: 2
     }
   )
 )
@@ -97,15 +105,15 @@ export const usePendingAction = (
 
 const useIsPendingOfType = (
   orderId: string | undefined,
-  type: PendingActionType
+  type: RecurringOrderActionType
 ): boolean =>
   pendingActionStore(state => selectEntry(state, orderId)?.type === type)
 
 export const useIsCancelPending = (orderId: string | undefined): boolean =>
-  useIsPendingOfType(orderId, 'cancel')
+  useIsPendingOfType(orderId, TransferSignatureReason.CancelRecurringSwap)
 
 export const useIsPausePending = (orderId: string | undefined): boolean =>
-  useIsPendingOfType(orderId, 'pause')
+  useIsPendingOfType(orderId, TransferSignatureReason.PauseRecurringSwap)
 
-export const useIsUnpausePending = (orderId: string | undefined): boolean =>
-  useIsPendingOfType(orderId, 'unpause')
+export const useIsResumePending = (orderId: string | undefined): boolean =>
+  useIsPendingOfType(orderId, TransferSignatureReason.ResumeRecurringSwap)

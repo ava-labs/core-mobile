@@ -494,8 +494,11 @@ export type AnalyticsEvents = {
       fromTokenSymbol: string
       toTokenSymbol: string
       amountPerOrder: string
+      // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+      // (`-1`) for Unlimited schedules, else a finite count.
+      // Dashboards filter on `numberOfOrders === -1` for the unlimited
+      // cohort — no separate `isUnlimited` boolean is emitted.
       numberOfOrders: number
-      isUnlimited: boolean
       intervalSeconds: number
     }
   }
@@ -511,7 +514,7 @@ export type AnalyticsEvents = {
       orderId: string
     }
   }
-  RecurringSwapUnpausedByUser: {
+  RecurringSwapResumedByUser: {
     chainId: number
     encrypted: {
       orderId: string

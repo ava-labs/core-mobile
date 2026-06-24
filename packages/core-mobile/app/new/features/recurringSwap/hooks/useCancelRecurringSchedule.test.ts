@@ -1,6 +1,10 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HttpError, type Chain } from '@avalabs/fusion-sdk'
+import {
+  HttpError,
+  TransferSignatureReason,
+  type Chain
+} from '@avalabs/fusion-sdk'
 import React from 'react'
 import { useCancelRecurringSchedule } from './useCancelRecurringSchedule'
 
@@ -44,18 +48,6 @@ jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
     getState: () => ({ markPending: mockMarkPending })
   }
-}))
-
-// Spy on the recurring-action side-channel — the hook must stash a
-// `cancel`-typed snapshot before invoking the SDK call so EvmSigner can
-// inject it as RECURRING_SWAP context on the approval modal.
-const mockSetActive = jest.fn()
-const mockClearActive = jest.fn()
-jest.mock('../services/activeActionContext', () => ({
-  setActiveRecurringActionContext: (...args: unknown[]) =>
-    mockSetActive(...args),
-  clearActiveRecurringActionContext: (...args: unknown[]) =>
-    mockClearActive(...args)
 }))
 
 const wrap = ({ children }: { children: React.ReactNode }): JSX.Element =>
@@ -102,7 +94,6 @@ describe('useCancelRecurringSchedule', () => {
     mockMarkPending.mockReset()
     mockCapture.mockReset()
     mockInvalidateQueries.mockReset()
-    mockSetActive.mockReset()
     jest.useFakeTimers()
   })
 
@@ -125,12 +116,28 @@ describe('useCancelRecurringSchedule', () => {
     expect(mockExecuteCancellation).toHaveBeenCalledWith({
       orderId: CANCEL_ARGS.orderId,
       address: CANCEL_ARGS.address,
-      sourceChain: SOURCE_CHAIN
+      sourceChain: SOURCE_CHAIN,
+      // The SDK forwards this verbatim onto `step.signerContext`, where
+      // EvmSigner.signOne attaches it as the approval modal's
+      // RECURRING_SWAP context. `action` drives the cancel/pause/resume
+      // copy distinction on the preview.
+      signerContext: {
+        action: TransferSignatureReason.CancelRecurringSwap,
+        fromTokenSymbol: CANCEL_ARGS.fromTokenSymbol,
+        toTokenSymbol: CANCEL_ARGS.toTokenSymbol
+      }
     })
 
     // After broadcast we mark the orderId pending-cancel so the row stays
     // visible with a spinner instead of optimistically disappearing.
-    expect(mockMarkPending).toHaveBeenCalledWith(CANCEL_ARGS.orderId, 'cancel')
+    // Hook bridges its string `config.type` ('cancel') to the SDK's
+    // `TransferSignatureReason` enum before persisting — that's what
+    // `pendingActionStore` stores so `listeners.ts` can switch on enum
+    // values directly.
+    expect(mockMarkPending).toHaveBeenCalledWith(
+      CANCEL_ARGS.orderId,
+      TransferSignatureReason.CancelRecurringSwap
+    )
 
     // Analytics fire from the hook on success (previously this lived in a
     // separate Redux listener watching the broadcast action).
@@ -139,17 +146,6 @@ describe('useCancelRecurringSchedule', () => {
       encrypted: {
         orderId: CANCEL_ARGS.orderId
       }
-    })
-
-    // The hook must populate the recurring-action side channel BEFORE
-    // invoking the SDK call so EvmSigner can inject the snapshot into
-    // the approval modal's request context. The hook clears the slot in its
-    // `finally` once the SDK call settles; this test only asserts the
-    // pre-call setActive payload.
-    expect(mockSetActive).toHaveBeenCalledWith({
-      type: 'cancel',
-      fromTokenSymbol: CANCEL_ARGS.fromTokenSymbol,
-      toTokenSymbol: CANCEL_ARGS.toTokenSymbol
     })
   })
 

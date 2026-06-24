@@ -73,7 +73,7 @@ addBranchListeners(startListening)
 
 addFusionListeners(startListening)
 
-// Recurring-swap step-based Redux listeners (fill / cancel / pause / unpause)
+// Recurring-swap step-based Redux listeners (fill / cancel / pause / resume)
 // were removed when the SDK started signing and broadcasting internally, so
 // the hooks resolve directly with `{ txHash }` and fire their own analytics +
 // invalidations. Only the failure-watcher / pending-action reconciler

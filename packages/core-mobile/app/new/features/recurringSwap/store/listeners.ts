@@ -1,6 +1,7 @@
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
@@ -17,7 +18,7 @@ import {
 } from './pendingActionStore'
 
 // The SDK now signs and broadcasts internally for fill /
-// cancel / pause / unpause, so the old Redux listeners that watched for
+// cancel / pause / resume, so the old Redux listeners that watched for
 // `onInAppRequestSucceeded` on step-discriminated `eth_sendTransaction`
 // requests are gone — the hooks themselves resolve when broadcast lands
 // and fire their own analytics + invalidations inline.
@@ -28,7 +29,7 @@ import {
 //      "Recurring swap execution failed" snackbar once per failure).
 //   2. The pending-action reconciler that clears entries from
 //      `pendingActionStore` once the server status reflects the
-//      requested transition (cancel/pause/unpause), the order vanishes,
+//      requested transition (cancel/pause/resume), the order vanishes,
 //      or the TTL elapses.
 
 // ─── Failure watcher ──────────────────────────────────────────────────────────
@@ -117,30 +118,30 @@ function processAllSchedules(
  *
  *   - `cancel`  → done when the order has reached `Cancelled`.
  *   - `pause`   → done when the order has reached `Paused`.
- *   - `unpause` → done when the order has reached `Active`.
+ *   - `resume`  → done when the order has reached `Active`.
  *
  * Using the precise destination matters for the cancel-from-Paused flow:
  * a "status no longer Active" check would clear the spinner the moment
  * the next listOrders refetch lands (the order was already Paused before
  * the cancel TX was even broadcast), causing a UI flicker back to
- * Pause/Unpause until the Cancelled status finally indexes.
+ * Pause/Resume until the Cancelled status finally indexes.
  */
 function isPendingActionResolved(
   entry: PendingActionEntry,
   order: RecurringOrder
 ): boolean {
   switch (entry.type) {
-    case 'cancel':
+    case TransferSignatureReason.CancelRecurringSwap:
       return order.status === RecurringOrderStatus.Cancelled
-    case 'pause':
+    case TransferSignatureReason.PauseRecurringSwap:
       return order.status === RecurringOrderStatus.Paused
-    case 'unpause':
+    case TransferSignatureReason.ResumeRecurringSwap:
       return order.status === RecurringOrderStatus.Active
   }
 }
 
 /**
- * Clears pending-action entries (cancel / pause / unpause) for any order
+ * Clears pending-action entries (cancel / pause / resume) for any order
  * whose server status has caught up, and evicts entries whose TTL has
  * elapsed — protects against a dropped/replaced action TX leaving the row
  * stuck on its "-ing" spinner forever.
@@ -205,7 +206,7 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
   try {
     // Always reconcile pending-action entries — even on empty responses we
     // need to drop entries for orders that have vanished from the list and
-    // to enforce the TTL eviction. Covers cancel / pause / unpause uniformly.
+    // to enforce the TTL eviction. Covers cancel / pause / resume uniformly.
     reconcilePendingActions(schedules ?? [])
 
     // Seed/process even on empty responses so the (account, chain) snapshot

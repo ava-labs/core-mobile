@@ -6,20 +6,23 @@ import { showSnackbar } from 'common/utils/toast'
 import FusionService from 'features/swap/services/FusionService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { pendingActionStore } from '../store/pendingActionStore'
 import {
-  clearActiveRecurringActionContext,
-  setActiveRecurringActionContext
-} from '../services/activeActionContext'
+  pendingActionStore,
+  RecurringOrderActionType
+} from '../store/pendingActionStore'
+import type { RecurringOrderActionSignerContext } from '../services/recurringSignerContext'
 import { scheduleStaggeredInvalidate } from '../utils/staggeredInvalidate'
 import { RECURRING_SCHEDULES_QK } from './useRecurringSchedules'
 
-// Cancel / pause / unpause are all on-chain TXs; the SDK signs + broadcasts
+// Cancel / pause / resume are all on-chain TXs; the SDK signs + broadcasts
 // internally. The three hooks all follow the identical shape:
 //   1. Validate `markrRecurring` is initialised
-//   2. Stash the rich display metadata in `activeActionContext` so
-//      EvmSigner.signOne can inject it as `RECURRING_SWAP` context on the
-//      approval modal request
+//   2. Build the display-metadata payload (including `action: config.type`
+//      so the approval modal can render the right cancel/pause/resume
+//      copy) and pass it through the SDK's `signerContext` field — the
+//      SDK echoes it back on `step.signerContext`, where EvmSigner.signOne
+//      attaches it as `RECURRING_SWAP` context on the approval modal
+//      request
 //   3. Call `markrRecurring.executeAction(...)`
 //   4. Mark the orderId in `pendingActionStore` so the row stays visible
 //      with an "-ing" spinner until Markr's next refetch shows the
@@ -36,8 +39,6 @@ import { RECURRING_SCHEDULES_QK } from './useRecurringSchedules'
 //
 // `_makeOrderActionHook.ts` is leading-underscored to flag it as a feature-
 // internal builder; the three named hooks below it remain the public surface.
-
-export type RecurringOrderActionType = 'cancel' | 'pause' | 'unpause'
 
 type HexOrderId = `0x${string}`
 
@@ -66,6 +67,12 @@ type ExecuteFn = (props: {
   orderId: HexOrderId
   address: Address
   sourceChain: Chain
+  // Forwarded onto `step.signerContext` so EvmSigner.signOne can tag and
+  // attach it as the approval modal's RECURRING_SWAP context. The action
+  // type the approval-side schema discriminates on is derived from
+  // `step.currentSignatureReason` (Cancel/Pause/ResumeRecurringSwap), not
+  // carried on this payload.
+  signerContext: RecurringOrderActionSignerContext
 }) => Promise<unknown>
 
 type ErrorSnackbarCopy = {
@@ -88,13 +95,13 @@ type OrderActionConfig = {
   analyticsEvent:
     | 'RecurringSwapCancelledByUser'
     | 'RecurringSwapPausedByUser'
-    | 'RecurringSwapUnpausedByUser'
+    | 'RecurringSwapResumedByUser'
   errorCopy: ErrorSnackbarCopy
 }
 
 /**
  * Builds a `useCancelRecurringSchedule` / `usePauseRecurringSchedule` /
- * `useUnpauseRecurringSchedule` hook. See file header for the shared shape.
+ * `useResumeRecurringSchedule` hook. See file header for the shared shape.
  */
 export function makeOrderActionHook(
   config: OrderActionConfig
@@ -135,22 +142,25 @@ export function makeOrderActionHook(
           )
         }
 
-        // Stash the rich display metadata for the in-flight action BEFORE
-        // invoking the SDK call — EvmSigner.signOne reads from the
-        // per-type slot synchronously during request dispatch. Slots are
-        // keyed by `type`, so a fill in flight and this order action can
-        // coexist without overwriting each other's previews.
-        setActiveRecurringActionContext({
-          type: config.type,
+        // Pass the display metadata through the SDK's `signerContext`
+        // field; the SDK forwards it unchanged onto `step.signerContext`,
+        // where EvmSigner.signOne attaches it to the approval modal's
+        // request as `RECURRING_SWAP` context. `action` drives the
+        // cancel/pause/resume copy distinction on the approval preview.
+        // Riding the payload with the request itself means two concurrent
+        // same-type actions (rare, but unblocked by the UI) can no longer
+        // overwrite each other's preview.
+        const signerContext: RecurringOrderActionSignerContext = {
+          action: config.type,
           fromTokenSymbol: args.fromTokenSymbol,
           toTokenSymbol: args.toTokenSymbol
-        })
-
+        }
         const execute = config.pickExecute(markrRecurring)
         await execute({
           orderId: args.orderId,
           address: args.address as Address,
-          sourceChain: args.sourceChain
+          sourceChain: args.sourceChain,
+          signerContext
         })
 
         // Mark pending after broadcast so the card's button stays in its
@@ -178,9 +188,6 @@ export function makeOrderActionHook(
         showOrderActionErrorSnackbar(err, config.errorCopy, config.hookName)
         throw err
       } finally {
-        // Always release this action's slot — independent of fill / other
-        // action-type slots — so a stale entry can't leak past this call.
-        clearActiveRecurringActionContext(config.type)
         inFlightRef.current = false
         if (isMountedRef.current) setIsPending(false)
       }
@@ -197,7 +204,7 @@ export function makeOrderActionHook(
     // Memoize so the returned object's identity only changes when
     // `isPending` flips. `run`/`mutate` are already stable (empty-deps
     // useCallback), so this lets downstream `useCallback`s that close
-    // over `cancel`/`pause`/`unpause` stay stable too — see the screen's
+    // over `cancel`/`pause`/`resume` stay stable too — see the screen's
     // `confirmAndRun` deps for the consumer that benefits.
     return useMemo(
       () => ({ isPending, mutate, mutateAsync: run }),
