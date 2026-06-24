@@ -1,4 +1,4 @@
-import { useTheme, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -35,8 +35,7 @@ export const useFadingHeaderNavigation = ({
   hasParent = false,
   renderHeaderRight,
   showNavigationHeaderTitle = true,
-  hasBackgroundAnimation = false,
-  opaqueHeaderBackgroundOnAndroid = false
+  hasBackgroundAnimation = false
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
@@ -48,13 +47,6 @@ export const useFadingHeaderNavigation = ({
   showNavigationHeaderTitle?: boolean
   backgroundColor?: string
   hasBackgroundAnimation?: boolean
-  // When the header background is hidden (transparent Pressable) on an Android
-  // formsheet modal, the sheet's dim scrim shows through the header strip and
-  // reads as a second, darker background. Setting this fills that Pressable with
-  // $surfacePrimary on Android so the strip matches the opaque sticky header
-  // below it. No-op on iOS (real translucent blur header) and when a background
-  // is already shown.
-  opaqueHeaderBackgroundOnAndroid?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -64,7 +56,6 @@ export const useFadingHeaderNavigation = ({
   targetHiddenProgress: SharedValue<number>
 } => {
   const navigation = useNavigation()
-  const { theme } = useTheme()
   const scrollY = useSharedValue(0)
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -133,15 +124,7 @@ export const useFadingHeaderNavigation = ({
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable
-        style={{
-          flex: 1,
-          backgroundColor:
-            opaqueHeaderBackgroundOnAndroid && Platform.OS === 'android'
-              ? theme.colors.$surfacePrimary
-              : undefined
-        }}
-      />
+      <Pressable style={{ flex: 1 }} />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
@@ -163,9 +146,7 @@ export const useFadingHeaderNavigation = ({
     shouldDelayBlurOniOS,
     hasBackgroundAnimation,
     hasSeparator,
-    targetHiddenProgress,
-    opaqueHeaderBackgroundOnAndroid,
-    theme.colors.$surfacePrimary
+    targetHiddenProgress
   ])
 
   const headerBackground = useCallback(() => {
