@@ -50,6 +50,13 @@ export function useModalScreensOptions(): {
   secondaryModalScreensOptions: NativeStackNavigationOptions
 } {
   const insets = useSafeAreaInsets()
+  // DEBUG_CONTENT_BG_PROBE: ORANGE = the native modal content container bg.
+  // If the dark "second background" seam over the header turns orange, the
+  // content view DOES cover it and the fix is contentStyle.backgroundColor =
+  // $surfacePrimary on Android. If it stays dark, the seam is the scrim outside
+  // the content view. Remove after.
+  const debugContentBg =
+    Platform.OS === 'android' ? 'rgba(255,140,0,0.7)' : undefined
   return {
     modalScreensOptions: {
       ...modalScreensOptions,
@@ -58,7 +65,8 @@ export function useModalScreensOptions(): {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
         marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined,
-        height: '100%'
+        height: '100%',
+        backgroundColor: debugContentBg
       }
     },
     secondaryModalScreensOptions: {
@@ -68,7 +76,8 @@ export function useModalScreensOptions(): {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
         marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined,
-        height: '100%'
+        height: '100%',
+        backgroundColor: debugContentBg
       }
     }
   }
