@@ -163,11 +163,11 @@ export async function submitRecurringSwap(
 
   // Build the display-metadata payload for the in-flight first-fill action
   // and pass it through the SDK's `signerContext` field. The SDK forwards
-  // it unchanged onto `step.signerContext`; `EvmSigner.signOne` then tags
-  // it with the action type derived from `step.currentSignatureReason`
-  // (`ScheduleRecurringSwap` / `AllowanceApproval` both map to `'fill'`)
-  // and attaches it as `RECURRING_SWAP` context so `<RecurrenceDetails />`
-  // renders above the approval modal. See `services/recurringSignerContext.ts`
+  // it unchanged onto `step.signerContext`; `EvmSigner.signOne` reads it
+  // back for the `ScheduleRecurringSwap` step and attaches it as
+  // `RECURRING_SWAP` context so `<RecurrenceDetails />` renders above the
+  // approval modal. See `services/recurringSignerContext.ts` for the
+  // producer/consumer contract.
   // for the producer/consumer contract.
   //
   // Default 2 max-fraction digits matches the rest of the app's
