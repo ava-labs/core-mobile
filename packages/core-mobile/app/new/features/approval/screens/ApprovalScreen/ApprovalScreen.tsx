@@ -32,6 +32,7 @@ import { Eip1559Fees } from 'utils/Utils'
 import { selectIsWalletLedger, selectWalletById } from 'store/wallet/slice'
 import { RootState } from 'store/types'
 import { selectAccountByAddress } from 'store/account/slice'
+import { useEip712Insights } from 'features/approval/hooks/useEip712Insights'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -177,6 +178,11 @@ const ApprovalScreenInner = ({
       return { ...detailSection, items: filteredItems }
     })
   }, [displayData.details, request])
+
+  // AC1 (human-readable summary of well-known EIP-712 schemas) and AC2
+  // (chain-mismatch warning) for typed-data signature requests.
+  const { knownTypedDataSection, chainMismatchMessage } =
+    useEip712Insights(signingData)
 
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)
@@ -445,6 +451,23 @@ const ApprovalScreenInner = ({
     }
   }, [displayData.account, displayData.network, symbol, chainId])
 
+  const renderKnownTypedData = useCallback((): JSX.Element | null => {
+    if (!knownTypedDataSection) return null
+
+    return <Details detailSection={knownTypedDataSection} symbol={symbol} />
+  }, [knownTypedDataSection, symbol])
+
+  const renderChainMismatchWarning = useCallback((): JSX.Element | null => {
+    if (!chainMismatchMessage) return null
+
+    return (
+      <Warning
+        message={chainMismatchMessage}
+        sx={{ marginBottom: 12, marginRight: 16 }}
+      />
+    )
+  }, [chainMismatchMessage])
+
   const renderDetails = useCallback((): JSX.Element => {
     return (
       <View>
@@ -547,6 +570,7 @@ const ApprovalScreenInner = ({
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
       {renderAccountUnavailableWarning()}
+      {renderChainMismatchWarning()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
       {/* If a request carries `RECURRING_SWAP` context, only render the preview
@@ -558,6 +582,7 @@ const ApprovalScreenInner = ({
       )}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
+      {renderKnownTypedData()}
       {renderDetails()}
       {renderNetworkFeeSelectorWithGasless()}
       {renderAlertBody()}
