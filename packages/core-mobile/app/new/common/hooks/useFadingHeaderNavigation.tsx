@@ -124,7 +124,17 @@ export const useFadingHeaderNavigation = ({
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable style={{ flex: 1 }} />
+      // DEBUG_HEADER_PROBE: LIME = the React Navigation header background layer.
+      // If the dark band (the one holding the centered nav title) turns lime,
+      // the band IS the header background → fix = opaque header. If it stays
+      // dark, the band is the window/scrim behind the sheet, not the header.
+      <Pressable
+        style={{
+          flex: 1,
+          backgroundColor:
+            Platform.OS === 'android' ? 'rgba(50,205,50,0.75)' : undefined
+        }}
+      />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
