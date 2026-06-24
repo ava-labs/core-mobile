@@ -4,8 +4,7 @@ import {
   ApprovalRevertedError,
   ErrorReason,
   InvalidParamsError,
-  isInvalidParamsError,
-  RECURRING_UNLIMITED_ORDERS_SENTINEL
+  isInvalidParamsError
 } from '@avalabs/fusion-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { queryClient } from 'contexts/ReactQueryProvider'
@@ -17,10 +16,7 @@ import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { buildRecurringQuoteQueryKey } from '../hooks/useRecurringQuote'
-import {
-  clearActiveRecurringActionContext,
-  setActiveRecurringActionContext
-} from '../services/activeActionContext'
+import type { RecurringFillSignerContext } from '../services/recurringSignerContext'
 import type { Frequency, NumberOfOrders } from '../types'
 import { scheduleStaggeredInvalidate } from './staggeredInvalidate'
 
@@ -123,15 +119,6 @@ export async function submitRecurringSwap(
     frequency,
     slippageBps
   })
-  // Derive from the wire value (not the `UNLIMITED_ORDERS` UI sentinel) so the
-  // `{ numberOfOrders, isUnlimited }` pair the side-channel context forwards
-  // is internally consistent. The schema's `superRefine` rejects mismatched
-  // pairs (auto-rejecting the approval), and the wire value is what actually
-  // gets signed — anchor on it so a stale/mismatched quote can't desync the
-  // two fields.
-  const isUnlimited =
-    quote.numberOfOrders === RECURRING_UNLIMITED_ORDERS_SENTINEL
-
   const overallStartedAt = Date.now()
   Logger.info(`${LOG_TAG} ▶️ submitRecurringSwap — START`, {
     chainId: quote.chainId,
@@ -174,20 +161,15 @@ export async function submitRecurringSwap(
     )
   }
 
-  // Stash the rich display metadata for the in-flight first-fill action so
-  // `EvmSigner.signOne` can attach it to the approval modal's request via
-  // RECURRING_SWAP context (see services/activeActionContext.ts header for
-  // the rationale on this side channel). The hook formats `amountPerOrder`
-  // here — `<RecurrenceDetails />` consumes the formatted string verbatim
-  // so the schema stays decimals-agnostic.
+  // Build the display-metadata payload for the in-flight first-fill action
+  // and pass it through the SDK's `signerContext` field. The SDK forwards
+  // it unchanged onto `step.signerContext`; `EvmSigner.signOne` then tags
+  // it with the action type derived from `step.currentSignatureReason`
+  // (`ScheduleRecurringSwap` / `AllowanceApproval` both map to `'fill'`)
+  // and attaches it as `RECURRING_SWAP` context so `<RecurrenceDetails />`
+  // renders above the approval modal. See `services/recurringSignerContext.ts`
+  // for the producer/consumer contract.
   //
-  // The slot is keyed by action type ('fill'), so a concurrent cancel /
-  // pause / unpause writes a different slot and won't be observed by this
-  // call's signs. The outer try/finally guarantees the slot clears even if
-  // a post-broadcast effect (analytics, snackbar, invalidate) throws —
-  // otherwise a stale 'fill' could bleed into a later unrelated swap that
-  // shares the prefix detector but predates a future SDK aggregator-id
-  // change.
   // Default 2 max-fraction digits matches the rest of the app's
   // `formatTokenAmount` usage. Sub-cent amounts (e.g. 0.001 AVAX) will
   // render as "0.00" by design — consistent with how send/swap previews
@@ -195,99 +177,97 @@ export async function submitRecurringSwap(
   const amountPerOrderFormatted = formatTokenAmount(
     bigintToBig(amountPerOrder, fromTokenDecimals)
   )
-  setActiveRecurringActionContext({
-    type: 'fill',
+  // `quote.numberOfOrders` is the wire value Markr signs: the unlimited
+  // sentinel (`-1`) if the user picked Unlimited, else a finite count.
+  // Forwarding it verbatim keeps the signed value and the preview's
+  // displayed value structurally identical — no `isUnlimited` boolean to
+  // disagree with the sentinel.
+  const signerContext: RecurringFillSignerContext = {
     fromTokenSymbol,
     toTokenSymbol,
     amountPerOrderFormatted,
     numberOfOrders: quote.numberOfOrders,
-    isUnlimited,
     frequency
+  }
+
+  let result: { txHash: Hex }
+  try {
+    // `fallbackToDefaultOnBatchFailure: true` matches `transferAsset`'s UX —
+    // try the one-click approve+swap batch first, and if the wallet rejects
+    // the batch (Ledger, certain WalletConnect peers), fall back to two
+    // sequential signatures rather than bubbling the batch error.
+    result = await markrRecurring.executeFirstFill({
+      quote,
+      fromAddress: fromAddress as `0x${string}`,
+      sourceChain,
+      fallbackToDefaultOnBatchFailure: true,
+      signerContext
+    })
+  } catch (err) {
+    if (err instanceof ApprovalRevertedError) {
+      Logger.error(
+        `${LOG_TAG} ❌ submitRecurringSwap — approval reverted on-chain`,
+        err
+      )
+    } else if (isInvalidParamsError(err)) {
+      // SDK boundary throws (quote expired, sourceChain ≠ quote.chainId,
+      // bad fromAddress, etc.) — log distinctly so analytics can separate
+      // these from generic signer failures. Also invalidate the cached
+      // quote so a retry refetches a fresh one instead of replaying the
+      // same stale payload (the pre-flight expiry check above usually
+      // catches QUOTE_EXPIRED, but this covers SDK clock-skew + other
+      // invalidating reasons that share this error class).
+      Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — invalid params`, err)
+      queryClient.invalidateQueries({
+        queryKey: expiredQuoteKey,
+        exact: true
+      })
+    } else {
+      Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — failed`, err)
+    }
+    throw err
+  }
+
+  Logger.info(
+    `${LOG_TAG} 🎉 submitRecurringSwap — COMPLETE in ${
+      Date.now() - overallStartedAt
+    }ms`,
+    { txHash: result.txHash }
+  )
+
+  // ── Post-broadcast effects ──────────────────────────────────────────────
+  // These used to fire from a Redux listener watching the `step: 'fill'`
+  // `onInAppRequestSucceeded` action. Now that the SDK signs and broadcasts
+  // internally, the SDK call's own resolution is the success signal; we
+  // fire the same effects here.
+
+  AnalyticsService.capture('RecurringSwapScheduled', {
+    chainId: quote.chainId,
+    encrypted: {
+      scheduleUuid: quote.uuid,
+      fromTokenSymbol,
+      toTokenSymbol,
+      amountPerOrder: amountPerOrder.toString(),
+      // Wire value Markr signs — the unlimited sentinel (-1) or a finite
+      // count. Downstream dashboards filter on `numberOfOrders === -1`
+      // for the unlimited cohort; no separate boolean is emitted.
+      numberOfOrders: quote.numberOfOrders,
+      intervalSeconds: deriveIntervalSeconds(frequency)
+    }
   })
 
-  try {
-    let result: { txHash: Hex }
-    try {
-      // `fallbackToDefaultOnBatchFailure: true` matches `transferAsset`'s UX —
-      // try the one-click approve+swap batch first, and if the wallet rejects
-      // the batch (Ledger, certain WalletConnect peers), fall back to two
-      // sequential signatures rather than bubbling the batch error.
-      result = await markrRecurring.executeFirstFill({
-        quote,
-        fromAddress: fromAddress as `0x${string}`,
-        sourceChain,
-        fallbackToDefaultOnBatchFailure: true
-      })
-    } catch (err) {
-      if (err instanceof ApprovalRevertedError) {
-        Logger.error(
-          `${LOG_TAG} ❌ submitRecurringSwap — approval reverted on-chain`,
-          err
-        )
-      } else if (isInvalidParamsError(err)) {
-        // SDK boundary throws (quote expired, sourceChain ≠ quote.chainId,
-        // bad fromAddress, etc.) — log distinctly so analytics can separate
-        // these from generic signer failures. Also invalidate the cached
-        // quote so a retry refetches a fresh one instead of replaying the
-        // same stale payload (the pre-flight expiry check above usually
-        // catches QUOTE_EXPIRED, but this covers SDK clock-skew + other
-        // invalidating reasons that share this error class).
-        Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — invalid params`, err)
-        queryClient.invalidateQueries({
-          queryKey: expiredQuoteKey,
-          exact: true
-        })
-      } else {
-        Logger.error(`${LOG_TAG} ❌ submitRecurringSwap — failed`, err)
-      }
-      throw err
-    }
+  showSnackbar('Recurring swap scheduled')
 
-    Logger.info(
-      `${LOG_TAG} 🎉 submitRecurringSwap — COMPLETE in ${
-        Date.now() - overallStartedAt
-      }ms`,
-      { txHash: result.txHash }
-    )
+  // Markr's `listOrders` lags on-chain confirmation by a few seconds while it
+  // observes and indexes the fill tx. A single invalidate-at-broadcast almost
+  // always lands before that record materialises, so the banner stays empty
+  // even though everything succeeded. Kick off one immediate invalidate plus
+  // a staggered batch at t=5s/15s/30s so the cache catches up without the
+  // user needing to navigate. The shared helper dedupes against any prior
+  // pending batch for the same key (e.g. user submits, errors, retries) so
+  // repeated calls don't stack timers.
+  queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
+  scheduleStaggeredInvalidate(RECURRING_SCHEDULES_QK)
 
-    // ── Post-broadcast effects ──────────────────────────────────────────────
-    // These used to fire from a Redux listener watching the `step: 'fill'`
-    // `onInAppRequestSucceeded` action. Now that the SDK signs and broadcasts
-    // internally, the SDK call's own resolution is the success signal; we
-    // fire the same effects here.
-
-    AnalyticsService.capture('RecurringSwapScheduled', {
-      chainId: quote.chainId,
-      encrypted: {
-        scheduleUuid: quote.uuid,
-        fromTokenSymbol,
-        toTokenSymbol,
-        amountPerOrder: amountPerOrder.toString(),
-        numberOfOrders: quote.numberOfOrders,
-        isUnlimited,
-        intervalSeconds: deriveIntervalSeconds(frequency)
-      }
-    })
-
-    showSnackbar('Recurring swap scheduled')
-
-    // Markr's `listOrders` lags on-chain confirmation by a few seconds while it
-    // observes and indexes the fill tx. A single invalidate-at-broadcast almost
-    // always lands before that record materialises, so the banner stays empty
-    // even though everything succeeded. Kick off one immediate invalidate plus
-    // a staggered batch at t=5s/15s/30s so the cache catches up without the
-    // user needing to navigate. The shared helper dedupes against any prior
-    // pending batch for the same key (e.g. user submits, errors, retries) so
-    // repeated calls don't stack timers.
-    queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
-    scheduleStaggeredInvalidate(RECURRING_SCHEDULES_QK)
-
-    return result
-  } finally {
-    // Defence-in-depth: clear the slot regardless of whether executeFirstFill
-    // resolved, rejected, or a post-broadcast effect threw. Without this, a
-    // single thrown `AnalyticsService.capture` would leave the 'fill' slot
-    // armed for the rest of the session.
-    clearActiveRecurringActionContext('fill')
-  }
+  return result
 }
