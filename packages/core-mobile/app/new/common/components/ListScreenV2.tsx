@@ -2,8 +2,7 @@ import {
   BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  Text,
-  useTheme
+  Text
 } from '@avalabs/k2-alpine'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
@@ -146,7 +145,6 @@ export const ListScreenV2 = <T,>({
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
-  const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
@@ -660,27 +658,6 @@ export const ListScreenV2 = <T,>({
     <Animated.View
       style={[{ flex: 1 }]}
       entering={getListItemEnteringAnimation(0)}>
-      {/* Android formsheet only: the FlashList is pushed down by
-          `flashListMarginTop` (= headerHeight) to clear the transparent
-          navigation header. That top strip has nothing opaque behind it, so it
-          exposed the formsheet's dim scrim — reading as a second, darker
-          background fading in over the header on scroll. Back the strip with
-          $surfacePrimary so it matches the (opaque) Android header fallback.
-          iOS is unaffected (flashListMarginTop is 0 and the header is a real
-          translucent blur, which must keep showing the list content behind it). */}
-      {isAndroidModal && (
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: flashListMarginTop,
-            backgroundColor: theme.colors.$surfacePrimary
-          }}
-        />
-      )}
       <FlashList
         ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}
@@ -711,6 +688,26 @@ export const ListScreenV2 = <T,>({
           restProps.style
         ])}
       />
+      {/* DEBUG_STRIP_PROBE: loud opaque magenta, ON TOP of the FlashList,
+          covering the whole header zone. If the dark "second background" strip
+          turns magenta, it lives in this component's RN tree (reposition the
+          real fill). If it stays dark with magenta around it, the strip is
+          painted by a layer ABOVE this content (the transparent nav header
+          showing the scrim) and the fix belongs at the nav header. Remove after. */}
+      {isAndroidModal && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: flashListMarginTop + headerSentinelHeight + 120,
+            backgroundColor: '#FF00FF',
+            zIndex: 999
+          }}
+        />
+      )}
       {headerOverlay && (
         // The overlay is a non-interactive label that sits directly on top of
         // the first list row. It animates from opacity 0, and an opacity-0 view
