@@ -130,10 +130,8 @@ describe('useCancelRecurringSchedule', () => {
 
     // After broadcast we mark the orderId pending-cancel so the row stays
     // visible with a spinner instead of optimistically disappearing.
-    // Hook bridges its string `config.type` ('cancel') to the SDK's
-    // `TransferSignatureReason` enum before persisting — that's what
-    // `pendingActionStore` stores so `listeners.ts` can switch on enum
-    // values directly.
+    // `pendingActionStore` stores the SDK `TransferSignatureReason` enum value
+    // so `listeners.ts` can switch on the exact cancel/pause/resume reason.
     expect(mockMarkPending).toHaveBeenCalledWith(
       CANCEL_ARGS.orderId,
       TransferSignatureReason.CancelRecurringSwap
