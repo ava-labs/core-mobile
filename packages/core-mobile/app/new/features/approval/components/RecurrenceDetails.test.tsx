@@ -1,5 +1,7 @@
 import React from 'react'
 import renderer, { act } from 'react-test-renderer'
+import { TransferSignatureReason } from '@avalabs/fusion-sdk'
+import type { RecurringOrderActionSignerContext } from 'features/recurringSwap/services/recurringSignerContext'
 
 jest.mock('@avalabs/k2-alpine', () => {
   const ReactActual = jest.requireActual('react')
@@ -41,13 +43,13 @@ function containsText(
   return false
 }
 
+// Fill context is identified structurally by the presence of `frequency`
+// (and the other fill-only fields) — no `type` discriminator.
 const fillCtx = {
-  type: 'fill' as const,
   fromTokenSymbol: 'LINK',
   toTokenSymbol: 'AVAX',
   amountPerOrderFormatted: '15.00',
   numberOfOrders: 4,
-  isUnlimited: false,
   frequency: { unit: 'week' as const, value: 4 }
 }
 
@@ -91,8 +93,11 @@ describe('<RecurrenceDetails />', () => {
     expect(containsText(json, 'every 1 week')).toBe(false)
   })
 
-  it('renders "for an unlimited amount of time" when isUnlimited', async () => {
-    const ctx = { ...fillCtx, isUnlimited: true, numberOfOrders: 365 }
+  // Unlimited is encoded by the wire sentinel `-1`
+  // (`RECURRING_UNLIMITED_ORDERS_SENTINEL`) on `numberOfOrders`; the
+  // component derives the "unlimited" copy from that sentinel directly.
+  it('renders "for an unlimited amount of time" when numberOfOrders is the unlimited sentinel (-1)', async () => {
+    const ctx = { ...fillCtx, numberOfOrders: -1 }
     let instance!: renderer.ReactTestRenderer
     await act(async () => {
       instance = renderer.create(<RecurrenceDetails context={ctx} />)
@@ -104,9 +109,11 @@ describe('<RecurrenceDetails />', () => {
     expect(containsText(json, 'for an unlimited amount of time')).toBe(true)
   })
 
-  it('renders the cancel preview for type="cancel"', async () => {
-    const ctx = {
-      type: 'cancel' as const,
+  it('renders the cancel preview for the CancelRecurringSwap action', async () => {
+    // Annotate so the enum-literal member doesn't widen to the full
+    // `TransferSignatureReason` enum (which the discriminated union rejects).
+    const ctx: RecurringOrderActionSignerContext = {
+      action: TransferSignatureReason.CancelRecurringSwap,
       fromTokenSymbol: 'LINK',
       toTokenSymbol: 'AVAX'
     }
@@ -124,9 +131,9 @@ describe('<RecurrenceDetails />', () => {
     ).toBe(true)
   })
 
-  it('renders the pause preview for type="pause" with the allowance-preserved callout', async () => {
-    const ctx = {
-      type: 'pause' as const,
+  it('renders the pause preview for the PauseRecurringSwap action with the allowance-preserved callout', async () => {
+    const ctx: RecurringOrderActionSignerContext = {
+      action: TransferSignatureReason.PauseRecurringSwap,
       fromTokenSymbol: 'USDC',
       toTokenSymbol: 'AVAX'
     }
@@ -145,9 +152,9 @@ describe('<RecurrenceDetails />', () => {
     expect(containsText(json, 'Existing allowance is preserved')).toBe(true)
   })
 
-  it('renders the unpause preview for type="unpause"', async () => {
-    const ctx = {
-      type: 'unpause' as const,
+  it('renders the resume preview for the ResumeRecurringSwap action', async () => {
+    const ctx: RecurringOrderActionSignerContext = {
+      action: TransferSignatureReason.ResumeRecurringSwap,
       fromTokenSymbol: 'USDC',
       toTokenSymbol: 'AVAX'
     }
