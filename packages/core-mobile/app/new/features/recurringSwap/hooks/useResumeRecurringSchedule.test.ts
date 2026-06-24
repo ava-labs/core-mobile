@@ -161,7 +161,7 @@ describe('useResumeRecurringSchedule', () => {
     })
 
     expect(mockSnackbar).toHaveBeenCalledWith(
-      'This schedule cannot be resumed right now'
+      'This recurring schedule cannot be resumed right now'
     )
     expect(mockMarkPending).not.toHaveBeenCalled()
   })

@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks'
+import { TokenType } from '@avalabs/vm-module-types'
 import { useRecurringEligibility } from './useRecurringEligibility'
 
 // Mock the FusionService.markrRecurring namespace. `checkEligibility` is the
@@ -28,13 +29,20 @@ jest.mock('features/swap/hooks/useZustandStore', () => ({
   useIsFusionServiceReady: () => mockUseIsFusionServiceReady()
 }))
 
+// `type: ERC20` is required: the hook resolves the on-chain address via
+// `resolveRecurringTokenAddress`, which only returns an address for
+// NATIVE/ERC20 tokens. Production `LocalTokenWithBalance` always carries a
+// type; omitting it here makes the hook short-circuit to `unsupported-token`
+// before ever calling `checkEligibility`.
 const usdc = {
+  type: TokenType.ERC20,
   address: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
   networkChainId: 43114,
   decimals: 6,
   symbol: 'USDC'
 }
 const wavax = {
+  type: TokenType.ERC20,
   address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
   networkChainId: 43114,
   decimals: 18,

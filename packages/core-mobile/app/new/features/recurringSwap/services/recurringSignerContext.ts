@@ -71,13 +71,16 @@ export function isRecurringTransferSignatureReason(
 // Returns `undefined` when:
 //   - the step's signature reason isn't one of the recurring ones
 //     (defense-in-depth — also gated upstream), OR
-//   - the producer payload is absent.
+//   - the producer payload is absent or not an object. Rejecting non-objects
+//     here (rather than forwarding them for the downstream Zod schema to throw
+//     on) keeps a malformed payload a graceful no-op: no RECURRING_SWAP context
+//     is attached and the approval simply renders without the preview.
 export function readRecurringSignerContext(
   step: TransferStepDetails
 ): RecurringSignerContext | undefined {
   if (!isRecurringTransferSignatureReason(step.currentSignatureReason))
     return undefined
   const value = step.signerContext
-  if (value === null || value === undefined) return undefined
+  if (!value || typeof value !== 'object') return undefined
   return value as RecurringSignerContext
 }

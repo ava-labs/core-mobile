@@ -440,12 +440,22 @@ export const SwapScreen = (): JSX.Element => {
     autoSlippage || slippage === undefined
       ? undefined
       : Math.round(slippage * 100)
+  // Don't fetch a recurring quote until the user has picked BOTH a frequency
+  // and a number of orders — the `/recurring/quote` request requires them and
+  // a partially-configured fetch is wasted work (and noisy errors) while the
+  // user is still mid-configuration.
+  const isRecurringQuoteReady =
+    recurring.isRecurring &&
+    recurring.frequency !== undefined &&
+    recurring.numberOfOrders !== undefined
   const recurringQuote = useRecurringQuote({
-    fromToken: recurring.isRecurring ? fromToken ?? undefined : undefined,
-    toToken: recurring.isRecurring ? toToken ?? undefined : undefined,
-    amountPerOrder: recurring.isRecurring ? fromTokenValue : undefined,
-    numberOfOrders: recurring.numberOfOrders,
-    frequency: recurring.frequency,
+    fromToken: isRecurringQuoteReady && fromToken ? fromToken : undefined,
+    toToken: isRecurringQuoteReady && toToken ? toToken : undefined,
+    amountPerOrder: isRecurringQuoteReady ? fromTokenValue : undefined,
+    numberOfOrders: isRecurringQuoteReady
+      ? recurring.numberOfOrders
+      : undefined,
+    frequency: isRecurringQuoteReady ? recurring.frequency : undefined,
     slippageBps: recurringSlippageBps
   })
 
@@ -965,7 +975,8 @@ export const SwapScreen = (): JSX.Element => {
     isRecurringBlocked,
     eligibility.eligible,
     recurring.isRecurring,
-    recurring.setIsRecurring
+    recurring.setIsRecurring,
+    recurring
   ])
 
   // Reset from amount only when the pay token changes, so we don't show a stale
@@ -1288,12 +1299,13 @@ export const SwapScreen = (): JSX.Element => {
     recurring.numberOfOrders,
     fromTokenValue,
     getNetwork,
+    recurringSlippageBps,
     dismissAll
   ])
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (recurring.isRecurring) {
-      void submitRecurring()
+      await submitRecurring()
       return
     }
     handleSwap()

@@ -177,7 +177,7 @@ describe('usePauseRecurringSchedule', () => {
     })
 
     expect(mockSnackbar).toHaveBeenCalledWith(
-      'This schedule cannot be paused right now'
+      'This recurring schedule cannot be paused right now'
     )
   })
 
