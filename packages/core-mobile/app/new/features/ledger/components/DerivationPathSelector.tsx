@@ -120,7 +120,7 @@ const OptionCard: React.FC<OptionCardProps> = ({ option, onPress }) => {
               variant="subtitle1"
               style={{
                 color: colors.$textPrimary,
-                fontWeight: '500',
+                fontFamily: 'Inter-SemiBold',
                 fontSize: 16,
                 lineHeight: 16
               }}>

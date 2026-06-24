@@ -63,8 +63,8 @@ export const RecoveryMethodList = ({
                   <Text
                     sx={{
                       fontSize: 16,
-                      fontWeight: '500',
                       lineHeight: 16,
+                      fontFamily: 'Inter-SemiBold',
                       color: colors.$textPrimary
                     }}>
                     {item.title}
