@@ -34,6 +34,12 @@ function transformNotification(
   switch (response.type) {
     case 'BALANCE_CHANGES': {
       const parsed = BalanceChangesMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.warn(
+          '[NotificationCenterService] BALANCE_CHANGES metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'BALANCE_CHANGES',
@@ -42,6 +48,12 @@ function transformNotification(
     }
     case 'PRICE_ALERTS': {
       const parsed = PriceAlertsMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.warn(
+          '[NotificationCenterService] PRICE_ALERTS metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'PRICE_ALERTS',
@@ -67,6 +79,12 @@ function transformNotification(
       }
 
       const parsed = NewsMetadataSchema.safeParse(response.metadata)
+      if (!parsed.success) {
+        Logger.warn(
+          '[NotificationCenterService] NEWS metadata parse failed; falling back to generic row',
+          parsed.error
+        )
+      }
       return {
         ...base,
         type: 'NEWS',
@@ -106,9 +124,7 @@ class NotificationCenterService {
         return []
       }
 
-      return parsed.data.notifications
-        .map(transformNotification)
-        .filter(n => n.data !== undefined)
+      return parsed.data.notifications.map(transformNotification)
     } catch (error) {
       Logger.error(
         '[NotificationCenterService] fetchNotifications failed:',
