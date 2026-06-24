@@ -15,6 +15,13 @@ jest.mock('expo-router', () => ({
   useNavigation: () => ({ addListener: mockAddListener })
 }))
 
+const mockIsLedgerSigning = jest.fn(() => false)
+jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
+  approvalController: {
+    isLedgerSigningInProgress: () => mockIsLedgerSigning()
+  }
+}))
+
 const mockCanGoBack = router.canGoBack as jest.Mock
 const mockBack = router.back as jest.Mock
 
@@ -25,6 +32,7 @@ describe('useDismissOnCancelledRequest', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockCanGoBack.mockReturnValue(true)
+    mockIsLedgerSigning.mockReturnValue(false)
     transitionEndCb = undefined
   })
 
@@ -75,6 +83,36 @@ describe('useDismissOnCancelledRequest', () => {
 
     renderHook(() => useDismissOnCancelledRequest(controller.signal))
     completePresent()
+
+    expect(mockBack).not.toHaveBeenCalled()
+  })
+
+  it('dismisses via the fallback timer when transitionEnd never fires (nested-stack initial route)', () => {
+    // ApprovalScreen is the initial route of a nested stack presented as a sheet
+    // by its parent, so its own navigator never emits transitionEnd. Dismissal
+    // must not depend solely on that event. (CP-14422)
+    jest.useFakeTimers()
+    const controller = new AbortController()
+
+    renderHook(() => useDismissOnCancelledRequest(controller.signal))
+    // transitionEnd never fires — do NOT call completePresent().
+    controller.abort()
+    expect(mockBack).not.toHaveBeenCalled() // deferred: not yet "presented"
+
+    jest.advanceTimersByTime(2000) // fallback elapses
+    expect(mockBack).toHaveBeenCalledTimes(1)
+    jest.useRealTimers()
+  })
+
+  it('does NOT dismiss while on-device Ledger signing is in progress', () => {
+    // Once signing has begun the cross-origin nav must not pop the review screen
+    // out from under a signature; the controller dismisses on settle. (CP-14422)
+    mockIsLedgerSigning.mockReturnValue(true)
+    const controller = new AbortController()
+
+    renderHook(() => useDismissOnCancelledRequest(controller.signal))
+    completePresent()
+    controller.abort()
 
     expect(mockBack).not.toHaveBeenCalled()
   })
