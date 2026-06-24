@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, type PersistStorage } from 'zustand/middleware'
 import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 
@@ -58,6 +58,64 @@ export interface PendingActionState {
   isExpired: (orderId: string, nowMs?: number) => boolean
 }
 
+// Shape stored on disk under the persist key. Only `pending` is durable —
+// the action methods on `PendingActionState` are re-attached by the merge
+// step at hydration time.
+type PersistedShape = { pending: Record<string, PendingActionEntry> }
+
+function isPersistedEntry(value: unknown): value is PendingActionEntry {
+  if (!value || typeof value !== 'object') return false
+  const e = value as Partial<PendingActionEntry>
+  // Validate every field the listener-side reconciler reads. An entry
+  // missing any of these would either fail the (account, chain) scope
+  // check (and stick around until the TTL fired) or crash the
+  // reconciler on the next list refetch.
+  return (
+    typeof e.type === 'string' &&
+    typeof e.addedAt === 'number' &&
+    typeof e.ownerAddress === 'string' &&
+    typeof e.chainId === 'number'
+  )
+}
+
+// Explicit migration so a device that rehydrates an older persisted shape
+// can't load entries the runtime no longer knows how to reconcile. Without
+// a `migrate` callback, zustand-persist still logs and discards on a
+// version mismatch in v5 — but encoding it here makes the intent
+// auditable and is robust to future zustand-internal changes / corrupted
+// stores that slip through the version check.
+export function migratePersistedPendingActionState(
+  persistedState: unknown,
+  version: number
+): PersistedShape {
+  // Pre-v3 entries pre-date the `ownerAddress` + `chainId` scoping fields
+  // and the `unpause` → `resume` rename. The reconciler can't match
+  // them to any future event, so the only thing keeping a stale entry
+  // from sticking on the UI would be the 10-minute TTL safety net.
+  // Clear them up front instead — the TTL guarantees nothing useful is
+  // lost (anything still in-flight at upgrade time would have aged out
+  // before the next listOrders refetch reconciles regardless).
+  if (version < 3) return { pending: {} }
+
+  // From v3 onward, defensively normalize: drop any entry that doesn't
+  // carry the full shape the reconciler reads. Guards against a
+  // hand-corrupted store, a future field addition that ships without a
+  // version bump, or a partial write from a crashed prior session.
+  const candidate =
+    persistedState && typeof persistedState === 'object'
+      ? (persistedState as { pending?: unknown }).pending ?? {}
+      : {}
+  const rawPending =
+    candidate && typeof candidate === 'object'
+      ? (candidate as Record<string, unknown>)
+      : {}
+  const pending: Record<string, PendingActionEntry> = {}
+  for (const [orderId, raw] of Object.entries(rawPending)) {
+    if (isPersistedEntry(raw)) pending[orderId] = raw
+  }
+  return { pending }
+}
+
 export const pendingActionStore = create<PendingActionState>()(
   persist(
     (set, get) => ({
@@ -95,7 +153,14 @@ export const pendingActionStore = create<PendingActionState>()(
       // anything still pending at upgrade time would have aged out before
       // the next listOrders refetch reconciles regardless.
       name: ZustandStorageKeys.RECURRING_PENDING_ACTION,
-      storage: zustandPersistStorage,
+      // Cast: the shared `zustandPersistStorage` is upstream-typed as
+      // `PersistStorage<StateStorage>` (a stale leftover), which would
+      // force `PersistedState` to infer to `StateStorage` here. The
+      // underlying MMKV adapter serializes any shape, so re-typing it
+      // to the actual persisted slice (`PersistedShape`) is safe and
+      // unlocks correctly-typed `partialize` + `migrate` callbacks.
+      storage:
+        zustandPersistStorage as unknown as PersistStorage<PersistedShape>,
       // v2: `'unpause'` → `'resume'` rename. Bumping discards any in-flight
       // 'unpause' entry persisted from a v1 client — acceptable given the
       // 10-min TTL: anything still pending at upgrade time would age out
@@ -105,7 +170,19 @@ export const pendingActionStore = create<PendingActionState>()(
       // so it would never match an event's (account, chain) scope and could
       // only be cleared by the TTL safety net. Bumping discards them up front
       // — again a zero-impact migration given the 10-min TTL.
-      version: 3
+      version: 3,
+      // Only the `pending` map is durable — the action methods on
+      // `PendingActionState` are re-attached by the merge step on
+      // hydration. Without an explicit `partialize` zustand would type
+      // the persisted shape as the full state (including methods), and
+      // the `migrate` callback below would have to return that shape
+      // even though functions get stripped during JSON.stringify anyway.
+      partialize: state => ({ pending: state.pending }),
+      // Encode the version-bump intent so it's testable and auditable.
+      // See `migratePersistedPendingActionState` for the policy: clear
+      // pre-v3 state outright, and defensively drop malformed entries
+      // from v3+ payloads.
+      migrate: migratePersistedPendingActionState
     }
   )
 )
