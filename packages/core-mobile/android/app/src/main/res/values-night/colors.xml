@@ -2,13 +2,13 @@
 <resources>
     <color name="dialogTextColor">#FFFFFF</color>
 
-    <!-- appSurfacePrimary backs colorSurface / android:colorBackground, which
-         shows through the transparent formsheet header. The M3 baseline
-         (#1C1B1F) is darker than the app surface ($surfacePrimary = neutral850
-         #28282E) and bled through as a darker band on scroll, so match it.
-         appSurfaceSecondary stays at the M3 baseline — it feeds
-         colorSurfaceVariant/Container* used by native surfaces, and overriding
-         it to neutral800 (#3E3E43) tinted those surfaces noticeably gray. -->
+    <!-- Both surfaces are pinned to the app's dark surface ($surfacePrimary =
+         neutral850 #28282E) so every native Material3 surface matches the
+         screen. The formsheet header seam exposes a colorSurfaceContainer*
+         surface (mapped to appSurfaceSecondary) on scroll; with the M3 baseline
+         (#211F26) it showed as a darker band, and neutral800 (#3E3E43) showed
+         as a gray band. Matching #28282E makes that surface blend into the
+         content so the band disappears, no transparency/blur needed. -->
     <color name="appSurfacePrimary">#28282E</color>
-    <color name="appSurfaceSecondary">#211F26</color>
+    <color name="appSurfaceSecondary">#28282E</color>
 </resources>
