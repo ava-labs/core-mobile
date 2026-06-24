@@ -69,15 +69,15 @@ export function isRecurringTransferSignatureReason(
 // half-rendered preview.
 //
 // Returns `undefined` when:
-//   - the step's quote isn't a recurring synthetic quote
+//   - the step's signature reason isn't one of the recurring ones
 //     (defense-in-depth — also gated upstream), OR
-//   - the producer payload is absent or not an object.
+//   - the producer payload is absent.
 export function readRecurringSignerContext(
   step: TransferStepDetails
 ): RecurringSignerContext | undefined {
   if (!isRecurringTransferSignatureReason(step.currentSignatureReason))
     return undefined
   const value = step.signerContext
-  if (!value || typeof value !== 'object') return undefined
+  if (value === null || value === undefined) return undefined
   return value as RecurringSignerContext
 }
