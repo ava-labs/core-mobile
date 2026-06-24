@@ -2,7 +2,7 @@ import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import { makeOrderActionHook } from './_makeOrderActionHook'
 
 // Resume is an on-chain TX. See `_makeOrderActionHook.ts` for the
-// shared shape (side-channel set, pending mark, analytics, staggered
+// shared shape (signerContext payload, pending mark, analytics, staggered
 // invalidates, error mapping).
 
 export const useResumeRecurringSchedule = makeOrderActionHook({
