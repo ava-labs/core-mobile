@@ -59,7 +59,7 @@ import {
 import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { getLedgerAppName } from 'features/ledger/utils'
 import LedgerTrustedNameService from 'services/ledger/LedgerTrustedNameService'
 import { toSegments } from 'utils/toSegments'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
@@ -661,6 +661,16 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  /**
+   * Whether EVM signing for this network should use the Ledger Avalanche app
+   * (C-Chain or an Avalanche L1) rather than the Ethereum app. Shares
+   * getLedgerAppName with the approval UI so the app we prompt for and the app
+   * we sign with can never disagree.
+   */
+  private usesAvalancheApp(network?: Network): boolean {
+    return getLedgerAppName(network) === LedgerAppType.AVALANCHE
+  }
+
   public async signEvmTransaction({
     accountIndex,
     transaction,
@@ -674,9 +684,12 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signEvmTransaction called')
 
-    // Determine chain type and required app
+    // Determine chain type and required app.
+    // Route C-Chain and Avalanche L1s (EVM chains with a subnetId) to the
+    // Avalanche app; all other EVM chains use the Ethereum app. getLedgerAppName
+    // is the single source of truth shared with the approval UI.
     const chainId = transaction.chainId ? Number(transaction.chainId) : 43114
-    const isAvalanche = isAvalancheChainId(chainId)
+    const isAvalanche = this.usesAvalancheApp(network)
     const appType = isAvalanche
       ? LedgerAppType.AVALANCHE
       : LedgerAppType.ETHEREUM
@@ -1216,19 +1229,20 @@ export class LedgerWallet implements Wallet {
     data,
     rpcMethod,
     derivationPath,
-    chainId
+    network
   }: {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     rpcMethod: RpcMethod
     derivationPath: string
-    chainId: number
+    network: Network
   }): Promise<string> {
-    const appType = isAvalancheChainId(chainId)
+    const isAvalanche = this.usesAvalancheApp(network)
+    const appType = isAvalanche
       ? LedgerAppType.AVALANCHE
       : LedgerAppType.ETHEREUM
     // Get transport and create Ethereum app instance
     const transport = await this.handleAppConnection(appType)
-    const app = isAvalancheChainId(chainId)
+    const app = isAvalanche
       ? new AppAvax(transport as Transport)
       : new Eth(transport as Transport)
 
@@ -1304,16 +1318,17 @@ export class LedgerWallet implements Wallet {
   private async handleEthAndPersonalSign({
     data,
     derivationPath,
-    chainId
+    network
   }: {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     derivationPath: string
-    chainId: number
+    network: Network
   }): Promise<string> {
-    // Use the Avalanche app when on an Avalanche chain — the Avalanche Ledger
-    // app exposes EVM signing through the same transport, so we can create an
-    // Eth instance without switching apps (matches core-web/extension behavior).
-    const appType = isAvalancheChainId(chainId)
+    // Use the Avalanche app when on an Avalanche chain (C-Chain or an L1) — the
+    // Avalanche Ledger app exposes EVM signing through the same transport, so we
+    // can create an Eth instance without switching apps (matches
+    // core-web/extension behavior).
+    const appType = this.usesAvalancheApp(network)
       ? LedgerAppType.AVALANCHE
       : LedgerAppType.ETHEREUM
     const transport = await this.handleAppConnection(appType)
@@ -1363,7 +1378,7 @@ export class LedgerWallet implements Wallet {
           data,
           rpcMethod,
           derivationPath,
-          chainId: network.chainId
+          network
         })
       } else if (
         rpcMethod === RpcMethod.ETH_SIGN ||
@@ -1372,7 +1387,7 @@ export class LedgerWallet implements Wallet {
         return this.handleEthAndPersonalSign({
           data,
           derivationPath,
-          chainId: network.chainId
+          network
         })
       } else {
         throw new Error('This function is not supported on your wallet')
