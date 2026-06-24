@@ -24,9 +24,17 @@ export function transformXPAddresses(
     xpAddresses = [stripAddressPrefix(account.addressPVM)]
   }
 
-  // Derive xpAddressDictionary with fallback
+  // Derive xpAddressDictionary with fallback. Mirror the xpAddresses branch
+  // above and require a non-empty dictionary before using it: a successful
+  // lookup can still return an empty `{}` (e.g. a Ledger account with no X/P
+  // activity yet), and an empty dictionary makes getInternalExternalAddrs yield
+  // no signing indices, which breaks XP signing and blocks C->P CCT swaps. Fall
+  // back to the account's primary P-chain address instead. See CP-14507.
   let xpAddressDictionary: XPAddressDictionary = {}
-  if (queryData?.xpAddressDictionary) {
+  if (
+    queryData?.xpAddressDictionary &&
+    Object.keys(queryData.xpAddressDictionary).length > 0
+  ) {
     xpAddressDictionary = queryData.xpAddressDictionary
   } else if (account?.addressPVM) {
     xpAddressDictionary = {

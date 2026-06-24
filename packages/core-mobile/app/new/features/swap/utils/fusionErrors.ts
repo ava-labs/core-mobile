@@ -1,5 +1,6 @@
 import { isEstimateNativeFeeError, isSdkError } from '@avalabs/fusion-sdk'
 import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
+import { CCT_CALLBACKS_ERROR_TAG } from '../services/cct/consts'
 
 export type FusionQuoteErrorKind =
   | 'network-fee-only' // gas alone exceeds balance; no bridge fee involved
@@ -253,6 +254,13 @@ export function getSwapErrorMessage(error: unknown): string {
   }
 
   const message = actualError?.message ?? error.message
+
+  // CCT swap couldn't resolve the active account's X/P addresses (e.g. a Ledger
+  // wallet with no derivable Avalanche address). Surface a clear message instead
+  // of the raw internal guard string. See CP-14507.
+  if (message.includes(CCT_CALLBACKS_ERROR_TAG)) {
+    return "This account isn't set up for cross-chain swaps. Please try a different account."
+  }
 
   // Common error patterns
   if (message.includes('insufficient funds')) {
