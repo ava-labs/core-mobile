@@ -67,11 +67,9 @@ type ExecuteFn = (props: {
   orderId: HexOrderId
   address: Address
   sourceChain: Chain
-  // Forwarded onto `step.signerContext` so EvmSigner.signOne can tag and
-  // attach it as the approval modal's RECURRING_SWAP context. The action
-  // type the approval-side schema discriminates on is derived from
-  // `step.currentSignatureReason` (Cancel/Pause/ResumeRecurringSwap), not
-  // carried on this payload.
+  // Forwarded onto `step.signerContext` so EvmSigner.signOne can attach it as
+  // the approval modal's RECURRING_SWAP context. The approval-side schema uses
+  // the payload's `action` field (cancel/pause/resume) to select the preview copy.
   signerContext: RecurringOrderActionSignerContext
 }) => Promise<unknown>
 
