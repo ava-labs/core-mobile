@@ -168,7 +168,6 @@ export async function submitRecurringSwap(
   // `RECURRING_SWAP` context so `<RecurrenceDetails />` renders above the
   // approval modal. See `services/recurringSignerContext.ts` for the
   // producer/consumer contract.
-  // for the producer/consumer contract.
   //
   // Default 2 max-fraction digits matches the rest of the app's
   // `formatTokenAmount` usage. Sub-cent amounts (e.g. 0.001 AVAX) will
