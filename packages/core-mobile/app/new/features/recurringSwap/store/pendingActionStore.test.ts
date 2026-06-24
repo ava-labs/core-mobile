@@ -206,4 +206,28 @@ describe('migratePersistedPendingActionState', () => {
       migratePersistedPendingActionState({ pending: 'not-a-map' }, 3)
     ).toEqual({ pending: {} })
   })
+
+  // A structurally-complete entry whose `type` is a junk string (corrupted
+  // store, or a future action value that shipped without a version bump) must
+  // be dropped — otherwise it survives migration and never resolves in
+  // `isPendingActionResolved` (no default branch), stranding the spinner
+  // until the TTL evicts it.
+  it('drops v3 entries whose `type` is not a real action value', () => {
+    const valid = {
+      type: TransferSignatureReason.ResumeRecurringSwap,
+      addedAt: 1_700_000_000_000,
+      ownerAddress: '0xowner',
+      chainId: 43114
+    }
+    const persisted = {
+      '0xvalid': valid,
+      '0xjunkType': { ...valid, type: 'totally-not-an-action' },
+      '0xemptyType': { ...valid, type: '' }
+    }
+    expect(
+      migratePersistedPendingActionState({ pending: persisted }, 3)
+    ).toEqual({
+      pending: { '0xvalid': valid }
+    })
+  })
 })

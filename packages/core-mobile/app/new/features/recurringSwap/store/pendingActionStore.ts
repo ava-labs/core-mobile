@@ -26,6 +26,25 @@ export type RecurringOrderActionType =
   | TransferSignatureReason.PauseRecurringSwap
   | TransferSignatureReason.ResumeRecurringSwap
 
+// The runtime set of valid action types — kept alongside the type alias so the
+// persist-migration guard can reject a corrupted entry whose `type` is some
+// junk string (which would otherwise survive migration and then never resolve
+// in `isPendingActionResolved`, sitting on the UI until the TTL evicts it).
+const RECURRING_ORDER_ACTION_TYPES: readonly RecurringOrderActionType[] = [
+  TransferSignatureReason.CancelRecurringSwap,
+  TransferSignatureReason.PauseRecurringSwap,
+  TransferSignatureReason.ResumeRecurringSwap
+]
+
+export function isRecurringOrderActionType(
+  value: unknown
+): value is RecurringOrderActionType {
+  return (
+    typeof value === 'string' &&
+    (RECURRING_ORDER_ACTION_TYPES as readonly string[]).includes(value)
+  )
+}
+
 export interface PendingActionEntry {
   type: RecurringOrderActionType
   addedAt: number
@@ -71,7 +90,11 @@ function isPersistedEntry(value: unknown): value is PendingActionEntry {
   // check (and stick around until the TTL fired) or crash the
   // reconciler on the next list refetch.
   return (
-    typeof e.type === 'string' &&
+    // Validate `type` against the real action values, not just `typeof
+    // string` — a corrupted entry with a junk string type would otherwise
+    // survive migration and never resolve in the reconciler (no default
+    // branch), stranding the spinner until the TTL.
+    isRecurringOrderActionType(e.type) &&
     typeof e.addedAt === 'number' &&
     typeof e.ownerAddress === 'string' &&
     typeof e.chainId === 'number'

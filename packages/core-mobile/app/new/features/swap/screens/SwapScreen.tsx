@@ -87,6 +87,7 @@ import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheC
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
+import { computeCanSubmit } from '../utils/recurringSubmitGate'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
@@ -1193,8 +1194,10 @@ export const SwapScreen = (): JSX.Element => {
     isSeedlessWallet
   })
 
-  // Mirror the one-shot `canSwap` gate: a blocking (non-warning) validation
-  // error must disable Next. Most importantly this covers below-minimum, which
+  // Submit-gate logic lives in `recurringSubmitGate` so the recurring
+  // below-minimum guard is unit testable without the whole screen. It mirrors
+  // the one-shot `canSwap` gate: a blocking (non-warning) validation error must
+  // disable Next. Most importantly this covers below-minimum, which
   // `computeValidationError` evaluates against the recurring per-token minimum
   // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
   // displayed but never reached `canSubmit`, and because the recurring quote
@@ -1202,21 +1205,18 @@ export const SwapScreen = (): JSX.Element => {
   // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
   // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
   // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
-  const hasBlockingValidationError =
-    validationError !== null && validationError.isWarning !== true
-
-  const isRecurringReady =
-    recurring.isRecurring &&
-    !!recurring.frequency &&
-    recurring.numberOfOrders !== undefined &&
-    !!fromToken &&
-    !!toToken &&
-    !!fromTokenValue &&
-    !!recurringQuote.data &&
-    !recurringSubmitting &&
-    !hasBlockingValidationError
-
-  const canSubmit = recurring.isRecurring ? isRecurringReady : canSwap
+  const canSubmit = computeCanSubmit({
+    isRecurring: recurring.isRecurring,
+    hasFrequency: !!recurring.frequency,
+    hasNumberOfOrders: recurring.numberOfOrders !== undefined,
+    hasFromToken: !!fromToken,
+    hasToToken: !!toToken,
+    hasFromTokenValue: !!fromTokenValue,
+    hasRecurringQuote: !!recurringQuote.data,
+    recurringSubmitting,
+    validationError,
+    canSwap
+  })
 
   // Extracted so `handleNext` stays under the cognitive-complexity bar.
   // Returns false when any guard fails — caller does not advance.

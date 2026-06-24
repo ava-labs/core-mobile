@@ -11,11 +11,17 @@ import { usePauseRecurringSchedule } from './usePauseRecurringSchedule'
 const mockExecutePause = jest.fn()
 const mockSnackbar = jest.fn()
 const mockMarkPending = jest.fn()
+const mockClearPending = jest.fn()
 const mockCapture = jest.fn()
 const mockInvalidateQueries = jest.fn()
-// No network resolvable → the post-broadcast receipt watcher early-returns,
-// so it's inert here (the revert path is covered in the cancel hook test,
-// which exercises the shared `_makeOrderActionHook` watcher).
+// Default: no network resolvable → the post-broadcast receipt watcher
+// early-returns, so it's inert for most tests. The revert test overrides
+// these to exercise the shared `_makeOrderActionHook` watcher with the
+// pause-specific `reverted` copy.
+const mockUseNetworks = jest.fn(() => ({
+  networks: {} as Record<number, unknown>
+}))
+const mockWaitForTransaction = jest.fn()
 const mockGetEvmProvider = jest.fn()
 
 jest.mock('features/swap/services/FusionService', () => ({
@@ -44,12 +50,15 @@ jest.mock('contexts/ReactQueryProvider', () => ({
 
 jest.mock('../store/pendingActionStore', () => ({
   pendingActionStore: {
-    getState: () => ({ markPending: mockMarkPending })
+    getState: () => ({
+      markPending: mockMarkPending,
+      clearPending: mockClearPending
+    })
   }
 }))
 
 jest.mock('hooks/networks/useNetworks', () => ({
-  useNetworks: () => ({ networks: {} })
+  useNetworks: () => mockUseNetworks()
 }))
 
 jest.mock('services/network/utils/providerUtils', () => ({
@@ -93,8 +102,15 @@ describe('usePauseRecurringSchedule', () => {
     mockExecutePause.mockReset()
     mockSnackbar.mockReset()
     mockMarkPending.mockReset()
+    mockClearPending.mockReset()
     mockCapture.mockReset()
     mockInvalidateQueries.mockReset()
+    mockUseNetworks.mockReturnValue({ networks: {} })
+    mockWaitForTransaction.mockReset()
+    mockGetEvmProvider.mockReset()
+    mockGetEvmProvider.mockResolvedValue({
+      waitForTransaction: mockWaitForTransaction
+    })
     jest.useFakeTimers()
   })
 
@@ -140,6 +156,36 @@ describe('usePauseRecurringSchedule', () => {
         orderId: PAUSE_ARGS.orderId
       }
     })
+  })
+
+  // Regression: the on-chain revert watcher lives in the shared
+  // `_makeOrderActionHook` builder, so each hook wires its own `reverted`
+  // copy. Without a per-hook assertion the pause string could be swapped by
+  // accident and nothing would notice. A status-0 receipt must clear the
+  // pending entry and surface the pause-specific failure snackbar.
+  it('clears the pending entry and surfaces the pause failure snackbar when the action TX reverts on-chain', async () => {
+    mockExecutePause.mockResolvedValueOnce({ txHash: '0xtxhash' })
+    mockUseNetworks.mockReturnValue({
+      networks: { [PAUSE_ARGS.chainId]: { vmName: 'EVM' } }
+    })
+    mockWaitForTransaction.mockResolvedValueOnce({ status: 0 })
+
+    const { result } = renderHook(() => usePauseRecurringSchedule(), {
+      wrapper: wrap
+    })
+
+    await act(async () => {
+      await result.current.mutateAsync(PAUSE_ARGS)
+      // Flush the fire-and-forget watcher's microtask chain
+      // (getEvmProvider → waitForTransaction → clearPending/snackbar).
+      for (let i = 0; i < 5; i++) await Promise.resolve()
+    })
+
+    expect(mockWaitForTransaction).toHaveBeenCalledWith('0xtxhash', 1, 60_000)
+    expect(mockClearPending).toHaveBeenCalledWith(PAUSE_ARGS.orderId)
+    expect(mockSnackbar).toHaveBeenCalledWith(
+      'Pause failed on-chain. Please try again'
+    )
   })
 
   it('does NOT mark the order pending when executePause fails', async () => {

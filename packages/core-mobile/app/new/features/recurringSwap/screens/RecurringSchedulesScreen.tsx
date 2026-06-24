@@ -45,6 +45,7 @@ import { useCancelRecurringSchedule } from '../hooks/useCancelRecurringSchedule'
 import { usePauseRecurringSchedule } from '../hooks/usePauseRecurringSchedule'
 import { useResumeRecurringSchedule } from '../hooks/useResumeRecurringSchedule'
 import { formatFrequencyShort } from '../utils/formatFrequency'
+import { shouldShowDeepLinkNotFound } from '../utils/shouldShowDeepLinkNotFound'
 import {
   useIsCancelPending,
   useIsPausePending,
@@ -636,15 +637,18 @@ export function RecurringSchedulesScreen({
   // the Retry CTA inline).
   const notFoundShownRef = useRef(false)
   useEffect(() => {
-    if (!initialExpandedOrderId) return
-    if (isLoading || isError) return
-    if (notFoundShownRef.current) return
-    const found = manageableSchedules.some(
-      s => s.orderId === initialExpandedOrderId
-    )
-    if (found) return
-    notFoundShownRef.current = true
-    showSnackbar('Recurring schedule not found')
+    if (
+      shouldShowDeepLinkNotFound({
+        initialExpandedOrderId,
+        isLoading,
+        isError,
+        alreadyShown: notFoundShownRef.current,
+        orderIds: manageableSchedules.map(s => s.orderId)
+      })
+    ) {
+      notFoundShownRef.current = true
+      showSnackbar('Recurring schedule not found')
+    }
   }, [initialExpandedOrderId, isLoading, isError, manageableSchedules])
 
   // Resolve the schedule's source `Chain` (CAIP-2 chainId + rpcUrl +
