@@ -10,9 +10,11 @@
     <color name="neutral800">#3E3E43</color>
 
     <!-- Semantic surface colors used for Material3 theme overrides.
+         Matches the app design system (light $surfacePrimary = neutralWhite
+         #FFFFFF, $surfaceSecondary = neutral50 #F5F5F6).
          Night-mode variants are defined in values-night/colors.xml. -->
     <color name="appSurfacePrimary">#FFFFFF</color>
-    <color name="appSurfaceSecondary">#F8F8FB</color>
+    <color name="appSurfaceSecondary">#F5F5F6</color>
     <color name="bootsplash_background">#28282E</color>
     <color name="iconBackgroundBling">#000000</color>
     <color name="iconBackgroundGrid">#091B25</color>

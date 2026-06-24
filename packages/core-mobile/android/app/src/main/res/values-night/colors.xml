@@ -2,9 +2,11 @@
 <resources>
     <color name="dialogTextColor">#FFFFFF</color>
 
-    <!-- Material3 baseline dark-mode surface colors — mirrors what
-         Theme.Material3.DayNight provides naturally so the AppTheme
-         overrides in values/styles.xml have no net effect in dark mode. -->
-    <color name="appSurfacePrimary">#1C1B1F</color>
-    <color name="appSurfaceSecondary">#211F26</color>
+    <!-- Dark-mode surface colors matching the app design system
+         ($surfacePrimary = neutral850 #28282E, $surfaceSecondary = neutral800
+         #3E3E43). The M3 baseline (#1C1B1F/#211F26) is darker than the app
+         surface and bled through transparent formsheet headers as a darker
+         band on scroll. -->
+    <color name="appSurfacePrimary">#28282E</color>
+    <color name="appSurfaceSecondary">#3E3E43</color>
 </resources>

@@ -474,11 +474,7 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
-              {/* DEBUG_SCROLL_PROBE: GREEN = the in-list sticky header blur
-                  (what should back the header). Watch if it slides up on scroll
-                  and a dark/cyan region grows below it. Remove after. */}
               <BlurViewWithFallback
-                backgroundColor="rgba(0,255,0,0.55)"
                 style={{
                   flex: 1
                 }}
@@ -686,9 +682,7 @@ export const ListScreenV2 = <T,>({
         ListFooterComponent={renderListFooter ? renderListFooter : undefined}
         style={StyleSheet.flatten([
           {
-            // DEBUG_SCROLL_PROBE: CYAN = FlashList content background, so a dark
-            // band exposed on scroll (the scrim) is distinguishable from content.
-            backgroundColor: backgroundColor ?? 'rgba(0,255,255,0.4)',
+            backgroundColor: backgroundColor ?? 'transparent',
             marginTop: flashListMarginTop
           },
           restProps.style
