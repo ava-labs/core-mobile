@@ -14,6 +14,16 @@ export const AppUpdateBanner = (): JSX.Element => {
 
   return (
     <View
+      // Android (Fabric) can mis-measure this row's intrinsic height to ~0 when
+      // it contains flex children, which makes the banner collapse and paint
+      // behind the settings rows below it. The minHeight floor (icon height +
+      // vertical padding) guarantees the banner always reserves real layout
+      // space so the rows are pushed down. It is applied via the RN `style`
+      // prop (not dripsy `sx`) so it bypasses style processing entirely and is
+      // guaranteed to reach Yoga as a raw pixel floor. It only sets a floor, so
+      // the banner still grows if the text wraps; no-op on iOS where the
+      // measurement is already correct.
+      style={{ minHeight: ICON_SIZE + 30 }}
       sx={{
         backgroundColor: '$surfaceSecondary',
         borderRadius: 12,
@@ -21,21 +31,17 @@ export const AppUpdateBanner = (): JSX.Element => {
         paddingVertical: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 20,
-        // Android (Fabric) can mis-measure this row's intrinsic height to ~0
-        // when it contains flex children, which makes the banner paint over the
-        // settings rows below it. A minHeight floor (icon height + vertical
-        // padding) guarantees the banner always reserves real layout space so
-        // the rows are pushed down. It only sets a floor, so the banner still
-        // grows if the text wraps; no-op on iOS where measurement is correct.
-        minHeight: ICON_SIZE + 30
+        gap: 20
       }}>
       <View
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
           flexShrink: 1,
-          gap: 12
+          gap: 12,
+          // Floor the content row to the icon height so it can never
+          // intrinsic-measure to 0 on Fabric, independent of the outer floor.
+          minHeight: ICON_SIZE
         }}>
         <View
           sx={{
