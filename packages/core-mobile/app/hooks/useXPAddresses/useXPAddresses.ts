@@ -142,9 +142,13 @@ export async function getCachedXPAddresses({
     return transformXPAddresses(result, account)
   } catch (error) {
     Logger.error('getCachedXPAddresses failed', error)
-    return {
-      xpAddresses: [],
-      xpAddressDictionary: {}
-    }
+    // Mirror the useXPAddresses hook: when the address lookup throws (e.g. a
+    // Ledger wallet whose Avalanche xpub can't be derived), fall back to the
+    // account's primary P-chain address rather than returning an empty
+    // dictionary. An empty dictionary makes getInternalExternalAddrs yield no
+    // signing indices, which breaks XP signing and blocks C->P CCT swaps on
+    // Ledger. transformXPAddresses(undefined, account) applies the same
+    // addressPVM fallback the hook already uses on a failed query. See CP-14507.
+    return transformXPAddresses(undefined, account)
   }
 }

@@ -21,6 +21,11 @@ import {
   TypedDataV1,
   DerivationPathType
 } from '@avalabs/vm-module-types'
+import { Transaction } from 'ethers'
+import {
+  recoverPersonalSignature,
+  recoverTypedSignature
+} from '@metamask/eth-sig-util'
 import { SentryTag, SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
@@ -28,6 +33,7 @@ import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import {
   getAddressDerivationPath,
+  getEvmTypedDataVersion,
   hasActiveDerivedAddresses,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
@@ -113,6 +119,95 @@ const retryWithBackoff = async <T,>(
   throw lastErr
 }
 
+const EVM_SIGN_METHODS = new Set([
+  RpcMethod.ETH_SIGN,
+  RpcMethod.PERSONAL_SIGN,
+  RpcMethod.SIGN_TYPED_DATA,
+  RpcMethod.SIGN_TYPED_DATA_V1,
+  RpcMethod.SIGN_TYPED_DATA_V3,
+  RpcMethod.SIGN_TYPED_DATA_V4
+])
+
+export const isEvmSignMethod = (method: RpcMethod): boolean =>
+  EVM_SIGN_METHODS.has(method)
+
+// Defense-in-depth: recover the signer from the produced signature and confirm it
+// matches the address the approval prompt referred to, so a signed EVM tx/message
+// can never come from a different key than was displayed (CP-14468).
+const assertEvmTransactionSigner = (
+  signedTx: string,
+  expectedAddress: string
+): void => {
+  let recovered: string | null
+  try {
+    recovered = Transaction.from(signedTx).from
+  } catch (e) {
+    // A malformed signed payload can't be verified — fail closed with a stable,
+    // low-leakage message and keep the parse error in internal logs only.
+    Logger.error(
+      'EVM transaction signer verification: failed to parse signed tx',
+      e
+    )
+    throw new Error('EVM transaction signer verification failed')
+  }
+  if (!recovered || recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
+    // Log the addresses internally only — the thrown error is wrapped into an
+    // RPC error returned to the dApp, so it must not embed account addresses.
+    Logger.error(
+      `EVM transaction signer mismatch: recovered=${
+        recovered ?? 'unknown'
+      }, expected=${expectedAddress}`
+    )
+    throw new Error('EVM transaction signer mismatch')
+  }
+}
+
+const assertEvmMessageSigner = ({
+  signature,
+  rpcMethod,
+  data,
+  expectedAddress
+}: {
+  signature: string
+  rpcMethod: RpcMethod
+  data: string | TypedDataV1 | TypedData<MessageTypes>
+  expectedAddress: string
+}): void => {
+  let recovered: string
+  try {
+    if (
+      rpcMethod === RpcMethod.ETH_SIGN ||
+      rpcMethod === RpcMethod.PERSONAL_SIGN
+    ) {
+      recovered = recoverPersonalSignature({ data: data as string, signature })
+    } else {
+      recovered = recoverTypedSignature({
+        data: data as TypedData<MessageTypes>,
+        signature,
+        version: getEvmTypedDataVersion(
+          rpcMethod,
+          data as TypedDataV1 | TypedData<MessageTypes>
+        )
+      })
+    }
+  } catch (e) {
+    // Recovery can throw on a malformed/unexpected signed payload — fail closed
+    // with a stable, low-leakage message and keep the underlying error in
+    // internal logs only (mirrors assertEvmTransactionSigner).
+    Logger.error('EVM message signer verification: failed to recover signer', e)
+    throw new Error('EVM message signer verification failed')
+  }
+
+  if (recovered.toLowerCase() !== expectedAddress.toLowerCase()) {
+    // Log the addresses internally only — the thrown error is wrapped into an
+    // RPC error returned to the dApp, so it must not embed account addresses.
+    Logger.error(
+      `EVM message signer mismatch: recovered=${recovered}, expected=${expectedAddress}`
+    )
+    throw new Error('EVM message signer mismatch')
+  }
+}
+
 class WalletService {
   public async sign({
     walletId,
@@ -121,7 +216,8 @@ class WalletService {
     accountIndex,
     accountName,
     network,
-    sentrySpanName = 'sign-transaction'
+    sentrySpanName = 'sign-transaction',
+    fromAddress
   }: {
     walletId: string
     walletType: WalletType
@@ -130,6 +226,7 @@ class WalletService {
     accountName?: string
     network: Network
     sentrySpanName?: SpanName
+    fromAddress?: string
   }): Promise<string> {
     return SentryWrapper.startSpan(
       { name: sentrySpanName, contextName: 'svc.wallet.sign' },
@@ -188,12 +285,18 @@ class WalletService {
             'Unable to sign evm transaction: wrong provider obtained'
           )
 
-        return wallet.signEvmTransaction({
+        const signedEvmTx = await wallet.signEvmTransaction({
           accountIndex,
           transaction,
           network,
           provider
         })
+
+        if (fromAddress) {
+          assertEvmTransactionSigner(signedEvmTx, fromAddress)
+        }
+
+        return signedEvmTx
       }
     )
   }
@@ -204,7 +307,8 @@ class WalletService {
     rpcMethod,
     data,
     accountIndex,
-    network
+    network,
+    fromAddress
   }: {
     walletId: string
     walletType: WalletType
@@ -212,6 +316,7 @@ class WalletService {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
+    fromAddress?: string
   }): Promise<string> {
     const provider = await NetworkService.getProviderForNetwork(network)
 
@@ -227,13 +332,24 @@ class WalletService {
       walletType
     })
 
-    return wallet.signMessage({
+    const signature = await wallet.signMessage({
       rpcMethod,
       data,
       accountIndex,
       network,
       provider
     })
+
+    if (fromAddress && isEvmSignMethod(rpcMethod)) {
+      assertEvmMessageSigner({
+        signature,
+        rpcMethod,
+        data,
+        expectedAddress: fromAddress
+      })
+    }
+
+    return signature
   }
 
   //FIXME: call terminate for seedless

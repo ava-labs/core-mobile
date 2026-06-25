@@ -217,7 +217,20 @@ export enum RequestContext {
   // creation time. The validator re-checks this so a kill-switch flip
   // refuses bypass even if a stale SWAP_AUTO_APPROVE context arrives
   // from a code path that didn't go through the live-state-aware signer.
-  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable'
+  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable',
+
+  // Carries display metadata (symbols, frequency, order count) for an
+  // in-flight recurring-swap action through the ApprovalController so the
+  // ApprovalScreen can render the "Scheduling / Cancelling / Pausing /
+  // Resuming recurring swap" preview block above the standard tx details.
+  //
+  // The SDK signs + broadcasts internally, so the value is no longer
+  // threaded in by the recurring submit/cancel/pause/resume hooks via
+  // `useInAppRequest().request(...)`. Instead, producers pass display metadata
+  // through the SDK `signerContext` → `step.signerContext`, and
+  // `EvmSigner.signOne` injects it onto requests whose stepDetails carry a
+  // `markr-recurring*` aggregator id.
+  RECURRING_SWAP = 'recurringSwap'
 }
 
 // Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass
