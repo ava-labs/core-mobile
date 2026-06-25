@@ -51,7 +51,8 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
 
   const isAvalancheChain =
     network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-    network.chainId === ChainId.AVALANCHE_TESTNET_ID
+    network.chainId === ChainId.AVALANCHE_TESTNET_ID ||
+    network.chainId === ChainId.AVALANCHE_LOCAL_ID
 
   const isAvalancheVM = [NetworkVMType.AVM, NetworkVMType.PVM].includes(
     network.vmName
