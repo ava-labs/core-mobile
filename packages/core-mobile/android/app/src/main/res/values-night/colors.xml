@@ -2,13 +2,10 @@
 <resources>
     <color name="dialogTextColor">#FFFFFF</color>
 
-    <!-- Both surfaces are pinned to the app's dark surface ($surfacePrimary =
-         neutral850 #28282E) so every native Material3 surface matches the
-         screen. The formsheet header seam exposes a colorSurfaceContainer*
-         surface (mapped to appSurfaceSecondary) on scroll; with the M3 baseline
-         (#211F26) it showed as a darker band, and neutral800 (#3E3E43) showed
-         as a gray band. Matching #28282E makes that surface blend into the
-         content so the band disappears, no transparency/blur needed. -->
+    <!-- Pin both surfaces to the app's dark surface color #28282E so native
+         Material3 surfaces match the app screen instead of the M3 baseline
+         (#1C1B1F / #211F26). The baseline otherwise bled through the
+         transparent formsheet header on scroll as a darker band. -->
     <color name="appSurfacePrimary">#28282E</color>
     <color name="appSurfaceSecondary">#28282E</color>
 </resources>

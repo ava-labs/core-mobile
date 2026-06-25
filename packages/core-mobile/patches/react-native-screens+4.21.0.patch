@@ -1,5 +1,4 @@
 diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
-index 6874075..1ebe795 100644
 --- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
 +++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
 @@ -2,12 +2,24 @@ package com.swmansion.rnscreens
@@ -28,10 +27,9 @@ index 6874075..1ebe795 100644
       * Handles the layout correction from the child Toolbar.
       */
 diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
-index 0ecc2fc..25ff7fd 100644
 --- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
 +++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
-@@ -142,10 +142,19 @@ open class CustomToolbar(
+@@ -142,10 +142,19 @@
          // We want to handle display cutout always, no matter the HeaderConfig prop values.
          // If there are no cutout displays, we want to apply the additional padding to
          // respect the status bar.
@@ -53,10 +51,9 @@ index 0ecc2fc..25ff7fd 100644
                  max(cutoutInsets.bottom, 0),
              )
 diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
-index 69103b2..30bb03d 100644
 --- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
 +++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
-@@ -295,27 +295,8 @@ class SheetDelegate(
+@@ -295,27 +295,8 @@
      // Otherwise, it shifts the sheet as high as possible, even if it means part of its content
      // will remain hidden behind the keyboard.
      internal fun computeSheetOffsetYWithIMEPresent(keyboardHeight: Int): Int {
@@ -86,7 +83,7 @@ index 69103b2..30bb03d 100644
      }
  
      // This is listener function, not the view's.
-@@ -491,17 +472,8 @@ class SheetDelegate(
+@@ -491,17 +472,8 @@
      }
  
      internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {
@@ -106,180 +103,3 @@ index 69103b2..30bb03d 100644
      }
  
      private fun attachCommonListeners(
-diff --git a/node_modules/react-native-screens/experimental/package.json b/node_modules/react-native-screens/experimental/package.json
-index 84004fa..1405ad1 100644
---- a/node_modules/react-native-screens/experimental/package.json
-+++ b/node_modules/react-native-screens/experimental/package.json
-@@ -1,7 +1,37 @@
- {
-   "main": "../lib/commonjs/experimental/index",
-   "module": "../lib/module/experimental/index",
--  "react-native": "../src/experimental/index",
--  "types": "../lib/typescript/experimental/index"
-+  "react-native": {
-+    "../lib/commonjs/experimental/index": "../src/experimental/index",
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "types": "../lib/typescript/experimental/index",
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify",
-+    "../lib/commonjs/experimental/index.js": "../src/experimental/index"
-+  }
- }
--
-diff --git a/node_modules/react-native-screens/gesture-handler/package.json b/node_modules/react-native-screens/gesture-handler/package.json
-index 282b21b..6d330e5 100644
---- a/node_modules/react-native-screens/gesture-handler/package.json
-+++ b/node_modules/react-native-screens/gesture-handler/package.json
-@@ -1,6 +1,37 @@
- {
-   "main": "../lib/commonjs/gesture-handler/index",
-   "module": "../lib/module/gesture-handler/index",
--  "react-native": "../src/gesture-handler/index",
--  "types": "../lib/typescript/gesture-handler/index"
-+  "react-native": {
-+    "../lib/commonjs/gesture-handler/index": "../src/gesture-handler/index",
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "types": "../lib/typescript/gesture-handler/index",
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify",
-+    "../lib/commonjs/gesture-handler/index.js": "../src/gesture-handler/index"
-+  }
- }
-diff --git a/node_modules/react-native-screens/private/package.json b/node_modules/react-native-screens/private/package.json
-index f7daf06..9b89518 100644
---- a/node_modules/react-native-screens/private/package.json
-+++ b/node_modules/react-native-screens/private/package.json
-@@ -1,6 +1,37 @@
- {
-   "main": "../lib/commonjs/private/index",
-   "module": "../lib/module/private/index",
--  "react-native": "../src/private/index",
--  "types": "../lib/typescript/private/index"
-+  "react-native": {
-+    "../lib/commonjs/private/index": "../src/private/index",
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "types": "../lib/typescript/private/index",
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify",
-+    "../lib/commonjs/private/index.js": "../src/private/index"
-+  }
- }
-diff --git a/node_modules/react-native-screens/reanimated/package.json b/node_modules/react-native-screens/reanimated/package.json
-index 55fece0..5c4158e 100644
---- a/node_modules/react-native-screens/reanimated/package.json
-+++ b/node_modules/react-native-screens/reanimated/package.json
-@@ -1,6 +1,37 @@
- {
-   "main": "../lib/commonjs/reanimated/index",
-   "module": "../lib/module/reanimated/index",
--  "react-native": "../src/reanimated/index",
--  "types": "../lib/typescript/reanimated/index.d.ts"
-+  "react-native": {
-+    "../lib/commonjs/reanimated/index": "../src/reanimated/index",
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "types": "../lib/typescript/reanimated/index.d.ts",
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify",
-+    "../lib/commonjs/reanimated/index.js": "../src/reanimated/index"
-+  }
- }
