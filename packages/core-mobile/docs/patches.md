@@ -121,13 +121,17 @@ You can wrap a toast container with a custom wrapper.
 
 This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
 
-### react-native+0.81.5.patch
+### react-native+0.85.3.patch
 
-On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part of the Liquid Glass redesign). This creates an unwanted gradient overlay on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs and scrolling back up. The patch hides `topEdgeEffect` on all scroll views on iOS 26+ via the official `isHidden` API. Gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
+On iOS 26, `UIScrollEdgeEffect` (part of the Liquid Glass redesign) draws a translucent blur/gradient at scroll view edges. This shows as an unwanted gradient washout on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs / returning from a pushed screen and scrolling back up. The patch hides ALL FOUR edge effects (top/bottom/left/right) on every scroll view, gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
 
-1/ RCTEnhancedScrollView.mm — hides `topEdgeEffect` at scroll view creation (`initWithFrame:`)
+1/ RCTEnhancedScrollView.mm — hides all four edge effects at scroll view creation (`initWithFrame:`), AND re-hides them in a `layoutSubviews` override (UIKit re-enables the effect after appearance/visibility changes such as tab switch / push-return, so re-applying every layout pass is required).
 
-2/ RCTScrollViewComponentView.mm — re-hides `topEdgeEffect` in `didMoveToWindow` when the scroll view becomes visible again (e.g. after tab switching, where iOS may re-enable the effect)
+2/ RCTScrollViewComponentView.mm — `_disableTopEdgeEffectIOS26` hides all four edge effects on the underlying scroll view, called from `didMoveToWindow` when the view becomes visible again.
+
+NOTE: This requires React Native core to be built from source (`RCT_USE_PREBUILT_RNCORE=0` in the Podfile). RN 0.85 defaults to a prebuilt `React.xcframework`, in which these `.mm` sources are NOT compiled, making the patch inert.
+
+NOTE: The upstream/main fix (facebook/react-native#55037) hides only `topEdgeEffect`; this strengthened version (all four edges + `layoutSubviews`) is what we verified fixes the bug. It may be possible to simplify back to the top-edge-only version now that it actually compiles — to be decided.
 
 - https://github.com/facebook/react-native/issues/54181
 - https://github.com/facebook/react-native/pull/55037
