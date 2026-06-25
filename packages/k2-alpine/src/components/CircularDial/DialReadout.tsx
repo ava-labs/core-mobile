@@ -304,22 +304,16 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
 
     const handleBlur = useCallback(() => {
       if (draft !== null) {
+        // Commit the draft (empty → 0 via commitDraftText) rather than
+        // reverting to `value`, so a cleared field can reach 0 (CP-14578).
         const committed = commitDraftText(draft, max)
-        if (committed !== null) {
-          progressSv.value = valueToProgress(committed, max)
-          onChange(committed)
-          onCommit(committed)
-        } else {
-          // Empty / invalid draft: revert. The input falls back to
-          // showing `value` via `currentText`; reset `progressSv`
-          // here so the track lands on the same value instead of
-          // sitting at 0 from the cleared draft.
-          progressSv.value = valueToProgress(clamp(value, 0, max), max)
-        }
+        progressSv.value = valueToProgress(committed, max)
+        onChange(committed)
+        onCommit(committed)
       }
       isEditingSv.value = false
       setDraft(null)
-    }, [draft, progressSv, onChange, onCommit, max, value, isEditingSv])
+    }, [draft, progressSv, onChange, onCommit, max, isEditingSv])
 
     // While editing, roll external `value` changes into the draft
     // (covers drag/preset-while-editing). Skip when the draft
