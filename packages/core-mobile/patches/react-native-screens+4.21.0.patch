@@ -1,3 +1,31 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomAppBarLayout.kt
+@@ -2,12 +2,24 @@ package com.swmansion.rnscreens
+ 
+ import android.annotation.SuppressLint
+ import android.content.Context
++import android.graphics.Color
+ import com.google.android.material.appbar.AppBarLayout
+ 
+ @SuppressLint("ViewConstructor")
+ class CustomAppBarLayout(
+     context: Context,
+ ) : AppBarLayout(context) {
++    init {
++        // PATCH (core-mobile): disable Material3 lift-on-scroll. When content
++        // scrolls under the bar, AppBarLayout repaints itself with
++        // colorSurfaceContainer; on our transparent formsheet headers that
++        // surface shows as a darker band over the content and draws on top of
++        // the sheet grabber. We always supply our own headerBackground, so this
++        // auto-lift surface is never wanted — keep the bar transparent.
++        isLiftOnScroll = false
++        setBackgroundColor(Color.TRANSPARENT)
++    }
++
+     /**
+      * Handles the layout correction from the child Toolbar.
+      */
 diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
 --- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
 +++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt

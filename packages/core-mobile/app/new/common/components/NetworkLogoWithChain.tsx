@@ -12,7 +12,8 @@ export const NetworkLogoWithChain = ({
   outerBorderColor,
   showChainLogo = true,
   chainLogoSize,
-  chainLogoStyle
+  chainLogoStyle,
+  invertChainLogo = false
 }: {
   network: Network
   networkSize?: number
@@ -20,12 +21,20 @@ export const NetworkLogoWithChain = ({
   showChainLogo?: boolean
   chainLogoSize?: number
   chainLogoStyle?: ViewStyle
+  /**
+   * Forces the dark variant of the chain badge (X/P/XP) regardless of the
+   * current theme — useful when the parent surface is dark (e.g. a selected
+   * chip) and we want the badge to flip from dark-on-light to light-on-dark
+   * for contrast.
+   */
+  invertChainLogo?: boolean
 }): React.JSX.Element => {
   const { theme } = useTheme()
+  const useDarkChainLogo = invertChainLogo ? !theme.isDark : theme.isDark
 
   const renderChainLogo = (): React.JSX.Element | undefined => {
     if (isXPChain(network.chainId)) {
-      return theme.isDark ? (
+      return useDarkChainLogo ? (
         <Icons.TokenLogos.AVAX_XP_DARK
           testID="network_logo__xp_chain"
           width={chainLogoSize ?? 16}
@@ -41,7 +50,7 @@ export const NetworkLogoWithChain = ({
     }
 
     if (isPChain(network.chainId)) {
-      return theme.isDark ? (
+      return useDarkChainLogo ? (
         <Icons.TokenLogos.AVAX_P_DARK
           testID="network_logo__p_chain"
           width={chainLogoSize ?? 12}
@@ -57,7 +66,7 @@ export const NetworkLogoWithChain = ({
     }
 
     if (isXChain(network.chainId)) {
-      return theme.isDark ? (
+      return useDarkChainLogo ? (
         <Icons.TokenLogos.AVAX_X_DARK
           testID="network_logo__x_chain"
           width={chainLogoSize ?? 12}

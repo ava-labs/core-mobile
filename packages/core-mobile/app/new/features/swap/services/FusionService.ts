@@ -1,9 +1,11 @@
 import type {
-  BridgeableUiAsset,
+  AvalancheCctInitializer,
   CompletedTransfer,
   FailedTransfer,
   GasSettings,
   GetBridgeableAssetsProps,
+  GetBridgeableAssetsResult,
+  RecurringNamespace,
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
 import {
@@ -31,7 +33,9 @@ import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
 import { isConcludedTransfer } from '../utils/transferStatus'
+import { fetchMarkrTargetChainAssets } from './fetchMarkrTargetChainAssets'
 import type {
+  FusionCctDependencies,
   FusionConfig,
   FusionServiceFlags,
   FusionSigners,
@@ -73,6 +77,10 @@ class FusionService implements IFusionService {
       services.push(ServiceType.AVALANCHE_EVM)
     }
 
+    if (featureFlags['fusion-avalanche-cct']) {
+      services.push(ServiceType.AVALANCHE_CCT)
+    }
+
     if (featureFlags['fusion-lombard-btc-to-btcb']) {
       services.push(ServiceType.LOMBARD_BTC_TO_BTCB)
     }
@@ -91,12 +99,14 @@ class FusionService implements IFusionService {
     btcFunctions,
     enabledServices,
     signers,
-    disableCrossChainSwaps
+    disableCrossChainSwaps,
+    cctDependencies
   }: {
     btcFunctions: BitcoinFunctions
     enabledServices: ServiceType[]
     signers: FusionSigners
     disableCrossChainSwaps: boolean
+    cctDependencies?: FusionCctDependencies
   }): ServiceInitializer[] {
     const initializers: ServiceInitializer[] = []
     for (const serviceType of enabledServices) {
@@ -107,7 +117,7 @@ class FusionService implements IFusionService {
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
             markrAppId: MARKR_EVM_PARTNER_ID,
-            getTargetChainAssets: () => Promise.resolve([]),
+            getTargetChainAssets: fetchMarkrTargetChainAssets,
             disableCrossChainSwaps
             // eslint-disable-next-line prettier/prettier
           } satisfies MarkrServiceInitializer)
@@ -118,6 +128,16 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm
           } satisfies EvmServiceInitializer)
+          break
+
+        case ServiceType.AVALANCHE_CCT:
+          if (!cctDependencies) {
+            throw fusionErrors.cctDependenciesMissing()
+          }
+          initializers.push({
+            type: serviceType,
+            ...cctDependencies
+          } satisfies AvalancheCctInitializer)
           break
 
         case ServiceType.LOMBARD_BTC_TO_BTCB:
@@ -149,18 +169,21 @@ class FusionService implements IFusionService {
   async init({
     bitcoinProvider,
     config,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     config: FusionConfig
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void> {
     try {
       const initializers = this.getServiceInitializers({
         btcFunctions: bitcoinProvider,
         enabledServices: config.enabledServices,
         signers,
-        disableCrossChainSwaps: config.disableCrossChainSwaps ?? false
+        disableCrossChainSwaps: config.disableCrossChainSwaps ?? false,
+        cctDependencies
       })
 
       // Ensure at least one service is enabled
@@ -208,13 +231,15 @@ class FusionService implements IFusionService {
     fetch,
     environment,
     featureFlags,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     fetch: Fetch
     environment: Environment
     featureFlags: FusionServiceFlags
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void> {
     const enabledServices = this.getEnabledServices(featureFlags)
     const disableCrossChainSwaps =
@@ -223,7 +248,8 @@ class FusionService implements IFusionService {
     return this.init({
       bitcoinProvider,
       config: { environment, enabledServices, fetch, disableCrossChainSwaps },
-      signers
+      signers,
+      cctDependencies
     })
   }
 
@@ -258,17 +284,38 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Returns assets bridgeable to the target chain for a given source asset and chain.
+   * Returns assets the user can swap to on the target chain for a given source asset and chain.
    * The MARKR service internally calls `getTargetChainAssets` and filters by supported routes.
+   *
+   * SDK 0.17.0 made this paginated — callers receive `{ assets, meta }` and pass `page` to advance.
    */
   async getBridgeableAssets(
     props: GetBridgeableAssetsProps
-  ): Promise<readonly BridgeableUiAsset[]> {
+  ): Promise<GetBridgeableAssetsResult> {
     try {
       return await this.transferManager.getBridgeableAssets(props)
     } catch (error) {
       Logger.error('[FusionService] getBridgeableAssets failed', error)
       throw error
+    }
+  }
+
+  /**
+   * Returns the manager-level `recurring` namespace, or `null` when the
+   * TransferManager hasn't been initialized yet (`init()` never called, or
+   * thrown during init). The namespace itself is always present once the
+   * manager exists — fusion-sdk hoisted `recurring` from the Markr service
+   * to the manager (CP-14409), so we no longer reach in via `getService`.
+   * Consumers in `app/new/features/recurringSwap/` use this to call `quote`,
+   * `prepareFirstFill`, `listOrders`, `cancelOrder`, `getRouterAddress`,
+   * `checkEligibility`, `getRecurringChainInfo`.
+   */
+  get markrRecurring(): RecurringNamespace | null {
+    try {
+      return this.transferManager.recurring
+    } catch (error) {
+      Logger.error('[FusionService] markrRecurring access failed', error)
+      return null
     }
   }
 

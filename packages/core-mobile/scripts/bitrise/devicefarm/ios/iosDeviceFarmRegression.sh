@@ -36,12 +36,8 @@ export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM="ios"
 export WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 
-# 4. Extract only needed vars from env file
-if [ -f "$CORE_MOBILE_DIR/.env.production.e2e" ]; then
-  E2E_MNEMONIC=$(grep '^E2E_MNEMONIC=' "$CORE_MOBILE_DIR/.env.production.e2e" | cut -d'=' -f2-)
-  E2E_METAMASK_MNEMONIC=$(grep '^E2E_METAMASK_MNEMONIC=' "$CORE_MOBILE_DIR/.env.production.e2e" | cut -d'=' -f2-)
-  export E2E_MNEMONIC E2E_METAMASK_MNEMONIC
-fi
+# 4. Load all E2E env vars from shared helper
+source "$_SCRIPT_DIR/../load-e2e-env.sh"
 
 # 5. Finally trigger test run
 node scripts/devicefarm/test.js

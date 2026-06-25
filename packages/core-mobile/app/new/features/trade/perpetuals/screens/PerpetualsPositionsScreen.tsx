@@ -35,6 +35,7 @@ import {
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
 import { PositionCard } from '../components/PositionCard'
+import { usePositionActions } from '../hooks/usePositionActions'
 import { MY_POSITIONS_MOCK, POSITIONS_SUMMARY_MOCK } from '../mocks'
 import { Position } from '../types'
 
@@ -178,13 +179,22 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
     ]
   )
 
+  const positionActions = usePositionActions()
+
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item, index }) => (
       <View sx={{ paddingHorizontal: 16, marginTop: index === 0 ? 0 : 10 }}>
-        <PositionCard position={item} fullWidth expandable />
+        <PositionCard
+          position={item}
+          fullWidth
+          expandable
+          onMarketClose={() => positionActions.marketClose(item)}
+          onLimitClose={() => positionActions.limitClose(item)}
+          onManage={() => positionActions.manage(item)}
+        />
       </View>
     ),
-    []
+    [positionActions]
   )
 
   const keyExtractor = useCallback((item: Position) => item.id, [])

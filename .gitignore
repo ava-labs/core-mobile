@@ -18,3 +18,4 @@ packages/*/coverage/
 /packages/core-mobile/boosts/
 
 /docs/local/
+/.codex/config.toml

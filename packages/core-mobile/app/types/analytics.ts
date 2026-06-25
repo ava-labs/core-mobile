@@ -121,10 +121,23 @@ export type AnalyticsEvents = {
   StakeClaimFail: undefined
   StakeClaimSuccess: undefined
   StakeCountStakes: { active: number; history: number; total: number }
-  StakeDelegationSuccess: { isAdvanced: boolean }
-  StakeDelegationFail: { isAdvanced: boolean }
+  StakeDelegationSuccess: {
+    isAdvanced: boolean
+    /**
+     * Convenience fee paid on this stake, in AVAX. Present whenever the
+     * flow applied a fee (regardless of flow — Fast Stake today, the
+     * delegate flow once it's wired up). Absent for flows that don't
+     * apply a fee at all, so analytics can distinguish "fee not paid"
+     * from "fee not applicable".
+     */
+    convenienceFeeAvax?: number
+  }
+  StakeDelegationFail: {
+    isAdvanced: boolean
+    convenienceFeeAvax?: number
+  }
   StakeIssueClaim: undefined
-  StakeIssueDelegation: undefined
+  StakeIssueDelegation: undefined | { convenienceFeeAvax: number }
   StakeOpened: undefined
   StakeOpenDurationSelect: undefined
   StakeTransactionStarted: {
@@ -471,6 +484,41 @@ export type AnalyticsEvents = {
   solana_signAndSendTransaction_failed: { encrypted: DappTxEventPayload }
   solana_signTransaction_approved: {
     encrypted: Omit<DappTxEventPayload, 'txHash'>
+  }
+
+  // RECURRING SWAPS (DCA)
+  RecurringSwapScheduled: {
+    chainId: number
+    encrypted: {
+      scheduleUuid: string
+      fromTokenSymbol: string
+      toTokenSymbol: string
+      amountPerOrder: string
+      // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+      // (`-1`) for Unlimited schedules, else a finite count.
+      // Dashboards filter on `numberOfOrders === -1` for the unlimited
+      // cohort — no separate `isUnlimited` boolean is emitted.
+      numberOfOrders: number
+      intervalSeconds: number
+    }
+  }
+  RecurringSwapCancelledByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
+  }
+  RecurringSwapPausedByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
+  }
+  RecurringSwapResumedByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
   }
 
   // NEST EGG CAMPAIGN

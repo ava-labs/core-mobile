@@ -1,5 +1,6 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
+  ActivityIndicator,
   GroupList,
   GroupListItem,
   Icons,
@@ -18,10 +19,31 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
+import type { QuoteFees } from '@avalabs/fusion-sdk'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useQuoteFees } from '../hooks/useQuoteFees'
 import { AUTO_QUOTE_ID } from '../consts'
 import type { Quote } from '../types'
+
+/**
+ * Communicates the state of the recurring-swap "schedule fee" line item.
+ *
+ *   undefined    — Not in recurring mode, or the fee is already loaded into
+ *                  `extraFees` (renders normally as part of the breakdown).
+ *   'set-inputs' — User has recurring on but hasn't picked frequency/orders
+ *                  (or hasn't typed an amount), so the schedule fee can't
+ *                  be quoted yet.
+ *   'updating'   — Inputs are complete and a fresh quote is in flight.
+ *                  Renders a small spinner on the row + an "updating…" hint
+ *                  in the tooltip body.
+ */
+export type SchedulePromptType = 'set-inputs' | 'updating' | undefined
+
+const SCHEDULE_FEE_LABEL = 'Schedule fee'
+const SCHEDULE_PROMPT_COPY: Record<NonNullable<SchedulePromptType>, string> = {
+  'set-inputs': `${SCHEDULE_FEE_LABEL}: set frequency & orders to calculate`,
+  updating: `${SCHEDULE_FEE_LABEL}: updating…`
+}
 
 export const SwapPricingDetailsScreen = ({
   bestQuote,
@@ -30,7 +52,9 @@ export const SwapPricingDetailsScreen = ({
   toToken,
   selectedQuote,
   allQuotes,
-  selectQuoteById
+  selectQuoteById,
+  extraFees,
+  schedulePromptType
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
@@ -39,6 +63,15 @@ export const SwapPricingDetailsScreen = ({
   selectedQuote: Quote | null
   allQuotes: Quote[]
   selectQuoteById: (quoteId: string | null) => void
+  /** Additional fees not present on `selectedQuote.fees`. The recurring-swap
+   *  schedule fee lives on the recurring quote (not the active swap quote),
+   *  so the route layer threads it in here to surface it as a line item in
+   *  the "Fees" tooltip. */
+  extraFees?: QuoteFees
+  /** When set, augments the Fees row to communicate that the recurring
+   *  schedule fee isn't yet computable (`'set-inputs'`) or is currently
+   *  being recomputed (`'updating'`). See {@link SchedulePromptType}. */
+  schedulePromptType?: SchedulePromptType
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -47,7 +80,12 @@ export const SwapPricingDetailsScreen = ({
   const [accordionResetKey, setAccordionResetKey] = useState(0)
 
   const { formatCurrency } = useFormatCurrency()
-  const totalFees = useQuoteFees(selectedQuote?.fees)
+  const mergedFees = useMemo<QuoteFees | undefined>(() => {
+    const base = selectedQuote?.fees
+    if (!extraFees?.length) return base
+    return base ? ([...base, ...extraFees] as QuoteFees) : extraFees
+  }, [selectedQuote?.fees, extraFees])
+  const totalFees = useQuoteFees(mergedFees)
 
   const formatInCurrency = useCallback(
     (
@@ -205,9 +243,15 @@ export const SwapPricingDetailsScreen = ({
       }
     ]
 
-    if (totalFees !== undefined) {
-      const breakdownDescription = totalFees.breakdown
-        .map(item =>
+    // Schedule fee is unresolved (inputs missing or currently fetching) —
+    // surface a row even when there are no other fees to show, so the user
+    // sees the state instead of an empty Pricing-details modal.
+    const hasFeeData = totalFees !== undefined
+    const hasPrompt = schedulePromptType !== undefined
+    if (!hasFeeData && !hasPrompt) return items
+
+    const breakdownLines = hasFeeData
+      ? totalFees.breakdown.map(item =>
           item.fiatAmount != null
             ? `${item.name}: ${formatCurrency({
                 amount: item.fiatAmount,
@@ -215,22 +259,50 @@ export const SwapPricingDetailsScreen = ({
               })}`
             : `${item.name}: ${item.tokenAmount}`
         )
-        .join('\n')
+      : []
+    if (hasPrompt) {
+      // When loaded, the schedule fee is already in `breakdown` via
+      // `extraFees`. The prompt only fires for missing-inputs/updating.
+      breakdownLines.push(SCHEDULE_PROMPT_COPY[schedulePromptType])
+    }
+    const breakdownDescription = breakdownLines.join('\n')
 
-      items.push({
-        title: totalFees.breakdown.length === 1 ? 'Fee' : 'Fees',
-        rightIcon: (
-          <Tooltip title="Fee Breakdown" description={breakdownDescription} />
-        ),
-        value: formatCurrency({
+    const isUpdating = schedulePromptType === 'updating'
+    const totalLabel = hasFeeData
+      ? formatCurrency({
           amount: totalFees.total,
           showLessThanThreshold: true
         })
-      })
-    }
+      : UNKNOWN_AMOUNT
+    const valueNode =
+      isUpdating || schedulePromptType === 'set-inputs' ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text variant="body1" sx={{ color: '$textSecondary' }}>
+            {totalLabel}
+          </Text>
+          {isUpdating && (
+            <ActivityIndicator
+              size="small"
+              testID="schedule_fee_updating_spinner"
+            />
+          )}
+        </View>
+      ) : (
+        totalLabel
+      )
+
+    const breakdownLineCount =
+      (hasFeeData ? totalFees.breakdown.length : 0) + (hasPrompt ? 1 : 0)
+    items.push({
+      title: breakdownLineCount === 1 ? 'Fee' : 'Fees',
+      rightIcon: (
+        <Tooltip title="Fee Breakdown" description={breakdownDescription} />
+      ),
+      value: valueNode
+    })
 
     return items
-  }, [fromToken, toToken, rate, totalFees, formatCurrency])
+  }, [fromToken, toToken, rate, totalFees, formatCurrency, schedulePromptType])
 
   const providerData = useMemo(() => {
     const items: GroupListItem[] = []

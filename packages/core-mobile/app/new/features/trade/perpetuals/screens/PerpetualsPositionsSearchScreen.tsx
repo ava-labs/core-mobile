@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
+import { usePositionActions } from '../hooks/usePositionActions'
 import { MY_POSITIONS_MOCK } from '../mocks'
 import { Position } from '../types'
 
@@ -12,7 +13,7 @@ const cactusIcon = require('../../../../assets/icons/cactus.png')
 
 export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
-
+  const positionActions = usePositionActions()
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
@@ -38,10 +39,17 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
   const renderItem: ListRenderItem<Position> = useCallback(
     ({ item }) => (
       <View sx={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-        <PositionCard position={item} fullWidth expandable />
+        <PositionCard
+          position={item}
+          fullWidth
+          expandable
+          onManage={() => positionActions.manage(item)}
+          onMarketClose={() => positionActions.marketClose(item)}
+          onLimitClose={() => positionActions.limitClose(item)}
+        />
       </View>
     ),
-    []
+    [positionActions]
   )
 
   const keyExtractor = useCallback((item: Position) => item.id, [])

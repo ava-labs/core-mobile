@@ -88,6 +88,8 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           <TokenAmountRow
             symbol={display.fromToken}
             logoUri={display.fromTokenLogoUri}
+            networkLogoUri={display.fromNetworkLogoUri}
+            networkChainId={display.fromNetworkChainId}
             amount={display.fromAmount}
             amountInCurrency={display.fromAmountInCurrency}
             isDebit={true}
@@ -96,6 +98,8 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           <TokenAmountRow
             symbol={display.toToken}
             logoUri={display.toTokenLogoUri}
+            networkLogoUri={display.toNetworkLogoUri}
+            networkChainId={display.toNetworkChainId}
             amount={display.toAmount}
             amountInCurrency={display.toAmountInCurrency}
             isDebit={false}
@@ -107,6 +111,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           directionLabel="From"
           networkName={display.fromNetwork}
           networkLogoUri={display.fromNetworkLogoUri}
+          networkChainId={display.fromNetworkChainId}
           status={display.fromChainStatus}
           confirmations={display.fromConfirmations}
         />
@@ -116,6 +121,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           directionLabel="To"
           networkName={display.toNetwork}
           networkLogoUri={display.toNetworkLogoUri}
+          networkChainId={display.toNetworkChainId}
           status={display.toChainStatus}
           note={display.refundNote}
           confirmations={display.toConfirmations}

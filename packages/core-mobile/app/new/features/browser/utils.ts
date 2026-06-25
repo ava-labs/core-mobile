@@ -107,6 +107,42 @@ export const removeTrailingSlash = (url: string): string => {
   return url.replace(/\/$/, '')
 }
 
+/**
+ * Decides whether a WebView `onNavigationStateChange` event represents an
+ * in-page URL change that is safe to surface to the user-facing URL bar
+ * immediately — i.e. a same-origin SPA `pushState`/`replaceState`.
+ *
+ * Cross-origin URL changes must NOT be surfaced from this event because the
+ * event fires off iOS WKWebView's `didStartProvisionalNavigation` / Android
+ * `doUpdateVisitedHistory`, which both report the destination URL *before*
+ * any response has been received. A page can exploit that by doing
+ * `location.href = 'https://google.com:9090'` (unresponsive port) — the
+ * WebView reports the new URL but the attacker's DOM is still what's
+ * rendered, so the URL bar gets spoofed. The `loading` field is unreliable
+ * here too: on iOS it reflects `_webView.loading` at the moment policy is
+ * decided, which is `false` for a stable page about to navigate.
+ *
+ * Cross-origin URL changes are committed via the WebView's `onLoad` event
+ * instead — that one only fires after `didFinishNavigation` (iOS) /
+ * `onPageFinished` (Android), i.e. the URL has actually rendered.
+ */
+export function isSameOriginSpaNavigation({
+  nextUrl,
+  lastSyncedUrl
+}: {
+  nextUrl: string
+  lastSyncedUrl: string
+}): boolean {
+  if (!nextUrl || nextUrl.startsWith('about:')) return false
+  if (lastSyncedUrl === nextUrl) return false
+  if (!lastSyncedUrl) return false
+  try {
+    return new URL(lastSyncedUrl).origin === new URL(nextUrl).origin
+  } catch {
+    return false
+  }
+}
+
 export const isBase64Png = (imageData: string): boolean => {
   return imageData.startsWith('data:image/png;base64')
 }

@@ -36,6 +36,8 @@ import IconAlertError from '../../assets/icons/alert_error.svg'
 import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
 import IconElectricBolt from '../../assets/icons/electric_bolt.svg'
+import IconBolt from '../../assets/icons/bolt.svg'
+import IconDatabaseSearch from '../../assets/icons/database_search.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutbound from '../../assets/icons/outbound_filled.svg'
@@ -47,6 +49,7 @@ import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
 import IconSyncV2 from '../../assets/icons/sync_v2.svg'
+import IconRotateRight from '../../assets/icons/rotate_right.svg'
 import IconEllipse from '../../assets/icons/ellipse.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
@@ -272,6 +275,7 @@ export const Icons = {
   Notification: {
     Sync: IconSync,
     SyncV2: IconSyncV2,
+    RotateRight: IconRotateRight,
     Ellipse: IconEllipse
   },
   Social: {
@@ -308,6 +312,8 @@ export const Icons = {
     Connect: IconWalletConnect,
     Compass: IconCompass,
     ElectricBolt: IconElectricBolt,
+    Bolt: IconBolt,
+    DatabaseSearch: IconDatabaseSearch,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     RedExclamation: IconRedExclamation,

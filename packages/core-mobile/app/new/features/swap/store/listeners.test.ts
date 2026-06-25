@@ -6,6 +6,7 @@ import {
   selectIsFusionEnabled,
   selectIsFusionMarkrEnabled,
   selectIsFusionAvalancheEvmEnabled,
+  selectIsFusionAvalancheCctEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
   selectIsFusionLombardBtcbToBtcEnabled,
   selectFusionDisableCrossChainSwaps
@@ -45,6 +46,7 @@ jest.mock('store/posthog/slice', () => ({
   selectIsFusionEnabled: jest.fn(),
   selectIsFusionMarkrEnabled: jest.fn(),
   selectIsFusionAvalancheEvmEnabled: jest.fn(),
+  selectIsFusionAvalancheCctEnabled: jest.fn(),
   selectIsFusionLombardBtcToBtcbEnabled: jest.fn(),
   selectIsFusionLombardBtcbToBtcEnabled: jest.fn(),
   selectFusionDisableCrossChainSwaps: jest.fn(),
@@ -122,6 +124,8 @@ const mockSelectIsFusionEnabled = selectIsFusionEnabled as jest.Mock
 const mockSelectIsFusionMarkrEnabled = selectIsFusionMarkrEnabled as jest.Mock
 const mockSelectIsFusionAvalancheEvmEnabled =
   selectIsFusionAvalancheEvmEnabled as jest.Mock
+const mockSelectIsFusionAvalancheCctEnabled =
+  selectIsFusionAvalancheCctEnabled as jest.Mock
 const mockSelectIsFusionLombardBtcToBtcbEnabled =
   selectIsFusionLombardBtcToBtcbEnabled as jest.Mock
 const mockSelectIsFusionLombardBtcbToBtcEnabled =
@@ -157,6 +161,7 @@ describe('Fusion listeners', () => {
     mockSelectIsFusionEnabled.mockReturnValue(true)
     mockSelectIsFusionMarkrEnabled.mockReturnValue(false)
     mockSelectIsFusionAvalancheEvmEnabled.mockReturnValue(false)
+    mockSelectIsFusionAvalancheCctEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcToBtcbEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcbToBtcEnabled.mockReturnValue(false)
     mockSelectFusionDisableCrossChainSwaps.mockReturnValue(false)
@@ -211,6 +216,7 @@ describe('Fusion listeners', () => {
           featureFlags: {
             'fusion-markr': true,
             'fusion-avalanche-evm': true,
+            'fusion-avalanche-cct': false,
             'fusion-lombard-btc-to-btcb': false,
             'fusion-lombard-btcb-to-btc': false,
             'fusion-disable-cross-chain-swaps': false

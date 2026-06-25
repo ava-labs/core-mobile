@@ -55,6 +55,10 @@ When Android `WindowInsets` reports `0` for the top system bar inset (common on 
 - `computeSheetOffsetYWithIMEPresent`: patched to always return `0` so the FormSheet does not shift upward when the keyboard appears. Keyboard positioning is handled by `react-native-keyboard-controller` at the content level instead.
 - `handleKeyboardInsetsProgress`: no-op'd to prevent the FormSheet from translating based on keyboard inset changes, avoiding conflicts with `react-native-keyboard-controller`.
 
+3/ CustomAppBarLayout.kt
+
+Disables Material3 lift-on-scroll on the native header's `AppBarLayout` (`init { isLiftOnScroll = false; setBackgroundColor(Color.TRANSPARENT) }`). By default, when content scrolls under the bar, `AppBarLayout` repaints itself with `colorSurfaceContainer` (the "lifted" state). On our transparent formsheet headers (e.g. the swap `ListScreenV2` "Select a token" picker, in dark mode) that opaque surface appeared as a darker band fading in over the header on scroll, and it drew on top of the sheet grabber. We always supply our own `headerBackground` (via `useFadingHeaderNavigation`), so the auto-lift surface is never wanted — keeping the bar transparent removes the band and stops it covering the grabber.
+
 ### react-native-reanimated+4.2.1.patch
 
 added isActive prop for useAnimatedSensor
@@ -128,3 +132,17 @@ On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part 
 - https://github.com/facebook/react-native/issues/54181
 - https://github.com/facebook/react-native/pull/55037
 - https://developer.apple.com/documentation/uikit/uiscrolledgeeffect
+
+### @shopify+flash-list+2.3.0.patch
+
+Fixes a sticky header (`stickyHeaderIndices`) at index 0 disappearing on iOS top overscroll. This affects all `ListScreenV2` modals, which use `stickyHeaderConfig={{ hideRelatedCell: true }}`.
+
+`StickyHeaders` only renders the overlay while `getLayout(stickyIndex).y (=0) <= scrollOffset + stickyHeaderOffset`. On an iOS top overscroll `scrollOffset` goes negative, so the binary search returns `-1`, the overlay returns `null`, and because `hideRelatedCell` also hides the in-flow cell, nothing renders — leaving an empty void where the header was. (Android uses stretch overscroll and keeps the offset `>= 0`, so it never hits this; the patch is a no-op there.)
+
+`dist/recyclerview/components/StickyHeaders.js`:
+
+1. Clamp the sticky-index lookup to `Math.max(0, getLastScrollOffset())` so index 0 stays the current sticky during overscroll and the overlay never nulls out. Only affects index selection; the push animation still uses `scrollY`.
+
+2. Add an `overscrollTranslateY` (`scrollY.interpolate([-100000, 0] → [100000, 0]`, clamped) as a second `translateY` transform on the overlay, so when `scrollY` is negative the pinned header rubber-bands down 1:1 with the content instead of staying rigidly fixed at the top. Clamps to `0` for normal scroll.
+
+Re-check on any `@shopify/flash-list` version bump (edits target `dist/`, since the package `main` is `dist/index.js`).

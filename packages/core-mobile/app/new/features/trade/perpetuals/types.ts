@@ -7,6 +7,8 @@ export type Position = {
   symbol: string
   side: PositionSide
   leverage: number
+  /** Position size in tokens (base units). */
+  size: number
   price: number
   pnl: number
   pnlStatus: PriceChangeStatus

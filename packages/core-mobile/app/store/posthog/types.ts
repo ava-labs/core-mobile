@@ -50,12 +50,16 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC]: false,
   [FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]: false,
   [FeatureGates.FUSION_QUICK_SWAPS]: false,
+  // Recurring swaps (DCA) kill-switch. `false` = blocked → toggle hidden, banner
+  // hidden, management screen 404s. Mirrors the SWAP_SOLANA pattern.
+  [FeatureGates.SWAP_RECURRING]: false,
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
   [FeatureGates.INJECTED_PROVIDER]: false,
   [FeatureGates.PREDICTIONS]: false,
   [FeatureGates.PERPETUALS]: false,
   [FeatureGates.PRICE_CHART]: false,
-  [FeatureGates.FAST_STAKE_ENABLED]: false
+  [FeatureGates.FAST_STAKE_ENABLED]: false,
+  [FeatureGates.FAST_STAKE_FEE_ENABLED]: false
 }
 
 export const initialState = {

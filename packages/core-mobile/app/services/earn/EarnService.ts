@@ -266,7 +266,8 @@ class EarnService {
     feeState,
     pFeeAdjustmentThreshold,
     xpAddressDictionary,
-    xpAddresses
+    xpAddresses,
+    additionalOutputs
   }: AddDelegatorTransactionProps & {
     walletId: string
     walletType: WalletType
@@ -288,7 +289,8 @@ class EarnService {
       stakeAmountInNAvax: stakeAmountNanoAvax,
       feeState,
       pFeeAdjustmentThreshold,
-      xpAddresses
+      xpAddresses,
+      additionalOutputs
     })
 
     const signedTxJson = await WalletService.sign({

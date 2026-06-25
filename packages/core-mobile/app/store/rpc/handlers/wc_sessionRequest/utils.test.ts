@@ -131,7 +131,16 @@ describe('isCoreDomain', () => {
       'https://av-la.github.io',
       'chrome-extension://dnoiacbfkodekidupaiagaljpbhaedmd/popup.html#/home', // wrong extension id
       'https://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home', // wrong protocol
-      'http://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home' // wrong protocol
+      'http://dnoiacbfkodekgkjbpoagaljpbhaedmd/popup.html#/home', // wrong protocol
+      // Unanchored-regex bypass attempts: attacker URL embeds the preview-deploy pattern in path/query/userinfo/subdomain
+      'https://evil.com/?q=https://a-core-web-dev.avalabs.workers.dev',
+      'https://evil.com/a-core-web-dev.avalabs.workers.dev',
+      'https://a-core-web-dev.avalabs.workers.dev.evil.com',
+      'https://a-core-web-dev.avalabs.workers.dev@evil.com',
+      // Non-https core hostnames should not be trusted
+      'http://core.app',
+      'http://staging.core.app',
+      'http://a-core-web-dev.avalabs.workers.dev'
     ]
 
     for (const url of urls) {

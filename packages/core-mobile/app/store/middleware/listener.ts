@@ -2,6 +2,7 @@ import { addListener, createListenerMiddleware } from '@reduxjs/toolkit'
 import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
+import { addPermissionsListeners } from 'store/permissions/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
@@ -20,6 +21,7 @@ import { addBranchListeners } from 'store/branch/listener'
 // Nest Egg disabled (CP-14058) — see addNestEggListeners call below
 // import { addNestEggListeners } from 'store/nestEgg/listeners'
 import { addFusionListeners } from 'new/features/swap/store/listeners'
+import { addRecurringSwapListeners } from 'new/features/recurringSwap/store/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -35,6 +37,8 @@ addAppListeners(startListening)
 addBalanceListeners(startListening)
 
 addAccountListeners(startListening)
+
+addPermissionsListeners(startListening)
 
 addNetworkListeners(startListening)
 
@@ -68,6 +72,8 @@ addBranchListeners(startListening)
 // addNestEggListeners(startListening)
 
 addFusionListeners(startListening)
+
+addRecurringSwapListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

@@ -1,3 +1,4 @@
+import { SxProp } from 'dripsy'
 import { StyleProp, ViewStyle } from 'react-native'
 
 export type PresetButton = {
@@ -66,4 +67,6 @@ export type CircularDialProps = {
    * Defaults to `0`.
    */
   canvasPadding?: number
+  /** Style for the label */
+  labelSx?: SxProp
 }

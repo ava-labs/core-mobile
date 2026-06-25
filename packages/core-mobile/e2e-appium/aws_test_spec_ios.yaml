@@ -1,5 +1,7 @@
 version: 0.1
 
+ios_test_host: macos_sequoia
+
 phases:
 
   install:
@@ -147,13 +149,19 @@ phases:
         fi
       - |-
         echo "--- Setting up Device Farm pre-signed WDA ---"
-        env | grep -i 'DEVICEFARM_WDA_DERIVED_DATA_PATH' 2>/dev/null || echo "No pre-signed WDA env vars found"
+        env | grep -i 'DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH' 2>/dev/null || echo "No pre-signed WDA env vars found"
         DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
-        WDA_PATH="${DEVICEFARM_WDA_DERIVED_DATA_PATH_V9:-$DEVICEFARM_WDA_DERIVED_DATA_PATH}"
+        APPIUM_DRIVER_VERSION=$(appium driver list --installed --json 2>/dev/null | jq -r ".xcuitest.version" 2>/dev/null | cut -d "." -f 1 || echo "")
+        CORRESPONDING_WDA=$(env | grep "DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH_V${APPIUM_DRIVER_VERSION}" 2>/dev/null | head -1 || true)
+        if [[ -n "$APPIUM_DRIVER_VERSION" ]] && [[ -n "$CORRESPONDING_WDA" ]]; then
+          WDA_PATH=$(echo "$CORRESPONDING_WDA" | cut -d "=" -f2-)
+          echo "Using Device Farm prebuilt WDA for xcuitest v${APPIUM_DRIVER_VERSION}.x: $WDA_PATH"
+        else
+          LATEST_WDA=$(env | grep "DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH_V" | sort -V -r | head -n 1 || true)
+          WDA_PATH=$(echo "$LATEST_WDA" | cut -d "=" -f2-)
+          echo "Falling back to latest available WDA: ${WDA_PATH:-not found}"
+        fi
         if [ -n "$WDA_PATH" ]; then
-          echo "Pre-signed WDA path: $WDA_PATH"
-          echo "--- WDA Build/Products contents ---"
-          ls "$WDA_PATH/Build/Products/" 2>/dev/null || echo "WARNING: expected products dir not found"
           printf '\nexport WDA_DERIVED_DATA_PATH="%s"\n' "$WDA_PATH" >> "${DF_ENV_DIR}/.df_env"
           echo "Exported WDA_DERIVED_DATA_PATH to .df_env"
         else

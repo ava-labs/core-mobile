@@ -338,6 +338,23 @@ describe('getSwapErrorMessage', () => {
     )
   })
 
+  it('should return a clear message for cctCallbacks xp-address errors', () => {
+    expect(
+      getSwapErrorMessage(
+        new Error('[cctCallbacks] xpAddressDictionary empty for active account')
+      )
+    ).toBe(
+      "This account isn't set up for cross-chain swaps. Please try a different account."
+    )
+    expect(
+      getSwapErrorMessage(
+        new Error('[cctCallbacks] xpAddresses empty for active account')
+      )
+    ).toBe(
+      "This account isn't set up for cross-chain swaps. Please try a different account."
+    )
+  })
+
   it('should return original message for unrecognized errors', () => {
     expect(getSwapErrorMessage(new Error('something unexpected'))).toBe(
       'something unexpected'

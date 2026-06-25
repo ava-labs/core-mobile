@@ -113,6 +113,10 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
           <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
           <Stack.Screen
+            name="(modals)/recurringSwapSchedules"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/perpetualsOnboarding"
             options={modalScreensOptions}
           />
@@ -134,6 +138,18 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/perpetualsBalance"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/perpetualsPlaceOrder"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/perpetualsClose"
+            options={secondaryModalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/perpetualsManage"
             options={modalScreensOptions}
           />
           <Stack.Screen
@@ -183,6 +199,10 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/addStake"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/addStakeV2"
             options={modalScreensOptions}
           />
           <Stack.Screen

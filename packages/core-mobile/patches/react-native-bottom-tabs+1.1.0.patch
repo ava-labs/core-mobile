@@ -99,3 +99,22 @@ index d699315..2484cc4 100644
  @available(iOS 26.0, *)
  struct BottomAccessoryRepresentableView: PlatformViewRepresentable {
    @Environment(\.tabViewBottomAccessoryPlacement) var tabViewBottomAccessoryPlacement
+diff --git a/node_modules/react-native-bottom-tabs/ios/TabViewImpl.swift b/node_modules/react-native-bottom-tabs/ios/TabViewImpl.swift
+index 72938be..a5d4290 100644
+--- a/node_modules/react-native-bottom-tabs/ios/TabViewImpl.swift
++++ b/node_modules/react-native-bottom-tabs/ios/TabViewImpl.swift
+@@ -64,6 +64,14 @@ struct TabViewImpl: View {
+ #if !os(macOS)
+         tabController.view.backgroundColor = .clear
+         tabController.viewControllers?.forEach { $0.view.backgroundColor = .clear }
++#endif
++#if os(iOS)
++        // When more than 5 tabs are present, UIKit moves the overflow into an
++        // auto-generated "More" UINavigationController, which renders a navigation
++        // bar with a back button on top of the tab's content. The app already
++        // provides its own custom tab bar that navigates directly to every tab,
++        // so this system bar is unwanted chrome. Hide it.
++        tabController.moreNavigationController.isNavigationBarHidden = true
+ #endif
+         #if os(macOS)
+           tabBar = tabController
