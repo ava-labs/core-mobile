@@ -89,6 +89,8 @@ type DialReadoutProps = {
   referenceValue?: number
   progressSv: SharedValue<number>
   isActive: SharedValue<boolean>
+  /** True during the post-gesture settle window (drag release / preset). */
+  isSettling: SharedValue<boolean>
   onChange: (v: number) => void
   onCommit: (v: number) => void
   /** Prefix for the input's `testID`. Falls back to `circular-dial`. */
@@ -117,6 +119,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       referenceValue,
       progressSv,
       isActive,
+      isSettling,
       labelSx,
       onChange,
       onCommit,
@@ -315,12 +318,18 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       setDraft(null)
     }, [draft, progressSv, onChange, onCommit, max, isEditingSv])
 
-    // While editing, roll external `value` changes into the draft
-    // (covers drag/preset-while-editing). Skip when the draft
-    // already matches `value` numerically — avoids clobbering an
-    // in-progress digit with the same number formatted differently.
+    // While editing, roll *gesture-driven* `value` changes into the draft so a
+    // drag or preset-tap with the keyboard open updates the typed text. Gate
+    // strictly on the dial being actively manipulated (`isActive`) or in its
+    // post-gesture settle window (`isSettling`): outside those, a `value`
+    // change is just the echo of the user's own typing bouncing back through
+    // the parent — and after a round-trip (e.g. staking's `avaxToTokenUnit`)
+    // or a render lag it may not compare equal to the draft, so syncing it
+    // would clobber the digit being typed or repaint a cleared field with the
+    // old value. Manual input always wins; only gestures feed the draft here.
     useEffect(() => {
       if (!isEditing) return
+      if (!isActive.value && !isSettling.value) return
       if (draft === '.') return
       const draftNum = draft === '' ? 0 : Number(draft)
       if (Number.isFinite(draftNum) && draftNum === value) return
