@@ -119,13 +119,14 @@ export const avalancheSendTransaction = async ({
       signedData: signedTransactionHex as Hex
     })
   } catch (error) {
+    // Keep only the error message off-device: the raw error/stack can carry the
+    // unsigned tx payload to Sentry, so we deliberately don't forward them.
     Logger.error('[avalancheSendTransaction] sign failed', {
       vm,
       walletType,
       externalIndices,
       internalIndices,
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      message: error instanceof Error ? error.message : String(error)
     })
     resolve({
       error: rpcErrors.internal({
