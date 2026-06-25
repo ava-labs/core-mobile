@@ -39,6 +39,26 @@ describe('KeystoneWallet', () => {
     expect(wallet.mfp).toEqual(MockedKeystoneData.mfp)
   })
 
+  it('throws when the X/P xpub is absent (undefined)', () => {
+    const walletWithoutXp = new KeystoneWallet({
+      evm: MockedKeystoneData.evm,
+      mfp: MockedKeystoneData.mfp
+    })
+    expect(() => walletWithoutXp.xpubXP).toThrow(
+      'no public key (xpubXP) available'
+    )
+  })
+
+  it('throws when the X/P xpub is an empty string (fails closed)', () => {
+    const walletWithEmptyXp = new KeystoneWallet({
+      ...MockedKeystoneData,
+      xp: ''
+    })
+    expect(() => walletWithEmptyXp.xpubXP).toThrow(
+      'no public key (xpubXP) available'
+    )
+  })
+
   it('should have returned the correct public key', async () => {
     const evmPublicKey = await wallet.getPublicKeyFor({
       derivationPath: `m/44'/60'/0'/0/1`,
@@ -65,6 +85,7 @@ describe('KeystoneWallet', () => {
       const result = await wallet.signBtcTransaction({
         accountIndex: 0,
         transaction: { inputs: [], outputs: [] },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         network: { vmName: 'BITCOIN' } as any,
         provider: new BitcoinProvider()
       })
