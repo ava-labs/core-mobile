@@ -69,8 +69,13 @@ const getBalanceLookupId = (
   targetChainId: number
 ): string => {
   if (asset.type !== FusionTokenType.NATIVE) return asset.address.toLowerCase()
-  if (isPChain(targetChainId)) return AVAX_P_ID
-  if (isXChain(targetChainId)) return AVAX_X_ID
+  // Only native AVAX maps to the AVAX-P/AVAX-X portfolio ids. P/X only expose
+  // native AVAX today, but guard on the symbol so a future non-AVAX native on
+  // those chains can't accidentally inherit the AVAX balance.
+  if (asset.symbol === 'AVAX') {
+    if (isPChain(targetChainId)) return AVAX_P_ID
+    if (isXChain(targetChainId)) return AVAX_X_ID
+  }
   return `NATIVE-${asset.symbol}`
 }
 

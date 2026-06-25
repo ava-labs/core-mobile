@@ -136,4 +136,44 @@ describe('useSwapTokens balance merge', () => {
 
     expect(result.current.tokens[0]?.balance).toBe(0n)
   })
+
+  it('does not merge the AVAX-P balance onto a non-AVAX native asset on a P/X target', () => {
+    // Defensive: P/X only expose native AVAX today, but a non-AVAX native must
+    // not inherit the AVAX-P/AVAX-X balance via the chain-only lookup.
+    useInfiniteQuery.mockReturnValue({
+      data: {
+        pages: [
+          {
+            assets: [
+              {
+                type: 'NATIVE',
+                symbol: 'FOO',
+                name: 'Foo',
+                decimals: 9,
+                logoUri: 'https://example.com/foo.png'
+              }
+            ],
+            meta: { hasMore: false }
+          }
+        ]
+      },
+      isLoading: false,
+      error: null,
+      fetchNextPage: jest.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false
+    })
+    useTokensWithBalanceByNetworkForAccount.mockReturnValue({
+      tokens: [portfolioNativeToken(AVAX_P_ID, ChainId.AVALANCHE_P)],
+      isLoading: false
+    })
+
+    const { result } = renderHook(() =>
+      useSwapTokens(getCaip2ChainId(ChainId.AVALANCHE_P))
+    )
+
+    const token = result.current.tokens[0]
+    expect(token?.symbol).toBe('FOO')
+    expect(token?.balance).toBe(0n)
+  })
 })
