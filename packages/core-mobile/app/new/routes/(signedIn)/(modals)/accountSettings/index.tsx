@@ -147,7 +147,20 @@ const AccountSettingsScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
 
-        <View sx={{ gap: 24, paddingHorizontal: 16 }}>
+        <View
+          // The update banner mounts asynchronously (after the update check
+          // resolves), inserting as the first child of this column. On Android
+          // (Fabric) RELEASE builds, inserting it does not reliably reflow the
+          // already-laid-out sibling rows below — they keep their original Y and
+          // the banner overlaps them (release-only, device-dependent timing
+          // race). Keying this column by the banner's presence remounts the
+          // subtree on that transition, forcing a clean layout pass so the rows
+          // are positioned below the banner. The banner keeps its dynamic,
+          // content-driven height.
+          key={
+            appUpdateStatus?.needsUpdate ? 'settings-with-banner' : 'settings'
+          }
+          sx={{ gap: 24, paddingHorizontal: 16 }}>
           {renderAppUpdateBanner()}
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
