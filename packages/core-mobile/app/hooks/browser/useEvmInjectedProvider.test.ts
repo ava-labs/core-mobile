@@ -87,7 +87,8 @@ jest.mock('expo-router', () => ({
 
 jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
   approvalController: {
-    handleGoBackIfNeeded: jest.fn()
+    handleGoBackIfNeeded: jest.fn(),
+    isLedgerSigningInProgress: jest.fn()
   }
 }))
 
@@ -1572,6 +1573,46 @@ describe('useEvmInjectedProvider', () => {
 
       expect(capturedSignal?.aborted).toBe(true)
       expect(mockApprovalController.handleGoBackIfNeeded).toHaveBeenCalled()
+    })
+
+    it('does NOT pop the screen on cross-origin nav while on-device Ledger signing is in progress (CP-14422)', async () => {
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
+      ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
+      // Uncancellable window: a signature is being confirmed on the device.
+      ;(
+        mockApprovalController.isLedgerSigningInProgress as jest.Mock
+      ).mockReturnValueOnce(true)
+
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
+
+      const { result } = renderProvider('https://uniswap.org')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io')
+      })
+
+      // Settlement still no-ops in the controller for this phase, and the abort
+      // still fires — but the review screen must NOT be popped out from under a
+      // signature the user is confirming on the device.
+      expect(capturedSignal?.aborted).toBe(true)
+      expect(mockApprovalController.handleGoBackIfNeeded).not.toHaveBeenCalled()
     })
 
     it('does NOT abort in-flight request on same-origin navigation (SPA route change)', async () => {

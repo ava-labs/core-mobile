@@ -11,6 +11,10 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
+  clearRequestSignal,
+  setRequestSignal
+} from 'store/rpc/utils/inFlightRequestSignals'
+import {
   isTxFeedbackEnabled,
   isInAppAvalancheRequest,
   isConfettiEnabled,
@@ -856,6 +860,37 @@ describe('ApprovalController', () => {
 
       expect(mockRouter.back).not.toHaveBeenCalled()
     })
+
+    it('does NOT pop the approval route when excludeApproval is set (screen self-dismisses)', () => {
+      // The cross-origin nav path passes excludeApproval: the approval screen
+      // owns its own dismissal via its request signal, so popping here too would
+      // double router.back(). (CP-14422)
+      mockCurrentRouteStore.getState.mockReturnValue({
+        currentRoute: '/approval',
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
+      })
+      mockRouter.canGoBack.mockReturnValue(true)
+
+      approvalController.handleGoBackIfNeeded({ excludeApproval: true })
+
+      expect(mockRouter.back).not.toHaveBeenCalled()
+    })
+
+    it('still pops non-approval modals when excludeApproval is set', () => {
+      mockCurrentRouteStore.getState.mockReturnValue({
+        currentRoute: '(modals)/addEthereumChain',
+        topRoute: undefined,
+        setCurrentRoute: jest.fn(),
+        setTopRoute: jest.fn()
+      })
+      mockRouter.canGoBack.mockReturnValue(true)
+
+      approvalController.handleGoBackIfNeeded({ excludeApproval: true })
+
+      expect(mockRouter.back).toHaveBeenCalledTimes(1)
+    })
   })
 
   // ── requestApproval ───────────────────────────────────────────────────────
@@ -1307,6 +1342,397 @@ describe('ApprovalController', () => {
       )
       expect('error' in result).toBe(true)
       expect(mockSign).not.toHaveBeenCalled()
+    })
+  })
+
+  // ── cross-origin cancel bridge (CP-14422) ──────────────────────────────────
+  describe('requestApproval — cross-origin cancel bridge', () => {
+    const signingData = { type: 'eth_sendTransaction', data: {} } as never
+    const displayData = {} as never
+    const REQ_ID = 'req-1'
+
+    // Park an approval (as requestApproval does) and return the cached callbacks.
+    // Pass a signal to register the cancel bridge for this request.
+    const park = (
+      signal?: AbortSignal
+    ): {
+      onApprove: (p: unknown) => Promise<void>
+      onReject: (m?: string) => void
+    } => {
+      if (signal) setRequestSignal(REQ_ID, signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: REQ_ID, sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      return mockWalletConnectCacheSet.mock.calls[
+        mockWalletConnectCacheSet.mock.calls.length - 1
+      ][0]
+    }
+
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+
+    afterEach(() => clearRequestSignal(REQ_ID))
+
+    it('settles the parked promise via the real onReject when the request is aborted', () => {
+      const controller = new AbortController()
+      park(controller.signal)
+      mockOnReject.mockClear()
+
+      controller.abort()
+
+      expect(mockOnReject).toHaveBeenCalledWith(
+        expect.objectContaining({ resolve: expect.any(Function) })
+      )
+      // Dismissal stays with setCurrentUrl's handleGoBackIfNeeded — the bridge
+      // must NOT also pop the screen (would double router.back()).
+      expect(mockRouter.back).not.toHaveBeenCalled()
+    })
+
+    it('blocks a late Approve tap after the request was aborted', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      controller.abort()
+      mockOnApprove.mockClear()
+
+      await parked.onApprove({ walletType: WalletType.MNEMONIC })
+
+      expect(mockOnApprove).not.toHaveBeenCalled()
+    })
+
+    it('tears down Ledger BLE + clears the review store when aborted while Ledger is pending', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      // Enter the Ledger sheet (ledgerPending) — BLE connecting, not yet signing.
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+      mockSetReviewTransactionParams.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockDisconnect).toHaveBeenCalled()
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(null)
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('drops out of ledgerSigning if the signing pipeline rejects without settling (no app-wide dismissal wedge)', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      const ledgerParams =
+        mockSetReviewTransactionParams.mock.calls[
+          mockSetReviewTransactionParams.mock.calls.length - 1
+        ][0]
+      // On-device signing begins, then the handler pipeline rejects WITHOUT ever
+      // calling resolve (e.g. a handler that throws before settling).
+      mockOnApprove.mockRejectedValueOnce(new Error('signing blew up'))
+      await ledgerParams.onApprove().catch(() => undefined)
+
+      // Phase must NOT be stuck in ledgerSigning — otherwise
+      // isLedgerSigningInProgress() stays true forever and every future
+      // cross-origin nav across all tabs silently stops dismissing the approval
+      // screen. (CP-14422)
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      // And the orphaned request is cancellable again (back in ledgerPending):
+      // a nav now tears down BLE + settles it.
+      mockOnReject.mockClear()
+      controller.abort()
+      await flushMicrotasks()
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('settles the parked promise immediately on abort even if Ledger BLE disconnect hangs', async () => {
+      // BLE disconnect that never resolves — settlement must not be gated behind
+      // it, or a hung disconnect would leave the dApp request hanging (the whole
+      // point of the abort path is prompt settlement). (CP-14422)
+      mockDisconnect.mockReturnValue(new Promise(() => undefined))
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      mockOnReject.mockClear()
+
+      controller.abort()
+      // No flush: the reject must have already fired synchronously, not be
+      // queued behind the (hanging) disconnect.
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('is a no-op when aborted after on-device Ledger signing has started', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      // Run the stored on-device onApprove → enters ledgerSigning (uncancellable).
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove()
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockOnReject).not.toHaveBeenCalled()
+      expect(mockDisconnect).not.toHaveBeenCalled()
+
+      // Settle the on-device signing so this ledgerSigning entry doesn't leak
+      // into the singleton and bleed into later tests' isLedgerSigningInProgress.
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
+    })
+
+    it('caches the request AbortSignal so the approval screen can self-dismiss on cancel', () => {
+      // The cross-origin nav can abort + settle the request in the window between
+      // navigate('/approval') and the screen mounting, so the generic pop may
+      // miss. Caching the signal lets the screen dismiss itself on mount if its
+      // request is already dead. (CP-14422)
+      const controller = new AbortController()
+      park(controller.signal)
+
+      const cached =
+        mockWalletConnectCacheSet.mock.calls[
+          mockWalletConnectCacheSet.mock.calls.length - 1
+        ][0]
+      expect(cached.signal).toBe(controller.signal)
+
+      controller.abort() // settle so nothing lingers
+    })
+
+    it('isLedgerSigningInProgress is false while only parked', () => {
+      const controller = new AbortController()
+      park(controller.signal)
+
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      controller.abort() // settle the parked entry so it doesn't linger
+    })
+
+    it('isLedgerSigningInProgress flips true once on-device Ledger signing begins', async () => {
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      // Ledger sheet up (BLE connecting) — still cancellable, not signing yet.
+      await parked.onApprove({ walletType: WalletType.LEDGER })
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      // On-device signing begins → ledgerSigning (uncancellable).
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove()
+
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+
+      // Settle signing so the ledgerSigning entry is cleared (test isolation).
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+    })
+
+    it('does not bridge requests without a signal (WalletConnect / in-app)', () => {
+      const other = new AbortController()
+      setRequestSignal('some-other-id', other.signal)
+      park() // no signal registered for REQ_ID → no bridge
+      mockOnReject.mockClear()
+
+      other.abort()
+
+      expect(mockOnReject).not.toHaveBeenCalled()
+      clearRequestSignal('some-other-id')
+    })
+
+    it('cancels immediately and neither caches params nor opens a modal if already aborted before parking', () => {
+      const controller = new AbortController()
+      controller.abort()
+      setRequestSignal(REQ_ID, controller.signal)
+      mockOnReject.mockClear()
+      mockRouter.navigate.mockClear()
+      mockWalletConnectCacheSet.mockClear()
+
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: REQ_ID, sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+
+      expect(mockOnReject).toHaveBeenCalled()
+      // No stale modal for a request that's already dead. (pre-park race)
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+      // And we must NOT leave the parked callbacks (incl. the now-dead resolve
+      // closure) + request data sitting in the single-slot cache: nothing would
+      // consume/clear it since the approval screen never mounts. (CP-14422)
+      expect(mockWalletConnectCacheSet).not.toHaveBeenCalled()
+    })
+
+    it('stays cancellable during a retryable Ledger error (BLE torn down if aborted then)', async () => {
+      mockDisconnect.mockResolvedValue(undefined)
+      const controller = new AbortController()
+      const parked = park(controller.signal)
+      await parked.onApprove({ walletType: WalletType.LEDGER }) // ledgerPending
+      const ledgerParams = mockSetReviewTransactionParams.mock.calls[0][0]
+      ledgerParams.onApprove() // on-device signing begins → ledgerSigning
+      // Device returns a retryable error → Retry/Cancel alert; phase must drop
+      // back to ledgerPending so a nav can still cancel + tear down BLE.
+      const onApproveArg =
+        mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0]
+      onApproveArg.resolve({ error: { message: 'retryable' } })
+      mockOnReject.mockClear()
+      mockDisconnect.mockClear()
+
+      controller.abort()
+      await flushMicrotasks()
+
+      expect(mockDisconnect).toHaveBeenCalled()
+      expect(mockOnReject).toHaveBeenCalled()
+    })
+
+    it('bridges overlapping requests independently (aborting one does not clobber the other)', () => {
+      const cA = new AbortController()
+      const cB = new AbortController()
+      setRequestSignal('req-A', cA.signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: 'req-A', sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      setRequestSignal('req-B', cB.signal)
+      approvalController.requestApproval({
+        request: makeRequest({ requestId: 'req-B', sessionId: 'core-mobile' }),
+        displayData,
+        signingData
+      })
+      mockOnReject.mockClear()
+
+      cA.abort()
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      mockOnReject.mockClear()
+      cB.abort() // would no-op if req-B's bridge had been clobbered by req-A
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      clearRequestSignal('req-A')
+      clearRequestSignal('req-B')
+    })
+
+    it('evicts the oldest parked approval with full teardown when at capacity', () => {
+      // Fill activeApprovals to capacity (ACTIVE_APPROVALS_MAX = 10) with distinct
+      // browser signing requests, each with its own cancel bridge.
+      const controllers: AbortController[] = []
+      for (let i = 0; i < 10; i++) {
+        const c = new AbortController()
+        controllers.push(c)
+        setRequestSignal(`evict-${i}`, c.signal)
+        approvalController.requestApproval({
+          request: makeRequest({
+            requestId: `evict-${i}`,
+            sessionId: 'core-mobile'
+          }),
+          displayData,
+          signingData
+        })
+      }
+      mockOnReject.mockClear()
+
+      // An 11th request must evict the oldest (evict-0) — and that eviction must
+      // run the real teardown (settle the promise + detach), NOT BoundedMap's
+      // silent plain-delete that would leak the listener/signal. (CP-14422)
+      const overflow = new AbortController()
+      setRequestSignal('evict-10', overflow.signal)
+      approvalController.requestApproval({
+        request: makeRequest({
+          requestId: 'evict-10',
+          sessionId: 'core-mobile'
+        }),
+        displayData,
+        signingData
+      })
+
+      // Oldest was settled exactly once via the real onReject.
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      // Oldest's bridge was detached: re-aborting it is now a no-op.
+      mockOnReject.mockClear()
+      controllers[0]?.abort()
+      expect(mockOnReject).not.toHaveBeenCalled()
+
+      // A still-parked entry keeps its bridge — aborting it still cancels.
+      controllers[1]?.abort()
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+
+      // Settle the remaining parked entries (evict-2..9 + overflow evict-10) so
+      // nothing leaks into the singleton for later tests.
+      overflow.abort()
+      for (let i = 2; i < 10; i++) controllers[i]?.abort()
+
+      for (let i = 0; i <= 10; i++) clearRequestSignal(`evict-${i}`)
+    })
+
+    it('keeps a ledgerSigning oldest and evicts the oldest cancellable entry at capacity (CP-14422)', async () => {
+      // Guard against contamination from a prior test leaking signing state.
+      expect(approvalController.isLedgerSigningInProgress()).toBe(false)
+
+      mockDisconnect.mockResolvedValue(undefined)
+      const base = mockWalletConnectCacheSet.mock.calls.length
+      const controllers: AbortController[] = []
+      for (let i = 0; i < 10; i++) {
+        const c = new AbortController()
+        controllers.push(c)
+        setRequestSignal(`sign-${i}`, c.signal)
+        approvalController.requestApproval({
+          request: makeRequest({
+            requestId: `sign-${i}`,
+            sessionId: 'core-mobile'
+          }),
+          displayData,
+          signingData
+        })
+      }
+
+      // Drive the OLDEST (sign-0) into on-device signing → uncancellable.
+      await mockWalletConnectCacheSet.mock.calls[base][0].onApprove({
+        walletType: WalletType.LEDGER
+      })
+      mockSetReviewTransactionParams.mock.calls[
+        mockSetReviewTransactionParams.mock.calls.length - 1
+      ][0].onApprove()
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+      mockOnReject.mockClear()
+
+      // An 11th request at capacity. The oldest is ledgerSigning (uncancellable),
+      // so it must NOT be the eviction victim — picking it would no-op and fall
+      // through to BoundedMap's silent delete(), leaking its listener/signal and
+      // dropping the in-progress signing. The oldest *cancellable* entry (sign-1)
+      // is settled+detached instead. (CP-14422)
+      const overflow = new AbortController()
+      setRequestSignal('sign-10', overflow.signal)
+      approvalController.requestApproval({
+        request: makeRequest({
+          requestId: 'sign-10',
+          sessionId: 'core-mobile'
+        }),
+        displayData,
+        signingData
+      })
+
+      // The in-progress signing survived — not silently dropped.
+      expect(approvalController.isLedgerSigningInProgress()).toBe(true)
+      // Exactly one eviction settlement: the oldest cancellable victim (sign-1).
+      expect(mockOnReject).toHaveBeenCalledTimes(1)
+      // That victim's bridge was detached: re-aborting it is now a no-op.
+      mockOnReject.mockClear()
+      controllers[1]?.abort()
+      expect(mockOnReject).not.toHaveBeenCalled()
+
+      // Cleanup: settle sign-0's signing + drop the rest so nothing leaks.
+      mockOnApprove.mock.calls[mockOnApprove.mock.calls.length - 1][0].resolve(
+        {}
+      )
+      overflow.abort()
+      for (let i = 2; i < 10; i++) controllers[i]?.abort()
+      for (let i = 0; i <= 10; i++) clearRequestSignal(`sign-${i}`)
     })
   })
 })
