@@ -21,7 +21,14 @@ export const AppUpdateBanner = (): JSX.Element => {
         paddingVertical: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 20
+        gap: 20,
+        // Android (Fabric) can mis-measure this row's intrinsic height to ~0
+        // when it contains flex children, which makes the banner paint over the
+        // settings rows below it. A minHeight floor (icon height + vertical
+        // padding) guarantees the banner always reserves real layout space so
+        // the rows are pushed down. It only sets a floor, so the banner still
+        // grows if the text wraps; no-op on iOS where measurement is correct.
+        minHeight: ICON_SIZE + 30
       }}>
       <View
         sx={{
