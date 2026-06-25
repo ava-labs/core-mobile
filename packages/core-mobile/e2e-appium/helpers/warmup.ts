@@ -1,5 +1,6 @@
 import onboardingPage from '../pages/onboarding.page'
 import portfolioPage from '../pages/portfolio.page'
+import commonElsPage from '../pages/commonEls.page'
 import { actions } from './actions'
 
 type AppState = 'loggedIn' | 'locked' | 'onboarding'
@@ -65,6 +66,7 @@ export default async function warmup(
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
+  await commonElsPage.tapTurnOnNotifications()
   await onboardingPage.verifyLoggedIn()
 }
 
@@ -141,6 +143,7 @@ export async function warmupSeedless() {
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
+  await commonElsPage.tapTurnOnNotifications()
   await onboardingPage.verifyLoggedIn()
 }
 

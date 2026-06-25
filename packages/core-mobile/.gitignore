@@ -70,12 +70,10 @@ package-lock.json
 !/.env.example
 
 # detox
-e2e/artifacts/
 /test-results/
 /playwright-report/
 /playwright/.cache/
 /testResults/
-e2e/tests/performance/testResults/
 
 # generated openzeppelin contract types
 app/contracts/openzeppelin

@@ -377,18 +377,13 @@ class CommonElsPage {
     await actions.tap(selectors.getById(`dropdown_item__${item}`))
   }
 
-  async tapNotNow() {
+  async tapTurnOnNotifications() {
     try {
-      await actions.tap(this.notNow)
+      await actions.tap(this.turnOnNotifications)
     } catch (e) {
-      console.log('Not now button not found')
+      console.log('Turn on notifications button not found')
     }
   }
-
-  async tapTurnOnNotifications() {
-    await actions.tap(this.turnOnNotifications)
-  }
-
   async tapAvaSVG() {
     await actions.tap(this.avaSVG)
   }
