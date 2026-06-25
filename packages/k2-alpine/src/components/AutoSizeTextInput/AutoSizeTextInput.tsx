@@ -56,8 +56,6 @@ interface TextInputProps extends _TextInputProps {
   testID?: string
 }
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
-
 export const AutoSizeTextInput = forwardRef<
   {
     focus: () => void
@@ -114,6 +112,14 @@ export const AutoSizeTextInput = forwardRef<
     const inputRef = useRef<TextInput>(null)
     const lastTextRef = useRef<string>('')
 
+    // The controlled <TextInput> below is intentionally NOT a Reanimated animated
+    // component. On the New Architecture (Fabric), a Reanimated-wrapped controlled
+    // TextInput drops/reverts `value` updates on Android, making the field
+    // impossible to type into. The font size here is set instantly (no
+    // withTiming), so mirroring it into React state and applying it as a plain
+    // style is visually identical while keeping the input a plain TextInput.
+    const [inputFontSize, setInputFontSize] = useState(initialFontSize)
+
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
       blur: () => inputRef.current?.blur(),
@@ -130,23 +136,17 @@ export const AutoSizeTextInput = forwardRef<
     // Update hasValue shared value synchronously during render
     hasValue.value = (value?.length ?? 0) > 0
 
+    // Plain (non-animated) color for the controlled TextInput, mirroring the
+    // animated styles used by the measurement text and prefix/suffix.
+    const inputColor =
+      (value?.length ?? 0) > 0 ? textColor : placeholderTextColor
+
     const textStyle = useAnimatedStyle(() => {
       return {
         textAlign,
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
         lineHeight: animatedFontSize.value * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
-      }
-    })
-
-    const inputTextStyle = useAnimatedStyle(() => {
-      const fontSize = animatedFontSize.value * FIT_SCALE_FACTOR
-      return {
-        textAlign,
-        fontFamily: 'Aeonik-Medium',
-        fontSize,
-        lineHeight: fontSize * 1.1,
         color: hasValue.value ? textColor : placeholderTextColor
       }
     })
@@ -191,6 +191,7 @@ export const AutoSizeTextInput = forwardRef<
 
         if (Math.abs(fontSize - animatedFontSize.value) > 0.5) {
           animatedFontSize.value = fontSize
+          setInputFontSize(fontSize)
         }
 
         if (Math.abs(newFontSize - animatedSuffixFontSize.value) > 0.5) {
@@ -258,6 +259,7 @@ export const AutoSizeTextInput = forwardRef<
         if (currentText.length < MIN_LENGTH_TO_RESIZE) {
           animatedFontSize.value = initialFontSize
           animatedSuffixFontSize.value = fontSizeMultiplier
+          setInputFontSize(initialFontSize)
           return
         }
 
@@ -353,12 +355,22 @@ export const AutoSizeTextInput = forwardRef<
         <View accessible={false} onLayout={handleLayout} style={styles.row}>
           {renderPrefix()}
 
-          <AnimatedTextInput
+          <TextInput
             {...props}
             ref={inputRef}
             testID={testID}
             value={value}
-            style={[styles.input, inputTextStyle, style]}
+            style={[
+              styles.input,
+              {
+                textAlign,
+                fontFamily: 'Aeonik-Medium',
+                fontSize: inputFontSize * FIT_SCALE_FACTOR,
+                lineHeight: inputFontSize * FIT_SCALE_FACTOR * 1.1,
+                color: inputColor
+              },
+              style
+            ]}
             maxLength={maxLength}
             editable={editable}
             onBlur={onBlur}
