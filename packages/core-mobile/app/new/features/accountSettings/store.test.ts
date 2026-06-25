@@ -39,10 +39,20 @@ describe('appIconStore', () => {
     expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith('Marker')
   })
 
-  it('should call setAlternateAppIcon with null for Default', () => {
+  it('should call setAlternateAppIcon with null for Default on iOS', () => {
+    ;(Platform as { OS: string }).OS = 'ios'
     appIconStore.setState({ currentIcon: AppIcon.Bling })
     appIconStore.getState().setIcon(AppIcon.Default)
     expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith(null)
+  })
+
+  it('should call setAlternateAppIcon with "Default" for Default on Android', () => {
+    // Android routes the default icon through the .MainActivityDefault alias so
+    // .MainActivity is never disabled. See CP-14555.
+    ;(Platform as { OS: string }).OS = 'android'
+    appIconStore.setState({ currentIcon: AppIcon.Bling })
+    appIconStore.getState().setIcon(AppIcon.Default)
+    expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith('Default')
   })
 
   it('should not call setAlternateAppIcon when selecting the same icon', () => {

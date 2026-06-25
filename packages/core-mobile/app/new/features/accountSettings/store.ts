@@ -147,6 +147,12 @@ export const appIconStore = create<AppIconState>(set => ({
     if (!supportsAlternateIcons) return
 
     let nativeIconName: string | null = icon === AppIcon.Default ? null : icon
+    if (icon === AppIcon.Default && Platform.OS === 'android') {
+      // Android routes the default icon through the .MainActivityDefault alias so that
+      // .MainActivity (the shared targetActivity of every alias) is never disabled when
+      // switching icons. iOS keeps null, which resets to the primary icon. See CP-14555.
+      nativeIconName = 'Default'
+    }
     if (
       icon === AppIcon.Light &&
       isDebugOrInternalBuild() &&

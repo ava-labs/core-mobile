@@ -150,3 +150,17 @@ Fixes a sticky header (`stickyHeaderIndices`) at index 0 disappearing on iOS top
 2. Add an `overscrollTranslateY` (`scrollY.interpolate([-100000, 0] → [100000, 0]`, clamped) as a second `translateY` transform on the overlay, so when `scrollY` is negative the pinned header rubber-bands down 1:1 with the content instead of staying rigidly fixed at the top. Clamps to `0` for normal scroll.
 
 Re-check on any `@shopify/flash-list` version bump (edits target `dist/`, since the package `main` is `dist/index.js`).
+
+### expo-alternate-app-icons+8.0.0.patch
+
+Fixes Android leaving multiple launcher icons after switching the app icon more than once (CP-14555). This works together with the manifest change that makes `.MainActivity` a launcher-less, always-enabled target and routes the default icon through a dedicated `.MainActivityDefault` alias.
+
+The library's Android `setAlternateAppIcon` only ever disabled `currentActivity.componentName` — the component the activity was *launched* with. That value is fixed for the life of the activity, so switching icons again in the same session (without relaunching) enabled the new alias but never disabled the previously-enabled one, and launcher aliases accumulated → multiple home-screen icons.
+
+`android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt`:
+
+1. Enable the target `.MainActivity<Suffix>` alias first (for the default icon the suffix is `Default`, so a null icon maps to `.MainActivityDefault`), so the launcher always has a valid entry.
+
+2. Enumerate the package's activities (`GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS`) and disable every *other* `.MainActivity*` alias — never `.MainActivity` itself, which is the shared `targetActivity` of every alias (a disabled target makes all aliases un-launchable and bricks the app on the splash screen). This guarantees exactly one enabled launcher regardless of how many times the icon is switched, and self-heals dirty state.
+
+iOS is unaffected (the iOS native module is separate; JS only sends the `Default` suffix on Android).
