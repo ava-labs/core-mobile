@@ -7,15 +7,10 @@ const cctQuote = (amountIn: bigint): Quote =>
   ({ serviceType: ServiceType.AVALANCHE_CCT, amountIn } as any)
 
 describe('shouldShowAvalancheCctTwoTxNotice', () => {
-  it('is true for a CCT quote with non-zero amountIn', () => {
-    expect(shouldShowAvalancheCctTwoTxNotice({ quote: cctQuote(1n) })).toBe(
-      true
-    )
-  })
-
-  it('is true regardless of wallet type — mobile prompts per leg for every wallet, including Seedless', () => {
-    // Seedless used to be carved out (mirroring core-web). On mobile both legs
-    // still go through the in-app approval pipeline, so the notice must show.
+  it('is true for a CCT quote with non-zero amountIn (every wallet type, incl. Seedless)', () => {
+    // Seedless used to be carved out (mirroring core-web), but on mobile both
+    // legs go through the in-app approval pipeline, so the notice must show
+    // regardless of wallet type — hence no wallet param.
     expect(shouldShowAvalancheCctTwoTxNotice({ quote: cctQuote(1n) })).toBe(
       true
     )

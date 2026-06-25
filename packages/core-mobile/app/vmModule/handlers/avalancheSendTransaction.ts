@@ -125,8 +125,7 @@ export const avalancheSendTransaction = async ({
       externalIndices,
       internalIndices,
       message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      error
+      stack: error instanceof Error ? error.stack : undefined
     })
     resolve({
       error: rpcErrors.internal({
