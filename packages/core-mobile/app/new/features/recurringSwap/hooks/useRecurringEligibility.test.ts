@@ -58,7 +58,6 @@ describe('useRecurringEligibility', () => {
   it('delegates to SDK checkEligibility and returns its result for a supported same-chain pair', () => {
     mockCheckEligibility.mockReturnValue({
       eligible: true,
-      minimumAmount: '1000000',
       minIntervalSeconds: 300
     })
 
@@ -78,7 +77,6 @@ describe('useRecurringEligibility', () => {
     )
     expect(result.current).toEqual({
       eligible: true,
-      minimumAmount: '1000000',
       minIntervalSeconds: 300
     })
   })
@@ -146,23 +144,4 @@ describe('useRecurringEligibility', () => {
     })
   })
 
-  it('passes the optional amount through to checkEligibility', () => {
-    mockCheckEligibility.mockReturnValue({
-      eligible: false,
-      reason: 'amount-below-minimum'
-    })
-    renderHook(() =>
-      useRecurringEligibility(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        usdc as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        wavax as any,
-        '0xabc',
-        500_000n
-      )
-    )
-    expect(mockCheckEligibility).toHaveBeenCalledWith(
-      expect.objectContaining({ amount: 500_000n })
-    )
-  })
 })

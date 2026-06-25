@@ -417,21 +417,12 @@ export const SwapScreen = (): JSX.Element => {
     isRecurringBlocked ? undefined : toToken,
     isRecurringBlocked ? undefined : evmAddress
   )
-  // Recurring per-token minimum sourced from `/info/chains` (via SDK eligibility
-  // check, which keys on the source token address). Available whenever the pair
-  // is supported, even before the user enters an amount.
-  const recurringMinimumTransferAmount = useMemo<bigint | null>(() => {
-    if (!eligibility.eligible) return null
-    try {
-      return BigInt(eligibility.minimumAmount)
-    } catch {
-      return null
-    }
-  }, [eligibility])
-  // Recurring on → validate against the supportedTokens minimum.
-  // Recurring off → validate against the active quote's one-shot minimum.
+  // Markr dropped the per-chain recurring supported-token list (and with it the
+  // per-order minimum), so recurring swaps no longer carry their own floor.
+  // Recurring on → no minimum check. Recurring off → validate against the
+  // active quote's one-shot minimum.
   const effectiveMinimumTransferAmount = recurring.isRecurring
-    ? recurringMinimumTransferAmount
+    ? null
     : minimumTransferAmount
   // Toggle stays hidden until the user enters a non-zero amount (matches Figma
   // "Recurring OFF" frame — the toggle row only appears beneath a populated
@@ -1218,16 +1209,12 @@ export const SwapScreen = (): JSX.Element => {
     quote: activeQuote
   })
 
-  // Submit-gate logic lives in `recurringSubmitGate` so the recurring
-  // below-minimum guard is unit testable without the whole screen. It mirrors
-  // the one-shot `canSwap` gate: a blocking (non-warning) validation error must
-  // disable Next. Most importantly this covers below-minimum, which
-  // `computeValidationError` evaluates against the recurring per-token minimum
-  // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
-  // displayed but never reached `canSubmit`, and because the recurring quote
-  // succeeds below the minimum (`useRecurringQuote` only gates on a non-zero
-  // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
-  // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
+  // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
+  // without the whole screen. It mirrors the one-shot `canSwap` gate: a
+  // blocking (non-warning) validation error must disable Next. Recurring no
+  // longer carries a per-order minimum (Markr dropped the supported-token
+  // list), so `effectiveMinimumTransferAmount` is null when recurring is on and
+  // the below-minimum branch is inert for recurring. Warnings (e.g.
   // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
   const canSubmit = computeCanSubmit({
     isRecurring: recurring.isRecurring,
