@@ -60,6 +60,21 @@ describe('approvalMethods', () => {
     }
   })
 
+  it('requires enum membership, not just an eth_/personal_ prefix', () => {
+    // These start with eth_/personal_ but are NOT RpcMethod signing members
+    // (read-only or non-signing) — they must classify as false. Proves the AND
+    // in the matcher: prefix alone is insufficient.
+    for (const m of [
+      'eth_call',
+      'eth_chainId',
+      'eth_getBalance',
+      'eth_blockNumber',
+      'personal_ecRecover'
+    ]) {
+      expect(isEvmSigningMethod(m)).toBe(false)
+    }
+  })
+
   it('is prototype-safe (Object members are not signing methods)', () => {
     for (const m of [
       'toString',
@@ -72,15 +87,22 @@ describe('approvalMethods', () => {
     }
   })
 
-  it('enum-hygiene tripwire: every RpcMethod member is classified or in a known-unhandled namespace', () => {
-    // Namespaces with no injected provider yet. If vm-module-types adds a member
-    // outside these and outside eth_/personal_/avalanche_, this fails — forcing
-    // a conscious decision (the list-free replacement for the old drift guard).
-    const KNOWN_UNHANDLED = ['solana_', 'bitcoin_', 'hvm_']
+  it('enum-hygiene tripwire: every RpcMethod member is classified or an explicitly-known unhandled member', () => {
+    // Frozen list of enum members that have no injected provider yet. A NEW enum
+    // member — even under an existing unhandled namespace — fails this until it
+    // is consciously triaged here (and routed, if it needs an injected provider).
+    // This is the list-free replacement for the old hand-maintained drift guard.
+    const KNOWN_UNHANDLED = [
+      'solana_signTransaction',
+      'solana_signAndSendTransaction',
+      'solana_signMessage',
+      'bitcoin_sendTransaction',
+      'bitcoin_signTransaction',
+      'hvm_signTransaction'
+    ]
     for (const m of Object.values(RpcMethod)) {
       const classified = isEvmSigningMethod(m) || isAvalancheSigningMethod(m)
-      const knownUnhandled = KNOWN_UNHANDLED.some(p => m.startsWith(p))
-      expect(classified || knownUnhandled).toBe(true)
+      expect(classified || KNOWN_UNHANDLED.includes(m)).toBe(true)
     }
   })
 })
