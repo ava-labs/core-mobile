@@ -47,7 +47,11 @@ describe('approvalMethods', () => {
   })
 
   it('neither helper classifies a cross-namespace enum member', () => {
+    const enumValues = Object.values(RpcMethod)
     for (const m of CROSS_NAMESPACE) {
+      // Guard against vacuity: these must be real enum members, otherwise they
+      // would classify as false simply for not being in the enum at all.
+      expect(enumValues).toContain(m)
       expect(isEvmSigningMethod(m)).toBe(false)
       expect(isAvalancheSigningMethod(m)).toBe(false)
     }
