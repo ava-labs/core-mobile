@@ -17,11 +17,7 @@ import {
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import {
-  personalSign,
-  signTypedData,
-  SignTypedDataVersion
-} from '@metamask/eth-sig-util'
+import { personalSign, signTypedData } from '@metamask/eth-sig-util'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
@@ -34,8 +30,8 @@ import {
   WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
-import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
+import { getEvmTypedDataVersion } from 'services/wallet/utils'
 import slip10 from 'micro-key-producer/slip10.js'
 import type HDKey from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed } from 'bip39'
@@ -440,19 +436,13 @@ export class MnemonicWallet implements Wallet {
       return personalSign({ privateKey: key, data })
     }
 
-    const version =
-      rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
-        ? SignTypedDataVersion.V3
-        : rpcMethod === RpcMethod.SIGN_TYPED_DATA_V4
-        ? SignTypedDataVersion.V4
-        : isTypedData(data)
-        ? SignTypedDataVersion.V4
-        : SignTypedDataVersion.V1
-
     return signTypedData({
       privateKey: key,
       data: data as TypedData<MessageTypes>,
-      version
+      version: getEvmTypedDataVersion(
+        rpcMethod,
+        data as TypedDataV1 | TypedData<MessageTypes>
+      )
     })
   }
 }

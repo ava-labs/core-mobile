@@ -205,8 +205,23 @@ export function createInjectedProviderRouter(
 
   const inFlightRequests = new Map<number, InFlightRequest>()
 
+  // The origin the WebView has most recently navigated TO (set by cancelByOrigin
+  // on every cross-origin nav). `cancelByOrigin` is edge-triggered and only
+  // aborts requests ALREADY in `inFlightRequests`, so a signing request that
+  // registers AFTER that edge would be missed — it'd park a modal that can never
+  // be cancelled and hang. Recording the live origin lets `registerInFlight`
+  // catch that late registration and abort it on arrival. (CP-14422)
+  let liveOrigin: string | undefined
+
   const registerInFlight = (id: number, origin: string): AbortController => {
     const controller = new AbortController()
+    // The page already navigated away from this request's origin before it
+    // registered (the cross-origin abort edge has passed and won't re-fire) —
+    // born aborted so the signing pipeline short-circuits to userRejectedRequest
+    // instead of opening an uncancellable modal. (CP-14422)
+    if (liveOrigin !== undefined && origin !== liveOrigin) {
+      controller.abort()
+    }
     inFlightRequests.set(id, { origin, controller })
     return controller
   }
@@ -755,6 +770,10 @@ export function createInjectedProviderRouter(
   }
 
   const cancelByOrigin = (currentOrigin: string | undefined): void => {
+    // Record where the page navigated to, so a signing request that registers
+    // AFTER this edge (and would be missed by the loop below) is aborted on
+    // arrival in registerInFlight. (CP-14422)
+    liveOrigin = currentOrigin
     if (inFlightRequests.size === 0) return
     for (const [id, entry] of inFlightRequests.entries()) {
       if (entry.origin !== currentOrigin) {

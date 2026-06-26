@@ -486,6 +486,41 @@ export type AnalyticsEvents = {
     encrypted: Omit<DappTxEventPayload, 'txHash'>
   }
 
+  // RECURRING SWAPS (DCA)
+  RecurringSwapScheduled: {
+    chainId: number
+    encrypted: {
+      scheduleUuid: string
+      fromTokenSymbol: string
+      toTokenSymbol: string
+      amountPerOrder: string
+      // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+      // (`-1`) for Unlimited schedules, else a finite count.
+      // Dashboards filter on `numberOfOrders === -1` for the unlimited
+      // cohort — no separate `isUnlimited` boolean is emitted.
+      numberOfOrders: number
+      intervalSeconds: number
+    }
+  }
+  RecurringSwapCancelledByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
+  }
+  RecurringSwapPausedByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
+  }
+  RecurringSwapResumedByUser: {
+    chainId: number
+    encrypted: {
+      orderId: string
+    }
+  }
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { encrypted: { addressC: string } }
   NestEggSuccessModalViewed: { encrypted: { addressC: string } }

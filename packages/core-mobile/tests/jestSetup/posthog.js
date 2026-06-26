@@ -16,16 +16,12 @@ jest.mock('store/posthog', () => {
       // Inline implementation matching the real selectIsLedgerSupportBlocked.
       selectIsLedgerSupportBlocked: state => {
         const featureFlags = state?.posthog?.featureFlags
-        return (
-          !featureFlags?.['ledger-support'] || !featureFlags?.['everything']
-        )
+        return !featureFlags?.['ledger-support'] || !featureFlags?.everything
       },
       // Inline implementation matching the real selectIsSolanaSupportBlocked.
       selectIsSolanaSupportBlocked: state => {
         const featureFlags = state?.posthog?.featureFlags
-        return (
-          !featureFlags?.['solana-support'] || !featureFlags?.['everything']
-        )
+        return !featureFlags?.['solana-support'] || !featureFlags?.everything
       }
     },
     {

@@ -123,6 +123,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
                 label="USD"
                 enableManualInput
                 testID="perpetuals_place_order_amount"
+                step={1}
               />
             </View>
             <Text

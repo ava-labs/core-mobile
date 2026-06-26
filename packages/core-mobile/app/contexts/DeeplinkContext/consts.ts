@@ -41,5 +41,6 @@ export const DEEPLINK_WHITELIST = [
   'core://accountSettings/notificationPreferences',
   'core://accountSettings/importWallet',
   'core://accountSettings/importPrivateKey',
-  'core://accountSettings/importSeedWallet'
+  'core://accountSettings/importSeedWallet',
+  'core://recurringSwapSchedules'
 ]

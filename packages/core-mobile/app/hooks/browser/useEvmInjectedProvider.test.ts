@@ -87,7 +87,8 @@ jest.mock('expo-router', () => ({
 
 jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
   approvalController: {
-    handleGoBackIfNeeded: jest.fn()
+    handleGoBackIfNeeded: jest.fn(),
+    isLedgerSigningInProgress: jest.fn()
   }
 }))
 
@@ -188,7 +189,7 @@ function renderProvider(url = 'https://example.com') {
   )
   if (url) {
     act(() => {
-      hookReturn.result.current.setCurrentUrl(url)
+      hookReturn.result.current.handleCommittedUrl(url)
     })
   }
   return hookReturn
@@ -269,6 +270,8 @@ describe('useEvmInjectedProvider', () => {
   describe('handleProviderMessage', () => {
     it('ignores invalid JSON payload', () => {
       const { result } = renderProvider()
+      // The initial commit primes _accounts; isolate the message under test.
+      mockInjectJavaScript.mockClear()
 
       act(() => {
         result.current.handleProviderMessage('not-json')
@@ -282,7 +285,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         await act(async () => {
@@ -318,7 +321,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         // Switch browser to chain 1 (auto-approved)
@@ -475,7 +478,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -585,7 +588,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -651,7 +654,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         await act(async () => {
@@ -687,7 +690,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         await act(async () => {
@@ -713,7 +716,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         await act(async () => {
@@ -778,7 +781,7 @@ describe('useEvmInjectedProvider', () => {
           const { result } = renderProvider()
 
           act(() => {
-            result.current.setCurrentUrl('https://example.com')
+            result.current.handleCommittedUrl('https://example.com')
           })
 
           const payload = JSON.stringify({
@@ -825,7 +828,7 @@ describe('useEvmInjectedProvider', () => {
 
         // The page is actually loaded from a malicious origin...
         act(() => {
-          result.current.setCurrentUrl('https://malicious.example/path')
+          result.current.handleCommittedUrl('https://malicious.example/path')
         })
 
         // ...but it tries to spoof its display name via domain_metadata.
@@ -870,7 +873,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -900,7 +903,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1006,7 +1009,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1035,7 +1038,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1268,7 +1271,7 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderProvider()
 
         act(() => {
-          result.current.setCurrentUrl('https://example.com')
+          result.current.handleCommittedUrl('https://example.com')
         })
 
         const payload = JSON.stringify({
@@ -1330,10 +1333,10 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('exposes setCurrentUrl', () => {
+      it('exposes handleCommittedUrl', () => {
         const { result } = renderProvider()
 
-        expect(typeof result.current.setCurrentUrl).toBe('function')
+        expect(typeof result.current.handleCommittedUrl).toBe('function')
       })
     })
   })
@@ -1535,7 +1538,7 @@ describe('useEvmInjectedProvider', () => {
     })
   })
 
-  describe('setCurrentUrl origin-change cleanup', () => {
+  describe('handleCommittedUrl origin-change cleanup', () => {
     it('aborts in-flight signing request when navigating cross-origin', async () => {
       const { approvalController: mockApprovalController } = jest.requireMock(
         'vmModule/ApprovalController/ApprovalController'
@@ -1565,11 +1568,51 @@ describe('useEvmInjectedProvider', () => {
       expect(capturedSignal?.aborted).toBe(false)
 
       act(() => {
-        result.current.setCurrentUrl('https://opensea.io')
+        result.current.handleCommittedUrl('https://opensea.io')
       })
 
       expect(capturedSignal?.aborted).toBe(true)
       expect(mockApprovalController.handleGoBackIfNeeded).toHaveBeenCalled()
+    })
+
+    it('does NOT pop the screen on cross-origin nav while on-device Ledger signing is in progress (CP-14422)', async () => {
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
+      ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
+      // Uncancellable window: a signature is being confirmed on the device.
+      ;(
+        mockApprovalController.isLedgerSigningInProgress as jest.Mock
+      ).mockReturnValueOnce(true)
+
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
+
+      const { result } = renderProvider('https://uniswap.org')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io')
+      })
+
+      // Settlement still no-ops in the controller for this phase, and the abort
+      // still fires — but the review screen must NOT be popped out from under a
+      // signature the user is confirming on the device.
+      expect(capturedSignal?.aborted).toBe(true)
+      expect(mockApprovalController.handleGoBackIfNeeded).not.toHaveBeenCalled()
     })
 
     it('does NOT abort in-flight request on same-origin navigation (SPA route change)', async () => {
@@ -1595,7 +1638,7 @@ describe('useEvmInjectedProvider', () => {
 
       act(() => {
         // Same origin, different path — mimics a SPA nav_change message
-        result.current.setCurrentUrl('https://uniswap.org/pool')
+        result.current.handleCommittedUrl('https://uniswap.org/pool')
       })
 
       expect(capturedSignal?.aborted).toBe(false)
@@ -1622,7 +1665,7 @@ describe('useEvmInjectedProvider', () => {
 
       act(() => {
         // SPA route change within the same origin (e.g. core.app -> /stake).
-        result.current.setCurrentUrl('https://uniswap.org/stake')
+        result.current.handleCommittedUrl('https://uniswap.org/stake')
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1660,137 +1703,197 @@ describe('useEvmInjectedProvider', () => {
 
       expect(result.current.dappMetadata.current).toBeNull()
     })
+  })
 
-    describe('primes _accounts on page load', () => {
-      const metadata = JSON.stringify({
-        domain: 'opensea.io',
-        name: 'OpenSea',
-        icon: '',
-        url: 'https://opensea.io/'
-      })
+  describe('handleCommittedUrl primes _accounts', () => {
+    const metadata = JSON.stringify({
+      domain: 'opensea.io',
+      name: 'OpenSea',
+      icon: '',
+      url: 'https://opensea.io/'
+    })
 
-      const withPermission = (addr: string): ReturnType<typeof useStore> =>
-        ({
-          getState: () => ({
-            permissions: {
-              grants: {
-                'https://opensea.io': {
-                  [addr]: ['EVM']
-                }
+    const withPermission = (addr: string): ReturnType<typeof useStore> =>
+      ({
+        getState: () => ({
+          permissions: {
+            grants: {
+              'https://opensea.io': {
+                [addr]: ['EVM']
               }
             }
-          }),
-          dispatch: jest.fn(),
-          subscribe: jest.fn(() => () => undefined)
-        } as unknown as ReturnType<typeof useStore>)
+          }
+        }),
+        dispatch: jest.fn(),
+        subscribe: jest.fn(() => () => undefined)
+      } as unknown as ReturnType<typeof useStore>)
 
-      it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
-        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
-        const { result } = renderProvider()
-        act(() => {
-          result.current.setCurrentUrl('https://opensea.io/')
-        })
-        mockInjectJavaScript.mockClear()
+    it('injects accountsChanged([address]) when the committed origin has a grant for the active account', () => {
+      mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
 
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
 
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining(
-            `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
-          )
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
+        )
+      )
+    })
+
+    it('injects accountsChanged([]) when no grant exists for the committed origin', () => {
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+    })
+
+    it('origin-gates the prime emit to the current page origin', () => {
+      // The prime injection must be wrapped in a window.location.origin check
+      // so a prime racing a cross-origin nav can't leak the previous origin's
+      // granted accounts into the next origin's page.
+      mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'if(window.location.origin==="https://opensea.io")'
+        )
+      )
+    })
+
+    it('injects accountsChanged([]) on commit when the active account is NOT granted', () => {
+      // Origin granted to a different address than the active account.
+      // Priming the granted set here would re-establish a phantom connection
+      // the injected signer can't honor, so we emit [] instead (CP-14382).
+      mockUseStore.mockReturnValue(withPermission('0xSomeOtherGrantedAddr'))
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+    })
+
+    it('primes on first load even when domain_metadata arrived before the URL committed', () => {
+      // First-load ordering: the shim posts domain_metadata at the page's
+      // DOMContentLoaded, which fires BEFORE the native onLoad commits the
+      // URL. The metadata alone must not prime (no trusted origin yet); the
+      // later commit must.
+      mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      act(() => {
+        result.current.handleDomainMetadata(metadata)
+      })
+
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged'")
+      )
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
+
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
+        )
+      )
+    })
+
+    it('does not prime a new document with the previous origin grant (cross-origin nav)', () => {
+      // A→B navigation: B's domain_metadata arrives while currentUrlRef still
+      // holds A. Priming off that message would inject A's granted account
+      // into B's document. It must stay silent until B's URL commits.
+      mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
+      })
+      mockInjectJavaScript.mockClear()
+
+      act(() => {
+        result.current.handleDomainMetadata(
+          JSON.stringify({
+            domain: 'evil.example',
+            name: 'Evil',
+            icon: '',
+            url: 'https://evil.example/'
+          })
         )
       })
 
-      it('origin-gates the prime emit to the current page origin', () => {
-        // The prime injection must be wrapped in a window.location.origin check
-        // so a prime racing a cross-origin nav can't leak the previous origin's
-        // granted accounts into the next origin's page.
-        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
-        const { result } = renderProvider()
-        act(() => {
-          result.current.setCurrentUrl('https://opensea.io/')
-        })
-        mockInjectJavaScript.mockClear()
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged'")
+      )
 
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
-
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining(
-            'if(window.location.origin==="https://opensea.io")'
-          )
-        )
+      act(() => {
+        result.current.handleCommittedUrl('https://evil.example/')
       })
 
-      it('injects accountsChanged([]) when no grant exists for the origin', () => {
-        const { result } = renderProvider()
-        act(() => {
-          result.current.setCurrentUrl('https://opensea.io/')
-        })
-        mockInjectJavaScript.mockClear()
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+      )
+    })
 
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
+    it('does not inject accountsChanged when origin is missing', () => {
+      // Committing an empty URL leaves currentUrlRef origin '' so the prime
+      // guard early-returns.
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
 
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
-        )
+      act(() => {
+        result.current.handleCommittedUrl('')
       })
 
-      it('injects accountsChanged([]) on reload when the active account is NOT granted', () => {
-        // Origin granted to a different address than the active account.
-        // Priming the granted set here would re-establish a phantom connection
-        // the injected signer can't honor, so we emit [] instead (CP-14382).
-        mockUseStore.mockReturnValue(withPermission('0xSomeOtherGrantedAddr'))
-        const { result } = renderProvider()
-        act(() => {
-          result.current.setCurrentUrl('https://opensea.io/')
-        })
-        mockInjectJavaScript.mockClear()
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged'")
+      )
+    })
 
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
+    it('does not inject accountsChanged when there is no active account', () => {
+      setupMocks({ account: null })
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
 
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
-        )
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io/')
       })
 
-      it('does not inject accountsChanged when origin is missing', () => {
-        const { result } = renderProvider('')
-        // currentUrlRef is never set, so origin stays ''
-        mockInjectJavaScript.mockClear()
-
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
-
-        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
-          expect.stringContaining("__coreProviderEmit('accountsChanged'")
-        )
-      })
-
-      it('does not inject accountsChanged when there is no active account', () => {
-        setupMocks({ account: null })
-        const { result } = renderProvider()
-        act(() => {
-          result.current.setCurrentUrl('https://opensea.io/')
-        })
-        mockInjectJavaScript.mockClear()
-
-        act(() => {
-          result.current.handleDomainMetadata(metadata)
-        })
-
-        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
-          expect.stringContaining("__coreProviderEmit('accountsChanged'")
-        )
-      })
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderEmit('accountsChanged'")
+      )
     })
   })
 
@@ -1823,7 +1926,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountB })
@@ -1841,7 +1944,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountB })
@@ -1858,7 +1961,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       mockInjectJavaScript.mockClear()
 
       setupMocks({ account: accountC })
@@ -1873,7 +1976,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountC })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       // Switch to ungranted-adjacent path then back to a granted account.
       setupMocks({ account: accountA })
       act(() => rerender())
@@ -1892,7 +1995,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       setupMocks({ account: accountB })
       act(() => rerender())
       mockInjectJavaScript.mockClear()
@@ -1915,7 +2018,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'x' }))
       )
@@ -1933,7 +2036,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(storeGranting([A, B]))
       setupMocks({ account: accountA })
       const { rerender, result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       // First switch emits [A, B].
       setupMocks({ account: { ...mockActiveAccount } })
       act(() => rerender())
@@ -1984,7 +2087,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(store)
       setupMocks({ account: accountA })
       const { result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       // Prime so the dApp is seen connected to [A].
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
@@ -2014,7 +2117,7 @@ describe('useEvmInjectedProvider', () => {
       mockUseStore.mockReturnValue(store)
       setupMocks({ account: accountA })
       const { result } = renderProvider()
-      act(() => result.current.setCurrentUrl(ORIGIN))
+      act(() => result.current.handleCommittedUrl(ORIGIN))
       act(() =>
         result.current.handleDomainMetadata(JSON.stringify({ name: 'OpenSea' }))
       )

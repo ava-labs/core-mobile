@@ -2,10 +2,19 @@ import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/type
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
-import { DerivationPathType, NetworkVMType } from '@avalabs/vm-module-types'
+import {
+  DerivationPathType,
+  MessageTypes,
+  NetworkVMType,
+  RpcMethod,
+  TypedData,
+  TypedDataV1
+} from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { BigNumberish, TransactionRequest } from 'ethers'
 import { BigIntLike, BytesLike, AddressLike } from '@ethereumjs/util'
+import { SignTypedDataVersion } from '@metamask/eth-sig-util'
+import { isTypedData } from '@avalabs/evm-module'
 import isString from 'lodash.isstring'
 import { LegacyTxData } from '@ethereumjs/tx'
 import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
@@ -69,6 +78,30 @@ export const addBufferToCChainBaseFee = (
   return adjustedBaseFee.toSubUnit() >= minAvax.toSubUnit()
     ? adjustedBaseFee
     : minAvax
+}
+
+// Single source of truth for choosing the SignTypedData version from the RPC
+// method. The signer (MnemonicWallet / PrivateKeyWallet) and the defense-in-depth
+// verifier (assertEvmMessageSigner) MUST select the same version, otherwise a
+// legitimate signature would fail recovery and be rejected as a "signer mismatch"
+// (CP-14468). Keeping this in one place prevents the signer and verifier from
+// drifting apart.
+export const getEvmTypedDataVersion = (
+  rpcMethod: RpcMethod,
+  data: TypedDataV1 | TypedData<MessageTypes>
+): SignTypedDataVersion => {
+  switch (rpcMethod) {
+    case RpcMethod.SIGN_TYPED_DATA_V3:
+      return SignTypedDataVersion.V3
+    case RpcMethod.SIGN_TYPED_DATA_V4:
+      return SignTypedDataVersion.V4
+    default:
+      // eth_signTypedData / _v1 have been observed carrying a V4 payload, so we
+      // detect it rather than blindly assuming V1.
+      return isTypedData(data)
+        ? SignTypedDataVersion.V4
+        : SignTypedDataVersion.V1
+  }
 }
 
 export const getAddressDerivationPath = ({

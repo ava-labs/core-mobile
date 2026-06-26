@@ -1195,6 +1195,61 @@ describe('createInjectedProviderRouter', () => {
       ).not.toThrow()
     })
 
+    it('aborts a signing request that registers AFTER a cross-origin nav (pre-registration race)', async () => {
+      // The edge-triggered cancelByOrigin runs (page navigated away) BEFORE this
+      // request registers its in-flight controller — so the abort loop finds
+      // nothing and never re-fires. Without live-origin tracking the request
+      // would park a modal that can never be cancelled and hang. (CP-14422)
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      let capturedSignal: AbortSignal | undefined
+      requestSigning.mockImplementationOnce(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      // Cross-origin nav lands first (no in-flight request yet to abort).
+      router.cancelByOrigin('https://other.example')
+
+      // Then the signing request for the now-stale origin registers.
+      sendWithId(router, 42, {
+        method: 'personal_sign',
+        params: ['0xMsg', '0xAddr']
+      })
+      await new Promise(r => setImmediate(r))
+
+      // Its signal must be born aborted, so the signing pipeline short-circuits
+      // to userRejectedRequest instead of opening an uncancellable modal.
+      expect(capturedSignal?.aborted).toBe(true)
+    })
+
+    it('does not abort a request that registers for the new (post-nav) origin', async () => {
+      // Guard against over-aborting: after navigating to other.example, a request
+      // legitimately originating from other.example must NOT be aborted.
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR],
+        nativeOrigin: 'https://other.example'
+      })
+      let capturedSignal: AbortSignal | undefined
+      requestSigning.mockImplementationOnce(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      router.cancelByOrigin('https://other.example')
+
+      sendWithId(router, 42, {
+        method: 'personal_sign',
+        params: ['0xMsg', '0xAddr']
+      })
+      await new Promise(r => setImmediate(r))
+
+      expect(capturedSignal?.aborted).toBe(false)
+    })
+
     it('cleans up in-flight tracking after abort', async () => {
       const { deps, requestSigning } = makeDeps({
         grantedAddresses: [MOCK_ADDR]
@@ -1212,10 +1267,11 @@ describe('createInjectedProviderRouter', () => {
       router.cancelByOrigin('https://other.example')
       expect(signals[0]?.aborted).toBe(true)
 
-      // A second cancel round should not re-abort the same controller.
-      // (If it did, reading .aborted still returns true, but the important
-      // thing is the entry was removed from the map.) Fire another request
-      // and confirm it gets its own independent signal.
+      // The entry was removed from the map (re-cancel won't double-abort it).
+      // Now the page returns to its origin (getNativeOrigin), so a fresh request
+      // from that origin gets its own independent, non-aborted signal — the
+      // live-origin guard only aborts requests whose origin is now stale.
+      router.cancelByOrigin('https://example.com')
       sendWithId(router, 2, { method: 'personal_sign', params: ['c', 'd'] })
       await new Promise(r => setImmediate(r))
       expect(signals[1]).toBeDefined()

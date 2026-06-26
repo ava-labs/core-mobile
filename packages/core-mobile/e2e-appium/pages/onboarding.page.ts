@@ -6,6 +6,14 @@ import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
 class OnboardingPage {
+  get continueWithGoogle() {
+    return selectors.getById(onboardingLoc.continueWithGoogle)
+  }
+
+  get continueWithApple() {
+    return selectors.getById(onboardingLoc.continueWithApple)
+  }
+
   get accessExistingWallet() {
     return selectors.getById(onboardingLoc.accessExistingWallet)
   }
@@ -32,6 +40,10 @@ class OnboardingPage {
 
   get unlockBtn() {
     return selectors.getById(onboardingLoc.unlockBtn)
+  }
+
+  get skip() {
+    return selectors.getById(onboardingLoc.skip)
   }
 
   get agreeAndContinue() {
@@ -181,12 +193,20 @@ class OnboardingPage {
     await actions.tap(this.letsGo)
   }
 
-  async tapUnlockBtn() {
-    await actions.tap(this.unlockBtn, this.recoveryPhraseInput)
+  async tapUnlockBtn(expectedEle = this.recoveryPhraseInput) {
+    await actions.tap(this.unlockBtn, expectedEle)
   }
 
-  async tapAgreeAndContinue() {
-    await actions.tap(this.agreeAndContinue, this.unlockBtn)
+  async tapSkip() {
+    await actions.tap(this.skip)
+  }
+
+  async tapContinueWithGoogle() {
+    await actions.tap(this.continueWithGoogle)
+  }
+
+  async tapAgreeAndContinue(expectedEle = this.unlockBtn) {
+    await actions.tap(this.agreeAndContinue, expectedEle)
   }
 
   async tapImport() {

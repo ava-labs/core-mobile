@@ -32,6 +32,12 @@ class KeystoneService {
   }
 
   async save(): Promise<void> {
+    // walletInfo is only populated by init() during the onboarding QR scan and
+    // is not rehydrated from storage. On a cold relaunch it is empty, so guard
+    // against overwriting the real stored xpubs with empty strings.
+    if (!this.walletInfo.evm || !this.walletInfo.xp || !this.walletInfo.mfp) {
+      return
+    }
     await KeystoneDataStorage.save(this.walletInfo)
   }
 }

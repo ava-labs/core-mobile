@@ -58,7 +58,9 @@ export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
 export default class KeystoneWallet implements Wallet {
   #mfp: string
   #xpub: string
-  #xpubXP: string
+  // May be undefined for a Keystone wallet without X/P data; the xpubXP getter
+  // asserts presence, so X/P operations fail clearly while EVM/BTC still sign.
+  #xpubXP: string | undefined
 
   constructor(keystoneData: KeystoneDataStorageType) {
     this.#mfp = keystoneData.mfp
@@ -72,7 +74,12 @@ export default class KeystoneWallet implements Wallet {
   }
 
   public get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
+    // Fail closed on any falsy value (undefined OR empty string): a Keystone
+    // wallet may legitimately lack X/P data, and we must never feed an empty
+    // xpub into X/P address derivation / signing. EVM/BTC never read this getter.
+    if (!this.#xpubXP) {
+      throw new Error('no public key (xpubXP) available')
+    }
     return this.#xpubXP
   }
 

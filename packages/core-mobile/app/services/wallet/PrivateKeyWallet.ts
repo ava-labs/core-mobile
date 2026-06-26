@@ -16,11 +16,7 @@ import {
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest, Wallet as EthersWallet } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import {
-  personalSign,
-  signTypedData,
-  SignTypedDataVersion
-} from '@metamask/eth-sig-util'
+import { personalSign, signTypedData } from '@metamask/eth-sig-util'
 import Logger from 'utils/Logger'
 import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
@@ -34,6 +30,7 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
+import { getEvmTypedDataVersion } from 'services/wallet/utils'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { Curve } from 'utils/publicKeys'
 import { ed25519 } from '@noble/curves/ed25519'
@@ -350,35 +347,21 @@ export class PrivateKeyWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V1: {
         if (typeof data === 'string') throw new Error('data cannot be string')
 
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 = isTypedData(data)
-
         const key = await this.getSigningKey({
           accountIndex,
           network,
           provider
         })
+        // instances were observed where method was eth_signTypedData or
+        // eth_signTypedData_v1, however, payload was V4 — getEvmTypedDataVersion
+        // detects that case.
         return signTypedData({
           privateKey: key,
           data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+          version: getEvmTypedDataVersion(rpcMethod, data)
         })
       }
-      case RpcMethod.SIGN_TYPED_DATA_V3: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      }
+      case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4: {
         if (!isTypedData(data)) throw new Error('invalid typed data')
 
@@ -390,7 +373,7 @@ export class PrivateKeyWallet implements Wallet {
         return signTypedData({
           privateKey: key,
           data,
-          version: SignTypedDataVersion.V4
+          version: getEvmTypedDataVersion(rpcMethod, data)
         })
       }
       default:

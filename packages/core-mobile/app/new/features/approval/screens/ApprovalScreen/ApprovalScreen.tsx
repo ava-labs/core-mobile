@@ -4,6 +4,9 @@ import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurringApprovalContext'
+import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
+import { useDismissOnCancelledRequest } from 'features/approval/hooks/useDismissOnCancelledRequest'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -26,7 +29,9 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
-import { selectIsWalletLedger } from 'store/wallet/slice'
+import { selectIsWalletLedger, selectWalletById } from 'store/wallet/slice'
+import { RootState } from 'store/types'
+import { selectAccountByAddress } from 'store/account/slice'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -35,18 +40,57 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getAccountUnavailableMessage,
   getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
+  isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary
 } from './utils'
 
-const ApprovalScreen = ({
-  params: { request, displayData, signingData, onApprove, onReject }
+// Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
+// Splitting it out keeps the main render's cognitive complexity at its
+// pre-existing limit — the `if (isMalformed) return null` is a security
+// invariant (must short-circuit before Approve is reachable), not a render
+// branch we want inlined into the main component's JSX.
+const ApprovalScreen = (props: {
+  params: ApprovalParams
+}): JSX.Element | null => {
+  const rejectAndClose = useCallback(
+    (message?: string) => {
+      props.params.onReject(message)
+      if (router.canGoBack()) {
+        router.back()
+      } else if (router.canDismiss()) {
+        router.dismissAll()
+      }
+    },
+    [props.params.onReject]
+  )
+  const { recurringContext, isRecurringContextMalformed } =
+    useRecurringApprovalContext(props.params.request, rejectAndClose)
+  if (isRecurringContextMalformed) return null
+  return (
+    <ApprovalScreenInner
+      params={props.params}
+      recurringContext={recurringContext}
+    />
+  )
+}
+
+const ApprovalScreenInner = ({
+  params: { request, displayData, signingData, signal, onApprove, onReject },
+  recurringContext
 }: {
   params: ApprovalParams
+  recurringContext: ReturnType<
+    typeof useRecurringApprovalContext
+  >['recurringContext']
 }): JSX.Element => {
+  // Self-dismiss if a cross-origin nav already cancelled this request before the
+  // screen mounted (the generic pop can race the mount and miss). (CP-14422)
+  useDismissOnCancelledRequest(signal)
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -66,6 +110,24 @@ const ApprovalScreen = ({
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
+  // The request targets an account that isn't in the active wallet, so it can't
+  // be signed — surface a clear reason rather than just a disabled button.
+  const requestedAccountUnavailable = isRequestedAccountUnavailable(
+    signingData,
+    account
+  )
+  // Resolve which wallet owns the requested address (read-only, display only —
+  // never used for signing) so we can name it in the warning.
+  const requestedAddress =
+    'account' in signingData ? signingData.account : undefined
+  const owningAccount = useSelector((state: RootState) =>
+    requestedAccountUnavailable && requestedAddress
+      ? selectAccountByAddress(requestedAddress)(state)
+      : undefined
+  )
+  const owningWallet = useSelector((state: RootState) =>
+    owningAccount ? selectWalletById(owningAccount.walletId)(state) : undefined
+  )
 
   const [submitting, setSubmitting] = useState(false)
   const [gasLimit, setGasLimit] = useState<number | undefined>(
@@ -284,6 +346,21 @@ const ApprovalScreen = ({
     )
   }, [gaslessError])
 
+  const renderAccountUnavailableWarning =
+    useCallback((): JSX.Element | null => {
+      if (!requestedAccountUnavailable) return null
+
+      return (
+        <Warning
+          message={getAccountUnavailableMessage(
+            owningWallet?.name,
+            owningAccount?.name
+          )}
+          sx={{ marginBottom: 12, marginRight: 16 }}
+        />
+      )
+    }, [requestedAccountUnavailable, owningWallet?.name, owningAccount?.name])
+
   const renderDappInfo = useCallback(
     (dAppInfo: {
       name: string
@@ -469,8 +546,16 @@ const ApprovalScreen = ({
       }}
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
+      {renderAccountUnavailableWarning()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
+      {/* If a request carries `RECURRING_SWAP` context, only render the preview
+          on the actual recurring action signature (not on any preceding ERC-20
+          allowance approval). `spendLimits.length > 0` is a heuristic: a
+          non-empty list indicates this sheet is the allowance approval step. */}
+      {recurringContext && spendLimits.length === 0 && (
+        <RecurrenceDetails context={recurringContext} />
+      )}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
       {renderDetails()}

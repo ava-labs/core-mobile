@@ -13,6 +13,7 @@ import { Account, XPAddressDictionary } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { getAvalancheChainAliasCaip2 } from '../../utils/getAvalancheChainAliasCaip2'
+import { CCT_CALLBACKS_ERROR_TAG } from './consts'
 
 /**
  * Live state accessors the callbacks need at invocation time. Each is read on
@@ -73,7 +74,8 @@ export type CctCallbacks = Pick<
 export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   const getRequiredAccount = (): Account => {
     const account = deps.getActiveAccount()
-    if (!account) throw new Error('[cctCallbacks] no active account')
+    if (!account)
+      throw new Error(`${CCT_CALLBACKS_ERROR_TAG} no active account`)
     return account
   }
 
@@ -87,7 +89,9 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
       // (e.g. Keystone non-primary account). Refuse to build the wallet
       // rather than silently producing an Avalanche.AddressWallet with no
       // X/P addresses, which would return empty UTXOs and empty addresses.
-      throw new Error('[cctCallbacks] xpAddresses empty for active account')
+      throw new Error(
+        `${CCT_CALLBACKS_ERROR_TAG} xpAddresses empty for active account`
+      )
     }
     return AvalancheWalletService.getReadOnlySigner({
       account,
@@ -109,7 +113,7 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
       // fall back to default derivation paths and produce a signature that
       // doesn't match the UTXO output owners. Fail fast.
       throw new Error(
-        '[cctCallbacks] xpAddressDictionary empty for active account'
+        `${CCT_CALLBACKS_ERROR_TAG} xpAddressDictionary empty for active account`
       )
     }
 
@@ -162,7 +166,9 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
       // empty for wallets that don't derive a Coreth bech32 address (some
       // Ledger paths). Returning '' would only surface as an opaque SDK
       // failure later — fail fast instead.
-      throw new Error('[cctCallbacks] addressCoreEth empty for active account')
+      throw new Error(
+        `${CCT_CALLBACKS_ERROR_TAG} addressCoreEth empty for active account`
+      )
     }
     return addressCoreEth
   }
