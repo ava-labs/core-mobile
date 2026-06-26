@@ -32,6 +32,9 @@ import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
+// Extra padding bottom so the gradient doesnt cover the bottom of the screen
+const EXTRA_PADDING_BOTTOM = 48
+
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
@@ -447,9 +450,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
-                paddingBottom: disableStickyFooter
-                  ? insets.bottom + 32
-                  : (footerLayout?.height ?? 0) + 32,
+                paddingBottom:
+                  (footerLayout?.height ?? 0) +
+                  (disableStickyFooter ? insets.bottom : 0) +
+                  EXTRA_PADDING_BOTTOM,
                 paddingTop: headerHeight
               }
             ]}
@@ -485,7 +489,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 48,
+              paddingBottom:
+                (footerLayout?.height ?? 0) +
+                insets.bottom +
+                EXTRA_PADDING_BOTTOM,
               paddingTop: headerHeight
             }
           ]}
