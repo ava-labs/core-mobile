@@ -12,7 +12,6 @@ import {
 import { useIsFocused } from 'expo-router'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useStakes } from 'hooks/earn/useStakes'
@@ -183,8 +182,7 @@ export const StakeCardList = ({
               marginBottom: 14,
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
-            }}
-            entering={getListItemEnteringAnimation(index)}>
+            }}>
             {content}
           </Animated.View>
         )

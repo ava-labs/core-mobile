@@ -12,7 +12,6 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { GRID_GAP } from 'common/consts'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React from 'react'
 import { Dimensions } from 'react-native'
@@ -70,7 +69,7 @@ export const TokenGridView = ({
   }
 
   return (
-    <Animated.View entering={getListItemEnteringAnimation(index)}>
+    <Animated.View>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{

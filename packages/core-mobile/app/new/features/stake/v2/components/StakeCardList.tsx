@@ -9,10 +9,6 @@ import {
 import { useIsFocused } from 'expo-router'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -107,10 +103,7 @@ export const StakeCardList = ({
   })
 
   const renderItem = useCallback(
-    ({
-      item,
-      index
-    }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
+    ({ item }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
       let content: JSX.Element | null = null
       if (item === StaticCard.Add) {
         content = (
@@ -132,9 +125,7 @@ export const StakeCardList = ({
           style={{
             marginBottom: 14,
             marginHorizontal: GRID_GAP / 2
-          }}
-          entering={getListItemEnteringAnimation(index)}
-          exiting={getListItemExitingAnimation(index)}>
+          }}>
           {content}
         </Animated.View>
       )
