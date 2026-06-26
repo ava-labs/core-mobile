@@ -229,7 +229,14 @@ export const BorrowTabContent = ({
 
   return (
     <FlashList
-      key={`borrow-tab-${sort.selected}`}
+      // Remount the grid when the sort selection or the selected protocol
+      // changes. Switching protocol swaps `contentState` in place without
+      // remounting this component, so on Fabric the grid reorders cells without
+      // recomputing the `numColumns` layout (uneven gaps / misalignment).
+      // Including the protocol (the borrow tab's "filter" analog) gives each
+      // data set a fresh layout pass, consistent with the deposit tab keying on
+      // its filter + sort.
+      key={`borrow-tab-${selectedProtocol}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}
