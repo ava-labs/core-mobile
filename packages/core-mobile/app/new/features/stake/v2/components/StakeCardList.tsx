@@ -199,6 +199,14 @@ export const StakeCardList = ({
 
   return (
     <FlashList
+      // Remount the masonry grid when the filter/sort selection changes. On
+      // Fabric, FlashList's masonry layout manager retains stale column heights
+      // across an in-place `data` reorder, so cells keep their previous column
+      // positions and the inter-card gaps break. Keying by the active selection
+      // gives each ordering a fresh layout pass (matches the v1 StakeCardList
+      // and StakeSearchScreen approach). It stays stable per selection so it
+      // doesn't thrash on background stake refreshes.
+      key={`stake-card-list-${filter.selected}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}
