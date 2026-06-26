@@ -78,8 +78,15 @@ export const NetworkFeeSelectorWithGasless = ({
     )
   }
 
+  // Async-resolved fee data readiness (chain + gas limit). Drives the reflow key
+  // below. Kept separate from the user's gasless toggle so toggling gasless does
+  // NOT remount the subtree (the Toggle keeps its press animation).
+  const isFeeDataReady = !!chainId && !!gasLimit
+
   const renderNetworkFeeSelector = (): JSX.Element | null => {
     if (gaslessEnabled && shouldShowGaslessSwitch) return null
+    // Narrow chainId/gasLimit inline (mirrors `isFeeDataReady`) so TS knows
+    // they're defined when passed to NetworkFeeSelector.
     if (!chainId || !gasLimit) return null
 
     return (
@@ -91,9 +98,20 @@ export const NetworkFeeSelectorWithGasless = ({
     )
   }
 
+  // CP-14599: the gasless toggle row and the network-fees rows each become
+  // visible asynchronously (the toggle once `shouldShowGaslessSwitch` resolves,
+  // the fee rows once `gasLimit` resolves). Under Fabric, inserting/growing one
+  // of these does not reliably reflow the already-laid-out sibling, so the two
+  // rows paint on top of each other. Remounting this subtree whenever that async
+  // visibility flips forces a clean layout pass so the rows stack with the
+  // toggle's `marginBottom` spacing intact. The key is keyed on async-resolved
+  // visibility (not the user's gasless toggle) so it flips once as the data
+  // settles and stays stable afterwards — the Toggle keeps its own animation.
+  const reflowKey = `gasless:${shouldShowGaslessSwitch}-fee:${isFeeDataReady}`
+
   return (
-    <View>
-      <View>{renderGaslessSwitch()}</View>
+    <View key={reflowKey}>
+      {renderGaslessSwitch()}
       {renderNetworkFeeSelector()}
       {errorMessage && (
         <Text
