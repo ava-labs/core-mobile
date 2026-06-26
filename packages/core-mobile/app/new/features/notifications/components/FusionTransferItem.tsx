@@ -128,7 +128,7 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         variant="body2"
         sx={{
           lineHeight: 15,
-          fontWeight: 500,
+          fontFamily: 'Inter-SemiBold',
           color:
             status === NotificationSwapStatus.Completed
               ? '$textSuccess'
