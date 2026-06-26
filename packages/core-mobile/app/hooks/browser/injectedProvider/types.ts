@@ -69,6 +69,12 @@ export type RouterDeps = {
   getPeerMeta: () => PeerMeta
   getActiveAccount: () => Account | undefined
 
+  // Whether the wallet is in developer (testnet) mode. Avalanche signing routes
+  // by an AVAX-namespace CAIP-2 derived from the request's chainAlias, and that
+  // CAIP-2 must match the current environment (Fuji vs mainnet) so the right
+  // module/network is loaded. CP-13672.
+  getIsDeveloperMode: () => boolean
+
   // Permissions
   /**
    * Every address at `domain` granted for `vmType`. Used by
@@ -101,4 +107,12 @@ export type RouterDeps = {
     peerMeta: PeerMeta,
     requestId: number
   ) => Promise<Account[]>
+
+  /**
+   * Switch the wallet's active account. The injected signer is active-only, so
+   * on connect we make the account the user selected the active one (when it
+   * isn't already) — otherwise the connection reconciles to nothing (4100) and
+   * the dApp reconnect-loops. Resolves once the switch is applied. (CP-14385)
+   */
+  setActiveAccount: (accountId: string) => Promise<void>
 }
