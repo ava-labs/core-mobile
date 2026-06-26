@@ -73,6 +73,7 @@ describe('coreMobileProvider', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
         {
+          provider: 'injected',
           encrypted: {
             dAppUrl: 'https://test.dapp.com',
             // EVM address is lowercased to a canonical form (CP-13825)
@@ -103,6 +104,7 @@ describe('coreMobileProvider', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
         {
+          provider: 'injected',
           encrypted: expect.objectContaining({
             address: NON_ACTIVE_FROM.toLowerCase()
           })
@@ -126,6 +128,7 @@ describe('coreMobileProvider', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
         {
+          provider: 'injected',
           encrypted: expect.objectContaining({
             address: mockActiveAccount.addressC.toLowerCase()
           })
@@ -145,6 +148,7 @@ describe('coreMobileProvider', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'avalanche_sendTransaction_success',
         {
+          provider: 'injected',
           encrypted: expect.objectContaining({
             address: mockActiveAccount.addressPVM
           })
@@ -162,6 +166,7 @@ describe('coreMobileProvider', () => {
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'bitcoin_sendTransaction_success',
         {
+          provider: 'injected',
           encrypted: expect.objectContaining({
             address: mockActiveAccount.addressBTC
           })

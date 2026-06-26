@@ -92,6 +92,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: {
               dAppUrl: 'https://test.dapp.com',
               // EVM address is lowercased to a canonical form (CP-13825)
@@ -118,6 +119,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               dAppUrl: 'https://test.dapp.com',
               // C-chain is EVM; address is lowercased to canonical form (CP-13825)
@@ -143,6 +145,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               address: mockActiveAccount.addressPVM
             })
@@ -165,6 +168,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               address: mockActiveAccount.addressAVM
             })
@@ -187,6 +191,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               dAppUrl: 'https://test.dapp.com',
               address: mockActiveAccount.addressBTC,
@@ -211,6 +216,7 @@ describe('walletConnectProvider', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               dAppUrl: 'https://test.dapp.com',
               address: mockActiveAccount.addressSVM,

@@ -148,6 +148,8 @@ class ApprovalController implements VmModuleApprovalController {
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.capture(eventName, {
+        // dApp-originated + in-app topic ⇒ injected browser; otherwise WC.
+        provider: isInAppRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,
@@ -208,6 +210,8 @@ class ApprovalController implements VmModuleApprovalController {
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.capture(eventName, {
+        // dApp-originated + in-app topic ⇒ injected browser; otherwise WC.
+        provider: isInAppRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,

@@ -71,6 +71,7 @@ class CoreMobileProvider implements AgnosticRpcProvider {
           (account ? getAddressForChainId(chainId, account) ?? '' : '')
       )
       AnalyticsService.capture(`${request.method}_success`, {
+        provider: 'injected',
         encrypted: {
           dAppUrl: request.peerMeta.url,
           address,

@@ -16,6 +16,22 @@ type DappTxEventPayload = {
 }
 
 /**
+ * Transport the dApp request came through. Sent as a top-level (plaintext)
+ * property — NOT inside `encrypted` — so MTU / usage dashboards can segment
+ * injected-browser vs WalletConnect traffic. CP-13825.
+ */
+export type DappTxProvider = 'injected' | 'walletConnect'
+
+/**
+ * Wrapper for every dApp-transaction lifecycle event: a queryable `provider`
+ * discriminator plus the encrypted per-tx payload.
+ */
+type DappTxEvent = {
+  provider: DappTxProvider
+  encrypted: DappTxEventPayload
+}
+
+/**
  * All analytics event payloads.
  *
  * Events with an `encrypted` field are automatically encrypted by
@@ -470,18 +486,18 @@ export type AnalyticsEvents = {
   }
 
   // dApp transaction lifecycle
-  eth_sendTransaction_success: { encrypted: DappTxEventPayload }
-  avalanche_sendTransaction_success: { encrypted: DappTxEventPayload }
-  bitcoin_sendTransaction_success: { encrypted: DappTxEventPayload }
-  solana_signAndSendTransaction_success: { encrypted: DappTxEventPayload }
-  eth_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
-  avalanche_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
-  bitcoin_sendTransaction_confirmed: { encrypted: DappTxEventPayload }
-  solana_signAndSendTransaction_confirmed: { encrypted: DappTxEventPayload }
-  eth_sendTransaction_failed: { encrypted: DappTxEventPayload }
-  avalanche_sendTransaction_failed: { encrypted: DappTxEventPayload }
-  bitcoin_sendTransaction_failed: { encrypted: DappTxEventPayload }
-  solana_signAndSendTransaction_failed: { encrypted: DappTxEventPayload }
+  eth_sendTransaction_success: DappTxEvent
+  avalanche_sendTransaction_success: DappTxEvent
+  bitcoin_sendTransaction_success: DappTxEvent
+  solana_signAndSendTransaction_success: DappTxEvent
+  eth_sendTransaction_confirmed: DappTxEvent
+  avalanche_sendTransaction_confirmed: DappTxEvent
+  bitcoin_sendTransaction_confirmed: DappTxEvent
+  solana_signAndSendTransaction_confirmed: DappTxEvent
+  eth_sendTransaction_failed: DappTxEvent
+  avalanche_sendTransaction_failed: DappTxEvent
+  bitcoin_sendTransaction_failed: DappTxEvent
+  solana_signAndSendTransaction_failed: DappTxEvent
   solana_signTransaction_approved: {
     encrypted: Omit<DappTxEventPayload, 'txHash'>
   }

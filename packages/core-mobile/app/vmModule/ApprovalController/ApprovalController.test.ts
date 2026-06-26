@@ -242,7 +242,14 @@ describe('ApprovalController', () => {
     mockIsInAppReview.mockReturnValue(false)
     mockIsSuccessToastEnabled.mockReturnValue(true)
     mockIsImmediateSentToast.mockReturnValue(false)
-    mockIsInAppRequest.mockReturnValue(false)
+    // Mirror the real isInAppRequest (sessionId === CORE_MOBILE_TOPIC) so the
+    // provider discriminator is genuinely driven by each request builder's
+    // topic — injected (CORE_MOBILE_TOPIC) → true, WalletConnect → false.
+    // Individual tests still override with mockReturnValue where they need a
+    // fixed value (e.g. confetti / presentation-mode checks). CP-13825.
+    mockIsInAppRequest.mockImplementation(
+      (request: RpcRequest) => request.sessionId === CORE_MOBILE_TOPIC
+    )
     // Default to post-Helicon (no optimistic UI), matching the steady state
     // this codepath will live in. Tests for the pre-Helicon path opt in.
     mockIsOptimisticConfirmationEnabled.mockResolvedValue(false)
@@ -367,7 +374,10 @@ describe('ApprovalController', () => {
 
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_confirmed',
-        { encrypted: expect.objectContaining({ txHash: TX_HASH }) }
+        {
+          provider: 'walletConnect',
+          encrypted: expect.objectContaining({ txHash: TX_HASH })
+        }
       )
     })
 
@@ -507,6 +517,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
           {
+            provider: 'walletConnect',
             encrypted: {
               dAppUrl: DAPP_URL,
               // EVM address is lowercased to a canonical form (CP-13825)
@@ -533,7 +544,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ txHash: TX_HASH }) }
+          {
+            provider: 'walletConnect',
+            encrypted: expect.objectContaining({ txHash: TX_HASH })
+          }
         )
       })
 
@@ -553,6 +567,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               chainId: AvalancheCaip2ChainId.C,
               txHash: TX_HASH
@@ -586,6 +601,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
           {
+            provider: 'injected',
             encrypted: {
               dAppUrl: DAPP_URL,
               // EVM address is lowercased to a canonical form (CP-13825)
@@ -613,6 +629,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
           {
+            provider: 'injected',
             encrypted: expect.objectContaining({
               address: NON_ACTIVE_SIGNER.toLowerCase()
             })
@@ -639,7 +656,10 @@ describe('ApprovalController', () => {
         )
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: '0xbbbb' }) }
+          {
+            provider: 'walletConnect',
+            encrypted: expect.objectContaining({ address: '0xbbbb' })
+          }
         )
       })
 
@@ -652,7 +672,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: '' }) }
+          {
+            provider: 'walletConnect',
+            encrypted: expect.objectContaining({ address: '' })
+          }
         )
       })
 
@@ -670,6 +693,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               address: EVM_ADDRESS.toLowerCase()
             })
@@ -686,7 +710,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: '' }) }
+          {
+            provider: 'walletConnect',
+            encrypted: expect.objectContaining({ address: '' })
+          }
         )
       })
 
@@ -795,6 +822,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_failed',
           {
+            provider: 'walletConnect',
             encrypted: {
               dAppUrl: DAPP_URL,
               // EVM address is lowercased to a canonical form (CP-13825)
@@ -822,6 +850,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_failed',
           {
+            provider: 'walletConnect',
             encrypted: expect.objectContaining({
               address: btcAddress,
               txHash: 'btctxhash'
@@ -851,6 +880,7 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_failed',
           {
+            provider: 'injected',
             encrypted: {
               dAppUrl: DAPP_URL,
               // EVM address is lowercased to a canonical form (CP-13825)

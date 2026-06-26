@@ -173,6 +173,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
           )
         )
         AnalyticsService.capture(`${request.method}_success`, {
+          provider: 'walletConnect',
           encrypted: {
             dAppUrl: request.peerMeta.url,
             address,
