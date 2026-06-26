@@ -7,9 +7,15 @@ import {
   OnTabChangeCallback,
   TabBarProps,
   Tabs,
-  useCurrentTabScrollY
+  useCurrentTabScrollY,
+  useHeaderMeasurements
 } from 'react-native-collapsible-tab-view'
-import { useAnimatedReaction } from 'react-native-reanimated'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedReaction,
+  useAnimatedStyle
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 
@@ -110,6 +116,7 @@ const CollapsibleTabWrapper = ({
 
 const ContentWrapper = ({
   children,
+  animate = true,
   extraOffset = 0
 }: {
   children: React.ReactNode
@@ -119,23 +126,49 @@ const ContentWrapper = ({
    * content.
    * @default 0
    */
+  animate?: boolean
   extraOffset?: number
 }): JSX.Element => {
+  const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
+  const header = useHeaderMeasurements()
   const tabBarHeight = useBottomTabBarHeight()
 
-  // With the layout-header-inset model the surrounding list reserves the header
-  // space via `paddingTop`, so the empty / loading / error content only needs to
-  // be centered in the remaining viewport (above the bottom tab bar / safe area).
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateY = animate
+      ? interpolate(
+          scrollY.value,
+          [0, header.height],
+          [-48, tabBarHeight],
+          Extrapolation.CLAMP
+        )
+      : 0
+
+    return {
+      transform: [
+        {
+          translateY
+        }
+      ]
+    }
+  })
+
   return (
     <View
       style={{
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
-        paddingBottom: insets.bottom + tabBarHeight + extraOffset
+        alignItems: 'center'
       }}>
-      {children}
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            paddingBottom: insets.bottom + tabBarHeight + extraOffset
+          }
+        ]}>
+        {children}
+      </Animated.View>
     </View>
   )
 }
