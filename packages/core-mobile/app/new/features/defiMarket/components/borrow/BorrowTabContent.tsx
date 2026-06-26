@@ -8,10 +8,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -143,8 +139,6 @@ export const BorrowTabContent = ({
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
-            entering={getListItemEnteringAnimation(index)}
-            exiting={getListItemExitingAnimation(index)}
             layout={SPRING_LINEAR_TRANSITION}>
             {content}
           </Animated.View>
