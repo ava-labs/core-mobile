@@ -66,10 +66,10 @@ export const GasOptions = ({
                 <Text
                   variant="body1"
                   sx={{
+                    fontFamily: 'Inter-SemiBold',
                     color: textColor,
                     fontSize: 15,
-                    lineHeight: 20,
-                    fontWeight: '500'
+                    lineHeight: 20
                   }}>
                   {item}
                 </Text>
