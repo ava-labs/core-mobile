@@ -15,16 +15,27 @@ export const getAddressWithCaip2ChainId = ({
 }): string | undefined => {
   let address: string | undefined
 
+  // Resolve the per-chain address first, then guard against an empty/missing
+  // value before building the CAIP-10 account string. Non-primary Keystone
+  // accounts have empty X/P (AVM/PVM) addresses (CP-14606); without this guard
+  // we would advertise a malformed "avax:<chain>:" account (trailing colon, no
+  // address) to the dApp.
+  let resolvedAddress: string | undefined
+
   if (blockchainNamespace === BlockchainNamespace.AVAX) {
-    address = isXChainId(caip2ChainId)
-      ? `${caip2ChainId}:${account.addressAVM}`
+    resolvedAddress = isXChainId(caip2ChainId)
+      ? account.addressAVM
       : isPChainId(caip2ChainId)
-      ? `${caip2ChainId}:${account.addressPVM}`
+      ? account.addressPVM
       : undefined
   } else if (blockchainNamespace === BlockchainNamespace.BIP122) {
-    address = `${caip2ChainId}:${account.addressBTC}`
+    resolvedAddress = account.addressBTC
   } else if (blockchainNamespace === BlockchainNamespace.EIP155) {
-    address = `${caip2ChainId}:${account.addressC}`
+    resolvedAddress = account.addressC
+  }
+
+  if (resolvedAddress && resolvedAddress.trim().length > 0) {
+    address = `${caip2ChainId}:${resolvedAddress}`
   }
 
   return address
