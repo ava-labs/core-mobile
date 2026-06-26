@@ -1,4 +1,6 @@
+import { RpcRequest } from '@avalabs/vm-module-types'
 import { CORE_MOBILE_META } from '../types'
+import { isInAppRequest } from './isInAppRequest'
 
 /**
  * Whether a request originated from a dApp (WalletConnect OR the injected
@@ -23,3 +25,21 @@ import { CORE_MOBILE_META } from '../types'
  */
 export const isDappOriginatedUrl = (url?: string): boolean =>
   !!url && url !== CORE_MOBILE_META.url
+
+/**
+ * Whether a request came from the in-app injected browser provider, as opposed
+ * to WalletConnect or a wallet-internal flow.
+ *
+ * Both the injected browser and wallet-internal flows (Send / Swap / Stake /
+ * Bridge) ride the in-app session topic (`CORE_MOBILE_TOPIC`), so `isInAppRequest`
+ * alone does NOT mean "injected". The discriminator is the combination:
+ *   - dApp-originated url (carries a real origin, not `CORE_MOBILE_META`) — this
+ *     excludes wallet-internal flows, which never set a peerMeta; AND
+ *   - in-app session topic — this excludes WalletConnect, which carries a real
+ *     WC session topic.
+ *
+ * Used to label per-network dApp-transaction analytics (MTU) by transport
+ * (injected vs WalletConnect). CP-13825.
+ */
+export const isInjectedDappRequest = (request: RpcRequest): boolean =>
+  isDappOriginatedUrl(request.dappInfo?.url) && isInAppRequest(request)

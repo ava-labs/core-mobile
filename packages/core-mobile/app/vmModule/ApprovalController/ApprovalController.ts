@@ -12,7 +12,10 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { isDappOriginatedUrl } from 'store/rpc/utils/isDappOriginatedRequest'
+import {
+  isDappOriginatedUrl,
+  isInjectedDappRequest
+} from 'store/rpc/utils/isDappOriginatedRequest'
 import { normalizeAnalyticsAddress } from 'store/rpc/utils/normalizeAnalyticsAddress'
 import {
   clearRequestSignal,
@@ -148,8 +151,7 @@ class ApprovalController implements VmModuleApprovalController {
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.capture(eventName, {
-        // dApp-originated + in-app topic ⇒ injected browser; otherwise WC.
-        provider: isInAppRequest(request) ? 'injected' : 'walletConnect',
+        provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,
@@ -210,8 +212,7 @@ class ApprovalController implements VmModuleApprovalController {
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.capture(eventName, {
-        // dApp-originated + in-app topic ⇒ injected browser; otherwise WC.
-        provider: isInAppRequest(request) ? 'injected' : 'walletConnect',
+        provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,

@@ -1,5 +1,9 @@
-import { CORE_MOBILE_META } from '../types'
-import { isDappOriginatedUrl } from './isDappOriginatedRequest'
+import { RpcRequest } from '@avalabs/vm-module-types'
+import { CORE_MOBILE_META, CORE_MOBILE_TOPIC } from '../types'
+import {
+  isDappOriginatedUrl,
+  isInjectedDappRequest
+} from './isDappOriginatedRequest'
 
 describe('isDappOriginatedUrl', () => {
   it('returns true for a real dApp url (WalletConnect or injected browser)', () => {
@@ -26,5 +30,42 @@ describe('isDappOriginatedUrl', () => {
   it('treats the exact core.app root as internal, but not a sub-path', () => {
     expect(isDappOriginatedUrl('https://core.app/')).toBe(false)
     expect(isDappOriginatedUrl('https://core.app/stake')).toBe(true)
+  })
+})
+
+describe('isInjectedDappRequest', () => {
+  const makeRequest = (sessionId: string, url?: string): RpcRequest =>
+    ({
+      requestId: 'req-1',
+      sessionId,
+      dappInfo: url === undefined ? undefined : { name: 'd', url, icon: '' }
+    } as unknown as RpcRequest)
+
+  it('returns true for the injected browser (real url + in-app topic)', () => {
+    expect(
+      isInjectedDappRequest(
+        makeRequest(CORE_MOBILE_TOPIC, 'https://app.uniswap.org')
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for WalletConnect (real url, but NOT in-app topic)', () => {
+    expect(
+      isInjectedDappRequest(
+        makeRequest('wc-topic-abc123', 'https://app.uniswap.org')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for wallet-internal flows (in-app topic, but CORE_MOBILE_META url)', () => {
+    expect(
+      isInjectedDappRequest(
+        makeRequest(CORE_MOBILE_TOPIC, CORE_MOBILE_META.url)
+      )
+    ).toBe(false)
+  })
+
+  it('returns false when the in-app request carries no origin url', () => {
+    expect(isInjectedDappRequest(makeRequest(CORE_MOBILE_TOPIC))).toBe(false)
   })
 })
