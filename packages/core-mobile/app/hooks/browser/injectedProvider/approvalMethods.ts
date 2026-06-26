@@ -13,9 +13,12 @@ const APPROVAL_METHODS = new Set<string>(Object.values(RpcMethod))
 // etc. are not enum members, so they correctly classify as non-signing. This
 // preserves the property the old `hasOwnProperty` check on the SIGNING_METHODS
 // record provided.
+// Returns a type guard: a true result proves `method` is an `RpcMethod` value
+// (membership in APPROVAL_METHODS == Object.values(RpcMethod)), so callers narrow
+// `method` to `RpcMethod` and avoid downstream `as RpcMethod` assertions.
 const signingMethodMatcher =
   (...prefixes: string[]) =>
-  (method: string): boolean =>
+  (method: string): method is RpcMethod =>
     APPROVAL_METHODS.has(method) && prefixes.some(p => method.startsWith(p))
 
 export const isEvmSigningMethod = signingMethodMatcher('eth_', 'personal_')

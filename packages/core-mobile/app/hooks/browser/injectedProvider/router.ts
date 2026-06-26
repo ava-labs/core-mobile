@@ -320,10 +320,7 @@ export function createInjectedProviderRouter(
         addr => addr.toLowerCase()
       )
     )
-    const requestedSigners = requestedSignerAddresses(
-      method as RpcMethod,
-      params
-    )
+    const requestedSigners = requestedSignerAddresses(method, params)
     const signerAddresses =
       requestedSigners.length > 0
         ? requestedSigners
@@ -348,7 +345,7 @@ export function createInjectedProviderRouter(
 
     try {
       const result = await requestSigning({
-        method: method as RpcMethod,
+        method,
         params,
         chainId: caip2ChainId,
         peerMeta: getPeerMeta(),
