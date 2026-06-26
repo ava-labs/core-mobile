@@ -15,6 +15,7 @@ import { Account } from 'store/account/types'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isTxSendMethod } from '../../utils/txSendMethods'
+import { normalizeAnalyticsAddress } from '../../utils/normalizeAnalyticsAddress'
 import { isSessionProposal, isUserRejectedError } from './utils'
 import { transformSolanaParams } from './solanaRequestUtils'
 
@@ -165,9 +166,11 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         result
       ) {
         const chainId = request.data.params.chainId
-        const address = getAddressForChain(
-          selectActiveAccount(listenerApi.getState()),
-          chainId
+        const address = normalizeAnalyticsAddress(
+          getAddressForChain(
+            selectActiveAccount(listenerApi.getState()),
+            chainId
+          )
         )
         AnalyticsService.capture(`${request.method}_success`, {
           encrypted: {

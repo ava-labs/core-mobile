@@ -75,7 +75,8 @@ describe('coreMobileProvider', () => {
         {
           encrypted: {
             dAppUrl: 'https://test.dapp.com',
-            address: mockActiveAccount.addressC,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: mockActiveAccount.addressC.toLowerCase(),
             chainId: 'eip155:1',
             txHash: '0xdeadbeef'
           }
@@ -83,7 +84,7 @@ describe('coreMobileProvider', () => {
       )
     })
 
-    it('uses the tx `from` as the address, not the active account (granted non-active signer)', async () => {
+    it('uses the tx `from` (lowercased) as the address, not the active account (granted non-active signer)', async () => {
       const NON_ACTIVE_FROM = '0xAAAA000000000000000000000000000000000001'
       const request = makeMockRequest(
         RpcMethod.ETH_SEND_TRANSACTION,
@@ -97,9 +98,15 @@ describe('coreMobileProvider', () => {
         listenerApi: mockListenerApi
       })
 
+      // The dApp-supplied `from` is normalized to lowercase so it matches the
+      // casing of the _confirmed / _failed signer address (CP-13825).
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
-        { encrypted: expect.objectContaining({ address: NON_ACTIVE_FROM }) }
+        {
+          encrypted: expect.objectContaining({
+            address: NON_ACTIVE_FROM.toLowerCase()
+          })
+        }
       )
     })
 
@@ -120,7 +127,7 @@ describe('coreMobileProvider', () => {
         'eth_sendTransaction_success',
         {
           encrypted: expect.objectContaining({
-            address: mockActiveAccount.addressC
+            address: mockActiveAccount.addressC.toLowerCase()
           })
         }
       )

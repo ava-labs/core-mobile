@@ -5,6 +5,7 @@ import { onInAppRequestFailed, onInAppRequestSucceeded } from '../slice'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../types'
 import { isTxSendMethod } from '../utils/txSendMethods'
 import { isDappOriginatedUrl } from '../utils/isDappOriginatedRequest'
+import { normalizeAnalyticsAddress } from '../utils/normalizeAnalyticsAddress'
 import { isSessionProposal } from './walletConnect/utils'
 
 // For eth_sendTransaction the dApp names the signer via the tx `from`, which the
@@ -65,9 +66,10 @@ class CoreMobileProvider implements AgnosticRpcProvider {
         request.data.params.request.params
       )
       const account = selectActiveAccount(listenerApi.getState())
-      const address =
+      const address = normalizeAnalyticsAddress(
         fromAddress ??
-        (account ? getAddressForChainId(chainId, account) ?? '' : '')
+          (account ? getAddressForChainId(chainId, account) ?? '' : '')
+      )
       AnalyticsService.capture(`${request.method}_success`, {
         encrypted: {
           dAppUrl: request.peerMeta.url,

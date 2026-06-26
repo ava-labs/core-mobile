@@ -94,7 +94,8 @@ describe('walletConnectProvider', () => {
           {
             encrypted: {
               dAppUrl: 'https://test.dapp.com',
-              address: mockActiveAccount.addressC,
+              // EVM address is lowercased to a canonical form (CP-13825)
+              address: mockActiveAccount.addressC.toLowerCase(),
               chainId: 'eip155:1',
               txHash: '0xdeadbeef'
             }
@@ -119,7 +120,8 @@ describe('walletConnectProvider', () => {
           {
             encrypted: expect.objectContaining({
               dAppUrl: 'https://test.dapp.com',
-              address: mockActiveAccount.addressC,
+              // C-chain is EVM; address is lowercased to canonical form (CP-13825)
+              address: mockActiveAccount.addressC.toLowerCase(),
               txHash: '0xcafebabe'
             })
           }

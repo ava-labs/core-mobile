@@ -13,6 +13,7 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { isDappOriginatedUrl } from 'store/rpc/utils/isDappOriginatedRequest'
+import { normalizeAnalyticsAddress } from 'store/rpc/utils/normalizeAnalyticsAddress'
 import {
   clearRequestSignal,
   getRequestSignal
@@ -375,7 +376,10 @@ class ApprovalController implements VmModuleApprovalController {
   ): void {
     const address = getAddressForChainId(chainId, account)
     if (address) {
-      this.signingAddressMap.set(requestId, address)
+      // Normalize so _confirmed / _failed report the same casing as _success
+      // (which may use the dApp-supplied tx `from`). Hex-only; non-EVM addresses
+      // are left untouched. CP-13825.
+      this.signingAddressMap.set(requestId, normalizeAnalyticsAddress(address))
     }
   }
 

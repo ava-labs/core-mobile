@@ -509,7 +509,8 @@ describe('ApprovalController', () => {
           {
             encrypted: {
               dAppUrl: DAPP_URL,
-              address: EVM_ADDRESS,
+              // EVM address is lowercased to a canonical form (CP-13825)
+              address: EVM_ADDRESS.toLowerCase(),
               chainId: 'eip155:1',
               txHash: TX_HASH
             }
@@ -587,7 +588,8 @@ describe('ApprovalController', () => {
           {
             encrypted: {
               dAppUrl: DAPP_URL,
-              address: EVM_ADDRESS,
+              // EVM address is lowercased to a canonical form (CP-13825)
+              address: EVM_ADDRESS.toLowerCase(),
               chainId: 'eip155:1',
               txHash: TX_HASH
             }
@@ -610,7 +612,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: NON_ACTIVE_SIGNER }) }
+          {
+            encrypted: expect.objectContaining({
+              address: NON_ACTIVE_SIGNER.toLowerCase()
+            })
+          }
         )
       })
 
@@ -633,7 +639,7 @@ describe('ApprovalController', () => {
         )
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: '0xBBBB' }) }
+          { encrypted: expect.objectContaining({ address: '0xbbbb' }) }
         )
       })
 
@@ -663,7 +669,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          { encrypted: expect.objectContaining({ address: EVM_ADDRESS }) }
+          {
+            encrypted: expect.objectContaining({
+              address: EVM_ADDRESS.toLowerCase()
+            })
+          }
         )
 
         // Second call should get empty string (cache was cleaned up)
@@ -787,7 +797,8 @@ describe('ApprovalController', () => {
           {
             encrypted: {
               dAppUrl: DAPP_URL,
-              address: EVM_ADDRESS,
+              // EVM address is lowercased to a canonical form (CP-13825)
+              address: EVM_ADDRESS.toLowerCase(),
               chainId: 'eip155:1',
               txHash: TX_HASH
             }
@@ -842,7 +853,8 @@ describe('ApprovalController', () => {
           {
             encrypted: {
               dAppUrl: DAPP_URL,
-              address: EVM_ADDRESS,
+              // EVM address is lowercased to a canonical form (CP-13825)
+              address: EVM_ADDRESS.toLowerCase(),
               chainId: 'eip155:1',
               txHash: TX_HASH
             }
