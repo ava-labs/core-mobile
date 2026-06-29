@@ -128,12 +128,15 @@ export const SelectAssetScreen = (): JSX.Element => {
             <View sx={{ flex: 1 }}>
               <Text
                 variant="body2"
-                sx={{ color: colors.$textPrimary, fontWeight: 500 }}>
+                sx={{ color: colors.$textPrimary, fontFamily: 'Inter-Medium' }}>
                 {item.symbol}
               </Text>
               <Text
                 variant="subtitle2"
-                sx={{ color: colors.$textSecondary, fontWeight: 500 }}>
+                sx={{
+                  color: colors.$textSecondary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 {tokenWithBalance?.balanceInCurrency
                   ? formatCurrency({
                       amount: tokenWithBalance.balanceInCurrency

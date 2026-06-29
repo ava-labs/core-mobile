@@ -72,7 +72,7 @@ export const RecoveryMethodList = ({
                   <Text
                     sx={{
                       fontSize: 12,
-                      fontWeight: '400',
+                      fontFamily: 'Inter-Regular',
                       lineHeight: 15,
                       color: colors.$textSecondary
                     }}>

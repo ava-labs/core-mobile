@@ -103,13 +103,19 @@ export const SelectCollateralBase = ({
               <View sx={{ flex: 1 }}>
                 <Text
                   variant="body2"
-                  sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                  sx={{
+                    color: theme.colors.$textPrimary,
+                    fontFamily: 'Inter-Medium'
+                  }}>
                   {item.asset.symbol} on{' '}
                   {PROTOCOL_DISPLAY_NAMES[item.marketName] ?? item.marketName}
                 </Text>
                 <Text
                   variant="subtitle2"
-                  sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
+                  sx={{
+                    color: theme.colors.$textSecondary,
+                    fontFamily: 'Inter-Medium'
+                  }}>
                   {formatCurrency({ amount: balanceValue.toNumber() })}
                 </Text>
               </View>
@@ -125,7 +131,10 @@ export const SelectCollateralBase = ({
               }}>
               <Text
                 variant="body1"
-                sx={{ color: theme.colors.$textPrimary, fontWeight: 400 }}>
+                sx={{
+                  color: theme.colors.$textPrimary,
+                  fontFamily: 'Inter-Regular'
+                }}>
                 Can be used as collateral
               </Text>
               {isToggling ? (
