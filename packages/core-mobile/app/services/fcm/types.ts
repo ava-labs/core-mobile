@@ -105,6 +105,26 @@ export const NotificationPayloadSchema = object({
         'Legacy field for UNKNOWN-classified SNS endpoints.'
       )
   }).optional()
+}).superRefine((payload, ctx) => {
+  // BALANCE_CHANGES / NEWS carry their own `title` / `body` in the data block,
+  // so they render on the Android data-only path without an envelope. A
+  // RECURRING_SWAP data block intentionally omits title/body — those live only
+  // on the `notification` envelope — so a data-only RECURRING_SWAP would pass
+  // the shape check yet have nothing to display, failing at runtime in
+  // FCMService. Require the envelope here so a misconfigured payload (backend/
+  // config regression) fails `safeParse` and is logged + dropped by the
+  // handlers' existing guard rather than reaching the display layer.
+  if (
+    payload.data.type === NotificationTypes.RECURRING_SWAP &&
+    !payload.notification
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['notification'],
+      message:
+        'RECURRING_SWAP payloads must include a `notification` envelope (title/body).'
+    })
+  }
 })
 
 export type NotificationPayload = z.infer<typeof NotificationPayloadSchema>

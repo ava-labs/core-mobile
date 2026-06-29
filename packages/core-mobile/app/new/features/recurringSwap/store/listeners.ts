@@ -171,10 +171,13 @@ async function ensureOrderSubscriptions(
       subscribed.add(orderId)
       // Save after each success so a mid-batch interruption (app kill,
       // network drop on the next iteration) preserves the work done so far.
-      // `loadSubscribedOrders` re-reads from MMKV at the start of each
-      // refetch, so a sibling subscriber's writes (different chain, same
-      // session) don't get clobbered.
-      saveSubscribedOrders(ownerAddress, chainId, subscribed)
+      // Merge with the latest persisted set to avoid clobbering concurrent
+      // ensureOrderSubscriptions runs for the same (owner, chain).
+      const merged = new Set([
+        ...loadSubscribedOrders(ownerAddress, chainId),
+        ...subscribed
+      ])
+      saveSubscribedOrders(ownerAddress, chainId, merged)
     } catch (err) {
       Logger.error('[RecurringSwap] order subscribe failed', {
         orderId,
@@ -296,7 +299,9 @@ function reconcilePendingActions(
  * (see `useRecurringSchedules`). We pluck both out so the seen-failures
  * persistence can be scoped per (account, chain).
  */
-async function handleQueryCacheEvent(event: QueryCacheNotifyEvent): Promise<void> {
+async function handleQueryCacheEvent(
+  event: QueryCacheNotifyEvent
+): Promise<void> {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||

@@ -111,6 +111,8 @@ class FCMService {
   #prepareDataOnlyNotificationData = (
     fcmData: BalanceChangeData | NewsData | RecurringSwapData
   ): DisplayNotificationParams => {
+    const data = this.#extractDeepLinkData(fcmData)
+
     // RECURRING_SWAP payloads carry only machine-readable progress fields
     // (orderId / status / token addresses) — no `title` or `body`, since
     // those live on the envelope. The Android data-only path can't
@@ -120,12 +122,17 @@ class FCMService {
     // loudly so a misconfigured payload surfaces in logs instead of
     // silently emitting a blank toast.
     if (fcmData.type === NotificationTypes.RECURRING_SWAP) {
-      throw Error(
-        'RECURRING_SWAP arrived data-only — backend must send title/body in `notification`'
+      Logger.error(
+        '[FCMService] RECURRING_SWAP arrived data-only; expected title/body in `notification` envelope'
       )
+      return {
+        channelId: DEFAULT_ANDROID_CHANNEL,
+        title: 'Recurring swap update',
+        body: 'Tap to view your recurring swap schedule.',
+        data
+      }
     }
     if (!fcmData.title) throw Error('No notification title')
-    const data = this.#extractDeepLinkData(fcmData)
     return {
       channelId: EVENT_TO_CH_ID[fcmData.event] ?? DEFAULT_ANDROID_CHANNEL,
       title: fcmData.title,

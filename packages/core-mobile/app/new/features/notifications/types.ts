@@ -44,17 +44,16 @@ export type NotificationMetadata =
 /**
  * Notification categories mapping to UI tabs.
  *
- * `RECURRING_SWAP` lives under the same category bucket as transaction-style
- * notifications: a fill is an on-chain event the user cares about alongside
- * balance changes, and the Figma list groups them together. Tabs filter on
- * `category` so a user on the Transactions tab sees recurring-swap fills /
- * completions / failures without needing a separate sub-tab.
+ * There is intentionally no `RECURRING_SWAP` category. Recurring-swap fills /
+ * completions / failures are on-chain transaction-like events, so
+ * `mapTypeToCategory` folds the `RECURRING_SWAP` notification *type* into the
+ * `TRANSACTION` bucket — they surface on the Transactions tab alongside
+ * balance changes (matching the Figma list) without needing a dedicated tab.
  */
 export enum NotificationCategory {
   TRANSACTION = 'TRANSACTION',
   PRICE_UPDATE = 'PRICE_UPDATE',
-  NEWS = 'NEWS',
-  RECURRING_SWAP = 'RECURRING_SWAP'
+  NEWS = 'NEWS'
 }
 
 /**

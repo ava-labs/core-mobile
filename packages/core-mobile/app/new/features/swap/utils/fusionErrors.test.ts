@@ -157,9 +157,9 @@ describe('isUserRejectionError', () => {
   })
 
   it('should match the rejection message on plain objects and strings too', () => {
-    expect(isUserRejectionError({ message: 'User rejected the request.' })).toBe(
-      true
-    )
+    expect(
+      isUserRejectionError({ message: 'User rejected the request.' })
+    ).toBe(true)
     expect(isUserRejectionError('User cancelled')).toBe(true)
   })
 
