@@ -70,6 +70,7 @@ import { useRecurringQuote } from 'features/recurringSwap/hooks/useRecurringQuot
 import { RecurringDetailsRows } from 'features/recurringSwap/components/RecurringDetailsRows'
 import { RecurringSchedulesBanner } from 'features/recurringSwap/components/RecurringSchedulesBanner'
 import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
+import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -93,6 +94,7 @@ import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { computeCanSubmit } from '../utils/recurringSubmitGate'
+import { computeRecurringBalanceError } from '../utils/recurringBalanceGate'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
@@ -191,17 +193,42 @@ function computeValidationError({
   debouncedFromTokenValue,
   minimumTransferAmount,
   fromToken,
-  feeValidationError
+  feeValidationError,
+  isRecurring,
+  numberOfOrders,
+  recurringTotalAmountIn,
+  recurringAdditiveNativeFee,
+  nativeFromToken
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
   minimumTransferAmount: bigint | null | undefined
   fromToken: LocalTokenWithBalance | undefined
   feeValidationError: FusionQuoteError | null | undefined
+  isRecurring: boolean
+  numberOfOrders: NumberOfOrders | undefined
+  recurringTotalAmountIn: bigint | undefined
+  recurringAdditiveNativeFee: bigint
+  nativeFromToken: LocalTokenWithBalance | undefined
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
     return fusionErrors.enterAmount()
+  }
+  // Recurring: validate the full schedule commitment (principal + additive
+  // native fees) up front so an under-funded schedule is caught here with a
+  // clear message instead of reverting on-chain at estimateGas (which surfaces
+  // as a generic "Recurring swap failed" toast). Stricter than the per-order
+  // balance guard below, so it runs first.
+  if (isRecurring && fromToken !== undefined) {
+    const recurringError = computeRecurringBalanceError({
+      numberOfOrders,
+      totalAmountIn: recurringTotalAmountIn,
+      additiveNativeFee: recurringAdditiveNativeFee,
+      fromToken,
+      nativeFromToken
+    })
+    if (recurringError) return recurringError
   }
   if (
     minimumTransferAmount != null &&
@@ -601,6 +628,21 @@ export const SwapScreen = (): JSX.Element => {
     updateMissingTokenPrice(toToken)
   }, [toToken, updateMissingTokenPrice])
 
+  // Sum the recurring quote's *additive* fees (SDK marks the one-time native
+  // schedule fee with `fee.extra` truthy and documents it as
+  // "balance-check separately"). These are native-denominated and must be
+  // reserved on top of the principal. Estimated gas (type 'gas', not `extra`)
+  // is intentionally excluded — the quote reports it in gas units, not a wei
+  // cost — and is left to the SDK's own estimateGas guard.
+  const recurringAdditiveNativeFee = useMemo(
+    () =>
+      (recurringQuote.data?.fees ?? []).reduce<bigint>(
+        (sum, fee) => (fee.extra ? sum + fee.amount : sum),
+        0n
+      ),
+    [recurringQuote.data?.fees]
+  )
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -610,7 +652,12 @@ export const SwapScreen = (): JSX.Element => {
         debouncedFromTokenValue,
         minimumTransferAmount: effectiveMinimumTransferAmount,
         fromToken,
-        feeValidationError
+        feeValidationError,
+        isRecurring: recurring.isRecurring,
+        numberOfOrders: recurring.numberOfOrders,
+        recurringTotalAmountIn: recurringQuote.data?.totalAmountIn,
+        recurringAdditiveNativeFee,
+        nativeFromToken
       })
     )
   }, [
@@ -618,7 +665,12 @@ export const SwapScreen = (): JSX.Element => {
     debouncedFromTokenValue,
     effectiveMinimumTransferAmount,
     fromToken,
-    feeValidationError
+    feeValidationError,
+    recurring.isRecurring,
+    recurring.numberOfOrders,
+    recurringQuote.data?.totalAmountIn,
+    recurringAdditiveNativeFee,
+    nativeFromToken
   ])
 
   const applyQuote = useCallback(() => {

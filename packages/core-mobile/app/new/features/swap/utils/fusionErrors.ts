@@ -94,6 +94,40 @@ export const fusionErrors = {
   belowMinimumAmount(formattedMin: string): FusionQuoteError {
     return new FusionQuoteError(`Minimum amount is ${formattedMin}.`)
   },
+  // Recurring: the full schedule total (amountPerOrder × numberOfOrders) must be
+  // funded up front. For native source tokens the first fill pre-wraps the whole
+  // total to WAVAX in one tx (the schedule can't pull native per order), so a
+  // total above balance reverts on-chain at estimateGas with INSUFFICIENT_FUNDS
+  // and surfaces as a generic "Recurring swap failed" toast. Block at input time
+  // instead. ERC-20 schedules also need the total to satisfy every future fill,
+  // so the same guard applies. Skipped for Unlimited (no finite total).
+  recurringTotalExceedsBalance(
+    numberOfOrders: number,
+    formattedTotal: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — ${numberOfOrders} orders require ${formattedTotal}.`
+    )
+  },
+  // ERC-20 source: token balance covers the principal but the native balance
+  // can't cover the one-time recurring schedule fee (charged in the gas token).
+  recurringScheduleFeeExceedsNativeBalance(
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedFee} for the schedule fee.`
+    )
+  },
+  // ERC-20 source: neither the token balance (principal) nor the native balance
+  // (schedule fee) is sufficient — surface both shortfalls in one message.
+  recurringInsufficientForTotalAndFee(
+    formattedTotal: string,
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedTotal} and ${formattedFee} for the schedule fee.`
+    )
+  },
   // Native token: gas alone exceeds balance (no bridge fee)
   networkFeeExceedsBalance(formattedFee: string): FusionQuoteError {
     return new FusionQuoteError(
