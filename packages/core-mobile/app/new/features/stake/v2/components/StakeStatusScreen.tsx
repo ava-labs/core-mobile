@@ -10,6 +10,8 @@ const STATUS_TITLE_HALF_HEIGHT = 30
 
 const FAST_STAKE_LOTTIE_LIGHT = require('assets/lotties/fast-stake-icon-light.json')
 const FAST_STAKE_LOTTIE_DARK = require('assets/lotties/fast-stake-icon-dark.json')
+const DELEGATE_LOTTIE_LIGHT = require('assets/lotties/stake-seedling-icon-light.json')
+const DELEGATE_LOTTIE_DARK = require('assets/lotties/stake-seedling-icon-dark.json')
 const SUCCESS_LOTTIE_LIGHT = require('assets/lotties/success-checkmark-icon-light.json')
 const SUCCESS_LOTTIE_DARK = require('assets/lotties/success-checkmark-icon-dark.json')
 
@@ -27,17 +29,29 @@ export type StakeStatusVariant = 'processing' | 'success'
  * config so each flow can stamp its own wording.
  */
 export const StakeStatusScreen = ({
-  variant
+  variant,
+  isAdvanced = false
 }: {
   variant: StakeStatusVariant
+  /**
+   * Advanced delegate flow — uses the delegate processing animation instead
+   * of the Fast Stake one. The success checkmark is shared across flows.
+   */
+  isAdvanced?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const isProcessing = variant === 'processing'
 
-  const lottieSource = isProcessing
+  const processingLottie = isAdvanced
     ? theme.isDark
-      ? FAST_STAKE_LOTTIE_DARK
-      : FAST_STAKE_LOTTIE_LIGHT
+      ? DELEGATE_LOTTIE_DARK
+      : DELEGATE_LOTTIE_LIGHT
+    : theme.isDark
+    ? FAST_STAKE_LOTTIE_DARK
+    : FAST_STAKE_LOTTIE_LIGHT
+
+  const lottieSource = isProcessing
+    ? processingLottie
     : theme.isDark
     ? SUCCESS_LOTTIE_DARK
     : SUCCESS_LOTTIE_LIGHT
@@ -76,6 +90,8 @@ export const StakeStatusScreen = ({
           sx={{ textAlign: 'center', paddingHorizontal: 32 }}>
           {isProcessing
             ? `We are processing\nyour transaction`
+            : isAdvanced
+            ? `Success!\nYou are now delegating.`
             : `Fast stake\nsuccessfully added`}
         </Text>
 

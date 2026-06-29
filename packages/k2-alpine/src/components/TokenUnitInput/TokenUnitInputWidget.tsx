@@ -32,6 +32,7 @@ export const TokenUnitInputWidget = ({
   formatInCurrency,
   accessory,
   sx,
+  cardSx,
   disabled,
   autoFocus,
   presets,
@@ -48,6 +49,8 @@ export const TokenUnitInputWidget = ({
   formatInCurrency(amount: TokenUnit): string
   accessory?: JSX.Element
   sx?: SxProp
+  /** Overrides for the inner card (e.g. a fixed `height`). */
+  cardSx?: SxProp
   disabled?: boolean
   autoFocus?: boolean
   /** When false, the amount renders in the danger color. */
@@ -122,7 +125,8 @@ export const TokenUnitInputWidget = ({
           alignItems: 'center',
           paddingTop: 32,
           paddingHorizontal: 16,
-          paddingBottom: 22
+          paddingBottom: 22,
+          ...cardSx
         }}>
         <TokenUnitInput
           editable={!disabled}
