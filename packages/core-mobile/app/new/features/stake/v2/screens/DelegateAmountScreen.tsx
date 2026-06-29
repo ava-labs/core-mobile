@@ -21,6 +21,7 @@ import useStakingParams from 'hooks/earn/useStakingParams'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { xpChainToken } from 'utils/units/knownTokens'
+import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { useSelectedDelegateNodeLimits } from '../hooks/useSelectedDelegateNodeLimits'
 
 // Reserve headroom for network fees (mirrors V1): the "Max" button stakes
@@ -70,6 +71,14 @@ const DelegateAmountScreen = (): JSX.Element => {
     !stakeAmount.isZero()
   const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
+
+  // The shared stake amount is seeded with `minStakeAmount` on modal entry so
+  // Fast Stake's dial starts at a valid value. This screen's keypad, however,
+  // starts empty, so reset the amount to zero on mount — otherwise the unseen
+  // seeded value would leave `Next` enabled before the user types anything.
+  useEffect(() => {
+    setStakeAmount(zeroAvaxPChain())
+  }, [setStakeAmount])
 
   const handleAmountChange = useCallback(
     (amount: TokenUnit) => {
