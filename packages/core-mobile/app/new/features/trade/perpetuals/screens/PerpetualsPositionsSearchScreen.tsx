@@ -2,6 +2,8 @@ import { Image, SearchBar, Text, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
@@ -12,6 +14,7 @@ import { Position } from '../types'
 const cactusIcon = require('../../../../assets/icons/cactus.png')
 
 export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
+  const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const positionActions = usePositionActions()
   const results = useMemo(() => {
@@ -54,17 +57,26 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
 
   const keyExtractor = useCallback((item: Position) => item.id, [])
 
+  const handleCancel = useCallback(async () => {
+    // Dismiss the keyboard before closing so it doesn't linger on Android.
+    await dismissKeyboardIfNeeded()
+    if (router.canGoBack()) {
+      router.back()
+    }
+  }, [router])
+
   const renderHeader = useCallback(
     () => (
       <SearchBar
         searchText={searchText}
         onTextChanged={setSearchText}
         useCancel
+        onCancel={handleCancel}
         autoFocus
         placeholder="Search"
       />
     ),
-    [searchText]
+    [searchText, handleCancel]
   )
 
   const renderEmpty = useCallback(() => {

@@ -10,6 +10,7 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { PerpetualListItem } from '../components/PerpetualListItem'
@@ -99,6 +100,14 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
 
   const keyExtractor = useCallback((item: PerpetualMarket) => item.id, [])
 
+  const handleCancel = useCallback(async () => {
+    // Dismiss the keyboard before closing so it doesn't linger on Android.
+    await dismissKeyboardIfNeeded()
+    if (router.canGoBack()) {
+      router.back()
+    }
+  }, [router])
+
   const renderHeader = useCallback(
     () => (
       <View sx={{ gap: 12 }}>
@@ -107,6 +116,7 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
           onTextChanged={setSearchText}
           setSearchBarFocused={setIsSearchBarFocused}
           useCancel
+          onCancel={handleCancel}
           autoFocus
           placeholder="Search"
         />
@@ -123,7 +133,7 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
         )}
       </View>
     ),
-    [searchText, results.length, sortGroups, handleSortChange]
+    [searchText, results.length, sortGroups, handleSortChange, handleCancel]
   )
 
   const renderEmpty = useCallback(() => {

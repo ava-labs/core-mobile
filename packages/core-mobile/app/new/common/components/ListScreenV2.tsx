@@ -18,11 +18,13 @@ import React, {
   useState
 } from 'react'
 import {
+  Keyboard,
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  Pressable,
   ScrollView,
   ScrollViewProps,
   StyleSheet,
@@ -804,19 +806,16 @@ const OuterHeaderListScreen = <T,>({
 
   const isAndroidModal = Platform.OS === 'android' && isModal
 
-  // Slide the centered empty state up by half the keyboard height so it stays
-  // centered in the visible area above the keyboard (the search input is
-  // autofocused, so the keyboard is usually open). Animated with `withTiming`
-  // so it tracks the keyboard smoothly instead of jumping — mirrors the
-  // CollapsibleTabs ContentWrapper translate.
+  // Keep the centered empty state above the keyboard (the search input is
+  // autofocused, so the keyboard is usually open). Animate `paddingBottom`
+  // rather than a translate: the container's outer bounds stay fixed below the
+  // fixed header, so it never overlaps/covers the header's Cancel/clear
+  // controls — while the centered content still eases up above the keyboard
+  // (withTiming, like the CollapsibleTabs ContentWrapper).
   const emptyAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: withTiming(keyboard.isVisible ? -keyboard.height / 2 : 0, {
-          duration: 250
-        })
-      }
-    ]
+    paddingBottom: withTiming(keyboard.isVisible ? keyboard.height : 0, {
+      duration: 250
+    })
   }))
 
   return (
@@ -843,7 +842,13 @@ const OuterHeaderListScreen = <T,>({
       </View>
       {data.length === 0 ? (
         <Animated.View style={[{ flex: 1 }, emptyAnimatedStyle]}>
-          {renderEmpty?.()}
+          <Pressable
+            style={{ flex: 1 }}
+            // Tapping the empty/zero-state area dismisses the keyboard (there's
+            // no scroll view here to provide keyboardDismissMode).
+            onPress={() => Keyboard.dismiss()}>
+            {renderEmpty?.()}
+          </Pressable>
         </Animated.View>
       ) : (
         <FlashList
