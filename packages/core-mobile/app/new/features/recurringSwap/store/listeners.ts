@@ -339,17 +339,15 @@ async function handleQueryCacheEvent(
     // path normally.
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
 
-    // Fire-and-forget the per-order push subscription pass. Async to keep
-    // the cache subscriber callback non-blocking; failures inside the
-    // function are logged but never bubble up — the next refetch retries
-    // any order that didn't make it into the persisted subscribed-set.
-    await ensureOrderSubscriptions(
-      ownerAddress,
-      chainId,
-      schedules ?? []
-    ).catch(err => {
-      Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
-    })
+    // Fire-and-forget the per-order push subscription pass. Kept out of the
+    // synchronous cache-subscriber call path; failures inside the function are
+    // logged but never bubble up — the next refetch retries any order that
+    // didn't make it into the persisted subscribed-set.
+    void ensureOrderSubscriptions(ownerAddress, chainId, schedules ?? []).catch(
+      err => {
+        Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
+      }
+    )
   } catch (err) {
     Logger.error('[RecurringSwap] Failure watcher error', err)
   }
