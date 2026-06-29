@@ -251,7 +251,7 @@ export function RepaySelectAmountFormBase({
                   variant="body1"
                   sx={{
                     color: '$textPrimary',
-                    fontWeight: 500
+                    fontFamily: 'Inter-Medium'
                   }}>
                   {remainingDebt?.toDisplay() ?? UNKNOWN_AMOUNT}{' '}
                   {market.asset.symbol}

@@ -58,24 +58,24 @@ export const HealthScoreCard = ({
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text
                 variant="body1"
-                sx={{ color: currentColor, fontWeight: 500 }}>
+                sx={{ color: currentColor, fontFamily: 'Inter-Medium' }}>
                 {formattedCurrent}
               </Text>
               <Text
                 variant="body1"
-                sx={{ color: '$textSecondary', fontWeight: 500 }}>
+                sx={{ color: '$textSecondary', fontFamily: 'Inter-Medium' }}>
                 →
               </Text>
               <Text
                 variant="body1"
-                sx={{ color: projectedColor, fontWeight: 500 }}>
+                sx={{ color: projectedColor, fontFamily: 'Inter-Medium' }}>
                 {formattedProjected}
               </Text>
             </View>
           ) : (
             <Text
               variant="body1"
-              sx={{ color: projectedColor, fontWeight: 500 }}>
+              sx={{ color: projectedColor, fontFamily: 'Inter-Medium' }}>
               {formattedProjected}
             </Text>
           )}

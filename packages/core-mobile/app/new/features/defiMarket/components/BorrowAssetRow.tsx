@@ -65,13 +65,13 @@ export function BorrowAssetRow({
         {isPrivacyModeEnabled ? (
           <HiddenBalanceText
             variant="heading3"
-            sx={{ fontWeight: '500', marginTop: 2 }}
+            sx={{ fontFamily: 'Inter-Medium', marginTop: 2 }}
           />
         ) : (
           <>
             <Text
               variant="heading2"
-              sx={{ color: '$textPrimary', fontWeight: '500' }}>
+              sx={{ color: '$textPrimary', fontFamily: 'Inter-Medium' }}>
               {amount.toDisplay()}
             </Text>
             <Text

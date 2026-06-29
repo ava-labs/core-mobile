@@ -171,7 +171,11 @@ export const BorrowSelectAmountFormBase = ({
             />
             <Text
               variant="body1"
-              sx={{ color: '$textDanger', flex: 1, fontWeight: 500 }}>
+              sx={{
+                color: '$textDanger',
+                flex: 1,
+                fontFamily: 'Inter-Medium'
+              }}>
               {blockingError}
             </Text>
           </View>
@@ -192,7 +196,7 @@ export const BorrowSelectAmountFormBase = ({
           />
           <Text
             variant="body1"
-            sx={{ color: '$textPrimary', flex: 1, fontWeight: 500 }}>
+            sx={{ color: '$textPrimary', flex: 1, fontFamily: 'Inter-Medium' }}>
             Protocol changes can alter your health score and risk of liquidation
             at anytime
           </Text>
