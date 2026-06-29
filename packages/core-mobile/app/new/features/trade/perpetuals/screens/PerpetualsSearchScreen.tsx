@@ -1,29 +1,86 @@
-import { Image, SearchBar, Text } from '@avalabs/k2-alpine'
+import {
+  Chip,
+  Image,
+  PriceChangeStatus,
+  SearchBar,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
+import { ListRenderItem } from '@shopify/flash-list'
+import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
 import { PerpetualListItem } from '../components/PerpetualListItem'
 import { PERP_MARKETS_MOCK } from '../mocks'
 import { PerpetualMarket } from '../types'
 
 const cactusIcon = require('../../../../assets/icons/cactus.png')
 
+type PerpetualSort = 'volume' | 'change' | 'price'
+
+const SORT_OPTIONS: { id: PerpetualSort; title: string }[] = [
+  { id: 'volume', title: 'Volume' },
+  { id: 'change', title: 'Change' },
+  { id: 'price', title: 'Price' }
+]
+
+// Signed % change so a Down status sorts below a flat/Up one — mirrors the
+// ordering used by the main PerpetualsScreen filter.
+const signedChange = (market: PerpetualMarket): number =>
+  market.changeStatus === PriceChangeStatus.Down
+    ? -market.changePercent
+    : market.changeStatus === PriceChangeStatus.Up
+    ? market.changePercent
+    : 0
+
 export const PerpetualsSearchScreen = (): JSX.Element => {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
+  const [selectedSort, setSelectedSort] = useState<PerpetualSort>('volume')
 
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
       return []
     }
-    return PERP_MARKETS_MOCK.filter(market =>
+    const filtered = PERP_MARKETS_MOCK.filter(market =>
       market.symbol.toLowerCase().includes(trimmed)
     )
-  }, [searchText])
+    switch (selectedSort) {
+      case 'volume':
+        return [...filtered].sort((a, b) => b.volume - a.volume)
+      case 'change':
+        return [...filtered].sort((a, b) => signedChange(b) - signedChange(a))
+      case 'price':
+        return [...filtered].sort((a, b) => b.price - a.price)
+      default:
+        return filtered
+    }
+  }, [searchText, selectedSort])
+
+  const sortGroups = useMemo<DropdownGroup[]>(
+    () => [
+      {
+        key: 'perp-search-sort',
+        items: SORT_OPTIONS.map(option => ({
+          id: option.id,
+          title: option.title,
+          selected: option.id === selectedSort
+        }))
+      }
+    ],
+    [selectedSort]
+  )
+
+  const handleSortChange = useCallback(
+    (event: { nativeEvent: { event: string } }) => {
+      setSelectedSort(event.nativeEvent.event as PerpetualSort)
+    },
+    []
+  )
 
   const renderItem: ListRenderItem<PerpetualMarket> = useCallback(
     ({ item, index }) => (
@@ -44,16 +101,29 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
 
   const renderHeader = useCallback(
     () => (
-      <SearchBar
-        searchText={searchText}
-        onTextChanged={setSearchText}
-        setSearchBarFocused={setIsSearchBarFocused}
-        useCancel
-        autoFocus
-        placeholder="Search"
-      />
+      <View sx={{ gap: 12 }}>
+        <SearchBar
+          searchText={searchText}
+          onTextChanged={setSearchText}
+          setSearchBarFocused={setIsSearchBarFocused}
+          useCancel
+          autoFocus
+          placeholder="Search"
+        />
+        {results.length > 0 && (
+          <DropdownMenu groups={sortGroups} onPressAction={handleSortChange}>
+            <Chip
+              size="large"
+              hitSlop={8}
+              rightIcon="expandMore"
+              style={{ alignSelf: 'flex-start' }}>
+              Sort
+            </Chip>
+          </DropdownMenu>
+        )}
+      </View>
     ),
-    [searchText]
+    [searchText, results.length, sortGroups, handleSortChange]
   )
 
   const renderEmpty = useCallback(() => {
@@ -84,9 +154,13 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
   }, [searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title=""
       isModal
+      // Android: render the search header outside the list and mount the list
+      // only when there are results, so the form sheet wires swipe-to-dismiss /
+      // nested scroll to a non-empty list. No-op on iOS (CP-14376).
+      headerOutsideList
       data={results}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
