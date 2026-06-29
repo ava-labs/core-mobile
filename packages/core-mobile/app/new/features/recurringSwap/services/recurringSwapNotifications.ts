@@ -1,5 +1,4 @@
 import Config from 'react-native-config'
-import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 
 // Backend (core-notification-sender): see Sarp's PR
@@ -17,17 +16,21 @@ const RECURRING_SWAP_SUBSCRIBE_PATH = '/v1/push/recurring-swaps/subscribe'
 
 type RecurringSwapNotificationSubscription = {
   orderId: string
+  // Resolved once per batch by the caller (`ensureOrderSubscriptions`) and
+  // reused across orders, mirroring the balance-change subscribe flow — so a
+  // multi-order snapshot triggers one `/v1/push/register`, not one per order.
+  deviceArn: string
 }
 
 export async function subscribeRecurringSwapNotifications(
   subscription: RecurringSwapNotificationSubscription
 ): Promise<void> {
-  const deviceArn = await registerAndGetDeviceArn()
+  const { deviceArn, orderId } = subscription
   const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + RECURRING_SWAP_SUBSCRIBE_PATH,
     JSON.stringify({
       deviceArn,
-      orderId: subscription.orderId
+      orderId
     })
   )
 

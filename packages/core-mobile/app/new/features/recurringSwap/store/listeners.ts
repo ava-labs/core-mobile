@@ -2,9 +2,12 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
+import { isAnyOf } from '@reduxjs/toolkit'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onLogOut } from 'store/app/slice'
+import { onFcmTokenChange } from 'store/notifications/slice'
 import type { AppStartListening } from 'store/types'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
 import type { RecurringOrder } from '../types'
@@ -34,6 +37,22 @@ import {
 // so a duplicate that slips through is harmless — this set is purely a
 // network-traffic optimization.
 const subscribeInFlight = new Set<string>()
+
+// Session-scoped memo for the deviceArn used by the recurring-swap subscribe
+// flow. `ensureOrderSubscriptions` already resolves the ARN once per batch,
+// but every snapshot that surfaces a fresh subscribable order (new order
+// created, 30s poll, banner mount, unlock invalidate, focus) re-hits
+// `/v1/push/register` for a result we already received earlier in the
+// session — this cache collapses that across batches.
+//
+// Invalidated on:
+//   - subscribe failure inside the loop (ARN may have been retired backend-side;
+//     drop it so the next batch re-registers and the live ARN gets reused)
+//   - `onFcmTokenChange` (the SNS endpoint mapping is stale until /v1/push/register
+//     posts the new FCM token, so we MUST force a fresh register or push
+//     deliveries will dead-letter against the old token)
+//   - `onLogOut` (a fresh sign-in may use a different device identity)
+let cachedDeviceArn: string | null = null
 
 // The SDK now signs and broadcasts internally for fill /
 // cancel / pause / resume, so the old Redux listeners that watched for
@@ -159,15 +178,45 @@ async function ensureOrderSubscriptions(
 ): Promise<void> {
   const ownerLower = ownerAddress.toLowerCase()
   const subscribed = loadSubscribedOrders(ownerAddress, chainId)
-  for (const schedule of schedules) {
-    if (!isSubscribableStatus(schedule.status)) continue
+
+  // Orders from this snapshot that still need a subscription. Filtering up
+  // front lets us resolve the deviceArn exactly once for the whole batch —
+  // and skip the register call entirely in the steady state (every order
+  // already subscribed, the common case on the 30s poll).
+  const pending = schedules.filter(
+    schedule =>
+      isSubscribableStatus(schedule.status) &&
+      !subscribed.has(schedule.orderId) &&
+      !subscribeInFlight.has(`${ownerLower}:${chainId}:${schedule.orderId}`)
+  )
+  if (pending.length === 0) return
+
+  // Resolve the deviceArn for this batch, reusing the session-cached value
+  // when present and falling back to /v1/push/register otherwise. Bail on
+  // failure rather than retrying register once per order; the next listOrders
+  // refetch retries the whole batch.
+  let deviceArn: string
+  if (cachedDeviceArn) {
+    deviceArn = cachedDeviceArn
+  } else {
+    try {
+      deviceArn = await registerAndGetDeviceArn()
+      cachedDeviceArn = deviceArn
+    } catch (err) {
+      Logger.error('[RecurringSwap] deviceArn registration failed', err)
+      return
+    }
+  }
+
+  for (const schedule of pending) {
     const orderId = schedule.orderId
-    if (subscribed.has(orderId)) continue
     const inFlightKey = `${ownerLower}:${chainId}:${orderId}`
+    // Re-check in-flight: a concurrent ensureOrderSubscriptions run may have
+    // claimed this order while we awaited the deviceArn above.
     if (subscribeInFlight.has(inFlightKey)) continue
     subscribeInFlight.add(inFlightKey)
     try {
-      await subscribeRecurringSwapNotifications({ orderId })
+      await subscribeRecurringSwapNotifications({ orderId, deviceArn })
       subscribed.add(orderId)
       // Save after each success so a mid-batch interruption (app kill,
       // network drop on the next iteration) preserves the work done so far.
@@ -179,6 +228,10 @@ async function ensureOrderSubscriptions(
       ])
       saveSubscribedOrders(ownerAddress, chainId, merged)
     } catch (err) {
+      // The ARN may have been retired backend-side (e.g. dead-endpoint
+      // cleanup); drop the cached value so the next batch re-registers
+      // against a live ARN before reusing it across the rest of the loop.
+      cachedDeviceArn = null
       Logger.error('[RecurringSwap] order subscribe failed', {
         orderId,
         err
@@ -391,6 +444,17 @@ export function addRecurringSwapListeners(
     actionCreator: onAppUnlocked,
     effect: () => {
       queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
+    }
+  })
+
+  // Drop the session-cached deviceArn whenever the underlying device identity
+  // can shift out from under it — FCM token rotation invalidates the SNS
+  // endpoint mapping (must re-register to refresh server-side), and logout
+  // may swap to a different account on the next sign-in.
+  startListening({
+    matcher: isAnyOf(onFcmTokenChange, onLogOut),
+    effect: () => {
+      cachedDeviceArn = null
     }
   })
 
