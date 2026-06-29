@@ -96,7 +96,7 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     style = { ...style, fontSize: 18, top: 8, fontWeight: '700' }
   }
   if (textVariant === 'buttonMedium') {
-    style = { ...style, fontSize: 15, top: 4, fontWeight: '600' }
+    style = { ...style, fontSize: 15, top: 4, fontFamily: 'Inter-SemiBold' }
   }
 
   return style
