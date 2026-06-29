@@ -91,6 +91,46 @@ describe('buildLocalToken', () => {
       expect(result.decimals).toBe(18)
     })
 
+    it('overrides AVAX to 9 decimals on X-Chain (nAVAX) and renders the balance correctly', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.AVAX,
+        isNative: true
+      })
+      const balanceData = makeBalanceToken({
+        type: TokenType.NATIVE,
+        internalId: tokenIds.AVAX,
+        networkChainId: ChainId.AVALANCHE_X,
+        balance: 411616842n // 0.411616842 AVAX at 9 decimals
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [balanceData],
+        tokenInfo,
+        caip2Id: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
+        chainId: ChainId.AVALANCHE_X
+      }) as any
+
+      expect(result.decimals).toBe(9)
+      // an 18-decimal interpretation would render ~0; 9 decimals renders ~0.4116
+      expect(result.balanceDisplayValue).toBe('0.4116')
+    })
+
+    it('overrides AVAX to 9 decimals on P-Chain (nAVAX)', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.AVAX,
+        isNative: true
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+        chainId: ChainId.AVALANCHE_P
+      }) as any
+
+      expect(result.decimals).toBe(9)
+    })
+
     it('falls through to meta decimals when native internalId is not in NATIVE_DECIMALS', () => {
       const tokenInfo = makeTokenInfo({
         internalId: 'NATIVE-unknown',
