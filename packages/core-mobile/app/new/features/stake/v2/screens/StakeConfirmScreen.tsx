@@ -458,7 +458,7 @@ const StakeConfirmScreen = ({
       const explorerLink = pNetwork.explorerUrl
         ? getExplorerAddressByNetwork(pNetwork.explorerUrl, txHash, 'tx')
         : undefined
-      transactionSnackbar.success({ message: 'New Stake Added', explorerLink })
+      transactionSnackbar.success({ message: 'New stake added', explorerLink })
 
       // Switch to the success screen; the whole flow then auto-dismisses
       // after SUCCESS_DISMISS_DELAY_MS (see the effect below), returning the
