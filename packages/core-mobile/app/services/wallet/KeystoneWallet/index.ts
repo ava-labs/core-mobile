@@ -9,7 +9,7 @@ import {
   MessageTypes,
   RpcMethod
 } from '@avalabs/vm-module-types'
-import { Curve } from 'utils/publicKeys'
+import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { assertNotUndefined } from 'utils/assertions'
 import {
   Avalanche,
@@ -58,10 +58,6 @@ import { SignatureRSV } from '../types'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
 export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
-// AVAX (X/P) BIP44 coin-type prefix shared by every account; only the primary
-// account (AVAX_DERIVATION_PATH, account 0) is derivable from a Keystone QR
-// wallet's single shared xpub.
-export const AVAX_COIN_TYPE_PATH = `m/44'/9000'/`
 
 export default class KeystoneWallet implements Wallet {
   #mfp: string
@@ -399,7 +395,7 @@ export default class KeystoneWallet implements Wallet {
     // derivation can omit X/P for the non-primary account rather than failing
     // closed (CP-14606). Real per-account X/P support is future work with the
     // Keystone team.
-    if (path.startsWith(AVAX_COIN_TYPE_PATH)) {
+    if (path.startsWith(AVALANCHE_DERIVATION_PATH_PREFIX)) {
       throw new KeystoneWalletError({
         name: KeystoneErrors.UNSUPPORTED_XP_DERIVATION,
         message: `Keystone cannot derive X/P for non-primary account path: ${path}`
