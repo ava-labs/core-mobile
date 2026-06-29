@@ -4,7 +4,7 @@ import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { useNavigation, usePathname } from 'expo-router'
 import { Platform } from 'react-native'
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { NativeStackNavigationOptions } from 'expo-router'
 import { LedgerSetupProvider } from 'features/ledger'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 

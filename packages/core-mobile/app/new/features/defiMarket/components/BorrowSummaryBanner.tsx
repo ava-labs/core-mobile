@@ -151,7 +151,7 @@ export const BorrowSummaryBanner = ({
               <ActivityIndicator size="small" />
               <Text
                 variant="body2"
-                sx={{ color: '$textSecondary', fontWeight: 500 }}>
+                sx={{ color: '$textSecondary', fontFamily: 'Inter-Medium' }}>
                 Your health score is updating...
               </Text>
             </View>

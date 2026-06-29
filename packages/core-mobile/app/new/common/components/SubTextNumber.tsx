@@ -7,14 +7,14 @@ export const SubTextNumber = ({
   number,
   testID,
   textColor,
-  fontWeight,
+  fontFamily,
   style,
   textVariant = 'body1'
 }: {
   number: number | string | undefined
   testID?: string
   textColor?: string
-  fontWeight?: TextStyle['fontWeight']
+  fontFamily?: string
   style?: ViewStyle
   textVariant?: SubTextNumberVariant
 }): JSX.Element => {
@@ -32,14 +32,14 @@ export const SubTextNumber = ({
   )
 
   const _textColor = textColor ?? alpha(colors.$textPrimary, 0.6)
-  const _fontWeight = fontWeight ?? subTextStyle.fontWeight
+  const _fontFamily = fontFamily ?? subTextStyle.fontFamily
 
   return (
     <View style={[styles.container, style]} testID={testID}>
       <Text
         numberOfLines={1}
         variant={textVariant}
-        style={[{ color: _textColor, fontWeight: _fontWeight }]}>
+        style={[{ color: _textColor, fontFamily: _fontFamily }]}>
         {mainTextBefore}
       </Text>
       {subText && (
@@ -47,7 +47,7 @@ export const SubTextNumber = ({
           variant={textVariant}
           style={[
             subTextStyle,
-            { color: _textColor, fontWeight: _fontWeight }
+            { color: _textColor, fontFamily: _fontFamily }
           ]}>
           {subText}
         </Text>
@@ -55,7 +55,7 @@ export const SubTextNumber = ({
       {mainTextAfter && (
         <Text
           variant={textVariant}
-          style={[{ color: _textColor, fontWeight: _fontWeight }]}>
+          style={[{ color: _textColor, fontFamily: _fontFamily }]}>
           {mainTextAfter}
         </Text>
       )}
@@ -81,22 +81,22 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     position: 'relative'
   }
   if (textVariant === 'subtitle2') {
-    style = { ...style, fontSize: 11, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 11, top: 4, fontFamily: 'Inter-Medium' }
   }
   if (textVariant === 'caption') {
-    style = { ...style, fontSize: 9, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 9, top: 4, fontFamily: 'Inter-Medium' }
   }
   if (textVariant === 'body1') {
-    style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
+    style = { ...style, fontSize: 13, top: 4, fontFamily: 'Inter-Medium' }
   }
   if (textVariant === 'body2') {
-    style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
+    style = { ...style, fontSize: 13, top: 4, fontFamily: 'Inter-Regular' }
   }
   if (textVariant === 'heading2') {
-    style = { ...style, fontSize: 18, top: 8, fontWeight: '700' }
+    style = { ...style, fontSize: 18, top: 8, fontFamily: 'Inter-Bold' }
   }
   if (textVariant === 'buttonMedium') {
-    style = { ...style, fontSize: 15, top: 4, fontWeight: '600' }
+    style = { ...style, fontSize: 15, top: 4, fontFamily: 'Inter-SemiBold' }
   }
 
   return style

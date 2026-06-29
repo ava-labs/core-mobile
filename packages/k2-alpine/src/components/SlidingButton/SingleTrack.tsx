@@ -169,7 +169,7 @@ export const SingleTrack = ({
           </Animated.View>
           <Animated.View
             style={[
-              StyleSheet.absoluteFillObject,
+              StyleSheet.absoluteFill,
               { alignItems: 'center', justifyContent: 'center' },
               spinnerStyle
             ]}>

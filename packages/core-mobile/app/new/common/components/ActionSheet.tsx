@@ -1,14 +1,7 @@
 import { SxProp, View } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { BackHandler } from 'react-native'
-
-/**
- * Temporarily import "useNavigation" from @react-navigation/native.
- * This is a workaround due to a render bug in the expo-router version.
- * See: https://github.com/expo/expo/issues/35383
- * TODO: Adjust import back to expo-router once the bug is resolved.
- */
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import {
   ActionButtons,
   ActionButtonsProps

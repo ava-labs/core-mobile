@@ -1122,7 +1122,12 @@ class AccountsService {
       offset: TRANSACTION_HISTORY_PAGE_SIZE
     })
 
-    return response.transactions.length > 0
+    // Some VM modules (e.g. the Solana/SVM module) return an undefined or
+    // malformed response for transaction history. Treat a missing `transactions`
+    // array as "no history" instead of throwing — otherwise this activity probe
+    // errors, account discovery never completes cleanly, and the "Adding
+    // accounts" migration re-runs on every cold start / foreground.
+    return (response?.transactions?.length ?? 0) > 0
   }
 
   private async runActivityProbes(

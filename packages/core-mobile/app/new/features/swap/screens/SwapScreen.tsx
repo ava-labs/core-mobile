@@ -17,7 +17,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
@@ -273,8 +273,18 @@ function buildPriceImpactItem({
 
   return {
     title: PRICE_IMPACT_ROW_TITLE,
+    // `flexShrink: 0` anchors this value row's intrinsic cross-size so it can't
+    // measure to ~0 on the first Android (Fabric) commit when it streams in
+    // after the quote (Calculating → Ready), which would otherwise hide the
+    // tooltip + impact text. (CP-14600)
     value: (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          flexShrink: 0
+        }}>
         <Tooltip
           title={tooltipTitle}
           description={tooltipDescription}
@@ -1485,7 +1495,17 @@ export const SwapScreen = (): JSX.Element => {
           }
         />
       )}
-      <View style={{ marginTop: 12 }}>
+      {/* CP-14600: the Pricing/Slippage/Price-impact rows are empty until the
+          quote resolves, then this GroupList card grows from zero height. Under
+          Fabric the already-laid-out neighbours don't reliably reflow around the
+          grown card, so the rows fail to appear, overlap, or sit under the
+          footer. Remounting this section when the rows first appear (data goes
+          empty → populated) forces a clean layout pass. The key is a stable
+          boolean (presence, not row count) so it flips once per quote cycle and
+          not on every price-impact/slippage update. */}
+      <View
+        key={data.length > 0 ? 'swap-details' : 'swap-details-empty'}
+        style={{ marginTop: 12 }}>
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}
       </View>
@@ -1514,6 +1534,10 @@ export const SwapScreen = (): JSX.Element => {
         }
       />
       {renderCctTwoTxNotice()}
+      {/* CP-14600: guarantee the last detail rows clear the sticky footer, where
+          the footer-height-driven bottom padding can be applied a frame late
+          while the quote rows are still streaming in. */}
+      <View style={{ height: 24 }} />
     </ScrollScreen>
   )
 }

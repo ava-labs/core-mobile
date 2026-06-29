@@ -14,6 +14,16 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
+# Force React Native core (incl. Fabric component views) to compile FROM SOURCE.
+# RN 0.85 defaults RCT_USE_PREBUILT_RNCORE=1, which ships React core as a prebuilt
+# `React.xcframework` (React-Core-prebuilt). In that mode `podspec_sources` makes
+# React-RCTFabric headers-only, so patch-package edits to
+# RCTEnhancedScrollView.mm / RCTScrollViewComponentView.mm (our iOS 26
+# scroll-edge-effect fix) are NEVER compiled. Setting this to '0' builds RN core
+# from source so the patch takes effect.
+# Trade-off: increases build time (RN core compiled from source).
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+
 prepare_react_native_project!
 
 setup_permissions([
@@ -39,7 +49,7 @@ setup_permissions([
   # 'StoreKit',
 ])
 
-platform :ios, '15.1'
+platform :ios, '16.4'
 
 # linkage = ENV['USE_FRAMEWORKS']
 # if linkage != nil
@@ -82,6 +92,10 @@ abstract_target 'common' do
 
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
+  # FirebaseAppCheck's AppCheckCore (11.3.0+) added `RecaptchaInterop (~> 101.0)`
+  # as a new transitive dependency. With statically linked Firebase pods it must
+  # be declared with modular headers, otherwise it "does not define modules".
+  pod 'RecaptchaInterop', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'
   
   target 'AvaxWallet' do

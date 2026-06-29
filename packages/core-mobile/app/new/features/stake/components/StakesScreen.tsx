@@ -11,7 +11,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { ListRenderItemInfo } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
@@ -132,8 +131,7 @@ const StakesScreen = ({
               marginBottom: 14,
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
-            }}
-            entering={getListItemEnteringAnimation(index)}>
+            }}>
             {content}
           </Animated.View>
         )

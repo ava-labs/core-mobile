@@ -1,0 +1,51 @@
+diff --git a/node_modules/expo-alternate-app-icons/android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt b/node_modules/expo-alternate-app-icons/android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt
+index 9c3ba02..6c0ba2e 100644
+--- a/node_modules/expo-alternate-app-icons/android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt
++++ b/node_modules/expo-alternate-app-icons/android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt
+@@ -34,16 +34,40 @@ class ExpoAlternateAppIconsModule : Module() {
+ 
+   private suspend fun setAlternateAppIcon(icon: String?): String? = withContext(Dispatchers.Main) {
+     val currentActivityComponent = appContext.activityProvider!!.currentActivity!!.componentName
++    val packageName = currentActivityComponent.packageName
+ 
+-    val currentIconName = retrieveIconNameFromComponent(currentActivityComponent)
+-
+-    if (currentIconName == icon) return@withContext icon
+-
+-    val newActivityComponent = replaceMainActivitySimpleName(currentActivityComponent, icon)
++    // On Android the default icon is its own launcher alias (.MainActivityDefault) so that
++    // the shared targetActivity (.MainActivity) is never disabled. See CP-14555.
++    val newActivityComponent = replaceMainActivitySimpleName(currentActivityComponent, icon ?: "Default")
+ 
+     appContext.reactContext?.packageManager?.run {
++      // Enable the target launcher alias first so the launcher always has a valid entry.
+       setComponentEnabledSetting(newActivityComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+-      setComponentEnabledSetting(currentActivityComponent, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
++
++      // Disable every *other* MainActivity launcher alias. We can't just disable
++      // currentActivity.componentName: it is fixed at launch, so switching icons more than
++      // once in a session would leave previously-enabled aliases on -> multiple launcher
++      // icons. We must also never disable .MainActivity itself, the shared targetActivity of
++      // every alias (a disabled target makes all aliases un-launchable). See CP-14555.
++      val activities = try {
++        getPackageInfo(
++          packageName,
++          PackageManager.GET_ACTIVITIES or PackageManager.MATCH_DISABLED_COMPONENTS
++        ).activities
++      } catch (error: PackageManager.NameNotFoundException) {
++        null
++      }
++      activities?.forEach { activityInfo ->
++        val simpleName = activityInfo.name.split('.').last()
++        val isMainActivityAlias = simpleName.startsWith(MAIN_ACTIVITY_NAME) && simpleName != MAIN_ACTIVITY_NAME
++        if (isMainActivityAlias && activityInfo.name != newActivityComponent.className) {
++          setComponentEnabledSetting(
++            ComponentName(packageName, activityInfo.name),
++            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
++            PackageManager.DONT_KILL_APP
++          )
++        }
++      }
+     }
+ 
+     return@withContext icon

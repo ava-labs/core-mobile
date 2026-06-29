@@ -1,5 +1,4 @@
 import { SquareButton, SquareButtonIconType } from '@avalabs/k2-alpine'
-import { getItemEnteringAnimation } from 'common/utils/animations'
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -12,18 +11,25 @@ export const ActionButtons = ({
   buttons: ActionButton[]
   contentContainerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
-  const renderActionItem = (item: ActionButton, index: number): JSX.Element => {
+  // NOTE: We intentionally render each button WITHOUT a reanimated `entering`
+  // animation. The previous staggered `FadeInRight(...).springify()` entrance
+  // could be left stuck at intermediate values (semi-transparent and/or
+  // translated/pushed) when the animation was interrupted by a re-mount —
+  // ActionButtons is conditionally mounted via `filteredTokenList.length > 0`
+  // and re-mounts during balance refetch / account switch / scroll. Springified
+  // entering animations are especially prone to this on the New Architecture
+  // (Fabric), where an interrupted entering animation isn't finalized to its
+  // resting value. Rendering the buttons statically guarantees they are always
+  // fully opaque and in their resting position.
+  const renderActionItem = (item: ActionButton): JSX.Element => {
     return (
-      <Animated.View entering={getItemEnteringAnimation(index)}>
-        <SquareButton
-          testID={`action_button__${item.title}`}
-          key={index}
-          title={item.title}
-          icon={item.icon}
-          onPress={item.onPress}
-          disabled={item.disabled}
-        />
-      </Animated.View>
+      <SquareButton
+        testID={`action_button__${item.title}`}
+        title={item.title}
+        icon={item.icon}
+        onPress={item.onPress}
+        disabled={item.disabled}
+      />
     )
   }
 
@@ -34,7 +40,7 @@ export const ActionButtons = ({
       horizontal
       scrollEventThrottle={16}
       data={buttons}
-      renderItem={item => renderActionItem(item.item, item.index)}
+      renderItem={item => renderActionItem(item.item)}
       showsHorizontalScrollIndicator={false}
       keyExtractor={(_, index) => index.toString()}
     />

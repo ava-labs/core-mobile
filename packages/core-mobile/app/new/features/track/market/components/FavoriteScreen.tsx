@@ -34,6 +34,24 @@ const FavoriteScreen = ({
   })
   const listType = view.selected
 
+  // Membership signature for the favorites set. Starring/unstarring a token
+  // mutates `favorites` in place (same view + sort), so the inner list key
+  // (`market-tokens-${view}-${sort}`) does NOT change and, on Fabric, the grid
+  // columns fail to relayout around the added/removed cell (uneven gaps /
+  // overlap). Folding this signature into the remount key forces a clean layout
+  // pass when membership changes. It is order-independent (sorted ids) so the
+  // price-driven re-sorting of the displayed rows never changes it — only an
+  // actual add/remove does — which avoids remounting (and resetting scroll) on
+  // every streamed price tick.
+  const favoritesKey = useMemo(
+    () =>
+      favorites
+        .map(token => token.id)
+        .sort()
+        .join(','),
+    [favorites]
+  )
+
   const emptyComponent = useMemo(() => {
     if (isLoadingFavorites) {
       return <LoadingState />
@@ -62,7 +80,7 @@ const FavoriteScreen = ({
         flex: 1
       }}>
       <MarketTokensScreen
-        key={`favorite-tokens-list-${listType}`}
+        key={`favorite-tokens-list-${listType}-${favoritesKey}`}
         data={data}
         charts={charts}
         sort={sort}

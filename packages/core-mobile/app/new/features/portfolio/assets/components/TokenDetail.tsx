@@ -189,7 +189,14 @@ const TokenDetail: FC<Props> = ({
   }, [])
 
   return (
-    <Animated.View entering={getListItemEnteringAnimation(5)}>
+    // `flex: 1` lets the list fill the tab page so its scroll view gets the full
+    // viewport height. Without it the wrapper collapses to content height and,
+    // on the New Architecture (Fabric) iOS, the collapsible header's
+    // `contentInset` offset can't be honored, leaving the rows under the header
+    // (the Activity tab already wraps its list in a `flex: 1` view).
+    <Animated.View
+      entering={getListItemEnteringAnimation(5)}
+      style={{ flex: 1 }}>
       <CollapsibleTabs.FlatList
         contentContainerStyle={{
           paddingHorizontal: 16,

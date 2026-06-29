@@ -5,6 +5,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
+import { GRID_GAP } from 'common/consts'
 import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
@@ -126,6 +127,10 @@ const AssetsScreen: FC<Props> = ({
         ? {
             marginLeft: isLeftColumn ? 8 : 0,
             marginRight: isLeftColumn ? 0 : 8,
+            // Row gap is applied per-cell (not via ItemSeparatorComponent): in a
+            // FlashList v2 multi-column (flexWrap) grid a vertical separator
+            // isn't reliably row-aligned, which produced uneven vertical gaps.
+            marginBottom: GRID_GAP,
             justifyContent: 'center',
             flex: 1,
             alignItems: 'center'
@@ -150,9 +155,12 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenDetail, numColumns, isGridView]
   )
 
+  // List view only. The grid view spaces rows via per-cell `marginBottom`
+  // (see renderItem) because FlashList v2's flexWrap grid doesn't row-align an
+  // ItemSeparatorComponent.
   const renderSeparator = useCallback((): JSX.Element => {
-    return <Space y={isGridView ? 12 : 10} />
-  }, [isGridView])
+    return <Space y={10} />
+  }, [])
 
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
@@ -254,9 +262,19 @@ const AssetsScreen: FC<Props> = ({
     []
   )
 
+  // Remount the list whenever the column ordering can change (account, view
+  // type, filter, or sort). On Fabric, FlashList recycles/repositions grid
+  // cells on an in-place `data` reorder without reliably recomputing the
+  // `numColumns` layout, which leaves uneven gaps / misaligned columns. Keying
+  // by the active selections gives each ordering a fresh layout pass. The key
+  // stays stable per selection (it doesn't include item count or streamed
+  // balance values) so it doesn't thrash on background balance refreshes.
   const assetsListKey = useMemo(
-    () => `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}`,
-    [activeAccount?.id, listType]
+    () =>
+      `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}-${
+        filter.selected
+      }-${sort.selected}`,
+    [activeAccount?.id, listType, filter.selected, sort.selected]
   )
 
   const maintainVisibleContentPosition = useMemo(() => {
@@ -282,7 +300,7 @@ const AssetsScreen: FC<Props> = ({
         containerStyle={containerStyle}
         renderEmpty={renderEmpty}
         renderHeader={renderHeader}
-        renderSeparator={renderSeparator}
+        renderSeparator={isGridView ? undefined : renderSeparator}
         isRefreshing={isRefetching}
         onRefresh={refetch}
         numColumns={numColumns}

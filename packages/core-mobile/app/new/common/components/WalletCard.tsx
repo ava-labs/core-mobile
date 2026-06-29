@@ -14,11 +14,13 @@ import { computeAccountBalance } from 'features/portfolio/utils/computeAccountBa
 import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedStyle,
+  useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -105,20 +107,65 @@ const WalletCard = ({
     onToggleExpansion(wallet.id)
   }, [onToggleExpansion, wallet.id])
 
-  const [contentHeight, setContentHeight] = useState(0)
-  const onContentLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout
-    setContentHeight(height)
-  }, [])
+  // Latest measured height of the in-flow content. Stored in a shared value so
+  // it can drive the collapse/expand animation on the UI thread.
+  const contentHeight = useSharedValue(0)
+  // 0 = collapsed, 1 = expanded. This is the ONLY value that is time-animated,
+  // and only on the user-initiated expand/collapse toggle.
+  const expandProgress = useSharedValue(isExpanded ? 1 : 0)
+  // True once the expand animation has fully settled. While true we render the
+  // content in natural flow (auto height, overflow visible) so adding/removing
+  // accounts grows/shrinks the card immediately, with no timing and no
+  // clipping. During the collapse/expand transition (and while collapsed) we
+  // fall back to the animated fixed height with overflow:'hidden'.
+  const [isFullyExpanded, setIsFullyExpanded] = useState(isExpanded)
+  const didMount = useRef(false)
+
+  const onContentLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      // Only record while expanded so the value stays at the full content
+      // height when the content unmounts on collapse, letting the collapse
+      // animation run smoothly from the full height down to 0.
+      if (isExpanded) {
+        contentHeight.value = event.nativeEvent.layout.height
+      }
+    },
+    [isExpanded, contentHeight]
+  )
+
+  useEffect(() => {
+    // Don't animate on the initial mount; `isFullyExpanded` already matches the
+    // initial `isExpanded`.
+    if (!didMount.current) {
+      didMount.current = true
+      return
+    }
+
+    // Use the animated fixed-height path for the duration of the toggle.
+    setIsFullyExpanded(false)
+
+    if (isExpanded) {
+      expandProgress.value = withTiming(1, EXPAND_TIMING, finished => {
+        if (finished) {
+          runOnJS(setIsFullyExpanded)(true)
+        }
+      })
+    } else {
+      expandProgress.value = withTiming(0, EXPAND_TIMING)
+    }
+  }, [isExpanded, expandProgress])
 
   const animatedContentStyle = useAnimatedStyle(() => {
     return {
-      minHeight: withTiming(
-        isExpanded ? contentHeight + HEADER_HEIGHT : HEADER_HEIGHT,
-        EXPAND_TIMING
-      )
+      height: expandProgress.value * contentHeight.value
     }
   })
+
+  // Once expanded and settled, render in natural flow so the height tracks the
+  // content intrinsically (immediate, never clipped). `isExpanded &&` ensures
+  // we synchronously leave natural-flow mode the moment a collapse starts, so
+  // the collapse animates from the full height instead of snapping shut.
+  const useNaturalFlow = isExpanded && isFullyExpanded
 
   const balanceSx = useMemo(
     () => ({
@@ -190,7 +237,6 @@ const WalletCard = ({
   return (
     <Animated.View
       style={[
-        animatedContentStyle,
         {
           backgroundColor: colors.$surfaceSecondary,
           borderRadius: 16,
@@ -198,27 +244,6 @@ const WalletCard = ({
         },
         style
       ]}>
-      <View
-        onLayout={onContentLayout}
-        sx={{
-          paddingHorizontal: 10,
-          gap: 10,
-          paddingBottom: 10,
-          position: 'absolute',
-          top: HEADER_HEIGHT,
-          left: 0,
-          right: 0
-        }}>
-        {isExpanded && (
-          <>
-            <View style={{ paddingTop: 1 }}>{accountsList}</View>
-            {wallet.type !== WalletType.PRIVATE_KEY && (
-              <AddAccountButton wallet={wallet} />
-            )}
-          </>
-        )}
-      </View>
-
       <TouchableOpacity
         onPress={handleToggle}
         sx={{
@@ -335,7 +360,29 @@ const WalletCard = ({
         </View>
       </TouchableOpacity>
 
-      <View sx={{ flex: 1 }} />
+      <Animated.View
+        style={
+          useNaturalFlow
+            ? { overflow: 'visible' as const }
+            : [animatedContentStyle, { overflow: 'hidden' as const }]
+        }>
+        <View
+          onLayout={onContentLayout}
+          sx={{
+            paddingHorizontal: 10,
+            gap: 10,
+            paddingBottom: 10
+          }}>
+          {isExpanded && (
+            <>
+              <View style={{ paddingTop: 1 }}>{accountsList}</View>
+              {wallet.type !== WalletType.PRIVATE_KEY && (
+                <AddAccountButton wallet={wallet} />
+              )}
+            </>
+          )}
+        </View>
+      </Animated.View>
     </Animated.View>
   )
 }
