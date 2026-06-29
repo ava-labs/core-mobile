@@ -143,5 +143,4 @@ describe('useRecurringEligibility', () => {
       reason: 'cross-chain'
     })
   })
-
 })

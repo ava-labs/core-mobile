@@ -95,6 +95,12 @@ export function mapTypeToCategory(
       return NotificationCategory.TRANSACTION
     case 'PRICE_ALERTS':
       return NotificationCategory.PRICE_UPDATE
+    case 'RECURRING_SWAP':
+      // Recurring-swap fills / completions / failures are on-chain
+      // transaction-like events the user cares about alongside balance
+      // changes. Sharing the TRANSACTION bucket means they land on the
+      // Transactions tab without needing a dedicated tab.
+      return NotificationCategory.TRANSACTION
     case 'NEWS':
     default:
       return NotificationCategory.NEWS

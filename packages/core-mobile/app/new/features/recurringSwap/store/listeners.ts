@@ -15,9 +15,25 @@ import {
   makeFailureKey
 } from '../utils/seenFailures'
 import {
+  loadSubscribedOrders,
+  saveSubscribedOrders
+} from '../utils/subscribedOrders'
+import { subscribeRecurringSwapNotifications } from '../services/recurringSwapNotifications'
+import {
   pendingActionStore,
   type PendingActionEntry
 } from './pendingActionStore'
+
+// In-flight subscribe dedupe. Keyed by `${ownerLower}:${chainId}:${orderId}`
+// so concurrent refetches (banner + manage-screen mount + 30s poll + focus +
+// unlock invalidate) don't all fire the same subscribe call. Module-scoped
+// because the React Query cache subscriber is a singleton — multiple
+// concurrent firings of `handleQueryCacheEvent` share this set.
+//
+// The backend treats re-subscribes as idempotent reactivations (Sarp's PR #172),
+// so a duplicate that slips through is harmless — this set is purely a
+// network-traffic optimization.
+const subscribeInFlight = new Set<string>()
 
 // The SDK now signs and broadcasts internally for fill /
 // cancel / pause / resume, so the old Redux listeners that watched for
@@ -109,6 +125,65 @@ function processAllSchedules(
 
   if (failuresDirty) saveSeenFailures(ownerAddress, chainId, seenFailures)
   if (anyNewFailure) showSnackbar('Recurring swap execution failed')
+}
+
+// ─── Notification subscription ────────────────────────────────────────────────
+
+// Active and Paused are the only statuses that can fire future fills (Paused
+// can be resumed). Cancelled / Completed are terminal — the backend webhook
+// deactivates the subscription on those transitions anyway (per Sarp's PR
+// #172), so subscribing them client-side would be a wasted round-trip.
+function isSubscribableStatus(status: RecurringOrderStatus): boolean {
+  return (
+    status === RecurringOrderStatus.Active ||
+    status === RecurringOrderStatus.Paused
+  )
+}
+
+/**
+ * Subscribe this device to push notifications for any new orders that
+ * appeared in the latest listOrders snapshot and aren't already tracked
+ * locally. Fire-and-forget — sequential per-order with a per-success save
+ * so a mid-batch app kill leaves a coherent persisted set instead of
+ * orphaning the surviving subscriptions.
+ *
+ * Failure handling: log + skip. The next listOrders refetch (banner mount,
+ * 30s poll, unlock invalidate, etc.) retries any unsubscribed order — and
+ * the backend treats re-subscribes as idempotent reactivations, so the
+ * worst case is a one-refetch delay before push notifications start.
+ */
+async function ensureOrderSubscriptions(
+  ownerAddress: string,
+  chainId: number,
+  schedules: readonly RecurringOrder[]
+): Promise<void> {
+  const ownerLower = ownerAddress.toLowerCase()
+  const subscribed = loadSubscribedOrders(ownerAddress, chainId)
+  for (const schedule of schedules) {
+    if (!isSubscribableStatus(schedule.status)) continue
+    const orderId = schedule.orderId
+    if (subscribed.has(orderId)) continue
+    const inFlightKey = `${ownerLower}:${chainId}:${orderId}`
+    if (subscribeInFlight.has(inFlightKey)) continue
+    subscribeInFlight.add(inFlightKey)
+    try {
+      await subscribeRecurringSwapNotifications({ orderId })
+      subscribed.add(orderId)
+      // Save after each success so a mid-batch interruption (app kill,
+      // network drop on the next iteration) preserves the work done so far.
+      // `loadSubscribedOrders` re-reads from MMKV at the start of each
+      // refetch, so a sibling subscriber's writes (different chain, same
+      // session) don't get clobbered.
+      saveSubscribedOrders(ownerAddress, chainId, subscribed)
+    } catch (err) {
+      Logger.error('[RecurringSwap] order subscribe failed', {
+        orderId,
+        err
+      })
+    } finally {
+      subscribeInFlight.delete(inFlightKey)
+    }
+  }
 }
 
 /**
@@ -221,7 +296,7 @@ function reconcilePendingActions(
  * (see `useRecurringSchedules`). We pluck both out so the seen-failures
  * persistence can be scoped per (account, chain).
  */
-function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
+async function handleQueryCacheEvent(event: QueryCacheNotifyEvent): Promise<void> {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||
@@ -258,6 +333,18 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
     // is initialised once — subsequent refetches then hit the new-failure
     // path normally.
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
+
+    // Fire-and-forget the per-order push subscription pass. Async to keep
+    // the cache subscriber callback non-blocking; failures inside the
+    // function are logged but never bubble up — the next refetch retries
+    // any order that didn't make it into the persisted subscribed-set.
+    await ensureOrderSubscriptions(
+      ownerAddress,
+      chainId,
+      schedules ?? []
+    ).catch(err => {
+      Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
+    })
   } catch (err) {
     Logger.error('[RecurringSwap] Failure watcher error', err)
   }

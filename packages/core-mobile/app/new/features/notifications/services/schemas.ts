@@ -6,7 +6,8 @@ import { z } from 'zod'
 export const NotificationTypeSchema = z.enum([
   'BALANCE_CHANGES',
   'PRICE_ALERTS',
-  'NEWS'
+  'NEWS',
+  'RECURRING_SWAP'
 ])
 
 /**
@@ -91,6 +92,32 @@ export const NewsPriceAlertMetadataSchema = z.object({
 export const NewsMetadataSchema = z.object({
   event: z.string(),
   url: z.string()
+})
+
+/**
+ * Recurring swap (DCA) notification metadata. Mirrors the FCM push payload
+ * Sarp's webhook fans out (PRs #172 / #174 on core-notification-sender):
+ * machine-readable progress fields the in-app row uses to format its title /
+ * subtitle + a status badge, and the `orderId` the deep link uses to
+ * auto-expand the matching schedule. Numeric fields arrive as strings
+ * (`z.coerce.number` is intentional — the wire format is plain JSON-string).
+ * `reasonCode` is set only on `status === 'failed'`; known codes are
+ * documented at the call site, unknown codes are passed through so newer
+ * backend codes don't fail parsing.
+ */
+export const RecurringSwapMetadataSchema = z.object({
+  orderId: z.string(),
+  owner: z.string(),
+  chainId: z.coerce.number(),
+  numberOfOrders: z.coerce.number(),
+  executedOrders: z.coerce.number(),
+  remainingOrders: z.coerce.number(),
+  tokenIn: z.string(),
+  tokenOut: z.string(),
+  amountIn: z.string(),
+  amountOut: z.string(),
+  status: z.string(),
+  reasonCode: z.string().optional()
 })
 
 /**

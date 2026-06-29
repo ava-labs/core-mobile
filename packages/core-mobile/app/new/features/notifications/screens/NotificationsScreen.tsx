@@ -24,6 +24,7 @@ import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
 import BalanceChangeItem from '../components/BalanceChangeItem'
+import RecurringSwapItem from '../components/RecurringSwapItem'
 import GenericNotificationItem from '../components/GenericNotificationItem'
 import {
   useNotifications,
@@ -35,7 +36,8 @@ import {
   AppNotification,
   NotificationTab,
   isPriceAlertNotification,
-  isBalanceChangeNotification
+  isBalanceChangeNotification,
+  isRecurringSwapNotification
 } from '../types'
 import { buildAccountLabelMap, isSwapTerminal } from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
@@ -121,6 +123,15 @@ const renderNotificationItem = (
         {...props}
       />
     )
+  }
+
+  // RecurringSwap rows render even without a parsed `data` payload — the
+  // backend-formatted title / body alone are enough for the user to read the
+  // notification, and the deepLinkUrl still routes to the schedules screen.
+  // (BalanceChange / PriceAlert require `data` for their formatted titles,
+  // hence the `*WithData` predicates above; recurring-swap doesn't.)
+  if (isRecurringSwapNotification(item)) {
+    return <RecurringSwapItem notification={item} {...props} />
   }
 
   return <GenericNotificationItem notification={item} {...props} />

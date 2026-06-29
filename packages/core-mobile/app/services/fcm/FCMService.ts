@@ -17,7 +17,8 @@ import {
   NewsData,
   NotificationPayload,
   NotificationPayloadSchema,
-  NotificationTypes
+  NotificationTypes,
+  RecurringSwapData
 } from 'services/fcm/types'
 import {
   ChannelId,
@@ -72,11 +73,16 @@ class FCMService {
         })
         .catch(Logger.error)
 
+      // Skip user-originated balance changes (spent / transferred between own
+      // accounts) — they're already visible in the app's own flows and would
+      // be noisy. The skip is balance-change-specific; other notification
+      // types (News / RecurringSwap) have no `event` field, so gate the
+      // access on the discriminator.
       if (
-        result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
-        result.data.data.event === BalanceChangeEvents.BALANCES_TRANSFERRED
+        result.data.data.type === NotificationTypes.BALANCE_CHANGES &&
+        (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
+          result.data.data.event === BalanceChangeEvents.BALANCES_TRANSFERRED)
       ) {
-        // skip showing notification if user just spent balance in app, or transferred balance between user's own accounts
         return
       }
 
@@ -103,8 +109,21 @@ class FCMService {
   }
 
   #prepareDataOnlyNotificationData = (
-    fcmData: BalanceChangeData | NewsData
+    fcmData: BalanceChangeData | NewsData | RecurringSwapData
   ): DisplayNotificationParams => {
+    // RECURRING_SWAP payloads carry only machine-readable progress fields
+    // (orderId / status / token addresses) — no `title` or `body`, since
+    // those live on the envelope. The Android data-only path can't
+    // construct a user-visible notification from them; the backend always
+    // sends a populated `notification` envelope for RECURRING_SWAP per
+    // Sarp's PR #174, so this branch should never fire in practice. Throw
+    // loudly so a misconfigured payload surfaces in logs instead of
+    // silently emitting a blank toast.
+    if (fcmData.type === NotificationTypes.RECURRING_SWAP) {
+      throw Error(
+        'RECURRING_SWAP arrived data-only — backend must send title/body in `notification`'
+      )
+    }
     if (!fcmData.title) throw Error('No notification title')
     const data = this.#extractDeepLinkData(fcmData)
     return {
@@ -120,10 +139,19 @@ class FCMService {
   ): DisplayNotificationParams => {
     if (!fcm.notification) throw Error('No notification payload')
     const data = this.#extractDeepLinkData(fcm.data)
-
+    // EVENT_TO_CH_ID is keyed by BalanceChange / News event values; RECURRING_SWAP
+    // has no `event` field, so fall back to the platform default channel when
+    // the backend doesn't supply `android.channelId` on the envelope. We
+    // intentionally don't introduce a dedicated RECURRING_SWAP channel —
+    // these pushes are already gated behind the device's balance-notification
+    // preference (per Sarp's PR #174) and reusing the default channel keeps
+    // the channel-management UX surface aligned with that gating.
+    const fallbackChannelId =
+      fcm.data.type === NotificationTypes.RECURRING_SWAP
+        ? DEFAULT_ANDROID_CHANNEL
+        : EVENT_TO_CH_ID[fcm.data.event]
     return {
-      channelId:
-        fcm.notification.android?.channelId ?? EVENT_TO_CH_ID[fcm.data.event],
+      channelId: fcm.notification.android?.channelId ?? fallbackChannelId,
       title: fcm.notification.title,
       body: fcm.notification.body,
       sound: fcm.notification.sound,
@@ -132,7 +160,7 @@ class FCMService {
   }
 
   #extractDeepLinkData = (
-    fcmData: BalanceChangeData | NewsData
+    fcmData: BalanceChangeData | NewsData | RecurringSwapData
   ):
     | {
         accountAddress: string
@@ -167,6 +195,22 @@ class FCMService {
         url: fcmData.urlV2 ?? fcmData.url ?? '',
         channelId: EVENT_TO_CH_ID[fcmData.event] as string,
         event: fcmData.event
+      }
+    } else if (fcmData.type === NotificationTypes.RECURRING_SWAP) {
+      // Deep-link a notification tap to the schedules screen, parameterized
+      // by orderId so `RecurringSchedulesScreen` auto-expands + scrolls the
+      // matching card into view (`initialExpandedOrderId` prop — already
+      // wired on main). The `event` field carries the type discriminator so
+      // `resolveChannelId` can classify the press consistently across cold-
+      // start and warm-background paths without needing a dedicated channel.
+      return {
+        url: `${
+          PROTOCOLS.CORE
+        }://recurringSwapSchedules?orderId=${encodeURIComponent(
+          fcmData.orderId
+        )}`,
+        channelId: DEFAULT_ANDROID_CHANNEL,
+        event: NotificationTypes.RECURRING_SWAP
       }
     }
   }
@@ -208,9 +252,16 @@ class FCMService {
       // and walletconnect taps are no longer dropped. Channel-id resolution
       // is centralized in `resolveChannelId` to keep precedence consistent
       // with the cold-start and warm-background paths.
+      // RECURRING_SWAP payloads have no `event` field — pass undefined for
+      // that variant; `resolveChannelId` already handles the missing
+      // fallback (the `data.channelId` we stamped in `#extractDeepLinkData`
+      // is the primary signal, fallbackEvent is the secondary).
       const channelId = resolveChannelId({
         data,
-        fallbackEvent: result.data.data.event
+        fallbackEvent:
+          result.data.data.type === NotificationTypes.RECURRING_SWAP
+            ? undefined
+            : result.data.data.event
       })
       AnalyticsService.capture('PushNotificationPressed', {
         channelId,

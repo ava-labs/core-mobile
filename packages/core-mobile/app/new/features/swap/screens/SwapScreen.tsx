@@ -386,6 +386,14 @@ export const SwapScreen = (): JSX.Element => {
   const [validationError, setValidationError] =
     useState<FusionQuoteError | null>(null)
   const minimumTransferAmount = useMinimumTransferAmount({ fromToken, toToken })
+  // Recurring is Markr-only, so its per-order floor is Markr's minimum
+  // specifically — not the blended "lowest across services" value, which could
+  // pin a lower non-Markr floor and let a sub-fillable per-order amount through.
+  const markrMinimumTransferAmount = useMinimumTransferAmount({
+    fromToken,
+    toToken,
+    serviceType: ServiceType.MARKR
+  })
 
   const {
     debounced: debouncedFromTokenValue,
@@ -417,13 +425,13 @@ export const SwapScreen = (): JSX.Element => {
     isRecurringBlocked ? undefined : toToken,
     isRecurringBlocked ? undefined : evmAddress
   )
-  // Markr dropped the per-chain recurring supported-token list (and with it the
-  // per-order minimum), so recurring swaps no longer carry their own floor.
-  // Recurring on → no minimum check. Recurring off → validate against the
-  // active quote's one-shot minimum.
+
+  // Recurring on → validate the per-order amount against Markr's floor.
+  // Recurring off → validate against the blended one-shot minimum.
   const effectiveMinimumTransferAmount = recurring.isRecurring
-    ? null
+    ? markrMinimumTransferAmount
     : minimumTransferAmount
+
   // Toggle stays hidden until the user enters a non-zero amount (matches Figma
   // "Recurring OFF" frame — the toggle row only appears beneath a populated
   // swap card). The recurring flag itself is preserved when the amount is
@@ -1211,10 +1219,10 @@ export const SwapScreen = (): JSX.Element => {
 
   // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
   // without the whole screen. It mirrors the one-shot `canSwap` gate: a
-  // blocking (non-warning) validation error must disable Next. Recurring no
-  // longer carries a per-order minimum (Markr dropped the supported-token
-  // list), so `effectiveMinimumTransferAmount` is null when recurring is on and
-  // the below-minimum branch is inert for recurring. Warnings (e.g.
+  // blocking (non-warning) validation error must disable Next. Recurring
+  // validates the per-order amount against Markr's floor
+  // (`effectiveMinimumTransferAmount`), so a per-order amount below that floor
+  // surfaces a blocking validation error here and disables Next. Warnings (e.g.
   // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
   const canSubmit = computeCanSubmit({
     isRecurring: recurring.isRecurring,

@@ -8,7 +8,8 @@ import {
   BalanceChangesTransferSchema,
   BalanceChangesMetadataSchema,
   PriceAlertsMetadataSchema,
-  NewsMetadataSchema
+  NewsMetadataSchema,
+  RecurringSwapMetadataSchema
 } from './services/schemas'
 
 /**
@@ -27,6 +28,7 @@ export type BalanceChangesMetadata = z.infer<
 >
 export type PriceAlertsMetadata = z.infer<typeof PriceAlertsMetadataSchema>
 export type NewsMetadata = z.infer<typeof NewsMetadataSchema>
+export type RecurringSwapMetadata = z.infer<typeof RecurringSwapMetadataSchema>
 
 export { BalanceChangeEventSchema }
 
@@ -37,14 +39,22 @@ export type NotificationMetadata =
   | BalanceChangesMetadata
   | PriceAlertsMetadata
   | NewsMetadata
+  | RecurringSwapMetadata
 
 /**
- * Notification categories mapping to UI tabs
+ * Notification categories mapping to UI tabs.
+ *
+ * `RECURRING_SWAP` lives under the same category bucket as transaction-style
+ * notifications: a fill is an on-chain event the user cares about alongside
+ * balance changes, and the Figma list groups them together. Tabs filter on
+ * `category` so a user on the Transactions tab sees recurring-swap fills /
+ * completions / failures without needing a separate sub-tab.
  */
 export enum NotificationCategory {
   TRANSACTION = 'TRANSACTION',
   PRICE_UPDATE = 'PRICE_UPDATE',
-  NEWS = 'NEWS'
+  NEWS = 'NEWS',
+  RECURRING_SWAP = 'RECURRING_SWAP'
 }
 
 /**
@@ -84,6 +94,10 @@ export type BackendNotification =
       type: 'NEWS'
       data?: NewsMetadata
     })
+  | (BaseNotification & {
+      type: 'RECURRING_SWAP'
+      data?: RecurringSwapMetadata
+    })
 
 /**
  * Union type for all notifications (used in UI)
@@ -91,7 +105,14 @@ export type BackendNotification =
 export type AppNotification = BackendNotification
 
 /**
- * Type guard for price alert notifications
+ * Type guard for price alert notifications.
+ *
+ * Also matches NEWS-wrapped price alerts (`category === 'NEWS'` +
+ * `data.event === 'PRICE_ALERTS'`). The `'event' in data` runtime check is
+ * load-bearing now that the `data` union includes RecurringSwapMetadata
+ * (which has no `event` field) — a direct `.event` access would fail at
+ * compile time. Semantics are unchanged: the in-check is true exactly
+ * when `data` carries the News/Balance/PriceAlerts shape.
  */
 export function isPriceAlertNotification(
   notification: AppNotification
@@ -99,11 +120,10 @@ export function isPriceAlertNotification(
   type: 'PRICE_ALERTS'
   data?: PriceAlertsMetadata
 } {
-  return (
-    notification.type === 'PRICE_ALERTS' ||
-    (notification.category === 'NEWS' &&
-      notification.data?.event === 'PRICE_ALERTS')
-  )
+  if (notification.type === 'PRICE_ALERTS') return true
+  if (notification.category !== 'NEWS') return false
+  const data = notification.data
+  return data !== undefined && 'event' in data && data.event === 'PRICE_ALERTS'
 }
 
 /**
@@ -116,6 +136,20 @@ export function isBalanceChangeNotification(
   data?: BalanceChangesMetadata
 } {
   return notification.type === 'BALANCE_CHANGES'
+}
+
+/**
+ * Type guard for recurring-swap notifications. Used by the notifications-list
+ * renderer + the `RecurringSwapItem` row component to derive title / subtitle
+ * / status badge from the metadata.
+ */
+export function isRecurringSwapNotification(
+  notification: AppNotification
+): notification is BaseNotification & {
+  type: 'RECURRING_SWAP'
+  data?: RecurringSwapMetadata
+} {
+  return notification.type === 'RECURRING_SWAP'
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
