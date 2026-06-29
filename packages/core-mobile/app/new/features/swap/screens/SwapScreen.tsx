@@ -78,7 +78,11 @@ import {
   fusionTransfersStore,
   useFusionServiceInitError
 } from '../hooks/useZustandStore'
-import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
+import {
+  FusionQuoteError,
+  fusionErrors,
+  isUserRejectionError
+} from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
 import {
   isAvalancheCctRoute,
@@ -1289,12 +1293,18 @@ export const SwapScreen = (): JSX.Element => {
       dismissAll()
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
       // User-rejection errors from the signer bubble up untouched. They're
       // not a bug — they're the user explicitly tapping Reject. Suppress
       // both the failure toast AND the Logger.error (which pipes to
       // Sentry) so rejections don't pollute the error telemetry.
-      if (/User (rejected|cancel(l|led))/i.test(message)) {
+      //
+      // Detect via `isUserRejectionError`, which checks the EIP-1193 code
+      // (4001) and the message across Error instances AND plain JSON-RPC
+      // error objects. The signer rejection crosses the VM-module boundary as
+      // a serialized `{ code, message }` object — not an `Error` — so the old
+      // inline `err.message` regex missed it and showed the generic "failed"
+      // toast on a deliberate reject.
+      if (isUserRejectionError(err)) {
         Logger.info('[RecurringSwap] submitRecurringSwap user-rejected')
       } else if (isInvalidParamsError(err)) {
         // Quote expired / sourceChain mismatch — surface a recoverable
