@@ -299,9 +299,7 @@ function reconcilePendingActions(
  * (see `useRecurringSchedules`). We pluck both out so the seen-failures
  * persistence can be scoped per (account, chain).
  */
-async function handleQueryCacheEvent(
-  event: QueryCacheNotifyEvent
-): Promise<void> {
+function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||
