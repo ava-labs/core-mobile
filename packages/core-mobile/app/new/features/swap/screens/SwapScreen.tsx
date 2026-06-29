@@ -80,7 +80,10 @@ import {
 } from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
-import { isAvalancheCctRoute } from '../utils/isAvalancheCctRoute'
+import {
+  isAvalancheCctRoute,
+  isCctOnlySource
+} from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
@@ -1093,10 +1096,26 @@ export const SwapScreen = (): JSX.Element => {
       setValidationError(
         fusionErrors.incompatibleNetworks(fromToken.symbol, toToken.symbol)
       )
-    } else {
-      // Clear error if tokens are compatible
-      setValidationError(null)
+      return
     }
+
+    // CP-14514: X/P-chain native AVAX is a CCT-only source — it can swap only to
+    // native AVAX on a different primary-network chain. The chain check above
+    // passes for X/P→C (C is a reachable CCT destination), so it can't catch a
+    // non-AVAX to-token like USDC left selected from a prior C-chain source.
+    // Clear it silently so the (already source-aware) token list and the user's
+    // next pick are the source of truth — no error, the networks aren't the issue.
+    if (
+      isCctOnlySource(fromToken) &&
+      !isAvalancheCctRoute({ fromToken, toToken })
+    ) {
+      setToToken(undefined)
+      setValidationError(null)
+      return
+    }
+
+    // Clear error if tokens are compatible
+    setValidationError(null)
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
