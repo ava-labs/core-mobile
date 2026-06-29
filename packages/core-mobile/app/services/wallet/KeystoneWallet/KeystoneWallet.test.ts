@@ -2,6 +2,7 @@ import { KeystoneDataStorageType } from 'features/keystone/storage/KeystoneDataS
 import { Curve } from 'utils/publicKeys'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
+import { KeystoneErrors } from 'services/wallet/KeystoneWallet/errors'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -112,6 +113,32 @@ describe('KeystoneWallet', () => {
     expect(xpPublicKey).toEqual(
       '034814b89f62338b37881a71ffe40cdd29752241560b861a7086ac711fa7a8fe79'
     )
+  })
+
+  it('throws a typed UNSUPPORTED_XP_DERIVATION error for a non-primary X/P path', async () => {
+    // Keystone QR wallets only carry the depth-3 account-0 X/P xpub
+    // (m/44'/9000'/0'), so per-account X/P paths (m/44'/9000'/N'/0/0, N > 0)
+    // cannot be derived. The error must be distinguishable so address
+    // derivation can omit X/P for the account rather than failing closed.
+    await expect(
+      wallet.getPublicKeyFor({
+        derivationPath: `m/44'/9000'/1'/0/0`,
+        curve: Curve.SECP256K1
+      })
+    ).rejects.toMatchObject({
+      name: KeystoneErrors.UNSUPPORTED_XP_DERIVATION
+    })
+  })
+
+  it('still throws a generic error for a truly unknown derivation path', async () => {
+    // Only the AVAX coin type (m/44'/9000'/...) maps to the X/P-unsupported
+    // sentinel; any other unknown path stays a generic failure.
+    await expect(
+      wallet.getPublicKeyFor({
+        derivationPath: `m/44'/1'/0'/0/0`,
+        curve: Curve.SECP256K1
+      })
+    ).rejects.toMatchObject({ name: 'Error' })
   })
 
   describe('getSigner', () => {

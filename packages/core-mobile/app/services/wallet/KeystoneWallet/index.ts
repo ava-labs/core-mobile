@@ -9,7 +9,7 @@ import {
   MessageTypes,
   RpcMethod
 } from '@avalabs/vm-module-types'
-import { Curve } from 'utils/publicKeys'
+import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { assertNotUndefined } from 'utils/assertions'
 import {
   Avalanche,
@@ -50,6 +50,10 @@ import { BN } from 'bn.js'
 import { isTypedData } from '@avalabs/evm-module'
 import { convertTxData, makeBigIntLike } from 'services/wallet/utils'
 import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
+import {
+  KeystoneErrors,
+  KeystoneWalletError
+} from 'services/wallet/KeystoneWallet/errors'
 import { SignatureRSV } from '../types'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
@@ -384,6 +388,18 @@ export default class KeystoneWallet implements Wallet {
     }
     if (path.startsWith(AVAX_DERIVATION_PATH)) {
       return Avalanche.getAddressPublicKeyFromXpub(this.xpubXP, accountIndex)
+    }
+    // A Keystone QR wallet only carries the primary account's X/P xpub
+    // (AVAX_DERIVATION_PATH); per-account X/P paths (m/44'/9000'/N'/0/0, N > 0)
+    // are not derivable. Surface this as a distinguishable error so address
+    // derivation can omit X/P for the non-primary account rather than failing
+    // closed (CP-14606). Real per-account X/P support is future work with the
+    // Keystone team.
+    if (path.startsWith(AVALANCHE_DERIVATION_PATH_PREFIX)) {
+      throw new KeystoneWalletError({
+        name: KeystoneErrors.UNSUPPORTED_XP_DERIVATION,
+        message: `Keystone cannot derive X/P for non-primary account path: ${path}`
+      })
     }
     throw new Error(`Unknown path: ${path}`)
   }
