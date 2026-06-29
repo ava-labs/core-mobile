@@ -98,7 +98,7 @@ export const TokenAmountRow = ({
             <SubTextNumber
               number={isDebit ? `-${amount}` : amount}
               textVariant="heading2"
-              fontWeight="500"
+              fontFamily="Inter-Medium"
               textColor={isDebit ? colors.$textDanger : colors.$textPrimary}
               style={{ maxWidth: '100%' }}
             />

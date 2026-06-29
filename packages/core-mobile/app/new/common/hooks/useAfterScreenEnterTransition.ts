@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { useCallback, useRef } from 'react'
 import { Platform } from 'react-native'
 

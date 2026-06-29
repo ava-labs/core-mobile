@@ -1,4 +1,4 @@
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'

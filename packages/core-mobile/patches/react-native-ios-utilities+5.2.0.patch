@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-ios-utilities/ios/Sources/Extensions+Helpers/RCTView+Helpers.swift b/node_modules/react-native-ios-utilities/ios/Sources/Extensions+Helpers/RCTView+Helpers.swift
+--- a/node_modules/react-native-ios-utilities/ios/Sources/Extensions+Helpers/RCTView+Helpers.swift
++++ b/node_modules/react-native-ios-utilities/ios/Sources/Extensions+Helpers/RCTView+Helpers.swift
+@@ -25,15 +25,11 @@
+     return rootView.recursivelyFindSubview(whereType: targetType);
+   };
+   
+-  var closestParentReactContentView: RCTRootContentView? {
+-    let targetType = RCTRootContentView.self;
+-  
+-    if let match = self.recursivelyFindParentView(whereType: targetType) {
+-      return match;
+-    };
+-    
+-    guard let rootView = self.rootViewForCurrentWindow else { return nil };
+-    return rootView.recursivelyFindSubview(whereType: targetType);
++  var closestParentReactContentView: RCTView? {
++    // Patched for RN 0.85 new architecture: `RCTRootContentView` is a legacy-arch
++    // class that is stripped from the prebuilt React Core (RCT_REMOVE_LEGACY_ARCH=1),
++    // so referencing it breaks linking. The new architecture doesn't use it.
++    return nil;
+   };
+   
+   var reactTouchHandlers: [RCTTouchHandler]? {

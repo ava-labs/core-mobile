@@ -13,10 +13,10 @@ index eada3eb..954c97f 100644
  //# sourceMappingURL=useAnimatedSensor.d.ts.map
 \ No newline at end of file
 diff --git a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
-index 6256687..2d6e16e 100644
+index cd1a999..e04a6b9 100644
 --- a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 +++ b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
-@@ -88,14 +88,17 @@ function adjustVectorToInterfaceOrientation(data: Value3D) {
+@@ -87,14 +87,17 @@ function adjustVectorToInterfaceOrientation(data: Value3D) {
   */
  export function useAnimatedSensor(
    sensorType: SensorType.ROTATION,
@@ -34,7 +34,7 @@ index 6256687..2d6e16e 100644
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D> {
    const userConfigRef = useRef(userConfig);
-@@ -144,18 +147,22 @@ export function useAnimatedSensor(
+@@ -143,17 +146,21 @@ export function useAnimatedSensor(
      const adjustToInterfaceOrientation =
        ref.current.config.adjustToInterfaceOrientation;
  
@@ -45,7 +45,7 @@ index 6256687..2d6e16e 100644
 -          data = adjustRotationToInterfaceOrientation(data as ValueRotation);
 -        } else {
 -          data = adjustVectorToInterfaceOrientation(data as Value3D);
-+    let id = -1
++    let id = -1;
 +
 +    if (isActive) {
 +      id = registerSensor(sensorType, config, (data) => {
@@ -59,16 +59,14 @@ index 6256687..2d6e16e 100644
          }
 -      }
 -      sensorData.value = data;
--      callMicrotasks();
 -    });
 +        sensorData.value = data;
-+        callMicrotasks();
 +      });
 +    }
  
      if (id !== -1) {
        // if sensor is available
-@@ -172,7 +179,13 @@ export function useAnimatedSensor(
+@@ -170,7 +177,13 @@ export function useAnimatedSensor(
      return () => {
        ref.current.unregister();
      };

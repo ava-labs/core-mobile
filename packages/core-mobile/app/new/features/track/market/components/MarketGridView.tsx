@@ -9,7 +9,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { GRID_GAP } from 'common/consts'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo } from 'react'
 import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -24,7 +23,6 @@ export const MarketGridView = memo(
   ({
     token,
     chartData,
-    index,
     onPress,
     formattedPrice,
     formattedPercentChange,
@@ -45,7 +43,7 @@ export const MarketGridView = memo(
     const { dataPoints, ranges } = chartData
 
     return (
-      <Animated.View entering={getListItemEnteringAnimation(index)}>
+      <Animated.View>
         <AnimatedPressable onPress={onPress}>
           <View
             sx={{

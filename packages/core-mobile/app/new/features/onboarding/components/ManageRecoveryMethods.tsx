@@ -61,7 +61,7 @@ export const ManageRecoveryMethods = ({
                 <Text
                   sx={{
                     fontSize: 16,
-                    fontWeight: '500',
+                    fontFamily: 'Inter-Medium',
                     lineHeight: 16,
                     color: colors.$textPrimary
                   }}>

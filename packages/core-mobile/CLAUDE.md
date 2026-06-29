@@ -235,3 +235,9 @@ yarn test app/utils/FormatCurrency.test.ts
 - Reactotron is configured for debugging Redux and MMKV
 - Expo dev client includes dev menu (shake device)
 - Sentry captures production errors
+
+## Styling Conventions
+
+Visual / design conventions (fonts, weights, and more) live in a dedicated doc:
+
+@docs/styles.md

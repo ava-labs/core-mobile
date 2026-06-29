@@ -2,6 +2,7 @@ import Big from 'big.js'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import DeviceInfo from 'react-native-device-info'
 import { Platform } from 'react-native'
+import Config from 'react-native-config'
 import { formatNumber } from './formatNumber/formatNumber'
 
 export const truncateNodeId = (nodeId: string, size = 6): string => {
@@ -136,6 +137,13 @@ export async function findAsyncSequential<T>(
 export const isDebugOrInternalBuild = (): boolean => {
   return __DEV__ || DeviceInfo.getBundleId().includes('.internal')
 }
+
+/**
+ * True when running an end-to-end (e2e) build. The e2e env files
+ * (`.env.*.e2e`) are the only ones that define a non-empty `E2E_MNEMONIC`, so a
+ * truthy value reliably identifies an e2e build.
+ */
+export const isE2EBuild = !!Config.E2E_MNEMONIC
 
 export const isIOS = Platform.OS === 'ios'
 export const isAndroid = Platform.OS === 'android'

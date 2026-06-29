@@ -50,10 +50,6 @@
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/BootTheme"
             >
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -78,6 +74,17 @@
 				<data android:scheme="https" android:host="nlfvn-alternate.test-app.link" />
 			</intent-filter>
         </activity>
+        <activity-alias
+            android:name=".MainActivityDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity-alias
             android:name=".MainActivityLight"
             android:enabled="false"

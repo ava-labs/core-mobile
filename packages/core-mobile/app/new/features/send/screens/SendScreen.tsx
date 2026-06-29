@@ -18,7 +18,7 @@ import {
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { addRecentContact } from 'store/addressBook'
 import {
   AvmCapableAccount,

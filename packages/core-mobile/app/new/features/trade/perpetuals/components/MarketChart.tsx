@@ -234,7 +234,7 @@ export const MarketChart = ({
         <View
           pointerEvents="none"
           style={[
-            StyleSheet.absoluteFillObject,
+            StyleSheet.absoluteFill,
             styles.center,
             { backgroundColor: surfaceColor }
           ]}>

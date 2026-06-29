@@ -1,7 +1,7 @@
 import { BalanceHeader, PriceChange, View } from '@avalabs/k2-alpine'
 import React, { memo } from 'react'
 import { LayoutChangeEvent, Pressable, ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { AnimatedStyle } from 'react-native-reanimated'
 
 /**
  * Memoized balance header section to prevent full screen re-renders
@@ -28,7 +28,7 @@ export const BalanceHeaderSection = memo(
     backgroundColor
   }: {
     onLayout: (event: LayoutChangeEvent) => void
-    animatedHeaderStyle: ViewStyle
+    animatedHeaderStyle: AnimatedStyle<ViewStyle>
     onPress: () => void
     walletName?: string
     walletIcon: 'wallet' | 'ledger'

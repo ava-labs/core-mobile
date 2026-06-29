@@ -55,6 +55,7 @@ export const TokenActivityListItemTitle = ({
             number={num}
             textVariant={textVariant}
             textColor={colors.$textPrimary}
+            fontFamily="Inter-SemiBold"
           />
         )
       }

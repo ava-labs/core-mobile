@@ -218,7 +218,7 @@ export const CollectiblesScreen = ({
 
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
-        <CollapsibleTabs.ContentWrapper animate={false}>
+        <CollapsibleTabs.ContentWrapper>
           <ErrorState
             title="All collectibles hidden"
             description="You have hidden all your collectibles"
