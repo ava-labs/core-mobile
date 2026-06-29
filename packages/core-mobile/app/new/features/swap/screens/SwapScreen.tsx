@@ -53,8 +53,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveWallet } from 'store/wallet/slice'
-import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -382,8 +380,6 @@ export const SwapScreen = (): JSX.Element => {
   } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeWallet = useSelector(selectActiveWallet)
-  const isSeedlessWallet = activeWallet?.type === WalletType.SEEDLESS
   const accountTokens = useTokensWithBalanceForAccount({
     account: activeAccount
   })
@@ -1190,8 +1186,7 @@ export const SwapScreen = (): JSX.Element => {
   }, [theme.isDark])
 
   const showCctTwoTxNotice = shouldShowAvalancheCctTwoTxNotice({
-    quote: activeQuote,
-    isSeedlessWallet
+    quote: activeQuote
   })
 
   // Submit-gate logic lives in `recurringSubmitGate` so the recurring

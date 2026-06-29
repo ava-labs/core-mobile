@@ -25,6 +25,7 @@ import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/api/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
+import { isUnsupportedXpDerivationError } from 'services/wallet/KeystoneWallet/errors'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -132,24 +133,24 @@ class ModuleManager {
         : DerivationPath.BIP44
     const secretId = JSON.stringify({ walletId, walletType })
 
-    // Keystone hardware wallets only expose secp256k1 xpubs (EVM + Avalanche
-    // X/P); they cannot derive Solana (ED25519) addresses. Asking the Solana
-    // module to derive would reject, and the fail-closed handling below would
-    // then discard the entire account for every index. Exclude Solana for
-    // Keystone so the account is still created from its supported chains — the
-    // empty SVM address is handled at the UI layer (CP-14303).
-    const modules =
-      walletType === WalletType.KEYSTONE
-        ? this.modules.filter(
-            module =>
-              !module
-                .getManifest()
-                ?.network.namespaces.includes(BlockchainNamespace.SOLANA)
-          )
-        : this.modules
+    // Keystone hardware wallets cannot derive Solana (ED25519) at all, and can
+    // only derive Avalanche X/P for the primary account (index 0) — their QR
+    // payload carries a single depth-3 account-0 X/P xpub (m/44'/9000'/0').
+    // Derive each index independently so those per-account limitations drop only
+    // the affected chains for the affected index instead of failing closed for
+    // the whole batch. Empty X/P / SVM addresses are handled at the UI layer.
+    // See deriveKeystoneAddresses (CP-14303 / CP-14606).
+    if (walletType === WalletType.KEYSTONE) {
+      return this.deriveKeystoneAddresses({
+        secretId,
+        accountIndices,
+        network,
+        derivationPathType
+      })
+    }
 
     const perModuleResults = await Promise.allSettled(
-      modules.map(async module =>
+      this.modules.map(async module =>
         module.deriveAddresses({
           secretId,
           accountIndices,
@@ -191,6 +192,88 @@ class ModuleManager {
       })
       return addresses
     })
+  }
+
+  /**
+   * Derive addresses for a Keystone wallet, one account index at a time.
+   *
+   * Two Keystone-specific limitations are tolerated per index so they don't
+   * fail closed the way a genuine error would:
+   *  - Solana (ED25519) is never derivable, so the Solana module is excluded.
+   *  - Avalanche X/P is only derivable for the primary account (index 0); for
+   *    non-primary accounts the Avalanche module rejects with a typed
+   *    UNSUPPORTED_XP_DERIVATION error, which we treat as "X/P absent for this
+   *    account" and omit (the account is still created from EVM/BTC).
+   *
+   * Any other rejection still fails closed for that index (returns `undefined`)
+   * so a partially-derived account is never persisted. Deriving per index keeps
+   * a non-primary X/P rejection from discarding the primary account's X/P when
+   * several indices are derived in one batch (e.g. account discovery).
+   */
+  private deriveKeystoneAddresses = async ({
+    secretId,
+    accountIndices,
+    network,
+    derivationPathType
+  }: {
+    secretId: string
+    accountIndices: number[]
+    network: Network
+    derivationPathType: DerivationPath
+  }): Promise<(Record<NetworkVMType, string> | undefined)[]> => {
+    const modules = this.modules.filter(
+      module =>
+        !module
+          .getManifest()
+          ?.network.namespaces.includes(BlockchainNamespace.SOLANA)
+    )
+
+    return Promise.all(
+      accountIndices.map(async accountIndex => {
+        const perModuleResults = await Promise.allSettled(
+          modules.map(async module =>
+            module.deriveAddresses({
+              secretId,
+              accountIndices: [accountIndex],
+              network,
+              derivationPathType
+            })
+          )
+        )
+
+        let addresses = emptyAddresses()
+        for (const result of perModuleResults) {
+          if (result.status === 'fulfilled') {
+            const slot = result.value[0]
+            if (slot) {
+              addresses = { ...addresses, ...slot }
+            }
+            continue
+          }
+
+          // Non-primary Keystone accounts simply have no X/P addresses; omit
+          // them and keep the account's EVM/BTC addresses.
+          if (isUnsupportedXpDerivationError(result.reason)) {
+            Logger.info(
+              'Keystone non-primary account has no X/P addresses; deriving EVM/BTC only',
+              { accountIndex }
+            )
+            continue
+          }
+
+          // Genuine/transient failure — fail closed for this index so a
+          // partially derived account is never persisted.
+          Logger.error('Failed to derive addresses for one or more modules', {
+            accountIndex,
+            isTestnet: network.isTestnet,
+            reason: result.reason
+          })
+          return undefined
+        }
+
+        return addresses
+      })
+    )
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {

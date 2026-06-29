@@ -116,6 +116,18 @@ const resolveInitialToken = ({
   })
 }
 
+// Whether to preselect the initial "to" token. In testnet (developer mode) we
+// skip it because initial to-tokens like USDC are mainnet-only and would yield
+// a broken no-quotes state. Native AVAX is the exception — it's supported on
+// Fuji and is the CCT destination for P/X → C swaps, so it's safe to preselect.
+export const shouldPreselectToToken = (
+  initialTokenIdTo: string | undefined,
+  isDeveloperMode: boolean
+): initialTokenIdTo is string => {
+  if (!initialTokenIdTo) return false
+  return !isDeveloperMode || normalizeId(initialTokenIdTo) === tokenIds.AVAX
+}
+
 export function useFusionTokenLookup({
   tokenInfo,
   accountTokens,
@@ -191,11 +203,8 @@ export function useFusionTokenLookup({
         : undefined
     )
 
-    // In testnet (developer mode), skip preselecting a "to" token.
-    // Initial to-token IDs (e.g. USDC) are mainnet-specific and no services
-    // support them in testnet, which would lead to a broken no-quotes state.
     setToToken(
-      initialTokenIdTo && !isDeveloperMode
+      shouldPreselectToToken(initialTokenIdTo, isDeveloperMode)
         ? resolveInitialToken({
             tokenId: initialTokenIdTo,
             caip2Id: tokenInfo.initialToCaip2Id,
