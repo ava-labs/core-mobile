@@ -31,7 +31,9 @@ function resolveBadgeKind(status: string | undefined): BadgeKind {
   if (status === undefined) return null
   const lower = status.toLowerCase()
   if (lower === 'failed') return 'failure'
-  if (lower === 'active' || lower === 'completed') return 'success'
+  if (lower === 'active' || lower === 'completed' || lower === 'executed') {
+    return 'success'
+  }
   return null
 }
 
