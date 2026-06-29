@@ -6,12 +6,14 @@ import {
   WalletSecretOperation
 } from 'services/ledger/types'
 import { Curve } from 'utils/publicKeys'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   isBitcoinCompatibleApp,
   isVersionExceeding,
   getFormattedAddresses,
   buildKeysFromMultiIndex,
   buildLedgerWalletSecret,
+  getLedgerAppName,
   LedgerWalletSecretSchema
 } from './index'
 
@@ -136,6 +138,33 @@ describe('isBitcoinCompatibleApp', () => {
     it('Unknown app is not compatible', () => {
       expect(isBitcoinCompatibleApp(LedgerAppType.UNKNOWN, '1.0.0')).toBe(false)
     })
+  })
+})
+
+describe('getLedgerAppName', () => {
+  it('routes local Avalanche C-Chain (43112) to the Avalanche app', () => {
+    const network = {
+      chainId: ChainId.AVALANCHE_LOCAL_ID,
+      vmName: NetworkVMType.EVM
+    } as Network
+
+    expect(getLedgerAppName(network)).toBe(LedgerAppType.AVALANCHE)
+  })
+
+  it('routes an Avalanche L1 (EVM chain with a subnetId) to the Avalanche app', () => {
+    const network = {
+      chainId: 1510,
+      vmName: NetworkVMType.EVM,
+      subnetId: 'orange-subnet'
+    } as Network
+
+    expect(getLedgerAppName(network)).toBe(LedgerAppType.AVALANCHE)
+  })
+
+  it('routes a foreign EVM chain (no subnetId) to the Ethereum app', () => {
+    const network = { chainId: 1, vmName: NetworkVMType.EVM } as Network
+
+    expect(getLedgerAppName(network)).toBe(LedgerAppType.ETHEREUM)
   })
 })
 
