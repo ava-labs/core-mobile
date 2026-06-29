@@ -113,10 +113,11 @@ export function buildEvmProviderShim({
   // eth_requestAccounts to trigger the approval UI.
   var _accounts = [];
 
-  // EIP-1193 connection state. Native emits disconnect(4901) when the active
-  // chain isn't a servable EVM chain (CP-13671) and chainChanged when it
-  // recovers; isConnected() must track that, since some dApps poll
-  // isConnected() and ignore the disconnect event.
+  // EIP-1193 connection state. isConnected() tracks disconnect (false) and
+  // connect/chainChanged (true), since some dApps poll isConnected() and ignore
+  // the event. Native keeps the shared provider alive across a non-EVM active
+  // network (avalanche_* is network-independent, CP-13672) rather than emitting
+  // disconnect, but a real disconnect event is still honored per EIP-1193.
   var _connected = true;
 
   // ──────────────────────────────────────────────
@@ -425,6 +426,9 @@ export function buildEvmProviderShim({
   // 8. Legacy events & initial EIP-1193 connect
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
+  // window.avalanche aliases this same provider; announce it too so X/P dApps
+  // that wait on avalanche#initialized detect Core. (CP-13672)
+  window.dispatchEvent(new Event('avalanche#initialized'));
 
   // EIP-1193: signal initial network connectivity.
   // Fired once via macrotask so that page scripts registering

@@ -12,7 +12,7 @@ import { WalletType } from 'services/wallet/types'
 import { Account, XPAddressDictionary } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RequestContext } from 'store/rpc/types'
-import { getAvalancheChainAliasCaip2 } from '../../utils/getAvalancheChainAliasCaip2'
+import { getAvalancheChainAliasCaip2 } from 'utils/caip2ChainIds'
 import { CCT_CALLBACKS_ERROR_TAG } from './consts'
 
 /**

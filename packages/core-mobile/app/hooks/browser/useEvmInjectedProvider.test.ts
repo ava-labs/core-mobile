@@ -87,7 +87,8 @@ jest.mock('expo-router', () => ({
 
 jest.mock('vmModule/ApprovalController/ApprovalController', () => ({
   approvalController: {
-    handleGoBackIfNeeded: jest.fn()
+    handleGoBackIfNeeded: jest.fn(),
+    isLedgerSigningInProgress: jest.fn()
   }
 }))
 
@@ -1416,7 +1417,14 @@ describe('useEvmInjectedProvider', () => {
       expect(chainChangedCalls).toHaveLength(0)
     })
 
-    it('emits disconnect (not chainChanged) when the active network is non-EVM (CP-13671)', () => {
+    it('keeps the provider alive (no disconnect, no chainChanged) when the active network is non-EVM (CP-13672)', () => {
+      // The injected provider object is shared (window.avalanche ===
+      // window.ethereum) and avalanche_* methods are network-independent.
+      // Emitting an EIP-1193 disconnect when the wallet's active network goes
+      // non-EVM would tell wagmi the whole provider is offline — and it would
+      // refuse to auto-reconnect — killing the X/P surface too. Hold the last
+      // EVM browser chain instead, and never emit a bogus EVM chainChanged for a
+      // non-EVM chainId either.
       setupMocks({ network: mockActiveNetwork })
       const { rerender } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1433,7 +1441,7 @@ describe('useEvmInjectedProvider', () => {
       })
       rerender()
 
-      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
         expect.stringContaining("__coreProviderEmit('disconnect'")
       )
       const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
@@ -1472,16 +1480,17 @@ describe('useEvmInjectedProvider', () => {
       )
     })
 
-    it('re-emits chainChanged when returning to the SAME EVM chain after a non-EVM disconnect (CP-13671)', () => {
-      // Recovery path: entering non-EVM invalidates the cached chainId, so
-      // switching back to the original EVM chain still fires chainChanged and the
-      // dApp can reconnect (otherwise the equality guard would skip it).
+    it('does not re-emit chainChanged when returning to the SAME EVM chain after a non-EVM detour (CP-13672)', () => {
+      // The provider is kept alive across a non-EVM active network (no disconnect,
+      // no cache invalidation), so the EVM browser chain is never lost. Returning
+      // to the same EVM chain is therefore a no-op — the dApp was never told its
+      // chain changed, so there is nothing to recover and no event to emit.
       setupMocks({ network: mockActiveNetwork })
       const { rerender } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
-      // Go to a non-EVM network (emits disconnect, invalidates cached chain).
+      // Detour through a non-EVM network (provider stays alive, chain retained).
       setupMocks({
         network: {
           ...mockActiveNetwork,
@@ -1499,8 +1508,39 @@ describe('useEvmInjectedProvider', () => {
       const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
         call[0].includes("__coreProviderEmit('chainChanged'")
       )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('emits chainChanged when switching to a DIFFERENT EVM chain after a non-EVM detour (CP-13672)', () => {
+      // Keeping the provider alive must not freeze chain tracking: a non-EVM
+      // detour retains the last EVM chain, but a subsequent switch to a genuinely
+      // different EVM chain still fires chainChanged so the dApp follows it.
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+      mockInjectJavaScript.mockClear()
+
+      // Switch to a different EVM chain (Ethereum mainnet, 0x1).
+      setupMocks({
+        network: { ...mockActiveNetwork, chainId: 1, vmName: NetworkVMType.EVM }
+      })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
       expect(chainChangedCalls).toHaveLength(1)
-      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0xa86a'")
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
     })
 
     it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {
@@ -1572,6 +1612,46 @@ describe('useEvmInjectedProvider', () => {
 
       expect(capturedSignal?.aborted).toBe(true)
       expect(mockApprovalController.handleGoBackIfNeeded).toHaveBeenCalled()
+    })
+
+    it('does NOT pop the screen on cross-origin nav while on-device Ledger signing is in progress (CP-14422)', async () => {
+      const { approvalController: mockApprovalController } = jest.requireMock(
+        'vmModule/ApprovalController/ApprovalController'
+      )
+      ;(mockApprovalController.handleGoBackIfNeeded as jest.Mock).mockClear()
+      // Uncancellable window: a signature is being confirmed on the device.
+      ;(
+        mockApprovalController.isLedgerSigningInProgress as jest.Mock
+      ).mockReturnValueOnce(true)
+
+      let capturedSignal: AbortSignal | undefined
+      const mockRequest = jest.fn(args => {
+        capturedSignal = args.signal
+        return new Promise(() => undefined)
+      })
+      mockCreateInAppRequest.mockReturnValue(mockRequest)
+      mockUseStore.mockReturnValue(grantStoreForOrigin('https://uniswap.org'))
+
+      const { result } = renderProvider('https://uniswap.org')
+
+      await act(async () => {
+        result.current.handleProviderMessage(
+          JSON.stringify({
+            id: 99,
+            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+          })
+        )
+      })
+
+      act(() => {
+        result.current.handleCommittedUrl('https://opensea.io')
+      })
+
+      // Settlement still no-ops in the controller for this phase, and the abort
+      // still fires — but the review screen must NOT be popped out from under a
+      // signature the user is confirming on the device.
+      expect(capturedSignal?.aborted).toBe(true)
+      expect(mockApprovalController.handleGoBackIfNeeded).not.toHaveBeenCalled()
     })
 
     it('does NOT abort in-flight request on same-origin navigation (SPA route change)', async () => {

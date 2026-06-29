@@ -6,6 +6,7 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
 import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurringApprovalContext'
 import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
+import { useDismissOnCancelledRequest } from 'features/approval/hooks/useDismissOnCancelledRequest'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -79,7 +80,7 @@ const ApprovalScreen = (props: {
 }
 
 const ApprovalScreenInner = ({
-  params: { request, displayData, signingData, onApprove, onReject },
+  params: { request, displayData, signingData, signal, onApprove, onReject },
   recurringContext
 }: {
   params: ApprovalParams
@@ -87,6 +88,9 @@ const ApprovalScreenInner = ({
     typeof useRecurringApprovalContext
   >['recurringContext']
 }): JSX.Element => {
+  // Self-dismiss if a cross-origin nav already cancelled this request before the
+  // screen mounted (the generic pop can race the mount and miss). (CP-14422)
+  useDismissOnCancelledRequest(signal)
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId

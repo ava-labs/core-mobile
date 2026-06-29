@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
+import { setActiveAccount as setActiveAccountThunk } from 'store/account/thunks'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { clearTabChainId, selectTabChainId } from 'store/browser/slices/tabs'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -108,19 +109,17 @@ export function useEvmInjectedProvider(
   // to the correct chain after the user switches networks wallet-wide.
   useEffect(() => {
     if (tabChainId !== undefined) return
-    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM provider can't serve it,
-    // so tell the dApp it's disconnected rather than emitting a bogus EVM
-    // chainChanged for a non-EVM chainId (EIP-1193 disconnect, code 4901).
-    // CP-13671.
+    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM surface can't represent
+    // it, but the injected provider object is shared (window.avalanche ===
+    // window.ethereum) and avalanche_* methods are network-independent. Emitting
+    // an EIP-1193 disconnect here would tell wagmi the whole provider is offline
+    // — and it would refuse to auto-reconnect (same hazard the revoke handler
+    // avoids) — killing the X/P surface too. So keep the provider alive: hold the
+    // last EVM browser chain (no sentinel reset) and emit nothing. The EVM
+    // surface resumes when an EVM network becomes active again (a real chain
+    // change fires chainChanged via the guard below; returning to the same chain
+    // is correctly a no-op since the dApp was never told it changed). CP-13672.
     if (activeNetwork.vmName !== NetworkVMType.EVM) {
-      // Invalidate the cached EVM chain (sentinel 0 — no real EVM chainId) so
-      // returning to the SAME EVM chainId later still re-emits chainChanged.
-      // Otherwise the equality guard below would skip it and a dApp that reacted
-      // to this disconnect would never get a follow-up event to recover. CP-13671.
-      browserNetworkRef.current = { chainId: 0, rpcUrl: '' }
-      webViewRef.current?.injectJavaScript(
-        `window.__coreProviderEmit && window.__coreProviderEmit('disconnect', { code: 4901, message: 'Disconnected from chain' }); true;`
-      )
       return
     }
     if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
@@ -187,8 +186,20 @@ export function useEvmInjectedProvider(
             message: USER_REJECTED_REQUEST_MESSAGE
           })
         )
-        if (!handled && !connectApprovalRegistry.hasActive()) {
-          approvalController.handleGoBackIfNeeded()
+        // Skip the generic pop while a signature is being confirmed on a Ledger:
+        // the cancel is already a no-op in that phase (the signing completes), so
+        // popping would just yank the review screen out from under the user
+        // mid-sign. The controller dismisses it itself once signing settles.
+        // `excludeApproval`: the signing approval screen dismisses itself
+        // (event-driven on its request's abort), so popping it here too would
+        // double `router.back()` — and its async route tracking made this pop
+        // miss anyway. Other modal types still dismiss via this pop. (CP-14422)
+        if (
+          !handled &&
+          !connectApprovalRegistry.hasActive() &&
+          !approvalController.isLedgerSigningInProgress()
+        ) {
+          approvalController.handleGoBackIfNeeded({ excludeApproval: true })
         }
       }
 
@@ -261,9 +272,23 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
+  // Last accounts list advertised to the dApp (serialized). Shared by the
+  // page-load prime path, the active-account switch effect, and the connect
+  // handler's synchronous emit (via emitEvent below) so none of them emit a
+  // duplicate accountsChanged for the same set. Declared before emitEvent so
+  // emitEvent can keep it in sync.
+  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
+
   const emitEvent = useCallback(
     (eventName: string, data: unknown) => {
       const dataJson = JSON.stringify(data)
+      // Keep the accountsChanged dedupe coherent: the connect handler emits
+      // accountsChanged synchronously through here (before resolving, to match
+      // MetaMask ordering). When that connect also switched the active account,
+      // the switch effect below would otherwise re-emit the identical set a
+      // render later — recording it here lets that effect dedupe it. (CP-14385)
+      if (eventName === 'accountsChanged')
+        lastEmittedAccountsRef.current = dataJson
       const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
@@ -309,11 +334,6 @@ export function useEvmInjectedProvider(
   useEffect(() => {
     activeAccountRef.current = activeAccount
   }, [activeAccount])
-
-  // Last accounts list advertised to the dApp (serialized). Shared by the
-  // page-load prime path and the active-account switch effect below so they
-  // never emit a duplicate accountsChanged for the same set.
-  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
 
   // Inject an accountsChanged emit gated on the page still being on `origin`
   // (the same guard sendResponse uses). An emit racing a cross-origin
@@ -552,13 +572,24 @@ export function useEvmInjectedProvider(
       },
       getPeerMeta,
       getActiveAccount: () => activeAccountRef.current,
+      getIsDeveloperMode: () => selectIsDeveloperMode(store.getState()),
       getGrantedAddresses: ({ domain, vmType }) =>
         selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
       grantPermission: ({ domain, address, vmType }) =>
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
         dispatch(revokePermissionAction({ domain, address, vmType })),
-      requestConnectApproval
+      requestConnectApproval,
+      setActiveAccount: async accountId => {
+        await dispatch(setActiveAccountThunk(accountId))
+        // Freshen activeAccountRef synchronously: the connect handler reconciles
+        // (via getActiveAccount → this ref) immediately after awaiting this, but
+        // the ref's effect won't have run yet for this render — without this the
+        // reconcile would still see the pre-switch active account and 4100. The
+        // thunk applies the switch synchronously, so the store is authoritative
+        // here. (CP-14385)
+        activeAccountRef.current = selectActiveAccount(store.getState())
+      }
     })
   }, [
     dispatch,

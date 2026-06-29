@@ -12,6 +12,7 @@ import {
 } from '../slice'
 import { PeerMeta, RequestContext, RpcMethod } from '../types'
 import { generateInAppRequestPayload } from './generateInAppRequestPayload'
+import { clearRequestSignal, setRequestSignal } from './inFlightRequestSignals'
 
 const EVENTS_TO_SUBSCRIBE = isAnyOf(
   onInAppRequestSucceeded,
@@ -97,6 +98,8 @@ export const createInAppRequest = (
         return
       }
 
+      const requestKey = String(inAppRequest.data.id)
+
       dispatch(onRequest(inAppRequest))
 
       let settled = false
@@ -117,12 +120,14 @@ export const createInAppRequest = (
               // @ts-ignore unsubscribe is a valid function
               unsubscribe()
               signal?.removeEventListener('abort', onAbort)
+              clearRequestSignal(requestKey)
               resolve(action.payload.txHash)
             } else if (onInAppRequestFailed.match(action)) {
               settled = true
               // @ts-ignore unsubscribe is a valid function
               unsubscribe()
               signal?.removeEventListener('abort', onAbort)
+              clearRequestSignal(requestKey)
               reject(action.payload.error)
             }
           }
@@ -130,11 +135,24 @@ export const createInAppRequest = (
       )
 
       if (signal) {
+        // Expose the signal so ApprovalController can settle a parked approval
+        // (and tear down Ledger BLE) if this request is cancelled by a
+        // cross-origin nav. Set here (same sync tick, before the listener effect
+        // runs) and cleared on every settle path. (CP-14422)
+        setRequestSignal(requestKey, signal)
         onAbort = () => {
           if (settled) return
           settled = true
           // @ts-ignore unsubscribe is a valid function
           unsubscribe()
+          // Keep the aborted signal in the map so a requestApproval that hasn't
+          // parked yet (abort landed in the pre-park window) still sees it and
+          // cancels itself instead of opening a stale modal. Do NOT clear it on
+          // a timer here: a slow `requestApproval` (observed on iOS, where the
+          // approval parks AFTER the cross-origin nav) would otherwise find the
+          // signal already gone, park an uncancellable sheet, and leave it
+          // lingering. The approval bridge clears it when it claims the signal;
+          // the never-claimed case ages out via the bounded signal map. (CP-14422)
           // Propagate a rejection so any handler currently sitting on the
           // approval screen (e.g. eth_sendTransaction) short-circuits
           // before broadcasting. The handler's machinery will dispatch
