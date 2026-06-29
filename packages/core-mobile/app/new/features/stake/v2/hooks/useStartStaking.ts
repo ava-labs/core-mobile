@@ -1,6 +1,6 @@
-import { showAlert } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { useStakeBalanceGuard } from 'features/stake/hooks/useStakeBalanceGuard'
+import { resetDelegateFilters } from 'features/stake/v2/store'
 import { useCallback } from 'react'
 
 /**
@@ -38,17 +38,19 @@ export const useStartStaking = (): {
     }
   }, [navigate, canAddStake, hasEnoughAvax, showNotEnoughAvaxAlert])
 
-  // The V2 delegate flow isn't wired up yet — surface a placeholder alert
-  // so the chooser entry stays visible without silently dropping the press.
-  // Skip the balance guard: there's no flow to gate, and a Buy/Swap alert
-  // here would imply the path is otherwise available.
   const startDelegate = useCallback(() => {
-    showAlert({
-      title: 'Coming soon',
-      description: 'The delegate flow is not yet available.',
-      buttons: [{ text: 'OK' }]
-    })
-  }, [])
+    // Balance still loading — ignore the press (mirrors `startFastStake`).
+    if (!canAddStake) return
+
+    if (hasEnoughAvax) {
+      // Start each Delegate flow from a clean slate so a previous session's
+      // advanced filters don't carry over.
+      resetDelegateFilters()
+      navigate({ pathname: '/addStakeV2/delegate/selectNode' })
+    } else {
+      showNotEnoughAvaxAlert('delegate')
+    }
+  }, [navigate, canAddStake, hasEnoughAvax, showNotEnoughAvaxAlert])
 
   return { hasEnoughAvax, canAddStake, startFastStake, startDelegate }
 }
