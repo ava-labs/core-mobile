@@ -89,6 +89,8 @@ type DialReadoutProps = {
   referenceValue?: number
   progressSv: SharedValue<number>
   isActive: SharedValue<boolean>
+  /** True during the post-gesture settle window (drag release / preset). */
+  isSettling: SharedValue<boolean>
   onChange: (v: number) => void
   onCommit: (v: number) => void
   /** Prefix for the input's `testID`. Falls back to `circular-dial`. */
@@ -117,6 +119,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       referenceValue,
       progressSv,
       isActive,
+      isSettling,
       labelSx,
       onChange,
       onCommit,
@@ -169,15 +172,26 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       return naturalDigits(clamped, displayDecimals)
     }, [draft, value, max, displayDecimals])
 
+    // UI-thread mirror of the editing draft. The display worklet writes it
+    // onto the native input (via the imperative `text` prop) while editing.
+    // Kept in lockstep with `draft` synchronously at every typing entry point
+    // (startEdit / handleChangeText) so the worklet never trails it.
+    const editTextSv = useSharedValue('')
+
     // Drive the visible number from progressSv on the UI thread whenever the
     // dial isn't being manually edited. This decouples the readout from the
     // parent's controlled `value` round-trip, so a fast swipe-and-release
     // lands on the final value instantly instead of lagging behind it or
-    // drifting as queued onChange echoes drain on the JS thread. While
-    // editing, return {} so the controlled draft owns the text.
+    // drifting as queued onChange echoes drain on the JS thread.
     const displayAnimatedProps = useAnimatedProps(() => {
       if (isEditingSv.value) {
-        return {} as { text?: string; defaultValue?: string }
+        // Mirror the draft onto the native input through the SAME imperative
+        // `text` path the non-editing branch uses. Returning `{}` here would
+        // leave the previously-shown (committed) text latched on the native
+        // view — and that stale text then wins over the controlled `value`, so
+        // a blurred-then-refocused, cleared field repaints the old number
+        // instead of what's being typed (CP-14578).
+        return { text: editTextSv.value, defaultValue: editTextSv.value }
       }
       const raw = progressSv.value * max
       // Snap to step only mid-drag so the live value ticks in clean step
@@ -217,6 +231,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       // typing and clobber the draft.
       cancelAnimation(progressSv)
       const initial = naturalDigits(clamp(value, 0, max), displayDecimals)
+      editTextSv.value = initial
       isEditingSv.value = true
       setDraft(initial)
     }, [
@@ -227,6 +242,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
       displayDecimals,
       isActive,
       isEditingSv,
+      editTextSv,
       progressSv
     ])
 
@@ -260,6 +276,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
                 : next.slice(0, dotIdx + 1 + maxDecimals)
           }
         }
+        editTextSv.value = next
         setDraft(next)
         // Animate to the typed value; each new withTiming cancels
         // the prior so fast typing chases smoothly.
@@ -282,7 +299,7 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
           onChange(live)
         }
       },
-      [max, maxDecimals, progressSv, onChange]
+      [max, maxDecimals, progressSv, onChange, editTextSv]
     )
 
     // Backstop that mirrors any non-typing draft change onto the
@@ -304,33 +321,35 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
 
     const handleBlur = useCallback(() => {
       if (draft !== null) {
+        // Commit the draft (empty → 0 via commitDraftText) rather than
+        // reverting to `value`, so a cleared field can reach 0 (CP-14578).
         const committed = commitDraftText(draft, max)
-        if (committed !== null) {
-          progressSv.value = valueToProgress(committed, max)
-          onChange(committed)
-          onCommit(committed)
-        } else {
-          // Empty / invalid draft: revert. The input falls back to
-          // showing `value` via `currentText`; reset `progressSv`
-          // here so the track lands on the same value instead of
-          // sitting at 0 from the cleared draft.
-          progressSv.value = valueToProgress(clamp(value, 0, max), max)
-        }
+        progressSv.value = valueToProgress(committed, max)
+        onChange(committed)
+        onCommit(committed)
       }
       isEditingSv.value = false
       setDraft(null)
-    }, [draft, progressSv, onChange, onCommit, max, value, isEditingSv])
+    }, [draft, progressSv, onChange, onCommit, max, isEditingSv])
 
-    // While editing, roll external `value` changes into the draft
-    // (covers drag/preset-while-editing). Skip when the draft
-    // already matches `value` numerically — avoids clobbering an
-    // in-progress digit with the same number formatted differently.
+    // While editing, roll *gesture-driven* `value` changes into the draft so a
+    // drag or preset-tap with the keyboard open updates the typed text. Gate
+    // strictly on the dial being actively manipulated (`isActive`) or in its
+    // post-gesture settle window (`isSettling`): outside those, a `value`
+    // change is just the echo of the user's own typing bouncing back through
+    // the parent — and after a round-trip (e.g. staking's `avaxToTokenUnit`)
+    // or a render lag it may not compare equal to the draft, so syncing it
+    // would clobber the digit being typed or repaint a cleared field with the
+    // old value. Manual input always wins; only gestures feed the draft here.
     useEffect(() => {
       if (!isEditing) return
+      if (!isActive.value && !isSettling.value) return
       if (draft === '.') return
       const draftNum = draft === '' ? 0 : Number(draft)
       if (Number.isFinite(draftNum) && draftNum === value) return
-      setDraft(naturalDigits(clamp(value, 0, max), displayDecimals))
+      const synced = naturalDigits(clamp(value, 0, max), displayDecimals)
+      editTextSv.value = synced
+      setDraft(synced)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value])
 
