@@ -39,8 +39,8 @@ jest.mock('@avalabs/k2-alpine', () => {
   }
 })
 
-import { PerpsGeoRestrictionWarning } from './PerpsGeoRestrictionWarning'
 import { PERPS_HELP_URL } from 'common/consts/urls'
+import { PerpsGeoRestrictionWarning } from './PerpsGeoRestrictionWarning'
 
 describe('<PerpsGeoRestrictionWarning />', () => {
   beforeEach(() => mockOpenUrl.mockReset())
