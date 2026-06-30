@@ -203,6 +203,35 @@ export function useEvmInjectedProvider(
         }
       }
 
+      // Re-assert the live chain on every committed URL, alongside the account
+      // re-prime below. The shim is built exactly once per tab (see
+      // providerShimJs), so its baked chainId is only the value seen at the FIRST
+      // document load; any later fresh document — cross-origin nav, or a
+      // same-origin full reload / pull-to-refresh — re-runs that stale baked
+      // chain and would otherwise report the wrong chainId until something else
+      // emitted chainChanged. We re-assert `browserNetworkRef` (the chain Core
+      // actually routes this tab's RPC/signing to), so a fresh document is
+      // corrected to the live chain. The re-assert is idempotent:
+      // __coreProviderReassertChain drops a value equal to the shim's live
+      // _chainId, so a same-origin SPA pushState (no chain change) does not churn
+      // listeners or fight a still-pending switch (React #185).
+      //
+      // Guard on the *resolved chain's* own vmName — NOT tabChainId/activeNetwork
+      // — so a non-EVM chainId is never emitted to the EVM provider: a tab pinned
+      // to a non-EVM chain (wallet_switchEthereumChain validates only membership
+      // in the cross-VM network map, not EVM-ness) is skipped, while an unpinned
+      // tab that retains a live EVM chain after the wallet moved to a non-EVM
+      // network (CP-13672) is still re-asserted.
+      const liveChainId = browserNetworkRef.current.chainId
+      const liveNetwork = allNetworksRef.current[liveChainId]
+      if (liveNetwork?.vmName === NetworkVMType.EVM) {
+        webViewRef.current?.injectJavaScript(
+          `window.__coreProviderReassertChain && window.__coreProviderReassertChain('0x${liveChainId.toString(
+            16
+          )}'); true;`
+        )
+      }
+
       // Prime the shim's _accounts cache on every committed URL: the initial
       // page load, cross-origin navigation, and same-origin SPA navigation
       // (pushState/replaceState). domain_metadata no longer primes (it arrives
@@ -212,7 +241,7 @@ export function useEvmInjectedProvider(
       // prime point that re-establishes connected state. CP-13772.
       primeAccountsRef.current?.()
     },
-    [tabId]
+    [tabId, webViewRef]
   )
 
   const chainIdHex = useMemo(() => {
@@ -220,12 +249,28 @@ export function useEvmInjectedProvider(
     return '0x' + initialChainId.toString(16)
   }, [activeNetwork.vmName, initialChainId])
 
-  const providerShimJs = useMemo(() => {
-    return buildEvmProviderShim({
-      chainId: chainIdHex,
-      uuid: getInjectedProviderUuid()
-    })
-  }, [chainIdHex])
+  // Build the injected shim EXACTLY ONCE per tab. `providerShimJs` is consumed
+  // as the WebView's `injectedJavaScriptBeforeContentLoaded`; changing that prop
+  // makes react-native-webview call `resetupScripts` (removeAllUserScripts +
+  // re-add) on the live WKWebView, and any `injectJavaScript` issued in that same
+  // tick is silently dropped. Previously this memo depended on `chainIdHex`, so a
+  // `wallet_switchEthereumChain` (which dispatches `setTabChainId` -> new
+  // chainIdHex) rebuilt the shim and dropped the switch's OWN response injection,
+  // leaving the dApp's switchChain promise — and the swap awaiting it — hung
+  // forever (CP-14615). The baked chainId only seeds the first document load; the
+  // live chain is kept current at runtime via the shim's optimistic `_chainId`
+  // update on switch, the unpinned sync effect's chainChanged emit, and the
+  // per-document-load re-assert in handleCommittedUrl. So bake the initial value
+  // once and never change the prop.
+  const initialChainIdHexRef = useRef(chainIdHex)
+  const providerShimJs = useMemo(
+    () =>
+      buildEvmProviderShim({
+        chainId: initialChainIdHexRef.current,
+        uuid: getInjectedProviderUuid()
+      }),
+    []
+  )
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {

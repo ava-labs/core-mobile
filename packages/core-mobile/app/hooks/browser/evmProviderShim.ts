@@ -161,6 +161,25 @@ export function buildEvmProviderShim({
     emit(eventName, data);
   };
 
+  // Idempotent chain re-assertion used by the native per-commit hook to correct a
+  // fresh document whose baked chainId is stale (full reload / cross-origin nav /
+  // pull-to-refresh). Deduped against the live _chainId: a same-origin SPA
+  // navigation that did NOT change chains — or a re-assert that races a still
+  // pending wallet_switchEthereumChain — is a no-op, so listeners never churn and
+  // we never fight the optimistic emit (React #185). Kept distinct from
+  // __coreProviderEmit so the CP-13671 disconnect->same-chain recovery path, which
+  // legitimately re-emits the current chainId to flip _connected back on, is
+  // unaffected by this dedupe.
+  window.__coreProviderReassertChain = function(data) {
+    // Compare numerically, not by string: _chainId may hold a non-canonical hex
+    // a dApp supplied via wallet_addEthereumChain (leading zeros / uppercase, e.g.
+    // '0x0539', '0xA86A'), while the native re-assert always sends canonical
+    // '0x'+n.toString(16). A string compare would miss those and emit a spurious
+    // same-chain chainChanged; parseInt makes the dedupe format/case-insensitive.
+    if (parseInt(data, 16) === parseInt(_chainId, 16)) return;
+    window.__coreProviderEmit('chainChanged', data);
+  };
+
   function emit(eventName, data) {
     var fns = _listeners[eventName];
     if (!fns) return;
@@ -213,6 +232,16 @@ export function buildEvmProviderShim({
           return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'wallet_switchEthereumChain already pending' });
         }
         var swTargetChainId = (params[0] && params[0].chainId) || null;
+        // Normalize to canonical lowercase hex ('0x'+n.toString(16)) so eth_chainId
+        // and chainChanged never expose a dApp-supplied non-canonical form ('1',
+        // '0x01', '0xA86A'). This also keeps the per-commit __coreProviderReassertChain
+        // dedupe (numeric) consistent: without it a malformed _chainId could never
+        // be corrected to canonical, and an uppercase target would spuriously
+        // re-emit chainChanged for the same chain. CP-14615.
+        if (swTargetChainId) {
+          var swParsed = parseInt(swTargetChainId, 16);
+          if (!isNaN(swParsed)) { swTargetChainId = '0x' + swParsed.toString(16); }
+        }
         if (swTargetChainId && swTargetChainId !== _chainId) {
           _chainId = swTargetChainId;
           provider.chainId = swTargetChainId;
