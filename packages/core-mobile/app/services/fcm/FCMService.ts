@@ -116,11 +116,10 @@ class FCMService {
     // RECURRING_SWAP payloads carry only machine-readable progress fields
     // (orderId / status / token addresses) — no `title` or `body`, since
     // those live on the envelope. The Android data-only path can't
-    // construct a user-visible notification from them; the backend always
-    // sends a populated `notification` envelope for RECURRING_SWAP per
-    // Sarp's PR #174, so this branch should never fire in practice. Throw
-    // loudly so a misconfigured payload surfaces in logs instead of
-    // silently emitting a blank toast.
+    // construct a user-visible notification from them. The schema now rejects
+    // data-only RECURRING_SWAP payloads (NotificationPayloadSchema.superRefine),
+    // but keep this fallback so a regression still shows something reasonable
+    // and is surfaced in logs rather than rendering a blank notification.
     if (fcmData.type === NotificationTypes.RECURRING_SWAP) {
       Logger.error(
         '[FCMService] RECURRING_SWAP arrived data-only; expected title/body in `notification` envelope'
