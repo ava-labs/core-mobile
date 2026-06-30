@@ -1290,6 +1290,11 @@ export const SwapScreen = (): JSX.Element => {
     hasRecurringQuote: !!recurringQuote.data,
     recurringSubmitting,
     validationError,
+    // `undefined` = the Markr per-order minimum query is still loading; gate
+    // Next until it settles (a value or null) so a sub-minimum per-order amount
+    // can't slip through the window where the recurring quote has resolved but
+    // the floor hasn't (the below-minimum check is skipped while it's unknown).
+    isRecurringMinimumReady: markrMinimumTransferAmount !== undefined,
     canSwap
   })
 
