@@ -45,7 +45,7 @@ export const NodeItem = ({
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {shouldWarn ? <NodeUnstable /> : <NodeStable />}
           <View sx={{ gap: 2 }}>
-            <Text variant="body1" sx={{ fontWeight: 600 }}>
+            <Text variant="body1" sx={{ fontFamily: 'Inter-SemiBold' }}>
               {truncateNodeId(node.nodeID)}
             </Text>
             <Text variant="body2">{`End date: ${endDate}`}</Text>
