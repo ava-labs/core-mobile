@@ -125,7 +125,7 @@ const AuthorizeInjectedDappScreen = (): JSX.Element | null => {
             <Text
               variant="body1"
               style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
-              <Text variant="body1" style={{ fontWeight: '600' }}>
+              <Text variant="body1" style={{ fontFamily: 'Inter-SemiBold' }}>
                 {peerMeta.url}
               </Text>
               {

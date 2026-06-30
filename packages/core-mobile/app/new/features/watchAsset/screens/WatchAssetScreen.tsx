@@ -88,7 +88,7 @@ const WatchAssetScreen = ({
               textAlign: 'center',
               fontSize: 15,
               lineHeight: 20,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: '$textPrimary'
             }}>
             {request.peerMeta.name} is requesting to add this token

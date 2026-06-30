@@ -124,7 +124,7 @@ export const SelectAccounts = ({
               variant="body1"
               sx={{
                 fontSize: 14,
-                fontWeight: '500',
+                fontFamily: 'Inter-Medium',
                 color: '$textPrimary',
                 marginLeft: 10
               }}>

@@ -47,7 +47,7 @@ export const UnsupportedBitcoinApp = ({
           Open the{' '}
           <Text
             variant="body1"
-            sx={{ fontWeight: '600', color: '$textPrimary' }}>
+            sx={{ fontFamily: 'Inter-SemiBold', color: '$textPrimary' }}>
             Bitcoin Recovery
           </Text>{' '}
           app on your Ledger device to continue.
