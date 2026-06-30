@@ -45,7 +45,11 @@ export const fetchFeatureAvailability = async (
       signal ? { signal } : undefined
     )
     return res.ok && res.status === 200
-  } catch {
+  } catch (err) {
+    // React Query cancellation (unmount / superseded refetch) aborts the
+    // signal. Rethrow so RQ discards it — resolving `false` here would cache a
+    // spurious "unavailable" for the whole staleTime and falsely geo-block.
+    if (signal?.aborted) throw err
     // Network / CORS failure — treat as unavailable (fail closed).
     return false
   }

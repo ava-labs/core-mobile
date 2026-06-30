@@ -100,4 +100,13 @@ describe('fetchFeatureAvailability', () => {
     fetchMock.mockRejectedValueOnce(new Error('network/CORS'))
     await expect(fetchFeatureAvailability('perps')).resolves.toBe(false)
   })
+
+  it('rethrows on cancellation so an aborted request is not cached as unavailable', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    fetchMock.mockRejectedValueOnce(new Error('Aborted'))
+    await expect(
+      fetchFeatureAvailability('perps', controller.signal)
+    ).rejects.toThrow()
+  })
 })
