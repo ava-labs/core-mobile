@@ -7,6 +7,7 @@ import { onAppUnlocked } from 'store/app/slice'
 import type { AppStartListening } from 'store/types'
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
+import { subscribeForRecurringSwap } from 'services/notifications/recurringSwap/subscribeForRecurringSwap'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
 import type { RecurringOrder } from '../types'
@@ -20,7 +21,6 @@ import {
   loadSubscribedOrders,
   saveSubscribedOrders
 } from '../utils/subscribedOrders'
-import { subscribeForRecurringSwap } from 'services/notifications/recurringSwap/subscribeForRecurringSwap'
 import {
   pendingActionStore,
   type PendingActionEntry
