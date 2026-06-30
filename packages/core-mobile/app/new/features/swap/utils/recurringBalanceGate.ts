@@ -14,13 +14,24 @@ import { fusionErrors, type FusionQuoteError } from './fusionErrors'
 const formatTokenWithSymbol = (
   amount: bigint,
   token: LocalTokenWithBalance
-): string =>
-  'decimals' in token
-    ? `${formatTokenAmount(
-        bigintToBig(amount, token.decimals),
-        token.decimals
-      )} ${token.symbol}`
-    : `${amount}`
+): string => {
+  // `LocalTokenWithBalance` is a union whose NFT member omits `decimals`, so the
+  // guard is real at the type level — but the gate only ever receives a swap
+  // source or its native gas token, never an NFT, so `decimals` is always here.
+  // Assert that invariant rather than fall back to a bare wei value: a wei
+  // amount with no symbol would land verbatim in a user-facing "Insufficient
+  // balance" string, and a silent fallback invites the next reader to trust it.
+  if (!('decimals' in token)) {
+    throw new Error(
+      `formatTokenWithSymbol: token "${token.symbol}" has no decimals — ` +
+        'a non-fungible token reached the recurring balance gate'
+    )
+  }
+  return `${formatTokenAmount(
+    bigintToBig(amount, token.decimals),
+    token.decimals
+  )} ${token.symbol}`
+}
 
 export type RecurringBalanceGateParams = {
   numberOfOrders: NumberOfOrders | undefined

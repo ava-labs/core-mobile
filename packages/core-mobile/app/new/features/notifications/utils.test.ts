@@ -7,6 +7,7 @@ import {
 } from './types'
 import {
   buildAccountLabelMap,
+  classifyRecurringSwapStatus,
   filterByTab,
   isSwapTerminal,
   isTerminalRecurringSwapNotification,
@@ -367,6 +368,32 @@ describe('mapTransferToTargetChainStatus', () => {
           makeTransfer(status as Transfer['status'])
         )
       ).toBe(NotificationSwapStatus.InProgress)
+    }
+  )
+})
+
+// ─── classifyRecurringSwapStatus ─────────────────────────────────────────────
+
+describe('classifyRecurringSwapStatus', () => {
+  it.each([
+    ['failed', 'failed'],
+    ['cancelled', 'cancelled'],
+    ['completed', 'completed'],
+    ['active', 'fill'],
+    ['executed', 'fill']
+  ])('classifies "%s" as %s', (raw, expected) => {
+    expect(classifyRecurringSwapStatus(raw)).toBe(expected)
+  })
+
+  it('is case-insensitive', () => {
+    expect(classifyRecurringSwapStatus('FAILED')).toBe('failed')
+    expect(classifyRecurringSwapStatus('Executed')).toBe('fill')
+  })
+
+  it.each([['paused'], ['source-pending'], ['']])(
+    'classifies unrecognized status "%s" as unknown',
+    raw => {
+      expect(classifyRecurringSwapStatus(raw)).toBe('unknown')
     }
   )
 })

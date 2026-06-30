@@ -417,14 +417,6 @@ export const SwapScreen = (): JSX.Element => {
   const [validationError, setValidationError] =
     useState<FusionQuoteError | null>(null)
   const minimumTransferAmount = useMinimumTransferAmount({ fromToken, toToken })
-  // Recurring is Markr-only, so its per-order floor is Markr's minimum
-  // specifically — not the blended "lowest across services" value, which could
-  // pin a lower non-Markr floor and let a sub-fillable per-order amount through.
-  const markrMinimumTransferAmount = useMinimumTransferAmount({
-    fromToken,
-    toToken,
-    serviceType: ServiceType.MARKR
-  })
 
   const {
     debounced: debouncedFromTokenValue,
@@ -450,6 +442,22 @@ export const SwapScreen = (): JSX.Element => {
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
   const recurring = useRecurringSwapContext()
+
+  // Recurring is Markr-only, so its per-order floor is Markr's minimum
+  // specifically — not the blended "lowest across services" value, which could
+  // pin a lower non-Markr floor and let a sub-fillable per-order amount through.
+  // Only pin the Markr floor when recurring is on. When it's off, leave
+  // serviceType undefined so this collapses onto the blended query key
+  // (`minimumTransferAmount`) and React Query dedupes them, instead of firing a
+  // second, unread getMinimumTransferAmount round trip on every one-shot swap.
+  // The recurring minimum-ready gate tolerates the brief loading window on
+  // toggle-on (Next stays disabled until this settles).
+  const markrMinimumTransferAmount = useMinimumTransferAmount({
+    fromToken,
+    toToken,
+    serviceType: recurring.isRecurring ? ServiceType.MARKR : undefined
+  })
+
   const evmAddress = activeAccount?.addressC
   const eligibility = useRecurringEligibility(
     isRecurringBlocked ? undefined : fromToken,

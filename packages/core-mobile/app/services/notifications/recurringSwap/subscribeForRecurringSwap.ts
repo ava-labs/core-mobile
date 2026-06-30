@@ -22,7 +22,7 @@ type RecurringSwapNotificationSubscription = {
   deviceArn: string
 }
 
-export async function subscribeRecurringSwapNotifications(
+export async function subscribeForRecurringSwap(
   subscription: RecurringSwapNotificationSubscription
 ): Promise<void> {
   const { deviceArn, orderId } = subscription

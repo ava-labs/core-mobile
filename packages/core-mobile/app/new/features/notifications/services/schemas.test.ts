@@ -56,4 +56,25 @@ describe('RecurringSwapMetadataSchema', () => {
     expect(parsed.success).toBe(true)
     expect(parsed.success && parsed.data.reasonCode).toBeUndefined()
   })
+
+  // Only `status` is required. A parse failure drops the entire `data` block
+  // (→ `data: undefined`), which flips a terminal row back to tappable — the
+  // regression this schema guards against. So a stray missing field from a
+  // field no consumer renders must NOT take the whole block down: anything but
+  // `status` is optional.
+  it('parses a payload carrying only status (all other fields absent)', () => {
+    const parsed = RecurringSwapMetadataSchema.safeParse({ status: 'failed' })
+    expect(parsed.success).toBe(true)
+    expect(parsed.success && parsed.data.status).toBe('failed')
+    expect(parsed.success && parsed.data.numberOfOrders).toBeUndefined()
+    expect(parsed.success && parsed.data.remainingOrders).toBeUndefined()
+  })
+
+  it('still fails when status itself is missing', () => {
+    const parsed = RecurringSwapMetadataSchema.safeParse({
+      orderId: '0xorder',
+      owner: '0xowner'
+    })
+    expect(parsed.success).toBe(false)
+  })
 })

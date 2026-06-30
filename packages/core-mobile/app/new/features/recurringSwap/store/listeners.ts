@@ -2,11 +2,10 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
-import { isAnyOf } from '@reduxjs/toolkit'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
-import { onAppUnlocked, onLogOut } from 'store/app/slice'
-import { onFcmTokenChange } from 'store/notifications/slice'
+import { onAppUnlocked } from 'store/app/slice'
 import type { AppStartListening } from 'store/types'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
@@ -21,7 +20,7 @@ import {
   loadSubscribedOrders,
   saveSubscribedOrders
 } from '../utils/subscribedOrders'
-import { subscribeRecurringSwapNotifications } from '../services/recurringSwapNotifications'
+import { subscribeForRecurringSwap } from 'services/notifications/recurringSwap/subscribeForRecurringSwap'
 import {
   pendingActionStore,
   type PendingActionEntry
@@ -37,22 +36,6 @@ import {
 // so a duplicate that slips through is harmless — this set is purely a
 // network-traffic optimization.
 const subscribeInFlight = new Set<string>()
-
-// Session-scoped memo for the deviceArn used by the recurring-swap subscribe
-// flow. `ensureOrderSubscriptions` already resolves the ARN once per batch,
-// but every snapshot that surfaces a fresh subscribable order (new order
-// created, 30s poll, banner mount, unlock invalidate, focus) re-hits
-// `/v1/push/register` for a result we already received earlier in the
-// session — this cache collapses that across batches.
-//
-// Invalidated on:
-//   - subscribe failure inside the loop (ARN may have been retired backend-side;
-//     drop it so the next batch re-registers and the live ARN gets reused)
-//   - `onFcmTokenChange` (the SNS endpoint mapping is stale until /v1/push/register
-//     posts the new FCM token, so we MUST force a fresh register or push
-//     deliveries will dead-letter against the old token)
-//   - `onLogOut` (a fresh sign-in may use a different device identity)
-let cachedDeviceArn: string | null = null
 
 // The SDK now signs and broadcasts internally for fill /
 // cancel / pause / resume, so the old Redux listeners that watched for
@@ -191,17 +174,21 @@ async function ensureOrderSubscriptions(
   )
   if (pending.length === 0) return
 
-  // Resolve the deviceArn for this batch, reusing the session-cached value
-  // when present and falling back to /v1/push/register otherwise. Bail on
-  // failure rather than retrying register once per order; the next listOrders
-  // refetch retries the whole batch.
-  let deviceArn: string
-  if (cachedDeviceArn) {
-    deviceArn = cachedDeviceArn
-  } else {
+  // Resolve the deviceArn for this batch. `registerDeviceToNotificationSender`
+  // persists the ARN in commonStorage, and the global notification flow keeps
+  // that key fresh — re-registered on FCM token rotation (`onFcmTokenChange`
+  // drives the balance-change / news / price-alert subscribes), wiped by
+  // logout's `clearAll()`. So reading the persisted key gives the same
+  // freshness as a session-scoped memo with none of the invalidation
+  // machinery, and it survives cold start. Fall back to /v1/push/register only
+  // when the key is empty. Bail on failure rather than retrying register once
+  // per order; the next listOrders refetch retries the whole batch.
+  let deviceArn = commonStorage.getString(
+    CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION
+  )
+  if (!deviceArn) {
     try {
       deviceArn = await registerAndGetDeviceArn()
-      cachedDeviceArn = deviceArn
     } catch (err) {
       Logger.error('[RecurringSwap] deviceArn registration failed', err)
       return
@@ -216,7 +203,7 @@ async function ensureOrderSubscriptions(
     if (subscribeInFlight.has(inFlightKey)) continue
     subscribeInFlight.add(inFlightKey)
     try {
-      await subscribeRecurringSwapNotifications({ orderId, deviceArn })
+      await subscribeForRecurringSwap({ orderId, deviceArn })
       subscribed.add(orderId)
       // Save after each success so a mid-batch interruption (app kill,
       // network drop on the next iteration) preserves the work done so far.
@@ -228,14 +215,24 @@ async function ensureOrderSubscriptions(
       ])
       saveSubscribedOrders(ownerAddress, chainId, merged)
     } catch (err) {
-      // The ARN may have been retired backend-side (e.g. dead-endpoint
-      // cleanup); drop the cached value so the next batch re-registers
-      // against a live ARN before reusing it across the rest of the loop.
-      cachedDeviceArn = null
       Logger.error('[RecurringSwap] order subscribe failed', {
         orderId,
         err
       })
+      // The ARN may have been retired backend-side (e.g. dead-endpoint
+      // cleanup). Re-reading the persisted key would just hand back the same
+      // dead ARN, so force a fresh /v1/push/register and reuse the live ARN
+      // for the remaining orders in this loop. Bail if the re-register itself
+      // fails — the next listOrders refetch retries the whole batch.
+      try {
+        deviceArn = await registerAndGetDeviceArn()
+      } catch (registerErr) {
+        Logger.error(
+          '[RecurringSwap] deviceArn re-registration failed',
+          registerErr
+        )
+        return
+      }
     } finally {
       subscribeInFlight.delete(inFlightKey)
     }
@@ -444,17 +441,6 @@ export function addRecurringSwapListeners(
     actionCreator: onAppUnlocked,
     effect: () => {
       queryClient.invalidateQueries({ queryKey: RECURRING_SCHEDULES_QK })
-    }
-  })
-
-  // Drop the session-cached deviceArn whenever the underlying device identity
-  // can shift out from under it — FCM token rotation invalidates the SNS
-  // endpoint mapping (must re-register to refresh server-side), and logout
-  // may swap to a different account on the next sign-in.
-  startListening({
-    matcher: isAnyOf(onFcmTokenChange, onLogOut),
-    effect: () => {
-      cachedDeviceArn = null
     }
   })
 

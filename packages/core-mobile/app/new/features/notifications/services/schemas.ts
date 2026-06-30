@@ -111,19 +111,33 @@ export const NewsMetadataSchema = z.object({
  * `data` block and with it the failure badge + terminal-state detection. Known
  * codes are documented at the call site; unknown codes pass through so newer
  * backend codes don't fail parsing.
+ *
+ * Only `status` is required. Because `safeParse` is all-or-nothing and a parse
+ * failure drops the entire `data` block (→ `data: undefined`), a required field
+ * that no consumer reads becomes a liability: if the backend ever stops sending
+ * it, terminal detection collapses and a finished schedule's row turns tappable
+ * again — deep-linking to a schedule the manage screen filters out, the exact
+ * regression this schema guards against. So every field but `status` is
+ * optional. The only other fields any consumer reads are `numberOfOrders` /
+ * `remainingOrders` (final-leg detection in `RecurringSwapItem` +
+ * `isTerminalRecurringSwapNotification`); when absent they degrade gracefully —
+ * the status-based terminal states (`completed`/`cancelled`/`failed`) and the
+ * failure badge still resolve, only the "Completed" vs "Executed" last-leg
+ * nuance is lost. The remaining fields are unread today and kept only as a
+ * forward-compatible record of the wire shape.
  */
 export const RecurringSwapMetadataSchema = z.object({
-  orderId: z.string(),
-  owner: z.string(),
-  chainId: z.coerce.number(),
-  numberOfOrders: z.coerce.number(),
-  executedOrders: z.coerce.number(),
-  remainingOrders: z.coerce.number(),
-  tokenIn: z.string(),
-  tokenOut: z.string(),
-  amountIn: z.string(),
-  amountOut: z.string(),
   status: z.string(),
+  orderId: z.string().optional(),
+  owner: z.string().optional(),
+  chainId: z.coerce.number().optional(),
+  numberOfOrders: z.coerce.number().optional(),
+  executedOrders: z.coerce.number().optional(),
+  remainingOrders: z.coerce.number().optional(),
+  tokenIn: z.string().optional(),
+  tokenOut: z.string().optional(),
+  amountIn: z.string().optional(),
+  amountOut: z.string().optional(),
   reasonCode: z.coerce.string().optional()
 })
 

@@ -5,6 +5,7 @@ import {
   isRecurringSwapNotification,
   RecurringSwapMetadata
 } from '../types'
+import { classifyRecurringSwapStatus } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
 
@@ -35,19 +36,21 @@ type Badge = { kind: 'success' | 'failure'; label: string } | null
 
 function resolveBadge(data: RecurringSwapMetadata | undefined): Badge {
   if (data === undefined) return null
-  const status = data.status.toLowerCase()
-  if (status === 'failed') return { kind: 'failure', label: 'Failed' }
+  // Shared classifier (see notifications/utils.ts) so the badge stays in lockstep
+  // with `isTerminalRecurringSwapNotification`'s row-actionability logic.
+  const kind = classifyRecurringSwapStatus(data.status)
+  if (kind === 'failed') return { kind: 'failure', label: 'Failed' }
 
-  const isSuccessFill =
-    status === 'active' || status === 'completed' || status === 'executed'
-  if (!isSuccessFill) return null
+  // Only success fills get a badge; 'cancelled' and unrecognized statuses show
+  // none (a cancelled schedule was deliberately stopped, not a fill event).
+  if (kind !== 'completed' && kind !== 'fill') return null
 
   // The schedule is finished when the backend marks it completed, or — for
   // finite schedules — when no fills remain. Infinite/DCA schedules
   // (numberOfOrders === -1) never reach a completed terminal, so they always
   // read as a mid-schedule fill.
   const isFinalLeg =
-    status === 'completed' ||
+    kind === 'completed' ||
     (data.numberOfOrders !== -1 && data.remainingOrders === 0)
 
   return { kind: 'success', label: isFinalLeg ? 'Completed' : 'Executed' }

@@ -5,7 +5,7 @@ export enum NotificationTypes {
   BALANCE_CHANGES = 'BALANCE_CHANGES',
   NEWS = 'NEWS',
   // Recurring swap (DCA) per-order progress. Subscribed via
-  // `subscribeRecurringSwapNotifications`; payload shape comes from the
+  // `subscribeForRecurringSwap`; payload shape comes from the
   // notification-sender webhook fanout (Sarp's PR #172 / #174). Backend
   // gates these behind the device's balance-notification preference and
   // owns subscription teardown — no client-side unsubscribe path.

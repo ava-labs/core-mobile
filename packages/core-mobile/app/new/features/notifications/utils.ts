@@ -86,6 +86,48 @@ export function mapTransferToTargetChainStatus(
 }
 
 /**
+ * Semantic bucket for a recurring-swap `data.status` string. This is the single
+ * source of truth for the raw-status vocabulary, shared by the two places that
+ * branch on it: `isTerminalRecurringSwapNotification` here (row actionability)
+ * and `resolveBadge` in `RecurringSwapItem.tsx` (the colored status badge).
+ * Both read the same backend strings and must agree on what each one means, so
+ * route every new status through this classifier rather than re-listing literals
+ * at the call site.
+ *
+ *   - 'failed'    → a fill failed (red badge; terminal / non-actionable)
+ *   - 'cancelled' → schedule was stopped (terminal / non-actionable, but no badge)
+ *   - 'completed' → the schedule's final leg landed (green "Completed"; terminal)
+ *   - 'fill'      → a mid-schedule leg landed ('active' / 'executed'; green
+ *                   "Executed"; NOT terminal on its own — a finite final leg is
+ *                   detected separately via remainingOrders)
+ *   - 'unknown'   → unrecognized status (no badge; not terminal on its own)
+ */
+export type RecurringSwapStatusKind =
+  | 'failed'
+  | 'cancelled'
+  | 'completed'
+  | 'fill'
+  | 'unknown'
+
+export function classifyRecurringSwapStatus(
+  rawStatus: string
+): RecurringSwapStatusKind {
+  switch (rawStatus.toLowerCase()) {
+    case 'failed':
+      return 'failed'
+    case 'cancelled':
+      return 'cancelled'
+    case 'completed':
+      return 'completed'
+    case 'active':
+    case 'executed':
+      return 'fill'
+    default:
+      return 'unknown'
+  }
+}
+
+/**
  * A recurring-swap notification is "terminal" when its schedule will no longer
  * appear on the management screen — which lists only Active / Paused schedules
  * (`RecurringSchedulesScreen` filters out Cancelled / Completed). Such a
@@ -93,7 +135,8 @@ export function mapTransferToTargetChainStatus(
  * rendered non-actionable (no chevron, no navigation) by `hasActionableUrl`.
  *
  * Read off the structured `data` block (NOT the human-facing copy):
- *   - status is a terminal / failed event ('completed' | 'cancelled' | 'failed'), or
+ *   - status classifies as a terminal event ('completed' | 'cancelled' |
+ *     'failed'), or
  *   - it's the final leg of a finite schedule (`numberOfOrders !== -1` and no
  *     fills remain). Infinite / DCA schedules (`numberOfOrders === -1`) never
  *     reach this state.
@@ -101,8 +144,9 @@ export function mapTransferToTargetChainStatus(
  * Note: 'failed' is a per-fill event, not a `RecurringOrderStatus` — a failed
  * fill can occur on a schedule that stays Active. We still treat it as
  * non-actionable per product intent (failures generally precede auto-cancel);
- * if a still-Active schedule's failure should remain tappable, drop 'failed'
- * from the terminal set here.
+ * if a still-Active schedule's failure should remain tappable, remap 'failed'
+ * in `classifyRecurringSwapStatus` (it also drives the red badge) or special-case
+ * it here.
  */
 export function isTerminalRecurringSwapNotification(
   notification: AppNotification
@@ -111,8 +155,8 @@ export function isTerminalRecurringSwapNotification(
   const data = notification.data
   if (!data) return false
 
-  const status = data.status.toLowerCase()
-  if (status === 'completed' || status === 'cancelled' || status === 'failed') {
+  const kind = classifyRecurringSwapStatus(data.status)
+  if (kind === 'completed' || kind === 'cancelled' || kind === 'failed') {
     return true
   }
   // Final leg of a finite schedule — no fills left to run.
