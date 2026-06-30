@@ -7,13 +7,13 @@ import {
 
 /**
  * Sort dropdown state for the Delegate node picker. Mirrors core-web's sort
- * menu (see `sortDelegateNodes`); defaults to "Highest APY".
+ * menu (see `sortDelegateNodes`); defaults to "Lowest fee" (web's default).
  */
 export const useDelegateNodeSort = (): DropdownSelection & {
   selected: DelegateNodeSortOption
 } => {
   const [selected, setSelected] = useState<DelegateNodeSortOption>(
-    DelegateNodeSortOption.HighestApy
+    DelegateNodeSortOption.LowestFee
   )
 
   const data = useMemo(
