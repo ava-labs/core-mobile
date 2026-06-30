@@ -2,30 +2,27 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { NodeValidator } from 'types/earn'
 
 /**
- * Sort options for the Delegate node picker, mirroring core-web's
+ * Sort options for the Delegate node picker, matching core-web's
  * `ValidatorSearchResults` sort menu (and its Glacier `SortByOption`
- * mapping):
+ * mapping) one-to-one:
  *
- * - Highest APY     → uptime, desc (web proxies APY with uptime performance)
- * - Lowest fee      → delegation fee, asc
+ * - Lowest fee      → delegation fee, asc (default — matches web)
  * - Most available  → available delegation capacity, desc
- * - Most trusted    → time remaining (validator end time), desc
+ * - Time remaining  → validator end time, desc
  * - Uptime          → uptime, desc
  */
 export enum DelegateNodeSortOption {
-  HighestApy = 'Highest APY',
   LowestFee = 'Lowest fee',
   MostAvailable = 'Most available',
-  MostTrusted = 'Most trusted',
+  TimeRemaining = 'Time remaining',
   Uptime = 'Uptime'
 }
 
 // Order matches the web sort menu; the first entry is the default.
 export const DELEGATE_NODE_SORT_OPTIONS: DelegateNodeSortOption[] = [
-  DelegateNodeSortOption.HighestApy,
   DelegateNodeSortOption.LowestFee,
   DelegateNodeSortOption.MostAvailable,
-  DelegateNodeSortOption.MostTrusted,
+  DelegateNodeSortOption.TimeRemaining,
   DelegateNodeSortOption.Uptime
 ]
 
@@ -47,32 +44,53 @@ const compareAvailableDesc = (
   return 0
 }
 
+// Longer remaining stake time (later end date) first.
+const compareTimeRemainingDesc = (
+  a: NodeWithAvailable,
+  b: NodeWithAvailable
+): number => Number(b.validator.endTime) - Number(a.validator.endTime)
+
+/**
+ * Shared tie-breaker: most stake time remaining first. After the default
+ * `maxFee ≤ 2%` filter, nearly every node sits at the network-minimum 2% fee,
+ * so a "Lowest fee" sort leaves a large tie. We fetch validators from the
+ * P-Chain RPC (raw, start-order — i.e. oldest/near-expiry first) and sort
+ * client-side, whereas core-web sorts server-side via Glacier; without a
+ * tie-breaker that source ordering surfaced near-expiry nodes at the top.
+ * Breaking ties by time remaining keeps long-lived validators on top, matching
+ * what web shows.
+ */
+const withTimeRemainingTieBreak =
+  (primary: (a: NodeWithAvailable, b: NodeWithAvailable) => number) =>
+  (a: NodeWithAvailable, b: NodeWithAvailable): number =>
+    primary(a, b) || compareTimeRemainingDesc(a, b)
+
+const compareFeeAsc = (a: NodeWithAvailable, b: NodeWithAvailable): number =>
+  Number(a.validator.delegationFee) - Number(b.validator.delegationFee)
+
+const compareUptimeDesc = (
+  a: NodeWithAvailable,
+  b: NodeWithAvailable
+): number => Number(b.validator.uptime) - Number(a.validator.uptime)
+
 export const sortDelegateNodes = (
   nodes: NodeWithAvailable[],
   option: DelegateNodeSortOption
 ): NodeWithAvailable[] => {
   const sorted = [...nodes]
   switch (option) {
-    case DelegateNodeSortOption.LowestFee:
-      sorted.sort(
-        (a, b) =>
-          Number(a.validator.delegationFee) - Number(b.validator.delegationFee)
-      )
-      break
     case DelegateNodeSortOption.MostAvailable:
-      sorted.sort(compareAvailableDesc)
+      sorted.sort(withTimeRemainingTieBreak(compareAvailableDesc))
       break
-    case DelegateNodeSortOption.MostTrusted:
-      sorted.sort(
-        (a, b) => Number(b.validator.endTime) - Number(a.validator.endTime)
-      )
+    case DelegateNodeSortOption.TimeRemaining:
+      sorted.sort(compareTimeRemainingDesc)
       break
-    case DelegateNodeSortOption.HighestApy:
     case DelegateNodeSortOption.Uptime:
+      sorted.sort(withTimeRemainingTieBreak(compareUptimeDesc))
+      break
+    case DelegateNodeSortOption.LowestFee:
     default:
-      sorted.sort(
-        (a, b) => Number(b.validator.uptime) - Number(a.validator.uptime)
-      )
+      sorted.sort(withTimeRemainingTieBreak(compareFeeAsc))
       break
   }
   return sorted

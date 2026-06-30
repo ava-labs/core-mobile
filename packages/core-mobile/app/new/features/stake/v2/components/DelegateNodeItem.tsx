@@ -19,10 +19,6 @@ import { truncateNodeId } from 'utils/Utils'
 import { determineNodeTags } from '../utils/determineNodeTags'
 import { NodeTagPill } from './NodeTagPill'
 
-// Below this uptime the node reads as unhealthy: the uptime renders in the
-// danger colour.
-const MIN_HEALTHY_UPTIME = 85
-
 // Delegator count is an integer — format with thousands separators and no
 // decimals (`formatNumber` forces 2 decimals, which renders e.g. "2,014.00").
 const countFormatter = new Intl.NumberFormat('en-US', {
@@ -45,14 +41,15 @@ export const DelegateNodeItem = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
-  const uptime = useMemo(() => Number(node.uptime), [node.uptime])
-  const isHealthy = !Number.isFinite(uptime) || uptime >= MIN_HEALTHY_UPTIME
-
-  const dateRange = useMemo(() => {
-    const start = format(new Date(Number(node.startTime) * 1000), 'MMM d')
-    const end = format(new Date(Number(node.endTime) * 1000), 'MMM d yyyy')
-    return `${start} - ${end}`
-  }, [node.startTime, node.endTime])
+  // Web's `ValidatorItem` shows the date range and delegator count together on
+  // the subtitle line ("Jun 29 - Jun 30 2026 | 0 Delegators"), so we mirror
+  // that here instead of breaking delegators out into its own stat row.
+  const subtitle = useMemo(() => {
+    const start = format(new Date(Number(node.startTime) * 1000), 'MMM dd')
+    const end = format(new Date(Number(node.endTime) * 1000), 'MMM dd yyyy')
+    const delegators = countFormatter.format(Number(node.delegatorCount ?? 0))
+    return `${start} - ${end} | ${delegators} Delegators`
+  }, [node.startTime, node.endTime, node.delegatorCount])
 
   const available = useMemo(() => {
     const validatorWeight = new TokenUnit(
@@ -117,7 +114,7 @@ export const DelegateNodeItem = ({
               {truncateNodeId(node.nodeID)}
             </Text>
             <Text variant="body2" sx={{ color: '$textSecondary' }}>
-              {dateRange}
+              {subtitle}
             </Text>
           </View>
           {primaryTag !== undefined && <NodeTagPill tag={primaryTag} />}
@@ -129,19 +126,15 @@ export const DelegateNodeItem = ({
           <View
             sx={{ height: 1, backgroundColor: theme.colors.$borderPrimary }}
           />
+          {/* Web's `ValidatorItem` shows only uptime + available capacity as
+           * the trailing stats (uptime always in the success colour), with
+           * the delegator count folded into the subtitle above. */}
           <View sx={{ gap: 2 }}>
-            <Text
-              variant="body2"
-              sx={{ color: isHealthy ? '$textSuccess' : '$textDanger' }}>
+            <Text variant="body2" sx={{ color: '$textSuccess' }}>
               {`${formatNumber(node.uptime)}% uptime`}
             </Text>
             <Text variant="body2" sx={{ color: '$textPrimary' }}>
-              {`${countFormatter.format(
-                Number(node.delegatorCount ?? 0)
-              )} delegators`}
-            </Text>
-            <Text variant="body2" sx={{ color: '$textPrimary' }}>
-              {`${available.toDisplay()} available`}
+              {`${available.toDisplay()} AVAX available`}
             </Text>
           </View>
         </View>

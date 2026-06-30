@@ -22,7 +22,7 @@ import { NodeValidator } from 'types/earn'
 import { useDelegateNodeSort } from '../hooks/useDelegateNodeSort'
 import { DelegateNodeItem } from '../components/DelegateNodeItem'
 import {
-  countActiveFilters,
+  countModifiedFilters,
   DelegateFilters,
   setDelegateNodeSelection,
   useDelegateFilters
@@ -74,10 +74,13 @@ const errorIcon = require('../../../../assets/icons/melting_face.png')
 /**
  * V2 Delegate flow: the node picker shown when the user chooses "Delegate"
  * from the staking chooser. Unlike the V1 select-node screen — which runs
- * after amount + duration and hard-filters validators by delegation capacity
- * and remaining time — this screen comes first, so it lists every active
- * validator (search + sort only) and tags each with Recommended / Popular /
- * Reliable / New (see `determineNodeTags`).
+ * after amount + duration — this screen comes first. It opens pre-filtered
+ * with core-web's default validator-search filters (uptime ≥ 75%, fee ≤ the
+ * network minimum, remaining time ≥ the minimum stake duration; seeded in
+ * `useStartStaking` via `applyDefaultDelegateFilters`) so both clients surface
+ * the same nodes by default. The user can loosen those in Advanced filters,
+ * and each node is tagged Recommended / Popular / Reliable / New (see
+ * `determineNodeTags`).
  */
 const SelectNodeScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
@@ -94,7 +97,11 @@ const SelectNodeScreen = (): JSX.Element => {
   const tokenSymbol = networkToken.symbol
   const minStakeSubUnit = minStakeAmount.toSubUnit()
   const filters = useDelegateFilters(state => state.filters)
-  const activeFilterCount = countActiveFilters(filters)
+  const filterDefaults = useDelegateFilters(state => state.defaults)
+  // Badge counts only filters the user has changed from the seeded defaults, so
+  // the picker opens looking unfiltered even though the web-parity defaults are
+  // applied.
+  const activeFilterCount = countModifiedFilters(filters, filterDefaults)
 
   const validators = useMemo(() => {
     const all = data?.validators ?? []

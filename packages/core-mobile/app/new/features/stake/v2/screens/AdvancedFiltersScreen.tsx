@@ -105,35 +105,55 @@ const FilterCard: FC<FilterCardProps> = ({
   )
 }
 
+// Whether an applied `{enabled, value}` filter deviates from its seeded
+// default. Drives each row's toggle: a row reads as "on" only when the user has
+// overridden the web default.
+const isOverridden = (
+  applied: { enabled: boolean; value: number },
+  base: { enabled: boolean; value: number }
+): boolean =>
+  applied.enabled !== base.enabled ||
+  (applied.enabled && applied.value !== base.value)
+
 /**
- * Builds an editable draft from the currently applied filters, keeping every
- * numeric value inside the live bounds. Range maxes that were never set (stored
- * as 0) default to the upper bound so a freshly-enabled range starts wide.
+ * Builds an editable draft from the currently applied filters. Here a row's
+ * `enabled` flag means "the user is overriding the web default" (it drives the
+ * toggle + whether the value control shows), NOT "the filter is active" — the
+ * web-parity defaults (uptime ≥ 75%, fee ≤ 2%, min time remaining) always apply
+ * underneath. So a row reads as toggled on only when its applied value differs
+ * from the seeded default; an untouched picker opens with every toggle off even
+ * though it's pre-filtered. Numeric values are kept inside the live bounds, and
+ * a row sitting at its default seeds its control at the default value so
+ * flipping the toggle on starts there (then drag up to tighten or down to
+ * loosen, e.g. uptime to 0% to see every node).
  */
 const seedDraft = (
   applied: DelegateFilters,
+  defaults: DelegateFilters,
   bounds: DelegateFilterBounds
 ): DelegateFilters => ({
   uptime: {
-    enabled: applied.uptime.enabled,
+    enabled:
+      applied.uptime.enabled !== defaults.uptime.enabled ||
+      (applied.uptime.enabled && applied.uptime.min !== defaults.uptime.min),
     min: clamp(applied.uptime.min, bounds.uptime.min, bounds.uptime.max)
   },
   maxFee: {
-    enabled: applied.maxFee.enabled,
+    enabled: isOverridden(applied.maxFee, defaults.maxFee),
     // Free numeric filter: allow any fee down to 0% (a value below the network
     // floor simply yields no matches) and retain exactly what was entered on
     // reopen — only the upper bound (100%) is enforced.
     value: clamp(applied.maxFee.value, 0, MAX_FEE_INPUT)
   },
   minAvailable: {
-    enabled: applied.minAvailable.enabled,
+    enabled: isOverridden(applied.minAvailable, defaults.minAvailable),
     value:
       applied.minAvailable.value > 0
         ? Math.max(applied.minAvailable.value, bounds.minAvailable.min)
         : bounds.minAvailable.min
   },
   minTimeRemaining: {
-    enabled: applied.minTimeRemaining.enabled,
+    enabled: isOverridden(applied.minTimeRemaining, defaults.minTimeRemaining),
     value:
       applied.minTimeRemaining.value > 0
         ? clamp(
@@ -148,17 +168,34 @@ const seedDraft = (
 const AdvancedFiltersScreen = (): JSX.Element => {
   const router = useRouter()
   const filters = useDelegateFilters(state => state.filters)
+  const defaults = useDelegateFilters(state => state.defaults)
   const setFilters = useDelegateFilters(state => state.setFilters)
   const bounds = useDelegateFilterBounds()
 
   const [draft, setDraft] = useState<DelegateFilters>(() =>
-    seedDraft(filters, bounds)
+    seedDraft(filters, defaults, bounds)
   )
 
   const handleApply = useCallback((): void => {
-    setFilters(draft)
+    // A row toggled on applies the user's value; a row toggled off reverts that
+    // dimension to the seeded web default (which still filters underneath), so
+    // the picker keeps its baseline instead of showing every node.
+    setFilters({
+      uptime: draft.uptime.enabled
+        ? { enabled: true, min: draft.uptime.min }
+        : defaults.uptime,
+      maxFee: draft.maxFee.enabled
+        ? { enabled: true, value: draft.maxFee.value }
+        : defaults.maxFee,
+      minAvailable: draft.minAvailable.enabled
+        ? { enabled: true, value: draft.minAvailable.value }
+        : defaults.minAvailable,
+      minTimeRemaining: draft.minTimeRemaining.enabled
+        ? { enabled: true, value: draft.minTimeRemaining.value }
+        : defaults.minTimeRemaining
+    })
     router.back()
-  }, [draft, router, setFilters])
+  }, [draft, defaults, router, setFilters])
 
   const handleCancel = useCallback((): void => {
     // Discard the draft — applied filters stay as they were.
