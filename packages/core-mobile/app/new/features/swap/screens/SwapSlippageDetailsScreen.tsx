@@ -314,7 +314,7 @@ export const SwapSlippageDetailsScreen = ({
                           sx={{
                             color: inversedColors.$textPrimary,
                             fontSize: 15,
-                            fontFamily: 'Inter-Semibold',
+                            fontFamily: 'Inter-SemiBold',
                             lineHeight: 20,
                             textAlign: 'center'
                           }}>
@@ -326,7 +326,7 @@ export const SwapSlippageDetailsScreen = ({
                         sx={{
                           color: colors.$textPrimary,
                           fontSize: 15,
-                          fontFamily: 'Inter-Semibold',
+                          fontFamily: 'Inter-SemiBold',
                           lineHeight: 20,
                           textAlign: 'center'
                         }}>
