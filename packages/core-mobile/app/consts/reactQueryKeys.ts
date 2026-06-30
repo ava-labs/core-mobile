@@ -89,5 +89,8 @@ export enum ReactQueryKeys {
   PREDICTIONS_SERIES = 'predictionsSeries',
   PREDICTIONS_MARKET_DETAIL = 'predictionsMarketDetail',
   PREDICTIONS_EVENT_DETAIL = 'predictionsEventDetail',
-  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes'
+  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes',
+
+  // regional feature availability (geo-restriction)
+  FEATURE_AVAILABILITY = 'featureAvailability'
 }
