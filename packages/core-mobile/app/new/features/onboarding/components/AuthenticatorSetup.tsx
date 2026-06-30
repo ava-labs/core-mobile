@@ -67,7 +67,7 @@ export const AuthenticatorSetup = ({
                 <Text
                   sx={{
                     fontSize: 16,
-                    fontWeight: '500',
+                    fontFamily: 'Inter-Medium',
                     lineHeight: 16,
                     color: colors.$textPrimary
                   }}>
@@ -78,7 +78,6 @@ export const AuthenticatorSetup = ({
                     <Text
                       sx={{
                         fontSize: 12,
-                        fontWeight: '400',
                         lineHeight: 15,
                         color: colors.$textSecondary
                       }}>
@@ -116,7 +115,7 @@ export const AuthenticatorSetup = ({
                 <Text
                   sx={{
                     fontSize: 16,
-                    fontWeight: '500',
+                    fontFamily: 'Inter-Medium',
                     lineHeight: 16,
                     color: colors.$textPrimary
                   }}>
@@ -125,7 +124,6 @@ export const AuthenticatorSetup = ({
                 <Text
                   sx={{
                     fontSize: 12,
-                    fontWeight: '400',
                     lineHeight: 15,
                     color: colors.$textSecondary,
                     marginTop: 3,
