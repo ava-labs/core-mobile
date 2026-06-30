@@ -402,8 +402,7 @@ const makeRecurringNotification = (
           }
         }
       : {})
-  } as Partial<AppNotification> &
-    Pick<AppNotification, 'type' | 'category'>)
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
 
 describe('isTerminalRecurringSwapNotification', () => {
   it('returns false for a non-recurring notification', () => {
@@ -411,9 +410,9 @@ describe('isTerminalRecurringSwapNotification', () => {
   })
 
   it('returns false for a recurring notification without a data payload', () => {
-    expect(isTerminalRecurringSwapNotification(makeRecurringNotification())).toBe(
-      false
-    )
+    expect(
+      isTerminalRecurringSwapNotification(makeRecurringNotification())
+    ).toBe(false)
   })
 
   it.each([['active'], ['paused'], ['executed']])(
