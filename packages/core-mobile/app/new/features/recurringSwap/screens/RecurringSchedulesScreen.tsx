@@ -527,6 +527,9 @@ export function RecurringSchedulesScreen({
    *  the user lands directly on the order the notification was about. */
   initialExpandedOrderId?: string
 } = {}): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const chainId = activeNetwork?.chainId
@@ -808,7 +811,7 @@ export function RecurringSchedulesScreen({
         isModal
         contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#3C3C4399" />
+          <ActivityIndicator size="large" color={colors.$textPrimary} />
         </View>
       </ScrollScreen>
     )
