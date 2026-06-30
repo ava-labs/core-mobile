@@ -39,7 +39,11 @@ import {
   isBalanceChangeNotification,
   isRecurringSwapNotification
 } from '../types'
-import { buildAccountLabelMap, isSwapTerminal } from '../utils'
+import {
+  buildAccountLabelMap,
+  isSwapTerminal,
+  isTerminalRecurringSwapNotification
+} from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
@@ -83,6 +87,11 @@ const isBalanceChangeWithData = (notification: AppNotification): boolean => {
  * Check if a notification has an actionable URL (not skipped like core://portfolio)
  */
 const hasActionableUrl = (notification: AppNotification): boolean => {
+  // Terminal / last-leg recurring-swap notifications point at a schedule the
+  // management screen no longer lists (it shows only Active / Paused), so the
+  // row is non-actionable — no chevron, and the press handler no-ops.
+  if (isTerminalRecurringSwapNotification(notification)) return false
+
   const url = notification.deepLinkUrl
   if (!url) return false
 

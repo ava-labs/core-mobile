@@ -6,7 +6,8 @@ import {
   NotificationCategory,
   NotificationTab,
   NotificationType,
-  NotificationSwapStatus
+  NotificationSwapStatus,
+  isRecurringSwapNotification
 } from './types'
 
 /**
@@ -82,6 +83,40 @@ export function mapTransferToTargetChainStatus(
 
   // source-pending, source-completed, target-pending → target not done yet
   return NotificationSwapStatus.InProgress
+}
+
+/**
+ * A recurring-swap notification is "terminal" when its schedule will no longer
+ * appear on the management screen — which lists only Active / Paused schedules
+ * (`RecurringSchedulesScreen` filters out Cancelled / Completed). Such a
+ * notification deep-links to a schedule the user can't see, so the row is
+ * rendered non-actionable (no chevron, no navigation) by `hasActionableUrl`.
+ *
+ * Read off the structured `data` block (NOT the human-facing copy):
+ *   - status is a terminal / failed event ('completed' | 'cancelled' | 'failed'), or
+ *   - it's the final leg of a finite schedule (`numberOfOrders !== -1` and no
+ *     fills remain). Infinite / DCA schedules (`numberOfOrders === -1`) never
+ *     reach this state.
+ *
+ * Note: 'failed' is a per-fill event, not a `RecurringOrderStatus` — a failed
+ * fill can occur on a schedule that stays Active. We still treat it as
+ * non-actionable per product intent (failures generally precede auto-cancel);
+ * if a still-Active schedule's failure should remain tappable, drop 'failed'
+ * from the terminal set here.
+ */
+export function isTerminalRecurringSwapNotification(
+  notification: AppNotification
+): boolean {
+  if (!isRecurringSwapNotification(notification)) return false
+  const data = notification.data
+  if (!data) return false
+
+  const status = data.status.toLowerCase()
+  if (status === 'completed' || status === 'cancelled' || status === 'failed') {
+    return true
+  }
+  // Final leg of a finite schedule — no fills left to run.
+  return data.numberOfOrders !== -1 && data.remainingOrders === 0
 }
 
 /**

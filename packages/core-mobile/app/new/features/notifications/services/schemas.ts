@@ -99,10 +99,17 @@ export const NewsMetadataSchema = z.object({
  * Sarp's webhook fans out (PRs #172 / #174 on core-notification-sender):
  * machine-readable progress fields the in-app row uses to format its title /
  * subtitle + a status badge, and the `orderId` the deep link uses to
- * auto-expand the matching schedule. Numeric fields arrive as strings
- * (`z.coerce.number` is intentional — the wire format is plain JSON-string).
- * `reasonCode` is set only on `status === 'failed'`; known codes are
- * documented at the call site, unknown codes are passed through so newer
+ * auto-expand the matching schedule. Numeric fields are coerced because the
+ * two backend channels disagree on shape: the FCM push stringifies every
+ * `data` value, while the notification-center history API returns raw JSON
+ * (numbers stay numbers). `z.coerce` accepts both.
+ *
+ * `reasonCode` is set only on `status === 'failed'`; the push sends it as a
+ * string (`String(reasonCode)`) but history sends the raw number — so it MUST
+ * be coerced too. Without this, every failed notification (which always
+ * carries a reasonCode) fails to parse on the history path, dropping the whole
+ * `data` block and with it the failure badge + terminal-state detection. Known
+ * codes are documented at the call site; unknown codes pass through so newer
  * backend codes don't fail parsing.
  */
 export const RecurringSwapMetadataSchema = z.object({
@@ -117,7 +124,7 @@ export const RecurringSwapMetadataSchema = z.object({
   amountIn: z.string(),
   amountOut: z.string(),
   status: z.string(),
-  reasonCode: z.string().optional()
+  reasonCode: z.coerce.string().optional()
 })
 
 /**
