@@ -2,8 +2,9 @@ import React from 'react'
 import renderer, { act } from 'react-test-renderer'
 
 const mockOpenUrl = jest.fn()
-jest.mock('common/hooks/useCoreBrowser', () => ({
-  useCoreBrowser: () => ({ openUrl: mockOpenUrl })
+jest.mock('common/hooks/useInAppBrowser', () => ({
+  __esModule: true,
+  default: () => ({ openUrl: mockOpenUrl })
 }))
 
 // Mock @avalabs/k2-alpine so we don't need a dripsy theme provider.
@@ -39,9 +40,7 @@ jest.mock('@avalabs/k2-alpine', () => {
 })
 
 import { PerpsGeoRestrictionWarning } from './PerpsGeoRestrictionWarning'
-
-const PERPS_HELP_URL =
-  'https://support.core.app/en/articles/15591330-core-mobile-what-are-perpetual-futures'
+import { PERPS_HELP_URL } from 'common/consts/urls'
 
 describe('<PerpsGeoRestrictionWarning />', () => {
   beforeEach(() => mockOpenUrl.mockReset())
@@ -65,9 +64,6 @@ describe('<PerpsGeoRestrictionWarning />', () => {
     await act(async () => {
       button.props.onPress()
     })
-    expect(mockOpenUrl).toHaveBeenCalledWith({
-      url: PERPS_HELP_URL,
-      title: expect.any(String)
-    })
+    expect(mockOpenUrl).toHaveBeenCalledWith(PERPS_HELP_URL)
   })
 })

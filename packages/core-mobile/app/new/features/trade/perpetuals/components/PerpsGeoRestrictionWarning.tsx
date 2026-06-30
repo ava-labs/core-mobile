@@ -1,6 +1,6 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { PERPS_HELP_URL } from 'common/consts/urls'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import React, { useCallback } from 'react'
 
 const WARNING_TEXT =
@@ -13,10 +13,10 @@ const WARNING_TEXT =
  */
 export const PerpsGeoRestrictionWarning = (): JSX.Element => {
   const { theme } = useTheme()
-  const { openUrl } = useCoreBrowser()
+  const { openUrl } = useInAppBrowser()
 
   const handleLearnMore = useCallback(() => {
-    openUrl({ url: PERPS_HELP_URL, title: 'Perpetual Futures' })
+    openUrl(PERPS_HELP_URL)
   }, [openUrl])
 
   return (
