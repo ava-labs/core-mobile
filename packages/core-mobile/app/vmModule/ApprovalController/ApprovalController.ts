@@ -53,9 +53,10 @@ import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 import {
+  evaluateBatchApproval,
   findRequestValidator,
-  runBatchApprovalBypass,
-  runRequestValidatorBypass
+  runRequestValidatorBypass,
+  signBatchRequests
 } from './quickSwapsBypass'
 
 // Max concurrently-parked cancellable approvals. Entries are removed on every
@@ -595,12 +596,86 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  // Batch approvals only exist for the Quick Swaps bypass — there's
-  // no batch manual-modal flow in this app. Delegate fully.
   async requestBatchApproval(
     params: BatchApprovalParams
   ): Promise<BatchApprovalResponse> {
-    return runBatchApprovalBypass(params)
+    const decision = await evaluateBatchApproval(params)
+    if (decision.kind === 'signed' || decision.kind === 'reject') {
+      return decision.response
+    }
+
+    // Manual path: open the batch approval screen (software wallets only —
+    // HW/WC never dispatch a batch; EvmSigner.signBatch throws for them).
+    const { request, displayData, signingRequests } = params
+    const requestId = request.requestId
+    this.userCancelledMap.delete(requestId)
+
+    return new Promise<BatchApprovalResponse>(resolve => {
+      if (this.registerCancelBridge(requestId, resolve as never)) return
+
+      walletConnectCache.batchApprovalParams.set({
+        request,
+        displayData,
+        signingRequests,
+        signal: getRequestSignal(requestId),
+        onApprove: (spendLimitOverrides: Record<number, string>) =>
+          this.handleBatchApprovalApprove({
+            requestId,
+            request,
+            signingRequests,
+            spendLimitOverrides,
+            resolve
+          }),
+        onReject: (message?: string) => {
+          this.clearCancelBridge(requestId)
+          onReject({ resolve: resolve as never, message })
+        }
+      })
+
+      router.navigate({
+        pathname: '/approvalBatch',
+        params: { presentationMode: NavigationPresentationMode.FORM_SHEET }
+      })
+    })
+  }
+
+  private async handleBatchApprovalApprove({
+    requestId,
+    request,
+    signingRequests,
+    spendLimitOverrides,
+    resolve
+  }: {
+    requestId: string
+    request: BatchApprovalParams['request']
+    signingRequests: BatchApprovalParams['signingRequests']
+    spendLimitOverrides: Record<number, string>
+    resolve: (
+      value: BatchApprovalResponse | PromiseLike<BatchApprovalResponse>
+    ) => void
+  }): Promise<void> {
+    if (this.userCancelledMap.get(requestId)) return
+    this.clearCancelBridge(requestId)
+
+    // Apply per-index spend-limit overrides (re-encoded approve calldata) to
+    // each tx before signing — mirrors the single-tx overrideData path.
+    const transactions = signingRequests.map((sr, i) => {
+      const override = spendLimitOverrides[i]
+      return override
+        ? { ...sr.signingData.data, data: override }
+        : sr.signingData.data
+    })
+
+    const result = await signBatchRequests(
+      request,
+      transactions,
+      'eth_sendTransactionBatch'
+    )
+    if ('error' in result) {
+      resolve(result)
+      return
+    }
+    resolve({ result: result.signedTxs })
   }
 }
 
