@@ -9,13 +9,18 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
 import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
+
+const GEO_BLOCKED_MESSAGE =
+  'Perpetual Futures are not available in your location.'
 
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
@@ -33,6 +38,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     leverage,
     liquidationPrice
   } = usePlaceOrder()
+
+  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
 
   const isLong = side === 'long'
   const directionLabel = isLong ? 'Long' : 'Short'
@@ -58,16 +65,23 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   })
 
   const handleConfirm = useCallback(async () => {
-    // UI-only: simulate the order submission. SDK wiring (marketOrder /
-    // placeOrderWithTpSl + agent signer) lands in a follow-up.
     setSubmitting(true)
     try {
+      // Re-check geo fresh (bypassing the 5-min cache) right before submitting
+      // — the user may have toggled a VPN since the screen loaded. Abort and
+      // surface the restriction rather than placing an order.
+      if (await recheckGeoBlock()) {
+        showSnackbar(GEO_BLOCKED_MESSAGE)
+        return
+      }
+      // UI-only: simulate the order submission. SDK wiring (marketOrder /
+      // placeOrderWithTpSl + agent signer) lands in a follow-up.
       await new Promise(resolve => setTimeout(resolve, 1200))
       router.back()
     } finally {
       setSubmitting(false)
     }
-  }, [router])
+  }, [router, recheckGeoBlock])
 
   const renderFooter = useCallback(
     () => (
@@ -75,12 +89,12 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         mode="single"
         label={`Slide to buy ${directionLabel}`}
         loading={submitting}
-        disabled={amount <= 0}
+        disabled={amount <= 0 || isGeoBlocked}
         onConfirm={handleConfirm}
         testID="perpetuals_place_order_confirm"
       />
     ),
-    [directionLabel, submitting, amount, handleConfirm]
+    [directionLabel, submitting, amount, isGeoBlocked, handleConfirm]
   )
 
   const leverageBadge = (
