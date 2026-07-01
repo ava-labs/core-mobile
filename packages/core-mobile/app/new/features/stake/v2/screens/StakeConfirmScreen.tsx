@@ -21,7 +21,7 @@ import { differenceInDays, format, getUnixTime } from 'date-fns'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
-import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
+import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
 import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
@@ -38,6 +38,7 @@ import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import NetworkService from 'services/network/NetworkService'
+import { showConfetti } from 'vmModule/utils/requestContext'
 import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
@@ -107,6 +108,20 @@ const StakeReviewFooter = ({
     </View>
   )
 }
+
+/**
+ * True only while the flow must wait for the reward estimate before the user
+ * can submit — i.e. when a fee policy applies (the convenience-fee output
+ * amount is derived from the gross reward). Fee-less flows return `false` so
+ * they pre-flight and enable the CTA as soon as a validator is ready. Kept as
+ * a module-level helper so the `&&` stays out of the component body's
+ * cognitive-complexity budget while still being shared by the preflight gate
+ * and the CTA disabled state.
+ */
+const isAwaitingFeeReward = (
+  hasFeePolicy: boolean,
+  isRewardEstimateFetching: boolean
+): boolean => hasFeePolicy && isRewardEstimateFetching
 
 /**
  * V2 "Almost done, review your stake..." screen.
@@ -195,8 +210,9 @@ const StakeConfirmScreen = ({
   }, [validatedStakingEndTime])
 
   // Always estimate the gross reward (no validator-specific delegation fee
-  // baked in). The convenience fee is applied below — only when the
-  // `fast-stake-fee-enabled` flag is on — so the displayed reward stays
+  // baked in). The convenience fee is applied below — only when the flow's
+  // `feePolicy` is set (Fast Stake's `fast-stake-fee-enabled` or the advanced
+  // delegate's `delegation-fee-enabled` flag) — so the displayed reward stays
   // consistent with whether the fee is actually charged.
   //
   // `validatedStakingDuration` is now safe to use before the validator
@@ -204,12 +220,18 @@ const StakeConfirmScreen = ({
   // the duration reflects the user-selected end time during the resolve
   // window and switches to the validator-clamped end time once it arrives.
   // No consumer-level gating needed here.
+  // Use the react-query-backed estimate so the current supply is fetched once
+  // and shared/cached app-wide (e.g. the Node details APY already populates
+  // it). The advanced delegate confirm otherwise fired a fresh, uncached
+  // `getCurrentSupply` that hung when batched with the confirm's other XP
+  // calls; reusing the cached supply avoids that round-trip entirely.
   const {
     data: grossEstimatedReward,
     isError: isRewardEstimateError,
+    isFetching: isRewardEstimateFetching,
     refetch: retryRewardEstimate
-  } = useStakeEstimatedReward({
-    amount: stakeAmount,
+  } = useEarnCalcEstimatedRewards({
+    amountNanoAvax: stakeAmount.toSubUnit(),
     duration: validatedStakingDuration,
     delegationFee: 0
   })
@@ -437,7 +459,10 @@ const StakeConfirmScreen = ({
       const explorerLink = pNetwork.explorerUrl
         ? getExplorerAddressByNetwork(pNetwork.explorerUrl, txHash, 'tx')
         : undefined
-      transactionSnackbar.success({ message: 'New Stake Added', explorerLink })
+      transactionSnackbar.success({ message: 'New stake added', explorerLink })
+      // Celebrate the completed stake alongside the success toast, mirroring
+      // the confetti shown for in-app Avalanche transactions.
+      showConfetti()
 
       // Switch to the success screen; the whole flow then auto-dismisses
       // after SUCCESS_DISMISS_DELAY_MS (see the effect below), returning the
@@ -619,17 +644,16 @@ const StakeConfirmScreen = ({
         issueDelegationAnalyticsProps
       )
 
+      // Both flows pre-flight the funding (`useStakeFundingPreflight`), which
+      // has already recomputed the steps with the convenience-fee output folded
+      // in, so we submit with the steps in context. `recomputeSteps` is only
+      // set by explicit retry paths (e.g. funds-stuck), which pass it through
+      // here.
       const performDelegation = (onProgress?: OnDelegationProgress): void => {
         issueDelegation({
           nodeId: validator.nodeID,
           startDate: minStartTime,
           endDate: validatedStakingEndTime,
-          // No forced recompute on the normal path: `useStakeFundingPreflight`
-          // already recomputed the steps with the convenience-fee output
-          // folded in (and gates the CTA until it succeeds), so the steps in
-          // context are fee-inclusive and current by the time the user slides.
-          // `recomputeSteps` is only set by explicit retry paths (e.g.
-          // funds-stuck), which pass it through here.
           recomputeSteps,
           onProgress,
           additionalOutputs: feeAdditionalOutputs
@@ -771,12 +795,30 @@ const StakeConfirmScreen = ({
   // matching the old behaviour for the advanced delegate flow.
   const isFeeContextReady = !feePolicy || grossEstimatedReward !== undefined
 
+  // Only hold the flow for the reward estimate when a fee policy applies — the
+  // fee output amount depends on the (gross) reward. Fee-less flows must NOT
+  // wait on it: gating the preflight on the reward there enables the CTA (since
+  // `isFeeContextReady` is already true) while the preflight is still disabled,
+  // letting the user slide before funding is checked. Shared by the preflight
+  // gate and the CTA disabled state so they stay symmetric.
+  const isWaitingForFeeReward = isAwaitingFeeReward(
+    feePolicy !== null,
+    isRewardEstimateFetching
+  )
+
   // Pre-flight the funding (stake + convenience fee + network fees) before the
   // user slides, so an unaffordable stake disables the CTA with an inline
-  // message instead of failing with an alert *after* the processing screen
-  // appears.
+  // message instead of failing with an alert after the processing screen. Both
+  // Fast Stake and the advanced delegate flow pre-flight here.
   const { isCheckingFunding, hasInsufficientFunds } = useStakeFundingPreflight({
-    enabled: phase === 'idle' && validator !== undefined && isFeeContextReady,
+    // Fee-less flows still pre-flight (stake + network fees), and run as soon as
+    // a validator is ready. When a fee applies we wait for the reward estimate
+    // so the funding check covers the convenience-fee output once it resolves.
+    enabled:
+      phase === 'idle' &&
+      validator !== undefined &&
+      isFeeContextReady &&
+      !isWaitingForFeeReward,
     stakeAmountNanoAvax: stakeAmount.toSubUnit(),
     additionalOutputs: feeAdditionalOutputs
   })
@@ -798,7 +840,14 @@ const StakeConfirmScreen = ({
           !isFeeContextReady ||
           isIssueDelegationPending ||
           isCheckingFunding ||
-          hasInsufficientFunds
+          hasInsufficientFunds ||
+          // While a fee applies, keep the CTA disabled until the supply query
+          // settles. The reward (and thus the fee output) is served from cache
+          // so `isFeeContextReady` is already true during a background refetch,
+          // but the funding pre-flight is intentionally held until the refetch
+          // finishes — without this the button would briefly enable before the
+          // funding check has even started.
+          isWaitingForFeeReward
         }
         onConfirm={() => handleDelegate()}
       />
@@ -814,11 +863,12 @@ const StakeConfirmScreen = ({
     validator,
     isFeeContextReady,
     isCheckingFunding,
+    isWaitingForFeeReward,
     handleDelegate
   ])
 
   if (phase !== 'idle') {
-    return <StakeStatusScreen variant={phase} />
+    return <StakeStatusScreen variant={phase} isAdvanced={isAdvanced} />
   }
 
   return (

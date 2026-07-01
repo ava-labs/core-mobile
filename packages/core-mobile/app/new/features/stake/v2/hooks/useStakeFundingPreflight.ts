@@ -50,7 +50,15 @@ export const useStakeFundingPreflight = ({
   }, [computeSteps])
 
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) {
+      // No check should be running while the preflight is disabled. Clear the
+      // flag here so a check that was cancelled mid-flight (e.g. `enabled`
+      // flipped off when the reward estimate started a background refetch)
+      // doesn't strand `isCheckingFunding` at `true` and leave the CTA
+      // permanently disabled — its `.finally` is skipped once `cancelled` is set.
+      setIsCheckingFunding(false)
+      return
+    }
     let cancelled = false
     setIsCheckingFunding(true)
     computeStepsRef

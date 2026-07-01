@@ -38,6 +38,7 @@ import IconCompass from '../../assets/icons/compass.svg'
 import IconElectricBolt from '../../assets/icons/electric_bolt.svg'
 import IconBolt from '../../assets/icons/bolt.svg'
 import IconDatabaseSearch from '../../assets/icons/database_search.svg'
+import IconDatabase from '../../assets/icons/database.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutbound from '../../assets/icons/outbound_filled.svg'
@@ -314,6 +315,7 @@ export const Icons = {
     ElectricBolt: IconElectricBolt,
     Bolt: IconBolt,
     DatabaseSearch: IconDatabaseSearch,
+    Database: IconDatabase,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     RedExclamation: IconRedExclamation,

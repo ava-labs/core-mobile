@@ -10,7 +10,12 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
+import {
+  differenceInDays,
+  format,
+  getUnixTime,
+  millisecondsToSeconds
+} from 'date-fns'
 import { Href, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import {
@@ -54,10 +59,17 @@ const DELEGATION_FEE_FOR_ESTIMATION = 2
  * etc.). The `stakeEndTime` query param is appended automatically.
  */
 const StakeDurationScreen = ({
-  nextRoute
+  nextRoute,
+  maxEndDate
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
   nextRoute: string
+  /**
+   * Optional upper bound on the stake end date — the advanced delegate flow
+   * passes the selected validator's end time so the custom date can't outlast
+   * it. Fast Stake omits it.
+   */
+  maxEndDate?: Date
 }): JSX.Element => {
   const { navigate } = useRouter()
 
@@ -177,8 +189,23 @@ const StakeDurationScreen = ({
     customEndDate
   ])
 
+  // Advanced delegate: the stake can't outlast the selected validator. The
+  // custom date picker already caps the max date, but a preset can still
+  // overshoot, so we surface the deadline + block proceeding (mirrors
+  // core-web's delegation end-time schema). Matches web's date format.
+  const nodeEndTimeUnix = useMemo(
+    () => (maxEndDate ? getUnixTime(maxEndDate) : undefined),
+    [maxEndDate]
+  )
+  const exceedsNodeEndTime =
+    nodeEndTimeUnix !== undefined && stakeEndTime > nodeEndTimeUnix
+  const nodeEndTimeLabel = useMemo(
+    () => (maxEndDate ? format(maxEndDate, 'MMM dd, yyyy, hh:mm:ss a') : ''),
+    [maxEndDate]
+  )
+
   const handlePressNext = useCallback(async () => {
-    if (stakeEndTime) {
+    if (stakeEndTime && !exceedsNodeEndTime) {
       // Compose the URL with a query string instead of `navigate({
       // pathname, params })` — Expo Router's typed `navigate({ pathname
       // })` overload requires `pathname` to be a single literal so it
@@ -189,7 +216,7 @@ const StakeDurationScreen = ({
       // plain string provided by the caller).
       navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}` as Href)
     }
-  }, [navigate, stakeEndTime, nextRoute])
+  }, [navigate, stakeEndTime, nextRoute, exceedsNodeEndTime])
 
   const handleDateSelected = (date: Date): void => {
     setCustomEndDate(new UTCDate(date.getTime()))
@@ -315,11 +342,12 @@ const StakeDurationScreen = ({
         accessible={true}
         type="primary"
         size="large"
+        disabled={exceedsNodeEndTime}
         onPress={handlePressNext}>
         Next
       </Button>
     )
-  }, [handlePressNext])
+  }, [handlePressNext, exceedsNodeEndTime])
 
   return (
     <>
@@ -342,6 +370,19 @@ const StakeDurationScreen = ({
             renderSelectionSubtitle={renderSelectionSubtitle}
           />
           <GroupList data={summarySection} />
+          {maxEndDate !== undefined && (
+            <Text
+              variant="caption"
+              sx={{
+                color: exceedsNodeEndTime ? '$textDanger' : '$textSecondary',
+                textAlign: 'center',
+                paddingHorizontal: 8
+              }}>
+              {exceedsNodeEndTime
+                ? `This duration runs past the node's end date (${nodeEndTimeLabel}). Choose a shorter duration or a different node.`
+                : `Your delegation must end before ${nodeEndTimeLabel}. If that's too soon, choose another node.`}
+            </Text>
+          )}
         </View>
       </ScrollScreen>
       <StakeCustomEndDatePicker
@@ -350,6 +391,7 @@ const StakeDurationScreen = ({
         setIsVisible={setIsCustomEndDatePickerVisible}
         onDateSelected={handleDateSelected}
         onCancel={handleCancelSelectingCustomEndDate}
+        maxDate={maxEndDate}
       />
     </>
   )
