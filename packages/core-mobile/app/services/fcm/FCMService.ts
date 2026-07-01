@@ -199,7 +199,7 @@ class FCMService {
       return {
         // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
         url: fcmData.urlV2 ?? fcmData.url ?? '',
-        channelId: EVENT_TO_CH_ID[fcmData.event] as string,
+        channelId: EVENT_TO_CH_ID[fcmData.event] ?? DEFAULT_ANDROID_CHANNEL,
         event: fcmData.event
       }
     } else if (fcmData.type === NotificationTypes.RECURRING_SWAP) {
