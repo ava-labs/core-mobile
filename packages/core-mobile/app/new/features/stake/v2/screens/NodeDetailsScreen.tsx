@@ -104,7 +104,7 @@ const NodeDetailsScreen = (): JSX.Element => {
         networkToken.decimals,
         networkToken.symbol
       ),
-    [node?.weight, networkToken]
+    [node?.weight, networkToken.decimals, networkToken.symbol]
   )
 
   const delegatorWeight = useMemo(
@@ -114,7 +114,7 @@ const NodeDetailsScreen = (): JSX.Element => {
         networkToken.decimals,
         networkToken.symbol
       ),
-    [node?.delegatorWeight, networkToken]
+    [node?.delegatorWeight, networkToken.decimals, networkToken.symbol]
   )
 
   // Available delegation capacity. Mobile derives this from the PVM weights

@@ -148,7 +148,7 @@ const SelectNodeScreen = (): JSX.Element => {
       filtered.push({ validator: v, available })
     }
 
-    return sortDelegateNodes(filtered, sort.selected).map(n => n.validator)
+    return sortDelegateNodes(filtered, sort.selected)
   }, [
     data?.validators,
     searchText,
@@ -162,11 +162,16 @@ const SelectNodeScreen = (): JSX.Element => {
 
   const handlePressNode = useCallback(
     (node: NodeValidator): void => {
-      const nodeIndex = validators.findIndex(v => v.nodeID === node.nodeID)
+      const nodeIndex = validators.findIndex(
+        v => v.validator.nodeID === node.nodeID
+      )
       // Hand the currently-displayed (filtered + sorted) list and the tapped
       // index to the details screen so its header chevrons can page through
       // the same order.
-      setDelegateNodeSelection(validators, nodeIndex < 0 ? 0 : nodeIndex)
+      setDelegateNodeSelection(
+        validators.map(v => v.validator),
+        nodeIndex < 0 ? 0 : nodeIndex
+      )
       navigate({ pathname: '/addStakeV2/delegate/nodeDetails' })
     },
     [validators, navigate]
@@ -177,8 +182,12 @@ const SelectNodeScreen = (): JSX.Element => {
   }, [navigate])
 
   const renderItem = useCallback(
-    ({ item }: { item: NodeValidator }): JSX.Element => (
-      <DelegateNodeItem node={item} onPress={() => handlePressNode(item)} />
+    ({ item }: { item: NodeWithAvailable }): JSX.Element => (
+      <DelegateNodeItem
+        node={item.validator}
+        available={item.available}
+        onPress={() => handlePressNode(item.validator)}
+      />
     ),
     [handlePressNode]
   )
@@ -230,7 +239,21 @@ const SelectNodeScreen = (): JSX.Element => {
       )
     }
 
-    if ((error || validators.length === 0) && searchText.length === 0) {
+    // A non-empty search that matches nothing is a distinct case from the
+    // initial load error / empty result — give it its own copy instead of
+    // falling through to a blank screen.
+    if (validators.length === 0 && searchText.length > 0) {
+      return (
+        <ErrorState
+          sx={{ flex: 1 }}
+          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
+          title="No Matching Nodes"
+          description="No node matches that NodeID. Try a different search."
+        />
+      )
+    }
+
+    if (error || validators.length === 0) {
       return (
         <ErrorState
           sx={{ flex: 1 }}
@@ -248,7 +271,7 @@ const SelectNodeScreen = (): JSX.Element => {
       data={validators}
       renderItem={renderItem}
       isModal
-      keyExtractor={item => item.nodeID}
+      keyExtractor={item => item.validator.nodeID}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
     />

@@ -32,9 +32,9 @@ export type DelegateFilterBounds = {
 
 /**
  * Computes the slider bounds for the Delegate advanced filters. Static ranges
- * (uptime, fee, time) come from the staking config; data-driven ranges
- * (availability, delegator count) are derived from the fetched validators so
- * the sliders span the real spread of nodes.
+ * (uptime, fee, time) come from the staking config; the data-driven
+ * availability range is derived from the fetched validators so the sliders
+ * span the real spread of nodes.
  */
 export const useDelegateFilterBounds = (): DelegateFilterBounds => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)

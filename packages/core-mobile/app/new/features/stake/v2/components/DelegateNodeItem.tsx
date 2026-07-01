@@ -9,10 +9,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { format } from 'date-fns'
 import React, { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { getAvailableDelegationWeight } from 'services/earn/utils'
-import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NodeValidator } from 'types/earn'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { truncateNodeId } from 'utils/Utils'
@@ -32,14 +28,18 @@ const CONTENT_INDENT = ICON_SIZE + 12
 
 export const DelegateNodeItem = ({
   node,
+  available,
   onPress
 }: {
   node: NodeValidator
+  /**
+   * Available delegation capacity, computed once by the list (in
+   * `SelectNodeScreen`) so it isn't recomputed per row.
+   */
+  available: TokenUnit
   onPress: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   // Web's `ValidatorItem` shows the date range and delegator count together on
   // the subtitle line ("Jun 29 - Jun 30 2026 | 0 Delegators"), so we mirror
@@ -50,24 +50,6 @@ export const DelegateNodeItem = ({
     const delegators = countFormatter.format(Number(node.delegatorCount ?? 0))
     return `${start} - ${end} | ${delegators} Delegators`
   }, [node.startTime, node.endTime, node.delegatorCount])
-
-  const available = useMemo(() => {
-    const validatorWeight = new TokenUnit(
-      node.weight ?? 0,
-      networkToken.decimals,
-      networkToken.symbol
-    )
-    const delegatorWeight = new TokenUnit(
-      node.delegatorWeight ?? 0,
-      networkToken.decimals,
-      networkToken.symbol
-    )
-    return getAvailableDelegationWeight({
-      isDeveloperMode,
-      validatorWeight,
-      delegatorWeight
-    })
-  }, [node.weight, node.delegatorWeight, networkToken, isDeveloperMode])
 
   // Mirror core-web's `ValidatorItem` which renders only the first
   // (highest-priority) tag: Recommended → Popular → Reliable → New.

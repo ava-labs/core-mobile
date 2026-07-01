@@ -3,7 +3,7 @@ import AdvancedFiltersScreen from 'features/stake/v2/screens/AdvancedFiltersScre
 
 /**
  * Advanced filters for the Delegate validator picker (uptime, fee, available
- * capacity, delegator count, time remaining). Presented as a modal over the
+ * capacity, time remaining). Presented as a modal over the
  * select-node screen; selections are applied via the delegate filter store.
  */
 export default function DelegateAdvancedFiltersRoute(): JSX.Element {
