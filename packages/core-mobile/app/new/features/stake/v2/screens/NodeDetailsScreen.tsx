@@ -64,7 +64,16 @@ const NodeDetailsScreen = (): JSX.Element => {
 
   const [gridWidth, setGridWidth] = useState(0)
   const onGridLayout = useCallback((e: LayoutChangeEvent): void => {
-    setGridWidth(e.nativeEvent.layout.width)
+    const width = e.nativeEvent.layout.width
+    // Only commit a genuinely new width. The stat cells are sized from
+    // `gridWidth`, so re-committing it on every layout pass (notably the
+    // 0↔real re-measures react-native-screens emits while this screen sits
+    // backgrounded behind the amount step) re-renders → resizes the cells →
+    // re-lays out the row → fires onLayout again, spinning a layout↔setState
+    // loop that pegs the UI thread. Ignoring zero/unchanged widths breaks it.
+    setGridWidth(prev =>
+      width > 0 && Math.abs(prev - width) >= 1 ? width : prev
+    )
   }, [])
   const cellWidth =
     gridWidth > 0
