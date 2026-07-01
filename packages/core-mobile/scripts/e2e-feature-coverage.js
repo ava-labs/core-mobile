@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+/* eslint-disable max-params */
 /* eslint-disable no-console */
 /**
  * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e-appium` specs
  * with top-level folders under `packages/core-mobile/app/new/features/` only
  * (not legacy `app/`, not other packages). Modal routes are separate. Deprecated
- * Detox tests in e2e/ are excluded. This is not line coverage.
  *
  * For each feature folder, `FEATURE_SIGNALS` maps spec paths (and optional regex)
  * to that feature. Non-test `.tsx` files are scanned for `testID={...}`; a
@@ -539,7 +539,7 @@ function featureCoverageMark(f, stats) {
   return spec || tid ? 'O' : 'X'
 }
 
-/** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
+/** Only Appium specs */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
 
 /** `required-scenarios.config.json` walletMode values with detection logic in this script. */
@@ -2377,7 +2377,7 @@ function printTextReportHeader(ctx) {
   console.log('Appium e2e ↔ feature coverage (heuristic, not line coverage)')
   console.log('Package:', pkgRoot)
   console.log(`Features: app/new/features/<folder> → ${featuresDir}`)
-  console.log('Specs:   e2e-appium/ only (e2e/ Detox excluded)')
+  console.log('Specs:   e2e-appium/ only')
   console.log(
     'testIDs: all feature .tsx (excl. *.test.tsx); matched in *.spec.ts only (not pages/locators)'
   )
