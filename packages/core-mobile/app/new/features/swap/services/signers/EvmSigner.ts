@@ -100,24 +100,6 @@ const isCrossChainQuote = (quote: Quote): boolean =>
   quote.sourceChain.chainId.toLowerCase() !==
   quote.targetChain.chainId.toLowerCase()
 
-const isQuickSwapsManualReviewError = (err: unknown): boolean => {
-  if (!err || typeof err !== 'object') return false
-  const data = (err as { data?: unknown }).data
-  if (!data || typeof data !== 'object') return false
-  return (
-    (data as { quickSwapsManualReview?: unknown }).quickSwapsManualReview ===
-    true
-  )
-}
-
-const readManualReviewReason = (err: unknown): string | undefined => {
-  if (!err || typeof err !== 'object') return undefined
-  const data = (err as { data?: unknown }).data
-  if (!data || typeof data !== 'object') return undefined
-  const reason = (data as { reason?: unknown }).reason
-  return typeof reason === 'string' && reason.length > 0 ? reason : undefined
-}
-
 export const getChainIdForBatch = (
   transactions: readonly EvmTransactionRequest[]
 ): number => {
@@ -495,8 +477,8 @@ export function createEvmSigner(
       // The `eth_sendTransactionBatch` handler rejects batches with
       // fewer than 2 txs (the EVM module's Zod schema requires
       // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would
-      // otherwise hit invalidParams without the quickSwapsManualReview
-      // marker and the swap would fail. Fall back to per-tx instead.
+      // otherwise hit invalidParams and the swap would fail — fall back
+      // to per-tx instead.
       if (
         !isQuickSwapsActive ||
         !allTxsHaveFees ||
@@ -506,23 +488,20 @@ export function createEvmSigner(
         return signEachManually([...transactions], stepDetails)
       }
 
+      // A flagged Quick-Swaps batch is no longer handled here: the
+      // ApprovalController's `evaluateBatchApproval` returns `{kind:'manual'}`
+      // for a batch whose validator requires manual approval, opening the
+      // BatchApprovalScreen — it does not throw the old
+      // `quickSwapsManualReview` marker back to us. So there is no per-tx
+      // fallback to run; real broadcast errors just propagate (the SDK
+      // handles them). We still log for telemetry parity with the other
+      // signer paths before rethrowing.
       try {
         return await dispatchAsBatch(request, transactions, {
           stepDetails,
           maxBuy
         })
       } catch (err) {
-        if (isQuickSwapsManualReviewError(err)) {
-          Logger.info(
-            '[fusion::evmSigner.signBatch] bypass requires manual review; falling back to per-tx approval',
-            (err as { data?: unknown }).data
-          )
-          return signEachManually(
-            [...transactions],
-            stepDetails,
-            readManualReviewReason(err)
-          )
-        }
         Logger.error('[fusion::evmSigner.signBatch]', err)
         throw err
       }
