@@ -14,6 +14,7 @@ import {
   stuckRouteKey,
   useStuckFundsRecovery
 } from '../hooks/useStuckFundsRecovery'
+import { useIsFusionServiceReady } from '../hooks/useZustandStore'
 import { routeLabel } from '../utils/stuckFundsRoutes'
 
 // Atomic AVAX amounts are denominated in nAVAX (9 decimals).
@@ -46,9 +47,12 @@ export const StuckFundsBanner = ({
   const { theme } = useTheme()
   const { routes, totalNAvax, hasAnyAtomics } = useStuckAtomicFunds()
   const { recover, recoveringKey } = useStuckFundsRecovery()
+  const [isFusionServiceReady] = useIsFusionServiceReady()
   const [expanded, setExpanded] = useState(false)
 
-  if (!hasAnyAtomics) {
+  // Hide until Fusion is ready so Recover is never shown in an unusable state
+  // (recovery builds a Fusion quote + transfer).
+  if (!hasAnyAtomics || !isFusionServiceReady) {
     return null
   }
 

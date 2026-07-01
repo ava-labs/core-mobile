@@ -18,7 +18,6 @@ import { subscribeToFirstQuote } from '../utils/subscribeToFirstQuote'
 import type { Quote } from '../types'
 import type { QuoterParams } from '../services/types'
 import { useStuckAtomicFunds } from './useStuckAtomicFunds'
-import { useIsFusionServiceReady } from './useZustandStore'
 
 type GetNetwork = (chainId: number) => NetworkWithCaip2ChainId | undefined
 
@@ -95,26 +94,24 @@ export const useStuckFundsRecovery = (): {
   const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
   const { getNetwork } = useNetworks()
   const { invalidate } = useStuckAtomicFunds()
-  const [isFusionServiceReady] = useIsFusionServiceReady()
   const [recoveringKey, setRecoveringKey] = useState<string | null>(null)
 
   const recover = useCallback(
     async (route: StuckRoute): Promise<void> => {
       if (recoveringKey) return
 
-      const params = resolveRecoveryQuoterParams({
-        route,
-        account,
-        isDeveloperMode,
-        getNetwork
-      })
-      if (!isFusionServiceReady || !params) {
-        showSnackbar('Recovery is unavailable right now')
-        return
-      }
-
+      // The banner only renders once Fusion is ready, so recovery is reachable
+      // only in a usable state; any resolution failure surfaces via the catch.
       setRecoveringKey(stuckRouteKey(route))
       try {
+        const params = resolveRecoveryQuoterParams({
+          route,
+          account,
+          isDeveloperMode,
+          getNetwork
+        })
+        if (!params) throw new Error('Could not resolve recovery route')
+
         // amountIn=0 yields an import-only recovery quote; take the first one.
         const quote = await new Promise<Quote>((resolve, reject) => {
           const cleanup = subscribeToFirstQuote(params, resolve, () =>
@@ -149,7 +146,6 @@ export const useStuckFundsRecovery = (): {
       transferGasMarginBps,
       getNetwork,
       invalidate,
-      isFusionServiceReady,
       recoveringKey
     ]
   )
