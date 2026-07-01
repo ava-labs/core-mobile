@@ -34,8 +34,8 @@ export async function subscribeForRecurringSwap(
       orderId
     })
   ).catch(error => {
-    Logger.error(`[subscribeForRecurringSwap.ts][subscribe]${error}`)
-    throw new Error(error)
+    Logger.error('[subscribeForRecurringSwap.ts][subscribe]', error)
+    throw error instanceof Error ? error : new Error(String(error))
   })
 
   if (!response.ok) {
