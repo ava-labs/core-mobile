@@ -1,0 +1,137 @@
+import React, { useState } from 'react'
+import { TouchableOpacity } from 'react-native'
+import {
+  Button,
+  Icons,
+  Separator,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-alpine'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useStuckAtomicFunds } from '../hooks/useStuckAtomicFunds'
+import {
+  stuckRouteKey,
+  useStuckFundsRecovery
+} from '../hooks/useStuckFundsRecovery'
+import { routeLabel } from '../utils/stuckFundsRoutes'
+
+// Atomic AVAX amounts are denominated in nAVAX (9 decimals).
+const NAVAX_DECIMALS = 9
+
+// Title / amount rows: Inter Regular 16 / 22 per Figma. No k2-alpine variant
+// encodes 16/22 exactly, so we anchor on `body1` (Inter Regular, primary color)
+// for the font family/weight and override only the two differing dimensions.
+const TITLE_TEXT_SX = { fontSize: 16, lineHeight: 22 } as const
+
+const formatAvax = (amountNAvax: bigint): string =>
+  `${new TokenUnit(amountNAvax, NAVAX_DECIMALS, 'AVAX').toDisplay()} AVAX`
+
+/**
+ * Shared banner surfacing AVAX stranded in atomic memory after an incomplete
+ * cross-chain transfer. Collapsed by default; expands to one row per stranded
+ * route, each with a Recover action that builds an import-only recovery quote
+ * and broadcasts it directly (via useStuckFundsRecovery), surfacing the standard
+ * CCT approval — no swap-screen detour, matching core-web's Recover UX.
+ *
+ * Renders nothing (and reserves no space) when there are no stranded funds, so
+ * callers should NOT wrap it in a spacing container — pass margins via `sx`
+ * instead, which apply only when the banner actually renders.
+ */
+export const StuckFundsBanner = ({
+  sx
+}: {
+  sx?: React.ComponentProps<typeof View>['sx']
+} = {}): JSX.Element | null => {
+  const { theme } = useTheme()
+  const { routes, totalNAvax, hasAnyAtomics } = useStuckAtomicFunds()
+  const { recover, recoveringKey } = useStuckFundsRecovery()
+  const [expanded, setExpanded] = useState(false)
+
+  if (!hasAnyAtomics) {
+    return null
+  }
+
+  const plural = routes.length > 1 ? 's' : ''
+
+  return (
+    <View
+      testID="stuckFundsBanner"
+      sx={{
+        backgroundColor: '$surfaceSecondary',
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        ...sx
+      }}>
+      <TouchableOpacity
+        testID="stuckFundsBanner_toggle"
+        accessibilityRole="button"
+        onPress={() => setExpanded(prev => !prev)}>
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 8,
+            paddingVertical: 14
+          }}>
+          <View sx={{ flex: 1 }}>
+            <Text variant="body1" sx={TITLE_TEXT_SX}>
+              Core has detected stuck funds
+            </Text>
+            <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+              {`You have ${formatAvax(
+                totalNAvax
+              )} stuck in atomic memory from incomplete cross-chain transfer${plural}`}
+            </Text>
+          </View>
+          <Icons.Navigation.ExpandMore
+            color={theme.colors.$textSecondary}
+            style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }}
+          />
+        </View>
+      </TouchableOpacity>
+
+      {expanded && (
+        <View>
+          {routes.map(route => {
+            const key = stuckRouteKey(route)
+            const isRecovering = recoveringKey === key
+            return (
+              <View key={key}>
+                {/* Flush divider above every row, including the first (separates
+                    it from the header), per Figma's menu-row borders. */}
+                <Separator />
+                <View
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 14,
+                    gap: 8
+                  }}>
+                  <View sx={{ flex: 1 }}>
+                    <Text variant="body1" sx={TITLE_TEXT_SX}>
+                      {formatAvax(route.amountNAvax)}
+                    </Text>
+                    <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+                      {routeLabel(route.source, route.dest)}
+                    </Text>
+                  </View>
+                  <Button
+                    testID={`stuckFundsBanner_recover_${route.source}_${route.dest}`}
+                    type="secondary"
+                    size="small"
+                    disabled={recoveringKey !== null}
+                    onPress={() => recover(route)}>
+                    {isRecovering ? 'Recovering' : 'Recover'}
+                  </Button>
+                </View>
+              </View>
+            )
+          })}
+        </View>
+      )}
+    </View>
+  )
+}

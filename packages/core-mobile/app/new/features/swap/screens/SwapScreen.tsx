@@ -1,7 +1,6 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from 'utils/Utils'
-import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -80,6 +79,8 @@ import {
 } from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
+import { computeValidationError } from '../utils/computeValidationError'
+import { StuckFundsBanner } from '../components/StuckFundsBanner'
 import {
   isAvalancheCctRoute,
   isCctOnlySource
@@ -176,51 +177,6 @@ function buildSwapDetailItems({
   }
 
   return items
-}
-
-/**
- * Computes the current swap validation error (or null if inputs are valid).
- * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
- */
-function computeValidationError({
-  fromTokenValue,
-  debouncedFromTokenValue,
-  minimumTransferAmount,
-  fromToken,
-  feeValidationError
-}: {
-  fromTokenValue: bigint | undefined
-  debouncedFromTokenValue: bigint | undefined
-  minimumTransferAmount: bigint | null | undefined
-  fromToken: LocalTokenWithBalance | undefined
-  feeValidationError: FusionQuoteError | null | undefined
-}): FusionQuoteError | null {
-  if (fromTokenValue === undefined) return null
-  if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
-    return fusionErrors.enterAmount()
-  }
-  if (
-    minimumTransferAmount != null &&
-    debouncedFromTokenValue !== undefined &&
-    debouncedFromTokenValue > 0n &&
-    debouncedFromTokenValue < minimumTransferAmount &&
-    fromToken &&
-    'decimals' in fromToken
-  ) {
-    const formattedMin = `${formatTokenAmount(
-      bigintToBig(minimumTransferAmount, fromToken.decimals),
-      fromToken.decimals
-    )} ${fromToken.symbol}`
-    return fusionErrors.belowMinimumAmount(formattedMin)
-  }
-  if (
-    debouncedFromTokenValue !== undefined &&
-    fromToken !== undefined &&
-    debouncedFromTokenValue > fromToken.balance
-  ) {
-    return fusionErrors.exceedsBalance()
-  }
-  return feeValidationError ?? null
 }
 
 /**
@@ -1450,13 +1406,15 @@ export const SwapScreen = (): JSX.Element => {
       isModal
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
       {/* Schedule-management entry point: surfaces above the new-swap flow so
           users with existing schedules see + manage them before entering a
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
-        <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
-        </View>
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
       )}
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
