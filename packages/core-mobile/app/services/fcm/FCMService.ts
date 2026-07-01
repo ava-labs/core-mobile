@@ -155,7 +155,7 @@ class FCMService {
     const fallbackChannelId =
       fcm.data.type === NotificationTypes.RECURRING_SWAP
         ? DEFAULT_ANDROID_CHANNEL
-        : EVENT_TO_CH_ID[fcm.data.event]
+        : EVENT_TO_CH_ID[fcm.data.event] ?? DEFAULT_ANDROID_CHANNEL
     return {
       channelId: fcm.notification.android?.channelId ?? fallbackChannelId,
       title: fcm.notification.title,
