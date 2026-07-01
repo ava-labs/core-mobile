@@ -17,7 +17,8 @@ const READY: RecurringSubmitGateParams = {
   hasFromTokenValue: true,
   hasRecurringQuote: true,
   recurringSubmitting: false,
-  validationError: null
+  validationError: null,
+  isRecurringMinimumReady: true
 }
 
 describe('hasBlockingValidationError', () => {
@@ -74,6 +75,24 @@ describe('isRecurringReady', () => {
   it('is false while a submit is already in flight', () => {
     expect(isRecurringReady({ ...READY, recurringSubmitting: true })).toBe(
       false
+    )
+  })
+
+  // Race guard: the recurring quote can resolve before the Markr per-order
+  // minimum query settles. While the minimum is unknown the below-minimum
+  // validation check is skipped, so readiness must stay false until it settles
+  // — otherwise a quick tap could submit a sub-minimum per-order amount.
+  it('is false while the Markr minimum query has not settled', () => {
+    expect(isRecurringReady({ ...READY, isRecurringMinimumReady: false })).toBe(
+      false
+    )
+  })
+
+  it('is ready once the minimum query has settled (even with no floor)', () => {
+    // A settled "no minimum" (null) still counts as ready — the flag only
+    // tracks that the query is no longer in flight.
+    expect(isRecurringReady({ ...READY, isRecurringMinimumReady: true })).toBe(
+      true
     )
   })
 })

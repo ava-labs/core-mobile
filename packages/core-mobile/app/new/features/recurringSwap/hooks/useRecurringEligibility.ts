@@ -12,8 +12,9 @@ import { resolveRecurringTokenAddress } from '../types'
  * Recurring-swap eligibility for a candidate `(fromToken, toToken, owner)` triple.
  *
  * The SDK's `markr.recurring.checkEligibility(...)` is the source of truth — it
- * encodes Markr's cross-chain / unsupported-token / amount-below-minimum rules
- * against the cached `/info/chains` payload. This hook is a thin React adapter:
+ * encodes Markr's cross-chain / unsupported-token / native-to-wrapped-native
+ * rules against the cached `/info/chains` payload. This hook is a thin React
+ * adapter:
  *
  * - returns `{ eligible: false, reason: 'unsupported-source-chain' }` while
  *   `FusionService` is initialising (caches not loaded yet); re-renders when
@@ -21,15 +22,14 @@ import { resolveRecurringTokenAddress } from '../types'
  * - projects mobile's `LocalTokenWithBalance` shape onto the SDK's `Address`
  *   inputs (the SDK's branded type — cast at the boundary)
  *
- * @param amount — per-order input amount in `tokenIn`'s smallest unit. When set,
- *   the SDK additionally surfaces the `amount-below-minimum` reason. UI passes
- *   it from the live input box; pass `undefined` to skip the amount check.
+ * Markr no longer publishes a per-chain supported-token list, so eligibility is
+ * a pure chain + same-chain + native/wrapped check — every ERC-20 (and the
+ * native asset) is recurring-eligible. There is no per-order minimum to surface.
  */
 export function useRecurringEligibility(
   fromToken: LocalTokenWithBalance | undefined,
   toToken: LocalTokenWithBalance | undefined,
-  ownerAddress: string | undefined,
-  amount?: bigint
+  ownerAddress: string | undefined
 ): RecurringEligibility {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
@@ -89,8 +89,7 @@ export function useRecurringEligibility(
         // boundary, the SDK validates the address against its chain-info map.
         fromTokenAddress: fromTokenAddress as Address,
         toTokenAddress: toTokenAddress as Address,
-        ownerAddress: ownerAddress as Address,
-        amount
+        ownerAddress: ownerAddress as Address
       })
     } catch (err) {
       Logger.info(
@@ -109,7 +108,6 @@ export function useRecurringEligibility(
     fromToken?.localId,
     toToken?.networkChainId,
     toToken?.localId,
-    ownerAddress,
-    amount
+    ownerAddress
   ])
 }
