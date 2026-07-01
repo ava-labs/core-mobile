@@ -61,7 +61,8 @@ import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
   selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
-  selectMarkrSwapMaxRetries
+  selectMarkrSwapMaxRetries,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
 import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
 import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
@@ -83,6 +84,7 @@ import { computeValidationError } from '../utils/computeValidationError'
 import { StuckFundsBanner } from '../components/StuckFundsBanner'
 import {
   isAvalancheCctRoute,
+  isAvalancheCctZeroAmountRoute,
   isCctOnlySource
 } from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
@@ -366,6 +368,7 @@ export const SwapScreen = (): JSX.Element => {
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const recurring = useRecurringSwapContext()
   const evmAddress = activeAccount?.addressC
   const eligibility = useRecurringEligibility(
@@ -554,6 +557,18 @@ export const SwapScreen = (): JSX.Element => {
     updateMissingTokenPrice(toToken)
   }, [toToken, updateMissingTokenPrice])
 
+  // CCT routes accept 0 (the SDK emits an import-only recovery quote), so the
+  // "enter an amount" gate is relaxed and the submit button reads "Recover".
+  const allowZeroAmount = isAvalancheCctZeroAmountRoute({
+    isAvalancheCctEnabled,
+    fromToken,
+    toToken
+  })
+
+  // Recovery flow = a CCT route with 0 explicitly entered (empty input is not
+  // treated as recovery, so the button stays "Next" until the user types 0).
+  const isCctRecovery = allowZeroAmount && debouncedFromTokenValue === 0n
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -563,7 +578,8 @@ export const SwapScreen = (): JSX.Element => {
         debouncedFromTokenValue,
         minimumTransferAmount: effectiveMinimumTransferAmount,
         fromToken,
-        feeValidationError
+        feeValidationError,
+        allowZeroAmount
       })
     )
   }, [
@@ -571,11 +587,15 @@ export const SwapScreen = (): JSX.Element => {
     debouncedFromTokenValue,
     effectiveMinimumTransferAmount,
     fromToken,
-    feeValidationError
+    feeValidationError,
+    allowZeroAmount
   ])
 
   const applyQuote = useCallback(() => {
-    if (!debouncedFromTokenValue || !activeQuote) {
+    // Show the received amount whenever a quote is in hand. A CCT recovery
+    // (0 entered) has amountIn=0, so keep the amount visible; an empty or
+    // no-quote input clears it.
+    if (!activeQuote || (!debouncedFromTokenValue && !isCctRecovery)) {
       setToTokenValue(undefined)
       return
     }
@@ -587,7 +607,7 @@ export const SwapScreen = (): JSX.Element => {
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [activeQuote, debouncedFromTokenValue])
+  }, [activeQuote, debouncedFromTokenValue, isCctRecovery])
 
   const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -1302,7 +1322,13 @@ export const SwapScreen = (): JSX.Element => {
           size="large"
           onPress={handleNext}
           disabled={!canSubmit || isBusy}>
-          {isBusy ? <ActivityIndicator size="small" /> : 'Next'}
+          {isBusy ? (
+            <ActivityIndicator size="small" />
+          ) : isCctRecovery ? (
+            'Recover'
+          ) : (
+            'Next'
+          )}
         </Button>
       </>
     )
@@ -1312,7 +1338,8 @@ export const SwapScreen = (): JSX.Element => {
     isSwapping,
     recurringSubmitting,
     isLombard,
-    renderLombardLogo
+    renderLombardLogo,
+    isCctRecovery
   ])
 
   const renderCctTwoTxNotice = useCallback(() => {

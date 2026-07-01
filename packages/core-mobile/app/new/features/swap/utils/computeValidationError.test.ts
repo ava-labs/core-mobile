@@ -31,6 +31,19 @@ describe('computeValidationError', () => {
     expect(error?.message).toBe('Please enter an amount')
   })
 
+  it('allows a 0 amount when allowZeroAmount is set (CCT recovery)', () => {
+    expect(
+      computeValidationError({
+        fromTokenValue: 0n,
+        debouncedFromTokenValue: 0n,
+        minimumTransferAmount: null,
+        fromToken: avax,
+        feeValidationError: null,
+        allowZeroAmount: true
+      })
+    ).toBeNull()
+  })
+
   it('flags exceeding balance', () => {
     const error = computeValidationError({
       fromTokenValue: 99_000_000_000n,

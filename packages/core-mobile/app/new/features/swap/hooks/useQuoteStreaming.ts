@@ -25,6 +25,9 @@ interface UseQuoteStreamingParams {
   toAddress: string | undefined
   slippageBps: number | undefined
   onNoQuotesError?: (retry: () => void) => void
+  // When true, a 0 amount is a valid request: an AVALANCHE_CCT route where the
+  // SDK emits an import-only recovery quote for amountIn=0.
+  allowZeroAmount?: boolean
 }
 
 interface UseQuoteStreamingResult {
@@ -48,7 +51,8 @@ export function useQuoteStreaming(
     fromAddress,
     toAddress,
     slippageBps,
-    onNoQuotesError
+    onNoQuotesError,
+    allowZeroAmount = false
   } = params
 
   // Subscribe to FusionService ready state
@@ -70,16 +74,17 @@ export function useQuoteStreaming(
       return { quoter: null, error: null }
     }
 
-    // Validate all required parameters
+    // Empty input never quotes. A CCT route additionally allows an explicit 0
+    // (import-only recovery quote); every other route needs a positive amount.
     if (
       !fromToken ||
       !fromNetwork ||
       !toToken ||
       !toNetwork ||
-      !fromAmount ||
-      fromAmount <= 0n ||
       !fromAddress ||
-      !toAddress
+      !toAddress ||
+      fromAmount === undefined ||
+      (fromAmount <= 0n && !allowZeroAmount)
     ) {
       return { quoter: null, error: null }
     }
@@ -128,6 +133,7 @@ export function useQuoteStreaming(
     fromAddress,
     toAddress,
     slippageBps,
+    allowZeroAmount,
     retryCount
   ])
 
