@@ -17,6 +17,7 @@ import {
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { FusionTransfer } from 'features/swap/types'
@@ -446,6 +447,11 @@ export const NotificationsScreen = (): JSX.Element => {
       navigationTitle={TITLE}
       renderFooter={renderFooter}
       renderHeader={renderHeader}>
+      {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+          reserves no space) when none. */}
+      <StuckFundsBanner
+        sx={{ marginHorizontal: 16, marginTop: 15, marginBottom: 10 }}
+      />
       {renderContent()}
     </ScrollScreen>
   )
