@@ -18,11 +18,14 @@ import React, {
   useState
 } from 'react'
 import {
+  Keyboard,
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  Pressable,
+  ScrollView,
   ScrollViewProps,
   StyleSheet,
   View,
@@ -38,7 +41,8 @@ import Animated, {
   FadeIn,
   interpolate,
   useAnimatedStyle,
-  useSharedValue
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
@@ -89,6 +93,25 @@ export interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /**
+   * Android only: render the title/search header OUTSIDE the scroll list (a
+   * fixed top region) and mount the FlashList only once `data` is non-empty;
+   * the empty state renders below the fixed header.
+   *
+   * On iOS this prop is ignored — the default in-list header is used, which
+   * works as expected there.
+   *
+   * Use for Android form-sheet search screens that start empty:
+   * react-native-screens wires the form sheet's swipe-to-dismiss (and nested
+   * scroll) to the first scrollable child found when the sheet lays out, so a
+   * list that's empty at mount is never wired and neither scroll nor
+   * swipe-to-dismiss work on release builds. Mounting the list only with data
+   * present fixes the wiring, and keeping the search header outside the list
+   * means it never remounts when results appear (typing doesn't drop focus).
+   *
+   * Defaults to false (CP-14376).
+   */
+  headerOutsideList?: boolean
   /** Optional background color */
   backgroundColor?: string
   /** Whether to show the navigation header title */
@@ -126,7 +149,7 @@ export type ListScreenRef<T> = {
   scrollViewRef?: RefObject<FlashListRef<T>>
 }
 
-export const ListScreenV2 = <T,>({
+const DefaultListScreen = <T,>({
   data,
   title,
   subtitle,
@@ -733,3 +756,152 @@ const RenderScrollComponent = React.forwardRef<
     nestedScrollEnabled={Platform.OS === 'android'}
   />
 ))
+
+// Scroll component for the Android `headerOutsideList` mode. A plain ScrollView
+// (not keyboard-aware: the input lives in the fixed header above the list) with
+// `nestedScrollEnabled` so the list participates in the Android form sheet's
+// nested scroll — a vertical swipe scrolls the list and, at the top, hands back
+// to the sheet's drag-to-dismiss instead of being swallowed (CP-14376).
+const PlainScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
+  (props, ref) => (
+    <ScrollView
+      {...props}
+      ref={ref}
+      nestedScrollEnabled={Platform.OS === 'android'}
+    />
+  )
+)
+PlainScrollComponent.displayName = 'ListScreenV2PlainScrollComponent'
+
+// `headerOutsideList` variant (Android): the title/search header is a fixed top
+// region and the FlashList mounts only once there's data. Keeps the search
+// header out of the scroll list (so it never remounts / drops focus) and lets
+// the Android form sheet wire swipe-to-dismiss to a non-empty list (CP-14376).
+const OuterHeaderListScreen = <T,>({
+  data,
+  title,
+  isModal,
+  backgroundColor,
+  renderEmpty,
+  renderHeader,
+  renderListFooter,
+  flatListRef,
+  ...props
+}: ListScreenProps<T>): JSX.Element => {
+  const insets = useSafeAreaInsets()
+  const headerHeight = useEffectiveHeaderHeight()
+  const keyboard = useKeyboardState()
+  const scrollViewRef = useRef<FlashListRef<T>>(null)
+
+  const {
+    renderItem,
+    keyExtractor,
+    getItemType,
+    contentContainerStyle: _contentContainerStyle,
+    ...restProps
+  } = props
+
+  // Reserve space for the keyboard so the last results aren't hidden behind it.
+  const keyboardPadding = keyboard.isVisible ? keyboard.height : 0
+
+  useImperativeHandle(
+    flatListRef,
+    () => ({
+      scrollViewRef: scrollViewRef as RefObject<FlashListRef<T>>
+    }),
+    [scrollViewRef]
+  )
+
+  const isAndroidModal = Platform.OS === 'android' && isModal
+
+  // Keep the centered empty state above the keyboard (the search input is
+  // autofocused, so the keyboard is usually open). Animate `paddingBottom`
+  // rather than a translate: the container's outer bounds stay fixed below the
+  // fixed header, so it never overlaps/covers the header's Cancel/clear
+  // controls — while the centered content still eases up above the keyboard
+  // (withTiming, like the CollapsibleTabs ContentWrapper).
+  const emptyAnimatedStyle = useAnimatedStyle(() => ({
+    paddingBottom: withTiming(keyboard.isVisible ? keyboard.height : 0, {
+      duration: 250
+    })
+  }))
+
+  return (
+    <View
+      style={{ flex: 1, backgroundColor: backgroundColor ?? 'transparent' }}>
+      <View
+        style={{
+          paddingTop: isAndroidModal
+            ? insets.top + 18
+            : isModal
+            ? 28
+            : headerHeight + 16,
+          paddingHorizontal: 16,
+          paddingBottom: 12
+        }}>
+        {title ? (
+          <Text
+            variant="heading2"
+            style={{ marginBottom: renderHeader ? 12 : 0 }}>
+            {title}
+          </Text>
+        ) : null}
+        {renderHeader?.()}
+      </View>
+      {data.length === 0 ? (
+        <Animated.View style={[{ flex: 1 }, emptyAnimatedStyle]}>
+          <Pressable
+            style={{ flex: 1 }}
+            // Tapping the empty/zero-state area dismisses the keyboard (there's
+            // no scroll view here to provide keyboardDismissMode).
+            onPress={() => Keyboard.dismiss()}>
+            {renderEmpty?.()}
+          </Pressable>
+        </Animated.View>
+      ) : (
+        <FlashList
+          {...restProps}
+          ref={scrollViewRef}
+          renderScrollComponent={PlainScrollComponent}
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          getItemType={getItemType}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{
+            paddingBottom:
+              (keyboard.isVisible ? keyboardPadding : insets.bottom) + 16
+          }}
+          ListFooterComponent={renderListFooter ?? undefined}
+        />
+      )}
+      {isModal && (
+        <View
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
+            left: 0,
+            right: 0,
+            zIndex: 1000
+          }}>
+          <Grabber />
+        </View>
+      )}
+    </View>
+  )
+}
+
+// `headerOutsideList` only changes layout on Android, where the form sheet
+// scroll/dismiss wiring needs a non-empty list at mount. iOS uses the default
+// in-list header (form sheets work there as-is).
+export const ListScreenV2 = <T,>({
+  headerOutsideList = false,
+  ...props
+}: ListScreenProps<T>): JSX.Element =>
+  headerOutsideList && Platform.OS === 'android' ? (
+    <OuterHeaderListScreen {...props} />
+  ) : (
+    <DefaultListScreen {...props} />
+  )
