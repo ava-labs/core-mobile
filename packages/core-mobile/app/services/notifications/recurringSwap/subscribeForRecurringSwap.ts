@@ -1,4 +1,5 @@
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 
 // Backend (core-notification-sender): see Sarp's PR
@@ -32,7 +33,10 @@ export async function subscribeForRecurringSwap(
       deviceArn,
       orderId
     })
-  )
+  ).catch(error => {
+    Logger.error(`[subscribeForRecurringSwap.ts][subscribe]${error}`)
+    throw new Error(error)
+  })
 
   if (!response.ok) {
     throw new Error(`${response.status}:${response.statusText}`)
