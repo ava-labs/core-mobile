@@ -7,7 +7,10 @@ import { useCallback, useState } from 'react'
 // (revert to the default limit).
 export const useSpendLimitOverrides = (): {
   overrides: Record<number, string>
-  setOverride: (index: number, encodedApproveCalldata: string | undefined) => void
+  setOverride: (
+    index: number,
+    encodedApproveCalldata: string | undefined
+  ) => void
 } => {
   const [overrides, setOverrides] = useState<Record<number, string>>({})
 
