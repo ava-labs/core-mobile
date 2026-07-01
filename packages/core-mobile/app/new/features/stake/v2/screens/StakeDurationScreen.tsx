@@ -379,8 +379,8 @@ const StakeDurationScreen = ({
                 paddingHorizontal: 8
               }}>
               {exceedsNodeEndTime
-                ? `Duration exceeds Node's end time [${nodeEndTimeLabel}]. Pick a lesser duration or a different node.`
-                : `Delegation must end before ${nodeEndTimeLabel}. If this is insufficient, please select another node.`}
+                ? `This duration runs past the node's end date (${nodeEndTimeLabel}). Choose a shorter duration or a different node.`
+                : `Your delegation must end before ${nodeEndTimeLabel}. If that's too soon, choose another node.`}
             </Text>
           )}
         </View>
