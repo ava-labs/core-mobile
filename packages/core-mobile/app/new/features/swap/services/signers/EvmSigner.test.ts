@@ -1,7 +1,7 @@
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { ServiceType, TokenType } from '@avalabs/fusion-sdk'
 import { RequestContext } from 'store/rpc/types'
-import { createEvmSigner } from './EvmSigner'
+import { createEvmSigner, getChainIdForBatch } from './EvmSigner'
 
 jest.mock('utils/Logger', () => ({
   __esModule: true,
@@ -73,6 +73,26 @@ const makeTx = (overrides: Record<string, unknown> = {}): never =>
     maxPriorityFeePerGas: 1_500_000_000n,
     ...overrides
   } as never)
+
+describe('getChainIdForBatch', () => {
+  it('returns the shared chainId when all txs match', () => {
+    expect(
+      getChainIdForBatch([{ chainId: 43114 }, { chainId: 43114 }] as never)
+    ).toBe(43114)
+  })
+
+  it('throws when txs span multiple chainIds', () => {
+    expect(() =>
+      getChainIdForBatch([{ chainId: 43114 }, { chainId: 1 }] as never)
+    ).toThrow('MultipleChainIdsInBatch')
+  })
+
+  it('throws when the batch is empty', () => {
+    expect(() => getChainIdForBatch([] as never)).toThrow(
+      'signBatch called with empty transactions array'
+    )
+  })
+})
 
 describe('createEvmSigner.signBatch', () => {
   it('dispatches eth_sendTransactionBatch when Quick Swaps is active', async () => {
