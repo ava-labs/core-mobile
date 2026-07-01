@@ -1,6 +1,5 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
@@ -51,6 +50,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { formatTokenAmount } from 'utils/Utils'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
@@ -85,6 +85,7 @@ import {
   isUserRejectionError
 } from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
+import { StuckFundsBanner } from '../components/StuckFundsBanner'
 import {
   isAvalancheCctRoute,
   isCctOnlySource
@@ -187,6 +188,9 @@ function buildSwapDetailItems({
 /**
  * Computes the current swap validation error (or null if inputs are valid).
  * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ *
+ * `allowZeroAmount` relaxes the "enter an amount" gate for AVALANCHE_CCT routes,
+ * where 0 is a valid input that triggers the SDK's import-only recovery quote.
  */
 function computeValidationError({
   fromTokenValue,
@@ -198,7 +202,8 @@ function computeValidationError({
   numberOfOrders,
   recurringTotalAmountIn,
   recurringAdditiveNativeFee,
-  nativeFromToken
+  nativeFromToken,
+  allowZeroAmount = false
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
@@ -210,9 +215,11 @@ function computeValidationError({
   recurringTotalAmountIn: bigint | undefined
   recurringAdditiveNativeFee: bigint
   nativeFromToken: LocalTokenWithBalance | undefined
+  allowZeroAmount?: boolean
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    if (allowZeroAmount) return null
     return fusionErrors.enterAmount()
   }
   // Recurring: validate the full schedule commitment (principal + additive
@@ -1520,13 +1527,15 @@ export const SwapScreen = (): JSX.Element => {
       isModal
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
       {/* Schedule-management entry point: surfaces above the new-swap flow so
           users with existing schedules see + manage them before entering a
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
-        <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
-        </View>
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
       )}
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
