@@ -2,7 +2,7 @@ import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
 import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreenV2, ListScreenRef } from 'common/components/ListScreenV2'
+import { ListScreenRef, ListScreenV2 } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -330,6 +331,12 @@ export const WalletsScreen = (): JSX.Element => {
     listRef.current?.scrollViewRef?.current?.scrollToOffset({ offset: 0 })
   }, [refetch])
 
+  const insets = useSafeAreaInsets()
+
+  const progressViewOffset = useMemo(() => {
+    return headerHeight * 2 + insets.top
+  }, [headerHeight, insets.top])
+
   return (
     <ListScreenV2
       flatListRef={listRef}
@@ -343,10 +350,10 @@ export const WalletsScreen = (): JSX.Element => {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={onRefresh}
-          progressViewOffset={headerHeight}
+          progressViewOffset={progressViewOffset}
         />
       }
-      progressViewOffset={headerHeight}
+      progressViewOffset={progressViewOffset}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
