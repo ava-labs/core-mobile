@@ -121,6 +121,22 @@ const WalletCard = ({
   const [isFullyExpanded, setIsFullyExpanded] = useState(isExpanded)
   const didMount = useRef(false)
 
+  // FlashList recycles WalletCard instances across rows, so a cell can be
+  // reused for a different wallet without remounting. The animation state above
+  // is seeded only on mount, so without this a recycled cell would render the
+  // previous wallet's expand progress and — critically — its stale measured
+  // `contentHeight`, clipping the new account list to the wrong (often zero)
+  // height. Re-seed everything whenever the wallet identity changes so the card
+  // reflects the wallet it is actually rendering. See CP-14631.
+  const walletIdRef = useRef(wallet.id)
+  useEffect(() => {
+    if (walletIdRef.current === wallet.id) return
+    walletIdRef.current = wallet.id
+    contentHeight.value = 0
+    expandProgress.value = isExpanded ? 1 : 0
+    setIsFullyExpanded(isExpanded)
+  }, [wallet.id, isExpanded, contentHeight, expandProgress])
+
   const onContentLayout = useCallback(
     (event: LayoutChangeEvent) => {
       // Only record while expanded so the value stays at the full content

@@ -2,7 +2,7 @@ import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
 import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreenV2, ListScreenRef } from 'common/components/ListScreenV2'
+import { ListScreenRef, ListScreenV2 } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -311,6 +312,24 @@ export const WalletsScreen = (): JSX.Element => {
     ]
   )
 
+  const keyExtractor = useCallback((item: WalletDisplayData) => item.id, [])
+
+  // Give every wallet its own FlashList item type (keyed on wallet id).
+  //
+  // An expanded card (a wallet with dozens of accounts) is enormously taller
+  // than a collapsed 64px header. FlashList keeps a separate size estimate and
+  // recycle pool per item type, so with a single shared type it estimates every
+  // card from one global average of mostly-collapsed rows, under-sizes the tall
+  // expanded cards, and briefly renders the following wallet cards on top of
+  // their account rows while scrolling or switching wallets (CP-14631 /
+  // CP-14632). A per-wallet type makes each card's size estimate track that
+  // wallet's own measured height, so cells are positioned correctly.
+  //
+  // The type is keyed on wallet id (NOT expansion) so it stays stable across an
+  // expand/collapse toggle: the cell keeps its key, the WalletCard instance is
+  // not remounted, and its height animation still plays.
+  const getItemType = useCallback((item: WalletDisplayData) => item.id, [])
+
   const renderEmpty = useCallback(() => {
     return (
       <ErrorState
@@ -328,6 +347,12 @@ export const WalletsScreen = (): JSX.Element => {
     listRef.current?.scrollViewRef?.current?.scrollToOffset({ offset: 0 })
   }, [refetch])
 
+  const insets = useSafeAreaInsets()
+
+  const progressViewOffset = useMemo(() => {
+    return headerHeight * 2 + insets.top
+  }, [headerHeight, insets.top])
+
   return (
     <ListScreenV2
       flatListRef={listRef}
@@ -341,13 +366,15 @@ export const WalletsScreen = (): JSX.Element => {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={onRefresh}
-          progressViewOffset={headerHeight}
+          progressViewOffset={progressViewOffset}
         />
       }
-      progressViewOffset={headerHeight}
+      progressViewOffset={progressViewOffset}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      getItemType={getItemType}
       shouldShowStickyHeader={false}
     />
   )
