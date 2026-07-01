@@ -22,7 +22,7 @@ export const NodeTagPill = ({ tag }: { tag: NodeTag }): JSX.Element => {
       <Text
         variant="buttonSmall"
         sx={{
-          fontWeight: 600,
+          fontFamily: 'Inter-SemiBold',
           color: isPositive ? '$surfacePrimary' : '$textPrimary'
         }}>
         {tag}

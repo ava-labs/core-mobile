@@ -92,7 +92,7 @@ export const DelegateNodeItem = ({
             />
           </View>
           <View sx={{ flex: 1, gap: 2 }}>
-            <Text variant="body1" sx={{ fontWeight: 600 }}>
+            <Text variant="body1" sx={{ fontFamily: 'Inter-SemiBold' }}>
               {truncateNodeId(node.nodeID)}
             </Text>
             <Text variant="body2" sx={{ color: '$textSecondary' }}>
