@@ -27,6 +27,7 @@ import {
 import { isOptimisticConfirmationEnabled } from '../utils/isOptimisticConfirmationEnabled'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
+import { evaluateBatchApproval, signBatchRequests } from './quickSwapsBypass'
 import { approvalController } from './ApprovalController'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -71,9 +72,24 @@ jest.mock('services/ledger/LedgerService', () => ({
 }))
 jest.mock(
   'services/walletconnectv2/walletConnectCache/walletConnectCache',
-  () => ({
-    walletConnectCache: { approvalParams: { set: jest.fn() } }
-  })
+  () => {
+    // `get()` returns whatever `set()` was last called with — mirrors the
+    // real single-slot cache closely enough for tests that stash onApprove /
+    // onReject via `set` and later invoke them via `get`. Wired once here
+    // (not per-test) so it survives the top-level `jest.clearAllMocks()`.
+    let lastBatchApprovalParams: unknown
+    return {
+      walletConnectCache: {
+        approvalParams: { set: jest.fn() },
+        batchApprovalParams: {
+          set: jest.fn(params => {
+            lastBatchApprovalParams = params
+          }),
+          get: jest.fn(() => lastBatchApprovalParams)
+        }
+      }
+    }
+  }
 )
 jest.mock('services/wallet/WalletService', () => ({
   __esModule: true,
@@ -105,6 +121,19 @@ jest.mock('services/analytics/AnalyticsService')
 jest.mock('store/rpc/handlers/wc_sessionRequest/utils', () => ({
   getAddressForChainId: jest.fn()
 }))
+// Partial mock: `evaluateBatchApproval` / `signBatchRequests` default to the
+// REAL implementation (so the existing validator-driven batch tests below
+// keep exercising real decision logic via the mutated `approvalValidators`
+// array), but individual tests can override with `.mockResolvedValue(...)`
+// to force the manual branch without needing a real validator setup.
+jest.mock('./quickSwapsBypass', () => {
+  const actual = jest.requireActual('./quickSwapsBypass')
+  return {
+    ...actual,
+    evaluateBatchApproval: jest.fn(actual.evaluateBatchApproval),
+    signBatchRequests: jest.fn(actual.signBatchRequests)
+  }
+})
 
 // ─── Typed mock aliases ────────────────────────────────────────────────────────
 
@@ -1331,21 +1360,205 @@ describe('ApprovalController', () => {
       updateTx: (() => ({})) as never
     })
 
+    const actualQuickSwapsBypass = jest.requireActual('./quickSwapsBypass')
+
+    // A single `await Promise.resolve()` isn't enough to flush the manual
+    // path when going through the REAL evaluateBatchApproval — it has its
+    // own internal `await validator.validate(...)` — so use a macrotask
+    // flush (matches the existing helper in the cancel-bridge describe
+    // block below).
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+
     beforeEach(() => {
       // Reset to the original baseline before each test; individual
       // tests push their own mock validator on top.
       restoreValidators()
       mockSign.mockReset()
+      // Restore the real evaluateBatchApproval/signBatchRequests implementation —
+      // the manual-path test below overrides these with mockResolvedValue,
+      // which (unlike jest.clearAllMocks()) survives between tests.
+      ;(evaluateBatchApproval as jest.Mock).mockImplementation(
+        actualQuickSwapsBypass.evaluateBatchApproval
+      )
+      ;(signBatchRequests as jest.Mock).mockImplementation(
+        actualQuickSwapsBypass.signBatchRequests
+      )
     })
 
     afterAll(restoreValidators)
 
-    it('returns error when no validator matches', async () => {
-      const result = await approvalController.requestBatchApproval(
-        baseParams() as never
+    it('opens the manual batch approval screen when no validator matches', async () => {
+      approvalController.requestBatchApproval(baseParams() as never)
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
       )
-      expect('error' in result).toBe(true)
       expect(mockSign).not.toHaveBeenCalled()
+    })
+
+    it('navigates to /approvalBatch and resolves signed txs on approve (manual path)', async () => {
+      // Force the manual branch.
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      ;(signBatchRequests as jest.Mock).mockResolvedValue({
+        signedTxs: [{ signedData: '0xsigned0' }, { signedData: '0xsigned1' }]
+      })
+
+      const params = {
+        request: {
+          requestId: 'b1',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [
+          { signingData: { data: { chainId: 43114 } } },
+          { signingData: { data: { chainId: 43114 } } }
+        ]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      expect(router.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
+      )
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({})
+      const result = await promise
+      expect(result).toEqual({
+        result: [{ signedData: '0xsigned0' }, { signedData: '0xsigned1' }]
+      })
+    })
+
+    it('applies a per-index spend-limit override to .data only (and only for the edited index)', async () => {
+      // Force the manual branch; record what handleBatchApprovalApprove
+      // passes to signBatchRequests after applying the overrides.
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      let recordedTransactions: unknown
+      ;(signBatchRequests as jest.Mock).mockImplementation(
+        async (_request, transactions) => {
+          recordedTransactions = transactions
+          return {
+            signedTxs: [{ signedData: '0xa' }, { signedData: '0xb' }]
+          }
+        }
+      )
+
+      const params = {
+        request: {
+          requestId: 'b-override',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [
+          {
+            signingData: {
+              data: {
+                chainId: 43114,
+                to: '0xTo0',
+                value: '0x0',
+                data: '0xORIG0'
+              }
+            }
+          },
+          {
+            signingData: {
+              data: {
+                chainId: 43114,
+                to: '0xTo1',
+                value: '0x0',
+                data: '0xORIG1'
+              }
+            }
+          }
+        ]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({ 0: '0xOVERRIDE' })
+      const result = await promise
+
+      const transactions = recordedTransactions as Record<string, unknown>[]
+      // Only .data is replaced on the edited index; other fields preserved.
+      expect(transactions[0]).toEqual({
+        chainId: 43114,
+        to: '0xTo0',
+        value: '0x0',
+        data: '0xOVERRIDE'
+      })
+      // Untouched index passes through unchanged.
+      expect(transactions[1]).toEqual({
+        chainId: 43114,
+        to: '0xTo1',
+        value: '0x0',
+        data: '0xORIG1'
+      })
+      // Input is not mutated — the original signingRequest data is intact.
+      expect(
+        (
+          params as unknown as {
+            signingRequests: { signingData: { data: { data: string } } }[]
+          }
+        ).signingRequests[0].signingData.data.data
+      ).toBe('0xORIG0')
+      expect(result).toEqual({
+        result: [{ signedData: '0xa' }, { signedData: '0xb' }]
+      })
+    })
+
+    it('resolves the error envelope when signBatchRequests fails', async () => {
+      ;(evaluateBatchApproval as jest.Mock).mockResolvedValue({
+        kind: 'manual'
+      })
+      ;(signBatchRequests as jest.Mock).mockResolvedValue({
+        error: { code: -32603, message: 'sign failed' }
+      })
+
+      const params = {
+        request: {
+          requestId: 'b-error',
+          method: 'eth_sendTransactionBatch',
+          context: {
+            walletId: 'w1',
+            walletType: 'MNEMONIC',
+            accountIndex: 0,
+            network: {}
+          }
+        },
+        displayData: {},
+        signingRequests: [{ signingData: { data: { chainId: 43114 } } }]
+      } as never
+
+      const promise = approvalController.requestBatchApproval(params)
+      await flushMicrotasks()
+
+      const cached = walletConnectCache.batchApprovalParams.get()
+      cached.onApprove({})
+      const result = await promise
+
+      expect(result).toEqual({
+        error: { code: -32603, message: 'sign failed' }
+      })
     })
 
     it('signs each signingRequest and returns signed RLP on isValid:true', async () => {
@@ -1410,7 +1623,7 @@ describe('ApprovalController', () => {
       expect(mockSign).not.toHaveBeenCalled()
     })
 
-    it('returns error with manual-review marker when requiresManualApproval', async () => {
+    it('opens the manual batch approval screen when requiresManualApproval', async () => {
       approvalValidators.push({
         canHandle: () => true,
         validate: async () => ({
@@ -1421,20 +1634,15 @@ describe('ApprovalController', () => {
         })
       })
 
-      const result = await approvalController.requestBatchApproval(
-        baseParams() as never
-      )
-      expect('error' in result).toBe(true)
+      // Falls through to the manual screen (no marker error anymore) —
+      // the per-tx approval flow is superseded by the batch approval screen.
+      approvalController.requestBatchApproval(baseParams() as never)
+      await flushMicrotasks()
+
       expect(mockSign).not.toHaveBeenCalled()
-      // Structured marker so EvmSigner.signBatch recognises and falls
-      // back to the per-tx approval flow.
-      if ('error' in result) {
-        const data = (result.error as { data?: unknown }).data as
-          | { quickSwapsManualReview?: boolean; code?: string }
-          | undefined
-        expect(data?.quickSwapsManualReview).toBe(true)
-        expect(data?.code).toBe('slippage_exceeded')
-      }
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approvalBatch' })
+      )
     })
 
     it('injects WARNING alert into displayData on requiresManualApproval', async () => {
@@ -1449,7 +1657,8 @@ describe('ApprovalController', () => {
       })
 
       const params = baseParams()
-      await approvalController.requestBatchApproval(params as never)
+      approvalController.requestBatchApproval(params as never)
+      await flushMicrotasks()
 
       const alert = (
         params.displayData as { alert?: { type: string; details: unknown } }
@@ -1481,7 +1690,8 @@ describe('ApprovalController', () => {
           }
         } as never
       }
-      await approvalController.requestBatchApproval(params as never)
+      approvalController.requestBatchApproval(params as never)
+      await flushMicrotasks()
 
       const alert = (
         params.displayData as { alert?: { type: string; details: unknown } }
