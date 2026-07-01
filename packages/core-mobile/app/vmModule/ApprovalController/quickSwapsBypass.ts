@@ -19,8 +19,8 @@ import { approvalValidators, requestValidators } from './validators'
 //   2. On isValid:true — sign each tx with the request's signing context
 //      and return the broadcast-ready signed RLP to the EVM module
 //   3. On requiresManualApproval — surface the reason via a fallback
-//      Alert and let the caller fall through to the manual modal
-//      (single-tx) or return a marker error the signer detects (batch)
+//      Alert and let the caller fall through to the manual approval
+//      screen (single-tx modal or the batch approval screen)
 //   4. On hard reject — return an invalidRequest error
 
 type BatchSigningContext = {

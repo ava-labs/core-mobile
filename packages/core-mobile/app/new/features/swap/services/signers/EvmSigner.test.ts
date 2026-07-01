@@ -354,9 +354,8 @@ describe('createEvmSigner.signBatch', () => {
 
   it('falls back to per-tx sign() when the batch has fewer than 2 txs (handler min-batch guard)', async () => {
     // The eth_sendTransactionBatch handler rejects batches < 2 txs with
-    // invalidParams (no quickSwapsManualReview marker), so we must not
-    // dispatch a 1-tx batch through the bypass path even when Quick
-    // Swaps is otherwise active.
+    // invalidParams, so we must not dispatch a 1-tx batch through the
+    // bypass path even when Quick Swaps is otherwise active.
     const request = jest
       .fn<Promise<string>, [unknown]>()
       .mockResolvedValueOnce('0xhashSingle')
@@ -402,257 +401,12 @@ describe('createEvmSigner.signBatch', () => {
     )
   })
 
-  it('falls back to per-tx sign() when bypass returns manual-review marker', async () => {
-    // First call (eth_sendTransactionBatch) rejects with the validator's
-    // manual-review marker. Subsequent calls (per-tx eth_sendTransaction)
-    // succeed and return the tx hash array.
-    const manualReviewError = Object.assign(
-      new Error(
-        'Quick Swaps requires manual review for this swap (Slippage tolerance exceeded).'
-      ),
-      {
-        data: { quickSwapsManualReview: true, code: 'slippage_exceeded' }
-      }
-    )
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const getOptions = jest.fn().mockReturnValue({
-      isQuickSwapsActive: true,
-      maxBuy: 'unlimited',
-      isBatchSigningSupported: true
-    })
-    const signer = createEvmSigner(request, getOptions)
-
-    const result = await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    expect(result).toEqual(['0xhashA', '0xhashB'])
-    // 1 batch attempt + 2 per-tx fallbacks
-    expect(request).toHaveBeenCalledTimes(3)
-    expect((request.mock.calls[0]?.[0] as { method: RpcMethod }).method).toBe(
-      RpcMethod.ETH_SEND_TRANSACTION_BATCH
-    )
-    expect((request.mock.calls[1]?.[0] as { method: RpcMethod }).method).toBe(
-      RpcMethod.ETH_SEND_TRANSACTION
-    )
-    expect((request.mock.calls[2]?.[0] as { method: RpcMethod }).method).toBe(
-      RpcMethod.ETH_SEND_TRANSACTION
-    )
-  })
-
-  it('forwards the manual-review reason to per-tx sign() context on fallback', async () => {
-    const manualReviewError = Object.assign(
-      new Error('Quick Swaps requires manual review (Slippage exceeded).'),
-      {
-        data: {
-          quickSwapsManualReview: true,
-          code: 'slippage_exceeded',
-          reason: 'Slippage tolerance exceeded'
-        }
-      }
-    )
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const signer = createEvmSigner(request, () => ({
-      isQuickSwapsActive: true,
-      maxBuy: 'unlimited',
-      isBatchSigningSupported: true
-    }))
-
-    await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    expect(request).toHaveBeenCalledTimes(3)
-    const perTxCall1 = request.mock.calls[1]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    const perTxCall2 = request.mock.calls[2]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    expect(perTxCall1?.context?.quickSwapsManualReviewReason).toBe(
-      'Slippage tolerance exceeded'
-    )
-    expect(perTxCall2?.context?.quickSwapsManualReviewReason).toBe(
-      'Slippage tolerance exceeded'
-    )
-  })
-
-  it('suppresses tx feedback (toast/confetti) on intermediate per-tx fallback steps', async () => {
-    const manualReviewError = Object.assign(new Error('fell back'), {
-      data: { quickSwapsManualReview: true, code: 'tx_flagged_warning' }
-    })
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const signer = createEvmSigner(request, () => ({
-      isQuickSwapsActive: true,
-      maxBuy: 'unlimited',
-      isBatchSigningSupported: true
-    }))
-
-    await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    const perTxCall1 = request.mock.calls[1]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    const perTxCall2 = request.mock.calls[2]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    expect(perTxCall1?.context?.suppressTxFeedback).toBe(true)
-    expect(perTxCall2?.context?.suppressTxFeedback).toBeUndefined()
-  })
-
-  it('waits for the previous tx receipt between per-tx fallback steps', async () => {
-    const manualReviewError = Object.assign(new Error('fell back'), {
-      data: {
-        quickSwapsManualReview: true,
-        code: 'balance_change_missing',
-        reason: 'Unable to verify balance change information'
-      }
-    })
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const waitForReceipt = jest.fn().mockResolvedValue(undefined)
-    const signer = createEvmSigner(
-      request,
-      () => ({
-        isQuickSwapsActive: true,
-        maxBuy: 'unlimited',
-        isBatchSigningSupported: true
-      }),
-      waitForReceipt
-    )
-
-    await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    expect(waitForReceipt).toHaveBeenCalledTimes(1)
-    expect(waitForReceipt).toHaveBeenCalledWith(expect.any(Number), '0xhashA')
-  })
-
-  it('swallows receipt-wait errors and continues to the next tx', async () => {
-    const manualReviewError = Object.assign(new Error('fell back'), {
-      data: {
-        quickSwapsManualReview: true,
-        code: 'balance_change_missing',
-        reason: 'Unable to verify balance change information'
-      }
-    })
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const waitForReceipt = jest
-      .fn()
-      .mockRejectedValue(new Error('receipt timeout'))
-    const signer = createEvmSigner(
-      request,
-      () => ({
-        isQuickSwapsActive: true,
-        maxBuy: 'unlimited',
-        isBatchSigningSupported: true
-      }),
-      waitForReceipt
-    )
-
-    const result = await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    expect(result).toEqual(['0xhashA', '0xhashB'])
-    expect(waitForReceipt).toHaveBeenCalledTimes(1)
-  })
-
-  it('suppresses swapAutoApprove on every per-tx call when the batch falls back', async () => {
-    const manualReviewError = Object.assign(new Error('fell back'), {
-      data: {
-        quickSwapsManualReview: true,
-        code: 'tx_flagged_warning',
-        reason: 'Transaction safety check returned Warning'
-      }
-    })
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const signer = createEvmSigner(request, () => ({
-      isQuickSwapsActive: true,
-      maxBuy: 'unlimited',
-      isBatchSigningSupported: true
-    }))
-
-    await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    const perTxCall1 = request.mock.calls[1]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    const perTxCall2 = request.mock.calls[2]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    expect(perTxCall1?.context?.swapAutoApprove).toBeUndefined()
-    expect(perTxCall2?.context?.swapAutoApprove).toBeUndefined()
-  })
-
-  it('omits the manual-review-reason context when the marker error has no reason', async () => {
-    const manualReviewError = Object.assign(new Error('marker only'), {
-      data: { quickSwapsManualReview: true, code: 'slippage_exceeded' }
-    })
-    const request = jest
-      .fn<Promise<string>, [unknown]>()
-      .mockRejectedValueOnce(manualReviewError)
-      .mockResolvedValueOnce('0xhashA')
-      .mockResolvedValueOnce('0xhashB')
-    const signer = createEvmSigner(request, () => ({
-      isQuickSwapsActive: true,
-      maxBuy: 'unlimited',
-      isBatchSigningSupported: true
-    }))
-
-    await signer.signBatch?.(
-      [makeTx(), makeTx({ to: '0xrouter' })],
-      jest.fn() as never,
-      makeStepDetails()
-    )
-
-    const perTxCall = request.mock.calls[1]?.[0] as {
-      context?: Record<string, unknown>
-    }
-    expect(perTxCall?.context?.quickSwapsManualReviewReason).toBeUndefined()
-  })
-
-  it('rethrows non-manual-review errors from the bypass path', async () => {
+  it('propagates a dispatchAsBatch error without falling back to per-tx', async () => {
+    // Flagged Quick-Swaps batches are no longer bounced back to us as a
+    // `quickSwapsManualReview` marker — `evaluateBatchApproval` opens the
+    // BatchApprovalScreen instead. So any error surfacing here is a real
+    // failure: it propagates once (the SDK owns broadcast retries) and we
+    // never re-dispatch per-tx.
     const realError = new Error('network down')
     const request = jest.fn().mockRejectedValue(realError)
     const signer = createEvmSigner(request, () => ({
@@ -668,8 +422,11 @@ describe('createEvmSigner.signBatch', () => {
         makeStepDetails()
       )
     ).rejects.toThrow('network down')
-    // Did NOT fall back to per-tx
+    // Single batch attempt — no per-tx fallback.
     expect(request).toHaveBeenCalledTimes(1)
+    expect((request.mock.calls[0]?.[0] as { method: RpcMethod }).method).toBe(
+      RpcMethod.ETH_SEND_TRANSACTION_BATCH
+    )
   })
 
   it('throws when called with empty transactions array', async () => {
