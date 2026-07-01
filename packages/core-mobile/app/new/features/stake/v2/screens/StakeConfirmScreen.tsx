@@ -38,6 +38,7 @@ import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import NetworkService from 'services/network/NetworkService'
+import { showConfetti } from 'vmModule/utils/requestContext'
 import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
@@ -459,6 +460,9 @@ const StakeConfirmScreen = ({
         ? getExplorerAddressByNetwork(pNetwork.explorerUrl, txHash, 'tx')
         : undefined
       transactionSnackbar.success({ message: 'New stake added', explorerLink })
+      // Celebrate the completed stake alongside the success toast, mirroring
+      // the confetti shown for in-app Avalanche transactions.
+      showConfetti()
 
       // Switch to the success screen; the whole flow then auto-dismisses
       // after SUCCESS_DISMISS_DELAY_MS (see the effect below), returning the
