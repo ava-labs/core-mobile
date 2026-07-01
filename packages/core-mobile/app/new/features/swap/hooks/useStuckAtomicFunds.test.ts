@@ -67,7 +67,7 @@ describe('useStuckAtomicFunds', () => {
     result.current.invalidate()
 
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['stuckAtomicFunds']
+      queryKey: ['fusionStuckAtomicFunds']
     })
   })
 })

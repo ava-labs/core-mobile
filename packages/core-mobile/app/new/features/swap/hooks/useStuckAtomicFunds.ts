@@ -6,18 +6,23 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getAvaxAssetId } from 'services/wallet/utils'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
   mapAtomicUtxosToRoutes,
   type StuckRoute
 } from '../utils/stuckFundsRoutes'
 
-export const STUCK_ATOMIC_FUNDS_KEY = 'stuckAtomicFunds'
+// Poll while the banner is on-screen so a route stranded during the session
+// surfaces without the user backgrounding/navigating. Safe to poll because
+// detection is read-only (never prompts the device); paused in the background.
+const STUCK_ATOMIC_FUNDS_REFETCH_INTERVAL = 60_000
 
 /**
  * Detects AVAX stranded in atomic memory after an incomplete cross-chain
  * transfer, across all six CCT routes. Read-only (never prompts the device),
- * so it refreshes on the app's normal foreground cadence rather than polling.
- * Call `invalidate` after a recovery completes to clear a recovered route.
+ * so it polls on a 60s interval (foreground only) plus the app's normal
+ * mount/foreground refresh. Call `invalidate` after a recovery completes to
+ * clear a recovered route.
  */
 export const useStuckAtomicFunds = (): {
   routes: StuckRoute[]
@@ -31,8 +36,15 @@ export const useStuckAtomicFunds = (): {
   const queryClient = useQueryClient()
 
   const { data: routes = [] } = useQuery({
-    queryKey: [STUCK_ATOMIC_FUNDS_KEY, account, isDeveloperMode, xpAddresses],
+    queryKey: [
+      ReactQueryKeys.FUSION_STUCK_ATOMIC_FUNDS,
+      account,
+      isDeveloperMode,
+      xpAddresses
+    ],
     enabled: !!account && xpAddresses.length > 0,
+    refetchInterval: STUCK_ATOMIC_FUNDS_REFETCH_INTERVAL,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       if (!account) return []
       return AvalancheWalletService.getAllAtomicUTXOs({
@@ -45,7 +57,9 @@ export const useStuckAtomicFunds = (): {
   })
 
   const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: [STUCK_ATOMIC_FUNDS_KEY] })
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.FUSION_STUCK_ATOMIC_FUNDS]
+    })
   }, [queryClient])
 
   return {
