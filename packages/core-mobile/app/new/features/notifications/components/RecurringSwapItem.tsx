@@ -51,8 +51,10 @@ function resolveBadge(data: RecurringSwapMetadata | undefined): Badge {
   // read as a mid-schedule fill.
   const isFinalLeg =
     kind === 'completed' ||
-    (data.numberOfOrders !== -1 && data.remainingOrders === 0)
-
+    (data.numberOfOrders !== undefined &&
+      data.remainingOrders !== undefined &&
+      data.numberOfOrders !== -1 &&
+      data.remainingOrders === 0)
   return { kind: 'success', label: isFinalLeg ? 'Completed' : 'Executed' }
 }
 
