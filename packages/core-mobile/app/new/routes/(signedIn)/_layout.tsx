@@ -82,6 +82,20 @@ export default function WalletLayout(): JSX.Element {
             }}
           />
           <Stack.Screen
+            name="(modals)/approvalBatch"
+            options={({ route }) => {
+              if (
+                // @ts-ignore
+                route.params?.presentationMode ===
+                NavigationPresentationMode.FORM_SHEET
+              ) {
+                return secondaryModalScreensOptions
+              }
+
+              return modalScreensOptions
+            }}
+          />
+          <Stack.Screen
             name="(modals)/keystoneSigner"
             options={secondaryModalScreensOptions}
           />
