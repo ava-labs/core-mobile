@@ -113,12 +113,19 @@ const readManualReviewReason = (err: unknown): string | undefined => {
   return typeof reason === 'string' && reason.length > 0 ? reason : undefined
 }
 
-const getChainIdForBatch = (
+export const getChainIdForBatch = (
   transactions: readonly EvmTransactionRequest[]
 ): number => {
   const first = transactions[0]
   assert(first, 'signBatch called with empty transactions array')
-  return Number(first.chainId)
+  const chainId = Number(first.chainId)
+  for (const tx of transactions) {
+    assert(
+      Number(tx.chainId) === chainId,
+      'MultipleChainIdsInBatch: all transactions in a batch must share one chainId'
+    )
+  }
+  return chainId
 }
 
 const BPS_DIVISOR_BIGINT = BigInt(BASIS_POINTS_DIVISOR)
