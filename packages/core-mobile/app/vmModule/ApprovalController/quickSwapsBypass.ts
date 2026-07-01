@@ -184,6 +184,63 @@ export const runRequestValidatorBypass = async (
   }
 }
 
+export type BatchApprovalDecision =
+  | { kind: 'signed'; response: BatchApprovalResponse }
+  | { kind: 'reject'; response: BatchApprovalResponse }
+  | { kind: 'manual' }
+
+// Thin, exported wrapper over the existing per-tx signing loop so the
+// ApprovalController's manual-batch path can sign the batch itself.
+export const signBatchRequests = async (
+  request: RpcRequest,
+  transactions: readonly Transaction[],
+  errorLabel: string
+): Promise<
+  | { signedTxs: { signedData: string }[] }
+  | { error: ReturnType<typeof rpcErrors.internal> }
+> => signWithBypassContext(request, transactions, errorLabel)
+
+// Decision function used by ApprovalController.requestBatchApproval to pick
+// between auto-approve (signed), hard reject, and opening the manual screen.
+export const evaluateBatchApproval = async (
+  params: BatchApprovalParams
+): Promise<BatchApprovalDecision> => {
+  const { request, signingRequests } = params
+  const validator = approvalValidators.find(v => v.canHandle(request))
+
+  // No validator (e.g. recurring first-fill: no SWAP_AUTO_APPROVE context) ->
+  // manual screen. Replaces the old "no validator matched" error.
+  if (!validator) return { kind: 'manual' }
+
+  const verdict = await validator.validate(params)
+
+  if (verdict.isValid) {
+    const result = await signWithBypassContext(
+      request,
+      signingRequests.map(sr => sr.signingData.data),
+      'eth_sendTransactionBatch'
+    )
+    if ('error' in result) return { kind: 'reject', response: result }
+    return { kind: 'signed', response: { result: result.signedTxs } }
+  }
+
+  if (verdict.requiresManualApproval) {
+    injectFallbackAlert(params.displayData, verdict.reason)
+    return { kind: 'manual' }
+  }
+
+  return {
+    kind: 'reject',
+    response: {
+      error: rpcErrors.invalidRequest({
+        message:
+          verdict.reason ||
+          'eth_sendTransactionBatch: blocked by safety validation'
+      })
+    }
+  }
+}
+
 // Batch path has no manual-modal fallback at this layer — on
 // requiresManualApproval we return a structured error with the
 // quickSwapsManualReview marker that EvmSigner.signBatch detects to
