@@ -71,7 +71,11 @@ export const RangeSlider: FC<RangeSliderProps> = ({
   // negative would yield NaN / Infinity and break snapping).
   const safeStep = step > 0 ? step : 1
   const range = Math.max(1e-9, max - min)
-  const stepProgress = safeStep / range
+  // Cap the step to the range: a `step` larger than `max - min` would snap
+  // every position to `min` (the thumb could never reach `max`), so clamp it
+  // so snapping stays well-defined even for very small / degenerate ranges.
+  const effectiveStep = Math.min(safeStep, range)
+  const stepProgress = effectiveStep / range
 
   const toProgress = (value: number): number => {
     const p = (value - min) / range
@@ -83,7 +87,8 @@ export const RangeSlider: FC<RangeSliderProps> = ({
     // `min + N*step`. Snapping as `round(raw/step)*step` would misalign when
     // `min` isn't a multiple of `step` (e.g. min=2,step=5 → 7 snaps to 5), and
     // would disagree with the progress snapping in `onEnd`, which is min-based.
-    const snapped = min + Math.round((raw - min) / safeStep) * safeStep
+    const snapped =
+      min + Math.round((raw - min) / effectiveStep) * effectiveStep
     return Math.min(Math.max(snapped, min), max)
   }
 
