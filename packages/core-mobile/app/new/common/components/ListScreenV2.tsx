@@ -180,9 +180,17 @@ export const ListScreenV2 = <T,>({
     [scrollViewRef]
   )
 
+  // Stable header element — recreated only when the title text changes, so
+  // `useFadingHeaderNavigation`'s header-title sync effect doesn't re-run (and
+  // re-`setOptions`) on every render. See ScrollScreen for the same fix.
+  const navigationHeader = useMemo(
+    () => <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    [navigationTitle, title]
+  )
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout,
       hideHeaderBackground: shouldShowStickyHeader,
       hasSeparator: shouldShowStickyHeader
