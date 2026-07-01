@@ -311,6 +311,8 @@ export const WalletsScreen = (): JSX.Element => {
     ]
   )
 
+  const keyExtractor = useCallback((item: WalletDisplayData) => item.id, [])
+
   const renderEmpty = useCallback(() => {
     return (
       <ErrorState
@@ -348,6 +350,7 @@ export const WalletsScreen = (): JSX.Element => {
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
+      keyExtractor={keyExtractor}
       shouldShowStickyHeader={false}
     />
   )
