@@ -50,6 +50,10 @@ jest.mock('../hooks/useStuckFundsRecovery', () => ({
   useStuckFundsRecovery: () => ({ recover: mockRecover, recoveringKey: null })
 }))
 
+jest.mock('../hooks/useZustandStore', () => ({
+  useIsFusionServiceReady: () => [true]
+}))
+
 const setRoutes = (routes: StuckRoute[]): void => {
   mockUseStuckAtomicFunds.mockReturnValue({
     routes,
