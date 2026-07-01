@@ -314,6 +314,22 @@ export const WalletsScreen = (): JSX.Element => {
 
   const keyExtractor = useCallback((item: WalletDisplayData) => item.id, [])
 
+  // Give every wallet its own FlashList item type (keyed on wallet id).
+  //
+  // An expanded card (a wallet with dozens of accounts) is enormously taller
+  // than a collapsed 64px header. FlashList keeps a separate size estimate and
+  // recycle pool per item type, so with a single shared type it estimates every
+  // card from one global average of mostly-collapsed rows, under-sizes the tall
+  // expanded cards, and briefly renders the following wallet cards on top of
+  // their account rows while scrolling or switching wallets (CP-14631 /
+  // CP-14632). A per-wallet type makes each card's size estimate track that
+  // wallet's own measured height, so cells are positioned correctly.
+  //
+  // The type is keyed on wallet id (NOT expansion) so it stays stable across an
+  // expand/collapse toggle: the cell keeps its key, the WalletCard instance is
+  // not remounted, and its height animation still plays.
+  const getItemType = useCallback((item: WalletDisplayData) => item.id, [])
+
   const renderEmpty = useCallback(() => {
     return (
       <ErrorState
@@ -358,6 +374,7 @@ export const WalletsScreen = (): JSX.Element => {
       renderEmpty={renderEmpty}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
+      getItemType={getItemType}
       shouldShowStickyHeader={false}
     />
   )
