@@ -160,7 +160,12 @@ export function isTerminalRecurringSwapNotification(
     return true
   }
   // Final leg of a finite schedule — no fills left to run.
-  return data.numberOfOrders !== -1 && data.remainingOrders === 0
+  return (
+    data.numberOfOrders !== undefined &&
+    data.remainingOrders !== undefined &&
+    data.numberOfOrders !== -1 &&
+    data.remainingOrders === 0
+  )
 }
 
 /**
