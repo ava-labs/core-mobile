@@ -51,6 +51,51 @@ class AvalancheWalletService {
   }
 
   /**
+   * Get importable atomic UTXOs for every CCT route across the primary network
+   * (C/P/X), one read-only signer call per (destination, source) pair. Used by
+   * the stuck-funds banner to detect AVAX stranded in atomic memory after an
+   * incomplete cross-chain transfer. Read-only: never prompts the device.
+   */
+  public async getAllAtomicUTXOs({
+    account,
+    isTestnet,
+    xpAddresses
+  }: {
+    account: Account
+    isTestnet: boolean
+    xpAddresses: string[]
+  }): Promise<
+    {
+      dest: Avalanche.ChainIDAlias
+      source: Avalanche.ChainIDAlias
+      utxos: utils.UtxoSet
+    }[]
+  > {
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
+
+    const routes: [Avalanche.ChainIDAlias, Avalanche.ChainIDAlias][] = [
+      ['P', 'C'],
+      ['P', 'X'],
+      ['C', 'P'],
+      ['C', 'X'],
+      ['X', 'C'],
+      ['X', 'P']
+    ]
+
+    return Promise.all(
+      routes.map(async ([dest, source]) => ({
+        dest,
+        source,
+        utxos: await readOnlySigner.getAtomicUTXOs(dest, source)
+      }))
+    )
+  }
+
+  /**
    * Get atomic UTXOs for P-Chain.
    */
   public async getPChainAtomicUTXOs({
