@@ -223,7 +223,13 @@ export function useEvmInjectedProvider(
       // tab that retains a live EVM chain after the wallet moved to a non-EVM
       // network (CP-13672) is still re-asserted.
       const liveChainId = browserNetworkRef.current.chainId
-      const liveNetwork = allNetworksRef.current[liveChainId]
+      // Fall back to the store like requestReadOnly does: allNetworksRef syncs via
+      // a useEffect, so a chain just added through wallet_addEthereumChain can be
+      // in Redux but not yet in the ref. Without the fallback a reload in that
+      // window would skip the re-assert for that fresh EVM chain.
+      const liveNetwork =
+        allNetworksRef.current[liveChainId] ??
+        selectAllNetworks(store.getState())[liveChainId]
       if (liveNetwork?.vmName === NetworkVMType.EVM) {
         webViewRef.current?.injectJavaScript(
           `window.__coreProviderReassertChain && window.__coreProviderReassertChain('0x${liveChainId.toString(
@@ -241,9 +247,13 @@ export function useEvmInjectedProvider(
       // prime point that re-establishes connected state. CP-13772.
       primeAccountsRef.current?.()
     },
-    [tabId, webViewRef]
+    [tabId, webViewRef, store]
   )
 
+  // Only consumed by initialChainIdHexRef below (read once at mount). Kept as a
+  // useMemo rather than inlined into the hook body so this branch stays in a
+  // nested function — inlining it tips useEvmInjectedProvider over the
+  // sonarjs/cognitive-complexity limit.
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
     return '0x' + initialChainId.toString(16)
