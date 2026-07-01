@@ -55,7 +55,8 @@ export const TokenHeader = ({
               sx={{
                 flexDirection: 'row',
                 alignItems: 'flex-end',
-                flexShrink: 1
+                flexShrink: 1,
+                minHeight: 38
               }}>
               <SubTextNumber
                 number={token.balanceDisplayValue}
@@ -64,6 +65,7 @@ export const TokenHeader = ({
               />
               <Text
                 variant="heading2"
+                numberOfLines={1}
                 sx={{
                   fontFamily: 'Aeonik-Medium',
                   color: colors.$textPrimary,
