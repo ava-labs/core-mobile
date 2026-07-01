@@ -69,7 +69,20 @@ export const useFadingHeaderNavigation = ({
   }, [targetLayout])
 
   const handleLayout = useCallback((event: LayoutChangeEvent): void => {
-    setNavigationHeaderLayout(event.nativeEvent.layout)
+    const { x, y, width, height } = event.nativeEvent.layout
+    // Only commit a new object when the rect actually changed. `onLayout` can
+    // fire repeatedly with identical values while the native header re-renders
+    // (e.g. after `setOptions`); committing a fresh object each time would
+    // re-render → re-set header options → re-layout, a churn loop.
+    setNavigationHeaderLayout(prev =>
+      prev &&
+      prev.x === x &&
+      prev.y === y &&
+      prev.width === width &&
+      prev.height === height
+        ? prev
+        : { x, y, width, height }
+    )
   }, [])
 
   const handleScroll = (
