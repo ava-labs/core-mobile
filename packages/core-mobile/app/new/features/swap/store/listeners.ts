@@ -6,6 +6,8 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
 import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
+import { QUICK_SWAPS_SOFTWARE_WALLET_TYPES } from 'store/settings/advanced/types'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 import {
   selectIsFusionEnabled,
@@ -191,9 +193,17 @@ export const initFusionService = async (
       request,
       () => {
         const liveState = listenerApi.getState()
+        const activeWallet = selectActiveWallet(liveState)
         return {
           isQuickSwapsActive: selectIsQuickSwapsActive(liveState),
-          maxBuy: selectQuickSwapsMaxBuy(liveState)
+          maxBuy: selectQuickSwapsMaxBuy(liveState),
+          // Recurring batches gate on this to decide whether `signBatch`
+          // can return a signed array (software wallets) or must throw
+          // `BatchSigningUnsupportedError` so the SDK falls back to the
+          // per-tx path (hardware / WalletConnect).
+          isBatchSigningSupported: activeWallet
+            ? QUICK_SWAPS_SOFTWARE_WALLET_TYPES.has(activeWallet.type)
+            : false
         }
       },
       async (chainId, txHash) => {

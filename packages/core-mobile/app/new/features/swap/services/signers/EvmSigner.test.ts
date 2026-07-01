@@ -1,7 +1,12 @@
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { ServiceType, TokenType } from '@avalabs/fusion-sdk'
+import {
+  ServiceType,
+  TokenType,
+  TransferSignatureReason
+} from '@avalabs/fusion-sdk'
 import { RequestContext } from 'store/rpc/types'
 import { createEvmSigner, getChainIdForBatch } from './EvmSigner'
+import { isBatchSigningUnsupportedError } from './errors'
 
 jest.mock('utils/Logger', () => ({
   __esModule: true,
@@ -59,6 +64,32 @@ const makeStepDetails = (overrides: Record<string, unknown> = {}): never =>
     ...overrides
   } as never)
 
+// Recurring first-fill step: `currentSignatureReason` matches
+// `TransferSignatureReason.ScheduleRecurringSwap` (drives
+// `isRecurringTransferSignatureReason`), `quote.serviceType` is MARKR (same
+// as one-shot Markr swaps — recurring synthetic quotes reuse it), and
+// `signerContext` carries the `RecurringFillSignerContext` payload that
+// `readRecurringSignerContext` forwards as RECURRING_SWAP context. See
+// `features/recurringSwap/services/recurringSignerContext.ts` and
+// `features/recurringSwap/utils/submitRecurringSwap.ts`.
+const makeRecurringStepDetails = (
+  overrides: Record<string, unknown> = {}
+): never =>
+  ({
+    currentSignature: 1,
+    currentSignatureReason: TransferSignatureReason.ScheduleRecurringSwap,
+    requiredSignatures: 1,
+    quote: makeQuote({ serviceType: ServiceType.MARKR }),
+    signerContext: {
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '10.00',
+      numberOfOrders: 5,
+      frequency: 'daily'
+    },
+    ...overrides
+  } as never)
+
 // Default fee fields mirror what Markr's tx generation produces when
 // `SwapContext` had `networkFees` loaded and threaded the user's tier
 // through `gasSettings`. The signer uses `tx.maxFeePerGas` as a
@@ -99,7 +130,8 @@ describe('createEvmSigner.signBatch', () => {
     const request = jest.fn().mockResolvedValue(['0xhash1', '0xhash2'])
     const getOptions = jest.fn().mockReturnValue({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     })
 
     const signer = createEvmSigner(request, getOptions)
@@ -138,7 +170,8 @@ describe('createEvmSigner.signBatch', () => {
       const request = jest.fn().mockResolvedValue(['0xa', '0xb'])
       const signer = createEvmSigner(request, () => ({
         isQuickSwapsActive: true,
-        maxBuy: 'unlimited'
+        maxBuy: 'unlimited',
+        isBatchSigningSupported: true
       }))
       // Use 2 txs so signBatch routes through the bypass path
       // (length-1 batches go through the per-tx flow; the EVM module
@@ -206,7 +239,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const getOptions = jest.fn().mockReturnValue({
       isQuickSwapsActive: false,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     })
     const waitForReceipt = jest.fn().mockResolvedValue(undefined)
 
@@ -255,7 +289,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const getOptions = jest.fn().mockReturnValue({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     })
     const signer = createEvmSigner(request, getOptions)
 
@@ -293,7 +328,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -326,7 +362,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     const result = await signer.signBatch?.(
@@ -347,7 +384,8 @@ describe('createEvmSigner.signBatch', () => {
     const request = jest.fn().mockResolvedValue(['0xa', '0xb'])
     const getOptions = jest.fn().mockImplementation(() => ({
       isQuickSwapsActive: isActive,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
     const signer = createEvmSigner(request, getOptions)
 
@@ -383,7 +421,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const getOptions = jest.fn().mockReturnValue({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     })
     const signer = createEvmSigner(request, getOptions)
 
@@ -425,7 +464,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -460,7 +500,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -495,7 +536,11 @@ describe('createEvmSigner.signBatch', () => {
     const waitForReceipt = jest.fn().mockResolvedValue(undefined)
     const signer = createEvmSigner(
       request,
-      () => ({ isQuickSwapsActive: true, maxBuy: 'unlimited' }),
+      () => ({
+        isQuickSwapsActive: true,
+        maxBuy: 'unlimited',
+        isBatchSigningSupported: true
+      }),
       waitForReceipt
     )
 
@@ -527,7 +572,11 @@ describe('createEvmSigner.signBatch', () => {
       .mockRejectedValue(new Error('receipt timeout'))
     const signer = createEvmSigner(
       request,
-      () => ({ isQuickSwapsActive: true, maxBuy: 'unlimited' }),
+      () => ({
+        isQuickSwapsActive: true,
+        maxBuy: 'unlimited',
+        isBatchSigningSupported: true
+      }),
       waitForReceipt
     )
 
@@ -556,7 +605,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -586,7 +636,8 @@ describe('createEvmSigner.signBatch', () => {
       .mockResolvedValueOnce('0xhashB')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -606,7 +657,8 @@ describe('createEvmSigner.signBatch', () => {
     const request = jest.fn().mockRejectedValue(realError)
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await expect(
@@ -624,7 +676,8 @@ describe('createEvmSigner.signBatch', () => {
     const request = jest.fn()
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await expect(
@@ -637,7 +690,8 @@ describe('createEvmSigner.signBatch', () => {
     const request = jest.fn().mockResolvedValue(['0xa', '0xb'])
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.signBatch?.(
@@ -661,6 +715,147 @@ describe('createEvmSigner.signBatch', () => {
   })
 })
 
+describe('createEvmSigner.signBatch — recurring first-fill', () => {
+  it('throws BatchSigningUnsupportedError on a hardware/WalletConnect wallet (isBatchSigningSupported: false)', async () => {
+    const request = jest.fn()
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: false
+    }))
+
+    const err = await signer
+      .signBatch?.(
+        [makeTx(), makeTx({ to: '0xrouter' })],
+        jest.fn() as never,
+        makeRecurringStepDetails()
+      )
+      .catch(e => e)
+
+    expect(isBatchSigningUnsupportedError(err)).toBe(true)
+    // Nothing dispatched — the SDK's fallbackToDefaultOnBatchFailure is
+    // what re-issues per-tx, not us.
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('dispatches eth_sendTransactionBatch on a software wallet (isBatchSigningSupported: true) without SWAP_AUTO_APPROVE', async () => {
+    const request = jest.fn().mockResolvedValue(['0xhashA', '0xhashB'])
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
+    }))
+
+    const result = await signer.signBatch?.(
+      [makeTx(), makeTx({ to: '0xrouter' })],
+      jest.fn() as never,
+      makeRecurringStepDetails()
+    )
+
+    expect(result).toEqual(['0xhashA', '0xhashB'])
+    expect(request).toHaveBeenCalledTimes(1)
+    const call = request.mock.calls[0][0]
+    expect(call.method).toBe(RpcMethod.ETH_SEND_TRANSACTION_BATCH)
+    // Never auto-approved: no validator will match without this context,
+    // so evaluateBatchApproval returns {kind:'manual'} and the
+    // BatchApprovalScreen opens.
+    expect(call.context).not.toHaveProperty(RequestContext.SWAP_AUTO_APPROVE)
+    // Carries the recurring preview context so the manual screen renders
+    // <RecurrenceDetails />.
+    expect(call.context[RequestContext.RECURRING_SWAP]).toEqual({
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC',
+      amountPerOrderFormatted: '10.00',
+      numberOfOrders: 5,
+      frequency: 'daily'
+    })
+  })
+
+  it('still dispatches as a batch even when Quick Swaps is OFF (recurring routing does not depend on isQuickSwapsActive)', async () => {
+    const request = jest.fn().mockResolvedValue(['0xhashA', '0xhashB'])
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: false,
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
+    }))
+
+    const result = await signer.signBatch?.(
+      [makeTx(), makeTx({ to: '0xrouter' })],
+      jest.fn() as never,
+      makeRecurringStepDetails()
+    )
+
+    expect(result).toEqual(['0xhashA', '0xhashB'])
+    expect(request).toHaveBeenCalledTimes(1)
+    expect((request.mock.calls[0]?.[0] as { method: RpcMethod }).method).toBe(
+      RpcMethod.ETH_SEND_TRANSACTION_BATCH
+    )
+  })
+
+  it('throws when a recurring batch tx is missing fees (cold-start guard) on a software wallet', async () => {
+    const request = jest.fn()
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
+    }))
+
+    await expect(
+      signer.signBatch?.(
+        [
+          makeTx({ maxFeePerGas: undefined, maxPriorityFeePerGas: undefined }),
+          makeTx({ to: '0xrouter' })
+        ],
+        jest.fn() as never,
+        makeRecurringStepDetails()
+      )
+    ).rejects.toThrow(
+      'signBatch: recurring batch txs must have fees pre-filled'
+    )
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('sets CONFETTI_DISABLED on the dispatched batch for a recurring order action (cancel/pause/resume), mirroring signOne', async () => {
+    // Order actions are schedule-management, not a completed swap — the
+    // confetti must be suppressed. This branch mirrors `signOne`; if a
+    // future SDK change ever routes an order action through signBatch it
+    // must behave identically. `isRecurringOrderActionSignatureReason`
+    // recognizes Cancel/Pause/Resume, and `readRecurringSignerContext`
+    // forwards the order-action payload verbatim as RECURRING_SWAP context.
+    const request = jest.fn().mockResolvedValue(['0xhashA', '0xhashB'])
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: true,
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
+    }))
+
+    await signer.signBatch?.(
+      [makeTx(), makeTx({ to: '0xrouter' })],
+      jest.fn() as never,
+      makeRecurringStepDetails({
+        currentSignatureReason: TransferSignatureReason.CancelRecurringSwap,
+        signerContext: {
+          action: TransferSignatureReason.CancelRecurringSwap,
+          fromTokenSymbol: 'AVAX',
+          toTokenSymbol: 'USDC'
+        }
+      })
+    )
+
+    expect(request).toHaveBeenCalledTimes(1)
+    const call = request.mock.calls[0][0]
+    expect(call.method).toBe(RpcMethod.ETH_SEND_TRANSACTION_BATCH)
+    expect(call.context[RequestContext.CONFETTI_DISABLED]).toBe(true)
+    expect(call.context[RequestContext.RECURRING_SWAP]).toEqual({
+      action: TransferSignatureReason.CancelRecurringSwap,
+      fromTokenSymbol: 'AVAX',
+      toTokenSymbol: 'USDC'
+    })
+    // Still never auto-approved.
+    expect(call.context).not.toHaveProperty(RequestContext.SWAP_AUTO_APPROVE)
+  })
+})
+
 describe('createEvmSigner.sign — single-tx auto-approve context', () => {
   // Single-tx Markr swaps (native source, repeat-allowance ERC-20)
   // flow through `sign` and dispatch the standard `eth_sendTransaction`.
@@ -676,7 +871,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     }))
 
     const result = await signer.sign(
@@ -702,7 +898,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: false,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     await signer.sign(makeTx(), jest.fn() as never, markrStepDetails)
@@ -717,7 +914,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: 'unlimited'
+      maxBuy: 'unlimited',
+      isBatchSigningSupported: true
     }))
 
     // makeStepDetails default uses serviceType: AVALANCHE_EVM (not MARKR)
@@ -733,7 +931,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashApprove')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     }))
 
     // ERC-20 `approve(spender, amount)` selector
@@ -758,7 +957,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashIncrease')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     }))
 
     // increaseAllowance(spender, amount) — 0x39509351 — not currently
@@ -786,7 +986,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     }))
 
     const txWithoutFees = makeTx({
@@ -806,7 +1007,8 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     const request = jest.fn().mockResolvedValue('0xhashSingle')
     const signer = createEvmSigner(request, () => ({
       isQuickSwapsActive: true,
-      maxBuy: '5000'
+      maxBuy: '5000',
+      isBatchSigningSupported: true
     }))
 
     const crossChainStepDetails = makeStepDetails({
