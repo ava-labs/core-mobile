@@ -222,11 +222,17 @@ describe('WalletService', () => {
       getAtomicUTXOs: getAtomicUTXOsMock
     })
 
+    let readOnlySignerSpy: jest.SpyInstance
+
     beforeAll(() => {
-      jest // @ts-ignore
+      readOnlySignerSpy = jest // @ts-ignore
         .spyOn(AvalancheWalletService, 'getReadOnlySigner')
         // @ts-ignore
         .mockImplementation(() => atomicMockWallet())
+    })
+
+    afterAll(() => {
+      readOnlySignerSpy.mockRestore()
     })
 
     it('returns all six CCT routes, one signer call per (dest, source) pair', async () => {
