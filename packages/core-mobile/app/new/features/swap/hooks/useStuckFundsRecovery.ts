@@ -55,18 +55,21 @@ const awaitTransferConclusion = (
   transfer: Transfer
 ): Promise<ConcludedTransfer> =>
   new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error('Recovery tracking timed out')),
-      RECOVERY_TRACK_TIMEOUT_MS
-    )
-    FusionService.trackTransfer(
+    const timer: { id?: ReturnType<typeof setTimeout> } = {}
+    const cancelTracking = FusionService.trackTransfer(
       transfer,
       () => undefined,
       concluded => {
-        clearTimeout(timer)
+        if (timer.id) clearTimeout(timer.id)
         resolve(concluded)
       }
     )
+    // On timeout, stop the SDK-side tracking too (not just this promise) so it
+    // doesn't keep polling in the background past the UI's patience.
+    timer.id = setTimeout(() => {
+      cancelTracking()
+      reject(new Error('Recovery tracking timed out'))
+    }, RECOVERY_TRACK_TIMEOUT_MS)
   })
 
 /**
