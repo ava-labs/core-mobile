@@ -3019,7 +3019,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNReanimated (4.4.1):
+  - RNReanimated (4.5.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3040,11 +3040,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNReanimated/apple (= 4.4.1)
-    - RNReanimated/common (= 4.4.1)
+    - RNReanimated/apple (= 4.5.1)
+    - RNReanimated/common (= 4.5.1)
+    - RNReanimated/view (= 4.5.1)
     - RNWorklets
     - Yoga
-  - RNReanimated/apple (4.4.1):
+  - RNReanimated/apple (4.5.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3067,7 +3068,30 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets
     - Yoga
-  - RNReanimated/common (4.4.1):
+  - RNReanimated/common (4.5.1):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNWorklets
+    - Yoga
+  - RNReanimated/view (4.5.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3245,7 +3269,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets (0.9.2):
+  - RNWorklets (0.10.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3266,10 +3290,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNWorklets/apple (= 0.9.2)
-    - RNWorklets/common (= 0.9.2)
+    - RNWorklets/apple (= 0.10.1)
+    - RNWorklets/common (= 0.10.1)
     - Yoga
-  - RNWorklets/apple (0.9.2):
+  - RNWorklets/apple (0.10.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3291,7 +3315,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNWorklets/common (0.9.2):
+  - RNWorklets/common (0.10.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -3987,7 +4011,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 4f2618a4a1e762a1ee134a1e2323bba9843e06da
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: e74751f2eb2e1b5df0c35f65e690435be647f2d7
+  hermes-engine: 98dd077508f9ee776d0d4a44f6b32197518aa1c3
   jail-monkey: 1846061ac12e861ac5a8ec7197b0daa775b83733
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
@@ -4098,7 +4122,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 25c9c516839be2c5e3d3344f95dc7da5f7e63fc2
   ReactCodegen: 22f5ee7ee1e6410da1332d1ef8e9cf1cb4aa7b7d
   ReactCommon: 14a0287b7145ef29530c15bcd7aca4154a3cb353
-  ReactNativeDependencies: 1338342f47b9f2dcbf29d76e09069f45578a0dd0
+  ReactNativeDependencies: aaf829fb656ecb0bc87fcc5d14f121db8d44276e
   ReactNativePerformance: fa4952a58739e1a1f6b90a4e9777657d463499a3
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNAppleAuthentication: 8d313d93fe2238d6b7ff0a39c67ebcf298d96653
@@ -4122,14 +4146,14 @@ SPEC CHECKSUMS:
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3
   RNPermissions: 239fd18384ca986d6684e0871bd39c49721530b3
-  RNReanimated: 5cbcdb713d6548c7ab0a769ad586a6b39fad73a9
+  RNReanimated: b8bf49928980031fb5e063929a8a42f2663a3946
   RNScreens: 04eaa3cec7258c13d744af58aed4aec958a17eda
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
   RNSentry: 3650d77f87428294f1558385190fdcf3f1227b0a
   RNShare: f505641c60b67ad0e5214b025e6af0b4a5781c2e
   RNSound: e52ec700bd9ce5d31d36b42808f24b94ffab1981
   RNSVG: 4500e73768fce7ace39bdedb0b7b4c62751ae918
-  RNWorklets: 720601f970c2aa5d156cf4b6c7d6cdbcc5c0b28d
+  RNWorklets: c1ef669bc37dcfe4af83cc6a3da12c4b3217ab20
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
