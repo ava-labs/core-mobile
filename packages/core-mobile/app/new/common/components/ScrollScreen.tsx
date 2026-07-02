@@ -486,8 +486,8 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             // parent form sheet's nested scrolling so a vertical swipe scrolls the
             // content instead of being captured by the sheet's drag-to-dismiss gesture.
             // Without it, scrolling down inside a modal dismisses the whole sheet.
-            nestedScrollEnabled={Platform.OS === 'android'}
             {...props}
+            nestedScrollEnabled={Platform.OS === 'android'}
             style={{
               flex: 1
             }}

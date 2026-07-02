@@ -1,6 +1,11 @@
 import { SxProp } from 'dripsy'
 import React, { useEffect, useRef, useState } from 'react'
-import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  StyleProp,
+  StyleSheet,
+  ViewStyle
+} from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -65,6 +70,26 @@ export const GroupList = ({
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setTextMarginLeft(event.nativeEvent.layout.x)
+  }
+
+  // The static clip view must round at the SAME radii as the outer surface,
+  // otherwise a caller that overrides corners on the outer view (e.g.
+  // StakeDetailScreen's top-only JOINED_STACK_RADIUS) would clip its children
+  // at the default 12px, producing mismatched corners / a clipped seam.
+  // `StyleSheet.flatten` resolves registered style ids (numbers) and nested
+  // arrays down to a single object, so caller overrides always propagate —
+  // then mirror the radius fields onto the clip, defaulting to 12.
+  const flattenedStyle = (StyleSheet.flatten(style) ?? {}) as ViewStyle
+  const clipRadiusStyle: ViewStyle = {
+    borderRadius: flattenedStyle.borderRadius ?? 12,
+    borderTopLeftRadius: flattenedStyle.borderTopLeftRadius,
+    borderTopRightRadius: flattenedStyle.borderTopRightRadius,
+    borderBottomLeftRadius: flattenedStyle.borderBottomLeftRadius,
+    borderBottomRightRadius: flattenedStyle.borderBottomRightRadius,
+    borderTopStartRadius: flattenedStyle.borderTopStartRadius,
+    borderTopEndRadius: flattenedStyle.borderTopEndRadius,
+    borderBottomStartRadius: flattenedStyle.borderBottomStartRadius,
+    borderBottomEndRadius: flattenedStyle.borderBottomEndRadius
   }
 
   const handlePress = (item: GroupListItem, index: number): void => {
@@ -166,22 +191,7 @@ export const GroupList = ({
         },
         style
       ]}>
-      <View
-        style={[
-          { borderRadius: 12, overflow: 'hidden' },
-          ...((Array.isArray(style) ? style : [style])
-            .filter(s => Boolean(s) && typeof s === 'object')
-            .map(s => {
-              const v = s as ViewStyle
-              return {
-                borderRadius: v.borderRadius,
-                borderTopLeftRadius: v.borderTopLeftRadius,
-                borderTopRightRadius: v.borderTopRightRadius,
-                borderBottomLeftRadius: v.borderBottomLeftRadius,
-                borderBottomRightRadius: v.borderBottomRightRadius
-              }
-            }))
-        ]}>
+      <View style={[clipRadiusStyle, { overflow: 'hidden' }]}>
         {data.map((item, index) => {
           const {
             leftIcon,
