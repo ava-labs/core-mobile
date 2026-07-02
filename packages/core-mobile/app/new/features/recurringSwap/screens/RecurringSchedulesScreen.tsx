@@ -348,124 +348,133 @@ function ScheduleCard({
       onLayout={
         onMeasureY ? e => onMeasureY(e.nativeEvent.layout.y) : undefined
       }
-      style={{
-        backgroundColor: colors.$surfaceSecondary,
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginBottom: 12,
-        overflow: 'hidden'
-      }}>
-      <Pressable onPress={handleToggle}>
-        <View
-          sx={{
-            position: 'relative',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            minHeight: 40
-          }}>
-          {network && (
-            <LogoWithNetwork
-              token={{
-                symbol: fromToken.symbol,
-                logoUri: fromToken.logoUri,
-                chainId: s.chainId
-              }}
-              network={network}
-              size="medium"
-              outerBorderColor={colors.$surfaceSecondary}
+      style={{ marginBottom: 12 }}>
+      {/* Static clip wrapper. The rounded surface + `overflow: 'hidden'` must
+          NOT sit on the `LinearTransition` view: under RN's new architecture
+          (Fabric) on Android, a layout-animated view with `overflow: 'hidden'`
+          settles at a stale (too-short) height when the expanded section
+          mounts, clipping the tail — the last "Next swap scheduled" row got
+          cut off. Keeping the clip on a non-animated view lets it measure the
+          real height. */}
+      <View
+        style={{
+          backgroundColor: colors.$surfaceSecondary,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          overflow: 'hidden'
+        }}>
+        <Pressable onPress={handleToggle}>
+          <View
+            sx={{
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12,
+              minHeight: 40
+            }}>
+            {network && (
+              <LogoWithNetwork
+                token={{
+                  symbol: fromToken.symbol,
+                  logoUri: fromToken.logoUri,
+                  chainId: s.chainId
+                }}
+                network={network}
+                size="medium"
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+            )}
+            <Icons.Custom.Compare
+              width={20}
+              height={20}
+              color={colors.$textPrimary}
             />
-          )}
-          <Icons.Custom.Compare
-            width={20}
-            height={20}
-            color={colors.$textPrimary}
-          />
-          {network && (
-            <LogoWithNetwork
-              token={{
-                symbol: toToken.symbol,
-                logoUri: toToken.logoUri,
-                chainId: s.chainId
-              }}
-              network={network}
-              size="medium"
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-          )}
-          <Animated.View
-            style={[{ position: 'absolute', right: 0 }, chevronStyle]}>
-            <Icons.Navigation.ExpandMore
-              width={24}
-              height={24}
-              color={colors.$textSecondary}
-            />
-          </Animated.View>
-        </View>
+            {network && (
+              <LogoWithNetwork
+                token={{
+                  symbol: toToken.symbol,
+                  logoUri: toToken.logoUri,
+                  chainId: s.chainId
+                }}
+                network={network}
+                size="medium"
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+            )}
+            <Animated.View
+              style={[{ position: 'absolute', right: 0 }, chevronStyle]}>
+              <Icons.Navigation.ExpandMore
+                width={24}
+                height={24}
+                color={colors.$textSecondary}
+              />
+            </Animated.View>
+          </View>
 
-        <Text
-          variant="body2"
-          sx={{
-            color: '$textPrimary',
-            textAlign: 'center',
-            marginTop: 12
-          }}>
-          {formatSummary(s, fromToken, toToken)}
-        </Text>
-        {/* Status badge under the summary — visible regardless of expanded
-            state so a non-active row is obvious in the list view without
-            the user having to drill in. `Active` schedules render no
-            badge (that's the implicit default). */}
-        {STATUS_LABEL[s.status] && (
           <Text
             variant="body2"
             sx={{
-              color: '$textSecondary',
+              color: '$textPrimary',
               textAlign: 'center',
-              marginTop: 4
+              marginTop: 12
             }}>
-            {STATUS_LABEL[s.status]}
+            {formatSummary(s, fromToken, toToken)}
           </Text>
-        )}
-      </Pressable>
+          {/* Status badge under the summary — visible regardless of expanded
+            state so a non-active row is obvious in the list view without
+            the user having to drill in. `Active` schedules render no
+            badge (that's the implicit default). */}
+          {STATUS_LABEL[s.status] && (
+            <Text
+              variant="body2"
+              sx={{
+                color: '$textSecondary',
+                textAlign: 'center',
+                marginTop: 4
+              }}>
+              {STATUS_LABEL[s.status]}
+            </Text>
+          )}
+        </Pressable>
 
-      {expanded && (
-        <View sx={{ marginTop: 12, gap: 12 }}>
-          {/* Pause / Resume sits to the LEFT of Cancel. The
+        {expanded && (
+          <View sx={{ marginTop: 12, gap: 12 }}>
+            {/* Pause / Resume sits to the LEFT of Cancel. The
               button's label, spinner state, and action depend on whether
               the schedule is currently active or paused: while paused, it
               acts as Resume; while active, it acts as Pause. The intent
               after the on-chain TX confirms is reflected by the server
               `status` flip and the pending-action store clearing. */}
-          <ActionButtons
-            isPaused={isPaused}
-            isPausing={isPausing}
-            isResuming={isResuming}
-            isCancelling={isCancelling}
-            canPause={canPause}
-            canResume={canResume}
-            cancelDisabled={cancelDisabled}
-            isSourceChainAvailable={isSourceChainAvailable}
-            schedule={s}
-            fromToken={fromToken}
-            toToken={toToken}
-            onPause={onPause}
-            onResume={onResume}
-            onRemove={onRemove}
-            dangerColor={colors.$textDanger}
-          />
+            <ActionButtons
+              isPaused={isPaused}
+              isPausing={isPausing}
+              isResuming={isResuming}
+              isCancelling={isCancelling}
+              canPause={canPause}
+              canResume={canResume}
+              cancelDisabled={cancelDisabled}
+              isSourceChainAvailable={isSourceChainAvailable}
+              schedule={s}
+              fromToken={fromToken}
+              toToken={toToken}
+              onPause={onPause}
+              onResume={onResume}
+              onRemove={onRemove}
+              dangerColor={colors.$textDanger}
+            />
 
-          <GroupList
-            data={groupData}
-            separatorMarginRight={16}
-            titleSx={{
-              fontFamily: 'Inter-Regular'
-            }}
-          />
-        </View>
-      )}
+            <GroupList
+              data={groupData}
+              separatorMarginRight={16}
+              titleSx={{
+                fontFamily: 'Inter-Regular'
+              }}
+            />
+          </View>
+        )}
+      </View>
     </Animated.View>
   )
 }
