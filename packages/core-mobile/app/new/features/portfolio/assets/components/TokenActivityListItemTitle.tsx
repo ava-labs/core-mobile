@@ -116,14 +116,22 @@ export const TokenActivityListItemTitle = ({
 
       // If we can identify both input and output tokens, use them.
       if (inputToken && outputToken) {
+        const inputSymbol = resolvePaymentSymbol(
+          inputToken,
+          network?.networkToken.symbol
+        )
+        const outputSymbol = resolvePaymentSymbol(
+          outputToken,
+          network?.networkToken.symbol
+        )
         return [
           renderAmount(inputToken.amount),
           ' ',
-          inputToken.symbol,
+          inputSymbol,
           ' swapped for ',
           renderAmount(outputToken.amount),
           ' ',
-          outputToken.symbol
+          outputSymbol
         ]
       }
 
