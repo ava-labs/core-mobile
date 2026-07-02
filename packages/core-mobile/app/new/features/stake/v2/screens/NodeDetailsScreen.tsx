@@ -31,6 +31,7 @@ import { Seconds } from 'types/siUnits'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { formatLargeCurrency, truncateNodeId } from 'utils/Utils'
 import { determineNodeTags } from '../utils/determineNodeTags'
+import { formatUptime } from '../utils/formatUptime'
 import { getValidatorExplorerUrl } from '../utils/getValidatorExplorerUrl'
 import { NodeTagPill } from '../components/NodeTagPill'
 import { useDelegateNodeSelection } from '../store'
@@ -195,11 +196,9 @@ const NodeDetailsScreen = (): JSX.Element => {
         caption: 'NodeID delegation fee'
       },
       {
-        // Drop the ".00" only when uptime is exactly 100 (→ "100%"); other
-        // values keep 2 decimals (e.g. "99.91%").
-        value: `${
-          Number(node.uptime) === 100 ? '100' : formatNumber(node.uptime)
-        }%`,
+        // `formatUptime` truncates below-100 values so a 99.999% node never
+        // reads as "100%"; an exact 100 drops the ".00".
+        value: `${formatUptime(node.uptime)}%`,
         caption: 'Time responsive'
       }
     ]

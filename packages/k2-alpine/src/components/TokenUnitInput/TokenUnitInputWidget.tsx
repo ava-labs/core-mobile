@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react'
-import { SxProp } from 'dripsy'
+import { Sx, SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { View } from '../Primitives'
 import { Button } from '../Button/Button'
@@ -49,8 +49,12 @@ export const TokenUnitInputWidget = ({
   formatInCurrency(amount: TokenUnit): string
   accessory?: JSX.Element
   sx?: SxProp
-  /** Overrides for the inner card (e.g. a fixed `height`). */
-  cardSx?: SxProp
+  /**
+   * Overrides for the inner card (e.g. a fixed `height`). Typed as the plain
+   * object form (`Sx`, not `SxProp`) because it's spread into the card's sx —
+   * a function-form `SxProp` would silently contribute nothing.
+   */
+  cardSx?: Sx
   disabled?: boolean
   autoFocus?: boolean
   /** When false, the amount renders in the danger color. */

@@ -1,6 +1,7 @@
 /**
- * 10% of the gross estimated delegation rewards charged as a convenience fee
- * for Fast Stake transactions. Mirrors the rate used by core-web (see
+ * 10% of the net estimated delegation rewards (after the validator's own
+ * delegation fee) charged as a convenience fee for Fast Stake transactions.
+ * Mirrors the rate and basis used by core-web (see
  * `apps/core/app/components/Stake/constants.ts`) so both clients quote the
  * user the same effective APY.
  */
@@ -34,10 +35,11 @@ export const getFastStakeFeeEscrowAddress = (isTestnet: boolean): string =>
     : FAST_STAKE_FEE_ESCROW_ADDRESS_MAINNET
 
 /**
- * 10% of the gross estimated delegation rewards charged as a service fee for
- * the advanced delegate flow. Mirrors core-web's `DELEGATION_FEE_RATE`; same
- * rate as Fast Stake but gated behind a separate flag/escrow so the two
- * programs can be tuned independently.
+ * 10% of the net estimated delegation rewards (after the validator's own
+ * delegation fee) charged as a service fee for the advanced delegate flow.
+ * Mirrors core-web's `DELEGATION_FEE_RATE`; same rate and basis as Fast Stake
+ * but gated behind a separate flag/escrow so the two programs can be tuned
+ * independently.
  */
 export const DELEGATION_FEE_RATE = 0.1
 

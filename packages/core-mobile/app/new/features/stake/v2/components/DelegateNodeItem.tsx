@@ -10,9 +10,9 @@ import {
 import { format } from 'date-fns'
 import React, { useMemo } from 'react'
 import { NodeValidator } from 'types/earn'
-import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { truncateNodeId } from 'utils/Utils'
 import { determineNodeTags } from '../utils/determineNodeTags'
+import { formatUptime } from '../utils/formatUptime'
 import { NodeTagPill } from './NodeTagPill'
 
 // Delegator count is an integer — format with thousands separators and no
@@ -113,7 +113,7 @@ export const DelegateNodeItem = ({
            * the delegator count folded into the subtitle above. */}
           <View sx={{ gap: 2 }}>
             <Text variant="body2" sx={{ color: '$textSuccess' }}>
-              {`${formatNumber(node.uptime)}% uptime`}
+              {`${formatUptime(node.uptime)}% uptime`}
             </Text>
             <Text variant="body2" sx={{ color: '$textPrimary' }}>
               {`${available.toDisplay()} AVAX available`}
