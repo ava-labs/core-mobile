@@ -39,6 +39,7 @@ import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
 import { toChain } from 'features/swap/utils/fusionTypeConverters'
+import { ErrorState } from 'common/components/ErrorState'
 import { useRecurringSchedules } from '../hooks/useRecurringSchedules'
 import type { UseRecurringOrderAction } from '../hooks/_makeOrderActionHook'
 import { useCancelRecurringSchedule } from '../hooks/useCancelRecurringSchedule'
@@ -629,6 +630,10 @@ export function RecurringSchedulesScreen({
     return filtered.map(({ s }) => s)
   }, [schedules])
   const manageableCount = manageableSchedules.length
+  // No manageable schedules → the screen shows only the empty (or empty-error)
+  // placeholder. In that case let the scroll content grow to fill the modal so
+  // the placeholder can be vertically centered instead of pinned near the top.
+  const isEmpty = manageableCount === 0
 
   // Scroll the deep-linked card into view. Triggered by the card's own
   // `onLayout` so we don't fire before the card has been measured (which
@@ -853,13 +858,19 @@ export function RecurringSchedulesScreen({
       title={title}
       navigationTitle={navigationTitle}
       isModal
-      contentContainerStyle={{ padding: 16 }}>
+      contentContainerStyle={{ padding: 16, ...(isEmpty && { flexGrow: 1 }) }}>
       {/* Distinguish "Markr fetch failed with no cached data" from "fetch
           succeeded and you have zero schedules". The previous render
           collapsed both into the empty state, which made a server
           outage look like "your schedules disappeared". */}
-      {isError && manageableSchedules.length === 0 && (
-        <View sx={{ alignItems: 'center', paddingTop: 32, gap: 12 }}>
+      {isError && isEmpty && (
+        <View
+          sx={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 12
+          }}>
           <Text variant="body2" sx={{ color: '$textSecondary' }}>
             Couldn’t load recurring swaps.
           </Text>
@@ -868,11 +879,12 @@ export function RecurringSchedulesScreen({
           </Button>
         </View>
       )}
-      {!isError && manageableSchedules.length === 0 && (
-        <View sx={{ alignItems: 'center', paddingTop: 32 }}>
-          <Text variant="body2" sx={{ color: '$textSecondary' }}>
-            No recurring swaps found.
-          </Text>
+      {!isError && isEmpty && (
+        <View sx={{ flex: 1, justifyContent: 'center' }}>
+          <ErrorState
+            title="No recurring swaps"
+            description="Recurring swaps you schedule will appear here"
+          />
         </View>
       )}
       {manageableSchedules.map(s => (
