@@ -1,6 +1,5 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
@@ -51,6 +50,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { formatTokenAmount } from 'utils/Utils'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
@@ -62,7 +62,8 @@ import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
   selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
-  selectMarkrSwapMaxRetries
+  selectMarkrSwapMaxRetries,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
 import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
 import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
@@ -85,8 +86,10 @@ import {
   isUserRejectionError
 } from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
+import { StuckFundsBanner } from '../components/StuckFundsBanner'
 import {
   isAvalancheCctRoute,
+  isAvalancheCctZeroAmountRoute,
   isCctOnlySource
 } from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
@@ -187,6 +190,9 @@ function buildSwapDetailItems({
 /**
  * Computes the current swap validation error (or null if inputs are valid).
  * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ *
+ * `allowZeroAmount` relaxes the "enter an amount" gate for AVALANCHE_CCT routes,
+ * where 0 is a valid input that triggers the SDK's import-only recovery quote.
  */
 function computeValidationError({
   fromTokenValue,
@@ -198,7 +204,8 @@ function computeValidationError({
   numberOfOrders,
   recurringTotalAmountIn,
   recurringAdditiveNativeFee,
-  nativeFromToken
+  nativeFromToken,
+  allowZeroAmount = false
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
@@ -210,9 +217,11 @@ function computeValidationError({
   recurringTotalAmountIn: bigint | undefined
   recurringAdditiveNativeFee: bigint
   nativeFromToken: LocalTokenWithBalance | undefined
+  allowZeroAmount?: boolean
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    if (allowZeroAmount) return null
     return fusionErrors.enterAmount()
   }
   // Recurring: validate the full schedule commitment (principal + additive
@@ -441,6 +450,7 @@ export const SwapScreen = (): JSX.Element => {
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const recurring = useRecurringSwapContext()
 
   // Recurring is Markr-only, so its per-order floor is Markr's minimum
@@ -651,6 +661,20 @@ export const SwapScreen = (): JSX.Element => {
     [recurringQuote.data?.fees]
   )
 
+  // CCT routes accept 0 (the SDK emits an import-only recovery quote), so the
+  // "enter an amount" gate is relaxed and the submit button reads "Recover".
+  const allowZeroAmount = isAvalancheCctZeroAmountRoute({
+    isAvalancheCctEnabled,
+    fromToken,
+    toToken
+  })
+
+  // Recovery flow = an enabled CCT route with a 0 amount. Note the amount input
+  // emits 0n for a cleared/empty field as well, so clearing the amount also
+  // enters recovery (button reads "Recover"). Distinguishing an empty field from
+  // an explicit typed 0 is tracked as a follow-up.
+  const isCctRecovery = allowZeroAmount && debouncedFromTokenValue === 0n
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -665,7 +689,8 @@ export const SwapScreen = (): JSX.Element => {
         numberOfOrders: recurring.numberOfOrders,
         recurringTotalAmountIn: recurringQuote.data?.totalAmountIn,
         recurringAdditiveNativeFee,
-        nativeFromToken
+        nativeFromToken,
+        allowZeroAmount
       })
     )
   }, [
@@ -678,11 +703,15 @@ export const SwapScreen = (): JSX.Element => {
     recurring.numberOfOrders,
     recurringQuote.data?.totalAmountIn,
     recurringAdditiveNativeFee,
-    nativeFromToken
+    nativeFromToken,
+    allowZeroAmount
   ])
 
   const applyQuote = useCallback(() => {
-    if (!debouncedFromTokenValue || !activeQuote) {
+    // Show the received amount whenever a quote is in hand. A CCT recovery
+    // (0 entered) has amountIn=0, so keep the amount visible; an empty or
+    // no-quote input clears it.
+    if (!activeQuote || (!debouncedFromTokenValue && !isCctRecovery)) {
       setToTokenValue(undefined)
       return
     }
@@ -694,7 +723,7 @@ export const SwapScreen = (): JSX.Element => {
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [activeQuote, debouncedFromTokenValue])
+  }, [activeQuote, debouncedFromTokenValue, isCctRecovery])
 
   const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -715,7 +744,17 @@ export const SwapScreen = (): JSX.Element => {
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
-    (amount: bigint): void => {
+    (amount: bigint, valueString: string): void => {
+      // An empty/cleared field emits valueString '' (a typed 0 emits '0'); both
+      // carry amount 0n. Map empty to undefined so the rest of the screen can
+      // tell them apart: undefined = no amount (never a recovery, no quote),
+      // 0n = an explicit typed 0 (the CCT recovery input).
+      if (valueString === '') {
+        setFromTokenValue(undefined)
+        setDestination(SwapSide.SELL)
+        setUserClickedMax(false)
+        return
+      }
       // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
       // floor the trailing wei so what the user sees is what gets sent.
       // Mirrors the staking flow's `toFixed(9)` clamp.
@@ -1182,10 +1221,13 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!debouncedFromTokenValue) {
+    // `!debouncedFromTokenValue` is also true for 0n, but a CCT recovery (an
+    // explicit 0) has a real amountOut to show, so don't clear it here — let
+    // applyQuote govern the To for that case (matches applyQuote's own guard).
+    if (!debouncedFromTokenValue && !isCctRecovery) {
       setToTokenValue(undefined)
     }
-  }, [debouncedFromTokenValue])
+  }, [debouncedFromTokenValue, isCctRecovery])
 
   usePreventScreenRemoval(isSwapping)
 
@@ -1416,7 +1458,13 @@ export const SwapScreen = (): JSX.Element => {
           size="large"
           onPress={handleNext}
           disabled={!canSubmit || isBusy}>
-          {isBusy ? <ActivityIndicator size="small" /> : 'Next'}
+          {isBusy ? (
+            <ActivityIndicator size="small" />
+          ) : isCctRecovery ? (
+            'Recover'
+          ) : (
+            'Next'
+          )}
         </Button>
       </>
     )
@@ -1426,7 +1474,8 @@ export const SwapScreen = (): JSX.Element => {
     isSwapping,
     recurringSubmitting,
     isLombard,
-    renderLombardLogo
+    renderLombardLogo,
+    isCctRecovery
   ])
 
   const renderCctTwoTxNotice = useCallback(() => {
@@ -1520,13 +1569,15 @@ export const SwapScreen = (): JSX.Element => {
       isModal
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
       {/* Schedule-management entry point: surfaces above the new-swap flow so
           users with existing schedules see + manage them before entering a
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
-        <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
-        </View>
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
       )}
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}

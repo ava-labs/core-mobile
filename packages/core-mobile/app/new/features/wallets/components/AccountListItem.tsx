@@ -39,18 +39,21 @@ const AccountListItem = ({
   }, [onAccountDetails, account.id])
 
   return (
-    <View>
+    <View
+      sx={{
+        backgroundColor: isActive
+          ? alpha(theme.colors.$textPrimary, 0.1)
+          : 'transparent',
+        borderRadius: 12,
+        height: 52
+      }}>
       <TouchableOpacity
         onPress={handlePress}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingLeft: 10,
-          borderRadius: 12,
-          height: 52,
-          backgroundColor: isActive
-            ? alpha(theme.colors.$textPrimary, 0.1)
-            : 'transparent'
+          paddingLeft: 14,
+          flex: 1
         }}>
         <View
           sx={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
@@ -125,7 +128,7 @@ const AccountListItem = ({
           </View>
         </View>
       </TouchableOpacity>
-      {!hideSeparator && <Separator sx={{ marginLeft: 46 }} />}
+      {!hideSeparator && <Separator sx={{ marginLeft: 50 }} />}
     </View>
   )
 }

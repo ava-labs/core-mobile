@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import type { Network } from '@avalabs/core-chains-sdk'
+import { compareDestinationChains } from '@avalabs/fusion-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
@@ -23,7 +23,9 @@ const STALE_TIME = 2 * 60 * 1000 // 2 minutes
 /**
  * Helper function to filter and sort networks
  * - Filters out Solana networks if blocked or not derived
- * - Sorts with Avalanche C-Chain first
+ * - Sorts using the shared Fusion SDK destination-chain ordering so mobile,
+ *   web, and extension present chains in the same deterministic order
+ *   (C-Chain, P-Chain, X-Chain, Ethereum, Bitcoin, Solana, then the rest)
  */
 function filterAndSortNetworks(
   networks: Network[],
@@ -34,15 +36,14 @@ function filterAndSortNetworks(
       // Filter out Solana networks if blocked or account has no Solana address
       return !(hideSolana && isSolanaNetwork(network))
     })
-    .sort((a, b) => {
-      // Avalanche C-Chain always first
-      const aIsAvalanche = isAvalancheChainId(a.chainId)
-      const bIsAvalanche = isAvalancheChainId(b.chainId)
-
-      if (aIsAvalanche && !bIsAvalanche) return -1
-      if (!aIsAvalanche && bIsAvalanche) return 1
-      return 0
-    })
+    .sort((a, b) =>
+      // The SDK normalizes numeric ids as EIP-155, so pass the CAIP-2 id via
+      // universalChainId to keep non-EVM chains (BTC, Solana, X/P) in the right bucket
+      compareDestinationChains(
+        { universalChainId: getCaip2ChainId(a.chainId), name: a.chainName },
+        { universalChainId: getCaip2ChainId(b.chainId), name: b.chainName }
+      )
+    )
 }
 
 /**

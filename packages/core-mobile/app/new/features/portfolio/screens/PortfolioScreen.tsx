@@ -31,6 +31,7 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
@@ -350,11 +351,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor={theme.colors.$surfacePrimary}
         />
 
+        {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+            reserves no space) when none. */}
+        <StuckFundsBanner sx={{ marginHorizontal: 16, marginTop: 21 }} />
+
         {filteredTokenList.length > 0 && (
           <ActionButtons
             buttons={actionButtons}
             contentContainerStyle={{
               padding: 16,
+              paddingTop: 20,
               paddingBottom: 20
             }}
           />
