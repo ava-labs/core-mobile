@@ -19,7 +19,6 @@ import {
 } from 'features/wallets/utils/buildWalletListRows'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -338,18 +337,13 @@ export const WalletsScreen = (): JSX.Element => {
     listRef.current?.scrollViewRef?.current?.scrollToOffset({ offset: 0 })
   }, [refetch])
 
-  const insets = useSafeAreaInsets()
-
-  const progressViewOffset = useMemo(() => {
-    return headerHeight * 2 + insets.top
-  }, [headerHeight, insets.top])
-
   return (
     <ListScreenV2
       flatListRef={listRef}
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
       data={rows}
+      contentInset={{ top: headerHeight }}
       extraData={expandedWallets}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
@@ -357,10 +351,9 @@ export const WalletsScreen = (): JSX.Element => {
         <RefreshControl
           refreshing={isRefreshing}
           onRefresh={onRefresh}
-          progressViewOffset={progressViewOffset}
+          progressViewOffset={headerHeight}
         />
       }
-      progressViewOffset={progressViewOffset}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}

@@ -6,6 +6,13 @@ import { CardPos } from '../utils/buildWalletListRows'
 const RADIUS = 16
 const INSET = 16
 const GAP = 5
+// A wallet's rows are separate FlashList cells but must look like one
+// continuous card. On Android, cells are positioned at sub-pixel offsets that
+// round to leave ~1px gaps between adjacent cells, through which the dark list
+// background shows as black seams. Pulling each connecting row 1px into the
+// next makes the card background overlap and cover the seam. (iOS rounds
+// sub-pixels without gaps, so this is a no-op there.)
+const SEAM_OVERLAP = 1
 
 export const CardRow = ({
   cardPos,
@@ -34,7 +41,9 @@ export const CardRow = ({
     borderBottomLeftRadius: isBottom ? RADIUS : 0,
     borderBottomRightRadius: isBottom ? RADIUS : 0,
     marginTop: isTop ? GAP : 0,
-    marginBottom: isBottom ? GAP : 0,
+    // Bottom/single rows end a card (real inter-card gap); top/middle rows
+    // continue into the next cell, so overlap them to hide the Android seam.
+    marginBottom: isBottom ? GAP : -SEAM_OVERLAP,
     overflow: 'hidden'
   }
 
