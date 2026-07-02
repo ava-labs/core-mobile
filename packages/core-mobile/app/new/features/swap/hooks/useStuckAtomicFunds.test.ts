@@ -37,6 +37,9 @@ jest.mock('services/wallet/AvalancheWalletService', () => ({
 jest.mock('services/wallet/utils', () => ({
   getAvaxAssetId: () => 'avax-asset-id'
 }))
+jest.mock('./useZustandStore', () => ({
+  useIsFusionServiceReady: () => [true]
+}))
 
 const { useQuery } = jest.requireMock('@tanstack/react-query')
 

@@ -12,6 +12,7 @@ import {
   mapAtomicUtxosToRoutes,
   type StuckRoute
 } from '../utils/stuckFundsRoutes'
+import { useIsFusionServiceReady } from './useZustandStore'
 
 /**
  * Invalidates the stuck-atomic-funds query. A plain function (uses the app's
@@ -46,6 +47,7 @@ export const useStuckAtomicFunds = (): {
   const account = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
+  const [isFusionServiceReady] = useIsFusionServiceReady()
   const { xpAddresses } = useXPAddresses(account)
 
   const { data: routes = [] } = useQuery({
@@ -58,9 +60,15 @@ export const useStuckAtomicFunds = (): {
       isDeveloperMode,
       xpAddresses
     ],
-    // Gate detection on the CCT flag: it's the feature's kill switch and stops
-    // the 6-RPC/60s poll for every XP user when CCT recovery isn't enabled.
-    enabled: isAvalancheCctEnabled && !!account && xpAddresses.length > 0,
+    // Gate detection on the CCT flag (the feature's kill switch, stops the
+    // 6-RPC/60s poll for every XP user when CCT recovery isn't enabled) and on
+    // Fusion readiness, since the banner is hidden until Fusion is ready anyway
+    // — no point polling during the post-unlock init window.
+    enabled:
+      isAvalancheCctEnabled &&
+      isFusionServiceReady &&
+      !!account &&
+      xpAddresses.length > 0,
     refetchInterval: STUCK_ATOMIC_FUNDS_REFETCH_INTERVAL,
     refetchIntervalInBackground: false,
     queryFn: async () => {

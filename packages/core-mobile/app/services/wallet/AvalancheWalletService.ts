@@ -97,6 +97,21 @@ class AvalancheWalletService {
       }))
     )
 
+    // Log dropped routes so intermittent RPC/chain failures are observable on
+    // the 60s poll without breaking detection for the routes that succeeded.
+    settled.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const [dest, source] = routes[index] as [
+          Avalanche.ChainIDAlias,
+          Avalanche.ChainIDAlias
+        ]
+        Logger.warn(
+          `[getAllAtomicUTXOs] atomic UTXO fetch failed for ${source}->${dest}`,
+          result.reason
+        )
+      }
+    })
+
     return settled
       .filter(
         (
