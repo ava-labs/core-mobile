@@ -251,8 +251,9 @@ const SelectNodeScreen = (): JSX.Element => {
 
     // A non-empty search that matches nothing is a distinct case from the
     // initial load error / empty result — give it its own copy instead of
-    // falling through to a blank screen.
-    if (validators.length === 0 && searchText.length > 0) {
+    // falling through to a blank screen. Trimmed to match the `validators`
+    // memo, so whitespace-only input doesn't read as an active search.
+    if (validators.length === 0 && searchText.trim().length > 0) {
       return (
         <ErrorState
           sx={{ flex: 1 }}

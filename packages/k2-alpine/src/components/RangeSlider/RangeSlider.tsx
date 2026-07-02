@@ -107,7 +107,9 @@ export const RangeSlider: FC<RangeSliderProps> = ({
   const [displayHigh, setDisplayHigh] = useState(high)
 
   // Sync external value changes (e.g. Reset) into the thumbs, but never while
-  // the user is dragging — that would fight the gesture.
+  // the user is dragging — that would fight the gesture. Also re-runs when
+  // `min`/`max` change (bounds are often derived from fetched data), since
+  // the value→progress mapping shifts with them even if `low`/`high` don't.
   useEffect(() => {
     if (isDragging.value) return
     lowP.value = toProgress(low)
@@ -115,7 +117,7 @@ export const RangeSlider: FC<RangeSliderProps> = ({
     setDisplayLow(low)
     setDisplayHigh(high)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [low, high])
+  }, [low, high, min, max])
 
   // Live label update during a drag: touches only this component's state (not
   // the parent), so a complex parent screen doesn't re-render every frame.
