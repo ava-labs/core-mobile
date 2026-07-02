@@ -744,7 +744,17 @@ export const SwapScreen = (): JSX.Element => {
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
-    (amount: bigint): void => {
+    (amount: bigint, valueString: string): void => {
+      // An empty/cleared field emits valueString '' (a typed 0 emits '0'); both
+      // carry amount 0n. Map empty to undefined so the rest of the screen can
+      // tell them apart: undefined = no amount (never a recovery, no quote),
+      // 0n = an explicit typed 0 (the CCT recovery input).
+      if (valueString === '') {
+        setFromTokenValue(undefined)
+        setDestination(SwapSide.SELL)
+        setUserClickedMax(false)
+        return
+      }
       // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
       // floor the trailing wei so what the user sees is what gets sent.
       // Mirrors the staking flow's `toFixed(9)` clamp.
@@ -1211,10 +1221,13 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!debouncedFromTokenValue) {
+    // `!debouncedFromTokenValue` is also true for 0n, but a CCT recovery (an
+    // explicit 0) has a real amountOut to show, so don't clear it here — let
+    // applyQuote govern the To for that case (matches applyQuote's own guard).
+    if (!debouncedFromTokenValue && !isCctRecovery) {
       setToTokenValue(undefined)
     }
-  }, [debouncedFromTokenValue])
+  }, [debouncedFromTokenValue, isCctRecovery])
 
   usePreventScreenRemoval(isSwapping)
 
