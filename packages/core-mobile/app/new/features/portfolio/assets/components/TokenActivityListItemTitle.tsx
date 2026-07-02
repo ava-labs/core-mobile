@@ -114,16 +114,21 @@ export const TokenActivityListItemTitle = ({
         userAddress
       )
 
+      // Resolve symbols through the network-token fallback rather than reading
+      // `token.symbol` raw: Glacier often returns an empty symbol for native
+      // assets (and occasionally ERC-20s), which would render as a dropped
+      // symbol + double space (e.g. "0.05  swapped"). `resolvePaymentSymbol`
+      // mirrors the `s1` fallback used by the other single-leg labels
+      // (token.symbol → network token symbol when NATIVE → token.type).
+      const inputSymbol = inputToken
+        ? resolvePaymentSymbol(inputToken, network?.networkToken.symbol)
+        : undefined
+      const outputSymbol = outputToken
+        ? resolvePaymentSymbol(outputToken, network?.networkToken.symbol)
+        : undefined
+
       // If we can identify both input and output tokens, use them.
       if (inputToken && outputToken) {
-        const inputSymbol = resolvePaymentSymbol(
-          inputToken,
-          network?.networkToken.symbol
-        )
-        const outputSymbol = resolvePaymentSymbol(
-          outputToken,
-          network?.networkToken.symbol
-        )
         return [
           renderAmount(inputToken.amount),
           ' ',
@@ -147,12 +152,7 @@ export const TokenActivityListItemTitle = ({
       // back to a neutral "Contract Call" rather than fabricating either.
       if (inputToken) {
         if (transaction.txType === TransactionType.SWAP) {
-          return [
-            renderAmount(inputToken.amount),
-            ' ',
-            inputToken.symbol,
-            ' swapped'
-          ]
+          return [renderAmount(inputToken.amount), ' ', inputSymbol, ' swapped']
         }
         // Keep the leg amount + symbol so the row still conveys what moved
         // (e.g. "10 USDC Contract Call"), matching the "10 USDC sent" style
@@ -160,7 +160,7 @@ export const TokenActivityListItemTitle = ({
         return [
           renderAmount(inputToken.amount),
           ' ',
-          inputToken.symbol,
+          inputSymbol,
           ' Contract Call'
         ]
       }
