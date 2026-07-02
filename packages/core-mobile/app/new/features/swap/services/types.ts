@@ -3,14 +3,17 @@ import type { FeatureFlags } from 'services/posthog/types'
 import type {
   BitcoinFunctions,
   BtcSigner,
+  CompletedTransfer,
   Environment,
   EstimateNativeFeeOptions,
   EvmSignerWithMessage,
+  FailedTransfer,
   GasSettings,
   GetMinimumTransferAmountProps,
   NativeFeeEstimate,
   Quote,
   QuoterInterface,
+  RefundedTransfer,
   ServiceType,
   Transfer,
   TransferManager,
@@ -108,11 +111,16 @@ export interface IFusionService {
    * Track a transfer's status changes via the SDK
    * @param transfer The transfer to track
    * @param updateListener Callback invoked on every status change
+   * @param onCompleted Optional callback invoked once when tracking concludes
+   * @returns a canceller that stops tracking this transfer immediately
    */
   trackTransfer(
     transfer: Transfer,
-    updateListener: (updated: Transfer) => void
-  ): void
+    updateListener: (updated: Transfer) => void,
+    onCompleted?: (
+      concluded: CompletedTransfer | FailedTransfer | RefundedTransfer
+    ) => void
+  ): () => void
 
   /**
    * Estimate the native fee required to execute the provided quote.

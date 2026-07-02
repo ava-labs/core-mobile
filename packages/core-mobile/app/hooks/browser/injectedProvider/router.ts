@@ -1,6 +1,7 @@
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { RpcMethod as AppRpcMethod } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import {
   getEvmCaip2ChainId,
@@ -12,6 +13,7 @@ import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
 import { isFirstPartyOrigin } from './firstPartyDomains'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
+import { isEvmSigningMethod, isAvalancheSigningMethod } from './approvalMethods'
 
 // avalanche_* methods (X/P account management + signing) are first-party-only.
 // A prefix classifies them: it conservatively covers every current and future
@@ -31,63 +33,17 @@ const isAvalancheMethod = (method: string): boolean =>
 // methods (avalanche_sendTransaction/…) are intentionally NOT here — they need
 // per-request CAIP-2 scope and route separately. CP-13672.
 const AVALANCHE_ACCOUNT_METHODS = new Set<string>([
-  'avalanche_getAccounts',
-  'avalanche_selectAccount',
-  'avalanche_getAccountPubKey'
+  AppRpcMethod.AVALANCHE_GET_ACCOUNTS,
+  AppRpcMethod.AVALANCHE_SELECT_ACCOUNT,
+  AppRpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY
 ])
 
 const isAvalancheAccountMethod = (method: string): boolean =>
   AVALANCHE_ACCOUNT_METHODS.has(method)
 
-// The first-party avalanche signing methods. Unlike the account methods, these
-// route to the Avalanche VM module (ModuleManager.loadModule by CAIP-2) and go
-// through the approval screen, with a per-request CAIP-2 scope (D3), NOT the EVM
-// browser network. Param shapes differ by method (see dispatchAvalancheSigning-
-// Request): send/signTransaction carry an object with chainAlias; signMessage is
-// a [message, accountIndex] tuple. Exact case-sensitive match (same reasoning as
-// the account set). CP-13672.
-const AVALANCHE_SIGNING_METHODS = new Set<string>([
-  'avalanche_sendTransaction',
-  'avalanche_signTransaction',
-  'avalanche_signMessage'
-])
-
-const isAvalancheSigningMethod = (method: string): boolean =>
-  AVALANCHE_SIGNING_METHODS.has(method)
-
 // The Avalanche Primary Network chain aliases a signing request may target.
 const isAvalancheChainAlias = (value: unknown): value is 'X' | 'P' | 'C' =>
   value === 'X' || value === 'P' || value === 'C'
-
-// Injected-specific methods (connect / EIP-2255 permissions / chain management)
-// are handled directly in `dispatchMethod`. Signing methods route through
-// `requestSigning`. Everything else is treated as read-only and dispatched to
-// the VM module, which validates it against its manifest — so the read-only
-// allowlist is no longer hand-maintained here (CP-14384).
-//
-// This list must cover every EVM (eth_*/personal_*) method in the vm-module
-// RpcMethod enum: a signing method missing here silently falls through to the
-// read-only branch. A drift guard in router.test.ts cross-checks it against the
-// enum so it can't quietly fall out of sync.
-export const SIGNING_METHODS: Record<string, RpcMethod> = {
-  [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
-  [RpcMethod.ETH_SEND_TRANSACTION_BATCH]: RpcMethod.ETH_SEND_TRANSACTION_BATCH,
-  [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
-  [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
-  [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,
-  [RpcMethod.SIGN_TYPED_DATA_V1]: RpcMethod.SIGN_TYPED_DATA_V1,
-  [RpcMethod.SIGN_TYPED_DATA_V3]: RpcMethod.SIGN_TYPED_DATA_V3,
-  [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
-}
-
-// `method` comes straight from the dApp, so an own-property check is required:
-// `method in SIGNING_METHODS` / `SIGNING_METHODS[method]` walk the prototype
-// chain, so names like `toString`, `constructor`, or `__proto__` would otherwise
-// hit the signing branch and call requestSigning with a non-RPC value.
-const signingMethodFor = (method: string): RpcMethod | undefined =>
-  Object.prototype.hasOwnProperty.call(SIGNING_METHODS, method)
-    ? SIGNING_METHODS[method]
-    : undefined
 
 const isEvmAddress = (value: unknown): value is string =>
   typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value)
@@ -334,8 +290,7 @@ export function createInjectedProviderRouter(
     method: string,
     params: unknown[]
   ): Promise<void> => {
-    const rpcMethod = signingMethodFor(method)
-    if (!rpcMethod) {
+    if (!isEvmSigningMethod(method)) {
       sendResponse(
         id,
         rpcErrors.methodNotFound(`Method not supported: ${method}`),
@@ -365,7 +320,7 @@ export function createInjectedProviderRouter(
         addr => addr.toLowerCase()
       )
     )
-    const requestedSigners = requestedSignerAddresses(rpcMethod, params)
+    const requestedSigners = requestedSignerAddresses(method, params)
     const signerAddresses =
       requestedSigners.length > 0
         ? requestedSigners
@@ -390,7 +345,7 @@ export function createInjectedProviderRouter(
 
     try {
       const result = await requestSigning({
-        method: rpcMethod,
+        method,
         params,
         chainId: caip2ChainId,
         peerMeta: getPeerMeta(),
@@ -882,7 +837,7 @@ export function createInjectedProviderRouter(
       // RAW params (NOT safeParams): avalanche signing uses object params whose
       // top-level chainAlias would be lost by the array coercion.
       dispatchAvalancheSigningRequest(id, method, params)
-    } else if (signingMethodFor(method)) {
+    } else if (isEvmSigningMethod(method)) {
       dispatchSigningRequest(id, method, safeParams)
     } else {
       // Anything not injected-specific and not a signing method is treated as
