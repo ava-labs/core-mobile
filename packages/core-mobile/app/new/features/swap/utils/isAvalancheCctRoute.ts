@@ -68,3 +68,21 @@ export const isAvalancheCctRoute = ({
   }
   return fromToken.networkChainId !== toToken.networkChainId
 }
+
+/**
+ * True when a 0 input amount is valid for the selected pair: an enabled
+ * AVALANCHE_CCT route. In that state the SDK emits an import-only recovery
+ * quote for `amountIn=0`, letting a user recover stranded funds straight from
+ * the swap screen (and the submit button reads "Recover"). Mirrors core-web's
+ * `isAvalancheCctZeroAmountQuoteRoute`.
+ */
+export const isAvalancheCctZeroAmountRoute = ({
+  isAvalancheCctEnabled,
+  fromToken,
+  toToken
+}: {
+  isAvalancheCctEnabled: boolean
+  fromToken: LocalTokenWithBalance | undefined
+  toToken: LocalTokenWithBalance | undefined
+}): boolean =>
+  isAvalancheCctEnabled && isAvalancheCctRoute({ fromToken, toToken })

@@ -1,49 +1,10 @@
 import { useState, useEffect } from 'react'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
-import FusionService from '../../services/FusionService'
-import { logSdkError } from '../../utils/fusionLogger'
 import { toSwappableAsset, toChain } from '../../utils/fusionTypeConverters'
+import { subscribeToFirstQuote } from '../../utils/subscribeToFirstQuote'
 import type { Quote } from '../../types'
-import type { QuoterParams } from '../../services/types'
 import { getTokenKey } from '../../utils/tokenKey'
-
-/**
- * Subscribes to the first quote emitted by a Quoter for the given params,
- * calls onQuote with it, then unsubscribes. Returns a cleanup function or
- * undefined if the quoter could not be created.
- */
-const subscribeToFirstQuote = (
-  params: QuoterParams,
-  onQuote: (quote: Quote) => void,
-  onFailed: () => void
-): (() => void) | undefined => {
-  try {
-    const quoter = FusionService.getQuoter(params)
-    if (!quoter) return undefined
-
-    let settled = false
-    const unsubscribe = quoter.subscribe((event, data) => {
-      if (settled) return
-      if (event === 'quote') {
-        settled = true
-        onQuote(data.bestQuote)
-        unsubscribe()
-      } else if (event === 'done' || event === 'error') {
-        settled = true
-        onFailed()
-        unsubscribe()
-      }
-    })
-    return () => {
-      settled = true
-      unsubscribe()
-    }
-  } catch (error) {
-    logSdkError('[subscribeToFirstQuote] error', error)
-    return undefined
-  }
-}
 
 type PreQuoteEntry = {
   quote: Quote

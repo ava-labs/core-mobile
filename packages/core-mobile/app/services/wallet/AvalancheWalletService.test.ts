@@ -211,4 +211,46 @@ describe('WalletService', () => {
       expect(unsignedTx).toStrictEqual(mockUnsignedTx)
     })
   })
+
+  describe('getAllAtomicUTXOs', () => {
+    // Returns a sentinel UtxoSet tagged with the (dest, source) it was called
+    // with, so we can assert each route maps to the right signer call.
+    const getAtomicUTXOsMock = jest
+      .fn()
+      .mockImplementation((dest: string, source: string) => ({ dest, source }))
+    const atomicMockWallet = jest.fn().mockReturnValue({
+      getAtomicUTXOs: getAtomicUTXOsMock
+    })
+
+    let readOnlySignerSpy: jest.SpyInstance
+
+    beforeAll(() => {
+      readOnlySignerSpy = jest // @ts-ignore
+        .spyOn(AvalancheWalletService, 'getReadOnlySigner')
+        // @ts-ignore
+        .mockImplementation(() => atomicMockWallet())
+    })
+
+    afterAll(() => {
+      readOnlySignerSpy.mockRestore()
+    })
+
+    it('returns all six CCT routes, one signer call per (dest, source) pair', async () => {
+      const result = await AvalancheWalletService.getAllAtomicUTXOs({
+        account: { index: 0 } as Account,
+        isTestnet: true,
+        xpAddresses: ['P-fuji1abc']
+      })
+
+      const pairs = result.map(r => `${r.source}->${r.dest}`).sort()
+      expect(pairs).toStrictEqual(
+        ['C->P', 'X->P', 'P->C', 'X->C', 'P->X', 'C->X'].sort()
+      )
+      // each entry's utxos came from getAtomicUTXOs(dest, source)
+      result.forEach(r => {
+        expect(r.utxos).toStrictEqual({ dest: r.dest, source: r.source })
+      })
+      expect(getAtomicUTXOsMock).toHaveBeenCalledTimes(6)
+    })
+  })
 })
