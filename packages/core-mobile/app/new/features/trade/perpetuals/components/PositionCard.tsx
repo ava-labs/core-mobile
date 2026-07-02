@@ -14,10 +14,11 @@ import {
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Animated, {
+  AnimatedStyle,
   Easing,
   LinearTransition,
   useAnimatedStyle,
@@ -270,7 +271,7 @@ const PositionHeader = ({
   formattedPnl: string
   pnlColor: string
   showChevron: boolean
-  chevronStyle: StyleProp<ViewStyle>
+  chevronStyle: AnimatedStyle<ViewStyle>
 }): JSX.Element => {
   const { theme } = useTheme()
   return (

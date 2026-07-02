@@ -13,6 +13,12 @@ import { StyleSheet } from 'react-native'
 import { MarketToken } from 'store/watchlist'
 
 const logoSize = 36
+// The #1 token renders a crown badge that sits above the logo via a negative
+// offset. On Android release builds that upward overflow gets clipped at the
+// row/list boundary, cutting off the top of the first row. Reserve extra top
+// space on the crowned row so the badge stays within bounds instead of relying
+// on `overflow: 'visible'`, which is unreliable inside Android FlashList cells.
+const CROWN_HEADROOM = 14
 
 export const TrendingTokenListView = memo(
   ({
@@ -71,8 +77,10 @@ export const TrendingTokenListView = memo(
           style={{
             paddingLeft: 16,
             paddingRight: 16,
-            paddingVertical: 12,
-            flexDirection: 'row'
+            paddingTop: index === 0 ? 12 + CROWN_HEADROOM : 12,
+            paddingBottom: 12,
+            flexDirection: 'row',
+            overflow: 'visible'
           }}>
           {renderLogo()}
           <View

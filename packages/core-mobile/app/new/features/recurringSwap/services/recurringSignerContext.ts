@@ -56,6 +56,18 @@ export function isRecurringTransferSignatureReason(
 ): boolean {
   return (
     reason === TransferSignatureReason.ScheduleRecurringSwap ||
+    isRecurringOrderActionSignatureReason(reason)
+  )
+}
+
+// Cancel / pause / resume are schedule-management actions, not a completed
+// swap or a new schedule. `EvmSigner.signOne` uses this to suppress the
+// success confetti for these three (`ScheduleRecurringSwap` — creating a
+// schedule — and recurring fills keep their normal feedback).
+export function isRecurringOrderActionSignatureReason(
+  reason: TransferSignatureReason
+): boolean {
+  return (
     reason === TransferSignatureReason.CancelRecurringSwap ||
     reason === TransferSignatureReason.PauseRecurringSwap ||
     reason === TransferSignatureReason.ResumeRecurringSwap

@@ -13,7 +13,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
@@ -128,12 +128,15 @@ export const SelectAssetScreen = (): JSX.Element => {
             <View sx={{ flex: 1 }}>
               <Text
                 variant="body2"
-                sx={{ color: colors.$textPrimary, fontWeight: 500 }}>
+                sx={{ color: colors.$textPrimary, fontFamily: 'Inter-Medium' }}>
                 {item.symbol}
               </Text>
               <Text
                 variant="subtitle2"
-                sx={{ color: colors.$textSecondary, fontWeight: 500 }}>
+                sx={{
+                  color: colors.$textSecondary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 {tokenWithBalance?.balanceInCurrency
                   ? formatCurrency({
                       amount: tokenWithBalance.balanceInCurrency

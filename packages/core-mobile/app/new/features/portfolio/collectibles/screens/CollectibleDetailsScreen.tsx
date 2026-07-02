@@ -1,6 +1,6 @@
 import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { showSnackbar } from 'common/utils/toast'

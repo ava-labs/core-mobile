@@ -90,31 +90,46 @@ export const SelectAssetScreen = (): JSX.Element => {
               <Text
                 testID={`borrow_asset__${item.asset.symbol}`}
                 variant="body2"
-                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                sx={{
+                  color: theme.colors.$textPrimary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 {item.asset.symbol}
               </Text>
             </View>
             <View sx={{ flex: 0.9 }}>
               <Text
                 variant="body2"
-                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                sx={{
+                  color: theme.colors.$textPrimary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 {formatApyPercent(item.borrowApyPercent)}
               </Text>
               <Text
                 variant="subtitle2"
-                sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
+                sx={{
+                  color: theme.colors.$textSecondary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 APY
               </Text>
             </View>
             <View sx={{ flex: 1 }}>
               <Text
                 variant="body2"
-                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                sx={{
+                  color: theme.colors.$textPrimary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 {formatApyPercent(item.historicalBorrowApyPercent)}
               </Text>
               <Text
                 variant="subtitle2"
-                sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
+                sx={{
+                  color: theme.colors.$textSecondary,
+                  fontFamily: 'Inter-Medium'
+                }}>
                 30-day APY
               </Text>
             </View>

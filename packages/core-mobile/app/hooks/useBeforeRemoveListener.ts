@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 
 export enum RemoveEvents {
   GO_BACK = 'GO_BACK',
@@ -10,8 +10,8 @@ export function useBeforeRemoveListener(
   callback: () => void,
   events: RemoveEvents[],
   preventDefault?: boolean
-) {
-  const { addListener, removeListener } = useNavigation()
+): void {
+  const { addListener } = useNavigation()
 
   const innerCallback = useCallback(
     (e: { data: { action: { type: string } }; preventDefault: () => void }) => {
@@ -26,7 +26,8 @@ export function useBeforeRemoveListener(
   )
 
   useEffect(() => {
-    addListener('beforeRemove', innerCallback)
-    return () => removeListener('beforeRemove', innerCallback)
-  }, [addListener, callback, innerCallback, removeListener])
+    // `addListener` returns the unsubscribe fn. React Navigation v6+/expo-router
+    // no longer exposes `removeListener`, so we must use the returned cleanup.
+    return addListener('beforeRemove', innerCallback)
+  }, [addListener, innerCallback])
 }

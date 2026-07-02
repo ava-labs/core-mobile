@@ -1,7 +1,7 @@
 const coverageThreshold = require('./coverage-thresholds.json')
 
 module.exports = {
-  preset: 'react-native',
+  preset: '@react-native/jest-preset',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   coverageDirectory: '<rootDir>/coverage',

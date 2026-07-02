@@ -1,6 +1,6 @@
 import { Separator, View } from '@avalabs/k2-alpine'
 import { DropdownSelections } from 'common/components/DropdownSelections'
-import { Space } from 'common/components/Space'
+import { GRID_GAP } from 'common/consts'
 import { ViewOption, DropdownSelection } from 'common/types'
 import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
@@ -66,6 +66,10 @@ const MarketTokensScreen = ({
             sx={{
               marginLeft: isLeftColumn ? 8 : 0,
               marginRight: isLeftColumn ? 0 : 8,
+              // Row gap is applied per-cell (not via ItemSeparatorComponent): a
+              // FlashList v2 multi-column (flexWrap) grid doesn't row-align a
+              // vertical separator, which produced uneven vertical gaps.
+              marginBottom: GRID_GAP,
               justifyContent: 'center',
               flex: 1,
               alignItems: 'center'
@@ -80,9 +84,12 @@ const MarketTokensScreen = ({
     [charts, goToMarketDetail, isGridView, numColumns]
   )
 
+  // List view only. The grid view spaces rows via per-cell `marginBottom`
+  // (see renderItem) because FlashList v2's flexWrap grid doesn't row-align an
+  // ItemSeparatorComponent.
   const renderSeparator = useCallback((): JSX.Element => {
-    return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
-  }, [isGridView])
+    return <Separator sx={{ marginLeft: 68 }} />
+  }, [])
 
   const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
@@ -94,7 +101,7 @@ const MarketTokensScreen = ({
       containerStyle={containerStyle}
       renderEmpty={renderEmpty}
       renderHeader={renderHeader}
-      renderSeparator={renderSeparator}
+      renderSeparator={isGridView ? undefined : renderSeparator}
       numColumns={numColumns}
       extraData={{ isGridView }}
       listKey={`market-tokens-${view.selected}-${sort.selected}`}

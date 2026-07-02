@@ -2,11 +2,62 @@ import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import {
+  getEvmCaip2ChainId,
+  getAvalancheChainAliasCaip2
+} from 'utils/caip2ChainIds'
 import { setTabChainId } from 'store/browser/slices/tabs'
+import type { Account } from 'store/account'
 import { isUserRejectedRpcError } from './errors'
 import { resolveActiveConnectedAccounts } from './resolveGrantedAccounts'
+import { isFirstPartyOrigin } from './firstPartyDomains'
 import { MAX_MESSAGE_SIZE, ProviderRequest, RouterDeps } from './types'
+
+// avalanche_* methods (X/P account management + signing) are first-party-only.
+// A prefix classifies them: it conservatively covers every current and future
+// avalanche_* method, so a new one can't silently bypass the gate by not being
+// added to a hand-maintained list. Matched case-insensitively so a mixed-case
+// probe (`Avalanche_*`) can't evade the gate and reach a downstream handler that
+// might compare differently. CP-13672.
+const isAvalancheMethod = (method: string): boolean =>
+  method.toLowerCase().startsWith('avalanche_')
+
+// The first-party avalanche account methods (X/P). They resolve to dedicated RPC
+// handlers (handlerMap, keyed by these exact method strings — RpcMethod values
+// in store/rpc/types) that read wallet state and require no approval and no
+// per-address grant. Matched case-sensitively to mirror the exact handlerMap
+// keys: a mixed-case variant has no handler and is correctly methodNotFound (and
+// is already blocked from third parties by the case-insensitive gate). Signing
+// methods (avalanche_sendTransaction/…) are intentionally NOT here — they need
+// per-request CAIP-2 scope and route separately. CP-13672.
+const AVALANCHE_ACCOUNT_METHODS = new Set<string>([
+  'avalanche_getAccounts',
+  'avalanche_selectAccount',
+  'avalanche_getAccountPubKey'
+])
+
+const isAvalancheAccountMethod = (method: string): boolean =>
+  AVALANCHE_ACCOUNT_METHODS.has(method)
+
+// The first-party avalanche signing methods. Unlike the account methods, these
+// route to the Avalanche VM module (ModuleManager.loadModule by CAIP-2) and go
+// through the approval screen, with a per-request CAIP-2 scope (D3), NOT the EVM
+// browser network. Param shapes differ by method (see dispatchAvalancheSigning-
+// Request): send/signTransaction carry an object with chainAlias; signMessage is
+// a [message, accountIndex] tuple. Exact case-sensitive match (same reasoning as
+// the account set). CP-13672.
+const AVALANCHE_SIGNING_METHODS = new Set<string>([
+  'avalanche_sendTransaction',
+  'avalanche_signTransaction',
+  'avalanche_signMessage'
+])
+
+const isAvalancheSigningMethod = (method: string): boolean =>
+  AVALANCHE_SIGNING_METHODS.has(method)
+
+// The Avalanche Primary Network chain aliases a signing request may target.
+const isAvalancheChainAlias = (value: unknown): value is 'X' | 'P' | 'C' =>
+  value === 'X' || value === 'P' || value === 'C'
 
 // Injected-specific methods (connect / EIP-2255 permissions / chain management)
 // are handled directly in `dispatchMethod`. Signing methods route through
@@ -197,10 +248,12 @@ export function createInjectedProviderRouter(
     trackPendingOrigin,
     getPeerMeta,
     getActiveAccount,
+    getIsDeveloperMode,
     getGrantedAddresses,
     grantPermission,
     revokePermission,
-    requestConnectApproval
+    requestConnectApproval,
+    setActiveAccount
   } = deps
 
   const inFlightRequests = new Map<number, InFlightRequest>()
@@ -351,6 +404,113 @@ export function createInjectedProviderRouter(
     }
   }
 
+  // First-party avalanche account methods (avalanche_getAccounts /
+  // _selectAccount / _getAccountPubKey). First-party access is already enforced
+  // in handleProviderMessage, so authorization is settled by the time we get
+  // here (D5 — the first-party origin IS the authorization; no per-address grant
+  // check like the EVM signing path runs). They go through the same in-app
+  // request bridge (`requestSigning` = createInAppRequest) as signing, but
+  // resolve to dedicated handlers that read wallet state with no approval. No
+  // chainId is passed: the handler is found by method, and these methods are
+  // network-independent. Registered as in-flight so a cross-origin navigation
+  // rejects the pending request (and the response is origin-gated by
+  // sendResponse regardless). Note: these handlers run synchronously with no
+  // approval step, so by the time an abort fires the work is already done — an
+  // abort cancels the pending RESPONSE, not e.g. an already-applied
+  // selectAccount switch. That's acceptable: the methods are first-party-only
+  // and benign (read state / switch the active account — no signing or funds).
+  // CP-13672.
+  const dispatchAvalancheAccountMethod = async (
+    id: number,
+    method: string,
+    params: unknown[]
+  ): Promise<void> => {
+    const origin = getNativeOrigin()
+    if (!origin) return
+    const controller = registerInFlight(id, origin)
+    try {
+      const result = await requestSigning({
+        method: method as unknown as RpcMethod,
+        params,
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
+      })
+      sendResponse(id, null, result)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
+    }
+  }
+
+  // First-party avalanche signing (avalanche_sendTransaction / _signTransaction
+  // / _signMessage). First-party access is enforced in handleProviderMessage, so
+  // no per-address grant check runs (D5 — first-party origin IS the
+  // authorization; the EVM signer-grant gate does not apply to X/P). Routes
+  // through the approval screen via the same in-app bridge as EVM signing, with
+  // `params` forwarded RAW (never the array-coerced safeParams) so the payload
+  // survives. We pass an AVAX-namespace CAIP-2 as the request scope so
+  // ModuleManager loads the avalanche module (not the EVM one). CP-13672.
+  //
+  // The two method families carry DIFFERENT params:
+  //   • sendTransaction / signTransaction → OBJECT `{ chainAlias, transactionHex,
+  //     … }`; the chainAlias (X/P/C) selects the chain and drives the CAIP-2 (D3).
+  //   • signMessage → TUPLE `[message, accountIndex]` with NO chainAlias; the
+  //     signature is account-keyed (network-independent), so it routes with a
+  //     default avalanche scope (X) that only selects the module + approval label.
+  //
+  // Environment (Fuji vs mainnet) is read here at dispatch. The downstream handler
+  // re-reads dev mode when deriving the signer's XP addresses, so a dev-mode toggle
+  // in the tiny window mid-request would, at worst, fail the signature — never
+  // misdirect funds. Same two-read pattern as the WC path.
+  const dispatchAvalancheSigningRequest = async (
+    id: number,
+    method: string,
+    params: unknown
+  ): Promise<void> => {
+    let caip2ChainId: string
+    if (method === 'avalanche_signMessage') {
+      caip2ChainId = getAvalancheChainAliasCaip2('X', getIsDeveloperMode())
+    } else {
+      const chainAlias = (params as { chainAlias?: unknown } | null | undefined)
+        ?.chainAlias
+      if (!isAvalancheChainAlias(chainAlias)) {
+        sendResponse(
+          id,
+          rpcErrors.invalidParams(
+            'avalanche_sendTransaction / avalanche_signTransaction require a chainAlias of X, P, or C'
+          ),
+          undefined
+        )
+        return
+      }
+      caip2ChainId = getAvalancheChainAliasCaip2(
+        chainAlias,
+        getIsDeveloperMode()
+      )
+    }
+
+    const origin = getNativeOrigin()
+    // gated upstream; never register a synthetic '' origin.
+    if (!origin) return
+
+    const controller = registerInFlight(id, origin)
+    try {
+      const result = await requestSigning({
+        method: method as unknown as RpcMethod,
+        params,
+        chainId: caip2ChainId,
+        peerMeta: getPeerMeta(),
+        signal: controller.signal
+      })
+      sendResponse(id, null, result)
+    } catch (e) {
+      sendResponse(id, e, undefined)
+    } finally {
+      clearInFlight(id, controller)
+    }
+  }
+
   const handleSwitchEthereumChain = (id: number, params: unknown[]): void => {
     const param = params[0] as { chainId?: string } | undefined
     const hexChainId = param?.chainId
@@ -445,6 +605,47 @@ export function createInjectedProviderRouter(
     }
   }
 
+  // Grant the user's connect selection, then — because the injected signer is
+  // active-only — make sure the wallet's active account is one of the granted
+  // accounts. If it isn't, switch the active account to the primary selection.
+  // Without this, connecting any account other than the current active one
+  // reconciles to nothing (4100), which dApps read as "not connected" and answer
+  // with an eth_requestAccounts reconnect loop. Returns whether anything was
+  // granted (false → genuine user rejection). (CP-14385)
+  //
+  // Note: the active account is global, so this is a deliberate, visible side
+  // effect — connecting a dApp to account N makes N the wallet's active account
+  // everywhere. A dApp open in another tab that hasn't granted N will see
+  // accountsChanged([]) (disconnected) on the switch; that is the existing
+  // active-only contract (CP-14382), not new behavior — switching accounts via
+  // the wallet's own selector already does the same.
+  const grantAndActivateSelection = async (
+    origin: string,
+    selected: Account[]
+  ): Promise<boolean> => {
+    let anyGranted = false
+    for (const account of selected) {
+      if (!account.addressC) continue
+      grantPermission({
+        domain: origin,
+        address: account.addressC,
+        vmType: NetworkVMType.EVM
+      })
+      anyGranted = true
+    }
+    if (!anyGranted) return false
+
+    const activeC = getActiveAccount()?.addressC?.toLowerCase()
+    const activeAmongSelection = selected.some(
+      account => account.addressC?.toLowerCase() === activeC
+    )
+    if (!activeAmongSelection) {
+      const primary = selected.find(account => account.addressC)
+      if (primary) await setActiveAccount(primary.id)
+    }
+    return anyGranted
+  }
+
   const handleRequestAccounts = async (id: number): Promise<void> => {
     const origin = getNativeOrigin()
     if (!origin) {
@@ -479,22 +680,14 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta, id)
-      let anyGranted = false
-      for (const account of selected) {
-        if (!account.addressC) continue
-        grantPermission({
-          domain: origin,
-          address: account.addressC,
-          vmType: NetworkVMType.EVM
-        })
-        anyGranted = true
-      }
+      const anyGranted = await grantAndActivateSelection(origin, selected)
       // Advertise the reconciled set, not the raw selection. The injected signer
-      // is active-only, so report [active, ...granted] when the active account is
-      // among the grants, and reject otherwise — never tell the dApp it's
-      // connected to an address Core won't sign for (phantom connection,
-      // CP-14382). Grants for non-active selections still persist, so switching
-      // to one later connects without re-prompting.
+      // is active-only, so report [active, ...granted]. grantAndActivateSelection
+      // has already made the active account one of the grants (switching to the
+      // primary selection if needed), so this normally reconciles non-empty;
+      // the reconciled.length === 0 branch below stays as a safety net for the
+      // case where the switch couldn't apply. Grants for non-active selections
+      // still persist, so switching to one later connects without re-prompting.
       const reconciled = resolveActiveConnectedAddresses(origin)
       if (!anyGranted) {
         // No account approved → genuine user rejection (4001).
@@ -559,20 +752,11 @@ export function createInjectedProviderRouter(
     try {
       const peerMeta = getPeerMeta()
       const selected = await requestConnectApproval(peerMeta, id)
-      let anyGranted = false
-      for (const account of selected) {
-        if (!account.addressC) continue
-        grantPermission({
-          domain: origin,
-          address: account.addressC,
-          vmType: NetworkVMType.EVM
-        })
-        anyGranted = true
-      }
+      const anyGranted = await grantAndActivateSelection(origin, selected)
       // Reconcile against the active account before returning permissions — same
-      // active-only reasoning as handleRequestAccounts: never return a permission
-      // set for an address the injected signer won't use (phantom connection,
-      // CP-14382).
+      // active-only reasoning as handleRequestAccounts: grantAndActivateSelection
+      // has switched the active account to the selection when needed, so this
+      // reconciles non-empty; the length === 0 branch stays as a safety net.
       const reconciled = resolveActiveConnectedAddresses(origin)
       if (!anyGranted) {
         // No account approved → genuine user rejection (4001).
@@ -692,6 +876,12 @@ export function createInjectedProviderRouter(
       handleRevokePermissions(id)
     } else if (method === 'wallet_watchAsset') {
       handleWatchAsset(id, params)
+    } else if (isAvalancheAccountMethod(method)) {
+      dispatchAvalancheAccountMethod(id, method, safeParams)
+    } else if (isAvalancheSigningMethod(method)) {
+      // RAW params (NOT safeParams): avalanche signing uses object params whose
+      // top-level chainAlias would be lost by the array coercion.
+      dispatchAvalancheSigningRequest(id, method, params)
     } else if (signingMethodFor(method)) {
       dispatchSigningRequest(id, method, safeParams)
     } else {
@@ -759,6 +949,25 @@ export function createInjectedProviderRouter(
       sendResponse(
         id,
         providerErrors.unauthorized('Origin unavailable'),
+        undefined
+      )
+      return
+    }
+
+    // First-party gate (CP-13672): avalanche_* (X/P account management +
+    // signing) is restricted to Core's own surfaces (core.app / AvaCloud / dev).
+    // Any other origin is rejected here, BEFORE dispatchMethod, so an untrusted
+    // page can never reach the account/signing handlers behind the gate. We
+    // return methodNotFound rather than a permission error so the rejection is
+    // indistinguishable from the method not existing — a third-party page can't
+    // even detect that the capability is there. EVM methods are unaffected.
+    if (isAvalancheMethod(method) && !isFirstPartyOrigin(nativeOrigin)) {
+      Logger.warn(
+        `[InjectedProvider] avalanche_* rejected for non-first-party origin: ${nativeOrigin}`
+      )
+      sendResponse(
+        id,
+        rpcErrors.methodNotFound(`Method not supported: ${method}`),
         undefined
       )
       return

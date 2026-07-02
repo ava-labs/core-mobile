@@ -225,6 +225,60 @@ describe('useEvmInjectedProvider', () => {
       const { result } = renderProvider()
       expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
+
+    it('is built once per tab — a wallet_switchEthereumChain (tabChainId change) does NOT rebuild it (CP-14615)', () => {
+      // Rebuilding providerShimJs changes the WebView's
+      // injectedJavaScriptBeforeContentLoaded prop, which makes react-native-webview
+      // call resetupScripts and silently drop the switch's own response injection —
+      // the dApp's switchChain promise then hangs forever (endless spinner).
+      setupMocks({ tabChainId: undefined })
+      const { result, rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
+
+      // The tab gets pinned to Ethereum by a switch; the shim must stay identical.
+      setupMocks({ tabChainId: 1 })
+      rerender()
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
+    })
+  })
+
+  describe('chain re-assert on committed URL (CP-14615 Part B)', () => {
+    it('re-asserts the live EVM chain via __coreProviderReassertChain on a commit', () => {
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+      act(() => {
+        result.current.handleCommittedUrl('https://example.com')
+      })
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderReassertChain('0xa86a')")
+      )
+    })
+
+    it('does NOT re-assert when the resolved live chain is non-EVM', () => {
+      const btc = {
+        vmName: NetworkVMType.BITCOIN,
+        chainId: 99999,
+        rpcUrl: 'https://btc.example'
+      }
+      setupMocks({
+        network: btc,
+        allNetworks: { ...mockAllNetworks, 99999: btc }
+      })
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+      act(() => {
+        result.current.handleCommittedUrl('https://example.com')
+      })
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining('__coreProviderReassertChain')
+      )
+    })
   })
 
   describe('sendResponse', () => {
@@ -1417,7 +1471,14 @@ describe('useEvmInjectedProvider', () => {
       expect(chainChangedCalls).toHaveLength(0)
     })
 
-    it('emits disconnect (not chainChanged) when the active network is non-EVM (CP-13671)', () => {
+    it('keeps the provider alive (no disconnect, no chainChanged) when the active network is non-EVM (CP-13672)', () => {
+      // The injected provider object is shared (window.avalanche ===
+      // window.ethereum) and avalanche_* methods are network-independent.
+      // Emitting an EIP-1193 disconnect when the wallet's active network goes
+      // non-EVM would tell wagmi the whole provider is offline — and it would
+      // refuse to auto-reconnect — killing the X/P surface too. Hold the last
+      // EVM browser chain instead, and never emit a bogus EVM chainChanged for a
+      // non-EVM chainId either.
       setupMocks({ network: mockActiveNetwork })
       const { rerender } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
@@ -1434,7 +1495,7 @@ describe('useEvmInjectedProvider', () => {
       })
       rerender()
 
-      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
         expect.stringContaining("__coreProviderEmit('disconnect'")
       )
       const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
@@ -1473,16 +1534,17 @@ describe('useEvmInjectedProvider', () => {
       )
     })
 
-    it('re-emits chainChanged when returning to the SAME EVM chain after a non-EVM disconnect (CP-13671)', () => {
-      // Recovery path: entering non-EVM invalidates the cached chainId, so
-      // switching back to the original EVM chain still fires chainChanged and the
-      // dApp can reconnect (otherwise the equality guard would skip it).
+    it('does not re-emit chainChanged when returning to the SAME EVM chain after a non-EVM detour (CP-13672)', () => {
+      // The provider is kept alive across a non-EVM active network (no disconnect,
+      // no cache invalidation), so the EVM browser chain is never lost. Returning
+      // to the same EVM chain is therefore a no-op — the dApp was never told its
+      // chain changed, so there is nothing to recover and no event to emit.
       setupMocks({ network: mockActiveNetwork })
       const { rerender } = renderHook(() =>
         useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
-      // Go to a non-EVM network (emits disconnect, invalidates cached chain).
+      // Detour through a non-EVM network (provider stays alive, chain retained).
       setupMocks({
         network: {
           ...mockActiveNetwork,
@@ -1500,8 +1562,39 @@ describe('useEvmInjectedProvider', () => {
       const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
         call[0].includes("__coreProviderEmit('chainChanged'")
       )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('emits chainChanged when switching to a DIFFERENT EVM chain after a non-EVM detour (CP-13672)', () => {
+      // Keeping the provider alive must not freeze chain tracking: a non-EVM
+      // detour retains the last EVM chain, but a subsequent switch to a genuinely
+      // different EVM chain still fires chainChanged so the dApp follows it.
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      setupMocks({
+        network: {
+          ...mockActiveNetwork,
+          chainId: 999,
+          vmName: NetworkVMType.BITCOIN
+        }
+      })
+      rerender()
+      mockInjectJavaScript.mockClear()
+
+      // Switch to a different EVM chain (Ethereum mainnet, 0x1).
+      setupMocks({
+        network: { ...mockActiveNetwork, chainId: 1, vmName: NetworkVMType.EVM }
+      })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
       expect(chainChangedCalls).toHaveLength(1)
-      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0xa86a'")
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
     })
 
     it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {

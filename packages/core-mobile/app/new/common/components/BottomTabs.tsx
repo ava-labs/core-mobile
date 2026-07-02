@@ -4,7 +4,8 @@ import {
   NativeBottomTabNavigationOptions,
   NativeBottomTabNavigationEventMap
 } from '@bottom-tabs/react-navigation'
-import { ParamListBase, TabNavigationState } from '@react-navigation/native'
+import { TabNavigationState } from 'expo-router'
+import { ParamListBase } from 'expo-router/react-navigation'
 
 const BottomTabNavigator = createNativeBottomTabNavigator().Navigator
 

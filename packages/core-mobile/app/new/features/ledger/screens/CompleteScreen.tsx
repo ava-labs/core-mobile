@@ -4,7 +4,7 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import React, { useEffect, useRef } from 'react'
 import { InteractionManager, View } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import LottieView from 'lottie-react-native'
 
 const SUCCESS_CHECKMARK = require('assets/lotties/success-checkmark.json')
@@ -76,7 +76,7 @@ export default function CompleteScreen(): JSX.Element {
             textAlign: 'center',
             marginTop: 24,
             marginBottom: 18,
-            fontWeight: '600'
+            fontFamily: 'Inter-SemiBold'
           }}>
           Ledger wallet{'\n'}successfully added
         </Text>

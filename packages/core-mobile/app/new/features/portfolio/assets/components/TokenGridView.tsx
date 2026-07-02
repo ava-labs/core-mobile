@@ -12,7 +12,6 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { GRID_GAP } from 'common/consts'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React from 'react'
 import { Dimensions } from 'react-native'
@@ -23,6 +22,16 @@ import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
+
+// FlashList v2's `numColumns` is a flexWrap layout that requires every cell to
+// have the same height (masonry is a separate, opt-in prop), otherwise adjacent
+// cells go ragged and the grid staggers. We pin a uniform card height and lay
+// the card out as a flex column: the top block (logo + name + token balance)
+// flows from the top, and the balance block (fiat value + price-change) is
+// anchored to the bottom-left via `marginTop: 'auto'`, so the important values
+// always sit at the same baseline regardless of how tall the top content is.
+// Only the height is constant — the WIDTH stays device-responsive.
+export const GRID_CARD_HEIGHT = 180
 
 export const TokenGridView = ({
   token,
@@ -60,7 +69,7 @@ export const TokenGridView = ({
   }
 
   return (
-    <Animated.View entering={getListItemEnteringAnimation(index)}>
+    <Animated.View>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -68,7 +77,9 @@ export const TokenGridView = ({
             padding: 16,
             backgroundColor: '$surfaceSecondary',
             gap: 8,
-            width: (SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2
+            width: (SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2,
+            height: GRID_CARD_HEIGHT,
+            overflow: 'hidden'
           }}>
           <LogoWithNetwork
             token={token}
@@ -108,7 +119,10 @@ export const TokenGridView = ({
               </MaskedText>
             </View>
           </View>
-          <View sx={{ marginTop: 19 }}>
+          {/* Anchored to the card's bottom-left: `marginTop: 'auto'` absorbs the
+              free space so the fiat balance + price-change always sit on the
+              same baseline across cells of the fixed-height grid. */}
+          <View sx={{ marginTop: 'auto' }}>
             <View>
               <View
                 sx={{

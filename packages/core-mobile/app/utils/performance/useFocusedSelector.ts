@@ -1,4 +1,4 @@
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { Selector, shallowEqual, useSelector } from 'react-redux'
 import { RootState } from 'store/types'
 

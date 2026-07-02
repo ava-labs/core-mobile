@@ -1,6 +1,8 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenInfo } from 'common/hooks/useTokenLookup'
 import { LocalTokenWithBalance } from 'store/balance/types'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { xpChainToken } from 'utils/units/knownTokens'
 import { DEFAULT_TOKEN_DECIMALS, NATIVE_DECIMALS } from '../consts'
 import { mapApiTokenToLocal } from './mapApiTokenToLocal'
 
@@ -60,15 +62,24 @@ export const buildLocalToken = ({
     ? ''
     : balanceData?.address ?? tokenInfo.platforms?.[caip2Id] ?? ''
 
+  // NATIVE_DECIMALS keys AVAX at 18 (C-Chain), but native AVAX on P/X-Chain is
+  // 9-decimal nAVAX. Override so balances/amounts render at the chain's actual
+  // precision — otherwise a 9-decimal balance shown at 18 decimals reads as 0.
+  // Mirrors mapSdkAssetToLocal's handling of the swap "to" side (CP-14511).
+  const decimals =
+    isNative && (isPChain(chainId) || isXChain(chainId))
+      ? xpChainToken.maxDecimals
+      : resolveDecimals(isNative, nativeDecimals, {
+          metaDecimals: tokenInfo.meta?.decimals?.[caip2Id],
+          balanceData
+        })
+
   return mapApiTokenToLocal(
     {
       symbol: balanceData?.symbol ?? tokenInfo.symbol,
       name: balanceData?.name ?? tokenInfo.name,
       address,
-      decimals: resolveDecimals(isNative, nativeDecimals, {
-        metaDecimals: tokenInfo.meta?.decimals?.[caip2Id],
-        balanceData
-      }),
+      decimals,
       isNative,
       internalId: balanceData?.internalId ?? tokenInfo.internalId,
       logoUri: balanceData?.logoUri ?? tokenInfo.meta?.logoUri ?? null,

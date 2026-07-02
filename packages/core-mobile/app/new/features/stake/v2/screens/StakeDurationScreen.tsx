@@ -11,7 +11,7 @@ import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
-import { Route, useRouter } from 'expo-router'
+import { Href, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import {
   DurationOptions,
@@ -57,7 +57,7 @@ const StakeDurationScreen = ({
   nextRoute
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
-  nextRoute: Route
+  nextRoute: string
 }): JSX.Element => {
   const { navigate } = useRouter()
 
@@ -183,9 +183,11 @@ const StakeDurationScreen = ({
       // pathname, params })` — Expo Router's typed `navigate({ pathname
       // })` overload requires `pathname` to be a single literal so it
       // can pick the matching params shape, and our `Route` union is
-      // too broad for that narrowing. The template-literal form keeps
-      // the route typed while letting `${string}` carry the query.
-      navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}`)
+      // too broad for that narrowing. Embedding the query in a template
+      // literal widens the result to `string`, so we cast it back to
+      // `Href` (no compile-time route validation here — `nextRoute` is a
+      // plain string provided by the caller).
+      navigate(`${nextRoute}?stakeEndTime=${stakeEndTime}` as Href)
     }
   }, [navigate, stakeEndTime, nextRoute])
 

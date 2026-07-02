@@ -30,8 +30,7 @@ export const RankView = ({
         <Text
           sx={{
             color: '$textSecondary',
-            fontFamily: 'Inter-Regular',
-            fontWeight: '500',
+            fontFamily: 'Inter-Medium',
             fontSize: 10,
             lineHeight: 12
           }}>

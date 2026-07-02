@@ -11,7 +11,7 @@ import {
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect } from 'expo-router'
 import React, { memo, useCallback, useMemo, useState } from 'react'
-import Config from 'react-native-config'
+import { isE2EBuild } from 'utils/Utils'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { ScrollScreen } from './ScrollScreen'
 
@@ -144,7 +144,7 @@ export const SelectAvatar = memo(
           {
             // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
             // We are doing this because the avatar selector is not working properly on appium tests.
-            !Config.E2E_MNEMONIC && (
+            !isE2EBuild && (
               <View
                 style={{
                   paddingBottom: 16

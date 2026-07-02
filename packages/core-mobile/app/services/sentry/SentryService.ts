@@ -1,4 +1,5 @@
 import Config from 'react-native-config'
+import { isE2EBuild } from 'utils/Utils'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
@@ -25,7 +26,7 @@ const ALLOWED_BREADCRUMB_CATEGORIES = new Set<string>(
 // otherwise enable if not development
 const isAvailable =
   ((__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) ||
-    (!__DEV__ && process.env.E2E !== 'true')) &&
+    (!__DEV__ && !isE2EBuild)) &&
   !!Config.SENTRY_DSN
 
 const navigationIntegration = Sentry.reactNavigationIntegration({

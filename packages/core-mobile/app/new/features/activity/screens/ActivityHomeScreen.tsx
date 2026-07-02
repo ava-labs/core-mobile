@@ -54,8 +54,15 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const selectedSegmentIndex = useSharedValue(0)
 
+  // Stable header element so `useFadingHeaderNavigation`'s header-title sync
+  // effect doesn't re-run (and re-`setOptions`) on every render.
+  const navigationHeader = useMemo(
+    () => <NavigationTitleHeader title={'Activity'} />,
+    []
+  )
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={'Activity'} />,
+    header: navigationHeader,
     targetLayout: balanceHeaderLayout,
     hasSeparator: false
   })

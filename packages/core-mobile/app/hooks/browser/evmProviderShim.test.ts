@@ -71,8 +71,11 @@ describe('buildEvmProviderShim', () => {
     })
 
     it('flips the flag false on a disconnect event and true on connect/chainChanged', () => {
-      // Native emits disconnect(4901) for a non-servable (non-EVM) chain and
-      // chainChanged when it recovers; isConnected() must follow (CP-13671).
+      // Standard EIP-1193 connection plumbing: isConnected() must follow a
+      // disconnect event (false) and connect/chainChanged (true). Native no
+      // longer emits disconnect for a non-EVM active network — the shared
+      // provider stays alive for avalanche_* (CP-13672) — but the shim still
+      // honors a real disconnect event per EIP-1193.
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("eventName === 'disconnect'")
       expect(shim).toContain('_connected = false;')
@@ -87,6 +90,36 @@ describe('buildEvmProviderShim', () => {
     it('starts _accounts empty — native primes on load based on permissions', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain('var _accounts = []')
+    })
+  })
+
+  describe('__coreProviderReassertChain (CP-14615)', () => {
+    it('defines an idempotent chain re-assert helper', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain(
+        'window.__coreProviderReassertChain = function(data)'
+      )
+    })
+
+    it('dedupes numerically so a non-canonical hex (0x01 / 0xA86A) is not re-emitted', () => {
+      // Native always sends canonical '0x'+n.toString(16); a dApp-supplied chain
+      // (wallet_addEthereumChain) may be zero-padded/uppercase. A string compare
+      // would miss those; the numeric compare is the correct dedupe.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('parseInt(data, 16) === parseInt(_chainId, 16)')
+    })
+
+    it('emits chainChanged via __coreProviderEmit when the chain actually changed', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("window.__coreProviderEmit('chainChanged', data)")
+    })
+
+    it('normalizes the optimistic wallet_switchEthereumChain chainId to canonical hex', () => {
+      // A dApp may send a non-canonical chainId ('1' / '0x01' / '0xA86A'); the shim
+      // must store canonical '0x'+n.toString(16) so eth_chainId is well-formed and
+      // the numeric re-assert dedupe stays consistent. CP-14615.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("swTargetChainId = '0x' + swParsed.toString(16)")
     })
   })
 
@@ -356,6 +389,11 @@ describe('buildEvmProviderShim', () => {
     it('dispatches ethereum#initialized event', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("new Event('ethereum#initialized')")
+    })
+
+    it('dispatches avalanche#initialized event so X/P dApps detect the provider (CP-13672)', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("new Event('avalanche#initialized')")
     })
 
     it('emits EIP-1193 connect event once at initialisation', () => {

@@ -29,7 +29,7 @@ export const GLACIER_URL = Config.GLACIER_URL
 class GlacierService {
   private glacierSdk = new Glacier(
     {
-      BASE: process.env.GLACIER_URL,
+      BASE: Config.GLACIER_URL,
       HEADERS: CORE_HEADERS
     },
     GlacierFetchHttpRequest

@@ -13,6 +13,11 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
+  isDappOriginatedUrl,
+  isInjectedDappRequest
+} from 'store/rpc/utils/isDappOriginatedRequest'
+import { normalizeAnalyticsAddress } from 'store/rpc/utils/normalizeAnalyticsAddress'
+import {
   clearRequestSignal,
   getRequestSignal
 } from 'store/rpc/utils/inFlightRequestSignals'
@@ -138,11 +143,15 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void => {
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.capture(eventName, {
+        provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,
@@ -195,11 +204,15 @@ class ApprovalController implements VmModuleApprovalController {
     // Clear any cached gate decision for this requestId so it doesn't linger.
     this.optimisticGateMap.delete(request.requestId)
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.capture(eventName, {
+        provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
         encrypted: {
           dAppUrl: request.dappInfo.url,
           address,
@@ -368,7 +381,10 @@ class ApprovalController implements VmModuleApprovalController {
   ): void {
     const address = getAddressForChainId(chainId, account)
     if (address) {
-      this.signingAddressMap.set(requestId, address)
+      // Normalize so _confirmed / _failed report the same casing as _success
+      // (which may use the dApp-supplied tx `from`). Hex-only; non-EVM addresses
+      // are left untouched. CP-13825.
+      this.signingAddressMap.set(requestId, normalizeAnalyticsAddress(address))
     }
   }
 
@@ -486,7 +502,14 @@ class ApprovalController implements VmModuleApprovalController {
     // up; a late Approve tap must not sign/broadcast. (CP-14422)
     if (this.userCancelledMap.get(requestId)) return
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    // Cache the actual selected signer so onTransactionConfirmed /
+    // onTransactionReverted emit the real address for dApp txs — including
+    // the injected browser (which the !isInAppRequest gate excluded,
+    // making those events fire with an empty address). CP-13825.
+    if (
+      isDappOriginatedUrl(request.dappInfo?.url) &&
+      isTxSendMethod(request.method)
+    ) {
       this.cacheSigningAddress(requestId, request.chainId, params.account)
     }
 

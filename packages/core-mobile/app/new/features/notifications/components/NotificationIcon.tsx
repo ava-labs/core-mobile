@@ -8,6 +8,7 @@ import {
   AppNotification,
   isPriceAlertNotification,
   isBalanceChangeNotification,
+  isRecurringSwapNotification,
   BalanceChangeEventSchema
 } from '../types'
 
@@ -62,16 +63,28 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
     if (isBalanceChangeNotification(notification)) {
       return renderBalanceChangeIcon()
     }
+    if (isRecurringSwapNotification(notification)) {
+      // The schedules screen uses the same `Compare` glyph for the
+      // (tokenIn → tokenOut) header on each card — reusing it here keeps
+      // the visual link consistent when the user taps through.
+      return <Icons.Custom.Compare color={colors.$textPrimary} />
+    }
     return (
       <Logos.AppIcons.Core color={colors.$textPrimary} width={24} height={7} />
     )
   }
 
-  // Get chain logo for balance change notifications
+  // Chain badge for balance-change + recurring-swap rows. Both carry an
+  // EVM chainId in metadata (recurring-swap's already a number from the
+  // schema coercion, balance-change's a string — `Number(chainId)`
+  // normalises either). News / PriceAlerts have no chain context.
   const renderChainBadge = (): React.JSX.Element | null => {
-    if (!isBalanceChangeNotification(notification)) return null
-    const chainId = notification.data?.chainId
-    if (!chainId) return null
+    const chainId =
+      isBalanceChangeNotification(notification) ||
+      isRecurringSwapNotification(notification)
+        ? notification.data?.chainId
+        : undefined
+    if (chainId === undefined || chainId === '') return null
 
     const network = getNetwork(Number(chainId))
     if (!network) return null

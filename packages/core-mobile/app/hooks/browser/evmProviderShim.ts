@@ -113,10 +113,11 @@ export function buildEvmProviderShim({
   // eth_requestAccounts to trigger the approval UI.
   var _accounts = [];
 
-  // EIP-1193 connection state. Native emits disconnect(4901) when the active
-  // chain isn't a servable EVM chain (CP-13671) and chainChanged when it
-  // recovers; isConnected() must track that, since some dApps poll
-  // isConnected() and ignore the disconnect event.
+  // EIP-1193 connection state. isConnected() tracks disconnect (false) and
+  // connect/chainChanged (true), since some dApps poll isConnected() and ignore
+  // the event. Native keeps the shared provider alive across a non-EVM active
+  // network (avalanche_* is network-independent, CP-13672) rather than emitting
+  // disconnect, but a real disconnect event is still honored per EIP-1193.
   var _connected = true;
 
   // ──────────────────────────────────────────────
@@ -158,6 +159,25 @@ export function buildEvmProviderShim({
     // that read provider._isConnected directly instead of calling isConnected().
     provider._isConnected = _connected;
     emit(eventName, data);
+  };
+
+  // Idempotent chain re-assertion used by the native per-commit hook to correct a
+  // fresh document whose baked chainId is stale (full reload / cross-origin nav /
+  // pull-to-refresh). Deduped against the live _chainId: a same-origin SPA
+  // navigation that did NOT change chains — or a re-assert that races a still
+  // pending wallet_switchEthereumChain — is a no-op, so listeners never churn and
+  // we never fight the optimistic emit (React #185). Kept distinct from
+  // __coreProviderEmit so the CP-13671 disconnect->same-chain recovery path, which
+  // legitimately re-emits the current chainId to flip _connected back on, is
+  // unaffected by this dedupe.
+  window.__coreProviderReassertChain = function(data) {
+    // Compare numerically, not by string: _chainId may hold a non-canonical hex
+    // a dApp supplied via wallet_addEthereumChain (leading zeros / uppercase, e.g.
+    // '0x0539', '0xA86A'), while the native re-assert always sends canonical
+    // '0x'+n.toString(16). A string compare would miss those and emit a spurious
+    // same-chain chainChanged; parseInt makes the dedupe format/case-insensitive.
+    if (parseInt(data, 16) === parseInt(_chainId, 16)) return;
+    window.__coreProviderEmit('chainChanged', data);
   };
 
   function emit(eventName, data) {
@@ -212,6 +232,16 @@ export function buildEvmProviderShim({
           return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'wallet_switchEthereumChain already pending' });
         }
         var swTargetChainId = (params[0] && params[0].chainId) || null;
+        // Normalize to canonical lowercase hex ('0x'+n.toString(16)) so eth_chainId
+        // and chainChanged never expose a dApp-supplied non-canonical form ('1',
+        // '0x01', '0xA86A'). This also keeps the per-commit __coreProviderReassertChain
+        // dedupe (numeric) consistent: without it a malformed _chainId could never
+        // be corrected to canonical, and an uppercase target would spuriously
+        // re-emit chainChanged for the same chain. CP-14615.
+        if (swTargetChainId) {
+          var swParsed = parseInt(swTargetChainId, 16);
+          if (!isNaN(swParsed)) { swTargetChainId = '0x' + swParsed.toString(16); }
+        }
         if (swTargetChainId && swTargetChainId !== _chainId) {
           _chainId = swTargetChainId;
           provider.chainId = swTargetChainId;
@@ -425,6 +455,9 @@ export function buildEvmProviderShim({
   // 8. Legacy events & initial EIP-1193 connect
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
+  // window.avalanche aliases this same provider; announce it too so X/P dApps
+  // that wait on avalanche#initialized detect Core. (CP-13672)
+  window.dispatchEvent(new Event('avalanche#initialized'));
 
   // EIP-1193: signal initial network connectivity.
   // Fired once via macrotask so that page scripts registering

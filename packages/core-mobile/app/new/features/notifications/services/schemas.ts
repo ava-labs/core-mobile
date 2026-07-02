@@ -6,7 +6,8 @@ import { z } from 'zod'
 export const NotificationTypeSchema = z.enum([
   'BALANCE_CHANGES',
   'PRICE_ALERTS',
-  'NEWS'
+  'NEWS',
+  'RECURRING_SWAP'
 ])
 
 /**
@@ -91,6 +92,53 @@ export const NewsPriceAlertMetadataSchema = z.object({
 export const NewsMetadataSchema = z.object({
   event: z.string(),
   url: z.string()
+})
+
+/**
+ * Recurring swap (DCA) notification metadata. Mirrors the FCM push payload
+ * Sarp's webhook fans out (PRs #172 / #174 on core-notification-sender):
+ * machine-readable progress fields the in-app row uses to format its title /
+ * subtitle + a status badge, and the `orderId` the deep link uses to
+ * auto-expand the matching schedule. Numeric fields are coerced because the
+ * two backend channels disagree on shape: the FCM push stringifies every
+ * `data` value, while the notification-center history API returns raw JSON
+ * (numbers stay numbers). `z.coerce` accepts both.
+ *
+ * `reasonCode` is set only on `status === 'failed'`; the push sends it as a
+ * string (`String(reasonCode)`) but history sends the raw number — so it MUST
+ * be coerced too. Without this, every failed notification (which always
+ * carries a reasonCode) fails to parse on the history path, dropping the whole
+ * `data` block and with it the failure badge + terminal-state detection. Known
+ * codes are documented at the call site; unknown codes pass through so newer
+ * backend codes don't fail parsing.
+ *
+ * Only `status` is required. Because `safeParse` is all-or-nothing and a parse
+ * failure drops the entire `data` block (→ `data: undefined`), a required field
+ * that no consumer reads becomes a liability: if the backend ever stops sending
+ * it, terminal detection collapses and a finished schedule's row turns tappable
+ * again — deep-linking to a schedule the manage screen filters out, the exact
+ * regression this schema guards against. So every field but `status` is
+ * optional. The only other fields any consumer reads are `numberOfOrders` /
+ * `remainingOrders` (final-leg detection in `RecurringSwapItem` +
+ * `isTerminalRecurringSwapNotification`); when absent they degrade gracefully —
+ * the status-based terminal states (`completed`/`cancelled`/`failed`) and the
+ * failure badge still resolve, only the "Completed" vs "Executed" last-leg
+ * nuance is lost. The remaining fields are unread today and kept only as a
+ * forward-compatible record of the wire shape.
+ */
+export const RecurringSwapMetadataSchema = z.object({
+  status: z.string(),
+  orderId: z.string().optional(),
+  owner: z.string().optional(),
+  chainId: z.coerce.number().optional(),
+  numberOfOrders: z.coerce.number().optional(),
+  executedOrders: z.coerce.number().optional(),
+  remainingOrders: z.coerce.number().optional(),
+  tokenIn: z.string().optional(),
+  tokenOut: z.string().optional(),
+  amountIn: z.string().optional(),
+  amountOut: z.string().optional(),
+  reasonCode: z.coerce.string().optional()
 })
 
 /**

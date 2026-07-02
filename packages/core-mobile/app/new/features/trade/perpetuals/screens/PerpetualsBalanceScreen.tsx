@@ -82,6 +82,11 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         value: formatCurrency({ amount: LOCKED })
       },
       {
+        title: 'Pending settlements',
+        subtitle: 'Markets ending soon',
+        value: formatCurrency({ amount: PENDING })
+      },
+      {
         title: 'In active positions',
         subtitle: '3 positions',
         value: formatCurrency({ amount: IN_POSITIONS }),
@@ -92,11 +97,6 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
           />
         ),
         onPress: handlePositionsPress
-      },
-      {
-        title: 'Pending settlements',
-        subtitle: 'Markets ending soon',
-        value: formatCurrency({ amount: PENDING })
       }
     ],
     [formatCurrency, handlePositionsPress, theme.colors.$textSecondary]

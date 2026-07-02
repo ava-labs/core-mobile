@@ -1,8 +1,8 @@
 import { ActivityIndicator, useTheme } from '@avalabs/k2-alpine'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import React, { useMemo } from 'react'
-import { Platform, RefreshControlProps, View, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControlProps, View, ViewStyle } from 'react-native'
+import { useCollapsibleStyle } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { CollapsibleTabs } from './CollapsibleTabs'
 
@@ -126,9 +126,14 @@ export function CollapsibleTabList<T>({
   isFetchingNextPage = false,
   columnItems
 }: CollapsibleTabListProps<T>): JSX.Element {
-  const header = useHeaderMeasurements()
   const { theme } = useTheme()
-  const collapsibleHeaderHeight = header?.height ?? 0
+  // The library computes the correct layout-model `paddingTop` (reserve header
+  // space) and `minHeight` (enough scroll range to fully collapse the header,
+  // even when the actual content is short). FlashList only forwards the
+  // library's `paddingTop` and drops its `minHeight`, and callers pass a
+  // `minHeight` tuned for the old native-contentInset model, so apply both
+  // explicitly here.
+  const { contentContainerStyle: collapsibleStyle } = useCollapsibleStyle()
 
   // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
   // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
@@ -146,23 +151,33 @@ export function CollapsibleTabList<T>({
   const refreshControl = useMemo(() => {
     if (!onRefresh) return undefined
 
+    // Don't pass `progressViewOffset` here. The collapsible list clones this
+    // RefreshControl and injects the correct offset from `useCollapsibleStyle()`
+    // (matching the content container's top padding, incl. the tab bar). A
+    // caller-provided value would override it and misalign the spinner.
     return (
-      <RefreshControl
-        refreshing={isRefreshing}
-        onRefresh={onRefresh}
-        progressViewOffset={Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight}
-      />
+      <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
     ) as React.ReactElement<RefreshControlProps>
-  }, [isRefreshing, onRefresh, collapsibleHeaderHeight])
+  }, [isRefreshing, onRefresh])
 
   const baseContentContainerStyle: ViewStyle = useMemo(
     () => ({
       flexGrow: 1,
       ...additionalContentStyle,
       ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? collapsibleHeaderHeight : 0
+      // Reserve header space via layout on every platform (Fabric clamps the
+      // old native-contentInset negative scroll). Override any caller-provided
+      // `minHeight` with the library's value so the header can fully collapse
+      // even when the content is shorter than the viewport.
+      paddingTop: collapsibleStyle.paddingTop,
+      minHeight: collapsibleStyle.minHeight
     }),
-    [additionalContentStyle, containerStyle, collapsibleHeaderHeight]
+    [
+      additionalContentStyle,
+      containerStyle,
+      collapsibleStyle.paddingTop,
+      collapsibleStyle.minHeight
+    ]
   )
 
   const finalOverrideProps = useMemo(

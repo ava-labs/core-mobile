@@ -327,12 +327,16 @@ describe('sanitizeDecimalInput', () => {
 })
 
 describe('commitDraftText', () => {
-  it('returns null for empty draft', () => {
-    expect(commitDraftText('', 100)).toBeNull()
+  // A cleared field commits 0 rather than reverting to the previous value —
+  // otherwise a seeded input (e.g. staking's minimum stake) snaps back to the
+  // seed and can never reach 0 from the keyboard (CP-14578).
+  it('commits 0 for an empty draft', () => {
+    expect(commitDraftText('', 100)).toBe(0)
+    expect(commitDraftText('   ', 100)).toBe(0)
   })
-  it('returns null for non-numeric drafts', () => {
-    expect(commitDraftText('abc', 100)).toBeNull()
-    expect(commitDraftText('.', 100)).toBeNull()
+  it('commits 0 for partial / non-numeric drafts', () => {
+    expect(commitDraftText('abc', 100)).toBe(0)
+    expect(commitDraftText('.', 100)).toBe(0)
   })
   it('clamps to [0, max] without snapping to step', () => {
     expect(commitDraftText('-50', 100)).toBe(0)

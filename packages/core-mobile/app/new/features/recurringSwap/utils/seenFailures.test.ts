@@ -135,7 +135,6 @@ describe('seenFailures', () => {
   // letting it through would mean the next refetch re-enters the silent-
   // seed path and suppresses snackbars for genuinely new failures.
   it('swallows and logs an init-flag MMKV write failure (does not propagate)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Logger = require('utils/Logger').default as {
       error: jest.Mock
     }

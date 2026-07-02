@@ -1,5 +1,7 @@
-import { NavigationState } from '@react-navigation/native'
-import { Router } from 'expo-router'
+import { NavigationState } from 'expo-router/react-navigation'
+import { useRouter } from 'expo-router'
+
+type Router = ReturnType<typeof useRouter>
 
 export const dismissTotpStack = (
   router: Router,
