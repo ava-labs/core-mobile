@@ -259,10 +259,18 @@ export function selectSwapTokens(
   tokens: TxToken[],
   userAddress: string | undefined
 ): { inputToken: TxToken | undefined; outputToken: TxToken | undefined } {
+  if (!userAddress) {
+    return { inputToken: undefined, outputToken: undefined }
+  }
+
+  const userAddressLower = userAddress.toLowerCase()
+
   const inputTokens = tokens.filter(
-    token => token.from?.address === userAddress
+    token => token.from?.address?.toLowerCase() === userAddressLower
   )
-  const outputTokens = tokens.filter(token => token.to?.address === userAddress)
+  const outputTokens = tokens.filter(
+    token => token.to?.address?.toLowerCase() === userAddressLower
+  )
 
   const inputToken =
     inputTokens.find(token => token.type !== TokenType.NATIVE) ?? inputTokens[0]
