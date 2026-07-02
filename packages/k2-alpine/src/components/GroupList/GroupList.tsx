@@ -166,7 +166,22 @@ export const GroupList = ({
         },
         style
       ]}>
-      <View style={{ borderRadius: 12, overflow: 'hidden' }}>
+      <View
+        style={[
+          { borderRadius: 12, overflow: 'hidden' },
+          ...((Array.isArray(style) ? style : [style])
+            .filter(s => Boolean(s) && typeof s === 'object')
+            .map(s => {
+              const v = s as ViewStyle
+              return {
+                borderRadius: v.borderRadius,
+                borderTopLeftRadius: v.borderTopLeftRadius,
+                borderTopRightRadius: v.borderTopRightRadius,
+                borderBottomLeftRadius: v.borderBottomLeftRadius,
+                borderBottomRightRadius: v.borderBottomRightRadius
+              }
+            }))
+        ]}>
         {data.map((item, index) => {
           const {
             leftIcon,
