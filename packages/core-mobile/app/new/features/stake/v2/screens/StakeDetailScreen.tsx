@@ -36,6 +36,7 @@ import { isOnGoing } from 'utils/earn/status'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusValue } from '../components/StakeStatusValue'
+import { isDelegationTx } from '../utils/isDelegationTx'
 import { isFastStakeTx } from '../utils/isFastStakeTx'
 
 const HASH_LENGTH = 14
@@ -203,15 +204,20 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     if (!stake) return []
     const items: GroupListItem[] = []
 
-    // Only label as "Fast stake" when the underlying delegation tx carried a
+    // Label as "Fast stake" when the underlying delegation tx carried a
     // UTXO output to the convenience-fee escrow address (see
-    // `isFastStakeTx`). Plain delegations created via the advanced flow have
-    // no such output and stay unlabelled — the "Delegate" / "Validate"
-    // labels for those are follow-up work.
+    // `isFastStakeTx`); fee-less delegations (e.g. from the advanced flow)
+    // fall back to the txType-based "Delegation" label, mirroring web's
+    // stake-type row. The "Validation" label is follow-up work.
     if (isFastStakeTx(stake, isDevMode)) {
       items.push({
         title: 'Stake type',
         value: 'Fast stake'
+      })
+    } else if (isDelegationTx(stake)) {
+      items.push({
+        title: 'Stake type',
+        value: 'Delegation'
       })
     }
 
