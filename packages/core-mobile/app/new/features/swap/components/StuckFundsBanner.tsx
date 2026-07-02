@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { TouchableOpacity } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { LayoutChangeEvent, TouchableOpacity } from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import {
   Button,
   Icons,
@@ -21,6 +27,13 @@ import { routeLabel } from '../utils/stuckFundsRoutes'
 
 // Atomic AVAX amounts are denominated in nAVAX (9 decimals).
 const NAVAX_DECIMALS = 9
+
+// Expand/collapse timing, matched to the wallets screen's WalletCard so the
+// motion feels consistent across the app.
+const EXPAND_TIMING = {
+  duration: 300,
+  easing: Easing.bezier(0.25, 1, 0.5, 1)
+}
 
 // Title / amount rows: Inter Regular 16 / 22 per Figma. No k2-alpine variant
 // encodes 16/22 exactly, so we anchor on `body1` (Inter Regular, primary color)
@@ -52,6 +65,35 @@ export const StuckFundsBanner = ({
   const { recover, recoveringKey } = useStuckFundsRecovery()
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const [expanded, setExpanded] = useState(false)
+
+  // Natural height of the rows, measured off an absolutely-positioned layer so
+  // it's the intrinsic content height regardless of the animated wrapper's
+  // clipped height. Kept in a shared value so it drives the animation on the UI
+  // thread. Measured up front (rows always rendered) so the first open animates.
+  const contentHeight = useSharedValue(0)
+  // 0 = collapsed, 1 = expanded — the only time-animated value.
+  const expandProgress = useSharedValue(0)
+
+  const onContentLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      contentHeight.value = event.nativeEvent.layout.height
+    },
+    [contentHeight]
+  )
+
+  useEffect(() => {
+    expandProgress.value = withTiming(expanded ? 1 : 0, EXPAND_TIMING)
+  }, [expanded, expandProgress])
+
+  // Wrapper height animates between 0 and the measured content height; overflow
+  // is clipped so the rows are revealed/hidden as it grows/shrinks.
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    height: expandProgress.value * contentHeight.value
+  }))
+
+  const animatedChevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${expandProgress.value * 180}deg` }]
+  }))
 
   // Gate on the CCT flag (recovery relies on CCT deps that aren't wired when the
   // flag is off) and hide until Fusion is ready, so Recover is never shown in an
@@ -105,15 +147,20 @@ export const StuckFundsBanner = ({
               )} stuck in atomic memory from incomplete cross-chain transfer${plural}`}
             </Text>
           </View>
-          <Icons.Navigation.ExpandMore
-            color={theme.colors.$textSecondary}
-            style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }}
-          />
+          <Animated.View style={animatedChevronStyle}>
+            <Icons.Navigation.ExpandMore color={theme.colors.$textSecondary} />
+          </Animated.View>
         </View>
       </TouchableOpacity>
 
-      {expanded && (
-        <View>
+      <Animated.View
+        pointerEvents={expanded ? 'auto' : 'none'}
+        style={[animatedContentStyle, { overflow: 'hidden' }]}>
+        {/* Absolutely positioned so onLayout reports the intrinsic row height,
+            independent of the wrapper's animated (clipped) height. */}
+        <View
+          onLayout={onContentLayout}
+          style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
           {routes.map(route => {
             const key = stuckRouteKey(route)
             const isRecovering = recoveringKey === key
@@ -151,7 +198,7 @@ export const StuckFundsBanner = ({
             )
           })}
         </View>
-      )}
+      </Animated.View>
     </View>
   )
 }
