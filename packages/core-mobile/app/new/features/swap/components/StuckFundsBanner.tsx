@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { TouchableOpacity } from 'react-native'
 import {
   Button,
@@ -56,7 +56,18 @@ export const StuckFundsBanner = ({
   // Gate on the CCT flag (recovery relies on CCT deps that aren't wired when the
   // flag is off) and hide until Fusion is ready, so Recover is never shown in an
   // unusable state. Detection is already flag-gated, so this is defense-in-depth.
-  if (!isAvalancheCctEnabled || !hasAnyAtomics || !isFusionServiceReady) {
+  const isHidden =
+    !isAvalancheCctEnabled || !hasAnyAtomics || !isFusionServiceReady
+
+  // Collapse when hidden so the banner re-shows collapsed (e.g. after a recovery
+  // clears the routes) — React keeps the component mounted when it returns null.
+  useEffect(() => {
+    if (isHidden && expanded) {
+      setExpanded(false)
+    }
+  }, [isHidden, expanded])
+
+  if (isHidden) {
     return null
   }
 
@@ -74,6 +85,7 @@ export const StuckFundsBanner = ({
       <TouchableOpacity
         testID="stuckFundsBanner_toggle"
         accessibilityRole="button"
+        accessibilityState={{ expanded }}
         onPress={() => setExpanded(prev => !prev)}>
         <View
           sx={{

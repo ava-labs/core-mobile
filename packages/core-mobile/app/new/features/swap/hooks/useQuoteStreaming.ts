@@ -76,6 +76,7 @@ export function useQuoteStreaming(
 
     // Empty input never quotes. A CCT route additionally allows an explicit 0
     // (import-only recovery quote); every other route needs a positive amount.
+    // Negatives are always rejected, even when allowZeroAmount is set.
     if (
       !fromToken ||
       !fromNetwork ||
@@ -84,7 +85,8 @@ export function useQuoteStreaming(
       !fromAddress ||
       !toAddress ||
       fromAmount === undefined ||
-      (fromAmount <= 0n && !allowZeroAmount)
+      fromAmount < 0n ||
+      (fromAmount === 0n && !allowZeroAmount)
     ) {
       return { quoter: null, error: null }
     }

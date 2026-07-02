@@ -80,6 +80,44 @@ const resolveRecoveryQuoterParams = ({
 }
 
 /**
+ * Resolves the first import-only recovery quote for `params`, rejecting on
+ * stream failure or after RECOVERY_QUOTE_TIMEOUT_MS. Passes the subscription's
+ * cleanup to `registerCleanup` so the caller can tear it down on unmount. The
+ * timeout is cleared the moment the quote settles, so a slow approval doesn't
+ * leave the timer armed to fire needlessly.
+ */
+const awaitFirstRecoveryQuote = (
+  params: QuoterParams,
+  registerCleanup: (cleanup: () => void) => void
+): Promise<Quote> =>
+  new Promise<Quote>((resolve, reject) => {
+    const timer: { id?: ReturnType<typeof setTimeout> } = {}
+    const clearTimer = (): void => {
+      if (timer.id) clearTimeout(timer.id)
+    }
+    const cleanup = subscribeToFirstQuote(
+      params,
+      quote => {
+        clearTimer()
+        resolve(quote)
+      },
+      () => {
+        clearTimer()
+        reject(new Error('No recovery quote available'))
+      }
+    )
+    if (!cleanup) {
+      reject(new Error('Could not create recovery quote'))
+      return
+    }
+    registerCleanup(cleanup)
+    timer.id = setTimeout(
+      () => reject(new Error('Recovery quote timed out')),
+      RECOVERY_QUOTE_TIMEOUT_MS
+    )
+  })
+
+/**
  * Recovers a stranded CCT route directly from the banner (no swap screen).
  * Mirrors web's Recover UX: builds an import-only recovery quote via the Fusion
  * SDK (`amountIn=0`, the flow the SDK author prescribed) and calls
@@ -124,7 +162,6 @@ export const useStuckFundsRecovery = (): {
       // The banner only renders once Fusion is ready, so recovery is reachable
       // only in a usable state; any resolution failure surfaces via the catch.
       setRecoveringKey(stuckRouteKey(route))
-      let timeoutId: ReturnType<typeof setTimeout> | undefined
       try {
         const params = resolveRecoveryQuoterParams({
           route,
@@ -135,22 +172,11 @@ export const useStuckFundsRecovery = (): {
         if (!params) throw new Error('Could not resolve recovery route')
 
         // amountIn=0 yields an import-only recovery quote; take the first one.
-        const quote = await new Promise<Quote>((resolve, reject) => {
-          const cleanup = subscribeToFirstQuote(params, resolve, () =>
-            reject(new Error('No recovery quote available'))
-          )
-          if (!cleanup) {
-            reject(new Error('Could not create recovery quote'))
-            return
-          }
+        const quote = await awaitFirstRecoveryQuote(params, cleanup => {
           activeCleanupRef.current = cleanup
-          timeoutId = setTimeout(
-            () => reject(new Error('Recovery quote timed out')),
-            RECOVERY_QUOTE_TIMEOUT_MS
-          )
         })
-        // The first quote settled the subscription itself; stand the guards
-        // down so the finally doesn't double-unsubscribe.
+        // The first quote settled the subscription itself; stand the guard down
+        // so the finally doesn't double-unsubscribe.
         activeCleanupRef.current = null
 
         const transfer = await FusionService.transferAsset(quote, {
@@ -172,7 +198,6 @@ export const useStuckFundsRecovery = (): {
           }
         }
       } finally {
-        if (timeoutId) clearTimeout(timeoutId)
         // Tear down a still-live subscription (timeout / early throw path).
         activeCleanupRef.current?.()
         activeCleanupRef.current = null
