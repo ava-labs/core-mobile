@@ -1,5 +1,6 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TimerKeepAlive } from 'common/components/TimerKeepAlive'
 import LottieView from 'lottie-react-native'
 import React from 'react'
 
@@ -61,6 +62,12 @@ export const StakeStatusScreen = ({
       isModal
       scrollEnabled={false}
       contentContainerStyle={{ flexGrow: 1 }}>
+      {/* Keeps JS timers firing on iOS release builds — without it the
+          in-flight delegation's polling/backoff, the success auto-dismiss and
+          the toast timeout all park until the user touches the screen.
+          Mounted for BOTH processing and success (the auto-dismiss timer runs
+          during success). See TimerKeepAlive for the full story. */}
+      <TimerKeepAlive />
       {/* The title is the only in-flow child, so it stays pinned to the exact
           vertical center regardless of the variant. The icon and subtitle are
           positioned absolutely relative to that center (above / below), so
