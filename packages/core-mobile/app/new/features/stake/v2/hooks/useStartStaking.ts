@@ -1,6 +1,9 @@
 import { useRouter } from 'expo-router'
 import { useStakeBalanceGuard } from 'features/stake/hooks/useStakeBalanceGuard'
-import { applyDefaultDelegateFilters } from 'features/stake/v2/store'
+import {
+  applyDefaultDelegateFilters,
+  setDelegateNodeSelection
+} from 'features/stake/v2/store'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { getStakingConfig } from 'services/earn/utils'
@@ -62,6 +65,11 @@ export const useStartStaking = (): {
           Number(config.MinStakeDuration) / SECONDS_PER_DAY
         )
       })
+      // Defensive reset alongside the filter reseed: normal navigation always
+      // overwrites the selection before it's read, but a deep link / state
+      // restoration straight into a later delegate step could otherwise pick
+      // up a stale node from a previous run.
+      setDelegateNodeSelection([], 0)
       navigate({ pathname: '/addStakeV2/delegate/selectNode' })
     } else {
       showNotEnoughAvaxAlert('delegate')

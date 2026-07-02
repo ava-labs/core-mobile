@@ -106,17 +106,14 @@ const SelectNodeScreen = (): JSX.Element => {
   const validators = useMemo(() => {
     const all = data?.validators ?? []
     const query = searchText.trim().toLowerCase()
+    const isSearching = query.length > 0
 
     const filtered: NodeWithAvailable[] = []
     for (const v of all) {
-      if (query && !v.nodeID.toLowerCase().includes(query)) continue
+      if (isSearching && !v.nodeID.toLowerCase().includes(query)) continue
 
-      // Hide nodes that can't accept at least the minimum delegation (full /
-      // near-full validators), mirroring core-web's default
-      // `minDelegationCapacity = minDelegatorStake` filter and the V1 select
-      // screen. Node selection comes before amount entry here, so we gate on
-      // the minimum rather than the (unknown) chosen amount. `available` is
-      // kept so the "Most available" sort doesn't recompute it.
+      // `available` is always computed — the rows and the "Most available"
+      // sort need it even when the gates below are skipped.
       const available = getAvailableDelegationWeight({
         isDeveloperMode,
         validatorWeight: new TokenUnit(
@@ -130,19 +127,32 @@ const SelectNodeScreen = (): JSX.Element => {
           tokenSymbol
         )
       })
-      // `available >= minStakeAmount` (TokenUnit has no `gte`); compare in
-      // sub-units (bigint) so the dep stays a primitive.
-      if (available.toSubUnit() < minStakeSubUnit) continue
 
-      // Advanced filters — each only narrows the list when its toggle is on.
-      if (
-        !passesAdvancedFilters(
-          v,
-          available.toDisplay({ asNumber: true }),
-          filters
-        )
-      ) {
-        continue
+      // An explicit NodeID search bypasses every gate, mirroring core-web
+      // ("Skip all other filters when searching by nodeIds",
+      // `ValidatorSearchResults.tsx`) — otherwise searching a real node whose
+      // fee/uptime falls outside the seeded defaults would confusingly return
+      // no results.
+      if (!isSearching) {
+        // Hide nodes that can't accept at least the minimum delegation (full /
+        // near-full validators), mirroring core-web's default
+        // `minDelegationCapacity = minDelegatorStake` filter and the V1 select
+        // screen. Node selection comes before amount entry here, so we gate on
+        // the minimum rather than the (unknown) chosen amount.
+        // `available >= minStakeAmount` (TokenUnit has no `gte`); compare in
+        // sub-units (bigint) so the dep stays a primitive.
+        if (available.toSubUnit() < minStakeSubUnit) continue
+
+        // Advanced filters — each only narrows the list when its toggle is on.
+        if (
+          !passesAdvancedFilters(
+            v,
+            available.toDisplay({ asNumber: true }),
+            filters
+          )
+        ) {
+          continue
+        }
       }
 
       filtered.push({ validator: v, available })

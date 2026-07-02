@@ -45,6 +45,10 @@ import {
 import { UnixTime } from 'services/earn/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
+// Fallback validator fee for reward estimates when the node isn't known yet
+// (Fast Stake auto-selects at confirm time with fee ≤ 2%, so 2% is the
+// worst-case approximation). The advanced flow passes the selected node's
+// actual fee via `delegationFeePercent`.
 const DELEGATION_FEE_FOR_ESTIMATION = 2
 
 /**
@@ -60,7 +64,8 @@ const DELEGATION_FEE_FOR_ESTIMATION = 2
  */
 const StakeDurationScreen = ({
   nextRoute,
-  maxEndDate
+  maxEndDate,
+  delegationFeePercent
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
   nextRoute: string
@@ -70,6 +75,13 @@ const StakeDurationScreen = ({
    * it. Fast Stake omits it.
    */
   maxEndDate?: Date
+  /**
+   * Validator delegation fee (percent) baked into the reward estimates — the
+   * advanced delegate flow passes the selected node's actual fee so the chart
+   * matches the confirm screen's quote (mirrors core-web). Fast Stake omits
+   * it (node unknown at this step) and falls back to the 2% cap.
+   */
+  delegationFeePercent?: number
 }): JSX.Element => {
   const { navigate } = useRouter()
 
@@ -131,9 +143,10 @@ const StakeDurationScreen = ({
   const [isCustomEndDatePickerVisible, setIsCustomEndDatePickerVisible] =
     useState(false)
 
+  const estimationFee = delegationFeePercent ?? DELEGATION_FEE_FOR_ESTIMATION
   const { data: estimatedRewards } = useStakeEstimatedRewards({
     amount: stakeAmount,
-    delegationFee: DELEGATION_FEE_FOR_ESTIMATION,
+    delegationFee: estimationFee,
     durations: durationsWithDays
   })
   const estimatedRewardsChartData = useMemo(() => {
@@ -151,7 +164,7 @@ const StakeDurationScreen = ({
       customEndDate === undefined
         ? undefined
         : convertToDurationInSeconds(customEndDate),
-    delegationFee: DELEGATION_FEE_FOR_ESTIMATION
+    delegationFee: estimationFee
   })
   const estimatedReward = useMemo(() => {
     if (selectedDurationIndex === undefined) {

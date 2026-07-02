@@ -37,7 +37,11 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   return useMemo<StakeReviewSource>(
     () => ({
       validator: node
-        ? { nodeID: node.nodeID, endTime: node.endTime }
+        ? {
+            nodeID: node.nodeID,
+            endTime: node.endTime,
+            delegationFee: node.delegationFee
+          }
         : undefined,
       isFetching: false,
       error: node ? null : NO_NODE_SELECTED_ERROR,

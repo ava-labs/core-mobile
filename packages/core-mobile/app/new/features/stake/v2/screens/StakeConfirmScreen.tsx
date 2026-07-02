@@ -41,6 +41,7 @@ import NetworkService from 'services/network/NetworkService'
 import { showConfetti } from 'vmModule/utils/requestContext'
 import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
+import { StakeTargetValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
 import { useStakeFundingPreflight } from '../hooks/useStakeFundingPreflight'
@@ -112,7 +113,7 @@ const StakeReviewFooter = ({
 /**
  * True only while the flow must wait for the reward estimate before the user
  * can submit — i.e. when a fee policy applies (the convenience-fee output
- * amount is derived from the gross reward). Fee-less flows return `false` so
+ * amount is derived from the net reward). Fee-less flows return `false` so
  * they pre-flight and enable the CTA as soon as a validator is ready. Kept as
  * a module-level helper so the `&&` stays out of the component body's
  * cognitive-complexity budget while still being shared by the preflight gate
@@ -122,6 +123,16 @@ const isAwaitingFeeReward = (
   hasFeePolicy: boolean,
   isRewardEstimateFetching: boolean
 ): boolean => hasFeePolicy && isRewardEstimateFetching
+
+/**
+ * Validator fee baked into the reward estimate. While the validator is
+ * still resolving the fee is unknown, so the estimate is briefly gross
+ * (fee 0) and refines once the validator arrives. Module-level so the
+ * `?.`/`??` stay out of the component's cognitive-complexity budget.
+ */
+const toEstimationFeePercent = (
+  validator: StakeTargetValidator | undefined
+): number => Number(validator?.delegationFee ?? 0)
 
 /**
  * V2 "Almost done, review your stake..." screen.
@@ -209,11 +220,15 @@ const StakeConfirmScreen = ({
     return new Date(validatedStakingEndTime.getTime())
   }, [validatedStakingEndTime])
 
-  // Always estimate the gross reward (no validator-specific delegation fee
-  // baked in). The convenience fee is applied below — only when the flow's
-  // `feePolicy` is set (Fast Stake's `fast-stake-fee-enabled` or the advanced
-  // delegate's `delegation-fee-enabled` flag) — so the displayed reward stays
-  // consistent with whether the fee is actually charged.
+  // Estimate the delegator's NET reward — the selected validator's actual
+  // delegation fee is baked in, mirroring core-web (`DelegationForm` passes
+  // `selectedNode.delegationFee` to `estimateStakingRewards`). While the
+  // validator is still resolving the fee is unknown, so the estimate is
+  // briefly gross (fee 0) and refines once the validator arrives. The Core
+  // convenience fee is applied below on top of this net — only when the
+  // flow's `feePolicy` is set (Fast Stake's `fast-stake-fee-enabled` or the
+  // advanced delegate's `delegation-fee-enabled` flag) — so the displayed
+  // reward stays consistent with whether the fee is actually charged.
   //
   // `validatedStakingDuration` is now safe to use before the validator
   // resolves: with the `undefined` plumbing in `useValidateStakingEndTime`,
@@ -226,38 +241,38 @@ const StakeConfirmScreen = ({
   // `getCurrentSupply` that hung when batched with the confirm's other XP
   // calls; reusing the cached supply avoids that round-trip entirely.
   const {
-    data: grossEstimatedReward,
+    data: netEstimatedReward,
     isError: isRewardEstimateError,
     isFetching: isRewardEstimateFetching,
     refetch: retryRewardEstimate
   } = useEarnCalcEstimatedRewards({
     amountNanoAvax: stakeAmount.toSubUnit(),
     duration: validatedStakingDuration,
-    delegationFee: 0
+    delegationFee: toEstimationFeePercent(validator)
   })
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
-  // Convenience fee derived from the gross reward. The flow's
-  // `feePolicy` decides whether and at what rate to charge — when it's
-  // null (e.g. the advanced delegate flow), no fee is computed and the
-  // user keeps the full gross estimate.
+  // Convenience fee derived from the NET reward (after the validator's
+  // delegation fee), matching core-web's `netRewards × DELEGATION_FEE_RATE`.
+  // The flow's `feePolicy` decides whether and at what rate to charge — when
+  // it's null, no fee is computed and the user keeps the full net estimate.
   const convenienceFee = useMemo<TokenUnit | undefined>(() => {
-    const reward = grossEstimatedReward?.estimatedTokenReward
+    const reward = netEstimatedReward?.estimatedTokenReward
     if (!reward || !feePolicy || reward.toSubUnit() === 0n) {
       return undefined
     }
     return reward.mul(feePolicy.rate)
-  }, [grossEstimatedReward?.estimatedTokenReward, feePolicy])
+  }, [netEstimatedReward?.estimatedTokenReward, feePolicy])
 
   // What the user actually sees as "Estimated reward": net of the
-  // convenience fee when it applies, otherwise the gross estimate.
+  // convenience fee when it applies, otherwise the net estimate.
   const displayedReward = useMemo<TokenUnit | undefined>(() => {
-    const reward = grossEstimatedReward?.estimatedTokenReward
+    const reward = netEstimatedReward?.estimatedTokenReward
     if (!reward) return undefined
     return convenienceFee ? reward.sub(convenienceFee) : reward
-  }, [grossEstimatedReward?.estimatedTokenReward, convenienceFee])
+  }, [netEstimatedReward?.estimatedTokenReward, convenienceFee])
 
   // Convenience-fee output bundled atomically with the delegation tx so the
   // fee is paid into the policy-defined escrow address(es) only if the
@@ -781,22 +796,22 @@ const StakeConfirmScreen = ({
     isStakeEndTimeValid
   ])
 
-  // Submit must wait for the gross reward estimate to be available
+  // Submit must wait for the net reward estimate to be available
   // whenever a fee policy applies. Without this guard the user can
   // slide-to-stake before the reward resolves — the tx would skip the
   // convenience-fee escrow output and analytics would record
   // `convenienceFeeAvax: 0` even though the UI advertised a fee.
   //
-  // Gate on `grossEstimatedReward` rather than the derived
+  // Gate on `netEstimatedReward` rather than the derived
   // `feeAdditionalOutputs` so we don't lock the CTA in the (degenerate)
   // case where the reward genuinely rounds to 0 — there, no fee output is
   // expected, but the submission itself is still valid. When no policy
   // applies, the screen submits as soon as a validator is available,
   // matching the old behaviour for the advanced delegate flow.
-  const isFeeContextReady = !feePolicy || grossEstimatedReward !== undefined
+  const isFeeContextReady = !feePolicy || netEstimatedReward !== undefined
 
   // Only hold the flow for the reward estimate when a fee policy applies — the
-  // fee output amount depends on the (gross) reward. Fee-less flows must NOT
+  // fee output amount depends on the (net) reward. Fee-less flows must NOT
   // wait on it: gating the preflight on the reward there enables the CTA (since
   // `isFeeContextReady` is already true) while the preflight is still disabled,
   // letting the user slide before funding is checked. Shared by the preflight
@@ -885,12 +900,12 @@ const StakeConfirmScreen = ({
             separatorMarginRight={16}
             itemHeight={48}
           />
-          {/* Caption is gated on `grossEstimatedReward` so the copy
+          {/* Caption is gated on `netEstimatedReward` so the copy
               ("Rewards estimate includes...") only shows once an estimate
               is actually rendered in the row above. Otherwise the
               Estimated reward row reads "—" while the caption confidently
               talks about a non-existent estimate. */}
-          {feePolicy && grossEstimatedReward && (
+          {feePolicy && netEstimatedReward && (
             <Text
               variant="caption"
               sx={{
