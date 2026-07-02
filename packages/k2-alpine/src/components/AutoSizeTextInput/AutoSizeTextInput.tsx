@@ -392,6 +392,11 @@ export const AutoSizeTextInput = forwardRef<
           <Animated.Text
             numberOfLines={1}
             onLayout={handleTextLayout}
+            // Match the visible input, which also disables font scaling. If the
+            // measurement text scaled with the OS accessibility text setting but
+            // the input didn't, the measured width would exceed the rendered
+            // width and the amount would shrink more than necessary.
+            allowFontScaling={false}
             style={[
               styles.measurementText,
               {
