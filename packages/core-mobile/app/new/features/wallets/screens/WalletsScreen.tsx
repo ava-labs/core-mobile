@@ -4,11 +4,19 @@ import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenRef, ListScreenV2 } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import WalletCard from 'common/components/WalletCard'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
+import AccountRow from 'features/wallets/components/AccountRow'
+import AddAccountRow from 'features/wallets/components/AddAccountRow'
+import WalletHeaderRow from 'features/wallets/components/WalletHeaderRow'
+import {
+  buildWalletListRows,
+  ListRow,
+  listRowKey,
+  listRowType
+} from 'features/wallets/utils/buildWalletListRows'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -44,16 +52,13 @@ export const WalletsScreen = (): JSX.Element => {
     const allEntries = Object.values(allBalancesData).flat()
     return allEntries.every(balance => balance.dataAccurate)
   }, [allBalancesData])
-  const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
+  const listRef = useRef<ListScreenRef<ListRow>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
   >({})
-
-  const expandedWalletsRef = useRef(expandedWallets)
-  expandedWalletsRef.current = expandedWallets
 
   const errorMessage = useMemo(() => {
     if (!isLoading && !isBalanceAccurate) return 'Unable to load all balances'
@@ -231,10 +236,7 @@ export const WalletsScreen = (): JSX.Element => {
   }, [primaryWalletsDisplayData, importedWalletsDisplayData, isActiveWalletId])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
-    setExpandedWallets(prev => ({
-      ...prev,
-      [walletId]: !prev[walletId]
-    }))
+    setExpandedWallets(prev => ({ ...prev, [walletId]: !prev[walletId] }))
   }, [])
 
   const handleAddAccount = useCallback((): void => {
@@ -270,65 +272,54 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [colors.$textDanger, errorMessage])
 
-  const cardStyle = useMemo(
-    () => ({
-      marginHorizontal: 16,
-      marginVertical: 5,
-      backgroundColor: colors.$surfacePrimary,
-      borderColor: colors.$borderPrimary,
-      borderWidth: 1
-    }),
-    [colors.$surfacePrimary, colors.$borderPrimary]
+  const rows = useMemo(
+    () =>
+      buildWalletListRows({
+        wallets: walletsDisplayData,
+        expanded: expandedWallets,
+        isActiveWalletId
+      }),
+    [walletsDisplayData, expandedWallets, isActiveWalletId]
   )
 
   const renderItem = useCallback(
-    ({ item }: { item: WalletDisplayData }) => {
-      if (!item) {
-        return null
+    ({ item }: { item: ListRow }) => {
+      switch (item.kind) {
+        case 'walletHeader':
+          return (
+            <WalletHeaderRow
+              wallet={item.wallet}
+              isActive={item.isActive}
+              isExpanded={item.isExpanded}
+              isRefreshing={isRefreshing}
+              cardPos={item.cardPos}
+              onToggleExpansion={toggleWalletExpansion}
+            />
+          )
+        case 'account':
+          return (
+            <AccountRow
+              account={item.account}
+              cardPos={item.cardPos}
+              isRefreshing={isRefreshing}
+              onSetActiveAccount={handleSetActiveAccount}
+              onAccountDetails={gotoAccountDetails}
+            />
+          )
+        case 'addAccount':
+          return <AddAccountRow wallet={item.wallet} cardPos={item.cardPos} />
       }
-      const isExpanded = expandedWalletsRef.current[item.id] ?? false
-      const isActive = isActiveWalletId(item.id)
-
-      return (
-        <WalletCard
-          wallet={item}
-          isActive={isActive}
-          isRefreshing={isRefreshing}
-          isExpanded={isExpanded}
-          onToggleExpansion={toggleWalletExpansion}
-          onSetActiveAccount={handleSetActiveAccount}
-          onAccountDetails={gotoAccountDetails}
-          style={cardStyle}
-        />
-      )
     },
     [
-      isActiveWalletId,
       isRefreshing,
       toggleWalletExpansion,
       handleSetActiveAccount,
-      gotoAccountDetails,
-      cardStyle
+      gotoAccountDetails
     ]
   )
 
-  const keyExtractor = useCallback((item: WalletDisplayData) => item.id, [])
-
-  // Give every wallet its own FlashList item type (keyed on wallet id).
-  //
-  // An expanded card (a wallet with dozens of accounts) is enormously taller
-  // than a collapsed 64px header. FlashList keeps a separate size estimate and
-  // recycle pool per item type, so with a single shared type it estimates every
-  // card from one global average of mostly-collapsed rows, under-sizes the tall
-  // expanded cards, and briefly renders the following wallet cards on top of
-  // their account rows while scrolling or switching wallets (CP-14631 /
-  // CP-14632). A per-wallet type makes each card's size estimate track that
-  // wallet's own measured height, so cells are positioned correctly.
-  //
-  // The type is keyed on wallet id (NOT expansion) so it stays stable across an
-  // expand/collapse toggle: the cell keeps its key, the WalletCard instance is
-  // not remounted, and its height animation still plays.
-  const getItemType = useCallback((item: WalletDisplayData) => item.id, [])
+  const keyExtractor = useCallback((item: ListRow) => listRowKey(item), [])
+  const getItemType = useCallback((item: ListRow) => listRowType(item), [])
 
   const renderEmpty = useCallback(() => {
     return (
@@ -358,7 +349,7 @@ export const WalletsScreen = (): JSX.Element => {
       flatListRef={listRef}
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
-      data={walletsDisplayData}
+      data={rows}
       extraData={expandedWallets}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
