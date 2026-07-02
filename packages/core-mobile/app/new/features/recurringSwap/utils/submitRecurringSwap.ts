@@ -191,15 +191,28 @@ export async function submitRecurringSwap(
 
   let result: { txHash: Hex }
   try {
-    // `fallbackToDefaultOnBatchFailure: true` matches `transferAsset`'s UX —
-    // try the one-click approve+swap batch first, and if the wallet rejects
-    // the batch (Ledger, certain WalletConnect peers), fall back to two
-    // sequential signatures rather than bubbling the batch error.
+    // `fallbackToDefaultOnBatchFailure` MUST be false for recurring.
+    //
+    // The SDK's `executeFirstFill` attempts `signBatch` first (it's defined on
+    // mobile's signer) and, when this flag is true, silently re-runs the whole
+    // wrap→approve→swap sequence on ANY throw from that attempt. That fallback
+    // is only safe when `signBatch` is atomic (a true `eth_sendTransactionBatch`
+    // where a throw means nothing was signed). Mobile's `signBatch` is NOT
+    // atomic for recurring: `EvmSigner.signBatch` routes recurring straight to
+    // `signEachManually`, which signs and BROADCASTS wrap + approve before the
+    // swap step. So a partway throw leaves those txs on-chain, and the SDK's
+    // re-run prompts a SECOND spend-limit approval and surfaces a spurious
+    // "User rejected the request." from a superseded approval sheet.
+    //
+    // With `false`, mobile's sequential `signBatch` is the single execution
+    // path; a real failure propagates once. Ledger/WC peers are unaffected —
+    // recurring never issues a true atomic batch, so there is no batch
+    // rejection for the SDK fallback to recover from.
     result = await markrRecurring.executeFirstFill({
       quote,
       fromAddress: fromAddress as `0x${string}`,
       sourceChain,
-      fallbackToDefaultOnBatchFailure: true,
+      fallbackToDefaultOnBatchFailure: false,
       signerContext
     })
   } catch (err) {

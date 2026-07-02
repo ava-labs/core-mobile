@@ -22,7 +22,8 @@ import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import {
   selectMarkrSwapMaxRetries,
-  selectFusionTransferGasMarginBps
+  selectFusionTransferGasMarginBps,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 // Nest Egg disabled (CP-14058) — see swapCompleted dispatch below
@@ -53,6 +54,7 @@ import {
 } from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
 import { findNextQuote } from '../utils/findNextQuote'
+import { isAvalancheCctZeroAmountRoute } from '../utils/isAvalancheCctRoute'
 import { logSdkError } from '../utils/fusionLogger'
 import { matchQuoteByIdentifiers } from '../utils/matchQuoteByIdentifiers'
 
@@ -174,6 +176,7 @@ export const SwapContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const maxRetries = useSelector(selectMarkrSwapMaxRetries)
   const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const { getNetwork } = useNetworks()
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -207,6 +210,14 @@ export const SwapContextProvider = ({
     })
   }, [])
 
+  // AVALANCHE_CCT routes accept amountIn=0 so the SDK can emit an import-only
+  // recovery quote (recover stranded funds straight from the swap screen).
+  const allowZeroAmount = isAvalancheCctZeroAmountRoute({
+    isAvalancheCctEnabled,
+    fromToken,
+    toToken
+  })
+
   // Subscribe to quote stream
   const { isLoading: isQuoteLoading, error: quoteError } = useQuoteStreaming({
     fromToken,
@@ -219,7 +230,8 @@ export const SwapContextProvider = ({
     // When auto slippage is enabled, pass undefined to let SDK determine optimal slippage
     // When manual, use the user's specified slippage value
     slippageBps: autoSlippage ? undefined : slippage * 100,
-    onNoQuotesError
+    onNoQuotesError,
+    allowZeroAmount
   })
 
   // Method to select a specific quote or auto mode. Also clears any

@@ -15,6 +15,7 @@ import Logger from 'utils/Logger'
 import { RequestContext, type SwapAutoApproveContext } from 'store/rpc/types'
 import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
 import {
+  isRecurringOrderActionSignatureReason,
   isRecurringTransferSignatureReason,
   readRecurringSignerContext
 } from 'features/recurringSwap/services/recurringSignerContext'
@@ -293,10 +294,19 @@ export function createEvmSigner(
     const recurringActive = isRecurring
       ? readRecurringSignerContext(stepDetails)
       : undefined
+    // Cancel / pause / resume are schedule-management actions, not a
+    // completed swap — suppress the success confetti (schedule creation and
+    // recurring fills keep their normal feedback).
+    const isRecurringOrderAction = isRecurringOrderActionSignatureReason(
+      stepDetails.currentSignatureReason
+    )
     const requestContext = recurringActive
       ? {
           ...contextWithManualReview,
-          [RequestContext.RECURRING_SWAP]: recurringActive
+          [RequestContext.RECURRING_SWAP]: recurringActive,
+          ...(isRecurringOrderAction
+            ? { [RequestContext.CONFETTI_DISABLED]: true }
+            : {})
         }
       : contextWithManualReview
 

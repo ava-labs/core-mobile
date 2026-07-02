@@ -1,7 +1,13 @@
 import { SxProp } from 'dripsy'
 import { BlurView } from 'expo-blur'
 import throttle from 'lodash/throttle'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef
+} from 'react'
 import { LayoutChangeEvent, Pressable, ViewStyle } from 'react-native'
 import Animated, {
   DerivedValue,
@@ -93,9 +99,31 @@ export const SegmentedControl = ({
     opacity: selectionIndicatorOpacityAnimation.value
   }))
 
+  // Fabric + Reanimated 4.4 (RN 0.85) regression: a `useAnimatedStyle` mapper can
+  // fail to attach to its view when the shared values it reads (here `viewWidth`)
+  // are written before the view is committed to the shadow tree. That leaves the
+  // selection indicator unpainted for the initial, never-changed selection (e.g.
+  // `Assets` / `1D`) until an unrelated re-commit (navigating, tapping another
+  // segment) forces the mapper to re-attach. See software-mansion/react-native-reanimated#8379.
+  //
+  // Remount the row exactly once, the first time we get a real (non-zero) width,
+  // so the indicator and per-segment text-color mappers re-attach with `viewWidth`
+  // already measured. Gating on the first layout (rather than a blind frame delay)
+  // keeps this correct under JS-thread contention — however late `onLayout` lands,
+  // the remount still happens against a populated width. This assumes the default
+  // selection is settled (no in-flight spring) at first layout, which holds for
+  // every current consumer (all start at index 0).
+  const [recommitKey, forceRecommit] = useReducer((x: number) => x + 1, 0)
+  const didRecommit = useRef(false)
+
   const handleLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      viewWidth.value = event.nativeEvent.layout.width
+      const width = event.nativeEvent.layout.width
+      viewWidth.value = width
+      if (width > 0 && !didRecommit.current) {
+        didRecommit.current = true
+        forceRecommit()
+      }
     },
     [viewWidth]
   )
@@ -124,6 +152,7 @@ export const SegmentedControl = ({
             backgroundColor ?? (theme.isDark ? '#C5C5C840' : '#28282820')
         }}>
         <Animated.View
+          key={recommitKey}
           style={{ borderRadius: 100, flexDirection: 'row' }}
           onLayout={handleLayout}>
           <Animated.View

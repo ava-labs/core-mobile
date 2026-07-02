@@ -374,6 +374,7 @@ class FusionService implements IFusionService {
    * @param transfer The transfer to track
    * @param updateListener Callback invoked on every status change
    * @param onCompleted Optional callback invoked once when tracking concludes
+   * @returns a canceller that stops tracking this transfer immediately
    */
   trackTransfer(
     transfer: Transfer,
@@ -381,7 +382,7 @@ class FusionService implements IFusionService {
     onCompleted?: (
       concluded: CompletedTransfer | FailedTransfer | RefundedTransfer
     ) => void
-  ): void {
+  ): () => void {
     const wrappedListener = (updated: Transfer): void => {
       Logger.info('[FusionService] new transfer status', {
         transferId: updated.id,
@@ -408,6 +409,14 @@ class FusionService implements IFusionService {
         Logger.error('[FusionService] trackTransfer error', err)
         this.#trackingCancels.delete(transfer.id)
       })
+
+    // Return a per-transfer canceller so callers that give up early (e.g. a UI
+    // timeout) can stop the SDK-side tracking instead of leaving it running
+    // until the next full `cleanup()`.
+    return () => {
+      cancel()
+      this.#trackingCancels.delete(transfer.id)
+    }
   }
 
   /**
