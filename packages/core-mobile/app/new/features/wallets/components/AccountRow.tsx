@@ -76,7 +76,7 @@ const AccountRow = ({
       <View
         sx={{
           paddingHorizontal: 10,
-          paddingBottom: cardPos === 'bottom' ? 10 : 0
+          paddingBottom: cardPos === 'bottom' ? 10 : 1
         }}>
         <AccountListItem
           testID={`manage_accounts_list__${account.wallet.name}__${account.account.name}`}

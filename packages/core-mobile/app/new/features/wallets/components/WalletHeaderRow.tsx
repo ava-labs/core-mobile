@@ -247,7 +247,20 @@ function arePropsEqual(
     prev.cardPos === next.cardPos &&
     prev.showMoreButton === next.showMoreButton &&
     prev.onToggleExpansion === next.onToggleExpansion &&
-    prev.wallet === next.wallet
+    // Field-level compare, not reference equality: `walletsDisplayData` spreads a
+    // fresh `{...wallet}` per wallet whenever accounts or the active account
+    // change, so `===` would re-render (and re-run WalletBalance +
+    // getEnabledNetworksForAccount for every account) on every such change.
+    // Compare what the header actually renders / queries: id, name, type, and
+    // the account-id set (drives the balance query + account-count text).
+    (prev.wallet === next.wallet ||
+      (prev.wallet.id === next.wallet.id &&
+        prev.wallet.name === next.wallet.name &&
+        prev.wallet.type === next.wallet.type &&
+        prev.wallet.accounts.length === next.wallet.accounts.length &&
+        prev.wallet.accounts.every(
+          (acc, i) => acc.account.id === next.wallet.accounts[i]?.account.id
+        )))
   )
 }
 
