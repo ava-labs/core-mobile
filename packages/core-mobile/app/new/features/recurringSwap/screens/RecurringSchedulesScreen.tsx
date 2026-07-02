@@ -277,16 +277,25 @@ function ScheduleCard({
     [s.tokenOut, network, contractTokens]
   )
 
+  // A `nextExecutionAt` in the past means the order was just resumed (or the
+  // relayer hasn't caught up yet): it will be triggered on the next relayer
+  // run — usually within a minute. Computed each render (not inside the memo)
+  // so that when the component re-renders after the scheduled time passes, the
+  // memo can flip to the soft label instead of caching the stale timestamp —
+  // `Date.now()` is not a valid memo dependency on its own.
+  const isNextExecutionStale =
+    s.nextExecutionAt !== null &&
+    s.nextExecutionAt !== undefined &&
+    s.nextExecutionAt * 1000 <= Date.now()
+
   const nextSwapValue = useMemo<React.ReactNode>(() => {
     if (s.nextExecutionAt === null || s.nextExecutionAt === undefined) {
       return '—'
     }
-    // A `nextExecutionAt` in the past means the order was just resumed (or the
-    // relayer hasn't caught up yet): it will be triggered on the next relayer
-    // run — usually within a minute. We don't know the exact time, so showing
-    // the stale scheduled timestamp would be misleading. Show a soft label
-    // instead. (Matches the CP-14659 web behavior.)
-    if (s.nextExecutionAt * 1000 <= Date.now()) {
+    // We don't know the exact next-run time when stale, so showing the stale
+    // scheduled timestamp would be misleading. Show a soft label instead.
+    // (Matches the CP-14659 web behavior.)
+    if (isNextExecutionStale) {
       return (
         <Text variant="body1" sx={{ color: '$textSecondary' }}>
           In a few minutes
@@ -304,7 +313,7 @@ function ScheduleCard({
         </Text>
       </View>
     )
-  }, [s.nextExecutionAt])
+  }, [s.nextExecutionAt, isNextExecutionStale])
 
   const groupData = useMemo((): GroupListItem[] => {
     const totalLabel = isUnlimited ? '∞' : String(s.numberOfOrders)
