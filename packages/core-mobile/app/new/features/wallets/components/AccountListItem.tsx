@@ -52,7 +52,8 @@ const AccountListItem = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          paddingLeft: 14
+          paddingLeft: 14,
+          flex: 1
         }}>
         <View
           sx={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
