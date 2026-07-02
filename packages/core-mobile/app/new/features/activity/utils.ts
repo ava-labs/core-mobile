@@ -239,3 +239,34 @@ export const getNftLabel = (nftToken: TxToken | undefined): string => {
   if (symbol) return symbol
   return 'NFT'
 }
+
+/**
+ * Resolves the user's swap input and output legs from a transaction's token
+ * transfers, given the user's address on the tx's network.
+ *
+ * A swap can list more than one leg sent FROM the user: recurring-swap fills
+ * (and any token→token swap that also charges a native protocol/gas-fee) carry
+ * both the ERC-20 swap input AND a small native fee leg to the router. The
+ * native leg isn't the traded principal, so when multiple input legs exist we
+ * prefer the non-native one. A genuine native-input swap (e.g. AVAX→USDT) has a
+ * single native input leg and still resolves to it.
+ *
+ * `outputToken` is the first leg sent TO the user (undefined for cross-chain
+ * swaps whose destination token lands on another chain). Callers treat a
+ * defined `inputToken` with an undefined `outputToken` as "input-only".
+ */
+export function selectSwapTokens(
+  tokens: TxToken[],
+  userAddress: string | undefined
+): { inputToken: TxToken | undefined; outputToken: TxToken | undefined } {
+  const inputTokens = tokens.filter(
+    token => token.from?.address === userAddress
+  )
+  const outputTokens = tokens.filter(token => token.to?.address === userAddress)
+
+  const inputToken =
+    inputTokens.find(token => token.type !== TokenType.NATIVE) ?? inputTokens[0]
+  const outputToken = outputTokens[0]
+
+  return { inputToken, outputToken }
+}
