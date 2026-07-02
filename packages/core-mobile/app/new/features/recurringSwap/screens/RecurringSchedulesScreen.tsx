@@ -281,6 +281,18 @@ function ScheduleCard({
     if (s.nextExecutionAt === null || s.nextExecutionAt === undefined) {
       return '—'
     }
+    // A `nextExecutionAt` in the past means the order was just resumed (or the
+    // relayer hasn't caught up yet): it will be triggered on the next relayer
+    // run — usually within a minute. We don't know the exact time, so showing
+    // the stale scheduled timestamp would be misleading. Show a soft label
+    // instead. (Matches the CP-14659 web behavior.)
+    if (s.nextExecutionAt * 1000 <= Date.now()) {
+      return (
+        <Text variant="body1" sx={{ color: '$textSecondary' }}>
+          In a few minutes
+        </Text>
+      )
+    }
     const { date, time } = formatUnixDateParts(s.nextExecutionAt)
     return (
       <View sx={{ alignItems: 'flex-end' }}>
