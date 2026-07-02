@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import type { Account } from 'store/account'
@@ -17,9 +17,13 @@ import { aliasToCaip2, type StuckRoute } from '../utils/stuckFundsRoutes'
 import { subscribeToFirstQuote } from '../utils/subscribeToFirstQuote'
 import type { Quote } from '../types'
 import type { QuoterParams } from '../services/types'
-import { useStuckAtomicFunds } from './useStuckAtomicFunds'
+import { invalidateStuckAtomicFunds } from './useStuckAtomicFunds'
 
 type GetNetwork = (chainId: number) => NetworkWithCaip2ChainId | undefined
+
+// Backstop for a quote stream that never emits a terminal event: without it a
+// stalled stream would leave every Recover button disabled until remount.
+const RECOVERY_QUOTE_TIMEOUT_MS = 30_000
 
 export const stuckRouteKey = (route: StuckRoute): string =>
   `${route.source}-${route.dest}`
@@ -93,16 +97,34 @@ export const useStuckFundsRecovery = (): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
   const { getNetwork } = useNetworks()
-  const { invalidate } = useStuckAtomicFunds()
   const [recoveringKey, setRecoveringKey] = useState<string | null>(null)
+
+  // Synchronous mutex: `recoveringKey` is captured per-render, so a rapid
+  // double-tap could start a second recovery before the state update disables
+  // the button. The ref guards that gap.
+  const isRecoveringRef = useRef(false)
+  // Cleanup for the in-flight quote subscription, torn down on unmount so the
+  // quoter doesn't keep running (and settling against a dead hook) off-screen.
+  const activeCleanupRef = useRef<(() => void) | null>(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      activeCleanupRef.current?.()
+      activeCleanupRef.current = null
+    }
+  }, [])
 
   const recover = useCallback(
     async (route: StuckRoute): Promise<void> => {
-      if (recoveringKey) return
+      if (isRecoveringRef.current) return
+      isRecoveringRef.current = true
 
       // The banner only renders once Fusion is ready, so recovery is reachable
       // only in a usable state; any resolution failure surfaces via the catch.
       setRecoveringKey(stuckRouteKey(route))
+      let timeoutId: ReturnType<typeof setTimeout> | undefined
       try {
         const params = resolveRecoveryQuoterParams({
           route,
@@ -117,8 +139,19 @@ export const useStuckFundsRecovery = (): {
           const cleanup = subscribeToFirstQuote(params, resolve, () =>
             reject(new Error('No recovery quote available'))
           )
-          if (!cleanup) reject(new Error('Could not create recovery quote'))
+          if (!cleanup) {
+            reject(new Error('Could not create recovery quote'))
+            return
+          }
+          activeCleanupRef.current = cleanup
+          timeoutId = setTimeout(
+            () => reject(new Error('Recovery quote timed out')),
+            RECOVERY_QUOTE_TIMEOUT_MS
+          )
         })
+        // The first quote settled the subscription itself; stand the guards
+        // down so the finally doesn't double-unsubscribe.
+        activeCleanupRef.current = null
 
         const transfer = await FusionService.transferAsset(quote, {
           estimateGasMarginBps: transferGasMarginBps
@@ -130,24 +163,24 @@ export const useStuckFundsRecovery = (): {
           throw new Error(`Recovery transfer failed: ${reason}`)
         }
 
-        invalidate()
+        invalidateStuckAtomicFunds()
       } catch (error) {
         if (!isUserRejectionError(error)) {
           Logger.error('[useStuckFundsRecovery] recovery failed', error)
-          showSnackbar('Recovery failed. Please try again.')
+          if (isMountedRef.current) {
+            showSnackbar('Recovery failed. Please try again.')
+          }
         }
       } finally {
-        setRecoveringKey(null)
+        if (timeoutId) clearTimeout(timeoutId)
+        // Tear down a still-live subscription (timeout / early throw path).
+        activeCleanupRef.current?.()
+        activeCleanupRef.current = null
+        isRecoveringRef.current = false
+        if (isMountedRef.current) setRecoveringKey(null)
       }
     },
-    [
-      account,
-      isDeveloperMode,
-      transferGasMarginBps,
-      getNetwork,
-      invalidate,
-      recoveringKey
-    ]
+    [account, isDeveloperMode, transferGasMarginBps, getNetwork]
   )
 
   return { recover, recoveringKey }

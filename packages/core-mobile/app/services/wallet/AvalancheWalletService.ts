@@ -86,13 +86,28 @@ class AvalancheWalletService {
       ['X', 'P']
     ]
 
-    return Promise.all(
+    // allSettled (not all): a single flaky route must not reject the whole
+    // detection query, or one bad chain would hide genuinely stuck funds that
+    // loaded fine on the other routes. Drop only the routes that failed.
+    const settled = await Promise.allSettled(
       routes.map(async ([dest, source]) => ({
         dest,
         source,
         utxos: await readOnlySigner.getAtomicUTXOs(dest, source)
       }))
     )
+
+    return settled
+      .filter(
+        (
+          result
+        ): result is PromiseFulfilledResult<{
+          dest: Avalanche.ChainIDAlias
+          source: Avalanche.ChainIDAlias
+          utxos: utils.UtxoSet
+        }> => result.status === 'fulfilled'
+      )
+      .map(result => result.value)
   }
 
   /**

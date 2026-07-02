@@ -40,6 +40,14 @@ jest.mock('@avalabs/core-utils-sdk', () => ({
   }
 }))
 
+jest.mock('react-redux', () => ({
+  useSelector: (fn: () => unknown) => fn()
+}))
+
+jest.mock('store/posthog', () => ({
+  selectIsFusionAvalancheCctEnabled: () => true
+}))
+
 const mockUseStuckAtomicFunds = jest.fn()
 jest.mock('../hooks/useStuckAtomicFunds', () => ({
   useStuckAtomicFunds: () => mockUseStuckAtomicFunds()

@@ -9,6 +9,8 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectIsFusionAvalancheCctEnabled } from 'store/posthog'
 import { useStuckAtomicFunds } from '../hooks/useStuckAtomicFunds'
 import {
   stuckRouteKey,
@@ -45,14 +47,16 @@ export const StuckFundsBanner = ({
   sx?: React.ComponentProps<typeof View>['sx']
 } = {}): JSX.Element | null => {
   const { theme } = useTheme()
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const { routes, totalNAvax, hasAnyAtomics } = useStuckAtomicFunds()
   const { recover, recoveringKey } = useStuckFundsRecovery()
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const [expanded, setExpanded] = useState(false)
 
-  // Hide until Fusion is ready so Recover is never shown in an unusable state
-  // (recovery builds a Fusion quote + transfer).
-  if (!hasAnyAtomics || !isFusionServiceReady) {
+  // Gate on the CCT flag (recovery relies on CCT deps that aren't wired when the
+  // flag is off) and hide until Fusion is ready, so Recover is never shown in an
+  // unusable state. Detection is already flag-gated, so this is defense-in-depth.
+  if (!isAvalancheCctEnabled || !hasAnyAtomics || !isFusionServiceReady) {
     return null
   }
 

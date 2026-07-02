@@ -669,8 +669,10 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
-  // Recovery flow = a CCT route with 0 explicitly entered (empty input is not
-  // treated as recovery, so the button stays "Next" until the user types 0).
+  // Recovery flow = an enabled CCT route with a 0 amount. Note the amount input
+  // emits 0n for a cleared/empty field as well, so clearing the amount also
+  // enters recovery (button reads "Recover"). Distinguishing an empty field from
+  // an explicit typed 0 is tracked as a follow-up.
   const isCctRecovery = allowZeroAmount && debouncedFromTokenValue === 0n
 
   const validateInputs = useCallback(() => {

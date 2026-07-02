@@ -5,8 +5,13 @@ import { useStuckAtomicFunds } from './useStuckAtomicFunds'
 const mockInvalidateQueries = jest.fn()
 
 jest.mock('@tanstack/react-query', () => ({
-  useQuery: jest.fn(),
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries })
+  useQuery: jest.fn()
+}))
+
+jest.mock('contexts/ReactQueryProvider', () => ({
+  queryClient: {
+    invalidateQueries: (...args: unknown[]) => mockInvalidateQueries(...args)
+  }
 }))
 
 jest.mock('react-redux', () => ({
@@ -15,6 +20,9 @@ jest.mock('react-redux', () => ({
 
 jest.mock('store/account', () => ({
   selectActiveAccount: () => ({ id: 'acc-1' })
+}))
+jest.mock('store/posthog', () => ({
+  selectIsFusionAvalancheCctEnabled: () => true
 }))
 jest.mock('store/settings/advanced', () => ({
   selectIsDeveloperMode: () => false
