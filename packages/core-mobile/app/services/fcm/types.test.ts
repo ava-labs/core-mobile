@@ -360,3 +360,39 @@ describe('NewsDataSchema', () => {
     expect(result.success).toBe(true)
   })
 })
+
+describe('NotificationPayloadSchema — RECURRING_SWAP envelope requirement', () => {
+  const recurringData = {
+    type: NotificationTypes.RECURRING_SWAP,
+    orderId: 'order-123',
+    owner: '0xabc0000000000000000000000000000000000001',
+    chainId: '43114',
+    numberOfOrders: '12',
+    executedOrders: '1',
+    remainingOrders: '11',
+    tokenIn: '0x0000000000000000000000000000000000000001',
+    tokenOut: '0x0000000000000000000000000000000000000002',
+    amountIn: '1000000000000000000',
+    amountOut: '2000000',
+    status: 'executed'
+  }
+
+  it('rejects a data-only RECURRING_SWAP payload (missing notification envelope)', () => {
+    // RecurringSwapDataSchema omits title/body, so without the envelope there
+    // is nothing to display. The refine must fail validation so the FCM
+    // handlers log + drop it rather than trying to render it at runtime.
+    const result = NotificationPayloadSchema.safeParse({ data: recurringData })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts a RECURRING_SWAP payload that includes a notification envelope', () => {
+    const result = NotificationPayloadSchema.safeParse({
+      data: recurringData,
+      notification: {
+        title: 'Recurring swap executed',
+        body: 'Order 1 of 12 completed'
+      }
+    })
+    expect(result.success).toBe(true)
+  })
+})

@@ -59,7 +59,7 @@ const ToggleDeveloperModeScreen = ({
               textAlign: 'center',
               fontSize: 15,
               lineHeight: 20,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: '$textPrimary'
             }}>
             {action}

@@ -114,8 +114,16 @@ describe('submitRecurringSwap', () => {
       quote: QUOTE,
       fromAddress: FROM_ADDR,
       sourceChain: SOURCE_CHAIN,
-      // Match `transferAsset`'s graceful one-click → sequential fallback.
-      fallbackToDefaultOnBatchFailure: true,
+      // MUST be false for recurring. Mobile's `signBatch` is NOT atomic for
+      // recurring — `EvmSigner.signBatch` routes recurring straight to
+      // `signEachManually`, which signs and broadcasts wrap/approve/swap
+      // sequentially. The SDK attempts `signBatch` first (it's defined), and
+      // with `fallbackToDefaultOnBatchFailure: true` it silently re-runs the
+      // whole wrap→approve→swap sequence on ANY throw — but the intermediate
+      // txs were already broadcast, so the user gets a SECOND spend-limit
+      // approval and a spurious "User rejected the request." from a superseded
+      // sheet. `false` surfaces a real failure once, with no double-execution.
+      fallbackToDefaultOnBatchFailure: false,
       // The SDK forwards this verbatim onto `step.signerContext`, where
       // EvmSigner.signOne tags it with the action type derived from
       // `step.currentSignatureReason` (ScheduleRecurringSwap /

@@ -11,10 +11,6 @@ import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { Placeholder } from 'common/components/Placeholder'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -25,7 +21,7 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { AnimatedStyle } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -51,7 +47,7 @@ const DepositTabScreen = ({
 }: {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
   onHeaderLayout: (event: LayoutChangeEvent) => void
-  animatedHeaderStyle: { opacity: number }
+  animatedHeaderStyle: AnimatedStyle<ViewStyle>
   containerStyle?: StyleProp<ViewStyle>
   isActive: boolean
 }): JSX.Element => {
@@ -133,9 +129,7 @@ const DepositTabScreen = ({
               marginBottom: 14,
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
-            }}
-            entering={getListItemEnteringAnimation(index)}
-            exiting={getListItemExitingAnimation(index)}>
+            }}>
             {content}
           </Animated.View>
         )

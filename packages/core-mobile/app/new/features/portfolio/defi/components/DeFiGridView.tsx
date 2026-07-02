@@ -9,7 +9,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { GRID_GAP } from 'common/consts'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React from 'react'
 import { Dimensions, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -49,7 +48,7 @@ export const DeFiGridView = ({
   })
 
   return (
-    <Animated.View entering={getListItemEnteringAnimation(index)} style={style}>
+    <Animated.View style={style}>
       <AnimatedPressable onPress={handleOnPress}>
         <View
           sx={{

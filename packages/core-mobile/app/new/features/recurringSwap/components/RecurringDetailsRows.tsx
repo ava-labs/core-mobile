@@ -22,6 +22,7 @@ import {
   RECURRING_FREQUENCY_VALUE_MAX,
   validateFrequency
 } from '@avalabs/fusion-sdk'
+import { TokenType } from '@avalabs/vm-module-types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useSwapContext } from 'features/swap/contexts/SwapContext'
@@ -136,6 +137,21 @@ const MIN_ORDERS = 2
 const DEFAULT_CUSTOM_ORDERS = 5
 const ORDERS_INPUT_KEY = 'orders_value'
 
+// Native-input recurring can't express an "Unlimited" schedule: the first fill
+// pre-wraps the whole schedule's worth (numberOfOrders × amountPerOrder) into
+// the wrapped-native token, and an unbounded schedule has no finite total to
+// wrap — Markr's `/recurring/quote` returns HTTP 400 for native + unlimited.
+// Hide the Unlimited chip for native source tokens so the user can't pick a
+// combination that would otherwise dead-end with a disabled "Next" and no
+// explanation (the recurring-quote error isn't surfaced in the UI).
+export function ordersChipsForToken(
+  isNativeFromToken: boolean
+): ChipOption<OrdersChipId>[] {
+  return isNativeFromToken
+    ? ORDERS_CHIPS.filter(chip => chip.id !== 'unlimited')
+    : ORDERS_CHIPS
+}
+
 function ordersToChipId(
   n: NumberOfOrders | undefined
 ): OrdersChipId | undefined {
@@ -176,6 +192,23 @@ export function RecurringDetailsRows({
   const { fromToken, toToken } = useSwapContext()
   const activeAccount = useSelector(selectActiveAccount)
   const evmAddress = activeAccount?.addressC
+
+  // Unlimited isn't valid for a native source token (see `ordersChipsForToken`).
+  const isNativeFromToken = fromToken?.type === TokenType.NATIVE
+  const ordersChips = useMemo(
+    () => ordersChipsForToken(isNativeFromToken),
+    [isNativeFromToken]
+  )
+
+  // If the source switches to native while Unlimited is selected, clear the
+  // selection — the chip is now hidden and the combination would 400 on quote.
+  // Cleared to `undefined` so the user makes an explicit valid choice rather
+  // than us silently picking a count for them.
+  useEffect(() => {
+    if (isNativeFromToken && numberOfOrders === UNLIMITED_ORDERS) {
+      setNumberOfOrders(undefined)
+    }
+  }, [isNativeFromToken, numberOfOrders, setNumberOfOrders])
 
   const eligibility = useRecurringEligibility(fromToken, toToken, evmAddress)
   const minIntervalSeconds = eligibility.eligible
@@ -446,7 +479,7 @@ export function RecurringDetailsRows({
         testID="recurring_row__orders">
         <View sx={{ padding: 16 }}>
           <RecurrenceChips
-            options={ORDERS_CHIPS}
+            options={ordersChips}
             selectedId={selectedOrdersChip}
             onSelect={handleSelectOrdersChip}
             testID="orders_chips"

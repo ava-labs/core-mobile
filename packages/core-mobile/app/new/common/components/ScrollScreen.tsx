@@ -6,7 +6,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { forwardRef, useCallback, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -31,6 +37,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
+
+// Extra padding bottom so the gradient doesnt cover the bottom of the screen
+const EXTRA_PADDING_BOTTOM = 48
 
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
@@ -104,6 +113,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       isModal,
       navigationTitle,
       shouldAvoidKeyboard,
+      // Default to the pre-1.21 spacer-view keyboard avoidance.
+      // keyboard-controller 1.21 changed `KeyboardAwareScrollView`'s default to
+      // `mode="insets"`, which only adjusts `contentInset` and doesn't move
+      // non-scrollable `flex: 1` layouts above the keyboard. Defaulting to
+      // "layout" keeps every screen behaving exactly as it did before the
+      // RN/keyboard-controller upgrade. Adopting "insets" should be an opt-in,
+      // per-screen change with its own QA.
+      mode = 'layout',
       disableStickyFooter,
       showNavigationHeaderTitle = true,
       hideHeaderBackground,
@@ -188,12 +205,22 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 
     const headerRef = useRef<View>(null)
 
+    // Stable header element — recreated only when the title text changes. Passing
+    // a fresh JSX element every render made `useFadingHeaderNavigation`'s
+    // header-title sync effect re-run each render → repeated `navigation
+    // .setOptions`, which (stacked across nested modal screens) churned the
+    // native header and pegged the JS thread.
+    const navigationHeader = useMemo(
+      () => <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      [navigationTitle, title]
+    )
+
     const {
       onScroll: onFadingScroll,
       scrollY,
       targetHiddenProgress
     } = useFadingHeaderNavigation({
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout: headerLayout,
       hasParent,
       hideHeaderBackground: hideHeaderBackground || isModal,
@@ -238,14 +265,37 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       }
     })
 
+    // Commit a new layout object only when the measured rect actually changed.
+    // `onLayout` can fire repeatedly with identical values (notably when a
+    // screen is re-measured every frame while backgrounded behind another in a
+    // native-stack — e.g. the delegate node screens behind the amount step).
+    // Setting a fresh object each time would re-render → re-lay out → fire
+    // `onLayout` again, spinning a layout↔setState loop that pegs the JS thread
+    // (visible as a flood of `UIManagerBinding::get` in a CPU profile).
     const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout
-      setHeaderLayout({ x, y, width, height })
+      setHeaderLayout(prev =>
+        prev &&
+        prev.x === x &&
+        prev.y === y &&
+        prev.width === width &&
+        prev.height === height
+          ? prev
+          : { x, y, width, height }
+      )
     }, [])
 
     const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
       const { x, y, width, height } = event.nativeEvent.layout
-      setFooterLayout({ x, y, width, height })
+      setFooterLayout(prev =>
+        prev &&
+        prev.x === x &&
+        prev.y === y &&
+        prev.width === width &&
+        prev.height === height
+          ? prev
+          : { x, y, width, height }
+      )
     }, [])
 
     const animatedBorderStyle = useAnimatedStyle(() => {
@@ -427,6 +477,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           <KeyboardScrollView
             ref={ref as never}
             testID={testID}
+            mode={mode}
             extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
@@ -438,9 +489,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
-                paddingBottom: disableStickyFooter
-                  ? insets.bottom + 32
-                  : (footerLayout?.height ?? 0) + 32,
+                paddingBottom:
+                  (footerLayout?.height ?? 0) +
+                  (disableStickyFooter ? insets.bottom : 0) +
+                  EXTRA_PADDING_BOTTOM,
                 paddingTop: headerHeight
               }
             ]}
@@ -476,7 +528,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 48,
+              paddingBottom:
+                (footerLayout?.height ?? 0) +
+                insets.bottom +
+                EXTRA_PADDING_BOTTOM,
               paddingTop: headerHeight
             }
           ]}

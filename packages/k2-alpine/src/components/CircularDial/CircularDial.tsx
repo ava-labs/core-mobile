@@ -561,6 +561,7 @@ export const CircularDial: FC<CircularDialProps> = ({
                 referenceValue={referenceValue}
                 progressSv={progressSv}
                 isActive={isActive}
+                isSettling={isSettling}
                 onChange={stableOnChange}
                 onCommit={stableOnCommit}
                 testIDPrefix={testID}

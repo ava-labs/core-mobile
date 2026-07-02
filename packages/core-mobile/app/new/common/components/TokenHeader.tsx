@@ -50,33 +50,38 @@ export const TokenHeader = ({
           }}>
           {isPrivacyModeEnabled ? (
             <HiddenBalanceText isCurrency={false} sx={{ lineHeight: 38 }} />
+          ) : token?.balanceDisplayValue ? (
+            <View
+              sx={{
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                flexShrink: 1,
+                minHeight: 38
+              }}>
+              <SubTextNumber
+                number={token.balanceDisplayValue}
+                textColor={colors.$textPrimary}
+                textVariant="heading2"
+              />
+              <Text
+                variant="heading2"
+                numberOfLines={1}
+                sx={{
+                  fontFamily: 'Aeonik-Medium',
+                  color: colors.$textPrimary,
+                  fontSize: 18,
+                  lineHeight: 18,
+                  marginBottom: 4
+                }}>
+                {token.symbol}
+              </Text>
+            </View>
           ) : (
             <Text
               variant="heading2"
               sx={{ lineHeight: 38, flexShrink: 1 }}
               numberOfLines={1}>
-              {token?.balanceDisplayValue ? (
-                <View sx={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-                  <SubTextNumber
-                    number={token.balanceDisplayValue}
-                    textColor={colors.$textPrimary}
-                    textVariant="heading2"
-                  />
-                  <Text
-                    variant="heading2"
-                    sx={{
-                      fontFamily: 'Aeonik-Medium',
-                      color: colors.$textPrimary,
-                      fontSize: 18,
-                      lineHeight: 18,
-                      marginBottom: 4
-                    }}>
-                    {token.symbol}
-                  </Text>
-                </View>
-              ) : (
-                UNKNOWN_AMOUNT
-              )}
+              {UNKNOWN_AMOUNT}
             </Text>
           )}
         </View>

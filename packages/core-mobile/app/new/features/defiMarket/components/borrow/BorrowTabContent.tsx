@@ -8,10 +8,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -20,7 +16,7 @@ import {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { AnimatedStyle } from 'react-native-reanimated'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -34,7 +30,7 @@ import { BorrowPosition, BorrowSummary, MarketName } from '../../types'
 export interface BorrowTabScreenProps {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
   onHeaderLayout: (event: LayoutChangeEvent) => void
-  animatedHeaderStyle: { opacity: number }
+  animatedHeaderStyle: AnimatedStyle<ViewStyle>
   containerStyle?: StyleProp<ViewStyle>
   isActive: boolean
 }
@@ -143,8 +139,6 @@ export const BorrowTabContent = ({
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
-            entering={getListItemEnteringAnimation(index)}
-            exiting={getListItemExitingAnimation(index)}
             layout={SPRING_LINEAR_TRANSITION}>
             {content}
           </Animated.View>
@@ -229,7 +223,14 @@ export const BorrowTabContent = ({
 
   return (
     <FlashList
-      key={`borrow-tab-${sort.selected}`}
+      // Remount the grid when the sort selection or the selected protocol
+      // changes. Switching protocol swaps `contentState` in place without
+      // remounting this component, so on Fabric the grid reorders cells without
+      // recomputing the `numColumns` layout (uneven gaps / misalignment).
+      // Including the protocol (the borrow tab's "filter" analog) gives each
+      // data set a fresh layout pass, consistent with the deposit tab keying on
+      // its filter + sort.
+      key={`borrow-tab-${selectedProtocol}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

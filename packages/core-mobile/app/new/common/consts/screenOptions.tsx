@@ -1,5 +1,5 @@
 import { View } from '@avalabs/k2-alpine'
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { NativeStackNavigationOptions } from 'expo-router'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'

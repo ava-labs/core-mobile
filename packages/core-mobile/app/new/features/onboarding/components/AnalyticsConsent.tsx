@@ -52,7 +52,7 @@ export const AnalyticsConsent = ({
       <View sx={{ gap: 20 }}>
         <Text testID="anlaysticsContent" variant="subtitle1">
           As a Core user, you have the option to opt-in for{' '}
-          <Text variant="body1" sx={{ fontWeight: '700' }}>
+          <Text variant="body1" sx={{ fontFamily: 'Inter-Bold' }}>
             airdrop rewards
           </Text>{' '}
           based on your activity and engagement. Core will collect anonymous

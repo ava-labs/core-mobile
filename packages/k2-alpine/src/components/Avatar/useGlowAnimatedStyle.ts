@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ImageStyle } from 'react-native'
 import {
+  AnimatedStyle,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -12,7 +13,7 @@ import { easeOutQuart } from '../../utils'
 
 export const useGlowAnimatedStyle = (
   delay: number
-): { animatedStyle: ImageStyle; isAnimating: boolean } => {
+): { animatedStyle: AnimatedStyle<ImageStyle>; isAnimating: boolean } => {
   const [isAnimating, setIsAnimating] = useState(true)
   const opacity = useSharedValue(0)
   const rotation = useSharedValue(0)

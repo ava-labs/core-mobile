@@ -51,7 +51,7 @@ export const CopyCode = ({
               <Text
                 sx={{
                   fontSize: 14,
-                  fontWeight: '500',
+                  fontFamily: 'Inter-Medium',
                   lineHeight: 17,
                   color: colors.$textPrimary
                 }}>
@@ -76,7 +76,6 @@ export const CopyCode = ({
               <Text
                 sx={{
                   fontSize: 13,
-                  fontWeight: '400',
                   lineHeight: 16,
                   color: colors.$textPrimary
                 }}>
@@ -99,7 +98,6 @@ export const CopyCode = ({
               <Text
                 sx={{
                   fontSize: 13,
-                  fontWeight: '400',
                   lineHeight: 16,
                   color: colors.$textPrimary
                 }}>
@@ -120,7 +118,6 @@ export const CopyCode = ({
               <Text
                 sx={{
                   fontSize: 13,
-                  fontWeight: '400',
                   lineHeight: 16,
                   color: colors.$textPrimary
                 }}>

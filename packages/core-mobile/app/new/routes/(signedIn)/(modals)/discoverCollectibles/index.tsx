@@ -135,7 +135,9 @@ export default function DiscoverCollectiblesScreen(): JSX.Element {
                 style={{
                   color: theme.colors.$textSecondary
                 }}>
-                <Text variant="subtitle2" style={{ fontWeight: 500 }}>
+                <Text
+                  variant="subtitle2"
+                  style={{ fontFamily: 'Inter-SemiBold' }}>
                   {`${item.title} `}
                 </Text>
                 {item.description}

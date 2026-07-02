@@ -17,7 +17,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
@@ -53,8 +53,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveWallet } from 'store/wallet/slice'
-import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -72,6 +70,7 @@ import { useRecurringQuote } from 'features/recurringSwap/hooks/useRecurringQuot
 import { RecurringDetailsRows } from 'features/recurringSwap/components/RecurringDetailsRows'
 import { RecurringSchedulesBanner } from 'features/recurringSwap/components/RecurringSchedulesBanner'
 import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
+import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -80,14 +79,22 @@ import {
   fusionTransfersStore,
   useFusionServiceInitError
 } from '../hooks/useZustandStore'
-import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
+import {
+  FusionQuoteError,
+  fusionErrors,
+  isUserRejectionError
+} from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
-import { isAvalancheCctRoute } from '../utils/isAvalancheCctRoute'
+import {
+  isAvalancheCctRoute,
+  isCctOnlySource
+} from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { computeCanSubmit } from '../utils/recurringSubmitGate'
+import { computeRecurringBalanceError } from '../utils/recurringBalanceGate'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
@@ -186,17 +193,42 @@ function computeValidationError({
   debouncedFromTokenValue,
   minimumTransferAmount,
   fromToken,
-  feeValidationError
+  feeValidationError,
+  isRecurring,
+  numberOfOrders,
+  recurringTotalAmountIn,
+  recurringAdditiveNativeFee,
+  nativeFromToken
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
   minimumTransferAmount: bigint | null | undefined
   fromToken: LocalTokenWithBalance | undefined
   feeValidationError: FusionQuoteError | null | undefined
+  isRecurring: boolean
+  numberOfOrders: NumberOfOrders | undefined
+  recurringTotalAmountIn: bigint | undefined
+  recurringAdditiveNativeFee: bigint
+  nativeFromToken: LocalTokenWithBalance | undefined
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
     return fusionErrors.enterAmount()
+  }
+  // Recurring: validate the full schedule commitment (principal + additive
+  // native fees) up front so an under-funded schedule is caught here with a
+  // clear message instead of reverting on-chain at estimateGas (which surfaces
+  // as a generic "Recurring swap failed" toast). Stricter than the per-order
+  // balance guard below, so it runs first.
+  if (isRecurring && fromToken !== undefined) {
+    const recurringError = computeRecurringBalanceError({
+      numberOfOrders,
+      totalAmountIn: recurringTotalAmountIn,
+      additiveNativeFee: recurringAdditiveNativeFee,
+      fromToken,
+      nativeFromToken
+    })
+    if (recurringError) return recurringError
   }
   if (
     minimumTransferAmount != null &&
@@ -275,8 +307,18 @@ function buildPriceImpactItem({
 
   return {
     title: PRICE_IMPACT_ROW_TITLE,
+    // `flexShrink: 0` anchors this value row's intrinsic cross-size so it can't
+    // measure to ~0 on the first Android (Fabric) commit when it streams in
+    // after the quote (Calculating → Ready), which would otherwise hide the
+    // tooltip + impact text. (CP-14600)
     value: (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          flexShrink: 0
+        }}>
         <Tooltip
           title={tooltipTitle}
           description={tooltipDescription}
@@ -382,8 +424,6 @@ export const SwapScreen = (): JSX.Element => {
   } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeWallet = useSelector(selectActiveWallet)
-  const isSeedlessWallet = activeWallet?.type === WalletType.SEEDLESS
   const accountTokens = useTokensWithBalanceForAccount({
     account: activeAccount
   })
@@ -402,28 +442,35 @@ export const SwapScreen = (): JSX.Element => {
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
   const recurring = useRecurringSwapContext()
+
+  // Recurring is Markr-only, so its per-order floor is Markr's minimum
+  // specifically — not the blended "lowest across services" value, which could
+  // pin a lower non-Markr floor and let a sub-fillable per-order amount through.
+  // Only pin the Markr floor when recurring is on. When it's off, leave
+  // serviceType undefined so this collapses onto the blended query key
+  // (`minimumTransferAmount`) and React Query dedupes them, instead of firing a
+  // second, unread getMinimumTransferAmount round trip on every one-shot swap.
+  // The recurring minimum-ready gate tolerates the brief loading window on
+  // toggle-on (Next stays disabled until this settles).
+  const markrMinimumTransferAmount = useMinimumTransferAmount({
+    fromToken,
+    toToken,
+    serviceType: recurring.isRecurring ? ServiceType.MARKR : undefined
+  })
+
   const evmAddress = activeAccount?.addressC
   const eligibility = useRecurringEligibility(
     isRecurringBlocked ? undefined : fromToken,
     isRecurringBlocked ? undefined : toToken,
     isRecurringBlocked ? undefined : evmAddress
   )
-  // Recurring per-token minimum sourced from `/info/chains` (via SDK eligibility
-  // check, which keys on the source token address). Available whenever the pair
-  // is supported, even before the user enters an amount.
-  const recurringMinimumTransferAmount = useMemo<bigint | null>(() => {
-    if (!eligibility.eligible) return null
-    try {
-      return BigInt(eligibility.minimumAmount)
-    } catch {
-      return null
-    }
-  }, [eligibility])
-  // Recurring on → validate against the supportedTokens minimum.
-  // Recurring off → validate against the active quote's one-shot minimum.
+
+  // Recurring on → validate the per-order amount against Markr's floor.
+  // Recurring off → validate against the blended one-shot minimum.
   const effectiveMinimumTransferAmount = recurring.isRecurring
-    ? recurringMinimumTransferAmount
+    ? markrMinimumTransferAmount
     : minimumTransferAmount
+
   // Toggle stays hidden until the user enters a non-zero amount (matches Figma
   // "Recurring OFF" frame — the toggle row only appears beneath a populated
   // swap card). The recurring flag itself is preserved when the amount is
@@ -589,6 +636,21 @@ export const SwapScreen = (): JSX.Element => {
     updateMissingTokenPrice(toToken)
   }, [toToken, updateMissingTokenPrice])
 
+  // Sum the recurring quote's *additive* fees (SDK marks the one-time native
+  // schedule fee with `fee.extra` truthy and documents it as
+  // "balance-check separately"). These are native-denominated and must be
+  // reserved on top of the principal. Estimated gas (type 'gas', not `extra`)
+  // is intentionally excluded — the quote reports it in gas units, not a wei
+  // cost — and is left to the SDK's own estimateGas guard.
+  const recurringAdditiveNativeFee = useMemo(
+    () =>
+      (recurringQuote.data?.fees ?? []).reduce<bigint>(
+        (sum, fee) => (fee.extra ? sum + fee.amount : sum),
+        0n
+      ),
+    [recurringQuote.data?.fees]
+  )
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -598,7 +660,12 @@ export const SwapScreen = (): JSX.Element => {
         debouncedFromTokenValue,
         minimumTransferAmount: effectiveMinimumTransferAmount,
         fromToken,
-        feeValidationError
+        feeValidationError,
+        isRecurring: recurring.isRecurring,
+        numberOfOrders: recurring.numberOfOrders,
+        recurringTotalAmountIn: recurringQuote.data?.totalAmountIn,
+        recurringAdditiveNativeFee,
+        nativeFromToken
       })
     )
   }, [
@@ -606,7 +673,12 @@ export const SwapScreen = (): JSX.Element => {
     debouncedFromTokenValue,
     effectiveMinimumTransferAmount,
     fromToken,
-    feeValidationError
+    feeValidationError,
+    recurring.isRecurring,
+    recurring.numberOfOrders,
+    recurringQuote.data?.totalAmountIn,
+    recurringAdditiveNativeFee,
+    nativeFromToken
   ])
 
   const applyQuote = useCallback(() => {
@@ -1087,10 +1159,26 @@ export const SwapScreen = (): JSX.Element => {
       setValidationError(
         fusionErrors.incompatibleNetworks(fromToken.symbol, toToken.symbol)
       )
-    } else {
-      // Clear error if tokens are compatible
-      setValidationError(null)
+      return
     }
+
+    // CP-14514: X/P-chain native AVAX is a CCT-only source — it can swap only to
+    // native AVAX on a different primary-network chain. The chain check above
+    // passes for X/P→C (C is a reachable CCT destination), so it can't catch a
+    // non-AVAX to-token like USDC left selected from a prior C-chain source.
+    // Clear it silently so the (already source-aware) token list and the user's
+    // next pick are the source of truth — no error, the networks aren't the issue.
+    if (
+      isCctOnlySource(fromToken) &&
+      !isAvalancheCctRoute({ fromToken, toToken })
+    ) {
+      setToToken(undefined)
+      setValidationError(null)
+      return
+    }
+
+    // Clear error if tokens are compatible
+    setValidationError(null)
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
@@ -1190,20 +1278,15 @@ export const SwapScreen = (): JSX.Element => {
   }, [theme.isDark])
 
   const showCctTwoTxNotice = shouldShowAvalancheCctTwoTxNotice({
-    quote: activeQuote,
-    isSeedlessWallet
+    quote: activeQuote
   })
 
-  // Submit-gate logic lives in `recurringSubmitGate` so the recurring
-  // below-minimum guard is unit testable without the whole screen. It mirrors
-  // the one-shot `canSwap` gate: a blocking (non-warning) validation error must
-  // disable Next. Most importantly this covers below-minimum, which
-  // `computeValidationError` evaluates against the recurring per-token minimum
-  // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
-  // displayed but never reached `canSubmit`, and because the recurring quote
-  // succeeds below the minimum (`useRecurringQuote` only gates on a non-zero
-  // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
-  // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
+  // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
+  // without the whole screen. It mirrors the one-shot `canSwap` gate: a
+  // blocking (non-warning) validation error must disable Next. Recurring
+  // validates the per-order amount against Markr's floor
+  // (`effectiveMinimumTransferAmount`), so a per-order amount below that floor
+  // surfaces a blocking validation error here and disables Next. Warnings (e.g.
   // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
   const canSubmit = computeCanSubmit({
     isRecurring: recurring.isRecurring,
@@ -1215,6 +1298,11 @@ export const SwapScreen = (): JSX.Element => {
     hasRecurringQuote: !!recurringQuote.data,
     recurringSubmitting,
     validationError,
+    // `undefined` = the Markr per-order minimum query is still loading; gate
+    // Next until it settles (a value or null) so a sub-minimum per-order amount
+    // can't slip through the window where the recurring quote has resolved but
+    // the floor hasn't (the below-minimum check is skipped while it's unknown).
+    isRecurringMinimumReady: markrMinimumTransferAmount !== undefined,
     canSwap
   })
 
@@ -1270,12 +1358,18 @@ export const SwapScreen = (): JSX.Element => {
       dismissAll()
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
       // User-rejection errors from the signer bubble up untouched. They're
       // not a bug — they're the user explicitly tapping Reject. Suppress
       // both the failure toast AND the Logger.error (which pipes to
       // Sentry) so rejections don't pollute the error telemetry.
-      if (/User (rejected|cancel(l|led))/i.test(message)) {
+      //
+      // Detect via `isUserRejectionError`, which checks the EIP-1193 code
+      // (4001) and the message across Error instances AND plain JSON-RPC
+      // error objects. The signer rejection crosses the VM-module boundary as
+      // a serialized `{ code, message }` object — not an `Error` — so the old
+      // inline `err.message` regex missed it and showed the generic "failed"
+      // toast on a deliberate reject.
+      if (isUserRejectionError(err)) {
         Logger.info('[RecurringSwap] submitRecurringSwap user-rejected')
       } else if (isInvalidParamsError(err)) {
         // Quote expired / sourceChain mismatch — surface a recoverable
@@ -1490,7 +1584,17 @@ export const SwapScreen = (): JSX.Element => {
           }
         />
       )}
-      <View style={{ marginTop: 12 }}>
+      {/* CP-14600: the Pricing/Slippage/Price-impact rows are empty until the
+          quote resolves, then this GroupList card grows from zero height. Under
+          Fabric the already-laid-out neighbours don't reliably reflow around the
+          grown card, so the rows fail to appear, overlap, or sit under the
+          footer. Remounting this section when the rows first appear (data goes
+          empty → populated) forces a clean layout pass. The key is a stable
+          boolean (presence, not row count) so it flips once per quote cycle and
+          not on every price-impact/slippage update. */}
+      <View
+        key={data.length > 0 ? 'swap-details' : 'swap-details-empty'}
+        style={{ marginTop: 12 }}>
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}
       </View>
@@ -1519,6 +1623,10 @@ export const SwapScreen = (): JSX.Element => {
         }
       />
       {renderCctTwoTxNotice()}
+      {/* CP-14600: guarantee the last detail rows clear the sticky footer, where
+          the footer-height-driven bottom padding can be applied a frame late
+          while the quote rows are still streaming in. */}
+      <View style={{ height: 24 }} />
     </ScrollScreen>
   )
 }

@@ -12,7 +12,7 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
-import { Route, useRouter } from 'expo-router'
+import { Href, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
@@ -72,7 +72,7 @@ const StakeAmountScreen = ({
   nextRoute
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
-  nextRoute: Route
+  nextRoute: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -161,7 +161,7 @@ const StakeAmountScreen = ({
       await computeSteps(stakeAmount.toSubUnit())
 
       AnalyticsService.capture('StakeOpenDurationSelect')
-      navigate(nextRoute)
+      navigate(nextRoute as Href)
     } catch (e) {
       setError(e as Error)
     }

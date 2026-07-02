@@ -527,6 +527,9 @@ export function RecurringSchedulesScreen({
    *  the user lands directly on the order the notification was about. */
   initialExpandedOrderId?: string
 } = {}): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const chainId = activeNetwork?.chainId
@@ -799,6 +802,21 @@ export function RecurringSchedulesScreen({
   const title = `${manageableCount} recurring\n${swapWord} scheduled`
   const navigationTitle = `${manageableCount} recurring ${swapWord} scheduled`
 
+  // While the first fetch is in flight we have no real count yet — rendering the
+  // "{N} recurring swaps scheduled" header would flash a misleading "0 …". Per
+  // design, show only a centered spinner over the modal until data resolves.
+  if (isLoading) {
+    return (
+      <ScrollScreen
+        isModal
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.$textPrimary} />
+        </View>
+      </ScrollScreen>
+    )
+  }
+
   return (
     <ScrollScreen
       ref={scrollRef}
@@ -806,18 +824,11 @@ export function RecurringSchedulesScreen({
       navigationTitle={navigationTitle}
       isModal
       contentContainerStyle={{ padding: 16 }}>
-      {isLoading && (
-        <View sx={{ alignItems: 'center', paddingTop: 32 }}>
-          <Text variant="body2" sx={{ color: '$textSecondary' }}>
-            Loading…
-          </Text>
-        </View>
-      )}
       {/* Distinguish "Markr fetch failed with no cached data" from "fetch
           succeeded and you have zero schedules". The previous render
           collapsed both into the empty state, which made a server
           outage look like "your schedules disappeared". */}
-      {!isLoading && isError && manageableSchedules.length === 0 && (
+      {isError && manageableSchedules.length === 0 && (
         <View sx={{ alignItems: 'center', paddingTop: 32, gap: 12 }}>
           <Text variant="body2" sx={{ color: '$textSecondary' }}>
             Couldn’t load recurring swaps.
@@ -827,7 +838,7 @@ export function RecurringSchedulesScreen({
           </Button>
         </View>
       )}
-      {!isLoading && !isError && manageableSchedules.length === 0 && (
+      {!isError && manageableSchedules.length === 0 && (
         <View sx={{ alignItems: 'center', paddingTop: 32 }}>
           <Text variant="body2" sx={{ color: '$textSecondary' }}>
             No recurring swaps found.

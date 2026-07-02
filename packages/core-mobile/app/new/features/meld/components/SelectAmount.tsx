@@ -166,7 +166,7 @@ export const SelectAmount = ({
           variant="caption"
           sx={{
             fontSize: 11,
-            fontWeight: 500,
+            fontFamily: 'Inter-SemiBold',
             textAlign: 'right'
           }}>
           {serviceProviderToDisplay}
@@ -196,7 +196,7 @@ export const SelectAmount = ({
           <Text
             testID="error_msg"
             variant="caption"
-            sx={{ fontWeight: 500, color: colors.$textDanger }}>
+            sx={{ fontFamily: 'Inter-Medium', color: colors.$textDanger }}>
             {errorMessage || createSessionWidgetErrorMessage}
           </Text>
         </View>
@@ -215,7 +215,7 @@ export const SelectAmount = ({
         <Text
           variant="caption"
           sx={{
-            fontWeight: 500,
+            fontFamily: 'Inter-Medium',
             color: colors.$textPrimary
           }}>
           Balance:{' '}
@@ -255,7 +255,6 @@ export const SelectAmount = ({
           sx={{
             fontSize: 16,
             lineHeight: 22,
-            fontWeight: 400,
             color: colors.$textPrimary
           }}>
           {category === ServiceProviderCategories.CRYPTO_ONRAMP
@@ -274,7 +273,6 @@ export const SelectAmount = ({
                     sx={{
                       fontSize: 16,
                       lineHeight: 22,
-                      fontWeight: 400,
                       textAlign: 'right'
                     }}>
                     {paymentMethodToDisplay}

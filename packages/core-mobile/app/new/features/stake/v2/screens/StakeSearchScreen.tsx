@@ -11,15 +11,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
 import Grabber from 'common/components/Grabber'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import {
   FORM_SHEET_FOCUS_BUFFER_MS,
   useAfterScreenEnterTransition
@@ -186,10 +182,7 @@ export const StakeSearchScreen = (): JSX.Element => {
   })
 
   const renderItem = useCallback(
-    ({
-      item,
-      index
-    }: ListRenderItemInfo<PChainTransaction>): JSX.Element | null => {
+    ({ item }: ListRenderItemInfo<PChainTransaction>): JSX.Element | null => {
       // FlashList's `masonry` layout can briefly invoke `renderItem` with an
       // `undefined` item when `data` shrinks between renders (e.g. while
       // typing into the SearchBar narrows `filteredStakes`). Guard so we
@@ -201,9 +194,7 @@ export const StakeSearchScreen = (): JSX.Element => {
           style={{
             marginBottom: 14,
             marginHorizontal: GRID_GAP / 2
-          }}
-          entering={getListItemEnteringAnimation(index)}
-          exiting={getListItemExitingAnimation(index)}>
+          }}>
           {renderStakeCard(item)}
         </Animated.View>
       )

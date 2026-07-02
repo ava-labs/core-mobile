@@ -64,7 +64,11 @@ export const SwapStatusCard = ({
         }}>
         <Text
           variant="body1"
-          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+          sx={{
+            color: '$textPrimary',
+            lineHeight: 22,
+            fontFamily: 'Inter-SemiBold'
+          }}>
           {directionLabel}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -96,7 +100,11 @@ export const SwapStatusCard = ({
         }}>
         <Text
           variant="body1"
-          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+          sx={{
+            color: '$textPrimary',
+            lineHeight: 22,
+            fontFamily: 'Inter-SemiBold'
+          }}>
           Status
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -105,7 +113,7 @@ export const SwapStatusCard = ({
             variant="body1"
             sx={{
               lineHeight: 22,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: statusColor
             }}>
             {statusTitle}
@@ -128,7 +136,7 @@ export const SwapStatusCard = ({
                 sx={{
                   color: '$textPrimary',
                   lineHeight: 22,
-                  fontWeight: '500'
+                  fontFamily: 'Inter-SemiBold'
                 }}>
                 Confirmations
               </Text>
@@ -175,7 +183,11 @@ export const SwapStatusCard = ({
             }}>
             <Text
               variant="body1"
-              sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+              sx={{
+                color: '$textPrimary',
+                lineHeight: 22,
+                fontFamily: 'Inter-SemiBold'
+              }}>
               Note
             </Text>
             <Text

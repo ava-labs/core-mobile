@@ -14,6 +14,16 @@ export const AppUpdateBanner = (): JSX.Element => {
 
   return (
     <View
+      // Android (Fabric) can mis-measure this row's intrinsic height to ~0 when
+      // it contains flex children, which makes the banner collapse and paint
+      // behind the settings rows below it. The minHeight floor (icon height +
+      // vertical padding) guarantees the banner always reserves real layout
+      // space so the rows are pushed down. It is applied via the RN `style`
+      // prop (not dripsy `sx`) so it bypasses style processing entirely and is
+      // guaranteed to reach Yoga as a raw pixel floor. It only sets a floor, so
+      // the banner still grows if the text wraps; no-op on iOS where the
+      // measurement is already correct.
+      style={{ minHeight: ICON_SIZE + 30 }}
       sx={{
         backgroundColor: '$surfaceSecondary',
         borderRadius: 12,
@@ -28,7 +38,10 @@ export const AppUpdateBanner = (): JSX.Element => {
           flexDirection: 'row',
           alignItems: 'center',
           flexShrink: 1,
-          gap: 12
+          gap: 12,
+          // Floor the content row to the icon height so it can never
+          // intrinsic-measure to 0 on Fabric, independent of the outer floor.
+          minHeight: ICON_SIZE
         }}>
         <View
           sx={{
@@ -43,22 +56,20 @@ export const AppUpdateBanner = (): JSX.Element => {
             contentFit="cover"
           />
         </View>
-        <View sx={{ flexShrink: 1, flexWrap: 'wrap' }}>
-          <View>
-            <Text
-              sx={{
-                fontFamily: 'Inter-Medium',
-                fontSize: 13,
-                lineHeight: 15
-              }}>
-              A newer version is available!
-            </Text>
-            <Text
-              variant="caption"
-              sx={{ color: '$textSecondary', fontSize: 13, lineHeight: 15 }}>
-              Update now for the best crypto experience
-            </Text>
-          </View>
+        <View sx={{ flex: 1 }}>
+          <Text
+            sx={{
+              fontFamily: 'Inter-Medium',
+              fontSize: 13,
+              lineHeight: 15
+            }}>
+            A newer version is available!
+          </Text>
+          <Text
+            variant="caption"
+            sx={{ color: '$textSecondary', fontSize: 13, lineHeight: 15 }}>
+            Update now for the best crypto experience
+          </Text>
         </View>
       </View>
       <Button

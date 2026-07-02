@@ -1,5 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
-import type { Caip2ChainId } from '@avalabs/fusion-sdk'
+import type { Caip2ChainId, ServiceType } from '@avalabs/fusion-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
@@ -11,7 +11,8 @@ import { useIsFusionServiceReady } from './useZustandStore'
 
 const fetchMinimumTransferAmount = async (
   fromToken: LocalTokenWithBalance,
-  toToken: LocalTokenWithBalance
+  toToken: LocalTokenWithBalance,
+  serviceType?: ServiceType
 ): Promise<bigint | null> => {
   try {
     const result = await FusionService.getMinimumTransferAmount({
@@ -22,6 +23,13 @@ const fetchMinimumTransferAmount = async (
     })
 
     if (!result) return null
+
+    // When a specific service is requested, pin its floor. Recurring swaps are
+    // Markr-only, so blending in a lower non-Markr floor (e.g. the gas-based
+    // avalanche-evm one) would under-floor the per-order amount and let a
+    // sub-fillable schedule through — the Markr fee/decimals floor is the
+    // relevant one. Returns null when that service doesn't support the route.
+    if (serviceType) return result[serviceType] ?? null
 
     const values = Object.values(result).filter(v => v !== undefined)
 
@@ -42,10 +50,14 @@ const fetchMinimumTransferAmount = async (
 
 export const useMinimumTransferAmount = ({
   fromToken,
-  toToken
+  toToken,
+  serviceType
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
+  // When set, return that service's minimum instead of the lowest across all
+  // services. Used by the recurring path to pin the Markr floor.
+  serviceType?: ServiceType
 }): bigint | null | undefined => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
@@ -54,11 +66,12 @@ export const useMinimumTransferAmount = ({
     queryKey: [
       ReactQueryKeys.FUSION_MINIMUM_TRANSFER_AMOUNT,
       fromToken ? getTokenKey(fromToken) : undefined,
-      toToken ? getTokenKey(toToken) : undefined
+      toToken ? getTokenKey(toToken) : undefined,
+      serviceType
     ],
     queryFn:
       isFusionServiceReady && fromToken && toToken
-        ? () => fetchMinimumTransferAmount(fromToken, toToken)
+        ? () => fetchMinimumTransferAmount(fromToken, toToken, serviceType)
         : skipToken,
     staleTime: 30_000
   })

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
+import { setActiveAccount as setActiveAccountThunk } from 'store/account/thunks'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
 import { clearTabChainId, selectTabChainId } from 'store/browser/slices/tabs'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -108,19 +109,17 @@ export function useEvmInjectedProvider(
   // to the correct chain after the user switches networks wallet-wide.
   useEffect(() => {
     if (tabChainId !== undefined) return
-    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM provider can't serve it,
-    // so tell the dApp it's disconnected rather than emitting a bogus EVM
-    // chainChanged for a non-EVM chainId (EIP-1193 disconnect, code 4901).
-    // CP-13671.
+    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM surface can't represent
+    // it, but the injected provider object is shared (window.avalanche ===
+    // window.ethereum) and avalanche_* methods are network-independent. Emitting
+    // an EIP-1193 disconnect here would tell wagmi the whole provider is offline
+    // — and it would refuse to auto-reconnect (same hazard the revoke handler
+    // avoids) — killing the X/P surface too. So keep the provider alive: hold the
+    // last EVM browser chain (no sentinel reset) and emit nothing. The EVM
+    // surface resumes when an EVM network becomes active again (a real chain
+    // change fires chainChanged via the guard below; returning to the same chain
+    // is correctly a no-op since the dApp was never told it changed). CP-13672.
     if (activeNetwork.vmName !== NetworkVMType.EVM) {
-      // Invalidate the cached EVM chain (sentinel 0 — no real EVM chainId) so
-      // returning to the SAME EVM chainId later still re-emits chainChanged.
-      // Otherwise the equality guard below would skip it and a dApp that reacted
-      // to this disconnect would never get a follow-up event to recover. CP-13671.
-      browserNetworkRef.current = { chainId: 0, rpcUrl: '' }
-      webViewRef.current?.injectJavaScript(
-        `window.__coreProviderEmit && window.__coreProviderEmit('disconnect', { code: 4901, message: 'Disconnected from chain' }); true;`
-      )
       return
     }
     if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
@@ -204,6 +203,41 @@ export function useEvmInjectedProvider(
         }
       }
 
+      // Re-assert the live chain on every committed URL, alongside the account
+      // re-prime below. The shim is built exactly once per tab (see
+      // providerShimJs), so its baked chainId is only the value seen at the FIRST
+      // document load; any later fresh document — cross-origin nav, or a
+      // same-origin full reload / pull-to-refresh — re-runs that stale baked
+      // chain and would otherwise report the wrong chainId until something else
+      // emitted chainChanged. We re-assert `browserNetworkRef` (the chain Core
+      // actually routes this tab's RPC/signing to), so a fresh document is
+      // corrected to the live chain. The re-assert is idempotent:
+      // __coreProviderReassertChain drops a value equal to the shim's live
+      // _chainId, so a same-origin SPA pushState (no chain change) does not churn
+      // listeners or fight a still-pending switch (React #185).
+      //
+      // Guard on the *resolved chain's* own vmName — NOT tabChainId/activeNetwork
+      // — so a non-EVM chainId is never emitted to the EVM provider: a tab pinned
+      // to a non-EVM chain (wallet_switchEthereumChain validates only membership
+      // in the cross-VM network map, not EVM-ness) is skipped, while an unpinned
+      // tab that retains a live EVM chain after the wallet moved to a non-EVM
+      // network (CP-13672) is still re-asserted.
+      const liveChainId = browserNetworkRef.current.chainId
+      // Fall back to the store like requestReadOnly does: allNetworksRef syncs via
+      // a useEffect, so a chain just added through wallet_addEthereumChain can be
+      // in Redux but not yet in the ref. Without the fallback a reload in that
+      // window would skip the re-assert for that fresh EVM chain.
+      const liveNetwork =
+        allNetworksRef.current[liveChainId] ??
+        selectAllNetworks(store.getState())[liveChainId]
+      if (liveNetwork?.vmName === NetworkVMType.EVM) {
+        webViewRef.current?.injectJavaScript(
+          `window.__coreProviderReassertChain && window.__coreProviderReassertChain('0x${liveChainId.toString(
+            16
+          )}'); true;`
+        )
+      }
+
       // Prime the shim's _accounts cache on every committed URL: the initial
       // page load, cross-origin navigation, and same-origin SPA navigation
       // (pushState/replaceState). domain_metadata no longer primes (it arrives
@@ -213,20 +247,40 @@ export function useEvmInjectedProvider(
       // prime point that re-establishes connected state. CP-13772.
       primeAccountsRef.current?.()
     },
-    [tabId]
+    [tabId, webViewRef, store]
   )
 
+  // Only consumed by initialChainIdHexRef below (read once at mount). Kept as a
+  // useMemo rather than inlined into the hook body so this branch stays in a
+  // nested function — inlining it tips useEvmInjectedProvider over the
+  // sonarjs/cognitive-complexity limit.
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
     return '0x' + initialChainId.toString(16)
   }, [activeNetwork.vmName, initialChainId])
 
-  const providerShimJs = useMemo(() => {
-    return buildEvmProviderShim({
-      chainId: chainIdHex,
-      uuid: getInjectedProviderUuid()
-    })
-  }, [chainIdHex])
+  // Build the injected shim EXACTLY ONCE per tab. `providerShimJs` is consumed
+  // as the WebView's `injectedJavaScriptBeforeContentLoaded`; changing that prop
+  // makes react-native-webview call `resetupScripts` (removeAllUserScripts +
+  // re-add) on the live WKWebView, and any `injectJavaScript` issued in that same
+  // tick is silently dropped. Previously this memo depended on `chainIdHex`, so a
+  // `wallet_switchEthereumChain` (which dispatches `setTabChainId` -> new
+  // chainIdHex) rebuilt the shim and dropped the switch's OWN response injection,
+  // leaving the dApp's switchChain promise — and the swap awaiting it — hung
+  // forever (CP-14615). The baked chainId only seeds the first document load; the
+  // live chain is kept current at runtime via the shim's optimistic `_chainId`
+  // update on switch, the unpinned sync effect's chainChanged emit, and the
+  // per-document-load re-assert in handleCommittedUrl. So bake the initial value
+  // once and never change the prop.
+  const initialChainIdHexRef = useRef(chainIdHex)
+  const providerShimJs = useMemo(
+    () =>
+      buildEvmProviderShim({
+        chainId: initialChainIdHexRef.current,
+        uuid: getInjectedProviderUuid()
+      }),
+    []
+  )
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {
@@ -273,9 +327,23 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
+  // Last accounts list advertised to the dApp (serialized). Shared by the
+  // page-load prime path, the active-account switch effect, and the connect
+  // handler's synchronous emit (via emitEvent below) so none of them emit a
+  // duplicate accountsChanged for the same set. Declared before emitEvent so
+  // emitEvent can keep it in sync.
+  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
+
   const emitEvent = useCallback(
     (eventName: string, data: unknown) => {
       const dataJson = JSON.stringify(data)
+      // Keep the accountsChanged dedupe coherent: the connect handler emits
+      // accountsChanged synchronously through here (before resolving, to match
+      // MetaMask ordering). When that connect also switched the active account,
+      // the switch effect below would otherwise re-emit the identical set a
+      // render later — recording it here lets that effect dedupe it. (CP-14385)
+      if (eventName === 'accountsChanged')
+        lastEmittedAccountsRef.current = dataJson
       const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
@@ -321,11 +389,6 @@ export function useEvmInjectedProvider(
   useEffect(() => {
     activeAccountRef.current = activeAccount
   }, [activeAccount])
-
-  // Last accounts list advertised to the dApp (serialized). Shared by the
-  // page-load prime path and the active-account switch effect below so they
-  // never emit a duplicate accountsChanged for the same set.
-  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
 
   // Inject an accountsChanged emit gated on the page still being on `origin`
   // (the same guard sendResponse uses). An emit racing a cross-origin
@@ -564,13 +627,24 @@ export function useEvmInjectedProvider(
       },
       getPeerMeta,
       getActiveAccount: () => activeAccountRef.current,
+      getIsDeveloperMode: () => selectIsDeveloperMode(store.getState()),
       getGrantedAddresses: ({ domain, vmType }) =>
         selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
       grantPermission: ({ domain, address, vmType }) =>
         dispatch(grantPermissionAction({ domain, address, vmType })),
       revokePermission: ({ domain, address, vmType }) =>
         dispatch(revokePermissionAction({ domain, address, vmType })),
-      requestConnectApproval
+      requestConnectApproval,
+      setActiveAccount: async accountId => {
+        await dispatch(setActiveAccountThunk(accountId))
+        // Freshen activeAccountRef synchronously: the connect handler reconciles
+        // (via getActiveAccount → this ref) immediately after awaiting this, but
+        // the ref's effect won't have run yet for this render — without this the
+        // reconcile would still see the pre-switch active account and 4100. The
+        // thunk applies the switch synchronously, so the store is authoritative
+        // here. (CP-14385)
+        activeAccountRef.current = selectActiveAccount(store.getState())
+      }
     })
   }, [
     dispatch,

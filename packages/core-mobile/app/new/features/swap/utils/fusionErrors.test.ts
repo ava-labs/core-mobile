@@ -144,9 +144,29 @@ describe('isUserRejectionError', () => {
     expect(isUserRejectionError(new Error(''))).toBe(false)
   })
 
-  it('should return false for non-Error values', () => {
-    expect(isUserRejectionError('user rejected')).toBe(false)
-    expect(isUserRejectionError({ message: 'user rejected' })).toBe(false)
+  it('should return true for the EIP-1193 user-rejected code (4001), regardless of message', () => {
+    // The rejection can reach us as a plain JSON-RPC error object (not an
+    // Error instance) after crossing the VM-module boundary — e.g.
+    // `providerErrors.userRejectedRequest()` serialized to `{ code, message }`.
+    // The standard 4001 code is the reliable signal; the message may be
+    // absent, wrapped, or "[object Object]"-ified by callers.
+    expect(isUserRejectionError({ code: 4001 })).toBe(true)
+    expect(
+      isUserRejectionError({ code: 4001, message: 'Internal JSON-RPC error.' })
+    ).toBe(true)
+  })
+
+  it('should match the rejection message on plain objects and strings too', () => {
+    expect(
+      isUserRejectionError({ message: 'User rejected the request.' })
+    ).toBe(true)
+    expect(isUserRejectionError('User cancelled')).toBe(true)
+  })
+
+  it('should return false for unrelated non-Error values', () => {
+    expect(isUserRejectionError({ code: -32603 })).toBe(false)
+    expect(isUserRejectionError({ message: 'insufficient funds' })).toBe(false)
+    expect(isUserRejectionError('boom')).toBe(false)
     expect(isUserRejectionError(null)).toBe(false)
     expect(isUserRejectionError(undefined)).toBe(false)
     expect(isUserRejectionError(42)).toBe(false)

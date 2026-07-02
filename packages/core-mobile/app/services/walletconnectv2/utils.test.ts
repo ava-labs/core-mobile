@@ -112,4 +112,25 @@ describe('getAddressWithCaip2ChainId', () => {
     })
     expect(result).toBeUndefined()
   })
+
+  it('should return undefined for a non-primary Keystone account with no AVM address', () => {
+    // Keystone non-primary accounts have empty X/P addresses (CP-14606). The
+    // formatter must not emit a malformed "avax:<chain>:" account string with a
+    // trailing colon, which would otherwise be advertised to the dApp.
+    const result = getAddressWithCaip2ChainId({
+      account: { ...mockAccount, index: 1, addressAVM: '', addressPVM: '' },
+      blockchainNamespace: BlockchainNamespace.AVAX,
+      caip2ChainId: AvalancheCaip2ChainId.X
+    })
+    expect(result).toBeUndefined()
+  })
+
+  it('should return undefined for a non-primary Keystone account with no PVM address', () => {
+    const result = getAddressWithCaip2ChainId({
+      account: { ...mockAccount, index: 1, addressAVM: '', addressPVM: '' },
+      blockchainNamespace: BlockchainNamespace.AVAX,
+      caip2ChainId: AvalancheCaip2ChainId.P
+    })
+    expect(result).toBeUndefined()
+  })
 })

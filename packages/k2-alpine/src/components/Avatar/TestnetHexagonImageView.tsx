@@ -1,4 +1,3 @@
-import MaskedView from '@react-native-masked-view/masked-view'
 import React from 'react'
 import Svg, { Path } from 'react-native-svg'
 import { useTheme } from '../../hooks'
@@ -19,19 +18,25 @@ export const TestnetHexagonImageView = ({
       : height / 2
 
   return (
-    <MaskedView
-      maskElement={
-        <Svg width={height} height={height} viewBox={hexagonPath.viewBox}>
-          <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
-        </Svg>
-      }>
+    <View style={{ width: height, height: height }}>
+      {/* Hexagon background (replaces the legacy MaskedView clip) */}
+      <Svg width={height} height={height} viewBox={`0 0 ${height} ${height}`}>
+        <Path
+          d={hexagonPath.path}
+          transform={hexagonTransform(height)}
+          fill={theme.colors.$borderPrimary}
+        />
+      </Svg>
+      {/* Centered water-drop icon, sits within the hexagon bounds */}
       <View
-        sx={{
-          width: height,
-          height: height,
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '$borderPrimary'
+          justifyContent: 'center'
         }}>
         <Icons.Custom.WaterDrop
           width={iconHeight}
@@ -39,8 +44,17 @@ export const TestnetHexagonImageView = ({
           color={theme.colors.$textPrimary}
         />
       </View>
-    </MaskedView>
+    </View>
   )
+}
+
+// Matches the legacy MaskedView mask geometry: <Svg viewBox="0 0 130 144"> with
+// the default preserveAspectRatio "xMidYMid meet" scales the hexagon UNIFORMLY
+// to fit the square and centers it (it does NOT stretch to fill width).
+const hexagonTransform = (height: number): string => {
+  const scale = height / 144
+  const translateX = (height - 130 * scale) / 2
+  return `translate(${translateX}, 0) scale(${scale})`
 }
 
 const hexagonPath = {

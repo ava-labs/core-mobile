@@ -75,7 +75,13 @@ const baseConfig = {
         inlineRequires: true
       }
     }),
-    babelTransformerPath: require.resolve('react-native-svg-transformer')
+    // Use the Expo entry so the SVG transformer delegates to Expo's upstream
+    // babel transformer (@expo/metro-config/babel-transformer). The default
+    // entry auto-detects and can pick @react-native/metro-babel-transformer,
+    // which bypasses Expo's Worklets/Reanimated transform pipeline and causes
+    // "[Worklets] Tried to synchronously call a non-worklet function on the UI
+    // thread" on Expo SDK 56 / RN 0.85.
+    babelTransformerPath: require.resolve('react-native-svg-transformer/expo')
   },
   resolver: {
     // mute warnings about circular dependencies
@@ -94,6 +100,21 @@ const baseConfig = {
       ios: ['require', 'react-native']
     },
     resolveRequest: (context, moduleName, platform) => {
+      // Expo SDK 56 vendors react-navigation inside expo-router. Third-party
+      // libs (e.g. @bottom-tabs/react-navigation, @vonovak/react-native-theme-control)
+      // import the EXTERNAL `@react-navigation/native`, which is a SEPARATE
+      // instance from expo-router's vendored copy. That duplication breaks
+      // navigation context sharing ("Couldn't register the navigator. ... multiple
+      // copies of @react-navigation" / "Couldn't find a theme"). Redirect the
+      // external package to expo-router's vendored copy so there is a single
+      // react-navigation instance across the app.
+      if (moduleName === '@react-navigation/native') {
+        return context.resolveRequest(
+          context,
+          require.resolve('expo-router/build/react-navigation/native'),
+          platform
+        )
+      }
       // Handle @buoy-gg subpath exports manually since unstable_enablePackageExports is false
       const buoyMatch = moduleName.match(/^(@buoy-gg\/[^/]+)\/(.+)$/)
       if (buoyMatch) {

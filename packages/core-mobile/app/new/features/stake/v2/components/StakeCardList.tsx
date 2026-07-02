@@ -6,13 +6,9 @@ import {
   useMotion,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
-import {
-  getListItemEnteringAnimation,
-  getListItemExitingAnimation
-} from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -107,10 +103,7 @@ export const StakeCardList = ({
   })
 
   const renderItem = useCallback(
-    ({
-      item,
-      index
-    }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
+    ({ item }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
       let content: JSX.Element | null = null
       if (item === StaticCard.Add) {
         content = (
@@ -132,9 +125,7 @@ export const StakeCardList = ({
           style={{
             marginBottom: 14,
             marginHorizontal: GRID_GAP / 2
-          }}
-          entering={getListItemEnteringAnimation(index)}
-          exiting={getListItemExitingAnimation(index)}>
+          }}>
           {content}
         </Animated.View>
       )
@@ -199,6 +190,14 @@ export const StakeCardList = ({
 
   return (
     <FlashList
+      // Remount the masonry grid when the filter/sort selection changes. On
+      // Fabric, FlashList's masonry layout manager retains stale column heights
+      // across an in-place `data` reorder, so cells keep their previous column
+      // positions and the inter-card gaps break. Keying by the active selection
+      // gives each ordering a fresh layout pass (matches the v1 StakeCardList
+      // and StakeSearchScreen approach). It stays stable per selection so it
+      // doesn't thrash on background stake refreshes.
+      key={`stake-card-list-${filter.selected}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

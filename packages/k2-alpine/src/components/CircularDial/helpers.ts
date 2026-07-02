@@ -97,12 +97,14 @@ export const sanitizeDecimalInput = (text: string, max: number): string => {
   return normalized
 }
 
-// Manual input is the precision escape hatch — does NOT snap to step,
-// so `9999.42` with step=10 commits as `9999.42`, not `10000`. Slides
-// snap separately via the gesture's `onEnd`.
-export const commitDraftText = (draft: string, max: number): number | null => {
+// Empty / whitespace / partial (".") drafts commit 0 so a cleared field
+// reaches 0 instead of reverting to the previous value — otherwise a seeded
+// input (e.g. staking's min) can't be cleared (CP-14578). Manual input does
+// NOT snap to step (`9999.42` with step=10 stays `9999.42`); the gesture's
+// `onEnd` handles snapping.
+export const commitDraftText = (draft: string, max: number): number => {
   const parsed = Number(draft)
-  if (!Number.isFinite(parsed) || draft.trim() === '') return null
+  if (draft.trim() === '' || !Number.isFinite(parsed)) return 0
   return clamp(parsed, 0, max)
 }
 

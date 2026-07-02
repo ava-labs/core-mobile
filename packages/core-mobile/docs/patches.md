@@ -121,13 +121,17 @@ You can wrap a toast container with a custom wrapper.
 
 This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
 
-### react-native+0.81.5.patch
+### react-native+0.85.3.patch
 
-On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part of the Liquid Glass redesign). This creates an unwanted gradient overlay on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs and scrolling back up. The patch hides `topEdgeEffect` on all scroll views on iOS 26+ via the official `isHidden` API. Gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
+On iOS 26, `UIScrollEdgeEffect` (part of the Liquid Glass redesign) draws a translucent blur/gradient at scroll view edges. This shows as an unwanted gradient washout on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs / returning from a pushed screen and scrolling back up. The patch hides ALL FOUR edge effects (top/bottom/left/right) on every scroll view, gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
 
-1/ RCTEnhancedScrollView.mm — hides `topEdgeEffect` at scroll view creation (`initWithFrame:`)
+1/ RCTEnhancedScrollView.mm — hides all four edge effects at scroll view creation (`initWithFrame:`), AND re-hides them in a `layoutSubviews` override (UIKit re-enables the effect after appearance/visibility changes such as tab switch / push-return, so re-applying every layout pass is required).
 
-2/ RCTScrollViewComponentView.mm — re-hides `topEdgeEffect` in `didMoveToWindow` when the scroll view becomes visible again (e.g. after tab switching, where iOS may re-enable the effect)
+2/ RCTScrollViewComponentView.mm — `_disableTopEdgeEffectIOS26` hides all four edge effects on the underlying scroll view, called from `didMoveToWindow` when the view becomes visible again.
+
+NOTE: This requires React Native core to be built from source (`RCT_USE_PREBUILT_RNCORE=0` in the Podfile). RN 0.85 defaults to a prebuilt `React.xcframework`, in which these `.mm` sources are NOT compiled, making the patch inert.
+
+NOTE: The upstream/main fix (facebook/react-native#55037) hides only `topEdgeEffect`; this strengthened version (all four edges + `layoutSubviews`) is what we verified fixes the bug. It may be possible to simplify back to the top-edge-only version now that it actually compiles — to be decided.
 
 - https://github.com/facebook/react-native/issues/54181
 - https://github.com/facebook/react-native/pull/55037
@@ -146,3 +150,17 @@ Fixes a sticky header (`stickyHeaderIndices`) at index 0 disappearing on iOS top
 2. Add an `overscrollTranslateY` (`scrollY.interpolate([-100000, 0] → [100000, 0]`, clamped) as a second `translateY` transform on the overlay, so when `scrollY` is negative the pinned header rubber-bands down 1:1 with the content instead of staying rigidly fixed at the top. Clamps to `0` for normal scroll.
 
 Re-check on any `@shopify/flash-list` version bump (edits target `dist/`, since the package `main` is `dist/index.js`).
+
+### expo-alternate-app-icons+8.0.0.patch
+
+Fixes Android leaving multiple launcher icons after switching the app icon more than once (CP-14555). This works together with the manifest change that makes `.MainActivity` a launcher-less, always-enabled target and routes the default icon through a dedicated `.MainActivityDefault` alias.
+
+The library's Android `setAlternateAppIcon` only ever disabled `currentActivity.componentName` — the component the activity was *launched* with. That value is fixed for the life of the activity, so switching icons again in the same session (without relaunching) enabled the new alias but never disabled the previously-enabled one, and launcher aliases accumulated → multiple home-screen icons.
+
+`android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt`:
+
+1. Enable the target `.MainActivity<Suffix>` alias first (for the default icon the suffix is `Default`, so a null icon maps to `.MainActivityDefault`), so the launcher always has a valid entry.
+
+2. Enumerate the package's activities (`GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS`) and disable every *other* `.MainActivity*` alias — never `.MainActivity` itself, which is the shared `targetActivity` of every alias (a disabled target makes all aliases un-launchable and bricks the app on the splash screen). This guarantees exactly one enabled launcher regardless of how many times the icon is switched, and self-heals dirty state.
+
+iOS is unaffected (the iOS native module is separate; JS only sends the `Default` suffix on Android).

@@ -85,7 +85,7 @@ export const DurationOptions = ({
                   <Text
                     variant="body1"
                     sx={{
-                      fontWeight: 500,
+                      fontFamily: 'Inter-SemiBold',
                       color: selectedTheme.colors.$textPrimary
                     }}>
                     {'numberOfDays' in item

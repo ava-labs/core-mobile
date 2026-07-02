@@ -1,5 +1,5 @@
 import { PageControl } from '@avalabs/k2-alpine'
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { NativeStackNavigationOptions } from 'expo-router'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'

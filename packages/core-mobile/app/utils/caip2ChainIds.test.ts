@@ -1,5 +1,5 @@
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
-import { getAvalancheChainAliasCaip2 } from './getAvalancheChainAliasCaip2'
+import { getAvalancheChainAliasCaip2 } from './caip2ChainIds'
 
 describe('getAvalancheChainAliasCaip2', () => {
   describe('mainnet', () => {

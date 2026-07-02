@@ -117,7 +117,7 @@ const allCaps = [
       : {}),
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
-    'appium:settings[snapshotMaxDepth]': 70,
+    'appium:settings[snapshotMaxDepth]': 62,
     'appium:isHeadless': false
   }
 ]
