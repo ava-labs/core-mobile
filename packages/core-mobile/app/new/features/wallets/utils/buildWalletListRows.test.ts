@@ -38,6 +38,32 @@ describe('buildWalletListRows', () => {
     expect(rows[0]).toMatchObject({ kind: 'walletHeader', cardPos: 'single' })
   })
 
+  it('expanded PRIVATE_KEY wallet with no accounts -> single header (closes the card)', () => {
+    const rows = buildWalletListRows({
+      wallets: [wallet('imported', [], WalletType.PRIVATE_KEY)],
+      expanded: { imported: true },
+      isActiveWalletId: noneActive
+    })
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({
+      kind: 'walletHeader',
+      isExpanded: true,
+      cardPos: 'single'
+    })
+  })
+
+  it('expanded mnemonic wallet with no accounts -> header top + addAccount bottom', () => {
+    const rows = buildWalletListRows({
+      wallets: [wallet('w1', [])],
+      expanded: { w1: true },
+      isActiveWalletId: noneActive
+    })
+    expect(rows.map(r => [r.kind, r.cardPos])).toEqual([
+      ['walletHeader', 'top'],
+      ['addAccount', 'bottom']
+    ])
+  })
+
   it('expanded mnemonic wallet -> top header, middle accounts, bottom addAccount', () => {
     const rows = buildWalletListRows({
       wallets: [wallet('w1', ['a1', 'a2'])],
