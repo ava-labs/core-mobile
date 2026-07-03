@@ -360,7 +360,11 @@ export const SendToken = ({
           onChange={setAmount}
           validateAmount={validateSendAmount}
           disabled={isSending || selectedToken === undefined}
-          autoFocus
+          // iOS auto-focuses immediately on mount. Android focuses later, once
+          // the form-sheet transition and keyboard layout have settled (see the
+          // useAfterScreenEnterTransition call above); focusing on mount there
+          // leaves a broken InputConnection ~1 in 5 times. See CP-14672.
+          autoFocus={Platform.OS === 'ios'}
           maxAmount={maxAmount}
         />
       )}
