@@ -144,11 +144,17 @@ export const TokenUnitInput = forwardRef<
     }))
 
     useEffect(() => {
-      if (autoFocus) {
-        requestAnimationFrame(() => {
-          textInputRef.current?.focus()
-        })
-      }
+      // Android intentionally does not auto-focus this amount input. On the New
+      // Architecture (Fabric), inside a react-native-screens form-sheet,
+      // programmatically focusing the field while the screen/keyboard is still
+      // settling leaves a broken InputConnection ~1 in 5 times: the cursor shows
+      // but keystrokes never reach JS, so the amount can't be entered (CP-14672).
+      // A user tap always establishes a healthy connection, so on Android we let
+      // the user tap to focus. iOS is unaffected and keeps auto-focus.
+      if (!autoFocus || Platform.OS !== 'ios') return
+      requestAnimationFrame(() => {
+        textInputRef.current?.focus()
+      })
     }, [autoFocus])
 
     return (
