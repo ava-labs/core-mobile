@@ -836,7 +836,9 @@ export function RecurringSchedulesScreen({
   // always sits on a second line, regardless of the count's width.
   // In the empty state there is no count to show, so drop the header entirely —
   // the centered ErrorState already conveys "No recurring swaps".
-  const title = isEmpty ? undefined : `${manageableCount} recurring\n${swapWord} scheduled`
+  const title = isEmpty
+    ? undefined
+    : `${manageableCount} recurring\n${swapWord} scheduled`
   const navigationTitle = isEmpty
     ? undefined
     : `${manageableCount} recurring ${swapWord} scheduled`
