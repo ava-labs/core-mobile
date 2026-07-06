@@ -10,15 +10,6 @@ jest.mock('../perpetuals/hooks/usePerpsAvailability', () => ({
   })
 }))
 
-jest.mock('../perpetuals/components/PerpsGeoRestrictionWarning', () => {
-  const rn = require('react-native') as typeof import('react-native')
-  const r = require('react') as typeof import('react')
-  return {
-    PerpsGeoRestrictionWarning: () =>
-      r.createElement(rn.View, { testID: 'geo-warning' })
-  }
-})
-
 jest.mock('common/components/TokenLogo', () => ({ TokenLogo: () => null }))
 jest.mock('common/hooks/useFormatCurrency', () => ({
   useFormatCurrency: () => ({ formatCurrency: () => '$0' })
@@ -63,25 +54,38 @@ const render = async (
   return instance
 }
 
-const hasGeoWarning = (instance: renderer.ReactTestRenderer): boolean =>
-  instance.root.findAllByProps({ testID: 'geo-warning' }).length > 0
+const hasText = (instance: renderer.ReactTestRenderer, text: string): boolean =>
+  instance.root.findAll(
+    node => node.children.length === 1 && node.children[0] === text
+  ).length > 0
 
 describe('<TradeBalance /> geo-restriction', () => {
   beforeEach(() => {
     mockState.isGeoBlocked = false
   })
 
-  it('shows the geo-restriction warning when geo-blocked with no funds', async () => {
+  it('renders nothing when geo-blocked with no funds', async () => {
     mockState.isGeoBlocked = true
-    expect(hasGeoWarning(await render(0))).toBe(true)
+    expect((await render(0)).toJSON()).toBeNull()
   })
 
-  it('shows the geo-restriction warning when geo-blocked with funds', async () => {
+  it('shows the balance row without funding actions when geo-blocked with funds', async () => {
     mockState.isGeoBlocked = true
-    expect(hasGeoWarning(await render(1000))).toBe(true)
+    const instance = await render(1000)
+    expect(hasText(instance, 'Available balance')).toBe(true)
+    expect(hasText(instance, 'Withdraw')).toBe(false)
+    expect(hasText(instance, 'Top up')).toBe(false)
+    expect(hasText(instance, 'Deposit funds')).toBe(false)
   })
 
-  it('does not show the warning when not geo-blocked', async () => {
-    expect(hasGeoWarning(await render(1000))).toBe(false)
+  it('shows Withdraw / Top up when not geo-blocked with funds', async () => {
+    const instance = await render(1000)
+    expect(hasText(instance, 'Withdraw')).toBe(true)
+    expect(hasText(instance, 'Top up')).toBe(true)
+  })
+
+  it('shows Deposit funds when not geo-blocked with no funds', async () => {
+    const instance = await render(0)
+    expect(hasText(instance, 'Deposit funds')).toBe(true)
   })
 })

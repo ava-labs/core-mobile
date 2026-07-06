@@ -69,8 +69,15 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     try {
       // Re-check geo fresh (bypassing the 5-min cache) right before submitting
       // — the user may have toggled a VPN since the screen loaded. Abort and
-      // surface the restriction rather than placing an order.
-      if (await recheckGeoBlock()) {
+      // surface the restriction rather than placing an order. A re-check that
+      // fails outright counts as blocked (fail closed).
+      let blocked: boolean
+      try {
+        blocked = await recheckGeoBlock()
+      } catch {
+        blocked = true
+      }
+      if (blocked) {
         showSnackbar(GEO_BLOCKED_MESSAGE)
         return
       }

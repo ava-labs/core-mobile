@@ -128,13 +128,32 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  it('does not warn when the fresh geo re-check passes', async () => {
-    mockRecheck.mockResolvedValueOnce(false)
+  it('fails closed — aborts the order and warns when the geo re-check itself fails', async () => {
+    mockRecheck.mockRejectedValueOnce(new Error('re-check failed'))
     const instance = await render()
     await act(async () => {
       await confirmButton(instance).props.onConfirm()
     })
-    expect(mockRecheck).toHaveBeenCalled()
-    expect(mockShowSnackbar).not.toHaveBeenCalled()
+    expect(mockShowSnackbar).toHaveBeenCalled()
+    expect(mockBack).not.toHaveBeenCalled()
+  })
+
+  it('does not warn when the fresh geo re-check passes', async () => {
+    // Fake timers so the simulated 1200ms submission delay doesn't slow the suite.
+    jest.useFakeTimers()
+    try {
+      mockRecheck.mockResolvedValueOnce(false)
+      const instance = await render()
+      await act(async () => {
+        const submission = confirmButton(instance).props.onConfirm()
+        await jest.advanceTimersByTimeAsync(1200)
+        await submission
+      })
+      expect(mockRecheck).toHaveBeenCalled()
+      expect(mockShowSnackbar).not.toHaveBeenCalled()
+      expect(mockBack).toHaveBeenCalled()
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })

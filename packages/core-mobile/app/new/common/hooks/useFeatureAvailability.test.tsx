@@ -6,6 +6,10 @@ import {
   useFeatureAvailability
 } from './useFeatureAvailability'
 
+// Use the manual mock in __mocks__/react-native-config.js (PROXY_URL =
+// 'MOCK_PROXY_URL') explicitly instead of relying on automatic resolution.
+jest.mock('react-native-config')
+
 const fetchMock = jest.fn()
 
 beforeEach(() => {
@@ -69,14 +73,20 @@ describe('useFeatureAvailability', () => {
   })
 
   it('assumes available while the check is still pending (no flash)', () => {
-    fetchMock.mockReturnValueOnce(new Promise(() => undefined))
+    // Fake timers so the never-settling fetch's timeout timer doesn't leak.
+    jest.useFakeTimers()
+    try {
+      fetchMock.mockReturnValueOnce(new Promise(() => undefined))
 
-    const { result } = renderHook(() => useFeatureAvailability('perps'), {
-      wrapper: newWrapper()
-    })
+      const { result } = renderHook(() => useFeatureAvailability('perps'), {
+        wrapper: newWrapper()
+      })
 
-    expect(result.current.isLoading).toBe(true)
-    expect(result.current.isAvailable).toBe(true)
+      expect(result.current.isLoading).toBe(true)
+      expect(result.current.isAvailable).toBe(true)
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
 
@@ -87,7 +97,7 @@ describe('fetchFeatureAvailability', () => {
     await expect(fetchFeatureAvailability('perps')).resolves.toBe(true)
     expect(fetchMock).toHaveBeenCalledWith(
       'MOCK_PROXY_URL/perps/available',
-      undefined
+      expect.objectContaining({ signal: expect.anything() })
     )
   })
 
@@ -108,5 +118,25 @@ describe('fetchFeatureAvailability', () => {
     await expect(
       fetchFeatureAvailability('perps', controller.signal)
     ).rejects.toThrow()
+  })
+
+  it('returns false (fail closed) when the request hangs past the timeout', async () => {
+    jest.useFakeTimers()
+    try {
+      // A fetch that never settles until its signal aborts, like a hanging proxy.
+      fetchMock.mockImplementationOnce(
+        (_url: string, opts: { signal: AbortSignal }) =>
+          new Promise((_resolve, reject) => {
+            opts.signal.addEventListener('abort', () =>
+              reject(new Error('Aborted'))
+            )
+          })
+      )
+      const promise = fetchFeatureAvailability('perps')
+      jest.advanceTimersByTime(10_000)
+      await expect(promise).resolves.toBe(false)
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
