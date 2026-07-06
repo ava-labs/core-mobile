@@ -152,7 +152,7 @@ export function TradeScreen(): JSX.Element {
             ]}>
             <View
               style={{
-                height: balanceHeight - 12,
+                height: Math.max(0, balanceHeight - 12),
                 backgroundColor: theme.colors.$surfacePrimary
               }}
             />
