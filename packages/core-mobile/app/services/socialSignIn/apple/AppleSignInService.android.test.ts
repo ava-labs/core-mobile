@@ -73,7 +73,7 @@ describe('AppleSignInService.android', () => {
   describe('preserved behavior', () => {
     it('still throws USER_CANCELED when the user cancels', async () => {
       const cancelled = Object.assign(new Error('cancelled'), {
-        code: 'E_SIGNIN_CANCELLED_ERROR'
+        code: appleAuthAndroid.Error.SIGNIN_CANCELLED
       })
       signInMock.mockRejectedValueOnce(cancelled)
 
