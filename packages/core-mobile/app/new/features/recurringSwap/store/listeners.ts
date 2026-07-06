@@ -3,7 +3,8 @@ import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onRehydrationComplete } from 'store/app/slice'
+import { selectIsRecurringSwapsBlocked } from 'store/posthog'
 import type { AppStartListening } from 'store/types'
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
@@ -349,7 +350,10 @@ function reconcilePendingActions(
  * (see `useRecurringSchedules`). We pluck both out so the seen-failures
  * persistence can be scoped per (account, chain).
  */
-function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
+function handleQueryCacheEvent(
+  event: QueryCacheNotifyEvent,
+  isRecurringSubscriptionBlocked: boolean
+): void {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||
@@ -387,15 +391,20 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
     // path normally.
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
 
-    // Fire-and-forget the per-order push subscription pass. Kept out of the
-    // synchronous cache-subscriber call path; failures inside the function are
-    // logged but never bubble up — the next refetch retries any order that
-    // didn't make it into the persisted subscribed-set.
-    void ensureOrderSubscriptions(ownerAddress, chainId, schedules ?? []).catch(
-      err => {
-        Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
-      }
-    )
+    // Fire-and-forget the per-order push subscription pass. Gated on the
+    // SWAP_RECURRING kill-switch: when recurring swaps are blocked the toggle,
+    // banner and management screen are all hidden, so there's nothing to keep
+    // the device subscribed for. Kept out of the synchronous cache-subscriber
+    // call path; failures inside the function are logged but never bubble up —
+    // the next refetch retries any order that didn't make it into the persisted
+    // subscribed-set.
+    if (!isRecurringSubscriptionBlocked) {
+      ensureOrderSubscriptions(ownerAddress, chainId, schedules ?? []).catch(
+        err => {
+          Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
+        }
+      )
+    }
   } catch (err) {
     Logger.error('[RecurringSwap] Failure watcher error', err)
   }
@@ -408,9 +417,20 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
  * Call once at app startup. The returned unsubscribe function exists so tests
  * (and any future hot-reload teardown) can drop the listener — production
  * doesn't currently invoke it.
+ *
+ * `isRecurringSubscriptionBlocked` gates the per-order push-notification
+ * subscription pass on the SWAP_RECURRING kill-switch — the failure snackbar
+ * and pending-action reconciliation still run regardless. The value is a
+ * snapshot captured when the watcher is wired (see `addRecurringSwapListeners`).
  */
-export function startRecurringFailureWatcher(): () => void {
-  return queryClient.getQueryCache().subscribe(handleQueryCacheEvent)
+export function startRecurringFailureWatcher(
+  isRecurringSubscriptionBlocked: boolean
+): () => void {
+  return queryClient
+    .getQueryCache()
+    .subscribe(event =>
+      handleQueryCacheEvent(event, isRecurringSubscriptionBlocked)
+    )
 }
 
 /**
@@ -444,5 +464,22 @@ export function addRecurringSwapListeners(
     }
   })
 
-  startRecurringFailureWatcher()
+  // Wire the React Query cache subscriber (failure watcher + pending-action
+  // reconciler) once, on rehydration — matching how `addAppListeners`
+  // bootstraps its `init` effect. `unsubscribe()` drops this listener after
+  // the first fire so the cache subscriber is attached exactly once even if
+  // `onRehydrationComplete` were ever re-dispatched.
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: (_, listenerApi) => {
+      listenerApi.unsubscribe()
+      // Snapshot the kill-switch at wire time and gate the push-notification
+      // subscription pass on it — when recurring swaps are blocked there's no
+      // toggle/banner/management screen, so nothing to subscribe the device for.
+      const isRecurringSubscriptionBlocked = selectIsRecurringSwapsBlocked(
+        listenerApi.getState()
+      )
+      startRecurringFailureWatcher(isRecurringSubscriptionBlocked)
+    }
+  })
 }

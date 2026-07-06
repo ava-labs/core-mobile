@@ -107,12 +107,24 @@ jest.mock('contexts/ReactQueryProvider', () => ({
   }
 }))
 
+// ─── posthog selector mock ────────────────────────────────────────────────────
+// The SWAP_RECURRING kill-switch drives whether the failure watcher wires up
+// the push-notification subscription pass. `listeners.ts` only consumes
+// `selectIsRecurringSwapsBlocked` from this barrel, so a minimal stub avoids
+// pulling the real module's heavy import graph (WalletFactory, etc.) into the
+// test.
+
+let mockIsRecurringSwapsBlocked = false
+jest.mock('store/posthog', () => ({
+  selectIsRecurringSwapsBlocked: () => mockIsRecurringSwapsBlocked
+}))
+
 // ─── Subject under test ───────────────────────────────────────────────────────
 
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onRehydrationComplete } from 'store/app/slice'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus, type RecurringOrder } from '../types'
 import {
@@ -189,7 +201,7 @@ describe('startRecurringFailureWatcher', () => {
       clearPending: jest.fn(),
       isExpired: jest.fn<boolean, [string, number?]>(() => false)
     }
-    startRecurringFailureWatcher()
+    startRecurringFailureWatcher(false)
   })
 
   // ── 1. New failure detection + de-dup ──────────────────────────────────────
@@ -621,6 +633,7 @@ describe('addRecurringSwapListeners', () => {
   beforeEach(() => {
     mockCacheSubscribers = []
     mockInvalidate.mockReset()
+    mockIsRecurringSwapsBlocked = false
   })
 
   it('registers an onAppUnlocked listener that invalidates the recurring-schedules cache', () => {
@@ -641,13 +654,28 @@ describe('addRecurringSwapListeners', () => {
     })
   })
 
-  it('starts the React Query cache subscriber', () => {
+  it('starts the React Query cache subscriber on rehydration', () => {
     const startListening = jest.fn()
 
     expect(mockCacheSubscribers).toHaveLength(0)
 
     addRecurringSwapListeners(startListening as never)
 
+    // The subscriber is wired lazily by the onRehydrationComplete effect, not
+    // at registration time.
+    expect(mockCacheSubscribers).toHaveLength(0)
+
+    const call = startListening.mock.calls.find(
+      c => c[0]?.actionCreator === onRehydrationComplete
+    )
+    expect(call).toBeDefined()
+
+    const unsubscribe = jest.fn()
+    const getState = jest.fn()
+    call?.[0].effect(undefined, { unsubscribe, getState })
+
+    // Fires exactly once and drops itself so the subscriber can't double-wire.
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
     expect(mockCacheSubscribers).toHaveLength(1)
   })
 })
