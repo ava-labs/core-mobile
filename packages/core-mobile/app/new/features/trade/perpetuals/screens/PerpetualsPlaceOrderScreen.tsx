@@ -2,13 +2,13 @@ import {
   alpha,
   CircularDial,
   GroupList,
-  Pressable,
   SlidingButton,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TERMS_OF_USE_URL } from 'common/consts/urls'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
@@ -207,36 +207,23 @@ const TermsOfUseText = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
 
   const openTermsOfUse = useCallback(() => {
-    openUrl('https://core.app/terms/core')
+    openUrl(TERMS_OF_USE_URL)
   }, [openUrl])
 
   return (
     <View sx={{ gap: 20 }}>
-      <View>
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          <Text variant="caption" style={{ textAlign: 'center' }}>
-            {`By trading, you agree to the `}
-          </Text>
-          <Pressable onPress={openTermsOfUse} hitSlop={20}>
-            <Text variant="caption" style={{ textDecorationLine: 'underline' }}>
-              Terms of Use
-            </Text>
-          </Pressable>
-          <Text variant="caption" style={{ textAlign: 'center' }}>
-            {`.`}
-          </Text>
-        </View>
-
-        <Text variant="caption" style={{ textAlign: 'center' }}>
-          {`Perpetual futures involve unique risks.`}
+      <Text variant="caption" style={{ textAlign: 'center' }}>
+        {`By trading, you agree to the `}
+        <Text
+          variant="caption"
+          onPress={openTermsOfUse}
+          suppressHighlighting
+          style={{ textDecorationLine: 'underline' }}
+          testID="perpetuals_place_order_terms_link">
+          Terms of Use
         </Text>
-      </View>
-
+        {`.\nPerpetual futures involve unique risks.`}
+      </Text>
       <View
         sx={{
           flexDirection: 'row',
