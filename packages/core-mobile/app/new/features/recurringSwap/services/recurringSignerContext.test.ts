@@ -3,6 +3,7 @@ import {
   type TransferStepDetails
 } from '@avalabs/fusion-sdk'
 import {
+  isRecurringOrderActionSignatureReason,
   isRecurringTransferSignatureReason,
   readRecurringSignerContext
 } from './recurringSignerContext'
@@ -55,6 +56,35 @@ describe('isRecurringTransferSignatureReason', () => {
     TransferSignatureReason.HyperliquidAuthorize
   ])('does NOT match non-recurring reason %s', reason => {
     expect(isRecurringTransferSignatureReason(reason)).toBe(false)
+  })
+})
+
+describe('isRecurringOrderActionSignatureReason', () => {
+  // Cancel / pause / resume are the schedule-management actions EvmSigner
+  // suppresses the success confetti for.
+  it.each([
+    TransferSignatureReason.CancelRecurringSwap,
+    TransferSignatureReason.PauseRecurringSwap,
+    TransferSignatureReason.ResumeRecurringSwap
+  ])('matches %s', reason => {
+    expect(isRecurringOrderActionSignatureReason(reason)).toBe(true)
+  })
+
+  // Creating a schedule is NOT an order action — it keeps its normal
+  // confetti, so it must not match.
+  it('does NOT match ScheduleRecurringSwap', () => {
+    expect(
+      isRecurringOrderActionSignatureReason(
+        TransferSignatureReason.ScheduleRecurringSwap
+      )
+    ).toBe(false)
+  })
+
+  it.each([
+    TransferSignatureReason.TokensTransfer,
+    TransferSignatureReason.AllowanceApproval
+  ])('does NOT match non-recurring reason %s', reason => {
+    expect(isRecurringOrderActionSignatureReason(reason)).toBe(false)
   })
 })
 

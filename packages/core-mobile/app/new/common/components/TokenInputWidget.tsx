@@ -44,7 +44,12 @@ type TokenInputWidgetProps = {
   balance?: bigint
   shouldShowBalance?: boolean
   network?: Network
-  onAmountChange: (amount: bigint) => void
+  /**
+   * `valueString` is the raw entered text: `''` when the field is empty/cleared,
+   * `'0'` for an explicit typed 0 (both carry `amount` 0n). Callers that need to
+   * tell empty apart from a typed 0 use it; others can ignore the second arg.
+   */
+  onAmountChange: (amount: bigint, valueString: string) => void
   /**
    * Fires when the Max percentage button is pressed (100% of balance).
    * Distinct from `onAmountChange` so callers can flag analytics events
@@ -121,7 +126,9 @@ export const TokenInputWidget = forwardRef<
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
-    onAmountChange?.(value)
+    // A percentage/Max button always sets a concrete amount, never "empty",
+    // so pass a non-empty valueString.
+    onAmountChange?.(value, value.toString())
     if (button.percent === 1) {
       onPressMax?.()
     }
@@ -144,7 +151,7 @@ export const TokenInputWidget = forwardRef<
         }))
       )
 
-      onAmountChange?.(value.value)
+      onAmountChange?.(value.value, value.valueString)
     },
     [onAmountChange, balance]
   )

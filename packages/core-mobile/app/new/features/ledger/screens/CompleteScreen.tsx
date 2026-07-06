@@ -76,7 +76,7 @@ export default function CompleteScreen(): JSX.Element {
             textAlign: 'center',
             marginTop: 24,
             marginBottom: 18,
-            fontWeight: '600'
+            fontFamily: 'Inter-SemiBold'
           }}>
           Ledger wallet{'\n'}successfully added
         </Text>

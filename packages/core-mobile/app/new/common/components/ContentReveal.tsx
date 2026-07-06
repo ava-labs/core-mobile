@@ -1,5 +1,5 @@
 import { View } from '@avalabs/k2-alpine'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
 export const ContentReveal = ({
@@ -9,7 +9,6 @@ export const ContentReveal = ({
   children: React.ReactNode
   isVisible: boolean
 }): JSX.Element => {
-  const contentRef = useRef<Animated.View>(null)
   const [contentHeight, setContentHeight] = useState(0)
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -19,18 +18,19 @@ export const ContentReveal = ({
     }
   })
 
-  useEffect(() => {
-    if (isVisible) {
-      contentRef.current?.measure((x, y, width, height) => {
-        setContentHeight(height)
-      })
-    }
-  }, [isVisible])
-
   return (
-    <Animated.View style={animatedStyle}>
+    // `overflow: 'hidden'` clips the absolutely-positioned child to the animated
+    // height. Without it, when the height is 0 (collapsed, or before the child
+    // is measured) the child still renders and bleeds out behind sibling
+    // content — on the New Architecture (Fabric) Android this left the revealed
+    // content (e.g. the balance-error banner) showing underneath the list.
+    <Animated.View style={[animatedStyle, { overflow: 'hidden' }]}>
+      {/* Measure via onLayout, not the legacy `ref.measure()` callback, which
+          is unreliable on Fabric (returns 0 on Android) — leaving the reveal
+          stuck at height 0. onLayout fires with the child's natural height on
+          both platforms and re-fires when the content changes. */}
       <View
-        ref={contentRef}
+        onLayout={event => setContentHeight(event.nativeEvent.layout.height)}
         style={{
           position: 'absolute',
           top: 0,

@@ -100,7 +100,7 @@ export function RecurrenceChips<T extends string>({
                       color: textColor,
                       fontSize: 15,
                       lineHeight: 20,
-                      fontWeight: '500'
+                      fontFamily: 'Inter-Medium'
                     }}>
                     {item.label}
                   </Text>

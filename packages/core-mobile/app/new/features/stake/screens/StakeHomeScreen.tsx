@@ -8,6 +8,7 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import {
   StakeCardList,
   StakeCardListHeaderProps
@@ -80,6 +81,9 @@ export const StakeHomeScreen = (): JSX.Element => {
               </Text>
             )}
           </Animated.View>
+          {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+              reserves no space) when none. */}
+          <StuckFundsBanner sx={{ marginHorizontal: 16, marginBottom: 16 }} />
           {isEmpty === false && <Banner />}
           <DropdownSelections
             filter={filter}

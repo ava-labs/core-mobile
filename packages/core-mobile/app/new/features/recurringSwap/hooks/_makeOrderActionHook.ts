@@ -9,6 +9,7 @@ import { isHttpError } from '@avalabs/fusion-sdk'
 import type { Network } from '@avalabs/core-chains-sdk'
 import { showSnackbar } from 'common/utils/toast'
 import FusionService from 'features/swap/services/FusionService'
+import { isUserRejectionError } from 'features/swap/utils/fusionErrors'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -372,17 +373,6 @@ export function makeOrderActionHook(
       [isPending, mutate, run]
     )
   }
-}
-
-// Matches the user-rejection detector in SwapScreen.submitRecurring. The
-// underlying signer throws an Error whose message starts with
-// "User rejected" / "User cancelled" / "User canceled" when the user taps
-// Reject (or closes the modal) on the in-app approval sheet. These aren't
-// failures we should surface — they're the user's deliberate action.
-function isUserRejectionError(err: unknown): boolean {
-  const message =
-    err instanceof Error ? err.message : typeof err === 'string' ? err : ''
-  return /User (rejected|cancel(l|led))/i.test(message)
 }
 
 function showOrderActionErrorSnackbar(

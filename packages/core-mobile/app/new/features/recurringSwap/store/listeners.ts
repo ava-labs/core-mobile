@@ -5,6 +5,9 @@ import { TransferSignatureReason } from '@avalabs/fusion-sdk'
 import type { QueryCacheNotifyEvent } from '@tanstack/react-query'
 import { onAppUnlocked } from 'store/app/slice'
 import type { AppStartListening } from 'store/types'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
+import { subscribeForRecurringSwap } from 'services/notifications/recurringSwap/subscribeForRecurringSwap'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus } from '../types'
 import type { RecurringOrder } from '../types'
@@ -15,9 +18,24 @@ import {
   makeFailureKey
 } from '../utils/seenFailures'
 import {
+  loadSubscribedOrders,
+  saveSubscribedOrders
+} from '../utils/subscribedOrders'
+import {
   pendingActionStore,
   type PendingActionEntry
 } from './pendingActionStore'
+
+// In-flight subscribe dedupe. Keyed by `${ownerLower}:${chainId}:${orderId}`
+// so concurrent refetches (banner + manage-screen mount + 30s poll + focus +
+// unlock invalidate) don't all fire the same subscribe call. Module-scoped
+// because the React Query cache subscriber is a singleton — multiple
+// concurrent firings of `handleQueryCacheEvent` share this set.
+//
+// The backend treats re-subscribes as idempotent reactivations (Sarp's PR #172),
+// so a duplicate that slips through is harmless — this set is purely a
+// network-traffic optimization.
+const subscribeInFlight = new Set<string>()
 
 // The SDK now signs and broadcasts internally for fill /
 // cancel / pause / resume, so the old Redux listeners that watched for
@@ -109,6 +127,116 @@ function processAllSchedules(
 
   if (failuresDirty) saveSeenFailures(ownerAddress, chainId, seenFailures)
   if (anyNewFailure) showSnackbar('Recurring swap execution failed')
+}
+
+// ─── Notification subscription ────────────────────────────────────────────────
+
+// Active and Paused are the only statuses that can fire future fills (Paused
+// can be resumed). Cancelled / Completed are terminal — the backend webhook
+// deactivates the subscription on those transitions anyway (per Sarp's PR
+// #172), so subscribing them client-side would be a wasted round-trip.
+function isSubscribableStatus(status: RecurringOrderStatus): boolean {
+  return (
+    status === RecurringOrderStatus.Active ||
+    status === RecurringOrderStatus.Paused
+  )
+}
+
+/**
+ * Subscribe this device to push notifications for any new orders that
+ * appeared in the latest listOrders snapshot and aren't already tracked
+ * locally. Fire-and-forget — sequential per-order with a per-success save
+ * so a mid-batch app kill leaves a coherent persisted set instead of
+ * orphaning the surviving subscriptions.
+ *
+ * Failure handling: log + skip. The next listOrders refetch (banner mount,
+ * 30s poll, unlock invalidate, etc.) retries any unsubscribed order — and
+ * the backend treats re-subscribes as idempotent reactivations, so the
+ * worst case is a one-refetch delay before push notifications start.
+ */
+async function ensureOrderSubscriptions(
+  ownerAddress: string,
+  chainId: number,
+  schedules: readonly RecurringOrder[]
+): Promise<void> {
+  const ownerLower = ownerAddress.toLowerCase()
+  const subscribed = loadSubscribedOrders(ownerAddress, chainId)
+
+  // Orders from this snapshot that still need a subscription. Filtering up
+  // front lets us resolve the deviceArn exactly once for the whole batch —
+  // and skip the register call entirely in the steady state (every order
+  // already subscribed, the common case on the 30s poll).
+  const pending = schedules.filter(
+    schedule =>
+      isSubscribableStatus(schedule.status) &&
+      !subscribed.has(schedule.orderId) &&
+      !subscribeInFlight.has(`${ownerLower}:${chainId}:${schedule.orderId}`)
+  )
+  if (pending.length === 0) return
+
+  // Resolve the deviceArn for this batch. `registerDeviceToNotificationSender`
+  // persists the ARN in commonStorage, and the global notification flow keeps
+  // that key fresh — re-registered on FCM token rotation (`onFcmTokenChange`
+  // drives the balance-change / news / price-alert subscribes), wiped by
+  // logout's `clearAll()`. So reading the persisted key gives the same
+  // freshness as a session-scoped memo with none of the invalidation
+  // machinery, and it survives cold start. Fall back to /v1/push/register only
+  // when the key is empty. Bail on failure rather than retrying register once
+  // per order; the next listOrders refetch retries the whole batch.
+  let deviceArn = commonStorage.getString(
+    CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION
+  )
+  if (!deviceArn) {
+    try {
+      deviceArn = await registerAndGetDeviceArn()
+    } catch (err) {
+      Logger.error('[RecurringSwap] deviceArn registration failed', err)
+      return
+    }
+  }
+
+  for (const schedule of pending) {
+    const orderId = schedule.orderId
+    const inFlightKey = `${ownerLower}:${chainId}:${orderId}`
+    // Re-check in-flight: a concurrent ensureOrderSubscriptions run may have
+    // claimed this order while we awaited the deviceArn above.
+    if (subscribeInFlight.has(inFlightKey)) continue
+    subscribeInFlight.add(inFlightKey)
+    try {
+      await subscribeForRecurringSwap({ orderId, deviceArn })
+      subscribed.add(orderId)
+      // Save after each success so a mid-batch interruption (app kill,
+      // network drop on the next iteration) preserves the work done so far.
+      // Merge with the latest persisted set to avoid clobbering concurrent
+      // ensureOrderSubscriptions runs for the same (owner, chain).
+      const merged = new Set([
+        ...loadSubscribedOrders(ownerAddress, chainId),
+        ...subscribed
+      ])
+      saveSubscribedOrders(ownerAddress, chainId, merged)
+    } catch (err) {
+      Logger.error('[RecurringSwap] order subscribe failed', {
+        orderId,
+        err
+      })
+      // The ARN may have been retired backend-side (e.g. dead-endpoint
+      // cleanup). Re-reading the persisted key would just hand back the same
+      // dead ARN, so force a fresh /v1/push/register and reuse the live ARN
+      // for the remaining orders in this loop. Bail if the re-register itself
+      // fails — the next listOrders refetch retries the whole batch.
+      try {
+        deviceArn = await registerAndGetDeviceArn()
+      } catch (registerErr) {
+        Logger.error(
+          '[RecurringSwap] deviceArn re-registration failed',
+          registerErr
+        )
+        return
+      }
+    } finally {
+      subscribeInFlight.delete(inFlightKey)
+    }
+  }
 }
 
 /**
@@ -258,6 +386,16 @@ function handleQueryCacheEvent(event: QueryCacheNotifyEvent): void {
     // is initialised once — subsequent refetches then hit the new-failure
     // path normally.
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
+
+    // Fire-and-forget the per-order push subscription pass. Kept out of the
+    // synchronous cache-subscriber call path; failures inside the function are
+    // logged but never bubble up — the next refetch retries any order that
+    // didn't make it into the persisted subscribed-set.
+    void ensureOrderSubscriptions(ownerAddress, chainId, schedules ?? []).catch(
+      err => {
+        Logger.error('[RecurringSwap] ensureOrderSubscriptions threw', err)
+      }
+    )
   } catch (err) {
     Logger.error('[RecurringSwap] Failure watcher error', err)
   }

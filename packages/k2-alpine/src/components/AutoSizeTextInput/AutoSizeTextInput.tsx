@@ -107,7 +107,6 @@ export const AutoSizeTextInput = forwardRef<
       initialFontSize *
       (suffix ? suffixFontSizeMultiplier : prefixFontSizeMultiplier)
     const hasValue = useSharedValue(false)
-    const animatedFontSize = useSharedValue(initialFontSize)
     const animatedSuffixFontSize = useSharedValue(fontSizeMultiplier)
     const inputRef = useRef<TextInput>(null)
     const lastTextRef = useRef<string>('')
@@ -141,16 +140,6 @@ export const AutoSizeTextInput = forwardRef<
     const inputColor =
       (value?.length ?? 0) > 0 ? textColor : placeholderTextColor
 
-    const textStyle = useAnimatedStyle(() => {
-      return {
-        textAlign,
-        fontFamily: 'Aeonik-Medium',
-        fontSize: animatedFontSize.value,
-        lineHeight: animatedFontSize.value * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
-      }
-    })
-
     const suffixTextStyle = useAnimatedStyle(() => {
       return {
         fontFamily: 'Aeonik-Medium',
@@ -183,19 +172,28 @@ export const AutoSizeTextInput = forwardRef<
         // This 1.1x correction factor increases the font size to better utilize the available space.
         const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
 
+        // `textWidth` is always measured at `initialFontSize` (the hidden
+        // measurement text below renders at a fixed, plain font size), so scale
+        // down from that known base in a single pass. This avoids the iterative
+        // convergence loop and, crucially, does not depend on a Reanimated
+        // animated font size having been applied to the measurement text before
+        // its width is read — a timing the New Architecture (Fabric) does not
+        // guarantee. When the animated size hadn't applied yet, the text was
+        // measured at the default (tiny) size, so the ratio blew up and the font
+        // clamped back to `initialFontSize`, i.e. it never shrank.
         const ratio = (availableWidth / textWidth) * correctionFactor
-        let fontSize = Math.round(animatedFontSize.value * ratio)
-        let newFontSize = Math.round(animatedSuffixFontSize.value * ratio)
+        let fontSize = Math.round(initialFontSize * ratio)
+        let suffixFontSize = Math.round(fontSizeMultiplier * ratio)
         fontSize = Math.max(10, Math.min(initialFontSize, fontSize))
-        newFontSize = Math.max(10, Math.min(fontSizeMultiplier, newFontSize))
+        suffixFontSize = Math.max(
+          10,
+          Math.min(fontSizeMultiplier, suffixFontSize)
+        )
 
-        if (Math.abs(fontSize - animatedFontSize.value) > 0.5) {
-          animatedFontSize.value = fontSize
-          setInputFontSize(fontSize)
-        }
+        setInputFontSize(fontSize)
 
-        if (Math.abs(newFontSize - animatedSuffixFontSize.value) > 0.5) {
-          animatedSuffixFontSize.value = newFontSize
+        if (Math.abs(suffixFontSize - animatedSuffixFontSize.value) > 0.5) {
+          animatedSuffixFontSize.value = suffixFontSize
         }
       },
       [
@@ -204,7 +202,6 @@ export const AutoSizeTextInput = forwardRef<
         renderRight,
         suffix,
         containerWidth,
-        animatedFontSize,
         animatedSuffixFontSize,
         initialFontSize,
         fontSizeMultiplier
@@ -257,7 +254,6 @@ export const AutoSizeTextInput = forwardRef<
 
         // Short text fits at initial size — skip measurement and reset
         if (currentText.length < MIN_LENGTH_TO_RESIZE) {
-          animatedFontSize.value = initialFontSize
           animatedSuffixFontSize.value = fontSizeMultiplier
           setInputFontSize(initialFontSize)
           return
@@ -270,7 +266,6 @@ export const AutoSizeTextInput = forwardRef<
       [
         value,
         containerWidth,
-        animatedFontSize,
         initialFontSize,
         animatedSuffixFontSize,
         fontSizeMultiplier,
@@ -386,7 +381,10 @@ export const AutoSizeTextInput = forwardRef<
           {renderSuffix()}
         </View>
 
-        {/* Hidden text for measuring content width */}
+        {/* Hidden text for measuring content width. Rendered at a fixed,
+            plain (non-animated) `initialFontSize` so its measured width is
+            deterministic and available on first layout — see
+            calculateAndUpdateFontSize. */}
         <View
           accessible={false}
           style={styles.measurementContainer}
@@ -394,7 +392,18 @@ export const AutoSizeTextInput = forwardRef<
           <Animated.Text
             numberOfLines={1}
             onLayout={handleTextLayout}
-            style={[styles.measurementText, textStyle]}>
+            // Match the visible input, which also disables font scaling. If the
+            // measurement text scaled with the OS accessibility text setting but
+            // the input didn't, the measured width would exceed the rendered
+            // width and the amount would shrink more than necessary.
+            allowFontScaling={false}
+            style={[
+              styles.measurementText,
+              {
+                fontSize: initialFontSize,
+                lineHeight: initialFontSize * 1.1
+              }
+            ]}>
             {value || ' '}
           </Animated.Text>
         </View>

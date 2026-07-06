@@ -52,6 +52,7 @@ export enum ReactQueryKeys {
   FUSION_TOKENS = 'fusionTokens',
   FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
+  FUSION_STUCK_ATOMIC_FUNDS = 'fusionStuckAtomicFunds',
 
   // recurring swaps (DCA). `RECURRING_ALLOWANCE` was dropped — the SDK
   // reads on-chain allowance internally inside `executeFirstFill` so mobile

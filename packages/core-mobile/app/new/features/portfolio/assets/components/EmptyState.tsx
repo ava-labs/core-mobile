@@ -1,14 +1,8 @@
 import { GroupList, Icons, Text, useTheme } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useRouter } from 'expo-router'
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
-import { Platform, View, ViewStyle } from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, Platform, View, ViewStyle } from 'react-native'
 
 import AVALANCHE_ANIMATION_DARK from 'assets/lotties/ava-logo-rotating-dark.json'
 import AVALANCHE_ANIMATION_LIGHT from 'assets/lotties/ava-logo-rotating.json'
@@ -35,8 +29,18 @@ export const EmptyState = ({
   const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
 
-  const animationContainerRef = useRef<View>(null)
   const [availableHeight, setAvailableHeight] = useState(0)
+
+  // Measure the animation container via onLayout rather than a ref `.measure()`
+  // callback — onLayout is reliable on Fabric (and doesn't need to re-run on
+  // every render) and gives the container's height to size the background
+  // animation.
+  const handleAnimationContainerLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setAvailableHeight(event.nativeEvent.layout.height)
+    },
+    []
+  )
 
   const groupListData = useMemo(() => {
     const leftIconStyle: ViewStyle = {
@@ -70,16 +74,6 @@ export const EmptyState = ({
       }
     ]
   }, [colors.$borderPrimary, colors.$textPrimary, goToBuy, router])
-
-  useLayoutEffect(() => {
-    if (animationContainerRef.current) {
-      animationContainerRef.current.measure(
-        (...args: [number, number, number, number]) => {
-          setAvailableHeight(args[3])
-        }
-      )
-    }
-  })
 
   const renderAnimation = useCallback(() => {
     if (availableHeight === 0) {
@@ -161,7 +155,7 @@ export const EmptyState = ({
           }
         ]}>
         <View
-          ref={animationContainerRef}
+          onLayout={handleAnimationContainerLayout}
           style={{
             flex: 1
           }}>

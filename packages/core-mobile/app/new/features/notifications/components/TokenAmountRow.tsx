@@ -89,7 +89,7 @@ export const TokenAmountRow = ({
               numberOfLines={1}
               variant="heading2"
               sx={{
-                fontWeight: '500',
+                fontFamily: 'Inter-Medium',
                 color: isDebit ? colors.$textDanger : colors.$textPrimary
               }}>
               {isDebit ? `-${amount}` : amount}

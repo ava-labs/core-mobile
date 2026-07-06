@@ -113,7 +113,10 @@ jest.mock('../contexts/RecurringSwapContext', () => ({
 
 // Import after mocks are registered.
 
-import { RecurringDetailsRows } from './RecurringDetailsRows'
+import {
+  RecurringDetailsRows,
+  ordersChipsForToken
+} from './RecurringDetailsRows'
 
 /** Walk the rendered tree and collect all string leaf values. */
 function collectText(
@@ -265,5 +268,23 @@ describe('<RecurringDetailsRows />', () => {
 
     expect(containsText(json, 'Unlimited')).toBe(true)
     expect(containsText(json, 'Estimated total spend')).toBe(false)
+  })
+})
+
+describe('ordersChipsForToken', () => {
+  it('includes the Unlimited chip for non-native (ERC-20) source tokens', () => {
+    const ids = ordersChipsForToken(false).map(chip => chip.id)
+    expect(ids).toContain('unlimited')
+  })
+
+  it('omits the Unlimited chip for native source tokens', () => {
+    // Native-input recurring pre-wraps the full schedule total, so an unbounded
+    // (Unlimited) schedule 400s on Markr's /recurring/quote — hide the option.
+    const ids = ordersChipsForToken(true).map(chip => chip.id)
+    expect(ids).not.toContain('unlimited')
+    // The finite presets + custom remain selectable.
+    expect(ids).toEqual(
+      expect.arrayContaining(['5', '10', '15', '20', 'custom'])
+    )
   })
 })

@@ -93,6 +93,36 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
+  describe('__coreProviderReassertChain (CP-14615)', () => {
+    it('defines an idempotent chain re-assert helper', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain(
+        'window.__coreProviderReassertChain = function(data)'
+      )
+    })
+
+    it('dedupes numerically so a non-canonical hex (0x01 / 0xA86A) is not re-emitted', () => {
+      // Native always sends canonical '0x'+n.toString(16); a dApp-supplied chain
+      // (wallet_addEthereumChain) may be zero-padded/uppercase. A string compare
+      // would miss those; the numeric compare is the correct dedupe.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('parseInt(data, 16) === parseInt(_chainId, 16)')
+    })
+
+    it('emits chainChanged via __coreProviderEmit when the chain actually changed', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("window.__coreProviderEmit('chainChanged', data)")
+    })
+
+    it('normalizes the optimistic wallet_switchEthereumChain chainId to canonical hex', () => {
+      // A dApp may send a non-canonical chainId ('1' / '0x01' / '0xA86A'); the shim
+      // must store canonical '0x'+n.toString(16) so eth_chainId is well-formed and
+      // the numeric re-assert dedupe stays consistent. CP-14615.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("swTargetChainId = '0x' + swParsed.toString(16)")
+    })
+  })
+
   describe('EIP-1193 provider object', () => {
     let shim: string
 

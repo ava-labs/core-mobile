@@ -1,6 +1,5 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
@@ -51,6 +50,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { formatTokenAmount } from 'utils/Utils'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
@@ -62,7 +62,8 @@ import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
   selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
-  selectMarkrSwapMaxRetries
+  selectMarkrSwapMaxRetries,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
 import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
 import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
@@ -70,6 +71,7 @@ import { useRecurringQuote } from 'features/recurringSwap/hooks/useRecurringQuot
 import { RecurringDetailsRows } from 'features/recurringSwap/components/RecurringDetailsRows'
 import { RecurringSchedulesBanner } from 'features/recurringSwap/components/RecurringSchedulesBanner'
 import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
+import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -78,14 +80,24 @@ import {
   fusionTransfersStore,
   useFusionServiceInitError
 } from '../hooks/useZustandStore'
-import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
+import {
+  FusionQuoteError,
+  fusionErrors,
+  isUserRejectionError
+} from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
-import { isAvalancheCctRoute } from '../utils/isAvalancheCctRoute'
+import { StuckFundsBanner } from '../components/StuckFundsBanner'
+import {
+  isAvalancheCctRoute,
+  isAvalancheCctZeroAmountRoute,
+  isCctOnlySource
+} from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { computeCanSubmit } from '../utils/recurringSubmitGate'
+import { computeRecurringBalanceError } from '../utils/recurringBalanceGate'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
@@ -178,23 +190,54 @@ function buildSwapDetailItems({
 /**
  * Computes the current swap validation error (or null if inputs are valid).
  * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ *
+ * `allowZeroAmount` relaxes the "enter an amount" gate for AVALANCHE_CCT routes,
+ * where 0 is a valid input that triggers the SDK's import-only recovery quote.
  */
 function computeValidationError({
   fromTokenValue,
   debouncedFromTokenValue,
   minimumTransferAmount,
   fromToken,
-  feeValidationError
+  feeValidationError,
+  isRecurring,
+  numberOfOrders,
+  recurringTotalAmountIn,
+  recurringAdditiveNativeFee,
+  nativeFromToken,
+  allowZeroAmount = false
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
   minimumTransferAmount: bigint | null | undefined
   fromToken: LocalTokenWithBalance | undefined
   feeValidationError: FusionQuoteError | null | undefined
+  isRecurring: boolean
+  numberOfOrders: NumberOfOrders | undefined
+  recurringTotalAmountIn: bigint | undefined
+  recurringAdditiveNativeFee: bigint
+  nativeFromToken: LocalTokenWithBalance | undefined
+  allowZeroAmount?: boolean
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    if (allowZeroAmount) return null
     return fusionErrors.enterAmount()
+  }
+  // Recurring: validate the full schedule commitment (principal + additive
+  // native fees) up front so an under-funded schedule is caught here with a
+  // clear message instead of reverting on-chain at estimateGas (which surfaces
+  // as a generic "Recurring swap failed" toast). Stricter than the per-order
+  // balance guard below, so it runs first.
+  if (isRecurring && fromToken !== undefined) {
+    const recurringError = computeRecurringBalanceError({
+      numberOfOrders,
+      totalAmountIn: recurringTotalAmountIn,
+      additiveNativeFee: recurringAdditiveNativeFee,
+      fromToken,
+      nativeFromToken
+    })
+    if (recurringError) return recurringError
   }
   if (
     minimumTransferAmount != null &&
@@ -407,29 +450,37 @@ export const SwapScreen = (): JSX.Element => {
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const recurring = useRecurringSwapContext()
+
+  // Recurring is Markr-only, so its per-order floor is Markr's minimum
+  // specifically — not the blended "lowest across services" value, which could
+  // pin a lower non-Markr floor and let a sub-fillable per-order amount through.
+  // Only pin the Markr floor when recurring is on. When it's off, leave
+  // serviceType undefined so this collapses onto the blended query key
+  // (`minimumTransferAmount`) and React Query dedupes them, instead of firing a
+  // second, unread getMinimumTransferAmount round trip on every one-shot swap.
+  // The recurring minimum-ready gate tolerates the brief loading window on
+  // toggle-on (Next stays disabled until this settles).
+  const markrMinimumTransferAmount = useMinimumTransferAmount({
+    fromToken,
+    toToken,
+    serviceType: recurring.isRecurring ? ServiceType.MARKR : undefined
+  })
+
   const evmAddress = activeAccount?.addressC
   const eligibility = useRecurringEligibility(
     isRecurringBlocked ? undefined : fromToken,
     isRecurringBlocked ? undefined : toToken,
     isRecurringBlocked ? undefined : evmAddress
   )
-  // Recurring per-token minimum sourced from `/info/chains` (via SDK eligibility
-  // check, which keys on the source token address). Available whenever the pair
-  // is supported, even before the user enters an amount.
-  const recurringMinimumTransferAmount = useMemo<bigint | null>(() => {
-    if (!eligibility.eligible) return null
-    try {
-      return BigInt(eligibility.minimumAmount)
-    } catch {
-      return null
-    }
-  }, [eligibility])
-  // Recurring on → validate against the supportedTokens minimum.
-  // Recurring off → validate against the active quote's one-shot minimum.
+
+  // Recurring on → validate the per-order amount against Markr's floor.
+  // Recurring off → validate against the blended one-shot minimum.
   const effectiveMinimumTransferAmount = recurring.isRecurring
-    ? recurringMinimumTransferAmount
+    ? markrMinimumTransferAmount
     : minimumTransferAmount
+
   // Toggle stays hidden until the user enters a non-zero amount (matches Figma
   // "Recurring OFF" frame — the toggle row only appears beneath a populated
   // swap card). The recurring flag itself is preserved when the amount is
@@ -595,6 +646,35 @@ export const SwapScreen = (): JSX.Element => {
     updateMissingTokenPrice(toToken)
   }, [toToken, updateMissingTokenPrice])
 
+  // Sum the recurring quote's *additive* fees (SDK marks the one-time native
+  // schedule fee with `fee.extra` truthy and documents it as
+  // "balance-check separately"). These are native-denominated and must be
+  // reserved on top of the principal. Estimated gas (type 'gas', not `extra`)
+  // is intentionally excluded — the quote reports it in gas units, not a wei
+  // cost — and is left to the SDK's own estimateGas guard.
+  const recurringAdditiveNativeFee = useMemo(
+    () =>
+      (recurringQuote.data?.fees ?? []).reduce<bigint>(
+        (sum, fee) => (fee.extra ? sum + fee.amount : sum),
+        0n
+      ),
+    [recurringQuote.data?.fees]
+  )
+
+  // CCT routes accept 0 (the SDK emits an import-only recovery quote), so the
+  // "enter an amount" gate is relaxed and the submit button reads "Recover".
+  const allowZeroAmount = isAvalancheCctZeroAmountRoute({
+    isAvalancheCctEnabled,
+    fromToken,
+    toToken
+  })
+
+  // Recovery flow = an enabled CCT route with a 0 amount. Note the amount input
+  // emits 0n for a cleared/empty field as well, so clearing the amount also
+  // enters recovery (button reads "Recover"). Distinguishing an empty field from
+  // an explicit typed 0 is tracked as a follow-up.
+  const isCctRecovery = allowZeroAmount && debouncedFromTokenValue === 0n
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -604,7 +684,13 @@ export const SwapScreen = (): JSX.Element => {
         debouncedFromTokenValue,
         minimumTransferAmount: effectiveMinimumTransferAmount,
         fromToken,
-        feeValidationError
+        feeValidationError,
+        isRecurring: recurring.isRecurring,
+        numberOfOrders: recurring.numberOfOrders,
+        recurringTotalAmountIn: recurringQuote.data?.totalAmountIn,
+        recurringAdditiveNativeFee,
+        nativeFromToken,
+        allowZeroAmount
       })
     )
   }, [
@@ -612,11 +698,20 @@ export const SwapScreen = (): JSX.Element => {
     debouncedFromTokenValue,
     effectiveMinimumTransferAmount,
     fromToken,
-    feeValidationError
+    feeValidationError,
+    recurring.isRecurring,
+    recurring.numberOfOrders,
+    recurringQuote.data?.totalAmountIn,
+    recurringAdditiveNativeFee,
+    nativeFromToken,
+    allowZeroAmount
   ])
 
   const applyQuote = useCallback(() => {
-    if (!debouncedFromTokenValue || !activeQuote) {
+    // Show the received amount whenever a quote is in hand. A CCT recovery
+    // (0 entered) has amountIn=0, so keep the amount visible; an empty or
+    // no-quote input clears it.
+    if (!activeQuote || (!debouncedFromTokenValue && !isCctRecovery)) {
       setToTokenValue(undefined)
       return
     }
@@ -628,7 +723,7 @@ export const SwapScreen = (): JSX.Element => {
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [activeQuote, debouncedFromTokenValue])
+  }, [activeQuote, debouncedFromTokenValue, isCctRecovery])
 
   const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -649,7 +744,17 @@ export const SwapScreen = (): JSX.Element => {
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
-    (amount: bigint): void => {
+    (amount: bigint, valueString: string): void => {
+      // An empty/cleared field emits valueString '' (a typed 0 emits '0'); both
+      // carry amount 0n. Map empty to undefined so the rest of the screen can
+      // tell them apart: undefined = no amount (never a recovery, no quote),
+      // 0n = an explicit typed 0 (the CCT recovery input).
+      if (valueString === '') {
+        setFromTokenValue(undefined)
+        setDestination(SwapSide.SELL)
+        setUserClickedMax(false)
+        return
+      }
       // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
       // floor the trailing wei so what the user sees is what gets sent.
       // Mirrors the staking flow's `toFixed(9)` clamp.
@@ -1093,17 +1198,36 @@ export const SwapScreen = (): JSX.Element => {
       setValidationError(
         fusionErrors.incompatibleNetworks(fromToken.symbol, toToken.symbol)
       )
-    } else {
-      // Clear error if tokens are compatible
-      setValidationError(null)
+      return
     }
+
+    // CP-14514: X/P-chain native AVAX is a CCT-only source — it can swap only to
+    // native AVAX on a different primary-network chain. The chain check above
+    // passes for X/P→C (C is a reachable CCT destination), so it can't catch a
+    // non-AVAX to-token like USDC left selected from a prior C-chain source.
+    // Clear it silently so the (already source-aware) token list and the user's
+    // next pick are the source of truth — no error, the networks aren't the issue.
+    if (
+      isCctOnlySource(fromToken) &&
+      !isAvalancheCctRoute({ fromToken, toToken })
+    ) {
+      setToToken(undefined)
+      setValidationError(null)
+      return
+    }
+
+    // Clear error if tokens are compatible
+    setValidationError(null)
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!debouncedFromTokenValue) {
+    // `!debouncedFromTokenValue` is also true for 0n, but a CCT recovery (an
+    // explicit 0) has a real amountOut to show, so don't clear it here — let
+    // applyQuote govern the To for that case (matches applyQuote's own guard).
+    if (!debouncedFromTokenValue && !isCctRecovery) {
       setToTokenValue(undefined)
     }
-  }, [debouncedFromTokenValue])
+  }, [debouncedFromTokenValue, isCctRecovery])
 
   usePreventScreenRemoval(isSwapping)
 
@@ -1199,16 +1323,12 @@ export const SwapScreen = (): JSX.Element => {
     quote: activeQuote
   })
 
-  // Submit-gate logic lives in `recurringSubmitGate` so the recurring
-  // below-minimum guard is unit testable without the whole screen. It mirrors
-  // the one-shot `canSwap` gate: a blocking (non-warning) validation error must
-  // disable Next. Most importantly this covers below-minimum, which
-  // `computeValidationError` evaluates against the recurring per-token minimum
-  // (`effectiveMinimumTransferAmount`). Without it the below-minimum error was
-  // displayed but never reached `canSubmit`, and because the recurring quote
-  // succeeds below the minimum (`useRecurringQuote` only gates on a non-zero
-  // amount, and `/recurring/quote` doesn't enforce the per-order minimum), a
-  // sub-minimum `amountPerOrder` could be submitted. Warnings (e.g.
+  // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
+  // without the whole screen. It mirrors the one-shot `canSwap` gate: a
+  // blocking (non-warning) validation error must disable Next. Recurring
+  // validates the per-order amount against Markr's floor
+  // (`effectiveMinimumTransferAmount`), so a per-order amount below that floor
+  // surfaces a blocking validation error here and disables Next. Warnings (e.g.
   // gas-estimation) are tolerated, matching `canSwap`'s `isWarning` allowance.
   const canSubmit = computeCanSubmit({
     isRecurring: recurring.isRecurring,
@@ -1220,6 +1340,11 @@ export const SwapScreen = (): JSX.Element => {
     hasRecurringQuote: !!recurringQuote.data,
     recurringSubmitting,
     validationError,
+    // `undefined` = the Markr per-order minimum query is still loading; gate
+    // Next until it settles (a value or null) so a sub-minimum per-order amount
+    // can't slip through the window where the recurring quote has resolved but
+    // the floor hasn't (the below-minimum check is skipped while it's unknown).
+    isRecurringMinimumReady: markrMinimumTransferAmount !== undefined,
     canSwap
   })
 
@@ -1275,12 +1400,18 @@ export const SwapScreen = (): JSX.Element => {
       dismissAll()
       return true
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
       // User-rejection errors from the signer bubble up untouched. They're
       // not a bug — they're the user explicitly tapping Reject. Suppress
       // both the failure toast AND the Logger.error (which pipes to
       // Sentry) so rejections don't pollute the error telemetry.
-      if (/User (rejected|cancel(l|led))/i.test(message)) {
+      //
+      // Detect via `isUserRejectionError`, which checks the EIP-1193 code
+      // (4001) and the message across Error instances AND plain JSON-RPC
+      // error objects. The signer rejection crosses the VM-module boundary as
+      // a serialized `{ code, message }` object — not an `Error` — so the old
+      // inline `err.message` regex missed it and showed the generic "failed"
+      // toast on a deliberate reject.
+      if (isUserRejectionError(err)) {
         Logger.info('[RecurringSwap] submitRecurringSwap user-rejected')
       } else if (isInvalidParamsError(err)) {
         // Quote expired / sourceChain mismatch — surface a recoverable
@@ -1327,7 +1458,13 @@ export const SwapScreen = (): JSX.Element => {
           size="large"
           onPress={handleNext}
           disabled={!canSubmit || isBusy}>
-          {isBusy ? <ActivityIndicator size="small" /> : 'Next'}
+          {isBusy ? (
+            <ActivityIndicator size="small" />
+          ) : isCctRecovery ? (
+            'Recover'
+          ) : (
+            'Next'
+          )}
         </Button>
       </>
     )
@@ -1337,7 +1474,8 @@ export const SwapScreen = (): JSX.Element => {
     isSwapping,
     recurringSubmitting,
     isLombard,
-    renderLombardLogo
+    renderLombardLogo,
+    isCctRecovery
   ])
 
   const renderCctTwoTxNotice = useCallback(() => {
@@ -1431,13 +1569,15 @@ export const SwapScreen = (): JSX.Element => {
       isModal
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
       {/* Schedule-management entry point: surfaces above the new-swap flow so
           users with existing schedules see + manage them before entering a
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
-        <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
-        </View>
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
       )}
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}

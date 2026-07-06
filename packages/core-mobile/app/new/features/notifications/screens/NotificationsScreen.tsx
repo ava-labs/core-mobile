@@ -17,6 +17,7 @@ import {
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { FusionTransfer } from 'features/swap/types'
@@ -24,6 +25,7 @@ import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
 import BalanceChangeItem from '../components/BalanceChangeItem'
+import RecurringSwapItem from '../components/RecurringSwapItem'
 import GenericNotificationItem from '../components/GenericNotificationItem'
 import {
   useNotifications,
@@ -35,9 +37,14 @@ import {
   AppNotification,
   NotificationTab,
   isPriceAlertNotification,
-  isBalanceChangeNotification
+  isBalanceChangeNotification,
+  isRecurringSwapNotification
 } from '../types'
-import { buildAccountLabelMap, isSwapTerminal } from '../utils'
+import {
+  buildAccountLabelMap,
+  isSwapTerminal,
+  isTerminalRecurringSwapNotification
+} from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
@@ -81,6 +88,11 @@ const isBalanceChangeWithData = (notification: AppNotification): boolean => {
  * Check if a notification has an actionable URL (not skipped like core://portfolio)
  */
 const hasActionableUrl = (notification: AppNotification): boolean => {
+  // Terminal / last-leg recurring-swap notifications point at a schedule the
+  // management screen no longer lists (it shows only Active / Paused), so the
+  // row is non-actionable — no chevron, and the press handler no-ops.
+  if (isTerminalRecurringSwapNotification(notification)) return false
+
   const url = notification.deepLinkUrl
   if (!url) return false
 
@@ -121,6 +133,15 @@ const renderNotificationItem = (
         {...props}
       />
     )
+  }
+
+  // RecurringSwap rows render even without a parsed `data` payload — the
+  // backend-formatted title / body alone are enough for the user to read the
+  // notification, and the deepLinkUrl still routes to the schedules screen.
+  // (BalanceChange / PriceAlert require `data` for their formatted titles,
+  // hence the `*WithData` predicates above; recurring-swap doesn't.)
+  if (isRecurringSwapNotification(item)) {
+    return <RecurringSwapItem notification={item} {...props} />
   }
 
   return <GenericNotificationItem notification={item} {...props} />
@@ -426,6 +447,11 @@ export const NotificationsScreen = (): JSX.Element => {
       navigationTitle={TITLE}
       renderFooter={renderFooter}
       renderHeader={renderHeader}>
+      {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+          reserves no space) when none. */}
+      <StuckFundsBanner
+        sx={{ marginHorizontal: 16, marginTop: 15, marginBottom: 10 }}
+      />
       {renderContent()}
     </ScrollScreen>
   )

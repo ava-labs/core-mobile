@@ -182,7 +182,7 @@ export const SelectServiceProvider = ({
                   variant="body1"
                   sx={{
                     lineHeight: 16,
-                    fontWeight: 600,
+                    fontFamily: 'Inter-SemiBold',
                     color: colors.$textPrimary
                   }}>
                   {ServiceProviderNames[serviceProvider.serviceProvider] ??
@@ -194,7 +194,6 @@ export const SelectServiceProvider = ({
                       variant="body2"
                       sx={{
                         color: colors.$textSuccess,
-                        fontWeight: 400,
                         lineHeight: 16
                       }}>
                       Lowest price
@@ -204,16 +203,14 @@ export const SelectServiceProvider = ({
             </View>
           )}
           <View>
-            <Text
-              variant="body2"
-              sx={{ textAlign: 'right', fontWeight: 400, lineHeight: 16 }}>
+            <Text variant="body2" sx={{ textAlign: 'right', lineHeight: 16 }}>
               {tokenUnitToDisplay} {token?.tokenWithBalance.symbol}
             </Text>
             <Text
               variant="subtitle2"
               sx={{
                 textAlign: 'right',
-                fontWeight: 500,
+                fontFamily: 'Inter-Medium',
                 fontSize: 12,
                 color: colors.$textSecondary
               }}>

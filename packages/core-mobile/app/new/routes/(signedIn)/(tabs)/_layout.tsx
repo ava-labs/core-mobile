@@ -98,17 +98,27 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      {hasXpAddresses && (
-        <BottomTabs.Screen
-          name="stake"
-          options={{
-            tabBarButtonTestID: 'stake_tab',
-            title: 'Stake',
-            tabBarIcon: () => stakeIcon,
-            freezeOnBlur
-          }}
-        />
-      )}
+      {/*
+       * Always register the stake screen; hide its button via tabBarItemHidden
+       * when the active account has no X/P addresses. Conditionally rendering
+       * (adding/removing) a native BottomTabs.Screen mutates the native tab
+       * controller's screen set at runtime, which crashes when hasXpAddresses
+       * flips on an account switch (e.g. primary Keystone account -> non-primary
+       * with empty X/P) and the user then opens the Browser tab. Mirror the
+       * earn/trade/activity tabs, which stay registered and use tabBarItemHidden
+       * (the custom TabBar below hides any tab whose tabBarItemHidden is set).
+       * (CP-14613)
+       */}
+      <BottomTabs.Screen
+        name="stake"
+        options={{
+          tabBarButtonTestID: 'stake_tab',
+          title: 'Stake',
+          tabBarIcon: () => stakeIcon,
+          freezeOnBlur,
+          tabBarItemHidden: !hasXpAddresses
+        }}
+      />
       <BottomTabs.Screen
         name="earn"
         options={{
@@ -161,7 +171,6 @@ const TabBar = ({
 }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const hasXpAddresses = useHasXpAddresses()
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -190,15 +199,11 @@ const TabBar = ({
       }}>
       {state.routes.map((route, index) => {
         const options = descriptors[route.key]?.options
-        // Check tabBarItemHidden option
+        // A tab opts out of the bar via its tabBarItemHidden option. Stake sets
+        // it when the account has no X/P addresses; earn/trade/activity set it
+        // from their feature flags. This single check is the only hide path, so
+        // there's no second source of truth to drift. (CP-14613)
         if (options?.tabBarItemHidden) {
-          return null
-        }
-        // Hide stake/earn tabs when user doesn't have XP addresses
-        if (
-          (route.name === 'stake' || route.name === 'earn') &&
-          !hasXpAddresses
-        ) {
           return null
         }
         const isActive = state.index === index
