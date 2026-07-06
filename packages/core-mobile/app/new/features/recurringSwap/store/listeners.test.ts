@@ -792,9 +792,10 @@ describe('addRecurringSwapListeners', () => {
     expect(mockCacheSubscribers).toHaveLength(1)
   })
 
-  // atn4z7's review: the wired subscriber must read the kill-switch LIVE from
-  // `listenerApi.getState()` on every cache event, not snapshot it at wire
-  // time. These two cases lock in both branches through the real wiring path.
+  // The wired subscriber must read the kill-switch LIVE from
+  // `listenerApi.getState()` on every matching cache event, not snapshot it at
+  // wire time. These two cases lock in both branches through the real wiring
+  // path.
 
   it('wires a live gate that reads state per event and subscribes when unblocked', async () => {
     const startListening = jest.fn()

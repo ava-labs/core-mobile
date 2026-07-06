@@ -352,13 +352,17 @@ function reconcilePendingActions(
  */
 function handleQueryCacheEvent(
   event: QueryCacheNotifyEvent,
-  isRecurringSubscriptionBlocked: boolean
+  getIsRecurringSubscriptionBlocked: () => boolean
 ): void {
   if (
     event.query.queryKey?.[0] !== RECURRING_SCHEDULES_QK[0] ||
     event.type !== 'updated' ||
     event.query.state.status !== 'success'
   ) {
+    // Early-return BEFORE reading the kill-switch: this subscriber fires for
+    // every query in the app's cache, so the `getState()`/selector read is
+    // deferred to the use site below — only paid on RECURRING_SCHEDULES
+    // success events, not on every unrelated high-frequency cache update.
     return
   }
 
@@ -392,14 +396,14 @@ function handleQueryCacheEvent(
     processAllSchedules(ownerAddress, chainId, schedules ?? [])
 
     // Fire-and-forget the per-order push subscription pass. Gated on the
-    // SWAP_RECURRING kill-switch, read LIVE per event (see
+    // SWAP_RECURRING kill-switch, read LIVE here per event (see
     // `startRecurringFailureWatcher`): when recurring swaps are blocked the
     // toggle, banner and management screen are all hidden, so there's nothing
     // to keep the device subscribed for. Kept out of the synchronous
     // cache-subscriber call path; failures inside the function are logged but
     // never bubble up — the next refetch retries any order that didn't make it
     // into the persisted subscribed-set.
-    if (!isRecurringSubscriptionBlocked) {
+    if (!getIsRecurringSubscriptionBlocked()) {
       // `void` marks the intentional fire-and-forget so the trailing `.catch`
       // promise doesn't float.
       // eslint-disable-next-line no-void
@@ -424,17 +428,26 @@ function handleQueryCacheEvent(
  * (and any future hot-reload teardown) can drop the listener — production
  * doesn't currently invoke it.
  *
- * `getIsRecurringSubscriptionBlocked` is a reader invoked LIVE on every cache
- * event — NOT a boolean snapshotted at wire time. It gates the per-order
+ * `getIsRecurringSubscriptionBlocked` is a reader invoked LIVE (per matching
+ * cache event) — NOT a boolean snapshotted at wire time. It gates the per-order
  * push-notification subscription pass on the SWAP_RECURRING kill-switch, and
  * reading live matches how every other recurring-swap gate consumes the flag
  * (the swap toggle, the Activity banner, the management-screen route guard all
  * read it via `useSelector`). The watcher is wired on `onRehydrationComplete`,
  * before the first live PostHog fetch lands — snapshotting there would freeze
- * the previous session's persisted value (default `false`/blocked on a fresh
- * install) and never re-read, so a schedule created after the flag flips on
- * mid-session would stay unsubscribed until the next app restart. The failure
- * snackbar and pending-action reconciliation still run regardless of the flag.
+ * whatever `selectIsRecurringSwapsBlocked` returned from the previously
+ * persisted PostHog state. On a fresh install nothing is persisted yet, so the
+ * `SWAP_RECURRING` gate reads as off and the selector returns `true` (blocked);
+ * a wire-time snapshot would then stay blocked for the whole session even after
+ * the periodic fetch enables the feature. Reading live re-evaluates on every
+ * matching event so a schedule created after the flag flips is subscribed
+ * without an app restart. The failure snackbar and pending-action
+ * reconciliation still run regardless of the flag.
+ *
+ * The reader is passed un-invoked and called at the use site inside
+ * `handleQueryCacheEvent`, after its early-returns — so the `getState()` read
+ * is only paid on RECURRING_SCHEDULES success events, not on every unrelated
+ * cache update this subscriber sees.
  */
 export function startRecurringFailureWatcher(
   getIsRecurringSubscriptionBlocked: () => boolean
@@ -442,7 +455,7 @@ export function startRecurringFailureWatcher(
   return queryClient
     .getQueryCache()
     .subscribe(event =>
-      handleQueryCacheEvent(event, getIsRecurringSubscriptionBlocked())
+      handleQueryCacheEvent(event, getIsRecurringSubscriptionBlocked)
     )
 }
 
