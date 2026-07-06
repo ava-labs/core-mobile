@@ -12,7 +12,6 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 import { usePerpsAvailability } from '../perpetuals/hooks/usePerpsAvailability'
-import { PerpsGeoRestrictionWarning } from '../perpetuals/components/PerpsGeoRestrictionWarning'
 
 export const TradeBalance = ({
   balance,
@@ -57,79 +56,71 @@ export const TradeBalance = ({
   })
 
   if (isGeoBlocked && !hasFunds) {
-    return (
-      <View>
-        <PerpsGeoRestrictionWarning />
-      </View>
-    )
+    return <></>
   }
 
   return (
-    <View sx={{ gap: 16 }}>
-      <AnimatedPressable
-        onPress={handleOnBalancePress}
-        disabled={onBalancePress === undefined}
-        style={{
-          borderRadius: 18,
-          overflow: 'hidden',
-          height: 60,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 10,
-          gap: 10,
-          backgroundColor: theme.colors.$surfaceSecondary
-        }}>
-        <TokenLogo size={36} symbol="USDC" />
+    <AnimatedPressable
+      onPress={handleOnBalancePress}
+      disabled={onBalancePress === undefined}
+      style={{
+        borderRadius: 18,
+        overflow: 'hidden',
+        height: 60,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        gap: 10,
+        backgroundColor: theme.colors.$surfaceSecondary
+      }}>
+      <TokenLogo size={36} symbol="USDC" />
 
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-            <Text variant="heading6">{formattedBalance}</Text>
-            <Icons.Navigation.ChevronRight
-              width={20}
-              height={20}
-              color={alpha(theme.colors.$textPrimary, 0.4)}
-            />
-          </View>
-          <Text variant="caption" sx={{ color: '$textSecondary' }}>
-            Available balance
-          </Text>
+      <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+          <Text variant="heading6">{formattedBalance}</Text>
+          <Icons.Navigation.ChevronRight
+            width={20}
+            height={20}
+            color={alpha(theme.colors.$textPrimary, 0.4)}
+          />
         </View>
+        <Text variant="caption" sx={{ color: '$textSecondary' }}>
+          Available balance
+        </Text>
+      </View>
 
-        {!isGeoBlocked ? (
-          hasFunds ? (
-            <View style={{ flexDirection: 'row', gap: 3 }}>
-              <Button
-                type="secondary"
-                size="small"
-                onPress={handleOnWithdrawPress}
-                style={{
-                  borderRadius: 20,
-                  borderTopRightRadius: 4,
-                  borderBottomRightRadius: 4
-                }}>
-                Withdraw
-              </Button>
-              <Button
-                type="secondary"
-                size="small"
-                onPress={handleOnTopUpPress}
-                style={{
-                  borderRadius: 20,
-                  borderTopLeftRadius: 4,
-                  borderBottomLeftRadius: 4
-                }}>
-                Top up
-              </Button>
-            </View>
-          ) : (
-            <Button type="primary" size="small" onPress={handleOnDepositPress}>
-              Deposit funds
+      {!isGeoBlocked ? (
+        hasFunds ? (
+          <View style={{ flexDirection: 'row', gap: 3 }}>
+            <Button
+              type="secondary"
+              size="small"
+              onPress={handleOnWithdrawPress}
+              style={{
+                borderRadius: 20,
+                borderTopRightRadius: 4,
+                borderBottomRightRadius: 4
+              }}>
+              Withdraw
             </Button>
-          )
-        ) : null}
-      </AnimatedPressable>
-
-      {isGeoBlocked && <PerpsGeoRestrictionWarning />}
-    </View>
+            <Button
+              type="secondary"
+              size="small"
+              onPress={handleOnTopUpPress}
+              style={{
+                borderRadius: 20,
+                borderTopLeftRadius: 4,
+                borderBottomLeftRadius: 4
+              }}>
+              Top up
+            </Button>
+          </View>
+        ) : (
+          <Button type="primary" size="small" onPress={handleOnDepositPress}>
+            Deposit funds
+          </Button>
+        )
+      ) : null}
+    </AnimatedPressable>
   )
 }
