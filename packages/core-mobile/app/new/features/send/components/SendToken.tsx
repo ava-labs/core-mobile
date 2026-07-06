@@ -79,18 +79,6 @@ export const SendToken = ({
     }
   }, [prevSelectedToken, selectedToken, resetAmount])
 
-  // Android: focus the amount input only after the form-sheet enter transition
-  // has ended AND a short layout/keyboard settle buffer. Focusing during the
-  // still-settling window leaves a broken InputConnection (cursor shows but
-  // keystrokes never reach JS). iOS keeps the input's own autoFocus. See CP-14672.
-  useAfterScreenEnterTransition(
-    () => tokenUnitInputWidgetRef.current?.focus(),
-    {
-      enabled: Platform.OS === 'android',
-      layoutBufferMs: ANDROID_AMOUNT_FOCUS_BUFFER_MS
-    }
-  )
-
   useEffect(() => {
     if (!isTokenTouched && selectedToken) {
       setIsTokenTouched(true)
@@ -137,6 +125,23 @@ export const SendToken = ({
       selectedToken?.symbol ?? ''
     )
   }, [network.networkToken.decimals, selectedToken])
+
+  // Android: focus the amount input only after the form-sheet enter transition
+  // has ended AND a short layout/keyboard settle buffer. Focusing during the
+  // still-settling window leaves a broken InputConnection (cursor shows but
+  // keystrokes never reach JS). iOS keeps the input's own autoFocus. See CP-14672.
+  //
+  // Gating `enabled` on `tokenBalance` also handles a late-mounting widget: the
+  // input only renders once `tokenBalance` is truthy, so if it isn't ready when
+  // the transition ends, `enabled` flips to true when it becomes available and
+  // the helper re-arms (enabled is one of its effect deps) and focuses then.
+  useAfterScreenEnterTransition(
+    () => tokenUnitInputWidgetRef.current?.focus(),
+    {
+      enabled: Platform.OS === 'android' && !!tokenBalance,
+      layoutBufferMs: ANDROID_AMOUNT_FOCUS_BUFFER_MS
+    }
+  )
 
   const addressToSendWithoutPrefix = useMemo(() => {
     if (selectedToken === undefined && toAddress?.recipientType !== 'address') {
