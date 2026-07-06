@@ -30,9 +30,6 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { TradeBalance } from '../components/TradeBalance'
 import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
 
-const BALANCE_ROW_HEIGHT = 60
-const BALANCE_ROW_VERTICAL_MARGIN = 28
-const MIN_HEADER_HEIGHT = BALANCE_ROW_HEIGHT + BALANCE_ROW_VERTICAL_MARGIN
 const GRADIENT_HEIGHT = 110
 // TODO: replace with the real perps balance once the SDK is wired.
 const MOCK_TRADE_BALANCE = 10250000.23
@@ -118,6 +115,13 @@ export function TradeScreen(): JSX.Element {
     }
   })
 
+  const [balanceHeight, setBalanceHeight] = useState(74)
+
+  const handleBalanceLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setBalanceHeight(height)
+  }, [])
+
   const renderHeader = useCallback(
     (): JSX.Element => (
       <View
@@ -133,36 +137,40 @@ export function TradeScreen(): JSX.Element {
             {description}
           </Text>
         </Animated.View>
-        <View>
+
+        <View onLayout={handleBalanceLayout}>
           <Animated.View
             pointerEvents="none"
             style={[
               animatedGradientStyle,
               {
-                height: GRADIENT_HEIGHT,
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0
               }
             ]}>
+            <View
+              style={{
+                height: Math.max(0, balanceHeight - 12),
+                backgroundColor: theme.colors.$surfacePrimary
+              }}
+            />
             <LinearGradient
               colors={[
                 theme.colors.$surfacePrimary,
                 alpha(theme.colors.$surfacePrimary, 0)
               ]}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 0, y: 1 }}
               style={{
-                flex: 1
+                height: 80,
+                marginTop: -2
               }}
             />
           </Animated.View>
-
           <View
             style={{
-              marginTop: 14,
-              marginHorizontal: 16
+              paddingTop: 14,
+              paddingHorizontal: 16
             }}>
             <TradeBalance
               balance={MOCK_TRADE_BALANCE}
@@ -179,7 +187,9 @@ export function TradeScreen(): JSX.Element {
       handleHeaderLayout,
       animatedHeaderStyle,
       animatedGradientStyle,
+      balanceHeight,
       theme.colors.$surfacePrimary,
+      handleBalanceLayout,
       router
     ]
   )
@@ -192,7 +202,7 @@ export function TradeScreen(): JSX.Element {
         tabs={tabs}
         onScrollY={onScroll}
         renderHeader={renderHeader}
-        minHeaderHeight={MIN_HEADER_HEIGHT}
+        minHeaderHeight={balanceHeight + 14}
       />
       {/* 
         This is a workaround to display the header background + separator on Android.
