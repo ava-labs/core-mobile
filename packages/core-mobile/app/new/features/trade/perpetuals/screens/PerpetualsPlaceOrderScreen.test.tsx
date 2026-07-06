@@ -172,7 +172,8 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
 
   it('opens the Terms of Use in the in-app browser when the link is pressed', async () => {
     const instance = await render()
-    const link = instance.root.findAllByProps({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const link: any = instance.root.findAllByProps({
       testID: 'perpetuals_place_order_terms_link'
     })[0]
     await act(async () => {
