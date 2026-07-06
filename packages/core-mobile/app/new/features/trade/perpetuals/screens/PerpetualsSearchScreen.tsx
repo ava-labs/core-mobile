@@ -78,7 +78,12 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
 
   const handleSortChange = useCallback(
     (event: { nativeEvent: { event: string } }) => {
-      setSelectedSort(event.nativeEvent.event as PerpetualSort)
+      const sort = SORT_OPTIONS.find(
+        option => option.id === event.nativeEvent.event
+      )
+      if (sort) {
+        setSelectedSort(sort.id)
+      }
     },
     []
   )

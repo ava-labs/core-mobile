@@ -745,6 +745,15 @@ const RenderScrollComponent = React.forwardRef<
   <KeyboardAwareScrollView
     {...props}
     ref={ref}
+    // Keyboard handling is done manually via `contentContainerStyle`'s
+    // keyboard-height paddingBottom (content-aware: only what's actually
+    // hidden behind the keyboard becomes scrollable). Left enabled, this
+    // component would ALSO add a keyboard-height contentInset while the
+    // keyboard is open, unconditionally extending the scroll range — a whole
+    // keyboard of blank space below short lists (CP-14376). Auto
+    // scroll-to-focused-input isn't needed either: every ListScreenV2 input
+    // is a search bar in the top header, never hidden by the keyboard.
+    enabled={false}
     nestedScrollEnabled={Platform.OS === 'android'}
   />
 ))
@@ -778,6 +787,16 @@ const OuterHeaderListScreen = <T,>({
   renderHeader,
   renderListFooter,
   flatListRef,
+  // Not supported in this variant — destructured so they don't leak into the
+  // FlashList spread below.
+  subtitle: _subtitle,
+  navigationTitle: _navigationTitle,
+  showNavigationHeaderTitle: _showNavigationHeaderTitle,
+  hasParent: _hasParent,
+  renderHeaderRight: _renderHeaderRight,
+  renderFooter: _renderFooter,
+  shouldShowStickyHeader: _shouldShowStickyHeader,
+  headerOverlay: _headerOverlay,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -792,9 +811,6 @@ const OuterHeaderListScreen = <T,>({
     contentContainerStyle: _contentContainerStyle,
     ...restProps
   } = props
-
-  // Reserve space for the keyboard so the last results aren't hidden behind it.
-  const keyboardPadding = keyboard.isVisible ? keyboard.height : 0
 
   useImperativeHandle(
     flatListRef,
@@ -814,7 +830,7 @@ const OuterHeaderListScreen = <T,>({
   // (withTiming, like the CollapsibleTabs ContentWrapper).
   const emptyAnimatedStyle = useAnimatedStyle(() => ({
     paddingBottom: withTiming(keyboard.isVisible ? keyboard.height : 0, {
-      duration: 250
+      duration: 100
     })
   }))
 
@@ -863,8 +879,17 @@ const OuterHeaderListScreen = <T,>({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           contentContainerStyle={{
+            ...((_contentContainerStyle as ViewStyle) ?? {}),
+            // The Android form sheet is NOT resized when the keyboard opens —
+            // the window keeps its height (KeyboardProvider) and a
+            // single-detent sheet is only nudged up by its top gap, so the
+            // keyboard covers the bottom of the list. Reserve that space so
+            // the covered rows can scroll into view; without it a list that
+            // overflows the visible area but fits the sheet can't scroll at
+            // all. This plain ScrollView has no keyboard awareness of its
+            // own, so this is single (not double) compensation.
             paddingBottom:
-              (keyboard.isVisible ? keyboardPadding : insets.bottom) + 16
+              (keyboard.isVisible ? keyboard.height : insets.bottom) + 16
           }}
           ListFooterComponent={renderListFooter ?? undefined}
         />
