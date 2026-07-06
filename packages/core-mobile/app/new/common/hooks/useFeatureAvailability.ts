@@ -51,6 +51,9 @@ export const fetchFeatureAvailability = async (
   feature: AvailabilityFeature,
   signal?: AbortSignal
 ): Promise<boolean> => {
+  // Without a proxy URL the check can't be performed — fail closed explicitly
+  // instead of letting a malformed fetch reach the error path.
+  if (!Config.PROXY_URL) return false
   // RN's AbortSignal polyfill (abort-controller via setUpXHR) has no
   // `AbortSignal.timeout` / `AbortSignal.any` statics, so compose the caller
   // signal and the timeout manually.

@@ -120,6 +120,18 @@ describe('fetchFeatureAvailability', () => {
     ).rejects.toThrow()
   })
 
+  it('fails closed without fetching when PROXY_URL is unset', async () => {
+    const Config = require('react-native-config').default
+    const original = Config.PROXY_URL
+    delete Config.PROXY_URL
+    try {
+      await expect(fetchFeatureAvailability('perps')).resolves.toBe(false)
+      expect(fetchMock).not.toHaveBeenCalled()
+    } finally {
+      Config.PROXY_URL = original
+    }
+  })
+
   it('returns false (fail closed) when the request hangs past the timeout', async () => {
     jest.useFakeTimers()
     try {
