@@ -128,29 +128,38 @@ export const SpendLimitOptions = ({
     [customSpendLimit, token, onSelect, defaultSpendLimitValue]
   )
 
+  const content = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end'
+      }}>
+      <Text
+        variant="body1"
+        numberOfLines={1}
+        sx={{ ...sharedValueStyle, marginRight: onSelect ? 16 : 0 }}>
+        {`${displayValue} ${token.symbol}`}
+      </Text>
+      {onSelect && (
+        <Icons.Navigation.ChevronRight
+          color={colors.$textSecondary}
+          style={{ position: 'absolute', right: -8 }}
+        />
+      )}
+    </View>
+  )
+
+  if (!onSelect) {
+    return content
+  }
+
   return (
     <DropdownMenu
       onPressAction={onPressAction}
       groups={menuItems}
       style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center'
-        }}>
-        <Text
-          variant="body1"
-          numberOfLines={1}
-          sx={{
-            ...sharedValueStyle
-          }}>
-          {displayValue} {token.symbol}
-        </Text>
-        <Icons.Navigation.ChevronRight
-          color={colors.$textSecondary}
-          style={{ marginRight: -8 }}
-        />
-      </View>
+      {content}
     </DropdownMenu>
   )
 }

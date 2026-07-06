@@ -13,13 +13,37 @@ import {
 } from '@avalabs/k2-alpine'
 import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
+import {
+  computeAccountBalance,
+  AccountBalanceData
+} from 'features/portfolio/utils/computeAccountBalance'
+import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
+import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useSelector } from 'react-redux'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { selectAccountById } from 'store/account'
 import { selectWalletById, selectWalletsCount } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+import {
+  selectEnabledChainIds,
+  selectEnabledNetworks,
+  selectEnabledNetworksMap
+} from 'store/network/slice'
+import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+
+const emptyAccountBalances: AdjustedNormalizedBalancesForAccount[] = []
+
+const defaultBalanceData: AccountBalanceData = {
+  balance: 0,
+  isLoadingBalance: true,
+  hasBalanceData: false,
+  dataAccurate: false,
+  error: null
+}
 
 type Props = {
   onSelect: (account: Account) => void
@@ -35,6 +59,49 @@ export const SelectAccounts = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { data: balancesData, isError: isBalancesError } = useAllBalances()
+
+  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const enabledNetworksMap = useSelector(selectEnabledNetworksMap)
+  const enabledChainIds = useFocusedSelector(selectEnabledChainIds)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
+
+  const enabledNetworksCountByAccount = useMemo(() => {
+    const result: Record<string, number> = {}
+    for (const account of Object.values(accounts)) {
+      result[account.id] = getEnabledNetworksForAccount(
+        account,
+        enabledNetworks
+      ).length
+    }
+    return result
+  }, [accounts, enabledNetworks])
+
+  const balancesByAccountId = useMemo(() => {
+    const result: Record<string, AccountBalanceData> = {}
+    for (const account of Object.values(accounts)) {
+      result[account.id] = computeAccountBalance({
+        accountBalances: balancesData[account.id] ?? emptyAccountBalances,
+        enabledNetworksCount: enabledNetworksCountByAccount[account.id] ?? 0,
+        enabledNetworksMap,
+        enabledChainIds,
+        isDeveloperMode,
+        tokenVisibility,
+        isError: isBalancesError
+      })
+    }
+    return result
+  }, [
+    accounts,
+    balancesData,
+    isBalancesError,
+    enabledNetworksCountByAccount,
+    enabledNetworksMap,
+    enabledChainIds,
+    isDeveloperMode,
+    tokenVisibility
+  ])
 
   const data = useMemo(() => {
     const allAccounts = Object.values(accounts)
@@ -57,7 +124,7 @@ export const SelectAccounts = ({
               variant="body1"
               sx={{
                 fontSize: 14,
-                fontWeight: '500',
+                fontFamily: 'Inter-Medium',
                 color: '$textPrimary',
                 marginLeft: 10
               }}>
@@ -88,13 +155,16 @@ export const SelectAccounts = ({
                 ) !== -1
 
               return (
-                <Account
+                <AccountItem
                   testID={`account__${account.name}`}
-                  key={index}
+                  key={account.id}
                   account={account}
                   isSelected={isSelected}
                   onSelect={onSelect}
                   lastItem={lastItem}
+                  balanceData={
+                    balancesByAccountId[account.id] ?? defaultBalanceData
+                  }
                 />
               )
             })}
@@ -102,35 +172,41 @@ export const SelectAccounts = ({
         )
       }
     ]
-  }, [accounts, colors.$textPrimary, onSelect, selectedAccounts])
+  }, [
+    accounts,
+    colors.$textPrimary,
+    onSelect,
+    selectedAccounts,
+    balancesByAccountId
+  ])
   return <GroupList data={data} />
 }
 
-const Account = ({
+const AccountItem = ({
   account,
   onSelect,
   lastItem,
   isSelected,
-  testID
+  testID,
+  balanceData
 }: {
   account: Account
   onSelect: (account: Account) => void
   lastItem: boolean
   isSelected: boolean
   testID?: string
+  balanceData: AccountBalanceData
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { balance: accountBalance, isLoadingBalance } =
-    useBalanceInCurrencyForAccount(account.id)
   const { formatCurrency } = useFormatCurrency()
   const accountData = useSelector(selectAccountById(account.id))
   const wallet = useSelector(selectWalletById(accountData?.walletId ?? ''))
   const walletsCount = useSelector(selectWalletsCount)
 
   const renderBalance = useCallback(() => {
-    if (isLoadingBalance) {
+    if (balanceData.isLoadingBalance) {
       return <ActivityIndicator style={{ marginRight: 14 }} size="small" />
     }
 
@@ -144,13 +220,12 @@ const Account = ({
           marginRight: 14,
           marginLeft: 20
         }}>
-        {formatCurrency({ amount: accountBalance })}
+        {formatCurrency({ amount: balanceData.balance })}
       </Text>
     )
-  }, [isLoadingBalance, accountBalance, formatCurrency])
+  }, [balanceData.isLoadingBalance, balanceData.balance, formatCurrency])
 
   const renderWalletBadge = useCallback(() => {
-    // Only show wallet badge if there are multiple wallets
     if (!wallet || walletsCount <= 1) {
       return null
     }

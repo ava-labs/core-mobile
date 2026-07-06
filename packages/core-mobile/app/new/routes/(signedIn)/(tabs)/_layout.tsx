@@ -18,7 +18,7 @@ import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
-  selectIsInAppDefiBorrowBlocked
+  selectIsPerpetualsBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -29,6 +29,7 @@ const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
 const earnPngIcon = require('../../../assets/icons/tabs/whatshot.png')
+const tradeIcon = require('../../../assets/icons/tabs/trade.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -63,17 +64,16 @@ export default function TabLayout(): JSX.Element {
     }
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
-
-  // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
-  const stakeTabTitle =
-    isInAppDefiBorrowBlocked && !isInAppDefiBlocked ? 'Earn' : 'Stake'
+  const isPerpetualsBlocked = useSelector(selectIsPerpetualsBlocked)
 
   return (
     <BottomTabs
       labeled
       translucent
-      disablePageAnimations={true}
+      // (iOS only) By default disablePageAnimations is false
+      // Keeping this false prevents the tab blur intensity from breaking when switching tabs
+      // Do not set this to true
+      disablePageAnimations={false}
       tabBarActiveTintColor={theme.colors.$textPrimary}
       scrollEdgeAppearance={'default'}
       tabBarInactiveTintColor={tabBarInactiveTintColor}
@@ -98,17 +98,27 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      {hasXpAddresses && (
-        <BottomTabs.Screen
-          name="stake"
-          options={{
-            tabBarButtonTestID: 'stake_tab',
-            title: stakeTabTitle,
-            tabBarIcon: () => stakeIcon,
-            freezeOnBlur
-          }}
-        />
-      )}
+      {/*
+       * Always register the stake screen; hide its button via tabBarItemHidden
+       * when the active account has no X/P addresses. Conditionally rendering
+       * (adding/removing) a native BottomTabs.Screen mutates the native tab
+       * controller's screen set at runtime, which crashes when hasXpAddresses
+       * flips on an account switch (e.g. primary Keystone account -> non-primary
+       * with empty X/P) and the user then opens the Browser tab. Mirror the
+       * earn/trade/activity tabs, which stay registered and use tabBarItemHidden
+       * (the custom TabBar below hides any tab whose tabBarItemHidden is set).
+       * (CP-14613)
+       */}
+      <BottomTabs.Screen
+        name="stake"
+        options={{
+          tabBarButtonTestID: 'stake_tab',
+          title: 'Stake',
+          tabBarIcon: () => stakeIcon,
+          freezeOnBlur,
+          tabBarItemHidden: !hasXpAddresses
+        }}
+      />
       <BottomTabs.Screen
         name="earn"
         options={{
@@ -116,8 +126,8 @@ export default function TabLayout(): JSX.Element {
           title: 'Earn',
           tabBarIcon: () => earnPngIcon,
           freezeOnBlur,
-          // Hide when borrow feature is disabled
-          tabBarItemHidden: isInAppDefiBorrowBlocked
+          // Hide when in-app DeFi is disabled
+          tabBarItemHidden: isInAppDefiBlocked
         }}
       />
       <BottomTabs.Screen
@@ -130,14 +140,24 @@ export default function TabLayout(): JSX.Element {
         }}
       />
       <BottomTabs.Screen
+        name="trade"
+        options={{
+          tabBarButtonTestID: 'trade_tab',
+          title: 'Trade',
+          tabBarIcon: () => tradeIcon,
+          freezeOnBlur,
+          tabBarItemHidden: isPerpetualsBlocked
+        }}
+      />
+      <BottomTabs.Screen
         name="activity"
         options={{
           tabBarButtonTestID: 'activity_tab',
           title: 'Activity',
           tabBarIcon: () => activityIcon,
           freezeOnBlur,
-          // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
-          tabBarItemHidden: !isInAppDefiBorrowBlocked
+          // Hide when in-app DeFi is enabled (Activity moves to Portfolio sub-tab)
+          tabBarItemHidden: !isInAppDefiBlocked
         }}
       />
     </BottomTabs>
@@ -151,7 +171,6 @@ const TabBar = ({
 }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const hasXpAddresses = useHasXpAddresses()
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -180,15 +199,11 @@ const TabBar = ({
       }}>
       {state.routes.map((route, index) => {
         const options = descriptors[route.key]?.options
-        // Check tabBarItemHidden option
+        // A tab opts out of the bar via its tabBarItemHidden option. Stake sets
+        // it when the account has no X/P addresses; earn/trade/activity set it
+        // from their feature flags. This single check is the only hide path, so
+        // there's no second source of truth to drift. (CP-14613)
         if (options?.tabBarItemHidden) {
-          return null
-        }
-        // Hide stake/earn tabs when user doesn't have XP addresses
-        if (
-          (route.name === 'stake' || route.name === 'earn') &&
-          !hasXpAddresses
-        ) {
           return null
         }
         const isActive = state.index === index
@@ -252,6 +267,8 @@ function getIcon(name: string): FC<SvgProps> {
       return Icons.Navigation.Browser
     case 'activity':
       return Icons.Navigation.History
+    case 'trade':
+      return Icons.Navigation.Trade
     default:
       return Icons.Navigation.Layers
   }

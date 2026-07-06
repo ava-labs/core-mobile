@@ -6,17 +6,22 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { addAccount, selectAccounts } from 'store/account'
+import {
+  addAccount,
+  selectAccounts,
+  setAccount,
+  setActiveAccountId,
+  setLedgerAddresses
+} from 'store/account'
 import { removeAccount, selectImportedAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
   selectRemovableWallets,
-  selectWalletsCount,
   setWalletName
 } from 'store/wallet/slice'
 import { removeWallet } from 'store/wallet/thunks'
@@ -24,6 +29,8 @@ import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
 import { useLedgerWalletMap } from 'features/ledger/store'
 import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
+import { createLedgerAccountFromXpubs } from 'features/ledger/utils/createLedgerAccountFromXpubs'
+import LedgerService from 'services/ledger/LedgerService'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
@@ -35,11 +42,17 @@ export const useManageWallet = (): {
   const { navigate } = useRouter()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
-  const walletsCount = useSelector(selectWalletsCount)
   const importedAccounts = useSelector(selectImportedAccounts)
   const removableWallets = useSelector(selectRemovableWallets)
   const accounts = useSelector(selectAccounts)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
+
+  const walletsWithAccountsCount = useMemo(() => {
+    const walletIds = new Set(
+      Object.values(accounts).map(account => account.walletId)
+    )
+    return walletIds.size
+  }, [accounts])
 
   const handleRemoveAllImportedAccounts = useCallback((): void => {
     importedAccounts.forEach(account => {
@@ -80,7 +93,7 @@ export const useManageWallet = (): {
 
   const handleRemoveWallet = useCallback(
     (wallet: Wallet): void => {
-      if (walletsCount <= 1) {
+      if (walletsWithAccountsCount <= 1) {
         showAlert({
           title: 'Cannot remove wallet',
           description:
@@ -112,13 +125,14 @@ export const useManageWallet = (): {
                 wallet.type === WalletType.LEDGER_LIVE
               ) {
                 removeLedgerWallet(wallet.id)
+                LedgerService.disconnect().catch(Logger.error)
               }
             }
           }
         ]
       })
     },
-    [dispatch, removeLedgerWallet, walletsCount]
+    [dispatch, removeLedgerWallet, walletsWithAccountsCount]
   )
 
   const handleAddAccount = useCallback(
@@ -130,6 +144,53 @@ export const useManageWallet = (): {
           wallet.type === WalletType.LEDGER ||
           wallet.type === WalletType.LEDGER_LIVE
         ) {
+          // For BIP44 Ledger wallets, try offline account creation from stored xpubs
+          if (wallet.type === WalletType.LEDGER) {
+            setIsAddingAccount(true)
+            const walletAccounts = Object.values(accounts).filter(
+              a => a.walletId === wallet.id
+            )
+            const nextIndex = walletAccounts.length
+
+            const result = await createLedgerAccountFromXpubs(
+              wallet.id,
+              nextIndex
+            )
+
+            if (result) {
+              dispatch(setAccount(result.account))
+              dispatch(setActiveAccountId(result.account.id))
+              dispatch(
+                setLedgerAddresses({
+                  [result.account.id]: {
+                    mainnet: {
+                      addressBTC: result.mainnetAddresses.btc,
+                      addressAVM: result.mainnetAddresses.avm,
+                      addressPVM: result.mainnetAddresses.pvm,
+                      addressCoreEth: result.mainnetAddresses.coreEth
+                    },
+                    testnet: {
+                      addressBTC: result.testnetAddresses.btc,
+                      addressAVM: result.testnetAddresses.avm,
+                      addressPVM: result.testnetAddresses.pvm,
+                      addressCoreEth: result.testnetAddresses.coreEth
+                    },
+                    walletId: wallet.id,
+                    index: nextIndex,
+                    id: result.account.id
+                  }
+                })
+              )
+
+              AnalyticsService.capture('WalletImportLedgerAccountAdded')
+              showSnackbar('Account added successfully')
+              setIsAddingAccount(false)
+              return
+            }
+            // No stored xpubs for this index — fall through to device flow
+            setIsAddingAccount(false)
+          }
+
           setIsAddingAccount(true)
           navigate({
             pathname: '/addAccountAppConnection',
@@ -167,10 +228,10 @@ export const useManageWallet = (): {
 
   const canRemoveWallet = useCallback(
     (wallet: Wallet): boolean => {
-      // 1. Seedless wallets cannot be removed
       if (wallet.type === WalletType.SEEDLESS) return false
 
-      // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
+      if (walletsWithAccountsCount <= 1) return false
+
       const isLastRemovableMnemonic =
         removableWallets.length === 1 &&
         (wallet.type === WalletType.MNEMONIC ||
@@ -178,7 +239,7 @@ export const useManageWallet = (): {
 
       return !isLastRemovableMnemonic
     },
-    [removableWallets]
+    [removableWallets, walletsWithAccountsCount]
   )
 
   const getDropdownItems = useCallback(

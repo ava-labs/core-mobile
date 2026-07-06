@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
@@ -237,6 +238,10 @@ class PortfolioPage {
     return selectors.getById(portfolio.portfolioBalanceHeader)
   }
 
+  get noAssetsFound() {
+    return selectors.getByText(portfolio.noAssetsFound)
+  }
+
   get loadingPortfolioBalanceHeader() {
     return selectors.getById(portfolio.loadingPortfolioBalanceHeader)
   }
@@ -299,6 +304,7 @@ class PortfolioPage {
 
   async tapAssetsTab() {
     await actions.tap(this.assetsTab)
+    await actions.delay(1000)
   }
 
   async tapCollectiblesTab() {
@@ -306,11 +312,13 @@ class PortfolioPage {
   }
 
   async tapDefiTab() {
-    await actions.click(this.defiTab)
+    await actions.longPress(this.defiTab)
+    await actions.delay(1000)
   }
 
   async tapActivityTab() {
     await actions.tap(this.activityTab)
+    await actions.delay(1000)
   }
 
   async tapEthNetwork() {
@@ -380,11 +388,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isNotVisible(selectors.getBySomeText(name))
-    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async dismissNetworkDropdown(network = commonEls.cChain) {
@@ -403,12 +407,7 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
-    await this.tapFilterDropdown()
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isVisible(selectors.getBySomeText(name))
-    }
+    await commonElsPage.selectDropdownItem(commonEls.allNetworks)
   }
 
   async verifyAccountName(name: string) {
@@ -539,12 +538,58 @@ class PortfolioPage {
     await actions.tap(this.bridgeButton)
   }
 
-  async verifyActivityItem(
+  async verifySendOnTokenDetail(
+    network: string,
+    token: string,
+    title: string,
     from = commonEls.accountOneAddress,
     to = commonEls.accountTwoAddress
   ) {
+    await this.tapAssetsTab()
+    await commonElsPage.filter(network)
+    await this.tapToken(token)
     await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
-    console.log(`Verified the transaction activity: tx__from_${from}_to_${to}`)
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnTokenDetail(title: string) {
+    await this.tapActivityTab()
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyXPSendOnActivityTab(title: string, network?: string) {
+    await this.tapActivityTab()
+    await actions.delay(2000)
+    if (network) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySendOnActivityTab(
+    network = commonEls.cChain_2,
+    title: string,
+    from = commonEls.accountOneAddress,
+    to = commonEls.accountTwoAddress
+  ) {
+    await this.tapActivityTab()
+    if (network !== commonEls.cChain_2) {
+      await commonElsPage.filter(network, commonElsPage.networkFilterDropdown)
+    }
+    await actions.waitFor(selectors.getById(`tx__from_${from}_to_${to}`))
+    await actions.waitFor(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifyActivityNotVisible(title: string) {
+    await actions.isNotVisible(selectors.getById(`tx__title__${title}`))
+  }
+
+  async verifySwapActivityHistory(title: string) {
+    if (driver.isAndroid) {
+      await actions.waitFor(selectors.getBySomeId(`tx__title__${title}`))
+    } else {
+      await actions.waitFor(selectors.getBySomeTextV2(title))
+    }
   }
 
   async selectView(viewType = 'List view') {
@@ -598,7 +643,7 @@ class PortfolioPage {
   async verifyDefiSort(ascending = true, isGrid = true) {
     const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
     const first = await actions.getText(selectors.getById(`${prefix}__0`))
-    const second = await actions.getText(selectors.getById(`${prefix}__2`))
+    const second = await actions.getText(selectors.getById(`${prefix}__1`))
     console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
     const compare = first.localeCompare(second)
     const isSorted = ascending ? compare <= 0 : compare >= 0

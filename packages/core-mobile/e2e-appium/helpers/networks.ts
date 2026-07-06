@@ -101,25 +101,19 @@ export const networks: Network[] = [
     }
   },
   {
-    name: common.base,
-    haveToggle: true,
-    data: {
-      rpcUrl: 'https://base.drpc.org',
-      explorerUrl: 'https://basescan.org',
-      chainId: '8453',
-      tokenSymbol: 'ETH',
-      tokenName: 'Ethereum'
-    }
+    name: common.arbitrum,
+    haveToggle: true
   },
   {
-    name: common.arbitrum,
-    haveToggle: true,
-    data: {
-      rpcUrl: 'https://arb1.arbitrum.io/rpc',
-      explorerUrl: 'https://arbiscan.io',
-      chainId: '42161',
-      tokenSymbol: 'ETH',
-      tokenName: 'Ethereum'
-    }
+    name: common.base,
+    haveToggle: true
+  },
+  {
+    name: common.bnbChain,
+    haveToggle: true
+  },
+  {
+    name: common.polygon,
+    haveToggle: true
   }
 ]

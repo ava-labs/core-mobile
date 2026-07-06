@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 
 export const useSendTransactionCallbacks = (): {
@@ -27,9 +28,12 @@ export const useSendTransactionCallbacks = (): {
       onDismiss: () => void
     }): void => {
       selectedToken &&
-        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
-          chainId: selectedToken.networkChainId,
-          txHash
+        AnalyticsService.capture('SendTransactionSucceeded', {
+          encrypted: {
+            chainId: selectedToken.networkChainId,
+            txHash
+          },
+          caip2ChainId: getCaip2ChainId(selectedToken.networkChainId)
         })
       audioFeedback(Audios.Send)
       setSelectedToken(undefined)

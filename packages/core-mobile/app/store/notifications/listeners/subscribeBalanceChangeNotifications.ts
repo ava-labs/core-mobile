@@ -51,7 +51,8 @@ export async function subscribeBalanceChangeNotifications(
   const response = await subscribeForBalanceChange({
     addresses,
     chainIds,
-    deviceArn
+    deviceArn,
+    signal: listenerApi.signal
   })
   if (response.message !== 'ok') {
     Logger.error(

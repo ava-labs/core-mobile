@@ -102,6 +102,8 @@ export const BrowserInput = (): ReactNode => {
   const renderPlaceholder = useCallback((): ReactNode => {
     return (
       <Pressable
+        testID="search_bar"
+        accessibilityLabel="search_bar"
         style={{
           flex: 1,
           height: '100%',
@@ -114,7 +116,7 @@ export const BrowserInput = (): ReactNode => {
         {activeTab?.activeHistory?.url.length &&
         isValidHttpUrl(activeTab?.activeHistory?.url) ? (
           <Text
-            testID="browser_url"
+            testID="browser_url_text"
             numberOfLines={1}
             style={{
               fontFamily: 'Inter-Medium',
@@ -331,6 +333,7 @@ export const BrowserInput = (): ReactNode => {
                 borderRadius: 100
               }}>
               <Pressable
+                testID="browser_tabs_btn"
                 onPress={navigateToTabs}
                 style={{
                   height: '100%',

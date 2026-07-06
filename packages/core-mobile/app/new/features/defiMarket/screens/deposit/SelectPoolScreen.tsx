@@ -86,6 +86,7 @@ export const SelectPoolScreen = (): JSX.Element => {
       ]
       return (
         <TouchableOpacity
+          testID={`protocol__${item.marketName}`}
           sx={{ marginHorizontal: 16, marginTop: 10 }}
           onPress={() => handleSelectPool(item)}>
           <View
@@ -121,12 +122,18 @@ export const SelectPoolScreen = (): JSX.Element => {
                   }}>
                   <Text
                     variant="body2"
-                    sx={{ color: colors.$textPrimary, fontWeight: 500 }}>
+                    sx={{
+                      color: colors.$textPrimary,
+                      fontFamily: 'Inter-Medium'
+                    }}>
                     {entry.value}
                   </Text>
                   <Text
                     variant="subtitle2"
-                    sx={{ color: colors.$textSecondary, fontWeight: 500 }}>
+                    sx={{
+                      color: colors.$textSecondary,
+                      fontFamily: 'Inter-Medium'
+                    }}>
                     {entry.label}
                   </Text>
                 </View>

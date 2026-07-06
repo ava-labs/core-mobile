@@ -1,0 +1,55 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/CustomToolbar.kt
+@@ -168,10 +168,19 @@
+         // We want to handle display cutout always, no matter the HeaderConfig prop values.
+         // If there are no cutout displays, we want to apply the additional padding to
+         // respect the status bar.
++        // Patched: fall back to the system status_bar_height resource when WindowInsets
++        // reports 0 (common on Android emulators without a display cutout).
++        var topInset = max(cutoutInsets.top, if (shouldApplyTopInset) systemBarInsets.top else 0)
++        if (topInset == 0 && shouldApplyTopInset) {
++            val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
++            if (resId > 0) {
++                topInset = resources.getDimensionPixelSize(resId)
++            }
++        }
+         val verticalInsets =
+             InsetsCompat.of(
+                 0,
+-                max(cutoutInsets.top, if (shouldApplyTopInset) systemBarInsets.top else 0),
++                topInset,
+                 0,
+                 max(cutoutInsets.bottom, 0),
+             )
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+@@ -440,7 +440,15 @@
+     internal fun createSheetExitAnimator(sheetAnimationContext: SheetAnimationContext): Animator =
+         screen.sheetAnimationCoordinator.createSheetExitAnimator(sheetAnimationContext)
+ 
+-    internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) =
+-        screen.sheetAnimationCoordinator.handleKeyboardInsetsProgress(insets)
++    internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {
++        // Patched(CP-14221): do NOT translate the form sheet with the keyboard.
++        // Keyboard avoidance is handled at the content level by
++        // react-native-keyboard-controller (KeyboardStickyView /
++        // KeyboardAwareScrollView). Letting the sheet move too double-handles it
++        // (the sheet AND the sticky footer both shift), which makes the modal
++        // expand to fill the top and misaligns the footer above the keyboard.
++        // This restores the pre-4.25 patched behavior whose original target
++        // functions were removed in the upstream keyboard-handling rewrite.
++    }
+ 
+     internal fun notifyKeyboardAnimationStart() = screen.sheetAnimationCoordinator.notifyKeyboardAnimationStart()
+@@ -452,7 +452,8 @@
+             bottomSheet: View,
+             newState: Int,
+         ) {
+-            if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
++            if (newState == BottomSheetBehavior.STATE_COLLAPSED ||
++                newState == BottomSheetBehavior.STATE_HIDDEN) {
+                 val isImeVisible =
+                     WindowInsetsCompat
+                         .toWindowInsetsCompat(bottomSheet.rootWindowInsets)

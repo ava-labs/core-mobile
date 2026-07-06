@@ -169,6 +169,26 @@ export const NETWORK_SOLANA_DEVNET = {
   caip2Id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
 } as Network
 
+// Default secondary EVM chain IDs that are auto-enabled on first unlock and
+// included in account balance discovery. Originally scoped to ETH L2s
+// (Arbitrum / Optimism / Base) — hence the name — but now also includes
+// non-L2 EVM L1s (BNB, Polygon) that share the same "show in primary section,
+// enabled by default, toggleable" UX. The constant name is preserved for
+// backward compatibility; see CP-14282 for the categorization fix that
+// expanded the set.
+// Kept here (rather than in the Redux slice) to avoid pulling store
+// implementation details into service/utility modules.
+export const defaultEnabledL2ChainIds = [
+  42161, // Arbitrum One
+  // 421614, // Arbitrum Sepolia
+  10, // Optimism
+  // 11155420, // Optimism Sepolia
+  8453, // Base Mainnet
+  // 84532 // Base Sepolia
+  56, // BNB Smart Chain
+  137 // Polygon
+]
+
 // Primary networks are the ones that are always enabled in the app
 export const MAIN_PRIMARY_NETWORKS = [
   AVALANCHE_MAINNET_NETWORK,

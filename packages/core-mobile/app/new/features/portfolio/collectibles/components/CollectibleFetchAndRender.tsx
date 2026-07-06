@@ -1,10 +1,9 @@
 import { TokenType } from '@avalabs/vm-module-types'
+import { findNftToken } from 'features/activity/utils'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import GlacierService from 'services/glacier/GlacierService'
-import NftProcessor from 'services/nft/NftProcessor'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
-import { getNftLocalId } from 'services/nft/utils'
+import { fetchNftData, getNftLocalId, isNftTokenType } from 'services/nft/utils'
 import { CardContainer } from './CardContainer'
 import { CollectibleRenderer } from './CollectibleRenderer'
 
@@ -18,14 +17,19 @@ export const CollectibleFetchAndRender = memo(
     size: number
     iconSize: number
   }): JSX.Element => {
-    const token = tx.tokens[0]
+    // When the tx has no ERC721/ERC1155 leg (rare backend inconsistency for
+    // NFT_* txTypes), `token` is undefined; the metadata fetch below short-
+    // circuits on missing contractAddress/tokenId so we fall back to an
+    // unprocessed placeholder card instead of fetching the wrong asset.
+    const token = findNftToken(tx)
     const [isLoading, setIsLoading] = useState(true)
 
-    const localId = getNftLocalId({
-      address: tx.to.toString(),
-      tokenId: token?.collectableTokenId?.toString() || ''
-    })
+    const contractAddress = token && 'address' in token ? token.address : ''
     const tokenId = token?.collectableTokenId?.toString() || ''
+    const localId = getNftLocalId({
+      address: contractAddress,
+      tokenId
+    })
 
     const initialCollectible = useMemo(() => {
       const chainId = Number(tx.chainId)
@@ -33,7 +37,7 @@ export const CollectibleFetchAndRender = memo(
       return {
         localId,
         type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
-        address: tx.to.toString(),
+        address: contractAddress,
         tokenId,
         status: NftLocalStatus.Unprocessed,
         balance: BigInt(0),
@@ -48,71 +52,58 @@ export const CollectibleFetchAndRender = memo(
         collectionName: '',
         chainId
       }
-    }, [localId, token?.type, tx.to, tx.chainId, tokenId])
+    }, [contractAddress, localId, token?.type, tx.chainId, tokenId])
 
     const [collectible, setCollectible] = useState<NftItem>(initialCollectible)
 
     const getCollectible = useCallback(async () => {
-      if (!isLoading) {
-        return
-      }
-      if (token?.to && token.collectableTokenId) {
-        try {
-          const result = await GlacierService.getTokenDetails({
-            address: tx.to.toString(),
-            chainId: tx.chainId,
-            tokenId
-          })
-          if (result) {
-            const processedMetadata = await NftProcessor.fetchMetadata(
-              result.tokenUri
-            )
-            const imageData = await NftProcessor.fetchImageAndAspect(
-              processedMetadata.image ||
-                processedMetadata.animation_url ||
-                processedMetadata.external_url
-            )
-            const chainId = Number(tx.chainId)
+      if (!isLoading) return
+      if (!contractAddress || !tokenId) return
 
-            setCollectible({
-              ...result,
-              imageData,
-              processedMetadata,
-              localId,
-              tokenId,
-              type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
-              name: token.name,
-              address: tx.to.toString(),
-              status: NftLocalStatus.Processed,
-              balance: BigInt(0),
-              balanceDisplayValue: '',
-              description: '',
-              logoUri: '',
-              logoSmall: '',
-              collectionName: '',
-              networkChainId: chainId,
-              chainId,
-              symbol: ''
-            })
-          }
-        } catch (error) {
-          setCollectible({
-            ...initialCollectible,
-            status: NftLocalStatus.Unprocessable
-          })
-        }
+      const tokenType = token?.type
+      if (!isNftTokenType(tokenType)) return
+
+      try {
+        const data = await fetchNftData(contractAddress, tokenId, tx.chainId)
+        if (!data) return
+
+        const chainId = Number(tx.chainId)
+        setCollectible({
+          ...data.result,
+          imageData: data.imageData,
+          processedMetadata: data.processedMetadata,
+          localId,
+          tokenId,
+          type: tokenType,
+          name: token?.name ?? '',
+          address: contractAddress,
+          status: NftLocalStatus.Processed,
+          balance: BigInt(0),
+          balanceDisplayValue: '',
+          description: '',
+          logoUri: '',
+          logoSmall: '',
+          collectionName: '',
+          networkChainId: chainId,
+          chainId,
+          symbol: ''
+        })
+      } catch (error) {
+        setCollectible({
+          ...initialCollectible,
+          status: NftLocalStatus.Unprocessable
+        })
+        setIsLoading(false)
       }
     }, [
+      contractAddress,
       initialCollectible,
       isLoading,
       localId,
-      token?.collectableTokenId,
       token?.name,
-      token?.to,
       token?.type,
       tokenId,
-      tx.chainId,
-      tx.to
+      tx.chainId
     ])
 
     useEffect(() => {

@@ -2,10 +2,88 @@ import assert from 'assert'
 import { ChainablePromiseElement } from 'webdriverio'
 import { selectors } from './selectors'
 
+/**
+ * First fulfillment wins; rejects only if both reject (Promise.any semantics for two promises).
+ * Avoids Promise.race + side .catch: the loser can still reject later and confuse loggers.
+ */
+function firstFulfillment<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let done = false
+    let rejectCount = 0
+    let firstError: unknown
+
+    const onFulfill = (v: T) => {
+      if (done) return
+      done = true
+      resolve(v)
+    }
+    const onReject = (err: unknown) => {
+      if (done) return
+      if (rejectCount === 0) {
+        firstError = err
+      }
+      rejectCount += 1
+      if (rejectCount === 2) {
+        done = true
+        reject(firstError)
+      }
+    }
+
+    a.then(onFulfill).catch(onReject)
+    b.then(onFulfill).catch(onReject)
+  })
+}
+
 async function type(element: ChainablePromiseElement, text: string | number) {
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(`Cannot type undefined or null value. Received: ${text}`)
+  }
+
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to type empty string')
+  }
+
   await waitFor(element)
-  await element.clearValue()
-  await element.addValue(text)
+
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch {
+    console.log(
+      'Warning: Could not click element before typing, continuing anyway'
+    )
+  }
+
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch {
+    // If clearValue fails, try selecting all and deleting
+    if (driver.isAndroid) {
+      try {
+        // 29 = KEYCODE_A, 4096 = META_CTRL_ON (Ctrl+A = select all)
+        await driver.pressKeyCode(29, 4096)
+        await driver.pause(100)
+        await driver.pressKeyCode(67) // Delete
+        await driver.pause(200)
+      } catch {
+        // Continue anyway
+      }
+    }
+  }
+
+  // Use setValue for both platforms since we've already cleared the value
+  // setValue is more reliable for TextInputs with children components
+  await element.setValue(textToType)
+
+  // Small pause to ensure text is processed
+  await driver.pause(300)
 }
 
 async function tapNumberPad(keyCode: string) {
@@ -14,8 +92,7 @@ async function tapNumberPad(keyCode: string) {
       const iosPath = `-ios predicate string:label == "${char}" AND type == "XCUIElementTypeKey"`
       await selectors.getByXpath(iosPath).click()
     } else {
-      const num = 7 + parseInt(char, 10)
-      await driver.pressKeyCode(num)
+      await driver.execute('mobile: type', { text: char })
     }
   }
 }
@@ -36,9 +113,13 @@ async function verifyElementText(
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
   try {
-    await ele.waitForExist({ timeout })
-  } catch (e) {
+    await firstFulfillment(
+      ele.waitForExist({ timeout }),
+      ele.waitForDisplayed({ timeout })
+    )
+  } catch {
     await ele.waitForDisplayed({ timeout })
+    return
   }
 }
 
@@ -66,17 +147,40 @@ async function waitForNotVisible(
   ele: ChainablePromiseElement,
   timeout = 20000
 ) {
-  try {
-    await ele.waitForDisplayed({ timeout, reverse: true })
-  } catch (e) {
-    await ele.waitForExist({ timeout, reverse: true })
-  }
+  await firstFulfillment(
+    ele.waitForDisplayed({ timeout, reverse: true }),
+    ele.waitForExist({ timeout, reverse: true })
+  )
   const eleSelector = await ele.selector
   console.log(`[${eleSelector}] is not visible as expected`)
 }
 
 async function getVisible(ele: ChainablePromiseElement) {
   return (await ele.isDisplayed()) || (await ele.isExisting())
+}
+
+/**
+ * Check if element is visible within timeout.
+ * Waits up to `timeout` ms using WebdriverIO's display polling; returns false on timeout or error.
+ */
+async function isElementVisible(
+  element: ChainablePromiseElement,
+  timeout = 2000
+): Promise<boolean> {
+  try {
+    await element.waitForDisplayed({ timeout })
+    return await element.isDisplayed()
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Check if biometric toggle is ON (visible “on” testID within timeout).
+ */
+async function isBiometricToggleOn(timeout = 1500): Promise<boolean> {
+  const toggleOn = selectors.getById('toggle_biometrics_on')
+  return isElementVisible(toggleOn, timeout)
 }
 
 async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
@@ -115,7 +219,7 @@ async function tap(
     if (expectedEle) {
       try {
         await waitFor(expectedEle)
-      } catch (e) {
+      } catch {
         if (await getVisible(ele)) {
           await ele.click()
           console.log(`Tapped again "${selector}"`)
@@ -141,7 +245,7 @@ async function longPress(
     if (expectedEle) {
       try {
         await waitFor(expectedEle)
-      } catch (e) {
+      } catch {
         await ele.longPress()
         console.log(`longPress again "${selector}"`)
       }
@@ -161,7 +265,7 @@ async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
     try {
       await click(selectors.getById(id))
-    } catch (e) {
+    } catch {
       await click(selectors.getById('Done'))
     }
   } else {
@@ -174,7 +278,7 @@ async function tapEnterOnKeyboard(id = 'Return') {
   if (driver.isIOS) {
     try {
       await click(selectors.getById(id))
-    } catch (e) {
+    } catch {
       await click(selectors.getById('Done'))
     }
   } else {
@@ -199,9 +303,12 @@ async function swipe(
       percent: percent
     })
   } else {
-    const elementId = await ele.elementId
+    const { width, height } = await driver.getWindowSize()
     await driver.execute('mobile: swipeGesture', {
-      elementId: elementId,
+      left: 0,
+      top: Math.floor(height * 0.2),
+      width,
+      height: Math.floor(height * 0.6),
       direction: direction,
       percent: percent
     })
@@ -248,10 +355,33 @@ async function clearText(ele: ChainablePromiseElement) {
 }
 
 async function scrollTo(
-  ele: ChainablePromiseElement
-  // direction: 'down' | 'up' | 'left' | 'right' = 'down'
+  ele: ChainablePromiseElement,
+  direction = 'down',
+  amount = 0.1
 ) {
-  await ele.scrollIntoView()
+  const { width, height } = await driver.getWindowSize()
+  for (let i = 0; i < 10; i++) {
+    if (await ele.isDisplayed().catch(() => false)) return
+    if (driver.isIOS) {
+      // iOS `mobile: swipe` direction = finger direction (opposite of scroll direction)
+      // 'down' scroll intent → finger moves 'up', and vice versa
+      const iosDirection = direction === 'down' ? 'up' : 'down'
+      await driver.execute('mobile: swipe', {
+        direction: iosDirection,
+        percent: amount
+      })
+    } else {
+      await driver.execute('mobile: scrollGesture', {
+        left: 0,
+        top: Math.floor(height * 0.2),
+        width,
+        height: Math.floor(height * 0.4),
+        direction,
+        percent: 0.3
+      })
+    }
+  }
+  await waitFor(ele)
 }
 
 async function log() {
@@ -276,27 +406,21 @@ async function pasteText(
   text: string,
   keyboardId = 'Return'
 ) {
-  const encodedText = Buffer.from(text, 'utf-8').toString('base64')
-  if (driver.isIOS) {
-    await driver.setClipboard(encodedText)
-  } else {
-    await driver.setClipboard(encodedText, 'plaintext')
-  }
-
   await waitFor(inputElement)
-  await inputElement.longPress({
-    x: 0,
-    y: 0,
-    duration: 600
-  })
 
   if (driver.isIOS) {
+    const encodedText = Buffer.from(text, 'utf-8').toString('base64')
+    await driver.setClipboard(encodedText)
+    await inputElement.longPress({ x: 0, y: 0, duration: 600 })
     await click(selectors.getByText('Paste'))
   } else {
-    await tapXY(160, 650)
+    await type(inputElement, text)
   }
-
-  await tapEnterOnKeyboard(keyboardId)
+  try {
+    await tapEnterOnKeyboard(keyboardId)
+  } catch {
+    console.log('Warning: Could not tap Enter on keyboard, continuing anyway')
+  }
 }
 
 async function tapXY(x: number, y: number) {
@@ -319,13 +443,53 @@ async function typeSlowly(
   element: ChainablePromiseElement,
   text: string | number
 ) {
-  await waitFor(element)
-  await element.clearValue()
-  const textString = text.toString()
-  for (const char of textString) {
-    await delay(1)
-    await element.addValue(char)
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(
+      `Cannot typeSlowly undefined or null value. Received: ${text}`
+    )
   }
+
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to typeSlowly empty string')
+  }
+
+  await waitFor(element)
+
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch {
+    console.log(
+      'Warning: Could not click element before typeSlowly, continuing anyway'
+    )
+  }
+
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch {
+    // Continue anyway
+  }
+
+  if (driver.isAndroid) {
+    await driver.execute('mobile: type', { text: textToType })
+    await driver.pause(200)
+    return
+  }
+
+  // Character-by-character input so PIN fields / masked inputs get per-keystroke events (setValue alone can skip that).
+  const perCharMs = 55
+  for (const char of textToType) {
+    await element.addValue(char)
+    await driver.pause(perCharMs)
+  }
+  await driver.pause(200)
 }
 
 async function assertPerformance(start: number, expectedTime = 20000) {
@@ -373,5 +537,7 @@ export const actions = {
   verifyText,
   tapXY,
   waitForNotVisible,
-  assertPerformance
+  assertPerformance,
+  isElementVisible,
+  isBiometricToggleOn
 }

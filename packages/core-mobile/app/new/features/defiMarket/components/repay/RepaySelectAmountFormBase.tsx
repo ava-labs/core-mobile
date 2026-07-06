@@ -29,6 +29,11 @@ export type RepaySelectAmountFormBaseProps = {
    */
   balance: TokenUnit
   formatInCurrency: (amt: TokenUnit, symbol: string) => string
+  /**
+   * `isMaxRepay` is true only when wallet balance exceeds debt and the user is
+   * repaying the full debt amount (Aave/Benqi: MAX_UINT256 clears accrued interest).
+   * If balance ≤ debt, always exact `amount`.
+   */
   submit: (params: {
     amount: TokenUnit
     isMaxRepay: boolean
@@ -50,14 +55,19 @@ export function RepaySelectAmountFormBase({
 
   const { market } = borrowPosition
 
-  const borrowedAmountUnit = useMemo(() => {
-    const { borrowedBalance } = borrowPosition
-    return new TokenUnit(
-      borrowedBalance,
-      market.asset.decimals,
-      market.asset.symbol
-    )
-  }, [borrowPosition, market])
+  const borrowedAmountUnit = borrowPosition.borrowedAmount
+
+  /**
+   * Amount the Max chip and % presets use as their cap:
+   * - balance > debt → full debt (UI shows debt; submit can use MAX_UINT256 when amount equals debt)
+   * - balance ≤ debt → whole wallet balance (exact repay only)
+   */
+  const repayMaxFillAmount = useMemo(() => {
+    if (balance.gt(borrowedAmountUnit)) {
+      return borrowedAmountUnit
+    }
+    return balance
+  }, [balance, borrowedAmountUnit])
 
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
@@ -70,12 +80,31 @@ export function RepaySelectAmountFormBase({
       const repayAmountUsd =
         repayAmount.toDisplay({ asNumber: true }) * pricePerToken
 
-      const newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
-      if (newTotalDebtUsd === 0) return Infinity
+      const debtRaw = borrowedAmountUnit.toSubUnit()
+      const repayRaw = repayAmount.toSubUnit()
+      const remainingRaw = debtRaw >= repayRaw ? debtRaw - repayRaw : 0n
+
+      let newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
+
+      // Float USD can round to 0 while on-chain / TokenUnit debt remains — use token-anchored floor.
+      if (remainingRaw > 0n) {
+        const remainingUnit = new TokenUnit(
+          remainingRaw.toString(),
+          borrowedAmountUnit.getMaxDecimals(),
+          borrowedAmountUnit.getSymbol()
+        )
+        const remainingUsd =
+          remainingUnit.toDisplay({ asNumber: true }) * pricePerToken
+        newTotalDebtUsd = Math.max(newTotalDebtUsd, remainingUsd)
+      }
+
+      if (remainingRaw === 0n && newTotalDebtUsd === 0) return Infinity
+
+      if (newTotalDebtUsd <= 0) return undefined
 
       return currentHealthScore * (totalDebtUsd / newTotalDebtUsd)
     },
-    [currentHealthScore, totalDebtUsd, market]
+    [currentHealthScore, totalDebtUsd, market, borrowedAmountUnit]
   )
 
   const healthScoreAfterRepay = useMemo(() => {
@@ -83,13 +112,14 @@ export function RepaySelectAmountFormBase({
     try {
       if (amount.toSubUnit() === 0n) return currentHealthScore
 
-      // Full repay of this token — check if all debt would be cleared
+      // Full repay of this position's UI debt — Infinity only if portfolio debt clears (in USD).
       if (amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()) {
         const pricePerToken =
           market.asset.mintTokenBalance.price.value.toNumber()
         const tokenDebtUsd =
           borrowedAmountUnit.toDisplay({ asNumber: true }) * pricePerToken
-        if (totalDebtUsd - tokenDebtUsd < 0.01) return Infinity
+        const otherDebtUsd = Math.max(0, totalDebtUsd - tokenDebtUsd)
+        if (otherDebtUsd < 0.01) return Infinity
       }
 
       return calculateHealthScoreAfterRepay(amount)
@@ -137,7 +167,7 @@ export function RepaySelectAmountFormBase({
     if (!amount) return
 
     const isMaxRepay =
-      amount.gt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)
+      balance.gt(borrowedAmountUnit) && amount.eq(borrowedAmountUnit)
 
     try {
       setIsSubmitting(true)
@@ -154,7 +184,7 @@ export function RepaySelectAmountFormBase({
     } finally {
       setIsSubmitting(false)
     }
-  }, [amount, borrowedAmountUnit, submit, onSubmitted])
+  }, [amount, balance, borrowedAmountUnit, submit, onSubmitted])
 
   const canSubmit =
     !isSubmitting &&
@@ -197,7 +227,8 @@ export function RepaySelectAmountFormBase({
           validateAmount={validateAmount}
           disabled={isSubmitting}
           autoFocus
-          maxAmount={borrowedAmountUnit}
+          maxAmount={repayMaxFillAmount}
+          maxAmountZeroMessage={`You don't have any ${market.asset.symbol} available to repay with`}
           presetPercentages={[25, 50]}
         />
 
@@ -220,7 +251,7 @@ export function RepaySelectAmountFormBase({
                   variant="body1"
                   sx={{
                     color: '$textPrimary',
-                    fontWeight: 500
+                    fontFamily: 'Inter-Medium'
                   }}>
                   {remainingDebt?.toDisplay() ?? UNKNOWN_AMOUNT}{' '}
                   {market.asset.symbol}

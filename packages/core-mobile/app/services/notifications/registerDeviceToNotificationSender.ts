@@ -2,8 +2,7 @@ import Logger from 'utils/Logger'
 import Config from 'react-native-config'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import { Platform } from 'react-native'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
+import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import FCMService from 'services/fcm/FCMService'
 
 // Singleton promise to prevent multiple concurrent calls
@@ -28,7 +27,7 @@ export async function registerAndGetDeviceArn(): Promise<string> {
 export async function registerDeviceToNotificationSender(): Promise<string> {
   const fcmToken = await FCMService.getFCMToken()
   const storedDeviceArn = commonStorage.getString(
-    StorageKey.NOTIFICATIONS_OPTIMIZATION
+    CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION
   )
   const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
@@ -46,7 +45,7 @@ export async function registerDeviceToNotificationSender(): Promise<string> {
   })
   if (response.ok) {
     const { deviceArn } = await response.json()
-    commonStorage.set(StorageKey.NOTIFICATIONS_OPTIMIZATION, deviceArn)
+    commonStorage.set(CommonStorageKeys.NOTIFICATIONS_OPTIMIZATION, deviceArn)
     return deviceArn
   } else {
     throw new Error(`${response.status}:${response.statusText}`)

@@ -86,7 +86,7 @@ export const Steps: FC<{ steps: string[] }> = ({ steps }) => {
           <Text
             variant="subtitle1"
             sx={{
-              fontWeight: 'bold'
+              fontFamily: 'Inter-Bold'
             }}>{`Step ${index + 1}`}</Text>
           <Text
             variant="subtitle1"

@@ -17,6 +17,13 @@ type Props = {
   maxRouteAdditiveBps: number
   liveRawAdditiveFee: bigint
   liveBufferedAdditiveFee: bigint
+  liveGasSafetyBps: number
+  liveRouteAdditiveBps: number
+  maxRawNativeAdditiveFee: bigint
+  maxBufferedNativeAdditiveFee: bigint
+  liveRawNativeAdditiveFee: bigint
+  liveBufferedNativeAdditiveFee: bigint
+  nativeDecimals?: number
 }
 
 const format = (raw: bigint | undefined, decimals: number): string =>
@@ -33,13 +40,21 @@ export const FeeDebugTable = ({
   maxBufferedAdditiveFee,
   maxRouteAdditiveBps,
   liveRawAdditiveFee,
-  liveBufferedAdditiveFee
+  liveBufferedAdditiveFee,
+  liveGasSafetyBps,
+  liveRouteAdditiveBps,
+  maxRawNativeAdditiveFee,
+  maxBufferedNativeAdditiveFee,
+  liveRawNativeAdditiveFee,
+  liveBufferedNativeAdditiveFee,
+  nativeDecimals = 18
 }: Props): React.ReactElement | null => {
   const feeUnitsMarginBps = useSelector(selectFusionFeeUnitsMarginBps)
 
   if (!__DEV__ || !DevDebuggingConfig.SWAP_FEE_DEBUG_TABLE) return null
 
   const f = (raw: bigint | undefined): string => format(raw, decimals)
+  const fn = (raw: bigint | undefined): string => format(raw, nativeDecimals)
 
   return (
     <View style={styles.table}>
@@ -54,19 +69,19 @@ export const FeeDebugTable = ({
         <Text style={[styles.cell, styles.label]}>
           {`gas raw\n(+${feeUnitsMarginBps / 100}% built-in)`}
         </Text>
-        <Text style={styles.cell}>{f(maxRawGasFee)}</Text>
-        <Text style={styles.cell}>{f(liveRawGasFee)}</Text>
+        <Text style={styles.cell}>{fn(maxRawGasFee)}</Text>
+        <Text style={styles.cell}>{fn(liveRawGasFee)}</Text>
       </View>
       {/* Gas buffered row */}
       <View style={[styles.row, styles.rowBorder]}>
         <Text style={[styles.cell, styles.label]}>gas buffered</Text>
         <Text style={styles.cell}>
-          {f(maxBufferedGasFee)}
+          {fn(maxBufferedGasFee)}
           <Text style={styles.bold}>{` (+${maxGasSafetyBps / 100}%)`}</Text>
         </Text>
         <Text style={styles.cell}>
-          {f(liveBufferedGasFee)}
-          <Text style={styles.bold}>{' (0%)'}</Text>
+          {fn(liveBufferedGasFee)}
+          <Text style={styles.bold}>{` (+${liveGasSafetyBps / 100}%)`}</Text>
         </Text>
       </View>
       {/* Additive raw row */}
@@ -76,7 +91,7 @@ export const FeeDebugTable = ({
         <Text style={styles.cell}>{f(liveRawAdditiveFee)}</Text>
       </View>
       {/* Additive buffered row */}
-      <View style={styles.row}>
+      <View style={[styles.row, styles.rowBorder]}>
         <Text style={[styles.cell, styles.label]}>additive buffered</Text>
         <Text style={styles.cell}>
           {f(maxBufferedAdditiveFee)}
@@ -84,7 +99,29 @@ export const FeeDebugTable = ({
         </Text>
         <Text style={styles.cell}>
           {f(liveBufferedAdditiveFee)}
-          <Text style={styles.bold}>{' (0%)'}</Text>
+          <Text style={styles.bold}>{` (+${
+            liveRouteAdditiveBps / 100
+          }%)`}</Text>
+        </Text>
+      </View>
+      {/* Native additive raw row */}
+      <View style={[styles.row, styles.rowBorder]}>
+        <Text style={[styles.cell, styles.label]}>native add. raw</Text>
+        <Text style={styles.cell}>{fn(maxRawNativeAdditiveFee)}</Text>
+        <Text style={styles.cell}>{fn(liveRawNativeAdditiveFee)}</Text>
+      </View>
+      {/* Native additive buffered row */}
+      <View style={styles.row}>
+        <Text style={[styles.cell, styles.label]}>native add. buffered</Text>
+        <Text style={styles.cell}>
+          {fn(maxBufferedNativeAdditiveFee)}
+          <Text style={styles.bold}>{` (+${maxRouteAdditiveBps / 100}%)`}</Text>
+        </Text>
+        <Text style={styles.cell}>
+          {fn(liveBufferedNativeAdditiveFee)}
+          <Text style={styles.bold}>{` (+${
+            liveRouteAdditiveBps / 100
+          }%)`}</Text>
         </Text>
       </View>
     </View>

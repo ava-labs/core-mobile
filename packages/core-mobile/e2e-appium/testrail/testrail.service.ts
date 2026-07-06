@@ -16,17 +16,23 @@ const testrail = axios.create(authConfig)
 export async function getTestRun(
   platform: string,
   isSmoke: boolean,
-  isPerformance: boolean
+  isPerformance: boolean,
+  isDeviceFarm = false,
+  isSeedlessTransactions = false
 ) {
   const today = new Date().toISOString().split('T')[0]
 
   let runType: string
-  if (isPerformance) {
-    runType = '[PERFORMANCE]'
+  if (isSeedlessTransactions) {
+    runType = '[Seedless Transactions]'
+  } else if (isPerformance) {
+    runType = '[VM Performance]'
   } else if (isSmoke) {
-    runType = '[SMOKE]'
+    runType = '[VM Smoke]'
+  } else if (isDeviceFarm) {
+    runType = '[RD Full Regression]'
   } else {
-    runType = '[REGRESSION]'
+    runType = '[VM Full Regression]'
   }
 
   const title = `${runType} ${platform} Test Run: ${today}`

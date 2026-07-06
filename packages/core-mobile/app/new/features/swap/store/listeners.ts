@@ -2,21 +2,29 @@ import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
+  selectQuickSwapsMaxBuy,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
+import { selectIsQuickSwapsActive } from 'store/settings/advanced/quickSwapsActive'
 import { isAnyOf } from '@reduxjs/toolkit'
 import {
   selectIsFusionEnabled,
   selectIsFusionMarkrEnabled,
   selectIsFusionAvalancheEvmEnabled,
+  selectIsFusionAvalancheCctEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
   selectIsFusionLombardBtcbToBtcEnabled,
+  selectFusionDisableCrossChainSwaps,
   setFeatureFlags
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import {
+  getBitcoinProvider,
+  getEvmProvider
+} from 'services/network/utils/providerUtils'
+import { selectNetwork } from 'store/network/slice'
 import type {
   CompletedTransfer,
   FailedTransfer,
@@ -32,14 +40,16 @@ import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
 import { createSvmSigner } from '../services/signers/SvmSigner'
+import { buildCctDependencies } from '../services/cct/buildCctDependencies'
 import {
   useIsFusionServiceReady,
+  useFusionServiceInitError,
   updateFusionTransfer,
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
 import { fetchAdapter } from '../utils/fetchAdapter'
 import { logSdkError } from '../utils/fusionLogger'
-import { trackFusionTransfer } from './actions'
+import { trackFusionTransfer, type TrackFusionTransferPayload } from './actions'
 
 /**
  * Get the current state of all Fusion feature flags
@@ -50,15 +60,19 @@ const getFusionFeatureStates = (
   isFusionEnabled: boolean
   isFusionMarkrEnabled: boolean
   isFusionAvalancheEvmEnabled: boolean
+  isFusionAvalancheCctEnabled: boolean
   isFusionLombardBtcToBtcbEnabled: boolean
   isFusionLombardBtcbToBtcEnabled: boolean
+  isFusionDisableCrossChainSwaps: boolean
   isDeveloperMode: boolean
 } => ({
   isFusionEnabled: selectIsFusionEnabled(state),
   isFusionMarkrEnabled: selectIsFusionMarkrEnabled(state),
   isFusionAvalancheEvmEnabled: selectIsFusionAvalancheEvmEnabled(state),
+  isFusionAvalancheCctEnabled: selectIsFusionAvalancheCctEnabled(state),
   isFusionLombardBtcToBtcbEnabled: selectIsFusionLombardBtcToBtcbEnabled(state),
   isFusionLombardBtcbToBtcEnabled: selectIsFusionLombardBtcbToBtcEnabled(state),
+  isFusionDisableCrossChainSwaps: selectFusionDisableCrossChainSwaps(state),
   isDeveloperMode: selectIsDeveloperMode(state)
 })
 
@@ -80,10 +94,14 @@ const shouldReinitializeFusion = (
       currentFeatures.isFusionMarkrEnabled ||
     prevFeatures.isFusionAvalancheEvmEnabled !==
       currentFeatures.isFusionAvalancheEvmEnabled ||
+    prevFeatures.isFusionAvalancheCctEnabled !==
+      currentFeatures.isFusionAvalancheCctEnabled ||
     prevFeatures.isFusionLombardBtcToBtcbEnabled !==
       currentFeatures.isFusionLombardBtcToBtcbEnabled ||
     prevFeatures.isFusionLombardBtcbToBtcEnabled !==
       currentFeatures.isFusionLombardBtcbToBtcEnabled ||
+    prevFeatures.isFusionDisableCrossChainSwaps !==
+      currentFeatures.isFusionDisableCrossChainSwaps ||
     prevFeatures.isDeveloperMode !== currentFeatures.isDeveloperMode
   )
 }
@@ -97,10 +115,12 @@ const resumeTransfersTracking = (): void => {
     const pending = getPendingFusionTransfers()
     for (const { transfer } of pending) {
       Logger.info('[FusionTracking] resuming tracking for', transfer.id)
+      // Original UI state (quote, userClickedMax) is lost across reinit;
+      // resumed analytics emit without the CP-14225 enrichment fields.
       FusionService.trackTransfer(
         transfer,
         updateFusionTransfer,
-        captureSwapAnalytics
+        createCaptureSwapAnalytics()
       )
     }
   } catch (error) {
@@ -129,7 +149,10 @@ export const initFusionService = async (
       return
     }
 
-    const request = createInAppRequest(listenerApi.dispatch)
+    const request = createInAppRequest(
+      listenerApi.dispatch,
+      listenerApi.getState
+    )
 
     // Check if already initialized and if reinitialization is needed
     const isFusionServiceReady = useIsFusionServiceReady.getState()
@@ -149,35 +172,64 @@ export const initFusionService = async (
     if (!featureStates.isFusionEnabled) {
       Logger.info('Fusion is disabled, skipping initialization')
       useIsFusionServiceReady.setState(false)
+      useFusionServiceInitError.setState(null)
       return
     }
 
     Logger.info('Initializing Fusion service', featureStates)
 
-    // Mark as not ready at start
     useIsFusionServiceReady.setState(false)
+    useFusionServiceInitError.setState(null)
 
-    // Create signers
-    const evmSigner = createEvmSigner(request)
+    // Getter (not captured value) so the signer reads live Quick Swaps
+    // settings — the user can toggle between init and swap execution.
+    // Uses the composite selector so PostHog flag, wallet allowlist,
+    // and the saved toggle all gate the bypass consistently — a stale
+    // `isEnabled: true` on a hardware wallet or with the flag off must
+    // NOT trigger bypass.
+    const evmSigner = createEvmSigner(
+      request,
+      () => {
+        const liveState = listenerApi.getState()
+        return {
+          isQuickSwapsActive: selectIsQuickSwapsActive(liveState),
+          maxBuy: selectQuickSwapsMaxBuy(liveState)
+        }
+      },
+      async (chainId, txHash) => {
+        const network = selectNetwork(Number(chainId))(listenerApi.getState())
+        if (!network) return
+        const provider = await getEvmProvider(network)
+        await provider.waitForTransaction(txHash, 1, 60_000)
+      }
+    )
     const btcSigner = createBtcSigner(request, featureStates.isDeveloperMode)
     const svmSigner = createSvmSigner(request, featureStates.isDeveloperMode)
 
-    // Determine environment
     const environment = getFusionEnvironment(featureStates.isDeveloperMode)
 
-    // Build feature flags object for the service
     const featureFlags = {
       'fusion-markr': featureStates.isFusionMarkrEnabled,
       'fusion-avalanche-evm': featureStates.isFusionAvalancheEvmEnabled,
+      'fusion-avalanche-cct': featureStates.isFusionAvalancheCctEnabled,
       'fusion-lombard-btc-to-btcb':
         featureStates.isFusionLombardBtcToBtcbEnabled,
       'fusion-lombard-btcb-to-btc':
-        featureStates.isFusionLombardBtcbToBtcEnabled
+        featureStates.isFusionLombardBtcbToBtcEnabled,
+      'fusion-disable-cross-chain-swaps':
+        featureStates.isFusionDisableCrossChainSwaps
     }
 
     const bitcoinProvider = await getBitcoinProvider(
       featureStates.isDeveloperMode
     )
+
+    // CCT callbacks read live Redux + React Query state on each invocation so
+    // they always see the latest account / wallet / xpAddresses. The
+    // TransferManager doesn't need to be recreated when those change.
+    const cctDependencies = featureStates.isFusionAvalancheCctEnabled
+      ? buildCctDependencies(listenerApi)
+      : undefined
 
     // Initialize the service
     await FusionService.initWithFeatureFlags({
@@ -189,7 +241,8 @@ export const initFusionService = async (
         evm: evmSigner,
         btc: btcSigner,
         svm: svmSigner
-      }
+      },
+      cctDependencies
     })
 
     // Mark as ready after successful init
@@ -202,6 +255,9 @@ export const initFusionService = async (
       error
     )
     useIsFusionServiceReady.setState(false)
+    useFusionServiceInitError.setState(
+      error instanceof Error ? error : new Error(String(error))
+    )
   } finally {
     isFusionInitializing = false
   }
@@ -213,40 +269,70 @@ export const cleanupFusionService = async (
 ): Promise<void> => {
   FusionService.cleanup()
   useIsFusionServiceReady.setState(false)
+  useFusionServiceInitError.setState(null)
 }
 
-const captureSwapAnalytics = (
-  concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
-): void => {
-  const addresses = {
-    sourceAddress: concludedTransfer.fromAddress,
-    targetAddress: concludedTransfer.toAddress,
-    sourceChainId: concludedTransfer.sourceChain.chainId,
-    targetChainId: concludedTransfer.targetChain.chainId
-  }
+/**
+ * Build a `concludedTransfer` callback for `FusionService.trackTransfer` that
+ * forwards Fusion outcomes to PostHog. The `context` carries client-side data
+ * the SDK's Transfer object does not (was-it-Max-button, token metadata,
+ * aggregator name/id) and is captured on `SwapFailed` so we can diagnose
+ * Markr toxic-pool cohorts post-hoc.
+ *
+ * Context is fully optional because `resumeTransfersTracking` re-creates the
+ * callback after an app reinit, when the original UI state (quote object,
+ * userClickedMax flag) is no longer in memory.
+ */
+export const createCaptureSwapAnalytics = (
+  context: Partial<Omit<TrackFusionTransferPayload, 'transfer'>> = {}
+) => {
+  return (
+    concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
+  ): void => {
+    const addresses = {
+      sourceAddress: concludedTransfer.fromAddress,
+      targetAddress: concludedTransfer.toAddress,
+      sourceChainId: concludedTransfer.sourceChain.chainId,
+      targetChainId: concludedTransfer.targetChain.chainId
+    }
 
-  if (isCompletedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapSuccessful', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source.txHash,
-      targetTxHash: concludedTransfer.target?.txHash
-    })
-  } else if (isFailedTransfer(concludedTransfer)) {
-    // source is optional on FailedTransfer — tx may not have been submitted
-    AnalyticsService.captureWithEncryption('SwapFailed', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source?.txHash,
-      targetTxHash: concludedTransfer.target?.txHash,
-      errorCode: concludedTransfer.errorCode?.toString(),
-      errorReason: concludedTransfer.errorReason ?? undefined
-    })
-  } else if (isRefundedTransfer(concludedTransfer)) {
-    AnalyticsService.captureWithEncryption('SwapRefunded', {
-      ...addresses,
-      sourceTxHash: concludedTransfer.source.txHash,
-      targetTxHash: concludedTransfer.target?.txHash,
-      refundTxHash: concludedTransfer.refund.txHash ?? undefined
-    })
+    if (isCompletedTransfer(concludedTransfer)) {
+      AnalyticsService.capture('SwapSuccessful', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source.txHash,
+          targetTxHash: concludedTransfer.target?.txHash
+        }
+      })
+    } else if (isFailedTransfer(concludedTransfer)) {
+      // source is optional on FailedTransfer — tx may not have been submitted
+      AnalyticsService.capture('SwapFailed', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source?.txHash,
+          targetTxHash: concludedTransfer.target?.txHash,
+          errorCode: concludedTransfer.errorCode?.toString(),
+          errorReason: concludedTransfer.errorReason ?? undefined,
+          userClickedMax: context.userClickedMax,
+          sourceTokenAddress: context.sourceTokenAddress,
+          sourceTokenSymbol: context.sourceTokenSymbol,
+          sourceAmount: context.quote?.amountIn.toString(),
+          destinationTokenAddress: context.destinationTokenAddress,
+          destinationTokenSymbol: context.destinationTokenSymbol,
+          quoteAggregator: context.quote?.aggregator.name,
+          quoteAggregatorId: context.quote?.aggregator.id
+        }
+      })
+    } else if (isRefundedTransfer(concludedTransfer)) {
+      AnalyticsService.capture('SwapRefunded', {
+        encrypted: {
+          ...addresses,
+          sourceTxHash: concludedTransfer.source.txHash,
+          targetTxHash: concludedTransfer.target?.txHash,
+          refundTxHash: concludedTransfer.refund.txHash ?? undefined
+        }
+      })
+    }
   }
 }
 
@@ -266,10 +352,7 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
 
   startListening({
     actionCreator: trackFusionTransfer,
-    effect: async (
-      { payload: transfer },
-      listenerApi: AppListenerEffectAPI
-    ) => {
+    effect: async ({ payload }, listenerApi: AppListenerEffectAPI) => {
       if (!selectIsFusionEnabled(listenerApi.getState())) return
 
       try {
@@ -281,10 +364,11 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
       }
 
       try {
+        const { transfer, ...context } = payload
         FusionService.trackTransfer(
           transfer,
           updateFusionTransfer,
-          captureSwapAnalytics
+          createCaptureSwapAnalytics(context)
         )
       } catch (error) {
         logSdkError('[trackFusionTransfer listener] error', error)

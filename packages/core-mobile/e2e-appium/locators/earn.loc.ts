@@ -16,5 +16,9 @@ export default {
   repayToast: 'Repay flow is coming soon',
   selectDepositsToUseAsCollateralTitle: 'Select deposits to use as collateral',
   borrowOn: 'Borrow on ',
-  borrowDetailRepayBtn: 'borrow_detail_repay_btn'
+  borrowDetailRepayBtn: 'borrow_detail_repay_btn',
+  depositFormTitle: 'How much do you want to deposit?',
+  borrowFormTitle: 'How much would you like to borrow?',
+  withdrawFormTitle: 'How much do you want to withdraw?',
+  repayFormTitle: 'How much do you want to repay?'
 }

@@ -1,83 +1,56 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { shallowEqual, useDispatch, useSelector, useStore } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectActiveNetwork } from 'store/network/slice'
+import { setActiveAccount as setActiveAccountThunk } from 'store/account/thunks'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
+import { clearTabChainId, selectTabChainId } from 'store/browser/slices/tabs'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { TabId } from 'store/browser/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { PeerMeta } from 'store/rpc/types'
-import { RpcMethod } from '@avalabs/vm-module-types'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { rpcErrors, serializeError } from '@metamask/rpc-errors'
+import { RpcMethod } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { ModuleErrors, VmModuleErrors } from 'vmModule/errors'
+import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import { approvalController } from 'vmModule/ApprovalController/ApprovalController'
+import {
+  grantPermission as grantPermissionAction,
+  revokePermission as revokePermissionAction,
+  selectGrantedAddressesForDomain
+} from 'store/permissions/slice'
+import type { RootState } from 'store/types'
+import type { Account } from 'store/account'
+import { applyConnectNavEffect } from './injectedProvider/connectApprovalNavigation'
+import { connectApprovalRegistry } from './injectedProvider/connectApprovalRegistry'
 import { buildEvmProviderShim } from './evmProviderShim'
 import { getInjectedProviderUuid } from './getInjectedProviderUuid'
+import {
+  createInjectedProviderRouter,
+  InjectedProviderRouter
+} from './injectedProvider/router'
+import { resolveActiveConnectedAccounts } from './injectedProvider/resolveGrantedAccounts'
+import {
+  CONNECT_PROMPT_TIMED_OUT_MESSAGE,
+  EIP1193_USER_REJECTED_CODE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  USER_REJECTED_REQUEST_MESSAGE
+} from './injectedProvider/errors'
+import {
+  BrowserNetwork,
+  DomainMetadata,
+  RouterDeps
+} from './injectedProvider/types'
 
-export const MAX_MESSAGE_SIZE = 1_048_576
-
-type ProviderRequest = {
-  id: number
-  origin?: string
-  request: {
-    method: string
-    params: unknown[]
-  }
-}
-
-type DomainMetadata = {
-  domain: string
-  name: string
-  icon: string
-  url: string
-}
-
-const READ_ONLY_METHODS = new Set([
-  'eth_blockNumber',
-  'eth_call',
-  'eth_estimateGas',
-  'eth_gasPrice',
-  'eth_getBalance',
-  'eth_getBlockByHash',
-  'eth_getBlockByNumber',
-  'eth_getCode',
-  'eth_getLogs',
-  'eth_getStorageAt',
-  'eth_getTransactionByHash',
-  'eth_getTransactionCount',
-  'eth_getTransactionReceipt',
-  'eth_maxPriorityFeePerGas',
-  'eth_feeHistory',
-  'web3_clientVersion',
-  'web3_sha3',
-  'eth_getBlockTransactionCountByHash',
-  'eth_getBlockTransactionCountByNumber'
-])
-
-const SIGNING_METHODS: Record<string, RpcMethod> = {
-  [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
-  [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
-  [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
-  [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,
-  [RpcMethod.SIGN_TYPED_DATA_V1]: RpcMethod.SIGN_TYPED_DATA_V1,
-  [RpcMethod.SIGN_TYPED_DATA_V3]: RpcMethod.SIGN_TYPED_DATA_V3,
-  [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
-}
-
-const ALLOWED_METHODS = new Set([
-  ...READ_ONLY_METHODS,
-  ...Object.keys(SIGNING_METHODS),
-  'wallet_switchEthereumChain',
-  'wallet_addEthereumChain'
-])
-
-function validateProviderRequest(data: unknown): data is ProviderRequest {
-  if (typeof data !== 'object' || data === null) return false
-  const obj = data as Record<string, unknown>
-  if (typeof obj.id !== 'number') return false
-  if (typeof obj.request !== 'object' || obj.request === null) return false
-  const req = obj.request as Record<string, unknown>
-  return typeof req.method === 'string'
-}
+// If the connect-approval screen never mounts or never resolves (e.g. Metro
+// hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
+// parked promise after this interval so the dApp can surface an error and
+// the user isn't stuck with a spinning button.
+const CONNECT_APPROVAL_TIMEOUT_MS = 90_000
 
 function getOriginFromUrl(url: string): string | undefined {
   if (!url) return undefined
@@ -89,48 +62,14 @@ function getOriginFromUrl(url: string): string | undefined {
   }
 }
 
-function parseProviderPayload(
-  payload: string,
-  respondWithError: (id: number, error: unknown) => void
-): ProviderRequest | undefined {
-  if (payload.length > MAX_MESSAGE_SIZE) {
-    Logger.warn(
-      `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
-    )
-    try {
-      const { id } = JSON.parse(payload) as { id?: unknown }
-      if (typeof id === 'number') {
-        respondWithError(
-          id,
-          rpcErrors.invalidRequest('Message exceeds size limit')
-        )
-      }
-    } catch {
-      /* oversized and unparseable */
-    }
-    return undefined
-  }
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(payload)
-  } catch {
-    Logger.error('[InjectedProvider] Invalid JSON payload')
-    return undefined
-  }
-
-  if (!validateProviderRequest(parsed)) {
-    Logger.error('[InjectedProvider] Malformed provider_request')
-    const maybeId = (parsed as Record<string, unknown>)?.id
-    if (typeof maybeId === 'number') {
-      respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
-    }
-    return undefined
-  }
-
-  return parsed
+type UseEvmInjectedProviderResult = {
+  providerShimJs: string
+  handleProviderMessage: (payload: string) => void
+  handleDomainMetadata: (payload: string) => void
+  emitEvent: (eventName: string, data: unknown) => void
+  dappMetadata: React.RefObject<DomainMetadata | null>
+  handleCommittedUrl: (url: string) => void
 }
-
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
  *
@@ -139,33 +78,209 @@ function parseProviderPayload(
  * Read-only methods are proxied directly to the network RPC endpoint.
  */
 export function useEvmInjectedProvider(
-  webViewRef: React.RefObject<RNWebView | null>
-) {
+  webViewRef: React.RefObject<RNWebView | null>,
+  tabId: TabId
+): UseEvmInjectedProviderResult {
   const dispatch = useDispatch()
+  const store = useStore<RootState>()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const allNetworks = useSelector(selectAllNetworks, shallowEqual)
+  const tabChainId = useSelector(selectTabChainId(tabId))
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const dappMetadata = useRef<DomainMetadata | null>(null)
   const currentUrlRef = useRef<string>('')
   const pendingOrigins = useRef<Map<number, string>>(new Map())
+  const initialChainId = tabChainId ?? activeNetwork.chainId
+  const initialNetwork = allNetworks[initialChainId] ?? activeNetwork
+  const browserNetworkRef = useRef<BrowserNetwork>({
+    chainId: initialChainId,
+    rpcUrl: initialNetwork.rpcUrl
+  })
 
-  const setCurrentUrl = useCallback((url: string) => {
-    currentUrlRef.current = url
-  }, [])
+  // Refs kept current so the stable router can read latest values via getters
+  const allNetworksRef = useRef(allNetworks)
+  useEffect(() => {
+    allNetworksRef.current = allNetworks
+  }, [allNetworks])
 
+  // When the tab has no persisted chainId, keep browserNetworkRef in sync with
+  // the global active network so read-only RPC and signing requests are routed
+  // to the correct chain after the user switches networks wallet-wide.
+  useEffect(() => {
+    if (tabChainId !== undefined) return
+    // Non-EVM active network (BTC/SVM/AVM/PVM): the EVM surface can't represent
+    // it, but the injected provider object is shared (window.avalanche ===
+    // window.ethereum) and avalanche_* methods are network-independent. Emitting
+    // an EIP-1193 disconnect here would tell wagmi the whole provider is offline
+    // — and it would refuse to auto-reconnect (same hazard the revoke handler
+    // avoids) — killing the X/P surface too. So keep the provider alive: hold the
+    // last EVM browser chain (no sentinel reset) and emit nothing. The EVM
+    // surface resumes when an EVM network becomes active again (a real chain
+    // change fires chainChanged via the guard below; returning to the same chain
+    // is correctly a no-op since the dApp was never told it changed). CP-13672.
+    if (activeNetwork.vmName !== NetworkVMType.EVM) {
+      return
+    }
+    if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
+    browserNetworkRef.current = {
+      chainId: activeNetwork.chainId,
+      rpcUrl: activeNetwork.rpcUrl
+    }
+    const hexChainId = '0x' + activeNetwork.chainId.toString(16)
+    webViewRef.current?.injectJavaScript(
+      `window.__coreProviderEmit('chainChanged', '${hexChainId}'); true;`
+    )
+  }, [activeNetwork, tabChainId, webViewRef])
+
+  // When developer (testnet) mode flips, drop any per-tab chain pin so the tab
+  // follows the wallet's active network for the NEW environment (the sync effect
+  // above then re-points browserNetworkRef + emits chainChanged). Otherwise the
+  // tab keeps signing with the prior environment's chainId and the RPC env check
+  // rejects every tx with "Invalid environment". CP-13775.
+  const prevDevModeRef = useRef(isDeveloperMode)
+  useEffect(() => {
+    if (prevDevModeRef.current === isDeveloperMode) return
+    prevDevModeRef.current = isDeveloperMode
+    // Only clear an actual pin — dispatching for an un-pinned tab is a redundant
+    // store update + rerender on every dev-mode toggle.
+    if (tabChainId !== undefined) dispatch(clearTabChainId({ tabId }))
+  }, [isDeveloperMode, dispatch, tabId, tabChainId])
+
+  // Router is assigned below (after useMemo). handleCommittedUrl may fire before
+  // the router is constructed on first render, so we route through a ref.
+  const routerRef = useRef<InjectedProviderRouter | null>(null)
+
+  // primeAccounts is defined later (it reads refs declared further down), so
+  // handleCommittedUrl routes its prime through a ref — same pattern as routerRef.
+  const primeAccountsRef = useRef<(() => void) | null>(null)
+
+  // Handle a URL the WebView has actually committed and rendered (onLoad /
+  // same-origin SPA navigation). The provider origin is intentionally never
+  // seeded from provisional navigation events: a page can keep executing while a
+  // hanging cross-origin navigation is provisional, and would get its requests
+  // attributed to the destination origin (APPSEC-330 address-bar spoof vector).
+  // Priming runs here at every commit — not off domain_metadata — so the trusted
+  // origin is always set first; the cost is that origin-requiring RPCs fired
+  // before the first commit are rejected, and the prime recovers connected state.
+  const handleCommittedUrl = useCallback(
+    (url: string) => {
+      const prevUrl = currentUrlRef.current
+      const prevOrigin = getOriginFromUrl(prevUrl)
+      currentUrlRef.current = url
+      const newOrigin = getOriginFromUrl(url)
+
+      if (prevOrigin && prevOrigin !== newOrigin) {
+        // Cross-origin navigation — cancel in-flight requests and unstick any
+        // connect approval(s) this tab parked. The registry advances/dismisses
+        // the modal via the nav effect (handled === true). If it returned
+        // `none`, this tab's connect was queued (another tab's modal is active)
+        // OR there was no connect for this tab. Only fall back to the generic
+        // modal dismissal when NO connect is active — otherwise we'd wrongly pop
+        // another tab's connect modal; when none is active, a non-connect modal
+        // (e.g. signing) may be up and should be dismissed. (CP-14385)
+        routerRef.current?.cancelByOrigin(newOrigin)
+        const handled = applyConnectNavEffect(
+          connectApprovalRegistry.rejectByTab(tabId, {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          })
+        )
+        // Skip the generic pop while a signature is being confirmed on a Ledger:
+        // the cancel is already a no-op in that phase (the signing completes), so
+        // popping would just yank the review screen out from under the user
+        // mid-sign. The controller dismisses it itself once signing settles.
+        // `excludeApproval`: the signing approval screen dismisses itself
+        // (event-driven on its request's abort), so popping it here too would
+        // double `router.back()` — and its async route tracking made this pop
+        // miss anyway. Other modal types still dismiss via this pop. (CP-14422)
+        if (
+          !handled &&
+          !connectApprovalRegistry.hasActive() &&
+          !approvalController.isLedgerSigningInProgress()
+        ) {
+          approvalController.handleGoBackIfNeeded({ excludeApproval: true })
+        }
+      }
+
+      // Re-assert the live chain on every committed URL, alongside the account
+      // re-prime below. The shim is built exactly once per tab (see
+      // providerShimJs), so its baked chainId is only the value seen at the FIRST
+      // document load; any later fresh document — cross-origin nav, or a
+      // same-origin full reload / pull-to-refresh — re-runs that stale baked
+      // chain and would otherwise report the wrong chainId until something else
+      // emitted chainChanged. We re-assert `browserNetworkRef` (the chain Core
+      // actually routes this tab's RPC/signing to), so a fresh document is
+      // corrected to the live chain. The re-assert is idempotent:
+      // __coreProviderReassertChain drops a value equal to the shim's live
+      // _chainId, so a same-origin SPA pushState (no chain change) does not churn
+      // listeners or fight a still-pending switch (React #185).
+      //
+      // Guard on the *resolved chain's* own vmName — NOT tabChainId/activeNetwork
+      // — so a non-EVM chainId is never emitted to the EVM provider: a tab pinned
+      // to a non-EVM chain (wallet_switchEthereumChain validates only membership
+      // in the cross-VM network map, not EVM-ness) is skipped, while an unpinned
+      // tab that retains a live EVM chain after the wallet moved to a non-EVM
+      // network (CP-13672) is still re-asserted.
+      const liveChainId = browserNetworkRef.current.chainId
+      // Fall back to the store like requestReadOnly does: allNetworksRef syncs via
+      // a useEffect, so a chain just added through wallet_addEthereumChain can be
+      // in Redux but not yet in the ref. Without the fallback a reload in that
+      // window would skip the re-assert for that fresh EVM chain.
+      const liveNetwork =
+        allNetworksRef.current[liveChainId] ??
+        selectAllNetworks(store.getState())[liveChainId]
+      if (liveNetwork?.vmName === NetworkVMType.EVM) {
+        webViewRef.current?.injectJavaScript(
+          `window.__coreProviderReassertChain && window.__coreProviderReassertChain('0x${liveChainId.toString(
+            16
+          )}'); true;`
+        )
+      }
+
+      // Prime the shim's _accounts cache on every committed URL: the initial
+      // page load, cross-origin navigation, and same-origin SPA navigation
+      // (pushState/replaceState). domain_metadata no longer primes (it arrives
+      // before the navigation commits, when currentUrlRef may still hold the
+      // previous document's origin — priming there could leak the previous
+      // origin's grant to a cross-origin document), so commit time is the single
+      // prime point that re-establishes connected state. CP-13772.
+      primeAccountsRef.current?.()
+    },
+    [tabId, webViewRef, store]
+  )
+
+  // Only consumed by initialChainIdHexRef below (read once at mount). Kept as a
+  // useMemo rather than inlined into the hook body so this branch stays in a
+  // nested function — inlining it tips useEvmInjectedProvider over the
+  // sonarjs/cognitive-complexity limit.
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
-    return '0x' + activeNetwork.chainId.toString(16)
-  }, [activeNetwork])
+    return '0x' + initialChainId.toString(16)
+  }, [activeNetwork.vmName, initialChainId])
 
-  const evmAddress = activeAccount?.addressC ?? ''
-
-  const providerShimJs = useMemo(() => {
-    return buildEvmProviderShim({
-      chainId: chainIdHex,
-      address: evmAddress,
-      uuid: getInjectedProviderUuid()
-    })
-  }, [chainIdHex, evmAddress])
+  // Build the injected shim EXACTLY ONCE per tab. `providerShimJs` is consumed
+  // as the WebView's `injectedJavaScriptBeforeContentLoaded`; changing that prop
+  // makes react-native-webview call `resetupScripts` (removeAllUserScripts +
+  // re-add) on the live WKWebView, and any `injectJavaScript` issued in that same
+  // tick is silently dropped. Previously this memo depended on `chainIdHex`, so a
+  // `wallet_switchEthereumChain` (which dispatches `setTabChainId` -> new
+  // chainIdHex) rebuilt the shim and dropped the switch's OWN response injection,
+  // leaving the dApp's switchChain promise — and the swap awaiting it — hung
+  // forever (CP-14615). The baked chainId only seeds the first document load; the
+  // live chain is kept current at runtime via the shim's optimistic `_chainId`
+  // update on switch, the unpinned sync effect's chainChanged emit, and the
+  // per-document-load re-assert in handleCommittedUrl. So bake the initial value
+  // once and never change the prop.
+  const initialChainIdHexRef = useRef(chainIdHex)
+  const providerShimJs = useMemo(
+    () =>
+      buildEvmProviderShim({
+        chainId: initialChainIdHexRef.current,
+        uuid: getInjectedProviderUuid()
+      }),
+    []
+  )
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {
@@ -212,154 +327,385 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
+  // Last accounts list advertised to the dApp (serialized). Shared by the
+  // page-load prime path, the active-account switch effect, and the connect
+  // handler's synchronous emit (via emitEvent below) so none of them emit a
+  // duplicate accountsChanged for the same set. Declared before emitEvent so
+  // emitEvent can keep it in sync.
+  const lastEmittedAccountsRef = useRef<string | undefined>(undefined)
+
   const emitEvent = useCallback(
     (eventName: string, data: unknown) => {
       const dataJson = JSON.stringify(data)
+      // Keep the accountsChanged dedupe coherent: the connect handler emits
+      // accountsChanged synchronously through here (before resolving, to match
+      // MetaMask ordering). When that connect also switched the active account,
+      // the switch effect below would otherwise re-emit the identical set a
+      // render later — recording it here lets that effect dedupe it. (CP-14385)
+      if (eventName === 'accountsChanged')
+        lastEmittedAccountsRef.current = dataJson
       const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
     [webViewRef]
   )
 
-  const proxyToRpc = useCallback(
-    async (id: number, method: string, params: unknown[]) => {
-      try {
-        const rpcUrl = activeNetwork.rpcUrl
-        if (!rpcUrl) {
-          sendResponse(
-            id,
-            rpcErrors.internal('No RPC URL configured'),
-            undefined
-          )
-          return
-        }
-
-        const body = JSON.stringify({
-          jsonrpc: '2.0',
-          id,
-          method,
-          params
-        })
-
-        const response = await fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body
-        })
-
-        const json = await response.json()
-
-        if (json.error) {
-          sendResponse(id, json.error, undefined)
-        } else {
-          sendResponse(id, null, json.result)
-        }
-      } catch (e) {
-        Logger.error('[InjectedProvider] RPC proxy error', e)
-        sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
-      }
-    },
-    [activeNetwork.rpcUrl, sendResponse]
-  )
-
-  const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
-    const meta = dappMetadata.current
+  // Hardened per CP-14159: dApp name + url derive ONLY from the WebView's
+  // native top-level URL. The page-supplied domain_metadata cannot influence
+  // either field (would be a spoofing vector) — only the favicon is taken
+  // from it. When the native URL is unavailable we return a non-Core
+  // placeholder so the downstream generateInAppRequestPayload does NOT fall
+  // back to CORE_MOBILE_META (which would misattribute the request to
+  // https://core.app).
+  const getPeerMeta = useCallback((): PeerMeta => {
     const nativeUrl = currentUrlRef.current
-    if (!meta && !nativeUrl) return undefined
+    let hostname = ''
+    if (nativeUrl) {
+      try {
+        hostname = new URL(nativeUrl).hostname
+      } catch {
+        // fall through to placeholder
+      }
+    }
 
+    // The dApp name and URL are derived ONLY from the WebView's actual
+    // top-level URL. The page-supplied domain_metadata cannot influence
+    // either (it would be a spoofing vector). The favicon is taken from
+    // domain_metadata since it is purely cosmetic. When the native URL is
+    // unavailable we return a non-Core placeholder so the downstream
+    // generateInAppRequestPayload does NOT fall back to CORE_MOBILE_META
+    // (which would misattribute the request to https://core.app).
+    const icon = dappMetadata.current?.icon
     return {
-      name: meta?.name ?? new URL(nativeUrl).hostname,
+      name: hostname || 'Unknown site',
       description: '',
-      url: nativeUrl || meta?.url || '',
-      icons: meta?.icon ? [meta.icon] : []
+      url: hostname ? nativeUrl : '',
+      icons: icon ? [icon] : []
     }
   }, [])
 
-  const dispatchSigningRequest = useCallback(
-    async (id: number, method: string, params: unknown[]) => {
-      const rpcMethod = SIGNING_METHODS[method]
-      if (!rpcMethod) {
-        sendResponse(
-          id,
-          rpcErrors.methodNotFound(`Method not supported: ${method}`),
-          undefined
-        )
-        return
-      }
+  const activeAccountRef = useRef(activeAccount)
 
-      const caip2ChainId = getEvmCaip2ChainId(activeNetwork.chainId)
-      const request = createInAppRequest(dispatch)
+  useEffect(() => {
+    activeAccountRef.current = activeAccount
+  }, [activeAccount])
 
-      try {
-        const result = await request({
-          method: rpcMethod,
-          params,
-          chainId: caip2ChainId,
-          peerMeta: buildDappPeerMeta()
-        })
-        sendResponse(id, null, result)
-      } catch (e) {
-        sendResponse(id, e, undefined)
-      }
+  // Inject an accountsChanged emit gated on the page still being on `origin`
+  // (the same guard sendResponse uses). An emit racing a cross-origin
+  // navigation can find currentUrlRef briefly ahead of the JS context that
+  // injectJavaScript actually runs in, so without this gate one origin's
+  // granted addresses could leak into the next origin's page. Shared by every
+  // accountsChanged path (active-account switch, Connected Sites revoke, prime).
+  const injectAccountsChanged = useCallback(
+    (origin: string, serialized: string) => {
+      webViewRef.current?.injectJavaScript(
+        `if(window.location.origin===${JSON.stringify(
+          origin
+        )}){window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${serialized})};true;`
+      )
     },
-    [dispatch, activeNetwork.chainId, sendResponse, buildDappPeerMeta]
+    [webViewRef]
   )
+
+  // Propagate wallet active-account switches to the dApp. MetaMask users
+  // expect the wallet's account selector to drive the dApp's connected
+  // account — dApps in the in-app browser have no account picker of their own.
+  //   - new active IS granted at this origin → emit [active, ...otherGranted]
+  //     (active first) so the dApp follows the wallet.
+  //   - new active is NOT granted → emit [] so the dApp reflects a disconnected
+  //     state (transacting UI disabled). The injected signer always signs with
+  //     the active account, so we must never leave the dApp believing it can
+  //     transact as an account that won't actually sign (CP-14382).
+  // We don't short-circuit on an empty granted set: a revoke-then-switch (grants
+  // cleared via Connected Sites, then the user switches accounts) must still emit
+  // accountsChanged([]) to clear the dApp's stale _accounts, matching the prime
+  // path. A genuinely never-connected origin is already covered by the prime
+  // path's [] emit, so the dedupe below suppresses any redundant emit here.
+  useEffect(() => {
+    const origin = getOriginFromUrl(currentUrlRef.current)
+    if (!origin) return
+    const granted = selectGrantedAddressesForDomain({
+      domain: origin,
+      vmType: NetworkVMType.EVM
+    })(store.getState())
+
+    const accounts = resolveActiveConnectedAccounts(
+      granted,
+      activeAccount?.addressC
+    )
+    const serialized = JSON.stringify(accounts)
+    if (lastEmittedAccountsRef.current === serialized) return
+    lastEmittedAccountsRef.current = serialized
+    injectAccountsChanged(origin, serialized)
+  }, [activeAccount, store, injectAccountsChanged])
+
+  // Connected Sites revokes a dApp from another screen without changing this
+  // tab's active account, so only a store subscription can react (CP-14382).
+  useEffect(() => {
+    let prevGrants = store.getState().permissions.grants
+    return store.subscribe(() => {
+      // store.subscribe fires on every dispatch — bail unless grants changed.
+      const grants = store.getState().permissions.grants
+      if (grants === prevGrants) return
+      prevGrants = grants
+
+      const origin = getOriginFromUrl(currentUrlRef.current)
+      if (!origin) return
+
+      // What this origin may transact as now: active-first, or [] if the active
+      // account is no longer granted.
+      const granted = selectGrantedAddressesForDomain({
+        domain: origin,
+        vmType: NetworkVMType.EVM
+      })(store.getState())
+      const accounts = resolveActiveConnectedAccounts(
+        granted,
+        activeAccountRef.current?.addressC
+      )
+
+      // Shared dedupe ref so this never double-fires with the switch/prime paths.
+      const serialized = JSON.stringify(accounts)
+      if (lastEmittedAccountsRef.current === serialized) return
+      lastEmittedAccountsRef.current = serialized
+      injectAccountsChanged(origin, serialized)
+    })
+  }, [store, injectAccountsChanged])
+
+  // When this browser tab unmounts (tab closed), reject this tab's connect
+  // approval(s) with 4001 so the dApp's eth_requestAccounts promise settles
+  // instead of hanging until supersede or the 90s timeout, and advance/dismiss
+  // the modal if one of them was active. Inactive tabs stay mounted when
+  // switching tabs, so this does not run on tab switch. (CP-14385)
+  useEffect(() => {
+    return () => {
+      applyConnectNavEffect(
+        connectApprovalRegistry.rejectByTab(tabId, {
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
+      )
+    }
+  }, [tabId])
+
+  const requestConnectApproval = useCallback(
+    (peerMeta: PeerMeta, requestId: number): Promise<Account[]> => {
+      return new Promise<Account[]>((resolve, reject) => {
+        let settled = false
+        const safeResolve = (selected: Account[]): void => {
+          if (settled) return
+          settled = true
+          resolve(selected)
+          clearTimeout(fallbackTimer)
+        }
+        const safeReject = (err: unknown): void => {
+          if (settled) return
+          settled = true
+          reject(err)
+          clearTimeout(fallbackTimer)
+        }
+
+        // Register in the per-tab-keyed registry (replaces the single global
+        // cache slot). The registry mints a unique approvalId; a same-tab
+        // in-flight request is superseded in place (rejecting its promise); a
+        // concurrent OTHER tab is queued — neither clobbers the other (CP-14385).
+        const { approvalId, effect } = connectApprovalRegistry.request(
+          {
+            tabId,
+            requestId,
+            peerMeta,
+            approve: safeResolve,
+            reject: safeReject
+          },
+          {
+            code: EIP1193_USER_REJECTED_CODE,
+            message: USER_REJECTED_REQUEST_MESSAGE
+          }
+        )
+        applyConnectNavEffect(effect)
+
+        // Safety net: if the screen never mounts or calls back within 90s, reject
+        // so the dApp can surface an error instead of hanging. Timer is per
+        // request, started at creation, so queued requests are bounded too.
+        const fallbackTimer = setTimeout(() => {
+          applyConnectNavEffect(
+            connectApprovalRegistry.reject(approvalId, {
+              code: JSON_RPC_INTERNAL_ERROR_CODE,
+              message: CONNECT_PROMPT_TIMED_OUT_MESSAGE
+            })
+          )
+        }, CONNECT_APPROVAL_TIMEOUT_MS)
+      })
+    },
+    [tabId]
+  )
+
+  const router = useMemo(() => {
+    // requestSigning closes over dispatch + store.getState (the latter was
+    // added in CP-14159 so the in-app request payload can read the current
+    // network state). Construct inside the memo so it always picks up the
+    // latest references and rebuilds when dispatch changes.
+    const requestSigning = createInAppRequest(dispatch, store.getState)
+
+    // Read-only RPC goes through the VM module — the same `module.onRpcRequest`
+    // path WalletConnect uses — so method classification and proxying come from
+    // the module manifest rather than a hand-maintained allowlist + raw fetch
+    // (CP-14384). Uses the per-tab browser network (which can diverge from the
+    // wallet's active network via wallet_switchEthereumChain), not the active one.
+    const requestReadOnly: RouterDeps['requestReadOnly'] = async ({
+      id,
+      method,
+      params,
+      chainId
+    }) => {
+      // Prefer the ref (avoids re-allocating the merged network map on every
+      // read-only call — a hot path for polling dApps). Fall back to the store
+      // only on a miss: a chain just added via wallet_addEthereumChain that
+      // Redux has but the ref hasn't picked up yet. That keeps the common path
+      // allocation-free while still closing the stale-ref race.
+      const network =
+        allNetworksRef.current[chainId] ??
+        selectAllNetworks(store.getState())[chainId]
+      if (!network) {
+        throw rpcErrors.internal(`No network configured for chain ${chainId}`)
+      }
+      const caip2 = getEvmCaip2ChainId(chainId)
+      let module
+      try {
+        module = await ModuleManager.loadModule(caip2, method)
+      } catch (e) {
+        // Only an unsupported-method manifest rejection maps to methodNotFound;
+        // anything else (unsupported chainId, module init failure) is a real
+        // internal error and must not masquerade as -32601.
+        if (
+          e instanceof VmModuleErrors &&
+          e.name === ModuleErrors.UNSUPPORTED_METHOD
+        ) {
+          throw rpcErrors.methodNotFound(`Unsupported method: ${method}`)
+        }
+        Logger.error('[InjectedProvider] read-only module load failed', e)
+        throw rpcErrors.internal('Failed to load module for read-only request')
+      }
+      const peerMeta = getPeerMeta()
+      const response = await module.onRpcRequest(
+        {
+          requestId: String(id),
+          sessionId: String(tabId),
+          // Read-only methods aren't members of the RpcMethod (signing) enum,
+          // but the module proxies them at runtime — same cast the WC path makes.
+          method: method as RpcMethod,
+          chainId: caip2,
+          params,
+          dappInfo: {
+            name: peerMeta.name,
+            url: peerMeta.url,
+            icon: peerMeta.icons[0] ?? ''
+          }
+        },
+        mapToVmNetwork(network)
+      )
+      if ('error' in response) {
+        throw response.error
+      }
+      return response.result
+    }
+
+    return createInjectedProviderRouter({
+      getBrowserNetwork: () => browserNetworkRef.current,
+      setBrowserNetwork: net => {
+        browserNetworkRef.current = net
+      },
+      getAllNetworks: () => allNetworksRef.current,
+      tabId,
+      dispatch,
+      requestSigning,
+      requestReadOnly,
+      sendResponse,
+      emitEvent,
+      getNativeOrigin: () => getOriginFromUrl(currentUrlRef.current),
+      trackPendingOrigin: (id, origin) => {
+        pendingOrigins.current.set(id, origin)
+      },
+      getPeerMeta,
+      getActiveAccount: () => activeAccountRef.current,
+      getIsDeveloperMode: () => selectIsDeveloperMode(store.getState()),
+      getGrantedAddresses: ({ domain, vmType }) =>
+        selectGrantedAddressesForDomain({ domain, vmType })(store.getState()),
+      grantPermission: ({ domain, address, vmType }) =>
+        dispatch(grantPermissionAction({ domain, address, vmType })),
+      revokePermission: ({ domain, address, vmType }) =>
+        dispatch(revokePermissionAction({ domain, address, vmType })),
+      requestConnectApproval,
+      setActiveAccount: async accountId => {
+        await dispatch(setActiveAccountThunk(accountId))
+        // Freshen activeAccountRef synchronously: the connect handler reconciles
+        // (via getActiveAccount → this ref) immediately after awaiting this, but
+        // the ref's effect won't have run yet for this render — without this the
+        // reconcile would still see the pre-switch active account and 4100. The
+        // thunk applies the switch synchronously, so the store is authoritative
+        // here. (CP-14385)
+        activeAccountRef.current = selectActiveAccount(store.getState())
+      }
+    })
+  }, [
+    dispatch,
+    store,
+    tabId,
+    sendResponse,
+    emitEvent,
+    getPeerMeta,
+    requestConnectApproval
+  ])
+
+  // Publish the router to the ref so setCurrentUrl (defined above, fires on nav
+  // events) can call cancelByOrigin. useLayoutEffect (not useEffect) so the ref
+  // is populated synchronously on commit, before any WebView navigation event
+  // can fire — otherwise an early cross-origin nav could run setCurrentUrl with
+  // a null ref and silently skip the security-sensitive cancellation.
+  useLayoutEffect(() => {
+    routerRef.current = router
+  }, [router])
 
   const handleProviderMessage = useCallback(
-    (payload: string) => {
-      const respondWithError = (id: number, error: unknown): void =>
-        sendResponse(id, error, undefined)
-
-      const parsed = parseProviderPayload(payload, respondWithError)
-      if (!parsed) return
-
-      const { id, origin: pageOrigin, request: rpc } = parsed
-      const { method, params } = rpc
-
-      const nativeOrigin = getOriginFromUrl(currentUrlRef.current)
-      if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
-        Logger.warn(
-          `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
-        )
-      }
-
-      Logger.trace(`[InjectedProvider] ${method}`, params)
-
-      if (!ALLOWED_METHODS.has(method)) {
-        sendResponse(
-          id,
-          rpcErrors.methodNotFound(`Unsupported method: ${method}`),
-          undefined
-        )
-        return
-      }
-
-      if (nativeOrigin) {
-        pendingOrigins.current.set(id, nativeOrigin)
-      }
-
-      if (method === 'wallet_switchEthereumChain') {
-        Logger.info(
-          '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
-        )
-        sendResponse(id, null, null)
-      } else if (method in SIGNING_METHODS) {
-        if (!nativeOrigin) {
-          sendResponse(
-            id,
-            rpcErrors.internal('Origin unavailable — cannot sign'),
-            undefined
-          )
-          return
-        }
-        dispatchSigningRequest(id, method, params ?? [])
-      } else if (READ_ONLY_METHODS.has(method)) {
-        proxyToRpc(id, method, params ?? [])
-      }
-    },
-    [sendResponse, proxyToRpc, dispatchSigningRequest]
+    (payload: string) => router.handleProviderMessage(payload),
+    [router]
   )
 
+  // Emit accountsChanged for the current origin's connected accounts: the
+  // granted addresses (active first) when the active account is granted,
+  // otherwise [] (CP-14382). Driven by handleCommittedUrl (page load,
+  // cross-origin, and same-origin SPA navigation, via primeAccountsRef) so a
+  // freshly-mounted provider consumer on a new route re-establishes the
+  // connection. The injected signer always signs with the active account, so
+  // priming the granted set while an ungranted account is active would
+  // re-establish a phantom connection — emit [] instead.
+  const primeAccounts = useCallback(() => {
+    const origin = getOriginFromUrl(currentUrlRef.current)
+    const active = activeAccountRef.current
+    if (!origin || !active?.addressC) return
+    const granted = selectGrantedAddressesForDomain({
+      domain: origin,
+      vmType: NetworkVMType.EVM
+    })(store.getState())
+    const accounts = resolveActiveConnectedAccounts(granted, active.addressC)
+    const serialized = JSON.stringify(accounts)
+    lastEmittedAccountsRef.current = serialized
+    injectAccountsChanged(origin, serialized)
+  }, [store, injectAccountsChanged])
+  // Publish to the ref so handleCommittedUrl (defined above) can prime on every
+  // committed URL. useLayoutEffect (not a render-phase assignment) to match
+  // routerRef: the ref must be set synchronously on commit, before a navigation
+  // event can fire handleCommittedUrl and read it.
+  useLayoutEffect(() => {
+    primeAccountsRef.current = primeAccounts
+  }, [primeAccounts])
+
+  // Domain metadata is page-postable and arrives at the new document's
+  // DOMContentLoaded — before the navigation has committed from the native
+  // side, when currentUrlRef may still hold the PREVIOUS document's URL.
+  // Priming must therefore never run off this message (it would either no-op
+  // on first load or, worse, prime a cross-origin document with the previous
+  // origin's grant); only the favicon is kept. Priming is driven by
+  // handleCommittedUrl instead.
   const handleDomainMetadata = useCallback((payload: string) => {
     try {
       dappMetadata.current = JSON.parse(payload)
@@ -375,6 +721,6 @@ export function useEvmInjectedProvider(
     handleDomainMetadata,
     emitEvent,
     dappMetadata,
-    setCurrentUrl
+    handleCommittedUrl
   }
 }

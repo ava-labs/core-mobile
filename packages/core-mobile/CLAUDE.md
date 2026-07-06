@@ -150,7 +150,9 @@ See `docs/features.md` for feature-specific env requirements.
 **E2E Tests** (Appium/WebDriverIO)
 - Located in `e2e-appium/`
 - Smoke tests tagged with `[smoke]` or `[Smoke]`
-- Platform-specific runs available
+- Platform-specific runs: `yarn appium:android` / `yarn appium:ios` (set `APP_PATH` to your build)
+- Local device capabilities are resolved in `e2e-appium/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
+- AWS Device Farm packaging and env vars: `scripts/devicefarm/README.md`
 
 ### Multi-Chain Support
 
@@ -186,7 +188,7 @@ Key slices and their responsibilities:
 
 **Monorepo Context**
 - This is a package within a monorepo at `/Users/junghwan.jang/Workspace/core-mobile`
-- Workspace dependencies: `@avalabs/k2-alpine`, `react-native-nitro-avalabs-crypto`
+- Workspace dependency: `@avalabs/k2-alpine` (native crypto comes from the published `@avalabs/crypto-nitro` via `@avalabs/crypto-sdk`, not a workspace package)
 - Shared packages use `workspace:*` protocol
 
 **Build Configuration**
@@ -233,3 +235,9 @@ yarn test app/utils/FormatCurrency.test.ts
 - Reactotron is configured for debugging Redux and MMKV
 - Expo dev client includes dev menu (shake device)
 - Sentry captures production errors
+
+## Styling Conventions
+
+Visual / design conventions (fonts, weights, and more) live in a dedicated doc:
+
+@docs/styles.md

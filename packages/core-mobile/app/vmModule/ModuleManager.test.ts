@@ -1,6 +1,61 @@
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { EvmModule } from '@avalabs/evm-module'
+import { BitcoinModule } from '@avalabs/bitcoin-module'
+import { AvalancheModule } from '@avalabs/avalanche-module'
+import { SvmModule } from '@avalabs/svm-module'
+import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
+import { WalletType } from 'services/wallet/types'
+import {
+  KeystoneErrors,
+  KeystoneWalletError
+} from 'services/wallet/KeystoneWallet/errors'
 import { VmModuleErrors } from './errors'
+
+// Keep real module instances so chainId/namespace lookups still hit real
+// manifests in the other tests; only stub the derivation pipeline.
+//
+// The default mocks key addresses off the *batch position* `i`, which the
+// positional-merge tests below rely on. The Keystone tests re-mock by the
+// real `accountIndex` (a single-index batch per index) so per-index
+// assertions are meaningful.
+const mockEvmResolved = (): void => {
+  jest
+    .spyOn(EvmModule.prototype, 'deriveAddresses')
+    .mockImplementation(async ({ accountIndices }) =>
+      accountIndices.map((_, i) => ({ [NetworkVMType.EVM]: `0xevm${i}` }))
+    )
+}
+const mockBtcResolved = (): void => {
+  jest
+    .spyOn(BitcoinModule.prototype, 'deriveAddresses')
+    .mockImplementation(async ({ accountIndices, network }) =>
+      accountIndices.map((_, i) => ({
+        [NetworkVMType.BITCOIN]: `${network.isTestnet ? 'tb1' : 'bc1'}btc${i}`
+      }))
+    )
+}
+const mockAvalancheResolved = (): void => {
+  jest
+    .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+    .mockImplementation(async ({ accountIndices }) =>
+      accountIndices.map((_, i) => ({
+        [NetworkVMType.AVM]: `X-avax${i}`,
+        [NetworkVMType.PVM]: `P-avax${i}`,
+        [NetworkVMType.CoreEth]: `C-avax${i}`
+      }))
+    )
+}
+const mockSvmResolved = (): void => {
+  jest
+    .spyOn(SvmModule.prototype, 'deriveAddresses')
+    .mockImplementation(async ({ accountIndices }) =>
+      accountIndices.map((_, i) => ({ [NetworkVMType.SVM]: `svm${i}` }))
+    )
+}
+mockEvmResolved()
+mockBtcResolved()
+mockAvalancheResolved()
+mockSvmResolved()
 
 describe('ModuleManager', () => {
   describe('not initialized', () => {
@@ -80,6 +135,230 @@ describe('ModuleManager', () => {
       } catch (e) {
         expect((e as VmModuleErrors).name).toBe('UNSUPPORTED_CHAIN_ID')
       }
+    })
+  })
+
+  describe('deriveAllAddresses', () => {
+    it('returns an empty array when accountIndices is empty', async () => {
+      const result = await ModuleManager.deriveAllAddresses({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC,
+        accountIndices: [],
+        network: { isTestnet: false } as Network
+      })
+      expect(result).toEqual([])
+    })
+
+    it('passes a single index through and returns one record', async () => {
+      const result = await ModuleManager.deriveAllAddresses({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC,
+        accountIndices: [7],
+        network: { isTestnet: false } as Network
+      })
+      expect(result).toHaveLength(1)
+      expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
+      expect(result[0]?.[NetworkVMType.CoreEth]).toBe('C-avax0')
+    })
+
+    it('merges per-module batch results positionally', async () => {
+      const result = await ModuleManager.deriveAllAddresses({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC,
+        accountIndices: [0, 1, 2],
+        network: { isTestnet: false } as Network
+      })
+      expect(result).toHaveLength(3)
+      expect(result.map(r => r?.[NetworkVMType.AVM])).toEqual([
+        'X-avax0',
+        'X-avax1',
+        'X-avax2'
+      ])
+      expect(result.map(r => r?.[NetworkVMType.SVM])).toEqual([
+        'svm0',
+        'svm1',
+        'svm2'
+      ])
+    })
+
+    it('returns undefined slots when a module rejects so partial failure is not masked', async () => {
+      jest
+        .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+        .mockRejectedValueOnce(new Error('xp pubkey unavailable'))
+
+      const result = await ModuleManager.deriveAllAddresses({
+        walletId: 'w1',
+        walletType: WalletType.MNEMONIC,
+        accountIndices: [0, 1],
+        network: { isTestnet: false } as Network
+      })
+      // A single module rejection means that chain is missing for every index
+      // in the batch, so no index can produce a complete record. We surface
+      // `undefined` rather than empty-string addresses so downstream
+      // `!addresses` guards engage instead of treating the account as valid.
+      expect(result).toEqual([undefined, undefined])
+    })
+
+    describe('Solana exclusion for Keystone', () => {
+      afterEach(() => {
+        // Restore the default resolving Solana mock so later tests are unaffected.
+        mockSvmResolved()
+      })
+
+      it('still derives a Keystone account when the Solana module rejects', async () => {
+        // Keystone hardware cannot derive Solana (ED25519) addresses, so the
+        // Solana module rejects. This must NOT discard the whole account.
+        jest
+          .spyOn(SvmModule.prototype, 'deriveAddresses')
+          .mockRejectedValue(new Error('ED25519 not supported'))
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.KEYSTONE,
+          accountIndices: [0],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toHaveLength(1)
+        expect(result[0]).toBeDefined()
+        expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
+        expect(result[0]?.[NetworkVMType.AVM]).toBe('X-avax0')
+        expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc0')
+        // Solana is not derivable for Keystone; the address is simply absent.
+        expect(result[0]?.[NetworkVMType.SVM]).toBeFalsy()
+      })
+
+      it('still fails closed when the Solana module rejects for a non-Keystone wallet', async () => {
+        jest
+          .spyOn(SvmModule.prototype, 'deriveAddresses')
+          .mockRejectedValue(new Error('transient svm failure'))
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.MNEMONIC,
+          accountIndices: [0],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toEqual([undefined])
+      })
+    })
+
+    describe('Keystone non-primary X/P handling', () => {
+      // Re-mock EVM/BTC/AVM by the real account index (the Keystone path
+      // derives one index per batch) so per-index assertions actually prove
+      // index 1 differs from index 0.
+      const mockByAccountIndex = (): void => {
+        jest
+          .spyOn(EvmModule.prototype, 'deriveAddresses')
+          .mockImplementation(async ({ accountIndices }) =>
+            accountIndices.map(index => ({
+              [NetworkVMType.EVM]: `0xevm${index}`
+            }))
+          )
+        jest
+          .spyOn(BitcoinModule.prototype, 'deriveAddresses')
+          .mockImplementation(async ({ accountIndices, network }) =>
+            accountIndices.map(index => ({
+              [NetworkVMType.BITCOIN]: `${
+                network.isTestnet ? 'tb1' : 'bc1'
+              }btc${index}`
+            }))
+          )
+      }
+
+      // The Avalanche module rejects with the typed Keystone error for any
+      // batch whose account index is non-zero — mirroring
+      // KeystoneWallet.getPublicKey throwing for m/44'/9000'/N'/0/0 (N > 0) —
+      // and resolves index 0 to the primary account's X/P addresses.
+      const mockAvalancheRejectsNonPrimary = (): void => {
+        jest
+          .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+          .mockImplementation(async ({ accountIndices }) => {
+            if (accountIndices.some(index => index > 0)) {
+              throw new KeystoneWalletError({
+                name: KeystoneErrors.UNSUPPORTED_XP_DERIVATION,
+                message: 'Keystone cannot derive X/P for non-primary account'
+              })
+            }
+            return accountIndices.map(index => ({
+              [NetworkVMType.AVM]: `X-avax${index}`,
+              [NetworkVMType.PVM]: `P-avax${index}`,
+              [NetworkVMType.CoreEth]: `C-avax${index}`
+            }))
+          })
+      }
+
+      beforeEach(() => {
+        mockByAccountIndex()
+      })
+
+      afterEach(() => {
+        // Restore the default position-based mocks for the other suites.
+        mockEvmResolved()
+        mockBtcResolved()
+        mockAvalancheResolved()
+        mockSvmResolved()
+      })
+
+      it('creates a non-primary Keystone account with EVM/BTC but empty X/P', async () => {
+        mockAvalancheRejectsNonPrimary()
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.KEYSTONE,
+          accountIndices: [1],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toHaveLength(1)
+        expect(result[0]).toBeDefined()
+        // EVM + BTC are derivable from the shared account-0 xpub.
+        expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm1')
+        expect(result[0]?.[NetworkVMType.BITCOIN]).toBe('bc1btc1')
+        // X/P (and Solana) are absent for a non-primary Keystone account.
+        expect(result[0]?.[NetworkVMType.AVM]).toBeFalsy()
+        expect(result[0]?.[NetworkVMType.PVM]).toBeFalsy()
+        expect(result[0]?.[NetworkVMType.CoreEth]).toBeFalsy()
+        expect(result[0]?.[NetworkVMType.SVM]).toBeFalsy()
+      })
+
+      it('keeps X/P for the primary account while omitting it for non-primary accounts in the same batch', async () => {
+        mockAvalancheRejectsNonPrimary()
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.KEYSTONE,
+          accountIndices: [0, 1],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toHaveLength(2)
+        // Primary account retains its X/P addresses.
+        expect(result[0]).toBeDefined()
+        expect(result[0]?.[NetworkVMType.AVM]).toBe('X-avax0')
+        expect(result[0]?.[NetworkVMType.EVM]).toBe('0xevm0')
+        // Non-primary account is still created, just without X/P.
+        expect(result[1]).toBeDefined()
+        expect(result[1]?.[NetworkVMType.EVM]).toBe('0xevm1')
+        expect(result[1]?.[NetworkVMType.AVM]).toBeFalsy()
+      })
+
+      it('still fails closed for a Keystone account when the Avalanche module rejects for a genuine reason', async () => {
+        // A non-sentinel rejection (transient/real failure) must NOT be masked.
+        jest
+          .spyOn(AvalancheModule.prototype, 'deriveAddresses')
+          .mockRejectedValue(new Error('transient avalanche failure'))
+
+        const result = await ModuleManager.deriveAllAddresses({
+          walletId: 'w1',
+          walletType: WalletType.KEYSTONE,
+          accountIndices: [1],
+          network: { isTestnet: false } as Network
+        })
+
+        expect(result).toEqual([undefined])
+      })
     })
   })
 })

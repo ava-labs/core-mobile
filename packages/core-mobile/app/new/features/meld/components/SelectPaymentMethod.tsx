@@ -93,7 +93,6 @@ export const SelectPaymentMethod = ({
             sx={{
               fontSize: 16,
               lineHeight: 22,
-              fontWeight: 400,
               color: colors.$textPrimary
             }}>
             Change provider

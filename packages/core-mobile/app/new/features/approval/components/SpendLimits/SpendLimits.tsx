@@ -1,4 +1,8 @@
-import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
+import {
+  bigIntToString,
+  TokenUnit,
+  truncateAddress
+} from '@avalabs/core-utils-sdk'
 import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
@@ -7,7 +11,9 @@ import { MaxUint256 } from 'ethers'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
-import React, { useMemo } from 'react'
+import { copyToClipboard } from 'new/common/utils/clipboard'
+import React, { useCallback, useMemo } from 'react'
+import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { SpendLimitOptions } from './SpendLimitOptions'
@@ -27,6 +33,13 @@ export const SpendLimits = ({
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const spendLimit = spendLimits[0]
+  const spenderAddress = spendLimit?.tokenApproval.spenderAddress
+
+  const handleCopySpenderAddress = useCallback(() => {
+    if (spenderAddress) {
+      copyToClipboard(spenderAddress, 'Address copied')
+    }
+  }, [spenderAddress])
 
   const data = useMemo(() => {
     if (!spendLimit) return []
@@ -66,7 +79,7 @@ export const SpendLimits = ({
       }
     ]
 
-    return [
+    const items = [
       {
         title: 'Spend limit',
         value: (
@@ -78,7 +91,25 @@ export const SpendLimits = ({
         )
       }
     ]
-  }, [spendLimit, onSelect])
+
+    if (spenderAddress) {
+      items.push({
+        title: 'Spender',
+        value: (
+          <Pressable onPress={handleCopySpenderAddress}>
+            <Text
+              variant="mono"
+              numberOfLines={1}
+              sx={{ fontSize: 15, lineHeight: 22, color: '$textSecondary' }}>
+              {truncateAddress(spenderAddress, 8)}
+            </Text>
+          </Pressable>
+        )
+      })
+    }
+
+    return items
+  }, [spendLimit, onSelect, spenderAddress, handleCopySpenderAddress])
 
   const tokenValue = spendLimit?.value?.bn
   const tokenDecimals =

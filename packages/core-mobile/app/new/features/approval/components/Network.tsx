@@ -1,15 +1,19 @@
 import React from 'react'
 import { View, Text, alpha, useTheme } from '@avalabs/k2-alpine'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { TokenLogo } from 'new/common/components/TokenLogo'
+import { NetworkLogo } from 'new/common/components/NetworkLogo'
 
 export const Network = ({
   logoUri,
   symbol,
-  name
+  name,
+  chainId
 }: {
   logoUri: string | undefined
   symbol?: string
   name: string
+  chainId?: number
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -41,7 +45,17 @@ export const Network = ({
           flex: 1,
           justifyContent: 'flex-end'
         }}>
-        <TokenLogo logoUri={logoUri} symbol={symbol} size={24} />
+        {chainId !== undefined && (isPChain(chainId) || isXChain(chainId)) ? (
+          <NetworkLogo
+            logoUri={logoUri}
+            chainId={chainId}
+            size={24}
+            chainBadgeBorderColor={colors.$surfaceSecondary}
+          />
+        ) : (
+          <TokenLogo logoUri={logoUri} symbol={symbol} size={24} />
+        )}
+
         <Text
           testID={`network__${name}`}
           variant="body1"

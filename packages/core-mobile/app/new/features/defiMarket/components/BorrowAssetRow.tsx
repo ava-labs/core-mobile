@@ -1,12 +1,12 @@
 import React from 'react'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { Network } from '@avalabs/core-chains-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { DeFiRowItem } from 'features/portfolio/defi/components/DeFiRowItem'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from './DefiAssetLogo'
 
@@ -17,7 +17,7 @@ interface BorrowAssetRowProps {
   network: Network
   label: string
   labelColor?: string
-  amount: number
+  amount: TokenUnit
   amountUsd: number
 }
 
@@ -65,14 +65,14 @@ export function BorrowAssetRow({
         {isPrivacyModeEnabled ? (
           <HiddenBalanceText
             variant="heading3"
-            sx={{ fontWeight: '500', marginTop: 2 }}
+            sx={{ fontFamily: 'Inter-Medium', marginTop: 2 }}
           />
         ) : (
           <>
             <Text
               variant="heading2"
-              sx={{ color: '$textPrimary', fontWeight: '500' }}>
-              {formatNumber(amount)}
+              sx={{ color: '$textPrimary', fontFamily: 'Inter-Medium' }}>
+              {amount.toDisplay()}
             </Text>
             <Text
               variant="subtitle2"

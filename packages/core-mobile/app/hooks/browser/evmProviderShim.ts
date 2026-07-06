@@ -17,6 +17,11 @@
  *   )
  */
 import {
+  BRIDGE_UNAVAILABLE_MESSAGE,
+  JSON_RPC_INTERNAL_ERROR_CODE,
+  JSON_RPC_RESOURCE_UNAVAILABLE_CODE
+} from './injectedProvider/errors'
+import {
   INJECTED_PROVIDER_NAME,
   INJECTED_PROVIDER_RDNS,
   INJECTED_PROVIDER_ICON
@@ -24,11 +29,13 @@ import {
 
 export function buildEvmProviderShim({
   chainId,
-  address,
   uuid
 }: {
   chainId: string // hex, e.g. '0xa86a'
-  address: string // e.g. '0x1234...'
+  // Accepted for caller compatibility but intentionally NOT embedded: accounts
+  // are primed via __coreProviderEmit('accountsChanged', ...) after the user
+  // approves a connection, never pre-seeded into the shim. See tests.
+  address?: string
   uuid: string // stable UUIDv4 persisted across restarts
 }): string {
   return `(function() {
@@ -57,30 +64,74 @@ export function buildEvmProviderShim({
   if (!doctypeCheck() || !suffixCheck() || !documentElementCheck()) return;
 
   // ──────────────────────────────────────────────
-  // 2. State
+  // 2. Desktop user-agent override (DEFERRED)
+  // ──────────────────────────────────────────────
+  // dApp wallet-connect libraries (RainbowKit, Web3Modal, etc.) render
+  // a stripped-down mobile modal that hides EIP-6963 injected wallets.
+  // Their desktop modals show all detected wallets including an
+  // "Installed" section.  Overriding navigator.userAgent to a desktop
+  // string makes these libraries render the full desktop connect UI.
+  //
+  // IMPORTANT: The override is DEFERRED until after page load so that
+  // dApps can still detect the mobile environment during initialisation
+  // and auto-connect to window.ethereum (e.g. Aave, Uniswap).
+  // Once the page has loaded, the override activates — any connect modal
+  // opened afterwards (RainbowKit, Web3Modal) will render the desktop UI
+  // that shows EIP-6963 detected wallets.
+  var _desktopUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+  var _uaOverridden = false;
+  function _applyDesktopUA() {
+    if (_uaOverridden) return;
+    _uaOverridden = true;
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        get: function() { return _desktopUA; },
+        configurable: true
+      });
+    } catch(_e) {}
+  }
+  window.addEventListener('load', function() { setTimeout(_applyDesktopUA, 200); });
+  setTimeout(_applyDesktopUA, 4000);
+
+  // ──────────────────────────────────────────────
+  // 3. State
   // ──────────────────────────────────────────────
   var _requestId = 0;
   var _callbacks = {};
   var _listeners = {};
   var _pendingInteractive = {};
   var INTERACTIVE_METHODS = {
-    'wallet_switchEthereumChain': true,
-    'wallet_addEthereumChain': true
+    'eth_requestAccounts': true,
+    'wallet_requestPermissions': true,
+    'wallet_addEthereumChain': true,
+    'wallet_watchAsset': true
   };
   var _chainId = '${chainId}';
-  var _address = '${address}';
-  var _connected = !!_address;
-  var _accounts = _address ? [_address] : [];
+  // _accounts is seeded empty. Native primes it via
+  // __coreProviderEmit('accountsChanged', [...]) on page load if the origin
+  // already has a permission grant; otherwise the dApp must call
+  // eth_requestAccounts to trigger the approval UI.
+  var _accounts = [];
+
+  // EIP-1193 connection state. isConnected() tracks disconnect (false) and
+  // connect/chainChanged (true), since some dApps poll isConnected() and ignore
+  // the event. Native keeps the shared provider alive across a non-EVM active
+  // network (avalanche_* is network-independent, CP-13672) rather than emitting
+  // disconnect, but a real disconnect event is still honored per EIP-1193.
+  var _connected = true;
 
   // ──────────────────────────────────────────────
-  // 3. Native response / event bridge
+  // 4. Native response / event bridge
   // ──────────────────────────────────────────────
   window.__coreProviderRespond = function(id, error, result) {
     var cb = _callbacks[id];
     if (!cb) return;
     delete _callbacks[id];
     if (error) {
-      cb.reject(typeof error === 'object' ? error : { code: -32603, message: String(error) });
+      var e = new Error(error.message || 'Unknown error');
+      e.code = error.code;
+      if (error.data !== undefined) { e.data = error.data; }
+      cb.reject(e);
     } else {
       cb.resolve(result);
     }
@@ -91,12 +142,42 @@ export function buildEvmProviderShim({
       _chainId = data;
       provider.chainId = data;
       provider.networkVersion = String(parseInt(data, 16));
+      // Re-pointing to a servable EVM chain recovers from a CP-13671 disconnect.
+      _connected = true;
     }
     if (eventName === 'accountsChanged') {
       _accounts = data || [];
       provider.selectedAddress = _accounts.length > 0 ? _accounts[0] : null;
     }
+    if (eventName === 'connect') {
+      _connected = true;
+    }
+    if (eventName === 'disconnect') {
+      _connected = false;
+    }
+    // Keep the legacy _isConnected property in sync with the flag for dApps
+    // that read provider._isConnected directly instead of calling isConnected().
+    provider._isConnected = _connected;
     emit(eventName, data);
+  };
+
+  // Idempotent chain re-assertion used by the native per-commit hook to correct a
+  // fresh document whose baked chainId is stale (full reload / cross-origin nav /
+  // pull-to-refresh). Deduped against the live _chainId: a same-origin SPA
+  // navigation that did NOT change chains — or a re-assert that races a still
+  // pending wallet_switchEthereumChain — is a no-op, so listeners never churn and
+  // we never fight the optimistic emit (React #185). Kept distinct from
+  // __coreProviderEmit so the CP-13671 disconnect->same-chain recovery path, which
+  // legitimately re-emits the current chainId to flip _connected back on, is
+  // unaffected by this dedupe.
+  window.__coreProviderReassertChain = function(data) {
+    // Compare numerically, not by string: _chainId may hold a non-canonical hex
+    // a dApp supplied via wallet_addEthereumChain (leading zeros / uppercase, e.g.
+    // '0x0539', '0xA86A'), while the native re-assert always sends canonical
+    // '0x'+n.toString(16). A string compare would miss those and emit a spurious
+    // same-chain chainChanged; parseInt makes the dedupe format/case-insensitive.
+    if (parseInt(data, 16) === parseInt(_chainId, 16)) return;
+    window.__coreProviderEmit('chainChanged', data);
   };
 
   function emit(eventName, data) {
@@ -108,13 +189,12 @@ export function buildEvmProviderShim({
   }
 
   // ──────────────────────────────────────────────
-  // 4. EIP-1193 provider
+  // 5. EIP-1193 provider
   // ──────────────────────────────────────────────
   var provider = {
     isMetaMask: true,
-    isCore: true,
     isAvalanche: true,
-    _isConnected: _connected,
+    _isConnected: true,
 
     request: function(args) {
       if (!args || typeof args.method !== 'string') {
@@ -135,44 +215,76 @@ export function buildEvmProviderShim({
         return Promise.resolve(String(parseInt(_chainId, 16)));
       }
       if (method === 'eth_coinbase') {
-        return Promise.resolve(_address || null);
+        return Promise.resolve(_accounts.length > 0 ? _accounts[0] : null);
       }
-      if (method === 'eth_requestAccounts') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _connected = true;
-        provider._isConnected = true;
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() {
-          emit('connect', { chainId: _chainId });
-          emit('accountsChanged', _accounts);
-        }, 0);
-        return Promise.resolve([_address]);
-      }
-      if (method === 'wallet_requestPermissions') {
-        if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _connected = true;
-        provider._isConnected = true;
-        _accounts = [_address];
-        provider.selectedAddress = _address;
-        setTimeout(function() { emit('accountsChanged', _accounts); }, 0);
-        return Promise.resolve([{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
-        }]);
-      }
-      if (method === 'wallet_getPermissions') {
-        var perms = _address ? [{
-          parentCapability: 'eth_accounts',
-          date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
-        }] : [];
-        return Promise.resolve(perms);
+      // Connect + permission methods round-trip to native so the user is prompted
+      // (eth_requestAccounts, wallet_requestPermissions) or the permissions slice
+      // is consulted (wallet_getPermissions, wallet_revokePermissions). The shim
+      // keeps _accounts in sync via __coreProviderEmit on 'accountsChanged'.
+
+      // wallet_switchEthereumChain: optimistically update local chain state
+      // SYNCHRONOUSLY before the bridge round-trip.  This fires chainChanged
+      // before wagmi sets status:'pending', so ConnectKit re-renders already
+      // see the target chainId and don't call switchChain again — preventing
+      // the React error #185 infinite-loop that occurs over an async bridge.
+      if (method === 'wallet_switchEthereumChain') {
+        if (_pendingInteractive['wallet_switchEthereumChain']) {
+          return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'wallet_switchEthereumChain already pending' });
+        }
+        var swTargetChainId = (params[0] && params[0].chainId) || null;
+        // Normalize to canonical lowercase hex ('0x'+n.toString(16)) so eth_chainId
+        // and chainChanged never expose a dApp-supplied non-canonical form ('1',
+        // '0x01', '0xA86A'). This also keeps the per-commit __coreProviderReassertChain
+        // dedupe (numeric) consistent: without it a malformed _chainId could never
+        // be corrected to canonical, and an uppercase target would spuriously
+        // re-emit chainChanged for the same chain. CP-14615.
+        if (swTargetChainId) {
+          var swParsed = parseInt(swTargetChainId, 16);
+          if (!isNaN(swParsed)) { swTargetChainId = '0x' + swParsed.toString(16); }
+        }
+        if (swTargetChainId && swTargetChainId !== _chainId) {
+          _chainId = swTargetChainId;
+          provider.chainId = swTargetChainId;
+          provider.networkVersion = String(parseInt(swTargetChainId, 16));
+          emit('chainChanged', swTargetChainId);
+        }
+        _pendingInteractive['wallet_switchEthereumChain'] = true;
+        var swId = ++_requestId;
+        return new Promise(function(resolve, reject) {
+          _callbacks[swId] = {
+            resolve: function(r) {
+              delete _pendingInteractive['wallet_switchEthereumChain'];
+              resolve(r);
+            },
+            reject: function(e) {
+              delete _pendingInteractive['wallet_switchEthereumChain'];
+              // Do NOT roll back _chainId on rejection. Rolling back fires
+              // chainChanged(original), which ConnectKit's "ensure correct chain"
+              // useEffect sees as a mismatch and re-calls switchChain — producing
+              // React error #185 (infinite update loop). wagmi enters status:'error'
+              // from the EIP-1193 user-rejected rejection; keeping _chainId at target prevents the
+              // re-trigger. The dApp receives that rejection and shows its rejection UX.
+              reject(e);
+            }
+          };
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              method: 'provider_request',
+              payload: JSON.stringify({
+                id: swId,
+                origin: window.location.origin,
+                request: { method: method, params: params }
+              })
+            }));
+          } catch(swErr) {
+            delete _pendingInteractive['wallet_switchEthereumChain'];
+            reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
+          }
+        });
       }
 
       if (INTERACTIVE_METHODS[method] && _pendingInteractive[method]) {
-        return Promise.reject({ code: -32002, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
+        return Promise.reject({ code: ${JSON_RPC_RESOURCE_UNAVAILABLE_CODE}, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
       }
       var isInteractive = !!INTERACTIVE_METHODS[method];
       if (isInteractive) _pendingInteractive[method] = true;
@@ -205,7 +317,7 @@ export function buildEvmProviderShim({
         } catch(e) {
           delete _callbacks[id];
           if (isInteractive) delete _pendingInteractive[method];
-          reject({ code: -32603, message: 'Bridge unavailable' });
+          reject({ code: ${JSON_RPC_INTERNAL_ERROR_CODE}, message: '${BRIDGE_UNAVAILABLE_MESSAGE}' });
         }
       });
     },
@@ -236,16 +348,17 @@ export function buildEvmProviderShim({
     on: function(event, fn) {
       if (!_listeners[event]) _listeners[event] = [];
       _listeners[event].push(fn);
-      // Auto-fire for already-connected state so wagmi's connector
-      // picks up the connection during setup() and triggers auto-connect
-      if (_connected && _accounts.length > 0) {
-        if (event === 'connect') {
-          setTimeout(function() { try { fn({ chainId: _chainId }); } catch(e) {} }, 0);
-        } else if (event === 'accountsChanged') {
-          setTimeout(function() { try { fn(_accounts.slice()); } catch(e) {} }, 0);
-        }
-      }
       return provider;
+    },
+    addListener: function(event, fn) {
+      return provider.on(event, fn);
+    },
+    once: function(event, fn) {
+      function wrapped(data) {
+        provider.removeListener(event, wrapped);
+        fn(data);
+      }
+      return provider.on(event, wrapped);
     },
     removeListener: function(event, fn) {
       var fns = _listeners[event];
@@ -253,23 +366,36 @@ export function buildEvmProviderShim({
       _listeners[event] = fns.filter(function(f) { return f !== fn; });
       return provider;
     },
+    off: function(event, fn) {
+      return provider.removeListener(event, fn);
+    },
     removeAllListeners: function(event) {
       if (event) delete _listeners[event];
       else _listeners = {};
       return provider;
+    },
+    listenerCount: function(event) {
+      return (_listeners[event] || []).length;
+    },
+    listeners: function(event) {
+      return (_listeners[event] || []).slice();
     },
 
     isConnected: function() {
       return _connected;
     },
 
+    _metamask: {
+      isUnlocked: function() { return Promise.resolve(true); }
+    },
+
     chainId: _chainId,
     networkVersion: String(parseInt(_chainId, 16)),
-    selectedAddress: _address || null
+    selectedAddress: null
   };
 
   // ──────────────────────────────────────────────
-  // 5. Install provider globals
+  // 6. Install provider globals
   // ──────────────────────────────────────────────
   // window.ethereum — standard EIP-1193 provider
   Object.defineProperty(window, 'ethereum', {
@@ -278,8 +404,7 @@ export function buildEvmProviderShim({
     configurable: false
   });
 
-  // window.core — RainbowKit/wagmi Core wallet connectors look for
-  // window.core?.ethereum to get the provider
+  // window.core — some dApps check window.core?.ethereum for Core wallet
   var coreNamespace = { ethereum: provider, isCore: true };
   Object.defineProperty(window, 'core', {
     get: function() { return coreNamespace; },
@@ -287,7 +412,7 @@ export function buildEvmProviderShim({
     configurable: false
   });
 
-  // window.avalanche — fallback used by some Core wallet connectors
+  // window.avalanche — legacy Core wallet detection used by some dApps
   Object.defineProperty(window, 'avalanche', {
     get: function() { return provider; },
     set: function() {},
@@ -295,30 +420,53 @@ export function buildEvmProviderShim({
   });
 
   // ──────────────────────────────────────────────
-  // 6. EIP-6963 announcement
+  // 7. EIP-6963 announcement
   // ──────────────────────────────────────────────
-  var providerInfo = {
+  var providerInfo = Object.freeze({
     uuid: '${uuid}',
     name: '${INJECTED_PROVIDER_NAME}',
     icon: '${INJECTED_PROVIDER_ICON}',
     rdns: '${INJECTED_PROVIDER_RDNS}'
-  };
+  });
+
+  var _providerDetail = Object.freeze({
+    info: providerInfo,
+    provider: provider
+  });
 
   function announceProvider() {
     window.dispatchEvent(new CustomEvent('eip6963:announceProvider', {
-      detail: Object.freeze({ info: providerInfo, provider: provider })
+      detail: _providerDetail
     }));
   }
   window.addEventListener('eip6963:requestProvider', announceProvider);
+
   announceProvider();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', announceProvider);
+  }
+  window.addEventListener('load', announceProvider);
+
+  setTimeout(announceProvider, 100);
+  setTimeout(announceProvider, 1000);
+  setTimeout(announceProvider, 3000);
 
   // ──────────────────────────────────────────────
-  // 7. Legacy events
+  // 8. Legacy events & initial EIP-1193 connect
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
+  // window.avalanche aliases this same provider; announce it too so X/P dApps
+  // that wait on avalanche#initialized detect Core. (CP-13672)
+  window.dispatchEvent(new Event('avalanche#initialized'));
+
+  // EIP-1193: signal initial network connectivity.
+  // Fired once via macrotask so that page scripts registering
+  // listeners synchronously during HTML parsing can receive it.
+  // disconnect is reserved for actual network/bridge loss.
+  setTimeout(function() { emit('connect', { chainId: _chainId }); }, 0);
 
   // ──────────────────────────────────────────────
-  // 8. Send domain metadata to native (deferred until DOM is ready)
+  // 9. Send domain metadata to native (deferred until DOM is ready)
   // ──────────────────────────────────────────────
   function safeSend(msg) {
     try {
@@ -349,31 +497,6 @@ export function buildEvmProviderShim({
   } else {
     document.addEventListener('DOMContentLoaded', sendDomainMetadata);
   }
-
-  // ──────────────────────────────────────────────
-  // 9. SPA navigation listener
-  // ──────────────────────────────────────────────
-  (function() {
-    var lastUrl = window.location.href;
-    function onUrlChange() {
-      var newUrl = window.location.href;
-      if (newUrl !== lastUrl) {
-        lastUrl = newUrl;
-        safeSend({ method: 'nav_change', payload: newUrl });
-      }
-    }
-    var origPushState = history.pushState;
-    history.pushState = function() {
-      origPushState.apply(history, arguments);
-      onUrlChange();
-    };
-    var origReplaceState = history.replaceState;
-    history.replaceState = function() {
-      origReplaceState.apply(history, arguments);
-      onUrlChange();
-    };
-    window.addEventListener('popstate', onUrlChange);
-  })();
 
   safeSend({ method: 'log', payload: 'Core EVM provider injected (chainId=' + _chainId + ')' });
 })();`

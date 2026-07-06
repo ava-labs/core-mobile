@@ -3,7 +3,13 @@ import { ChannelId } from 'services/notifications/channels'
 
 export enum NotificationTypes {
   BALANCE_CHANGES = 'BALANCE_CHANGES',
-  NEWS = 'NEWS'
+  NEWS = 'NEWS',
+  // Recurring swap (DCA) per-order progress. Subscribed via
+  // `subscribeForRecurringSwap`; payload shape comes from the
+  // notification-sender webhook fanout (Sarp's PR #172 / #174). Backend
+  // gates these behind the device's balance-notification preference and
+  // owns subscription teardown — no client-side unsubscribe path.
+  RECURRING_SWAP = 'RECURRING_SWAP'
 }
 
 export enum NewsEvents {
@@ -32,6 +38,38 @@ export const BalanceChangeDataSchema = object({
   url: string() // we need this url to deeplink to in-app browser or screens.
 })
 
+// Recurring swap execution / completion / failure notification. All numeric
+// fields are sent as strings on the wire because FCM data payloads are
+// `Record<string, string>`-shaped — the per-order delta is computed
+// server-side (`executedOrders` / `remainingOrders` cursors). `reasonCode`
+// is set only on `status === 'failed'` and carries a known wire code (e.g.
+// `'2'` insufficient balance, `'3'` insufficient allowance); unknown codes
+// are tolerated (forwarded to analytics but not surfaced as a push).
+//
+// `numberOfOrders === '-1'` is the SDK's unlimited sentinel (matches
+// `RECURRING_UNLIMITED_ORDERS_SENTINEL`); the in-app row formats that as ∞.
+//
+// No `title` / `body` here — those live on the envelope (`notification`
+// field) so the backend can localize / version the copy without the
+// client schema needing to chase. The data block carries the machine-
+// readable progress fields the in-app notification list + deep-link
+// routing need.
+export const RecurringSwapDataSchema = object({
+  type: literal(NotificationTypes.RECURRING_SWAP),
+  orderId: string(),
+  owner: string().startsWith('0x'),
+  chainId: string(),
+  numberOfOrders: string(),
+  executedOrders: string(),
+  remainingOrders: string(),
+  tokenIn: string().startsWith('0x'),
+  tokenOut: string().startsWith('0x'),
+  amountIn: string(),
+  amountOut: string(),
+  status: string(),
+  reasonCode: string().optional()
+})
+
 // news notification covers the following:
 // 1/ automated price alerts (fixed list of tokens):
 //    uses urlV2 with internalId
@@ -52,7 +90,7 @@ export const NewsDataSchema = object({
 })
 
 export const NotificationPayloadSchema = object({
-  data: BalanceChangeDataSchema.or(NewsDataSchema),
+  data: BalanceChangeDataSchema.or(NewsDataSchema).or(RecurringSwapDataSchema),
   notification: object({
     title: string(),
     body: string(),
@@ -62,9 +100,31 @@ export const NotificationPayloadSchema = object({
     })
       .optional()
       .describe(
-        'Deprecated: this is for backward compatibility, remove when https://github.com/ava-labs/core-notification-sender-service/pull/62 is released to prod '
-      ) //TODO
+        // Backend only sends this for SNS endpoints classified as UNKNOWN
+        // (legacy clients). iOS foreground path still depends on it.
+        'Legacy field for UNKNOWN-classified SNS endpoints.'
+      )
   }).optional()
+}).superRefine((payload, ctx) => {
+  // BALANCE_CHANGES / NEWS carry their own `title` / `body` in the data block,
+  // so they render on the Android data-only path without an envelope. A
+  // RECURRING_SWAP data block intentionally omits title/body — those live only
+  // on the `notification` envelope — so a data-only RECURRING_SWAP would pass
+  // the shape check yet have nothing to display, failing at runtime in
+  // FCMService. Require the envelope here so a misconfigured payload (backend/
+  // config regression) fails `safeParse` and is logged + dropped by the
+  // handlers' existing guard rather than reaching the display layer.
+  if (
+    payload.data.type === NotificationTypes.RECURRING_SWAP &&
+    !payload.notification
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['notification'],
+      message:
+        'RECURRING_SWAP payloads must include a `notification` envelope (title/body).'
+    })
+  }
 })
 
 export type NotificationPayload = z.infer<typeof NotificationPayloadSchema>
@@ -72,3 +132,5 @@ export type NotificationPayload = z.infer<typeof NotificationPayloadSchema>
 export type BalanceChangeData = z.infer<typeof BalanceChangeDataSchema>
 
 export type NewsData = z.infer<typeof NewsDataSchema>
+
+export type RecurringSwapData = z.infer<typeof RecurringSwapDataSchema>

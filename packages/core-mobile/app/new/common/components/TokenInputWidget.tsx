@@ -1,4 +1,4 @@
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { formatTokenAmount } from 'utils/Utils'
 import { Network } from '@avalabs/core-chains-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import {
@@ -14,36 +14,29 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState
+} from 'react'
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
+import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
-export const TokenInputWidget = ({
-  title,
-  token,
-  balance,
-  shouldShowBalance,
-  network,
-  maximum,
-  amount,
-  onAmountChange,
-  formatInCurrency,
-  onSelectToken,
-  onFocus,
-  onBlur,
-  sx,
-  disabled,
-  editable = true,
-  isLoadingAmount = false,
-  autoFocus,
-  valid = true,
-  amountInputTestID = 'token_amount_input_field'
-}: {
+export type TokenInputWidgetRef = {
+  focus: () => void
+  blur: () => void
+}
+
+type TokenInputWidgetProps = {
   title: string
   amount?: bigint
   maximum?: bigint
@@ -51,7 +44,19 @@ export const TokenInputWidget = ({
   balance?: bigint
   shouldShowBalance?: boolean
   network?: Network
-  onAmountChange: (amount: bigint) => void
+  /**
+   * `valueString` is the raw entered text: `''` when the field is empty/cleared,
+   * `'0'` for an explicit typed 0 (both carry `amount` 0n). Callers that need to
+   * tell empty apart from a typed 0 use it; others can ignore the second arg.
+   */
+  onAmountChange: (amount: bigint, valueString: string) => void
+  /**
+   * Fires when the Max percentage button is pressed (100% of balance).
+   * Distinct from `onAmountChange` so callers can flag analytics events
+   * (e.g. SwapFailed.userClickedMax) without inferring "max" from amount
+   * equality, which is brittle.
+   */
+  onPressMax?: () => void
   formatInCurrency: (amount: bigint | undefined) => string
   onSelectToken?: () => void
   onFocus?: () => void
@@ -60,10 +65,37 @@ export const TokenInputWidget = ({
   disabled?: boolean
   editable?: boolean
   isLoadingAmount?: boolean
-  autoFocus?: boolean
   valid?: boolean
   amountInputTestID?: string
-}): JSX.Element => {
+}
+
+export const TokenInputWidget = forwardRef<
+  TokenInputWidgetRef,
+  TokenInputWidgetProps
+>(function TokenInputWidget(
+  {
+    title,
+    token,
+    balance,
+    shouldShowBalance,
+    network,
+    maximum,
+    amount,
+    onAmountChange,
+    onPressMax,
+    formatInCurrency,
+    onSelectToken,
+    onFocus,
+    onBlur,
+    sx,
+    disabled,
+    editable = true,
+    isLoadingAmount = false,
+    valid = true,
+    amountInputTestID = 'token_amount_input_field'
+  },
+  ref
+): JSX.Element {
   const {
     theme: { colors }
   } = useTheme()
@@ -73,6 +105,15 @@ export const TokenInputWidget = ({
   >([])
 
   const tokenAmountInputRef = useRef<TokenAmountInputRef>(null)
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => tokenAmountInputRef.current?.focus(),
+      blur: () => tokenAmountInputRef.current?.blur()
+    }),
+    []
+  )
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -85,7 +126,12 @@ export const TokenInputWidget = ({
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
-    onAmountChange?.(value)
+    // A percentage/Max button always sets a concrete amount, never "empty",
+    // so pass a non-empty valueString.
+    onAmountChange?.(value, value.toString())
+    if (button.percent === 1) {
+      onPressMax?.()
+    }
 
     setPercentageButtons(prevButtons =>
       prevButtons.map((b, i) =>
@@ -105,7 +151,7 @@ export const TokenInputWidget = ({
         }))
       )
 
-      onAmountChange?.(value.value)
+      onAmountChange?.(value.value, value.valueString)
     },
     [onAmountChange, balance]
   )
@@ -217,7 +263,6 @@ export const TokenInputWidget = ({
                     <TokenAmountInput
                       ref={tokenAmountInputRef}
                       testID={amountInputTestID}
-                      autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
                       textAlign="right"
@@ -238,7 +283,7 @@ export const TokenInputWidget = ({
               <View
                 sx={{
                   flexDirection: 'row',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   gap: 24,
                   justifyContent: 'space-between',
                   marginTop: -12
@@ -259,6 +304,11 @@ export const TokenInputWidget = ({
                         <ActivityIndicator size="small" />
                       </View>
                     ) : undefined)}
+                  {token && network && (
+                    <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+                      {`on ${getNetworkLongDisplayName(network)}`}
+                    </Text>
+                  )}
                 </View>
                 <View
                   sx={{
@@ -326,7 +376,7 @@ export const TokenInputWidget = ({
       </Animated.View>
     </View>
   )
-}
+})
 
 type PercentageButton = {
   text: string

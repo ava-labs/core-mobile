@@ -6,8 +6,11 @@ import {
   NotificationTab
 } from './types'
 import {
+  buildAccountLabelMap,
+  classifyRecurringSwapStatus,
   filterByTab,
   isSwapTerminal,
+  isTerminalRecurringSwapNotification,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus,
@@ -125,6 +128,122 @@ describe('filterByTab', () => {
 
   it('returns empty array when input is empty', () => {
     expect(filterByTab([], NotificationTab.ALL)).toEqual([])
+  })
+})
+
+// ─── buildAccountLabelMap ─────────────────────────────────────────────────────
+
+describe('buildAccountLabelMap', () => {
+  const addr = '0x1111111111111111111111111111111111111111'
+  const otherAddr = '0x2222222222222222222222222222222222222222'
+
+  const makeAccounts = (
+    entries: { id: string; addressC: string; name: string; walletId: string }[]
+  ): Parameters<typeof buildAccountLabelMap>[0] =>
+    Object.fromEntries(
+      entries.map(e => [
+        e.id,
+        {
+          id: e.id,
+          addressC: e.addressC,
+          name: e.name,
+          walletId: e.walletId,
+          addressBTC: '',
+          index: 0
+        }
+      ])
+    ) as Parameters<typeof buildAccountLabelMap>[0]
+
+  const makeWallets = (
+    entries: { id: string; name: string }[]
+  ): Parameters<typeof buildAccountLabelMap>[1] =>
+    Object.fromEntries(
+      entries.map(e => [e.id, { id: e.id, name: e.name, type: 'MNEMONIC' }])
+    ) as Parameters<typeof buildAccountLabelMap>[1]
+
+  it('uses just the account name when the user has one wallet', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w1' }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe('Account 2')
+  })
+
+  it('prefixes the wallet name when the user has multiple wallets', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 2', walletId: 'w2' }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Wallet A' },
+      { id: 'w2', name: 'Wallet B' }
+    ])
+
+    expect(buildAccountLabelMap(accounts, wallets).get(addr)).toBe(
+      'Wallet B · Account 2'
+    )
+  })
+
+  it('keys the map by lowercased address regardless of input casing', () => {
+    const accounts = makeAccounts([
+      {
+        id: 'a1',
+        addressC: addr.toUpperCase(),
+        name: 'Account 2',
+        walletId: 'w1'
+      }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    const map = buildAccountLabelMap(accounts, wallets)
+    expect(map.get(addr)).toBe('Account 2')
+    expect(map.get(addr.toUpperCase())).toBeUndefined()
+  })
+
+  it('omits addresses for accounts the user does not own', () => {
+    const accounts = makeAccounts([
+      { id: 'a1', addressC: addr, name: 'Account 1', walletId: 'w1' }
+    ])
+    const wallets = makeWallets([{ id: 'w1', name: 'Wallet A' }])
+
+    expect(
+      buildAccountLabelMap(accounts, wallets).get(otherAddr)
+    ).toBeUndefined()
+  })
+
+  it('returns an empty map when there are no accounts', () => {
+    expect(buildAccountLabelMap({}, {}).size).toBe(0)
+  })
+
+  it('lets the active account win when an address collides across wallets', () => {
+    // e.g. a private-key wallet imports a key already derived in a mnemonic
+    // wallet — both accounts legitimately own the same EVM address.
+    const accounts = makeAccounts([
+      {
+        id: 'mnemonic-acct',
+        addressC: addr,
+        name: 'Account 5',
+        walletId: 'w1'
+      },
+      {
+        id: 'private-key-acct',
+        addressC: addr,
+        name: 'Imported',
+        walletId: 'w2'
+      }
+    ])
+    const wallets = makeWallets([
+      { id: 'w1', name: 'Mnemonic Wallet' },
+      { id: 'w2', name: 'Private Key Wallet' }
+    ])
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'private-key-acct').get(addr)
+    ).toBe('Private Key Wallet · Imported')
+
+    expect(
+      buildAccountLabelMap(accounts, wallets, 'mnemonic-acct').get(addr)
+    ).toBe('Mnemonic Wallet · Account 5')
   })
 })
 
@@ -251,4 +370,123 @@ describe('mapTransferToTargetChainStatus', () => {
       ).toBe(NotificationSwapStatus.InProgress)
     }
   )
+})
+
+// ─── classifyRecurringSwapStatus ─────────────────────────────────────────────
+
+describe('classifyRecurringSwapStatus', () => {
+  it.each([
+    ['failed', 'failed'],
+    ['cancelled', 'cancelled'],
+    ['completed', 'completed'],
+    ['active', 'fill'],
+    ['executed', 'fill']
+  ])('classifies "%s" as %s', (raw, expected) => {
+    expect(classifyRecurringSwapStatus(raw)).toBe(expected)
+  })
+
+  it('is case-insensitive', () => {
+    expect(classifyRecurringSwapStatus('FAILED')).toBe('failed')
+    expect(classifyRecurringSwapStatus('Executed')).toBe('fill')
+  })
+
+  it.each([['paused'], ['source-pending'], ['']])(
+    'classifies unrecognized status "%s" as unknown',
+    raw => {
+      expect(classifyRecurringSwapStatus(raw)).toBe('unknown')
+    }
+  )
+})
+
+// ─── isTerminalRecurringSwapNotification ──────────────────────────────────────
+
+const makeRecurringNotification = (
+  data?: Partial<{
+    status: string
+    numberOfOrders: number
+    executedOrders: number
+    remainingOrders: number
+  }>
+): AppNotification =>
+  makeNotification({
+    type: 'RECURRING_SWAP',
+    category: NotificationCategory.TRANSACTION,
+    ...(data
+      ? {
+          data: {
+            orderId: '0xorder',
+            owner: '0xowner',
+            chainId: 43114,
+            tokenIn: '0xin',
+            tokenOut: '0xout',
+            amountIn: '1',
+            amountOut: '2',
+            status: 'active',
+            numberOfOrders: 5,
+            executedOrders: 1,
+            remainingOrders: 4,
+            ...data
+          }
+        }
+      : {})
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+
+describe('isTerminalRecurringSwapNotification', () => {
+  it('returns false for a non-recurring notification', () => {
+    expect(isTerminalRecurringSwapNotification(balanceChange)).toBe(false)
+  })
+
+  it('returns false for a recurring notification without a data payload', () => {
+    expect(
+      isTerminalRecurringSwapNotification(makeRecurringNotification())
+    ).toBe(false)
+  })
+
+  it.each([['active'], ['paused'], ['executed']])(
+    'returns false for an ongoing fill (status "%s", fills remaining)',
+    status => {
+      expect(
+        isTerminalRecurringSwapNotification(
+          makeRecurringNotification({ status, remainingOrders: 3 })
+        )
+      ).toBe(false)
+    }
+  )
+
+  it.each([['completed'], ['cancelled'], ['failed']])(
+    'returns true for terminal status "%s"',
+    status => {
+      expect(
+        isTerminalRecurringSwapNotification(
+          makeRecurringNotification({ status, remainingOrders: 2 })
+        )
+      ).toBe(true)
+    }
+  )
+
+  it('returns true for the final leg of a finite schedule (no fills remain)', () => {
+    expect(
+      isTerminalRecurringSwapNotification(
+        makeRecurringNotification({
+          status: 'active',
+          numberOfOrders: 3,
+          executedOrders: 3,
+          remainingOrders: 0
+        })
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for an infinite/DCA schedule even with remainingOrders 0', () => {
+    // numberOfOrders === -1 never reaches a "no fills remain" terminal.
+    expect(
+      isTerminalRecurringSwapNotification(
+        makeRecurringNotification({
+          status: 'active',
+          numberOfOrders: -1,
+          remainingOrders: 0
+        })
+      )
+    ).toBe(false)
+  })
 })

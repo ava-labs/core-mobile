@@ -100,12 +100,15 @@ export default {
   nameContactBtn: 'name_btn',
   typeInOrPasteAddress: 'Type in or paste address',
   contactPreviewAddress: 'contact_preview_address',
-  hkd: 'HKD',
   beamL1: 'Beam L1',
   customAvatar: 'custom_avatar',
   nameThisNetworkBtn: 'Name this network',
   saveNetworkBtn: 'save_network_btn',
   appIcon: 'App icon',
-  appIconTitle: 'Customize\nthe app icon',
-  default: 'Default'
+  appIconTitle: 'Customize',
+  default: 'Default',
+  core: 'Core',
+  advancedSettings: 'list_item__Advanced settings',
+  quickSwapsEnabled: 'quick_swaps_enabled',
+  quickSwapsDisabled: 'quick_swaps_disabled'
 }

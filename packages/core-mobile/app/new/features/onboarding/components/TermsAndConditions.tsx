@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react'
 import { Button, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useTermsOfUse } from 'features/onboarding/hooks/useTermsOfUse'
-import { renderRichText } from 'common/utils/renderRichText'
 import { Loader } from 'common/components/Loader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { renderRichText } from 'common/utils/renderRichText'
+import { useTermsOfUse } from 'features/onboarding/hooks/useTermsOfUse'
+import React, { useMemo } from 'react'
 
 export const TermsAndConditions = ({
   onAgreeAndContinue
@@ -27,7 +27,7 @@ export const TermsAndConditions = ({
         size="large"
         type="primary"
         onPress={onAgreeAndContinue}
-        disabled={isLoading}>
+        disabled={isLoading || !terms}>
         Agree and continue
       </Button>
     )
@@ -44,7 +44,11 @@ export const TermsAndConditions = ({
         width: SCREEN_WIDTH
       }}
       renderFooter={renderFooter}>
-      {isLoading ? <Loader /> : <View sx={{ gap: 12 }}>{termsComponent}</View>}
+      {isLoading || !terms ? (
+        <Loader />
+      ) : (
+        <View sx={{ gap: 12 }}>{termsComponent}</View>
+      )}
     </ScrollScreen>
   )
 }

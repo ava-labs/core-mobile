@@ -134,7 +134,7 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
             }}>
             <Text
               variant="body1"
-              sx={{ color: '$textPrimary', fontWeight: 500 }}>
+              sx={{ color: '$textPrimary', fontFamily: 'Inter-Medium' }}>
               What's a health score?
             </Text>
             <Text variant="body2" sx={{ color: '$textSecondary' }}>
@@ -152,7 +152,7 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
             }}>
             <Text
               variant="body1"
-              sx={{ color: '$textPrimary', fontWeight: 500 }}>
+              sx={{ color: '$textPrimary', fontFamily: 'Inter-Medium' }}>
               How to read my score?
             </Text>
             <Text variant="body2" sx={{ color: '$textSecondary' }}>

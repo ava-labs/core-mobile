@@ -52,6 +52,7 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
   const renderItem: ListRenderItem<ContentfulEcosystemProject> = ({ item }) => {
     return (
       <CarouselItem
+        testID={`browser_ecosystem_item__${item.name}`}
         title={item.name}
         image={item.logo?.url}
         description={item.description}

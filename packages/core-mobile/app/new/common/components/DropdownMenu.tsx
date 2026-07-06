@@ -160,7 +160,8 @@ export function DropdownMenu({
       <DropdownMenuTrigger
         disabled={disabled}
         style={style}
-        action={triggerAction}>
+        action={triggerAction}
+        {...(Platform.OS === 'android' && testID ? { testID } : {})}>
         {children ?? <Text>Dropdown</Text>}
       </DropdownMenuTrigger>
 

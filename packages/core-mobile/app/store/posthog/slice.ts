@@ -50,34 +50,6 @@ export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
   return isSeedlessSigningBlocked(state.posthog.featureFlags)
 }
 
-export const selectIsLegacyBridgeEnabled = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-  if (isSeedlessWallet && isSeedlessSigningBlocked(featureFlags)) {
-    return false
-  }
-  return (
-    featureFlags[FeatureGates.LEGACY_BRIDGE] === true &&
-    featureFlags[FeatureGates.EVERYTHING] === true
-  )
-}
-
-export const selectIsBridgeBtcBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_BTC] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BRIDGE_ETH] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsEarnBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -100,6 +72,14 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPriceChartBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PRICE_CHART] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 /**
  * Parses a PostHog feature-var string as an integer.
  * Falls back to the compiled-in default only when the flag is absent (NaN).
@@ -118,6 +98,17 @@ const parseIntFlag = (raw: unknown, fallback: string): number => {
 const parseFloatFlag = (raw: unknown, fallback: string): number => {
   const n = parseFloat(raw as string)
   return Number.isNaN(n) ? parseFloat(fallback) : n
+}
+
+// 3-state override for the optimistic-confirmation gate. Mirrors the
+// `sae-override` flag in core-extension. `auto` (or any unrecognized value)
+// defers to the InfoAPI Helicon check.
+export type SaeOverride = 'auto' | 'enabled' | 'disabled'
+
+export const selectSaeOverride = (state: RootState): SaeOverride => {
+  const value = state.posthog.featureFlags[FeatureVars.SAE_OVERRIDE]
+  if (value === 'enabled' || value === 'disabled') return value
+  return 'auto'
 }
 
 export const selectSentrySampleRate = (state: RootState): number => {
@@ -374,6 +365,13 @@ export const selectFusionMaxAmountAdditiveBpsSolanaToEvm = (
   )
 }
 
+export const selectFusionDisableCrossChainSwaps = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return !!featureFlags[FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]
+}
+
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseIntFlag(
@@ -387,6 +385,15 @@ export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
 
   return (
     !featureFlags[FeatureGates.SWAP_SOLANA] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsRecurringSwapsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  return (
+    !featureFlags[FeatureGates.SWAP_RECURRING] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
@@ -439,22 +446,6 @@ export const selectIsInAppDefiBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.IN_APP_DEFI] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_IS_NEW] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsInAppDefiBorrowBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.IN_APP_DEFI_BORROW] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
@@ -576,6 +567,16 @@ export const selectIsFusionAvalancheEvmEnabled = (
   )
 }
 
+export const selectIsFusionAvalancheCctEnabled = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_AVALANCHE_CCT] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
 export const selectIsFusionLombardBtcToBtcbEnabled = (
   state: RootState
 ): boolean => {
@@ -596,6 +597,21 @@ export const selectIsFusionLombardBtcbToBtcEnabled = (
   )
 }
 
+export const selectIsQuickSwapsAvailable = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_QUICK_SWAPS] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+// Composed selector — true when ANY feature on the Advanced Settings
+// screen is available. Drives the entry-row visibility on Account
+// Settings. Add new flags here as features are added to the Advanced
+// screen so the entry doesn't disappear when one specific flag flips off.
+export const selectIsAdvancedSettingsAvailable = (state: RootState): boolean =>
+  selectIsQuickSwapsAvailable(state)
+
 export const selectIsAlternateAppIconsBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
@@ -608,6 +624,38 @@ export const selectIsInjectedProviderBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.INJECTED_PROVIDER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsPredictionsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PREDICTIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsPerpetualsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PERPETUALS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsFastStakeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.FAST_STAKE_ENABLED] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }

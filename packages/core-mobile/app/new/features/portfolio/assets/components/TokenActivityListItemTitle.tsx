@@ -1,12 +1,17 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenType, TransactionType } from '@avalabs/vm-module-types'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import {
+  findNftToken,
+  findPaymentToken,
+  getNftLabel,
   isCollectibleTransaction,
-  isPotentiallySwap
+  isPotentiallySwap,
+  resolvePaymentSymbol,
+  resolveUserIsRecipient
 } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
@@ -50,6 +55,7 @@ export const TokenActivityListItemTitle = ({
             number={num}
             textVariant={textVariant}
             textColor={colors.$textPrimary}
+            fontFamily="Inter-SemiBold"
           />
         )
       }
@@ -172,6 +178,55 @@ export const TokenActivityListItemTitle = ({
     ]
   )
 
+  // Title for NFT-related transactions. Distinguishes marketplace
+  // purchases/sales (NFT + NATIVE/ERC20 leg) from plain transfers, and
+  // includes the payment amount when present.
+  const getCollectibleTitle = useCallback(
+    (transaction: TokenActivityTransaction): ReactNode[] => {
+      // `nftToken` may be undefined when an NFT_* tx lacks an ERC721/ERC1155
+      // leg; downstream helpers (`getNftLabel`, `resolveUserIsRecipient`)
+      // tolerate undefined and we render the generic "NFT" label.
+      const nftToken = findNftToken(transaction)
+      const network = getNetwork(Number(transaction.chainId))
+      const userAddress =
+        network && activeAccount
+          ? getAddressByNetwork(activeAccount, network)
+          : transaction.from
+      const userAddressLower = userAddress?.toLowerCase()
+
+      const userIsRecipient = resolveUserIsRecipient({
+        nftToken,
+        userAddressLower,
+        transaction,
+        account: activeAccount
+      })
+      const paymentToken = findPaymentToken(
+        transaction.tokens,
+        userIsRecipient,
+        userAddressLower
+      )
+      const nftLabel = getNftLabel(nftToken)
+
+      if (paymentToken) {
+        const action = userIsRecipient ? 'bought' : 'sold'
+        const paymentSymbol = resolvePaymentSymbol(
+          paymentToken,
+          network?.networkToken.symbol
+        )
+        return [
+          `${nftLabel} ${action} for `,
+          renderAmount(paymentToken.amount),
+          ' ',
+          paymentSymbol
+        ]
+      }
+
+      const action = userIsRecipient ? 'received' : 'sent'
+      return [`${nftLabel} ${action}`]
+    },
+    [activeAccount, getNetwork, renderAmount]
+  )
+
   // Build an array of nodes: strings and React elements
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const nodes = useMemo<ReactNode[]>(() => {
@@ -204,15 +259,7 @@ export const TokenActivityListItemTitle = ({
 
       default: {
         if (isCollectibleTransaction(tx)) {
-          if (tx.tokens[0]?.type === TokenType.ERC1155) {
-            return [`NFT ${tx.isSender || isFromAccount ? 'sent' : 'received'}`]
-          }
-
-          return [
-            `${tx.tokens[0]?.name} (${tx?.tokens[0]?.symbol}) ${
-              tx.isSender || isFromAccount ? 'sent' : 'received'
-            }`
-          ]
+          return getCollectibleTitle(tx)
         }
         if (tx.isContractCall) {
           // if the tx has 3 tokens, it means we funded the gas
@@ -268,14 +315,29 @@ export const TokenActivityListItemTitle = ({
     getIOTokenAmountAndSymbol,
     tx,
     getSwapTitle,
+    getCollectibleTitle,
     renderAmount,
     sourceBlockchain,
     targetBlockchain,
     isFromAccount
   ])
 
+  const titleLabel = useMemo(() => {
+    return nodes
+      .map(node => {
+        if (typeof node === 'string') return node
+        if (React.isValidElement(node)) {
+          const props = node.props as { number?: number | string }
+          if (props.number !== undefined) return String(props.number)
+        }
+        return ''
+      })
+      .join('')
+  }, [nodes])
+
   return (
     <View
+      testID={`tx__title__${titleLabel}`}
       style={{
         flexDirection: 'row',
         alignItems: 'baseline',

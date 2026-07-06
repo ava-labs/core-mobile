@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts b/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
-index 38df065..c780667 100644
+index 38df065..72041f3 100644
 --- a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
 +++ b/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
 @@ -11,6 +11,8 @@ export type RefHandler<T extends TabName = TabName> = {
@@ -11,11 +11,77 @@ index 38df065..c780667 100644
  };
  export type CollapsibleRef<T extends TabName = TabName> = RefHandler<T> | undefined;
  export type TabBarProps<T extends TabName = TabName> = {
+@@ -94,6 +96,14 @@ export type CollapsibleProps = {
+      * @default false
+      */
+     allowHeaderOverscroll?: boolean;
++    /**
++     * Reserve header space via layout `paddingTop` instead of the native iOS
++     * `contentInset` (+ negative scroll) model. Needed on the New Architecture
++     * (Fabric) where scrolling into a negative `contentInset` region is clamped.
++     *
++     * @default false
++     */
++    useLayoutHeaderInset?: boolean;
+ };
+ export type ContextType<T extends TabName = TabName> = {
+     headerHeight: number;
+@@ -173,6 +183,7 @@ export type ContextType<T extends TabName = TabName> = {
+      * @default false
+      */
+     allowHeaderOverscroll?: boolean;
++    useLayoutHeaderInset?: boolean;
+     minHeaderHeight: number;
+ };
+ export type ScrollViewProps = ComponentProps<typeof Animated.ScrollView>;
 diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-index 9ec4cfe..3a068c9 100644
+index 9ec4cfe..fff872c 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -227,7 +227,9 @@ export const Container = React.memo(
+@@ -1,11 +1,13 @@
+ import React from 'react'
+-import { StyleSheet, useWindowDimensions, View } from 'react-native'
++import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
++import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+ import PagerView from 'react-native-pager-view'
+ import Animated, {
+   useAnimatedReaction,
+   useAnimatedStyle,
+   useDerivedValue,
+   useSharedValue,
++  withDecay,
+   withDelay,
+   withTiming,
+   useFrameCallback,
+@@ -77,6 +79,7 @@ export const Container = React.memo(
+         onTabChange,
+         width: customWidth,
+         allowHeaderOverscroll,
++        useLayoutHeaderInset = false,
+       },
+       ref
+     ) => {
+@@ -106,12 +109,17 @@ export const Container = React.memo(
+       )
+ 
+       const contentInset = React.useMemo(() => {
+-        if (allowHeaderOverscroll) return 0
++        // When the layout-based header-inset strategy is used, header space is
++        // reserved via `paddingTop` (see useCollapsibleStyle), so no native
++        // contentInset / negative scroll is needed. This is required on the New
++        // Architecture (Fabric) iOS, where scrolling into the inset region is
++        // clamped and the list would otherwise render under the header.
++        if (allowHeaderOverscroll || useLayoutHeaderInset) return 0
+ 
+         // necessary for the refresh control on iOS to be positioned underneath the header
+         // this also adjusts the scroll bars to clamp underneath the header area
+         return IS_IOS ? (headerHeight || 0) + (tabBarHeight || 0) : 0
+-      }, [headerHeight, tabBarHeight, allowHeaderOverscroll])
++      }, [headerHeight, tabBarHeight, allowHeaderOverscroll, useLayoutHeaderInset])
+ 
+       const snappingTo: ContextType['snappingTo'] = useSharedValue(0)
+       const offset: ContextType['offset'] = useSharedValue(0)
+@@ -227,7 +235,9 @@ export const Container = React.memo(
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
@@ -26,7 +92,66 @@ index 9ec4cfe..3a068c9 100644
          if (timeSinceFirstFrame > 1500) {
            scheduleOnRN(toggleSyncScrollFrame, false)
          }
-@@ -343,9 +345,24 @@ export const Container = React.memo(
+@@ -325,6 +335,58 @@ export const Container = React.memo(
+         },
+       })
+ 
++      // Forward vertical pans on the header to the focused tab's scrollable so
++      // the header can be collapsed by swiping anywhere on it. Horizontal pans
++      // and short presses pass through so nested gestures (e.g. a chart's
++      // crosshair drag) can still claim them.
++      //
++      // `headerScrollOffset` is the single source of truth driven by the
++      // gesture: onStart resyncs it from the actual scroll position, onChange
++      // writes the new target, onEnd hands the value to `withDecay` so the
++      // scroll continues with momentum after the user lifts their finger. A
++      // `useAnimatedReaction` forwards every change to the focused tab's
++      // scrollable via `scrollToImpl`.
++      const headerScrollOffset = useSharedValue(0)
++      useAnimatedReaction(
++        () => headerScrollOffset.value,
++        (value, prev) => {
++          if (prev === null || value === prev) return
++          const focusedName = focusedTab.value
++          const ref = refMap[focusedName]
++          if (!ref) return
++          scrollToImpl(ref, 0, value - contentInset, false)
++        }
++      )
++      const headerPanGesture = React.useMemo(
++        () =>
++          Gesture.Pan()
++            .activeOffsetY([-5, 5])
++            .failOffsetX([-10, 10])
++            .onStart(() => {
++              'worklet'
++              headerScrollOffset.value = scrollYCurrent.value
++            })
++            .onChange((e) => {
++              'worklet'
++              headerScrollOffset.value = Math.max(
++                0,
++                headerScrollOffset.value - e.changeY
++              )
++            })
++            .onEnd((e) => {
++              'worklet'
++              // Per-platform deceleration matches each OS's native scroll
++              // feel: iOS uses ~0.998 (long, gentle tail), Android uses ~0.985
++              // (short, decisive). The native scrollable handles the visible
++              // clamp at top/bottom, so no explicit `clamp` is needed.
++              headerScrollOffset.value = withDecay({
++                velocity: -e.velocityY,
++                deceleration: Platform.OS === 'ios' ? 0.998 : 0.985,
++              })
++            }),
++        [contentInset, focusedTab, refMap, scrollYCurrent, headerScrollOffset]
++      )
++
+       React.useImperativeHandle(
+         ref,
+         () => ({
+@@ -343,9 +405,24 @@ export const Container = React.memo(
            getCurrentIndex: () => {
              return index.value
            },
@@ -52,8 +177,106 @@ index 9ec4cfe..3a068c9 100644
        )
  
        return (
+@@ -376,6 +453,7 @@ export const Container = React.memo(
+             headerTranslateY,
+             width,
+             allowHeaderOverscroll,
++            useLayoutHeaderInset,
+           }}
+         >
+           <Animated.View
+@@ -391,22 +469,24 @@ export const Container = React.memo(
+                 !cancelTranslation && stylez,
+               ]}
+             >
+-              <View
+-                style={[styles.container, styles.headerContainer]}
+-                onLayout={getHeaderHeight}
+-                pointerEvents="box-none"
+-              >
+-                {renderHeader &&
+-                  renderHeader({
+-                    containerRef,
+-                    index,
+-                    tabNames: tabNamesArray,
+-                    focusedTab,
+-                    indexDecimal,
+-                    onTabPress,
+-                    tabProps,
+-                  })}
+-              </View>
++              <GestureDetector gesture={headerPanGesture}>
++                <View
++                  style={[styles.container, styles.headerContainer]}
++                  onLayout={getHeaderHeight}
++                  pointerEvents="box-none"
++                >
++                  {renderHeader &&
++                    renderHeader({
++                      containerRef,
++                      index,
++                      tabNames: tabNamesArray,
++                      focusedTab,
++                      indexDecimal,
++                      onTabPress,
++                      tabProps,
++                    })}
++                </View>
++              </GestureDetector>
+               <View
+                 style={[styles.container, styles.tabBarContainer]}
+                 onLayout={getTabBarHeight}
+diff --git a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx b/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
+index 35ea1de..b6d7ad2 100644
+--- a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
++++ b/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
+@@ -144,25 +144,28 @@ export function useCollapsibleStyle(): CollapsibleStyle {
+     containerHeight,
+     width,
+     allowHeaderOverscroll,
++    useLayoutHeaderInset,
+     minHeaderHeight,
+   } = useTabsContext()
+   const containerHeightWithMinHeader = Math.max(
+     0,
+     (containerHeight ?? 0) - minHeaderHeight
+   )
++  // The native iOS `contentInset` model uses paddingTop: 0. When the layout
++  // strategy is requested (Fabric-safe), reserve header space via paddingTop
++  // exactly like the Android branch.
++  const useNativeIosInset = IS_IOS && !allowHeaderOverscroll && !useLayoutHeaderInset
+ 
+   return useMemo(
+     () => ({
+       style: { width },
+       contentContainerStyle: {
+-        minHeight:
+-          IS_IOS && !allowHeaderOverscroll
+-            ? containerHeightWithMinHeader - (tabBarHeight || 0)
+-            : containerHeightWithMinHeader + (headerHeight || 0),
+-        paddingTop:
+-          IS_IOS && !allowHeaderOverscroll
+-            ? 0
+-            : (headerHeight || 0) + (tabBarHeight || 0),
++        minHeight: useNativeIosInset
++          ? containerHeightWithMinHeader - (tabBarHeight || 0)
++          : containerHeightWithMinHeader + (headerHeight || 0),
++        paddingTop: useNativeIosInset
++          ? 0
++          : (headerHeight || 0) + (tabBarHeight || 0),
+       },
+       progressViewOffset:
+         // on iOS we need the refresh control to be at the top if overscrolling
+@@ -173,6 +176,7 @@ export function useCollapsibleStyle(): CollapsibleStyle {
+     }),
+     [
+       allowHeaderOverscroll,
++      useNativeIosInset,
+       headerHeight,
+       tabBarHeight,
+       width,
 diff --git a/node_modules/react-native-collapsible-tab-view/src/types.ts b/node_modules/react-native-collapsible-tab-view/src/types.ts
-index 00fbafc..dee894c 100644
+index 00fbafc..c8bd789 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/types.ts
 +++ b/node_modules/react-native-collapsible-tab-view/src/types.ts
 @@ -30,6 +30,8 @@ export type RefHandler<T extends TabName = TabName> = {
@@ -65,3 +288,33 @@ index 00fbafc..dee894c 100644
  }
  
  export type CollapsibleRef<T extends TabName = TabName> =
+@@ -132,6 +134,16 @@ export type CollapsibleProps = {
+    * @default false
+    */
+   allowHeaderOverscroll?: boolean
++
++  /**
++   * Reserve the header space via layout `paddingTop` instead of the native iOS
++   * `contentInset` (+ negative scroll) model. Needed on the New Architecture
++   * (Fabric) where scrolling into a negative `contentInset` region is clamped,
++   * which otherwise leaves the list rendered under the header on remount.
++   *
++   * @default false
++   */
++  useLayoutHeaderInset?: boolean
+ }
+ 
+ export type ContextType<T extends TabName = TabName> = {
+@@ -222,6 +234,12 @@ export type ContextType<T extends TabName = TabName> = {
+    */
+   allowHeaderOverscroll?: boolean
+ 
++  /**
++   * Reserve header space via layout `paddingTop` instead of the native iOS
++   * `contentInset` model (see `CollapsibleProps.useLayoutHeaderInset`).
++   */
++  useLayoutHeaderInset?: boolean
++
+   minHeaderHeight: number
+ }
+ 

@@ -31,6 +31,7 @@ export const PrivacyScreen = (): JSX.Element | null => {
           backgroundColor: colors.$surfacePrimary
         }}>
         <View
+          testID="privacy_screen"
           style={{
             flex: 1,
             backgroundColor: colors.$surfacePrimary,

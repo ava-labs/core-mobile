@@ -14,6 +14,7 @@
         "expo-build-properties",
         {
           "ios": {
+            "deploymentTarget": "16.4",
             "extraPods": [
               {
                 "name": "SDWebImage",
@@ -68,7 +69,8 @@
       "@sentry/react-native"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }

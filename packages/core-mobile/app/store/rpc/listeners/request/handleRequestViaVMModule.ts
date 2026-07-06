@@ -15,11 +15,19 @@ import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
+import {
+  selectIsInAppReviewBlocked,
+  selectIsQuickSwapsAvailable
+} from 'store/posthog/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
-import { AgnosticRpcProvider, Request, RequestContext } from '../../types'
+import {
+  AgnosticRpcProvider,
+  CORE_MOBILE_TOPIC,
+  Request,
+  RequestContext
+} from '../../types'
 
 export const handleRequestViaVMModule = async ({
   module,
@@ -92,21 +100,40 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
-  let context =
-    request.context ??
-    (await getContext({
+  // Merge, don't fallback: a non-empty `request.context` from the caller must
+  // not suppress the per-method auto-injected context (e.g. Avalanche `account`
+  // for AVALANCHE_SEND/SIGN_TRANSACTION). Caller wins on key conflicts.
+  let context = {
+    ...(await getContext({
       method,
       params,
       activeAccount,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
       isTestnet
-    }))
+    })),
+    ...request.context
+  }
 
   if (!isInAppReviewBlocked) {
     context = {
       ...context,
       [RequestContext.IN_APP_REVIEW]: true
+    }
+  }
+
+  // Signing context for ApprovalController bypass paths — only
+  // attached to in-app requests so dApp calls don't carry walletId
+  // through the VM module's RPC pipeline. QUICK_SWAPS_AVAILABLE is
+  // the live PostHog kill-switch snapshot the validator re-checks.
+  if (request.data.topic === CORE_MOBILE_TOPIC) {
+    context = {
+      ...context,
+      walletId: activeWallet.id,
+      walletType: activeWallet.type,
+      accountIndex: activeAccount.index,
+      network,
+      [RequestContext.QUICK_SWAPS_AVAILABLE]: selectIsQuickSwapsAvailable(state)
     }
   }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -13,6 +13,10 @@ import { Button } from '@avalabs/k2-alpine'
 import { PrimaryAccount, selectAccountById } from 'store/account'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useSelector } from 'react-redux'
+import {
+  isLedgerBluetoothError,
+  showBluetoothErrorAlert
+} from 'services/ledger/LedgerBluetoothError'
 import { useLedgerWalletMap } from '../store'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
@@ -25,6 +29,12 @@ export default function SolanaConnectionScreen(): JSX.Element {
   const [currentAppConnectionStep, setAppConnectionStep] = useState<
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
   >(AppConnectionStep.SOLANA_CONNECT)
+
+  // useRef instead of useState: the ref flips synchronously, so a second tap
+  // cannot enter handleConnectSolana before the first invocation finishes.
+  // useState is async — rapid taps could race past the isUpdatingWallet guard
+  // before React re-renders with the updated value.
+  const isHandlingCompleteRef = useRef(false)
 
   const {
     connectedDeviceId,
@@ -50,6 +60,9 @@ export default function SolanaConnectionScreen(): JSX.Element {
   }, [])
 
   const handleConnectSolana = useCallback(async () => {
+    if (isHandlingCompleteRef.current) return
+    isHandlingCompleteRef.current = true
+
     try {
       if (!account) {
         throw new Error('Account not found')
@@ -91,6 +104,10 @@ export default function SolanaConnectionScreen(): JSX.Element {
     } catch (err) {
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      if (isLedgerBluetoothError(err)) {
+        showBluetoothErrorAlert(err)
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',
@@ -98,6 +115,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
       )
     } finally {
       setIsUpdatingWallet(false)
+      isHandlingCompleteRef.current = false
     }
   }, [
     account,

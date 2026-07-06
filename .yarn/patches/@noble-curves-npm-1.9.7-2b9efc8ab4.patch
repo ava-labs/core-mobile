@@ -1,21 +1,14 @@
-diff --git a/.DS_Store b/.DS_Store
-new file mode 100644
-index 0000000000000000000000000000000000000000..3117a90a0d1c52a564b798d5ebe84c3506d72932
---- /dev/null
-+++ b/.DS_Store
-@@ -0,0 +1 @@
-+
-\ No newline at end of file
 diff --git a/abstract/weierstrass.js b/abstract/weierstrass.js
 index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac4331544f 100644
 --- a/abstract/weierstrass.js
 +++ b/abstract/weierstrass.js
-@@ -11,6 +11,29 @@ exports.ecdsa = ecdsa;
+@@ -11,6 +11,30 @@ exports.ecdsa = ecdsa;
  exports.weierstrassPoints = weierstrassPoints;
  exports._legacyHelperEquat = _legacyHelperEquat;
  exports.weierstrass = weierstrass;
 +
-+const NativeAvalabsCrypto = require("react-native-nitro-avalabs-crypto");
++const _CryptoNitroMod = require("@avalabs/crypto-nitro");
++const NativeAvalabsCrypto = _CryptoNitroMod.default || _CryptoNitroMod;
 +const getPublicKeyFromNativeLib = NativeAvalabsCrypto.getPublicKey;
 +const pointAddScalarNative = NativeAvalabsCrypto.pointAddScalar;
 +const signNative = NativeAvalabsCrypto.sign;
@@ -40,7 +33,7 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac
  /**
   * Short Weierstrass curve methods. The formula is: y² = x³ + ax + b.
   *
-@@ -915,7 +938,17 @@ function ecdh(Point, ecdhOpts = {}) {
+@@ -915,7 +939,17 @@ function ecdh(Point, ecdhOpts = {}) {
       * @returns Public key, full when isCompressed=false; short when isCompressed=true
       */
      function getPublicKey(secretKey, isCompressed = true) {
@@ -59,7 +52,7 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac
      }
      function keygen(seed) {
          const secretKey = randomSecretKey(seed);
-@@ -1232,6 +1265,14 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
+@@ -1232,6 +1266,14 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       * ```
       */
      function sign(message, secretKey, opts = {}) {
@@ -74,7 +67,7 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac
          message = (0, utils_ts_1.ensureBytes)('message', message);
          const { seed, k2sig } = prepSig(message, secretKey, opts); // Steps A, D of RFC6979 3.2.
          const drbg = (0, utils_ts_1.createHmacDrbg)(hash.outputLen, Fn.BYTES, hmac);
-@@ -1287,6 +1328,12 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
+@@ -1287,6 +1329,12 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       * ```
       */
      function verify(signature, message, publicKey, opts = {}) {
@@ -87,123 +80,35 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac
          const { lowS, prehash, format } = validateSigOpts(opts, defaultSigOpts);
          publicKey = (0, utils_ts_1.ensureBytes)('publicKey', publicKey);
          message = validateMsgAndHash((0, utils_ts_1.ensureBytes)('message', message), prehash);
-diff --git a/esm/package.json b/esm/package.json
-index 7f1fc33ddaa81f23f560a391b4828ecae59edd5d..8220a13ecc5a52f8db9612fdc7ef5e2a28824321 100644
---- a/esm/package.json
-+++ b/esm/package.json
-@@ -1,4 +1,34 @@
- {
-   "type": "module",
--  "sideEffects": false
-+  "sideEffects": false,
-+  "react-native": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  }
- }
-diff --git a/package.json b/package.json
-index 852104a522d6a005c05b5411f36c50bfb76b48bc..8d3a2182f7b60506e6301a432173bc895c7302bd 100644
---- a/package.json
-+++ b/package.json
-@@ -291,5 +291,35 @@
-     "schnorr",
-     "fft"
-   ],
--  "funding": "https://paulmillr.com/funding/"
-+  "funding": "https://paulmillr.com/funding/",
-+  "react-native": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  }
- }
-diff --git a/src/package.json b/src/package.json
-index 3dbc1ca591c0557e35b6004aeba250e6a70b56e3..08d985c3d4a0bd8e6c4ffd6401312e9e4ab2246d 100644
---- a/src/package.json
-+++ b/src/package.json
-@@ -1,3 +1,33 @@
- {
--  "type": "module"
-+  "type": "module",
-+  "react-native": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  }
- }
+diff --git a/abstract/edwards.js b/abstract/edwards.js
+index ca506901d86a1d3662227d5ee4ab9ada885c2f45..38f2412bac8c7bf6076921fe32c24b1d585c8eea 100644
+--- a/abstract/edwards.js
++++ b/abstract/edwards.js
+@@ -4,6 +4,11 @@ exports.PrimeEdwardsPoint = void 0;
+ exports.edwards = edwards;
+ exports.eddsa = eddsa;
+ exports.twistedEdwards = twistedEdwards;
++
++const _CryptoNitroMod = require("@avalabs/crypto-nitro");
++const NativeAvalabsCrypto = _CryptoNitroMod.default || _CryptoNitroMod;
++const getExtendedPublicKeyFromNativeLib = NativeAvalabsCrypto.getExtendedPublicKey;
++
+ /**
+  * Twisted Edwards curve. The formula is: ax² + y² = 1 + dx²y².
+  * For design rationale of types / exports, see weierstrass module documentation.
+@@ -460,6 +465,15 @@ function eddsa(Point, cHash, eddsaOpts = {}) {
+     }
+     /** Calculates EdDSA pub key. RFC8032 5.1.5. */
+     function getPublicKey(secretKey) {
++        const con = console;
++        try {
++            const nativeRes = getExtendedPublicKeyFromNativeLib(secretKey).pointBytes;
++            return nativeRes;
++        } catch (e) {
++            con.log(`Native lib failed, falling back to JS implementation ${e}`);
++            // fall through to JS implementation below
++        }
++
+         return getExtendedPublicKey(secretKey).pointBytes;
+     }
+     // int('LE', SHA512(dom2(F, C) || msgs)) mod N

@@ -1,4 +1,6 @@
+/* eslint-disable max-params */
 import { actions } from '../helpers/actions'
+import { getAndroidAppId } from '../helpers/warmup'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
 import commonElsLoc from '../locators/commonEls.loc'
@@ -291,8 +293,16 @@ class Settings {
     return selectors.getById(`contact__${contactName}__${address}`)
   }
 
-  get hkd() {
-    return selectors.getByText(settings.hkd)
+  get advancedSettingsBtn() {
+    return selectors.getById(settings.advancedSettings)
+  }
+
+  get quickSwapsEnabled() {
+    return selectors.getById(settings.quickSwapsEnabled)
+  }
+
+  get quickSwapsDisabled() {
+    return selectors.getById(settings.quickSwapsDisabled)
   }
 
   async verifyEmptyContacts() {
@@ -309,8 +319,9 @@ class Settings {
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
+      await common.tapAndroidDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
-      await this.setAddress(network, address, contactName)
+      await this.setAddress(network, address)
     }
     // exit the edit contact form
     await common.goBack()
@@ -322,17 +333,16 @@ class Settings {
 
   async tapDeleteContact() {
     await actions.tap(this.deleteContactBtn)
+    await common.tapDeleteAlert()
   }
 
-  async setAddress(network: string, address: string, contactName: string) {
+  async setAddress(network: string, address: string) {
     await actions.click(selectors.getByText(`Add ${network} address`))
-    await actions.click(this.typeInOrPasteAddress)
-    await actions.type(
-      selectors.getById(`advanced_input__${network.toLowerCase()}`),
-      address
-    )
-    await actions.dismissKeyboard()
-    await actions.tap(selectors.getByText(contactName))
+    await actions.tap(this.typeInOrPasteAddress)
+    const input = selectors.getById(`advanced_input__${network.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, address)
+    await actions.tapEnterOnKeyboard()
   }
 
   async verifyContact(address: string, contactName: string) {
@@ -347,7 +357,7 @@ class Settings {
     await this.addContactName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
-      await this.setAddress(network, address, contactName)
+      await this.setAddress(network, address)
     }
     // save contact
     await common.tapSave()
@@ -417,7 +427,11 @@ class Settings {
     await actions.waitFor(this.removeAllAccounts)
     await actions.isNotVisible(this.addAccountToThisWallet)
     await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
-    await this.tapMyWalletsTitle()
+    if (driver.isAndroid) {
+      await common.goAndroidBack()
+    } else {
+      await this.tapMyWalletsTitle()
+    }
   }
 
   async tapMyWalletsTitle() {
@@ -441,15 +455,14 @@ class Settings {
   }
 
   async verifyPKWalletRemoved(accountName = 'Account 3') {
+    await actions.delay(1000)
     await actions.isNotVisible(this.manageAccountsWalletName(settings.imported))
     await actions.isNotVisible(this.privateKeyAccount(accountName))
   }
 
   async tapWalletByName(walletName = 'Wallet 2', accountName = 'Account 1') {
     await actions.tap(this.manageAccountsWalletName(walletName))
-    await actions.isVisible(
-      this.manageAccountsAccountName(walletName, accountName)
-    )
+    await this.verifyMyWalletsAccountName(accountName, walletName)
   }
 
   async verifyAccountDetail(
@@ -543,11 +556,8 @@ class Settings {
   }
 
   async tapNotifications() {
+    await actions.scrollTo(this.notificationsPreferences, 'down')
     await actions.tap(this.notificationsPreferences)
-  }
-
-  async swipeSettings(amount = 0.8) {
-    await actions.swipe('up', amount, this.mainnetAvatar)
   }
 
   async selectCurrency(curr: string) {
@@ -596,7 +606,8 @@ class Settings {
 
   async verifyDefaultNetworks() {
     await actions.waitFor(this.addNetworkBtn)
-    for (const network of networks) {
+    const networksToVerify = networks.filter(network => network.data)
+    for (const network of networksToVerify) {
       await actions.isVisible(this.networkList(network.name))
       if (network.haveToggle) {
         await actions.isVisible(this.networkEnabled(network.name))
@@ -623,14 +634,13 @@ class Settings {
 
   async setNetworkData(type: string, value: string) {
     await actions.tap(selectors.getByText(`Add ${type}`))
-    await actions.type(
-      selectors.getById(`advanced_input__${type.toLowerCase()}`),
-      value
-    )
+    const input = selectors.getById(`advanced_input__${type.toLowerCase()}`)
+    await actions.scrollTo(input, 'down')
+    await actions.type(input, value)
     if (type === 'Chain ID') {
       await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
     } else {
-      await actions.dismissKeyboard()
+      await actions.tapEnterOnKeyboard()
     }
   }
 
@@ -770,6 +780,15 @@ class Settings {
     )
   }
 
+  async verifyMywalletsAccountNameNotVisible(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
+    await actions.waitForNotVisible(
+      this.manageAccountsAccountName(walletName, accountName)
+    )
+  }
+
   async tapAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
     await actions.tap(this.manageAccountsAccountName(walletName, accountName))
   }
@@ -818,22 +837,22 @@ class Settings {
   }
 
   async verifyAppIconScreen(selectedIconId: string) {
-    await actions.waitFor(selectors.getById(settings.appIconTitle))
+    await actions.waitFor(selectors.getBySomeText(settings.appIconTitle))
     const appIcons = [
-      'Light',
-      'Old',
+      'Core light',
+      'Old school Core',
       'Bling',
-      'Shiny',
+      'So shiny',
       'Marker',
       'Minimalism',
       'Neon'
     ]
-    if (selectedIconId !== 'Default') {
+    if (selectedIconId !== settings.core) {
       const idx = appIcons.indexOf(selectedIconId)
       if (idx !== -1) {
         appIcons.splice(idx, 1)
       }
-      appIcons.push('Default')
+      appIcons.push(settings.core)
     }
     await actions.isVisible(
       selectors.getById(`app_icon_${selectedIconId}_selected`)
@@ -845,17 +864,36 @@ class Settings {
 
   async selectAppIcon(iconId?: string) {
     if (!iconId) {
-      iconId = ['Light', 'Old', 'Bling', 'Shiny', 'Marker', 'Minimalism'][
-        Math.floor(Math.random() * 6)
-      ] as string
+      iconId = [
+        'Core light',
+        'Old school Core',
+        'Bling',
+        'So shiny',
+        'Marker',
+        'Minimalism'
+      ][Math.floor(Math.random() * 6)] as string
     }
     await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    if (driver.isAndroid) {
+      // Emulators kill the app process when changing the icon; real devices don't.
+      // activateApp fails after icon change because Android temporarily can't
+      // resolve the launchable activity alias — use startActivity explicitly.
+      await actions.delay(2000)
+      if (driver.isAndroid) {
+        const appId = getAndroidAppId()
+        await driver.terminateApp(appId)
+        await driver.activateApp(appId)
+        await onboardingPage.exitMetroAfterLogin()
+        await onboardingPage.unlockEnterPin()
+        await this.goSettings()
+      }
+    }
     return iconId
   }
 
   async tapSecurityAndPrivacy(needSwipe = true) {
     if (needSwipe) {
-      await this.swipeSettings()
+      await actions.scrollTo(this.securityAndPrivacy, 'down')
     }
     await actions.tap(this.securityAndPrivacy)
   }
@@ -943,6 +981,24 @@ class Settings {
     const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
     await this.tapNotificationSwitch(isSwitchOn, notiType)
     await actions.isVisible(selectors.getById(`${notiType}_${toggled}_switch`))
+  }
+
+  async quickSwapOn(enable = true) {
+    await this.goSettings()
+    await actions.scrollTo(this.advancedSettingsBtn, 'down')
+    await actions.tap(this.advancedSettingsBtn)
+    const isCurrentlyEnabled = await actions.isElementVisible(
+      this.quickSwapsEnabled,
+      3000
+    )
+    if (isCurrentlyEnabled !== enable) {
+      const toggleToTap = enable
+        ? this.quickSwapsDisabled
+        : this.quickSwapsEnabled
+      await actions.longPress(toggleToTap)
+    }
+    await common.goBack()
+    await common.dismissBottomSheet()
   }
 }
 

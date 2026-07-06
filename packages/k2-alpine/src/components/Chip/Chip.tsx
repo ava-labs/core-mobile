@@ -25,6 +25,7 @@ interface ChipProps {
   hitSlop?: number | Insets
   accessibilityLabel?: string
   renderLeft?: () => JSX.Element
+  isSelected?: boolean
 }
 
 export const Chip = forwardRef<
@@ -40,6 +41,7 @@ export const Chip = forwardRef<
       children,
       accessibilityLabel,
       renderLeft,
+      isSelected,
       ...rest
     },
     ref
@@ -66,13 +68,15 @@ export const Chip = forwardRef<
           {
             ...sizeStyles[size],
             borderRadius: 1000,
-            backgroundColor,
+            backgroundColor: isSelected
+              ? theme.colors.$textPrimary
+              : backgroundColor,
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden',
             flexDirection: 'row',
             alignSelf: 'flex-start',
-            gap: 2
+            gap: 4
           },
           style
         ]}
@@ -82,7 +86,7 @@ export const Chip = forwardRef<
           numberOfLines={1}
           variant={'buttonSmall'}
           style={{
-            color: tintColor
+            color: isSelected ? theme.colors.$surfacePrimary : tintColor
           }}>
           {children}
         </Text>
@@ -106,13 +110,11 @@ export const Chip = forwardRef<
 const sizeStyles = StyleSheet.create({
   large: {
     paddingHorizontal: 12,
-    minHeight: 27,
-    minWidth: 60
+    minHeight: 27
   },
   small: {
     paddingHorizontal: 10,
-    minHeight: 20,
-    minWidth: 57
+    minHeight: 20
   }
 })
 

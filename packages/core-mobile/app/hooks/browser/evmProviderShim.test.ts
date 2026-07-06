@@ -25,11 +25,9 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("var _chainId = '0xa86a'")
     })
 
-    it('embeds the address', () => {
+    it('does not embed the address (no pre-seeded account)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain(
-        "var _address = '0x1234567890abcdef1234567890abcdef12345678'"
-      )
+      expect(shim).not.toContain('var _address =')
     })
 
     it('embeds a different chain ID when provided', () => {
@@ -42,25 +40,86 @@ describe('buildEvmProviderShim', () => {
       expect(shim).not.toContain("var _chainId = '0xa86a'")
     })
 
-    it('embeds an empty address when not provided', () => {
+    it('accepts an empty address without embedding it', () => {
       const shim = buildEvmProviderShim({
         chainId: '0xa86a',
         address: '',
         uuid: defaultParams.uuid
       })
-      expect(shim).toContain("var _address = ''")
+      expect(shim).not.toContain('var _address =')
     })
   })
 
-  describe('pre-connected state', () => {
-    it('sets _connected to true when address is provided', () => {
+  describe('connection state', () => {
+    it('starts connected (EIP-1193: network connectivity, not account auth)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain('var _connected = !!_address')
+      expect(shim).toContain('var _connected = true')
+      expect(shim).toContain('_isConnected: true')
     })
 
-    it('initializes _accounts from _address', () => {
+    it('starts connected even when address is empty', () => {
+      const shim = buildEvmProviderShim({
+        ...defaultParams,
+        address: ''
+      })
+      expect(shim).toContain('var _connected = true')
+    })
+
+    it('isConnected() returns the tracked flag, not a hard-coded true', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain('var _accounts = _address ? [_address] : []')
+      expect(shim).toContain('return _connected;')
+    })
+
+    it('flips the flag false on a disconnect event and true on connect/chainChanged', () => {
+      // Standard EIP-1193 connection plumbing: isConnected() must follow a
+      // disconnect event (false) and connect/chainChanged (true). Native no
+      // longer emits disconnect for a non-EVM active network — the shared
+      // provider stays alive for avalanche_* (CP-13672) — but the shim still
+      // honors a real disconnect event per EIP-1193.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("eventName === 'disconnect'")
+      expect(shim).toContain('_connected = false;')
+      expect(shim).toContain("eventName === 'connect'")
+    })
+
+    it('keeps the legacy _isConnected property in sync with the flag', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('provider._isConnected = _connected;')
+    })
+
+    it('starts _accounts empty — native primes on load based on permissions', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('var _accounts = []')
+    })
+  })
+
+  describe('__coreProviderReassertChain (CP-14615)', () => {
+    it('defines an idempotent chain re-assert helper', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain(
+        'window.__coreProviderReassertChain = function(data)'
+      )
+    })
+
+    it('dedupes numerically so a non-canonical hex (0x01 / 0xA86A) is not re-emitted', () => {
+      // Native always sends canonical '0x'+n.toString(16); a dApp-supplied chain
+      // (wallet_addEthereumChain) may be zero-padded/uppercase. A string compare
+      // would miss those; the numeric compare is the correct dedupe.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain('parseInt(data, 16) === parseInt(_chainId, 16)')
+    })
+
+    it('emits chainChanged via __coreProviderEmit when the chain actually changed', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("window.__coreProviderEmit('chainChanged', data)")
+    })
+
+    it('normalizes the optimistic wallet_switchEthereumChain chainId to canonical hex', () => {
+      // A dApp may send a non-canonical chainId ('1' / '0x01' / '0xA86A'); the shim
+      // must store canonical '0x'+n.toString(16) so eth_chainId is well-formed and
+      // the numeric re-assert dedupe stays consistent. CP-14615.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("swTargetChainId = '0x' + swParsed.toString(16)")
     })
   })
 
@@ -71,16 +130,16 @@ describe('buildEvmProviderShim', () => {
       shim = buildEvmProviderShim(defaultParams)
     })
 
-    it('sets isMetaMask flag', () => {
+    it('sets isMetaMask flag to true for broad dApp compatibility', () => {
       expect(shim).toContain('isMetaMask: true')
     })
 
-    it('sets isCore flag', () => {
-      expect(shim).toContain('isCore: true')
+    it('sets isAvalanche flag (prevents wagmi MetaMask connector from claiming our provider)', () => {
+      expect(shim).toContain('isAvalanche: true')
     })
 
-    it('sets isAvalanche flag', () => {
-      expect(shim).toContain('isAvalanche: true')
+    it('sets isCore flag on window.core namespace', () => {
+      expect(shim).toContain('isCore: true')
     })
 
     it('implements request method', () => {
@@ -89,6 +148,11 @@ describe('buildEvmProviderShim', () => {
 
     it('implements isConnected method', () => {
       expect(shim).toContain('isConnected: function()')
+    })
+
+    it('provides _metamask.isUnlocked() for wagmi compatibility', () => {
+      expect(shim).toContain('_metamask:')
+      expect(shim).toContain('isUnlocked: function()')
     })
   })
 
@@ -99,16 +163,20 @@ describe('buildEvmProviderShim', () => {
       shim = buildEvmProviderShim(defaultParams)
     })
 
+    it.each(['eth_chainId', 'eth_accounts', 'net_version', 'eth_coinbase'])(
+      'handles %s locally (sync cache)',
+      method => {
+        expect(shim).toContain(`method === '${method}'`)
+      }
+    )
+
     it.each([
-      'eth_chainId',
-      'eth_accounts',
-      'net_version',
-      'eth_coinbase',
       'eth_requestAccounts',
       'wallet_requestPermissions',
-      'wallet_getPermissions'
-    ])('handles %s locally', method => {
-      expect(shim).toContain(`method === '${method}'`)
+      'wallet_getPermissions',
+      'wallet_revokePermissions'
+    ])('round-trips %s to native (no inpage implementation)', method => {
+      expect(shim).not.toContain(`method === '${method}'`)
     })
   })
 
@@ -143,12 +211,32 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('on: function(event, fn)')
     })
 
+    it('implements addListener()', () => {
+      expect(shim).toContain('addListener: function(event, fn)')
+    })
+
+    it('implements once()', () => {
+      expect(shim).toContain('once: function(event, fn)')
+    })
+
     it('implements removeListener()', () => {
       expect(shim).toContain('removeListener: function(event, fn)')
     })
 
+    it('implements off()', () => {
+      expect(shim).toContain('off: function(event, fn)')
+    })
+
     it('implements removeAllListeners()', () => {
       expect(shim).toContain('removeAllListeners: function(event)')
+    })
+
+    it('implements listenerCount()', () => {
+      expect(shim).toContain('listenerCount: function(event)')
+    })
+
+    it('implements listeners()', () => {
+      expect(shim).toContain('listeners: function(event)')
     })
   })
 
@@ -199,12 +287,35 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("rdns: 'app.core.mobile'")
     })
 
-    it('sets provider name to Core', () => {
-      expect(shim).toContain("name: 'Core'")
+    it('sets provider name to Core Mobile', () => {
+      expect(shim).toContain("name: 'Core Mobile'")
     })
 
     it('includes a base64 SVG icon', () => {
       expect(shim).toContain("icon: 'data:image/svg+xml;base64,")
+    })
+
+    it('freezes providerInfo per EIP-6963 spec', () => {
+      expect(shim).toContain('var providerInfo = Object.freeze(')
+    })
+
+    it('freezes _providerDetail per EIP-6963 spec', () => {
+      expect(shim).toContain('var _providerDetail = Object.freeze(')
+    })
+
+    it('re-announces on DOMContentLoaded and load events', () => {
+      expect(shim).toContain(
+        "document.addEventListener('DOMContentLoaded', announceProvider)"
+      )
+      expect(shim).toContain(
+        "window.addEventListener('load', announceProvider)"
+      )
+    })
+
+    it('uses staggered timeouts for late-initialising libraries', () => {
+      expect(shim).toContain('setTimeout(announceProvider, 100)')
+      expect(shim).toContain('setTimeout(announceProvider, 1000)')
+      expect(shim).toContain('setTimeout(announceProvider, 3000)')
     })
   })
 
@@ -247,6 +358,15 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('window.__coreProviderRespond = function(id')
     })
 
+    it('rejects with an Error instance so wagmi/viem instanceof checks pass (EIP-1193 compliance)', () => {
+      // EIP-1193: "the Provider MUST reject with an Error object"
+      // wagmi uses instanceof checks on errors; plain-object rejections
+      // lose their .code and crash dApps like Aave when handling 4902.
+      expect(shim).toContain('var e = new Error(error.message')
+      expect(shim).toContain('e.code = error.code')
+      expect(shim).toContain('cb.reject(e)')
+    })
+
     it('defines __coreProviderEmit on window', () => {
       expect(shim).toContain('window.__coreProviderEmit = function(eventName')
     })
@@ -265,24 +385,80 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('legacy event dispatch', () => {
+  describe('legacy event dispatch & initial connect', () => {
     it('dispatches ethereum#initialized event', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("new Event('ethereum#initialized')")
     })
-  })
 
-  describe('auto-connect event firing', () => {
-    it('auto-fires connect event on listener attachment', () => {
+    it('dispatches avalanche#initialized event so X/P dApps detect the provider (CP-13672)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("event === 'connect'")
-      expect(shim).toContain('fn({ chainId: _chainId })')
+      expect(shim).toContain("new Event('avalanche#initialized')")
     })
 
-    it('auto-fires accountsChanged event on listener attachment', () => {
+    it('emits EIP-1193 connect event once at initialisation', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("event === 'accountsChanged'")
-      expect(shim).toContain('fn(_accounts.slice())')
+      expect(shim).toContain("emit('connect', { chainId: _chainId })")
+    })
+  })
+
+  describe('desktop user-agent override (deferred)', () => {
+    let shim: string
+
+    beforeAll(() => {
+      shim = buildEvmProviderShim(defaultParams)
+    })
+
+    it('overrides navigator.userAgent via Object.defineProperty', () => {
+      expect(shim).toContain("Object.defineProperty(navigator, 'userAgent'")
+    })
+
+    it('uses a desktop Chrome user-agent string', () => {
+      expect(shim).toContain('Macintosh; Intel Mac OS X')
+      expect(shim).toContain('Chrome/')
+    })
+
+    it('defers the override until after page load', () => {
+      expect(shim).toContain("window.addEventListener('load'")
+      expect(shim).toContain('_applyDesktopUA')
+      expect(shim).toContain('_uaOverridden')
+    })
+
+    it('has a fallback timeout for pages that do not fire load', () => {
+      expect(shim).toContain('setTimeout(_applyDesktopUA, 4000)')
+    })
+  })
+
+  describe('event listener (no auto-fire)', () => {
+    it('does NOT auto-fire connect/accountsChanged on listener attachment (prevents React #185 loop)', () => {
+      // Auto-firing current state to new listeners causes wagmi to re-subscribe
+      // during its cleanup/setup cycle, which feeds back into another auto-fire,
+      // producing React error #185 (infinite update loop) when dApps trigger chain-switch UI.
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).not.toContain("event === 'connect'")
+      expect(shim).not.toContain("event === 'accountsChanged'")
+    })
+  })
+
+  describe('SPA navigation listener (security)', () => {
+    it('does not emit nav_change messages from page JS', () => {
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '0x1234567890abcdef1234567890abcdef12345678',
+        uuid: 'test-uuid-1234'
+      })
+      // The page must not be able to drive the native origin via postMessage.
+      expect(shim).not.toContain('nav_change')
+    })
+
+    it('does not patch history.pushState or history.replaceState', () => {
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '0x1234567890abcdef1234567890abcdef12345678',
+        uuid: 'test-uuid-1234'
+      })
+      expect(shim).not.toContain('history.pushState')
+      expect(shim).not.toContain('history.replaceState')
     })
   })
 })

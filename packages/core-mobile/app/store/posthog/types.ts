@@ -5,8 +5,6 @@ import { uuid } from 'utils/uuid'
 export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
   [FeatureGates.EVENTS]: true,
-  [FeatureGates.BRIDGE_BTC]: true,
-  [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.EARN]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
@@ -15,11 +13,11 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.MARKR_SWAP_MAX_RETRIES]: '3', // 3 retries
   [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '2000', // 20% fee units buffer
-  [FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]: '5000', // 50% safety margin on gas (Max swap amount)
+  [FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]: '6000', // 60% safety margin on gas (Max swap amount)
   [FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]: '2000', // 20% gas units buffer for transfers
-  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT]: '1500', // 15% additive fee buffer for Max swap amount (default routes)
+  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT]: '4000', // 40% additive fee buffer for Max swap amount (default routes)
   [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA]: '5500', // 55% additive fee buffer for Max swap amount (evm→solana)
-  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM]: '500', // 5% additive fee buffer for Max swap amount (solana→evm)
+  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM]: '4000', // 40% additive fee buffer for Max swap amount (solana→evm)
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.SEEDLESS_ONBOARDING]: true,
   [FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]: true,
@@ -30,11 +28,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_SIGNING]: true,
   [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
   [FeatureGates.ALL_NOTIFICATIONS]: true,
-  [FeatureGates.UNIFIED_BRIDGE_CCTP]: true,
-  [FeatureGates.UNIFIED_BRIDGE_ICTT]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_EVM]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_AVA_TO_BTC]: true,
-  [FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA]: true,
   [FeatureGates.HALLIDAY_BRIDGE_BANNER]: true,
   [FeatureGates.GASLESS]: true,
   [FeatureGates.MELD_ONRAMP]: true,
@@ -46,8 +39,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
-  [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
-  [FeatureGates.IN_APP_DEFI_BORROW]: false,
   [FeatureGates.IN_APP_REVIEW]: true,
   [FeatureGates.GASLESS_INSTANT]: true,
   [FeatureGates.NEST_EGG_CAMPAIGN]: false,
@@ -57,9 +48,18 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_AVALANCHE_EVM]: false,
   [FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB]: false,
   [FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC]: false,
+  [FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]: false,
+  [FeatureGates.FUSION_QUICK_SWAPS]: false,
+  // Recurring swaps (DCA) kill-switch. `false` = blocked → toggle hidden, banner
+  // hidden, management screen 404s. Mirrors the SWAP_SOLANA pattern.
+  [FeatureGates.SWAP_RECURRING]: false,
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
-  [FeatureGates.LEGACY_BRIDGE]: false,
-  [FeatureGates.INJECTED_PROVIDER]: false
+  [FeatureGates.INJECTED_PROVIDER]: false,
+  [FeatureGates.PREDICTIONS]: false,
+  [FeatureGates.PERPETUALS]: false,
+  [FeatureGates.PRICE_CHART]: false,
+  [FeatureGates.FAST_STAKE_ENABLED]: false,
+  [FeatureGates.FAST_STAKE_FEE_ENABLED]: false
 }
 
 export const initialState = {

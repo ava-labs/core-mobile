@@ -12,9 +12,10 @@ This is a Yarn workspaces monorepo for the Ava Labs Mobile Team, containing the 
 
 - **`packages/core-mobile/`** - Main React Native mobile wallet application (see `packages/core-mobile/CLAUDE.md` for detailed documentation)
 - **`packages/k2-alpine/`** - Mobile design system library with Storybook components
-- **`packages/react-native-nitro-avalabs-crypto/`** - Native crypto module using Nitro Modules for high-performance cryptographic operations
 - **`packages/eslint-mobile/`** - Shared ESLint plugin for the mobile team
 - **`packages/tsconfig-mobile/`** - Shared TypeScript configuration
+
+Native crypto operations are provided by `@avalabs/crypto-nitro` (published, optional peer of `@avalabs/crypto-sdk`). It replaces the former `packages/react-native-nitro-avalabs-crypto` workspace and is consumed transitively through the vm-modules (`@avalabs/{evm,bitcoin,avalanche,svm}-module`).
 
 ### Workspace Dependencies
 
@@ -47,9 +48,6 @@ yarn core <COMMAND>
 # Shortcuts for k2-alpine package
 yarn k2 <COMMAND>
 # Example: yarn k2 storybook-generate
-
-# Shortcuts for crypto package
-yarn crypto <COMMAND>
 ```
 
 ### Cleanup
@@ -92,17 +90,13 @@ yarn add -W <package-name>
 
 ### Working with Native Modules
 
-The `react-native-nitro-avalabs-crypto` package contains native C++ code using Nitro Modules:
+Native crypto bindings ship from the published `@avalabs/crypto-nitro` package — there is no in-tree native crypto workspace to rebuild. After bumping `@avalabs/crypto-nitro` or any other native module:
 
 ```bash
-# After modifying native code or Nitrogen specs
-cd packages/react-native-nitro-avalabs-crypto
-yarn specs  # Regenerates native bindings
-
-# Then rebuild the app
-cd ../core-mobile
+yarn install
+cd packages/core-mobile
 yarn podInstall  # iOS
-yarn android     # Android
+yarn android     # Android (gradle sync)
 ```
 
 ### Testing Across Packages
@@ -149,7 +143,7 @@ The monorepo uses Bitrise for CI/CD (see `bitrise.yml`):
 - Android builds with Java 17 and NDK 27.1.12297006
 - iOS builds with Xcode
 - Detox E2E tests
-- Appium smoke tests
+- Appium / WebDriverIO tests in `packages/core-mobile/e2e-appium/` (see `packages/core-mobile/scripts/devicefarm/README.md` for AWS Device Farm)
 - TestRail integration for test reporting
 
 ## Git Workflow
@@ -186,12 +180,9 @@ yarn start  # Starts Expo dev client with Storybook
 yarn storybook-generate  # Regenerates Storybook story list
 ```
 
-### react-native-nitro-avalabs-crypto
+### @avalabs/crypto-nitro
 
-High-performance crypto operations implemented in C++ using Nitro Modules framework. After modifying:
-1. Update TypeScript specs in `src/specs/`
-2. Run `yarn specs` to regenerate native bindings
-3. Rebuild iOS/Android apps
+High-performance crypto operations implemented in C++ using the Nitro Modules framework. Published externally as `@avalabs/crypto-nitro` (an optional peer of `@avalabs/crypto-sdk`); core-mobile installs it directly so the React Native runtime can autolink it. Address-derivation and signing call sites should go through `@avalabs/crypto-sdk` (which the vm-modules pull in) rather than importing `@avalabs/crypto-nitro` directly.
 
 ## Key Dependencies
 
@@ -217,5 +208,5 @@ High-performance crypto operations implemented in C++ using Nitro Modules framew
 - Reinstall: `cd ../.. && yarn core podInstall`
 
 **Native module errors:**
-- For crypto module: `cd packages/react-native-nitro-avalabs-crypto && yarn specs`
+- For crypto: bump `@avalabs/crypto-nitro` (and any matching `@avalabs/crypto-sdk`), then `yarn install && yarn core podInstall` to refresh native bindings
 - Rebuild app after native changes

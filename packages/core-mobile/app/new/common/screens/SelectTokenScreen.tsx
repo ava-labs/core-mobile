@@ -83,6 +83,7 @@ export const SelectTokenScreen = <T extends object>({
 
     return (
       <FlatList
+        testID="network_selector_scroll"
         style={{ marginHorizontal: -16 }}
         contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
         horizontal

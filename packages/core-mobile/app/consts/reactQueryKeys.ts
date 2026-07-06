@@ -52,6 +52,13 @@ export enum ReactQueryKeys {
   FUSION_TOKENS = 'fusionTokens',
   FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
+  FUSION_STUCK_ATOMIC_FUNDS = 'fusionStuckAtomicFunds',
+
+  // recurring swaps (DCA). `RECURRING_ALLOWANCE` was dropped — the SDK
+  // reads on-chain allowance internally inside `executeFirstFill` so mobile
+  // no longer needs a separate query for it.
+  RECURRING_QUOTE = 'recurringQuote',
+  RECURRING_SCHEDULES = 'recurringSchedules',
 
   // token aggregator
   TOKEN_LOOKUP = 'tokenLookup',
@@ -72,5 +79,19 @@ export enum ReactQueryKeys {
   BENQI_REWARDS = 'benqiRewards',
 
   // notifications
-  NOTIFICATION_CENTER_LIST = 'notificationCenterList'
+  NOTIFICATION_CENTER_LIST = 'notificationCenterList',
+  PRICE_ALERT_CHART = 'priceAlertChart',
+
+  // token detail chart
+  TOKEN_CHART_DATA = 'tokenChartData',
+
+  // predictions
+  PREDICTIONS_MARKETS = 'predictionsMarkets',
+  PREDICTIONS_SERIES = 'predictionsSeries',
+  PREDICTIONS_MARKET_DETAIL = 'predictionsMarketDetail',
+  PREDICTIONS_EVENT_DETAIL = 'predictionsEventDetail',
+  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes',
+
+  // regional feature availability (geo-restriction)
+  FEATURE_AVAILABILITY = 'featureAvailability'
 }

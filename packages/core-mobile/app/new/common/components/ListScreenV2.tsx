@@ -1,11 +1,11 @@
 import {
+  BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
-  Text,
-  useTheme
+  Text
 } from '@avalabs/k2-alpine'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -101,10 +101,25 @@ export interface ListScreenProps<T>
   renderEmpty?: () => React.ReactNode
   /** Optional function to render a fixed footer at the bottom of the screen */
   renderFooter?: () => React.ReactNode
+  /** Optional function to render a true list footer rendered after the last item (maps to FlashList's ListFooterComponent). Use this for infinite-scroll spinners instead of renderFooter. */
+  renderListFooter?: () => React.ReactNode
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
+  /**
+   * Renders an absolute-positioned banner just below the sticky header that
+   * fades in once the user has scrolled past `triggerContentY` (a y-coordinate
+   * in FlashList content space, typically obtained via the FlashList ref's
+   * `getLayout(index)`). Useful for section labels that need to stick at the
+   * top of the list but can't be added to FlashList's `stickyHeaderIndices`
+   * (which only shows one sticky at a time and would push out the title/search
+   * header).
+   */
+  headerOverlay?: {
+    triggerContentY: number
+    render: () => React.ReactNode
+  }
   /** Optional ref to the flat list */
-  flatListRef?: RefObject<ListScreenRef<T>>
+  flatListRef?: RefObject<ListScreenRef<T> | null>
 }
 
 export type ListScreenRef<T> = {
@@ -124,11 +139,12 @@ export const ListScreenV2 = <T,>({
   renderHeader,
   renderHeaderRight,
   renderFooter,
+  renderListFooter,
   shouldShowStickyHeader = true,
+  headerOverlay,
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
-  const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
@@ -164,11 +180,18 @@ export const ListScreenV2 = <T,>({
     [scrollViewRef]
   )
 
+  // Stable header element — recreated only when the title text changes, so
+  // `useFadingHeaderNavigation`'s header-title sync effect doesn't re-run (and
+  // re-`setOptions`) on every render. See ScrollScreen for the same fix.
+  const navigationHeader = useMemo(
+    () => <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    [navigationTitle, title]
+  )
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout,
-      shouldHeaderHaveGrabber: isModal,
       hideHeaderBackground: shouldShowStickyHeader,
       hasSeparator: shouldShowStickyHeader
         ? renderHeader
@@ -277,7 +300,8 @@ export const ListScreenV2 = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
+      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transformOrigin: 'bottom left'
     }
   })
 
@@ -301,6 +325,60 @@ export const ListScreenV2 = <T,>({
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
       opacity: shouldShowStickyHeader ? opacity : 0
+    }
+  })
+
+  // Pull primitives out of `headerOverlay` so the worklet captures stable
+  // values — otherwise the whole object reference (new on each
+  // triggerContentY tick from the caller) would force Reanimated to
+  // recompile the worklet.
+  const hasHeaderOverlay = !!headerOverlay
+  const overlayTrigger = headerOverlay?.triggerContentY ?? 0
+  const headerOverlayAnimatedStyle = useAnimatedStyle(() => {
+    if (!hasHeaderOverlay || headerSentinelHeight === 0) {
+      return { opacity: 0 }
+    }
+    // The header's inner content translates up by `heightDelta` on scroll
+    // (see animatedHeaderContainerStyle below the title fade animation).
+    // The visible sticky bottom is therefore `headerSentinelHeight -
+    // heightDelta` once scrolled, which is where the overlay should sit.
+    const heightDelta = shouldShowStickyHeader
+      ? contentHeaderHeight + (isModal ? 16 : 20)
+      : 0
+    const visibleStickyBottom = headerSentinelHeight - heightDelta
+    const threshold = overlayTrigger - visibleStickyBottom
+
+    // Crossfade window — fade the overlay in/out over a ~24 px scroll range
+    // centered on the threshold so the banner hits half-opacity at the exact
+    // moment the in-list divider crosses the sticky edge. Without this, the
+    // divider scrolls under the header and the banner pops in afterward,
+    // producing a visible beat where neither label is on screen.
+    const FADE = 24
+    const opacity = interpolate(
+      scrollY.value,
+      [threshold - FADE / 2, threshold + FADE / 2],
+      [0, 1],
+      Extrapolation.CLAMP
+    )
+    // Ride the same translateY as the inner content so the overlay sits flush
+    // with the collapsed sticky bottom instead of the original natural
+    // bottom (which would leave a transparent gap where the title used to be).
+    const collapseTranslate = interpolate(
+      scrollY.value,
+      [0, contentHeaderHeight],
+      [0, -heightDelta],
+      Extrapolation.CLAMP
+    )
+    // A small bounded slide on entry adds motion to the dissolve.
+    const entranceTranslate = interpolate(
+      scrollY.value,
+      [threshold - FADE / 2, threshold + FADE / 2],
+      [-6, 0],
+      Extrapolation.CLAMP
+    )
+    return {
+      opacity,
+      transform: [{ translateY: collapseTranslate + entranceTranslate }]
     }
   })
 
@@ -332,11 +410,16 @@ export const ListScreenV2 = <T,>({
   ])
 
   const isAndroidModal = Platform.OS === 'android' && isModal
-  const flashListMarginTop = isAndroidModal ? headerHeight : 0
+  const flashListMarginTop = isAndroidModal
+    ? title.length === 0
+      ? insets.top - 8
+      : headerHeight
+    : 0
 
   const overrideProps = useMemo(() => {
-    const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
+    const extraPadding = isModal
+      ? -insets.top - (Platform.OS === 'ios' ? 8 : 16)
+      : 8
 
     return {
       contentContainerStyle: {
@@ -377,8 +460,6 @@ export const ListScreenV2 = <T,>({
     return items
   }, [data])
 
-  const headerBgColor = backgroundColor ?? theme.colors.$surfacePrimary
-
   const headerContent = useMemo(() => {
     return (
       <View
@@ -401,10 +482,9 @@ export const ListScreenV2 = <T,>({
                   bottom: 0
                 }
               ]}>
-              <View
+              <BlurViewWithFallback
                 style={{
-                  flex: 1,
-                  backgroundColor: headerBgColor
+                  flex: 1
                 }}
               />
             </Animated.View>
@@ -463,7 +543,6 @@ export const ListScreenV2 = <T,>({
     isAndroidModal,
     renderHeader,
     headerHeight,
-    headerBgColor,
     handleHeaderSentinelLayout,
     handleContentHeaderLayout,
     title,
@@ -596,6 +675,7 @@ export const ListScreenV2 = <T,>({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
+        stickyHeaderConfig={{ hideRelatedCell: true }}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
         {...restProps}
@@ -607,6 +687,7 @@ export const ListScreenV2 = <T,>({
           internalKeyExtractor as (item: T, index: number) => string
         }
         getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
+        ListFooterComponent={renderListFooter ? renderListFooter : undefined}
         style={StyleSheet.flatten([
           {
             backgroundColor: backgroundColor ?? 'transparent',
@@ -615,6 +696,27 @@ export const ListScreenV2 = <T,>({
           restProps.style
         ])}
       />
+      {headerOverlay && (
+        // The overlay is a non-interactive label that sits directly on top of
+        // the first list row. It animates from opacity 0, and an opacity-0 view
+        // still intercepts touches — with "box-none" the opaque banner child
+        // swallowed taps on the first token (CP-14391). "none" lets every tap
+        // fall through to the list beneath, which is all the banner ever wants.
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: 'absolute',
+              top: flashListMarginTop + headerSentinelHeight,
+              left: 0,
+              right: 0,
+              zIndex: 1
+            },
+            headerOverlayAnimatedStyle
+          ]}>
+          {headerOverlay.render()}
+        </Animated.View>
+      )}
       {renderGrabber()}
       {renderFooterContent()}
     </Animated.View>

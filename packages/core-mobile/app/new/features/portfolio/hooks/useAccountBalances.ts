@@ -11,6 +11,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectWalletById } from 'store/wallet/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { useOnlineStatus } from 'common/hooks/useOnlineStatus'
 import * as store from '../store'
 
 /**
@@ -49,11 +50,16 @@ export function useAccountBalances(
   data: AdjustedNormalizedBalancesForAccount[]
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
+  isPaused: boolean
+  isOffline: boolean
   isRefetching: boolean
   refetch: () => Promise<void>
 } {
   const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
+  const isOnline = useOnlineStatus()
+
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
@@ -67,6 +73,7 @@ export function useAccountBalances(
     data,
     isFetching,
     isError,
+    isPaused,
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -109,31 +116,36 @@ export function useAccountBalances(
     setIsRefetching(prev => ({ ...prev, [account.id]: true }))
 
     try {
+      if (!isOnline) {
+        // Yield to the event loop so the spinner renders before we clear it.
+        // Without this, React 18 batches the true→false updates into one render.
+        await new Promise<void>(resolve => setTimeout(resolve, 300))
+        return
+      }
       await refetchFn()
     } finally {
       setIsRefetching(prev => ({ ...prev, [account.id]: false }))
     }
-  }, [isNotReady, account?.id, setIsRefetching, refetchFn])
+  }, [isNotReady, isOnline, account?.id, setIsRefetching, refetchFn])
 
   const isLoading = useMemo(() => {
-    if (isError) return false
+    if (isError || !isOnline) return false
 
-    // still loading if:
-    // - account missing, OR
-    // - no data, OR
-    // - fewer results than enabled networks
     return (
       !account ||
       !data ||
       data.length === 0 ||
       data.length < enabledNetworks.length
     )
-  }, [account, data, enabledNetworks.length, isError])
+  }, [account, data, enabledNetworks.length, isError, isOnline])
 
   return {
     data: data ?? [],
     isLoading,
     isFetching,
+    isError,
+    isPaused,
+    isOffline: !isOnline,
     isRefetching: isRefetching[account?.id ?? ''] ?? false,
     refetch
   }

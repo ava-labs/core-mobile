@@ -3,6 +3,10 @@ import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import { CoreAccountType } from '@avalabs/types'
 import {
+  selectIsLedgerSupportBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog'
+import {
   Account,
   AccountsState,
   AccountCollection,
@@ -77,7 +81,7 @@ export const selectAccounts = (state: RootState): AccountCollection =>
 
 export const selectLedgerAddresses = (
   state: RootState
-): LedgerAddressesCollection => state.account.ledgerAddresses
+): LedgerAddressesCollection => state.account.ledgerAddresses ?? {}
 
 export const selectAccountByAddress =
   (address: string) =>
@@ -92,6 +96,27 @@ export const selectAccountByAddress =
         acc.addressAVM?.toLowerCase() === givenAddress ||
         acc.addressPVM?.toLowerCase() === givenAddress ||
         acc?.addressSVM?.toLowerCase() === givenAddress
+      )
+    })
+  }
+
+// Like selectAccountByAddress, but the result is guaranteed to belong to
+// `walletId` — so the displayed address can't diverge from the signer.
+export const selectAccountByAddressAndWalletId =
+  (walletId: string, address: string) =>
+  (state: RootState): Account | undefined => {
+    const givenAddress = address.toLowerCase()
+
+    return Object.values(state.account.accounts).find(acc => {
+      if (acc.walletId !== walletId) return false
+      return (
+        acc.addressC.toLowerCase() === givenAddress ||
+        acc.addressBTC.toLowerCase() === givenAddress ||
+        acc.addressAVM?.toLowerCase() === givenAddress ||
+        acc.addressPVM?.toLowerCase() === givenAddress ||
+        // SVM addresses are base58 and case-sensitive — compare exactly so two
+        // distinct pubkeys differing only by case can't be conflated.
+        acc.addressSVM === address
       )
     })
   }
@@ -118,8 +143,14 @@ export const selectAccountsByWalletId = createSelector(
 )
 
 export const selectLedgerAddressesByWalletId = createSelector(
-  [selectLedgerAddresses, (_: RootState, walletId: string) => walletId],
-  (accounts, walletId) => {
+  [
+    selectLedgerAddresses,
+    (_: RootState, walletId: string) => walletId,
+    selectIsLedgerSupportBlocked
+  ],
+  (accounts, walletId, isLedgerBlocked) => {
+    if (isLedgerBlocked) return []
+
     return Object.values(accounts)
       .filter(account => account.walletId === walletId)
       .sort((a, b) => a.index - b.index)
@@ -154,6 +185,17 @@ export const selectImportedAccounts = createSelector(
 export const selectAccountsCount = createSelector(
   [selectAccounts],
   (accounts): number => Object.keys(accounts).length
+)
+
+export const selectActiveAccountHasSolanaAddress = createSelector(
+  [selectActiveAccount, selectIsSolanaSupportBlocked],
+  (activeAccount, isSolanaSupportBlocked) => {
+    if (isSolanaSupportBlocked) return false
+    return (
+      activeAccount?.addressSVM !== undefined &&
+      activeAccount.addressSVM.length > 0
+    )
+  }
 )
 
 // actions

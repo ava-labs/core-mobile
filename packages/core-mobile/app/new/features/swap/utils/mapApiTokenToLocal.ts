@@ -1,7 +1,7 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { DEFAULT_TOKEN_DECIMALS } from '../consts'
 import { ApiToken } from '../types'
 import { getLocalTokenIdFromApi } from './getLocalTokenIdFromApi'
 
@@ -17,8 +17,17 @@ export const mapApiTokenToLocal = (
     if (apiToken.isNative) {
       return TokenType.NATIVE
     }
-    // EVM chains use ERC20, Solana uses SPL
-    return networkChainId === ChainId.SOLANA_MAINNET_ID
+
+    if (apiToken.contractType === 'ERC-20') {
+      return TokenType.ERC20
+    }
+
+    if (apiToken.contractType === 'SPL') {
+      return TokenType.SPL
+    }
+
+    // contractType can be null on the wire; fall back to the caip2Id namespace.
+    return apiToken.networkCaip2Id.startsWith('solana:')
       ? TokenType.SPL
       : TokenType.ERC20
   }
@@ -27,7 +36,7 @@ export const mapApiTokenToLocal = (
   const localId = getLocalTokenIdFromApi(apiToken)
 
   // Format balance using TokenUnit
-  const decimals = apiToken.decimals ?? 18
+  const decimals = apiToken.decimals ?? DEFAULT_TOKEN_DECIMALS
   const balance = balanceData?.balance ?? 0n
   const balanceDisplayValue = new TokenUnit(
     balance,
@@ -58,6 +67,9 @@ export const mapApiTokenToLocal = (
     priceInCurrency: balanceData?.priceInCurrency ?? 0,
 
     // Required fields for different token types
-    reputation: null
+    reputation: null,
+
+    // Verification flag from the token aggregator (null/undefined => treat as verified)
+    isVerified: apiToken.isVerified
   } as LocalTokenWithBalance
 }

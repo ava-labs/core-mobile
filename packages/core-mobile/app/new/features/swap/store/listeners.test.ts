@@ -6,20 +6,25 @@ import {
   selectIsFusionEnabled,
   selectIsFusionMarkrEnabled,
   selectIsFusionAvalancheEvmEnabled,
+  selectIsFusionAvalancheCctEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
-  selectIsFusionLombardBtcbToBtcEnabled
+  selectIsFusionLombardBtcbToBtcEnabled,
+  selectFusionDisableCrossChainSwaps
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import FusionService from '../services/FusionService'
 import {
   useIsFusionServiceReady,
+  useFusionServiceInitError,
   updateFusionTransfer,
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
 import {
   initFusionService,
   cleanupFusionService,
-  addFusionListeners
+  addFusionListeners,
+  createCaptureSwapAnalytics
 } from './listeners'
 
 // ---------------------------------------------------------------------------
@@ -41,8 +46,10 @@ jest.mock('store/posthog/slice', () => ({
   selectIsFusionEnabled: jest.fn(),
   selectIsFusionMarkrEnabled: jest.fn(),
   selectIsFusionAvalancheEvmEnabled: jest.fn(),
+  selectIsFusionAvalancheCctEnabled: jest.fn(),
   selectIsFusionLombardBtcToBtcbEnabled: jest.fn(),
   selectIsFusionLombardBtcbToBtcEnabled: jest.fn(),
+  selectFusionDisableCrossChainSwaps: jest.fn(),
   setFeatureFlags: { type: 'posthog/setFeatureFlags' }
 }))
 
@@ -50,6 +57,11 @@ jest.mock('utils/Logger', () => ({
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn()
+}))
+
+jest.mock('services/analytics/AnalyticsService', () => ({
+  __esModule: true,
+  default: { capture: jest.fn() }
 }))
 
 jest.mock('store/rpc/utils/createInAppRequest', () => ({
@@ -86,6 +98,10 @@ jest.mock('../hooks/useZustandStore', () => ({
     getState: jest.fn(),
     setState: jest.fn()
   },
+  useFusionServiceInitError: {
+    getState: jest.fn(),
+    setState: jest.fn()
+  },
   updateFusionTransfer: jest.fn(),
   getPendingFusionTransfers: jest.fn()
 }))
@@ -108,12 +124,17 @@ const mockSelectIsFusionEnabled = selectIsFusionEnabled as jest.Mock
 const mockSelectIsFusionMarkrEnabled = selectIsFusionMarkrEnabled as jest.Mock
 const mockSelectIsFusionAvalancheEvmEnabled =
   selectIsFusionAvalancheEvmEnabled as jest.Mock
+const mockSelectIsFusionAvalancheCctEnabled =
+  selectIsFusionAvalancheCctEnabled as jest.Mock
 const mockSelectIsFusionLombardBtcToBtcbEnabled =
   selectIsFusionLombardBtcToBtcbEnabled as jest.Mock
 const mockSelectIsFusionLombardBtcbToBtcEnabled =
   selectIsFusionLombardBtcbToBtcEnabled as jest.Mock
+const mockSelectFusionDisableCrossChainSwaps =
+  selectFusionDisableCrossChainSwaps as jest.Mock
 const mockGetPendingFusionTransfers = getPendingFusionTransfers as jest.Mock
 const mockUseIsFusionServiceReady = useIsFusionServiceReady as any
+const mockUseFusionServiceInitError = useFusionServiceInitError as any
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -140,8 +161,10 @@ describe('Fusion listeners', () => {
     mockSelectIsFusionEnabled.mockReturnValue(true)
     mockSelectIsFusionMarkrEnabled.mockReturnValue(false)
     mockSelectIsFusionAvalancheEvmEnabled.mockReturnValue(false)
+    mockSelectIsFusionAvalancheCctEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcToBtcbEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcbToBtcEnabled.mockReturnValue(false)
+    mockSelectFusionDisableCrossChainSwaps.mockReturnValue(false)
 
     mockUseIsFusionServiceReady.getState.mockReturnValue(false)
     mockGetPendingFusionTransfers.mockReturnValue([])
@@ -193,9 +216,25 @@ describe('Fusion listeners', () => {
           featureFlags: {
             'fusion-markr': true,
             'fusion-avalanche-evm': true,
+            'fusion-avalanche-cct': false,
             'fusion-lombard-btc-to-btcb': false,
-            'fusion-lombard-btcb-to-btc': false
+            'fusion-lombard-btcb-to-btc': false,
+            'fusion-disable-cross-chain-swaps': false
           }
+        })
+      )
+    })
+
+    it('should pass fusion-disable-cross-chain-swaps=true when flag is enabled', async () => {
+      mockSelectFusionDisableCrossChainSwaps.mockReturnValue(true)
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(FusionService.initWithFeatureFlags).toHaveBeenCalledWith(
+        expect.objectContaining({
+          featureFlags: expect.objectContaining({
+            'fusion-disable-cross-chain-swaps': true
+          })
         })
       )
     })
@@ -242,6 +281,17 @@ describe('Fusion listeners', () => {
         expect(FusionService.initWithFeatureFlags).toHaveBeenCalled()
       })
 
+      it('should cleanup and reinit when fusion-disable-cross-chain-swaps changes', async () => {
+        mockSelectFusionDisableCrossChainSwaps
+          .mockReturnValueOnce(false)
+          .mockReturnValue(true)
+
+        await initFusionService({}, makeListenerApi())
+
+        expect(FusionService.cleanup).toHaveBeenCalled()
+        expect(FusionService.initWithFeatureFlags).toHaveBeenCalled()
+      })
+
       it('should cleanup and reinit when developer mode changes', async () => {
         // devMode: prevState=false (first call), currentState=true
         mockSelectIsDeveloperMode
@@ -268,6 +318,63 @@ describe('Fusion listeners', () => {
       await cleanupFusionService({}, {} as any)
 
       expect(mockUseIsFusionServiceReady.setState).toHaveBeenCalledWith(false)
+    })
+
+    it('should clear the init error', async () => {
+      await cleanupFusionService({}, {} as any)
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('Fusion init error state', () => {
+    it('should clear the init error before starting initialization', async () => {
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+
+    it('should clear the init error when Fusion is disabled', async () => {
+      mockSelectIsFusionEnabled.mockReturnValue(false)
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(null)
+    })
+
+    it('should not set an init error on successful initialization', async () => {
+      await initFusionService({}, makeListenerApi())
+
+      // Only the "clear" call — no error instance is ever passed in the success path
+      const calls = mockUseFusionServiceInitError.setState.mock.calls
+      expect(calls.every((args: unknown[]) => args[0] === null)).toBe(true)
+    })
+
+    it('should set the init error when initialization throws an Error', async () => {
+      const error = new Error('SDK init failed')
+      ;(FusionService.initWithFeatureFlags as jest.Mock).mockRejectedValue(
+        error
+      )
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(mockUseFusionServiceInitError.setState).toHaveBeenCalledWith(error)
+    })
+
+    it('should coerce a non-Error throw value into an Error instance', async () => {
+      ;(FusionService.initWithFeatureFlags as jest.Mock).mockRejectedValue(
+        'boom'
+      )
+
+      await initFusionService({}, makeListenerApi())
+
+      const errorCall = mockUseFusionServiceInitError.setState.mock.calls.find(
+        (args: unknown[]) => args[0] instanceof Error
+      )
+      expect(errorCall).toBeDefined()
+      expect(errorCall[0]).toBeInstanceOf(Error)
+      expect(errorCall[0].message).toBe('boom')
     })
   })
 
@@ -374,12 +481,17 @@ describe('Fusion listeners', () => {
       )
       const effect = call[0].effect
       const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const payload = {
+        transfer,
+        quote: { aggregator: { id: 'agg-1', name: 'KyberSwap' } } as any,
+        userClickedMax: false
+      }
 
       const mockListenerApi = {
         getState: jest.fn().mockReturnValue({}),
         delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
       }
-      const effectPromise = effect({ payload: transfer }, mockListenerApi)
+      const effectPromise = effect({ payload }, mockListenerApi)
 
       // trackTransfer should not be called immediately
       expect(FusionService.trackTransfer).not.toHaveBeenCalled()
@@ -407,17 +519,131 @@ describe('Fusion listeners', () => {
         c => c[0]?.actionCreator?.type === 'fusion/trackTransfer'
       )
       const effect = call[0].effect
-      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const payload = {
+        transfer: { id: 'transfer-1', status: 'source-pending' } as any,
+        quote: { aggregator: { id: 'agg-1', name: 'KyberSwap' } } as any,
+        userClickedMax: false
+      }
 
       const mockListenerApi = {
         getState: jest.fn().mockReturnValue({}),
         delay: jest.fn()
       }
 
-      await effect({ payload: transfer }, mockListenerApi)
+      await effect({ payload }, mockListenerApi)
 
       expect(FusionService.trackTransfer).not.toHaveBeenCalled()
       expect(mockListenerApi.delay).not.toHaveBeenCalled()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('createCaptureSwapAnalytics — SwapFailed instrumentation (CP-14225)', () => {
+    const baseFailedTransfer = {
+      status: 'failed',
+      fromAddress: '0xfromAddress',
+      toAddress: '0xtoAddress',
+      sourceChain: { chainId: 'eip155:43114' },
+      targetChain: { chainId: 'eip155:43114' },
+      source: { txHash: '0xsourceHash' },
+      target: undefined,
+      errorCode: 5006,
+      errorReason: 'TRANSACTION_REVERTED'
+    } as any
+
+    const baseQuote = {
+      aggregator: { id: 'agg-markr-odos', name: 'Odos' },
+      amountIn: 1290000000000000000n
+    } as any
+
+    it('captures all 8 new fields on SwapFailed when userClickedMax is true', () => {
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: true,
+        sourceTokenAddress: undefined,
+        sourceTokenSymbol: 'AVAX',
+        destinationTokenAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+        destinationTokenSymbol: 'USDC'
+      })
+
+      capture(baseFailedTransfer)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapFailed',
+        expect.objectContaining({
+          encrypted: expect.objectContaining({
+            sourceAddress: '0xfromAddress',
+            targetAddress: '0xtoAddress',
+            sourceChainId: 'eip155:43114',
+            targetChainId: 'eip155:43114',
+            sourceTxHash: '0xsourceHash',
+            errorCode: '5006',
+            errorReason: 'TRANSACTION_REVERTED',
+            userClickedMax: true,
+            sourceTokenSymbol: 'AVAX',
+            sourceTokenAddress: undefined,
+            sourceAmount: '1290000000000000000',
+            destinationTokenAddress:
+              '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+            destinationTokenSymbol: 'USDC',
+            quoteAggregator: 'Odos',
+            quoteAggregatorId: 'agg-markr-odos'
+          })
+        })
+      )
+    })
+
+    it('captures userClickedMax=false on SwapFailed when the user did not press Max', () => {
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: false,
+        sourceTokenAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+        sourceTokenSymbol: 'USDC',
+        destinationTokenAddress: undefined,
+        destinationTokenSymbol: 'AVAX'
+      })
+
+      capture(baseFailedTransfer)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapFailed',
+        expect.objectContaining({
+          encrypted: expect.objectContaining({
+            userClickedMax: false,
+            sourceTokenSymbol: 'USDC',
+            destinationTokenSymbol: 'AVAX',
+            quoteAggregator: 'Odos'
+          })
+        })
+      )
+    })
+
+    it('does not enrich SwapSuccessful with the new fields', () => {
+      const completed = {
+        ...baseFailedTransfer,
+        status: 'completed',
+        source: { txHash: '0xsourceHash' },
+        target: { txHash: '0xtargetHash' }
+      } as any
+
+      const capture = createCaptureSwapAnalytics({
+        quote: baseQuote,
+        userClickedMax: true,
+        sourceTokenSymbol: 'AVAX',
+        destinationTokenSymbol: 'USDC'
+      })
+
+      capture(completed)
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapSuccessful',
+        expect.objectContaining({
+          encrypted: expect.not.objectContaining({
+            userClickedMax: expect.anything(),
+            quoteAggregator: expect.anything()
+          })
+        })
+      )
     })
   })
 })

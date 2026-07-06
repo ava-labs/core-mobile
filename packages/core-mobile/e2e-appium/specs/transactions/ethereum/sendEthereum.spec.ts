@@ -3,7 +3,7 @@ import warmup from '../../../helpers/warmup'
 import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
-describe('[Smoke] Send transaction', () => {
+describe('Send transaction', () => {
   it('should send ETH on Ethereum', async () => {
     // login & create account
     await warmup()

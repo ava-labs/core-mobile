@@ -82,7 +82,9 @@ export const LEDGER_TIMEOUTS = {
   APP_WAIT_TIMEOUT: 30000, // 30 seconds for waiting for app
   APP_POLLING_INTERVAL: 2000, // 2 seconds between app checks
   APP_CHECK_DELAY: 1000, // 1 second delay between app detection attempts
-  REQUEST_DELAY: 3000 // 3s delay between APDU commands
+  REQUEST_DELAY: 3000, // 3s delay between APDU commands
+  RECONNECT_MAX_RETRIES: 3, // max auto-reconnect attempts after unexpected disconnect
+  RECONNECT_BASE_DELAY: 1000 // 1s base delay between reconnect attempts (doubles each retry)
 } as const
 
 export const LEDGER_DEVICE_BRIEF_DELAY_MS = 1000

@@ -5,7 +5,7 @@ import { ViewOnceKey } from 'store/viewOnce'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
 export const SwapOnboardingScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { replace } = useRouter()
   const params = useLocalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
@@ -14,11 +14,11 @@ export const SwapOnboardingScreen = (): JSX.Element => {
   }>()
 
   const handlePressNext = useCallback(() => {
-    navigate({
+    replace({
       pathname: '/swap/swap',
       params
     })
-  }, [navigate, params])
+  }, [replace, params])
 
   return (
     <TransactionOnboarding

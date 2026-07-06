@@ -69,6 +69,7 @@ export const AddContactScreen = (): React.JSX.Element => {
     return (
       <View sx={{ gap: 16 }}>
         <Button
+          testID="save_btn"
           type="primary"
           size="large"
           onPress={handleSave}
@@ -76,6 +77,7 @@ export const AddContactScreen = (): React.JSX.Element => {
           Save
         </Button>
         <Button
+          testID="cancel_btn"
           type="tertiary"
           size="large"
           onPress={() => canGoBack() && back()}>
@@ -93,8 +95,7 @@ export const AddContactScreen = (): React.JSX.Element => {
       shouldAvoidKeyboard
       disableStickyFooter
       contentContainerStyle={{
-        padding: 16,
-        paddingBottom: 64
+        padding: 16
       }}>
       {contact && (
         <ContactForm

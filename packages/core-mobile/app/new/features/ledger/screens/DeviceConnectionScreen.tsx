@@ -1,55 +1,53 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import {
-  View,
-  Alert,
-  ActivityIndicator,
-  Platform,
-  PermissionsAndroid
-} from 'react-native'
+import { View, Alert, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
+import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerDevice } from 'services/ledger/types'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { LedgerDevice, LedgerDerivationPathType } from 'services/ledger/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useSelector } from 'react-redux'
+import { selectWalletState } from 'store/app'
+import { WalletState } from 'store/app/types'
+import { useBluetooth } from 'common/hooks/useBluetooth'
+import {
+  isLedgerBluetoothError,
+  isLedgerConnectionFailed,
+  showBluetoothErrorAlert,
+  LEDGER_CONNECTION_FAILED_TITLE,
+  LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+} from 'services/ledger/LedgerBluetoothError'
+import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 
-export default function DeviceConnectionScreen(): JSX.Element {
-  const { push, back } = useRouter()
+interface DeviceConnectionScreenProps {
+  onNavigateToAppConnection: () => void
+}
+
+export default function DeviceConnectionScreen({
+  onNavigateToAppConnection
+}: DeviceConnectionScreenProps): JSX.Element {
+  const { back } = useRouter()
   const {
     theme: { colors }
   } = useTheme()
 
-  const { isConnecting, connectToDevice, resetSetup } = useLedgerSetupContext()
+  const walletState = useSelector(selectWalletState)
+  const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
+  const { isConnecting, connectToDevice, resetSetup, selectedDerivationPath } =
+    useLedgerSetupContext()
 
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
-  const [transportState, setTransportState] = useState({ available: false })
-
-  // Monitor BLE transport state
-  useEffect(() => {
-    const subscription = TransportBLE.observeState({
-      next: (event: { available: boolean }) => {
-        setTransportState({ available: event.available })
-      },
-      error: (error: Error) => {
-        Alert.alert(
-          'BLE Error',
-          `Failed to monitor BLE state: ${error.message}`
-        )
-      },
-      complete: () => {
-        // BLE scan complete
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+  const {
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    isBluetoothAvailable,
+    openSettings
+  } = useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -74,71 +72,71 @@ export default function DeviceConnectionScreen(): JSX.Element {
     }
   }, [])
 
-  // Request Bluetooth permissions
-  const requestBluetoothPermissions =
-    useCallback(async (): Promise<boolean> => {
-      if (Platform.OS !== 'android') {
-        return true
-      }
+  const handleCancel = useCallback(() => {
+    resetSetup()
+    back()
+  }, [resetSetup, back])
 
-      try {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ])
-
-        return Object.values(granted).every(
-          permission => permission === PermissionsAndroid.RESULTS.GRANTED
-        )
-      } catch (error) {
-        return false
-      }
-    }, [])
+  const onScanError = useCallback(
+    ({ title, message }: { title: string; message: string }): void => {
+      Alert.alert(title, message, [{ text: 'OK', onPress: resetSetup }])
+    },
+    [resetSetup]
+  )
 
   // Scan for devices
   const scanForDevices = useCallback(async () => {
-    if (!transportState.available) {
-      Alert.alert(
-        'Bluetooth Unavailable',
-        'Please enable Bluetooth to scan for Ledger devices'
-      )
-      return
-    }
-
-    const hasPermissions = await requestBluetoothPermissions()
-    if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
-      return
-    }
-
     try {
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
     } catch (error) {
+      if (isLedgerBluetoothError(error)) {
+        showBluetoothErrorAlert(error)
+        return
+      }
       Alert.alert(
         'Scan Error',
         `Failed to scan for devices: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`
+        }`,
+        [{ text: 'OK', onPress: resetSetup }]
       )
     }
-  }, [transportState.available, requestBluetoothPermissions])
+  }, [resetSetup, onScanError])
 
   // Handle device connection
   const handleDeviceConnection = useCallback(
     async (deviceId: string, deviceName: string) => {
+      const derivationPath =
+        selectedDerivationPath ?? LedgerDerivationPathType.BIP44
+
+      if (checkIfLedgerWalletExists(deviceId, derivationPath)) {
+        Alert.alert(
+          'Wallet already exists',
+          'This Ledger wallet has already been imported.',
+          [{ text: 'OK' }]
+        )
+        return
+      }
+
       try {
         await connectToDevice(deviceId, deviceName)
-
-        // Navigate to app connection step
-        push('/accountSettings/ledger/appConnection')
+        if (walletState === WalletState.NONEXISTENT) {
+          AnalyticsService.capture('OnboardingLedgerConnected')
+        } else {
+          AnalyticsService.capture('WalletImportLedgerConnected')
+        }
+        onNavigateToAppConnection()
       } catch (error) {
+        if (walletState === WalletState.NONEXISTENT) {
+          AnalyticsService.capture('OnboardingLedgerConnectionFailed')
+        } else {
+          AnalyticsService.capture('WalletImportLedgerConnectionFailed')
+        }
         Alert.alert(
-          'Connection failed',
-          'Failed to connect to Ledger device. Please try again.',
+          LEDGER_CONNECTION_FAILED_TITLE,
+          isLedgerConnectionFailed(error)
+            ? LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+            : 'Failed to connect to Ledger device. Please try again.',
           [
             {
               text: 'OK',
@@ -151,19 +149,56 @@ export default function DeviceConnectionScreen(): JSX.Element {
         )
       }
     },
-    [connectToDevice, push, resetSetup]
+    [
+      selectedDerivationPath,
+      checkIfLedgerWalletExists,
+      connectToDevice,
+      resetSetup,
+      onNavigateToAppConnection,
+      walletState
+    ]
   )
 
-  const handleCancel = useCallback(() => {
-    resetSetup()
-    back()
-  }, [resetSetup, back])
+  const renderBluetoothPermissionError = useCallback(() => {
+    if (isBluetoothOnAndPermissionGranted || isInitializingBluetooth)
+      return null
+    return (
+      <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icons.Alert.ErrorOutline
+            color={colors.$textDanger}
+            width={20}
+            height={20}
+          />
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+            To connect you need to allow Bluetooth in your device settings
+          </Text>
+        </View>
+        <Button
+          size="small"
+          type="secondary"
+          onPress={openSettings}
+          style={{ width: 165, marginLeft: 28 }}>
+          Open device settings
+        </Button>
+      </View>
+    )
+  }, [
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    colors,
+    openSettings
+  ])
 
   const renderFooter = useCallback(() => {
     return (
       <View style={{ gap: 12 }}>
         {!isScanning && devices.length === 0 && (
-          <Button type="primary" size="large" onPress={scanForDevices}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={scanForDevices}
+            disabled={!isBluetoothAvailable || isInitializingBluetooth}>
             Scan for Device
           </Button>
         )}
@@ -190,13 +225,16 @@ export default function DeviceConnectionScreen(): JSX.Element {
     scanForDevices,
     devices.length,
     colors.$textPrimary,
-    handleCancel
+    handleCancel,
+    isBluetoothAvailable,
+    isInitializingBluetooth
   ])
 
   return (
     <ScrollScreen
       title={`Connect \nYour Ledger`}
       isModal
+      renderHeader={renderBluetoothPermissionError}
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1, marginHorizontal: 16 }}>
       <View style={{ flex: 1 }}>

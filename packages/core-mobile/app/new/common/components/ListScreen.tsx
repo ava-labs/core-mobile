@@ -149,11 +149,18 @@ export const ListScreen = <T,>({
     [scrollViewRef]
   )
 
+  // Stable header element — recreated only when the title text changes, so
+  // `useFadingHeaderNavigation`'s header-title sync effect doesn't re-run (and
+  // re-`setOptions`) on every render. See ScrollScreen for the same fix.
+  const navigationHeader = useMemo(
+    () => <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    [navigationTitle, title]
+  )
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout,
-      shouldHeaderHaveGrabber: isModal,
       hideHeaderBackground: shouldShowStickyHeader,
       hasSeparator: shouldShowStickyHeader
         ? renderHeader
@@ -257,7 +264,8 @@ export const ListScreen = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
+      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transformOrigin: 'bottom left'
     }
   })
 
@@ -292,8 +300,13 @@ export const ListScreen = <T,>({
       ? keyboard.height + 16
       : insets.bottom + 16 + footerPadding
 
-    const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
+    const extraPadding = isModal
+      ? Platform.OS === 'ios'
+        ? 24
+        : title.length === 0
+        ? 24
+        : 0
+      : 8
 
     return [
       props?.contentContainerStyle,
@@ -306,33 +319,39 @@ export const ListScreen = <T,>({
         paddingBottom,
         minHeight:
           frame.height +
-          contentHeaderHeight +
+          contentHeaderHeight -
           extraPadding -
           (shouldShowStickyHeader ? renderHeaderHeight : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
+    renderFooter,
+    footerHeight,
     keyboard.isVisible,
     keyboard.height,
     insets.bottom,
-    insets.top,
     isModal,
+    title.length,
     props?.contentContainerStyle,
     data.length,
     frame.height,
     contentHeaderHeight,
     shouldShowStickyHeader,
-    renderHeaderHeight,
-    renderFooter,
-    footerHeight
+    renderHeaderHeight
   ])
+
+  const isAndroidModal = Platform.OS === 'android' && isModal
 
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle]}>
         <View
           style={{
-            paddingTop: headerHeight + 16,
+            paddingTop: isAndroidModal
+              ? title.length === 0
+                ? insets.top + 8
+                : headerHeight + 16
+              : headerHeight + 16,
             paddingBottom: renderHeader ? 12 : 0
           }}>
           <Animated.View
@@ -477,6 +496,7 @@ export const ListScreen = <T,>({
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}
       <AnimatedFlatList
+        testID="bottom_sheet"
         data={data}
         ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}

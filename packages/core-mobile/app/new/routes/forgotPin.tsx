@@ -1,9 +1,15 @@
-import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  Button,
+  Icons,
+  SlidingButton,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import SlideToConfirm from 'common/components/SlideToConfirm'
 import { useRouter } from 'expo-router'
-import React, { useCallback } from 'react'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
+import React, { useCallback } from 'react'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
@@ -21,7 +27,11 @@ const ForgotPin = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <View sx={{ gap: 20 }}>
-        <SlideToConfirm onConfirm={handleConfirm} text={'Slide to confirm'} />
+        <SlidingButton
+          mode="single"
+          label="Slide to confirm"
+          onConfirm={handleConfirm}
+        />
         <Button
           testID="cancel_btn"
           type="tertiary"

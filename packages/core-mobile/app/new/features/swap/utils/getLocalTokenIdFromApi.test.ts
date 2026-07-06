@@ -11,7 +11,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX')
@@ -25,7 +28,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 9,
         isNative: true,
         internalId: 'sol-native',
-        logoUri: 'https://example.com/sol.png'
+        logoUri: 'https://example.com/sol.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-SOL')
@@ -39,7 +45,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 8,
         isNative: true,
         internalId: 'btc-native',
-        logoUri: 'https://example.com/btc.png'
+        logoUri: 'https://example.com/btc.png',
+        networkCaip2Id: 'bip122:000000000019d6689c085ae165831e93',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-BTC')
@@ -53,7 +62,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: true,
         internalId: 'eth-native',
-        logoUri: 'https://example.com/eth.png'
+        logoUri: 'https://example.com/eth.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-ETH')
@@ -69,7 +81,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -85,7 +100,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-solana',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -101,7 +119,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: false,
         internalId: 'dai-ethereum',
-        logoUri: 'https://example.com/dai.png'
+        logoUri: 'https://example.com/dai.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -117,7 +138,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: false,
         internalId: 'weth-ethereum',
-        logoUri: 'https://example.com/weth.png'
+        logoUri: 'https://example.com/weth.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -133,7 +157,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdt-ethereum',
-        logoUri: 'https://example.com/usdt.png'
+        logoUri: 'https://example.com/usdt.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(
@@ -151,7 +178,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: false,
         internalId: 'token-1',
-        logoUri: 'https://example.com/token.png'
+        logoUri: 'https://example.com/token.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       const token2: ApiToken = {
@@ -161,7 +191,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: false,
         internalId: 'token-2',
-        logoUri: 'https://example.com/token.png'
+        logoUri: 'https://example.com/token.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       // Both should return the same localId (lowercase)
@@ -182,7 +215,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX')
@@ -196,7 +232,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-bridged',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-AVAX.e')
@@ -210,7 +249,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 8,
         isNative: true,
         internalId: 'btc2',
-        logoUri: 'https://example.com/btc.png'
+        logoUri: 'https://example.com/btc.png',
+        networkCaip2Id: 'bip122:000000000019d6689c085ae165831e93',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe('NATIVE-BTC2.0')
@@ -225,7 +267,10 @@ describe('getLocalTokenIdFromApi', () => {
         decimals: 18,
         isNative: false,
         internalId: 'long-token',
-        logoUri: 'https://example.com/long.png'
+        logoUri: 'https://example.com/long.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: null
       }
 
       expect(getLocalTokenIdFromApi(apiToken)).toBe(longAddress.toLowerCase())

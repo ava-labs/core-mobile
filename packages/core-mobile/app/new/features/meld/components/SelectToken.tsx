@@ -134,10 +134,9 @@ export const SelectToken = ({
         <GroupList
           data={data}
           titleSx={{
-            fontFamily: 'Inter-Regular',
+            fontFamily: 'Inter-SemiBold',
             fontSize: 16,
-            lineHeight: 22,
-            fontWeight: 500
+            lineHeight: 22
           }}
           textContainerSx={{
             paddingVertical: 4

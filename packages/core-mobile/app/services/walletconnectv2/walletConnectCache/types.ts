@@ -1,4 +1,9 @@
-import { RpcRequest, DisplayData, SigningData } from '@avalabs/vm-module-types'
+import {
+  RpcRequest,
+  DisplayData,
+  SigningData,
+  ERC20Token
+} from '@avalabs/vm-module-types'
 import { ProposalTypes } from '@walletconnect/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
@@ -10,6 +15,7 @@ import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/contact/avalan
 import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
 import { Contact } from 'store/addressBook/types'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
+import { WalletWatchAssetRpcRequest } from 'store/rpc/handlers/chain/wallet_watchAsset/wallet_watchAsset'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 
@@ -28,12 +34,21 @@ export type OnApproveParams = {
   maxPriorityFeePerGas?: bigint
   gasLimit?: number
   overrideData?: string
+  onSigned?: () => Promise<boolean>
 }
 
 export type ApprovalParams = {
   request: RpcRequest
   displayData: DisplayData
   signingData: SigningData
+  /**
+   * The in-flight request's AbortSignal, present only for cancellable injected
+   * browser signing requests. A cross-origin nav can abort + settle the request
+   * in the window between navigating to the approval screen and the screen
+   * mounting, so the generic dismissal may miss; the screen reads this to
+   * self-dismiss on mount if its request is already cancelled. (CP-14422)
+   */
+  signal?: AbortSignal
   onApprove: ({
     walletId,
     walletType,
@@ -64,4 +79,9 @@ export type EditContactParams = {
 export type AddEthereumChainParams = {
   request: WalletAddEthereumChainRpcRequest
   network: Network
+}
+
+export type WatchAssetParams = {
+  request: WalletWatchAssetRpcRequest
+  token: ERC20Token
 }

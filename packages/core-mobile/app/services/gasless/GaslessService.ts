@@ -11,6 +11,7 @@ import { Transaction, TransactionLike } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { FundTxParams } from 'services/gasless/types'
+import { buildEvmTransaction } from 'vmModule/utils/buildEvmTransaction'
 
 if (!Config.GAS_STATION_URL) {
   Logger.warn(
@@ -38,10 +39,14 @@ class GaslessService {
     return this.sdk
   }
 
-  isEligibleForChain = async (chainId: string): Promise<boolean> => {
+  isEligibleForChain = async (
+    chainId: string,
+    from?: string,
+    nonce?: number
+  ): Promise<boolean> => {
     const sdk = await this.getSdk()
     if (!sdk) return false
-    return await sdk.isEligibleForChain({ chainId })
+    return await sdk.isEligibleForChain({ chainId, from, nonce })
   }
 
   isEligibleForTxType = (signingData: SigningData): boolean => {
@@ -58,7 +63,11 @@ class GaslessService {
     signingData,
     addressFrom,
     provider,
+    chainId,
     maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    overrideData,
     waitForConfirmation
   }: FundTxParams): Promise<FundResult> => {
     const sdk = await this.getSdk()
@@ -82,9 +91,18 @@ class GaslessService {
 
     const { difficulty, challengeHex } = await sdk.fetchChallenge()
     const { solutionHex } = await sdk.solveChallenge(challengeHex, difficulty)
-    const txHex = Transaction.from({
-      ...signingData.data,
+
+    const transaction = buildEvmTransaction({
+      transactionRequest: signingData.data,
+      chainId,
       maxFeePerGas,
+      maxPriorityFeePerGas,
+      gasLimit,
+      overrideData
+    })
+
+    const txHex = Transaction.from({
+      ...transaction,
       from: null
     } as TransactionLike).unsignedSerialized
 

@@ -11,10 +11,13 @@ import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
   selectIsEarnBlocked,
-  selectIsInAppDefiBorrowBlocked,
+  selectIsInAppDefiBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
+import { selectAccounts, selectActiveAccount } from 'store/account'
+import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { FusionTransfer } from 'features/swap/types'
@@ -22,6 +25,7 @@ import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
 import BalanceChangeItem from '../components/BalanceChangeItem'
+import RecurringSwapItem from '../components/RecurringSwapItem'
 import GenericNotificationItem from '../components/GenericNotificationItem'
 import {
   useNotifications,
@@ -33,9 +37,14 @@ import {
   AppNotification,
   NotificationTab,
   isPriceAlertNotification,
-  isBalanceChangeNotification
+  isBalanceChangeNotification,
+  isRecurringSwapNotification
 } from '../types'
-import { isSwapTerminal } from '../utils'
+import {
+  buildAccountLabelMap,
+  isSwapTerminal,
+  isTerminalRecurringSwapNotification
+} from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
@@ -57,7 +66,9 @@ const SWIPE_DURATION = 500 // animation duration for each swipe
 const MAX_ANIMATED_ITEMS = 10 // only animate visible items, rest disappear instantly
 
 /**
- * Check if notification is a price alert with metadata
+ * Check if notification is a price alert with metadata.
+ * Handles both direct PRICE_ALERTS type and NEWS-wrapped price alerts
+ * (type:"NEWS" with data.event:"PRICE_ALERTS").
  */
 const isPriceAlertWithData = (notification: AppNotification): boolean => {
   if (!isPriceAlertNotification(notification)) return false
@@ -77,6 +88,11 @@ const isBalanceChangeWithData = (notification: AppNotification): boolean => {
  * Check if a notification has an actionable URL (not skipped like core://portfolio)
  */
 const hasActionableUrl = (notification: AppNotification): boolean => {
+  // Terminal / last-leg recurring-swap notifications point at a schedule the
+  // management screen no longer lists (it shows only Active / Paused), so the
+  // row is non-actionable — no chevron, and the press handler no-ops.
+  if (isTerminalRecurringSwapNotification(notification)) return false
+
   const url = notification.deepLinkUrl
   if (!url) return false
 
@@ -96,15 +112,36 @@ const renderNotificationItem = (
   props: {
     showSeparator: boolean
     accessoryType: 'chevron' | 'none'
+    index: number
     testID: string
-  }
+  },
+  accountLabelMap: Map<string, string>
 ): React.JSX.Element => {
   if (isPriceAlertWithData(item)) {
     return <PriceAlertItem notification={item} {...props} />
   }
 
   if (isBalanceChangeWithData(item)) {
-    return <BalanceChangeItem notification={item} {...props} />
+    const addr = isBalanceChangeNotification(item)
+      ? item.data?.accountAddress?.toLowerCase()
+      : undefined
+    const accountLabel = addr ? accountLabelMap.get(addr) ?? null : null
+    return (
+      <BalanceChangeItem
+        notification={item}
+        accountLabel={accountLabel}
+        {...props}
+      />
+    )
+  }
+
+  // RecurringSwap rows render even without a parsed `data` payload — the
+  // backend-formatted title / body alone are enough for the user to read the
+  // notification, and the deepLinkUrl still routes to the schedules screen.
+  // (BalanceChange / PriceAlert require `data` for their formatted titles,
+  // hence the `*WithData` predicates above; recurring-swap doesn't.)
+  if (isRecurringSwapNotification(item)) {
+    return <RecurringSwapItem notification={item} {...props} />
   }
 
   return <GenericNotificationItem notification={item} {...props} />
@@ -117,8 +154,15 @@ export const NotificationsScreen = (): JSX.Element => {
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
+  const accounts = useSelector(selectAccounts)
+  const wallets = useSelector(selectWallets)
+  const activeAccount = useSelector(selectActiveAccount)
+  const accountLabelMap = useMemo(
+    () => buildAccountLabelMap(accounts, wallets, activeAccount?.id),
+    [accounts, wallets, activeAccount?.id]
+  )
   const selectedTabIndex = useSharedValue(0)
   const [selectedTabState, setSelectedTabState] = useState(0)
   const selectedTab = TAB_ITEMS[selectedTabState]?.value ?? NotificationTab.ALL
@@ -258,12 +302,12 @@ export const NotificationsScreen = (): JSX.Element => {
           },
           dispatch: action => action,
           isEarnBlocked,
-          isInAppDefiBorrowBlocked,
+          isInAppDefiBlocked,
           openUrl
         })
       }
     },
-    [openUrl, isEarnBlocked, isInAppDefiBorrowBlocked]
+    [openUrl, isEarnBlocked, isInAppDefiBlocked]
   )
 
   const renderFooter = useCallback(() => {
@@ -328,11 +372,18 @@ export const NotificationsScreen = (): JSX.Element => {
               : () => handleNotificationPress(notification)
           }
           enabled={!isClearingAll}>
-          {renderNotificationItem(notification, {
-            showSeparator: !isLast,
-            accessoryType: hasActionableUrl(notification) ? 'chevron' : 'none',
-            testID: `notification-item-${notification.id}`
-          })}
+          {renderNotificationItem(
+            notification,
+            {
+              showSeparator: !isLast,
+              accessoryType: hasActionableUrl(notification)
+                ? 'chevron'
+                : 'none',
+              index,
+              testID: `notification-item-${notification.id}`
+            },
+            accountLabelMap
+          )}
         </SwipeableRow>
       )
     },
@@ -342,7 +393,8 @@ export const NotificationsScreen = (): JSX.Element => {
       removeTransfer,
       handleSwapActivityPress,
       dismissNotification,
-      handleNotificationPress
+      handleNotificationPress,
+      accountLabelMap
     ]
   )
 
@@ -395,6 +447,11 @@ export const NotificationsScreen = (): JSX.Element => {
       navigationTitle={TITLE}
       renderFooter={renderFooter}
       renderHeader={renderHeader}>
+      {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+          reserves no space) when none. */}
+      <StuckFundsBanner
+        sx={{ marginHorizontal: 16, marginTop: 15, marginBottom: 10 }}
+      />
       {renderContent()}
     </ScrollScreen>
   )

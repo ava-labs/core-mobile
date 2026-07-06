@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -17,6 +18,7 @@ import {
 } from 'react-native'
 import { useTheme } from '../../hooks'
 import {
+  computeMaxLength,
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
@@ -29,7 +31,7 @@ export interface TokenAmountInputRef {
 
 /**
  * TokenAmountInput takes user's input via InputText component and calls "onChange" callback with { value: bigint; valueString: string } object.
- * If there's no input, callback value is set to { value: new BigInt(0), valueString: '0' }.
+ * If the field is empty, callback value is set to { value: 0n, valueString: '' } — an empty `valueString` lets callers tell a cleared/empty field apart from an explicit typed "0" (which emits valueString: '0'), since both carry value 0n.
  * Because of that, if "value" passed to TokenAmountInput is zero it is sanitized to "undefined" so that user can delete all zeroes from input.
  */
 export const TokenAmountInput = forwardRef<
@@ -86,7 +88,9 @@ export const TokenAmountInput = forwardRef<
     const handleChangeText = (rawValue: string): void => {
       const valueText = normalizeNumericTextInput(rawValue)
       if (!valueText) {
-        onChange?.({ value: 0n, valueString: '0' })
+        // Empty field: emit an empty valueString so callers can distinguish a
+        // cleared/empty field from an explicit typed "0" (both carry value 0n).
+        onChange?.({ value: 0n, valueString: '' })
         setValueAsString('')
         return
       }
@@ -122,20 +126,6 @@ export const TokenAmountInput = forwardRef<
       }
     }, [valueAsString])
 
-    useEffect(() => {
-      if (autoFocus) {
-        requestAnimationFrame(() => {
-          inputRef.current?.focus()
-        })
-      }
-    }, [autoFocus])
-
-    useEffect(() => {
-      if (inputRef.current) {
-        inputRef.current?.setNativeProps({ text: valueAsString })
-      }
-    }, [valueAsString])
-
     const handleBlur = useCallback(
       (e: BlurEvent): void => {
         onBlur?.(e)
@@ -152,12 +142,18 @@ export const TokenAmountInput = forwardRef<
       [moveCursorToEnd, onFocus]
     )
 
+    const maxLength = useMemo(
+      () => computeMaxLength(valueAsString, denomination),
+      [valueAsString, denomination]
+    )
+
     return (
       <AutoSizeTextInput
         {...props}
         value={valueAsString}
         ref={inputRef}
         testID={testID}
+        maxLength={maxLength}
         keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}

@@ -8,6 +8,7 @@ type SwapStatusCardProps = {
   directionLabel: 'From' | 'To'
   networkName?: string
   networkLogoUri?: string
+  networkChainId?: number
   status: NotificationSwapStatus
   note?: string
   confirmations?: { count: number; required: number }
@@ -17,6 +18,7 @@ export const SwapStatusCard = ({
   directionLabel,
   networkName,
   networkLogoUri,
+  networkChainId,
   status,
   note,
   confirmations
@@ -62,11 +64,20 @@ export const SwapStatusCard = ({
         }}>
         <Text
           variant="body1"
-          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+          sx={{
+            color: '$textPrimary',
+            lineHeight: 22,
+            fontFamily: 'Inter-SemiBold'
+          }}>
           {directionLabel}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <NetworkLogo logoUri={networkLogoUri} size={20} />
+          <NetworkLogo
+            logoUri={networkLogoUri}
+            chainId={networkChainId}
+            size={20}
+            chainBadgeBorderColor={colors.$surfaceSecondary}
+          />
           {networkName !== undefined && (
             <Text
               variant="body1"
@@ -89,7 +100,11 @@ export const SwapStatusCard = ({
         }}>
         <Text
           variant="body1"
-          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+          sx={{
+            color: '$textPrimary',
+            lineHeight: 22,
+            fontFamily: 'Inter-SemiBold'
+          }}>
           Status
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -98,7 +113,7 @@ export const SwapStatusCard = ({
             variant="body1"
             sx={{
               lineHeight: 22,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: statusColor
             }}>
             {statusTitle}
@@ -121,7 +136,7 @@ export const SwapStatusCard = ({
                 sx={{
                   color: '$textPrimary',
                   lineHeight: 22,
-                  fontWeight: '500'
+                  fontFamily: 'Inter-SemiBold'
                 }}>
                 Confirmations
               </Text>
@@ -168,7 +183,11 @@ export const SwapStatusCard = ({
             }}>
             <Text
               variant="body1"
-              sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+              sx={{
+                color: '$textPrimary',
+                lineHeight: 22,
+                fontFamily: 'Inter-SemiBold'
+              }}>
               Note
             </Text>
             <Text

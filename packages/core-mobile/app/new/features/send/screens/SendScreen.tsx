@@ -5,6 +5,7 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { transactionSnackbar } from 'common/utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { View, ActivityIndicator } from '@avalabs/k2-alpine'
@@ -17,7 +18,7 @@ import {
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { addRecentContact } from 'store/addressBook'
 import {
   AvmCapableAccount,
@@ -45,9 +46,12 @@ export const SendScreen = (): JSX.Element => {
   const handleSuccess = useCallback(
     (txHash: string): void => {
       network &&
-        AnalyticsService.captureWithEncryption('SendTransactionSucceeded', {
-          chainId: network.chainId,
-          txHash
+        AnalyticsService.capture('SendTransactionSucceeded', {
+          encrypted: {
+            chainId: network.chainId,
+            txHash
+          },
+          caip2ChainId: getCaip2ChainId(network.chainId)
         })
       audioFeedback(Audios.Send)
       resetAmount()

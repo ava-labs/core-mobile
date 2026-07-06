@@ -5,8 +5,8 @@ import portfolioPage from '../../../pages/portfolio.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import commonElsLoc from '../../../locators/commonEls.loc'
 
-describe('[Smoke] Send transaction', () => {
-  it('should send AVAX on P-Chain', async () => {
+describe('Send transaction', () => {
+  it('[Smoke] should send AVAX on P-Chain', async () => {
     // login & create account
     await warmup()
     await commonElsPage.filter(commonElsLoc.pChain)
@@ -17,7 +17,7 @@ describe('[Smoke] Send transaction', () => {
     await commonElsPage.goBack()
   })
 
-  it('should send AVAX on X-Chain', async () => {
+  it('[Smoke] should send AVAX on X-Chain', async () => {
     // login & create account
     await commonElsPage.filter(commonElsLoc.xChain)
     await portfolioPage.tapToken()

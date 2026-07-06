@@ -1,19 +1,11 @@
 import { Icons, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused } from 'expo-router'
 import { Image, ImageErrorEventData } from 'expo-image'
-import React, {
-  memo,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, View, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftContentType, NftItem, NftLocalStatus } from 'services/nft/types'
 
 export interface CollectibleRendererProps {
   collectible: NftItem
@@ -87,9 +79,20 @@ export const CollectibleRenderer = memo(
     }, [collectible?.status, colors.$textPrimary, error, iconSize, isLoading])
 
     const renderContent = useCallback(() => {
-      if (collectible?.imageData?.video)
+      const { uri, type } = collectible?.imageData ?? {}
+
+      if (!uri) return null
+
+      if (type === NftContentType.MP4)
         return (
           <Animated.View
+            // On Android the native video view consumes touches. For
+            // non-interactive previews (grid/list, `hideControls: true`) we must
+            // let taps fall through to the wrapping Pressable, so disable pointer
+            // events. For interactive usages (e.g. CollectibleDetail, where
+            // `hideControls` is falsy and the player shows controls) we must KEEP
+            // pointer events so the video receives touches for pause/resume.
+            pointerEvents={videoProps?.hideControls ? 'none' : 'auto'}
             style={[
               {
                 width: '100%',
@@ -99,8 +102,7 @@ export const CollectibleRenderer = memo(
             ]}>
             {isFocused ? (
               <Video
-                source={collectible?.imageData?.video}
-                thumbnail={collectible?.imageData?.image}
+                source={uri}
                 onLoadEnd={onLoadEnd}
                 onError={onVideoError}
                 {...videoProps}
@@ -109,36 +111,29 @@ export const CollectibleRenderer = memo(
           </Animated.View>
         )
 
-      if (collectible?.imageData?.image) {
-        return (
-          <Animated.View
-            style={[
-              {
-                width: '100%',
-                height: '100%',
-                zIndex: 1
-              }
-            ]}>
-            <Image
-              source={{
-                uri: collectible?.imageData?.image
-              }}
-              onLoad={onLoadEnd}
-              onError={onImageError}
-              renderToHardwareTextureAndroid={false}
-              style={{
-                width: '100%',
-                flex: 1
-              }}
-            />
-          </Animated.View>
-        )
-      }
-
-      return null
+      return (
+        <Animated.View
+          style={[
+            {
+              width: '100%',
+              height: '100%',
+              zIndex: 1
+            }
+          ]}>
+          <Image
+            source={{ uri }}
+            onLoad={onLoadEnd}
+            onError={onImageError}
+            renderToHardwareTextureAndroid={false}
+            style={{
+              width: '100%',
+              flex: 1
+            }}
+          />
+        </Animated.View>
+      )
     }, [
-      collectible?.imageData?.image,
-      collectible?.imageData?.video,
+      collectible?.imageData,
       isFocused,
       onImageError,
       onLoadEnd,
@@ -185,18 +180,6 @@ const CollectibleSkeleton = (): ReactNode => {
   } = useTheme()
   const [layout, setLayout] = useState({ width: 0, height: 0 })
 
-  const contentRef = useRef<View>(null)
-
-  useLayoutEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.measure(
-        (x: number, y: number, width: number, height: number) => {
-          setLayout({ width, height })
-        }
-      )
-    }
-  }, [])
-
   const onLayout = (event: LayoutChangeEvent): void => {
     const { width, height } = event.nativeEvent.layout
     setLayout({ width, height })
@@ -204,21 +187,22 @@ const CollectibleSkeleton = (): ReactNode => {
 
   return (
     <View
-      ref={contentRef}
       onLayout={onLayout}
       style={{
         width: '100%',
         height: '100%'
       }}>
-      <ContentLoader
-        speed={1}
-        width={layout.width}
-        height={layout.height}
-        viewBox={`0 0 ${layout.width} ${layout.height}`}
-        foregroundColor={isDark ? '#69696D' : '#D9D9D9'}
-        backgroundColor={isDark ? '#3E3E43' : '#F2F2F3'}>
-        <Rect x="0" y="0" width={layout.width} height={layout.height} />
-      </ContentLoader>
+      {layout.width > 0 && layout.height > 0 ? (
+        <ContentLoader
+          speed={1}
+          width={layout.width}
+          height={layout.height}
+          viewBox={`0 0 ${layout.width} ${layout.height}`}
+          foregroundColor={isDark ? '#69696D' : '#D9D9D9'}
+          backgroundColor={isDark ? '#3E3E43' : '#F2F2F3'}>
+          <Rect x="0" y="0" width={layout.width} height={layout.height} />
+        </ContentLoader>
+      ) : null}
     </View>
   )
 }

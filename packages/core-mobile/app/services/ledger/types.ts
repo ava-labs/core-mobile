@@ -35,24 +35,25 @@ export const LedgerReturnCode = {
   COMMAND_NOT_ALLOWED: 0x6986
 } as const
 
-export const LEDGER_ERROR_CODES = {
-  WRONG_APP: '0x6a80',
-  COMMUNICATION_ERROR: '0x6511',
-  REJECTED: '0x6985',
-  REJECTED_ALT: '0x6986',
-  NOT_READY: '0x6a86',
-  DEVICE_LOCKED: '0x5515',
-  UPDATE_REQUIRED: '0x6e00',
-  USER_CANCELLED: 'user_cancelled',
-  DISCONNECTED_DEVICE: 'disconnecteddevice',
-  TRANSPORT_RACE_CONDITION: 'transportracecondition',
-  TRANSPORT_RACE_CONDITION_ALT:
-    'an action was already pending on the ledger device',
-  BLIND_SIGNATURE: 'blind'
-} as const
-
-export type LedgerReturnCodeType =
-  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
+export enum LEDGER_ERROR_CODES {
+  WRONG_APP = '0x6a80',
+  COMMUNICATION_ERROR = '0x6511',
+  REJECTED = '0x6985',
+  REJECTED_ALT = '0x6986',
+  NOT_READY = '0x6a86',
+  DEVICE_LOCKED = '0x5515',
+  UPDATE_REQUIRED = '0x6e00',
+  USER_CANCELLED = 'user_cancelled',
+  DISCONNECTED_DEVICE = 'disconnecteddevice',
+  TRANSPORT_RACE_CONDITION = 'transportracecondition',
+  TRANSPORT_RACE_CONDITION_ALT = 'an action was already pending on the ledger device',
+  BLIND_SIGNATURE = 'blind',
+  BLUETOOTH_PERMISSION = 'ledger_bluetooth_permission_required',
+  BLUETOOTH_RADIO_OFF = 'ledger_bluetooth_radio_off',
+  BLUETOOTH_UNSUPPORTED = 'ledger_bluetooth_unsupported',
+  BLUETOOTH_UNKNOWN = 'ledger_bluetooth_unknown',
+  TRANSPORT_INTERFACE_NOT_AVAILABLE = 'transport_interface_not_available'
+}
 
 // ============================================================================
 // LEDGER DEVICE TYPES
@@ -179,6 +180,50 @@ export interface WalletUpdateSolanaOptions {
 }
 
 // ============================================================================
+// WALLET SECRET BUILDING TYPES
+// ============================================================================
+
+export const WalletSecretOperation = {
+  NEW: 'new',
+  UPDATE: 'update',
+  SOLANA_UPDATE: 'solana-update'
+} as const
+
+interface BaseWalletSecretParams {
+  deviceId: string
+  deviceName: string
+  derivationPathType: LedgerDerivationPathType
+}
+
+export interface NewWalletSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.NEW
+  extendedPublicKeys?: Record<number, { evm: string; avalanche: string }>
+  publicKeys: Record<number, PublicKeyInfo[]>
+  solanaAddresses?: Record<number, string>
+}
+
+export interface UpdateWalletSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.UPDATE
+  existingWalletSecret: Record<string, unknown>
+  accountIndex: number
+  newXpubs?: { evm: string; avalanche: string }
+  newPublicKeys: PublicKeyInfo[]
+  newSolanaKeys?: PublicKeyInfo[]
+}
+
+export interface SolanaUpdateSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.SOLANA_UPDATE
+  existingWalletSecret: Record<string, unknown>
+  accountIndex: number
+  newSolanaKeys: PublicKeyInfo[]
+}
+
+export type WalletSecretParams =
+  | NewWalletSecretParams
+  | UpdateWalletSecretParams
+  | SolanaUpdateSecretParams
+
+// ============================================================================
 // LEDGER WALLET DATA TYPES
 // ============================================================================
 
@@ -218,3 +263,19 @@ export interface LedgerLiveWalletData extends BaseLedgerWalletData {
 
 // Union type for all possible Ledger wallet data
 export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
+
+// ============================================================================
+// LEDGER ACCOUNT DISCOVERY
+// ============================================================================
+
+/** Maximum number of account indices to derive during Ledger import discovery */
+export const MAX_LEDGER_DISCOVERY_ACCOUNTS = 10
+
+/**
+ * Keys for multiple account indices, keyed by account index.
+ * Used during Ledger import to hold derived keys before activity checking.
+ */
+export type LedgerMultiIndexKeys = {
+  mainnet: { [accountIndex: number]: LedgerKeys }
+  testnet: { [accountIndex: number]: LedgerKeys }
+}

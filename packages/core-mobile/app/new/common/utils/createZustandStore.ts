@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, PersistOptions } from 'zustand/middleware'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv'
 
 /**
  * A lightweight utility for creating isolated Zustand stores that behave like `useState`

@@ -25,7 +25,11 @@ import {
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
-import { HORIZONTAL_ITEM_GAP, HORIZONTAL_MARGIN } from '../consts'
+import {
+  getGridCardHeight,
+  HORIZONTAL_ITEM_GAP,
+  HORIZONTAL_MARGIN
+} from '../consts'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
@@ -102,6 +106,26 @@ export const CollectiblesScreen = ({
     },
     [onScrollResync, view, goToCollectibleManagement]
   )
+
+  const columnItems = useMemo(() => {
+    if (listType === CollectibleView.ListView || filteredAndSorted.length === 0)
+      return undefined
+
+    const cols: { item: NftItem; index: number }[][] = Array.from(
+      { length: columns },
+      () => []
+    )
+    const colHeights = new Array(columns).fill(0)
+
+    filteredAndSorted.forEach((item, index) => {
+      const height = getGridCardHeight(listType, index)
+      const shortestCol = colHeights.indexOf(Math.min(...colHeights))
+      cols[shortestCol]?.push({ item, index })
+      colHeights[shortestCol] += height
+    })
+
+    return cols
+  }, [filteredAndSorted, columns, listType])
 
   const renderItem: ListRenderItem<NftItem> = useCallback(
     ({ item, index }) => {
@@ -194,7 +218,7 @@ export const CollectiblesScreen = ({
 
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
-        <CollapsibleTabs.ContentWrapper animate={false}>
+        <CollapsibleTabs.ContentWrapper>
           <ErrorState
             title="All collectibles hidden"
             description="You have hidden all your collectibles"
@@ -292,10 +316,13 @@ export const CollectiblesScreen = ({
         onRefresh={pullToRefresh}
         numColumns={columns}
         extraData={{ view, sort, filter }}
-        listKey={`collectibles-list-${listType}`}
-        masonry
+        listKey={`collectibles-list-${listType}-${sort.selected}-${(
+          filter.selected ?? []
+        ).join('-')}`}
+        columnItems={columnItems}
         nestedScrollEnabled
         removeClippedSubviews={Platform.OS === 'android'}
+        maintainVisibleContentPosition={{ disabled: true }}
       />
     </Animated.View>
   )

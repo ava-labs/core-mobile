@@ -61,6 +61,10 @@ buck-out/
 /vendor/bundle/
 
 package-lock.json
+# Device Farm test zip uses npm ci — lockfile must be tracked (see scripts/devicefarm/package-tests.sh)
+!e2e-appium/package-lock.json
+# ensure-client-device-farm.sh uses npm ci — lockfile must match packages/core-mobile @aws-sdk/client-device-farm version
+!scripts/devicefarm/client-device-farm-isolated/package-lock.json
 .markdownlint.json
 /.env*
 !/.env.example
@@ -100,3 +104,11 @@ expo-env.d.ts
 
 # generated api clients
 app/utils/api/generated
+
+# AWS Device Farm
+devicefarm-package/
+e2e-appium/appium-tests-devicefarm.zip
+e2e-appium/*.tgz
+e2e-appium/node_modules/
+e2e-appium/run-ios-localRd.sh
+e2e-appium/run-os-localRd.sh

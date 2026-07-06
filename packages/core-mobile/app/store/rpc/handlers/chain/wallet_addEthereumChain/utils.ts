@@ -17,7 +17,7 @@ const chainInfoSchema = z.object({
   isTestnet: z.boolean().optional()
 })
 
-const paramsSchema = z.tuple([chainInfoSchema])
+const paramsSchema = z.tuple([chainInfoSchema]).rest(z.unknown())
 
 const approveDataSchema = z.object({
   network: networkSchema

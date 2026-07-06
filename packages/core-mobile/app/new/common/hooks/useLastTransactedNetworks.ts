@@ -13,16 +13,17 @@ export const useLastTransactedNetworks = (): UseQueryResult<
   Networks,
   Error
 > => {
-  const address = useSelector(selectActiveAccount)?.addressC ?? ''
+  const address = useSelector(selectActiveAccount)?.addressC
 
   return useQuery({
     staleTime: REFETCH_INTERVAL,
     refetchInterval: REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
+    enabled: Boolean(address),
     queryKey: [ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS, address],
     queryFn: () =>
       NetworkService.fetchLastTransactedERC20Networks({
-        address
+        address: address as string
       })
   })
 }

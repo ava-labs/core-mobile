@@ -1,9 +1,10 @@
 import React, { useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import { useLocalSearchParams } from 'expo-router'
 import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { SelectSwapTokenScreen } from 'features/swap/screens/SelectSwapTokenScreen'
+import { SelectToSwapTokenScreen } from 'features/swap/screens/SelectToSwapTokenScreen'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
@@ -11,11 +12,13 @@ import {
 import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { tokenIds } from 'consts/tokenIds'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { getTokenKey } from 'features/swap/utils/tokenKey'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const SelectSwapToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()
   const [selectedFromToken] = useSwapSelectedFromToken()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const btcBTokenId = isDeveloperMode ? tokenIds.BTC_B_FUJI : tokenIds.BTC_B
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
 
   // Get supported chains and filtered destinations
@@ -29,13 +32,12 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
   // When FROM is Bitcoin and browsing Avalanche as destination, only BTC.b is eligible
   const tokenFilter = useCallback(
     (token: LocalTokenWithBalance, selectedNetwork: Network | undefined) => {
-      const tokenKey = getTokenKey(token)
-      // Hide the currently selected TO token (no point re-selecting it)
-      if (selectedToToken && tokenKey === getTokenKey(selectedToToken)) {
-        return false
-      }
       // Hide the FROM token to prevent selecting the same token on both sides
-      if (selectedFromToken && tokenKey === getTokenKey(selectedFromToken)) {
+      if (
+        selectedFromToken &&
+        token.localId === selectedFromToken.localId &&
+        token.networkChainId === selectedFromToken.networkChainId
+      ) {
         return false
       }
       if (
@@ -44,15 +46,15 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
         selectedNetwork !== undefined &&
         isAvalancheCChainId(selectedNetwork.chainId)
       ) {
-        return token.internalId === tokenIds.BTC_B
+        return token.internalId === btcBTokenId
       }
       return true
     },
-    [selectedFromToken, selectedToToken]
+    [selectedFromToken, btcBTokenId]
   )
 
   return (
-    <SelectSwapTokenScreen
+    <SelectToSwapTokenScreen
       selectedToken={selectedToToken}
       setSelectedToken={setSelectedToToken}
       // Pre-select network to match "from" token's network

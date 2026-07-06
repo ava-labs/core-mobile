@@ -104,12 +104,12 @@ const AuthorizeDappScreen = ({
             <Text
               variant="body1"
               style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
-              Do you want to allow{' '}
-              <Text variant="body1" style={{ fontWeight: '600' }}>
+              <Text variant="body1" style={{ fontFamily: 'Inter-SemiBold' }}>
                 {peerMeta.url}
-              </Text>{' '}
-              to access your wallet? Tapping “Connect” will grant full access to
-              the accounts selected
+              </Text>
+              {
+                ' wants to connect. This will allow the site to view your wallet address and balance, and request approval for transactions and message signatures.'
+              }
             </Text>
           </View>
         </View>

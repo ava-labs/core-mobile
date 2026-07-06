@@ -1,8 +1,7 @@
-import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -15,13 +14,9 @@ import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedReaction,
-  useAnimatedStyle,
-  withTiming
+  useAnimatedStyle
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 
 export type OnTabChange = OnTabChangeCallback<string>
@@ -36,6 +31,14 @@ export const CollapsibleTabsContainer = forwardRef<
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
     minHeaderHeight?: number
+    /**
+     * Reserve header space via layout `paddingTop` instead of the native iOS
+     * `contentInset` model. Defaults to `true` because the New Architecture
+     * (Fabric) clamps programmatic scrolling into a negative `contentInset`
+     * region, which breaks the iOS inset model on tab switch / remount (content
+     * renders under the header). The layout model needs no negative scroll.
+     */
+    useLayoutHeaderInset?: boolean
   }
 >(
   (
@@ -46,7 +49,8 @@ export const CollapsibleTabsContainer = forwardRef<
       onIndexChange,
       onTabChange,
       onScrollY,
-      minHeaderHeight
+      minHeaderHeight,
+      useLayoutHeaderInset = true
     },
     ref
   ): JSX.Element => {
@@ -63,9 +67,13 @@ export const CollapsibleTabsContainer = forwardRef<
 
     const pagerProps = useMemo(() => {
       return {
-        style: styles.overflow
+        style: styles.overflow,
+        // Disable swipe between tabs when there's only one tab. iOS PagerView
+        // shows a rubber-band/enlarge effect at the edge of a single-tab pager
+        // when scroll is enabled.
+        scrollEnabled: tabs.length > 1
       }
-    }, [])
+    }, [tabs.length])
 
     return (
       <Tabs.Container
@@ -77,7 +85,8 @@ export const CollapsibleTabsContainer = forwardRef<
         pagerProps={pagerProps}
         onTabChange={onTabChange}
         onIndexChange={onIndexChange}
-        minHeaderHeight={minHeaderHeight}>
+        minHeaderHeight={minHeaderHeight}
+        useLayoutHeaderInset={useLayoutHeaderInset}>
         {content}
       </Tabs.Container>
     )
@@ -112,23 +121,17 @@ const ContentWrapper = ({
 }: {
   children: React.ReactNode
   /**
-   * Additional offset to subtract from content height calculation on Android.
-   * Useful when there are missing UI elements (like SegmentedControl)
-   * that need to be accounted for in the available content space.
+   * Extra bottom padding added to the wrapper. Useful when there are missing UI
+   * elements (like SegmentedControl) that would normally take space below the
+   * content.
    * @default 0
    */
-  extraOffset?: number
-  /**
-   * Whether to animate the content translation.
-   * @default true
-   */
   animate?: boolean
+  extraOffset?: number
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
-  const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -140,13 +143,11 @@ const ContentWrapper = ({
           Extrapolation.CLAMP
         )
       : 0
+
     return {
       transform: [
         {
-          translateY: withTiming(translateY, {
-            ...ANIMATED.TIMING_CONFIG,
-            duration: 250
-          })
+          translateY
         }
       ]
     }
@@ -154,28 +155,20 @@ const ContentWrapper = ({
 
   return (
     <View
-      style={[
-        Platform.OS === 'ios'
-          ? {
-              // iOS works with 100%, but android needs specific height
-              height: '100%',
-              paddingBottom: header.height - tabBarHeight + insets.bottom
-            }
-          : {
-              height:
-                frame.height -
-                header.height -
-                headerHeight -
-                insets.bottom -
-                tabBarHeight -
-                extraOffset
-            },
-        {
-          justifyContent: 'center',
-          alignItems: 'center'
-        }
-      ]}>
-      <Animated.View style={animatedStyle}>{children}</Animated.View>
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            paddingBottom: insets.bottom + tabBarHeight + extraOffset
+          }
+        ]}>
+        {children}
+      </Animated.View>
     </View>
   )
 }
@@ -198,6 +191,8 @@ const styles = StyleSheet.create({
   tabsContainer: {
     shadowOpacity: 0,
     elevation: 0,
-    overflow: 'visible'
+    overflow: 'visible',
+    backgroundColor: 'transparent',
+    zIndex: 1
   }
 })

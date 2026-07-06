@@ -15,6 +15,7 @@ import { Account } from 'store/account/types'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isTxSendMethod } from '../../utils/txSendMethods'
+import { normalizeAnalyticsAddress } from '../../utils/normalizeAnalyticsAddress'
 import { isSessionProposal, isUserRejectedError } from './utils'
 import { transformSolanaParams } from './solanaRequestUtils'
 
@@ -165,15 +166,20 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         result
       ) {
         const chainId = request.data.params.chainId
-        const address = getAddressForChain(
-          selectActiveAccount(listenerApi.getState()),
-          chainId
+        const address = normalizeAnalyticsAddress(
+          getAddressForChain(
+            selectActiveAccount(listenerApi.getState()),
+            chainId
+          )
         )
-        AnalyticsService.captureWithEncryption(`${request.method}_success`, {
-          dAppUrl: request.peerMeta.url,
-          address,
-          chainId,
-          txHash: result
+        AnalyticsService.capture(`${request.method}_success`, {
+          provider: 'walletConnect',
+          encrypted: {
+            dAppUrl: request.peerMeta.url,
+            address,
+            chainId,
+            txHash: result
+          }
         })
       }
 
@@ -189,14 +195,13 @@ class WalletConnectProvider implements AgnosticRpcProvider {
           selectActiveAccount(listenerApi.getState()),
           chainId
         )
-        AnalyticsService.captureWithEncryption(
-          'solana_signTransaction_approved',
-          {
+        AnalyticsService.capture('solana_signTransaction_approved', {
+          encrypted: {
             dAppUrl: request.peerMeta.url,
             address,
             chainId
           }
-        )
+        })
       }
 
       try {

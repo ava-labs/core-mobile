@@ -2,6 +2,7 @@ import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
+import { useNoInternetToast } from 'common/hooks/useNoInternetToast'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
@@ -34,7 +35,11 @@ export default function Root(): JSX.Element | null {
     const subscription = RnAppearance.addChangeListener(
       ({ colorScheme: updatedColorSchemes }) => {
         if (selectedAppearance === Appearance.System && !isDeveloperMode) {
-          dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
+          dispatch(
+            setSelectedColorScheme(
+              updatedColorSchemes === 'dark' ? 'dark' : 'light'
+            )
+          )
           setStatusBarStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
         }
       }
@@ -47,6 +52,7 @@ export default function Root(): JSX.Element | null {
   }, [colorScheme])
 
   useLoadFonts()
+  useNoInternetToast()
 
   useEffect(() => {
     Bootsplash.hide()

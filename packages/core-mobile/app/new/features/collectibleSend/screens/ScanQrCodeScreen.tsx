@@ -5,7 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'

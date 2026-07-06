@@ -3,8 +3,6 @@ import { JsonMap } from 'store/posthog'
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
-  BRIDGE_BTC = 'bridge-feature-btc',
-  BRIDGE_ETH = 'bridge-feature-eth',
   EARN = 'earn-feature',
   BUY_COINBASE_PAY = 'buy-feature-coinbase',
   SEEDLESS_ONBOARDING = 'seedless-onboarding',
@@ -14,11 +12,6 @@ export enum FeatureGates {
   SEEDLESS_MFA_PASSKEY = 'seedless-mfa-passkey',
   SEEDLESS_MFA_AUTHENTICATOR = 'seedless-mfa-authenticator',
   SEEDLESS_SIGNING = 'seedless-signing',
-  UNIFIED_BRIDGE_CCTP = 'unified-bridge-cctp',
-  UNIFIED_BRIDGE_ICTT = 'unified-bridge-ictt',
-  UNIFIED_BRIDGE_AB_EVM = 'unified-bridge-ab-evm',
-  UNIFIED_BRIDGE_AB_AVA_TO_BTC = 'unified-bridge-ab-ava-to-btc',
-  UNIFIED_BRIDGE_AB_BTC_TO_AVA = 'unified-bridge-ab-btc-to-ava',
   LOG_ERRORS_TO_SENTRY = 'log-errors-to-sentry',
   BLOCKAID_DAPP_SCAN = 'blockaid-dapp-scan',
   ALL_NOTIFICATIONS = 'all-notifications',
@@ -35,8 +28,6 @@ export enum FeatureGates {
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
-  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
-  IN_APP_DEFI_BORROW = 'in-app-defi-borrow',
   IN_APP_REVIEW = 'in-app-review',
   GASLESS_INSTANT = 'gasless-instant',
   NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
@@ -44,11 +35,19 @@ export enum FeatureGates {
   FUSION = 'fusion',
   FUSION_MARKR = 'fusion-markr',
   FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
+  FUSION_AVALANCHE_CCT = 'fusion-avalanche-cct',
   FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
+  FUSION_DISABLE_CROSS_CHAIN_SWAPS = 'fusion-disable-cross-chain-swaps',
+  FUSION_QUICK_SWAPS = 'fusion-quick-swaps',
+  SWAP_RECURRING = 'swap-recurring',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
-  LEGACY_BRIDGE = 'legacy-bridge',
-  INJECTED_PROVIDER = 'injected-provider'
+  INJECTED_PROVIDER = 'injected-provider',
+  PREDICTIONS = 'predictions',
+  PRICE_CHART = 'price-chart',
+  PERPETUALS = 'perpetuals',
+  FAST_STAKE_ENABLED = 'fast-stake-enabled',
+  FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled'
 }
 
 export enum FeatureVars {
@@ -63,7 +62,11 @@ export enum FeatureVars {
   FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps',
   FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT = 'fusion-max-amount-additive-bps-default',
   FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA = 'fusion-max-amount-additive-bps-evm-to-solana',
-  FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM = 'fusion-max-amount-additive-bps-solana-to-evm'
+  FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM = 'fusion-max-amount-additive-bps-solana-to-evm',
+  // 3-state override for the optimistic-confirmation gate ('auto' | 'enabled' |
+  // 'disabled'). Mirrors core-extension's `sae-override` flag. Used to force the
+  // post-Helicon (no optimistic confetti) flow on or off without a code release.
+  SAE_OVERRIDE = 'sae-override'
 }
 
 // posthog response can be an empty object when all features are disabled

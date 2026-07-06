@@ -91,6 +91,46 @@ describe('buildLocalToken', () => {
       expect(result.decimals).toBe(18)
     })
 
+    it('overrides AVAX to 9 decimals on X-Chain (nAVAX) and renders the balance correctly', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.AVAX,
+        isNative: true
+      })
+      const balanceData = makeBalanceToken({
+        type: TokenType.NATIVE,
+        internalId: tokenIds.AVAX,
+        networkChainId: ChainId.AVALANCHE_X,
+        balance: 411616842n // 0.411616842 AVAX at 9 decimals
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [balanceData],
+        tokenInfo,
+        caip2Id: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
+        chainId: ChainId.AVALANCHE_X
+      }) as any
+
+      expect(result.decimals).toBe(9)
+      // an 18-decimal interpretation would render ~0; 9 decimals renders ~0.4116
+      expect(result.balanceDisplayValue).toBe('0.4116')
+    })
+
+    it('overrides AVAX to 9 decimals on P-Chain (nAVAX)', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.AVAX,
+        isNative: true
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+        chainId: ChainId.AVALANCHE_P
+      }) as any
+
+      expect(result.decimals).toBe(9)
+    })
+
     it('falls through to meta decimals when native internalId is not in NATIVE_DECIMALS', () => {
       const tokenInfo = makeTokenInfo({
         internalId: 'NATIVE-unknown',
@@ -356,6 +396,81 @@ describe('buildLocalToken', () => {
       })
 
       expect(result.internalId).toBe('tokeninfo-id')
+    })
+  })
+
+  describe('contractType resolution', () => {
+    // The lookup API doesn't return contractType, so buildLocalToken passes
+    // null to mapApiTokenToLocal, which derives the token type from the
+    // caip2Id namespace.
+    it('resolves to SPL for a non-native token on a Solana caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [SOL_CAIP2]: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+        },
+        meta: { logoUri: null, decimals: { [SOL_CAIP2]: 6 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: SOL_CAIP2,
+        chainId: ChainId.SOLANA_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.SPL)
+    })
+
+    it('resolves to ERC20 for a non-native token on an Avalanche caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [AVAX_CAIP2]: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
+        },
+        meta: { logoUri: null, decimals: { [AVAX_CAIP2]: 6 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: AVAX_CAIP2,
+        chainId: ChainId.AVALANCHE_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+
+    it('resolves to ERC20 for a non-native token on an Ethereum caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        platforms: {
+          [ETH_CAIP2]: '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+        },
+        meta: { logoUri: null, decimals: { [ETH_CAIP2]: 18 } }
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: ETH_CAIP2,
+        chainId: ChainId.ETHEREUM_HOMESTEAD
+      })
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+
+    it('resolves to NATIVE for a native token regardless of caip2Id', () => {
+      const tokenInfo = makeTokenInfo({
+        internalId: tokenIds.SOL,
+        isNative: true
+      })
+
+      const result = buildLocalToken({
+        accountTokens: [],
+        tokenInfo,
+        caip2Id: SOL_CAIP2,
+        chainId: ChainId.SOLANA_MAINNET_ID
+      })
+
+      expect(result.type).toBe(TokenType.NATIVE)
     })
   })
 

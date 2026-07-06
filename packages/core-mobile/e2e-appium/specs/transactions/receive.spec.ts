@@ -2,7 +2,7 @@ import warmup from '../../helpers/warmup'
 import cl from '../../locators/commonEls.loc'
 import txPage from '../../pages/transactions.page'
 
-describe('[Smoke] Receive', () => {
+describe('Receive', () => {
   before(async () => {
     await warmup()
     await txPage.tapReceive()
@@ -18,9 +18,9 @@ describe('[Smoke] Receive', () => {
   Object.entries(networkAndAddress).forEach(([network, address]) => {
     it(`should verify ${network} address`, async () => {
       if (network !== cl.evm) {
-        await txPage.selectNetwork(network)
+        await txPage.selectReceiveNetwork(network)
       }
-      await txPage.verifyReceiveScreen(network, address)
+      await txPage.verifyReceiveScreen(network, address.toLowerCase())
     })
   })
 })

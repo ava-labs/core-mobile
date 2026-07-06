@@ -90,6 +90,7 @@ const HistoryScreen = (): JSX.Element => {
   const renderHeader = (): JSX.Element => {
     return (
       <SearchBar
+        testID="search_bar"
         onTextChanged={setSearchText}
         searchText={searchText}
         placeholder="Search or Type URL"
@@ -115,6 +116,7 @@ const HistoryScreen = (): JSX.Element => {
     if (isIOS26AndAbove)
       return (
         <TouchableOpacity
+          testID="clear_all_history_btn"
           onPress={removeAll}
           style={{
             paddingHorizontal: 10
@@ -125,7 +127,11 @@ const HistoryScreen = (): JSX.Element => {
 
     return (
       <NavigationBarButton>
-        <Button type="secondary" size="small" onPress={removeAll}>
+        <Button
+          testID="clear_all_history_btn"
+          type="secondary"
+          size="small"
+          onPress={removeAll}>
           Clear all
         </Button>
       </NavigationBarButton>

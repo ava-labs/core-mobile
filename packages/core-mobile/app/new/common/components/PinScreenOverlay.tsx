@@ -51,6 +51,12 @@ export const PinScreenOverlay = (): JSX.Element => {
           />
         ) : (
           <KeyboardAwareScrollView
+            // `mode="layout"` restores the pre-1.21 spacer-view behavior.
+            // 1.21's default `mode="insets"` adjusts the scroll view's
+            // `contentInset` instead of the layout, which doesn't work inside
+            // `FullWindowOverlay` (a separate iOS window) and fails to
+            // redistribute the flex-based PIN layout above the keyboard.
+            mode="layout"
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}

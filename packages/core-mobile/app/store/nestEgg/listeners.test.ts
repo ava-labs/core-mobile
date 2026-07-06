@@ -17,8 +17,7 @@ jest.mock('common/utils/waitForInteractions', () => ({
 }))
 
 jest.mock('services/analytics/AnalyticsService', () => ({
-  capture: jest.fn(),
-  captureWithEncryption: jest.fn()
+  capture: jest.fn()
 }))
 
 jest.mock('services/network/utils/isAvalancheNetwork', () => ({

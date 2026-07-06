@@ -5,7 +5,7 @@ import commonLoc from '../../../locators/commonEls.loc'
 import portfolio from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
-describe.skip('[Smoke] Send transaction', () => {
+describe.skip('Send transaction', () => {
   it('should send NFT on Ethereum', async () => {
     await warmup()
     await portfolio.tapCollectiblesTab()

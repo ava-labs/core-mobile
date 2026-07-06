@@ -2,7 +2,6 @@ import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
-import { TrendingToken } from 'utils/api/types'
 import {
   ChartData,
   Error,
@@ -46,7 +45,8 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
 }
 
 export const transformMartketChartRawPrices = (
-  pricesRaw: [number, number][]
+  pricesRaw: [number, number][],
+  totalVolumesRaw?: [number, number][] | null
 ): ChartData => {
   const dates = pricesRaw.map(value => value[0])
   const prices = pricesRaw.map(value => value[1])
@@ -70,9 +70,11 @@ export const transformMartketChartRawPrices = (
       diffValue,
       percentChange
     },
-    dataPoints: pricesRaw.map(tu => {
-      return { date: new Date(tu[0]), value: tu[1] }
-    })
+    dataPoints: pricesRaw.map((tu, i) => ({
+      date: new Date(tu[0]),
+      value: tu[1],
+      volume: totalVolumesRaw?.[i]?.[1] ?? null
+    }))
   }
 }
 
@@ -113,33 +115,4 @@ export const transformSimplePriceResponse = (
     })
   })
   return formattedData
-}
-
-export const applyExchangeRateToTrendingTokens = (
-  trendingTokens: TrendingToken[],
-  exchangeRate: number
-): TrendingToken[] => {
-  return trendingTokens.map(item => ({
-    ...item,
-    price: (item.price ?? 0) * exchangeRate,
-    marketcap:
-      typeof item.marketcap === 'number'
-        ? item.marketcap * exchangeRate
-        : item.marketcap,
-    fdv: typeof item.fdv === 'number' ? item.fdv * exchangeRate : item.fdv,
-    volume24hUSD:
-      typeof item.volume24hUSD === 'number'
-        ? item.volume24hUSD * exchangeRate
-        : item.volume24hUSD,
-    liquidity:
-      typeof item.liquidity === 'number'
-        ? item.liquidity * exchangeRate
-        : item.liquidity,
-    sparkline: item.sparkline
-      ? item.sparkline.map(point => ({
-          ...point,
-          value: point.value * exchangeRate
-        }))
-      : item.sparkline
-  }))
 }

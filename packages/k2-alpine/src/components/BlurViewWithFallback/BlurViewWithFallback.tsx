@@ -71,6 +71,7 @@ export const BlurViewWithFallback = ({
 
   return (
     <BlurView
+      accessible={false}
       style={iosContainerStyle}
       intensity={intensity}
       tint={theme.isDark ? 'dark' : 'light'}>

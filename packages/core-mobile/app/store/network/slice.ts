@@ -13,22 +13,14 @@ import {
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { selectActiveAccount } from 'store/account'
+import { selectActiveAccountHasSolanaAddress } from 'store/account'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
-
-export const defaultEnabledL2ChainIds = [
-  42161, // Arbitrum One
-  // 421614, // Arbitrum Sepolia
-  10, // Optimism
-  // 11155420, // Optimism Sepolia
-  8453 // Base Mainnet
-  // 84532 // Base Sepolia
-]
 
 export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
@@ -160,10 +152,10 @@ export const selectActiveNetwork = (state: RootState): Network => {
 
 export const selectAllNetworks = (state: RootState): Networks => {
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const customNetworks = selectCustomNetworks(state)
   const rawNetworks = getNetworksFromCache({
     includeSolana: !isSolanaSupportBlocked
   })
-  const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }
 
@@ -214,18 +206,15 @@ export const selectEnabledNetworks = createSelector(
     selectEnabledChainIds,
     selectIsDeveloperMode,
     selectNetworks,
-    selectActiveAccount
+    selectActiveAccountHasSolanaAddress
   ],
   // eslint-disable-next-line max-params
-  (enabledChainIds, isDeveloperMode, networks, activeAccount) => {
+  (enabledChainIds, isDeveloperMode, networks, hasSolanaAddress) => {
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
         if (network.vmName === NetworkVMType.SVM) {
-          if (
-            activeAccount?.addressSVM !== undefined &&
-            activeAccount.addressSVM.length > 0
-          ) {
+          if (hasSolanaAddress) {
             acc.push(network)
           }
         } else {
@@ -242,18 +231,15 @@ export const selectEnabledNetworksMap = createSelector(
     selectEnabledChainIds,
     selectIsDeveloperMode,
     selectNetworks,
-    selectActiveAccount
+    selectActiveAccountHasSolanaAddress
   ],
   // eslint-disable-next-line max-params
-  (enabledChainIds, isDeveloperMode, networks, activeAccount) => {
+  (enabledChainIds, isDeveloperMode, networks, hasSolanaAddress) => {
     return enabledChainIds.reduce<Networks>((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
         if (network.vmName === NetworkVMType.SVM) {
-          if (
-            activeAccount?.addressSVM !== undefined &&
-            activeAccount.addressSVM.length > 0
-          ) {
+          if (hasSolanaAddress) {
             acc[chainId] = network
           }
         } else {
@@ -269,17 +255,14 @@ export const selectEnabledNetworksByTestnet =
   (isTestnet: boolean) => (state: RootState) => {
     const networks = selectNetworks(state)
     const enabledChainIds = selectEnabledChainIds(state)
-    const activeAccount = selectActiveAccount(state)
+    const hasSolanaAddress = selectActiveAccountHasSolanaAddress(state)
 
     const results: Network[] = []
     for (const chainId of enabledChainIds) {
       const network = networks[chainId]
       if (network && network.isTestnet === isTestnet) {
         if (network.vmName === NetworkVMType.SVM) {
-          if (
-            activeAccount?.addressSVM !== undefined &&
-            activeAccount.addressSVM.length > 0
-          ) {
+          if (hasSolanaAddress) {
             results.push(network)
           }
         } else {

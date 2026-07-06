@@ -1,13 +1,10 @@
-import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ANIMATED, Image, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
-import { useRouter } from 'expo-router'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { RecurringSchedulesBanner } from 'new/features/recurringSwap/components/RecurringSchedulesBanner'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -17,7 +14,6 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
@@ -36,8 +32,6 @@ export const ActivityScreen = ({
   searchText?: string
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const { navigate } = useRouter()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { openUrl } = useInAppBrowser()
   const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
@@ -55,19 +49,6 @@ export const ActivityScreen = ({
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(account)
-
-  const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
-      navigate({
-        pathname: '/bridgeStatus',
-        params: {
-          txHash: pendingBridge.sourceTxHash,
-          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
-        }
-      })
-    },
-    [navigate, isDeveloperMode]
-  )
 
   const handleExplorerLink = useCallback(
     (
@@ -107,18 +88,23 @@ export const ActivityScreen = ({
 
   const renderHeader = useCallback(() => {
     return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          gap: 16,
-          marginTop: 4,
-          marginBottom: 16,
-          paddingHorizontal: 16
-        }}>
-        <DropdownSelections filter={filter} />
-        <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
-      </View>
+      <>
+        <View
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            gap: 16,
+            marginTop: 4,
+            marginBottom: 16,
+            paddingHorizontal: 16
+          }}>
+          <DropdownSelections filter={filter} />
+          <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
+        </View>
+        <View sx={{ marginHorizontal: 16 }}>
+          <RecurringSchedulesBanner />
+        </View>
+      </>
     )
   }, [filter, network, networkFilterDropdown])
 
@@ -207,7 +193,6 @@ export const ActivityScreen = ({
       <ActivityList
         data={activityListData}
         xpToken={xpToken}
-        handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
         containerStyle={containerStyle}
         renderHeader={renderHeader}

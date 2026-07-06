@@ -165,7 +165,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         : {}
 
     return (
-      <Container {...containerProps}>
+      <Container testID="pin_input" {...containerProps}>
         {/* Display for input dots */}
         <Animated.View
           style={[
@@ -196,10 +196,8 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
              which focuses this input; on other platforms the TextInput itself
              may receive taps directly. */}
         <TextInput
-          accessibilityLabel="pin_input"
-          testID="pin_input"
           ref={textInputRef}
-          style={[StyleSheet.absoluteFillObject, { opacity: 0 }]}
+          style={[StyleSheet.absoluteFill, { opacity: 0 }]}
           value={value}
           onChangeText={handleInputChange}
           keyboardType={Platform.OS === 'ios' ? 'number-pad' : undefined}

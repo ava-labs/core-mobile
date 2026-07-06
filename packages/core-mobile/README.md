@@ -65,6 +65,10 @@ yarn lint
 yarn envs # will ask for sudo password
 ```
 
+## E2E tests (Appium / WebDriverIO)
+
+UI tests live in [`e2e-appium/`](./e2e-appium/). Run `yarn appium:android` or `yarn appium:ios` from this package (set `APP_PATH` to your build). Local device detection and optional env vars are described in [`e2e-appium/helpers/resolve-local-device.ts`](./e2e-appium/helpers/resolve-local-device.ts). For AWS Device Farm packaging, CI, and triggers, see [`scripts/devicefarm/README.md`](./scripts/devicefarm/README.md).
+
 ## Custom fonts
 
 To add custom fonts, add it to `app/assets/fonts` folder and then run:

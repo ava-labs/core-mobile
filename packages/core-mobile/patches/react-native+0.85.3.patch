@@ -1,0 +1,37 @@
+diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+--- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
++++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+@@ -42,5 +42,9 @@
+     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+ 
++    if (@available(iOS 26.0, *)) {
++      self.topEdgeEffect.hidden = YES;
++    }
++
+     __weak __typeof(self) weakSelf = self;
+     _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
+       [weakSelf setPrivateDelegate:delegate];
+diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
+--- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
++++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTScrollViewComponentView.mm
+@@ -449,5 +449,12 @@
+ 
+   [super updateProps:props oldProps:oldProps];
+ }
+ 
++- (void)_disableTopEdgeEffectIOS26
++{
++  if (@available(iOS 26.0, *)) {
++    _scrollView.topEdgeEffect.hidden = YES;
++  }
++}
++
+ - (void)updateState:(const State::Shared &)state oldState:(const State::Shared &)oldState
+@@ -843,5 +843,7 @@
+   if (!self.window) {
+     // The view is being removed, ensure that the scroll end event is dispatched
+     [self _handleScrollEndIfNeeded];
++  } else {
++    [self _disableTopEdgeEffectIOS26];
+   }
+ }

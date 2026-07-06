@@ -3,6 +3,7 @@ import { Text } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { FusionTransfer } from 'features/swap/types'
+import { getNetworkDisplayName } from 'common/utils/getNetworkDisplayName'
 import { mapTransferToSwapStatus } from '../utils'
 import { NotificationSwapStatus } from '../types'
 import NotificationListItem from './NotificationListItem'
@@ -36,9 +37,21 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
   const fromSymbol = item.transfer.sourceAsset.symbol
   const toSymbol = item.transfer.targetAsset.symbol
 
-  const fromNetworkLogoUri = getNetworkByCaip2ChainId(
+  const fromNetwork = getNetworkByCaip2ChainId(
     item.transfer.sourceChain.chainId
-  )?.logoUri
+  )
+  const toNetwork = getNetworkByCaip2ChainId(item.transfer.targetChain.chainId)
+  const fromNetworkLogoUri = fromNetwork?.logoUri
+  const fromNetworkChainId = fromNetwork?.chainId
+  // Only annotate the title with chain names when the route actually
+  // crosses chains — same-chain swaps (Markr / Wrap-Unwrap) keep the
+  // tighter `0.1 USDC swapped for 0.1 USDT` form.
+  const isCrossChain =
+    item.transfer.sourceChain.chainId !== item.transfer.targetChain.chainId
+  const fromChainName =
+    isCrossChain && fromNetwork ? getNetworkDisplayName(fromNetwork) : undefined
+  const toChainName =
+    isCrossChain && toNetwork ? getNetworkDisplayName(toNetwork) : undefined
 
   const fromAmount = useMemo(() => {
     try {
@@ -81,14 +94,25 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         } refunded to your wallet`
       }
     }
-    const from = fromAmount
+    const fromBase = fromAmount
       ? `${fromAmount.toDisplay()} ${fromSymbol}`
       : fromSymbol
-    const to = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
+    const toBase = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
+    const from = fromChainName ? `${fromBase} (${fromChainName})` : fromBase
+    const to = toChainName ? `${toBase} (${toChainName})` : toBase
     return status === NotificationSwapStatus.InProgress
       ? `Swapping ${fromSymbol} to ${toSymbol} in progress...`
       : `${from} swapped for ${to}`
-  }, [fromAmount, fromSymbol, toAmount, toSymbol, status, item.transfer])
+  }, [
+    fromAmount,
+    fromSymbol,
+    toAmount,
+    toSymbol,
+    status,
+    item.transfer,
+    fromChainName,
+    toChainName
+  ])
 
   const subtitle =
     status in SUBTITLE_MAP
@@ -104,7 +128,7 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         variant="body2"
         sx={{
           lineHeight: 15,
-          fontWeight: 500,
+          fontFamily: 'Inter-SemiBold',
           color:
             status === NotificationSwapStatus.Completed
               ? '$textSuccess'
@@ -123,7 +147,13 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
     <NotificationListItem
       title={title}
       subtitle={renderSubtitle()}
-      icon={<SwapIcon status={status} networkLogoUri={fromNetworkLogoUri} />}
+      icon={
+        <SwapIcon
+          status={status}
+          networkLogoUri={fromNetworkLogoUri}
+          networkChainId={fromNetworkChainId}
+        />
+      }
       timestamp={item.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}

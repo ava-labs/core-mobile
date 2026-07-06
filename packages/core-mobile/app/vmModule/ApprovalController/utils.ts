@@ -1,6 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { showAlert } from '@avalabs/k2-alpine'
-import { RpcError } from '@avalabs/vm-module-types'
+import { RpcError, RpcMethod } from '@avalabs/vm-module-types'
 import { getLedgerAppName, isBitcoinCompatibleApp } from 'features/ledger/utils'
 import LedgerService from 'services/ledger/LedgerService'
 import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
@@ -15,6 +15,7 @@ export const handleLedgerErrorAndShowAlert = ({
 }: {
   error: RpcError
   network: Network
+  rpcMethod?: RpcMethod
   onRetry: () => void
   onCancel: () => void
 }): void => {

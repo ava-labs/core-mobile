@@ -8,35 +8,94 @@ import {
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
-import { useIsLoadingBalancesForWallet } from 'features/portfolio/hooks/useIsLoadingBalancesForWallet'
+import { computeAccountBalance } from 'features/portfolio/utils/computeAccountBalance'
 import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  AdjustedNormalizedBalancesForAccount,
+  AdjustedNormalizedBalancesForAccounts
+} from 'services/balance/types'
+import { Networks } from 'store/network/types'
+import { TokenVisibility } from 'store/portfolio'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { Wallet } from 'store/wallet/types'
 
-export const WalletBalance = ({
-  wallet,
-  isRefreshing,
-  balanceSx,
-  variant = 'spinner'
-}: {
-  wallet: Wallet
+const emptyAccountBalances: AdjustedNormalizedBalancesForAccount[] = []
+
+interface WalletBalanceProps {
   isRefreshing: boolean
+  walletBalancesData: AdjustedNormalizedBalancesForAccounts
+  isBalancesError: boolean
+  /**
+   * Map from accountId to the number of enabled networks that account can
+   * actually produce balance entries for (see CP-14303). The wallet total
+   * is considered loaded when every account has at least that many entries.
+   */
+  enabledNetworksCountByAccount: Record<string, number>
+  enabledNetworksMap: Networks
+  enabledChainIds: number[]
+  isDeveloperMode: boolean
+  tokenVisibility: TokenVisibility
   balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
-}): JSX.Element => {
+}
+
+const WalletBalanceComponent = ({
+  isRefreshing,
+  walletBalancesData,
+  isBalancesError,
+  enabledNetworksCountByAccount,
+  enabledNetworksMap,
+  enabledChainIds,
+  isDeveloperMode,
+  tokenVisibility,
+  balanceSx,
+  variant = 'spinner'
+}: WalletBalanceProps): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const isLoading = useIsLoadingBalancesForWallet(wallet)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForWallet(wallet)
+
+  const { isLoading, balanceTotalInCurrency } = useMemo(() => {
+    const accountEntries = Object.entries(walletBalancesData)
+
+    let loading = accountEntries.length === 0
+    let total = 0
+    for (const [accountId, accountBalances] of accountEntries) {
+      const result = computeAccountBalance({
+        accountBalances: accountBalances ?? emptyAccountBalances,
+        enabledNetworksCount: enabledNetworksCountByAccount[accountId] ?? 0,
+        // `?? 0` is safe here: a count of 0 makes computeAccountBalance
+        // treat the account as fully loaded (not loading) — any tokens
+        // already in `accountBalances` are still summed. In practice
+        // BalanceService also gates requests by `getAddressByNetwork`, so
+        // accounts that support no enabled networks have no balances to
+        // sum and naturally contribute $0. The same bucket also covers
+        // unknown accountIds from transient races where balances arrive
+        // before the per-account count map is populated.
+        enabledNetworksMap,
+        enabledChainIds,
+        isDeveloperMode,
+        tokenVisibility,
+        isError: isBalancesError
+      })
+      if (result.isLoadingBalance) loading = true
+      total += result.balance
+    }
+
+    return { isLoading: loading, balanceTotalInCurrency: total }
+  }, [
+    walletBalancesData,
+    enabledNetworksCountByAccount,
+    enabledNetworksMap,
+    enabledChainIds,
+    isDeveloperMode,
+    tokenVisibility,
+    isBalancesError
+  ])
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
@@ -104,3 +163,5 @@ export const WalletBalance = ({
     </LoadingContent>
   )
 }
+
+export const WalletBalance = React.memo(WalletBalanceComponent)

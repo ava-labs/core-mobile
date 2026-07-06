@@ -1,21 +1,19 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { LayoutChangeEvent, LayoutRectangle, ViewStyle } from 'react-native'
 import { NavigationTitleHeader } from '@avalabs/k2-alpine'
-import { useAnimatedStyle } from 'react-native-reanimated'
+import { AnimatedStyle, useAnimatedStyle } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from './useFadingHeaderNavigation'
 
 interface FadingHeaderOptions {
   title: string
-  shouldHeaderHaveGrabber?: boolean
 }
 
 // a wrapper around useFadingHeaderNavigation that provides a more convenient API
 // for the simple use case of a fading header on a scrollable modal screen
 export const useSimpleFadingHeader = ({
-  title,
-  shouldHeaderHaveGrabber = true
+  title
 }: FadingHeaderOptions): {
-  animatedHeaderStyle: ViewStyle
+  animatedHeaderStyle: AnimatedStyle<ViewStyle>
   onScroll: ReturnType<typeof useFadingHeaderNavigation>['onScroll']
   handleHeaderLayout: (event: LayoutChangeEvent) => void
 } => {
@@ -31,8 +29,7 @@ export const useSimpleFadingHeader = ({
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber
+    targetLayout: headerLayout
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({

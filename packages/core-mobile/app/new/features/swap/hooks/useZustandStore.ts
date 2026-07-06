@@ -2,8 +2,7 @@ import { createZustandStore } from 'common/utils/createZustandStore'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { PersistStorage, StorageValue } from 'zustand/middleware'
-import { zustandStorageMMKV } from 'utils/mmkv/storages'
-import { ZustandStorageKeys } from 'resources/Constants'
+import { ZustandStorageKeys, zustandStorageMMKV } from 'utils/mmkv'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { mapTransferToSwapStatus } from 'features/notifications/utils'
 import { parseTransfer, stringifyTransfer } from '@avalabs/fusion-sdk'
@@ -35,12 +34,24 @@ export type SelectedQuoteIdentifiers = {
   aggregatorId: string
 } | null
 
-export const useUserSelectedQuote =
+export const useUserSelectedQuoteIds =
+  createZustandStore<SelectedQuoteIdentifiers>(null)
+// Ids for the quote promoted by pre-swap auto-advance when the best quote
+// fails fee validation with a provider-specific error. Kept distinct from
+// useUserSelectedQuoteIds so it doesn't flip the flow into manual-selection
+// mode (which would disable swap-time retry and mis-tag analytics as
+// 'manual').
+export const useAutoAdvancedQuoteIds =
   createZustandStore<SelectedQuoteIdentifiers>(null)
 export const useAllQuotes = createZustandStore<Quote[]>([])
 
 // Fusion service state
 export const useIsFusionServiceReady = createZustandStore<boolean>(false)
+
+// Non-null when the Fusion SDK failed to initialize (e.g. no services could start).
+// Used to render a full-screen error state on the swap screen, matching the
+// extension's behaviour when `transferManagerError` is set.
+export const useFusionServiceInitError = createZustandStore<Error | null>(null)
 
 // Persist storage for FusionTransfers.
 // stringifyTransfer/parseTransfer handle bigint serialization via {__type:'bigint'} tagging.

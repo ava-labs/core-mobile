@@ -58,6 +58,7 @@ export const DiscoverLearn = (): ReactNode => {
 
     return (
       <CarouselItem
+        testID={`browser_learn_item__${index}`}
         title={item.headline}
         onPress={() => handlePress(item)}
         renderImage={

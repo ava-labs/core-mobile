@@ -1,10 +1,129 @@
+import { EstimateNativeFeeError, ErrorCode } from '@avalabs/fusion-sdk'
 import {
+  fusionErrors,
+  isGasOnlyNetworkFeeError,
   isUserRejectionError,
   isGasEstimationError,
   isInvalidResponseError,
   shouldRetryWithNextQuote,
   getSwapErrorMessage
 } from './fusionErrors'
+
+describe('fusionErrors', () => {
+  describe('networkFeeExceedsBalance', () => {
+    it('should include required fee in message', () => {
+      const error = fusionErrors.networkFeeExceedsBalance('0.001 AVAX')
+      expect(error.message).toBe(
+        'Network fee exceeds your balance.\nNetwork fee: 0.001 AVAX'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterNetworkFee', () => {
+    it('should include required fee in message', () => {
+      const error =
+        fusionErrors.amountExceedsBalanceAfterNetworkFee('0.001 AVAX')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and network fee.\nNetwork fee: 0.001 AVAX'
+      )
+    })
+  })
+
+  describe('feesExceedBalance', () => {
+    it('should include required fees in message', () => {
+      const error = fusionErrors.feesExceedBalance('0.001234 AVAX')
+      expect(error.message).toBe(
+        'Network and bridge fees exceed your balance.\nRequired fees: 0.001234 AVAX'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterFees', () => {
+    it('should include required fees in message', () => {
+      const error = fusionErrors.amountExceedsBalanceAfterFees('0.001234 AVAX')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and fees.\nRequired fees: 0.001234 AVAX'
+      )
+    })
+  })
+
+  describe('networkFeeExceedsNativeBalance', () => {
+    it('should include symbol and formatted amount in message', () => {
+      const error = fusionErrors.networkFeeExceedsNativeBalance(
+        'AVAX',
+        '0.001 AVAX'
+      )
+      expect(error.message).toBe(
+        'Network fee exceeds your AVAX balance.\nNetwork fee: 0.001 AVAX.'
+      )
+    })
+  })
+
+  describe('feesExceedNativeBalance', () => {
+    it('should include symbol and formatted amount in message', () => {
+      const error = fusionErrors.feesExceedNativeBalance('ETH', '0.002 ETH')
+      expect(error.message).toBe(
+        'Network and bridge fees exceed your ETH balance.\nRequired fees: 0.002 ETH.'
+      )
+    })
+
+    it('should fall back gracefully for unknown native tokens', () => {
+      const error = fusionErrors.feesExceedNativeBalance('native', '1000000')
+      expect(error.message).toContain(
+        'Network and bridge fees exceed your native balance.'
+      )
+    })
+  })
+
+  describe('bridgeFeeExceedsBalance', () => {
+    it('should include required fee in message', () => {
+      const error = fusionErrors.bridgeFeeExceedsBalance('0.5 USDC')
+      expect(error.message).toBe(
+        'Bridge fee exceeds your balance.\nBridge fee: 0.5 USDC'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterBridgeFee', () => {
+    it('should include bridge fee in message', () => {
+      const error = fusionErrors.amountExceedsBalanceAfterBridgeFee('0.5 USDC')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and bridge fee.\nBridge fee: 0.5 USDC'
+      )
+    })
+  })
+
+  describe('swapAmountTooSmall', () => {
+    it('should return a user-friendly message', () => {
+      const error = fusionErrors.swapAmountTooSmall()
+      expect(error.message).toBe(
+        'Swap amount is too small for this token pair.\nTry a larger amount.'
+      )
+    })
+
+    it('should be tagged as provider-specific', () => {
+      const error = fusionErrors.swapAmountTooSmall()
+      expect(error.kind).toBe('provider-specific')
+    })
+  })
+
+  describe('insufficientFundsForFee', () => {
+    it('tags the undefined cause branch as provider-specific', () => {
+      const error = fusionErrors.insufficientFundsForFee(undefined)
+      expect(error.kind).toBe('provider-specific')
+    })
+
+    it('keeps the confirmed-native branch as network-fee-only', () => {
+      const error = fusionErrors.insufficientFundsForFee(true)
+      expect(error.kind).toBe('network-fee-only')
+    })
+
+    it('keeps the confirmed-token branch as other', () => {
+      const error = fusionErrors.insufficientFundsForFee(false)
+      expect(error.kind).toBe('other')
+    })
+  })
+})
 
 describe('isUserRejectionError', () => {
   it('should return true for "user rejected" message', () => {
@@ -25,9 +144,29 @@ describe('isUserRejectionError', () => {
     expect(isUserRejectionError(new Error(''))).toBe(false)
   })
 
-  it('should return false for non-Error values', () => {
-    expect(isUserRejectionError('user rejected')).toBe(false)
-    expect(isUserRejectionError({ message: 'user rejected' })).toBe(false)
+  it('should return true for the EIP-1193 user-rejected code (4001), regardless of message', () => {
+    // The rejection can reach us as a plain JSON-RPC error object (not an
+    // Error instance) after crossing the VM-module boundary — e.g.
+    // `providerErrors.userRejectedRequest()` serialized to `{ code, message }`.
+    // The standard 4001 code is the reliable signal; the message may be
+    // absent, wrapped, or "[object Object]"-ified by callers.
+    expect(isUserRejectionError({ code: 4001 })).toBe(true)
+    expect(
+      isUserRejectionError({ code: 4001, message: 'Internal JSON-RPC error.' })
+    ).toBe(true)
+  })
+
+  it('should match the rejection message on plain objects and strings too', () => {
+    expect(
+      isUserRejectionError({ message: 'User rejected the request.' })
+    ).toBe(true)
+    expect(isUserRejectionError('User cancelled')).toBe(true)
+  })
+
+  it('should return false for unrelated non-Error values', () => {
+    expect(isUserRejectionError({ code: -32603 })).toBe(false)
+    expect(isUserRejectionError({ message: 'insufficient funds' })).toBe(false)
+    expect(isUserRejectionError('boom')).toBe(false)
     expect(isUserRejectionError(null)).toBe(false)
     expect(isUserRejectionError(undefined)).toBe(false)
     expect(isUserRejectionError(42)).toBe(false)
@@ -35,14 +174,60 @@ describe('isUserRejectionError', () => {
 })
 
 describe('isGasEstimationError', () => {
-  it('should return true for "gas estimation" message', () => {
+  it('should return true for legacy "gas estimation" message (pre-0.15.0 SDK)', () => {
     expect(isGasEstimationError(new Error('gas estimation failed'))).toBe(true)
     expect(isGasEstimationError(new Error('gas estimation error'))).toBe(true)
+  })
+
+  it('should return true for post-0.15.0 "estimate gas" messages', () => {
+    expect(
+      isGasEstimationError(
+        new Error('Failed to estimate gas for Markr swap transaction.')
+      )
+    ).toBe(true)
+    expect(
+      isGasEstimationError(
+        new Error(
+          'Failed to estimate gas for Markr swap transaction. Revert: TargetCallFailed().'
+        )
+      )
+    ).toBe(true)
+    expect(
+      isGasEstimationError(
+        new Error('Failed to estimate gas for ERC20 approval transaction.')
+      )
+    ).toBe(true)
+  })
+
+  it('should return true for real SDK EstimateNativeFeeError instances via the type guard', () => {
+    // Real SDK instance — the type guard uses instanceof and matches this.
+    const err = new EstimateNativeFeeError({
+      errorCode: ErrorCode.VIEM_ERROR,
+      tx: '0xtx'
+    })
+    expect(isGasEstimationError(err)).toBe(true)
+  })
+
+  it('should return false for duck-typed EstimateNativeFeeError without a matching substring', () => {
+    // The SDK's isEstimateNativeFeeError uses instanceof on its own class,
+    // so an error that merely has the same `name` property is not matched
+    // by the type guard. Without a "gas estimation" / "estimate gas"
+    // substring in the message, the substring fallback also misses —
+    // documenting that cross-realm / fake instances require SDK-wrapped
+    // errors or a recognisable message to be classified.
+    class FakeEstimateNativeFeeError extends Error {
+      override name = 'EstimateNativeFeeError'
+    }
+    const err = new FakeEstimateNativeFeeError('opaque message with no hint')
+    expect(isGasEstimationError(err)).toBe(false)
   })
 
   it('should be case-insensitive', () => {
     expect(isGasEstimationError(new Error('Gas Estimation Failed'))).toBe(true)
     expect(isGasEstimationError(new Error('GAS ESTIMATION'))).toBe(true)
+    expect(
+      isGasEstimationError(new Error('FAILED TO ESTIMATE GAS FOR SWAP'))
+    ).toBe(true)
   })
 
   it('should return false for unrelated errors', () => {
@@ -102,6 +287,13 @@ describe('shouldRetryWithNextQuote', () => {
     expect(shouldRetryWithNextQuote(new Error('gas estimation failed'))).toBe(
       true
     )
+    expect(
+      shouldRetryWithNextQuote(
+        new Error(
+          'Failed to estimate gas for Markr swap transaction. Revert: TargetCallFailed().'
+        )
+      )
+    ).toBe(true)
   })
 
   it('should return true for invalid response errors', () => {
@@ -135,10 +327,10 @@ describe('shouldRetryWithNextQuote', () => {
 describe('getSwapErrorMessage', () => {
   it('should return insufficient balance message for insufficient funds errors', () => {
     expect(getSwapErrorMessage(new Error('insufficient funds for gas'))).toBe(
-      'Insufficient balance to complete swap and cover gas fees'
+      'Insufficient balance to cover swap amount and fees.'
     )
     expect(getSwapErrorMessage(new Error('insufficient funds'))).toBe(
-      'Insufficient balance to complete swap and cover gas fees'
+      'Insufficient balance to cover swap amount and fees.'
     )
   })
 
@@ -166,6 +358,23 @@ describe('getSwapErrorMessage', () => {
     )
   })
 
+  it('should return a clear message for cctCallbacks xp-address errors', () => {
+    expect(
+      getSwapErrorMessage(
+        new Error('[cctCallbacks] xpAddressDictionary empty for active account')
+      )
+    ).toBe(
+      "This account isn't set up for cross-chain swaps. Please try a different account."
+    )
+    expect(
+      getSwapErrorMessage(
+        new Error('[cctCallbacks] xpAddresses empty for active account')
+      )
+    ).toBe(
+      "This account isn't set up for cross-chain swaps. Please try a different account."
+    )
+  })
+
   it('should return original message for unrecognized errors', () => {
     expect(getSwapErrorMessage(new Error('something unexpected'))).toBe(
       'something unexpected'
@@ -183,5 +392,58 @@ describe('getSwapErrorMessage', () => {
     expect(getSwapErrorMessage({ message: 'object error' })).toBe(
       'Unknown error occurred'
     )
+  })
+})
+
+describe('isGasOnlyNetworkFeeError', () => {
+  it('returns true for networkFeeExceedsBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsBalance('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for amountExceedsBalanceAfterNetworkFee', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterNetworkFee('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for networkFeeExceedsNativeBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsNativeBalance('AVAX', '0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for feesExceedBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(fusionErrors.feesExceedBalance('0.002 AVAX'))
+    ).toBe(false)
+  })
+
+  it('returns false for feesExceedNativeBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.feesExceedNativeBalance('AVAX', '0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for amountExceedsBalanceAfterFees (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterFees('0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for unrelated errors', () => {
+    expect(isGasOnlyNetworkFeeError(fusionErrors.exceedsBalance())).toBe(false)
+    expect(isGasOnlyNetworkFeeError(fusionErrors.enterAmount())).toBe(false)
   })
 })

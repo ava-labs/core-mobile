@@ -12,6 +12,7 @@ import {
   LayoutChangeEvent,
   Platform,
   Pressable,
+  StyleProp,
   StyleSheet,
   TextInput,
   TextStyle
@@ -37,10 +38,14 @@ interface TextInputProps extends _TextInputProps {
   renderLeft?: () => React.ReactNode
   /** Right component with no autoresizing */
   renderRight?: () => React.ReactNode
-  /** Left text style */
-  prefixSx?: TextStyle
-  /** Right text style */
-  suffixSx?: TextStyle
+  /**
+   * Style for the prefix (e.g. `$`).
+   */
+  prefixStyle?: StyleProp<TextStyle>
+  /**
+   * Style for the suffix (e.g. `USDC`).
+   */
+  suffixStyle?: StyleProp<TextStyle>
   /** Prefix fontSize multiplier */
   prefixFontSizeMultiplier?: number
   /** Suffix fontSize multiplier */
@@ -50,8 +55,6 @@ interface TextInputProps extends _TextInputProps {
   /** Test ID */
   testID?: string
 }
-
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 export const AutoSizeTextInput = forwardRef<
   {
@@ -69,8 +72,9 @@ export const AutoSizeTextInput = forwardRef<
       suffix,
       textAlign,
       containerSx,
-      prefixSx,
-      suffixSx,
+      prefixStyle,
+      suffixStyle,
+      prefixFontSizeMultiplier = 1,
       suffixFontSizeMultiplier = 1,
       renderLeft,
       renderRight,
@@ -95,13 +99,25 @@ export const AutoSizeTextInput = forwardRef<
     const lastTextWidthRef = useRef(0)
     const prevContainerWidthRef = useRef(0)
 
+    // Prefer the suffix multiplier when a suffix is present: prefix and suffix
+    // share one adornment font size, and a suffix (e.g. `USDC`) is the common
+    // "subtitle" case. Falls back to the prefix multiplier for prefix-only
+    // inputs (e.g. a leading `$`).
+    const fontSizeMultiplier =
+      initialFontSize *
+      (suffix ? suffixFontSizeMultiplier : prefixFontSizeMultiplier)
     const hasValue = useSharedValue(false)
-    const animatedFontSize = useSharedValue(initialFontSize)
-    const animatedSuffixFontSize = useSharedValue(
-      initialFontSize * suffixFontSizeMultiplier
-    )
+    const animatedSuffixFontSize = useSharedValue(fontSizeMultiplier)
     const inputRef = useRef<TextInput>(null)
     const lastTextRef = useRef<string>('')
+
+    // The controlled <TextInput> below is intentionally NOT a Reanimated animated
+    // component. On the New Architecture (Fabric), a Reanimated-wrapped controlled
+    // TextInput drops/reverts `value` updates on Android, making the field
+    // impossible to type into. The font size here is set instantly (no
+    // withTiming), so mirroring it into React state and applying it as a plain
+    // style is visually identical while keeping the input a plain TextInput.
+    const [inputFontSize, setInputFontSize] = useState(initialFontSize)
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -119,33 +135,18 @@ export const AutoSizeTextInput = forwardRef<
     // Update hasValue shared value synchronously during render
     hasValue.value = (value?.length ?? 0) > 0
 
-    const textStyle = useAnimatedStyle(() => {
-      return {
-        textAlign,
-        fontFamily: 'Aeonik-Medium',
-        fontSize: animatedFontSize.value,
-        lineHeight: animatedFontSize.value * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
-      }
-    })
-
-    const inputTextStyle = useAnimatedStyle(() => {
-      const fontSize = animatedFontSize.value * FIT_SCALE_FACTOR
-      return {
-        textAlign,
-        fontFamily: 'Aeonik-Medium',
-        fontSize,
-        lineHeight: fontSize * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
-      }
-    })
+    // Plain (non-animated) color for the controlled TextInput, mirroring the
+    // animated styles used by the measurement text and prefix/suffix.
+    const inputColor =
+      (value?.length ?? 0) > 0 ? textColor : placeholderTextColor
 
     const suffixTextStyle = useAnimatedStyle(() => {
       return {
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedSuffixFontSize.value,
         lineHeight: animatedSuffixFontSize.value * 1.1,
-        color: hasValue.value ? textColor : placeholderTextColor
+        color: hasValue.value ? textColor : placeholderTextColor,
+        includeFontPadding: false
       }
     })
 
@@ -171,35 +172,39 @@ export const AutoSizeTextInput = forwardRef<
         // This 1.1x correction factor increases the font size to better utilize the available space.
         const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
 
+        // `textWidth` is always measured at `initialFontSize` (the hidden
+        // measurement text below renders at a fixed, plain font size), so scale
+        // down from that known base in a single pass. This avoids the iterative
+        // convergence loop and, crucially, does not depend on a Reanimated
+        // animated font size having been applied to the measurement text before
+        // its width is read — a timing the New Architecture (Fabric) does not
+        // guarantee. When the animated size hadn't applied yet, the text was
+        // measured at the default (tiny) size, so the ratio blew up and the font
+        // clamped back to `initialFontSize`, i.e. it never shrank.
         const ratio = (availableWidth / textWidth) * correctionFactor
-        let newFontSize = Math.round(animatedFontSize.value * ratio)
-        let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
-        newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
-        newSuffixFontSize = Math.max(
+        let fontSize = Math.round(initialFontSize * ratio)
+        let suffixFontSize = Math.round(fontSizeMultiplier * ratio)
+        fontSize = Math.max(10, Math.min(initialFontSize, fontSize))
+        suffixFontSize = Math.max(
           10,
-          Math.min(
-            initialFontSize * suffixFontSizeMultiplier,
-            newSuffixFontSize
-          )
+          Math.min(fontSizeMultiplier, suffixFontSize)
         )
 
-        if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
-          animatedFontSize.value = newFontSize
-        }
-        if (Math.abs(newSuffixFontSize - animatedSuffixFontSize.value) > 0.5) {
-          animatedSuffixFontSize.value = newSuffixFontSize
+        setInputFontSize(fontSize)
+
+        if (Math.abs(suffixFontSize - animatedSuffixFontSize.value) > 0.5) {
+          animatedSuffixFontSize.value = suffixFontSize
         }
       },
       [
-        animatedFontSize,
-        animatedSuffixFontSize,
-        containerWidth,
-        prefix,
-        suffix,
-        initialFontSize,
         renderLeft,
+        prefix,
         renderRight,
-        suffixFontSizeMultiplier
+        suffix,
+        containerWidth,
+        animatedSuffixFontSize,
+        initialFontSize,
+        fontSizeMultiplier
       ]
     )
 
@@ -249,9 +254,8 @@ export const AutoSizeTextInput = forwardRef<
 
         // Short text fits at initial size — skip measurement and reset
         if (currentText.length < MIN_LENGTH_TO_RESIZE) {
-          animatedFontSize.value = initialFontSize
-          animatedSuffixFontSize.value =
-            initialFontSize * suffixFontSizeMultiplier
+          animatedSuffixFontSize.value = fontSizeMultiplier
+          setInputFontSize(initialFontSize)
           return
         }
 
@@ -260,13 +264,12 @@ export const AutoSizeTextInput = forwardRef<
         }
       },
       [
-        containerWidth,
         value,
-        calculateAndUpdateFontSize,
-        animatedFontSize,
-        animatedSuffixFontSize,
+        containerWidth,
         initialFontSize,
-        suffixFontSizeMultiplier
+        animatedSuffixFontSize,
+        fontSizeMultiplier,
+        calculateAndUpdateFontSize
       ]
     )
 
@@ -294,7 +297,7 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
-            <Animated.Text style={[suffixTextStyle, prefixSx]}>
+            <Animated.Text style={[suffixTextStyle, prefixStyle]}>
               {prefix}
             </Animated.Text>
           </Pressable>
@@ -306,7 +309,7 @@ export const AutoSizeTextInput = forwardRef<
       focusTextInput,
       handleLeftLayout,
       suffixTextStyle,
-      prefixSx
+      prefixStyle
     ])
 
     const renderSuffix = useCallback(() => {
@@ -321,7 +324,7 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
-            <Animated.Text style={[suffixTextStyle, suffixSx]}>
+            <Animated.Text style={[suffixTextStyle, suffixStyle]}>
               {suffix}
             </Animated.Text>
           </Pressable>
@@ -332,7 +335,7 @@ export const AutoSizeTextInput = forwardRef<
       handleRightLayout,
       renderRight,
       suffix,
-      suffixSx,
+      suffixStyle,
       suffixTextStyle
     ])
 
@@ -347,12 +350,22 @@ export const AutoSizeTextInput = forwardRef<
         <View accessible={false} onLayout={handleLayout} style={styles.row}>
           {renderPrefix()}
 
-          <AnimatedTextInput
+          <TextInput
             {...props}
             ref={inputRef}
             testID={testID}
             value={value}
-            style={[styles.input, inputTextStyle, style]}
+            style={[
+              styles.input,
+              {
+                textAlign,
+                fontFamily: 'Aeonik-Medium',
+                fontSize: inputFontSize * FIT_SCALE_FACTOR,
+                lineHeight: inputFontSize * FIT_SCALE_FACTOR * 1.1,
+                color: inputColor
+              },
+              style
+            ]}
             maxLength={maxLength}
             editable={editable}
             onBlur={onBlur}
@@ -368,7 +381,10 @@ export const AutoSizeTextInput = forwardRef<
           {renderSuffix()}
         </View>
 
-        {/* Hidden text for measuring content width */}
+        {/* Hidden text for measuring content width. Rendered at a fixed,
+            plain (non-animated) `initialFontSize` so its measured width is
+            deterministic and available on first layout — see
+            calculateAndUpdateFontSize. */}
         <View
           accessible={false}
           style={styles.measurementContainer}
@@ -376,7 +392,18 @@ export const AutoSizeTextInput = forwardRef<
           <Animated.Text
             numberOfLines={1}
             onLayout={handleTextLayout}
-            style={[styles.measurementText, textStyle]}>
+            // Match the visible input, which also disables font scaling. If the
+            // measurement text scaled with the OS accessibility text setting but
+            // the input didn't, the measured width would exceed the rendered
+            // width and the amount would shrink more than necessary.
+            allowFontScaling={false}
+            style={[
+              styles.measurementText,
+              {
+                fontSize: initialFontSize,
+                lineHeight: initialFontSize * 1.1
+              }
+            ]}>
             {value || ' '}
           </Animated.Text>
         </View>
@@ -407,7 +434,13 @@ const styles = StyleSheet.create({
     gap: GAP_WIDTH
   },
   input: {
-    padding: 0
+    padding: 0,
+    // Android adds size-proportional font padding and positions the placeholder
+    // hint by its own gravity, so a small prefix/suffix and the big digits (or
+    // the empty-state hint) center on mismatched boxes. Tightening the line box
+    // and pinning vertical alignment keeps the glyphs aligned. No-op on iOS.
+    includeFontPadding: false,
+    textAlignVertical: 'center'
   },
   measurementContainer: {
     position: 'absolute',

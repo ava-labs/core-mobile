@@ -13,8 +13,4 @@ export interface AnalyticsServiceInterface {
     eventName: E,
     ...properties: CaptureEventProperties<E>
   ): Promise<void>
-  captureWithEncryption<E extends AnalyticsEventName>(
-    eventName: E,
-    properties: AnalyticsEvents[E]
-  ): Promise<void>
 }

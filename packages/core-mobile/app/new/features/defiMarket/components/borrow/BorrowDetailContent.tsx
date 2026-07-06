@@ -11,7 +11,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import React, { useCallback, useMemo } from 'react'
-import { formatUnits } from 'viem'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -40,8 +40,7 @@ export function BorrowDetailContent({
 
   const { onScroll, animatedHeaderStyle, handleHeaderLayout } =
     useSimpleFadingHeader({
-      title: 'Borrow details',
-      shouldHeaderHaveGrabber: false
+      title: 'Borrow details'
     })
 
   const collateralDeposits = useMemo(() => {
@@ -194,11 +193,10 @@ export function BorrowDetailContent({
                 padding: 0
               }}>
               {collateralDeposits.map((deposit, index) => {
-                const depositAmount = Number(
-                  formatUnits(
-                    deposit.asset.mintTokenBalance.balance,
-                    deposit.asset.decimals
-                  )
+                const depositAmount = new TokenUnit(
+                  deposit.asset.mintTokenBalance.balance,
+                  deposit.asset.decimals,
+                  deposit.asset.symbol
                 )
                 const depositAmountUsd =
                   deposit.asset.mintTokenBalance.balanceValue.value.toNumber()

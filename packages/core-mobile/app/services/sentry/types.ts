@@ -43,5 +43,27 @@ export type OpName =
 export const SentryStorage = 'sentry_sample_rate'
 
 export const SentryTag = {
-  FusionSdk: 'fusion-sdk'
+  FusionSdk: 'fusion-sdk',
+  AccountService: 'accounts-service',
+  PostHog: 'posthog',
+  Glacier: 'glacier',
+  ProfileApi: 'profile-api',
+  GasStation: 'gas-station',
+  Proxy: 'proxy',
+  SchemaMigration: 'schemaMigration'
 } as const
+
+/**
+ * Breadcrumb categories explicitly allowed by `SentryService.beforeBreadcrumb`.
+ * `SentryService` derives its allowlist from `Object.values(...)` of this
+ * object at module load, so adding a new entry here is enough — no other
+ * file needs to change. Breadcrumbs whose category isn't listed get dropped.
+ */
+export const AllowedSentryBreadcrumbCategory = {
+  ListenerMigration: 'listenerMigration',
+  ListenerReconciler: 'listenerReconciler',
+  FeeEstimationUserState: 'feeEstimationUserState'
+} as const
+
+export type AllowedSentryBreadcrumbCategory =
+  typeof AllowedSentryBreadcrumbCategory[keyof typeof AllowedSentryBreadcrumbCategory]

@@ -115,7 +115,7 @@ const StakeDurationScreen = (): JSX.Element => {
       }
     })
   }, [estimatedRewards])
-  const estimatedCustomReward = useStakeEstimatedReward({
+  const { data: estimatedCustomReward } = useStakeEstimatedReward({
     amount: stakeAmount,
     duration:
       customEndDate === undefined
@@ -271,7 +271,7 @@ const StakeDurationScreen = (): JSX.Element => {
         value: (
           <StakeTokenUnitValue
             value={estimatedReward}
-            textSx={{ fontWeight: 600 }}
+            textSx={{ fontFamily: 'Inter-SemiBold' }}
           />
         )
       }
@@ -348,7 +348,7 @@ const StakeDurationScreen = (): JSX.Element => {
               marginTop: 0
             }}
             titleSx={{
-              fontWeight: 600
+              fontFamily: 'Inter-SemiBold'
             }}
           />
         </View>

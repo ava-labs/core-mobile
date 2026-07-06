@@ -26,8 +26,6 @@ const AddEthereumChainScreen = ({
     router.canGoBack() && router.back()
   }, [onApprove, request, network])
 
-  const title = 'Do you want to add this chain?'
-
   const renderDappInfo = useCallback((): JSX.Element | null => {
     const description =
       request.peerMeta.name + ` is requesting to add this chain`
@@ -52,7 +50,7 @@ const AddEthereumChainScreen = ({
               textAlign: 'center',
               fontSize: 15,
               lineHeight: 20,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: '$textPrimary'
             }}>
             {description}
@@ -110,8 +108,6 @@ const AddEthereumChainScreen = ({
   return (
     <ActionSheet
       isModal
-      title={title}
-      navigationTitle={title}
       onClose={() => onReject(request)}
       confirm={{
         label: 'Approve',

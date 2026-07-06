@@ -53,6 +53,26 @@ export type PubKeyType = {
   xp?: string
 }
 
+/**
+ * Mirrors `AddPermissionlessDelegator.additionalOutputs` from
+ * `@avalabs/core-wallets-sdk` — each entry produces one additional
+ * `TransferableOutput` bundled atomically with the delegation tx. Used by
+ * the Fast Stake fee flow to escrow the convenience fee to a Core-owned
+ * P-Chain address (see `FAST_STAKE_FEE_ESCROW_ADDRESS_MAINNET` and the
+ * sibling Fuji constant).
+ */
+export type AdditionalDelegatorOutput = {
+  /** P-Chain bech32 co-owners of the output (e.g. `P-avax1...`). */
+  addresses: readonly string[]
+  amount: bigint
+  /** Defaults to AVAX when omitted. */
+  assetId?: string
+  /** Signatures required to spend the output. Defaults to 1. */
+  threshold?: number
+  /** Unix-seconds locktime. Defaults to 0 (spendable immediately). */
+  locktime?: bigint
+}
+
 export type AddDelegatorProps = {
   account: Account
   isTestnet: boolean
@@ -70,6 +90,14 @@ export type AddDelegatorProps = {
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
   xpAddresses: string[]
+  /**
+   * Optional extra outputs to bundle atomically with the delegation (used
+   * for Fast Stake's convenience-fee escrow output). Forwarded as-is to
+   * `addPermissionlessDelegator`'s `additionalOutputs`. The delegation is
+   * still atomic — if the tx fails, neither the stake nor the fee output
+   * is created.
+   */
+  additionalOutputs?: readonly AdditionalDelegatorOutput[]
 }
 
 export interface CommonAvalancheTxParamsBase {

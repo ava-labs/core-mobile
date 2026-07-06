@@ -64,14 +64,16 @@ const handleSwapForNestEgg = async (
   const timestamp = Date.now()
   dispatch(setQualified({ txHash, timestamp }))
 
-  AnalyticsService.captureWithEncryption('NestEggQualified', {
-    addressC: currentAccount?.addressC ?? '',
-    txHash,
-    chainId,
-    fromTokenSymbol,
-    toTokenSymbol,
-    fromAmountUsd,
-    timestamp
+  AnalyticsService.capture('NestEggQualified', {
+    encrypted: {
+      addressC: currentAccount?.addressC ?? '',
+      txHash,
+      chainId,
+      fromTokenSymbol,
+      toTokenSymbol,
+      fromAmountUsd,
+      timestamp
+    }
   })
 
   // Show success modal

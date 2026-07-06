@@ -27,8 +27,6 @@ export type AccountDisplayData = {
   account: Account
   isActive: boolean
   hideSeparator: boolean
-  onPress: () => void
-  onPressDetails: () => void
 }
 
 export enum ViewOption {

@@ -35,8 +35,10 @@ function NestEggSuccessScreen(): JSX.Element {
 
   useFocusEffect(
     useCallback(() => {
-      AnalyticsService.captureWithEncryption('NestEggSuccessModalViewed', {
-        addressC: currentAccount?.addressC ?? ''
+      AnalyticsService.capture('NestEggSuccessModalViewed', {
+        encrypted: {
+          addressC: currentAccount?.addressC ?? ''
+        }
       })
     }, [currentAccount?.addressC])
   )

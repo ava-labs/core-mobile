@@ -79,6 +79,33 @@ describe('transformXPAddresses', () => {
     })
   })
 
+  // CP-14507: a successful lookup can return an empty dictionary (e.g. a Ledger
+  // account with no X/P activity yet). The empty `{}` must NOT be used as-is —
+  // it has to fall back to the account's primary P-chain address, otherwise XP
+  // signing yields no indices and C->P CCT swaps fail.
+  describe('when queryData.xpAddressDictionary is an empty object', () => {
+    it('falls back to account.addressPVM for the dictionary', () => {
+      const queryData = {
+        xpAddresses: [],
+        xpAddressDictionary: {}
+      }
+      const account = createMockAccount({
+        addressPVM: 'P-avax1fallback'
+      })
+
+      const result = transformXPAddresses(queryData, account)
+
+      expect(result.xpAddresses).toEqual(['avax1fallback'])
+      expect(result.xpAddressDictionary).toEqual({
+        avax1fallback: {
+          space: 'e',
+          index: 0,
+          hasActivity: false
+        }
+      })
+    })
+  })
+
   describe('when queryData.xpAddressDictionary is missing', () => {
     it('falls back to account.addressPVM for dictionary', () => {
       const queryData = {

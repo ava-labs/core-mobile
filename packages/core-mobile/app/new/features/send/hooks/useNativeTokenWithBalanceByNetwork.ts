@@ -9,7 +9,7 @@ export const useNativeTokenWithBalanceByNetwork = (
   network?: Network
 ): NetworkTokenWithBalance | undefined => {
   const activeAccount = useSelector(selectActiveAccount)
-  const tokens = useTokensWithBalanceByNetworkForAccount(
+  const { tokens } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
     network?.chainId
   )

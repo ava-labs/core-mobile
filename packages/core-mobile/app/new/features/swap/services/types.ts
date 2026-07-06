@@ -1,19 +1,39 @@
+import { FeatureGates } from 'services/posthog/types'
+import type { FeatureFlags } from 'services/posthog/types'
 import type {
   BitcoinFunctions,
   BtcSigner,
+  CompletedTransfer,
   Environment,
   EstimateNativeFeeOptions,
   EvmSignerWithMessage,
+  FailedTransfer,
+  GasSettings,
   GetMinimumTransferAmountProps,
   NativeFeeEstimate,
   Quote,
   QuoterInterface,
+  RefundedTransfer,
   ServiceType,
   Transfer,
   TransferManager,
   Fetch,
   SolanaSigner
 } from '@avalabs/fusion-sdk'
+import type { CctCallbacks } from './cct/createCctCallbacks'
+
+/**
+ * The subset of PostHog feature flags consumed by FusionService.
+ */
+export type FusionServiceFlags = Pick<
+  FeatureFlags,
+  | FeatureGates.FUSION_MARKR
+  | FeatureGates.FUSION_AVALANCHE_EVM
+  | FeatureGates.FUSION_AVALANCHE_CCT
+  | FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB
+  | FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC
+  | FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS
+>
 
 /**
  * Configuration for initializing the Fusion SDK
@@ -22,6 +42,7 @@ export interface FusionConfig {
   environment: Environment
   enabledServices: ServiceType[]
   fetch: Fetch
+  disableCrossChainSwaps?: boolean
 }
 
 /**
@@ -32,6 +53,12 @@ export interface FusionSigners {
   btc: BtcSigner
   svm: SolanaSigner
 }
+
+/**
+ * Optional dependencies required only when the `AVALANCHE_CCT` service is
+ * enabled (the six callbacks the SDK's `AvalancheCctInitializer` consumes).
+ */
+export type FusionCctDependencies = CctCallbacks
 
 /**
  * Parameters for creating a Quoter instance
@@ -49,11 +76,13 @@ export interface IFusionService {
   init({
     bitcoinProvider,
     config,
-    signers
+    signers,
+    cctDependencies
   }: {
     bitcoinProvider: BitcoinFunctions
     config: FusionConfig
     signers: FusionSigners
+    cctDependencies?: FusionCctDependencies
   }): Promise<void>
 
   /**
@@ -73,20 +102,25 @@ export interface IFusionService {
   /**
    * Execute a transfer using the provided quote
    * @param quote The quote to execute
-   * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
+   * @param gasSettings Gas settings passed through to the Fusion SDK
    * @returns Transfer object with status and transaction details
    */
-  transferAsset(quote: Quote, estimateGasMarginBps: number): Promise<Transfer>
+  transferAsset(quote: Quote, gasSettings: GasSettings): Promise<Transfer>
 
   /**
    * Track a transfer's status changes via the SDK
    * @param transfer The transfer to track
    * @param updateListener Callback invoked on every status change
+   * @param onCompleted Optional callback invoked once when tracking concludes
+   * @returns a canceller that stops tracking this transfer immediately
    */
   trackTransfer(
     transfer: Transfer,
-    updateListener: (updated: Transfer) => void
-  ): void
+    updateListener: (updated: Transfer) => void,
+    onCompleted?: (
+      concluded: CompletedTransfer | FailedTransfer | RefundedTransfer
+    ) => void
+  ): () => void
 
   /**
    * Estimate the native fee required to execute the provided quote.
@@ -102,6 +136,19 @@ export interface IFusionService {
   getMinimumTransferAmount(
     props: GetMinimumTransferAmountProps
   ): Promise<{ [key in ServiceType]?: bigint } | null>
+
+  /**
+   * Calculate price impact for the given quote.
+   * Returns basis points (bps) or null if unavailable.
+   * @param quote The quote to evaluate
+   * @param sourcePrice USD price per unit of the source token
+   * @param targetPrice USD price per unit of the target token
+   */
+  calculatePriceImpactFromQuote(
+    quote: Quote,
+    sourcePrice: number,
+    targetPrice: number
+  ): Promise<number | null>
 
   /**
    * Cleanup and reset the service

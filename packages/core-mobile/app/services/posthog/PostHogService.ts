@@ -1,5 +1,7 @@
 import Config from 'react-native-config'
+import { isE2EBuild } from 'utils/Utils'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { JsonMap } from 'store/posthog'
 import { applyTempChainIdConversion } from 'utils/caip2ChainIds'
@@ -78,7 +80,9 @@ class PostHogService implements PostHogServiceInterface {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to capture PostHog event', error)
+        Logger.error('failed to capture PostHog event', error, {
+          source: SentryTag.PostHog
+        })
       })
   }
 
@@ -107,7 +111,9 @@ class PostHogService implements PostHogServiceInterface {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to capture PostHog identify event', error)
+        Logger.error('failed to capture PostHog identify event', error, {
+          source: SentryTag.PostHog
+        })
       })
   }
 
@@ -146,9 +152,7 @@ class PostHogService implements PostHogServiceInterface {
         }
 
         try {
-          const response = await fetcher(
-            `${process.env.PROXY_URL}/proxy/posthog`
-          )
+          const response = await fetcher(`${Config.PROXY_URL}/proxy/posthog`)
 
           if (!response.featureFlags) {
             throw new Error('No feature flags found in cached response')
@@ -167,7 +171,7 @@ class PostHogService implements PostHogServiceInterface {
     try {
       const responseJson = await fetchWithPosthogFallback()
 
-      return sanitizeFeatureFlags(responseJson, appVersion)
+      return sanitizeFeatureFlags(responseJson, appVersion, isE2EBuild)
     } catch (e) {
       Logger.error('failed to fetch feature flags', e)
     }

@@ -13,7 +13,10 @@ import {
 } from 'store/posthog'
 import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
-import { getTotalAdditiveSourceFee } from '../../utils/getTotalAdditiveSourceFee'
+import {
+  getTotalAdditiveSourceFee,
+  getTotalAdditiveNativeFee
+} from '../../utils/getTotalAdditiveSourceFee'
 import { usePreQuote } from './usePreQuote'
 import {
   computeMaxAmount,
@@ -53,6 +56,8 @@ export const useMaxSwapAmount = ({
   rawGasFee: bigint | undefined
   bufferedGasFee: bigint | undefined
   gasSafetyBps: number
+  rawNativeAdditiveFee: bigint
+  bufferedNativeAdditiveFee: bigint
 } => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const { getNetwork } = useNetworks()
@@ -127,6 +132,14 @@ export const useMaxSwapAmount = ({
   const bufferedAdditiveFee = additiveFeeResult.buffered
   const rawAdditiveFee = additiveFeeResult.raw
 
+  // Additive fees denominated in the native asset (e.g. CCIP bridge fee in AVAX)
+  const nativeAdditiveFeeResult = useMemo(
+    () => getTotalAdditiveNativeFee(fromToken, preQuote, routeAdditiveBps),
+    [fromToken, preQuote, routeAdditiveBps]
+  )
+  const bufferedNativeAdditiveFee = nativeAdditiveFeeResult.buffered
+  const rawNativeAdditiveFee = nativeAdditiveFeeResult.raw
+
   const {
     gasFee: bufferedFee,
     rawGasFee,
@@ -170,6 +183,8 @@ export const useMaxSwapAmount = ({
     routeAdditiveBps,
     rawGasFee,
     bufferedGasFee: bufferedFee,
-    gasSafetyBps: maxAmountGasSafetyBps
+    gasSafetyBps: maxAmountGasSafetyBps,
+    rawNativeAdditiveFee,
+    bufferedNativeAdditiveFee
   }
 }

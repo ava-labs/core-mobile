@@ -1,9 +1,8 @@
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore } from '@reduxjs/toolkit'
-import { createMigrate, persistReducer, persistStore } from 'redux-persist'
-import { bridgeReducer as bridge } from 'store/bridge/slice'
-import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice'
-import { migrations } from 'store/migrations'
+import { persistReducer, persistStore } from 'redux-persist'
+import { migrations } from 'store/schemaMigration/schemaMigrations'
+import { createInstrumentedMigrate } from 'store/schemaMigration/createInstrumentedMigrate'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
 import reactotron from '../../ReactotronConfig'
@@ -18,19 +17,20 @@ import { customTokenReducer as customToken } from './customToken/slice'
 import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
+import { permissionsReducer as permissions } from './permissions/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
 import { transactionApi } from './transaction'
 import { rpcReducer as rpc } from './rpc/slice'
-import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
+import { chartPreferencesReducer as chartPreferences } from './chartPreferences/slice'
 
-const VERSION = 26
+const VERSION = 29
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
@@ -43,8 +43,7 @@ const combinedReducer = combineReducers({
   account,
   notifications,
   addressBook,
-  bridge,
-  unifiedBridge,
+  permissions,
   customToken,
   posthog,
   wallet,
@@ -59,6 +58,7 @@ const combinedReducer = combineReducers({
   settings,
   watchlist,
   portfolio,
+  chartPreferences,
 
   // apis
   [transactionApi.reducerPath]: transactionApi.reducer
@@ -88,10 +88,9 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     rootReducer,
     transforms: [
       AppBlacklistTransform,
-      BridgeBlacklistTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
-    migrate: createMigrate(migrations, { debug: __DEV__ }),
+    migrate: createInstrumentedMigrate(migrations, { debug: __DEV__ }),
     version: VERSION,
     throttle: STORAGE_WRITE_THROTTLE
   }

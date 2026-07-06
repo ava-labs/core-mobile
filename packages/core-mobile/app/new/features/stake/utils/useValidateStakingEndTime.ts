@@ -11,7 +11,13 @@ import { utc } from '@date-fns/utc/utc'
 
 export const useValidateStakingEndTime = (
   stakingEndTime: UTCDate,
-  validatorEndTimeStr: UnixTime
+  // Optional so callers can pass `undefined` while the validator is still
+  // resolving (async fetch). The previous contract required callers to
+  // synthesize a sentinel (`0`) which `fromUnixTime` then turned into the
+  // Unix epoch, silently clamping the end time to 1970 and producing a
+  // negative duration. With `undefined` the validator-end-time clamp is
+  // skipped entirely until a real value arrives.
+  validatorEndTimeStr: UnixTime | undefined
 ): {
   minStartTime: UTCDate
   validatedStakingEndTime: UTCDate
@@ -35,6 +41,13 @@ export const useValidateStakingEndTime = (
       minStartTime.getTime()
     ) {
       return new UTCDate(minStartTime.getTime() + minStakeDurationMs)
+    }
+
+    // Skip the validator-end-time clamp while the validator is still
+    // resolving — the user-selected end time is the best we can offer
+    // until a real validator end time arrives.
+    if (validatorEndTimeStr === undefined) {
+      return stakingEndTime
     }
 
     // check if stake duration is more than validator's end time,

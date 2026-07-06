@@ -10,10 +10,11 @@ const fs = require('fs')
 
 const projectId = 3
 const password = String(process.env.TESTRAIL_API_KEY)
+const user = process.env.TESTRAIL_USERNAME?.trim() || 'mobiledevs@avalabs.org'
 
 export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
-  user: 'mobiledevs@avalabs.org',
+  user,
   password: password
 })
 

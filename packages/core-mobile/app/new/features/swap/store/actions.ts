@@ -1,6 +1,16 @@
 import { createAction } from '@reduxjs/toolkit'
-import type { Transfer } from '../types'
+import type { Quote, Transfer } from '../types'
 
-export const trackFusionTransfer = createAction<Transfer>(
+export type TrackFusionTransferPayload = {
+  transfer: Transfer
+  quote: Quote
+  userClickedMax: boolean
+  sourceTokenAddress?: string
+  sourceTokenSymbol?: string
+  destinationTokenAddress?: string
+  destinationTokenSymbol?: string
+}
+
+export const trackFusionTransfer = createAction<TrackFusionTransferPayload>(
   'fusion/trackTransfer'
 )

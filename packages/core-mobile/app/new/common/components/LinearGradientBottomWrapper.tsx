@@ -24,6 +24,7 @@ export const LinearGradientBottomWrapper = ({
     [theme.colors.$surfacePrimary]
   )
 
+  // BlurView as parent of buttons hides subtree from iOS XCUITest/Appium; keep blur as backdrop only.
   return (
     <View style={styles.container}>
       {enabled && (
@@ -35,16 +36,23 @@ export const LinearGradientBottomWrapper = ({
           end={end}
         />
       )}
-      <BlurViewWithFallback shouldDelayBlurOniOS={shouldDelayBlurOniOS}>
+      <View pointerEvents="none" style={styles.backdrop}>
+        <BlurViewWithFallback
+          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+          style={styles.backdropFill}
+        />
+      </View>
+      <View collapsable={false} style={styles.content}>
         {children}
-      </BlurViewWithFallback>
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: -1
+    marginBottom: -1,
+    position: 'relative'
   },
   gradient: {
     position: 'absolute',
@@ -52,5 +60,16 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 60
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 0
+  },
+  backdropFill: {
+    flex: 1
+  },
+  content: {
+    zIndex: 1,
+    position: 'relative'
   }
 })

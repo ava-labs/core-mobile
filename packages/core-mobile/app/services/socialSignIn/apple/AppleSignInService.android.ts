@@ -3,6 +3,7 @@ import Config from 'react-native-config'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
 import { OidcPayload } from 'seedless/types'
+import { formatSignInErrorReason } from '../formatSignInErrorReason'
 import { AppleSigninServiceInterface } from './types'
 
 if (!Config.APPLE_OAUTH_CLIENT_ID) {
@@ -52,8 +53,15 @@ class AppleSigninService implements AppleSigninServiceInterface {
       ) {
         throw new Error('USER_CANCELED')
       }
-      Logger.error('Android Apple sign in error', error)
-      throw new Error('Android Apple sign in error')
+      if (
+        error instanceof Error &&
+        error.message.startsWith('Android Apple sign in error')
+      ) {
+        throw error
+      }
+      const reason = formatSignInErrorReason(error)
+      Logger.error(`Android Apple sign in error: ${reason}`, error)
+      throw new Error(`Android Apple sign in error: ${reason}`)
     }
   }
 }

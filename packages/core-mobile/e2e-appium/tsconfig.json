@@ -1,14 +1,36 @@
 {
-  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2020",
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "pretty": true,
+    "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
+    "sourceMap": true,
+    "strictPropertyInitialization": false,
     "types": [
       "@wdio/globals/types",
       "@wdio/types",
-      "@types/mocha"
-    ],
+      "@types/mocha",
+      "@types/node"
+    ]
   },
   "include": [
     "**/*.ts",
-    "wdio.conf.ts"
-  ]
+    "wdio.conf.ts",
+    "scripts/**/*.js",
+    "wdio.devicefarm.conf.ts"
+  ],
+  "exclude": ["node_modules"]
 }

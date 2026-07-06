@@ -5,16 +5,56 @@ import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
-import { Wallet, WalletType } from './types'
+import type { Wallet } from './types'
+import { WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 import { LedgerWallet } from './LedgerWallet'
-import { WalletDerivedDataCache } from './WalletDerivedDataCache'
+import { walletDerivedDataCache } from './WalletDerivedDataCache'
 
 class WalletFactory {
-  private derivedDataCache = new WalletDerivedDataCache()
+  get cache() {
+    return walletDerivedDataCache
+  }
 
-  get cache(): WalletDerivedDataCache {
-    return this.derivedDataCache
+  async getOrCreateWallet({
+    walletId,
+    walletType
+  }: {
+    walletId: string
+    walletType: WalletType
+  }): Promise<Wallet> {
+    // 1. Resolved instance cache hit
+    const cached = walletDerivedDataCache.getWalletInstance(walletId)
+    if (cached) {
+      return cached
+    }
+
+    // 2. In-flight creation — join existing Promise to avoid duplicate keychain reads
+    const inFlight = walletDerivedDataCache.getWalletCreationInFlight(walletId)
+    if (inFlight) {
+      return inFlight
+    }
+
+    // 3. Start new creation and register the Promise synchronously before any await
+    const promise = this.createWallet({ walletId, walletType }).then(wallet => {
+      // Only return/cache the wallet if this promise is still the current
+      // in-flight entry. If clearWallet/clearAll was called while creation
+      // was in progress, the in-flight entry was deleted or replaced and
+      // we must not leak the constructed wallet to callers awaiting this
+      // stale promise.
+      if (
+        walletDerivedDataCache.getWalletCreationInFlight(walletId) !== promise
+      ) {
+        throw new Error(
+          `Wallet creation for "${walletId}" was invalidated before completion`
+        )
+      }
+
+      walletDerivedDataCache.setWalletInstance(walletId, wallet)
+      return wallet
+    })
+    walletDerivedDataCache.setWalletCreationInFlight(walletId, promise)
+    return promise
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -50,7 +90,7 @@ class WalletFactory {
 
         const client = await SeedlessService.session.getSignerClient()
 
-        return new SeedlessWallet(client, pubKeys)
+        return new SeedlessWallet(client)
       }
       case WalletType.MNEMONIC: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)

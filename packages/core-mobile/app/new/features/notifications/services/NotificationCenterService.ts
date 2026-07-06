@@ -9,10 +9,121 @@ import {
   BalanceChangesMetadataSchema,
   PriceAlertsMetadataSchema,
   NewsPriceAlertMetadataSchema,
-  NewsMetadataSchema
+  NewsMetadataSchema,
+  RecurringSwapMetadataSchema
 } from './schemas'
 
 const BASE_URL = Config.NOTIFICATION_SENDER_API_URL
+
+// Base fields shared by every variant of `BackendNotification` — extracted so
+// the per-type helpers below can spread it without recomputing.
+type TransformBase = {
+  id: string
+  category: ReturnType<typeof mapTypeToCategory>
+  title: string
+  body: string
+  timestamp: number
+  deepLinkUrl: string | undefined
+}
+
+// Per-type parse helpers. Each safe-parses the metadata against its schema and
+// either returns the typed `data` or `undefined` (logged) so the row still
+// renders with the backend-formatted title / body / category. Extracted from
+// `transformNotification` so the dispatcher itself stays linear and below the
+// sonarjs cognitive-complexity cap (the four sequential case bodies + their
+// safe-parse branches push the inline form over the limit).
+function transformBalanceChanges(
+  base: TransformBase,
+  metadata: unknown
+): BackendNotification {
+  const parsed = BalanceChangesMetadataSchema.safeParse(metadata)
+  if (!parsed.success) {
+    Logger.error(
+      '[NotificationCenterService] BALANCE_CHANGES metadata parse failed; falling back to generic row',
+      parsed.error
+    )
+  }
+  return {
+    ...base,
+    type: 'BALANCE_CHANGES',
+    data: parsed.success ? parsed.data : undefined
+  }
+}
+
+function transformPriceAlerts(
+  base: TransformBase,
+  metadata: unknown
+): BackendNotification {
+  const parsed = PriceAlertsMetadataSchema.safeParse(metadata)
+  if (!parsed.success) {
+    Logger.error(
+      '[NotificationCenterService] PRICE_ALERTS metadata parse failed; falling back to generic row',
+      parsed.error
+    )
+  }
+  return {
+    ...base,
+    type: 'PRICE_ALERTS',
+    data: parsed.success ? parsed.data : undefined
+  }
+}
+
+// NEWS double-shape: the backend wraps price-alerts as `type:"NEWS" +
+// event:"PRICE_ALERTS" + data[]`. Detect that first and re-emit as a
+// PRICE_ALERTS row so the in-app list renders the same `PriceAlertItem`
+// regardless of whether the backend sent the canonical or wrapped form.
+function transformNews(
+  base: TransformBase,
+  metadata: unknown
+): BackendNotification {
+  const priceAlert = NewsPriceAlertMetadataSchema.safeParse(metadata)
+  if (priceAlert.success) {
+    const priceData = priceAlert.data.data[0]!
+    return {
+      ...base,
+      category: mapTypeToCategory('PRICE_ALERTS'),
+      type: 'PRICE_ALERTS' as const,
+      data: {
+        ...priceData,
+        url: priceAlert.data.url
+      }
+    }
+  }
+  const parsed = NewsMetadataSchema.safeParse(metadata)
+  if (!parsed.success) {
+    Logger.error(
+      '[NotificationCenterService] NEWS metadata parse failed; falling back to generic row',
+      parsed.error
+    )
+  }
+  return {
+    ...base,
+    type: 'NEWS',
+    data: parsed.success ? parsed.data : undefined
+  }
+}
+
+function transformRecurringSwap(
+  base: TransformBase,
+  metadata: unknown
+): BackendNotification {
+  // Backend (Sarp PRs #172 / #174) sends order progress fields in the
+  // metadata block. Parse-failures fall back to a generic row — title /
+  // body / category from `base` are still rendered, so the user still
+  // sees the notification even if the schema drifts.
+  const parsed = RecurringSwapMetadataSchema.safeParse(metadata)
+  if (!parsed.success) {
+    Logger.error(
+      '[NotificationCenterService] RECURRING_SWAP metadata parse failed; falling back to generic row',
+      parsed.error
+    )
+  }
+  return {
+    ...base,
+    type: 'RECURRING_SWAP',
+    data: parsed.success ? parsed.data : undefined
+  }
+}
 
 /**
  * Transform API notification response to app notification format
@@ -22,7 +133,7 @@ const BASE_URL = Config.NOTIFICATION_SENDER_API_URL
 function transformNotification(
   response: NotificationResponse
 ): BackendNotification {
-  const base = {
+  const base: TransformBase = {
     id: response.notificationId,
     category: mapTypeToCategory(response.type),
     title: response.title,
@@ -32,46 +143,28 @@ function transformNotification(
   }
 
   switch (response.type) {
-    case 'BALANCE_CHANGES': {
-      const parsed = BalanceChangesMetadataSchema.safeParse(response.metadata)
-      return {
-        ...base,
-        type: 'BALANCE_CHANGES',
-        data: parsed.success ? parsed.data : undefined
-      }
-    }
-    case 'PRICE_ALERTS': {
-      const parsed = PriceAlertsMetadataSchema.safeParse(response.metadata)
-      return {
-        ...base,
-        type: 'PRICE_ALERTS',
-        data: parsed.success ? parsed.data : undefined
-      }
-    }
-    case 'NEWS': {
-      // Check if this is a NEWS-wrapped price alert (type:"NEWS" + event:"PRICE_ALERTS")
-      const priceAlert = NewsPriceAlertMetadataSchema.safeParse(
-        response.metadata
+    case 'BALANCE_CHANGES':
+      return transformBalanceChanges(base, response.metadata)
+    case 'PRICE_ALERTS':
+      return transformPriceAlerts(base, response.metadata)
+    case 'NEWS':
+      return transformNews(base, response.metadata)
+    case 'RECURRING_SWAP':
+      return transformRecurringSwap(base, response.metadata)
+    default: {
+      // Exhaustiveness guard: a new NotificationType must add its case above.
+      // Unreachable today — `response.type` is validated against the zod enum
+      // upstream (NotificationListResponseSchema in fetchNotifications), so an
+      // unknown type never reaches here. Assigning to `never` makes a future
+      // enum member a compile error; the throw (caught by fetchNotifications,
+      // which returns []) is the runtime backstop, replacing the previous
+      // implicit `undefined` return that would have leaked into the list.
+      const unreachable: never = response.type
+      throw new Error(
+        `transformNotification: unhandled notification type ${String(
+          unreachable
+        )}`
       )
-      if (priceAlert.success) {
-        const priceData = priceAlert.data.data[0]!
-        return {
-          ...base,
-          category: mapTypeToCategory('PRICE_ALERTS'),
-          type: 'PRICE_ALERTS' as const,
-          data: {
-            ...priceData,
-            url: priceAlert.data.url
-          }
-        }
-      }
-
-      const parsed = NewsMetadataSchema.safeParse(response.metadata)
-      return {
-        ...base,
-        type: 'NEWS',
-        data: parsed.success ? parsed.data : undefined
-      }
     }
   }
 }
@@ -106,9 +199,7 @@ class NotificationCenterService {
         return []
       }
 
-      return parsed.data.notifications
-        .map(transformNotification)
-        .filter(n => n.data !== undefined)
+      return parsed.data.notifications.map(transformNotification)
     } catch (error) {
       Logger.error(
         '[NotificationCenterService] fetchNotifications failed:',

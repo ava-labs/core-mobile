@@ -5,11 +5,13 @@ import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 export async function subscribeForBalanceChange({
   deviceArn,
   chainIds,
-  addresses
+  addresses,
+  signal
 }: {
   deviceArn: string
   chainIds: string[]
   addresses: string[]
+  signal?: AbortSignal
 }): Promise<{ message: 'ok' }> {
   const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
@@ -17,7 +19,8 @@ export async function subscribeForBalanceChange({
       deviceArn,
       chainIds,
       addresses
-    })
+    }),
+    { signal }
   ).catch(error => {
     Logger.error(`[subscribeForBalanceChange.ts][subscribe]${error}`)
     throw new Error(error)

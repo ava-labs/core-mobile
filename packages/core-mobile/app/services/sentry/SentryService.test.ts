@@ -6,7 +6,8 @@ import * as Sentry from '@sentry/react-native'
 
 const mockScope = {
   setContext: jest.fn(),
-  setTags: jest.fn()
+  setTags: jest.fn(),
+  setFingerprint: jest.fn()
 }
 
 // ---------------------------------------------------------------------------
@@ -52,6 +53,7 @@ describe('SentryService', () => {
     jest.clearAllMocks()
     mockScope.setContext.mockClear()
     mockScope.setTags.mockClear()
+    mockScope.setFingerprint.mockClear()
   })
 
   // -------------------------------------------------------------------------
@@ -71,6 +73,15 @@ describe('SentryService', () => {
       it('does not call Sentry.captureException', () => {
         service.captureException('oops')
         expect(Sentry.captureException).not.toHaveBeenCalled()
+      })
+
+      it('still no-ops when tags are provided', () => {
+        service.captureException('oops', {
+          value: new Error('boom'),
+          tags: { source: 'gas-station' }
+        })
+        expect(Sentry.captureException).not.toHaveBeenCalled()
+        expect(Sentry.withScope).not.toHaveBeenCalled()
       })
     })
 
@@ -103,7 +114,7 @@ describe('SentryService', () => {
     describe('captureException', () => {
       it('passes an Error directly with message as extra', () => {
         const error = new Error('original error')
-        service.captureException('context message', error)
+        service.captureException('context message', { value: error })
 
         expect(Sentry.captureException).toHaveBeenCalledWith(error, {
           extra: { message: 'context message' }
@@ -111,7 +122,9 @@ describe('SentryService', () => {
       })
 
       it('wraps a non-Error value in a new Error and adds value as extra', () => {
-        service.captureException('something went wrong', { code: 42 })
+        service.captureException('something went wrong', {
+          value: { code: 42 }
+        })
 
         expect(Sentry.captureException).toHaveBeenCalledWith(
           expect.any(Error),
@@ -128,6 +141,41 @@ describe('SentryService', () => {
           expect.any(Error),
           undefined
         )
+      })
+
+      it('sets tags on the scope when tags are provided', () => {
+        const error = new Error('boom')
+        service.captureException('context', {
+          value: error,
+          tags: { source: 'gas-station' }
+        })
+
+        expect(Sentry.withScope).toHaveBeenCalled()
+        expect(mockScope.setTags).toHaveBeenCalledWith({
+          source: 'gas-station'
+        })
+        expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+          extra: { message: 'context' }
+        })
+      })
+
+      it('sets tags when value is non-Error and tags are provided', () => {
+        service.captureException('msg', {
+          value: { code: 42 },
+          tags: { source: 'glacier' }
+        })
+
+        expect(mockScope.setTags).toHaveBeenCalledWith({ source: 'glacier' })
+        expect(Sentry.captureException).toHaveBeenCalledWith(
+          expect.any(Error),
+          { extra: { value: { code: 42 } } }
+        )
+      })
+
+      it('does not set tags when none are provided', () => {
+        service.captureException('msg', { value: new Error('boom') })
+
+        expect(mockScope.setTags).not.toHaveBeenCalled()
       })
     })
 
@@ -163,6 +211,30 @@ describe('SentryService', () => {
         service.captureMessage('msg')
 
         expect(mockScope.setTags).not.toHaveBeenCalled()
+      })
+
+      it('sets the fingerprint on the scope when a non-empty fingerprint is provided', () => {
+        service.captureMessage('msg', undefined, undefined, [
+          'useFeeEstimation',
+          '0xeda86850'
+        ])
+
+        expect(mockScope.setFingerprint).toHaveBeenCalledWith([
+          'useFeeEstimation',
+          '0xeda86850'
+        ])
+      })
+
+      it('does not call setFingerprint when no fingerprint is provided', () => {
+        service.captureMessage('msg')
+
+        expect(mockScope.setFingerprint).not.toHaveBeenCalled()
+      })
+
+      it('does not call setFingerprint when fingerprint is an empty array', () => {
+        service.captureMessage('msg', undefined, undefined, [])
+
+        expect(mockScope.setFingerprint).not.toHaveBeenCalled()
       })
 
       it('converts bigint values in context to strings', () => {

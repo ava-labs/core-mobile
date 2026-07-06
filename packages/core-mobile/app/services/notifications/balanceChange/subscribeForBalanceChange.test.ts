@@ -41,7 +41,8 @@ describe('subscribe', () => {
         deviceArn,
         chainIds,
         addresses
-      })
+      }),
+      { signal: undefined }
     )
 
     // Check if the response was handled correctly
@@ -70,5 +71,27 @@ describe('subscribe', () => {
     await expect(
       subscribeForBalanceChange({ deviceArn, chainIds, addresses })
     ).rejects.toThrow('404:not found')
+  })
+
+  it('forwards an abort signal so superseded subscribes can be cancelled', async () => {
+    mockAppCheckPostJson.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({ message: 'ok' })
+    })
+    const controller = new AbortController()
+
+    await subscribeForBalanceChange({
+      deviceArn,
+      chainIds,
+      addresses,
+      signal: controller.signal
+    })
+
+    expect(mockAppCheckPostJson).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      { signal: controller.signal }
+    )
   })
 })

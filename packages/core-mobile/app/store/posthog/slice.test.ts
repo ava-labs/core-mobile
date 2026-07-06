@@ -4,7 +4,6 @@ import { RootState } from 'store/types'
 import {
   setFeatureFlags,
   selectIsSeedlessSigningBlocked,
-  selectIsLegacyBridgeEnabled,
   selectIsFusionEnabled,
   selectFusionFeeUnitsMarginBps,
   selectFusionMaxAmountGasSafetyBps,
@@ -279,77 +278,6 @@ describe('selectIsSeedlessSigningBlocked', () => {
       }
     })
     expect(selectIsSeedlessSigningBlocked(state)).toBe(true)
-  })
-})
-
-describe('selectIsLegacyBridgeEnabled', () => {
-  it('should return true when flag is on and wallet is non-seedless', () => {
-    const state = createMockRootState({
-      walletType: WalletType.MNEMONIC,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: true,
-        [FeatureGates.LEGACY_BRIDGE]: true
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(true)
-  })
-
-  it('should return false when LEGACY_BRIDGE is off', () => {
-    const state = createMockRootState({
-      walletType: WalletType.MNEMONIC,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: true,
-        [FeatureGates.LEGACY_BRIDGE]: false
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(false)
-  })
-
-  it('should return false when EVERYTHING is off', () => {
-    const state = createMockRootState({
-      walletType: WalletType.MNEMONIC,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: false,
-        [FeatureGates.LEGACY_BRIDGE]: true
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(false)
-  })
-
-  it('should return false for seedless wallet when seedless signing is blocked', () => {
-    const state = createMockRootState({
-      walletType: WalletType.SEEDLESS,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: true,
-        [FeatureGates.SEEDLESS_SIGNING]: false,
-        [FeatureGates.LEGACY_BRIDGE]: true
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(false)
-  })
-
-  it('should return true for seedless wallet when seedless signing is enabled and flag is on', () => {
-    const state = createMockRootState({
-      walletType: WalletType.SEEDLESS,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: true,
-        [FeatureGates.SEEDLESS_SIGNING]: true,
-        [FeatureGates.LEGACY_BRIDGE]: true
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(true)
-  })
-
-  it('should return false for seedless wallet when seedless signing is enabled but flag is off', () => {
-    const state = createMockRootState({
-      walletType: WalletType.SEEDLESS,
-      featureFlags: {
-        [FeatureGates.EVERYTHING]: true,
-        [FeatureGates.SEEDLESS_SIGNING]: true,
-        [FeatureGates.LEGACY_BRIDGE]: false
-      }
-    })
-    expect(selectIsLegacyBridgeEnabled(state)).toBe(false)
   })
 })
 

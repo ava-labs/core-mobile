@@ -9,7 +9,7 @@ function withPlatformAll(ios: string, android: string) {
 function getByText(text: string) {
   return withPlatform(
     `-ios predicate string:name == "${text}"`,
-    `//*[@text='${text}']`
+    `android=new UiSelector().text("${text}")`
   )
 }
 
@@ -30,23 +30,27 @@ function getByTextWithIndex(text: string, index = 0) {
 }
 
 function getById(id: string) {
-  return withPlatform(
-    `~${id}`,
-    `//*[@resource-id='${id}' or @content-desc='${id}']`
-  )
+  return withPlatform(`~${id}`, `android=new UiSelector().resourceId("${id}")`)
 }
 
 function getBySmartText(textOrId: string) {
   return withPlatform(
     // iOS
     `-ios predicate string:
-      (name == "${textOrId}" 
+      (name == "${textOrId}"
        OR name == "${textOrId.toUpperCase()}"
-       OR label == "${textOrId}" 
+       OR label == "${textOrId}"
        OR value == "${textOrId}"
       )`,
-    // Android
-    `//*[@resource-id='${textOrId}' or @content-desc='${textOrId}' or @text='${textOrId}' or @text='${textOrId.toUpperCase()}']`
+    // Android: case-insensitive text match covers both 'Save' and 'SAVE' styled buttons
+    `android=new UiSelector().textMatches("(?i)^${textOrId}$")`
+  )
+}
+
+function getBySomeId(id: string) {
+  return withPlatform(
+    `-ios predicate string:identifier CONTAINS "${id}"`,
+    `android=new UiSelector().resourceIdMatches(".*${id}.*")`
   )
 }
 
@@ -57,7 +61,14 @@ function getByXpath(xpath: string) {
 function getBySomeText(text: string) {
   return withPlatform(
     `-ios predicate string:name CONTAINS "${text}" AND accessible == true`,
-    `//*[contains(@text, '${text}')]`
+    `android=new UiSelector().textContains("${text}")`
+  )
+}
+
+function getBySomeTextV2(text: string) {
+  return withPlatform(
+    `-ios predicate string:name CONTAINS "${text}"`,
+    `android=new UiSelector().textContains("${text}")`
   )
 }
 
@@ -67,6 +78,8 @@ export const selectors = {
   getByIdWithIndex,
   getByTextWithIndex,
   getBySomeText,
+  getBySomeTextV2,
+  getBySomeId,
   getByXpath,
   getBySmartText
 }

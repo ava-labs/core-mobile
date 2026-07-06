@@ -15,21 +15,17 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-/**
- * Temporarily import "useNavigation" from @react-navigation/native.
- * This is a workaround due to a render bug in the expo-router version.
- * See: https://github.com/expo/expo/issues/35383
- * TODO: Adjust import back to expo-router once the bug is resolved.
- */
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import {
+  NativeStackNavigationOptions,
+  useFocusEffect,
+  useNavigation
+} from 'expo-router'
 import { Pressable } from 'react-native-gesture-handler'
 
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   backgroundColor,
-  shouldHeaderHaveGrabber = false,
   hideHeaderBackground = false,
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
@@ -40,7 +36,6 @@ export const useFadingHeaderNavigation = ({
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
-  shouldHeaderHaveGrabber?: boolean
   hideHeaderBackground?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
@@ -74,7 +69,20 @@ export const useFadingHeaderNavigation = ({
   }, [targetLayout])
 
   const handleLayout = useCallback((event: LayoutChangeEvent): void => {
-    setNavigationHeaderLayout(event.nativeEvent.layout)
+    const { x, y, width, height } = event.nativeEvent.layout
+    // Only commit a new object when the rect actually changed. `onLayout` can
+    // fire repeatedly with identical values while the native header re-renders
+    // (e.g. after `setOptions`); committing a fresh object each time would
+    // re-render → re-set header options → re-layout, a churn loop.
+    setNavigationHeaderLayout(prev =>
+      prev &&
+      prev.x === x &&
+      prev.y === y &&
+      prev.width === width &&
+      prev.height === height
+        ? prev
+        : { x, y, width, height }
+    )
   }, [])
 
   const handleScroll = (
@@ -174,7 +182,7 @@ export const useFadingHeaderNavigation = ({
       </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldHeaderHaveGrabber, header, handleLayout])
+  }, [header, handleLayout])
 
   // Return a stable function reference that returns the memoized component
   const headerTitle = useCallback(() => {

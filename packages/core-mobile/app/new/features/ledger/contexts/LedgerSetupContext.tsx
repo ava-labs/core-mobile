@@ -6,11 +6,9 @@ import React, {
   useMemo,
   ReactNode
 } from 'react'
-import {
-  LedgerDerivationPathType,
-  LedgerTransportState
-} from 'services/ledger/types'
-import { useLedgerWallet } from '../hooks/useLedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
+import LedgerService from 'services/ledger/LedgerService'
+import { useLedgerAppStateListener } from '../hooks/useLedgerAppStateListener'
 
 interface LedgerSetupContextValue {
   // State values
@@ -23,9 +21,8 @@ interface LedgerSetupContextValue {
   setSelectedDerivationPath: (path: LedgerDerivationPathType) => void
   setIsUpdatingWallet: (creating: boolean) => void
 
-  // Ledger wallet hook values
+  // Connection state and actions
   isConnecting: boolean
-  transportState: LedgerTransportState
   connectToDevice: (deviceId: string, deviceName?: string) => Promise<void>
   disconnectDevice: () => Promise<void>
   // Helper methods
@@ -47,11 +44,9 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     null
   )
   const [connectedDeviceName, setConnectedDeviceName] =
-    useState<string>('Ledger Device')
+    useState<string>('Ledger')
   const [isUpdatingWallet, setIsUpdatingWallet] = useState<boolean>(false)
-
-  const { isConnecting, transportState, connectToDevice, disconnectDevice } =
-    useLedgerWallet()
+  const [isConnecting, setIsConnecting] = useState<boolean>(false)
 
   const handleSetConnectedDevice = useCallback(
     (deviceId: string, deviceName: string) => {
@@ -64,22 +59,31 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const resetSetup = useCallback(() => {
     setSelectedDerivationPath(null)
     setConnectedDeviceId(null)
-    setConnectedDeviceName('Ledger Device')
+    setConnectedDeviceName('Ledger')
     setIsUpdatingWallet(false)
+    setIsConnecting(false)
   }, [])
 
   const handleConnectToDevice = useCallback(
     async (deviceId: string, deviceName?: string) => {
-      await connectToDevice(deviceId)
-      handleSetConnectedDevice(deviceId, deviceName || 'Ledger Device')
+      setIsConnecting(true)
+      try {
+        await LedgerService.connect(deviceId)
+        handleSetConnectedDevice(deviceId, deviceName || 'Ledger')
+      } finally {
+        setIsConnecting(false)
+      }
     },
-    [connectToDevice, handleSetConnectedDevice]
+    [handleSetConnectedDevice]
   )
 
   const handleDisconnectDevice = useCallback(async () => {
-    await disconnectDevice()
-    resetSetup()
-  }, [disconnectDevice, resetSetup])
+    try {
+      await LedgerService.disconnect()
+    } finally {
+      resetSetup()
+    }
+  }, [resetSetup])
 
   const contextValue: LedgerSetupContextValue = useMemo(
     () => ({
@@ -88,7 +92,6 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectedDeviceName,
       isUpdatingWallet,
       isConnecting,
-      transportState,
       connectToDevice: handleConnectToDevice,
       disconnectDevice: handleDisconnectDevice,
       setSelectedDerivationPath,
@@ -101,12 +104,15 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectedDeviceName,
       isUpdatingWallet,
       isConnecting,
-      transportState,
       handleConnectToDevice,
       handleDisconnectDevice,
       resetSetup
     ]
   )
+
+  // Release BLE on background during onboarding — before the wallet is
+  // registered as Ledger, the signed-in layout's listener isn't active.
+  useLedgerAppStateListener(connectedDeviceId !== null)
 
   return (
     <LedgerSetupContext.Provider value={contextValue}>

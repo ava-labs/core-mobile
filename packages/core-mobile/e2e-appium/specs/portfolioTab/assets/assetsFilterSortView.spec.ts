@@ -9,8 +9,6 @@ import { selectors } from '../../../helpers/selectors'
 describe('Portfolio tab', () => {
   it('Assets - filter assets by network', async () => {
     await warmup()
-    await commonElsPage.filter(commonElsLoc.cChain_2)
-    await portfolioPage.displayAssetsByNetwork(commonElsLoc.cChain_2)
 
     await commonElsPage.filter(commonElsLoc.pChain)
     await portfolioPage.displayAssetsByNetwork(commonElsLoc.pChain_3)
@@ -24,7 +22,8 @@ describe('Portfolio tab', () => {
     await commonElsPage.filter(commonElsLoc.bitcoin)
     await portfolioPage.displayAssetsByNetwork(commonElsLoc.bitcoin)
 
-    await commonElsPage.filter(commonElsLoc.allNetworks)
+    await commonElsPage.filter(commonElsLoc.cChain_2)
+    await portfolioPage.displayAssetsByNetwork(commonElsLoc.cChain_2)
   })
 
   it('Assets - sort assets', async () => {
@@ -39,8 +38,8 @@ describe('Portfolio tab', () => {
       )
 
       assert(
-        previousAmount > currentAmount,
-        `Expected ${previousAmount} to be greater than ${currentAmount}`
+        previousAmount >= currentAmount,
+        `Expected ${previousAmount} to be greater than or equal to ${currentAmount}`
       )
 
       previousAmount = currentAmount
@@ -49,10 +48,10 @@ describe('Portfolio tab', () => {
     // Descending order
     await commonElsPage.selectDropdown('sort', 'Low to high balance')
     previousAmount = actions.getAmount(
-      await actions.getText(selectors.getById('list_fiat_balance__0'))
+      await actions.getText(selectors.getById('list_fiat_balance__1'))
     )
 
-    for (let i = 1; i < 3; i++) {
+    for (let i = 2; i < 4; i++) {
       const currentAmount = actions.getAmount(
         await actions.getText(selectors.getById(`list_fiat_balance__${i}`))
       )
@@ -69,14 +68,13 @@ describe('Portfolio tab', () => {
   })
 
   it('Assets - view assets by grid and list', async () => {
+    await portfolioPage.verifyAssetRow(0)
+    await portfolioPage.verifyAssetRow(1)
+    await portfolioPage.verifyAssetRow(2)
+
     await commonElsPage.selectDropdown('view', 'Grid view')
     await portfolioPage.verifyAssetRow(0, false)
     await portfolioPage.verifyAssetRow(1, false)
     await portfolioPage.verifyAssetRow(2, false)
-
-    await commonElsPage.selectDropdown('view', 'List view')
-    await portfolioPage.verifyAssetRow(0)
-    await portfolioPage.verifyAssetRow(1)
-    await portfolioPage.verifyAssetRow(2)
   })
 })

@@ -6,9 +6,8 @@ import {
   supportsAlternateIcons
 } from 'expo-alternate-app-icons'
 import { Platform } from 'react-native'
-import { ZustandStorageKeys } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { zustandPersistStorage } from 'utils/mmkv/storages'
+import { ZustandStorageKeys, zustandPersistStorage } from 'utils/mmkv'
 import { isDebugOrInternalBuild } from 'utils/Utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -148,6 +147,12 @@ export const appIconStore = create<AppIconState>(set => ({
     if (!supportsAlternateIcons) return
 
     let nativeIconName: string | null = icon === AppIcon.Default ? null : icon
+    if (icon === AppIcon.Default && Platform.OS === 'android') {
+      // Android routes the default icon through the .MainActivityDefault alias so that
+      // .MainActivity (the shared targetActivity of every alias) is never disabled when
+      // switching icons. iOS keeps null, which resets to the primary icon. See CP-14555.
+      nativeIconName = 'Default'
+    }
     if (
       icon === AppIcon.Light &&
       isDebugOrInternalBuild() &&

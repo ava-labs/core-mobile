@@ -9,6 +9,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import GaslessService from 'services/gasless/GaslessService'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
@@ -16,6 +17,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type Params = {
   maxFeePerGas: bigint | undefined
+  maxPriorityFeePerGas: bigint | undefined
+  gasLimit: number | undefined
+  overrideData: string | undefined
   signingData: SigningData
   caip2ChainId: string
 }
@@ -31,6 +35,9 @@ type Return = {
 export const useGasless = ({
   signingData,
   maxFeePerGas,
+  maxPriorityFeePerGas,
+  gasLimit,
+  overrideData,
   caip2ChainId
 }: Params): Return => {
   const { getNetwork } = useNetworks()
@@ -52,12 +59,24 @@ export const useGasless = ({
         setIsGaslessEligible(false)
         return
       }
+      const isEthSendTx = GaslessService.isEthSendTx(signingData)
+      const fromAddress =
+        isEthSendTx && signingData.data.from != null
+          ? String(signingData.data.from)
+          : undefined
+      const nonce =
+        isEthSendTx && signingData.data.nonce != null
+          ? Number(signingData.data.nonce)
+          : undefined
       const isEligibleForChain = await GaslessService.isEligibleForChain(
-        chainId.toString()
+        chainId.toString(),
+        fromAddress,
+        nonce
       ).catch(err => {
         Logger.error('Error checking gasless eligibility', err)
         return false
       })
+
       const isEligibleForTxType =
         GaslessService.isEligibleForTxType(signingData)
       const isEligible = isEligibleForTxType && isEligibleForChain
@@ -71,6 +90,7 @@ export const useGasless = ({
     setGaslessError(
       'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
     )
+    setGaslessEnabled(false)
   }, [])
 
   const handleGaslessTx = async (
@@ -79,7 +99,7 @@ export const useGasless = ({
     let attempts = 0
     const MAX_ATTEMPTS = 1
 
-    if (!network) {
+    if (!network || !chainId) {
       showGaslessError()
       return undefined
     }
@@ -94,7 +114,11 @@ export const useGasless = ({
         GaslessService.fundTx({
           signingData,
           addressFrom,
+          chainId,
           maxFeePerGas,
+          maxPriorityFeePerGas,
+          gasLimit,
+          overrideData,
           provider,
           waitForConfirmation: isGaslessInstantBlocked
         })
@@ -124,7 +148,9 @@ export const useGasless = ({
           errorMessage,
           errorCategory
         })
-        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`)
+        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`, error, {
+          source: SentryTag.GasStation
+        })
         showGaslessError()
         return undefined
       }

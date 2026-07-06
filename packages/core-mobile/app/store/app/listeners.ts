@@ -1,16 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Action, isAnyOf } from '@reduxjs/toolkit'
+import type { Action } from '@reduxjs/toolkit'
+import { isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
-import {
-  AppState,
-  AppStateStatus,
-  Platform,
-  Appearance as RnAppearance
-} from 'react-native'
+import type { AppStateStatus } from 'react-native'
+import { AppState, Platform, Appearance as RnAppearance } from 'react-native'
 import BootSplash from 'react-native-bootsplash'
 import DeviceInfo from 'react-native-device-info'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { clearAddressesCache } from 'services/wallet/getAddressesCache'
 import { WalletType } from 'services/wallet/types'
 import {
   onRehydrationComplete,
@@ -21,15 +19,16 @@ import {
   setWalletState,
   WalletState
 } from 'store/app'
+import { listenerReconcilerExecutor } from 'store/listenerReconcilers'
 import { reduxStorage } from 'store/reduxStorage'
+import type { ColorSchemeName } from 'store/settings/appearance'
 import {
   Appearance,
-  ColorSchemeName,
   setSelectedAppearance,
   setSelectedColorScheme
 } from 'store/settings/appearance'
 import { selectLockWalletWithPIN } from 'store/settings/securityPrivacy'
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import type { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
@@ -174,6 +173,11 @@ const clearData = async (
   await BiometricsSDK.clearAllData().catch(e =>
     Logger.error('failed to clear biometrics', e)
   )
+  try {
+    clearAddressesCache()
+  } catch (e) {
+    Logger.error('failed to clear address cache', e)
+  }
   await SecureStorageService.clearAll().catch(e =>
     Logger.error('failed to clear secure store', e)
   )
@@ -213,8 +217,25 @@ export const addAppListeners = (startListening: AppStartListening): void => {
   })
 
   startListening({
+    actionCreator: onAppUnlocked,
+    effect: (_, listenerApi) =>
+      listenerReconcilerExecutor.executeAll(listenerApi)
+  })
+
+  startListening({
     actionCreator: onLogOut,
     effect: clearData
+  })
+
+  startListening({
+    actionCreator: onAppLocked,
+    effect: () => {
+      try {
+        clearAddressesCache()
+      } catch (e) {
+        Logger.error('failed to clear address cache on lock', e)
+      }
+    }
   })
 
   startListening({

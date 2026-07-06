@@ -23,7 +23,7 @@ describe('PostHogService', () => {
           Promise.resolve({
             featureFlags: {
               [FeatureGates.SOLANA_SUPPORT]: false,
-              [FeatureGates.LEGACY_BRIDGE]: true
+              [FeatureGates.FUSION]: true
             }
           }),
         ok: true,
@@ -34,7 +34,7 @@ describe('PostHogService', () => {
 
       expect(flags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: false,
-        [FeatureGates.LEGACY_BRIDGE]: true
+        [FeatureGates.FUSION]: true
       })
     })
 
@@ -44,9 +44,9 @@ describe('PostHogService', () => {
           Promise.resolve({
             featureFlags: {
               [FeatureGates.SOLANA_SUPPORT]: true,
-              [FeatureGates.LEGACY_BRIDGE]: true
+              [FeatureGates.FUSION]: true
             },
-            featureFlagPayloads: { [FeatureGates.LEGACY_BRIDGE]: '>=1.60.0' }
+            featureFlagPayloads: { [FeatureGates.FUSION]: '>=1.60.0' }
           }),
         ok: true,
         status: 200
@@ -56,7 +56,7 @@ describe('PostHogService', () => {
 
       expect(flags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: true,
-        [FeatureGates.LEGACY_BRIDGE]: false
+        [FeatureGates.FUSION]: false
       })
     })
   })
@@ -77,7 +77,7 @@ describe('PostHogService', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch).toHaveBeenCalledWith(
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
+        `${Config.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -94,7 +94,7 @@ describe('PostHogService', () => {
         .mockRejectedValueOnce(new Error('some error'))
         .mockResolvedValueOnce({
           json: jest.fn().mockResolvedValue({
-            featureFlags: { [FeatureGates.LEGACY_BRIDGE]: false },
+            featureFlags: { [FeatureGates.FUSION]: false },
             featureFlagPayloads: { [FeatureGates.SOLANA_SUPPORT]: '>=1.60.0' }
           })
         })
@@ -116,7 +116,7 @@ describe('PostHogService', () => {
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch).toHaveBeenNthCalledWith(
         1,
-        `${process.env.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
+        `${Config.PROXY_URL}/proxy/posthog/decide?ip=&_=1234&v=3&ver=${appVersion}`,
         {
           body: 'data=' + encodeURIComponent(data),
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

@@ -21,7 +21,12 @@ export const AnimatedText = ({
       .split('')
       .map((character, index) => {
         return (
-          <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
+          // Key by position, not `${character}-${index}`: keying by the glyph
+          // remounted the node every time a digit changed, restarting the
+          // fade-in from opacity 0 on each value update. Keying by index lets
+          // characters update in place, so only genuinely new positions animate
+          // in (CP-14631).
+          <AnimateFadeScale key={index} delay={index * 30}>
             <Text variant={variant} sx={sx}>
               {character}
             </Text>

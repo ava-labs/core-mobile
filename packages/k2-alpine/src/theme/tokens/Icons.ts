@@ -35,6 +35,9 @@ import IconNotifications from '../../assets/icons/notifications.svg'
 import IconAlertError from '../../assets/icons/alert_error.svg'
 import IconArrowDown from '../../assets/icons/arrow_down.svg'
 import IconCompass from '../../assets/icons/compass.svg'
+import IconElectricBolt from '../../assets/icons/electric_bolt.svg'
+import IconBolt from '../../assets/icons/bolt.svg'
+import IconDatabaseSearch from '../../assets/icons/database_search.svg'
 import IconWalletConnect from '../../assets/icons/wallet_connect.svg'
 import IconContactLess from '../../assets/icons/contactless.svg'
 import IconOutbound from '../../assets/icons/outbound_filled.svg'
@@ -46,6 +49,7 @@ import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
 import IconSyncV2 from '../../assets/icons/sync_v2.svg'
+import IconRotateRight from '../../assets/icons/rotate_right.svg'
 import IconEllipse from '../../assets/icons/ellipse.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
@@ -54,7 +58,6 @@ import IconVolumeOn from '../../assets/icons/volume_on.svg'
 import IconShareIOS from '../../assets/icons/ios_share.svg'
 import IconSearchCustom from '../../assets/icons/search_custom.svg'
 import IconAlertCircle from '../../assets/icons/alert_circle.svg'
-import IconAvalabsTrademark from '../../assets/icons/avalabs_trademark.svg'
 import IconChevronRightV2 from '../../assets/icons/chevron_right_v2.svg'
 import IconQrCodeScanner from '../../assets/icons/qr_code_scanner.svg'
 import IconSearch from '../../assets/icons/search.svg'
@@ -104,6 +107,13 @@ import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
 import IconLedger from '../../assets/icons/ledger_logo.svg'
 import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
 import SolanaLogo from '../../assets/icons/solana_logo.svg'
+import IconPrediction from '../../assets/icons/prediction.svg'
+import IconTrade from '../../assets/icons/trade.svg'
+import IconUnfold from '../../assets/icons/unfold.svg'
+import IconCandlestick from '../../assets/icons/candlestick.svg'
+import IconCandlesticks from '../../assets/icons/candlesticks.svg'
+import IconTakeProfit from '../../assets/icons/take_profit.svg'
+import IconStopLoss from '../../assets/icons/stop_loss.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -258,11 +268,14 @@ export const Icons = {
     Stake: IconStake,
     Earn: IconEarn,
     Browser: IconBrowser,
-    Track: IconTrack
+    Track: IconTrack,
+    Trade: IconTrade,
+    Unfold: IconUnfold
   },
   Notification: {
     Sync: IconSync,
     SyncV2: IconSyncV2,
+    RotateRight: IconRotateRight,
     Ellipse: IconEllipse
   },
   Social: {
@@ -298,6 +311,9 @@ export const Icons = {
     ArrowDown: IconArrowDown,
     Connect: IconWalletConnect,
     Compass: IconCompass,
+    ElectricBolt: IconElectricBolt,
+    Bolt: IconBolt,
+    DatabaseSearch: IconDatabaseSearch,
     QRCodeScanner: IconQrCodeScanner,
     Contactless: IconContactLess,
     RedExclamation: IconRedExclamation,
@@ -308,7 +324,6 @@ export const Icons = {
     ArrowDownHandleBar: IconArrowDownHandleBar,
     Search: IconSearch,
     SearchCustom: IconSearchCustom,
-    AvalabsTrademark: IconAvalabsTrademark,
     SignPost: IconSignPost,
     TxTypeAdd: IconTxTypeAdd,
     AdvanceTime: IconTxTypeAdvanceTime,
@@ -353,7 +368,12 @@ export const Icons = {
     Bluetooth: IconBluetooth,
     Avalanche: AvalancheLogo,
     Solana: SolanaLogo,
-    MoneyBag: IconMoneyBag
+    MoneyBag: IconMoneyBag,
+    Prediction: IconPrediction,
+    Candlestick: IconCandlestick,
+    Candlesticks: IconCandlesticks,
+    TakeProfit: IconTakeProfit,
+    StopLoss: IconStopLoss
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

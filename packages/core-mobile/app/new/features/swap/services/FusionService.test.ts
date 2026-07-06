@@ -1,10 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Environment, ServiceType, QuoterInterface } from '@avalabs/fusion-sdk'
-import type { FeatureFlags } from 'services/posthog/types'
-import { createTransferManager } from '@avalabs/fusion-sdk'
+import {
+  createTransferManager,
+  calculatePriceImpactFromQuote
+} from '@avalabs/fusion-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import FusionService from './FusionService'
-import type { FusionConfig, FusionSigners, QuoterParams } from './types'
+import type {
+  FusionConfig,
+  FusionServiceFlags,
+  FusionSigners,
+  QuoterParams
+} from './types'
 
 // Mock the fusion-sdk
 jest.mock('@avalabs/fusion-sdk', () => ({
@@ -15,11 +23,17 @@ jest.mock('@avalabs/fusion-sdk', () => ({
   ServiceType: {
     MARKR: 'MARKR',
     AVALANCHE_EVM: 'AVALANCHE_EVM',
+    AVALANCHE_CCT: 'AVALANCHE_CCT',
     LOMBARD_BTC_TO_BTCB: 'LOMBARD_BTC_TO_BTCB',
     LOMBARD_BTCB_TO_BTC: 'LOMBARD_BTCB_TO_BTC',
     WRAP_UNWRAP: 'WRAP_UNWRAP'
   },
-  createTransferManager: jest.fn()
+  createTransferManager: jest.fn(),
+  calculatePriceImpactFromQuote: jest.fn()
+}))
+
+jest.mock('@avalabs/core-utils-sdk', () => ({
+  bigintToBig: jest.fn()
 }))
 
 // Mock Logger
@@ -234,7 +248,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': true
       }
 
@@ -242,7 +256,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -265,7 +279,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': true,
         'fusion-avalanche-evm': true,
         'fusion-lombard-btc-to-btcb': true,
@@ -276,7 +290,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -295,7 +309,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': false,
         'fusion-avalanche-evm': false
       }
@@ -304,7 +318,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -314,6 +328,194 @@ describe('FusionService', () => {
       expect(call.serviceInitializers).toHaveLength(1)
       expect(call.serviceInitializers[0]).toMatchObject({
         type: ServiceType.WRAP_UNWRAP
+      })
+    })
+
+    it('should pass disableCrossChainSwaps=true to MARKR initializer when flag is set', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const featureFlags: Partial<FusionServiceFlags> = {
+        'fusion-markr': true,
+        'fusion-disable-cross-chain-swaps': true
+      }
+
+      await FusionService.initWithFeatureFlags({
+        bitcoinProvider: mockBitcoinProvider,
+        fetch: mockFetch,
+        environment: Environment.PROD,
+        featureFlags: featureFlags as FusionServiceFlags,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const markrInitializer = call.serviceInitializers.find(
+        (s: { type: string }) => s.type === ServiceType.MARKR
+      )
+      expect(markrInitializer).toMatchObject({ disableCrossChainSwaps: true })
+    })
+
+    it('should pass disableCrossChainSwaps=false to MARKR initializer by default', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const featureFlags: Partial<FusionServiceFlags> = {
+        'fusion-markr': true
+      }
+
+      await FusionService.initWithFeatureFlags({
+        bitcoinProvider: mockBitcoinProvider,
+        fetch: mockFetch,
+        environment: Environment.PROD,
+        featureFlags: featureFlags as FusionServiceFlags,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const markrInitializer = call.serviceInitializers.find(
+        (s: { type: string }) => s.type === ServiceType.MARKR
+      )
+      expect(markrInitializer).toMatchObject({ disableCrossChainSwaps: false })
+    })
+
+    describe('AVALANCHE_CCT', () => {
+      const mockCctDependencies = {
+        avalancheSendTx: jest.fn(),
+        getCoreEthAddress: jest.fn(),
+        getAtomicUtxos: jest.fn(),
+        getUtxos: jest.fn(),
+        getWalletAddressesForChainAlias: jest.fn(),
+        getWalletChangeAddressForChainAlias: jest.fn()
+      }
+
+      const mockManagerFactory = () => ({
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      })
+
+      it('enables AVALANCHE_CCT when the fusion-avalanche-cct flag is on', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        expect(call.serviceInitializers).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ type: ServiceType.AVALANCHE_CCT })
+          ])
+        )
+      })
+
+      it('throws cctDependenciesMissing when the flag is on but no cctDependencies are provided', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        // No cctDependencies provided — should throw before reaching the SDK.
+        await expect(
+          FusionService.initWithFeatureFlags({
+            bitcoinProvider: mockBitcoinProvider,
+            fetch: mockFetch,
+            environment: Environment.PROD,
+            featureFlags: featureFlags as FusionServiceFlags,
+            signers: mockSigners
+          })
+        ).rejects.toThrow(/cctDependencies not provided/)
+        expect(createTransferManager).not.toHaveBeenCalled()
+      })
+
+      it('produces an initializer carrying the six SDK callbacks when cctDependencies are provided', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-avalanche-cct': true
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        const cctInitializer = call.serviceInitializers.find(
+          (s: { type: string }) => s.type === ServiceType.AVALANCHE_CCT
+        )
+        expect(cctInitializer).toMatchObject({
+          type: ServiceType.AVALANCHE_CCT,
+          avalancheSendTx: mockCctDependencies.avalancheSendTx,
+          getCoreEthAddress: mockCctDependencies.getCoreEthAddress,
+          getAtomicUtxos: mockCctDependencies.getAtomicUtxos,
+          getUtxos: mockCctDependencies.getUtxos,
+          getWalletAddressesForChainAlias:
+            mockCctDependencies.getWalletAddressesForChainAlias,
+          getWalletChangeAddressForChainAlias:
+            mockCctDependencies.getWalletChangeAddressForChainAlias
+        })
+      })
+
+      it('does not register AVALANCHE_CCT when the flag is off', async () => {
+        ;(createTransferManager as jest.Mock).mockResolvedValue(
+          mockManagerFactory()
+        )
+
+        const featureFlags: Partial<FusionServiceFlags> = {
+          'fusion-markr': true,
+          'fusion-avalanche-cct': false
+        }
+
+        await FusionService.initWithFeatureFlags({
+          bitcoinProvider: mockBitcoinProvider,
+          fetch: mockFetch,
+          environment: Environment.PROD,
+          featureFlags: featureFlags as FusionServiceFlags,
+          signers: mockSigners,
+          cctDependencies: mockCctDependencies
+        })
+
+        const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+        const cctInitializer = call.serviceInitializers.find(
+          (s: { type: string }) => s.type === ServiceType.AVALANCHE_CCT
+        )
+        expect(cctInitializer).toBeUndefined()
       })
     })
   })
@@ -580,7 +782,9 @@ describe('FusionService', () => {
         signers: mockSigners
       })
 
-      const result = await FusionService.transferAsset(mockQuote, 2000)
+      const result = await FusionService.transferAsset(mockQuote, {
+        estimateGasMarginBps: 2000
+      })
 
       expect(result).toBe(mockTransfer)
       expect(mockTransferManager.transferAsset).toHaveBeenCalledWith({
@@ -608,7 +812,7 @@ describe('FusionService', () => {
       } as any
 
       await expect(
-        FusionService.transferAsset(mockQuote, 2000)
+        FusionService.transferAsset(mockQuote, { estimateGasMarginBps: 2000 })
       ).rejects.toThrow('Fusion service is not initialized')
     })
 
@@ -643,7 +847,7 @@ describe('FusionService', () => {
       })
 
       await expect(
-        FusionService.transferAsset(mockQuote, 2000)
+        FusionService.transferAsset(mockQuote, { estimateGasMarginBps: 2000 })
       ).rejects.toThrow('Transfer failed')
 
       expect(Logger.error).toHaveBeenCalledWith(
@@ -1412,6 +1616,76 @@ describe('FusionService', () => {
       await expect(
         FusionService.getMinimumTransferAmount(props)
       ).rejects.toThrow('Fusion service is not initialized')
+    })
+  })
+
+  describe('calculatePriceImpactFromQuote', () => {
+    it('should return bps value from the SDK', async () => {
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockResolvedValue(150)
+
+      const mockQuote = { id: 'quote-1' } as any
+      const result = await FusionService.calculatePriceImpactFromQuote(
+        mockQuote,
+        1.5,
+        2.0
+      )
+
+      expect(result).toBe(150)
+      expect(calculatePriceImpactFromQuote).toHaveBeenCalledWith(
+        mockQuote,
+        expect.any(Function)
+      )
+    })
+
+    it('should return null when SDK cannot determine price impact', async () => {
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockResolvedValue(null)
+
+      const mockQuote = { id: 'quote-1' } as any
+      const result = await FusionService.calculatePriceImpactFromQuote(
+        mockQuote,
+        1.5,
+        2.0
+      )
+
+      expect(result).toBeNull()
+    })
+
+    it('should pass correct USD values to the SDK pricing callback', async () => {
+      let capturedCallback: (
+        input: any,
+        output: any
+      ) => Promise<[number, number]>
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockImplementation(
+        (_quote: any, callback: any) => {
+          capturedCallback = callback
+          return Promise.resolve(200)
+        }
+      )
+      ;(bigintToBig as jest.Mock)
+        .mockReturnValueOnce({ toNumber: () => 5 })
+        .mockReturnValueOnce({ toNumber: () => 3 })
+
+      const mockQuote = { id: 'quote-1' } as any
+      await FusionService.calculatePriceImpactFromQuote(mockQuote, 2.0, 4.0)
+
+      const mockInput = { amount: 5000000n, asset: { decimals: 6 } }
+      const mockOutput = { amount: 3000000n, asset: { decimals: 6 } }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const [inputUsd, outputUsd] = await capturedCallback!(
+        mockInput,
+        mockOutput
+      )
+
+      expect(bigintToBig).toHaveBeenCalledWith(
+        mockInput.amount,
+        mockInput.asset.decimals
+      )
+      expect(bigintToBig).toHaveBeenCalledWith(
+        mockOutput.amount,
+        mockOutput.asset.decimals
+      )
+      expect(inputUsd).toBe(10) // 5 * 2.0
+      expect(outputUsd).toBe(12) // 3 * 4.0
     })
   })
 })

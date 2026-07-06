@@ -3,7 +3,6 @@ import { ProgressDots } from 'common/components/ProgressDots'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { showSnackbar } from 'common/utils/toast'
-import { useRouter } from 'expo-router'
 import {
   AppConnectionStep,
   LedgerAppConnection
@@ -13,18 +12,30 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 import { Alert, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
+import {
+  isLedgerBluetoothError,
+  showBluetoothErrorAlert
+} from 'services/ledger/LedgerBluetoothError'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
-  LedgerKeysByNetwork
+  LedgerKeysByNetwork,
+  LedgerMultiIndexKeys,
+  MAX_LEDGER_DISCOVERY_ACCOUNTS,
+  PublicKeyInfo
 } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
+import {
+  buildFirstAccountKeys,
+  deriveRangeKeys
+} from '../utils/deriveMultiIndexKeys'
 
 export default function AppConnectionScreen({
   selectedDerivationPath = LedgerDerivationPathType.BIP44,
@@ -32,46 +43,46 @@ export default function AppConnectionScreen({
   isUpdatingWallet,
   handleComplete,
   deviceId,
-  deviceName = 'Ledger Device',
-  disconnectDevice,
-  accountIndex
+  deviceName = 'Ledger',
+  handleCancel,
+  accountIndex,
+  showProgressDots = true,
+  showConnectionToasts,
+  showCancelOnComplete
 }: {
   selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
   isUpdatingWallet: boolean
   deviceId?: string | null
   deviceName?: string
-  disconnectDevice: () => Promise<void>
-  handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
+  handleCancel: () => Promise<void>
+  handleComplete: (keys: LedgerMultiIndexKeys) => Promise<void>
   accountIndex: number
+  showProgressDots?: boolean
+  showConnectionToasts: boolean
+  showCancelOnComplete: boolean
 }): JSX.Element {
-  const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const hasDeviceId = !!deviceId
+  const isAddingAccount = accountIndex > 0
 
   // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LedgerKeysByNetwork>({
-    mainnet: {
-      solanaKeys: [],
-      avalancheKeys: undefined
-    },
-    testnet: {
-      solanaKeys: [],
-      avalancheKeys: undefined
-    }
+  const [multiIndexKeys, setMultiIndexKeys] = useState<LedgerMultiIndexKeys>({
+    mainnet: {},
+    testnet: {}
   })
 
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
   const [skipSolana, setSkipSolana] = useState(false)
 
-  const handleCancel = useCallback(async () => {
-    await disconnectDevice()
-    back()
-  }, [disconnectDevice, back])
+  // AbortController for cancelling in-flight Solana key retrieval.
+  // Created fresh each time handleConnectSolana runs; aborted when the
+  // user taps "Skip Solana" or the component unmounts.
+  const solanaAbortControllerRef = useRef<AbortController | null>(null)
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {
@@ -106,15 +117,24 @@ export default function AppConnectionScreen({
     }
   }, [currentAppConnectionStep, isSolanaSupportBlocked])
 
-  // Cleanup: Stop polling when component unmounts
+  // Cleanup: Stop polling and cancel any in-flight Solana requests
+  // when the component unmounts (e.g. navigating away).
   useEffect(() => {
     return () => {
       Logger.info('AppConnectionScreen unmounting, stopping app polling')
+      solanaAbortControllerRef.current?.abort()
       LedgerService.stopAppPolling()
     }
   }, [])
 
+  // The device "Open Solana?" prompt is intentionally deferred until the user
+  // taps Continue: `handleConnectSolana` → getSolanaKeysForRange →
+  // ensureAppReady → openApp. Prompting eagerly on step entry meant the device
+  // asked even when the user went on to tap "Skip Solana".
+
   const headerCenterOverlay = useMemo(() => {
+    if (!showProgressDots) return undefined
+
     const paddingTop = Platform.OS === 'ios' ? 15 : 50
 
     return (
@@ -141,47 +161,50 @@ export default function AppConnectionScreen({
         </View>
       </View>
     )
-  }, [headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
+  }, [
+    showProgressDots,
+    headerHeight,
+    isSolanaSupportBlocked,
+    progressDotsCurrentStep
+  ])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
       if (!deviceId) {
         throw new Error('No device ID found')
       }
-      await LedgerService.ensureConnection(deviceId)
+      await LedgerService.connect(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      // Get keys from service
-      const avalancheKeys = await LedgerService.getAvalancheKeys(
-        accountIndex,
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const isBIP44 = selectedDerivationPath === LedgerDerivationPathType.BIP44
+      const startIndex = isAddingAccount ? accountIndex : 0
+
+      const firstAccountKeys = await LedgerService.getAvalancheKeys(
+        startIndex,
         isDeveloperMode,
         selectedDerivationPath
       )
-      const oppositeAvalancheKeys = await LedgerService.getAvalancheKeys(
-        accountIndex,
-        !isDeveloperMode,
-        selectedDerivationPath
-      )
 
-      // Update local state
-      setKeys({
-        mainnet: {
-          avalancheKeys: isDeveloperMode
-            ? oppositeAvalancheKeys
-            : avalancheKeys,
-          solanaKeys: []
-        },
-        testnet: {
-          avalancheKeys: isDeveloperMode
-            ? avalancheKeys
-            : oppositeAvalancheKeys,
-          solanaKeys: []
-        }
+      const firstKeys = await buildFirstAccountKeys({
+        firstAccountKeys,
+        isBIP44,
+        isDeveloperMode,
+        startIndex
       })
 
-      // Show success toast notification
-      showSnackbar('Avalanche app connected')
-      // if get avalanche keys succeeds move forward to solana connect
+      const rangeKeys = await deriveRangeKeys(
+        count,
+        isBIP44,
+        firstAccountKeys.xpubs.evm
+      )
+
+      setMultiIndexKeys({
+        mainnet: { ...firstKeys.mainnet, ...rangeKeys.mainnet },
+        testnet: { ...firstKeys.testnet, ...rangeKeys.testnet }
+      })
+
+      if (showConnectionToasts) showSnackbar('Avalanche app connected')
       setAppConnectionStep(
         isSolanaSupportBlocked
           ? AppConnectionStep.COMPLETE
@@ -190,6 +213,10 @@ export default function AppConnectionScreen({
     } catch (err) {
       Logger.error('Failed to connect to Avalanche app', err)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_CONNECT)
+      if (isLedgerBluetoothError(err)) {
+        showBluetoothErrorAlert(err)
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
@@ -199,9 +226,11 @@ export default function AppConnectionScreen({
   }, [
     accountIndex,
     deviceId,
+    isAddingAccount,
     isDeveloperMode,
     isSolanaSupportBlocked,
-    selectedDerivationPath
+    selectedDerivationPath,
+    showConnectionToasts
   ])
 
   const handleConnectSolana = useCallback(async () => {
@@ -209,43 +238,68 @@ export default function AppConnectionScreen({
       if (!deviceId) {
         throw new Error('No device ID found')
       }
-      await LedgerService.ensureConnection(deviceId)
+      await LedgerService.connect(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
+      // Create a fresh AbortController for this connection attempt.
+      // If the user taps "Skip Solana" or the component unmounts while
+      // we're waiting, handleSkipSolana / cleanup will call abort() on
+      // this controller, which cancels waitForApp polling and the
+      // getSolanaKeysForRange loop.
+      const controller = new AbortController()
+      solanaAbortControllerRef.current = controller
+
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys(accountIndex)
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const startIndex = isAddingAccount ? accountIndex : 0
+      const solanaKeysRange = await LedgerService.getSolanaKeysForRange(
+        count,
+        startIndex,
+        controller.signal
+      )
+
+      // If the user tapped "Skip Solana" while we were fetching keys,
+      // don't merge partial results or show a success toast.
+      if (controller.signal.aborted) return
 
       // Update local state
-      setKeys(prev => ({
-        ...prev,
-        mainnet: {
-          ...prev.mainnet,
-          solanaKeys
-        },
-        testnet: {
-          ...prev.testnet,
-          solanaKeys
-        }
-      }))
+      setMultiIndexKeys(prev =>
+        mergeSolanaKeys(prev, solanaKeysRange, { startIndex, count })
+      )
 
       // Show success toast notification
-      showSnackbar('Solana app connected')
+      if (showConnectionToasts) showSnackbar('Solana app connected')
 
       // Skip success step and go directly to complete
       setAppConnectionStep(AppConnectionStep.COMPLETE)
     } catch (err) {
+      // If the user cancelled (Skip Solana or unmount), don't show an error —
+      // the cancellation was intentional.
+      if (solanaAbortControllerRef.current?.signal.aborted) {
+        Logger.info('Solana connection cancelled by user')
+        return
+      }
+
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      if (isLedgerBluetoothError(err)) {
+        showBluetoothErrorAlert(err)
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId])
+  }, [accountIndex, deviceId, isAddingAccount, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
-    // Skip Solana and proceed to complete step
+    // Cancel any in-flight Solana key retrieval. This aborts the
+    // waitForApp polling loop and getSolanaKeysForRange iteration so the
+    // Ledger device stops receiving APDU requests for the Solana app.
+    solanaAbortControllerRef.current?.abort()
+
     setSkipSolana(true)
     setAppConnectionStep(AppConnectionStep.COMPLETE)
   }, [setAppConnectionStep])
@@ -296,13 +350,15 @@ export default function AppConnectionScreen({
       case AppConnectionStep.COMPLETE:
         primary = {
           text: isUpdatingWallet ? <ActivityIndicator /> : 'Complete setup',
-          onPress: () => handleComplete(keys),
+          onPress: () => handleComplete(multiIndexKeys),
           disable: isUpdatingWallet
         }
-        secondary = {
-          text: 'Cancel',
-          onPress: handleCancel,
-          disable: isUpdatingWallet
+        if (showCancelOnComplete) {
+          secondary = {
+            text: 'Cancel',
+            onPress: handleCancel,
+            disable: isUpdatingWallet
+          }
         }
         break
     }
@@ -336,8 +392,17 @@ export default function AppConnectionScreen({
     handleSkipSolana,
     hasDeviceId,
     isUpdatingWallet,
-    keys
+    multiIndexKeys,
+    showCancelOnComplete
   ])
+
+  const emptyKeys = { solanaKeys: [], avalancheKeys: undefined }
+  const firstMainnetKey = multiIndexKeys.mainnet[accountIndex]
+  const firstTestnetKey = multiIndexKeys.testnet[accountIndex]
+  const displayKeys: LedgerKeysByNetwork = {
+    mainnet: firstMainnetKey ?? emptyKeys,
+    testnet: firstTestnetKey ?? emptyKeys
+  }
 
   return (
     <ScrollScreen
@@ -357,10 +422,40 @@ export default function AppConnectionScreen({
         completeStepTitle={completeStepTitle}
         connectedDeviceId={deviceId}
         connectedDeviceName={deviceName}
-        keys={keys}
+        keys={displayKeys}
         appConnectionStep={currentAppConnectionStep}
         skipSolana={skipSolana}
+        derivationPathType={selectedDerivationPath}
       />
     </ScrollScreen>
   )
+}
+
+function mergeSolanaKeys(
+  prev: LedgerMultiIndexKeys,
+  solanaKeysRange: (PublicKeyInfo[] | null)[],
+  opts: { startIndex: number; count: number }
+): LedgerMultiIndexKeys {
+  const updatedMainnet = { ...prev.mainnet }
+  const updatedTestnet = { ...prev.testnet }
+
+  for (let i = 0; i < opts.count; i++) {
+    const idx = opts.startIndex + i
+    const solKeys = solanaKeysRange[i] ?? []
+
+    if (updatedMainnet[idx]) {
+      updatedMainnet[idx] = {
+        ...updatedMainnet[idx],
+        solanaKeys: solKeys
+      }
+    }
+    if (updatedTestnet[idx]) {
+      updatedTestnet[idx] = {
+        ...updatedTestnet[idx],
+        solanaKeys: solKeys
+      }
+    }
+  }
+
+  return { mainnet: updatedMainnet, testnet: updatedTestnet }
 }

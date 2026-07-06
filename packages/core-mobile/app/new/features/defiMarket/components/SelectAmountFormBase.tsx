@@ -168,7 +168,11 @@ export const SelectAmountFormBase = ({
             />
             <Text
               variant="body1"
-              sx={{ color: '$textDanger', flex: 1, fontWeight: 500 }}>
+              sx={{
+                color: '$textDanger',
+                flex: 1,
+                fontFamily: 'Inter-Medium'
+              }}>
               {blockingError}
             </Text>
           </View>

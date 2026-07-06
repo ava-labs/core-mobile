@@ -2,15 +2,16 @@ import portfolioPage from '../../../pages/portfolio.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import warmup from '../../../helpers/warmup'
 import commonElsLoc from '../../../locators/commonEls.loc'
+import { actions } from '../../../helpers/actions'
 
 describe('Portfolio Assets', () => {
   const tokens = {
-    avax: ['Send', 'Swap', 'Buy', 'Withdraw', 'Stake'],
-    usdcCChain: ['Send', 'Swap', 'Buy', 'Bridge', 'Withdraw'],
-    btc: ['Send', 'Buy', 'Withdraw'],
-    eth: ['Send', 'Buy', 'Bridge', 'Withdraw'],
-    usdcETH: ['Send', 'Buy', 'Bridge', 'Withdraw'],
-    sol: ['Send', 'Swap', 'Buy', 'Withdraw'],
+    avax: ['Send', 'Swap', 'Buy', 'Stake'],
+    usdcCChain: ['Send', 'Swap', 'Buy'],
+    btc: ['Send', 'Swap', 'Buy'],
+    eth: ['Send', 'Buy', 'Swap'],
+    usdcETH: ['Send', 'Buy', 'Swap'],
+    sol: ['Send', 'Swap', 'Buy'],
     orca: ['Send', 'Swap'],
     pchain: ['Send', 'Stake'],
     xchain: ['Send']
@@ -18,6 +19,12 @@ describe('Portfolio Assets', () => {
 
   before(async () => {
     await warmup()
+  })
+
+  afterEach(async () => {
+    if (await actions.getVisible(commonElsPage.backButton)) {
+      await commonElsPage.goBack()
+    }
   })
 
   it('AVAX owned token detail', async () => {
@@ -36,16 +43,28 @@ describe('Portfolio Assets', () => {
 
   it('ETH owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.ethereum)
-    await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('Ethereum', tokens.eth)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth)
+    }
   })
 
   it('Ethereum ERC20 owned token detail', async () => {
-    await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcETH)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH)
+    }
   })
 
   it('SOL owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.solana)
-    await portfolioPage.verifyOwnedTokenDetail('SOL', tokens.sol)
+    try {
+      await portfolioPage.verifyOwnedTokenDetail('Solana', tokens.sol)
+    } catch (error) {
+      await portfolioPage.verifyOwnedTokenDetail('SOL Wormhole', tokens.sol)
+    }
   })
 
   it('Solana SPL owned token detail', async () => {

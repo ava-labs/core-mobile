@@ -2,10 +2,11 @@ import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { validateFee } from 'common/hooks/send/utils/evm/validate'
-import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurringApprovalContext'
+import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
+import { useDismissOnCancelledRequest } from 'features/approval/hooks/useDismissOnCancelledRequest'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -14,6 +15,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
+import { AlertBody } from 'new/features/approval/components/AlertBody'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -27,7 +29,9 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
-import { selectIsWalletLedger } from 'store/wallet/slice'
+import { selectIsWalletLedger, selectWalletById } from 'store/wallet/slice'
+import { RootState } from 'store/types'
+import { selectAccountByAddress } from 'store/account/slice'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -36,16 +40,57 @@ import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelect
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
+  getAccountUnavailableMessage,
+  getEthSendTxValidationError,
+  getHasBalanceChange,
   getInitialGasLimit,
+  isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary
 } from './utils'
 
-const ApprovalScreen = ({
-  params: { request, displayData, signingData, onApprove, onReject }
+// Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
+// Splitting it out keeps the main render's cognitive complexity at its
+// pre-existing limit — the `if (isMalformed) return null` is a security
+// invariant (must short-circuit before Approve is reachable), not a render
+// branch we want inlined into the main component's JSX.
+const ApprovalScreen = (props: {
+  params: ApprovalParams
+}): JSX.Element | null => {
+  const rejectAndClose = useCallback(
+    (message?: string) => {
+      props.params.onReject(message)
+      if (router.canGoBack()) {
+        router.back()
+      } else if (router.canDismiss()) {
+        router.dismissAll()
+      }
+    },
+    [props.params.onReject]
+  )
+  const { recurringContext, isRecurringContextMalformed } =
+    useRecurringApprovalContext(props.params.request, rejectAndClose)
+  if (isRecurringContextMalformed) return null
+  return (
+    <ApprovalScreenInner
+      params={props.params}
+      recurringContext={recurringContext}
+    />
+  )
+}
+
+const ApprovalScreenInner = ({
+  params: { request, displayData, signingData, signal, onApprove, onReject },
+  recurringContext
 }: {
   params: ApprovalParams
+  recurringContext: ReturnType<
+    typeof useRecurringApprovalContext
+  >['recurringContext']
 }): JSX.Element => {
+  // Self-dismiss if a cross-origin nav already cancelled this request before the
+  // screen mounted (the generic pop can race the mount and miss). (CP-14422)
+  useDismissOnCancelledRequest(signal)
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -56,7 +101,8 @@ const ApprovalScreen = ({
   const activeWallet = useActiveWallet()
   const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
-  const { renderLedgerFooter } = useLedgerApproval(isLedger)
+  const { renderLedgerFooter, cancelLedger, dismissLedger, isLedgerActive } =
+    useLedgerApproval(isLedger)
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
@@ -64,6 +110,24 @@ const ApprovalScreen = ({
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
+  // The request targets an account that isn't in the active wallet, so it can't
+  // be signed — surface a clear reason rather than just a disabled button.
+  const requestedAccountUnavailable = isRequestedAccountUnavailable(
+    signingData,
+    account
+  )
+  // Resolve which wallet owns the requested address (read-only, display only —
+  // never used for signing) so we can name it in the warning.
+  const requestedAddress =
+    'account' in signingData ? signingData.account : undefined
+  const owningAccount = useSelector((state: RootState) =>
+    requestedAccountUnavailable && requestedAddress
+      ? selectAccountByAddress(requestedAddress)(state)
+      : undefined
+  )
+  const owningWallet = useSelector((state: RootState) =>
+    owningAccount ? selectWalletById(owningAccount.walletId)(state) : undefined
+  )
 
   const [submitting, setSubmitting] = useState(false)
   const [gasLimit, setGasLimit] = useState<number | undefined>(
@@ -73,6 +137,10 @@ const ApprovalScreen = ({
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
   >()
+
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
+
   const {
     gaslessEnabled,
     setGaslessEnabled,
@@ -82,6 +150,9 @@ const ApprovalScreen = ({
   } = useGasless({
     signingData,
     maxFeePerGas,
+    maxPriorityFeePerGas,
+    gasLimit,
+    overrideData: hashedCustomSpend,
     caip2ChainId
   })
 
@@ -92,9 +163,6 @@ const ApprovalScreen = ({
     (displayData.networkFeeSelector && maxPriorityFeePerGas === undefined) ||
     submitting ||
     amountError !== undefined
-
-  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals)
 
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
@@ -111,9 +179,7 @@ const ApprovalScreen = ({
   }, [displayData.details, request])
 
   const balanceChange = displayData.balanceChange
-  const hasBalanceChange =
-    balanceChange &&
-    (balanceChange.ins.length > 0 || balanceChange.outs.length > 0)
+  const hasBalanceChange = getHasBalanceChange(balanceChange)
 
   const rejectAndClose = useCallback(
     (message?: string) => {
@@ -123,37 +189,20 @@ const ApprovalScreen = ({
     [onReject]
   )
 
-  const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
-    if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
-
-    if (!account) return false
-    const txHash = await handleGaslessTx(account.addressC)
-    if (!txHash) return false
-
-    // flag VM-module retry via request context instead of mutating tx data
-    request.context = {
-      ...request.context,
-      [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
-    }
-    return true
-  }, [
-    shouldShowGaslessSwitch,
-    gaslessEnabled,
-    handleGaslessTx,
-    account,
-    request,
-    isGaslessInstantBlocked
-  ])
+  // When the sheet is closed via the X button or swipe (not the in-footer Cancel
+  // button), cancelLedger ensures the userCancelledMap flag is set so any
+  // in-flight resolveWithRetry skips the retry alert and any already-visible
+  // retry alert's Retry button becomes a no-op.
+  const handleClose = useCallback((): void => {
+    if (isLedger) cancelLedger()
+    onReject()
+  }, [cancelLedger, isLedger, onReject])
 
   const handleApprove = useCallback(async (): Promise<void> => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    const canProceed = await handleGaslessPreApprove()
-    if (!canProceed) {
-      setSubmitting(false)
-      return
-    }
+    const isGasless = shouldShowGaslessSwitch && gaslessEnabled
 
     try {
       await onApprove({
@@ -164,7 +213,21 @@ const ApprovalScreen = ({
         maxFeePerGas,
         maxPriorityFeePerGas,
         gasLimit,
-        overrideData: hashedCustomSpend
+        overrideData: hashedCustomSpend,
+        // For gasless: fund after signing but before broadcasting.
+        // This ensures the gas station is only called once we have
+        // a signed tx, preventing wasted funding on rejected signs.
+        onSigned: isGasless
+          ? async () => {
+              if (!account) return false
+              request.context = {
+                ...request.context,
+                [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
+              }
+              const txHash = await handleGaslessTx(account.addressC)
+              return !!txHash
+            }
+          : undefined
       })
       // For Ledger, the controller sets the store and navigation is handled
       // by ApprovalController.handleGoBackIfNeeded after signing completes
@@ -178,7 +241,8 @@ const ApprovalScreen = ({
     }
   }, [
     approveDisabled,
-    handleGaslessPreApprove,
+    shouldShowGaslessSwitch,
+    gaslessEnabled,
     onApprove,
     activeWallet.id,
     activeWallet.type,
@@ -188,6 +252,9 @@ const ApprovalScreen = ({
     maxPriorityFeePerGas,
     gasLimit,
     hashedCustomSpend,
+    isGaslessInstantBlocked,
+    handleGaslessTx,
+    request,
     isLedger
   ])
 
@@ -206,28 +273,13 @@ const ApprovalScreen = ({
       return
     }
 
-    const ethSendTx = signingData.data
-
-    try {
-      const gasLimitToValidate = gasLimit ? BigInt(gasLimit) : 0n
-      const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
-
-      validateFee({
-        gasLimit: gasLimitToValidate,
-        maxFee: maxFeePerGas || 0n,
-        amount,
-        nativeToken,
-        token: nativeToken
-      })
-
-      setAmountError(undefined)
-    } catch (err) {
-      if (err instanceof Error) {
-        setAmountError(err.message)
-      } else {
-        setAmountError(SendErrorMessage.UNKNOWN_ERROR)
-      }
-    }
+    const error = getEthSendTxValidationError({
+      gasLimit,
+      maxFeePerGas,
+      sendValue: signingData.data.value,
+      nativeToken
+    })
+    setAmountError(error)
   }, [
     signingData,
     network?.networkToken,
@@ -268,6 +320,15 @@ const ApprovalScreen = ({
     validateEthSendTransaction()
   }, [validateEthSendTransaction, gaslessEnabled])
 
+  // When gasless funding fails on a Ledger wallet, dismiss the Ledger review
+  // footer so the regular Approve/Reject buttons reappear. The user can then
+  // retry the transaction paying gas normally.
+  useEffect(() => {
+    if (gaslessError && isLedger) {
+      dismissLedger()
+    }
+  }, [gaslessError, isLedger, dismissLedger])
+
   useEffect(() => {
     setTimeout(() => {
       dismissKeyboardIfNeeded()
@@ -284,6 +345,21 @@ const ApprovalScreen = ({
       />
     )
   }, [gaslessError])
+
+  const renderAccountUnavailableWarning =
+    useCallback((): JSX.Element | null => {
+      if (!requestedAccountUnavailable) return null
+
+      return (
+        <Warning
+          message={getAccountUnavailableMessage(
+            owningWallet?.name,
+            owningAccount?.name
+          )}
+          sx={{ marginBottom: 12, marginRight: 16 }}
+        />
+      )
+    }, [requestedAccountUnavailable, owningWallet?.name, owningAccount?.name])
 
   const renderDappInfo = useCallback(
     (dAppInfo: {
@@ -313,7 +389,7 @@ const ApprovalScreen = ({
                 textAlign: 'center',
                 fontSize: 15,
                 lineHeight: 20,
-                fontWeight: '500',
+                fontFamily: 'Inter-Medium',
                 color: '$textPrimary'
               }}>
               {action}
@@ -347,6 +423,7 @@ const ApprovalScreen = ({
             logoUri={displayData.network.logoUri}
             symbol={symbol}
             name={displayData.network.name}
+            chainId={chainId}
           />
         </View>
       )
@@ -358,6 +435,7 @@ const ApprovalScreen = ({
           logoUri={displayData.network.logoUri}
           symbol={symbol}
           name={displayData.network.name}
+          chainId={chainId}
         />
       )
     }
@@ -365,7 +443,7 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }, [displayData.account, displayData.network, symbol])
+  }, [displayData.account, displayData.network, symbol, chainId])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
@@ -378,7 +456,7 @@ const ApprovalScreen = ({
   }, [filteredSections, symbol])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
-    if (!hasBalanceChange) return null
+    if (!hasBalanceChange || !balanceChange) return null
 
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])
@@ -392,7 +470,11 @@ const ApprovalScreen = ({
       <SpendLimits
         spendLimits={spendLimits}
         hasBalanceChange={hasBalanceChange}
-        onSelect={canEdit ? updateSpendLimit : undefined}
+        onSelect={
+          canEdit && !submitting && !isLedgerActive
+            ? updateSpendLimit
+            : undefined
+        }
       />
     )
   }
@@ -432,14 +514,24 @@ const ApprovalScreen = ({
       }
     : undefined
 
+  const renderAlertBody = useCallback((): JSX.Element | null => {
+    const body = displayData.alert?.details.body
+    if (!body || body.length === 0) return null
+
+    return <AlertBody reasons={body} />
+  }, [displayData.alert?.details.body])
+
   return (
     <ActionSheet
       isModal
+      // disabled for now to avoid the issue with the scroll to confirm on approval screen
+      // TODO: enable this once the issue is fixed
+      // requireScrollToConfirm
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
       }
-      onClose={onReject}
+      onClose={handleClose}
       alert={alert}
       confirm={{
         label: 'Approve',
@@ -454,12 +546,21 @@ const ApprovalScreen = ({
       }}
       renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
+      {renderAccountUnavailableWarning()}
       {renderGaslessAlert()}
       {renderBalanceChange()}
+      {/* If a request carries `RECURRING_SWAP` context, only render the preview
+          on the actual recurring action signature (not on any preceding ERC-20
+          allowance approval). `spendLimits.length > 0` is a heuristic: a
+          non-empty list indicates this sheet is the allowance approval step. */}
+      {recurringContext && spendLimits.length === 0 && (
+        <RecurrenceDetails context={recurringContext} />
+      )}
       {renderSpendLimits()}
       {renderAccountAndNetwork()}
       {renderDetails()}
       {renderNetworkFeeSelectorWithGasless()}
+      {renderAlertBody()}
     </ActionSheet>
   )
 }

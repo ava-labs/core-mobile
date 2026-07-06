@@ -1,6 +1,6 @@
 import { Card, showAlert, TextInput, useTheme } from '@avalabs/k2-alpine'
 import { Empty } from '@cubist-labs/cubesigner-sdk'
-import { useFocusEffect } from '@react-navigation/native'
+import { useFocusEffect } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TextInput as RNTextInput } from 'react-native'

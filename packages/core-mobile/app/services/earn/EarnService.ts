@@ -22,6 +22,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   SortOrder,
@@ -265,7 +266,8 @@ class EarnService {
     feeState,
     pFeeAdjustmentThreshold,
     xpAddressDictionary,
-    xpAddresses
+    xpAddresses,
+    additionalOutputs
   }: AddDelegatorTransactionProps & {
     walletId: string
     walletType: WalletType
@@ -287,7 +289,8 @@ class EarnService {
       stakeAmountInNAvax: stakeAmountNanoAvax,
       feeState,
       pFeeAdjustmentThreshold,
-      xpAddresses
+      xpAddresses,
+      additionalOutputs
     })
 
     const signedTxJson = await WalletService.sign({
@@ -311,9 +314,11 @@ class EarnService {
       network: avaxXPNetwork
     })
 
-    AnalyticsService.captureWithEncryption('StakeTransactionStarted', {
-      txHash: txID,
-      chainId: avaxXPNetwork.chainId
+    AnalyticsService.capture('StakeTransactionStarted', {
+      encrypted: {
+        txHash: txID,
+        chainId: avaxXPNetwork.chainId
+      }
     })
     Logger.trace('txID', txID)
 
@@ -477,7 +482,9 @@ class EarnService {
           }
         })
     } catch (error) {
-      Logger.error('getTransformedStakesForAllAccounts failed: ', error)
+      Logger.error('getTransformedStakesForAllAccounts failed: ', error, {
+        source: SentryTag.Glacier
+      })
     }
   }
 

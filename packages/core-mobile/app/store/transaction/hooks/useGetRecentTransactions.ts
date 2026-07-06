@@ -1,17 +1,12 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { useFocusEffect } from '@react-navigation/native'
-import { isAnyOf } from '@reduxjs/toolkit'
+import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { InteractionManager } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectIsLocked } from 'store/app/slice'
-import { popBridgeTransaction } from 'store/bridge/slice'
-import { addAppListener } from 'store/middleware/listener'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
-
-const REFETCH_EVENTS = isAnyOf(popBridgeTransaction)
 
 const POLLING_INTERVAL_IN_MS = 15000
 
@@ -26,8 +21,6 @@ const emptyArr: Transaction[] = []
  *    refetch transactions every 15 seconds
  *  - if active network/account changes,
  *    it will auto refetch if cached data is stale (after 60 seconds of being unused)
- *  - while the component is in focus,
- *    trigger a refetch when certain events occur (for ex, a pending bridge transaction finishes)
  *  - refetch transactions whenever the app is switched from another screen to portfolio screen
  *    except from react-native-tab-view screens
  */
@@ -40,7 +33,6 @@ export const useGetRecentTransactions = (
   isError: boolean
   refresh: () => void
 } => {
-  const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
@@ -58,24 +50,6 @@ export const useGetRecentTransactions = (
       skip: isAppLocked,
       pollingInterval: POLLING_INTERVAL_IN_MS
     }
-  )
-
-  // whenever the subscribed component is in focus
-  // we will refetch transactions when certain events occur that are not part of the query args
-  useFocusEffect(
-    // @ts-ignore: unsubscribe from redux addListener has incorrect type
-    useCallback(() => {
-      return dispatch(
-        addAppListener({
-          matcher: REFETCH_EVENTS,
-          effect: () => {
-            InteractionManager.runAfterInteractions(() => {
-              refetch()
-            })
-          }
-        })
-      )
-    }, [dispatch, refetch])
   )
 
   useFocusEffect(

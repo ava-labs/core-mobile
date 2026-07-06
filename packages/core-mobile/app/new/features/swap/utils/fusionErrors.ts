@@ -1,13 +1,30 @@
-import { isSdkError } from '@avalabs/fusion-sdk'
+import { isEstimateNativeFeeError, isSdkError } from '@avalabs/fusion-sdk'
 import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
+import { CCT_CALLBACKS_ERROR_TAG } from '../services/cct/consts'
 
-const INSUFFICIENT_BALANCE_FOR_FEES =
-  'Insufficient balance to complete swap and cover gas fees'
+export type FusionQuoteErrorKind =
+  | 'network-fee-only' // gas alone exceeds balance; no bridge fee involved
+  | 'provider-specific' // error is specific to this quote's provider and may not repeat on another quote
+  | 'other'
 
 export class FusionQuoteError extends Error {
-  constructor(message: string, public readonly reason?: QuoterDoneReason) {
+  public readonly reason?: QuoterDoneReason
+  public readonly isWarning?: boolean
+  public readonly kind: FusionQuoteErrorKind
+
+  constructor(
+    message: string,
+    options?: {
+      reason?: QuoterDoneReason
+      isWarning?: boolean
+      kind?: FusionQuoteErrorKind
+    }
+  ) {
     super(message)
     this.name = 'FusionQuoteError'
+    this.reason = options?.reason
+    this.isWarning = options?.isWarning
+    this.kind = options?.kind ?? 'other'
   }
 }
 
@@ -16,13 +33,13 @@ export const fusionErrors = {
   noQuotes(): FusionQuoteError {
     return new FusionQuoteError(
       'No quotes available right now. Please try again.',
-      'no-quotes'
+      { reason: 'no-quotes' }
     )
   },
   noEligibleServices(): FusionQuoteError {
     return new FusionQuoteError(
       'Swap not supported for this token pair.\nPlease try a different pair.',
-      'no-eligible-services'
+      { reason: 'no-eligible-services' }
     )
   },
 
@@ -32,6 +49,11 @@ export const fusionErrors = {
   },
   unknownServiceType(serviceType: string): FusionQuoteError {
     return new FusionQuoteError(`Unknown service type: ${serviceType}`)
+  },
+  cctDependenciesMissing(): FusionQuoteError {
+    return new FusionQuoteError(
+      'AVALANCHE_CCT enabled but cctDependencies not provided'
+    )
   },
 
   // Type-conversion / validation errors
@@ -72,36 +94,182 @@ export const fusionErrors = {
   belowMinimumAmount(formattedMin: string): FusionQuoteError {
     return new FusionQuoteError(`Minimum amount is ${formattedMin}.`)
   },
-  insufficientBalanceForFees(): FusionQuoteError {
-    return new FusionQuoteError(INSUFFICIENT_BALANCE_FOR_FEES)
-  },
-  insufficientBalanceForAdditiveFee(formattedMax: string): FusionQuoteError {
+  // Recurring: the full schedule total (amountPerOrder × numberOfOrders) must be
+  // funded up front. For native source tokens the first fill pre-wraps the whole
+  // total to WAVAX in one tx (the schedule can't pull native per order), so a
+  // total above balance reverts on-chain at estimateGas with INSUFFICIENT_FUNDS
+  // and surfaces as a generic "Recurring swap failed" toast. Block at input time
+  // instead. ERC-20 schedules also need the total to satisfy every future fill,
+  // so the same guard applies. Skipped for Unlimited (no finite total).
+  recurringTotalExceedsBalance(
+    numberOfOrders: number,
+    formattedTotal: string
+  ): FusionQuoteError {
     return new FusionQuoteError(
-      `Insufficient balance to cover swap amount and fees.\nMax amount is: ${formattedMax}`
+      `Insufficient balance — ${numberOfOrders} orders require ${formattedTotal}.`
     )
   },
+  // ERC-20 source: token balance covers the principal but the native balance
+  // can't cover the one-time recurring schedule fee (charged in the gas token).
+  recurringScheduleFeeExceedsNativeBalance(
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedFee} for the schedule fee.`
+    )
+  },
+  // ERC-20 source: neither the token balance (principal) nor the native balance
+  // (schedule fee) is sufficient — surface both shortfalls in one message.
+  recurringInsufficientForTotalAndFee(
+    formattedTotal: string,
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedTotal} and ${formattedFee} for the schedule fee.`
+    )
+  },
+  // Native token: gas alone exceeds balance (no bridge fee)
+  networkFeeExceedsBalance(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network fee exceeds your balance.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Native token: gas + bridge fees exceed balance
+  feesExceedBalance(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network and bridge fees exceed your balance.\nRequired fees: ${formattedFee}`
+    )
+  },
+  // Native token: balance covers gas but not gas + swap amount (no bridge fee)
+  amountExceedsBalanceAfterNetworkFee(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and network fee.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Native token: balance covers fees but not fees + swap amount
+  amountExceedsBalanceAfterFees(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and fees.\nRequired fees: ${formattedFee}`
+    )
+  },
+  // Non-native token: not enough native balance to pay gas (no bridge fee)
+  networkFeeExceedsNativeBalance(
+    symbol: string,
+    formattedAmount: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network fee exceeds your ${symbol} balance.\nNetwork fee: ${formattedAmount}.`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Non-native token: not enough native balance to pay gas + bridge fee
+  feesExceedNativeBalance(
+    symbol: string,
+    formattedAmount: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network and bridge fees exceed your ${symbol} balance.\nRequired fees: ${formattedAmount}.`
+    )
+  },
+  // Non-native token: bridge fee alone exceeds token balance
+  bridgeFeeExceedsBalance(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Bridge fee exceeds your balance.\nBridge fee: ${formattedFee}`
+    )
+  },
+  // Non-native token: token balance covers the fee but not fee + swap amount
+  amountExceedsBalanceAfterBridgeFee(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and bridge fee.\nBridge fee: ${formattedFee}`
+    )
+  },
+  // isNativeFeeIssue=true  → native token shortfall (network-fee-only)
+  // isNativeFeeIssue=false → token shortfall
+  // isNativeFeeIssue=undefined → unknown (e.g. Solana simulation, no cause attached)
+  insufficientFundsForFee(
+    isNativeFeeIssue: boolean | undefined
+  ): FusionQuoteError {
+    if (isNativeFeeIssue === true) {
+      return new FusionQuoteError(
+        'Insufficient native funds to cover the fee',
+        {
+          kind: 'network-fee-only'
+        }
+      )
+    }
+    if (isNativeFeeIssue === false) {
+      return new FusionQuoteError(
+        'Insufficient token funds to estimate the fee'
+      )
+    }
+    return new FusionQuoteError('Insufficient funds to estimate the fee', {
+      kind: 'provider-specific'
+    })
+  },
   gasEstimationFailed(): FusionQuoteError {
-    return new FusionQuoteError('Unable to estimate gas')
+    return new FusionQuoteError('Unable to estimate gas', { isWarning: true })
+  },
+  swapAmountTooSmall(): FusionQuoteError {
+    return new FusionQuoteError(
+      'Swap amount is too small for this token pair.\nTry a larger amount.',
+      { kind: 'provider-specific' }
+    )
   }
 }
 
 /**
- * Check if error is user rejection (user cancelled transaction)
- * Don't show error toast for these - user intentionally cancelled
+ * Returns true for errors caused solely by insufficient gas balance (no bridge
+ * fee component). These can be downgraded to warnings on networks with gasless
+ * support, since the gas fee will be covered outside the user's balance.
+ */
+export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
+  return error.kind === 'network-fee-only'
+}
+
+// EIP-1193 standard code for a user-rejected request. The rejection can reach
+// us either as an Error instance OR as a plain JSON-RPC error object — e.g.
+// `providerErrors.userRejectedRequest()` serialized to `{ code, message }`
+// after crossing the VM-module boundary. A plain object is NOT `instanceof
+// Error`, so a message-only check on `Error` lets it through to the generic
+// "failed" path. The 4001 code survives serialization on both shapes and is
+// the reliable signal; we keep the message check as a fallback.
+const USER_REJECTED_REQUEST_CODE = 4001
+const USER_REJECTION_MESSAGE_PATTERN = /user (rejected|cancel(l|led))/i
+
+/**
+ * Check if error is a user rejection (user cancelled the transaction).
+ * Don't show an error toast for these — the user intentionally cancelled.
+ *
+ * Robust to the three shapes a rejection arrives in: an `Error` instance, a
+ * plain JSON-RPC error object (`{ code, message }`), and a bare string.
  */
 export function isUserRejectionError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false
-
-  return error.message.toLowerCase().includes('user rejected')
+  if (typeof error === 'string') {
+    return USER_REJECTION_MESSAGE_PATTERN.test(error)
+  }
+  if (!error || typeof error !== 'object') return false
+  const { code, message } = error as { code?: unknown; message?: unknown }
+  if (code === USER_REJECTED_REQUEST_CODE) return true
+  return (
+    typeof message === 'string' && USER_REJECTION_MESSAGE_PATTERN.test(message)
+  )
 }
+
+// The SDK has updated its error phrasing across versions, so the checkers
+// below match both legacy and current substrings to keep the retry/advance
+// logic firing.
 
 /**
  * Check if error is gas estimation failure
  * These are retryable with next quote (auto mode only)
  */
 export function isGasEstimationError(error: unknown): boolean {
+  if (isEstimateNativeFeeError(error)) return true
   if (!(error instanceof Error)) return false
-  return error.message.toLowerCase().includes('gas estimation')
+  const message = error.message.toLowerCase()
+  return message.includes('gas estimation') || message.includes('estimate gas')
 }
 
 /**
@@ -140,9 +308,16 @@ export function getSwapErrorMessage(error: unknown): string {
 
   const message = actualError?.message ?? error.message
 
+  // CCT swap couldn't resolve the active account's X/P addresses (e.g. a Ledger
+  // wallet with no derivable Avalanche address). Surface a clear message instead
+  // of the raw internal guard string. See CP-14507.
+  if (message.includes(CCT_CALLBACKS_ERROR_TAG)) {
+    return "This account isn't set up for cross-chain swaps. Please try a different account."
+  }
+
   // Common error patterns
   if (message.includes('insufficient funds')) {
-    return INSUFFICIENT_BALANCE_FOR_FEES
+    return 'Insufficient balance to cover swap amount and fees.'
   }
   if (message.includes('slippage')) {
     return 'Price moved too much. Try increasing slippage tolerance.'

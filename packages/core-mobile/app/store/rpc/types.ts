@@ -2,6 +2,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { AppListenerEffectAPI } from 'store/types'
 import { RpcError } from '@avalabs/vm-module-types'
 import { uuid } from 'utils/uuid'
+import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
 
 export interface PeerMeta {
   name: string
@@ -41,6 +42,8 @@ export enum RpcMethod {
   /* standard methods */
   ETH_REQUEST_ACCOUNTS = 'eth_requestAccounts',
   ETH_SEND_TRANSACTION = 'eth_sendTransaction',
+  // In-app only — not declared in the WC namespace allowlist.
+  ETH_SEND_TRANSACTION_BATCH = 'eth_sendTransactionBatch',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
   SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
@@ -50,6 +53,7 @@ export enum RpcMethod {
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
   WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
+  WALLET_WATCH_ASSET = 'wallet_watchAsset',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',
@@ -192,5 +196,59 @@ export enum RequestContext {
 
   // used to show "Transaction sent" immediately in onTransactionPending instead of a
   // pending toast — used when no confirmed toast will follow (e.g. Fusion same-chain swap)
-  IMMEDIATE_SENT_TOAST = 'immediateSentToast'
+  IMMEDIATE_SENT_TOAST = 'immediateSentToast',
+
+  // Snapshot of the `sae-override` PostHog feature flag, captured at request
+  // creation time by createInAppRequest. Read by isOptimisticConfirmationEnabled
+  // to short-circuit the InfoAPI Helicon check. See createInAppRequest for the
+  // rationale on threading this via context instead of a service-level read.
+  SAE_OVERRIDE = 'saeOverride',
+
+  // Quick Swaps bypass intent — consumed by SwapValidator and
+  // BatchSwapValidator to decide whether a Markr swap can skip the
+  // /approval modal.
+  SWAP_AUTO_APPROVE = 'swapAutoApprove',
+
+  // Carries the BatchSwapValidator's reason to the per-tx fallback flow
+  // so the manual modal can render "Manual approval required: <reason>".
+  QUICK_SWAPS_MANUAL_REVIEW_REASON = 'quickSwapsManualReviewReason',
+
+  // Snapshot of the `fusion-quick-swaps` PostHog flag at in-app request
+  // creation time. The validator re-checks this so a kill-switch flip
+  // refuses bypass even if a stale SWAP_AUTO_APPROVE context arrives
+  // from a code path that didn't go through the live-state-aware signer.
+  QUICK_SWAPS_AVAILABLE = 'quickSwapsAvailable',
+
+  // Carries display metadata (symbols, frequency, order count) for an
+  // in-flight recurring-swap action through the ApprovalController so the
+  // ApprovalScreen can render the "Scheduling / Cancelling / Pausing /
+  // Resuming recurring swap" preview block above the standard tx details.
+  //
+  // The SDK signs + broadcasts internally, so the value is no longer
+  // threaded in by the recurring submit/cancel/pause/resume hooks via
+  // `useInAppRequest().request(...)`. Instead, producers pass display metadata
+  // through the SDK `signerContext` → `step.signerContext`, and
+  // `EvmSigner.signOne` injects it onto requests whose stepDetails carry a
+  // `markr-recurring*` aggregator id.
+  RECURRING_SWAP = 'recurringSwap'
+}
+
+// Presence of `SWAP_AUTO_APPROVE` in request.context signals bypass
+// intent. Fields below are inputs the validator consumes.
+export type SwapAutoApproveContext = {
+  maxBuy?: QuickSwapMaxBuy
+  srcTokenAddress?: string
+  destTokenAddress?: string
+  isSrcTokenNative?: boolean
+  isDestTokenNative?: boolean
+  // Basis points (e.g. 50 = 0.5%).
+  slippage?: number
+  minAmountOut?: string
+  // Used to net out gas burn from source-side diff on native swaps.
+  amountIn?: string
+  // Quote-attested partner fee (basis points). Validator adds this to
+  // the slippage tolerance for the USD-loss check. Passing the actual
+  // value (not just a boolean) means we tolerate exactly the fee Markr
+  // quoted, not a constant guess. Undefined or 0 = no fee.
+  partnerFeeBps?: number
 }

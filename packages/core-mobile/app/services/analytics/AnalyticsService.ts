@@ -1,5 +1,4 @@
 import PostHogService from 'services/posthog/PostHogService'
-import { AnalyticsEvents } from 'types/analytics'
 import Config from 'react-native-config'
 import { encrypt } from 'utils/hpke'
 import Logger from 'utils/Logger'
@@ -19,6 +18,16 @@ if (!Config.ANALYTICS_ENCRYPTION_KEY) {
 if (!Config.ANALYTICS_ENCRYPTION_KEY_ID) {
   Logger.warn(
     'ANALYTICS_ENCRYPTION_KEY_ID is missing in env file. Analytics are disabled.'
+  )
+}
+
+const hasEncryptedPayload = (
+  properties: unknown
+): properties is { encrypted: Record<string, unknown> } => {
+  return (
+    typeof properties === 'object' &&
+    properties !== null &&
+    'encrypted' in properties
   )
 }
 
@@ -42,29 +51,25 @@ class AnalyticsService implements AnalyticsServiceInterface {
       return
     }
 
-    return PostHogService.capture(eventName, properties[0])
-  }
+    const payload = properties[0]
 
-  async captureWithEncryption<E extends AnalyticsEventName>(
-    eventName: E,
-    properties: AnalyticsEvents[E]
-  ): Promise<void> {
-    if (!this.isEnabled) {
-      return
+    if (!hasEncryptedPayload(payload)) {
+      return PostHogService.capture(eventName, payload)
     }
 
     try {
-      const stringifiedProperties = JSON.stringify(properties)
+      const { encrypted: toEncrypt, ...plaintext } = payload
       const { encrypted, enc, keyID } = await encrypt(
-        stringifiedProperties,
+        JSON.stringify(toEncrypt),
         this.analyticsEncryptionKey,
         this.analyticsEncryptionKeyId
       )
 
       return PostHogService.capture(eventName, {
+        ...plaintext,
         data: encrypted,
         enc,
-        keyID: keyID
+        keyID
       })
     } catch (error) {
       Logger.error(

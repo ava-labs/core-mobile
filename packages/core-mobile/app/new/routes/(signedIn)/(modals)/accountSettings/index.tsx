@@ -1,7 +1,6 @@
 import {
   Avatar,
   GroupList,
-  Icons,
   Logos,
   showAlert,
   Text,
@@ -21,6 +20,7 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
+import { AdvancedSettings } from 'features/accountSettings/components/AdvancedSettings'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import { Support } from 'features/accountSettings/components/Support'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
@@ -94,6 +94,10 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
+  const goToAdvancedSettings = useCallback(() => {
+    navigate('/accountSettings/advancedSettings')
+  }, [navigate])
+
   const onTestnetChange = (value: boolean): void => {
     showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
 
@@ -143,7 +147,20 @@ const AccountSettingsScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
 
-        <View sx={{ gap: 24, paddingHorizontal: 16 }}>
+        <View
+          // The update banner mounts asynchronously (after the update check
+          // resolves), inserting as the first child of this column. On Android
+          // (Fabric) RELEASE builds, inserting it does not reliably reflow the
+          // already-laid-out sibling rows below — they keep their original Y and
+          // the banner overlaps them (release-only, device-dependent timing
+          // race). Keying this column by the banner's presence remounts the
+          // subtree on that transition, forcing a clean layout pass so the rows
+          // are positioned below the banner. The banner keeps its dynamic,
+          // content-driven height.
+          key={
+            appUpdateStatus?.needsUpdate ? 'settings-with-banner' : 'settings'
+          }
+          sx={{ gap: 24, paddingHorizontal: 16 }}>
           {renderAppUpdateBanner()}
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
@@ -224,6 +241,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectCurrency={goToCurrency}
               selectAppIcon={goToSelectAppIcon}
             />
+            <AdvancedSettings selectAdvancedSettings={goToAdvancedSettings} />
             <UserPreferences
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
@@ -280,17 +298,27 @@ const AccountSettingsScreen = (): JSX.Element => {
         {/* Footer */}
         <View
           testID="settings_footer"
-          sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
+          sx={{ gap: 6, alignItems: 'center', paddingBottom: 24 }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}
             height={22}
           />
-          <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
+          <Text
+            sx={{
+              color: colors.$textSecondary,
+              fontFamily: 'Inter-Regular',
+              fontSize: 12,
+              lineHeight: 14
+            }}>
+            {`©${COPYRIGHT_YEAR} Ava Labs – All rights reserved`}
+          </Text>
         </View>
       </View>
     </ScrollScreen>
   )
 }
+
+const COPYRIGHT_YEAR = new Date().getFullYear()
 
 export default AccountSettingsScreen

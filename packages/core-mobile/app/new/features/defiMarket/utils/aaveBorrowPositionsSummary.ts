@@ -1,3 +1,4 @@
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { formatUnits } from 'viem'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../consts'
@@ -60,8 +61,10 @@ export const buildAaveBorrowPositions = ({
       return []
     }
 
-    const borrowedAmount = Number(
-      formatUnits(borrowedBalance, market.asset.decimals)
+    const borrowedAmount = new TokenUnit(
+      borrowedBalance,
+      market.asset.decimals,
+      market.asset.symbol
     )
 
     return [
@@ -70,7 +73,8 @@ export const buildAaveBorrowPositions = ({
         borrowedBalance,
         borrowedAmount,
         borrowedAmountUsd:
-          borrowedAmount * market.asset.mintTokenBalance.price.value.toNumber()
+          borrowedAmount.toDisplay({ asNumber: true }) *
+          market.asset.mintTokenBalance.price.value.toNumber()
       }
     ]
   })

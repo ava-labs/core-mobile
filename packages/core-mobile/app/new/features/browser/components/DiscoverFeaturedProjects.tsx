@@ -60,7 +60,11 @@ export const DiscoverFeaturedProjects = (): JSX.Element | null => {
         image={item.logo?.url}
         isLast={index === (randomisedItems?.length ?? 0) - 1}
         renderRight={
-          <Button size="small" type="secondary" onPress={() => onPress(item)}>
+          <Button
+            testID={`trending_project_open_btn__${item.name}`}
+            size="small"
+            type="secondary"
+            onPress={() => onPress(item)}>
             Open
           </Button>
         }

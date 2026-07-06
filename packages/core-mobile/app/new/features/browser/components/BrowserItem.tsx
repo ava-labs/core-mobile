@@ -178,6 +178,7 @@ export const ListItem = memo(
         <Avatar image={image} size={36} />
 
         <View
+          testID="browser_history_item"
           sx={{
             height: LIST_ITEM_HEIGHT,
             flexDirection: 'row',

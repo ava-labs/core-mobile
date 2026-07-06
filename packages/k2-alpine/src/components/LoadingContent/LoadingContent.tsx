@@ -116,6 +116,7 @@ export const LoadingFadeInOut = ({
   children: React.ReactNode
 }): JSX.Element => {
   const opacity = useSharedValue(maxOpacity)
+  const paddingLeftValue = useSharedValue(isLoading ? paddingLeft : 0)
 
   useEffect(() => {
     if (isLoading) {
@@ -129,12 +130,21 @@ export const LoadingFadeInOut = ({
     }
   }, [isLoading, maxOpacity, minOpacity, opacity])
 
+  // Drive paddingLeft from its own shared value via an effect so it is NOT
+  // recomputed inside the opacity-driven worklet below. `opacity` is animated
+  // with an infinite `withRepeat`, so the `useAnimatedStyle` worklet re-runs
+  // every frame; calling `withTiming(...)` there allocated a new timing object
+  // per frame (a memory leak while the shimmer is active).
+  useEffect(() => {
+    paddingLeftValue.value = withTiming(isLoading ? paddingLeft : 0, {
+      duration: 300
+    })
+  }, [isLoading, paddingLeft, paddingLeftValue])
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      paddingLeft: withTiming(isLoading ? paddingLeft : 0, {
-        duration: 300
-      })
+      paddingLeft: paddingLeftValue.value
     }
   })
 

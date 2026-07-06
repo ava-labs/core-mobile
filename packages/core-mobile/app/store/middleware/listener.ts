@@ -2,6 +2,7 @@ import { addListener, createListenerMiddleware } from '@reduxjs/toolkit'
 import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
+import { addPermissionsListeners } from 'store/permissions/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
@@ -17,8 +18,10 @@ import { AppAddListener, AppStartListening } from 'store/types'
 import { addCurrencyListeners } from 'store/settings/currency/listeners'
 import { addMeldListeners } from 'store/meld/listeners'
 import { addBranchListeners } from 'store/branch/listener'
-import { addNestEggListeners } from 'store/nestEgg/listeners'
+// Nest Egg disabled (CP-14058) — see addNestEggListeners call below
+// import { addNestEggListeners } from 'store/nestEgg/listeners'
 import { addFusionListeners } from 'new/features/swap/store/listeners'
+import { addRecurringSwapListeners } from 'new/features/recurringSwap/store/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -34,6 +37,8 @@ addAppListeners(startListening)
 addBalanceListeners(startListening)
 
 addAccountListeners(startListening)
+
+addPermissionsListeners(startListening)
 
 addNetworkListeners(startListening)
 
@@ -61,9 +66,14 @@ addMeldListeners(startListening)
 
 addBranchListeners(startListening)
 
-addNestEggListeners(startListening)
+// Nest Egg disabled (CP-14058): feature unused and linked to a blank,
+// un-dismissable modal on iOS. Commented out (not removed) so it can be
+// re-enabled later.
+// addNestEggListeners(startListening)
 
 addFusionListeners(startListening)
+
+addRecurringSwapListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

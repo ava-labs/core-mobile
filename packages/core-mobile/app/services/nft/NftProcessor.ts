@@ -1,124 +1,44 @@
-import { Image } from 'react-native'
-import { NFTItemExternalData, NftContentType } from 'store/nft'
-import Logger from 'utils/Logger'
-import { NftImageData, NftItemExternalData } from './types'
+import { NftContentType, NftImageData, NftItemExternalData } from './types'
 import { convertIPFSResolver } from './utils'
 
+const BASE64_SVG_PREFIX = 'data:image/svg+xml;base64,'
+
 export class NftProcessor {
-  private base64 = require('base-64')
-  private base64Prefix = 'data:image/svg+xml;base64,'
-
-  fetchImageAndAspect(imageData: string): Promise<NftImageData> {
-    return new Promise<NftImageData>(resolve => {
-      if (this.isBase64Svg(imageData)) {
-        const svg = this.decodeBase64Svg(imageData)
-        const trimmed = this.removeSvgNamespace(svg)
-        const aspect = this.extractSvgAspect(trimmed) ?? 1
-        resolve({ image: svg, aspect, isSvg: true, type: NftContentType.SVG })
-      } else {
-        const imageUrl = convertIPFSResolver(imageData)
-        this.identifyByMagicNumber(imageUrl)
-          .then(type => {
-            if (type === NftContentType.SVG) {
-              resolve({
-                image: imageUrl,
-                aspect: 1,
-                isSvg: false,
-                type
-              })
-            } else if (type === NftContentType.MP4) {
-              resolve({
-                video: imageUrl,
-                image: '',
-                aspect: 1,
-                isSvg: false,
-                type
-              })
-            } else {
-              Image.getSize(
-                imageUrl,
-                (width: number, height: number) => {
-                  const aspect = height / width
-                  resolve({
-                    image: imageUrl,
-                    aspect: isNaN(aspect) ? 1 : aspect,
-                    isSvg: false,
-                    type
-                  })
-                },
-                error => {
-                  resolve({ image: imageUrl, aspect: 1, isSvg: false, type })
-                  Logger.error(error)
-                }
-              )
-            }
-          })
-          .catch(error => {
-            Logger.error('Error fetching image and aspect:', error)
-            resolve({
-              image: '',
-              aspect: 1,
-              isSvg: false,
-              type: NftContentType.Unknown
-            })
-          })
-      }
-    })
-  }
-
-  private isBase64Svg(imageData: string): boolean {
-    return imageData.startsWith(this.base64Prefix)
-  }
-
-  private decodeBase64Svg(svgData: string): string {
-    const base64Data = svgData.substring(this.base64Prefix.length)
-    return this.base64Prefix + this.base64.decode(base64Data).toString()
-  }
-
-  private removeSvgNamespace(svg: string): string {
-    const regex = new RegExp('(</*)(.+?:)', 'ig')
-    return svg.replace(regex, '$1')
-  }
-
-  private extractSvgAspect(svg: string): number | undefined {
-    const viewBoxRegex = new RegExp('viewBox="(.*?)"', 'i')
-    const viewBoxMatch = svg.match(viewBoxRegex)
-    if (viewBoxMatch && viewBoxMatch.length > 1) {
-      const whMatch = viewBoxMatch[1]?.split(' ')
-      if (whMatch && whMatch.length === 4) {
-        const height = whMatch[3]
-        const width = whMatch[2]
-        if (!height || !width) return undefined
-        return Number.parseInt(height) / Number.parseInt(width)
-      }
+  async fetchImage(imageData: string): Promise<NftImageData> {
+    if (!imageData) {
+      throw new Error('[NftProcessor] fetchImage called with empty uri')
     }
-    return undefined
+
+    if (imageData.startsWith(BASE64_SVG_PREFIX)) {
+      return { uri: imageData, type: NftContentType.SVG }
+    }
+
+    const imageUrl = convertIPFSResolver(imageData)
+    const type = await this.identifyByMagicNumber(imageUrl)
+    return { uri: imageUrl, type }
   }
 
   private async identifyByMagicNumber(url: string): Promise<NftContentType> {
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { Range: 'bytes=0-256' } // Increased range for better detection
-      })
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-256' }
+    })
 
-      if (!response.ok) return NftContentType.Unknown
-
-      const buffer = await response.arrayBuffer()
-      const uint8Array = new Uint8Array(buffer)
-      const textDecoder = new TextDecoder()
-      const snippet = textDecoder.decode(buffer).trimStart()
-
-      if (this.isJpeg(uint8Array)) return NftContentType.JPG
-      if (this.isPng(uint8Array)) return NftContentType.PNG
-      if (this.isGif(uint8Array)) return NftContentType.GIF
-      if (this.isSvg(snippet)) return NftContentType.SVG
-      if (this.isMp4(uint8Array)) return NftContentType.MP4
-
-      return NftContentType.Unknown
-    } catch (error) {
-      return NftContentType.Unknown
+    if (!response.ok) {
+      throw new Error(`[NftProcessor] HTTP ${response.status} fetching ${url}`)
     }
+
+    const buffer = await response.arrayBuffer()
+    const uint8Array = new Uint8Array(buffer)
+    const snippet = new TextDecoder().decode(buffer).trimStart()
+
+    if (this.isJpeg(uint8Array)) return NftContentType.JPG
+    if (this.isPng(uint8Array)) return NftContentType.PNG
+    if (this.isGif(uint8Array)) return NftContentType.GIF
+    if (this.isSvg(snippet)) return NftContentType.SVG
+    if (this.isMp4(uint8Array)) return NftContentType.MP4
+
+    return NftContentType.Unknown
   }
 
   private isJpeg(uint8Array: Uint8Array): boolean {
@@ -162,7 +82,7 @@ export class NftProcessor {
     )
   }
 
-  async fetchMetadata(tokenUri: string): Promise<NFTItemExternalData> {
+  async fetchMetadata(tokenUri: string): Promise<NftItemExternalData> {
     const base64MetaPrefix = 'data:application/json;base64,'
     if (tokenUri.startsWith(base64MetaPrefix)) {
       const base64Metadata = tokenUri.substring(base64MetaPrefix.length)

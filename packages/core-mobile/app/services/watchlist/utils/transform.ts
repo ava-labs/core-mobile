@@ -2,6 +2,36 @@ import { TrendingToken } from 'utils/api/types'
 import { Charts, MarketToken, MarketType, Prices } from 'store/watchlist/types'
 import { transformMartketChartRawPrices } from 'services/token/utils'
 
+export const applyExchangeRateToTrendingTokens = (
+  trendingTokens: TrendingToken[],
+  exchangeRate: number
+): TrendingToken[] => {
+  return trendingTokens.map(item => ({
+    ...item,
+    price:
+      typeof item.price === 'number' ? item.price * exchangeRate : item.price,
+    marketcap:
+      typeof item.marketcap === 'number'
+        ? item.marketcap * exchangeRate
+        : item.marketcap,
+    fdv: typeof item.fdv === 'number' ? item.fdv * exchangeRate : item.fdv,
+    volume24hUSD:
+      typeof item.volume24hUSD === 'number'
+        ? item.volume24hUSD * exchangeRate
+        : item.volume24hUSD,
+    liquidity:
+      typeof item.liquidity === 'number'
+        ? item.liquidity * exchangeRate
+        : item.liquidity,
+    sparkline: item.sparkline
+      ? item.sparkline.map(point => ({
+          ...point,
+          value: point.value * exchangeRate
+        }))
+      : item.sparkline
+  }))
+}
+
 export const transformTrendingTokens = (
   trendingTokens: TrendingToken[]
 ): {

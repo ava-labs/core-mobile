@@ -31,6 +31,7 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
+import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
@@ -55,9 +56,8 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  selectIsLegacyBridgeEnabled,
   selectIsMeldOfframpBlocked,
-  selectIsInAppDefiBorrowBlocked,
+  selectIsInAppDefiBlocked,
   selectIsFusionEnabled
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -90,12 +90,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
-  // When borrow feature is enabled, Activity moves to Portfolio sub-tab
-  const segmentItems = isInAppDefiBorrowBlocked
+  // When in-app DeFi is enabled, Activity moves to Portfolio sub-tab
+  const segmentItems = isInAppDefiBlocked
     ? SEGMENT_ITEMS_DEFAULT
     : SEGMENT_ITEMS_WITH_ACTIVITY
 
@@ -106,13 +105,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
-
-  const handleBridge = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/bridge'
-    })
-  }, [navigate])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -137,7 +129,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isBalanceLoaded,
     isLoading: isLoadingBalances,
     isRefetching: isRefetchingBalance,
-    isAllBalancesInaccurate: allBalancesInaccurate
+    isAllBalancesInaccurate: allBalancesInaccurate,
+    isAllBalancesError
   } = useAccountBalanceSummary(activeAccount)
 
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
@@ -257,13 +250,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    if (isLegacyBridgeEnabled) {
-      buttons.push({
-        title: ActionButtonTitle.Bridge,
-        icon: 'bridge',
-        onPress: handleBridge
-      })
-    }
     if (!isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -277,10 +263,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToBuy,
     navigateToWithdraw,
     handleReceive,
-    handleBridge,
     navigateToSwap,
     isMeldOfframpBlocked,
-    isLegacyBridgeEnabled,
     isFusionEnabled
   ])
 
@@ -334,11 +318,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [totalPriceChange, valueChange24h, indicatorStatus, percentChange24h])
 
   const errorMessage = useMemo(() => {
-    if (allBalancesInaccurate) {
+    if (allBalancesInaccurate || isAllBalancesError) {
       return 'Unable to load balances'
     }
     return undefined
-  }, [allBalancesInaccurate])
+  }, [allBalancesInaccurate, isAllBalancesError])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
@@ -367,11 +351,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor={theme.colors.$surfacePrimary}
         />
 
+        {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
+            reserves no space) when none. */}
+        <StuckFundsBanner sx={{ marginHorizontal: 16, marginTop: 21 }} />
+
         {filteredTokenList.length > 0 && (
           <ActionButtons
             buttons={actionButtons}
             contentContainerStyle={{
               padding: 16,
+              paddingTop: 20,
               paddingBottom: 20
             }}
           />
@@ -544,8 +533,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       }
     ]
 
-    // When borrow feature is enabled, add Activity as a sub-tab
-    if (!isInAppDefiBorrowBlocked) {
+    // When in-app DeFi is enabled, add Activity as a sub-tab
+    if (!isInAppDefiBlocked) {
       baseTabs.push({
         tabName: 'Activity',
         component: <ActivityScreen containerStyle={contentContainerStyle} />
@@ -563,7 +552,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles,
-    isInAppDefiBorrowBlocked
+    isInAppDefiBlocked
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {

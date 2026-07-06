@@ -1,20 +1,40 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your theme here. -->
+    <!-- Base theme containing all shared, mode-independent items.
+         Both light and night AppTheme inherit from this so that
+         resource-qualified style overrides (values-night/) don't
+         accidentally drop window, system bar, or dialog settings. -->
+    <style name="BaseAppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
 
-         <!--style for react-native-community/datetimepicker -->
+        <!--style for react-native-community/datetimepicker -->
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
         <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
 
         <!-- default tint color for dialog button text -->
         <item name="android:colorPrimary">@color/dialogTextColor</item>
         <item name="colorPrimary">@color/dialogTextColor</item>
+    </style>
+
+    <!-- Application theme for both light and dark mode.
+         Overrides Material3 surface/container colors to prevent the default
+         purple/lavender tint (from the M3 baseline seed color) from appearing
+         as a pink header in light mode on Android.
+         Light vs. dark surface values are driven by the resource-qualified color
+         resources appSurfacePrimary and appSurfaceSecondary, defined in
+         values/colors.xml (light) and values-night/colors.xml (dark). -->
+    <style name="AppTheme" parent="BaseAppTheme">
+        <item name="colorSurface">@color/appSurfacePrimary</item>
+        <item name="android:colorBackground">@color/appSurfacePrimary</item>
+        <item name="colorSurfaceVariant">@color/appSurfaceSecondary</item>
+        <item name="colorSurfaceContainerLowest">@color/appSurfacePrimary</item>
+        <item name="colorSurfaceContainerLow">@color/appSurfacePrimary</item>
+        <item name="colorSurfaceContainer">@color/appSurfaceSecondary</item>
+        <item name="colorSurfaceContainerHigh">@color/appSurfaceSecondary</item>
+        <item name="colorSurfaceContainerHighest">@color/appSurfaceSecondary</item>
     </style>
 
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">

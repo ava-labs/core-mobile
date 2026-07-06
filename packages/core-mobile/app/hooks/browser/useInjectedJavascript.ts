@@ -22,9 +22,9 @@ export type InjectedJsMessageWrapper = {
     | 'page_styles'
     | 'log'
     | 'walletConnect_deeplink_blocked'
+    | 'window_open'
     | 'provider_request'
     | 'domain_metadata'
-    | 'nav_change'
   payload: string
 }
 
@@ -75,7 +75,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
       injected: [
         {
           injected_id: 'isAvalanche',
-          namespace: ${BlockchainNamespace.EIP155},
+          namespace: '${BlockchainNamespace.EIP155}',
         }
       ],
       rdns: null,
@@ -187,20 +187,30 @@ export function useInjectedJavascript(): InjectedJavascripts {
     }, 500); //add delay to make sure we don't get overridden by something else
   })();`
 
-  // blocks dapp redirects to walletconnect deeplinks
-  // after walletConnect sent a session request
-  const injectCustomWindowOpen = `(async function(){
-    const originalWindowOpen = window.open;
+  // Routes window.open through the native side instead of letting the WebView
+  // handle it. On Android with setSupportMultipleWindows=false, calling the
+  // platform window.open updates the WebView's visited history (and therefore
+  // our address bar) even when no actual page navigation replaces the content
+  // — that mismatch lets a malicious page render attacker UI under a trusted
+  // URL. We always intercept and hand the URL to the native tab manager so the
+  // address bar and the rendered content stay in sync.
+  const injectCustomWindowOpen = `(function(){
     window.open = function(url, target, features){
-      if (url.startsWith('core://wc?requestId')){
-        const message = {
-          method: 'walletConnect_deeplink_blocked',
+      try {
+        if (typeof url !== 'string' || url.length === 0) return null;
+        if (url.indexOf('core://wc?requestId') === 0){
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            method: 'walletConnect_deeplink_blocked',
+            payload: url
+          }));
+          return null;
+        }
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          method: 'window_open',
           payload: url
-        };
-        window.ReactNativeWebView.postMessage(JSON.stringify(message));
-        return null;
-      }
-      return originalWindowOpen(url, target, features);
+        }));
+      } catch (e) {}
+      return null;
     }
   })();`
 

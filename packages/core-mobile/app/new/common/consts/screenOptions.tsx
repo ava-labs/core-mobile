@@ -1,5 +1,5 @@
 import { View } from '@avalabs/k2-alpine'
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { NativeStackNavigationOptions } from 'expo-router'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
@@ -22,7 +22,13 @@ export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerTransparent: true,
   headerTitleAlign: 'center',
-  animation: 'slide_from_right'
+  // `ios_from_right` (not `slide_from_right`): after the RN 0.85 / Expo 56
+  // upgrade (react-native-screens 4.21 → 4.25) `slide_from_right` stopped
+  // sliding from the right on Android and animated from the bottom like a
+  // modal. `ios_from_right` is the modern iOS-style horizontal push — it slides
+  // the new screen in from the right on Android and resolves to the default
+  // (right) push on iOS, so iOS is unchanged.
+  animation: 'ios_from_right'
 }
 
 export const stackScreensOptions: NativeStackNavigationOptions | undefined = {

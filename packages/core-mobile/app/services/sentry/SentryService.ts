@@ -1,21 +1,32 @@
 import Config from 'react-native-config'
+import { isE2EBuild } from 'utils/Utils'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { ErrorEvent, TransactionEvent } from '@sentry/core'
 import UserService from 'services/user/UserService'
+import { AllowedSentryBreadcrumbCategory } from './types'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
   // eslint-disable-next-line no-console
   console.warn('SENTRY_DSN is not defined. Sentry is disabled.')
 
+/**
+ * Allowlist used by `beforeBreadcrumb`. Hoisted to module scope and held
+ * as a Set so the filter — which fires on every breadcrumb — does an O(1)
+ * lookup instead of re-allocating an array and scanning it each call.
+ */
+const ALLOWED_BREADCRUMB_CATEGORIES = new Set<string>(
+  Object.values(AllowedSentryBreadcrumbCategory)
+)
+
 // if development then only enable if spotlight is enabled
 // otherwise enable if not development
 const isAvailable =
   ((__DEV__ && DevDebuggingConfig.SENTRY_SPOTLIGHT) ||
-    (!__DEV__ && process.env.E2E !== 'true')) &&
+    (!__DEV__ && !isE2EBuild)) &&
   !!Config.SENTRY_DSN
 
 const navigationIntegration = Sentry.reactNavigationIntegration({
@@ -56,7 +67,16 @@ const init = (): void => {
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       beforeSend: scrubSentryData,
       beforeSendTransaction: scrubSentryData,
-      beforeBreadcrumb: () => {
+      beforeBreadcrumb: breadcrumb => {
+        // Breadcrumbs are dropped by default to prevent unintended data
+        // leaks (e.g. console output containing sensitive info). Categories
+        // listed in `AllowedSentryBreadcrumbCategory` are explicitly allowlisted.
+        if (
+          breadcrumb.category &&
+          ALLOWED_BREADCRUMB_CATEGORIES.has(breadcrumb.category)
+        ) {
+          return breadcrumb
+        }
         return null
       },
       tracesSampler: samplingContext => {
@@ -70,19 +90,33 @@ const init = (): void => {
   }
 }
 
-const captureException = (message: string, value?: unknown): void => {
+type CaptureExceptionOptions = {
+  value?: unknown
+  tags?: Record<string, string>
+}
+
+const captureException = (
+  message: string,
+  options: CaptureExceptionOptions = {}
+): void => {
   if (!isAvailable) {
     return
   }
 
-  if (value instanceof Error) {
-    Sentry.captureException(value, { extra: { message } })
-  } else {
-    Sentry.captureException(
-      new Error(message),
-      value !== undefined ? { extra: { value } } : undefined
-    )
-  }
+  const { value, tags } = options
+
+  Sentry.withScope(scope => {
+    if (tags) scope.setTags(tags)
+
+    if (value instanceof Error) {
+      Sentry.captureException(value, { extra: { message } })
+    } else {
+      Sentry.captureException(
+        new Error(message),
+        value !== undefined ? { extra: { value } } : undefined
+      )
+    }
+  })
 }
 
 /**
@@ -103,10 +137,13 @@ const sanitizeContext = (value: unknown): unknown => {
   }
 }
 
+/* eslint-disable max-params -- positional args preserve the existing call-site
+   shape; converting to an options object would touch every caller. */
 const captureMessage = (
   message: string,
   context?: Record<string, unknown>,
-  tags?: Record<string, string>
+  tags?: Record<string, string>,
+  fingerprint?: string[]
 ): void => {
   if (!isAvailable) {
     return
@@ -122,9 +159,13 @@ const captureMessage = (
     if (tags) {
       scope.setTags(tags)
     }
+    if (fingerprint && fingerprint.length > 0) {
+      scope.setFingerprint(fingerprint)
+    }
     Sentry.captureMessage(message)
   })
 }
+/* eslint-enable max-params */
 
 export default {
   init,

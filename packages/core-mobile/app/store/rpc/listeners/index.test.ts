@@ -60,6 +60,16 @@ jest
   .spyOn(BiometricsSDK, 'loadWalletSecret')
   .mockResolvedValue({ success: true, value: 'superSecret' })
 
+jest.mock('utils/getAddressesFromXpubXP/getAddressesFromXpubXP', () => ({
+  getXpubXPIfAvailable: jest.fn().mockResolvedValue('xpubXP-stub')
+}))
+
+jest.mock('hooks/useXPAddresses/useXPAddresses', () => ({
+  getCachedXPAddresses: jest.fn().mockResolvedValue({
+    xpAddressDictionary: {}
+  })
+}))
+
 const mockOnRpcRequest = jest.fn()
 
 const mockModule: Module = {
@@ -71,6 +81,7 @@ const mockModule: Module = {
   getAddress: jest.fn(),
   getTokens: jest.fn(),
   deriveAddress: jest.fn(),
+  deriveAddresses: jest.fn(),
   buildDerivationPath: jest.fn(),
   onRpcRequest: mockOnRpcRequest
 }
@@ -561,24 +572,26 @@ describe('rpc - listeners', () => {
           const network = mockNetworks[43114] as Network
           const transformedNetwork = mapToVmNetwork(network)
 
-          const request = {
-            requestId: String(testRequest.data.id),
-            sessionId: testRequest.data.topic,
-            chainId: testRequest.data.params.chainId,
-            dappInfo: {
-              name: testRequest.peerMeta.name,
-              icon: testRequest.peerMeta.icons[0] ?? '',
-              url: testRequest.peerMeta.url
-            },
-            method: testRequest.method,
-            params: testRequest.data.params.request.params,
-            context: {
-              [RequestContext.IN_APP_REVIEW]: true
-            }
-          }
-
+          // The handler injects signing context (walletId, walletType,
+          // accountIndex, network) into every request before handing it
+          // to the EVM module — `objectContaining` keeps the assertion
+          // focused on the SDK-shape fields the test cares about.
           expect(mockOnRpcRequest).toHaveBeenCalledWith(
-            request,
+            expect.objectContaining({
+              requestId: String(testRequest.data.id),
+              sessionId: testRequest.data.topic,
+              chainId: testRequest.data.params.chainId,
+              dappInfo: {
+                name: testRequest.peerMeta.name,
+                icon: testRequest.peerMeta.icons[0] ?? '',
+                url: testRequest.peerMeta.url
+              },
+              method: testRequest.method,
+              params: testRequest.data.params.request.params,
+              context: expect.objectContaining({
+                [RequestContext.IN_APP_REVIEW]: true
+              })
+            }),
             transformedNetwork
           )
 
@@ -629,6 +642,45 @@ describe('rpc - listeners', () => {
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
             1677366383831712,
             testError
+          )
+        })
+
+        // Regression: pre-existing request.context (e.g. SAE_OVERRIDE snapshot
+        // from createInAppRequest) must not short-circuit the auto-injected
+        // Avalanche `account` context for AVALANCHE_SEND/SIGN_TRANSACTION.
+        it('should merge request.context with auto-injected Avalanche account context', async () => {
+          mockOnRpcRequest.mockImplementation(async () => ({
+            result: 'tx-hash'
+          }))
+
+          const avalancheSendRequest = {
+            ...createRequest(
+              'avalanche_sendTransaction' as RpcMethod.AVALANCHE_SEND_TRANSACTION,
+              {
+                chainAlias: 'P',
+                transactionHex: '0xdeadbeef',
+                externalIndices: [],
+                internalIndices: []
+              }
+            ),
+            context: { [RequestContext.SAE_OVERRIDE]: 'auto' }
+          }
+
+          store.dispatch(onRequest(avalancheSendRequest))
+
+          await jest.runOnlyPendingTimersAsync()
+
+          expect(mockOnRpcRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+              context: expect.objectContaining({
+                [RequestContext.SAE_OVERRIDE]: 'auto',
+                [RequestContext.IN_APP_REVIEW]: true,
+                account: expect.objectContaining({
+                  xpAddress: mockActiveAccount.addressPVM
+                })
+              })
+            }),
+            expect.anything()
           )
         })
       })

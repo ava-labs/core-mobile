@@ -15,7 +15,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -40,7 +43,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 9,
         isNative: true,
         internalId: 'sol-native',
-        logoUri: 'https://example.com/sol.png'
+        logoUri: 'https://example.com/sol.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
@@ -63,7 +69,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: 'ERC-20'
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -89,7 +98,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: false,
         internalId: 'dai-ethereum',
-        logoUri: 'https://example.com/dai.png'
+        logoUri: 'https://example.com/dai.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null,
+        contractType: 'ERC-20'
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.ETHEREUM_HOMESTEAD)
@@ -110,7 +122,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-solana',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: 'SPL'
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
@@ -126,6 +141,67 @@ describe('mapApiTokenToLocal', () => {
     })
   })
 
+  describe('contractType fallback via networkCaip2Id', () => {
+    it('falls back to SPL when contractType is null on a Solana caip2Id', () => {
+      const apiToken: ApiToken = {
+        symbol: 'USDC',
+        name: 'USD Coin',
+        address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        decimals: 6,
+        isNative: false,
+        internalId: 'usdc-solana',
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: null
+      }
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
+
+      expect(result.type).toBe(TokenType.SPL)
+    })
+
+    it('falls back to ERC20 when contractType is null on an EVM caip2Id', () => {
+      const apiToken: ApiToken = {
+        symbol: 'USDC',
+        name: 'USD Coin',
+        address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+        decimals: 6,
+        isNative: false,
+        internalId: 'usdc-avax-c',
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
+      }
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+
+    it('explicit contractType wins over caip2Id namespace', () => {
+      // ERC-20 contractType on a solana caip2Id is nonsensical but exercises
+      // that the explicit value is honored before the fallback runs.
+      const apiToken: ApiToken = {
+        symbol: 'WEIRD',
+        name: 'Weird',
+        address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        decimals: 6,
+        isNative: false,
+        internalId: 'weird',
+        logoUri: null,
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null,
+        contractType: 'ERC-20'
+      }
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
+
+      expect(result.type).toBe(TokenType.ERC20)
+    })
+  })
+
   describe('Balance integration', () => {
     it('should merge balance data when provided', () => {
       const apiToken: ApiToken = {
@@ -135,7 +211,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -167,7 +246,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: 'ERC-20'
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -198,7 +280,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -221,7 +306,8 @@ describe('mapApiTokenToLocal', () => {
         address: '0x123',
         isNative: false,
         internalId: 'test-token',
-        logoUri: 'https://example.com/test.png'
+        logoUri: 'https://example.com/test.png',
+        networkCaip2Id: 'eip155:43114'
       } as ApiToken
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -239,7 +325,8 @@ describe('mapApiTokenToLocal', () => {
         address: '',
         decimals: 18,
         isNative: true,
-        internalId: 'test-token'
+        internalId: 'test-token',
+        networkCaip2Id: 'eip155:43114'
       } as ApiToken
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -258,7 +345,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -279,7 +369,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -298,7 +391,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -317,7 +413,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c-chain',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: 'ERC-20'
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -328,6 +427,49 @@ describe('mapApiTokenToLocal', () => {
       }
     })
 
+    it.each([
+      ['true', true],
+      ['false', false],
+      ['null', null]
+    ])('should propagate isVerified=%s from the API', (_label, value) => {
+      const apiToken: ApiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 18,
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null,
+        isVerified: value
+      }
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.isVerified).toBe(value)
+    })
+
+    it('should leave isVerified undefined when the API omits it', () => {
+      const apiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 18,
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
+      } as ApiToken
+
+      const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
+
+      expect(result.isVerified).toBeUndefined()
+    })
+
     it('should set description to same as name', () => {
       const apiToken: ApiToken = {
         symbol: 'AVAX',
@@ -336,7 +478,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -357,7 +502,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'test-token',
-        logoUri: 'https://example.com/test.png'
+        logoUri: 'https://example.com/test.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -385,7 +533,10 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {

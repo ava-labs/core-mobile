@@ -2,6 +2,7 @@
 
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
+  computeMaxLength,
   getMaxDecimals,
   normalizeValue,
   normalizeNumericTextInput,
@@ -243,6 +244,42 @@ describe('normalizeNumericTextInput', () => {
         '123456789.123456789'
       )
     })
+  })
+})
+
+describe('computeMaxLength', () => {
+  it('returns undefined for empty string', () => {
+    expect(computeMaxLength('', 18)).toBeUndefined()
+  })
+
+  it('computes correctly for typical token values', () => {
+    // "11.682027063720753153" → int "11" (2 digits) + 1 + 18 = 21
+    expect(computeMaxLength('11.682027063720753153', 18)).toBe(21)
+  })
+
+  it('computes correctly for single-digit integer part', () => {
+    // "5.841013531860376576" → int "5" (1 digit) + 1 + 18 = 20
+    expect(computeMaxLength('5.841013531860376576', 18)).toBe(20)
+  })
+
+  it('strips leading zeros from integer part', () => {
+    // "01.5" → int "1" (1 digit) + 1 + 18 = 20
+    expect(computeMaxLength('01.5', 18)).toBe(20)
+  })
+
+  it('preserves single zero as integer part', () => {
+    // "0.001" → int "0" (1 digit) + 1 + 8 = 10
+    expect(computeMaxLength('0.001', 8)).toBe(10)
+  })
+
+  it('handles values without decimal point', () => {
+    // "123" → int "123" (3 digits) + 1 + 18 = 22
+    expect(computeMaxLength('123', 18)).toBe(22)
+  })
+
+  it('handles fiat-style values with fewer decimals', () => {
+    // "1234.56" → int "1234" (4 digits) + 1 + 5 = 10
+    expect(computeMaxLength('1234.56', 5)).toBe(10)
   })
 })
 

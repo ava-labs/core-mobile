@@ -11,10 +11,13 @@ import React, {
 import {
   Platform,
   ReturnKeyTypeOptions,
+  StyleProp,
   TextInput,
+  TextStyle,
   TouchableWithoutFeedback
 } from 'react-native'
 import {
+  computeMaxLength,
   normalizeNumericTextInput,
   normalizeValue
 } from '../../utils/tokenUnitInput'
@@ -39,7 +42,17 @@ type FiatAmountInputProps = {
   autoFocus?: boolean
   placeholder?: string
   returnKeyType?: ReturnKeyTypeOptions
+  /**
+   * Where the subtext node (`formatInSubTextNumber`) renders relative to the
+   * big amount. Defaults to `'top'` to preserve the existing onramp/offramp
+   * layout where the converted token amount sits above the fiat input.
+   */
+  subTextPosition?: 'top' | 'bottom'
+  suffixStyle?: StyleProp<TextStyle>
+  prefixStyle?: StyleProp<TextStyle>
 }
+
+const BIG_AMOUNT_FONT_SIZE = 60
 
 export const FiatAmountInput = forwardRef<
   FiatAmountInputHandle,
@@ -58,6 +71,9 @@ export const FiatAmountInput = forwardRef<
       editable,
       returnKeyType = 'done',
       autoFocus,
+      subTextPosition = 'top',
+      suffixStyle,
+      prefixStyle,
       ...props
     },
     ref
@@ -108,17 +124,14 @@ export const FiatAmountInput = forwardRef<
         const isInputValid =
           frontValue !== undefined &&
           !isNaN(Number(changedValue)) &&
-          (!endValue || endValue.length <= 5)
+          (!endValue || endValue.length <= FIAT_MAX_DECIMALS)
 
         if (isInputValid) {
-          const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
+          const normalizedValue = normalizeValue(changedValue)
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-          setMaxLength(
-            Math.min(20, sanitizedFrontValue.length + '.'.length + 5)
-          )
+          setMaxLength(computeMaxLength(normalizedValue, FIAT_MAX_DECIMALS))
 
-          const normalizedValue = normalizeValue(changedValue)
           setValue(normalizedValue)
           onChange?.(normalizedValue)
         } else {
@@ -141,10 +154,15 @@ export const FiatAmountInput = forwardRef<
     }, [autoFocus])
 
     useImperativeHandle(ref, () => ({
-      setValue: (newValue: string) => setValue(newValue),
+      setValue: (newValue: string) => {
+        setValue(newValue)
+        setMaxLength(computeMaxLength(newValue, FIAT_MAX_DECIMALS))
+      },
       focus: () => textInputRef.current?.focus(),
       blur: () => textInputRef.current?.blur()
     }))
+
+    const subTextNode = formatInSubTextNumber?.(Number(inputAmount ?? 0))
 
     return (
       <View
@@ -152,7 +170,7 @@ export const FiatAmountInput = forwardRef<
           alignItems: 'center',
           ...sx
         }}>
-        {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
+        {subTextPosition === 'top' ? subTextNode : null}
         <TouchableWithoutFeedback accessible={false} onPress={handlePress}>
           <View
             accessible={false}
@@ -166,10 +184,13 @@ export const FiatAmountInput = forwardRef<
               value={value}
               testID="fiat_amount_input"
               onChangeText={handleValueChanged}
-              initialFontSize={60}
+              initialFontSize={BIG_AMOUNT_FONT_SIZE}
               textAlign="right"
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
+              suffixFontSizeMultiplier={0.5}
+              suffixStyle={suffixStyle}
+              prefixStyle={prefixStyle}
               placeholder={`${PLACEHOLDER}`}
               maxLength={maxLength}
               returnKeyType={returnKeyType}
@@ -185,12 +206,14 @@ export const FiatAmountInput = forwardRef<
             />
           </View>
         </TouchableWithoutFeedback>
+        {subTextPosition === 'bottom' ? subTextNode : null}
       </View>
     )
   }
 )
 
 const PLACEHOLDER = '0.00'
+const FIAT_MAX_DECIMALS = 5
 
 // returns matching currency symbol for the amount with symbol
 // e.g '$' | '€' | '£' | '¥' | '₹'
@@ -198,5 +221,8 @@ function getCurrencySymbol(amountWithSymbol: string): string {
   const ScRe =
     /[$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]/
 
-  return amountWithSymbol.match(ScRe)?.[0] ?? '$'
+  // Empty string when no fiat symbol is detected — lets callers that format
+  // amounts with a token name (e.g. `"1.50 USDC"`) render without a spurious
+  // leading `$`.
+  return amountWithSymbol.match(ScRe)?.[0] ?? ''
 }

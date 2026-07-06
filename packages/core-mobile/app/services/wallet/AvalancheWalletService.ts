@@ -51,6 +51,81 @@ class AvalancheWalletService {
   }
 
   /**
+   * Get importable atomic UTXOs for every CCT route across the primary network
+   * (C/P/X), one read-only signer call per (destination, source) pair. Used by
+   * the stuck-funds banner to detect AVAX stranded in atomic memory after an
+   * incomplete cross-chain transfer. Read-only: never prompts the device.
+   */
+  public async getAllAtomicUTXOs({
+    account,
+    isTestnet,
+    xpAddresses
+  }: {
+    account: Account
+    isTestnet: boolean
+    xpAddresses: string[]
+  }): Promise<
+    {
+      dest: Avalanche.ChainIDAlias
+      source: Avalanche.ChainIDAlias
+      utxos: utils.UtxoSet
+    }[]
+  > {
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
+
+    const routes: [Avalanche.ChainIDAlias, Avalanche.ChainIDAlias][] = [
+      ['P', 'C'],
+      ['P', 'X'],
+      ['C', 'P'],
+      ['C', 'X'],
+      ['X', 'C'],
+      ['X', 'P']
+    ]
+
+    // allSettled (not all): a single flaky route must not reject the whole
+    // detection query, or one bad chain would hide genuinely stuck funds that
+    // loaded fine on the other routes. Drop only the routes that failed.
+    const settled = await Promise.allSettled(
+      routes.map(async ([dest, source]) => ({
+        dest,
+        source,
+        utxos: await readOnlySigner.getAtomicUTXOs(dest, source)
+      }))
+    )
+
+    // Log dropped routes so intermittent RPC/chain failures are observable on
+    // the 60s poll without breaking detection for the routes that succeeded.
+    settled.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const [dest, source] = routes[index] as [
+          Avalanche.ChainIDAlias,
+          Avalanche.ChainIDAlias
+        ]
+        Logger.warn(
+          `[getAllAtomicUTXOs] atomic UTXO fetch failed for ${source}->${dest}`,
+          result.reason
+        )
+      }
+    })
+
+    return settled
+      .filter(
+        (
+          result
+        ): result is PromiseFulfilledResult<{
+          dest: Avalanche.ChainIDAlias
+          source: Avalanche.ChainIDAlias
+          utxos: utils.UtxoSet
+        }> => result.status === 'fulfilled'
+      )
+      .map(result => result.value)
+  }
+
+  /**
    * Get atomic UTXOs for P-Chain.
    */
   public async getPChainAtomicUTXOs({
@@ -329,7 +404,8 @@ class AvalancheWalletService {
     rewardAddress,
     shouldValidateBurnedAmount = true,
     feeState,
-    xpAddresses
+    xpAddresses,
+    additionalOutputs
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -381,7 +457,13 @@ class AvalancheWalletService {
         weight: stakeAmountInNAvax,
         subnetId: PChainId._11111111111111111111111111111111LPO_YY,
         rewardAddresses: [rewardAddress],
-        feeState
+        feeState,
+        // Only forward when non-empty so the wallet-sdk's `additionalOutputs`
+        // path stays opt-in; passing an empty array would still trigger the
+        // extra-output handling on the builder.
+        ...(additionalOutputs && additionalOutputs.length > 0
+          ? { additionalOutputs }
+          : {})
       })
     } catch (error) {
       Logger.warn('unable to create add delegator tx', error)
@@ -469,7 +551,7 @@ class AvalancheWalletService {
     })
   }
 
-  private async getReadOnlySigner({
+  public async getReadOnlySigner({
     account,
     isTestnet,
     xpAddresses

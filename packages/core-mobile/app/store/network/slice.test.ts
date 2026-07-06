@@ -5,6 +5,7 @@ import {
   NetworkVMType
 } from '@avalabs/core-chains-sdk'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from 'store/types'
 import {
   selectActiveChainId,
@@ -21,7 +22,6 @@ import {
   removeCustomNetwork,
   enableL2ChainIds,
   alwaysEnabledChainIds,
-  defaultEnabledL2ChainIds,
   noActiveNetwork
 } from './slice'
 import { NetworkState } from './types'
@@ -644,6 +644,16 @@ describe('network slice', () => {
           id => id === 42161
         ).length
         expect(arbitrumCount).toBe(1)
+      })
+    })
+
+    describe('defaultEnabledL2ChainIds membership (CP-14282)', () => {
+      it('includes BNB Smart Chain (56) so it renders in the primary section', () => {
+        expect(defaultEnabledL2ChainIds).toContain(56)
+      })
+
+      it('includes Polygon (137) so it renders in the primary section', () => {
+        expect(defaultEnabledL2ChainIds).toContain(137)
       })
     })
 

@@ -27,7 +27,8 @@ describe('Settings', () => {
   })
 
   it('Notifications - should turn OFF all notifications', async () => {
-    await common.goBack()
+    await common.dismissBottomSheet()
+    await settingsPage.goSettings()
     await settingsPage.tapNotifications()
     for (const [title] of Object.entries(notiData)) {
       await settingsPage.toggleAndVerify('disabled', title)

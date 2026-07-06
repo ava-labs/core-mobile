@@ -52,7 +52,7 @@ export const FavoritesList = (
     handleUrlSubmit?.(item.url)
   }
 
-  const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item }) => {
+  const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item, index }) => {
     if (item.isSuggested) {
       const image = prepareFaviconToLoad(item.url, item.favicon)
 
@@ -61,7 +61,9 @@ export const FavoritesList = (
           style={{
             width: '25%'
           }}>
-          <AnimatedPressable onPress={() => onPress(item)}>
+          <AnimatedPressable
+            testID={`browser_suggested_item__${index}`}
+            onPress={() => onPress(item)}>
             <BrowserItem
               type="grid"
               title={item.title.length ? item.title : item.url}

@@ -51,6 +51,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.searchBar)
   }
 
+  get networkSelectorScroll() {
+    return selectors.getById(txLoc.networkSelectorScroll)
+  }
+
   get selectTokenTitle() {
     return selectors.getByText(txLoc.selectTokenTitle)
   }
@@ -115,8 +119,8 @@ class TransactionsPage {
     return selectors.getById(txLoc.receiveQrCode)
   }
 
-  get selectReceiveNetwork() {
-    return selectors.getById(txLoc.selectReceiveNetwork)
+  get receiveNetwork() {
+    return selectors.getById(txLoc.receiveNetwork)
   }
 
   get selectOtherTokenBtn() {
@@ -155,6 +159,10 @@ class TransactionsPage {
     return selectors.getByText(txLoc.maxBtn)
   }
 
+  get slippageRow() {
+    return selectors.getById(txLoc.slippageRow)
+  }
+
   async tapSelectTokenTitle() {
     await actions.tap(this.selectTokenTitle)
   }
@@ -165,8 +173,7 @@ class TransactionsPage {
 
   async dismissTransactionOnboarding() {
     try {
-      await actions.waitFor(this.transactionOnboardingNext, 10000)
-      await actions.click(this.transactionOnboardingNext)
+      await actions.tap(this.transactionOnboardingNext)
     } catch (e) {
       console.log('Transaction onboarding not found')
     }
@@ -194,6 +201,7 @@ class TransactionsPage {
   }
 
   async tapSwap() {
+    await actions.scrollTo(this.swapButton, 'up')
     await actions.waitFor(this.swapButton, 40000)
     await actions.tap(this.swapButton)
   }
@@ -202,12 +210,32 @@ class TransactionsPage {
     await actions.tap(this.sendSelectTokenListBtn)
   }
 
+  async selectNetwork(network: string) {
+    const expectedNetwork = selectors.getById(
+      `selected_network_selector__${network}`
+    )
+    if (!(await actions.getVisible(expectedNetwork))) {
+      const networkBtn = selectors.getById(`network_selector__${network}`)
+
+      while (!(await actions.getVisible(expectedNetwork))) {
+        await actions.dragAndDrop(this.networkSelectorScroll, [-500, 0])
+        try {
+          await actions.longPress(networkBtn)
+          await actions.waitFor(expectedNetwork)
+        } catch (e) {
+          console.log('Network not found')
+        }
+      }
+    }
+  }
+
   async selectToken(tokenName: string, network?: string) {
     if (network) {
-      await actions.tap(selectors.getById(`network_selector__${network}`))
+      await this.selectNetwork(network)
     }
     await actions.type(this.searchBar, tokenName)
     try {
+      await actions.dismissKeyboard()
       await actions.tap(selectors.getById(`token_selector__${tokenName}`))
     } catch (e) {
       await actions.typeSlowly(this.searchBar, tokenName)
@@ -262,6 +290,7 @@ class TransactionsPage {
     const isInsufficientBalance = await this.checkInsufficientBalance()
     if (isInsufficientBalance) {
       await commonElsPage.dismissBottomSheet()
+      return performance.now()
     } else {
       await this.tapNext()
       await this.tapApprove()
@@ -278,7 +307,7 @@ class TransactionsPage {
   }
 
   async tapClaimCard() {
-    await actions.longPress(this.claimCard)
+    await actions.longPress(this.claimCard, this.claimNow)
   }
 
   async tapClaimNow() {
@@ -305,7 +334,7 @@ class TransactionsPage {
     await this.selectDuration(duration)
     await this.tapNext()
     await this.tapConfirmStake()
-    await actions.waitForNotVisible(this.reviewStakeTitle)
+    await actions.waitForNotVisible(this.reviewStakeTitle, 40000)
   }
 
   async claim() {
@@ -376,7 +405,7 @@ class TransactionsPage {
     await portfolioPage.tapToken(fromToken)
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.enterAmount(amount, this.swapAmountInput)
     // Select To Token
     if (toToken !== 'USDC') {
       await this.tapYouReceive()
@@ -406,25 +435,30 @@ class TransactionsPage {
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
 
-    // select tokens
-    const fromTokenOnUi = await actions.getText(this.youPay)
-    if (from !== fromTokenOnUi) {
-      await this.tapYouPay()
-      await this.selectToken(from, network)
-    }
+    // select pay token
+    await this.tapYouPay()
+    await this.selectToken(from, network)
 
-    const toTokenOnUi = await actions.getText(this.youReceive)
-    if (to !== toTokenOnUi) {
-      await this.tapYouReceive()
-      await this.selectToken(to, network)
-    }
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    // select receive token
+    await this.tapYouReceive()
+    await this.selectToken(to, network)
+
+    // enter amount
+    await this.enterAmount(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
     if (from !== 'AVAX' && network === txLoc.cChain) {
       await this.approveSpendLimitIfNeeded()
     }
+    await actions.waitFor(this.approveTitle, 40000)
+    await this.tapApprove()
+  }
+
+  async quickSwap(amount = '0.000001') {
+    await this.dismissTransactionOnboarding()
+    await this.enterAmount(amount, this.swapAmountInput)
+    await this.tapNext(this.approveBtn)
     await actions.waitFor(this.approveTitle, 40000)
     await this.tapApprove()
   }
@@ -449,11 +483,7 @@ class TransactionsPage {
 
   async swapOnTrack(index = 1, amount = '0.001') {
     await this.tapTrackBuyBtn(index)
-    await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
-    await this.tapNext()
-    await this.tapApprove()
-    await this.verifySuccessToast()
+    await this.quickSwap(amount)
   }
 
   async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {
@@ -476,7 +506,7 @@ class TransactionsPage {
     await actions.waitFor(this.receiveCryptoTitle)
     await actions.isVisible(this.receiveCryptoSubtitle)
     await actions.isVisible(this.receiveQrCode)
-    await actions.isVisible(this.selectReceiveNetwork)
+    await actions.isVisible(this.receiveNetwork)
     await actions.isVisible(selectors.getById(`copy_btn__${network}`))
     await actions.isVisible(selectors.getById(`receive_address__${address}`))
     await actions.isVisible(selectors.getById(`receive_network__${network}`))
@@ -486,8 +516,8 @@ class TransactionsPage {
     }
   }
 
-  async selectNetwork(network: string) {
-    await actions.tap(this.selectReceiveNetwork)
+  async selectReceiveNetwork(network: string) {
+    await actions.tap(this.receiveNetwork)
     await actions.tap(selectors.getById(`select_network__${network}`))
   }
 
@@ -505,6 +535,7 @@ class TransactionsPage {
       await actions.tap(selectors.getById(`list_item__${token}`))
     }
     await actions.tap(selectors.getById(`fiat_amount_button__${randomAmount}`))
+    await actions.delay(1000)
     await actions.tap(this.nextBtn)
     await browserPage.tapClose()
     await commonElsPage.dismissBottomSheet()
@@ -540,6 +571,36 @@ class TransactionsPage {
 
   async tapMax() {
     await actions.tap(this.maxBtn)
+  }
+
+  async setSlippageTo2Percent() {
+    await actions.tap(this.slippageRow)
+    await actions.tap(selectors.getByText(txLoc.slippage2Percent))
+    await actions.tap(selectors.getByText(txLoc.doneBtn))
+  }
+
+  async quickSwapNoApprove(amount = '0.01') {
+    await this.dismissTransactionOnboarding()
+    // Enter amount first so a quote is fetched and the Slippage row becomes visible
+    await this.enterAmount(amount, this.swapAmountInput)
+    await actions.tap(this.swapText)
+    // Set slippage to 2% (waits up to 20 s for the Slippage row to appear)
+    await this.setSlippageTo2Percent()
+    // Tap Next — in QuickSwaps mode this executes the swap directly
+    await this.tapNext()
+  }
+
+  async verifyQuickSwapSuccess() {
+    const isApproveVisible = await actions.isElementVisible(
+      this.approveBtn,
+      3000
+    )
+    if (isApproveVisible) {
+      throw new Error(
+        'Approve button should not be visible — QuickSwaps must submit without manual approval'
+      )
+    }
+    await actions.waitForNotVisible(this.swapAmountInput, 60000)
   }
 }
 

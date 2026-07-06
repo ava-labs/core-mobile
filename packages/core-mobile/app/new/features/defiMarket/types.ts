@@ -1,4 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Money as BaseMoney } from '@avalabs/glacier-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -141,7 +142,7 @@ export type AaveAccountData = [bigint, bigint, bigint, bigint, bigint, bigint]
 export type BorrowPosition = {
   market: DefiMarket
   borrowedBalance: bigint
-  borrowedAmount: number
+  borrowedAmount: TokenUnit
   borrowedAmountUsd: number
 }
 
