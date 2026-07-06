@@ -115,7 +115,7 @@ export function TradeScreen(): JSX.Element {
     }
   })
 
-  const [balanceHeight, setBalanceHeight] = useState(0)
+  const [balanceHeight, setBalanceHeight] = useState(74)
 
   const handleBalanceLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
