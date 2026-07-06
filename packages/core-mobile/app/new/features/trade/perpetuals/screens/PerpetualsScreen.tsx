@@ -22,6 +22,8 @@ import { PerpetualListItem } from '../components/PerpetualListItem'
 import { Positions } from '../components/Positions'
 import { PERP_MARKETS_MOCK } from '../mocks'
 import { PerpetualMarket } from '../types'
+import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
+import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 
 const PERPETUAL_FILTERS: TradeFilterChip[] = [
   'Trending',
@@ -133,12 +135,20 @@ export const PerpetualsScreen = ({
     [isLoading, refetch, theme.colors.$textPrimary]
   )
 
+  const { isGeoBlocked } = usePerpsAvailability()
+
   const renderHeader = useCallback(
     () => (
       <View
         sx={{
           gap: 20
         }}>
+        {isGeoBlocked && (
+          <View style={{ paddingHorizontal: 16 }}>
+            <PerpsGeoRestrictionWarning />
+          </View>
+        )}
+
         <Positions scrollOffsetRef={positionsScrollOffsetRef} />
         <TradeFilters
           chips={PERPETUAL_FILTERS}
@@ -149,7 +159,7 @@ export const PerpetualsScreen = ({
         />
       </View>
     ),
-    [selectedFilter, handleSelectFilter, handleSearchPress]
+    [isGeoBlocked, selectedFilter, handleSelectFilter, handleSearchPress]
   )
 
   return (
