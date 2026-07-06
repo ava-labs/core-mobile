@@ -14,6 +14,8 @@ import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { ScrollView } from 'react-native-gesture-handler'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
+import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 
 const HERO_VALUE = 1234.45
 const WITHDRAWABLE = 856.78
@@ -31,6 +33,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
+  const { isGeoBlocked } = usePerpsAvailability()
   const scrollViewRef = useRef<ScrollView>(null)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -181,6 +184,8 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
       navigationTitle="Available balance"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, gap: 10 }}>
+      {isGeoBlocked && <PerpsGeoRestrictionWarning />}
+
       <GroupList
         data={withdrawableRows}
         titleSx={{ fontFamily: 'Inter-Regular' }}
