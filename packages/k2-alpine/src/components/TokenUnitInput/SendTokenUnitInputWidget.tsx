@@ -24,6 +24,7 @@ type PresetDefinition = {
 
 export type SendTokenUnitInputWidgetHandle = {
   setValue: (value: string) => void
+  focus: () => void
 }
 
 type SendTokenUnitInputWidgetProps = {
@@ -81,7 +82,8 @@ export const SendTokenUnitInputWidget = forwardRef<
     const textInputRef = useRef<TokenUnitInputHandle>(null)
 
     useImperativeHandle(ref, () => ({
-      setValue: (newValue: string) => textInputRef.current?.setValue(newValue)
+      setValue: (newValue: string) => textInputRef.current?.setValue(newValue),
+      focus: () => textInputRef.current?.focus()
     }))
 
     // Preset targets depend only on balance/max/token — not on `amount`, so typing
