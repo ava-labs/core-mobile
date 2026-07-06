@@ -834,8 +834,12 @@ export function RecurringSchedulesScreen({
   const swapWord = `swap${manageableCount === 1 ? '' : 's'}`
   // Force the screen header to break after "{N} recurring" so "swaps scheduled"
   // always sits on a second line, regardless of the count's width.
-  const title = `${manageableCount} recurring\n${swapWord} scheduled`
-  const navigationTitle = `${manageableCount} recurring ${swapWord} scheduled`
+  // In the empty state there is no count to show, so drop the header entirely —
+  // the centered ErrorState already conveys "No recurring swaps".
+  const title = isEmpty ? undefined : `${manageableCount} recurring\n${swapWord} scheduled`
+  const navigationTitle = isEmpty
+    ? undefined
+    : `${manageableCount} recurring ${swapWord} scheduled`
 
   // While the first fetch is in flight we have no real count yet — rendering the
   // "{N} recurring swaps scheduled" header would flash a misleading "0 …". Per
