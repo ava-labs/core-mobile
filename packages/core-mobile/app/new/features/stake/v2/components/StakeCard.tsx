@@ -1,4 +1,11 @@
-import { BaseCard, Motion, Separator, Text, View } from '@avalabs/k2-alpine'
+import {
+  BaseCard,
+  Button,
+  Motion,
+  Separator,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
 import React, { useState } from 'react'
 import { LayoutChangeEvent, Platform, StyleSheet } from 'react-native'
 import { ProgressWave } from './ProgressWave'
@@ -30,6 +37,12 @@ export interface StakeCardProps {
   badge?: StakeBadgeType
   width?: number
   onPress?: () => void
+  /**
+   * Restake handler — when provided (completed stakes whose tx can seed a
+   * restake, see `useRestake`), a Restake button renders at the bottom of
+   * the card, mirroring web's stake-table Restake action.
+   */
+  onRestake?: () => void
 }
 
 const DEFAULT_WIDTH = 200
@@ -52,7 +65,8 @@ export const StakeCard = ({
   motion,
   badge,
   width = DEFAULT_WIDTH,
-  onPress
+  onPress,
+  onRestake
 }: StakeCardProps): JSX.Element => {
   const isCompleted = variant === 'completed'
   const showWave = !isCompleted && progress !== undefined
@@ -140,6 +154,25 @@ export const StakeCard = ({
         label="Status"
         value={<StakeStatusValue isActive={!isCompleted} size="small" />}
       />
+      {onRestake && (
+        // BaseCard fires its onPress from raw touch-event bubbling (see k2's
+        // `usePressableGesture`), so the nested Button does NOT swallow the
+        // touch — without stopping propagation here, tapping Restake would
+        // also trigger the card's onPress and stack the stake details screen
+        // on top of the review flow.
+        <View
+          onTouchStart={e => e.stopPropagation()}
+          onTouchEnd={e => e.stopPropagation()}>
+          <Button
+            type="secondary"
+            size="small"
+            style={{ marginTop: 12 }}
+            onPress={onRestake}
+            testID="stake_card_restake_btn">
+            Restake
+          </Button>
+        </View>
+      )}
     </BaseCard>
   )
 }

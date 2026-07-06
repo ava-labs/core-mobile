@@ -167,3 +167,51 @@ export const setDelegateNodeSelection = (
   nodes: NodeValidator[],
   index: number
 ): void => useDelegateNodeSelection.getState().setSelection(nodes, index)
+
+/**
+ * One-shot "entering via restake" flag. `useRestake` seeds the shared stake
+ * amount with the original stake's amount *before* navigating, but the
+ * add-stake layout re-seeds that store with the minimum stakable amount in a
+ * mount effect — and parent effects run after child effects, so the layout
+ * would clobber the restake amount. Setting this flag ahead of navigation
+ * lets the layout skip that one seed. A module-level slot rather than a
+ * zustand store: nothing re-renders on it and it must not outlive a single
+ * modal entry.
+ */
+let pendingRestakeEntry = false
+
+export const beginRestakeEntry = (): void => {
+  pendingRestakeEntry = true
+}
+
+/** Returns whether a restake entry is pending and clears it (one-shot). */
+export const takeRestakeEntry = (): boolean => {
+  const pending = pendingRestakeEntry
+  pendingRestakeEntry = false
+  return pending
+}
+
+/**
+ * Delegate-restake prefill, mirroring web's `restake` location state on the
+ * delegate page: when the original validator has left the active set and the
+ * user is dropped into the node picker, the amount and duration steps still
+ * open prefilled with the original stake's values (web's `DelegationForm`
+ * keeps `initialAmount` / `initialDurationMs` regardless of which node ends
+ * up selected). Unlike the entry flag above this persists for the whole
+ * modal session — re-visiting a step re-applies the prefill, like web's
+ * page-level state — and is cleared on the next non-restake flow entry (see
+ * the add-stake layout) or overwritten by the next restake.
+ */
+let restakePrefill: { durationDays: number } | null = null
+
+export const setRestakePrefill = (prefill: { durationDays: number }): void => {
+  restakePrefill = prefill
+}
+
+/** Peeks the active restake prefill (null outside a delegate restake). */
+export const getRestakePrefill = (): { durationDays: number } | null =>
+  restakePrefill
+
+export const clearRestakePrefill = (): void => {
+  restakePrefill = null
+}
