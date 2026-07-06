@@ -1,5 +1,5 @@
+import { showAlert } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { showSnackbar } from 'common/utils/toast'
 import { Href, useLocalSearchParams, useRouter } from 'expo-router'
 import {
   RESTAKE_NODE_UNAVAILABLE_ERROR,
@@ -31,16 +31,23 @@ export default function DelegateConfirmRoute(): JSX.Element {
 
   useEffect(() => {
     if (!isRestakeNodeUnavailable) return
-    showSnackbar(
-      `Validator ${truncateNodeId(
+    showAlert({
+      title: 'Node unavailable',
+      description: `Validator ${truncateNodeId(
         restakeNodeId ?? ''
-      )} is no longer available for delegation. Please select a different one.`
-    )
-    replace('/addStakeV2/delegate/selectNode' as Href)
+      )} is no longer available for delegation. Please select a different one.`,
+      buttons: [
+        {
+          text: 'OK',
+          onPress: () => replace('/addStakeV2/delegate/selectNode' as Href)
+        }
+      ]
+    })
   }, [isRestakeNodeUnavailable, restakeNodeId, replace])
 
-  // Keep showing a spinner while the redirect settles — rendering the
-  // confirm screen here would flash its no-match alert first.
+  // Keep showing a spinner behind the alert (and while the redirect
+  // settles) — rendering the confirm screen here would fire its generic
+  // no-match alert on top.
   if (isRestakeNodeUnavailable) {
     return <LoadingState sx={{ flex: 1 }} />
   }
