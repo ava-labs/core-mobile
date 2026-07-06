@@ -2,6 +2,7 @@ import {
   alpha,
   CircularDial,
   GroupList,
+  Pressable,
   SlidingButton,
   Text,
   useTheme,
@@ -9,22 +10,22 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
+import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
-import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 
 const GEO_BLOCKED_MESSAGE =
   'Perpetual Futures are not available in your location.'
 
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
-  const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const [submitting, setSubmitting] = useState(false)
 
@@ -126,7 +127,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       navigationTitle="Place your bet"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8, gap: 20, paddingBottom: 8 }}>
+      <View sx={{ paddingTop: 8, gap: 20 }}>
         <View sx={{ gap: 8 }}>
           <PositionPill coin={coin} price={entryPrice} side={side} />
 
@@ -195,23 +196,64 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
             testID="perpetuals_place_order_stop_loss"
           />
         </View>
+        <TermsOfUseText />
+      </View>
+    </ScrollScreen>
+  )
+}
+
+const TermsOfUseText = (): JSX.Element => {
+  const { theme } = useTheme()
+  const { openUrl } = useInAppBrowser()
+
+  const openTermsOfUse = useCallback(() => {
+    openUrl('https://core.app/terms/core')
+  }, [openUrl])
+
+  return (
+    <View sx={{ gap: 20 }}>
+      <View>
         <View
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6
+            justifyContent: 'center'
           }}>
-          <Text
-            variant="caption"
-            sx={{
-              color: '$textSecondary'
-            }}>
-            Powered by
+          <Text variant="caption" style={{ textAlign: 'center' }}>
+            {`By trading, you agree to the `}
           </Text>
-          <HyperliquidLogo color={alpha(theme.colors.$textPrimary, 0.6)} />
+          <Pressable onPress={openTermsOfUse} hitSlop={20}>
+            <Text variant="caption" style={{ textDecorationLine: 'underline' }}>
+              Terms of Use
+            </Text>
+          </Pressable>
+          <Text variant="caption" style={{ textAlign: 'center' }}>
+            {`.`}
+          </Text>
         </View>
+
+        <Text variant="caption" style={{ textAlign: 'center' }}>
+          {`Perpetual futures involve unique risks.`}
+        </Text>
       </View>
-    </ScrollScreen>
+
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          height: 32
+        }}>
+        <Text
+          variant="caption"
+          sx={{
+            color: '$textSecondary'
+          }}>
+          Powered by
+        </Text>
+        <HyperliquidLogo color={alpha(theme.colors.$textPrimary, 0.6)} />
+      </View>
+    </View>
   )
 }
