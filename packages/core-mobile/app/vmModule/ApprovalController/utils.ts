@@ -3,7 +3,11 @@ import { showAlert } from '@avalabs/k2-alpine'
 import { RpcError, RpcMethod } from '@avalabs/vm-module-types'
 import { getLedgerAppName, isBitcoinCompatibleApp } from 'features/ledger/utils'
 import LedgerService from 'services/ledger/LedgerService'
-import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
+import {
+  LEDGER_ERROR_CODES,
+  LedgerAppType,
+  LEDGER_BLIND_SIGN_MESSAGE
+} from 'services/ledger/types'
 
 export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 
@@ -18,6 +22,7 @@ export const handleLedgerErrorAndShowAlert = ({
   rpcMethod?: RpcMethod
   onRetry: () => void
   onCancel: () => void
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   // @ts-ignore
   const message = error.data?.cause?.message || error.message || ''
@@ -71,6 +76,12 @@ export const handleLedgerErrorAndShowAlert = ({
   ) {
     description =
       'Ledger is processing another request. Please try again later.'
+  } else if (
+    lowercasedMessage.includes(LEDGER_ERROR_CODES.BLIND_SIGN_REQUIRED) &&
+    ledgerAppName === LedgerAppType.AVALANCHE
+  ) {
+    title = 'Enable blind signing'
+    description = LEDGER_BLIND_SIGN_MESSAGE
   } else {
     description = message
   }
