@@ -197,13 +197,23 @@ export function useQuoteStreaming(
         case 'done':
           setIsLoading(false)
           if (data.reason === 'no-quotes') {
-            setError(fusionErrors.noQuotes())
-            onNoQuotesError?.(retry)
-            SentryService.captureMessage(
-              'Fusion quoter: no-quotes',
-              data.data,
-              { source: SentryTag.FusionSdk }
-            )
+            // A zero-amount CCT route is an import-only recovery probe: "no
+            // quotes" just means there's nothing stranded to recover, which is
+            // a normal state (the user may simply be typing/clearing the
+            // amount). Don't treat it as an error — no alert, no inline error,
+            // no Sentry noise. When funds ARE stranded the SDK emits a real
+            // quote instead, so the recovery flow is unaffected. See CP-14674.
+            const isZeroAmountRecoveryProbe =
+              allowZeroAmount && fromAmount === 0n
+            if (!isZeroAmountRecoveryProbe) {
+              setError(fusionErrors.noQuotes())
+              onNoQuotesError?.(retry)
+              SentryService.captureMessage(
+                'Fusion quoter: no-quotes',
+                data.data,
+                { source: SentryTag.FusionSdk }
+              )
+            }
           }
           if (data.reason === 'no-eligible-services') {
             setError(fusionErrors.noEligibleServices())
@@ -221,7 +231,15 @@ export function useQuoteStreaming(
     return () => {
       unsubscribe()
     }
-  }, [quoterResult, setBestQuote, setAllQuotes, onNoQuotesError, retry])
+  }, [
+    quoterResult,
+    setBestQuote,
+    setAllQuotes,
+    onNoQuotesError,
+    retry,
+    allowZeroAmount,
+    fromAmount
+  ])
 
   return {
     isLoading,
