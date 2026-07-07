@@ -39,6 +39,12 @@ jest.mock('common/hooks/useFormatCurrency', () => ({
   useFormatCurrency: () => ({ formatCurrency: () => '$0' })
 }))
 
+const mockOpenUrl = jest.fn()
+jest.mock('common/hooks/useInAppBrowser', () => ({
+  __esModule: true,
+  default: () => ({ openUrl: mockOpenUrl })
+}))
+
 jest.mock('../hooks/useTriggerToggles', () => ({
   useTriggerToggles: () => ({
     takeProfit: { enabled: false, onToggle: jest.fn(), drillValue: '' },
@@ -88,6 +94,7 @@ jest.mock('@avalabs/k2-alpine', () => {
   }
 })
 
+import { TERMS_OF_USE_URL } from 'common/consts/urls'
 import { PerpetualsPlaceOrderScreen } from './PerpetualsPlaceOrderScreen'
 
 const CONFIRM = 'perpetuals_place_order_confirm'
@@ -155,5 +162,23 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     } finally {
       jest.useRealTimers()
     }
+  })
+})
+
+describe('PerpetualsPlaceOrderScreen terms of use', () => {
+  beforeEach(() => {
+    mockOpenUrl.mockReset()
+  })
+
+  it('opens the Terms of Use in the in-app browser when the link is pressed', async () => {
+    const instance = await render()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const link: any = instance.root.findAllByProps({
+      testID: 'perpetuals_place_order_terms_link'
+    })[0]
+    await act(async () => {
+      link.props.onPress()
+    })
+    expect(mockOpenUrl).toHaveBeenCalledWith(TERMS_OF_USE_URL)
   })
 })
