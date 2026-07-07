@@ -73,7 +73,7 @@ const SearchResultScreen = ({
       transform: [
         {
           translateY: withTiming(
-            isSearchBarFocused ? -collapsibleHeaderHeight + 40 : 0,
+            isSearchBarFocused ? -collapsibleHeaderHeight + 90 : 0,
             {
               ...ANIMATED.TIMING_CONFIG
             }
