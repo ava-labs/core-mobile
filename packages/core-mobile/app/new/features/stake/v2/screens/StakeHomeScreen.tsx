@@ -25,6 +25,7 @@ import {
   StakeCardListHeaderProps
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
+import { CctBanner } from '../components/CctBanner'
 
 // Width of the right-edge fade overlay on the chip scroll. Matches the
 // pattern used by TradeFilters so trailing chips fade into the screen
@@ -178,6 +179,9 @@ export const StakeHomeScreen = (): JSX.Element => {
               </AnimatedPressable>
             </View>
           )}
+          {/* CCT banner — points stakers to Swap for P→C transfers. Self-hides
+              (and reserves no space) when dismissed or nothing is claimable. */}
+          <CctBanner sx={{ marginTop: 16, marginHorizontal: 16 }} />
         </View>
       )
     },
