@@ -1519,7 +1519,7 @@ describe('ApprovalController', () => {
           params as unknown as {
             signingRequests: { signingData: { data: { data: string } } }[]
           }
-        ).signingRequests[0].signingData.data.data
+        ).signingRequests[0]?.signingData.data.data
       ).toBe('0xORIG0')
       expect(result).toEqual({
         result: [{ signedData: '0xa' }, { signedData: '0xb' }]

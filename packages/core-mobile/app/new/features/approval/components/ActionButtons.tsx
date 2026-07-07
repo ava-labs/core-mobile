@@ -24,7 +24,7 @@ export type ActionButtonsProps = {
     isLoading?: boolean
     testID?: string
   }
-  cancel: {
+  cancel?: {
     label: string
     onPress: () => void
     disabled?: boolean
@@ -67,15 +67,17 @@ export const ActionButtons = ({
           }>
           {confirm.isLoading ? <ActivityIndicator /> : confirm.label}
         </Button>
-        <Button
-          size="large"
-          type="tertiary"
-          style={{ marginTop: 16 }}
-          onPress={() => cancel.onPress()}
-          disabled={cancel.disabled}
-          testID="reject_button">
-          {cancel.label}
-        </Button>
+        {cancel && (
+          <Button
+            size="large"
+            type="tertiary"
+            style={{ marginTop: 16 }}
+            onPress={() => cancel.onPress()}
+            disabled={cancel.disabled}
+            testID="reject_button">
+            {cancel.label}
+          </Button>
+        )}
       </View>
     )
   }, [confirm, cancel, alert, alertConfirmed])

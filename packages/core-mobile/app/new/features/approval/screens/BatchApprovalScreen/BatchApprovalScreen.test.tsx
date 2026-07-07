@@ -48,7 +48,11 @@ jest.mock('@avalabs/k2-alpine', () => {
     Icons: {
       Social: { RemoveModerator: () => null },
       Device: { GPPMaybe: () => null },
-      Action: { Info: () => null },
+      Action: {
+        Info: () => null,
+        Help: () => null,
+        CheckCircleOutline: () => null
+      },
       Navigation: { ChevronRight: () => null }
     },
     useTheme: () => ({
@@ -57,6 +61,7 @@ jest.mock('@avalabs/k2-alpine', () => {
           $textPrimary: '#000',
           $textSecondary: '#888',
           $textDanger: '#f00',
+          $textSuccess: '#0f0',
           $surfaceSecondary: '#eee'
         },
         isDark: false
@@ -80,6 +85,7 @@ jest.mock('new/common/components/ActionSheet', () => {
       title,
       confirm,
       cancel,
+      onClose,
       children
     }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any) =>
@@ -92,11 +98,23 @@ jest.mock('new/common/components/ActionSheet', () => {
           { testID: 'confirm_button', onPress: confirm.onPress },
           r.createElement(rn.Text, null, confirm.label)
         ),
-        r.createElement(
-          rn.TouchableOpacity,
-          { testID: 'cancel_button', onPress: cancel.onPress },
-          r.createElement(rn.Text, null, cancel.label)
-        ),
+        // `cancel` is optional — the tx-detail steps omit it (the header back
+        // button replaces the old bottom "Previous" button).
+        cancel
+          ? r.createElement(
+              rn.TouchableOpacity,
+              { testID: 'cancel_button', onPress: cancel.onPress },
+              r.createElement(rn.Text, null, cancel.label)
+            )
+          : null,
+        // Stand-in for the native gesture / hardware-back dismissal: the real
+        // ActionSheet fires `onClose` from its `beforeRemove` listener when the
+        // sheet is dismissed by swipe. Expose it as a pressable so tests can
+        // drive that path.
+        r.createElement(rn.TouchableOpacity, {
+          testID: 'gesture_dismiss',
+          onPress: onClose
+        }),
         children
       )
   }
@@ -139,6 +157,40 @@ jest.mock('hooks/useSpendLimits', () => ({
 
 jest.mock('../../components/Account', () => ({ Account: () => null }))
 jest.mock('../../components/Network', () => ({ Network: () => null }))
+jest.mock('../../components/AccountNetworkCard', () => ({
+  AccountNetworkCard: () => null
+}))
+jest.mock('../../components/NetworkFeeSelectorWithGasless', () => ({
+  NetworkFeeSelectorWithGasless: () => null
+}))
+
+// The overview derives its network from the active-network list via useNetworks
+// (which reads Redux); stub it so the screen renders without a store Provider.
+jest.mock('hooks/networks/useNetworks', () => ({
+  useNetworks: () => ({ getNetwork: jest.fn(() => undefined) })
+}))
+
+// useEffectiveHeaderHeight pulls in expo-router/react-navigation (which imports
+// a PNG asset Jest can't parse); stub it to a fixed height.
+jest.mock('common/hooks/useEffectiveHeaderHeight', () => ({
+  useEffectiveHeaderHeight: () => 100
+}))
+jest.mock('common/components/BackBarButton', () => ({
+  __esModule: true,
+  default: () => null
+}))
+jest.mock('common/components/ProgressDots', () => ({
+  ProgressDots: () => null
+}))
+jest.mock('hooks/useGasless', () => ({
+  useGasless: () => ({
+    gaslessEnabled: false,
+    setGaslessEnabled: jest.fn(),
+    shouldShowGaslessSwitch: false,
+    gaslessError: null,
+    handleGaslessTx: jest.fn()
+  })
+}))
 jest.mock('../../components/BalanceChange/BalanceChange', () => ({
   __esModule: true,
   default: () => null
@@ -264,6 +316,8 @@ describe('BatchApprovalScreen', () => {
       instance = renderer.create(<BatchApprovalScreen params={params} />)
     })
     pressTestID(instance, 'confirm_button')
+    // Gasless is intentionally not offered on the batch screen (no batch
+    // broadcast-path funding hook), so onApprove is called with overrides only.
     expect(params.onApprove).toHaveBeenCalledWith({})
   })
 
@@ -301,5 +355,21 @@ describe('BatchApprovalScreen', () => {
     })
     pressTestID(instance, 'cancel_button')
     expect(params.onReject).toHaveBeenCalled()
+  })
+
+  it('rejects the request WITHOUT an extra router.back() on a gesture dismissal', () => {
+    // A swipe-down dismissal already pops this sheet natively. `rejectAndClose`
+    // would call router.back() a second time, popping the screen underneath
+    // (e.g. the Swap sheet). The gesture path (ActionSheet.onClose) must only
+    // reject the pending request and let the native pop handle navigation.
+    const router = jest.requireMock('expo-router').router
+    const params = buildParams(1)
+    let instance!: renderer.ReactTestRenderer
+    act(() => {
+      instance = renderer.create(<BatchApprovalScreen params={params} />)
+    })
+    pressTestID(instance, 'gesture_dismiss')
+    expect(params.onReject).toHaveBeenCalled()
+    expect(router.back).not.toHaveBeenCalled()
   })
 })

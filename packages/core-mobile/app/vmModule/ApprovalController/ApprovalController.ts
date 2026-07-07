@@ -12,6 +12,7 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc/types'
 import {
   isDappOriginatedUrl,
   isInjectedDappRequest
@@ -618,12 +619,16 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingRequests,
         signal: getRequestSignal(requestId),
-        onApprove: (spendLimitOverrides: Record<number, string>) =>
+        onApprove: (
+          spendLimitOverrides: Record<number, string>,
+          options?: { gaslessEnabled?: boolean }
+        ) =>
           this.handleBatchApprovalApprove({
             requestId,
             request,
             signingRequests,
             spendLimitOverrides,
+            gaslessEnabled: options?.gaslessEnabled ?? false,
             resolve
           }),
         onReject: (message?: string) => {
@@ -644,18 +649,32 @@ class ApprovalController implements VmModuleApprovalController {
     request,
     signingRequests,
     spendLimitOverrides,
+    gaslessEnabled,
     resolve
   }: {
     requestId: string
     request: BatchApprovalParams['request']
     signingRequests: BatchApprovalParams['signingRequests']
     spendLimitOverrides: Record<number, string>
+    gaslessEnabled: boolean
     resolve: (
       value: BatchApprovalResponse | PromiseLike<BatchApprovalResponse>
     ) => void
   }): Promise<void> {
     if (this.userCancelledMap.get(requestId)) return
     this.clearCancelBridge(requestId)
+
+    // Capture the user's "Get free gas" choice on the request context. The
+    // batch path only signs here and returns the signed RLP to the EVM module
+    // to broadcast — there is no per-tx funding hook like the single-tx
+    // `onSigned` path — so this records intent for the broadcast path to fund
+    // once batch gasless support lands. Harmless no-op today.
+    if (gaslessEnabled) {
+      request.context = {
+        ...request.context,
+        [RequestContext.GASLESS_ENABLED]: true
+      }
+    }
 
     // Apply per-index spend-limit overrides (re-encoded approve calldata) to
     // each tx before signing — mirrors the single-tx overrideData path.

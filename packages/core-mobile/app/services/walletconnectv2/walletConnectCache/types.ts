@@ -67,13 +67,18 @@ export type ApprovalParams = {
 // Params handed to the BatchApprovalScreen via walletConnectCache. `onApprove`
 // receives a map of txIndex -> re-encoded ERC-20 approve calldata (hex) for any
 // steps whose spend limit the user edited; the controller applies these before
-// signing each tx. See BatchApprovalScreen / handleBatchApprovalApprove.
+// signing each tx. `options.gaslessEnabled` carries the user's "Get free gas"
+// choice from the overview screen. See BatchApprovalScreen /
+// handleBatchApprovalApprove.
 export type BatchApprovalScreenParams = {
   request: RpcRequest
   displayData: DisplayData
   signingRequests: SigningRequest<SigningData_EthSendTx>[]
   signal?: AbortSignal
-  onApprove: (spendLimitOverrides: Record<number, string>) => void
+  onApprove: (
+    spendLimitOverrides: Record<number, string>,
+    options?: { gaslessEnabled?: boolean }
+  ) => void
   onReject: (message?: string) => void
 }
 
