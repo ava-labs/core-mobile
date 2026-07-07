@@ -639,7 +639,15 @@ class ApprovalController implements VmModuleApprovalController {
 
       router.navigate({
         pathname: '/approvalBatch',
-        params: { presentationMode: NavigationPresentationMode.FORM_SHEET }
+        // Batches are in-app only (the eth_sendTransactionBatch handler rejects
+        // any non-CORE_MOBILE_TOPIC request), so isInAppRequest is always true
+        // here. Mirror requestApproval's conditional anyway so the presentation
+        // style can't diverge if that trust boundary ever changes.
+        params: {
+          presentationMode: isInAppRequest(request)
+            ? NavigationPresentationMode.FORM_SHEET
+            : undefined
+        }
       })
     })
   }

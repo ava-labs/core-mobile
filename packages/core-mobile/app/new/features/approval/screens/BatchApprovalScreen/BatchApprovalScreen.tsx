@@ -9,7 +9,7 @@ import { useRecurringApprovalContext } from 'features/approval/hooks/useRecurrin
 import { RecurrenceDetails } from 'features/approval/components/RecurrenceDetails'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ActionSheet } from 'new/common/components/ActionSheet'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Platform } from 'react-native'
 import { BatchApprovalScreenParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
@@ -59,13 +59,22 @@ export const BatchApprovalScreen = ({
   const { recurringContext, isRecurringContextMalformed } =
     useRecurringApprovalContext(params.request, rejectAndClose)
 
+  // Defensive: the signer never produces a zero-tx batch (the
+  // eth_sendTransactionBatch handler enforces >= 2 txs), but guard it here so
+  // the inner screen's `signingRequests[0]` reads never hand `undefined` (cast
+  // to SigningData) to `useGasless`. Reject + close in an effect (mirroring the
+  // malformed-context path above) so a violated invariant can't hang the
+  // pending request behind a blank sheet, then return null as a render guard.
+  const isEmptyBatch = params.signingRequests.length === 0
+  useEffect(() => {
+    if (isEmptyBatch) {
+      rejectAndClose('Batch approval received no transactions')
+    }
+  }, [isEmptyBatch, rejectAndClose])
+
   if (isRecurringContextMalformed) return null
 
-  // Defensive: the signer never produces a zero-tx batch, but guard it here so
-  // the inner screen's `signingRequests[0]` reads never hand `undefined` (cast
-  // to SigningData) to `useGasless`. Returning null before the inner mounts
-  // keeps that hook from ever running with a missing representative tx.
-  if (params.signingRequests.length === 0) return null
+  if (isEmptyBatch) return null
 
   return (
     <BatchApprovalScreenInner
