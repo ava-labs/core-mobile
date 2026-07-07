@@ -482,12 +482,13 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            // On Android, `nestedScrollEnabled` lets the scroll view participate in a
-            // parent form sheet's nested scrolling so a vertical swipe scrolls the
-            // content instead of being captured by the sheet's drag-to-dismiss gesture.
-            // Without it, scrolling down inside a modal dismisses the whole sheet.
+            // Do NOT set `nestedScrollEnabled` here. On Android, explicitly passing
+            // it (true OR false) to the gesture-handler ScrollView disables its
+            // default nested-scroll participation, so the parent form sheet never
+            // receives the vertical drag and swipe-to-dismiss stops working
+            // (CP-14710). Leaving it unset keeps content scrolling AND sheet
+            // dismissal both working.
             {...props}
-            nestedScrollEnabled={Platform.OS === 'android'}
             style={{
               flex: 1
             }}
@@ -529,11 +530,12 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
-          // On Android, `nestedScrollEnabled` lets the scroll view participate in a
-          // parent form sheet's nested scrolling so a vertical swipe scrolls the
-          // content instead of being captured by the sheet's drag-to-dismiss gesture.
-          // Without it, scrolling down inside a modal dismisses the whole sheet.
-          nestedScrollEnabled={Platform.OS === 'android'}
+          // Do NOT set `nestedScrollEnabled` here. On Android, explicitly passing
+          // it (true OR false) to the gesture-handler ScrollView disables its
+          // default nested-scroll participation, so the parent form sheet never
+          // receives the vertical drag and swipe-to-dismiss stops working
+          // (CP-14710). Leaving it unset keeps content scrolling AND sheet
+          // dismissal both working.
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
