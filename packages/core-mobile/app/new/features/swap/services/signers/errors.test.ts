@@ -1,4 +1,7 @@
-import { BatchSigningUnsupportedError, isBatchSigningUnsupportedError } from './errors'
+import {
+  BatchSigningUnsupportedError,
+  isBatchSigningUnsupportedError
+} from './errors'
 
 describe('BatchSigningUnsupportedError', () => {
   it('is identified by its type guard', () => {
