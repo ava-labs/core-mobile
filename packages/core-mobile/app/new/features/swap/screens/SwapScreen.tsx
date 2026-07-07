@@ -15,7 +15,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -412,7 +411,6 @@ export const SwapScreen = (): JSX.Element => {
     activeQuote,
     allQuotes,
     isQuoteLoading,
-    setDestination,
     slippage,
     autoSlippage,
     setAmount,
@@ -763,7 +761,6 @@ export const SwapScreen = (): JSX.Element => {
       // 0n = an explicit typed 0 (the CCT recovery input).
       if (valueString === '') {
         setFromTokenValue(undefined)
-        setDestination(SwapSide.SELL)
         setUserClickedMax(false)
         return
       }
@@ -781,25 +778,14 @@ export const SwapScreen = (): JSX.Element => {
           ? clampToNAvax(amount, decimals)
           : amount
       setFromTokenValue(next)
-      setDestination(SwapSide.SELL)
       setUserClickedMax(false)
     },
-    [fromToken, toToken, setDestination, setUserClickedMax]
+    [fromToken, toToken, setUserClickedMax]
   )
 
   const handlePressMax = useCallback((): void => {
     setUserClickedMax(true)
   }, [setUserClickedMax])
-
-  const handleToAmountChange = useCallback(
-    (amount: bigint): void => {
-      setToTokenValue(amount)
-      setDestination(SwapSide.BUY)
-      setAmount(amount)
-      setUserClickedMax(false)
-    },
-    [setDestination, setAmount, setUserClickedMax]
-  )
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
     await dismissKeyboardIfNeeded()
@@ -952,7 +938,6 @@ export const SwapScreen = (): JSX.Element => {
           }
           network={getNetwork(toToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
-          onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
           isLoadingAmount={
             recurring.isRecurring ? recurringQuote.isFetching : isQuoteLoading
@@ -963,7 +948,6 @@ export const SwapScreen = (): JSX.Element => {
   }, [
     theme,
     formatInCurrency,
-    handleToAmountChange,
     toToken,
     getNetwork,
     toTokenValue,
