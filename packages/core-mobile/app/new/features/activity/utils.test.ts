@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Transaction } from 'store/transaction'
@@ -7,10 +7,12 @@ import {
   findPaymentToken,
   getNftLabel,
   isCollectibleTransaction,
+  isInputOnlyContractCall,
   isNftTransaction,
   isPaymentTokenType,
   isPotentiallySwap,
   resolvePaymentSymbol,
+  resolveTxUserAddress,
   resolveUserIsRecipient,
   selectSwapTokens
 } from './utils'
@@ -634,5 +636,67 @@ describe('selectSwapTokens', () => {
 
     expect(inputToken).toBeUndefined()
     expect(outputToken).toBeUndefined()
+  })
+})
+
+describe('isInputOnlyContractCall', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const leg = (from: string, to: string): TxToken =>
+    ({
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      amount: '1',
+      from: { address: from },
+      to: { address: to }
+    } as TxToken)
+
+  it('is true when a leg leaves the user with nothing coming back', () => {
+    // e.g. an ERC-20 approval or a cross-chain swap output on another chain
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], USER_ADDRESS)
+    ).toBe(true)
+  })
+
+  it('is false for a genuine swap with an output leg back to the user', () => {
+    expect(
+      isInputOnlyContractCall(
+        [leg(USER_ADDRESS, ROUTER), leg(POOL, USER_ADDRESS)],
+        USER_ADDRESS
+      )
+    ).toBe(false)
+  })
+
+  it('is false when no leg involves the user', () => {
+    expect(isInputOnlyContractCall([leg(POOL, ROUTER)], USER_ADDRESS)).toBe(
+      false
+    )
+  })
+
+  it('is false when the user address is unknown', () => {
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], undefined)
+    ).toBe(false)
+  })
+})
+
+describe('resolveTxUserAddress', () => {
+  const account = { addressC: '0xEvmAddress' } as Account
+  const evmNetwork = { vmName: NetworkVMType.EVM } as Network
+
+  it('returns the per-network account address when account and network resolve', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, evmNetwork)).toBe('0xEvmAddress')
+  })
+
+  it('falls back to tx.from when the network is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, undefined)).toBe('0xTxFrom')
+  })
+
+  it('falls back to tx.from when the account is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, undefined, evmNetwork)).toBe('0xTxFrom')
   })
 })

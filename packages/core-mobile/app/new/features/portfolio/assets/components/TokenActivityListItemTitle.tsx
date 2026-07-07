@@ -11,6 +11,7 @@ import {
   isCollectibleTransaction,
   isPotentiallySwap,
   resolvePaymentSymbol,
+  resolveTxUserAddress,
   resolveUserIsRecipient,
   selectSwapTokens
 } from 'features/activity/utils'
@@ -18,7 +19,6 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { getAddressByNetwork } from 'store/account/utils'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
@@ -104,10 +104,11 @@ export const TokenActivityListItemTitle = ({
       // swap that also carries a native protocol/gas-fee leg (e.g. recurring
       // fills) is labelled by the ERC-20 principal, not the small native fee.
       const network = getNetwork(Number(transaction.chainId))
-      const userAddress =
-        network && activeAccount
-          ? getAddressByNetwork(activeAccount, network)
-          : transaction.from
+      const userAddress = resolveTxUserAddress(
+        transaction,
+        activeAccount,
+        network
+      )
 
       const { inputToken, outputToken } = selectSwapTokens(
         transaction.tokens,
@@ -205,10 +206,11 @@ export const TokenActivityListItemTitle = ({
       // tolerate undefined and we render the generic "NFT" label.
       const nftToken = findNftToken(transaction)
       const network = getNetwork(Number(transaction.chainId))
-      const userAddress =
-        network && activeAccount
-          ? getAddressByNetwork(activeAccount, network)
-          : transaction.from
+      const userAddress = resolveTxUserAddress(
+        transaction,
+        activeAccount,
+        network
+      )
       const userAddressLower = userAddress?.toLowerCase()
 
       const userIsRecipient = resolveUserIsRecipient({

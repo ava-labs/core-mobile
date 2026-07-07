@@ -1,3 +1,4 @@
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
@@ -6,6 +7,7 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { isNftTokenType } from 'services/nft/utils'
 import { Account } from 'store/account'
+import { getAddressByNetwork } from 'store/account/utils'
 import { Transaction } from 'store/transaction'
 
 export type ActivityListItem =
@@ -277,4 +279,34 @@ export function selectSwapTokens(
   const outputToken = outputTokens[0]
 
   return { inputToken, outputToken }
+}
+
+/**
+ * The active user's address on a transaction's network, resolved the same way
+ * the swap-title does: prefer the account's per-network address, falling back
+ * to `tx.from` when the account or network can't be resolved. Sharing this
+ * keeps the title, the row icon, and the Swap filter reading the same address.
+ */
+export function resolveTxUserAddress(
+  tx: Transaction,
+  account: Account | undefined,
+  network: Network | undefined
+): string | undefined {
+  return network && account ? getAddressByNetwork(account, network) : tx.from
+}
+
+/**
+ * True when the only identifiable leg leaves the user (input) with nothing
+ * coming back (no output leg). A genuine swap returns a token to the user, so
+ * an input-only shape is an unclassified contract call — an ERC-20 approval, a
+ * cross-chain swap whose output lands on another chain, etc. Mirrors the
+ * "Contract Call" branch of the swap-title so the row icon and Swap filter stay
+ * consistent with the rendered label.
+ */
+export function isInputOnlyContractCall(
+  tokens: TxToken[],
+  userAddress: string | undefined
+): boolean {
+  const { inputToken, outputToken } = selectSwapTokens(tokens, userAddress)
+  return Boolean(inputToken) && !outputToken
 }
