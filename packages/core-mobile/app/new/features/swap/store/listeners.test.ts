@@ -47,6 +47,10 @@ jest.mock('store/settings/advanced/slice', () => ({
 }))
 
 jest.mock('store/settings/advanced/quickSwapsActive', () => ({
+  // Keep the real `selectIsBatchSigningSupported` so the getBatchOptions tests
+  // still exercise the actual software-wallet allowlist (via the mocked
+  // `selectActiveWallet`); only the Quick Swaps gate is stubbed.
+  ...jest.requireActual('store/settings/advanced/quickSwapsActive'),
   selectIsQuickSwapsActive: jest.fn().mockReturnValue(false)
 }))
 

@@ -56,6 +56,7 @@ import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsBatchSigningSupported } from 'store/settings/advanced/quickSwapsActive'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
@@ -355,6 +356,7 @@ function buildPriceImpactItem({
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isBatchSigningSupported = useSelector(selectIsBatchSigningSupported)
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
   const [fusionInitError] = useFusionServiceInitError()
@@ -427,7 +429,8 @@ export const SwapScreen = (): JSX.Element => {
     swapStatus,
     successTransferId,
     advanceBestQuote,
-    setUserClickedMax
+    setUserClickedMax,
+    recurringGasSettings
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -1373,6 +1376,12 @@ export const SwapScreen = (): JSX.Element => {
     // can't slip through the window where the recurring quote has resolved but
     // the floor hasn't (the below-minimum check is skipped while it's unknown).
     isRecurringMinimumReady: markrMinimumTransferAmount !== undefined,
+    // Gate Next until `recurringGasSettings` carries an explicit maxFeePerGas.
+    // `buildFusionGasSettings` only fills the EIP-1559 tier override once live
+    // `networkFees` load, and the software-wallet batch path submits with the
+    // per-tx fallback disabled — so submitting fee-less during the cold-start
+    // window trips signBatch's guard and hard-fails the whole swap. (CP-14641)
+    hasRecurringFees: recurringGasSettings.maxFeePerGas !== undefined,
     canSwap
   })
 
@@ -1419,7 +1428,9 @@ export const SwapScreen = (): JSX.Element => {
         toTokenLocalId: toToken.localId,
         fromTokenNetworkChainId: fromToken.networkChainId,
         toTokenNetworkChainId: toToken.networkChainId,
-        slippageBps: recurringSlippageBps
+        slippageBps: recurringSlippageBps,
+        gasSettings: recurringGasSettings,
+        isBatchSigningSupported
       })
       // submitRecurringSwap fires the success snackbar + analytics +
       // staggered query invalidations on its own (the SDK call's resolution
@@ -1464,6 +1475,8 @@ export const SwapScreen = (): JSX.Element => {
     fromTokenValue,
     getNetwork,
     recurringSlippageBps,
+    recurringGasSettings,
+    isBatchSigningSupported,
     dismissAll
   ])
 
