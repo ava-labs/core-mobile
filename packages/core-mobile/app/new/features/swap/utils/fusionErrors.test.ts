@@ -458,6 +458,19 @@ describe('getSwapErrorMessage', () => {
     )
   })
 
+  it('should return the execution-failure message for JSON parse errors (CP-14708)', () => {
+    // A malformed 200 application/json body on /swap or /authorize throws a
+    // native SyntaxError that would otherwise leak to the "Swap failed" toast.
+    expect(
+      getSwapErrorMessage(
+        new SyntaxError('JSON Parse error: Unexpected character: <')
+      )
+    ).toBe('Something went wrong completing the swap. Please try again.')
+    expect(getSwapErrorMessage(new Error('Unexpected end of JSON input'))).toBe(
+      'Something went wrong completing the swap. Please try again.'
+    )
+  })
+
   it('should return original message for unrecognized errors', () => {
     expect(getSwapErrorMessage(new Error('something unexpected'))).toBe(
       'something unexpected'

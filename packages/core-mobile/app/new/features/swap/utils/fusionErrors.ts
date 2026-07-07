@@ -367,6 +367,19 @@ export function getSwapErrorMessage(error: unknown): string {
 
   const message = actualError?.message ?? error.message
 
+  // A malformed/truncated JSON body on an execution endpoint (/swap, /authorize)
+  // comes back 200 with an application/json header, so the SDK's fetchJson
+  // content-type guard passes and response.json() throws a native SyntaxError
+  // that the retry loop (which only wraps the fetch, not the parse) doesn't
+  // catch. Without this branch it falls through to the raw message below and
+  // surfaces as "JSON Parse error: ..." in the "Swap failed" toast — the same
+  // string this feature kills on the quote screen. Distinct copy from the quote
+  // path since "Couldn't load a quote" reads oddly for an execution failure.
+  // See CP-14708.
+  if (isResponseParseError(actualError ?? error)) {
+    return 'Something went wrong completing the swap. Please try again.'
+  }
+
   // CCT swap couldn't resolve the active account's X/P addresses (e.g. a Ledger
   // wallet with no derivable Avalanche address). Surface a clear message instead
   // of the raw internal guard string. See CP-14507.
