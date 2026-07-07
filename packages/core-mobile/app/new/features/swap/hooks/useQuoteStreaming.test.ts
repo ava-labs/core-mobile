@@ -30,11 +30,17 @@ jest.mock('services/sentry/SentryService', () => ({
 }))
 
 // The quote/ready stores are Zustand-backed; stub them so the hook sees the
-// Fusion service as ready and we don't touch MMKV.
+// Fusion service as ready and we don't touch MMKV. The setter references must
+// be STABLE — the hook's effect lists them as deps, so a fresh jest.fn() per
+// render would re-subscribe every render and reset error/isLoading between
+// them, making `result.current` unreliable.
+const mockSetBestQuote = jest.fn()
+const mockSetAllQuotes = jest.fn()
+const mockSetReady = jest.fn()
 jest.mock('./useZustandStore', () => ({
-  useBestQuote: () => [null, jest.fn()],
-  useAllQuotes: () => [[], jest.fn()],
-  useIsFusionServiceReady: () => [true, jest.fn()]
+  useBestQuote: () => [null, mockSetBestQuote],
+  useAllQuotes: () => [[], mockSetAllQuotes],
+  useIsFusionServiceReady: () => [true, mockSetReady]
 }))
 
 const mockGetQuoter = jest.mocked(FusionService.getQuoter)
@@ -79,7 +85,7 @@ describe('useQuoteStreaming', () => {
     mockGetQuoter.mockReturnValue(quoter)
     const onNoQuotesError = jest.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useQuoteStreaming({
         ...baseParams,
         fromAmount: 0n,
@@ -90,10 +96,11 @@ describe('useQuoteStreaming', () => {
 
     act(() => emit('done', { reason: 'no-quotes', data: {} }))
 
-    // Nothing is stranded → no "Quotes unavailable" alert and no Sentry noise;
-    // "no quotes" is the normal outcome of a recovery probe, not an error.
+    // Nothing is stranded → no "Quotes unavailable" alert, no inline error, and
+    // no Sentry noise; "no quotes" is the normal outcome of a recovery probe.
     expect(onNoQuotesError).not.toHaveBeenCalled()
     expect(mockCaptureMessage).not.toHaveBeenCalled()
+    expect(result.current.error).toBeNull()
   })
 
   it('alerts when a real (positive-amount) quote request finds no quotes', () => {
@@ -101,7 +108,7 @@ describe('useQuoteStreaming', () => {
     mockGetQuoter.mockReturnValue(quoter)
     const onNoQuotesError = jest.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useQuoteStreaming({
         ...baseParams,
         fromAmount: 100n,
@@ -113,8 +120,9 @@ describe('useQuoteStreaming', () => {
     act(() => emit('done', { reason: 'no-quotes', data: {} }))
 
     // A positive amount is a genuine swap attempt, so "no quotes" is a real
-    // error worth alerting on (and reporting to Sentry).
+    // error worth alerting on, surfacing inline, and reporting to Sentry.
     expect(onNoQuotesError).toHaveBeenCalledTimes(1)
     expect(mockCaptureMessage).toHaveBeenCalledTimes(1)
+    expect(result.current.error).not.toBeNull()
   })
 })
