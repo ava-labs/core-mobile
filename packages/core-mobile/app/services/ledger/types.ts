@@ -59,13 +59,13 @@ export enum LEDGER_ERROR_CODES {
   BLIND_SIGN_REQUIRED = '0x6984'
 }
 
-// Shown when an Avalanche L1 (foreign-EVM) transaction is rejected with 0x6984.
-// Kept soft: 0x6984 is the generic "invalid data" word, so guide toward the
-// fix (blind signing) without asserting it is the only possible cause.
+// Shown when an Avalanche-app transaction is rejected with a bare 0x6984
+// (blind-sign refusal). Kept soft: 0x6984 is the generic "invalid data" word,
+// so guide toward the fix without asserting it is the only cause.
 export const LEDGER_BLIND_SIGN_MESSAGE =
-  'This L1 transaction needs blind signing. Open the Avalanche app on your ' +
-  'Ledger, go to Settings and turn on Blind signing, then try again. If you ' +
-  "don't see that setting, update the Avalanche app in Ledger Live."
+  'This transaction likely needs blind signing enabled in the Avalanche app ' +
+  'on your Ledger. Open the app’s Settings, turn on Blind signing, and try ' +
+  'again. If you don’t see that setting, update the Avalanche app in Ledger Live.'
 
 // ============================================================================
 // LEDGER DEVICE TYPES

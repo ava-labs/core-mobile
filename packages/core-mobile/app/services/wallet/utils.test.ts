@@ -1,5 +1,11 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { RpcMethod, TypedData, MessageTypes } from '@avalabs/vm-module-types'
+import {
+  NetworkVMType,
+  RpcMethod,
+  TypedData,
+  MessageTypes
+} from '@avalabs/vm-module-types'
+import { Network } from '@avalabs/core-chains-sdk'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { LedgerAppType, LEDGER_BLIND_SIGN_MESSAGE } from 'services/ledger/types'
 import {
@@ -89,5 +95,19 @@ describe('handleLedgerError', () => {
         appType: LedgerAppType.ETHEREUM
       })
     ).not.toThrow()
+  })
+
+  it('resolves an L1 network to the Avalanche app and maps 0x6984', () => {
+    const l1Network = {
+      vmName: NetworkVMType.EVM,
+      subnetId: 'orange-subnet',
+      chainId: 999999
+    } as unknown as Network
+    expect(() =>
+      handleLedgerError({
+        error: err('Ledger device: UNKNOWN_ERROR (0x6984)'),
+        network: l1Network
+      })
+    ).toThrow(LEDGER_BLIND_SIGN_MESSAGE)
   })
 })
