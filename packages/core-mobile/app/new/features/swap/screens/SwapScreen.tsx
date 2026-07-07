@@ -116,6 +116,7 @@ import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
+import { resolveReceiveAmount } from '../utils/resolveReceiveAmount'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -708,22 +709,33 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const applyQuote = useCallback(() => {
-    // Show the received amount whenever a quote is in hand. A CCT recovery
-    // (0 entered) has amountIn=0, so keep the amount visible; an empty or
-    // no-quote input clears it.
-    if (!activeQuote || (!debouncedFromTokenValue && !isCctRecovery)) {
+    // The "You receive" amount comes from the recurring quote's first-fill
+    // estimate when recurring is on (the one-time `activeQuote` is frozen in
+    // that mode — see `syncDebouncedAmount`), and from `activeQuote` otherwise.
+    // Fees are already baked into `amountOut` by the SDK/backend.
+    const action = resolveReceiveAmount({
+      isRecurring: recurring.isRecurring,
+      fromTokenValue,
+      recurringAmountOut: recurringQuote.data?.amountOut,
+      hasActiveQuote: !!activeQuote,
+      activeQuoteAmountOut: activeQuote?.amountOut,
+      debouncedFromTokenValue,
+      isCctRecovery
+    })
+    if (action.type === 'set') {
+      setToTokenValue(action.value)
+    } else if (action.type === 'clear') {
       setToTokenValue(undefined)
-      return
     }
-
-    // Fusion SDK Quote has amountOut as bigint - fees are already included
-    // No need to apply fee deduction - the SDK/backend handles all fees
-    const amountOut = activeQuote.amountOut
-
-    if (amountOut) {
-      setToTokenValue(amountOut)
-    }
-  }, [activeQuote, debouncedFromTokenValue, isCctRecovery])
+    // 'keep' → leave the current value untouched (avoids flashing empty mid-refetch)
+  }, [
+    recurring.isRecurring,
+    fromTokenValue,
+    recurringQuote.data?.amountOut,
+    activeQuote,
+    debouncedFromTokenValue,
+    isCctRecovery
+  ])
 
   const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -942,7 +954,9 @@ export const SwapScreen = (): JSX.Element => {
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
-          isLoadingAmount={isQuoteLoading}
+          isLoadingAmount={
+            recurring.isRecurring ? recurringQuote.isFetching : isQuoteLoading
+          }
         />
       </View>
     )
@@ -954,6 +968,8 @@ export const SwapScreen = (): JSX.Element => {
     getNetwork,
     toTokenValue,
     isQuoteLoading,
+    recurring.isRecurring,
+    recurringQuote.isFetching,
     handleSelectToToken,
     isSwapping
   ])
