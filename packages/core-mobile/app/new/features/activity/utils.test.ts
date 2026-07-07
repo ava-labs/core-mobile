@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Transaction } from 'store/transaction'
@@ -7,11 +7,14 @@ import {
   findPaymentToken,
   getNftLabel,
   isCollectibleTransaction,
+  isInputOnlyContractCall,
   isNftTransaction,
   isPaymentTokenType,
   isPotentiallySwap,
   resolvePaymentSymbol,
-  resolveUserIsRecipient
+  resolveTxUserAddress,
+  resolveUserIsRecipient,
+  selectSwapTokens
 } from './utils'
 
 const USER_ADDRESS = '0xUser'
@@ -546,5 +549,154 @@ describe('getNftLabel', () => {
       getNftLabel({ type: TokenType.ERC721, name: '', symbol: '' } as TxToken)
     ).toBe('NFT')
     expect(getNftLabel(undefined)).toBe('NFT')
+  })
+})
+
+describe('selectSwapTokens', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const usdc = (from: string, to: string): TxToken => ({
+    type: TokenType.ERC20,
+    address: '0xUSDC',
+    name: 'USD Coin',
+    symbol: 'USDC',
+    amount: '1',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  const usdt = (from: string, to: string): TxToken => ({
+    type: TokenType.ERC20,
+    address: '0xUSDT',
+    name: 'TetherToken',
+    symbol: 'USDT',
+    amount: '0.9914',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  const avax = (from: string, to: string): TxToken => ({
+    type: TokenType.NATIVE,
+    name: 'Avalanche',
+    symbol: 'AVAX',
+    amount: '0.05',
+    from: { address: from },
+    to: { address: to }
+  })
+
+  it('prefers the ERC-20 input leg over a native fee leg (recurring-swap fill)', () => {
+    // Recurring USDC→USDT fill: the user sends BOTH a 0.05 AVAX native fee leg
+    // and the 1 USDC swap input; the native leg must not be chosen as the input.
+    const tokens = [
+      avax(USER_ADDRESS, ROUTER),
+      usdt(POOL, USER_ADDRESS),
+      usdc(USER_ADDRESS, ROUTER)
+    ]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(inputToken?.amount).toBe('1')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('keeps the native leg as input for a genuine native-input swap', () => {
+    // AVAX→USDT: the only leg from the user is native, so it IS the input.
+    const tokens = [avax(USER_ADDRESS, ROUTER), usdt(POOL, USER_ADDRESS)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('AVAX')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('resolves a plain ERC-20 → ERC-20 swap', () => {
+    const tokens = [usdc(USER_ADDRESS, ROUTER), usdt(POOL, USER_ADDRESS)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(outputToken?.symbol).toBe('USDT')
+  })
+
+  it('returns input with no output when the destination leg is not to the user (cross-chain)', () => {
+    const tokens = [usdc(USER_ADDRESS, ROUTER)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken?.symbol).toBe('USDC')
+    expect(outputToken).toBeUndefined()
+  })
+
+  it('returns undefined for both when no leg involves the user', () => {
+    const tokens = [usdc(POOL, ROUTER), usdt(POOL, ROUTER)]
+
+    const { inputToken, outputToken } = selectSwapTokens(tokens, USER_ADDRESS)
+
+    expect(inputToken).toBeUndefined()
+    expect(outputToken).toBeUndefined()
+  })
+})
+
+describe('isInputOnlyContractCall', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const leg = (from: string, to: string): TxToken =>
+    ({
+      type: TokenType.ERC20,
+      symbol: 'USDC',
+      amount: '1',
+      from: { address: from },
+      to: { address: to }
+    } as TxToken)
+
+  it('is true when a leg leaves the user with nothing coming back', () => {
+    // e.g. an ERC-20 approval or a cross-chain swap output on another chain
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], USER_ADDRESS)
+    ).toBe(true)
+  })
+
+  it('is false for a genuine swap with an output leg back to the user', () => {
+    expect(
+      isInputOnlyContractCall(
+        [leg(USER_ADDRESS, ROUTER), leg(POOL, USER_ADDRESS)],
+        USER_ADDRESS
+      )
+    ).toBe(false)
+  })
+
+  it('is false when no leg involves the user', () => {
+    expect(isInputOnlyContractCall([leg(POOL, ROUTER)], USER_ADDRESS)).toBe(
+      false
+    )
+  })
+
+  it('is false when the user address is unknown', () => {
+    expect(
+      isInputOnlyContractCall([leg(USER_ADDRESS, ROUTER)], undefined)
+    ).toBe(false)
+  })
+})
+
+describe('resolveTxUserAddress', () => {
+  const account = { addressC: '0xEvmAddress' } as Account
+  const evmNetwork = { vmName: NetworkVMType.EVM } as Network
+
+  it('returns the per-network account address when account and network resolve', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, evmNetwork)).toBe('0xEvmAddress')
+  })
+
+  it('falls back to tx.from when the network is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, account, undefined)).toBe('0xTxFrom')
+  })
+
+  it('falls back to tx.from when the account is missing', () => {
+    const tx = makeTx({ tokens: [], from: '0xTxFrom' })
+    expect(resolveTxUserAddress(tx, undefined, evmNetwork)).toBe('0xTxFrom')
   })
 })
