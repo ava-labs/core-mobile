@@ -32,10 +32,7 @@ export const PartnerLogos = (): JSX.Element => {
       Logos.PartnerLogos.Stripe,
       theme.isDark
         ? Logos.PartnerLogos.PoweredByCircleDark
-        : Logos.PartnerLogos.PoweredByCircleLight,
-      theme.isDark
-        ? Logos.PartnerLogos.PoweredByParaswapDark
-        : Logos.PartnerLogos.PoweredByParaswapLight
+        : Logos.PartnerLogos.PoweredByCircleLight
     ],
     numColumns: 1,
     itemPadding: 16,

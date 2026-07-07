@@ -81,8 +81,6 @@ abstract_target 'common' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # Enables or disables Hermes; if flag is omitted Hermes will be enabled by default.
-    :hermes_enabled => true,
     :fabric_enabled => true,
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."

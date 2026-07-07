@@ -543,7 +543,6 @@ __metadata:
     "@noble/secp256k1": 2.1.0
     "@notifee/react-native": 9.1.8
     "@openzeppelin/contracts": 5.0.2
-    "@paraswap/sdk": 7.2.3
     "@playwright/test": 1.48.0
     "@react-native-async-storage/async-storage": 2.2.0
     "@react-native-clipboard/clipboard": 1.16.3
@@ -639,7 +638,6 @@ __metadata:
     camelcase-keys: 9.1.3
     coinselect: 3.1.13
     date-fns: 4.1.0
-    deprecated-react-native-prop-types: 5.0.0
     detox: 20.41.1
     es6-promise: 4.2.8
     eslint: 8.50.0
@@ -673,7 +671,6 @@ __metadata:
     jail-monkey: 2.8.0
     jest: 30.1.3
     jimp: 1.6.0
-    jsc-android: 294992.0.0
     json-stringify-pretty-compact: 4.0.0
     ledger-bitcoin: 0.3.0
     lodash.debounce: 4.0.8
@@ -699,12 +696,10 @@ __metadata:
     react-native: 0.85.3
     react-native-aes-crypto: 3.1.0
     react-native-argon2: 2.0.1
-    react-native-big-list: 1.6.1
     react-native-ble-plx: 3.5.1
     react-native-bootsplash: 6.3.11
     react-native-bottom-tabs: 1.1.0
     react-native-branch: 6.8.0
-    react-native-chart-kit: 6.12.0
     react-native-check-version: 1.4.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -11403,37 +11398,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@paraswap/core@npm:2.4.0":
-  version: 2.4.0
-  resolution: "@paraswap/core@npm:2.4.0"
-  checksum: 8b0dc13163caff38bfed4238f478c6315a5c1a0b126865effc217d7acd2cd959978638d92aea7eec16134e12599252c840eae515faa821103297ba665d7bef7e
-  languageName: node
-  linkType: hard
-
-"@paraswap/sdk@npm:7.2.3":
-  version: 7.2.3
-  resolution: "@paraswap/sdk@npm:7.2.3"
-  dependencies:
-    "@paraswap/core": 2.4.0
-    ts-essentials: ^10.0.3
-  peerDependencies:
-    axios: ">=0.25.0 <2.0.0"
-    ethers: ^5.5.0 || ^6.0.0
-    viem: ^2.21.0
-    web3: ^4.14.0
-  peerDependenciesMeta:
-    axios:
-      optional: true
-    ethers:
-      optional: true
-    viem:
-      optional: true
-    web3:
-      optional: true
-  checksum: d949675fffd583b463abd7a7a1a03525532f90968fea5121eb0d245960f9003be6db49e232d68a544cb1fec98c8c7012c1badde33aa971115b95e622a771c292
-  languageName: node
-  linkType: hard
-
 "@parcel/watcher-android-arm64@npm:2.3.0":
   version: 2.3.0
   resolution: "@parcel/watcher-android-arm64@npm:2.3.0"
@@ -13775,13 +13739,6 @@ __metadata:
   version: 0.85.3
   resolution: "@react-native/normalize-colors@npm:0.85.3"
   checksum: 77d03e37bcb6127f6c6ec7f1d4df4deb69aa666b1bf28f2ba87c63eff9e82839fd49875379c0b97ae8273d99a0fdb41b5fe2d74b1765ed08c5cef8cd45faa8c8
-  languageName: node
-  linkType: hard
-
-"@react-native/normalize-colors@npm:^0.73.0":
-  version: 0.73.2
-  resolution: "@react-native/normalize-colors@npm:0.73.2"
-  checksum: ddf9384ad41adc4f3c8eb61ddd27113130c8060bd2f4255bee284a52aa7ddcff8a5e751f569dd416c45f8b9d4062392fa7219b221f2f7f0b229d02b8d2a5b974
   languageName: node
   linkType: hard
 
@@ -23706,17 +23663,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deprecated-react-native-prop-types@npm:5.0.0":
-  version: 5.0.0
-  resolution: "deprecated-react-native-prop-types@npm:5.0.0"
-  dependencies:
-    "@react-native/normalize-colors": ^0.73.0
-    invariant: ^2.2.4
-    prop-types: ^15.8.1
-  checksum: ccbd4214733a178ef51934c4e0149f5c3ab60aa318d68500b6d6b4b59be9d6c25b844f808ed7095d82e1bbef6fc4bc49e0dea14d55d3ebd1ff383011ac2a1576
-  languageName: node
-  linkType: hard
-
 "deprecated-react-native-prop-types@npm:^2.3.0":
   version: 2.3.0
   resolution: "deprecated-react-native-prop-types@npm:2.3.0"
@@ -30830,13 +30776,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsc-android@npm:294992.0.0":
-  version: 294992.0.0
-  resolution: "jsc-android@npm:294992.0.0"
-  checksum: 6c759ff63d9379b9b3ac474c82e4c0be1ce1ae07e931b554e96cd1f6030185407b044070f656c9d40b1fa0d05c2d1be81d87f9e665f410148a2c7ca7f0ed78f0
-  languageName: node
-  linkType: hard
-
 "jsc-safe-url@npm:^0.2.2, jsc-safe-url@npm:^0.2.4":
   version: 0.2.4
   resolution: "jsc-safe-url@npm:0.2.4"
@@ -31819,7 +31758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4, lodash@npm:^4.0.0, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.13, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.2.1":
+"lodash@npm:4.17.21, lodash@npm:^4, lodash@npm:^4.0.0, lodash@npm:^4.17.10, lodash@npm:^4.17.11, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:^4.2.1":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -34778,13 +34717,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"paths-js@npm:^0.4.10":
-  version: 0.4.11
-  resolution: "paths-js@npm:0.4.11"
-  checksum: a2e968450d4c02a3aed2866c28766e6d386afd9a4ed5f8fe9c4f87e6867ef57d94d0e7a184f8987dfa7c59fed2519e10052320505b5bd1fd7a28dea7bb94995d
-  languageName: node
-  linkType: hard
-
 "pbkdf2@npm:^3.0.17":
   version: 3.1.2
   resolution: "pbkdf2@npm:3.1.2"
@@ -35090,13 +35022,6 @@ __metadata:
   version: 7.0.0
   resolution: "pngjs@npm:7.0.0"
   checksum: b19a018930d27de26229c1b3ff250b3a25d09caa22cbb0b0459987d91eb0a560a18ab5d67da45a38ed7514140f26d1db58de83c31159ec101f2bb270a3c707f1
-  languageName: node
-  linkType: hard
-
-"point-in-polygon@npm:^1.0.1":
-  version: 1.1.0
-  resolution: "point-in-polygon@npm:1.1.0"
-  checksum: 67a6374f0b79bc872bde8e375d7d5ea011a1419c5f4320dfb7705801cd3a8fcaee8bff385465e075b2ce863bbc86ccd74c63345d9f326981cd0807642bc5199c
   languageName: node
   linkType: hard
 
@@ -35980,20 +35905,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-big-list@npm:1.6.1":
-  version: 1.6.1
-  resolution: "react-native-big-list@npm:1.6.1"
-  dependencies:
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@types/react": "*"
-    "@types/react-native": "*"
-    react: "*"
-    react-native: "*"
-  checksum: e0e8ce1ab026d7cefdf7e00b46089ef1ae0e7081fdb3b54b93aaafc2469c817e1695279cbbe50099914318a20a437675bd6926d4ca5c45698fa356a7af375f67
-  languageName: node
-  linkType: hard
-
 "react-native-ble-plx@npm:3.5.1":
   version: 3.5.1
   resolution: "react-native-ble-plx@npm:3.5.1"
@@ -36051,21 +35962,6 @@ __metadata:
   peerDependencies:
     react-native: ">= 0.60"
   checksum: 04788c174864e323d19e675d504fd930b325207a48e8379eff1a8e22336090c8491d77f46900affb9568ffd5f36334e6d72bbd008512317301c173999de63d09
-  languageName: node
-  linkType: hard
-
-"react-native-chart-kit@npm:6.12.0":
-  version: 6.12.0
-  resolution: "react-native-chart-kit@npm:6.12.0"
-  dependencies:
-    lodash: ^4.17.13
-    paths-js: ^0.4.10
-    point-in-polygon: ^1.0.1
-  peerDependencies:
-    react: "> 16.7.0"
-    react-native: ">= 0.50.0"
-    react-native-svg: "> 6.4.1"
-  checksum: 04c225965c0ce3c71205a62bc92743e9188458d8f95c12481e43a2e53c425bd5db8274e57ab93c1cb95ffd3fb54950ca92c3d33e518a3505d7697c247b3b7e15
   languageName: node
   linkType: hard
 
@@ -40596,18 +40492,6 @@ react-native-webview@ava-labs/react-native-webview:
   version: 2.2.0
   resolution: "ts-dedent@npm:2.2.0"
   checksum: 93ed8f7878b6d5ed3c08d99b740010eede6bccfe64bce61c5a4da06a2c17d6ddbb80a8c49c2d15251de7594a4f93ffa21dd10e7be75ef66a4dc9951b4a94e2af
-  languageName: node
-  linkType: hard
-
-"ts-essentials@npm:^10.0.3":
-  version: 10.0.3
-  resolution: "ts-essentials@npm:10.0.3"
-  peerDependencies:
-    typescript: ">=4.5.0"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 7919df8b46be0dcfaade3ddbc98c0fd5236585ea0b8a46c898eda1a7229c17673e0286179c6bece41c26e16e62037f0fda38f4f5246a61026698022427806354
   languageName: node
   linkType: hard
 

@@ -49,7 +49,7 @@ type TokenInputWidgetProps = {
    * `'0'` for an explicit typed 0 (both carry `amount` 0n). Callers that need to
    * tell empty apart from a typed 0 use it; others can ignore the second arg.
    */
-  onAmountChange: (amount: bigint, valueString: string) => void
+  onAmountChange?: (amount: bigint, valueString: string) => void
   /**
    * Fires when the Max percentage button is pressed (100% of balance).
    * Distinct from `onAmountChange` so callers can flag analytics events
