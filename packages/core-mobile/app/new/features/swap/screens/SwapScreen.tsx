@@ -15,7 +15,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -411,7 +410,6 @@ export const SwapScreen = (): JSX.Element => {
     activeQuote,
     allQuotes,
     isQuoteLoading,
-    setDestination,
     slippage,
     autoSlippage,
     setAmount,
@@ -751,7 +749,6 @@ export const SwapScreen = (): JSX.Element => {
       // 0n = an explicit typed 0 (the CCT recovery input).
       if (valueString === '') {
         setFromTokenValue(undefined)
-        setDestination(SwapSide.SELL)
         setUserClickedMax(false)
         return
       }
@@ -769,25 +766,14 @@ export const SwapScreen = (): JSX.Element => {
           ? clampToNAvax(amount, decimals)
           : amount
       setFromTokenValue(next)
-      setDestination(SwapSide.SELL)
       setUserClickedMax(false)
     },
-    [fromToken, toToken, setDestination, setUserClickedMax]
+    [fromToken, toToken, setUserClickedMax]
   )
 
   const handlePressMax = useCallback((): void => {
     setUserClickedMax(true)
   }, [setUserClickedMax])
-
-  const handleToAmountChange = useCallback(
-    (amount: bigint): void => {
-      setToTokenValue(amount)
-      setDestination(SwapSide.BUY)
-      setAmount(amount)
-      setUserClickedMax(false)
-    },
-    [setDestination, setAmount, setUserClickedMax]
-  )
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
     await dismissKeyboardIfNeeded()
@@ -940,7 +926,6 @@ export const SwapScreen = (): JSX.Element => {
           }
           network={getNetwork(toToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
-          onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
           isLoadingAmount={isQuoteLoading}
         />
@@ -949,7 +934,6 @@ export const SwapScreen = (): JSX.Element => {
   }, [
     theme,
     formatInCurrency,
-    handleToAmountChange,
     toToken,
     getNetwork,
     toTokenValue,
@@ -1582,58 +1566,67 @@ export const SwapScreen = (): JSX.Element => {
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
       {renderError()}
-      {/* Disclaimer banner — only when recurring is ON. Per Figma it sits
-          between the swap card and the toggle. */}
-      {showRecurringToggle && recurring.isRecurring && (
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 8
-          }}>
-          <Icons.Action.Info
-            color={theme.colors.$textPrimary}
-            width={20}
-            height={20}
-          />
-          <Text variant="body2" sx={{ color: '$textPrimary', flexShrink: 1 }}>
-            Swap rate is for the first swap, subsequent swaps will change
-            depending on the market
-          </Text>
-        </View>
-      )}
-      {/* Recurring toggle — rendered whenever the pair is eligible, regardless
-          of the on/off state (per Figma's "Recurring OFF" + "Recurring ON"
-          screens). Sits above the Pricing/Slippage/Price-impact rows. */}
+      {/* Recurring section: disclaimer (ON only) + toggle + details (ON only).
+          Wrapped in a container whose `key` flips with `isRecurring`, so
+          toggling REMOUNTS the subtree. Under Fabric on Android, mounting the
+          disclaimer / details between already-laid-out siblings doesn't
+          reliably reflow the column — the disclaimer overlapped the swap card
+          above and the toggle below (same class as the CP-14600 issue handled
+          below). Remounting forces a clean layout pass. The toggle sits inside
+          the keyed wrapper because it's the persistent element whose remount
+          drives the reflow. Per Figma the disclaimer sits between the swap card
+          and the toggle. */}
       {showRecurringToggle && (
-        <View sx={{ marginTop: 12 }}>
-          <GroupList
-            data={[
-              {
-                title: 'Make this a recurring swap',
-                value: (
-                  <Toggle
-                    value={recurring.isRecurring}
-                    onValueChange={recurring.setIsRecurring}
-                  />
-                )
+        <View key={recurring.isRecurring ? 'recurring-on' : 'recurring-off'}>
+          {recurring.isRecurring && (
+            <View
+              sx={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                marginTop: 8
+              }}>
+              <Icons.Action.Info
+                color={theme.colors.$textPrimary}
+                width={20}
+                height={20}
+              />
+              {/* `flex: 1` (not `flexShrink: 1`) gives the Text a bounded width
+                  so it wraps to two lines instead of overflowing the row. */}
+              <Text variant="body2" sx={{ color: '$textPrimary', flex: 1 }}>
+                Swap rate is for the first swap, subsequent swaps will change
+                depending on the market
+              </Text>
+            </View>
+          )}
+          <View sx={{ marginTop: 12 }}>
+            <GroupList
+              data={[
+                {
+                  title: 'Make this a recurring swap',
+                  value: (
+                    <Toggle
+                      value={recurring.isRecurring}
+                      onValueChange={recurring.setIsRecurring}
+                    />
+                  )
+                }
+              ]}
+              separatorMarginRight={16}
+            />
+          </View>
+          {recurring.isRecurring && (
+            <RecurringDetailsRows
+              amountPerOrder={fromTokenValue}
+              fromTokenSymbol={fromToken?.symbol}
+              fromTokenDecimals={
+                fromToken && 'decimals' in fromToken
+                  ? fromToken.decimals
+                  : undefined
               }
-            ]}
-            separatorMarginRight={16}
-          />
+            />
+          )}
         </View>
-      )}
-      {showRecurringToggle && recurring.isRecurring && (
-        <RecurringDetailsRows
-          amountPerOrder={fromTokenValue}
-          fromTokenSymbol={fromToken?.symbol}
-          fromTokenDecimals={
-            fromToken && 'decimals' in fromToken
-              ? fromToken.decimals
-              : undefined
-          }
-        />
       )}
       {/* CP-14600: the Pricing/Slippage/Price-impact rows are empty until the
           quote resolves, then this GroupList card grows from zero height. Under

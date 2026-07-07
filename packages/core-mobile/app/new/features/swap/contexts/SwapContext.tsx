@@ -10,7 +10,6 @@ import React, {
   useMemo
 } from 'react'
 import { showAlert } from '@avalabs/k2-alpine'
-import { SwapSide } from '@paraswap/sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -93,8 +92,6 @@ interface SwapContextState {
   setSlippage: Dispatch<number>
   autoSlippage: boolean
   setAutoSlippage: Dispatch<boolean>
-  destination: SwapSide
-  setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   /** Live source-token amount in smallest units. Exposed for consumers
    *  (e.g. the pricing details modal) that need to recompute downstream
@@ -128,7 +125,6 @@ export const SwapContextProvider = ({
   const [toToken, setToToken] = useSwapSelectedToToken()
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
-  const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
   const [successTransferId, setSuccessTransferId] = useState<
     string | undefined
@@ -580,8 +576,6 @@ export const SwapContextProvider = ({
     setSlippage,
     autoSlippage,
     setAutoSlippage,
-    destination,
-    setDestination,
     swapStatus,
     amount,
     setAmount,

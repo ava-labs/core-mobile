@@ -39,6 +39,7 @@ import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
 import { toChain } from 'features/swap/utils/fusionTypeConverters'
+import { ErrorState } from 'common/components/ErrorState'
 import { useRecurringSchedules } from '../hooks/useRecurringSchedules'
 import type { UseRecurringOrderAction } from '../hooks/_makeOrderActionHook'
 import { useCancelRecurringSchedule } from '../hooks/useCancelRecurringSchedule'
@@ -277,9 +278,30 @@ function ScheduleCard({
     [s.tokenOut, network, contractTokens]
   )
 
+  // A `nextExecutionAt` in the past means the order was just resumed (or the
+  // relayer hasn't caught up yet): it will be triggered on the next relayer
+  // run — usually within a minute. Computed each render (not inside the memo)
+  // so that when the component re-renders after the scheduled time passes, the
+  // memo can flip to the soft label instead of caching the stale timestamp —
+  // `Date.now()` is not a valid memo dependency on its own.
+  const isNextExecutionStale =
+    s.nextExecutionAt !== null &&
+    s.nextExecutionAt !== undefined &&
+    s.nextExecutionAt * 1000 <= Date.now()
+
   const nextSwapValue = useMemo<React.ReactNode>(() => {
     if (s.nextExecutionAt === null || s.nextExecutionAt === undefined) {
       return '—'
+    }
+    // We don't know the exact next-run time when stale, so showing the stale
+    // scheduled timestamp would be misleading. Show a soft label instead.
+    // (Matches the CP-14659 web behavior.)
+    if (isNextExecutionStale) {
+      return (
+        <Text variant="body1" sx={{ color: '$textSecondary' }}>
+          In a few minutes
+        </Text>
+      )
     }
     const { date, time } = formatUnixDateParts(s.nextExecutionAt)
     return (
@@ -292,7 +314,7 @@ function ScheduleCard({
         </Text>
       </View>
     )
-  }, [s.nextExecutionAt])
+  }, [s.nextExecutionAt, isNextExecutionStale])
 
   const groupData = useMemo((): GroupListItem[] => {
     const totalLabel = isUnlimited ? '∞' : String(s.numberOfOrders)
@@ -327,124 +349,133 @@ function ScheduleCard({
       onLayout={
         onMeasureY ? e => onMeasureY(e.nativeEvent.layout.y) : undefined
       }
-      style={{
-        backgroundColor: colors.$surfaceSecondary,
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginBottom: 12,
-        overflow: 'hidden'
-      }}>
-      <Pressable onPress={handleToggle}>
-        <View
-          sx={{
-            position: 'relative',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            minHeight: 40
-          }}>
-          {network && (
-            <LogoWithNetwork
-              token={{
-                symbol: fromToken.symbol,
-                logoUri: fromToken.logoUri,
-                chainId: s.chainId
-              }}
-              network={network}
-              size="medium"
-              outerBorderColor={colors.$surfaceSecondary}
+      style={{ marginBottom: 12 }}>
+      {/* Static clip wrapper. The rounded surface + `overflow: 'hidden'` must
+          NOT sit on the `LinearTransition` view: under RN's new architecture
+          (Fabric) on Android, a layout-animated view with `overflow: 'hidden'`
+          settles at a stale (too-short) height when the expanded section
+          mounts, clipping the tail — the last "Next swap scheduled" row got
+          cut off. Keeping the clip on a non-animated view lets it measure the
+          real height. */}
+      <View
+        style={{
+          backgroundColor: colors.$surfaceSecondary,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          overflow: 'hidden'
+        }}>
+        <Pressable onPress={handleToggle}>
+          <View
+            sx={{
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12,
+              minHeight: 40
+            }}>
+            {network && (
+              <LogoWithNetwork
+                token={{
+                  symbol: fromToken.symbol,
+                  logoUri: fromToken.logoUri,
+                  chainId: s.chainId
+                }}
+                network={network}
+                size="medium"
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+            )}
+            <Icons.Custom.Compare
+              width={20}
+              height={20}
+              color={colors.$textPrimary}
             />
-          )}
-          <Icons.Custom.Compare
-            width={20}
-            height={20}
-            color={colors.$textPrimary}
-          />
-          {network && (
-            <LogoWithNetwork
-              token={{
-                symbol: toToken.symbol,
-                logoUri: toToken.logoUri,
-                chainId: s.chainId
-              }}
-              network={network}
-              size="medium"
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-          )}
-          <Animated.View
-            style={[{ position: 'absolute', right: 0 }, chevronStyle]}>
-            <Icons.Navigation.ExpandMore
-              width={24}
-              height={24}
-              color={colors.$textSecondary}
-            />
-          </Animated.View>
-        </View>
+            {network && (
+              <LogoWithNetwork
+                token={{
+                  symbol: toToken.symbol,
+                  logoUri: toToken.logoUri,
+                  chainId: s.chainId
+                }}
+                network={network}
+                size="medium"
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+            )}
+            <Animated.View
+              style={[{ position: 'absolute', right: 0 }, chevronStyle]}>
+              <Icons.Navigation.ExpandMore
+                width={24}
+                height={24}
+                color={colors.$textSecondary}
+              />
+            </Animated.View>
+          </View>
 
-        <Text
-          variant="body2"
-          sx={{
-            color: '$textPrimary',
-            textAlign: 'center',
-            marginTop: 12
-          }}>
-          {formatSummary(s, fromToken, toToken)}
-        </Text>
-        {/* Status badge under the summary — visible regardless of expanded
-            state so a non-active row is obvious in the list view without
-            the user having to drill in. `Active` schedules render no
-            badge (that's the implicit default). */}
-        {STATUS_LABEL[s.status] && (
           <Text
             variant="body2"
             sx={{
-              color: '$textSecondary',
+              color: '$textPrimary',
               textAlign: 'center',
-              marginTop: 4
+              marginTop: 12
             }}>
-            {STATUS_LABEL[s.status]}
+            {formatSummary(s, fromToken, toToken)}
           </Text>
-        )}
-      </Pressable>
+          {/* Status badge under the summary — visible regardless of expanded
+            state so a non-active row is obvious in the list view without
+            the user having to drill in. `Active` schedules render no
+            badge (that's the implicit default). */}
+          {STATUS_LABEL[s.status] && (
+            <Text
+              variant="body2"
+              sx={{
+                color: '$textSecondary',
+                textAlign: 'center',
+                marginTop: 4
+              }}>
+              {STATUS_LABEL[s.status]}
+            </Text>
+          )}
+        </Pressable>
 
-      {expanded && (
-        <View sx={{ marginTop: 12, gap: 12 }}>
-          {/* Pause / Resume sits to the LEFT of Cancel. The
+        {expanded && (
+          <View sx={{ marginTop: 12, gap: 12 }}>
+            {/* Pause / Resume sits to the LEFT of Cancel. The
               button's label, spinner state, and action depend on whether
               the schedule is currently active or paused: while paused, it
               acts as Resume; while active, it acts as Pause. The intent
               after the on-chain TX confirms is reflected by the server
               `status` flip and the pending-action store clearing. */}
-          <ActionButtons
-            isPaused={isPaused}
-            isPausing={isPausing}
-            isResuming={isResuming}
-            isCancelling={isCancelling}
-            canPause={canPause}
-            canResume={canResume}
-            cancelDisabled={cancelDisabled}
-            isSourceChainAvailable={isSourceChainAvailable}
-            schedule={s}
-            fromToken={fromToken}
-            toToken={toToken}
-            onPause={onPause}
-            onResume={onResume}
-            onRemove={onRemove}
-            dangerColor={colors.$textDanger}
-          />
+            <ActionButtons
+              isPaused={isPaused}
+              isPausing={isPausing}
+              isResuming={isResuming}
+              isCancelling={isCancelling}
+              canPause={canPause}
+              canResume={canResume}
+              cancelDisabled={cancelDisabled}
+              isSourceChainAvailable={isSourceChainAvailable}
+              schedule={s}
+              fromToken={fromToken}
+              toToken={toToken}
+              onPause={onPause}
+              onResume={onResume}
+              onRemove={onRemove}
+              dangerColor={colors.$textDanger}
+            />
 
-          <GroupList
-            data={groupData}
-            separatorMarginRight={16}
-            titleSx={{
-              fontFamily: 'Inter-Regular'
-            }}
-          />
-        </View>
-      )}
+            <GroupList
+              data={groupData}
+              separatorMarginRight={16}
+              titleSx={{
+                fontFamily: 'Inter-Regular'
+              }}
+            />
+          </View>
+        )}
+      </View>
     </Animated.View>
   )
 }
@@ -599,6 +630,10 @@ export function RecurringSchedulesScreen({
     return filtered.map(({ s }) => s)
   }, [schedules])
   const manageableCount = manageableSchedules.length
+  // No manageable schedules → the screen shows only the empty (or empty-error)
+  // placeholder. In that case let the scroll content grow to fill the modal so
+  // the placeholder can be vertically centered instead of pinned near the top.
+  const isEmpty = manageableCount === 0
 
   // Scroll the deep-linked card into view. Triggered by the card's own
   // `onLayout` so we don't fire before the card has been measured (which
@@ -799,8 +834,14 @@ export function RecurringSchedulesScreen({
   const swapWord = `swap${manageableCount === 1 ? '' : 's'}`
   // Force the screen header to break after "{N} recurring" so "swaps scheduled"
   // always sits on a second line, regardless of the count's width.
-  const title = `${manageableCount} recurring\n${swapWord} scheduled`
-  const navigationTitle = `${manageableCount} recurring ${swapWord} scheduled`
+  // In the empty state there is no count to show, so drop the header entirely —
+  // the centered ErrorState already conveys "No recurring swaps".
+  const title = isEmpty
+    ? undefined
+    : `${manageableCount} recurring\n${swapWord} scheduled`
+  const navigationTitle = isEmpty
+    ? undefined
+    : `${manageableCount} recurring ${swapWord} scheduled`
 
   // While the first fetch is in flight we have no real count yet — rendering the
   // "{N} recurring swaps scheduled" header would flash a misleading "0 …". Per
@@ -823,13 +864,19 @@ export function RecurringSchedulesScreen({
       title={title}
       navigationTitle={navigationTitle}
       isModal
-      contentContainerStyle={{ padding: 16 }}>
+      contentContainerStyle={{ padding: 16, ...(isEmpty && { flexGrow: 1 }) }}>
       {/* Distinguish "Markr fetch failed with no cached data" from "fetch
           succeeded and you have zero schedules". The previous render
           collapsed both into the empty state, which made a server
           outage look like "your schedules disappeared". */}
-      {isError && manageableSchedules.length === 0 && (
-        <View sx={{ alignItems: 'center', paddingTop: 32, gap: 12 }}>
+      {isError && isEmpty && (
+        <View
+          sx={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 12
+          }}>
           <Text variant="body2" sx={{ color: '$textSecondary' }}>
             Couldn’t load recurring swaps.
           </Text>
@@ -838,11 +885,12 @@ export function RecurringSchedulesScreen({
           </Button>
         </View>
       )}
-      {!isError && manageableSchedules.length === 0 && (
-        <View sx={{ alignItems: 'center', paddingTop: 32 }}>
-          <Text variant="body2" sx={{ color: '$textSecondary' }}>
-            No recurring swaps found.
-          </Text>
+      {!isError && isEmpty && (
+        <View sx={{ flex: 1, justifyContent: 'center' }}>
+          <ErrorState
+            title="No recurring swaps"
+            description="Recurring swaps you schedule will appear here"
+          />
         </View>
       )}
       {manageableSchedules.map(s => (
