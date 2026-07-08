@@ -177,5 +177,9 @@ export const toFastStakeValidator = (
   v: ActiveValidatorDetails
 ): StakeTargetValidator => ({
   nodeID: v.nodeId,
-  endTime: v.endTimestamp.toString()
+  endTime: v.endTimestamp.toString(),
+  // Glacier types the fee as optional; the Fast Stake query filters on
+  // `maxFeePercentage`, so it's present in practice. Fall back to '0' (a
+  // gross estimate) rather than inventing a fee.
+  delegationFee: v.delegationFee ?? '0'
 })

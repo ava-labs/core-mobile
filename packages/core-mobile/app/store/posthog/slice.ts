@@ -660,6 +660,14 @@ export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsDelegationFeeBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.DELEGATION_FEE_ENABLED] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

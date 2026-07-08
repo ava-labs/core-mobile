@@ -1,11 +1,14 @@
 import { EstimateNativeFeeError, ErrorCode } from '@avalabs/fusion-sdk'
 import {
   fusionErrors,
+  FusionQuoteError,
   isGasOnlyNetworkFeeError,
   isUserRejectionError,
   isGasEstimationError,
   isInvalidResponseError,
+  isResponseParseError,
   shouldRetryWithNextQuote,
+  toQuoteDisplayError,
   getSwapErrorMessage
 } from './fusionErrors'
 
@@ -305,6 +308,17 @@ describe('shouldRetryWithNextQuote', () => {
     ).toBe(true)
   })
 
+  it('should return true for response parse errors (CP-14708)', () => {
+    expect(
+      shouldRetryWithNextQuote(
+        new SyntaxError('JSON Parse error: Unexpected character: <')
+      )
+    ).toBe(true)
+    expect(
+      shouldRetryWithNextQuote(new Error('Unexpected end of JSON input'))
+    ).toBe(true)
+  })
+
   it('should return false for user rejection errors', () => {
     expect(shouldRetryWithNextQuote(new Error('user rejected'))).toBe(false)
   })
@@ -321,6 +335,75 @@ describe('shouldRetryWithNextQuote', () => {
     expect(shouldRetryWithNextQuote(null)).toBe(false)
     expect(shouldRetryWithNextQuote(undefined)).toBe(false)
     expect(shouldRetryWithNextQuote('gas estimation')).toBe(false)
+  })
+})
+
+describe('isResponseParseError', () => {
+  it('should return true for SyntaxError instances', () => {
+    expect(isResponseParseError(new SyntaxError('anything'))).toBe(true)
+  })
+
+  it('should return true for Hermes JSON parse error strings', () => {
+    expect(
+      isResponseParseError(
+        new Error('JSON Parse error: Unexpected character: <')
+      )
+    ).toBe(true)
+    expect(
+      isResponseParseError(new Error('JSON Parse error: Unexpected EOF'))
+    ).toBe(true)
+  })
+
+  it('should return true for V8/Node JSON parse error strings', () => {
+    expect(
+      isResponseParseError(
+        new Error('Unexpected token < in JSON at position 0')
+      )
+    ).toBe(true)
+    expect(
+      isResponseParseError(new Error('Unexpected end of JSON input'))
+    ).toBe(true)
+    expect(isResponseParseError(new Error('"<html>" is not valid JSON'))).toBe(
+      true
+    )
+  })
+
+  it('should return false for unrelated errors and non-Error values', () => {
+    expect(isResponseParseError(new Error('insufficient funds'))).toBe(false)
+    expect(isResponseParseError(new Error(''))).toBe(false)
+    expect(isResponseParseError(null)).toBe(false)
+    expect(isResponseParseError(undefined)).toBe(false)
+    expect(isResponseParseError('JSON Parse error')).toBe(false)
+  })
+})
+
+describe('toQuoteDisplayError', () => {
+  it('passes FusionQuoteError through untouched', () => {
+    const original = fusionErrors.noEligibleServices()
+    expect(toQuoteDisplayError(original)).toBe(original)
+  })
+
+  it('maps a JSON parse SyntaxError to the friendly quoteFailed message (CP-14708)', () => {
+    const result = toQuoteDisplayError(
+      new SyntaxError('JSON Parse error: Unexpected character: <')
+    )
+    expect(result).toBeInstanceOf(FusionQuoteError)
+    expect(result.message).toBe("Couldn't load a quote. Please try again.")
+  })
+
+  it('never surfaces the raw parser string to the UI', () => {
+    const result = toQuoteDisplayError(
+      new Error('JSON Parse error: Unexpected character: <')
+    )
+    expect(result.message).not.toContain('JSON Parse error')
+  })
+
+  it('normalises other errors through getSwapErrorMessage', () => {
+    const result = toQuoteDisplayError(new Error('insufficient funds'))
+    expect(result).toBeInstanceOf(FusionQuoteError)
+    expect(result.message).toBe(
+      'Insufficient balance to cover swap amount and fees.'
+    )
   })
 })
 
@@ -372,6 +455,19 @@ describe('getSwapErrorMessage', () => {
       )
     ).toBe(
       "This account isn't set up for cross-chain swaps. Please try a different account."
+    )
+  })
+
+  it('should return the execution-failure message for JSON parse errors (CP-14708)', () => {
+    // A malformed 200 application/json body on /swap or /authorize throws a
+    // native SyntaxError that would otherwise leak to the "Swap failed" toast.
+    expect(
+      getSwapErrorMessage(
+        new SyntaxError('JSON Parse error: Unexpected character: <')
+      )
+    ).toBe('Something went wrong completing the swap. Please try again.')
+    expect(getSwapErrorMessage(new Error('Unexpected end of JSON input'))).toBe(
+      'Something went wrong completing the swap. Please try again.'
     )
   })
 
