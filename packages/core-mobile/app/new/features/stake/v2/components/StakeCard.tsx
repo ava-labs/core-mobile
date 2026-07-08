@@ -23,7 +23,10 @@ export interface StakeCardProps {
   progress?: number
   /** Optional accelerometer motion driver for the wave animation. */
   motion?: Motion
-  /** Optional badge label shown only on active cards (fastStake / delegating / validating). */
+  /**
+   * Optional badge label (fastStake / delegating / validating). Shown on both
+   * active and completed cards, matching web's stake-table type column.
+   */
   badge?: StakeBadgeType
   width?: number
   onPress?: () => void
@@ -36,7 +39,7 @@ const DEFAULT_WIDTH = 200
  * completed cards) are floored to this height; cards with longer content
  * grow past it via `minHeight`.
  */
-export const BASE_CARD_HEIGHT = 210
+export const BASE_CARD_HEIGHT = 235
 
 export const StakeCard = ({
   title,
@@ -118,7 +121,7 @@ export const StakeCard = ({
         </Text>
       </View>
 
-      <Separator sx={{ marginTop: 4, marginBottom: 6 }} />
+      <Separator sx={{ marginTop: 5, marginBottom: 6 }} />
       <DetailRow
         label="Node"
         value={

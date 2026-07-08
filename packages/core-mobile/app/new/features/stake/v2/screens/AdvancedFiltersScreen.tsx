@@ -1,0 +1,325 @@
+import {
+  Button,
+  RangeSlider,
+  Separator,
+  Text,
+  Toggle,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import {
+  addDays,
+  addMonths,
+  differenceInDays,
+  differenceInMonths
+} from 'date-fns'
+import { useRouter } from 'expo-router'
+import React, { FC, useCallback, useMemo, useState } from 'react'
+import Animated, { Easing, LinearTransition } from 'react-native-reanimated'
+import { FilterNumberInput } from '../components/FilterNumberInput'
+import {
+  DelegateFilterBounds,
+  useDelegateFilterBounds
+} from '../hooks/useDelegateFilterBounds'
+import { DelegateFilters, useDelegateFilters } from '../store'
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(Math.max(value, min), max)
+
+const formatPercent = (value: number): string => `${value}%`
+// Number-only formatters for the inline numeric inputs (unit rendered apart).
+const formatFeeValue = (value: number): string => `${value}`
+const formatAvaxValue = (value: number): string => `${value}`
+// Upper bound for the fee input, matching core-web's max delegation fee.
+const MAX_FEE_INPUT = 100
+// Mirrors core-web's `getSliderDetails`: convert the day count into calendar
+// months + a day remainder (not fixed 30-day months) so e.g. 365 days reads as
+// "12 months", not "12 months 5 days". Shows both non-zero parts.
+const formatDuration = (days: number): string => {
+  const total = Math.round(days)
+  if (total <= 0) return '0 days'
+  const now = new Date()
+  const future = addDays(now, total)
+  const months = differenceInMonths(future, now)
+  const remDays = differenceInDays(future, addMonths(now, months))
+  const parts: string[] = []
+  if (months > 0) parts.push(`${months} month${months === 1 ? '' : 's'}`)
+  if (remDays > 0) parts.push(`${remDays} day${remDays === 1 ? '' : 's'}`)
+  return parts.length > 0 ? parts.join(' ') : '0 days'
+}
+
+type FilterCardProps = {
+  label: string
+  enabled: boolean
+  onToggle: (value: boolean) => void
+  children: React.ReactNode
+}
+
+/**
+ * A labelled filter row with an enable toggle. When enabled, a separator and
+ * the control area expand below the header. `layout` + `overflow: hidden`
+ * animate the height as the body mounts/unmounts.
+ */
+const FilterCard: FC<FilterCardProps> = ({
+  label,
+  enabled,
+  onToggle,
+  children
+}) => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
+  return (
+    <Animated.View
+      layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
+      style={{
+        borderRadius: 18,
+        overflow: 'hidden',
+        backgroundColor: colors.$surfaceSecondary
+      }}>
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14
+        }}>
+        <Text variant="body1" sx={{ fontSize: 16 }}>
+          {label}
+        </Text>
+        <Toggle value={enabled} onValueChange={onToggle} />
+      </View>
+      {enabled && (
+        <>
+          <Separator sx={{ marginHorizontal: 16 }} />
+          <View sx={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+            {children}
+          </View>
+        </>
+      )}
+    </Animated.View>
+  )
+}
+
+// Whether an applied `{enabled, value}` filter deviates from its seeded
+// default. Drives each row's toggle: a row reads as "on" only when the user has
+// overridden the web default.
+const isOverridden = (
+  applied: { enabled: boolean; value: number },
+  base: { enabled: boolean; value: number }
+): boolean =>
+  applied.enabled !== base.enabled ||
+  (applied.enabled && applied.value !== base.value)
+
+/**
+ * Builds an editable draft from the currently applied filters. Here a row's
+ * `enabled` flag means "the user is overriding the web default" (it drives the
+ * toggle + whether the value control shows), NOT "the filter is active" — the
+ * web-parity defaults (uptime ≥ 75%, fee ≤ 2%, min time remaining) always apply
+ * underneath. So a row reads as toggled on only when its applied value differs
+ * from the seeded default; an untouched picker opens with every toggle off even
+ * though it's pre-filtered. Numeric values are kept inside the live bounds, and
+ * a row sitting at its default seeds its control at the default value so
+ * flipping the toggle on starts there (then drag up to tighten or down to
+ * loosen, e.g. uptime to 0% to see every node).
+ */
+const seedDraft = (
+  applied: DelegateFilters,
+  defaults: DelegateFilters,
+  bounds: DelegateFilterBounds
+): DelegateFilters => ({
+  uptime: {
+    enabled:
+      applied.uptime.enabled !== defaults.uptime.enabled ||
+      (applied.uptime.enabled && applied.uptime.min !== defaults.uptime.min),
+    min: clamp(applied.uptime.min, bounds.uptime.min, bounds.uptime.max)
+  },
+  maxFee: {
+    enabled: isOverridden(applied.maxFee, defaults.maxFee),
+    // Free numeric filter: allow any fee down to 0% (a value below the network
+    // floor simply yields no matches) and retain exactly what was entered on
+    // reopen — only the upper bound (100%) is enforced.
+    value: clamp(applied.maxFee.value, 0, MAX_FEE_INPUT)
+  },
+  minAvailable: {
+    enabled: isOverridden(applied.minAvailable, defaults.minAvailable),
+    value:
+      applied.minAvailable.value > 0
+        ? Math.max(applied.minAvailable.value, bounds.minAvailable.min)
+        : bounds.minAvailable.min
+  },
+  minTimeRemaining: {
+    enabled: isOverridden(applied.minTimeRemaining, defaults.minTimeRemaining),
+    value:
+      applied.minTimeRemaining.value > 0
+        ? clamp(
+            applied.minTimeRemaining.value,
+            bounds.minTimeRemaining.min,
+            bounds.minTimeRemaining.max
+          )
+        : bounds.minTimeRemaining.min
+  }
+})
+
+const AdvancedFiltersScreen = (): JSX.Element => {
+  const router = useRouter()
+  const filters = useDelegateFilters(state => state.filters)
+  const defaults = useDelegateFilters(state => state.defaults)
+  const setFilters = useDelegateFilters(state => state.setFilters)
+  const bounds = useDelegateFilterBounds()
+
+  const [draft, setDraft] = useState<DelegateFilters>(() =>
+    seedDraft(filters, defaults, bounds)
+  )
+
+  const handleApply = useCallback((): void => {
+    // A row toggled on applies the user's value; a row toggled off reverts that
+    // dimension to the seeded web default (which still filters underneath), so
+    // the picker keeps its baseline instead of showing every node.
+    setFilters({
+      uptime: draft.uptime.enabled
+        ? { enabled: true, min: draft.uptime.min }
+        : defaults.uptime,
+      maxFee: draft.maxFee.enabled
+        ? { enabled: true, value: draft.maxFee.value }
+        : defaults.maxFee,
+      minAvailable: draft.minAvailable.enabled
+        ? { enabled: true, value: draft.minAvailable.value }
+        : defaults.minAvailable,
+      minTimeRemaining: draft.minTimeRemaining.enabled
+        ? { enabled: true, value: draft.minTimeRemaining.value }
+        : defaults.minTimeRemaining
+    })
+    router.back()
+  }, [draft, defaults, router, setFilters])
+
+  const handleCancel = useCallback((): void => {
+    // Discard the draft — applied filters stay as they were.
+    router.back()
+  }, [router])
+
+  const renderFooter = useCallback(
+    () => (
+      <View sx={{ gap: 12 }}>
+        <Button type="primary" size="large" onPress={handleApply}>
+          Apply filters
+        </Button>
+        <Button type="secondary" size="large" onPress={handleCancel}>
+          Cancel
+        </Button>
+      </View>
+    ),
+    [handleApply, handleCancel]
+  )
+
+  const cards = useMemo(
+    () => [
+      <FilterCard
+        key="uptime"
+        label="Uptime range"
+        enabled={draft.uptime.enabled}
+        onToggle={value =>
+          setDraft(d => ({ ...d, uptime: { ...d.uptime, enabled: value } }))
+        }>
+        <RangeSlider
+          min={bounds.uptime.min}
+          max={bounds.uptime.max}
+          step={bounds.uptime.step}
+          low={draft.uptime.min}
+          high={bounds.uptime.max}
+          lockHigh
+          formatValue={formatPercent}
+          onChange={low =>
+            setDraft(d => ({ ...d, uptime: { ...d.uptime, min: low } }))
+          }
+        />
+      </FilterCard>,
+      <FilterCard
+        key="maxFee"
+        label="Max delegation fee"
+        enabled={draft.maxFee.enabled}
+        onToggle={value =>
+          setDraft(d => ({ ...d, maxFee: { ...d.maxFee, enabled: value } }))
+        }>
+        <FilterNumberInput
+          label="Fee"
+          unit="%"
+          value={draft.maxFee.value}
+          min={0}
+          max={MAX_FEE_INPUT}
+          format={formatFeeValue}
+          onChange={value =>
+            setDraft(d => ({ ...d, maxFee: { ...d.maxFee, value } }))
+          }
+        />
+      </FilterCard>,
+      <FilterCard
+        key="minAvailable"
+        label="Min available delegation"
+        enabled={draft.minAvailable.enabled}
+        onToggle={value =>
+          setDraft(d => ({
+            ...d,
+            minAvailable: { ...d.minAvailable, enabled: value }
+          }))
+        }>
+        <FilterNumberInput
+          label="Amount"
+          unit="AVAX"
+          value={draft.minAvailable.value}
+          min={bounds.minAvailable.min}
+          format={formatAvaxValue}
+          onChange={value =>
+            setDraft(d => ({
+              ...d,
+              minAvailable: { ...d.minAvailable, value }
+            }))
+          }
+        />
+      </FilterCard>,
+      <FilterCard
+        key="minTime"
+        label="Min time remaining"
+        enabled={draft.minTimeRemaining.enabled}
+        onToggle={value =>
+          setDraft(d => ({
+            ...d,
+            minTimeRemaining: { ...d.minTimeRemaining, enabled: value }
+          }))
+        }>
+        <RangeSlider
+          single
+          min={bounds.minTimeRemaining.min}
+          max={bounds.minTimeRemaining.max}
+          step={bounds.minTimeRemaining.step}
+          low={draft.minTimeRemaining.value}
+          formatValue={formatDuration}
+          onChange={low =>
+            setDraft(d => ({
+              ...d,
+              minTimeRemaining: { ...d.minTimeRemaining, value: low }
+            }))
+          }
+        />
+      </FilterCard>
+    ],
+    [draft, bounds]
+  )
+
+  return (
+    <ScrollScreen
+      title="Advanced filters"
+      navigationTitle="Advanced filters"
+      isModal
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, gap: 12 }}>
+      {cards}
+    </ScrollScreen>
+  )
+}
+
+export default AdvancedFiltersScreen

@@ -91,11 +91,13 @@ describe('toFastStakeValidator', () => {
       geolocation: null
     }
 
-    // Only `nodeID` and `endTime` are surfaced — uptime and delegation fee
-    // are intentionally dropped to keep the shape flow-neutral.
+    // `nodeID`, `endTime` and `delegationFee` are surfaced (the fee feeds
+    // the reward estimate); uptime is intentionally dropped to keep the
+    // shape flow-neutral.
     expect(toFastStakeValidator(glacier)).toEqual({
       nodeID: 'NodeID-A',
-      endTime: '2000000'
+      endTime: '2000000',
+      delegationFee: '2'
     })
   })
 })
