@@ -1,5 +1,6 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TimerKeepAlive } from 'common/components/TimerKeepAlive'
 import LottieView from 'lottie-react-native'
 import React from 'react'
 
@@ -10,6 +11,8 @@ const STATUS_TITLE_HALF_HEIGHT = 30
 
 const FAST_STAKE_LOTTIE_LIGHT = require('assets/lotties/fast-stake-icon-light.json')
 const FAST_STAKE_LOTTIE_DARK = require('assets/lotties/fast-stake-icon-dark.json')
+const DELEGATE_LOTTIE_LIGHT = require('assets/lotties/stake-seedling-icon-light.json')
+const DELEGATE_LOTTIE_DARK = require('assets/lotties/stake-seedling-icon-dark.json')
 const SUCCESS_LOTTIE_LIGHT = require('assets/lotties/success-checkmark-icon-light.json')
 const SUCCESS_LOTTIE_DARK = require('assets/lotties/success-checkmark-icon-dark.json')
 
@@ -27,17 +30,29 @@ export type StakeStatusVariant = 'processing' | 'success'
  * config so each flow can stamp its own wording.
  */
 export const StakeStatusScreen = ({
-  variant
+  variant,
+  isAdvanced = false
 }: {
   variant: StakeStatusVariant
+  /**
+   * Advanced delegate flow — uses the delegate processing animation instead
+   * of the Fast Stake one. The success checkmark is shared across flows.
+   */
+  isAdvanced?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const isProcessing = variant === 'processing'
 
-  const lottieSource = isProcessing
+  const processingLottie = isAdvanced
     ? theme.isDark
-      ? FAST_STAKE_LOTTIE_DARK
-      : FAST_STAKE_LOTTIE_LIGHT
+      ? DELEGATE_LOTTIE_DARK
+      : DELEGATE_LOTTIE_LIGHT
+    : theme.isDark
+    ? FAST_STAKE_LOTTIE_DARK
+    : FAST_STAKE_LOTTIE_LIGHT
+
+  const lottieSource = isProcessing
+    ? processingLottie
     : theme.isDark
     ? SUCCESS_LOTTIE_DARK
     : SUCCESS_LOTTIE_LIGHT
@@ -47,6 +62,12 @@ export const StakeStatusScreen = ({
       isModal
       scrollEnabled={false}
       contentContainerStyle={{ flexGrow: 1 }}>
+      {/* Keeps JS timers firing on iOS release builds — without it the
+          in-flight delegation's polling/backoff, the success auto-dismiss and
+          the toast timeout all park until the user touches the screen.
+          Mounted for BOTH processing and success (the auto-dismiss timer runs
+          during success). See TimerKeepAlive for the full story. */}
+      <TimerKeepAlive />
       {/* The title is the only in-flow child, so it stays pinned to the exact
           vertical center regardless of the variant. The icon and subtitle are
           positioned absolutely relative to that center (above / below), so
@@ -76,6 +97,8 @@ export const StakeStatusScreen = ({
           sx={{ textAlign: 'center', paddingHorizontal: 32 }}>
           {isProcessing
             ? `We are processing\nyour transaction`
+            : isAdvanced
+            ? `Success!\nYou are now delegating.`
             : `Fast stake\nsuccessfully added`}
         </Text>
 
