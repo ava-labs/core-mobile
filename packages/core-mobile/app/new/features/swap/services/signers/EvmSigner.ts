@@ -197,9 +197,9 @@ const dispatchAsBatch = async (
 // validator for a batch lacking that context and returns `{kind:'manual'}`,
 // opening the manual `BatchApprovalScreen`. We attach RECURRING_SWAP context
 // ourselves (mirroring what `signOne` does for the per-tx path) so the screen
-// renders `<RecurrenceDetails/>`. The signed array is returned to the SDK,
-// which broadcasts — signBatch does NOT self-broadcast here, so it is atomic
-// w.r.t. our wallet and safe under fallbackToDefaultOnBatchFailure. (CP-14641)
+// renders `<RecurrenceDetails/>`. The mobile approval flow signs and broadcasts
+// via `eth_sendTransactionBatch` and returns tx hashes to the SDK.
+// (CP-14641)
 const dispatchRecurringBatch = async (
   request: Request,
   transactions: readonly EvmTransactionRequest[],
