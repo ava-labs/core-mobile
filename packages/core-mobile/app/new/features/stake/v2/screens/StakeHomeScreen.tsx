@@ -25,6 +25,7 @@ import {
   StakeCardListHeaderProps
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
+import { CctBanner } from '../components/CctBanner'
 
 // Width of the right-edge fade overlay on the chip scroll. Matches the
 // pattern used by TradeFilters so trailing chips fade into the screen
@@ -105,78 +106,84 @@ export const StakeHomeScreen = (): JSX.Element => {
           <StuckFundsBanner sx={{ marginHorizontal: 16, marginBottom: 16 }} />
           <Banner />
           {!isEmpty && (
-            <View
-              sx={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: 20,
-                paddingRight: 16,
-                gap: 8
-              }}>
-              <View sx={{ flex: 1, overflow: 'hidden' }}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    flexDirection: 'row',
-                    gap: 8,
-                    paddingLeft: 16,
-                    paddingRight: CHIP_FADE_WIDTH
-                  }}>
-                  {filter.data[0]?.items.map(item => (
-                    <Chip
-                      key={item.id}
-                      size="large"
-                      isSelected={item.id === filter.selected}
-                      onPress={() => filter.onSelected(item.id)}
-                      style={{ minWidth: 40 }}>
-                      {item.title}
-                    </Chip>
-                  ))}
-                </ScrollView>
-                <LinearGradient
-                  pointerEvents="none"
-                  style={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: CHIP_FADE_WIDTH
-                  }}
-                  colors={[
-                    alpha(theme.colors.$surfacePrimary, 0),
-                    theme.colors.$surfacePrimary
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                />
-              </View>
-              <AnimatedPressable
-                onPress={handleSearchPress}
-                accessibilityRole="button"
-                accessibilityLabel="Search stakes"
-                style={{
-                  backgroundColor: theme.colors.$surfaceSecondary,
-                  borderRadius: 1000,
-                  height: 27,
+            <>
+              <View
+                sx={{
                   flexDirection: 'row',
-                  justifyContent: 'center',
                   alignItems: 'center',
-                  gap: 6,
-                  paddingHorizontal: 12
+                  marginTop: 20,
+                  paddingRight: 16,
+                  gap: 8
                 }}>
-                <Icons.Custom.Search
-                  color={theme.colors.$textPrimary}
-                  width={14}
-                  height={14}
-                />
-                <Text
-                  variant="buttonSmall"
-                  sx={{ color: theme.colors.$textSecondary }}>
-                  Search
-                </Text>
-              </AnimatedPressable>
-            </View>
+                <View sx={{ flex: 1, overflow: 'hidden' }}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      flexDirection: 'row',
+                      gap: 8,
+                      paddingLeft: 16,
+                      paddingRight: CHIP_FADE_WIDTH
+                    }}>
+                    {filter.data[0]?.items.map(item => (
+                      <Chip
+                        key={item.id}
+                        size="large"
+                        isSelected={item.id === filter.selected}
+                        onPress={() => filter.onSelected(item.id)}
+                        style={{ minWidth: 40 }}>
+                        {item.title}
+                      </Chip>
+                    ))}
+                  </ScrollView>
+                  <LinearGradient
+                    pointerEvents="none"
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: CHIP_FADE_WIDTH
+                    }}
+                    colors={[
+                      alpha(theme.colors.$surfacePrimary, 0),
+                      theme.colors.$surfacePrimary
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                </View>
+                <AnimatedPressable
+                  onPress={handleSearchPress}
+                  accessibilityRole="button"
+                  accessibilityLabel="Search stakes"
+                  style={{
+                    backgroundColor: theme.colors.$surfaceSecondary,
+                    borderRadius: 1000,
+                    height: 27,
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 6,
+                    paddingHorizontal: 12
+                  }}>
+                  <Icons.Custom.Search
+                    color={theme.colors.$textPrimary}
+                    width={14}
+                    height={14}
+                  />
+                  <Text
+                    variant="buttonSmall"
+                    sx={{ color: theme.colors.$textSecondary }}>
+                    Search
+                  </Text>
+                </AnimatedPressable>
+              </View>
+              {/* CCT banner — points stakers to Swap for P→C transfers.
+                  Self-hides (and reserves no space) when dismissed or nothing
+                  is claimable. */}
+              <CctBanner sx={{ marginTop: 16, marginHorizontal: 16 }} />
+            </>
           )}
         </View>
       )
