@@ -12,6 +12,7 @@ import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { truncateNodeId } from 'utils/Utils'
 import { getActiveStakeProgress, getStakedAmount } from '../../utils'
 import { StakeCard } from '../components/StakeCard'
+import { isDelegationTx } from '../utils/isDelegationTx'
 import { isFastStakeTx } from '../utils/isFastStakeTx'
 import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
 import { getStakeTitle } from '../utils'
@@ -80,9 +81,10 @@ export const useStakeCardRenderer = ({
       // On-chain detection: show the Fast Stake badge whenever the
       // delegation tx carried a UTXO output to the convenience-fee escrow
       // address (see `isFastStakeTx`) — applied to both active and
-      // completed cards to match the web table behaviour. Plain
-      // delegations created via the advanced flow stay unbadged. The
-      // `delegating` / `validating` badges remain follow-up work.
+      // completed cards to match the web table behaviour. Fee-less
+      // delegations (e.g. from the advanced flow) fall back to the
+      // txType-based `delegating` badge, mirroring web's type label. The
+      // `validating` badge remains follow-up work.
       const isFastStake = isFastStakeTx(stake, isDevMode)
 
       return (
@@ -101,7 +103,13 @@ export const useStakeCardRenderer = ({
             stakeIsActive ? getActiveStakeProgress(stake, now) : undefined
           }
           motion={motion}
-          badge={isFastStake ? 'fastStake' : undefined}
+          badge={
+            isFastStake
+              ? 'fastStake'
+              : isDelegationTx(stake)
+              ? 'delegating'
+              : undefined
+          }
           width={width}
           onPress={() => onPressStake(stake.txHash)}
         />
