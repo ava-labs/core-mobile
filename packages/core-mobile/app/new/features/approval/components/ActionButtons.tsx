@@ -113,8 +113,7 @@ export const ActionButtons = ({
       // WARNING (e.g. "Manual approval required") shows red text/icon to
       // match the extension's sign UI, but without the confirm toggle that
       // DANGER requires.
-      const isRedAlert =
-        isDangerAlert || alertData.type === AlertType.WARNING
+      const isRedAlert = isDangerAlert || alertData.type === AlertType.WARNING
 
       return (
         <View>

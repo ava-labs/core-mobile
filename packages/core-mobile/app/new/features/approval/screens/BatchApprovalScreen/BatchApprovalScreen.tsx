@@ -305,7 +305,16 @@ const BatchApprovalScreenInner = ({
           label: 'Next',
           onPress: handleNext
         }}>
+        {/* `key={index}` is load-bearing: BatchTxStep owns per-tx
+            `useSpendLimits` state (incl. `hashedCustomSpend`). Without a
+            per-step key React reuses ONE instance across every step, so an
+            edited spend limit's calldata survives into the next step and its
+            `onOverride` effect (which re-fires when `index` changes) would
+            register the previous step's calldata against the new index —
+            signing a corrupted tx. Keying by index remounts the step so its
+            hook state resets. (CP-14641) */}
         <BatchTxStep
+          key={index}
           index={index}
           signingRequest={signingRequest}
           chainId={numericChainId}

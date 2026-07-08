@@ -145,15 +145,36 @@ jest.mock('features/approval/components/RecurrenceDetails', () => ({
   RecurrenceDetails: () => null
 }))
 
-jest.mock('hooks/useSpendLimits', () => ({
-  useSpendLimits: jest.fn(() => ({
-    spendLimits: [],
-    canEdit: false,
-    updateSpendLimit: jest.fn(),
-    hashedCustomSpend: undefined
-  })),
-  Limit: { DEFAULT: 'DEFAULT', UNLIMITED: 'UNLIMITED', CUSTOM: 'CUSTOM' }
-}))
+// Faithful mock of the real hook's state semantics: `hashedCustomSpend` is
+// component state, set only by `updateSpendLimit`, and (like the real hook) is
+// NOT reset when `tokenApprovals` changes. Reproducing that persistence is what
+// lets the "no cross-step override leak" test exercise the real component
+// identity behavior (BatchTxStep's per-index key). A step is editable — and
+// exposes an edit affordance — only when its request carries an editable
+// `tokenApprovals` with a marker `calldata`.
+jest.mock('hooks/useSpendLimits', () => {
+  const r = require('react') as typeof import('react')
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useSpendLimits: (tokenApprovals: any) => {
+      const [hashedCustomSpend, setHashed] = r.useState<string | undefined>(
+        undefined
+      )
+      const updateSpendLimit = r.useCallback(() => {
+        setHashed(tokenApprovals ? tokenApprovals.calldata : undefined)
+      }, [tokenApprovals])
+      return {
+        spendLimits: tokenApprovals
+          ? [{ limitType: 'DEFAULT', tokenApproval: {} }]
+          : [],
+        canEdit: Boolean(tokenApprovals && tokenApprovals.isEditable),
+        updateSpendLimit,
+        hashedCustomSpend
+      }
+    },
+    Limit: { DEFAULT: 'DEFAULT', UNLIMITED: 'UNLIMITED', CUSTOM: 'CUSTOM' }
+  }
+})
 
 jest.mock('../../components/Account', () => ({ Account: () => null }))
 jest.mock('../../components/Network', () => ({ Network: () => null }))
@@ -196,9 +217,23 @@ jest.mock('../../components/BalanceChange/BalanceChange', () => ({
   default: () => null
 }))
 jest.mock('../../components/Details', () => ({ Details: () => null }))
-jest.mock('../../components/SpendLimits/SpendLimits', () => ({
-  SpendLimits: () => null
-}))
+// Render an "edit" affordance only when the step is editable (onSelect passed).
+// Pressing it drives `updateSpendLimit`, the user action that produces an
+// override.
+jest.mock('../../components/SpendLimits/SpendLimits', () => {
+  const r = require('react') as typeof import('react')
+  const rn = require('react-native') as typeof import('react-native')
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    SpendLimits: ({ onSelect }: any) =>
+      onSelect
+        ? r.createElement(rn.TouchableOpacity, {
+            testID: 'edit_spend_limit',
+            onPress: () => onSelect({ limitType: 'CUSTOM' })
+          })
+        : null
+  }
+})
 
 jest.mock('common/components/withWalletConnectCache', () => ({
   withWalletConnectCache: () => (Component: unknown) => Component
@@ -239,12 +274,17 @@ function pressTestID(
   })
 }
 
-const buildSigningRequest = (index: number): any => ({
+const buildSigningRequest = (
+  index: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tokenApprovals?: any
+): any => ({
   displayData: {
     title: `Transaction ${index}`,
     details: [],
     account: '0xabc',
-    network: { chainId: 43114, name: 'Avalanche' }
+    network: { chainId: 43114, name: 'Avalanche' },
+    ...(tokenApprovals ? { tokenApprovals } : {})
   },
   signingData: {
     type: RpcMethod.ETH_SEND_TRANSACTION,
@@ -345,6 +385,30 @@ describe('BatchApprovalScreen', () => {
     expect(findByText(json, 'Do you want to approve all transactions?')).toBe(
       true
     )
+  })
+
+  it('does NOT leak an edited spend limit onto the next transaction (CP-14641)', () => {
+    // Step 0 is an editable ERC-20 approval; step 1 is not. Editing step 0's
+    // spend limit then advancing must register the override against index 0
+    // only — never index 1. A regression (a reused BatchTxStep instance whose
+    // stale `hashedCustomSpend` re-fires on the index change) would sign the
+    // step-0 approve calldata as the step-1 transaction.
+    const params = buildParams(2, {
+      signingRequests: [
+        buildSigningRequest(0, { isEditable: true, calldata: '0xEDITED0' }),
+        buildSigningRequest(1)
+      ]
+    })
+    let instance!: renderer.ReactTestRenderer
+    act(() => {
+      instance = renderer.create(<BatchApprovalScreen params={params} />)
+    })
+    pressTestID(instance, 'see_details_button') // -> step 1 of 2 (index 0)
+    pressTestID(instance, 'edit_spend_limit') // edit spend limit on step 0
+    pressTestID(instance, 'confirm_button') // Next -> step 2 of 2 (index 1)
+    pressTestID(instance, 'confirm_button') // Next -> final confirm
+    pressTestID(instance, 'confirm_button') // Approve all
+    expect(params.onApprove).toHaveBeenCalledWith({ 0: '0xEDITED0' })
   })
 
   it('calls onReject when "Reject" is pressed', () => {
