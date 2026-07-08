@@ -4,7 +4,6 @@ import { createFailureTicket, createBugTicket, searchVersionTickets, type Failed
 import { getDailyAutomationReport, getManualTestProgress } from './tools/testrail'
 import type { StoredMessage } from './store'
 
-const anthropic = new Anthropic({ apiKey: process.env.QA_ANTHROPIC_API_KEY })
 
 const tools: Anthropic.Tool[] = [
   {
@@ -211,6 +210,7 @@ export async function runAgent(
   todaysContext: StoredMessage[] = [],
   currentThreadLink?: string
 ): Promise<string> {
+  const anthropic = new Anthropic({ apiKey: process.env.QA_ANTHROPIC_API_KEY })
   const messages: Anthropic.MessageParam[] = [
     ...history,
     { role: 'user', content: userMessage },

@@ -1,4 +1,9 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import path from 'path'
+const result = dotenv.config({ path: path.resolve(__dirname, '../.env') })
+console.log('[dotenv] loaded from:', path.resolve(__dirname, '../.env'))
+console.log('[dotenv] error?', result.error ?? 'none')
+console.log('[dotenv] QA_ANTHROPIC_API_KEY:', process.env.QA_ANTHROPIC_API_KEY?.slice(0, 20) + '...')
 import { App } from '@slack/bolt'
 import { runAgent } from './agent'
 import { addMessage, getRecentMessages } from './store'
