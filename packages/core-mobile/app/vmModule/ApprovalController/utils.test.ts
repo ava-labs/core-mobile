@@ -1,6 +1,5 @@
-import { NetworkVMType } from '@avalabs/vm-module-types'
 import { showAlert } from '@avalabs/k2-alpine'
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType, LEDGER_BLIND_SIGN_MESSAGE } from 'services/ledger/types'
 import { handleLedgerErrorAndShowAlert } from './utils'
@@ -52,6 +51,10 @@ describe('handleLedgerErrorAndShowAlert — 0x6984 on Avalanche L1', () => {
   })
 
   it('does NOT show blind-sign guidance for a non-Avalanche (Ethereum) app', () => {
+    // The gate requires BOTH the expected app (ledgerAppName, from the network
+    // shape below) AND the detected open app (getCurrentAppType) to be
+    // Avalanche; here both are Ethereum. The dedicated detected-app case is
+    // covered by the test below.
     mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.ETHEREUM)
 
     handleLedgerErrorAndShowAlert({

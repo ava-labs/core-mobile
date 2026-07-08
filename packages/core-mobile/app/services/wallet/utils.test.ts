@@ -1,11 +1,6 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import {
-  NetworkVMType,
-  RpcMethod,
-  TypedData,
-  MessageTypes
-} from '@avalabs/vm-module-types'
-import { Network } from '@avalabs/core-chains-sdk'
+import { RpcMethod, TypedData, MessageTypes } from '@avalabs/vm-module-types'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { LedgerAppType, LEDGER_BLIND_SIGN_MESSAGE } from 'services/ledger/types'
 import {
