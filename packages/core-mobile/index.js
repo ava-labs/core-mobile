@@ -3,6 +3,7 @@ import { enableFreeze } from 'react-native-screens'
 enableFreeze(true)
 
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
+import { fetch as whatwgFetch } from 'whatwg-fetch'
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
@@ -44,6 +45,16 @@ if (__DEV__) {
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false
 }
+
+// Expo SDK 56's winter runtime replaces globalThis.fetch with expo/fetch,
+// whose Android response-body handling can corrupt payloads (surfaces as
+// "JSON Parse error: Unexpected character" in avalanchejs P-Chain RPC calls
+// during staking — see expo/expo#46398, not yet backported to SDK 56).
+// Restore React Native's whatwg-fetch for global consumers until the upstream
+// fix ships. Explicit `expo/fetch` imports (streaming) are unaffected. This
+// must run after the import graph above (where the winter runtime installs
+// its fetch) and before setupDeBankCaching() below (which wraps global.fetch).
+global.fetch = whatwgFetch
 
 // TODO: remove this once we integrate with the new balance service
 setupDeBankCaching()
