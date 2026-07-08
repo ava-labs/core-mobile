@@ -15,6 +15,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { LayoutChangeEvent } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -115,6 +116,15 @@ import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
+
+// Base gap kept between the focused "You pay" input and the keyboard, added on
+// top of the measured height of the banners above the swap card (stuck-funds +
+// manage-recurring). Those banners push the input down, so when it's tapped
+// KeyboardAwareScrollView scrolls it (banners height + this base) above the
+// keyboard, scaling the scroll to how far it was actually pushed. The base
+// alone (no banners) still clears the keyboard and the %/Max buttons that fade
+// in beneath the input on focus.
+const YOU_PAY_KEYBOARD_BASE_OFFSET = 60
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -487,6 +497,36 @@ export const SwapScreen = (): JSX.Element => {
   const showRecurringToggle =
     !isRecurringBlocked && eligibility.eligible && hasFromAmount
   const [recurringSubmitting, setRecurringSubmitting] = useState(false)
+
+  // Measured height of the banners stacked above the swap card (stuck-funds +
+  // manage-recurring, incl. their margins; 0 when both are hidden). Drives the
+  // keyboard bottomOffset so tapping "You pay" scrolls it clear of the keyboard
+  // by however far the banners pushed it down.
+  //
+  // Crucially, bottomOffset is FROZEN while the input is focused: changing it
+  // makes KeyboardAwareScrollView re-scroll the focused input into view (it runs
+  // an effect on the bottomOffset prop), which would yank the screen when the
+  // user expands a banner mid-edit. So we only commit the height to state while
+  // unfocused, and resync on blur; the latest measurement is kept in a ref.
+  const [bannersHeight, setBannersHeight] = useState(0)
+  const isYouPayFocusedRef = useRef(false)
+  const latestBannersHeightRef = useRef(0)
+  const handleBannersLayout = useCallback((event: LayoutChangeEvent) => {
+    const height = event.nativeEvent.layout.height
+    latestBannersHeightRef.current = height
+    if (!isYouPayFocusedRef.current) {
+      setBannersHeight(height)
+    }
+  }, [])
+  const handleYouPayFocus = useCallback(() => {
+    isYouPayFocusedRef.current = true
+  }, [])
+  const handleYouPayBlur = useCallback(() => {
+    isYouPayFocusedRef.current = false
+    // Commit any banner resize that happened during the edit so the next tap
+    // scrolls with the current height.
+    setBannersHeight(latestBannersHeightRef.current)
+  }, [])
 
   // Subscribe to the recurring quote when the toggle is on so we have fresh
   // calldata ready by the time the user presses Next. `slippage` in SwapContext
@@ -878,6 +918,8 @@ export const SwapScreen = (): JSX.Element => {
           onAmountChange={handleFromAmountChange}
           onPressMax={handlePressMax}
           onSelectToken={handleSelectFromToken}
+          onFocus={handleYouPayFocus}
+          onBlur={handleYouPayBlur}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
         />
@@ -894,7 +936,9 @@ export const SwapScreen = (): JSX.Element => {
     fromMaxSwapAmount,
     validationError,
     fromTokenValue,
-    isSwapping
+    isSwapping,
+    handleYouPayFocus,
+    handleYouPayBlur
   ])
 
   const renderToSection = useCallback((): JSX.Element => {
@@ -1552,17 +1596,24 @@ export const SwapScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard
+      bottomOffset={bannersHeight + YOU_PAY_KEYBOARD_BASE_OFFSET}
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
-      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
-          incomplete cross-chain transfer. Self-hides (and reserves no space)
-          when there are none, so the margins live on the banner itself. */}
-      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
-      {/* Schedule-management entry point: surfaces above the new-swap flow so
-          users with existing schedules see + manage them before entering a
-          new pair. Self-hides via `count === 0` when there are none. */}
-      {!isRecurringBlocked && (
-        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
-      )}
+      {/* Banners stacked above the swap card. Measured together (styleless
+          wrapper, no spacing of its own) so their combined height feeds the
+          keyboard bottomOffset. Each self-hides and reserves no space when
+          empty, so the wrapper collapses to 0 when both are gone. */}
+      <View onLayout={handleBannersLayout}>
+        {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+            incomplete cross-chain transfer. Self-hides (and reserves no space)
+            when there are none, so the margins live on the banner itself. */}
+        <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
+        {/* Schedule-management entry point: surfaces above the new-swap flow so
+            users with existing schedules see + manage them before entering a
+            new pair. Self-hides via `count === 0` when there are none. */}
+        {!isRecurringBlocked && (
+          <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
+        )}
+      </View>
       {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
       {renderError()}
