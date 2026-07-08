@@ -8,14 +8,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
+import { ListRenderItem } from '@shopify/flash-list'
 import { ChainName, defaultEnabledL2ChainIds } from 'services/network/consts'
 import { alwaysEnabledChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
@@ -295,7 +295,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   }, [goToAddCustomNetwork, theme.colors.$textPrimary])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={title}
       data={data}
       isModal

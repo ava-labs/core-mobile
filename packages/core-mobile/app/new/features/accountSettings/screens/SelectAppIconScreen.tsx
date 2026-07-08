@@ -6,11 +6,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
-import { ListRenderItemInfo } from 'react-native'
+import { ListRenderItemInfo } from '@shopify/flash-list'
 import {
   AppIcon,
   APP_ICON_DISPLAY_NAMES,
@@ -54,7 +54,7 @@ export const SelectAppIconScreen = (): JSX.Element => {
   )
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={`Customize\nthe app icon`}
       navigationTitle="Customize the app icon"
       isModal

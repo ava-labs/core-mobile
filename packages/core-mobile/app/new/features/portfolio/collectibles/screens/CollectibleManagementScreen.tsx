@@ -1,10 +1,10 @@
 import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
+import { ListRenderItem } from '@shopify/flash-list'
 import { useDispatch, useSelector } from 'react-redux'
 import { NftItem } from 'services/nft/types'
 import {
@@ -68,7 +68,7 @@ export const CollectibleManagementScreen = (): ReactNode => {
   }, [handleSearch, searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Manage list"
       isModal
       keyExtractor={item => `collectibles-manage-${item.localId}`}

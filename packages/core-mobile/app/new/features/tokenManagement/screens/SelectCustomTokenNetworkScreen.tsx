@@ -7,12 +7,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { ListRenderItem } from 'react-native'
+import { ListRenderItem } from '@shopify/flash-list'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { useRouter } from 'expo-router'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
@@ -154,7 +154,7 @@ export const SelectCustomTokenNetworkScreen = (): JSX.Element => {
   }, [setSearchText, searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={TITLE}
       data={filteredNetworks}
       isModal

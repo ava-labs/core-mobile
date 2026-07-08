@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
@@ -162,7 +162,7 @@ export const SelectAssetScreen = (): JSX.Element => {
   }, [isLoading, selectedProtocol])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={`Choose an asset to borrow`}
       isModal
       data={borrowableMarkets}

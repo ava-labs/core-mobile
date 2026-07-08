@@ -1,7 +1,7 @@
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import React, { useCallback, useEffect } from 'react'
-import { ListRenderItem } from 'react-native'
+import { ListRenderItem } from '@shopify/flash-list'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionListItem } from '../components/PositionListItem'
 import { POSITIONS_HISTORY_MOCK } from '../mocks'
@@ -33,7 +33,7 @@ export const PerpetualsPositionsHistoryScreen = (): JSX.Element => {
   )
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="History"
       isModal
       data={POSITIONS_HISTORY_MOCK}

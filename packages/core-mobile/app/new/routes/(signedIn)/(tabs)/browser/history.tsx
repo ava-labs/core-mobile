@@ -7,7 +7,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
@@ -15,7 +15,8 @@ import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import { prepareFaviconToLoad } from 'features/browser/utils'
 import React from 'react'
-import { ListRenderItem, Platform } from 'react-native'
+import { Platform } from 'react-native'
+import { ListRenderItem } from '@shopify/flash-list'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addHistoryForActiveTab,
@@ -150,7 +151,7 @@ const HistoryScreen = (): JSX.Element => {
     )
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="History"
       data={filterHistories}
       renderItem={renderItem}

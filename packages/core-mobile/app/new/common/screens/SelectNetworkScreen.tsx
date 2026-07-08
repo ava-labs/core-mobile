@@ -1,6 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useRouter } from 'expo-router'
@@ -108,11 +108,11 @@ export const SelectNetworkScreen = ({
   }
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select a network"
       data={networks}
       isModal
-      // @ts-ignore TODO: ListScreen improvement
+      // @ts-ignore TODO: ListScreenV2 improvement
       renderItem={renderItem}
       keyExtractor={item => item?.chainId?.toString()}
     />

@@ -9,7 +9,7 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { CurrencySymbol } from 'store/settings/currency'
@@ -157,7 +157,7 @@ export const SelectCurrency = ({
   }, [])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select a currency"
       data={searchResults}
       isModal

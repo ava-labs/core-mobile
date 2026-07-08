@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import {
   Button,
   Image,
@@ -182,7 +182,7 @@ export const SelectAssetScreen = (): JSX.Element => {
   }, [isLoadingMarkets])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select an asset to deposit"
       isModal
       data={depositableTokens}

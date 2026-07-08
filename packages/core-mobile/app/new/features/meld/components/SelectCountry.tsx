@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { LoadingState } from 'common/components/LoadingState'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { useMeldCountryCode } from '../store'
@@ -148,7 +148,7 @@ export const SelectCountry = ({
   }, [isLoading])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select a country"
       data={searchResults}
       isModal

@@ -2,7 +2,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { ListRenderItem } from '@shopify/flash-list'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native'
@@ -119,11 +119,11 @@ export const SelectTokenScreen = <T extends object>({
   }, [])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select a token"
       data={filteredTokens}
       isModal
-      // @ts-ignore TODO: ListScreen improvement
+      // @ts-ignore TODO: ListScreenV2 improvement
       renderItem={renderListItem}
       keyExtractor={keyExtractor}
       renderHeader={renderHeader}

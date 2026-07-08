@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import {
   Icons,
   Image,
@@ -163,7 +163,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   }, [isLoadingMarkets])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={`Choose a pool to\nstart earning`}
       isModal
       data={isLoadingMarkets ? [] : filteredAvailableMarkets}

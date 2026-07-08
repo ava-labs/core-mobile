@@ -8,7 +8,7 @@ import {
   alpha
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { format } from 'date-fns'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -249,7 +249,7 @@ export const SelectServiceProvider = ({
   }, [isLoadingCryptoQuotes, isRefetchingCryptoQuotes])
 
   return (
-    <ListScreen
+    <ListScreenV2
       isModal
       title="Change provider"
       renderHeader={renderHeader}

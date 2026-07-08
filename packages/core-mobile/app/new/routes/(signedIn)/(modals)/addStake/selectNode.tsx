@@ -8,7 +8,7 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { secondsToMilliseconds } from 'date-fns'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { NodeItem } from 'features/stake/components/NodeItem'
@@ -114,7 +114,7 @@ const StakeSelectNode = (): JSX.Element => {
   }, [isFetching, error, useAdvancedSearchNodesError, validators, searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Which node would you like to use?"
       data={validators ?? []}
       renderItem={renderItem}

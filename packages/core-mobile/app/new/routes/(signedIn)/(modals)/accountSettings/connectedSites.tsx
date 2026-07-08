@@ -7,7 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import {
   Dapp,
   useConnectedDapps
@@ -233,7 +233,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
   }, [])
 
   return (
-    <ListScreen
+    <ListScreenV2
       isModal
       showNavigationHeaderTitle={false}
       title="Connected sites"

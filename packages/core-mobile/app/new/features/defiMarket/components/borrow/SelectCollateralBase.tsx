@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router'
 import { useNavigation } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeposits } from 'hooks/earn/useDeposits'
@@ -192,7 +192,7 @@ export const SelectCollateralBase = ({
   ])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select deposits to use as collateral"
       isModal
       data={filteredDeposits}

@@ -12,7 +12,7 @@ import {
 import { NetworkVMType } from '@avalabs/vm-module-types'
 
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { ListViewItem } from 'common/components/ListViewItem'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -159,7 +159,7 @@ export const RecentContacts = ({
   }, [])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={`First, enter the\nrecipient's address`}
       navigationTitle="Enter the recipient's address"
       data={searchResults}

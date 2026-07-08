@@ -1,13 +1,13 @@
 import { Icons, SearchBar, Separator, useTheme } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { LoadingState } from 'common/components/LoadingState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useRouter } from 'expo-router'
 import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
 import React, { useCallback } from 'react'
-import { ListRenderItemInfo } from 'react-native'
+import { ListRenderItemInfo } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance/types'
 
 export const TokenManagementScreen = (): JSX.Element => {
@@ -78,7 +78,7 @@ export const TokenManagementScreen = (): JSX.Element => {
   }, [handleSearch, searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Manage list"
       data={filteredTokenList}
       isModal
@@ -89,7 +89,7 @@ export const TokenManagementScreen = (): JSX.Element => {
       }
       onRefresh={refetch}
       refreshing={false}
-      ListEmptyComponent={ListEmptyComponent}
+      renderEmpty={ListEmptyComponent}
       keyExtractor={item => (item as LocalTokenWithBalance).localId}
       renderHeader={renderHeader}
     />

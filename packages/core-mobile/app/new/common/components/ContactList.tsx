@@ -5,7 +5,7 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import React, { useCallback, useMemo, useState } from 'react'
 import { Contact } from 'store/addressBook'
-import { ListScreen } from './ListScreen'
+import { ListScreenV2 } from './ListScreenV2'
 import { ListViewItem } from './ListViewItem'
 
 export const ContactList = ({
@@ -89,7 +89,7 @@ export const ContactList = ({
   }, [ListEmptyComponent])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={title}
       keyExtractor={item => (item as Contact).id}
       data={searchResults}
