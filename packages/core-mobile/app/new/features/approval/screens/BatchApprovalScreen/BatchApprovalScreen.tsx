@@ -319,6 +319,7 @@ const BatchApprovalScreenInner = ({
           signingRequest={signingRequest}
           chainId={numericChainId}
           disabled={submitting}
+          initialOverride={overrides[index]}
           onOverride={setOverride}
         />
       </ActionSheet>

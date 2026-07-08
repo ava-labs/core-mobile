@@ -18,6 +18,7 @@ export const BatchTxStep = ({
   signingRequest,
   chainId,
   disabled,
+  initialOverride,
   onOverride
 }: {
   index: number
@@ -27,6 +28,11 @@ export const BatchTxStep = ({
   // symbol correction must be sourced from the request, not from displayData.
   chainId?: number
   disabled?: boolean
+  // The override calldata the parent already holds for this step, if any. This
+  // step is remounted (keyed by index) on every navigation, so it must be
+  // seeded with the existing override to keep its displayed amount consistent
+  // with what will be signed when the user returns to an already-edited step.
+  initialOverride?: string
   onOverride: (
     index: number,
     encodedApproveCalldata: string | undefined
@@ -37,12 +43,12 @@ export const BatchTxStep = ({
   const symbol = getNetworkSymbol(chainId)
 
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-    useSpendLimits(displayData.tokenApprovals)
+    useSpendLimits(displayData.tokenApprovals, initialOverride)
 
-useEffect(() => {
-  if (hashedCustomSpend === undefined) return
-  onOverride(index, hashedCustomSpend)
-}, [hashedCustomSpend, index, onOverride])
+  useEffect(() => {
+    if (hashedCustomSpend === undefined) return
+    onOverride(index, hashedCustomSpend)
+  }, [hashedCustomSpend, index, onOverride])
 
   // Drop the one-time recurring schedule fee from the expanded token list. On
   // the wrap step the native (AVAX) outflow bundles two items: the wrap

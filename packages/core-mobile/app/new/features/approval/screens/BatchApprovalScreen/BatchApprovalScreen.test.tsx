@@ -86,6 +86,7 @@ jest.mock('new/common/components/ActionSheet', () => {
       confirm,
       cancel,
       onClose,
+      renderHeaderLeft,
       children
     }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any) =>
@@ -93,6 +94,9 @@ jest.mock('new/common/components/ActionSheet', () => {
         rn.View,
         null,
         title ? r.createElement(rn.Text, null, title) : null,
+        // Render the header-left slot so the back button (and its navigation)
+        // is reachable in tests.
+        renderHeaderLeft ? renderHeaderLeft() : null,
         r.createElement(
           rn.TouchableOpacity,
           { testID: 'confirm_button', onPress: confirm.onPress },
@@ -156,9 +160,11 @@ jest.mock('hooks/useSpendLimits', () => {
   const r = require('react') as typeof import('react')
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    useSpendLimits: (tokenApprovals: any) => {
+    useSpendLimits: (tokenApprovals: any, initialCustomSpend?: string) => {
+      // Seeded from the prior override (as the real hook does), so a remounted
+      // step re-visited after an edit reports the edit rather than a default.
       const [hashedCustomSpend, setHashed] = r.useState<string | undefined>(
-        undefined
+        initialCustomSpend
       )
       const updateSpendLimit = r.useCallback(() => {
         setHashed(tokenApprovals ? tokenApprovals.calldata : undefined)
@@ -196,10 +202,19 @@ jest.mock('hooks/networks/useNetworks', () => ({
 jest.mock('common/hooks/useEffectiveHeaderHeight', () => ({
   useEffectiveHeaderHeight: () => 100
 }))
-jest.mock('common/components/BackBarButton', () => ({
-  __esModule: true,
-  default: () => null
-}))
+jest.mock('common/components/BackBarButton', () => {
+  const r = require('react') as typeof import('react')
+  const rn = require('react-native') as typeof import('react-native')
+  return {
+    __esModule: true,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    default: ({ onBack }: any) =>
+      r.createElement(rn.TouchableOpacity, {
+        testID: 'back_button',
+        onPress: onBack
+      })
+  }
+})
 jest.mock('common/components/ProgressDots', () => ({
   ProgressDots: () => null
 }))
@@ -405,6 +420,32 @@ describe('BatchApprovalScreen', () => {
     })
     pressTestID(instance, 'see_details_button') // -> step 1 of 2 (index 0)
     pressTestID(instance, 'edit_spend_limit') // edit spend limit on step 0
+    pressTestID(instance, 'confirm_button') // Next -> step 2 of 2 (index 1)
+    pressTestID(instance, 'confirm_button') // Next -> final confirm
+    pressTestID(instance, 'confirm_button') // Approve all
+    expect(params.onApprove).toHaveBeenCalledWith({ 0: '0xEDITED0' })
+  })
+
+  it('preserves an edited spend limit when navigating away and back to its step (CP-14641)', () => {
+    // Editing step 0, advancing, then returning to step 0 must keep the
+    // override — the step is remounted (keyed by index), so it has to be
+    // re-seeded from the override the parent still holds. Otherwise the review
+    // screen would snap back to the default on the second visit while still
+    // signing the edited value.
+    const params = buildParams(2, {
+      signingRequests: [
+        buildSigningRequest(0, { isEditable: true, calldata: '0xEDITED0' }),
+        buildSigningRequest(1)
+      ]
+    })
+    let instance!: renderer.ReactTestRenderer
+    act(() => {
+      instance = renderer.create(<BatchApprovalScreen params={params} />)
+    })
+    pressTestID(instance, 'see_details_button') // -> step 1 of 2 (index 0)
+    pressTestID(instance, 'edit_spend_limit') // edit spend limit on step 0
+    pressTestID(instance, 'confirm_button') // Next -> step 2 of 2 (index 1)
+    pressTestID(instance, 'back_button') // Back -> step 1 of 2 (index 0)
     pressTestID(instance, 'confirm_button') // Next -> step 2 of 2 (index 1)
     pressTestID(instance, 'confirm_button') // Next -> final confirm
     pressTestID(instance, 'confirm_button') // Approve all
