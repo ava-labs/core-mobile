@@ -39,9 +39,10 @@ export const BatchTxStep = ({
   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
     useSpendLimits(displayData.tokenApprovals)
 
-  useEffect(() => {
-    onOverride(index, hashedCustomSpend)
-  }, [hashedCustomSpend, index, onOverride])
+useEffect(() => {
+  if (hashedCustomSpend === undefined) return
+  onOverride(index, hashedCustomSpend)
+}, [hashedCustomSpend, index, onOverride])
 
   // Drop the one-time recurring schedule fee from the expanded token list. On
   // the wrap step the native (AVAX) outflow bundles two items: the wrap
