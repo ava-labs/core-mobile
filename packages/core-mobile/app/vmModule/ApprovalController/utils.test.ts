@@ -66,4 +66,23 @@ describe('handleLedgerErrorAndShowAlert — 0x6984 on Avalanche L1', () => {
     expect(arg.title).not.toBe('Enable blind signing')
     expect(arg.description).toBe('Ledger device: UNKNOWN_ERROR (0x6984)')
   })
+
+  it('does NOT show blind-sign guidance when the expected app is Avalanche but a different app is open', () => {
+    // Avalanche L1 network (getLedgerAppName → AVALANCHE) but the detected
+    // open app is Ethereum — 0x6984 here is a generic status word from
+    // another app, not the Avalanche blind-signing prompt.
+    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.ETHEREUM)
+
+    handleLedgerErrorAndShowAlert({
+      error: { message: 'Ledger device: UNKNOWN_ERROR (0x6984)' } as never,
+      network: l1Network,
+      onRetry: jest.fn(),
+      onCancel: jest.fn()
+    })
+
+    expect(mockShowAlert).toHaveBeenCalledTimes(1)
+    const arg = mockShowAlert.mock.calls[0][0]
+    expect(arg.title).not.toBe('Enable blind signing')
+    expect(arg.description).toBe('Ledger device: UNKNOWN_ERROR (0x6984)')
+  })
 })

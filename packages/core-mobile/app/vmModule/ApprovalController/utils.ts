@@ -78,7 +78,8 @@ export const handleLedgerErrorAndShowAlert = ({
       'Ledger is processing another request. Please try again later.'
   } else if (
     lowercasedMessage.includes(LEDGER_ERROR_CODES.BLIND_SIGN_REQUIRED) &&
-    ledgerAppName === LedgerAppType.AVALANCHE
+    ledgerAppName === LedgerAppType.AVALANCHE &&
+    detectedAppType === LedgerAppType.AVALANCHE
   ) {
     title = 'Enable blind signing'
     description = LEDGER_BLIND_SIGN_MESSAGE
