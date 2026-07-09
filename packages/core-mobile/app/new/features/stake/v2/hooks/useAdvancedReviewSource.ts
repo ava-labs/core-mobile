@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
+import { useNow } from 'hooks/time/useNow'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { selectIsDelegationFeeBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
@@ -12,6 +14,10 @@ import {
 import { StakeReviewSource } from '../types'
 import { useDelegateNodeSelection } from '../store'
 import { getDelegateNodeLimits } from './useSelectedDelegateNodeLimits'
+
+// Matches `useValidateStakingEndTime`'s min-start-time buffer (submission is
+// anchored at now + 1 minute).
+const MIN_START_TIME_BUFFER_MS = 60 * 1000
 
 // Hoisted so the memo doesn't allocate a fresh Error on every recompute when no
 // node is selected.
@@ -35,6 +41,19 @@ export const RESTAKE_NODE_UNAVAILABLE_ERROR = new Error(
  */
 export const RESTAKE_NODE_FULL_ERROR = new Error(
   'The original node no longer has enough delegation capacity'
+)
+/**
+ * Sentinel for "the restake target validator is still active but its own
+ * validation period ends too soon to host even a minimum-duration stake".
+ * The normal flow catches this on the duration screen (`exceedsNodeEndTime`);
+ * restake skips that screen, and `useValidateStakingEndTime` clamps the end
+ * time to the validator's *after* its min-duration adjustment — so without
+ * this gate a sub-minimum stake could reach the chain (which rejects it after
+ * the cross-chain import has already run). Surfaced to the confirm route the
+ * same way as the other restake sentinels.
+ */
+export const RESTAKE_NODE_ENDING_ERROR = new Error(
+  "The original node's remaining validation period is too short"
 )
 
 /**
@@ -89,7 +108,26 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
     return stakeAmount.gt(maxAmount)
   }, [isRestake, node, isDeveloperMode, stakeAmount])
 
+  // Restake only: the node's own validation period must have room for at
+  // least a minimum-duration stake (anchored at now + the same 1-minute
+  // buffer `useValidateStakingEndTime` uses for the start time). The normal
+  // flow enforces this on the duration screen (`exceedsNodeEndTime`), which
+  // restake skips. When the remaining time covers the minimum but not the
+  // original duration, the stake proceeds with the end time clamped to the
+  // validator's — shown on the review — mirroring web's `DelegationForm`,
+  // which clamps its prefilled duration to the node's remaining days.
+  const now = useNow()
+  const isRestakeNodeEnding = useMemo(() => {
+    if (!isRestake || !node) return false
+    const { maxEndDate } = getDelegateNodeLimits(node, isDeveloperMode)
+    return (
+      maxEndDate.getTime() - now <
+      MIN_START_TIME_BUFFER_MS + getMinimumStakeDurationMs(isDeveloperMode)
+    )
+  }, [isRestake, node, isDeveloperMode, now])
+
   return useMemo<StakeReviewSource>(() => {
+    const isRestakeNodeUnusable = isRestakeNodeFull || isRestakeNodeEnding
     let error: Error | null = null
     if (!node) {
       if (isRestake) {
@@ -99,14 +137,17 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
       } else {
         error = NO_NODE_SELECTED_ERROR
       }
+    } else if (isRestakeNodeEnding) {
+      error = RESTAKE_NODE_ENDING_ERROR
     } else if (isRestakeNodeFull) {
       error = RESTAKE_NODE_FULL_ERROR
     }
     return {
-      // A capacity-exhausted restake node reads as "no validator" so the
-      // confirm screen can't proceed with it even if the redirect is slow.
+      // A capacity-exhausted / soon-ending restake node reads as "no
+      // validator" so the confirm screen can't proceed with it even if the
+      // redirect is slow.
       validator:
-        node && !isRestakeNodeFull
+        node && !isRestakeNodeUnusable
           ? {
               nodeID: node.nodeID,
               endTime: node.endTime,
@@ -126,6 +167,7 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
     node,
     isRestake,
     isRestakeNodeFull,
+    isRestakeNodeEnding,
     isFetchingValidators,
     validatorsError,
     isDelegationFeeEnabled,

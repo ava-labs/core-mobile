@@ -852,6 +852,13 @@ const StakeConfirmScreen = ({
         isSubmitting={isIssueDelegationPending}
         isSubmitDisabled={
           !validator ||
+          // Also hold the CTA during a background validator refetch — the
+          // source can serve a cached validator immediately (`useNodes` has a
+          // 5-min staleTime), and the eligibility gates (restake capacity /
+          // remaining time, fast-stake requalification) only re-run once
+          // fresh data lands. Without this, a stale-cache restake could be
+          // submitted inside that window.
+          isFetchingValidator ||
           !isFeeContextReady ||
           isIssueDelegationPending ||
           isCheckingFunding ||
@@ -876,6 +883,7 @@ const StakeConfirmScreen = ({
     retryRewardEstimate,
     isIssueDelegationPending,
     validator,
+    isFetchingValidator,
     isFeeContextReady,
     isCheckingFunding,
     isWaitingForFeeReward,
