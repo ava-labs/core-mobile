@@ -2,6 +2,8 @@
 
 import { selectIsLocked } from 'store/app/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import {
   selectIsFusionEnabled,
   selectIsFusionMarkrEnabled,
@@ -20,6 +22,7 @@ import {
   updateFusionTransfer,
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
+import { createEvmSigner } from '../services/signers/EvmSigner'
 import {
   initFusionService,
   cleanupFusionService,
@@ -39,7 +42,20 @@ jest.mock('store/app/slice', () => ({
 
 jest.mock('store/settings/advanced/slice', () => ({
   selectIsDeveloperMode: jest.fn(),
+  selectQuickSwapsMaxBuy: jest.fn().mockReturnValue('unlimited'),
   toggleDeveloperMode: { type: 'settings/toggleDeveloperMode' }
+}))
+
+jest.mock('store/settings/advanced/quickSwapsActive', () => ({
+  // Keep the real `selectIsBatchSigningSupported` so the getBatchOptions tests
+  // still exercise the actual software-wallet allowlist (via the mocked
+  // `selectActiveWallet`); only the Quick Swaps gate is stubbed.
+  ...jest.requireActual('store/settings/advanced/quickSwapsActive'),
+  selectIsQuickSwapsActive: jest.fn().mockReturnValue(false)
+}))
+
+jest.mock('store/wallet/slice', () => ({
+  selectActiveWallet: jest.fn()
 }))
 
 jest.mock('store/posthog/slice', () => ({
@@ -135,6 +151,8 @@ const mockSelectFusionDisableCrossChainSwaps =
 const mockGetPendingFusionTransfers = getPendingFusionTransfers as jest.Mock
 const mockUseIsFusionServiceReady = useIsFusionServiceReady as any
 const mockUseFusionServiceInitError = useFusionServiceInitError as any
+const mockCreateEvmSigner = createEvmSigner as jest.Mock
+const mockSelectActiveWallet = selectActiveWallet as jest.Mock
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -302,6 +320,50 @@ describe('Fusion listeners', () => {
 
         expect(FusionService.cleanup).toHaveBeenCalled()
         expect(FusionService.initWithFeatureFlags).toHaveBeenCalled()
+      })
+    })
+
+    // -----------------------------------------------------------------------
+    // The `getBatchOptions` getter passed to createEvmSigner decides whether
+    // recurring first-fills can batch-sign. It reads the LIVE active wallet at
+    // call time so the value tracks wallet switches between init and execution.
+    describe('getBatchOptions().isBatchSigningSupported', () => {
+      // Invoke the getter that initFusionService handed to createEvmSigner.
+      const readBatchOptions = async (): Promise<{
+        isBatchSigningSupported: boolean
+      }> => {
+        await initFusionService({}, makeListenerApi())
+        const getBatchOptions = mockCreateEvmSigner.mock
+          .calls[0]?.[1] as () => {
+          isBatchSigningSupported: boolean
+        }
+        expect(typeof getBatchOptions).toBe('function')
+        return getBatchOptions()
+      }
+
+      it.each([
+        WalletType.MNEMONIC,
+        WalletType.SEEDLESS,
+        WalletType.PRIVATE_KEY
+      ])('is true for software wallet type %s', async type => {
+        mockSelectActiveWallet.mockReturnValue({ type })
+        const { isBatchSigningSupported } = await readBatchOptions()
+        expect(isBatchSigningSupported).toBe(true)
+      })
+
+      it.each([WalletType.LEDGER, WalletType.LEDGER_LIVE, WalletType.KEYSTONE])(
+        'is false for hardware wallet type %s',
+        async type => {
+          mockSelectActiveWallet.mockReturnValue({ type })
+          const { isBatchSigningSupported } = await readBatchOptions()
+          expect(isBatchSigningSupported).toBe(false)
+        }
+      )
+
+      it('is false when there is no active wallet (fail-safe guard)', async () => {
+        mockSelectActiveWallet.mockReturnValue(undefined)
+        const { isBatchSigningSupported } = await readBatchOptions()
+        expect(isBatchSigningSupported).toBe(false)
       })
     })
   })
