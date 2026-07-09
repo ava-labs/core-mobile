@@ -21,12 +21,17 @@ import {
 } from 'features/recurringSwap/services/recurringSignerContext'
 import { BASIS_POINTS_DIVISOR } from '../../consts'
 import { buildRequestContext } from '../../utils/buildRequestContext'
+import { BatchSigningUnsupportedError } from './errors'
 
 // Getter (not captured value) so the signer reads the latest settings
 // even if the user toggles Quick Swaps between init and execution.
 export type SignBatchOptionsGetter = () => {
   isQuickSwapsActive: boolean
   maxBuy: QuickSwapMaxBuy
+  // True only for wallets that can return signed txs without a per-tx
+  // approval (MNEMONIC / SEEDLESS / PRIVATE_KEY). From
+  // QUICK_SWAPS_SOFTWARE_WALLET_TYPES.
+  isBatchSigningSupported: boolean
 }
 
 // Common hex-encoded tx fields shared by single-tx eth_sendTransaction
@@ -95,30 +100,19 @@ const isCrossChainQuote = (quote: Quote): boolean =>
   quote.sourceChain.chainId.toLowerCase() !==
   quote.targetChain.chainId.toLowerCase()
 
-const isQuickSwapsManualReviewError = (err: unknown): boolean => {
-  if (!err || typeof err !== 'object') return false
-  const data = (err as { data?: unknown }).data
-  if (!data || typeof data !== 'object') return false
-  return (
-    (data as { quickSwapsManualReview?: unknown }).quickSwapsManualReview ===
-    true
-  )
-}
-
-const readManualReviewReason = (err: unknown): string | undefined => {
-  if (!err || typeof err !== 'object') return undefined
-  const data = (err as { data?: unknown }).data
-  if (!data || typeof data !== 'object') return undefined
-  const reason = (data as { reason?: unknown }).reason
-  return typeof reason === 'string' && reason.length > 0 ? reason : undefined
-}
-
-const getChainIdForBatch = (
+export const getChainIdForBatch = (
   transactions: readonly EvmTransactionRequest[]
 ): number => {
   const first = transactions[0]
   assert(first, 'signBatch called with empty transactions array')
-  return Number(first.chainId)
+  const chainId = Number(first.chainId)
+  for (const tx of transactions) {
+    assert(
+      Number(tx.chainId) === chainId,
+      'MultipleChainIdsInBatch: all transactions in a batch must share one chainId'
+    )
+  }
+  return chainId
 }
 
 const BPS_DIVISOR_BIGINT = BigInt(BASIS_POINTS_DIVISOR)
@@ -194,6 +188,46 @@ const dispatchAsBatch = async (
         maxBuy
       )
     }
+  })
+  return result as unknown as readonly `0x${string}`[]
+}
+
+// Recurring batches must be user-approved (never silently auto-approved), so we
+// dispatch WITHOUT SWAP_AUTO_APPROVE context. `evaluateBatchApproval` finds no
+// validator for a batch lacking that context and returns `{kind:'manual'}`,
+// opening the manual `BatchApprovalScreen`. We attach RECURRING_SWAP context
+// ourselves (mirroring what `signOne` does for the per-tx path) so the screen
+// renders `<RecurrenceDetails/>`. The mobile approval flow signs and broadcasts
+// via `eth_sendTransactionBatch` and returns tx hashes to the SDK.
+// (CP-14641)
+const dispatchRecurringBatch = async (
+  request: Request,
+  transactions: readonly EvmTransactionRequest[],
+  stepDetails: Parameters<EvmSignerWithMessage['sign']>[2]
+): Promise<readonly `0x${string}`[]> => {
+  const rawContext = buildRequestContext(stepDetails)
+  const recurringActive = readRecurringSignerContext(stepDetails)
+  const isRecurringOrderAction = isRecurringOrderActionSignatureReason(
+    stepDetails.currentSignatureReason
+  )
+  const context = recurringActive
+    ? {
+        ...rawContext,
+        [RequestContext.RECURRING_SWAP]: recurringActive,
+        ...(isRecurringOrderAction
+          ? { [RequestContext.CONFETTI_DISABLED]: true }
+          : {})
+      }
+    : rawContext
+
+  const result = await request({
+    method: RpcMethod.ETH_SEND_TRANSACTION_BATCH,
+    params: {
+      transactions: transactions.map(normalizeBatchTx),
+      options: { skipIntermediateTxs: true }
+    },
+    chainId: getEvmCaip2ChainId(getChainIdForBatch(transactions)),
+    context
   })
   return result as unknown as readonly `0x${string}`[]
 }
@@ -407,32 +441,46 @@ export function createEvmSigner(
 
     signBatch: async (transactions, dispatch, stepDetails) => {
       assert(transactions.length > 0, 'signBatch called with no transactions')
-      const { isQuickSwapsActive, maxBuy } = getBatchOptions()
+      const { isQuickSwapsActive, maxBuy, isBatchSigningSupported } =
+        getBatchOptions()
 
       // Cold-start guard: every batch tx must have fees pre-filled.
       const allTxsHaveFees = transactions.every(
         tx => typeof tx.maxFeePerGas === 'bigint'
       )
       const isCrossChain = isCrossChainQuote(stepDetails.quote)
-      // Recurring fills must never go through the Quick Swaps batch
-      // bypass — `dispatchAsBatch` attaches `SWAP_AUTO_APPROVE` and the
+      // Recurring fills must never go through the Quick Swaps auto-approve
+      // batch bypass — `dispatchAsBatch` attaches `SWAP_AUTO_APPROVE` and the
       // batch validator would let a recurring fill auto-approve silently
       // (creating a schedule + first fill without the user seeing the
-      // recurring preview). The sequential path uses `signOne`, which
-      // already excludes recurring from `shouldAttachAutoApprove` and
-      // injects `RECURRING_SWAP` context so `<RecurrenceDetails />`
-      // renders. Route recurring batches straight to sequential.
+      // recurring preview). Recurring instead dispatches a *manual* batch
+      // (see `dispatchRecurringBatch`) that carries RECURRING_SWAP context
+      // and no SWAP_AUTO_APPROVE, routing to the BatchApprovalScreen.
       const isRecurring = isRecurringTransferSignatureReason(
         stepDetails.currentSignatureReason
       )
+
+      if (isRecurring) {
+        if (!isBatchSigningSupported) {
+          // HW / WalletConnect: cannot batch-sign. Throw so the SDK's
+          // fallbackToDefaultOnBatchFailure re-issues each tx via the
+          // single-tx path.
+          throw new BatchSigningUnsupportedError('hardware-or-walletconnect')
+        }
+        assert(
+          transactions.every(tx => typeof tx.maxFeePerGas === 'bigint'),
+          'signBatch: recurring batch txs must have fees pre-filled'
+        )
+        return dispatchRecurringBatch(request, transactions, stepDetails)
+      }
+
       // The `eth_sendTransactionBatch` handler rejects batches with
       // fewer than 2 txs (the EVM module's Zod schema requires
       // `tuple([fe, fe]).rest(fe)`). A 1-tx "batch" from Markr would
-      // otherwise hit invalidParams without the quickSwapsManualReview
-      // marker and the swap would fail. Fall back to per-tx instead.
+      // otherwise hit invalidParams and the swap would fail — fall back
+      // to per-tx instead.
       if (
         !isQuickSwapsActive ||
-        isRecurring ||
         !allTxsHaveFees ||
         isCrossChain ||
         transactions.length < 2
@@ -440,23 +488,20 @@ export function createEvmSigner(
         return signEachManually([...transactions], stepDetails)
       }
 
+      // A flagged Quick-Swaps batch is no longer handled here: the
+      // ApprovalController's `evaluateBatchApproval` returns `{kind:'manual'}`
+      // for a batch whose validator requires manual approval, opening the
+      // BatchApprovalScreen — it does not throw the old
+      // `quickSwapsManualReview` marker back to us. So there is no per-tx
+      // fallback to run; real broadcast errors just propagate (the SDK
+      // handles them). We still log for telemetry parity with the other
+      // signer paths before rethrowing.
       try {
         return await dispatchAsBatch(request, transactions, {
           stepDetails,
           maxBuy
         })
       } catch (err) {
-        if (isQuickSwapsManualReviewError(err)) {
-          Logger.info(
-            '[fusion::evmSigner.signBatch] bypass requires manual review; falling back to per-tx approval',
-            (err as { data?: unknown }).data
-          )
-          return signEachManually(
-            [...transactions],
-            stepDetails,
-            readManualReviewReason(err)
-          )
-        }
         Logger.error('[fusion::evmSigner.signBatch]', err)
         throw err
       }

@@ -19,8 +19,8 @@ import { approvalValidators, requestValidators } from './validators'
 //   2. On isValid:true — sign each tx with the request's signing context
 //      and return the broadcast-ready signed RLP to the EVM module
 //   3. On requiresManualApproval — surface the reason via a fallback
-//      Alert and let the caller fall through to the manual modal
-//      (single-tx) or return a marker error the signer detects (batch)
+//      Alert and let the caller fall through to the manual approval
+//      screen (single-tx modal or the batch approval screen)
 //   4. On hard reject — return an invalidRequest error
 
 type BatchSigningContext = {
@@ -184,23 +184,33 @@ export const runRequestValidatorBypass = async (
   }
 }
 
-// Batch path has no manual-modal fallback at this layer — on
-// requiresManualApproval we return a structured error with the
-// quickSwapsManualReview marker that EvmSigner.signBatch detects to
-// re-issue each tx through requestApproval.
-export const runBatchApprovalBypass = async (
+export type BatchApprovalDecision =
+  | { kind: 'signed'; response: BatchApprovalResponse }
+  | { kind: 'reject'; response: BatchApprovalResponse }
+  | { kind: 'manual' }
+
+// Thin, exported wrapper over the existing per-tx signing loop so the
+// ApprovalController's manual-batch path can sign the batch itself.
+export const signBatchRequests = async (
+  request: RpcRequest,
+  transactions: readonly Transaction[],
+  errorLabel: string
+): Promise<
+  | { signedTxs: { signedData: string }[] }
+  | { error: ReturnType<typeof rpcErrors.internal> }
+> => signWithBypassContext(request, transactions, errorLabel)
+
+// Decision function used by ApprovalController.requestBatchApproval to pick
+// between auto-approve (signed), hard reject, and opening the manual screen.
+export const evaluateBatchApproval = async (
   params: BatchApprovalParams
-): Promise<BatchApprovalResponse> => {
+): Promise<BatchApprovalDecision> => {
   const { request, signingRequests } = params
   const validator = approvalValidators.find(v => v.canHandle(request))
-  if (!validator) {
-    return {
-      error: rpcErrors.internal({
-        message:
-          'eth_sendTransactionBatch: no validator matched the batch request'
-      })
-    }
-  }
+
+  // No validator (e.g. recurring first-fill: no SWAP_AUTO_APPROVE context) ->
+  // manual screen. Replaces the old "no validator matched" error.
+  if (!validator) return { kind: 'manual' }
 
   const verdict = await validator.validate(params)
 
@@ -210,33 +220,23 @@ export const runBatchApprovalBypass = async (
       signingRequests.map(sr => sr.signingData.data),
       'eth_sendTransactionBatch'
     )
-    if ('error' in result) return result
-    return { result: result.signedTxs }
+    if ('error' in result) return { kind: 'reject', response: result }
+    return { kind: 'signed', response: { result: result.signedTxs } }
   }
 
   if (verdict.requiresManualApproval) {
-    // The per-tx swap will re-run SwapValidator and inject its own
-    // alert into per-tx displayData. Inject here too for callers and
-    // future code paths that render the batch displayData directly.
     injectFallbackAlert(params.displayData, verdict.reason)
-    const detail = verdict.reason || 'unknown reason'
-    return {
-      error: rpcErrors.internal({
-        message: `Quick Swaps requires manual review for this swap (${detail}).`,
-        data: {
-          quickSwapsManualReview: true,
-          code: verdict.code,
-          reason: verdict.reason
-        }
-      })
-    }
+    return { kind: 'manual' }
   }
 
   return {
-    error: rpcErrors.invalidRequest({
-      message:
-        verdict.reason ||
-        'eth_sendTransactionBatch: blocked by safety validation'
-    })
+    kind: 'reject',
+    response: {
+      error: rpcErrors.invalidRequest({
+        message:
+          verdict.reason ||
+          'eth_sendTransactionBatch: blocked by safety validation'
+      })
+    }
   }
 }

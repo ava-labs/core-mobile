@@ -528,8 +528,7 @@ export const Details = ({
       sx={{
         backgroundColor: colors.$surfaceSecondary,
         borderRadius: 12,
-        paddingHorizontal: 16,
-        marginTop: 12
+        paddingHorizontal: 16
       }}>
       <FlatList
         scrollEnabled={false}

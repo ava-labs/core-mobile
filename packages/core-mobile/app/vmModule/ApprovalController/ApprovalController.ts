@@ -12,6 +12,7 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc/types'
 import {
   isDappOriginatedUrl,
   isInjectedDappRequest
@@ -53,9 +54,10 @@ import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 import {
+  evaluateBatchApproval,
   findRequestValidator,
-  runBatchApprovalBypass,
-  runRequestValidatorBypass
+  runRequestValidatorBypass,
+  signBatchRequests
 } from './quickSwapsBypass'
 
 // Max concurrently-parked cancellable approvals. Entries are removed on every
@@ -595,12 +597,112 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  // Batch approvals only exist for the Quick Swaps bypass — there's
-  // no batch manual-modal flow in this app. Delegate fully.
   async requestBatchApproval(
     params: BatchApprovalParams
   ): Promise<BatchApprovalResponse> {
-    return runBatchApprovalBypass(params)
+    const decision = await evaluateBatchApproval(params)
+    if (decision.kind === 'signed' || decision.kind === 'reject') {
+      return decision.response
+    }
+
+    // Manual path: open the batch approval screen (software wallets only —
+    // HW/WC never dispatch a batch; EvmSigner.signBatch throws for them).
+    const { request, displayData, signingRequests } = params
+    const requestId = request.requestId
+    this.userCancelledMap.delete(requestId)
+
+    return new Promise<BatchApprovalResponse>(resolve => {
+      if (this.registerCancelBridge(requestId, resolve as never)) return
+
+      walletConnectCache.batchApprovalParams.set({
+        request,
+        displayData,
+        signingRequests,
+        signal: getRequestSignal(requestId),
+        onApprove: (
+          spendLimitOverrides: Record<number, string>,
+          options?: { gaslessEnabled?: boolean }
+        ) =>
+          this.handleBatchApprovalApprove({
+            requestId,
+            request,
+            signingRequests,
+            spendLimitOverrides,
+            gaslessEnabled: options?.gaslessEnabled ?? false,
+            resolve
+          }),
+        onReject: (message?: string) => {
+          this.clearCancelBridge(requestId)
+          onReject({ resolve: resolve as never, message })
+        }
+      })
+
+      router.navigate({
+        pathname: '/approvalBatch',
+        // Batches are in-app only (the eth_sendTransactionBatch handler rejects
+        // any non-CORE_MOBILE_TOPIC request), so isInAppRequest is always true
+        // here. Mirror requestApproval's conditional anyway so the presentation
+        // style can't diverge if that trust boundary ever changes.
+        params: {
+          presentationMode: isInAppRequest(request)
+            ? NavigationPresentationMode.FORM_SHEET
+            : undefined
+        }
+      })
+    })
+  }
+
+  private async handleBatchApprovalApprove({
+    requestId,
+    request,
+    signingRequests,
+    spendLimitOverrides,
+    gaslessEnabled,
+    resolve
+  }: {
+    requestId: string
+    request: BatchApprovalParams['request']
+    signingRequests: BatchApprovalParams['signingRequests']
+    spendLimitOverrides: Record<number, string>
+    gaslessEnabled: boolean
+    resolve: (
+      value: BatchApprovalResponse | PromiseLike<BatchApprovalResponse>
+    ) => void
+  }): Promise<void> {
+    if (this.userCancelledMap.get(requestId)) return
+    this.clearCancelBridge(requestId)
+
+    // Capture the user's "Get free gas" choice on the request context. The
+    // batch path only signs here and returns the signed RLP to the EVM module
+    // to broadcast — there is no per-tx funding hook like the single-tx
+    // `onSigned` path — so this records intent for the broadcast path to fund
+    // once batch gasless support lands. Harmless no-op today.
+    if (gaslessEnabled) {
+      request.context = {
+        ...request.context,
+        [RequestContext.GASLESS_ENABLED]: true
+      }
+    }
+
+    // Apply per-index spend-limit overrides (re-encoded approve calldata) to
+    // each tx before signing — mirrors the single-tx overrideData path.
+    const transactions = signingRequests.map((sr, i) => {
+      const override = spendLimitOverrides[i]
+      return override
+        ? { ...sr.signingData.data, data: override }
+        : sr.signingData.data
+    })
+
+    const result = await signBatchRequests(
+      request,
+      transactions,
+      'eth_sendTransactionBatch'
+    )
+    if ('error' in result) {
+      resolve(result)
+      return
+    }
+    resolve({ result: result.signedTxs })
   }
 }
 
