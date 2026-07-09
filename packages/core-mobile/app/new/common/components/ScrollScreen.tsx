@@ -131,6 +131,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       renderFooter,
       renderHeaderRight,
       onScrolledToEnd,
+      // Pulled out of `...props` so the internal size/layout tracking can be
+      // composed with them rather than silently overriding them.
+      onContentSizeChange: onContentSizeChangeProp,
+      onLayout: onLayoutProp,
       ...props
     },
     ref
@@ -154,6 +158,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const [isScrollable, setIsScrollable] = useState(false)
 
     const updateIsScrollable = useCallback(() => {
+      // Only Android's nested-scroll path reads this (see `nestedScrollEnabled`
+      // below); skip the state update on iOS so it can't trigger renders for a
+      // value it never uses.
+      if (Platform.OS !== 'android') return
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
       const scrollable = scrollContentHeight.current > 0 && maxScroll > 0
       setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
@@ -210,6 +218,25 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
         checkScrollableAfterLayout()
       },
       [checkScrollableAfterLayout, updateIsScrollable]
+    )
+
+    // Run the internal tracking and then forward to any caller-provided
+    // handler, so passing `onContentSizeChange` / `onLayout` to ScrollScreen
+    // keeps working instead of being overridden by the internal handlers.
+    const handleContentSizeChangeComposed = useCallback(
+      (w: number, h: number) => {
+        handleContentSizeChange(w, h)
+        onContentSizeChangeProp?.(w, h)
+      },
+      [handleContentSizeChange, onContentSizeChangeProp]
+    )
+
+    const handleScrollViewLayoutComposed = useCallback(
+      (e: LayoutChangeEvent) => {
+        handleScrollViewLayout(e)
+        onLayoutProp?.(e)
+      },
+      [handleScrollViewLayout, onLayoutProp]
     )
     const [headerLayout, setHeaderLayout] = useState<
       LayoutRectangle | undefined
@@ -521,8 +548,8 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
               }
             ]}
             onScroll={onScroll}
-            onContentSizeChange={handleContentSizeChange}
-            onLayout={handleScrollViewLayout}>
+            onContentSizeChange={handleContentSizeChangeComposed}
+            onLayout={handleScrollViewLayoutComposed}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
@@ -559,9 +586,13 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           ]}
           onScroll={onScroll}
           onContentSizeChange={
-            onScrolledToEnd ? handleContentSizeChange : undefined
+            onScrolledToEnd
+              ? handleContentSizeChangeComposed
+              : onContentSizeChangeProp
           }
-          onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+          onLayout={
+            onScrolledToEnd ? handleScrollViewLayoutComposed : onLayoutProp
+          }>
           {renderHeaderContent()}
           {children}
         </ScrollView>
