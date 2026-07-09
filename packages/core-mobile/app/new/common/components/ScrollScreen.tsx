@@ -145,6 +145,20 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 
     const SCROLL_END_THRESHOLD = 20
 
+    // Whether the content actually overflows the viewport. Drives Android
+    // `nestedScrollEnabled` on the keyboard-aware branch: when the content
+    // scrolls, the plain RN ScrollView must participate in the parent form
+    // sheet's nested scrolling so a downward swipe scrolls to the top instead
+    // of being captured by the sheet's drag-to-dismiss. When the content fits,
+    // we leave it off so a short modal stays swipe-to-dismiss. (CP-14679)
+    const [isScrollable, setIsScrollable] = useState(false)
+
+    const updateIsScrollable = useCallback(() => {
+      const maxScroll = scrollContentHeight.current - scrollViewHeight.current
+      const scrollable = scrollContentHeight.current > 0 && maxScroll > 0
+      setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
+    }, [])
+
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {
         if (!onScrolledToEnd || hasReachedEndRef.current) return
@@ -176,6 +190,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       (_w: number, h: number) => {
         const prevHeight = scrollContentHeight.current
         scrollContentHeight.current = h
+        updateIsScrollable()
 
         if (!onScrolledToEnd) return
 
@@ -185,15 +200,16 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           checkScrollableAfterLayout()
         }
       },
-      [onScrolledToEnd, checkScrollableAfterLayout]
+      [onScrolledToEnd, checkScrollableAfterLayout, updateIsScrollable]
     )
 
     const handleScrollViewLayout = useCallback(
       (e: LayoutChangeEvent) => {
         scrollViewHeight.current = e.nativeEvent.layout.height
+        updateIsScrollable()
         checkScrollableAfterLayout()
       },
-      [checkScrollableAfterLayout]
+      [checkScrollableAfterLayout, updateIsScrollable]
     )
     const [headerLayout, setHeaderLayout] = useState<
       LayoutRectangle | undefined
@@ -483,6 +499,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             {...props}
+            // On Android, `nestedScrollEnabled` lets this plain RN ScrollView
+            // participate in a parent form sheet's nested scrolling so a
+            // vertical swipe scrolls the content instead of being captured by
+            // the sheet's drag-to-dismiss gesture. Enabled only while the
+            // content actually overflows — a short modal keeps swipe-to-dismiss.
+            // (The gesture-handler ScrollView branch below arbitrates this on
+            // its own and doesn't need the prop.) (CP-14679)
+            nestedScrollEnabled={Platform.OS === 'android' && isScrollable}
             style={{
               flex: 1
             }}
@@ -497,10 +521,8 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
               }
             ]}
             onScroll={onScroll}
-            onContentSizeChange={
-              onScrolledToEnd ? handleContentSizeChange : undefined
-            }
-            onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+            onContentSizeChange={handleContentSizeChange}
+            onLayout={handleScrollViewLayout}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
