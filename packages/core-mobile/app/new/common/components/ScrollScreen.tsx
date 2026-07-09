@@ -163,7 +163,11 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // value it never uses.
       if (Platform.OS !== 'android') return
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-      const scrollable = scrollContentHeight.current > 0 && maxScroll > 0
+      // Require a measured viewport height: before the ScrollView reports its
+      // layout, `scrollViewHeight` is 0, which would make `maxScroll` equal the
+      // full content height and falsely mark short content as scrollable (and
+      // briefly break swipe-to-dismiss).
+      const scrollable = scrollViewHeight.current > 0 && maxScroll > 0
       setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
     }, [])
 
