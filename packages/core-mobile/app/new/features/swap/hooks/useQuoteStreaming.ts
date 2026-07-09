@@ -7,7 +7,7 @@ import SentryService from 'services/sentry/SentryService'
 import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
-import { fusionErrors, toQuoteDisplayError } from '../utils/fusionErrors'
+import { fusionErrors } from '../utils/fusionErrors'
 import { logSdkError } from '../utils/fusionLogger'
 import {
   useBestQuote,
@@ -186,11 +186,7 @@ export function useQuoteStreaming(
           break
         case 'error': {
           Logger.error('Quote stream error', data)
-          // The swap screen renders the quote error's message verbatim, so
-          // normalise it first — otherwise a raw SDK error (e.g. the Markr
-          // quote stream's JSON.parse SyntaxError) reaches the user as-is.
-          // See CP-14708.
-          setError(toQuoteDisplayError(data))
+          setError(data)
           setIsLoading(false)
           break
         }
