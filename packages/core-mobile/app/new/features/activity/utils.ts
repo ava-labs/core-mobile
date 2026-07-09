@@ -310,8 +310,10 @@ export function resolveTxUserAddress(
  * matches its network token.
  *
  * When the user's legs can't be resolved (no user address, or no leg to/from
- * the user), fall back to the original positional symbol match over the first
- * two legs.
+ * the user), fall back to a positional symbol match over the first two legs.
+ * Both paths resolve symbols through `resolvePaymentSymbol`, so a native leg
+ * whose Glacier symbol is empty still maps to the network token symbol (e.g.
+ * AVAX) instead of silently dropping off the native token's screen.
  */
 export function transactionInvolvesTokenSymbol({
   tokens,
@@ -324,22 +326,17 @@ export function transactionInvolvesTokenSymbol({
   userAddress: string | undefined
   networkTokenSymbol: string | undefined
 }): boolean {
+  const matchesLeg = (leg: TxToken | undefined): boolean =>
+    leg !== undefined &&
+    tokenSymbol === resolvePaymentSymbol(leg, networkTokenSymbol)
+
   const { inputToken, outputToken } = selectSwapTokens(tokens, userAddress)
 
   if (inputToken || outputToken) {
-    const inputSymbol = inputToken
-      ? resolvePaymentSymbol(inputToken, networkTokenSymbol)
-      : undefined
-    const outputSymbol = outputToken
-      ? resolvePaymentSymbol(outputToken, networkTokenSymbol)
-      : undefined
-    return tokenSymbol === inputSymbol || tokenSymbol === outputSymbol
+    return matchesLeg(inputToken) || matchesLeg(outputToken)
   }
 
-  return Boolean(
-    (tokens[0]?.symbol && tokenSymbol === tokens[0].symbol) ||
-      (tokens[1]?.symbol && tokenSymbol === tokens[1].symbol)
-  )
+  return matchesLeg(tokens[0]) || matchesLeg(tokens[1])
 }
 
 /**

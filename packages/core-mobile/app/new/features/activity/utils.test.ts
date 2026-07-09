@@ -854,4 +854,22 @@ describe('transactionInvolvesTokenSymbol', () => {
       })
     ).toBe(false)
   })
+
+  it('resolves an empty native symbol on the positional fallback path', () => {
+    // No from/to info, so selectSwapTokens can't resolve legs -> fallback path.
+    // Glacier returned an empty symbol for the native leg; it must still map to
+    // the network token so the native (AVAX) screen lists the tx.
+    const tokens: TxToken[] = [
+      { type: TokenType.NATIVE, symbol: '', amount: '1' } as TxToken,
+      pepe(ROUTER, POOL)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'AVAX',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
 })
