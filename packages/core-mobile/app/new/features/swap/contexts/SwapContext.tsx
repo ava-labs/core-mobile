@@ -42,10 +42,7 @@ import {
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
 import { useQuickSwaps } from '../hooks/useQuickSwaps'
 import FusionService from '../services/FusionService'
-import {
-  mapFeeSettingToGasSettings,
-  SuggestedGasFees
-} from '../utils/quickSwapsFee'
+import { buildFusionGasSettings } from '../utils/quickSwapsFee'
 import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
@@ -109,6 +106,14 @@ interface SwapContextState {
   setUserClickedMax: Dispatch<boolean>
   /** ID of the transfer that was just successfully submitted */
   successTransferId: string | undefined
+  /**
+   * GasSettings for the recurring first-fill batch. Always carries the
+   * EIP-1559 tier override (from `feeSetting` + live `networkFees`) so the
+   * SDK's batch path fills `maxFeePerGas` and the batch reaches the manual
+   * BatchApprovalScreen instead of falling back to sequential approvals.
+   * (CP-14641)
+   */
+  recurringGasSettings: GasSettings
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -182,6 +187,23 @@ export const SwapContextProvider = ({
   // Quick Swaps gas tier
   const { isEnabled: isQuickSwapsActive, feeSetting, maxBuy } = useQuickSwaps()
   const { data: networkFees } = useNetworkFee(fromNetwork)
+
+  // Recurring first-fills always need the EIP-1559 tier override (independent
+  // of the Quick Swaps toggle): the SDK's batch path only spreads
+  // `maybe1559(gasSettings)` onto the batch txs and never estimates fees for
+  // them, so without an explicit maxFeePerGas the recurring batch trips
+  // EvmSigner.signBatch's "fees pre-filled" guard and falls back to sequential
+  // per-tx approvals. Reuses the same `feeSetting` as regular swaps. (CP-14641)
+  const recurringGasSettings = useMemo(
+    () =>
+      buildFusionGasSettings({
+        networkFees,
+        feeSetting,
+        estimateGasMarginBps: transferGasMarginBps,
+        applyTierOverride: true
+      }),
+    [networkFees, feeSetting, transferGasMarginBps]
+  )
   const toNetwork = useMemo(
     () => (toToken ? getNetwork(toToken.networkChainId) : undefined),
     [toToken, getNetwork]
@@ -441,25 +463,17 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        let gasSettings: GasSettings = {
-          estimateGasMarginBps: transferGasMarginBps
-        }
-
-        if (isQuickSwapsActive) {
-          const suggested: SuggestedGasFees | undefined = networkFees && {
-            slow: networkFees.low,
-            normal: networkFees.medium,
-            fast: networkFees.high
-          }
-          const tierOverride = mapFeeSettingToGasSettings(feeSetting, suggested)
-          if (tierOverride) {
-            gasSettings = { ...gasSettings, ...tierOverride }
-          } else {
-            Logger.warn(
-              '[SwapContext] no gas tier override available; using SDK default',
-              { feeSetting }
-            )
-          }
+        const gasSettings = buildFusionGasSettings({
+          networkFees,
+          feeSetting,
+          estimateGasMarginBps: transferGasMarginBps,
+          applyTierOverride: isQuickSwapsActive
+        })
+        if (isQuickSwapsActive && gasSettings.maxFeePerGas === undefined) {
+          Logger.warn(
+            '[SwapContext] no gas tier override available; using SDK default',
+            { feeSetting }
+          )
         }
 
         if (
@@ -581,7 +595,8 @@ export const SwapContextProvider = ({
     setAmount,
     userClickedMax,
     setUserClickedMax,
-    successTransferId
+    successTransferId,
+    recurringGasSettings
   }
 
   return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>
