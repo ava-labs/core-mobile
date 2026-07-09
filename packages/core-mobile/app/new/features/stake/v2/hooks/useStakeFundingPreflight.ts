@@ -15,6 +15,16 @@ import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
  * Only underfunded results are surfaced as `hasInsufficientFunds`; transient
  * errors (network, etc.) are ignored here so they don't strand the user — the
  * normal submit + error-alert path handles those.
+ *
+ * The check counts as complete only once `computeSteps` had all of its async
+ * inputs (`isComputeReady`) and returned actual steps. Before that,
+ * `computeSteps` resolves to an empty list without validating anything, which
+ * must NOT enable the CTA: a restake lands directly on the confirm screen
+ * with a cached validator, so the pre-flight can fire before the fee-state /
+ * base-fee queries resolve — treating that empty result as "funded" let an
+ * unaffordable stake through with no inline error (it then failed after the
+ * slide). While the inputs are still loading we report `isCheckingFunding`
+ * and re-run the real check when `isComputeReady` flips true.
  */
 export const useStakeFundingPreflight = ({
   enabled,
@@ -27,7 +37,7 @@ export const useStakeFundingPreflight = ({
   /** Convenience-fee escrow output(s); undefined when no fee applies. */
   additionalOutputs: readonly AdditionalDelegatorOutput[] | undefined
 }): { isCheckingFunding: boolean; hasInsufficientFunds: boolean } => {
-  const { computeSteps } = useDelegationContext()
+  const { computeSteps, isComputeReady } = useDelegationContext()
   const [fundingError, setFundingError] = useState<Error | null>(null)
   const [isCheckingFunding, setIsCheckingFunding] = useState(false)
 
@@ -59,23 +69,38 @@ export const useStakeFundingPreflight = ({
       setIsCheckingFunding(false)
       return
     }
+    if (!isComputeReady) {
+      // `computeSteps` would resolve to an empty list without validating
+      // anything. Hold the CTA as "checking" until the inputs are ready; the
+      // dep below re-runs the real check the moment they are.
+      setIsCheckingFunding(true)
+      return
+    }
     let cancelled = false
     setIsCheckingFunding(true)
     computeStepsRef
       .current(stakeAmountNanoAvax, additionalOutputAmount)
-      .then(() => {
-        if (!cancelled) setFundingError(null)
+      .then(steps => {
+        if (cancelled) return
+        if (steps.length === 0) {
+          // An input vanished between the readiness check and the call (e.g.
+          // account switch mid-flight) — nothing was validated, so don't mark
+          // the check as passed. `isComputeReady` flips false for the same
+          // reason and re-arms this effect, keeping the CTA held meanwhile.
+          return
+        }
+        setFundingError(null)
+        setIsCheckingFunding(false)
       })
       .catch((e: unknown) => {
-        if (!cancelled) setFundingError(e as Error)
-      })
-      .finally(() => {
-        if (!cancelled) setIsCheckingFunding(false)
+        if (cancelled) return
+        setFundingError(e as Error)
+        setIsCheckingFunding(false)
       })
     return () => {
       cancelled = true
     }
-  }, [enabled, stakeAmountNanoAvax, additionalOutputAmount])
+  }, [enabled, isComputeReady, stakeAmountNanoAvax, additionalOutputAmount])
 
   return {
     isCheckingFunding,

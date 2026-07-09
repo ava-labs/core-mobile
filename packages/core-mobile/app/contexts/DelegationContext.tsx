@@ -49,6 +49,13 @@ interface DelegationContextState {
   steps: Step[]
   computeSteps: ComputeSteps
   delegate: Delegate
+  /**
+   * Whether `computeSteps` has all of its async inputs (fee state, C-Chain
+   * base fee, providers, account addresses). While false, `computeSteps`
+   * resolves to an empty step list without computing anything — callers that
+   * need a real funding answer must wait for this to become true.
+   */
+  isComputeReady: boolean
 }
 
 export const DelegationContext = createContext<DelegationContextState>(
@@ -60,15 +67,16 @@ export const DelegationContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const { steps, computeSteps, delegate } = useDelegation()
+  const { steps, computeSteps, delegate, isComputeReady } = useDelegation()
 
   const state: DelegationContextState = useMemo(
     () => ({
       steps,
       computeSteps,
-      delegate
+      delegate,
+      isComputeReady
     }),
-    [computeSteps, delegate, steps]
+    [computeSteps, delegate, steps, isComputeReady]
   )
 
   return (
