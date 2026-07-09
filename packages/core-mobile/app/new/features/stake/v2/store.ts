@@ -211,7 +211,7 @@ export const setRestakePrefill = (prefill: { durationDays: number }): void => {
   restakePrefill = prefill
 }
 
-/** Peeks the active restake prefill (null outside a delegate restake). */
+/** Peeks the active restake prefill (null when no restake entry is pending). */
 export const getRestakePrefill = (): { durationDays: number } | null =>
   restakePrefill
 

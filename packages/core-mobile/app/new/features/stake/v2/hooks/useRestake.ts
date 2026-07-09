@@ -1,6 +1,6 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
-import { addDays, getUnixTime } from 'date-fns'
+import { addDays, addHours, getUnixTime } from 'date-fns'
 import { Href, useRouter } from 'expo-router'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useCallback } from 'react'
@@ -79,10 +79,13 @@ export const useRestake = (): {
         // clears it and re-seeds the amount so nothing leaks (overwritten by
         // the next restake, cleared by the layout on a normal modal entry).
         setRestakePrefill({ durationDays: params.durationDays })
-        // Same end-time derivation web uses: now + the original stake's
-        // whole-day duration.
+        // Same end-time derivation web uses (`FastStakeReview` /
+        // `DelegationForm`): now + the original stake's whole-day duration,
+        // plus 1h of slack — calendar-day math shifts by ±1h across DST
+        // transitions, and the slack keeps a spring-forward from landing the
+        // duration below the original (and below the network minimum).
         const stakeEndTime = getUnixTime(
-          addDays(new Date(), params.durationDays)
+          addHours(addDays(new Date(), params.durationDays), 1)
         )
 
         if (isFastStake) {
