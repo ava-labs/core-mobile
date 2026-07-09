@@ -100,13 +100,18 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
 
   // Restake only: the node's remaining delegation capacity must still cover
   // the original amount (the seeded shared amount). The normal flow enforces
-  // this on the amount screen, which restake skips.
+  // this on the amount screen, which restake skips. Suppressed while the
+  // validators query is (re)fetching: a warm cache serves the node instantly,
+  // and evaluating against that stale snapshot could fire the confirm route's
+  // irreversible redirect-to-picker alert for a node fresh data would pass —
+  // same settle-first treatment the not-found case gets below (the CTA is
+  // already held during the fetch via `isFetching`).
   const [stakeAmount] = useStakeAmount()
   const isRestakeNodeFull = useMemo(() => {
-    if (!isRestake || !node) return false
+    if (!isRestake || !node || isFetchingValidators) return false
     const { maxAmount } = getDelegateNodeLimits(node, isDeveloperMode)
     return stakeAmount.gt(maxAmount)
-  }, [isRestake, node, isDeveloperMode, stakeAmount])
+  }, [isRestake, node, isFetchingValidators, isDeveloperMode, stakeAmount])
 
   // Restake only: the node's own validation period must have room for at
   // least a minimum-duration stake (anchored at now + the same 1-minute
@@ -116,15 +121,16 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   // original duration, the stake proceeds with the end time clamped to the
   // validator's — shown on the review — mirroring web's `DelegationForm`,
   // which clamps its prefilled duration to the node's remaining days.
+  // Suppressed while fetching for the same reason as the capacity gate.
   const now = useNow()
   const isRestakeNodeEnding = useMemo(() => {
-    if (!isRestake || !node) return false
+    if (!isRestake || !node || isFetchingValidators) return false
     const { maxEndDate } = getDelegateNodeLimits(node, isDeveloperMode)
     return (
       maxEndDate.getTime() - now <
       MIN_START_TIME_BUFFER_MS + getMinimumStakeDurationMs(isDeveloperMode)
     )
-  }, [isRestake, node, isDeveloperMode, now])
+  }, [isRestake, node, isFetchingValidators, isDeveloperMode, now])
 
   return useMemo<StakeReviewSource>(() => {
     const isRestakeNodeUnusable = isRestakeNodeFull || isRestakeNodeEnding
