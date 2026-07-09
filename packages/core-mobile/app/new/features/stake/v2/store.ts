@@ -192,15 +192,18 @@ export const takeRestakeEntry = (): boolean => {
 }
 
 /**
- * Delegate-restake prefill, mirroring web's `restake` location state on the
- * delegate page: when the original validator has left the active set and the
- * user is dropped into the node picker, the amount and duration steps still
- * open prefilled with the original stake's values (web's `DelegationForm`
- * keeps `initialAmount` / `initialDurationMs` regardless of which node ends
- * up selected). Unlike the entry flag above this persists for the whole
- * modal session — re-visiting a step re-applies the prefill, like web's
- * page-level state — and is cleared on the next non-restake flow entry (see
- * the add-stake layout) or overwritten by the next restake.
+ * Restake prefill, mirroring web's `restake` location state on the delegate
+ * page: when the original validator has left the active set and the user is
+ * dropped into the node picker, the amount and duration steps still open
+ * prefilled with the original stake's values (web's `DelegationForm` keeps
+ * `initialAmount` / `initialDurationMs` regardless of which node ends up
+ * selected). Set on EVERY restake entry (fast stake included) so its
+ * presence doubles as the "restake leftovers pending" marker that
+ * `useStartStaking` checks before a chooser-initiated flow. Unlike the entry
+ * flag above this persists for the whole modal session — re-visiting a step
+ * re-applies the prefill, like web's page-level state — and is cleared on
+ * the next non-restake modal entry (see the add-stake layout), a
+ * chooser-initiated flow start, or the next restake (overwrite).
  */
 let restakePrefill: { durationDays: number } | null = null
 

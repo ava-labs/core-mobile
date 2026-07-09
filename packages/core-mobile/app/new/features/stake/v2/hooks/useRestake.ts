@@ -10,7 +10,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   applyDefaultDelegateFilters,
   beginRestakeEntry,
-  clearRestakePrefill,
   setDelegateNodeSelection,
   setRestakePrefill
 } from '../store'
@@ -73,8 +72,13 @@ export const useRestake = (): {
 
       return () => {
         beginRestakeEntry()
-        clearRestakePrefill()
         useStakeAmount.setState(new TokenUnit(params.amountNAvax, 9, 'AVAX'))
+        // Set for BOTH branches: the delegate node-gone fallback consumes it
+        // as the amount/duration prefill, and `useStartStaking` treats its
+        // presence as "restake leftovers pending" — a chooser-initiated flow
+        // clears it and re-seeds the amount so nothing leaks (overwritten by
+        // the next restake, cleared by the layout on a normal modal entry).
+        setRestakePrefill({ durationDays: params.durationDays })
         // Same end-time derivation web uses: now + the original stake's
         // whole-day duration.
         const stakeEndTime = getUnixTime(
@@ -88,11 +92,11 @@ export const useRestake = (): {
           return
         }
 
-        // If the original node has left the active set, the confirm route
-        // drops the user into the node picker (web parity) — seed the same
-        // defaults a fresh delegate flow applies so the picker behaves
-        // normally, and stash the original duration so the amount/duration
-        // steps open prefilled with the original stake's values.
+        // If the original node has left the active set (or lost capacity),
+        // the confirm route drops the user into the node picker (web parity)
+        // — seed the same defaults a fresh delegate flow applies so the
+        // picker behaves normally, while the prefill above keeps the
+        // amount/duration steps opening with the original stake's values.
         const config = getStakingConfig(isDeveloperMode)
         applyDefaultDelegateFilters({
           minFeePercent:
@@ -101,7 +105,6 @@ export const useRestake = (): {
             Number(config.MinStakeDuration) / SECONDS_PER_DAY
           )
         })
-        setRestakePrefill({ durationDays: params.durationDays })
         // Clear any node left over from a previous delegate flow so the
         // confirm can't fall back to a stale selection while the restake
         // node resolves.

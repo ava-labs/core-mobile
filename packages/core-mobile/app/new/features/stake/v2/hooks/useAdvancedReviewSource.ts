@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useNodes } from 'hooks/earn/useNodes'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDelegationFeeBlocked } from 'store/posthog'
@@ -10,6 +11,7 @@ import {
 } from '../constants'
 import { StakeReviewSource } from '../types'
 import { useDelegateNodeSelection } from '../store'
+import { getDelegateNodeLimits } from './useSelectedDelegateNodeLimits'
 
 // Hoisted so the memo doesn't allocate a fresh Error on every recompute when no
 // node is selected.
@@ -22,6 +24,17 @@ const NO_NODE_SELECTED_ERROR = new Error('No node selected')
  */
 export const RESTAKE_NODE_UNAVAILABLE_ERROR = new Error(
   'The original node is no longer available for delegation'
+)
+/**
+ * Sentinel for "the restake target validator is still active but no longer
+ * has enough delegation capacity for the original amount". The normal flow
+ * catches this on the amount screen (`exceedsNodeCapacity`); restake skips
+ * that screen, so the check happens here at node-resolution time instead —
+ * without it, the user could slide-to-stake something the chain will reject.
+ * Surfaced to the confirm route the same way as the unavailable sentinel.
+ */
+export const RESTAKE_NODE_FULL_ERROR = new Error(
+  'The original node no longer has enough delegation capacity'
 )
 
 /**
@@ -66,6 +79,16 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   const isDelegationFeeBlocked = useSelector(selectIsDelegationFeeBlocked)
   const isDelegationFeeEnabled = !isDelegationFeeBlocked
 
+  // Restake only: the node's remaining delegation capacity must still cover
+  // the original amount (the seeded shared amount). The normal flow enforces
+  // this on the amount screen, which restake skips.
+  const [stakeAmount] = useStakeAmount()
+  const isRestakeNodeFull = useMemo(() => {
+    if (!isRestake || !node) return false
+    const { maxAmount } = getDelegateNodeLimits(node, isDeveloperMode)
+    return stakeAmount.gt(maxAmount)
+  }, [isRestake, node, isDeveloperMode, stakeAmount])
+
   return useMemo<StakeReviewSource>(() => {
     let error: Error | null = null
     if (!node) {
@@ -76,15 +99,20 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
       } else {
         error = NO_NODE_SELECTED_ERROR
       }
+    } else if (isRestakeNodeFull) {
+      error = RESTAKE_NODE_FULL_ERROR
     }
     return {
-      validator: node
-        ? {
-            nodeID: node.nodeID,
-            endTime: node.endTime,
-            delegationFee: node.delegationFee
-          }
-        : undefined,
+      // A capacity-exhausted restake node reads as "no validator" so the
+      // confirm screen can't proceed with it even if the redirect is slow.
+      validator:
+        node && !isRestakeNodeFull
+          ? {
+              nodeID: node.nodeID,
+              endTime: node.endTime,
+              delegationFee: node.delegationFee
+            }
+          : undefined,
       isFetching: isRestake ? isFetchingValidators : false,
       error,
       feePolicy: isDelegationFeeEnabled
@@ -97,6 +125,7 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   }, [
     node,
     isRestake,
+    isRestakeNodeFull,
     isFetchingValidators,
     validatorsError,
     isDelegationFeeEnabled,

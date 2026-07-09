@@ -2,6 +2,7 @@ import { showAlert } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { Href, useLocalSearchParams, useRouter } from 'expo-router'
 import {
+  RESTAKE_NODE_FULL_ERROR,
   RESTAKE_NODE_UNAVAILABLE_ERROR,
   useAdvancedReviewSource
 } from 'features/stake/v2/hooks/useAdvancedReviewSource'
@@ -16,26 +17,31 @@ import { truncateNodeId } from 'utils/Utils'
  * `delegation-fee-enabled` flag is on (see `useAdvancedReviewSource`).
  *
  * Restake lands here directly with a `restakeNodeId` param. When that
- * validator has left the active set, this wrapper redirects to the node
- * picker with a notice instead of rendering the confirm (which would fire
- * its generic no-match alert) — web parity with `StakingDelegatePage`'s
- * validator-not-found search fallback. The restake prefill (amount/duration)
- * stays active, so the picker flow reopens with the original stake's values.
+ * validator has left the active set — or is still active but no longer has
+ * enough delegation capacity for the original amount — this wrapper redirects
+ * to the node picker with a notice instead of rendering the confirm (which
+ * would fire its generic no-match alert) — web parity with
+ * `StakingDelegatePage`'s validator-not-found search fallback. The restake
+ * prefill (amount/duration) stays active, so the picker flow reopens with the
+ * original stake's values.
  */
 export default function DelegateConfirmRoute(): JSX.Element {
   const source = useAdvancedReviewSource()
   const { replace } = useRouter()
   const { restakeNodeId } = useLocalSearchParams<{ restakeNodeId?: string }>()
-  const isRestakeNodeUnavailable =
-    source.error === RESTAKE_NODE_UNAVAILABLE_ERROR
+  const isRestakeNodeFull = source.error === RESTAKE_NODE_FULL_ERROR
+  const isRestakeNodeUnusable =
+    source.error === RESTAKE_NODE_UNAVAILABLE_ERROR || isRestakeNodeFull
 
   useEffect(() => {
-    if (!isRestakeNodeUnavailable) return
+    if (!isRestakeNodeUnusable) return
+    const nodeId = truncateNodeId(restakeNodeId ?? '')
     showAlert({
       title: 'Node unavailable',
-      description: `Validator ${truncateNodeId(
-        restakeNodeId ?? ''
-      )} is no longer available for delegation. Please select a different one.`,
+      // Capacity copy mirrors core-web's `ReviewDelegationTx` toast.
+      description: isRestakeNodeFull
+        ? `Validator ${nodeId} is no longer eligible for staking. The capacity has been reached. Please select a different one.`
+        : `Validator ${nodeId} is no longer available for delegation. Please select a different one.`,
       buttons: [
         {
           text: 'OK',
@@ -43,12 +49,12 @@ export default function DelegateConfirmRoute(): JSX.Element {
         }
       ]
     })
-  }, [isRestakeNodeUnavailable, restakeNodeId, replace])
+  }, [isRestakeNodeUnusable, isRestakeNodeFull, restakeNodeId, replace])
 
   // Keep showing a spinner behind the alert (and while the redirect
   // settles) — rendering the confirm screen here would fire its generic
   // no-match alert on top.
-  if (isRestakeNodeUnavailable) {
+  if (isRestakeNodeUnusable) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
