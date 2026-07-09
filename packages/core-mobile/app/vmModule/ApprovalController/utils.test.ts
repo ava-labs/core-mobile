@@ -35,10 +35,17 @@ beforeEach(() => {
   mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.AVALANCHE)
 })
 
-describe('handleLedgerErrorAndShowAlert — 0x6984 on Avalanche L1', () => {
-  it('shows the blind-sign guidance instead of the raw UNKNOWN_ERROR', () => {
+describe('handleLedgerErrorAndShowAlert — Avalanche blind-sign guidance', () => {
+  it('shows the blind-sign title for the transformed message the real send/swap flow delivers', () => {
+    // Real Avalanche L1 (foreign-EVM) path: signEvmTransaction's catch runs the
+    // throw-side handleLedgerError first, which rewrites the raw 0x6984 into
+    // LEDGER_BLIND_SIGN_MESSAGE; ethSendTransaction then re-wraps that as
+    // rpcErrors.internal({ data: { cause } }). That transformed message — not a
+    // raw 0x6984 — is what actually reaches this handler in production.
     handleLedgerErrorAndShowAlert({
-      error: { message: 'Ledger device: UNKNOWN_ERROR (0x6984)' } as never,
+      error: {
+        data: { cause: { message: LEDGER_BLIND_SIGN_MESSAGE } }
+      } as never,
       network: l1Network,
       onRetry: jest.fn(),
       onCancel: jest.fn()
@@ -50,35 +57,13 @@ describe('handleLedgerErrorAndShowAlert — 0x6984 on Avalanche L1', () => {
     expect(arg.description).toBe(LEDGER_BLIND_SIGN_MESSAGE)
   })
 
-  it('does NOT show blind-sign guidance for a non-Avalanche (Ethereum) app', () => {
-    // The gate requires BOTH the expected app (ledgerAppName, from the network
-    // shape below) AND the detected open app (getCurrentAppType) to be
-    // Avalanche; here both are Ethereum. The dedicated detected-app case is
-    // covered by the test below.
-    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.ETHEREUM)
-
+  it('does NOT relabel a bare 0x6984 that never went through the throw-side', () => {
+    // A raw 0x6984 that reaches the alert without being transformed (e.g. a
+    // generic status word from another flow) must keep the default handling —
+    // only the transformed guidance message triggers the blind-sign title.
     handleLedgerErrorAndShowAlert({
       error: { message: 'Ledger device: UNKNOWN_ERROR (0x6984)' } as never,
       network: ethereumNetwork,
-      onRetry: jest.fn(),
-      onCancel: jest.fn()
-    })
-
-    expect(mockShowAlert).toHaveBeenCalledTimes(1)
-    const arg = mockShowAlert.mock.calls[0][0]
-    expect(arg.title).not.toBe('Enable blind signing')
-    expect(arg.description).toBe('Ledger device: UNKNOWN_ERROR (0x6984)')
-  })
-
-  it('does NOT show blind-sign guidance when the expected app is Avalanche but a different app is open', () => {
-    // Avalanche L1 network (getLedgerAppName → AVALANCHE) but the detected
-    // open app is Ethereum — 0x6984 here is a generic status word from
-    // another app, not the Avalanche blind-signing prompt.
-    mockLedger.getCurrentAppType.mockReturnValue(LedgerAppType.ETHEREUM)
-
-    handleLedgerErrorAndShowAlert({
-      error: { message: 'Ledger device: UNKNOWN_ERROR (0x6984)' } as never,
-      network: l1Network,
       onRetry: jest.fn(),
       onCancel: jest.fn()
     })

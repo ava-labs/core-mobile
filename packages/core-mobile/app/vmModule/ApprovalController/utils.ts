@@ -22,6 +22,9 @@ export const handleLedgerErrorAndShowAlert = ({
   rpcMethod?: RpcMethod
   onRetry: () => void
   onCancel: () => void
+  // sonarjs anchors the cognitive-complexity report on the arrow-function line
+  // below, so the suppression must sit immediately above it (not above the
+  // export) to actually apply.
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   // @ts-ignore
@@ -77,10 +80,15 @@ export const handleLedgerErrorAndShowAlert = ({
     description =
       'Ledger is processing another request. Please try again later.'
   } else if (
-    lowercasedMessage.includes(LEDGER_ERROR_CODES.BLIND_SIGN_REQUIRED) &&
-    ledgerAppName === LedgerAppType.AVALANCHE &&
-    detectedAppType === LedgerAppType.AVALANCHE
+    lowercasedMessage.includes(LEDGER_BLIND_SIGN_MESSAGE.toLowerCase())
   ) {
+    // For a real Avalanche L1 (foreign-EVM) send/swap the raw 0x6984 never
+    // reaches this handler unchanged: the throw-side handleLedgerError has
+    // already rewritten it into LEDGER_BLIND_SIGN_MESSAGE, and
+    // ethSendTransaction re-wraps that as data.cause.message. So match on the
+    // transformed message rather than 0x6984 (which would fall through to the
+    // default "Transaction failed" title). The message is only ever produced
+    // for the Avalanche app, so it is inherently app-scoped.
     title = 'Enable blind signing'
     description = LEDGER_BLIND_SIGN_MESSAGE
   } else {
