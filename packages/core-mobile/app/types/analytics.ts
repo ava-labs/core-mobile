@@ -162,6 +162,9 @@ export type AnalyticsEvents = {
   SwapReviewOrder: {
     provider: string
     slippage: number
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapConfirmed: {
     encrypted: {
@@ -173,6 +176,7 @@ export type AnalyticsEvents = {
       quoteSelectionMode: 'manual' | 'auto'
       autoRetryAttempt?: number
     }
+    serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
     quickSwapsEnabled?: boolean
@@ -188,6 +192,9 @@ export type AnalyticsEvents = {
       sourceTxHash: string
       targetTxHash?: string
     }
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapFailed: {
     encrypted: {
@@ -208,6 +215,9 @@ export type AnalyticsEvents = {
       quoteAggregator?: string
       quoteAggregatorId?: string
     }
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   SwapRefunded: {
     encrypted: {
@@ -219,6 +229,9 @@ export type AnalyticsEvents = {
       targetTxHash?: string
       refundTxHash?: string
     }
+    serviceType: string
+    caip2SourceChainId: string
+    caip2TargetChainId: string
   }
   QuickSwapsToggled: { isEnabled: boolean }
   QuickSwapsBypassFired: {
