@@ -42,16 +42,6 @@ export const fusionErrors = {
       { reason: 'no-eligible-services' }
     )
   },
-  // The Fusion SDK's Markr quote stream does a bare JSON.parse on each SSE
-  // frame; a non-JSON frame (heartbeat, gateway/proxy error page, truncated
-  // chunk) throws a SyntaxError that would otherwise reach the UI as a raw
-  // "JSON Parse error: ..." string. Surface a friendly, retryable message
-  // instead. See CP-14708.
-  quoteFailed(): FusionQuoteError {
-    return new FusionQuoteError("Couldn't load a quote. Please try again.", {
-      kind: 'provider-specific'
-    })
-  },
 
   // Service / initialisation errors
   serviceNotInitialized(): FusionQuoteError {
@@ -297,60 +287,11 @@ export function isInvalidResponseError(error: unknown): boolean {
 }
 
 /**
- * Check if error is a JSON/SSE response parse failure.
- *
- * The Fusion SDK's Markr `/quote` handler runs a bare `JSON.parse(e.data)` on
- * every SSE frame, so any non-JSON frame — an empty heartbeat, a plain-text or
- * HTML gateway/proxy error page, or a truncated chunk — throws a `SyntaxError`.
- * These are transient/provider-specific: retry with the next quote and never
- * show the raw parser string to the user. See CP-14708.
- *
- * Matches both the Hermes ("JSON Parse error: ...") and V8/Node
- * ("Unexpected token", "Unexpected end of JSON input", "is not valid JSON")
- * phrasings so it behaves the same on-device and under Jest.
- */
-export function isResponseParseError(error: unknown): boolean {
-  if (error instanceof SyntaxError) return true
-  if (!(error instanceof Error)) return false
-
-  const message = error.message.toLowerCase()
-  return (
-    message.includes('json parse error') || // Hermes (on-device)
-    message.includes('unexpected token') || // V8/Node
-    message.includes('unexpected end of json') || // V8/Node (empty/truncated)
-    message.includes('is not valid json') // V8/Node (modern)
-  )
-}
-
-/**
  * Determine if we should retry with next quote
  * Only retry for specific error types
  */
 export function shouldRetryWithNextQuote(error: unknown): boolean {
-  return (
-    isGasEstimationError(error) ||
-    isInvalidResponseError(error) ||
-    isResponseParseError(error)
-  )
-}
-
-/**
- * Normalise an error from the quote stream into a user-facing error before it
- * is rendered on the swap screen. The quote path (unlike the execution path)
- * renders `error.message` verbatim, so a raw SDK error — most notably the
- * `JSON.parse` `SyntaxError` from the Markr quote stream — would otherwise be
- * shown to the user as-is. See CP-14708.
- *
- * - `FusionQuoteError`s are already curated (friendly message + metadata the
- *   swap screen relies on, e.g. `isWarning`), so they pass through untouched.
- * - Parse failures become a friendly, retryable "couldn't load a quote".
- * - Anything else is run through `getSwapErrorMessage` for the same
- *   normalisation the execution path already applies.
- */
-export function toQuoteDisplayError(error: unknown): Error {
-  if (error instanceof FusionQuoteError) return error
-  if (isResponseParseError(error)) return fusionErrors.quoteFailed()
-  return new FusionQuoteError(getSwapErrorMessage(error))
+  return isGasEstimationError(error) || isInvalidResponseError(error)
 }
 
 /**
@@ -366,19 +307,6 @@ export function getSwapErrorMessage(error: unknown): string {
   }
 
   const message = actualError?.message ?? error.message
-
-  // A malformed/truncated JSON body on an execution endpoint (/swap, /authorize)
-  // comes back 200 with an application/json header, so the SDK's fetchJson
-  // content-type guard passes and response.json() throws a native SyntaxError
-  // that the retry loop (which only wraps the fetch, not the parse) doesn't
-  // catch. Without this branch it falls through to the raw message below and
-  // surfaces as "JSON Parse error: ..." in the "Swap failed" toast — the same
-  // string this feature kills on the quote screen. Distinct copy from the quote
-  // path since "Couldn't load a quote" reads oddly for an execution failure.
-  // See CP-14708.
-  if (isResponseParseError(actualError ?? error)) {
-    return 'Something went wrong completing the swap. Please try again.'
-  }
 
   // CCT swap couldn't resolve the active account's X/P addresses (e.g. a Ledger
   // wallet with no derivable Avalanche address). Surface a clear message instead
