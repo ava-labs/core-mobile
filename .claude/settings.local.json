@@ -14,7 +14,8 @@
       "Bash(node_modules/.bin/tsc --noEmit --project e2e-appium/tsconfig.json)",
       "Bash(node packages/core-mobile/node_modules/.bin/tsc --noEmit --project packages/core-mobile/e2e-appium/tsconfig.json)",
       "Bash(echo \"EXIT: $?\")",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "mcp__7db7d402-74f0-49b8-921b-d14b5dc57cef__getJiraIssue"
     ]
   }
 }
