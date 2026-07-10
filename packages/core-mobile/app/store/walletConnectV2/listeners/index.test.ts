@@ -184,7 +184,7 @@ describe('walletConnect - listeners', () => {
       // the in-app browser can re-surface such a stale uri on every navigation,
       // which previously spammed "Failed to pair with dApp" toasts (CORE-REACT-NATIVE-62P).
       const expiredUri =
-        'wc:1111111111111111111111111111111111111111111111111111111111111111@2?relay-protocol=irn&symKey=2222222222222222222222222222222222222222222222222222222222222222&expiryTimestamp=1'
+        'wc:1111111111111111111111111111111111111111111111111111111111111111@2?relay-protocol=irn&symKey=2222222222222222222222222222222222222222222222222222222222222222&expiryTimestamp=0'
       store.dispatch(newSession(expiredUri))
 
       expect(mockWCPair).not.toHaveBeenCalled()
@@ -195,7 +195,7 @@ describe('walletConnect - listeners', () => {
       // a distinct expired uri (not reused elsewhere) so the per-uri toast dedupe
       // isn't affected by other tests in this file.
       const expiredUri =
-        'wc:3333333333333333333333333333333333333333333333333333333333333333@2?relay-protocol=irn&symKey=4444444444444444444444444444444444444444444444444444444444444444&expiryTimestamp=1'
+        'wc:3333333333333333333333333333333333333333333333333333333333333333@2?relay-protocol=irn&symKey=4444444444444444444444444444444444444444444444444444444444444444&expiryTimestamp=0'
       store.dispatch(newSession(expiredUri))
       store.dispatch(newSession(expiredUri))
 
