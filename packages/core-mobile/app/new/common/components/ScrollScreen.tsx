@@ -162,12 +162,15 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // below); skip the state update on iOS so it can't trigger renders for a
       // value it never uses.
       if (Platform.OS !== 'android') return
+      // Don't downgrade the optimistic default until BOTH the viewport and the
+      // content have been measured. `onLayout` and `onContentSizeChange` fire
+      // in either order; acting on a half-measured state (e.g. content known
+      // but `scrollViewHeight` still 0) would flip this to a wrong value
+      // mid-window and reopen the accidental-dismiss race.
+      if (scrollViewHeight.current <= 0 || scrollContentHeight.current <= 0)
+        return
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
-      // Require a measured viewport height: before the ScrollView reports its
-      // layout, `scrollViewHeight` is 0, which would make `maxScroll` equal the
-      // full content height and falsely mark short content as scrollable (and
-      // briefly break swipe-to-dismiss).
-      const scrollable = scrollViewHeight.current > 0 && maxScroll > 0
+      const scrollable = maxScroll > 0
       setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
     }, [])
 
@@ -519,6 +522,18 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // 90% of our screens reuse this component but only some need keyboard avoiding
     // If you have an input on the screen, you need to enable this prop
     if (shouldAvoidKeyboard) {
+      // On an Android form sheet, offset the scroll view *below* the header
+      // (margin) instead of letting it span the full height and inset its
+      // content (padding). When `nestedScrollEnabled` is on for scrollable
+      // content, a full-height scroll view claims vertical drags across the
+      // whole sheet — including the header strip — so the sheet's own
+      // drag-to-dismiss dies there (the strip has nothing to scroll and the
+      // scroll view doesn't forward the drag). Keeping the scroll view below
+      // the header leaves that strip over a non-scrolling view, so the sheet
+      // intercepts drags there and grabber/header swipe-to-dismiss works even
+      // while the body scrolls. iOS/non-modal keep the under-header layout so
+      // content still scrolls beneath the transparent header. (CP-14679)
+      const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
       return (
         <View style={{ flex: 1 }} collapsable={false}>
           <KeyboardScrollView
@@ -538,9 +553,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             // (The gesture-handler ScrollView branch below arbitrates this on
             // its own and doesn't need the prop.) (CP-14679)
             nestedScrollEnabled={Platform.OS === 'android' && isScrollable}
-            style={{
-              flex: 1
-            }}
+            style={[
+              { flex: 1 },
+              scrollBelowHeader ? { marginTop: headerHeight } : null
+            ]}
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
@@ -548,7 +564,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
                   (footerLayout?.height ?? 0) +
                   (disableStickyFooter ? insets.bottom : 0) +
                   EXTRA_PADDING_BOTTOM,
-                paddingTop: headerHeight
+                // Offset lives on the scroll view's margin when below the
+                // header; otherwise inset the content so it sits under the
+                // transparent header.
+                paddingTop: scrollBelowHeader ? 0 : headerHeight
               }
             ]}
             onScroll={onScroll}
