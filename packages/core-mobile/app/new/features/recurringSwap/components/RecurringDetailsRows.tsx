@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Modal, Platform, Pressable } from 'react-native'
+import { Keyboard, Modal, Platform, Pressable } from 'react-native'
 import {
   Icons,
   Separator,
@@ -238,6 +238,13 @@ export function RecurringDetailsRows({
 
   const promptCustomFrequencyValue = useCallback(
     (unit: FrequencyUnit) => {
+      // Android: this alert renders inline in the swap window and autofocuses
+      // its own input. If "You pay" is still focused with the keyboard up, the
+      // swap KeyboardAwareScrollView snaps back to it on the keyboard frame
+      // change (a show/refresh, not a hide — so `disableScrollOnKeyboardHide`
+      // on SwapScreen doesn't cover it). Blur first so KAS has no child to
+      // scroll to; the alert then shows its own keyboard. (CP-14726)
+      if (Platform.OS === 'android') Keyboard.dismiss()
       const min = MIN_FREQ_VALUE[unit]
       const max = MAX_FREQ_VALUE[unit]
       const seed =
@@ -352,6 +359,9 @@ export function RecurringDetailsRows({
   )
 
   const promptCustomOrders = useCallback(() => {
+    // See `promptCustomFrequencyValue`: blur the swap form's focused input on
+    // Android before opening this inline alert so KAS doesn't snap back to it.
+    if (Platform.OS === 'android') Keyboard.dismiss()
     const seed =
       typeof numberOfOrders === 'number' &&
       numberOfOrders !== UNLIMITED_ORDERS &&
