@@ -158,10 +158,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const [isScrollable, setIsScrollable] = useState(false)
 
     const updateIsScrollable = useCallback(() => {
-      // Only Android's nested-scroll path reads this (see `nestedScrollEnabled`
-      // below); skip the state update on iOS so it can't trigger renders for a
-      // value it never uses.
-      if (Platform.OS !== 'android') return
+      // Only an Android form sheet's nested-scroll path reads this (see
+      // `nestedScrollEnabled` below): it negotiates with a parent
+      // `BottomSheetBehavior`, which only exists when the screen is a modal. On
+      // iOS, and on non-modal Android screens (no parent sheet to negotiate
+      // with), the prop is a no-op — so skip the state update entirely to avoid
+      // renders for a value nothing consumes. Keep this gate in sync with
+      // `scrollBelowHeader` and `nestedScrollEnabled` below.
+      if (Platform.OS !== 'android' || !isModal) return
       // Wait until BOTH the viewport and the content have been measured before
       // computing scrollability. `onLayout` and `onContentSizeChange` fire in
       // either order; acting on a half-measured state (e.g. content known but
@@ -173,7 +177,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
       const scrollable = maxScroll > 0
       setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
-    }, [])
+    }, [isModal])
 
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {
@@ -546,14 +550,15 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             {...props}
-            // On Android, `nestedScrollEnabled` lets this plain RN ScrollView
-            // participate in a parent form sheet's nested scrolling so a
-            // vertical swipe scrolls the content instead of being captured by
-            // the sheet's drag-to-dismiss gesture. Enabled only while the
-            // content actually overflows — a short modal keeps swipe-to-dismiss.
-            // (The gesture-handler ScrollView branch below arbitrates this on
-            // its own and doesn't need the prop.) (CP-14679)
-            nestedScrollEnabled={Platform.OS === 'android' && isScrollable}
+            // On an Android form sheet, `nestedScrollEnabled` lets this plain
+            // RN ScrollView participate in the parent sheet's nested scrolling
+            // so a vertical swipe scrolls the content instead of being captured
+            // by the sheet's drag-to-dismiss gesture. Enabled only for a modal
+            // (`scrollBelowHeader`, no-op otherwise) and only while the content
+            // actually overflows — a short modal keeps swipe-to-dismiss. (The
+            // gesture-handler ScrollView branch below arbitrates this on its own
+            // and doesn't need the prop.) (CP-14679)
+            nestedScrollEnabled={scrollBelowHeader && isScrollable}
             style={[
               { flex: 1 },
               scrollBelowHeader ? { marginTop: headerHeight } : null
