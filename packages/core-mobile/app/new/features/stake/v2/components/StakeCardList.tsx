@@ -88,7 +88,8 @@ export const StakeCardList = ({
 
   const handlePressStake = useCallback(
     (txHash: string) => {
-      navigate({ pathname: '/stakeDetail', params: { txHash } })
+      // `source` feeds StakeDetailViewed's entry-point attribution.
+      navigate({ pathname: '/stakeDetail', params: { txHash, source: 'home' } })
     },
     [navigate]
   )

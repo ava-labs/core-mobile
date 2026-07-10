@@ -135,6 +135,16 @@ const toEstimationFeePercent = (
 ): number => Number(validator?.delegationFee ?? 0)
 
 /**
+ * A restake is the only flow that sets either node param (`useRestake`'s
+ * fast / delegate branches). Module-level so the `||` stays out of the
+ * component's cognitive-complexity budget.
+ */
+const isRestakeEntry = (
+  preferredNodeId: string | undefined,
+  restakeNodeId: string | undefined
+): boolean => Boolean(preferredNodeId || restakeNodeId)
+
+/**
  * V2 "Almost done, review your stake..." screen.
  *
  * Designed to be shared across staking flows (Fast Stake today; the
@@ -175,9 +185,17 @@ const StakeConfirmScreen = ({
   const { steps } = useDelegationContext()
   const { annualPercentageYieldBPS } = useStakingParams()
   // Optional in the type because deep links / state restoration can land here
-  // without the param — the defensive parsing below relies on it being
-  // possibly `undefined`, so the type must reflect that too.
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
+  // without the params — the defensive parsing below relies on them being
+  // possibly `undefined`, so the type must reflect that too. The node params
+  // are only ever set by `useRestake` (fast path / delegate path), so their
+  // presence identifies a restake for analytics.
+  const { stakeEndTime, preferredNodeId, restakeNodeId } =
+    useLocalSearchParams<{
+      stakeEndTime?: string
+      preferredNodeId?: string
+      restakeNodeId?: string
+    }>()
+  const isRestake = isRestakeEntry(preferredNodeId, restakeNodeId)
   // Defensive parse — deep links / state restoration could land us here
   // with a missing or non-numeric `stakeEndTime`. Falling through with a
   // NaN would produce an Invalid Date and later crash inside `format()` /
@@ -292,13 +310,15 @@ const StakeConfirmScreen = ({
     ]
   }, [convenienceFee, feePolicy])
 
-  // Per-event analytics built from the route's `isAdvanced` flag and the
-  // runtime-computed fee amount. `convenienceFeeAvax` is only added when
-  // the flow actually applies a fee — keeps the "fee not paid" vs
-  // "fee not applicable" distinction the analytics contract promises.
+  // Per-event analytics built from the route's `isAdvanced` flag, the
+  // restake marker, and the runtime-computed fee amount.
+  // `convenienceFeeAvax` is only added when the flow actually applies a
+  // fee — keeps the "fee not paid" vs "fee not applicable" distinction the
+  // analytics contract promises.
   const delegationAnalyticsProps = useMemo(
     () => ({
       isAdvanced,
+      isRestake,
       ...(feePolicy
         ? {
             convenienceFeeAvax: convenienceFee
@@ -307,20 +327,25 @@ const StakeConfirmScreen = ({
           }
         : {})
     }),
-    [isAdvanced, feePolicy, convenienceFee]
+    [isAdvanced, isRestake, feePolicy, convenienceFee]
   )
 
   // Bundle captured on `StakeIssueDelegation`, which has a stricter shape
-  // (no `isAdvanced`) than the success/fail events. Undefined when the
-  // flow doesn't charge a fee, matching the analytics type's union arm.
-  const issueDelegationAnalyticsProps = useMemo(() => {
-    if (!feePolicy) return undefined
-    return {
-      convenienceFeeAvax: convenienceFee
-        ? convenienceFee.toDisplay({ asNumber: true })
-        : 0
-    }
-  }, [feePolicy, convenienceFee])
+  // (no `isAdvanced`) than the success/fail events. Always carries the
+  // restake marker; the fee is added only when one applies.
+  const issueDelegationAnalyticsProps = useMemo(
+    () => ({
+      isRestake,
+      ...(feePolicy
+        ? {
+            convenienceFeeAvax: convenienceFee
+              ? convenienceFee.toDisplay({ asNumber: true })
+              : 0
+          }
+        : {})
+    }),
+    [isRestake, feePolicy, convenienceFee]
+  )
 
   // Percentage form of the fee rate, formatted for display so that
   // floating-point artifacts (e.g. `0.07 * 100 = 7.000000000000001`) don't

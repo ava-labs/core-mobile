@@ -26,7 +26,7 @@ import {
 } from 'features/stake/utils'
 import { useStake } from 'hooks/earn/useStake'
 import { clamp, round } from 'lodash'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
@@ -43,7 +43,11 @@ import { isFastStakeTx } from '../utils/isFastStakeTx'
 const HASH_LENGTH = 14
 
 export const StakeDetailScreen = (): React.JSX.Element => {
-  const { txHash } = useLocalSearchParams<{ txHash: string }>()
+  const { txHash, source } = useLocalSearchParams<{
+    txHash: string
+    /** Entry-point attribution for StakeDetailViewed; in-app navigations set it. */
+    source?: 'home' | 'search'
+  }>()
   const stake = useStake(txHash)
   const isDevMode = useSelector(selectIsDeveloperMode)
   const apyBps = useSelector(selectStakeAnnualPercentageYieldBPS)
@@ -65,13 +69,31 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     return isOnGoing(stake, now)
   }, [stake, now])
 
+  // Once per visit, and only after the stake has resolved so the variant is
+  // known — firing on mount would either drop the variant or mislabel it
+  // while `useStake` is still loading. Entries without a `source` param
+  // reached this screen from outside the in-app navigations that set it
+  // (e.g. a push-notification deep link), hence the fallback.
+  const hasCapturedViewRef = useRef(false)
+  useEffect(() => {
+    if (!stake || hasCapturedViewRef.current) return
+    hasCapturedViewRef.current = true
+    AnalyticsService.capture('StakeDetailViewed', {
+      variant: isActive ? 'active' : 'completed',
+      source: source ?? 'deeplink'
+    })
+  }, [stake, isActive, source])
+
   // Restake CTA — completed stakes only (web parity), and only when the tx
   // carries enough data to seed a restake (see `useRestake`). Note completed
   // is checked explicitly rather than as `!isActive`, so pending stakes don't
   // offer it either.
   const { getOnRestake } = useRestake()
   const onRestake = useMemo(
-    () => (stake ? getOnRestake(stake, isCompleted(stake, now)) : undefined),
+    () =>
+      stake
+        ? getOnRestake(stake, isCompleted(stake, now), 'detail')
+        : undefined,
     [stake, getOnRestake, now]
   )
 
