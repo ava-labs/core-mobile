@@ -559,9 +559,16 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             // gesture-handler ScrollView branch below arbitrates this on its own
             // and doesn't need the prop.) (CP-14679)
             nestedScrollEnabled={scrollBelowHeader && isScrollable}
+            // `props.style` is merged last so a caller's style is preserved
+            // (it would otherwise be dropped: `{...props}` spreads `style` but
+            // this explicit `style` prop replaces it). Defaults come first so
+            // `flex: 1` and the Android modal offset still apply unless the
+            // caller overrides them, mirroring the `contentContainerStyle`
+            // merge below and the non-keyboard branch's wrapper `props.style`.
             style={[
               { flex: 1 },
-              scrollBelowHeader ? { marginTop: headerHeight } : null
+              scrollBelowHeader ? { marginTop: headerHeight } : null,
+              props?.style
             ]}
             contentContainerStyle={[
               props?.contentContainerStyle,
