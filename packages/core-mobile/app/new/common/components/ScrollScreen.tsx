@@ -162,11 +162,12 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // below); skip the state update on iOS so it can't trigger renders for a
       // value it never uses.
       if (Platform.OS !== 'android') return
-      // Don't downgrade the optimistic default until BOTH the viewport and the
-      // content have been measured. `onLayout` and `onContentSizeChange` fire
-      // in either order; acting on a half-measured state (e.g. content known
-      // but `scrollViewHeight` still 0) would flip this to a wrong value
-      // mid-window and reopen the accidental-dismiss race.
+      // Wait until BOTH the viewport and the content have been measured before
+      // computing scrollability. `onLayout` and `onContentSizeChange` fire in
+      // either order; acting on a half-measured state (e.g. content known but
+      // `scrollViewHeight` still 0) would make `maxScroll` equal the full
+      // content height and wrongly mark short content as scrollable, briefly
+      // enabling `nestedScrollEnabled` and breaking swipe-to-dismiss.
       if (scrollViewHeight.current <= 0 || scrollContentHeight.current <= 0)
         return
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
