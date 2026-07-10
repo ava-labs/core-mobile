@@ -158,14 +158,17 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const [isScrollable, setIsScrollable] = useState(false)
 
     const updateIsScrollable = useCallback(() => {
-      // Only an Android form sheet's nested-scroll path reads this (see
-      // `nestedScrollEnabled` below): it negotiates with a parent
-      // `BottomSheetBehavior`, which only exists when the screen is a modal. On
-      // iOS, and on non-modal Android screens (no parent sheet to negotiate
-      // with), the prop is a no-op — so skip the state update entirely to avoid
-      // renders for a value nothing consumes. Keep this gate in sync with
-      // `scrollBelowHeader` and `nestedScrollEnabled` below.
-      if (Platform.OS !== 'android' || !isModal) return
+      // Only the keyboard-aware branch's Android form-sheet nested-scroll path
+      // reads this (see `nestedScrollEnabled` below): it negotiates with a
+      // parent `BottomSheetBehavior`, which only exists when the screen is a
+      // modal. Everywhere else the value is never consumed — the non-keyboard
+      // branch renders a gesture-handler ScrollView with no `isScrollable` prop,
+      // and iOS / non-modal screens have no sheet to negotiate with. Skip the
+      // state update in all those cases to avoid renders for a value nothing
+      // reads (e.g. an Android modal ActionSheet using `onScrolledToEnd` on the
+      // non-keyboard branch). Keep this gate in sync with `scrollBelowHeader`
+      // and `nestedScrollEnabled` below.
+      if (Platform.OS !== 'android' || !isModal || !shouldAvoidKeyboard) return
       // Wait until BOTH the viewport and the content have been measured before
       // computing scrollability. `onLayout` and `onContentSizeChange` fire in
       // either order; acting on a half-measured state (e.g. content known but
@@ -177,7 +180,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       const maxScroll = scrollContentHeight.current - scrollViewHeight.current
       const scrollable = maxScroll > 0
       setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
-    }, [isModal])
+    }, [isModal, shouldAvoidKeyboard])
 
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {
