@@ -708,4 +708,83 @@ describe('Fusion listeners', () => {
       )
     })
   })
+
+  describe('createCaptureSwapAnalytics — route metadata (CP-14364)', () => {
+    // Distinct source/target chains prove each caip2 id maps to the right leg.
+    const cChain = 'eip155:43114'
+    const pChain = 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+
+    const baseTransfer = {
+      type: 'avalanche-cct',
+      fromAddress: '0xfromAddress',
+      toAddress: '0xtoAddress',
+      sourceChain: { chainId: cChain },
+      targetChain: { chainId: pChain },
+      source: { txHash: '0xsourceHash' },
+      target: { txHash: '0xtargetHash' }
+    } as any
+
+    const expectedRoute = {
+      serviceType: 'avalanche-cct',
+      caip2SourceChainId: cChain,
+      caip2TargetChainId: pChain
+    }
+
+    it('adds serviceType + caip2 chain ids at top-level on SwapSuccessful', () => {
+      createCaptureSwapAnalytics()({
+        ...baseTransfer,
+        status: 'completed'
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapSuccessful',
+        expect.objectContaining(expectedRoute)
+      )
+    })
+
+    it('adds serviceType + caip2 chain ids at top-level on SwapFailed', () => {
+      createCaptureSwapAnalytics()({
+        ...baseTransfer,
+        status: 'failed'
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapFailed',
+        expect.objectContaining(expectedRoute)
+      )
+    })
+
+    it('adds serviceType + caip2 chain ids at top-level on SwapRefunded', () => {
+      createCaptureSwapAnalytics()({
+        ...baseTransfer,
+        status: 'refunded',
+        refund: { txHash: '0xrefundHash' }
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapRefunded',
+        expect.objectContaining(expectedRoute)
+      )
+    })
+
+    it('reads route metadata off the transfer, so it works on the resume path (empty context)', () => {
+      // resumeTransfersTracking re-creates the callback with no context/quote;
+      // serviceType + caip2 ids must still land because they come from the
+      // Transfer itself, not the (now-absent) quote.
+      createCaptureSwapAnalytics(undefined)({
+        ...baseTransfer,
+        type: 'markr',
+        status: 'completed'
+      })
+
+      expect(AnalyticsService.capture).toHaveBeenCalledWith(
+        'SwapSuccessful',
+        expect.objectContaining({
+          serviceType: 'markr',
+          caip2SourceChainId: cChain,
+          caip2TargetChainId: pChain
+        })
+      )
+    })
+  })
 })

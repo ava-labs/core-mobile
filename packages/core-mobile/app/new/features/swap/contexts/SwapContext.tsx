@@ -338,6 +338,7 @@ export const SwapContextProvider = ({
           quoteSelectionMode,
           autoRetryAttempt
         },
+        serviceType: quote.serviceType,
         caip2SourceChainId: quote.sourceChain.chainId,
         caip2TargetChainId: quote.targetChain.chainId,
         quickSwapsEnabled: isQuickSwapsActive,
