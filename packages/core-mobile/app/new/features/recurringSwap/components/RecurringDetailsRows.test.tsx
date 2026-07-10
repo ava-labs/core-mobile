@@ -303,6 +303,41 @@ describe('recurring prompt keyboard handling', () => {
     })
   }
 
+  // Drive the Android custom-frequency path: expand the row, pick the custom
+  // chip (opens the Android unit picker), then select a unit — which routes to
+  // `promptCustomFrequencyValue` (the other guarded `Keyboard.dismiss()` site).
+  const triggerCustomFrequencyAndroid = async (): Promise<void> => {
+    let instance!: renderer.ReactTestRenderer
+    await act(async () => {
+      instance = renderer.create(<RecurringDetailsRows {...baseProps} />)
+    })
+    await act(async () => {
+      const row = instance.root
+        .findAllByProps({ testID: 'recurring_row__frequency' })
+        .find(node => typeof node.props.onPress === 'function')
+      expect(row).toBeDefined()
+      row?.props.onPress()
+    })
+    await act(async () => {
+      const chips = instance.root
+        .findAllByProps({ testID: 'frequency_chips' })
+        .find(node => typeof node.props.onSelect === 'function')
+      expect(chips).toBeDefined()
+      chips?.props.onSelect('custom')
+    })
+    // The Android unit-picker dialog is the element exposing both onSelect and
+    // onDismiss; selecting a unit routes to the value prompt.
+    await act(async () => {
+      const dialog = instance.root.findAll(
+        node =>
+          typeof node.props.onSelect === 'function' &&
+          typeof node.props.onDismiss === 'function'
+      )[0]
+      expect(dialog).toBeDefined()
+      dialog?.props.onSelect('day')
+    })
+  }
+
   afterEach(() => {
     Object.defineProperty(Platform, 'OS', {
       configurable: true,
@@ -333,6 +368,17 @@ describe('recurring prompt keyboard handling', () => {
     await triggerCustomOrders()
 
     expect(dismissSpy).not.toHaveBeenCalled()
+  })
+
+  it('dismisses the keyboard on the Android custom-frequency path (unit picker → value prompt)', async () => {
+    setPlatform('android')
+    const dismissSpy = jest
+      .spyOn(Keyboard, 'dismiss')
+      .mockImplementation(() => undefined)
+
+    await triggerCustomFrequencyAndroid()
+
+    expect(dismissSpy).toHaveBeenCalledTimes(1)
   })
 })
 
