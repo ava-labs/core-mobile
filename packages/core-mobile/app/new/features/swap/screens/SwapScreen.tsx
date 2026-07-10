@@ -15,7 +15,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, Platform } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -1625,6 +1625,15 @@ export const SwapScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard
+      // Android only: the custom frequency / number-of-orders inputs open a
+      // react-native-dialog text-input alert (autofocused → keyboard). On
+      // Android that alert renders inline in this window (iOS isolates it in a
+      // FullWindowOverlay), so this KeyboardAwareScrollView sees the keyboard
+      // hide and, by default, auto-scrolls back to its initial position —
+      // snapping the form to the top and hiding the recurring setup the user
+      // was just editing. Keeping the position on keyboard-hide fixes that
+      // without affecting iOS (which never sees the alert's keyboard). (CP-14726)
+      disableScrollOnKeyboardHide={Platform.OS === 'android'}
       bottomOffset={bannersHeight + YOU_PAY_KEYBOARD_BASE_OFFSET}
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       {/* Banners stacked above the swap card. Measured together (styleless
