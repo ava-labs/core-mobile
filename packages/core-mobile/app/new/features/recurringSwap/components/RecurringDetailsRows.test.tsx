@@ -113,6 +113,7 @@ jest.mock('../contexts/RecurringSwapContext', () => ({
 
 // Import after mocks are registered.
 
+import { Keyboard, Platform } from 'react-native'
 import {
   RecurringDetailsRows,
   ordersChipsForToken
@@ -268,6 +269,70 @@ describe('<RecurringDetailsRows />', () => {
 
     expect(containsText(json, 'Unlimited')).toBe(true)
     expect(containsText(json, 'Estimated total spend')).toBe(false)
+  })
+})
+
+describe('recurring prompt keyboard handling', () => {
+  const originalOS = Platform.OS
+
+  const setPlatform = (os: 'ios' | 'android'): void => {
+    Object.defineProperty(Platform, 'OS', { configurable: true, value: os })
+  }
+
+  // Invoke the "custom" orders chip, which routes to `promptCustomOrders`
+  // (the guarded `Keyboard.dismiss()` site). The chips only mount once the
+  // "Number of orders" row is expanded, so toggle it open first.
+  const triggerCustomOrders = async (): Promise<void> => {
+    let instance!: renderer.ReactTestRenderer
+    await act(async () => {
+      instance = renderer.create(<RecurringDetailsRows {...baseProps} />)
+    })
+    await act(async () => {
+      const row = instance.root
+        .findAllByProps({ testID: 'recurring_row__orders' })
+        .find(node => typeof node.props.onPress === 'function')
+      expect(row).toBeDefined()
+      row?.props.onPress()
+    })
+    const chips = instance.root
+      .findAllByProps({ testID: 'orders_chips' })
+      .find(node => typeof node.props.onSelect === 'function')
+    expect(chips).toBeDefined()
+    await act(async () => {
+      chips?.props.onSelect('custom')
+    })
+  }
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: originalOS
+    })
+    jest.restoreAllMocks()
+  })
+
+  it('dismisses the keyboard before opening the prompt on Android', async () => {
+    setPlatform('android')
+    const dismissSpy = jest
+      .spyOn(Keyboard, 'dismiss')
+      .mockImplementation(() => undefined)
+
+    await triggerCustomOrders()
+
+    // Blurs the swap form's focused input so its KeyboardAwareScrollView has no
+    // child to snap back to when the inline alert opens. (CP-14726)
+    expect(dismissSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not dismiss the keyboard on iOS (prompt is isolated in a FullWindowOverlay)', async () => {
+    setPlatform('ios')
+    const dismissSpy = jest
+      .spyOn(Keyboard, 'dismiss')
+      .mockImplementation(() => undefined)
+
+    await triggerCustomOrders()
+
+    expect(dismissSpy).not.toHaveBeenCalled()
   })
 })
 
