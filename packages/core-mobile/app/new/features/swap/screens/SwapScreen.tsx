@@ -788,7 +788,10 @@ export const SwapScreen = (): JSX.Element => {
     if (!activeQuote) return
     AnalyticsService.capture('SwapReviewOrder', {
       provider: activeQuote.aggregator.name,
-      slippage
+      slippage,
+      serviceType: activeQuote.serviceType,
+      caip2SourceChainId: activeQuote.sourceChain.chainId,
+      caip2TargetChainId: activeQuote.targetChain.chainId
     })
 
     dismissKeyboardIfNeeded()

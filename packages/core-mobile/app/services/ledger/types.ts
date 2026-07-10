@@ -52,8 +52,20 @@ export enum LEDGER_ERROR_CODES {
   BLUETOOTH_RADIO_OFF = 'ledger_bluetooth_radio_off',
   BLUETOOTH_UNSUPPORTED = 'ledger_bluetooth_unsupported',
   BLUETOOTH_UNKNOWN = 'ledger_bluetooth_unknown',
-  TRANSPORT_INTERFACE_NOT_AVAILABLE = 'transport_interface_not_available'
+  TRANSPORT_INTERFACE_NOT_AVAILABLE = 'transport_interface_not_available',
+  // Avalanche app returns a bare 0x6984 (no review screen) when it cannot
+  // clear-sign a foreign-EVM/L1 tx and blind signing is not enabled.
+  // Unmapped by hw-app-avalanche and @ledgerhq → surfaces as UNKNOWN_ERROR.
+  BLIND_SIGN_REQUIRED = '0x6984'
 }
+
+// Shown when an Avalanche-app transaction is rejected with a bare 0x6984
+// (blind-sign refusal). Kept soft: 0x6984 is the generic "invalid data" word,
+// so guide toward the fix without asserting it is the only cause.
+export const LEDGER_BLIND_SIGN_MESSAGE =
+  'This transaction likely needs blind signing enabled in the Avalanche app ' +
+  'on your Ledger. Open the app’s Settings, turn on Blind signing, and try ' +
+  'again. If you don’t see that setting, update the Avalanche app in Ledger Live.'
 
 // ============================================================================
 // LEDGER DEVICE TYPES
