@@ -296,7 +296,7 @@ const BatchApprovalScreenInner = ({
     return (
       <ActionSheet
         isModal
-        title={`Transaction ${page} of ${txCount}`}
+        title={`Transaction ${page}`}
         showNavigationHeaderTitle={false}
         headerCenterOverlay={progressDotsOverlay}
         renderHeaderLeft={renderHeaderLeft}

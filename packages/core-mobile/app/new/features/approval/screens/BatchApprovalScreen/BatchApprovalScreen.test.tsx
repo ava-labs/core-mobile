@@ -376,7 +376,7 @@ describe('BatchApprovalScreen', () => {
     expect(params.onApprove).toHaveBeenCalledWith({})
   })
 
-  it('advances to "Transaction 1 of N" when "See details" is pressed', () => {
+  it('advances to "Transaction N" when "See details" is pressed', () => {
     const params = buildParams(3)
     let instance!: renderer.ReactTestRenderer
     act(() => {
@@ -384,7 +384,7 @@ describe('BatchApprovalScreen', () => {
     })
     pressTestID(instance, 'see_details_button')
     const json = instance.toJSON()
-    expect(findByText(json, 'Transaction 1 of 3')).toBe(true)
+    expect(findByText(json, 'Transaction 1')).toBe(true)
   })
 
   it('reaches the final confirm page after advancing through all steps', () => {
