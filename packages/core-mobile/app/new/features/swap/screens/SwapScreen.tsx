@@ -1730,6 +1730,19 @@ export const SwapScreen = (): JSX.Element => {
       // the content instead of being captured by the sheet's drag-to-dismiss.
       // Passed through to the underlying ScrollView via ScrollScreen's props.
       nestedScrollEnabled={Platform.OS === 'android'}
+      // Android + recurring only: the custom frequency / number-of-orders
+      // inputs (rendered only while recurring is on) open a react-native-dialog
+      // text-input alert (autofocused → keyboard). On Android that alert
+      // renders inline in this window (iOS isolates it in a FullWindowOverlay),
+      // so this KeyboardAwareScrollView sees the keyboard hide and, by default,
+      // auto-scrolls back to its initial position — snapping the form to the top
+      // and hiding the recurring setup the user was just editing. Keeping the
+      // position on keyboard-hide fixes that without affecting iOS (which never
+      // sees the alert's keyboard) or the plain one-time swap flow, which has no
+      // such dialog and should keep its normal restore-on-dismiss. (CP-14726)
+      disableScrollOnKeyboardHide={
+        Platform.OS === 'android' && recurring.isRecurring
+      }
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
           incomplete cross-chain transfer. Self-hides (and reserves no space)
