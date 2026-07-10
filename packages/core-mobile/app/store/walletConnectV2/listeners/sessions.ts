@@ -1,6 +1,7 @@
 import { AppListenerEffectAPI } from 'store/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { InteractionManager } from 'react-native'
+import { parseUri } from '@walletconnect/utils'
 import Logger from 'utils/Logger'
 import {
   onRehydrationComplete,
@@ -103,10 +104,47 @@ export const updateSessions = async ({
   }
 }
 
+/**
+ * A wc:v2 pairing uri carries its own `expiryTimestamp` (unix seconds); it is
+ * absent on legacy/v1 uris. The in-app browser re-surfaces stored `wc:` links
+ * on navigation, so an already-expired uri can be re-delivered here many times.
+ * Pairing with an expired uri throws and previously spammed "Failed to pair
+ * with dApp" toasts (CORE-REACT-NATIVE-62P), so we short-circuit it silently.
+ */
+const isExpiredWcUri = (uri: string): boolean => {
+  try {
+    const { expiryTimestamp } = parseUri(uri)
+    // `expiryTimestamp` is unix seconds. Treat at-or-past expiry as expired
+    // (`<=`) — marginally more conservative than the SDK's strict `<`, so a
+    // just-expired uri is skipped rather than attempted; they differ only at
+    // exact-millisecond equality.
+    return expiryTimestamp !== undefined && expiryTimestamp * 1000 <= Date.now()
+  } catch {
+    // if the uri can't be parsed, let WalletConnectService.pair validate it as before
+    return false
+  }
+}
+
+// Tracks expired uris we've already surfaced a toast for, so a background dapp
+// tab replaying the same stale uri can inform the user at most once instead of
+// spamming (CORE-REACT-NATIVE-62P).
+const expiredUrisToasted = new Set<string>()
+
 export const startSession = async (
   action: ReturnType<typeof newSession>
 ): Promise<void> => {
   const uri = action.payload
+
+  if (isExpiredWcUri(uri)) {
+    Logger.info('skipping pair for expired wallet connect uri')
+    if (!expiredUrisToasted.has(uri)) {
+      expiredUrisToasted.add(uri)
+      showSnackbar(
+        'This connection link has expired. Please try connecting again.'
+      )
+    }
+    return
+  }
 
   try {
     await WalletConnectService.pair(uri)
@@ -119,8 +157,11 @@ export const startSession = async (
   }
 }
 
-export const killAllSessions = async (): Promise<void> =>
-  WalletConnectService.killAllSessions()
+export const killAllSessions = async (): Promise<void> => {
+  // forget expired-uri toast history on logout so it can't grow across accounts
+  expiredUrisToasted.clear()
+  return WalletConnectService.killAllSessions()
+}
 
 export const killSomeSessions = async (
   action: ReturnType<typeof killSessions>
