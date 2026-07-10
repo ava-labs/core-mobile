@@ -528,7 +528,15 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         // is the root cause of the "Failed to pair with dApp" spam
         // (CORE-REACT-NATIVE-62P). Genuine load errors still fall through to
         // `setError` below, so the app's error UI keeps working for any tab.
-        if (disabled) return
+        if (disabled) {
+          // Suppress the WebView's error overlay so a background tab isn't left
+          // on an error page when the user returns to it. We deliberately skip
+          // the goBack/goToDiscover recovery here: `goToDiscover` is a global
+          // dispatch (would move the *active* view) and `lastNavStateRef` isn't
+          // maintained for inactive tabs.
+          event.preventDefault()
+          return
+        }
         setPendingDeepLink({
           url: failedUrl,
           origin: DeepLinkOrigin.ORIGIN_IN_APP_BROWSER
