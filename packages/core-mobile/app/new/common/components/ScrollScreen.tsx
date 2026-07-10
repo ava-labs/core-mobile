@@ -542,6 +542,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // while the body scrolls. iOS/non-modal keep the under-header layout so
       // content still scrolls beneath the transparent header. (CP-14679)
       const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
+      // Attach the internal composed size/layout handlers only when their work
+      // is needed: `onScrolledToEnd` (scroll-to-end tracking) or
+      // `scrollBelowHeader` (the Android modal nested-scroll path, which needs
+      // `isScrollable`). Otherwise the caller's callback is passed through
+      // directly so keyboard-avoiding screens don't run JS on every layout /
+      // content-size change for a no-op. (CP-14679)
+      const pickScrollHandler = <T,>(composed: T, passthrough: T): T =>
+        onScrolledToEnd || scrollBelowHeader ? composed : passthrough
       return (
         <View style={{ flex: 1 }} collapsable={false}>
           <KeyboardScrollView
@@ -587,8 +595,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
               }
             ]}
             onScroll={onScroll}
-            onContentSizeChange={handleContentSizeChangeComposed}
-            onLayout={handleScrollViewLayoutComposed}>
+            onContentSizeChange={pickScrollHandler(
+              handleContentSizeChangeComposed,
+              onContentSizeChangeProp
+            )}
+            onLayout={pickScrollHandler(
+              handleScrollViewLayoutComposed,
+              onLayoutProp
+            )}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
