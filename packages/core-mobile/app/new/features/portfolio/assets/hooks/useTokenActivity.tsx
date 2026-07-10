@@ -84,7 +84,7 @@ export const useTokenActivity = ({
         tokens: tx.tokens,
         tokenSymbol: token.symbol,
         userAddress: resolveTxUserAddress(tx, account, network),
-        networkTokenSymbol: network?.networkToken.symbol
+        networkTokenSymbol: network?.networkToken?.symbol
       })
     })
   }, [token?.symbol, transactions, account, network])
