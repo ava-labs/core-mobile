@@ -109,15 +109,16 @@ export const updateSessions = async ({
  * absent on legacy/v1 uris. The in-app browser re-surfaces stored `wc:` links
  * on navigation, so an already-expired uri can be re-delivered here many times.
  * Pairing with an expired uri throws and previously spammed "Failed to pair
- * with dApp" toasts (CORE-REACT-NATIVE-62P), so we short-circuit it silently.
+ * with dApp" toasts (CORE-REACT-NATIVE-62P), so we short-circuit it and show a
+ * single deduped, friendly snackbar instead of the generic error toast.
  */
 const isExpiredWcUri = (uri: string): boolean => {
   try {
     const { expiryTimestamp } = parseUri(uri)
     // `expiryTimestamp` is unix seconds. Treat at-or-past expiry as expired
     // (`<=`) — marginally more conservative than the SDK's strict `<`, so a
-    // just-expired uri is skipped rather than attempted; they differ only at
-    // exact-millisecond equality.
+    // just-expired uri is skipped rather than attempted; the two only disagree
+    // when `Date.now()` lands exactly on the expiry-second boundary.
     return expiryTimestamp !== undefined && expiryTimestamp * 1000 <= Date.now()
   } catch {
     // if the uri can't be parsed, let WalletConnectService.pair validate it as before
@@ -127,8 +128,19 @@ const isExpiredWcUri = (uri: string): boolean => {
 
 // Tracks expired uris we've already surfaced a toast for, so a background dapp
 // tab replaying the same stale uri can inform the user at most once instead of
-// spamming (CORE-REACT-NATIVE-62P).
+// spamming (CORE-REACT-NATIVE-62P). Bounded so a page that mints many distinct
+// expired uris can't grow it unbounded across a session; oldest entries evict
+// first (insertion-ordered Set), and it's cleared entirely on logout.
+const EXPIRED_URI_TOAST_CACHE_LIMIT = 100
 const expiredUrisToasted = new Set<string>()
+
+const markExpiredUriToasted = (uri: string): void => {
+  if (expiredUrisToasted.size >= EXPIRED_URI_TOAST_CACHE_LIMIT) {
+    const oldest = expiredUrisToasted.values().next().value
+    if (oldest !== undefined) expiredUrisToasted.delete(oldest)
+  }
+  expiredUrisToasted.add(uri)
+}
 
 export const startSession = async (
   action: ReturnType<typeof newSession>
@@ -138,7 +150,7 @@ export const startSession = async (
   if (isExpiredWcUri(uri)) {
     Logger.info('skipping pair for expired wallet connect uri')
     if (!expiredUrisToasted.has(uri)) {
-      expiredUrisToasted.add(uri)
+      markExpiredUriToasted(uri)
       showSnackbar(
         'This connection link has expired. Please try connecting again.'
       )
