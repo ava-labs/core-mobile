@@ -15,10 +15,12 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { LayoutChangeEvent } from 'react-native'
+import { Keyboard, LayoutChangeEvent, Platform } from 'react-native'
+import type { ScrollView } from 'react-native-gesture-handler'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import {
   TokenInputWidget,
   TokenInputWidgetRef
@@ -119,14 +121,29 @@ import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFee
 import { getTokenKey } from '../utils/tokenKey'
 import { resolveReceiveAmount } from '../utils/resolveReceiveAmount'
 
-// Base gap kept between the focused "You pay" input and the keyboard, added on
-// top of the measured height of the banners above the swap card (stuck-funds +
-// manage-recurring). Those banners push the input down, so when it's tapped
-// KeyboardAwareScrollView scrolls it (banners height + this base) above the
-// keyboard, scaling the scroll to how far it was actually pushed. The base
-// alone (no banners) still clears the keyboard and the %/Max buttons that fade
-// in beneath the input on focus.
-const YOU_PAY_KEYBOARD_BASE_OFFSET = 60
+// Disable KeyboardAwareScrollView's built-in scroll-into-view. The swap card is
+// short, so KAS clamps its scroll to the maximum and yanks the card up past the
+// header. A large negative offset makes its "input near keyboard" check never
+// fire, so we drive the scroll ourselves when the keyboard appears (see below).
+// Mirrors PerpetualsWithdrawScreen's use of a negative offset.
+const DISABLE_KAS_AUTOSCROLL_OFFSET = -1000
+
+// Gap left above the swap card when we scroll "You pay" into view, so it sits a
+// touch below the header rather than flush against it.
+const YOU_PAY_SCROLL_TOP_MARGIN = 8
+
+// Debounce before we scroll "You pay" into view. On open the swap card slides
+// (Animated.View layout={LinearTransition}) as the banner above it settles, so
+// its position changes for several frames. Scrolling on every keyboard / layout
+// event chased that moving target, which moved the focused input and made the
+// keyboard oscillate + the header flicker. Debouncing means we scroll ONCE,
+// after the card has stopped moving.
+const YOU_PAY_SCROLL_DEBOUNCE_MS = 120
+
+// Only re-scroll on a card-position change that happens within this window after
+// the keyboard opens (the slide-in). A later change from a user action, such as
+// expanding the stuck-funds banner, falls outside it, so it does NOT scroll.
+const YOU_PAY_SCROLL_SETTLE_MS = 700
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -502,35 +519,107 @@ export const SwapScreen = (): JSX.Element => {
     !isRecurringBlocked && eligibility.eligible && hasFromAmount
   const [recurringSubmitting, setRecurringSubmitting] = useState(false)
 
-  // Measured height of the banners stacked above the swap card (stuck-funds +
-  // manage-recurring, incl. their margins; 0 when both are hidden). Drives the
-  // keyboard bottomOffset so tapping "You pay" scrolls it clear of the keyboard
-  // by however far the banners pushed it down.
-  //
-  // Crucially, bottomOffset is FROZEN while the input is focused: changing it
-  // makes KeyboardAwareScrollView re-scroll the focused input into view (it runs
-  // an effect on the bottomOffset prop), which would yank the screen when the
-  // user expands a banner mid-edit. So we only commit the height to state while
-  // unfocused, and resync on blur; the latest measurement is kept in a ref.
-  const [bannersHeight, setBannersHeight] = useState(0)
+  // Keyboard-avoidance for "You pay". KAS's own scroll-into-view is disabled (see
+  // the negative bottomOffset), so we scroll the swap card just below the header
+  // ourselves. `fromSectionYRef` tracks where the card sits in the scroll content,
+  // and a keyboard-height bottom spacer gives the room to scroll it (iOS doesn't
+  // resize for the keyboard, and Android's resize room alone isn't enough once the
+  // banners push the card down). See the effects below for the sequence.
+  const scrollRef = useRef<ScrollView>(null)
+  const headerHeight = useEffectiveHeaderHeight()
   const isYouPayFocusedRef = useRef(false)
-  const latestBannersHeightRef = useRef(0)
-  const handleBannersLayout = useCallback((event: LayoutChangeEvent) => {
-    const height = event.nativeEvent.layout.height
-    latestBannersHeightRef.current = height
-    if (!isYouPayFocusedRef.current) {
-      setBannersHeight(height)
-    }
-  }, [])
+  const fromSectionYRef = useRef(0)
+  const keyboardHeightRef = useRef(0)
+  const keyboardShownAtRef = useRef(0)
+  const scrollDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
+  const snapRafRef = useRef<number | undefined>(undefined)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const scrollYouPayIntoView = useCallback(
+    (animated: boolean) => {
+      scrollRef.current?.scrollTo({
+        y: Math.max(
+          0,
+          fromSectionYRef.current - headerHeight - YOU_PAY_SCROLL_TOP_MARGIN
+        ),
+        animated
+      })
+    },
+    [headerHeight]
+  )
+  // Debounced final scroll: reset on each keyboard/layout event and scroll once
+  // things settle, so we don't chase the card while it slides in (which moved the
+  // focused input repeatedly and oscillated the keyboard / flickered the header).
+  const scheduleScroll = useCallback(() => {
+    if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+    scrollDebounceRef.current = setTimeout(() => {
+      if (!isYouPayFocusedRef.current || keyboardHeightRef.current === 0) return
+      scrollYouPayIntoView(true)
+    }, YOU_PAY_SCROLL_DEBOUNCE_MS)
+  }, [scrollYouPayIntoView])
+  const handleFromSectionLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const y = event.nativeEvent.layout.y
+      const changed = y !== fromSectionYRef.current
+      fromSectionYRef.current = y
+      // Re-scroll only while the card is still settling right after the keyboard
+      // opened (the slide-in). The time gate means a later user action that moves
+      // the card, such as expanding the stuck-funds banner, does NOT scroll.
+      if (
+        changed &&
+        isYouPayFocusedRef.current &&
+        keyboardHeightRef.current > 0 &&
+        Date.now() - keyboardShownAtRef.current < YOU_PAY_SCROLL_SETTLE_MS
+      ) {
+        scheduleScroll()
+      }
+    },
+    [scheduleScroll]
+  )
   const handleYouPayFocus = useCallback(() => {
     isYouPayFocusedRef.current = true
   }, [])
   const handleYouPayBlur = useCallback(() => {
     isYouPayFocusedRef.current = false
-    // Commit any banner resize that happened during the edit so the next tap
-    // scrolls with the current height.
-    setBannersHeight(latestBannersHeightRef.current)
+    keyboardHeightRef.current = 0
+    setKeyboardHeight(0)
+    if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+    if (snapRafRef.current !== undefined) {
+      cancelAnimationFrame(snapRafRef.current)
+    }
   }, [])
+  // On keyboard show for "You pay": render the scroll-room spacer, snap the
+  // header to its scrolled state immediately (so the big title doesn't flash
+  // while the card slides in), then schedule the debounced scroll that lands the
+  // final position. The snap is deferred a frame so it runs after the spacer has
+  // laid out (and therefore has room to scroll); its id is tracked so a pending
+  // snap is cancelled on blur / unmount (and before scheduling a new one) rather
+  // than firing after the effect is gone. The spacer is cleared on blur, not
+  // keyboardDidHide, so a transient hide doesn't flap it. Focus-gated so other
+  // inputs (e.g. RecurringDetailsRows' number-pad alert) are ignored.
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', event => {
+      if (!isYouPayFocusedRef.current) return
+      keyboardShownAtRef.current = Date.now()
+      keyboardHeightRef.current = event.endCoordinates.height
+      setKeyboardHeight(event.endCoordinates.height)
+      if (snapRafRef.current !== undefined) {
+        cancelAnimationFrame(snapRafRef.current)
+      }
+      snapRafRef.current = requestAnimationFrame(() =>
+        scrollYouPayIntoView(false)
+      )
+      scheduleScroll()
+    })
+    return () => {
+      if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+      if (snapRafRef.current !== undefined) {
+        cancelAnimationFrame(snapRafRef.current)
+      }
+      showSub.remove()
+    }
+  }, [scheduleScroll, scrollYouPayIntoView])
 
   // Subscribe to the recurring quote when the toggle is on so we have fresh
   // calldata ready by the time the user presses Next. `slippage` in SwapContext
@@ -1624,29 +1713,39 @@ export const SwapScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
+      ref={scrollRef}
       title="Swap"
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard
-      bottomOffset={bannersHeight + YOU_PAY_KEYBOARD_BASE_OFFSET}
+      // Android uses adjustResize (window shrinks for the keyboard) + our own
+      // spacer/scroll, so we disable KeyboardAwareScrollView there: with it
+      // enabled, typing runs its maybeScroll, whose "input above the viewport"
+      // branch scrolls to the top under our negative bottomOffset. iOS has no
+      // adjustResize, so it keeps KAS for scroll room.
+      enabled={Platform.OS !== 'android'}
+      bottomOffset={DISABLE_KAS_AUTOSCROLL_OFFSET}
+      // Android: let this ScrollView participate in the parent form sheet's
+      // nested scrolling so our programmatic scroll (and vertical swipes) move
+      // the content instead of being captured by the sheet's drag-to-dismiss.
+      // Passed through to the underlying ScrollView via ScrollScreen's props.
+      nestedScrollEnabled={Platform.OS === 'android'}
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
-      {/* Banners stacked above the swap card. Measured together (styleless
-          wrapper, no spacing of its own) so their combined height feeds the
-          keyboard bottomOffset. Each self-hides and reserves no space when
-          empty, so the wrapper collapses to 0 when both are gone. */}
-      <View onLayout={handleBannersLayout}>
-        {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
-            incomplete cross-chain transfer. Self-hides (and reserves no space)
-            when there are none, so the margins live on the banner itself. */}
-        <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
-        {/* Schedule-management entry point: surfaces above the new-swap flow so
-            users with existing schedules see + manage them before entering a
-            new pair. Self-hides via `count === 0` when there are none. */}
-        {!isRecurringBlocked && (
-          <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
-        )}
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
+      {/* Schedule-management entry point: surfaces above the new-swap flow so
+          users with existing schedules see + manage them before entering a
+          new pair. Self-hides via `count === 0` when there are none. */}
+      {!isRecurringBlocked && (
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
+      )}
+      {/* onLayout captures where the swap card sits in the scroll content so
+          focusing "You pay" can scroll it to just below the header. */}
+      <View onLayout={handleFromSectionLayout}>
+        {renderFromAndToSections()}
       </View>
-      {renderFromAndToSections()}
       {renderAdditiveFeesNotice()}
       {renderError()}
       {/* Recurring section: disclaimer (ON only) + toggle + details (ON only).
@@ -1754,6 +1853,9 @@ export const SwapScreen = (): JSX.Element => {
           the footer-height-driven bottom padding can be applied a frame late
           while the quote rows are still streaming in. */}
       <View style={{ height: 24 }} />
+      {/* Scroll room so the focused "You pay" card can clear the banners above
+          it. Present only while the keyboard is up for "You pay". */}
+      {keyboardHeight > 0 && <View style={{ height: keyboardHeight }} />}
     </ScrollScreen>
   )
 }
