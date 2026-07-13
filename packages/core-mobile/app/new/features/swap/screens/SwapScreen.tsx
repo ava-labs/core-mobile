@@ -538,10 +538,18 @@ export const SwapScreen = (): JSX.Element => {
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const scrollYouPayIntoView = useCallback(
     (animated: boolean) => {
+      // On the Android form sheet, ScrollScreen offsets the scroll view below
+      // the header via `marginTop: headerHeight` (CP-14679), so the scroll
+      // content already starts under the header — don't subtract headerHeight
+      // again or the card lands a full header-height too low (CP-14744). iOS
+      // insets the content under the transparent header (paddingTop), so the
+      // subtraction still applies there. This screen is always `isModal`, so
+      // the Android condition matches ScrollScreen's `scrollBelowHeader`.
+      const headerOffset = Platform.OS === 'android' ? 0 : headerHeight
       scrollRef.current?.scrollTo({
         y: Math.max(
           0,
-          fromSectionYRef.current - headerHeight - YOU_PAY_SCROLL_TOP_MARGIN
+          fromSectionYRef.current - headerOffset - YOU_PAY_SCROLL_TOP_MARGIN
         ),
         animated
       })
