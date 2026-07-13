@@ -3987,7 +3987,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 4f2618a4a1e762a1ee134a1e2323bba9843e06da
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: e74751f2eb2e1b5df0c35f65e690435be647f2d7
+  hermes-engine: e5b36155094fd3fc0b75ccbb0cd7958465d74709
   jail-monkey: 1846061ac12e861ac5a8ec7197b0daa775b83733
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
@@ -4098,7 +4098,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 25c9c516839be2c5e3d3344f95dc7da5f7e63fc2
   ReactCodegen: 22f5ee7ee1e6410da1332d1ef8e9cf1cb4aa7b7d
   ReactCommon: 14a0287b7145ef29530c15bcd7aca4154a3cb353
-  ReactNativeDependencies: 1338342f47b9f2dcbf29d76e09069f45578a0dd0
+  ReactNativeDependencies: b7706c430db8eaf58583b21b5eeb999bd782b046
   ReactNativePerformance: fa4952a58739e1a1f6b90a4e9777657d463499a3
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RNAppleAuthentication: 8d313d93fe2238d6b7ff0a39c67ebcf298d96653
