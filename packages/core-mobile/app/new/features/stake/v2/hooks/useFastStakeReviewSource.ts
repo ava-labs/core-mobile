@@ -28,9 +28,14 @@ import { useFastStakeNode } from './useFastStakeNode'
  */
 export const useFastStakeReviewSource = (): StakeReviewSource => {
   const [stakingAmount] = useStakeAmount()
-  // Optional in the type because the param can be missing at runtime (deep
+  // Optional in the type because the params can be missing at runtime (deep
   // links / state restoration); the defensive parse below depends on that.
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
+  // `preferredNodeId` only arrives on the restake path — the original
+  // stake's node gets first refusal before auto-selection kicks in.
+  const { stakeEndTime, preferredNodeId } = useLocalSearchParams<{
+    stakeEndTime?: string
+    preferredNodeId?: string
+  }>()
   // Defensive parse — missing / non-finite / non-positive params yield
   // `undefined` and surface as a source error below, instead of cascading a
   // NaN into the Glacier query (which would then produce a confusing
@@ -49,7 +54,8 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
   // round-trip with a bogus stake duration.
   const { data, isFetching, error } = useFastStakeNode({
     stakingAmount,
-    stakingEndTime
+    stakingEndTime,
+    preferredNodeId
   })
 
   return useMemo<StakeReviewSource>(() => {

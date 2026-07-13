@@ -11,6 +11,8 @@ import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
+  addDays,
+  addHours,
   differenceInDays,
   format,
   getUnixTime,
@@ -65,7 +67,8 @@ const DELEGATION_FEE_FOR_ESTIMATION = 2
 const StakeDurationScreen = ({
   nextRoute,
   maxEndDate,
-  delegationFeePercent
+  delegationFeePercent,
+  initialDurationDays
 }: {
   /** Pathname pushed onto the router when the user presses `Next`. */
   nextRoute: string
@@ -82,6 +85,14 @@ const StakeDurationScreen = ({
    * it (node unknown at this step) and falls back to the 2% cap.
    */
   delegationFeePercent?: number
+  /**
+   * Restake prefill: the original stake's duration in whole days. When it
+   * matches a preset, that preset starts selected; otherwise the screen opens
+   * on a custom end date of now + N days (+1h of slack so the duration can't
+   * round below the original — mirrors core-web's `DelegationForm`
+   * `initialDurationMs`). The user can still change it freely.
+   */
+  initialDurationDays?: number
 }): JSX.Element => {
   const { navigate } = useRouter()
 
@@ -106,13 +117,32 @@ const StakeDurationScreen = ({
     () => getCustomDurationIndex(isDeveloperMode),
     [isDeveloperMode]
   )
+  // Restake prefill (all captured once, at mount): when the original stake's
+  // duration matches a preset we start on that preset; otherwise we start on
+  // a custom end date. `undefined` initial chart index = the custom state
+  // (same convention `handleSelectDuration` uses when the user picks Custom).
+  const [initialPresetIndex] = useState<number | undefined>(() => {
+    if (initialDurationDays === undefined) return undefined
+    const index = durationsWithDays.findIndex(
+      duration => duration.numberOfDays === initialDurationDays
+    )
+    return index >= 0 ? index : undefined
+  })
+  const [initialCustomEndDate] = useState<UTCDate | undefined>(() =>
+    initialDurationDays !== undefined && initialPresetIndex === undefined
+      ? new UTCDate(addHours(addDays(now, initialDurationDays), 1).getTime())
+      : undefined
+  )
+  const initialChartIndex = initialCustomEndDate
+    ? undefined
+    : initialPresetIndex ?? defaultDurationIndex
   const animatedChartIndex = useSharedValue<number | undefined>(
-    defaultDurationIndex
+    initialChartIndex
   )
   // Mirror the shared value to a state variable so that React re-renders when it changes.
   const [selectedChartIndex, setSelectedChartIndex] = useState<
     number | undefined
-  >(defaultDurationIndex)
+  >(initialChartIndex)
   useAnimatedReaction(
     () => animatedChartIndex.value,
     (current, previous) => {
@@ -130,8 +160,10 @@ const StakeDurationScreen = ({
     300
   )
   const [stakeEndTime, setStakeEndTime] = useState<UnixTime>(() => {
+    if (initialCustomEndDate) return getUnixTime(initialCustomEndDate)
     const defaultDelegationTime =
-      durationsWithDays[defaultDurationIndex] ?? THREE_MONTHS
+      durationsWithDays[initialChartIndex ?? defaultDurationIndex] ??
+      THREE_MONTHS
     return getStakeEndDate({
       startDateUnix: millisecondsToSeconds(now),
       stakeDurationFormat: defaultDelegationTime.stakeDurationFormat,
@@ -139,7 +171,9 @@ const StakeDurationScreen = ({
       isDeveloperMode: isDeveloperMode
     })
   })
-  const [customEndDate, setCustomEndDate] = useState<UTCDate>()
+  const [customEndDate, setCustomEndDate] = useState<UTCDate | undefined>(
+    initialCustomEndDate
+  )
   const [isCustomEndDatePickerVisible, setIsCustomEndDatePickerVisible] =
     useState(false)
 
@@ -373,7 +407,7 @@ const StakeDurationScreen = ({
         <View sx={{ gap: 12, marginTop: 16 }}>
           <StakeRewardChart
             ref={rewardChartRef}
-            initialIndex={defaultDurationIndex}
+            initialIndex={initialChartIndex}
             style={{
               height: 270
             }}

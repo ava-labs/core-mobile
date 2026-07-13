@@ -72,7 +72,10 @@ export const StakeCardList = ({
     filter,
     sort
   } = useStakeFilterAndSort({
-    stakes
+    stakes,
+    // Web parity: the V2 home screen's chip row includes the stake-type
+    // filters (Fast stakes / Delegation) after the status ones.
+    includeTypeFilters: true
   })
 
   const data: StakeCardType[] = useMemo(

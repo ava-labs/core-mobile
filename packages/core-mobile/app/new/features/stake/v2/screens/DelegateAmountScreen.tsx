@@ -23,6 +23,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import { useSelectedDelegateNodeLimits } from '../hooks/useSelectedDelegateNodeLimits'
+import { getRestakePrefill } from '../store'
 
 // Reserve headroom for network fees (mirrors V1): the "Max" button stakes
 // 99.99% of the balance so the remainder covers fees.
@@ -47,6 +48,18 @@ const DelegateAmountScreen = (): JSX.Element => {
   const [error, setError] = useState<Error | null>(null)
   const { computeSteps } = useDelegationContext()
   const [stakeAmount, setStakeAmount] = useStakeAmount()
+  // Delegate-restake fallback path (original validator gone → node picker →
+  // here): the restake prefill is active and the shared amount still holds
+  // the original stake's amount — keep it and show it in the keypad instead
+  // of starting from zero (web parity: `DelegationForm`'s `initialAmount`
+  // applies whichever node ends up selected). Captured once at mount;
+  // `TokenUnitInputWidget`'s `amount` prop only seeds the input's initial
+  // text, so a stable value keeps later keypad edits from fighting it.
+  const [initialAmount] = useState<TokenUnit | undefined>(() =>
+    getRestakePrefill() !== null && !stakeAmount.isZero()
+      ? stakeAmount
+      : undefined
+  )
   const { minStakeAmount } = useStakingParams()
   const { maxAmount } = useSelectedDelegateNodeLimits()
   const cChainBalance = useCChainBalance()
@@ -76,9 +89,12 @@ const DelegateAmountScreen = (): JSX.Element => {
   // Fast Stake's dial starts at a valid value. This screen's keypad, however,
   // starts empty (0), so reset the amount to zero on mount — otherwise the
   // unseen seeded value would leave `Next` enabled before the user types.
+  // The restake prefill is the exception: its amount IS shown in the keypad
+  // (via `initialAmount`), so it stays.
   useEffect(() => {
+    if (initialAmount !== undefined) return
     setStakeAmount(zeroAvaxPChain())
-  }, [setStakeAmount])
+  }, [setStakeAmount, initialAmount])
 
   const handleAmountChange = useCallback(
     (amount: TokenUnit) => {
@@ -187,6 +203,7 @@ const DelegateAmountScreen = (): JSX.Element => {
       shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16 }}>
       <TokenUnitInputWidget
+        amount={initialAmount}
         disabled={isComputing}
         balance={cumulativeBalance}
         token={xpChainToken}

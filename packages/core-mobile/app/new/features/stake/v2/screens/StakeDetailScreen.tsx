@@ -32,10 +32,11 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectStakeAnnualPercentageYieldBPS } from 'store/posthog'
-import { isOnGoing } from 'utils/earn/status'
+import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { truncateNodeId } from 'utils/Utils'
 import { StakeStatusValue } from '../components/StakeStatusValue'
+import { useRestake } from '../hooks/useRestake'
 import { isDelegationTx } from '../utils/isDelegationTx'
 import { isFastStakeTx } from '../utils/isFastStakeTx'
 
@@ -63,6 +64,16 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     if (!stake) return false
     return isOnGoing(stake, now)
   }, [stake, now])
+
+  // Restake CTA — completed stakes only (web parity), and only when the tx
+  // carries enough data to seed a restake (see `useRestake`). Note completed
+  // is checked explicitly rather than as `!isActive`, so pending stakes don't
+  // offer it either.
+  const { getOnRestake } = useRestake()
+  const onRestake = useMemo(
+    () => (stake ? getOnRestake(stake, isCompleted(stake, now)) : undefined),
+    [stake, getOnRestake, now]
+  )
 
   const progressPercent = useMemo(() => {
     if (!stake) return 0
@@ -291,6 +302,20 @@ export const StakeDetailScreen = (): React.JSX.Element => {
     <ScrollScreen
       title="Stake details"
       navigationTitle="Stake details"
+      renderFooter={
+        onRestake
+          ? () => (
+              <Button
+                testID="stake_detail_restake_btn"
+                accessible={true}
+                type="primary"
+                size="large"
+                onPress={onRestake}>
+                Restake
+              </Button>
+            )
+          : undefined
+      }
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ marginTop: 8, gap: 10 }}>
         {identitySection.length > 0 && (
