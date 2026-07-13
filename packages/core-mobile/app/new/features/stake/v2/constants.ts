@@ -2,8 +2,8 @@
 // `fast-stake-fee-enabled` / `delegation-fee-enabled` gates are multivariate
 // and their variant string carries the rate in basis points. See
 // `selectFastStakeFeeRate` / `selectDelegationFeeRate` in `store/posthog`
-// (both default to 10%, the rate core-web still hardcodes). The fee basis is
-// unchanged: the rate applies to the NET estimated rewards, after the
+// (no variant means no fee; core-web still hardcodes its 10%). The fee basis
+// is unchanged: the rate applies to the NET estimated rewards, after the
 // validator's own delegation fee.
 
 /**

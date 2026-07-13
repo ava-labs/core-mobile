@@ -51,8 +51,8 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
-  // Flag-driven (multivariate variant in bps, 10% fallback) — see
-  // `selectFastStakeFeeRate`.
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectFastStakeFeeRate`.
   const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // `useFastStakeNode` already treats `undefined` `stakingEndTime` as the

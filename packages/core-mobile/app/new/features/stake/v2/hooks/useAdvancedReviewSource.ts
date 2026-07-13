@@ -165,8 +165,8 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isDelegationFeeBlocked = useSelector(selectIsDelegationFeeBlocked)
   const isDelegationFeeEnabled = !isDelegationFeeBlocked
-  // Flag-driven (multivariate variant in bps, 10% fallback) — see
-  // `selectDelegationFeeRate`.
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectDelegationFeeRate`.
   const delegationFeeRate = useSelector(selectDelegationFeeRate)
 
   // Restake only: the node's remaining delegation capacity must still cover

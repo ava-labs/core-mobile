@@ -107,8 +107,8 @@ const StakeAmountScreen = ({
 
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
-  // Flag-driven (multivariate variant in bps, 10% fallback) — see
-  // `selectFastStakeFeeRate`.
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectFastStakeFeeRate`.
   const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // This screen doesn't know the stake duration yet (it's picked on the next

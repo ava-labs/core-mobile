@@ -377,19 +377,19 @@ describe('selectFastStakeFeeRate / selectDelegationFeeRate', () => {
     expect(selectFastStakeFeeRate(state)).toBe(0)
   })
 
-  it('falls back to the 10% default when the gate is a plain boolean', () => {
+  it('yields 0 (fee off) when the gate is a plain boolean with no variant', () => {
     const state = stateWithFlags({
       [FeatureGates.FAST_STAKE_FEE_ENABLED]: true,
       [FeatureGates.DELEGATION_FEE_ENABLED]: true
     })
-    expect(selectFastStakeFeeRate(state)).toBe(0.1)
-    expect(selectDelegationFeeRate(state)).toBe(0.1)
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
   })
 
-  it('falls back to the 10% default when the flag is absent', () => {
+  it('yields 0 (fee off) when the flag is absent', () => {
     const state = stateWithFlags({})
-    expect(selectFastStakeFeeRate(state)).toBe(0.1)
-    expect(selectDelegationFeeRate(state)).toBe(0.1)
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
   })
 })
 
@@ -422,11 +422,11 @@ describe('selectIsFastStakeFeeBlocked / selectIsDelegationFeeBlocked with varian
     expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
   })
 
-  it('keeps a plain boolean gate enabled (10% fallback is positive)', () => {
+  it('treats a plain boolean gate (no rate variant) as blocked', () => {
     const state = stateWithFlags({
       [FeatureGates.EVERYTHING]: true,
       [FeatureGates.FAST_STAKE_FEE_ENABLED]: true
     })
-    expect(selectIsFastStakeFeeBlocked(state)).toBe(false)
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
   })
 })
