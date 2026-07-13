@@ -14,8 +14,14 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView as RNScrollView
+} from 'react-native'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
@@ -75,6 +81,28 @@ export const StakeHomeScreen = (): JSX.Element => {
     navigate({ pathname: '/stakeSearch' })
   }, [navigate])
 
+  // Selecting a chip changes the list's filter, and `StakeCardList` keys its
+  // FlashList by the active selection (a Fabric masonry workaround), so the
+  // whole header — this chip ScrollView included — remounts and would snap
+  // back to x=0. Track the offset across remounts and restore it once the
+  // fresh ScrollView has measured its content.
+  const chipScrollRef = useRef<RNScrollView>(null)
+  const chipScrollOffsetX = useRef(0)
+  const handleChipScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      chipScrollOffsetX.current = event.nativeEvent.contentOffset.x
+    },
+    []
+  )
+  const restoreChipScroll = useCallback(() => {
+    if (chipScrollOffsetX.current > 0) {
+      chipScrollRef.current?.scrollTo({
+        x: chipScrollOffsetX.current,
+        animated: false
+      })
+    }
+  }, [])
+
   const renderHeader = useCallback(
     ({ isEmpty, filter }: StakeCardListHeaderProps): JSX.Element => {
       return (
@@ -117,8 +145,12 @@ export const StakeHomeScreen = (): JSX.Element => {
                 }}>
                 <View sx={{ flex: 1, overflow: 'hidden' }}>
                   <ScrollView
+                    ref={chipScrollRef}
                     horizontal
                     showsHorizontalScrollIndicator={false}
+                    onScroll={handleChipScroll}
+                    scrollEventThrottle={16}
+                    onContentSizeChange={restoreChipScroll}
                     contentContainerStyle={{
                       flexDirection: 'row',
                       gap: 8,
@@ -195,7 +227,9 @@ export const StakeHomeScreen = (): JSX.Element => {
       theme.colors.$textSecondary,
       handleHeaderLayout,
       animatedHeaderStyle,
-      handleSearchPress
+      handleSearchPress,
+      handleChipScroll,
+      restoreChipScroll
     ]
   )
 

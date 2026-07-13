@@ -16,6 +16,7 @@ import { isDelegationTx } from '../utils/isDelegationTx'
 import { isFastStakeTx } from '../utils/isFastStakeTx'
 import { ensureCurrencySuffix, formatEndDate } from '../utils/cardFormat'
 import { getStakeTitle } from '../utils'
+import { useRestake } from './useRestake'
 
 export interface UseStakeCardRendererArgs {
   /** Time snapshot used for status detection and progress calculation. */
@@ -56,6 +57,7 @@ export const useStakeCardRenderer = ({
   const avaxPrice = useAvaxPrice()
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { getOnRestake } = useRestake()
 
   return useCallback(
     (stake: PChainTransaction): JSX.Element | null => {
@@ -112,6 +114,10 @@ export const useStakeCardRenderer = ({
           }
           width={width}
           onPress={() => onPressStake(stake.txHash)}
+          // Undefined for active stakes and for txs that can't seed a
+          // restake, hiding the card's Restake button (web parity: only
+          // completed stakes offer Restake).
+          onRestake={getOnRestake(stake, stakeIsCompleted)}
         />
       )
     },
@@ -124,7 +130,8 @@ export const useStakeCardRenderer = ({
       selectedCurrency,
       motion,
       width,
-      onPressStake
+      onPressStake,
+      getOnRestake
     ]
   )
 }

@@ -5,6 +5,7 @@ import {
   useModalScreensOptions
 } from 'common/consts/screenOptions'
 import { DelegationContextProvider } from 'contexts/DelegationContext'
+import { clearRestakePrefill, takeRestakeEntry } from 'features/stake/v2/store'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import React, { useEffect, useRef } from 'react'
@@ -32,8 +33,18 @@ export default function StakeLayoutV2(): JSX.Element {
   // Captured via ref so a dev-mode toggle mid-flow (which changes
   // `minStakeAmount`) doesn't stomp on the user's typed value — only
   // the value at modal entry seeds the input.
+  //
+  // Restake entries skip the seed entirely: `useRestake` pre-seeds the
+  // original stake's amount before navigating, and this effect runs
+  // *after* any child screen's (parent effects fire last on mount), so
+  // it would otherwise overwrite the restake amount with the minimum.
   const initialAmountRef = useRef(minStakeAmount)
   useEffect(() => {
+    if (takeRestakeEntry()) return
+    // Non-restake entry: drop any prefill left behind by a restake that was
+    // abandoned mid-flow, so a fresh Fast Stake / Delegate session doesn't
+    // inherit the old stake's amount or duration.
+    clearRestakePrefill()
     setStakeAmount(initialAmountRef.current)
   }, [setStakeAmount])
 

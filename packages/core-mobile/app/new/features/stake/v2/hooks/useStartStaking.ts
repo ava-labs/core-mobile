@@ -2,8 +2,12 @@ import { useRouter } from 'expo-router'
 import { useStakeBalanceGuard } from 'features/stake/hooks/useStakeBalanceGuard'
 import {
   applyDefaultDelegateFilters,
+  clearRestakePrefill,
+  getRestakePrefill,
   setDelegateNodeSelection
 } from 'features/stake/v2/store'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
+import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { getStakingConfig } from 'services/earn/utils'
@@ -33,8 +37,24 @@ export const useStartStaking = (): {
 } => {
   const { navigate } = useRouter()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const [, setStakeAmount] = useStakeAmount()
+  const { minStakeAmount } = useStakingParams()
   const { hasEnoughAvax, canAddStake, showNotEnoughAvaxAlert } =
     useStakeBalanceGuard()
+
+  // Defensive cleanup at sub-flow entry: a restake entry seeds the shared
+  // amount (and the restake prefill) before navigating, and the layout's
+  // entry-time cleanup intentionally skips restake entries. Should the
+  // chooser ever become reachable within a restake-opened modal (router
+  // behavior change, new back affordance, deep link), starting a flow from
+  // it would otherwise inherit the old stake's amount/duration. Presence of
+  // the prefill is the "restake leftovers pending" marker — drop it and
+  // re-seed the amount like a normal entry.
+  const clearRestakeLeftovers = useCallback(() => {
+    if (getRestakePrefill() === null) return
+    clearRestakePrefill()
+    setStakeAmount(minStakeAmount)
+  }, [setStakeAmount, minStakeAmount])
 
   const startFastStake = useCallback(() => {
     // Balance still loading — ignore the press. The chooser also gates
@@ -43,17 +63,25 @@ export const useStartStaking = (): {
     if (!canAddStake) return
 
     if (hasEnoughAvax) {
+      clearRestakeLeftovers()
       navigate({ pathname: '/addStakeV2/fastStake/amount' })
     } else {
       showNotEnoughAvaxAlert('fast stake')
     }
-  }, [navigate, canAddStake, hasEnoughAvax, showNotEnoughAvaxAlert])
+  }, [
+    navigate,
+    canAddStake,
+    hasEnoughAvax,
+    showNotEnoughAvaxAlert,
+    clearRestakeLeftovers
+  ])
 
   const startDelegate = useCallback(() => {
     // Balance still loading — ignore the press (mirrors `startFastStake`).
     if (!canAddStake) return
 
     if (hasEnoughAvax) {
+      clearRestakeLeftovers()
       // Seed the same default filters core-web applies on entry (uptime ≥ 75%,
       // fee ≤ network min, remaining time ≥ min stake duration) so the node
       // list opens pre-filtered to the same nodes — and so a previous session's
@@ -79,7 +107,8 @@ export const useStartStaking = (): {
     canAddStake,
     hasEnoughAvax,
     showNotEnoughAvaxAlert,
-    isDeveloperMode
+    isDeveloperMode,
+    clearRestakeLeftovers
   ])
 
   return { hasEnoughAvax, canAddStake, startFastStake, startDelegate }
