@@ -14,6 +14,10 @@ import {
   selectMarkrSwapMaxRetries,
   selectSentrySampleRate,
   selectStakeAnnualPercentageYieldBPS,
+  selectFastStakeFeeRate,
+  selectDelegationFeeRate,
+  selectIsFastStakeFeeBlocked,
+  selectIsDelegationFeeBlocked,
   posthogSlice
 } from './slice'
 import { DefaultFeatureFlagConfig, initialState } from './types'
@@ -349,5 +353,80 @@ describe('selectIsFusionEnabled', () => {
       }
     })
     expect(selectIsFusionEnabled(state)).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Stake convenience-fee rate selectors (multivariate fee gates)
+// ---------------------------------------------------------------------------
+
+describe('selectFastStakeFeeRate / selectDelegationFeeRate', () => {
+  it('parses the variant string as basis points', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '250'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0.1)
+    expect(selectDelegationFeeRate(state)).toBe(0.025)
+  })
+
+  it('treats a variant of "0" as a valid zero rate (no fallback)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '0'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+  })
+
+  it('falls back to the 10% default when the gate is a plain boolean', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: true,
+      [FeatureGates.DELEGATION_FEE_ENABLED]: true
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0.1)
+    expect(selectDelegationFeeRate(state)).toBe(0.1)
+  })
+
+  it('falls back to the 10% default when the flag is absent', () => {
+    const state = stateWithFlags({})
+    expect(selectFastStakeFeeRate(state)).toBe(0.1)
+    expect(selectDelegationFeeRate(state)).toBe(0.1)
+  })
+})
+
+describe('selectIsFastStakeFeeBlocked / selectIsDelegationFeeBlocked with variants', () => {
+  it('reports enabled for a positive-rate variant', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '250',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '1000'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(false)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(false)
+  })
+
+  it('treats a variant of "0" exactly like the flag being off', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '0',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '0'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(true)
+  })
+
+  it('treats a negative-rate misconfiguration as off', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '-100'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+  })
+
+  it('keeps a plain boolean gate enabled (10% fallback is positive)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: true
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(false)
   })
 })

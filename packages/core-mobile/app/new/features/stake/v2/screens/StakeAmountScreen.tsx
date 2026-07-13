@@ -24,11 +24,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getMaximumStakeEndDate } from 'services/earn/utils'
-import { selectIsFastStakeFeeBlocked } from 'store/posthog'
+import {
+  selectFastStakeFeeRate,
+  selectIsFastStakeFeeBlocked
+} from 'store/posthog'
 import { Seconds } from 'types/siUnits'
 import { stringToBigint } from 'utils/bigNumbers/stringToBigint'
 import { xpChainToken } from 'utils/units/knownTokens'
-import { FAST_STAKE_FEE_RATE } from '../constants'
 
 // we can't stake the full amount because of fees; when the user maxes out
 // we stake 99.99% of the balance so there's room to cover fees.
@@ -105,6 +107,9 @@ const StakeAmountScreen = ({
 
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
+  // Flag-driven (multivariate variant in bps, 10% fallback) — see
+  // `selectFastStakeFeeRate`.
+  const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // This screen doesn't know the stake duration yet (it's picked on the next
   // screen), so reserve room for the fee at the MAX duration (1y) — the
@@ -134,10 +139,8 @@ const StakeAmountScreen = ({
     const reward = referenceReward?.estimatedTokenReward
     const minStake = minStakeAmount.toDisplay({ asNumber: true })
     if (!reward || minStake <= 0) return 0
-    return (
-      (reward.toDisplay({ asNumber: true }) * FAST_STAKE_FEE_RATE) / minStake
-    )
-  }, [isFastStakeFeeEnabled, referenceReward, minStakeAmount])
+    return (reward.toDisplay({ asNumber: true }) * fastStakeFeeRate) / minStake
+  }, [isFastStakeFeeEnabled, fastStakeFeeRate, referenceReward, minStakeAmount])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {

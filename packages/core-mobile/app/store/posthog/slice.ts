@@ -652,11 +652,37 @@ export const selectIsFastStakeBlocked = (state: RootState): boolean => {
   )
 }
 
+// The two fee gates are multivariate: their variant string carries the
+// convenience-fee rate in basis points (e.g. '1000' = 10%), so the same flag
+// both enables the fee and tunes its rate without a release. A gate served as
+// a plain boolean `true` (no variant) falls back to the compiled-in 10%,
+// matching core-web's hardcoded rate. Only meaningful while the corresponding
+// `selectIs*FeeBlocked` selector reports the fee as enabled.
+const STAKE_FEE_RATE_FALLBACK_BPS = '1000' // 10%
+const BPS_PER_UNIT = 10_000
+
+export const selectFastStakeFeeRate = (state: RootState): number =>
+  parseIntFlag(
+    state.posthog.featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED],
+    STAKE_FEE_RATE_FALLBACK_BPS
+  ) / BPS_PER_UNIT
+
+export const selectDelegationFeeRate = (state: RootState): number =>
+  parseIntFlag(
+    state.posthog.featureFlags[FeatureGates.DELEGATION_FEE_ENABLED],
+    STAKE_FEE_RATE_FALLBACK_BPS
+  ) / BPS_PER_UNIT
+
 export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+    !featureFlags[FeatureGates.EVERYTHING] ||
+    // A variant of '0' (or a negative misconfiguration) means "charge
+    // nothing" — report the fee as blocked outright so the flows take the
+    // fee-off path instead of advertising a 0% fee and holding the CTA on
+    // the reward estimate for a fee that never materialises.
+    selectFastStakeFeeRate(state) <= 0
   )
 }
 
@@ -664,7 +690,9 @@ export const selectIsDelegationFeeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.DELEGATION_FEE_ENABLED] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+    !featureFlags[FeatureGates.EVERYTHING] ||
+    // Same zero-rate treatment as `selectIsFastStakeFeeBlocked`.
+    selectDelegationFeeRate(state) <= 0
   )
 }
 

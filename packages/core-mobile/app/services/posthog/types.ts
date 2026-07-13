@@ -47,6 +47,12 @@ export enum FeatureGates {
   PRICE_CHART = 'price-chart',
   PERPETUALS = 'perpetuals',
   FAST_STAKE_ENABLED = 'fast-stake-enabled',
+  // The two fee gates below are multivariate: besides plain boolean `true`,
+  // PostHog may serve a variant string carrying the convenience-fee rate in
+  // basis points (e.g. '1000' = 10%). The rate selectors in `store/posthog`
+  // parse it and fall back to the compiled-in default when the flag is a
+  // plain boolean; a variant of '0' behaves exactly like the flag being off
+  // (see `selectIs*FeeBlocked`).
   FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled',
   DELEGATION_FEE_ENABLED = 'delegation-fee-enabled'
 }
