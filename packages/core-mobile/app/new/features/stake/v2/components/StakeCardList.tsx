@@ -175,6 +175,19 @@ export const StakeCardList = ({
     setSelectedSort(sort.selected as SortOrder)
   }, [sort.selected])
 
+  // Changing the filter/sort selection remounts the FlashList (see the `key`
+  // below), which resets the native scroll offset to 0 WITHOUT emitting a
+  // scroll event. Scroll-driven header state (the fading navigation title on
+  // the stake home) would otherwise stay stuck at the pre-remount offset —
+  // small title pinned in the navigation bar, large title never fading back
+  // in. Re-sync it to the top manually whenever the remount key changes.
+  useEffect(() => {
+    if (scrollOffsetRef.current.y !== 0) {
+      scrollOffsetRef.current = { x: 0, y: 0 }
+      onScroll?.(0)
+    }
+  }, [filter.selected, sort.selected, onScroll])
+
   // Pass the header as a JSX element rather than a component reference.
   // FlashList instantiates a function passed to `ListHeaderComponent` as
   // `<HeaderComponent />`, so a new function identity (which happens every
