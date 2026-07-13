@@ -1,8 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useLocalSearchParams } from 'expo-router'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { selectIsDelegationFeeBlocked } from 'store/posthog'
@@ -18,6 +19,16 @@ import { getDelegateNodeLimits } from './useSelectedDelegateNodeLimits'
 // Matches `useValidateStakingEndTime`'s min-start-time buffer (submission is
 // anchored at now + 1 minute).
 const MIN_START_TIME_BUFFER_MS = 60 * 1000
+
+// Covers the wall-clock drift between this render-time check and the actual
+// submission: `computeDelegateDates` re-anchors the start at submit time
+// (+1 min) and, for minimum-duration stakes, extends the end date by the
+// elapsed time — so a node that clears the gate by only a few seconds can
+// still produce a delegation the chain rejects (past the validator's end, or
+// under the minimum duration from the fresh start) after the C→P import has
+// already run. Five minutes comfortably exceeds any realistic review dwell
+// time; a validator that close to its end is a bad restake target anyway.
+const SUBMIT_DRIFT_MARGIN_MS = 5 * 60 * 1000
 
 // Hoisted so the memo doesn't allocate a fresh Error on every recompute when no
 // node is selected.
@@ -55,6 +66,49 @@ export const RESTAKE_NODE_FULL_ERROR = new Error(
 export const RESTAKE_NODE_ENDING_ERROR = new Error(
   "The original node's remaining validation period is too short"
 )
+/**
+ * Sentinel for "the validators query itself failed" (network / RPC), so the
+ * confirm route can surface a connection-appropriate message instead of the
+ * confirm screen's generic "no node matches your requirements" alert — which
+ * describes a filtering miss, not a dropped connection.
+ */
+export const RESTAKE_NODES_FETCH_FAILED_ERROR = new Error(
+  'Unable to load the validator list for restake'
+)
+
+/**
+ * Maps the source's resolution state to the error surfaced to the confirm
+ * screen / route. Module-level so the branch chain stays out of the hook's
+ * cognitive-complexity budget. A failed fetch means we couldn't even check
+ * the node, so it gets its own sentinel (connection-appropriate copy)
+ * instead of "node unavailable" (which implies we checked).
+ */
+const pickSourceError = ({
+  hasNode,
+  isRestake,
+  isFetchingValidators,
+  validatorsError,
+  isRestakeNodeEnding,
+  isRestakeNodeFull
+}: {
+  hasNode: boolean
+  isRestake: boolean
+  isFetchingValidators: boolean
+  validatorsError: Error | null
+  isRestakeNodeEnding: boolean
+  isRestakeNodeFull: boolean
+}): Error | null => {
+  if (!hasNode) {
+    if (!isRestake) return NO_NODE_SELECTED_ERROR
+    if (isFetchingValidators) return null
+    return validatorsError
+      ? RESTAKE_NODES_FETCH_FAILED_ERROR
+      : RESTAKE_NODE_UNAVAILABLE_ERROR
+  }
+  if (isRestakeNodeEnding) return RESTAKE_NODE_ENDING_ERROR
+  if (isRestakeNodeFull) return RESTAKE_NODE_FULL_ERROR
+  return null
+}
 
 /**
  * Advanced delegate data source for `StakeConfirmScreen`.
@@ -88,6 +142,20 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
     isFetching: isFetchingValidators,
     error: validatorsError
   } = useNodes(isRestake)
+
+  // Restake entry always re-fetches the validator set: `useNodes` has a
+  // 5-minute staleTime, so a warm cache (e.g. the user was just in the node
+  // picker) would otherwise serve the eligibility gates a stale snapshot with
+  // no refetch at all. Invalidating on entry keeps the gates — and the
+  // confirm CTA hold on `isFetching` — anchored to current data.
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    if (!isRestake) return
+    queryClient.invalidateQueries({ queryKey: ['nodes'] })
+    // Entry-time effect by design: `isRestake` is fixed for the life of the
+    // route (it comes from the navigation params).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const node = useMemo(() => {
     if (!isRestake) return selectedNode
@@ -128,26 +196,22 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
     const { maxEndDate } = getDelegateNodeLimits(node, isDeveloperMode)
     return (
       maxEndDate.getTime() - now <
-      MIN_START_TIME_BUFFER_MS + getMinimumStakeDurationMs(isDeveloperMode)
+      MIN_START_TIME_BUFFER_MS +
+        getMinimumStakeDurationMs(isDeveloperMode) +
+        SUBMIT_DRIFT_MARGIN_MS
     )
   }, [isRestake, node, isFetchingValidators, isDeveloperMode, now])
 
   return useMemo<StakeReviewSource>(() => {
     const isRestakeNodeUnusable = isRestakeNodeFull || isRestakeNodeEnding
-    let error: Error | null = null
-    if (!node) {
-      if (isRestake) {
-        error = isFetchingValidators
-          ? null
-          : validatorsError ?? RESTAKE_NODE_UNAVAILABLE_ERROR
-      } else {
-        error = NO_NODE_SELECTED_ERROR
-      }
-    } else if (isRestakeNodeEnding) {
-      error = RESTAKE_NODE_ENDING_ERROR
-    } else if (isRestakeNodeFull) {
-      error = RESTAKE_NODE_FULL_ERROR
-    }
+    const error = pickSourceError({
+      hasNode: node !== undefined,
+      isRestake,
+      isFetchingValidators,
+      validatorsError,
+      isRestakeNodeEnding,
+      isRestakeNodeFull
+    })
     return {
       // A capacity-exhausted / soon-ending restake node reads as "no
       // validator" so the confirm screen can't proceed with it even if the

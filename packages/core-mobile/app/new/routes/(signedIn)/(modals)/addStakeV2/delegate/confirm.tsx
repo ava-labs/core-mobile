@@ -5,10 +5,11 @@ import {
   RESTAKE_NODE_ENDING_ERROR,
   RESTAKE_NODE_FULL_ERROR,
   RESTAKE_NODE_UNAVAILABLE_ERROR,
+  RESTAKE_NODES_FETCH_FAILED_ERROR,
   useAdvancedReviewSource
 } from 'features/stake/v2/hooks/useAdvancedReviewSource'
 import StakeConfirmScreen from 'features/stake/v2/screens/StakeConfirmScreen'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { truncateNodeId } from 'utils/Utils'
 
 /**
@@ -25,7 +26,9 @@ import { truncateNodeId } from 'utils/Utils'
  * confirm (which would fire its generic no-match alert) — web parity with
  * `StakingDelegatePage`'s validator-not-found search fallback. The restake
  * prefill (amount/duration) stays active, so the picker flow reopens with the
- * original stake's values.
+ * original stake's values. A failed validators fetch takes the same redirect
+ * with connection-appropriate copy — the picker has its own error + retry
+ * surface for a still-failing query.
  */
 export default function DelegateConfirmRoute(): JSX.Element {
   const source = useAdvancedReviewSource()
@@ -33,22 +36,33 @@ export default function DelegateConfirmRoute(): JSX.Element {
   const { restakeNodeId } = useLocalSearchParams<{ restakeNodeId?: string }>()
   const isRestakeNodeFull = source.error === RESTAKE_NODE_FULL_ERROR
   const isRestakeNodeEnding = source.error === RESTAKE_NODE_ENDING_ERROR
+  const isRestakeFetchFailed = source.error === RESTAKE_NODES_FETCH_FAILED_ERROR
   const isRestakeNodeUnusable =
     source.error === RESTAKE_NODE_UNAVAILABLE_ERROR ||
     isRestakeNodeFull ||
-    isRestakeNodeEnding
+    isRestakeNodeEnding ||
+    isRestakeFetchFailed
 
+  // One-shot: a background refetch can flip the classification (e.g. FULL ↔
+  // ENDING) while the alert is already up, and without the latch the effect
+  // would stack a second alert on top of the first.
+  const hasShownAlertRef = useRef(false)
   useEffect(() => {
-    if (!isRestakeNodeUnusable) return
+    if (!isRestakeNodeUnusable || hasShownAlertRef.current) return
+    hasShownAlertRef.current = true
     const nodeId = truncateNodeId(restakeNodeId ?? '')
     // Capacity copy mirrors core-web's `ReviewDelegationTx` toast.
-    const description = isRestakeNodeFull
+    const description = isRestakeFetchFailed
+      ? `We couldn't load the validator list. Please check your connection and try again.`
+      : isRestakeNodeFull
       ? `Validator ${nodeId} is no longer eligible for staking. The capacity has been reached. Please select a different one.`
       : isRestakeNodeEnding
       ? `Validator ${nodeId} does not have enough time remaining in its validation period for a new stake. Please select a different one.`
       : `Validator ${nodeId} is no longer available for delegation. Please select a different one.`
     showAlert({
-      title: 'Node unavailable',
+      title: isRestakeFetchFailed
+        ? 'Unable to load validators'
+        : 'Node unavailable',
       description,
       buttons: [
         {
@@ -61,6 +75,7 @@ export default function DelegateConfirmRoute(): JSX.Element {
     isRestakeNodeUnusable,
     isRestakeNodeFull,
     isRestakeNodeEnding,
+    isRestakeFetchFailed,
     restakeNodeId,
     replace
   ])
