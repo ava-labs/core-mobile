@@ -18,7 +18,12 @@ import {
   OnDelegationProgress
 } from 'contexts/DelegationContext'
 import { differenceInDays, format, getUnixTime } from 'date-fns'
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
+import {
+  Href,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter
+} from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
@@ -170,7 +175,7 @@ const StakeConfirmScreen = ({
    */
   isAdvanced: boolean
 }): JSX.Element => {
-  const { back, dismissAll } = useRouter()
+  const { back, dismissAll, dismissTo } = useRouter()
   const navigation = useNavigation()
   const dispatch = useDispatch()
   // Drives the post-slide screens. `isSubmitting` latches when the user
@@ -746,17 +751,23 @@ const StakeConfirmScreen = ({
     )
   }, [phase, navigation])
 
-  // Auto-close the entire stake flow shortly after success. Going back on
-  // the parent navigator pops the whole addStakeV2 modal and returns to
-  // wherever the flow was opened from. (`dismissAll()` only pops the inner
-  // stack back to the chooser/start screen, which we don't want.)
+  // Auto-close the entire stake flow shortly after success, always landing
+  // on the stake home. Popping just the add-stake modal (the parent
+  // navigator's `goBack()`) would return to wherever the flow was opened
+  // from — for a restake that can be the stake detail or search modal
+  // stacked beneath, both now-stale surfaces. `dismissTo` POPs back to the
+  // existing stake tab route instead, dismissing every modal above it in
+  // one action. (`navigate` is wrong here: since React Navigation 7 it
+  // pushes a fresh route instead of popping to the existing one, which
+  // presented a second stake home as a modal. `dismissAll()` is also
+  // wrong: it only pops the inner stack back to the chooser/start screen.)
   useEffect(() => {
     if (phase !== 'success') return
     const timeout = setTimeout(() => {
-      navigation.getParent()?.goBack()
+      dismissTo('/stake' as Href)
     }, SUCCESS_DISMISS_DELAY_MS)
     return () => clearTimeout(timeout)
-  }, [phase, navigation])
+  }, [phase, dismissTo])
 
   // Invalid `stakeEndTime` route param (deep link / state restoration with
   // a missing or NaN value). We can't proceed with a fake duration, so
