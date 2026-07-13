@@ -14,7 +14,8 @@ import {
   resolvePaymentSymbol,
   resolveTxUserAddress,
   resolveUserIsRecipient,
-  selectSwapTokens
+  selectSwapTokens,
+  transactionInvolvesTokenSymbol
 } from './utils'
 
 const USER_ADDRESS = '0xUser'
@@ -698,5 +699,177 @@ describe('resolveTxUserAddress', () => {
   it('falls back to tx.from when the account is missing', () => {
     const tx = makeTx({ tokens: [], from: '0xTxFrom' })
     expect(resolveTxUserAddress(tx, undefined, evmNetwork)).toBe('0xTxFrom')
+  })
+})
+
+describe('transactionInvolvesTokenSymbol', () => {
+  const ROUTER = '0xRouter'
+  const POOL = '0xPool'
+
+  const leg = (
+    from: string,
+    to: string,
+    overrides: Partial<TxToken>
+  ): TxToken =>
+    ({
+      type: TokenType.ERC20,
+      amount: '1',
+      from: { address: from },
+      to: { address: to },
+      ...overrides
+    } as TxToken)
+
+  const avaxFee = (from: string, to: string): TxToken =>
+    leg(from, to, { type: TokenType.NATIVE, symbol: 'AVAX', amount: '0.05' })
+
+  const wavax = (from: string, to: string): TxToken =>
+    leg(from, to, { address: '0xWAVAX', symbol: 'WAVAX', amount: '0.01' })
+
+  const pepe = (from: string, to: string): TxToken =>
+    leg(from, to, { address: '0xPEPE', symbol: 'PEPE', amount: '26000' })
+
+  // A recurring/DCA fill of WAVAX→PEPE: the native AVAX carries only the
+  // protocol/gas fee, WAVAX is the real swap input, PEPE the output.
+  const dcaFill = [
+    avaxFee(USER_ADDRESS, ROUTER),
+    wavax(USER_ADDRESS, ROUTER),
+    pepe(POOL, USER_ADDRESS)
+  ]
+
+  it('files a recurring fill under its ERC-20 input (WAVAX) screen', () => {
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'WAVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('files a recurring fill under its output (PEPE) screen', () => {
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'PEPE',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('does NOT file a recurring fill under the native AVAX screen (fee leg only)', () => {
+    // The native leg is just the fee — matching the title, which reads
+    // "WAVAX swapped for PEPE", the row must not appear on the AVAX screen.
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: dcaFill,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(false)
+  })
+
+  it('finds the ERC-20 leg even when it is ordered after the first two legs', () => {
+    // WAVAX at index 2 — the old positional match (tokens[0]/tokens[1]) missed it.
+    const reordered = [
+      avaxFee(USER_ADDRESS, ROUTER),
+      pepe(POOL, USER_ADDRESS),
+      wavax(USER_ADDRESS, ROUTER)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: reordered,
+        tokenSymbol: 'WAVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('keeps a genuine native-input swap (AVAX→WAVAX) on the AVAX screen', () => {
+    const nativeSwap = [
+      avaxFee(USER_ADDRESS, ROUTER),
+      wavax(POOL, USER_ADDRESS)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: nativeSwap,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('resolves an empty native symbol via the network token symbol', () => {
+    const nativeSend: TxToken[] = [
+      {
+        type: TokenType.NATIVE,
+        symbol: '',
+        amount: '1',
+        from: { address: USER_ADDRESS },
+        to: { address: ROUTER }
+      } as TxToken
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens: nativeSend,
+        tokenSymbol: 'AVAX',
+        userAddress: USER_ADDRESS,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('falls back to positional symbol match when the user address is unknown', () => {
+    const tokens = [wavax(POOL, ROUTER), pepe(ROUTER, POOL)]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'WAVAX',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'PEPE',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
+  })
+
+  it('does not match an unrelated token via the positional fallback', () => {
+    const tokens = [wavax(POOL, ROUTER), pepe(ROUTER, POOL)]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'USDC',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(false)
+  })
+
+  it('resolves an empty native symbol on the positional fallback path', () => {
+    // No from/to info, so selectSwapTokens can't resolve legs -> fallback path.
+    // Glacier returned an empty symbol for the native leg; it must still map to
+    // the network token so the native (AVAX) screen lists the tx.
+    const tokens: TxToken[] = [
+      { type: TokenType.NATIVE, symbol: '', amount: '1' } as TxToken,
+      pepe(ROUTER, POOL)
+    ]
+    expect(
+      transactionInvolvesTokenSymbol({
+        tokens,
+        tokenSymbol: 'AVAX',
+        userAddress: undefined,
+        networkTokenSymbol: 'AVAX'
+      })
+    ).toBe(true)
   })
 })
