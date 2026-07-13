@@ -12,8 +12,11 @@ import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
   selectIsEarnBlocked,
   selectIsInAppDefiBlocked,
-  selectIsFusionEnabled
+  selectIsFusionEnabled,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -156,6 +159,13 @@ export const NotificationsScreen = (): JSX.Element => {
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
+  const isFusionAvalancheCctEnabled = useSelector(
+    selectIsFusionAvalancheCctEnabled
+  )
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const hasSeenSwapOnboarding = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.SWAP_ONBOARDING)
+  )
   const accounts = useSelector(selectAccounts)
   const wallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
@@ -303,11 +313,23 @@ export const NotificationsScreen = (): JSX.Element => {
           dispatch: action => action,
           isEarnBlocked,
           isInAppDefiBlocked,
+          shouldRedirectStakeCompleteToCct:
+            isFusionEnabled && isFusionAvalancheCctEnabled,
+          isDeveloperMode,
+          shouldShowSwapOnboarding: !hasSeenSwapOnboarding,
           openUrl
         })
       }
     },
-    [openUrl, isEarnBlocked, isInAppDefiBlocked]
+    [
+      openUrl,
+      isEarnBlocked,
+      isInAppDefiBlocked,
+      isFusionEnabled,
+      isFusionAvalancheCctEnabled,
+      isDeveloperMode,
+      hasSeenSwapOnboarding
+    ]
   )
 
   const renderFooter = useCallback(() => {
