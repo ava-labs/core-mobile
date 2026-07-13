@@ -131,6 +131,10 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       renderFooter,
       renderHeaderRight,
       onScrolledToEnd,
+      // Pulled out of `...props` so the internal size/layout tracking can be
+      // composed with them rather than silently overriding them.
+      onContentSizeChange: onContentSizeChangeProp,
+      onLayout: onLayoutProp,
       ...props
     },
     ref
@@ -144,6 +148,39 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const hasReachedEndRef = useRef(false)
 
     const SCROLL_END_THRESHOLD = 20
+
+    // Whether the content actually overflows the viewport. Drives Android
+    // `nestedScrollEnabled` on the keyboard-aware branch: when the content
+    // scrolls, the plain RN ScrollView must participate in the parent form
+    // sheet's nested scrolling so a downward swipe scrolls to the top instead
+    // of being captured by the sheet's drag-to-dismiss. When the content fits,
+    // we leave it off so a short modal stays swipe-to-dismiss. (CP-14679)
+    const [isScrollable, setIsScrollable] = useState(false)
+
+    const updateIsScrollable = useCallback(() => {
+      // Only the keyboard-aware branch's Android form-sheet nested-scroll path
+      // reads this (see `nestedScrollEnabled` below): it negotiates with a
+      // parent `BottomSheetBehavior`, which only exists when the screen is a
+      // modal. Everywhere else the value is never consumed — the non-keyboard
+      // branch renders a gesture-handler ScrollView with no `isScrollable` prop,
+      // and iOS / non-modal screens have no sheet to negotiate with. Skip the
+      // state update in all those cases to avoid renders for a value nothing
+      // reads (e.g. an Android modal ActionSheet using `onScrolledToEnd` on the
+      // non-keyboard branch). Keep this gate in sync with `scrollBelowHeader`
+      // and `nestedScrollEnabled` below.
+      if (Platform.OS !== 'android' || !isModal || !shouldAvoidKeyboard) return
+      // Wait until BOTH the viewport and the content have been measured before
+      // computing scrollability. `onLayout` and `onContentSizeChange` fire in
+      // either order; acting on a half-measured state (e.g. content known but
+      // `scrollViewHeight` still 0) would make `maxScroll` equal the full
+      // content height and wrongly mark short content as scrollable, briefly
+      // enabling `nestedScrollEnabled` and breaking swipe-to-dismiss.
+      if (scrollViewHeight.current <= 0 || scrollContentHeight.current <= 0)
+        return
+      const maxScroll = scrollContentHeight.current - scrollViewHeight.current
+      const scrollable = maxScroll > 0
+      setIsScrollable(prev => (prev === scrollable ? prev : scrollable))
+    }, [isModal, shouldAvoidKeyboard])
 
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {
@@ -176,6 +213,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       (_w: number, h: number) => {
         const prevHeight = scrollContentHeight.current
         scrollContentHeight.current = h
+        updateIsScrollable()
 
         if (!onScrolledToEnd) return
 
@@ -185,15 +223,35 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           checkScrollableAfterLayout()
         }
       },
-      [onScrolledToEnd, checkScrollableAfterLayout]
+      [onScrolledToEnd, checkScrollableAfterLayout, updateIsScrollable]
     )
 
     const handleScrollViewLayout = useCallback(
       (e: LayoutChangeEvent) => {
         scrollViewHeight.current = e.nativeEvent.layout.height
+        updateIsScrollable()
         checkScrollableAfterLayout()
       },
-      [checkScrollableAfterLayout]
+      [checkScrollableAfterLayout, updateIsScrollable]
+    )
+
+    // Run the internal tracking and then forward to any caller-provided
+    // handler, so passing `onContentSizeChange` / `onLayout` to ScrollScreen
+    // keeps working instead of being overridden by the internal handlers.
+    const handleContentSizeChangeComposed = useCallback(
+      (w: number, h: number) => {
+        handleContentSizeChange(w, h)
+        onContentSizeChangeProp?.(w, h)
+      },
+      [handleContentSizeChange, onContentSizeChangeProp]
+    )
+
+    const handleScrollViewLayoutComposed = useCallback(
+      (e: LayoutChangeEvent) => {
+        handleScrollViewLayout(e)
+        onLayoutProp?.(e)
+      },
+      [handleScrollViewLayout, onLayoutProp]
     )
     const [headerLayout, setHeaderLayout] = useState<
       LayoutRectangle | undefined
@@ -472,6 +530,26 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // 90% of our screens reuse this component but only some need keyboard avoiding
     // If you have an input on the screen, you need to enable this prop
     if (shouldAvoidKeyboard) {
+      // On an Android form sheet, offset the scroll view *below* the header
+      // (margin) instead of letting it span the full height and inset its
+      // content (padding). When `nestedScrollEnabled` is on for scrollable
+      // content, a full-height scroll view claims vertical drags across the
+      // whole sheet — including the header strip — so the sheet's own
+      // drag-to-dismiss dies there (the strip has nothing to scroll and the
+      // scroll view doesn't forward the drag). Keeping the scroll view below
+      // the header leaves that strip over a non-scrolling view, so the sheet
+      // intercepts drags there and grabber/header swipe-to-dismiss works even
+      // while the body scrolls. iOS/non-modal keep the under-header layout so
+      // content still scrolls beneath the transparent header. (CP-14679)
+      const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
+      // Attach the internal composed size/layout handlers only when their work
+      // is needed: `onScrolledToEnd` (scroll-to-end tracking) or
+      // `scrollBelowHeader` (the Android modal nested-scroll path, which needs
+      // `isScrollable`). Otherwise the caller's callback is passed through
+      // directly so keyboard-avoiding screens don't run JS on every layout /
+      // content-size change for a no-op. (CP-14679)
+      const pickScrollHandler = <T,>(composed: T, passthrough: T): T =>
+        onScrolledToEnd || scrollBelowHeader ? composed : passthrough
       return (
         <View style={{ flex: 1 }} collapsable={false}>
           <KeyboardScrollView
@@ -483,9 +561,26 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             {...props}
-            style={{
-              flex: 1
-            }}
+            // On an Android form sheet, `nestedScrollEnabled` lets this plain
+            // RN ScrollView participate in the parent sheet's nested scrolling
+            // so a vertical swipe scrolls the content instead of being captured
+            // by the sheet's drag-to-dismiss gesture. Enabled only for a modal
+            // (`scrollBelowHeader`, no-op otherwise) and only while the content
+            // actually overflows — a short modal keeps swipe-to-dismiss. (The
+            // gesture-handler ScrollView branch below arbitrates this on its own
+            // and doesn't need the prop.) (CP-14679)
+            nestedScrollEnabled={scrollBelowHeader && isScrollable}
+            // `props.style` is merged last so a caller's style is preserved
+            // (it would otherwise be dropped: `{...props}` spreads `style` but
+            // this explicit `style` prop replaces it). Defaults come first so
+            // `flex: 1` and the Android modal offset still apply unless the
+            // caller overrides them, mirroring the `contentContainerStyle`
+            // merge below and the non-keyboard branch's wrapper `props.style`.
+            style={[
+              { flex: 1 },
+              scrollBelowHeader ? { marginTop: headerHeight } : null,
+              props?.style
+            ]}
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
@@ -493,14 +588,21 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
                   (footerLayout?.height ?? 0) +
                   (disableStickyFooter ? insets.bottom : 0) +
                   EXTRA_PADDING_BOTTOM,
-                paddingTop: headerHeight
+                // Offset lives on the scroll view's margin when below the
+                // header; otherwise inset the content so it sits under the
+                // transparent header.
+                paddingTop: scrollBelowHeader ? 0 : headerHeight
               }
             ]}
             onScroll={onScroll}
-            onContentSizeChange={
-              onScrolledToEnd ? handleContentSizeChange : undefined
-            }
-            onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+            onContentSizeChange={pickScrollHandler(
+              handleContentSizeChangeComposed,
+              onContentSizeChangeProp
+            )}
+            onLayout={pickScrollHandler(
+              handleScrollViewLayoutComposed,
+              onLayoutProp
+            )}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
@@ -537,9 +639,13 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           ]}
           onScroll={onScroll}
           onContentSizeChange={
-            onScrolledToEnd ? handleContentSizeChange : undefined
+            onScrolledToEnd
+              ? handleContentSizeChangeComposed
+              : onContentSizeChangeProp
           }
-          onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
+          onLayout={
+            onScrolledToEnd ? handleScrollViewLayoutComposed : onLayoutProp
+          }>
           {renderHeaderContent()}
           {children}
         </ScrollView>
