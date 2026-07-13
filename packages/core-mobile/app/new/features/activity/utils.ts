@@ -296,6 +296,50 @@ export function resolveTxUserAddress(
 }
 
 /**
+ * Decides whether a transaction belongs on a given token's detail screen.
+ *
+ * A token-detail screen lists the txs that involve that token, and this must
+ * agree with the row's title. The title resolves the user's actual input/output
+ * legs via `selectSwapTokens` (which drops the small native protocol/fee leg a
+ * recurring/DCA fill carries, and isn't limited to the first two legs), so we
+ * file the row under exactly those tokens. This keeps a "X WAVAX swapped for Y"
+ * recurring fill on the WAVAX (and output-token) screens — where the swap
+ * actually happened — instead of the native AVAX screen it lands on when only
+ * the fee leg carries the native symbol. Symbols are resolved through
+ * `resolvePaymentSymbol` so a native leg with an empty Glacier symbol still
+ * matches its network token.
+ *
+ * When the user's legs can't be resolved (no user address, or no leg to/from
+ * the user), fall back to a positional symbol match over the first two legs.
+ * Both paths resolve symbols through `resolvePaymentSymbol`, so a native leg
+ * whose Glacier symbol is empty still maps to the network token symbol (e.g.
+ * AVAX) instead of silently dropping off the native token's screen.
+ */
+export function transactionInvolvesTokenSymbol({
+  tokens,
+  tokenSymbol,
+  userAddress,
+  networkTokenSymbol
+}: {
+  tokens: TxToken[]
+  tokenSymbol: string
+  userAddress: string | undefined
+  networkTokenSymbol: string | undefined
+}): boolean {
+  const matchesLeg = (leg: TxToken | undefined): boolean =>
+    leg !== undefined &&
+    tokenSymbol === resolvePaymentSymbol(leg, networkTokenSymbol)
+
+  const { inputToken, outputToken } = selectSwapTokens(tokens, userAddress)
+
+  if (inputToken || outputToken) {
+    return matchesLeg(inputToken) || matchesLeg(outputToken)
+  }
+
+  return matchesLeg(tokens[0]) || matchesLeg(tokens[1])
+}
+
+/**
  * True when the only identifiable leg leaves the user (input) with nothing
  * coming back (no output leg). A genuine swap returns a token to the user, so
  * an input-only shape is an unclassified contract call — an ERC-20 approval, a
