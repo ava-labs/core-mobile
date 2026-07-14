@@ -85,9 +85,14 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
     return account
   }
 
-  const getReadOnlySigner = async (): Promise<Avalanche.AddressWallet> => {
+  // `isTestnet` may be passed by callers that also need the value for
+  // network-dependent work (e.g. getUtxos' asset-id lookup), so the signer
+  // and that work are guaranteed to describe the same network. Defaults to
+  // a fresh read for everyone else.
+  const getReadOnlySigner = async (
+    isTestnet: boolean = deps.getIsDeveloperMode()
+  ): Promise<Avalanche.AddressWallet> => {
     const account = getRequiredAccount()
-    const isTestnet = deps.getIsDeveloperMode()
     const { xpAddresses } = await deps.getXpAddresses()
     if (xpAddresses.length === 0) {
       // Defensive: getCachedXPAddresses normally fetches on a cold cache, so
@@ -188,11 +193,11 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   }
 
   const getUtxos: CctCallbacks['getUtxos'] = async chainAlias => {
-    // Read once, before any await: the asset id must describe the same
-    // network the signer was built for, even if developer mode flips
+    // Read once and thread into the signer: the asset id must describe the
+    // same network the signer was built for, even if developer mode flips
     // while the UTXO fetch is in flight.
     const isTestnet = deps.getIsDeveloperMode()
-    const signer = await getReadOnlySigner()
+    const signer = await getReadOnlySigner(isTestnet)
     const utxoSet = await signer.getUTXOs(chainAlias)
     if (!deps.getFilterSmallUtxos()) return utxoSet
     // CP-13903: drop dust from the spendable set, mirroring extension
