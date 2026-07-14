@@ -181,12 +181,20 @@ export const StakeCardList = ({
   // the stake home) would otherwise stay stuck at the pre-remount offset —
   // small title pinned in the navigation bar, large title never fading back
   // in. Re-sync it to the top manually whenever the remount key changes.
+  // Guarded by the previous key rather than the effect's dep list alone:
+  // `onScroll`'s identity is not guaranteed stable across parent re-renders,
+  // and resyncing outside an actual remount would wrongly report "top" while
+  // the user is scrolled down.
+  const listRemountKey = `${filter.selected}-${sort.selected}`
+  const prevListRemountKeyRef = useRef(listRemountKey)
   useEffect(() => {
+    if (prevListRemountKeyRef.current === listRemountKey) return
+    prevListRemountKeyRef.current = listRemountKey
     if (scrollOffsetRef.current.y !== 0) {
       scrollOffsetRef.current = { x: 0, y: 0 }
       onScroll?.(0)
     }
-  }, [filter.selected, sort.selected, onScroll])
+  }, [listRemountKey, onScroll])
 
   // Pass the header as a JSX element rather than a component reference.
   // FlashList instantiates a function passed to `ListHeaderComponent` as
@@ -214,7 +222,7 @@ export const StakeCardList = ({
       // gives each ordering a fresh layout pass (matches the v1 StakeCardList
       // and StakeSearchScreen approach). It stays stable per selection so it
       // doesn't thrash on background stake refreshes.
-      key={`stake-card-list-${filter.selected}-${sort.selected}`}
+      key={`stake-card-list-${listRemountKey}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

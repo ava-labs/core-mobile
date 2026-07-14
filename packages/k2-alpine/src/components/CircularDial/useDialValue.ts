@@ -35,14 +35,17 @@ export const useDialValue = ({
   useEffect(() => {
     const rangeChanged =
       lastRangeRef.current.max !== max || lastRangeRef.current.step !== step
-    lastRangeRef.current = { max, step }
 
     if (rangeChanged) {
-      // Skip only while a gesture owns the dial (same ownership rule the
-      // echo path uses); the next value/range change re-syncs after release.
-      if (!isActive.value && !isSettling.value) {
-        progressSv.value = valueToProgress(value, max)
+      // Defer while a gesture owns the dial (same ownership rule the echo
+      // path uses) — and leave `lastRangeRef` stale so the remap is retried
+      // on the next effect run (the release propagates a fresh `value`)
+      // instead of being dropped.
+      if (isActive.value || isSettling.value) {
+        return
       }
+      lastRangeRef.current = { max, step }
+      progressSv.value = valueToProgress(value, max)
       return
     }
 
