@@ -12,6 +12,7 @@ import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectWalletById } from 'store/wallet/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { useOnlineStatus } from 'common/hooks/useOnlineStatus'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import * as store from '../store'
 
 /**
@@ -26,14 +27,19 @@ const staleTime = 20_000
  */
 const refetchInterval = __DEV__ ? 30_000 : 5_000
 
-export const balanceKey = (account: Account | undefined, network?: Network[]) =>
+export const balanceKey = (
+  account: Account | undefined,
+  network: Network[] | undefined,
+  filterOutDustUtxos: boolean
+) =>
   [
     ReactQueryKeys.ACCOUNT_BALANCE,
     account?.id,
     network
       ?.map(n => n.chainId)
       .sort()
-      .join(',')
+      .join(','),
+    filterOutDustUtxos
   ] as const
 
 /**
@@ -64,6 +70,7 @@ export function useAccountBalances(
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+  const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   const isNotReady = !account || enabledNetworks.length === 0 || !wallet
 
@@ -77,7 +84,7 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account, enabledNetworks),
+    queryKey: balanceKey(account, enabledNetworks, filterOutDustUtxos),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
@@ -96,9 +103,10 @@ export function useAccountBalances(
         currency: currency.toLowerCase(),
         xpAddresses,
         xpub,
+        filterOutDustUtxos,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balanceKey(account, enabledNetworks),
+            balanceKey(account, enabledNetworks, filterOutDustUtxos),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
               if (!prev) return [balance]
               const filtered = prev.filter(p => p.chainId !== balance.chainId)

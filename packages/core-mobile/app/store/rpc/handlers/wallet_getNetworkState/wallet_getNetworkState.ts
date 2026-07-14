@@ -4,6 +4,7 @@ import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { selectEnabledNetworksByTestnet } from 'store/network/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account'
@@ -81,8 +82,10 @@ class WalletGetNetworkStateHandler
 
     const activeAccount = selectActiveAccount(state)
 
+    const filterOutDustUtxos = selectIsFilterSmallUtxosActive(state)
+
     const cachedBalancesForAccount = queryClient.getQueryData(
-      balanceKey(activeAccount, enabledNetworks)
+      balanceKey(activeAccount, enabledNetworks, filterOutDustUtxos)
     ) as AdjustedNormalizedBalancesForAccount[] | undefined
 
     const networks = enabledNetworks.map(network => {

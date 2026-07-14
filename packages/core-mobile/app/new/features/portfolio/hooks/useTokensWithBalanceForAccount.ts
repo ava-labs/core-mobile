@@ -79,18 +79,20 @@ export function useTokensWithBalanceForAccount({
 export function getTokensWithBalanceForAccountFromCache({
   account,
   networks,
-  isDeveloperMode
+  isDeveloperMode,
+  filterOutDustUtxos
 }: {
   account?: Account
   networks: Networks
   isDeveloperMode: boolean
+  filterOutDustUtxos: boolean
 }): AdjustedLocalTokenWithBalance[] {
   if (!account) return []
 
   const results = (
-    queryClient.getQueryData(balanceKey(account, Object.values(networks))) as
-      | AdjustedNormalizedBalancesForAccount[]
-      | undefined
+    queryClient.getQueryData(
+      balanceKey(account, Object.values(networks), filterOutDustUtxos)
+    ) as AdjustedNormalizedBalancesForAccount[] | undefined
   )?.filter(balance => balance.accountId === account.id)
 
   if (!results) return []
