@@ -48,6 +48,7 @@ import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { StakeTargetValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
+import { formatDurationInDays } from 'features/stake/utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
 import { useStakeFundingPreflight } from '../hooks/useStakeFundingPreflight'
 import { StakeReviewSource } from '../types'
@@ -420,7 +421,7 @@ const StakeConfirmScreen = ({
         value: isResolvingValidator ? (
           <ActivityIndicator />
         ) : (
-          `${differenceInDays(validatedStakingEndTime, now)} days`
+          formatDurationInDays(differenceInDays(validatedStakingEndTime, now))
         )
       },
       {
