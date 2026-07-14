@@ -1,3 +1,4 @@
+import { ServiceType } from '@avalabs/fusion-sdk'
 import type { Quote } from '../types'
 
 /**
@@ -10,9 +11,15 @@ import type { Quote } from '../types'
  * attributable to recovered funds), so no client-side atomic-UTXO detection is
  * needed. Covers both a normal swap that folds in stuck funds and a zero-amount
  * pure recovery (where `recoveredAmountOut === amountOut`).
+ *
+ * Gated on the AVALANCHE_CCT service type (like `shouldShowAvalancheCctTwoTxNotice`)
+ * so the AVAX-specific copy can never surface on another service's quote, even
+ * if that service were to populate `recoveredAmountOut`.
  */
 export const shouldShowRecoveredFundsNotice = ({
   quote
 }: {
   quote: Quote | null | undefined
-}): boolean => (quote?.recoveredAmountOut ?? 0n) > 0n
+}): boolean =>
+  quote?.serviceType === ServiceType.AVALANCHE_CCT &&
+  (quote.recoveredAmountOut ?? 0n) > 0n

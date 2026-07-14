@@ -25,4 +25,15 @@ describe('shouldShowRecoveredFundsNotice', () => {
     expect(shouldShowRecoveredFundsNotice({ quote: null })).toBe(false)
     expect(shouldShowRecoveredFundsNotice({ quote: undefined })).toBe(false)
   })
+
+  it('is false for a non-CCT quote even when recoveredAmountOut is set', () => {
+    expect(
+      shouldShowRecoveredFundsNotice({
+        quote: {
+          serviceType: ServiceType.MARKR,
+          recoveredAmountOut: 500n
+        } as any
+      })
+    ).toBe(false)
+  })
 })

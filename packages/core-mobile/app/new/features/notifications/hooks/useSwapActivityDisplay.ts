@@ -7,7 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import type { Transfer } from '@avalabs/fusion-sdk'
+import { ServiceType, type Transfer } from '@avalabs/fusion-sdk'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
@@ -241,7 +241,9 @@ export function useSwapActivityDisplay(
               required: transfer.target.requiredConfirmationCount
             }
           : undefined,
-      includesRecoveredFunds: (transfer.recoveredAmountOut ?? 0n) > 0n
+      includesRecoveredFunds:
+        transfer.type === ServiceType.AVALANCHE_CCT &&
+        (transfer.recoveredAmountOut ?? 0n) > 0n
     }
   }, [
     item,
