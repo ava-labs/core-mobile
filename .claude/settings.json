@@ -13,7 +13,8 @@
       "Bash(npx tsc:*)",
       "Bash(node_modules/.bin/tsc --noEmit --project e2e-appium/tsconfig.json)",
       "Bash(node packages/core-mobile/node_modules/.bin/tsc --noEmit --project packages/core-mobile/e2e-appium/tsconfig.json)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
