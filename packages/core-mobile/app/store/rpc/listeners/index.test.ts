@@ -281,10 +281,9 @@ describe('rpc - listeners', () => {
       it('should reject a dApp-automated read method on developer mode mismatch without showing an error toast (CP-14617)', async () => {
         mockSelectIsDeveloperMode.mockImplementation(() => true)
 
-        const testRequest = createRequest(
-          'wallet_getNetworkState' as RpcMethod.WALLET_GET_NETWORK_STATE,
-          [false]
-        )
+        const testRequest = createRequest(RpcMethod.WALLET_GET_NETWORK_STATE, [
+          false
+        ])
 
         store.dispatch(onRequest(testRequest))
 
