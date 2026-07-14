@@ -18,6 +18,7 @@ import {
   selectDelegationFeeRate,
   selectIsFastStakeFeeBlocked,
   selectIsDelegationFeeBlocked,
+  selectIsFilterSmallUtxosAvailable,
   posthogSlice
 } from './slice'
 import { DefaultFeatureFlagConfig, initialState } from './types'
@@ -447,5 +448,23 @@ describe('selectIsFastStakeFeeBlocked / selectIsDelegationFeeBlocked with varian
       [FeatureGates.FAST_STAKE_FEE_ENABLED]: true
     })
     expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+  })
+})
+
+describe('selectIsFilterSmallUtxosAvailable', () => {
+  it('is false by default (flag defaults off)', () => {
+    expect(selectIsFilterSmallUtxosAvailable(createMockRootState({}))).toBe(
+      false
+    )
+  })
+
+  it('is true when FILTER_SMALL_UTXOS and EVERYTHING are on', () => {
+    const state = createMockRootState({
+      featureFlags: {
+        [FeatureGates.FILTER_SMALL_UTXOS]: true,
+        [FeatureGates.EVERYTHING]: true
+      }
+    })
+    expect(selectIsFilterSmallUtxosAvailable(state)).toBe(true)
   })
 })
