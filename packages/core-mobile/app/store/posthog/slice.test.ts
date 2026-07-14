@@ -377,6 +377,18 @@ describe('selectFastStakeFeeRate / selectDelegationFeeRate', () => {
     expect(selectFastStakeFeeRate(state)).toBe(0)
   })
 
+  it('rejects partially numeric variants outright (strict parse)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000abc',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '10.5'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(true)
+  })
+
   it('yields 0 (fee off) when the gate is a plain boolean with no variant', () => {
     const state = stateWithFlags({
       [FeatureGates.FAST_STAKE_FEE_ENABLED]: true,

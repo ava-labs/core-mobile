@@ -661,16 +661,21 @@ export const selectIsFastStakeBlocked = (state: RootState): boolean => {
 // explicit rate from PostHog.
 const BPS_PER_UNIT = 10_000
 
+// Strict integer parse for the fee-rate variants — deliberately NOT
+// `parseIntFlag`, whose `parseInt` accepts partially numeric strings
+// ('1000abc' → 1000). This value charges users, so anything that isn't a
+// pure digit string reads as 0 and the fee stays off.
+const parseBpsFlag = (raw: unknown): number =>
+  typeof raw === 'string' && /^\d+$/.test(raw) ? parseInt(raw) : 0
+
 export const selectFastStakeFeeRate = (state: RootState): number =>
-  parseIntFlag(
-    state.posthog.featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED],
-    '0'
+  parseBpsFlag(
+    state.posthog.featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED]
   ) / BPS_PER_UNIT
 
 export const selectDelegationFeeRate = (state: RootState): number =>
-  parseIntFlag(
-    state.posthog.featureFlags[FeatureGates.DELEGATION_FEE_ENABLED],
-    '0'
+  parseBpsFlag(
+    state.posthog.featureFlags[FeatureGates.DELEGATION_FEE_ENABLED]
   ) / BPS_PER_UNIT
 
 export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
