@@ -992,11 +992,6 @@ export const SwapScreen = (): JSX.Element => {
   useAfterScreenEnterTransition(
     () => {
       if (hasAutoFocusedRef.current) return
-      // Skip auto-focus if the screen is already leaving. The focus is deferred
-      // by the transition + layout buffer, so on a quick open→dismiss it can
-      // otherwise fire `focus()` just as the modal tears down, opening a
-      // keyboard that no longer has an owner to dismiss it (CP-14743).
-      if (!navigation.isFocused()) return
       hasAutoFocusedRef.current = true
       fromTokenInputRef.current?.focus()
     },
@@ -1004,18 +999,6 @@ export const SwapScreen = (): JSX.Element => {
       layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
     }
   )
-
-  // Guarantee the keyboard never outlives the swap modal. If the user opens and
-  // quickly dismisses the modal, the deferred auto-focus above can still open
-  // the keyboard a beat before the screen unmounts; without this it lingers and
-  // blocks the portfolio behind. Dismissing on unmount covers that race on both
-  // platforms (Android notably keeps the soft keyboard up when a screen unmounts
-  // mid dismiss-animation). (CP-14743)
-  useEffect(() => {
-    return () => {
-      Keyboard.dismiss()
-    }
-  }, [])
 
   const renderFromSection = useCallback(() => {
     return (
