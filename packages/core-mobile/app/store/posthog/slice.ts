@@ -664,9 +664,13 @@ const BPS_PER_UNIT = 10_000
 // Strict integer parse for the fee-rate variants — deliberately NOT
 // `parseIntFlag`, whose `parseInt` accepts partially numeric strings
 // ('1000abc' → 1000). This value charges users, so anything that isn't a
-// pure digit string reads as 0 and the fee stays off.
+// pure digit string reads as 0 and the fee stays off, and the result is
+// capped at 10,000 bps (100% of the reward) so no misconfigured variant can
+// ever charge more than the reward itself.
 const parseBpsFlag = (raw: unknown): number =>
-  typeof raw === 'string' && /^\d+$/.test(raw) ? parseInt(raw) : 0
+  typeof raw === 'string' && /^\d+$/.test(raw)
+    ? Math.min(parseInt(raw, 10), BPS_PER_UNIT)
+    : 0
 
 export const selectFastStakeFeeRate = (state: RootState): number =>
   parseBpsFlag(

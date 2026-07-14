@@ -377,6 +377,13 @@ describe('selectFastStakeFeeRate / selectDelegationFeeRate', () => {
     expect(selectFastStakeFeeRate(state)).toBe(0)
   })
 
+  it('caps the rate at 10,000 bps (100% of the reward)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '500000'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(1)
+  })
+
   it('rejects partially numeric variants outright (strict parse)', () => {
     const state = stateWithFlags({
       [FeatureGates.EVERYTHING]: true,
