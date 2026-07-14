@@ -453,9 +453,16 @@ export const DialReadout = forwardRef<DialReadoutHandle, DialReadoutProps>(
               amountStyle,
               animatedDigitStyle,
               {
-                // Width is intrinsic; font auto-fit shrinks the
-                // digits before width hits `maxWidth`.
-                maxWidth: AMOUNT_CANVAS_WIDTH,
+                // Fixed width, NOT intrinsic: mid-drag the digits are written
+                // imperatively on the UI thread (`animatedProps.text`), which
+                // does not trigger a Yoga relayout — an intrinsic box keeps
+                // the width of the last laid-out text, so when the value
+                // grows a character (e.g. "9" → "9.1") the tail is clipped
+                // and renders as "9.". A fixed box spanning the readout area
+                // can't be outgrown; the font auto-fit (which targets
+                // `AMOUNT_FIT_WIDTH`) still shrinks long numbers before they
+                // reach the edges.
+                width: AMOUNT_CANVAS_WIDTH,
                 textAlign: 'center',
                 padding: 0,
                 paddingHorizontal: 8,

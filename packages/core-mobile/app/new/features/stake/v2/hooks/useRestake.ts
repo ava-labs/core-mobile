@@ -5,6 +5,7 @@ import { Href, useRouter } from 'expo-router'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getStakingConfig } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
@@ -51,7 +52,9 @@ const SECONDS_PER_DAY = 24 * 60 * 60
 export const useRestake = (): {
   getOnRestake: (
     stake: PChainTransaction,
-    isCompleted: boolean
+    isCompleted: boolean,
+    /** Which Restake entry point the handler is wired to (analytics). */
+    source: 'card' | 'detail'
   ) => (() => void) | undefined
 } => {
   const { navigate } = useRouter()
@@ -60,7 +63,8 @@ export const useRestake = (): {
   const getOnRestake = useCallback(
     (
       stake: PChainTransaction,
-      isCompleted: boolean
+      isCompleted: boolean,
+      source: 'card' | 'detail'
     ): (() => void) | undefined => {
       if (!isCompleted) return undefined
 
@@ -71,6 +75,13 @@ export const useRestake = (): {
       if (!isFastStake && !isDelegationTx(stake)) return undefined
 
       return () => {
+        // Restakes get their own funnel start (deliberately NOT
+        // `StakeFlowStarted`); the downstream lifecycle reuses the
+        // delegation events with `isRestake` set by the confirm screen.
+        AnalyticsService.capture('StakeRestakeStarted', {
+          isAdvanced: !isFastStake,
+          source
+        })
         beginRestakeEntry()
         useStakeAmount.setState(new TokenUnit(params.amountNAvax, 9, 'AVAX'))
         // Set for BOTH branches: the delegate node-gone fallback consumes it

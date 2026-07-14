@@ -29,7 +29,10 @@ import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomE
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
-import { convertToDurationInSeconds } from 'features/stake/utils'
+import {
+  convertToDurationInSeconds,
+  formatDurationInDays
+} from 'features/stake/utils'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
 import { useDebounce } from 'hooks/useDebounce'
@@ -187,7 +190,7 @@ const StakeDurationScreen = ({
     return (estimatedRewards ?? []).map((item, index) => {
       return {
         value: item.estimatedTokenReward.toDisplay({ asNumber: true }),
-        duration: `${item.duration.numberOfDays} days`,
+        duration: formatDurationInDays(item.duration.numberOfDays),
         index
       }
     })
@@ -335,7 +338,7 @@ const StakeDurationScreen = ({
         title: 'Duration',
         value:
           selectedDurationInDays !== undefined
-            ? `${selectedDurationInDays} days`
+            ? formatDurationInDays(selectedDurationInDays)
             : '',
         accordion: (
           <DurationOptions

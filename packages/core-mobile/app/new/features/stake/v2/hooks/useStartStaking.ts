@@ -10,6 +10,7 @@ import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getStakingConfig } from 'services/earn/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
@@ -63,6 +64,9 @@ export const useStartStaking = (): {
     if (!canAddStake) return
 
     if (hasEnoughAvax) {
+      // Fired only when the flow actually starts — a balance-blocked tap
+      // shows the Buy/Swap alert instead and must not enter the funnel.
+      AnalyticsService.capture('StakeFlowStarted', { isAdvanced: false })
       clearRestakeLeftovers()
       navigate({ pathname: '/addStakeV2/fastStake/amount' })
     } else {
@@ -81,6 +85,8 @@ export const useStartStaking = (): {
     if (!canAddStake) return
 
     if (hasEnoughAvax) {
+      // Same gating rationale as `startFastStake` above.
+      AnalyticsService.capture('StakeFlowStarted', { isAdvanced: true })
       clearRestakeLeftovers()
       // Seed the same default filters core-web applies on entry (uptime ≥ 75%,
       // fee ≤ network min, remaining time ≥ min stake duration) so the node

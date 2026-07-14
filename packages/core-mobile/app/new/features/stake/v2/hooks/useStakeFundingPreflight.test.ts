@@ -137,4 +137,49 @@ describe('useStakeFundingPreflight', () => {
       expect(result.current.hasInsufficientFunds).toBe(false)
     })
   })
+
+  describe('CTA flicker (CP-14717)', () => {
+    it('reports checking synchronously on the first enabled render', () => {
+      // Never resolves — this asserts the value BEFORE any effect settles. The
+      // old implementation set `isCheckingFunding` from the effect, which left
+      // the first painted frame reading `false` and let the slide button flash
+      // enabled while the check had not even started.
+      mockComputeSteps.mockReturnValue(new Promise(() => undefined))
+      const { result } = renderPreflight()
+      expect(result.current.isCheckingFunding).toBe(true)
+    })
+
+    it('re-enters checking in the same render the inputs change', async () => {
+      const { result, rerender } = renderPreflight()
+      await flush()
+      expect(result.current.isCheckingFunding).toBe(false)
+
+      // Amount changes (e.g. fee output resolves) — pending must be true in
+      // the very render that carries the new inputs, not one effect-tick later.
+      rerender({ ...defaultProps, stakeAmountNanoAvax: 2_000_000_000n })
+      expect(result.current.isCheckingFunding).toBe(true)
+
+      await flush()
+      expect(result.current.isCheckingFunding).toBe(false)
+      expect(mockComputeSteps).toHaveBeenLastCalledWith(2_000_000_000n, 0n)
+    })
+
+    it('re-runs the check after the preflight is disabled and re-enabled', async () => {
+      const { result, rerender } = renderPreflight()
+      await flush()
+      expect(mockComputeSteps).toHaveBeenCalledTimes(1)
+
+      // Disabled (e.g. reward estimate refetching) — idle, not pending.
+      rerender({ ...defaultProps, enabled: false })
+      expect(result.current.isCheckingFunding).toBe(false)
+
+      // Re-enabled: the balance may have moved meanwhile, so the completed
+      // check is invalidated and runs again (held as pending synchronously).
+      rerender(defaultProps)
+      expect(result.current.isCheckingFunding).toBe(true)
+      await flush()
+      expect(mockComputeSteps).toHaveBeenCalledTimes(2)
+      expect(result.current.isCheckingFunding).toBe(false)
+    })
+  })
 })

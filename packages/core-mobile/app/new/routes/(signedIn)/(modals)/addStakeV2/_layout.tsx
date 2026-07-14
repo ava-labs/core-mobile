@@ -76,6 +76,25 @@ export default function StakeLayoutV2(): JSX.Element {
             headerBackVisible: false
           }}
         />
+        {/*
+         * The confirm screens host the left-to-right "slide to stake"
+         * button. On iOS 26 the back-pop gesture works across the whole
+         * screen content by default (`fullScreenGestureEnabled` maps to
+         * react-native-screens' `interactiveContentPopGestureRecognizer`
+         * handling and defaults to true there), so sliding the button
+         * reads as a back swipe and pops to the duration step mid-slide.
+         * Disable the content-wide gesture on these screens only — the
+         * edge swipe-back and the header back button still work, and the
+         * other steps keep the convenient full-screen back swipe.
+         */}
+        <Stack.Screen
+          name="fastStake/confirm"
+          options={{ fullScreenGestureEnabled: false }}
+        />
+        <Stack.Screen
+          name="delegate/confirm"
+          options={{ fullScreenGestureEnabled: false }}
+        />
       </Stack>
     </DelegationContextProvider>
   )
