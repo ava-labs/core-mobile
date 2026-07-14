@@ -10,6 +10,7 @@ import {
   onClosingTransitionEnd,
   onClosingTransitionStart
 } from 'common/utils/navigationGuard'
+import { dismissKeyboardOnClose } from 'common/utils/dismissKeyboardOnClose'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { LedgerSetupProvider } from 'features/ledger'
 import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
@@ -56,10 +57,16 @@ export default function WalletLayout(): JSX.Element {
           screenOptions={{ headerShown: false }}
           screenListeners={{
             transitionStart: e => {
-              if (e.data.closing) onClosingTransitionStart()
+              if (e.data.closing) {
+                onClosingTransitionStart()
+                dismissKeyboardOnClose()
+              }
             },
             transitionEnd: e => {
-              if (e.data.closing) onClosingTransitionEnd()
+              if (e.data.closing) {
+                onClosingTransitionEnd()
+                dismissKeyboardOnClose()
+              }
             }
           }}>
           <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
