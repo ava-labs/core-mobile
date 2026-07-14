@@ -10,7 +10,7 @@ import {
   onClosingTransitionEnd,
   onClosingTransitionStart
 } from 'common/utils/navigationGuard'
-import { dismissKeyboardOnClose } from 'common/utils/dismissKeyboardOnClose'
+import { dismissKeyboardIfOrphaned } from 'common/utils/dismissKeyboardIfOrphaned'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { LedgerSetupProvider } from 'features/ledger'
 import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
@@ -56,17 +56,17 @@ export default function WalletLayout(): JSX.Element {
         <Stack
           screenOptions={{ headerShown: false }}
           screenListeners={{
+            // When a screen becomes active (e.g. the portfolio after the swap
+            // modal is dismissed), sweep away any keyboard left up by the screen
+            // that just went away. `focus` is a reliable navigation event —
+            // unlike the sheet's `transitionEnd`, which doesn't fire here.
+            // (CP-14743)
+            focus: () => dismissKeyboardIfOrphaned(),
             transitionStart: e => {
-              if (e.data.closing) {
-                onClosingTransitionStart()
-                dismissKeyboardOnClose()
-              }
+              if (e.data.closing) onClosingTransitionStart()
             },
             transitionEnd: e => {
-              if (e.data.closing) {
-                onClosingTransitionEnd()
-                dismissKeyboardOnClose()
-              }
+              if (e.data.closing) onClosingTransitionEnd()
             }
           }}>
           <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />

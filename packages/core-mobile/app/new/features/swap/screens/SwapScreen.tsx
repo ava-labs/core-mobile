@@ -34,7 +34,7 @@ import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { showSnackbar } from 'common/utils/toast'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useDebounce } from 'hooks/useDebounce'
@@ -998,26 +998,6 @@ export const SwapScreen = (): JSX.Element => {
     {
       layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
     }
-  )
-
-  // Tear the keyboard down when the screen loses focus or unmounts (CP-14743).
-  // The swap form sheet's closing transition does NOT emit the navigation
-  // `transitionStart/End{closing}` events, so those are dead signals here — blur
-  // and unmount are the only reliable ones. `useFocusEffect`'s cleanup runs on
-  // both. Blurring the input directly (while it's still mounted and its window
-  // valid — blur fires before unmount) reliably hides the soft keyboard on
-  // Android, where a late global dismiss at unmount gets dropped and the
-  // keyboard lingers over the portfolio. This also runs when navigating to the
-  // token pickers, matching the explicit `dismissKeyboardIfNeeded` there.
-  // `useAfterScreenEnterTransition` cancels its pending auto-focus on blur too,
-  // so the deferred focus can't re-open the keyboard after this fires.
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        fromTokenInputRef.current?.blur()
-        Keyboard.dismiss()
-      }
-    }, [])
   )
 
   const renderFromSection = useCallback(() => {

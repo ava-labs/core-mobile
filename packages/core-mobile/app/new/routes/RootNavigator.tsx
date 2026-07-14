@@ -13,7 +13,6 @@ import {
   onClosingTransitionEnd,
   onClosingTransitionStart
 } from 'common/utils/navigationGuard'
-import { dismissKeyboardOnClose } from 'common/utils/dismissKeyboardOnClose'
 import { currentRouteStore } from './store'
 
 export function RootNavigator(): JSX.Element {
@@ -50,16 +49,10 @@ export function RootNavigator(): JSX.Element {
           }
           return {
             transitionStart: (e: { data: { closing: boolean } }) => {
-              if (e.data.closing) {
-                onClosingTransitionStart()
-                dismissKeyboardOnClose()
-              }
+              if (e.data.closing) onClosingTransitionStart()
             },
             transitionEnd: (e: { data: { closing: boolean } }) => {
-              if (e.data.closing) {
-                onClosingTransitionEnd()
-                dismissKeyboardOnClose()
-              }
+              if (e.data.closing) onClosingTransitionEnd()
             }
           }
         }}
