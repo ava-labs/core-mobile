@@ -7,15 +7,22 @@ import { balanceApiClient } from 'utils/api/clients/balanceApiClient'
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 /**
- * Fetches supported chain IDs from the balance API
+ * Fetches supported chain IDs from the balance API.
+ * Exported for tests.
  */
-const fetchSupportedChains = async (): Promise<string[]> => {
+export const fetchSupportedChains = async (): Promise<string[]> => {
   const result = await getV1BalanceGetSupportedChains({
     client: balanceApiClient
   })
 
   if (result.error || !result.data) {
-    throw new Error('Failed to fetch supported chains')
+    // Include the status so a 403 (e.g. region blocking) is distinguishable
+    // from a 5xx in Sentry — the bare message hid this for 200k+ events.
+    throw new Error(
+      `Failed to fetch supported chains (HTTP ${
+        result.response?.status ?? 'unknown'
+      })`
+    )
   }
 
   return result.data.caip2Ids

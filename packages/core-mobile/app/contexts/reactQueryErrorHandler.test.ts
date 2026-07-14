@@ -1,0 +1,71 @@
+import { CancelledError } from '@tanstack/query-core'
+import Logger from 'utils/Logger'
+import {
+  onQueryError,
+  resetReportedQueryErrors
+} from './reactQueryErrorHandler'
+
+jest.mock('utils/Logger', () => ({
+  error: jest.fn(),
+  warn: jest.fn()
+}))
+
+const queryWithHash = (queryHash: string): { queryHash: string } => ({
+  queryHash
+})
+
+describe('onQueryError', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    resetReportedQueryErrors()
+  })
+
+  it('reports the first occurrence of an error at error level', () => {
+    onQueryError(new Error('boom'), queryWithHash('["chains"]'))
+
+    expect(Logger.error).toHaveBeenCalledTimes(1)
+    expect(Logger.warn).not.toHaveBeenCalled()
+  })
+
+  it('downgrades repeats of the same query error to warn', () => {
+    const query = queryWithHash('["chains"]')
+    onQueryError(new Error('boom'), query)
+    onQueryError(new Error('boom'), query)
+    onQueryError(new Error('boom'), query)
+
+    expect(Logger.error).toHaveBeenCalledTimes(1)
+    expect(Logger.warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports again when the same query fails with a different message', () => {
+    const query = queryWithHash('["chains"]')
+    onQueryError(new Error('HTTP 500'), query)
+    onQueryError(new Error('HTTP 403'), query)
+
+    expect(Logger.error).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports the same error message for different queries independently', () => {
+    onQueryError(new Error('boom'), queryWithHash('["a"]'))
+    onQueryError(new Error('boom'), queryWithHash('["b"]'))
+
+    expect(Logger.error).toHaveBeenCalledTimes(2)
+  })
+
+  it('ignores React Query cancellations entirely', () => {
+    onQueryError(new CancelledError(), queryWithHash('["chains"]'))
+
+    expect(Logger.error).not.toHaveBeenCalled()
+    expect(Logger.warn).not.toHaveBeenCalled()
+  })
+
+  it('handles non-Error rejection values despite the typed signature', () => {
+    const query = queryWithHash('["chains"]')
+    const nonError = 'string failure' as unknown as Error
+    onQueryError(nonError, query)
+    onQueryError(nonError, query)
+
+    expect(Logger.error).toHaveBeenCalledTimes(1)
+    expect(Logger.warn).toHaveBeenCalledTimes(1)
+  })
+})
