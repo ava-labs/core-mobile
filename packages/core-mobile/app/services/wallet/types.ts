@@ -146,6 +146,12 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   amountInNAvax: bigint
   sourceAddress: string
   feeState?: pvm.FeeState
+  /**
+   * CP-13903: when true, drop AVAX UTXOs < SMALL_UTXO_THRESHOLD_NAVAX from
+   * the spendable set (after the tx-size cap), mirroring core-extension's
+   * getMaxUtxoSet. Callers pass selectIsFilterSmallUtxosActive.
+   */
+  filterSmallUtxos?: boolean
 }
 
 //TODO: delete this enum

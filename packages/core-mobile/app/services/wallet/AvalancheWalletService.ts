@@ -19,6 +19,7 @@ import {
   CreateSendPTxParams
 } from './types'
 import { getAvaxAssetId } from './utils'
+import { filterOutSmallUtxos } from './filterSmallUtxos'
 class AvalancheWalletService {
   /**
    * Get atomic transactions that are in VM memory.
@@ -285,7 +286,8 @@ class AvalancheWalletService {
     destinationAddress,
     sourceAddress,
     feeState,
-    xpAddresses
+    xpAddresses,
+    filterSmallUtxos
   }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
@@ -299,12 +301,18 @@ class AvalancheWalletService {
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
-    const filteredUtxos = Avalanche.getMaximumUtxoSet({
+    let filteredUtxos = Avalanche.getMaximumUtxoSet({
       wallet: readOnlySigner,
       utxos: utxoSet.getUTXOs(),
       sizeSupportedTx: Avalanche.SizeSupportedTx.BaseP,
       feeState
     })
+    if (filterSmallUtxos === true) {
+      filteredUtxos = filterOutSmallUtxos(
+        filteredUtxos,
+        getAvaxAssetId(isTestnet)
+      )
+    }
     utxoSet = new utils.UtxoSet(filteredUtxos)
     const changeAddress = utils.parse(sourceAddress)[2]
 

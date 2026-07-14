@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
@@ -42,6 +44,7 @@ const usePVMSend: SendAdapterPVM = ({
   const provider = useAvalancheXpProvider()
   const wallet = useActiveWallet()
   const { xpAddresses, xpAddressDictionary } = useXPAddresses(account)
+  const filterSmallUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   const createSendPTx = useCallback(
     async (amountInNAvax: bigint, price?: bigint): Promise<UnsignedTx> => {
@@ -55,10 +58,19 @@ const usePVMSend: SendAdapterPVM = ({
         destinationAddress,
         sourceAddress: fromAddress,
         feeState: getFeeState(price),
-        xpAddresses
+        xpAddresses,
+        filterSmallUtxos
       })
     },
-    [addressToSend, account, network, fromAddress, getFeeState, xpAddresses]
+    [
+      addressToSend,
+      account,
+      network,
+      fromAddress,
+      getFeeState,
+      xpAddresses,
+      filterSmallUtxos
+    ]
   )
 
   useEffect(() => {
@@ -106,7 +118,8 @@ const usePVMSend: SendAdapterPVM = ({
         toAddress: addressToSend,
         feeState: getFeeState(gasPrice),
         xpAddresses,
-        xpAddressDictionary
+        xpAddressDictionary,
+        filterSmallUtxos
       })
     } finally {
       setIsSending(false)
@@ -124,7 +137,8 @@ const usePVMSend: SendAdapterPVM = ({
     gasPrice,
     wallet,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    filterSmallUtxos
   ])
 
   const handleError = useCallback(
