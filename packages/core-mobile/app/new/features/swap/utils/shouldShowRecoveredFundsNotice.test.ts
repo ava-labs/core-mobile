@@ -1,39 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ServiceType } from '@avalabs/fusion-sdk'
-import type { Quote } from '../types'
+import { getRecoveredAtomicAmount } from '@avalabs/fusion-sdk'
 import { shouldShowRecoveredFundsNotice } from './shouldShowRecoveredFundsNotice'
 
-const cctQuote = (recoveredAmountOut: bigint | undefined): Quote =>
-  ({ serviceType: ServiceType.AVALANCHE_CCT, recoveredAmountOut } as any)
+jest.mock('@avalabs/fusion-sdk', () => ({
+  getRecoveredAtomicAmount: jest.fn()
+}))
+
+const mockGetRecovered = getRecoveredAtomicAmount as jest.Mock
+const quote = {} as any
 
 describe('shouldShowRecoveredFundsNotice', () => {
-  it('is true when recoveredAmountOut is positive (stuck funds swept in)', () => {
-    expect(shouldShowRecoveredFundsNotice({ quote: cctQuote(500n) })).toBe(true)
+  afterEach(() => jest.clearAllMocks())
+
+  it('is true when the SDK reports a positive recovered amount', () => {
+    mockGetRecovered.mockReturnValue(500n)
+    expect(shouldShowRecoveredFundsNotice({ quote })).toBe(true)
   })
 
-  it('is false when recoveredAmountOut is 0n (nothing recovered)', () => {
-    expect(shouldShowRecoveredFundsNotice({ quote: cctQuote(0n) })).toBe(false)
+  it('is false when the SDK reports 0n recovered', () => {
+    mockGetRecovered.mockReturnValue(0n)
+    expect(shouldShowRecoveredFundsNotice({ quote })).toBe(false)
   })
 
-  it('is false when recoveredAmountOut is absent', () => {
-    expect(shouldShowRecoveredFundsNotice({ quote: cctQuote(undefined) })).toBe(
-      false
-    )
+  it('is false when the SDK returns null (non-CCT quote)', () => {
+    mockGetRecovered.mockReturnValue(null)
+    expect(shouldShowRecoveredFundsNotice({ quote })).toBe(false)
   })
 
-  it('is false when quote is null or undefined', () => {
+  it('is false for a null/undefined quote and does not call the SDK', () => {
     expect(shouldShowRecoveredFundsNotice({ quote: null })).toBe(false)
     expect(shouldShowRecoveredFundsNotice({ quote: undefined })).toBe(false)
-  })
-
-  it('is false for a non-CCT quote even when recoveredAmountOut is set', () => {
-    expect(
-      shouldShowRecoveredFundsNotice({
-        quote: {
-          serviceType: ServiceType.MARKR,
-          recoveredAmountOut: 500n
-        } as any
-      })
-    ).toBe(false)
+    expect(mockGetRecovered).not.toHaveBeenCalled()
   })
 })

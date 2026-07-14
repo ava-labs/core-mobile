@@ -3,7 +3,7 @@ import { Icons, Text, View, useTheme } from '@avalabs/k2-alpine'
 
 /**
  * Informational note shown when a cross-chain swap includes AVAX recovered from
- * a previous incomplete transfer (SDK `recoveredAmountOut > 0n`). Explains why
+ * a previous incomplete transfer (SDK `getRecoveredAtomicAmount` > 0n). Explains why
  * the received amount can exceed what was sent.
  *
  * Shared by the swap screen (driven by the live quote) and the swap

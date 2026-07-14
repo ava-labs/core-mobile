@@ -7,7 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { ServiceType, type Transfer } from '@avalabs/fusion-sdk'
+import { getRecoveredAtomicAmount, type Transfer } from '@avalabs/fusion-sdk'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
@@ -73,7 +73,7 @@ export type SwapActivityDisplay = {
   toConfirmations?: { count: number; required: number }
   /**
    * True when part of the imported amount was AVAX recovered from a previous
-   * incomplete cross-chain transfer (SDK `recoveredAmountOut > 0n`). Drives an
+   * incomplete cross-chain transfer (SDK `getRecoveredAtomicAmount` > 0n). Drives an
    * informational note explaining why the received amount exceeds what was sent.
    */
   includesRecoveredFunds: boolean
@@ -241,9 +241,7 @@ export function useSwapActivityDisplay(
               required: transfer.target.requiredConfirmationCount
             }
           : undefined,
-      includesRecoveredFunds:
-        transfer.type === ServiceType.AVALANCHE_CCT &&
-        (transfer.recoveredAmountOut ?? 0n) > 0n
+      includesRecoveredFunds: (getRecoveredAtomicAmount(transfer) ?? 0n) > 0n
     }
   }, [
     item,
