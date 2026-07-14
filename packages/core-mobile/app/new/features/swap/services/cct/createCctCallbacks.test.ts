@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RpcMethod } from '@avalabs/vm-module-types'
+import type { TransferStepDetails } from '@avalabs/fusion-sdk'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { WalletType } from 'services/wallet/types'
@@ -193,6 +194,11 @@ describe('createCctCallbacks', () => {
       toBytes: () => '0xtxbytes'
     } as any
 
+    // The SDK's avalancheSendTx signature takes a TransferStepDetails as its
+    // second arg (approval step context); mobile's callback ignores it, so a
+    // stub satisfies the call sites.
+    const fakeStep = {} as TransferStepDetails
+
     let mockedRequest: jest.Mock
 
     beforeEach(() => {
@@ -208,12 +214,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      const txHash = await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      const txHash = await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -234,12 +243,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'X',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'X',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.X
@@ -252,12 +264,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'C',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'C',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.C
@@ -270,12 +285,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'C',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'C',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].context).toEqual({
         [RequestContext.SUPPRESS_TX_FEEDBACK]: true
@@ -287,12 +305,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       // No SUPPRESS_TX_FEEDBACK flag so the final-leg success toast fires.
       const context = mockedRequest.mock.calls[0]?.[0].context
@@ -307,12 +328,15 @@ describe('createCctCallbacks', () => {
         })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 1n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 1n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.P_TESTNET
@@ -330,12 +354,15 @@ describe('createCctCallbacks', () => {
         })
       )
       await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
+        avalancheSendTx(
+          {
+            baseFeeInNanoAvax: 1n,
+            chainAlias: 'P',
+            txType: 'import',
+            unsignedTx: fakeUnsignedTx
+          },
+          fakeStep
+        )
       ).rejects.toThrow(/xpAddressDictionary empty/)
       expect(mockedRequest).not.toHaveBeenCalled()
     })

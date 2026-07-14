@@ -71,6 +71,12 @@ export type SwapActivityDisplay = {
   fromConfirmations?: { count: number; required: number }
   /** Confirmation progress for the target (To) chain leg. */
   toConfirmations?: { count: number; required: number }
+  /**
+   * True when part of the imported amount was AVAX recovered from a previous
+   * incomplete cross-chain transfer (SDK `recoveredAmountOut > 0n`). Drives an
+   * informational note explaining why the received amount exceeds what was sent.
+   */
+  includesRecoveredFunds: boolean
 }
 
 /**
@@ -234,7 +240,8 @@ export function useSwapActivityDisplay(
               count: transfer.target.confirmationCount,
               required: transfer.target.requiredConfirmationCount
             }
-          : undefined
+          : undefined,
+      includesRecoveredFunds: (transfer.recoveredAmountOut ?? 0n) > 0n
     }
   }, [
     item,
