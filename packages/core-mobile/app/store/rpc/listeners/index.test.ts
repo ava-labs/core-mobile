@@ -278,6 +278,29 @@ describe('rpc - listeners', () => {
         )
       })
 
+      it('should reject a dApp-automated read method on developer mode mismatch without showing an error toast (CP-14617)', async () => {
+        mockSelectIsDeveloperMode.mockImplementation(() => true)
+
+        const testRequest = createRequest(
+          'wallet_getNetworkState' as RpcMethod.WALLET_GET_NETWORK_STATE,
+          [false]
+        )
+
+        store.dispatch(onRequest(testRequest))
+
+        await jest.runOnlyPendingTimersAsync()
+
+        expect(transactionSnackbar.error).not.toHaveBeenCalled()
+
+        expect(mockWCRejectRequest).toHaveBeenCalledWith(
+          '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
+          1677366383831712,
+          rpcErrors.internal(
+            'Invalid environment. Please turn off developer mode and try again'
+          )
+        )
+      })
+
       it('should not reject request when requested chain does not match developer mode for a chain agnostic method', async () => {
         mockSelectIsDeveloperMode.mockImplementation(() => true)
 
