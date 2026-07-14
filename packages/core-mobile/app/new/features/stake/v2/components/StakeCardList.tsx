@@ -7,13 +7,18 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { useIsFocused } from 'expo-router'
-import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
+import {
+  FlashList,
+  FlashListRef,
+  ListRenderItemInfo
+} from '@shopify/flash-list'
 import { LoadingState } from 'common/components/LoadingState'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppState,
+  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -88,7 +93,8 @@ export const StakeCardList = ({
 
   const handlePressStake = useCallback(
     (txHash: string) => {
-      navigate({ pathname: '/stakeDetail', params: { txHash } })
+      // `source` feeds StakeDetailViewed's entry-point attribution.
+      navigate({ pathname: '/stakeDetail', params: { txHash, source: 'home' } })
     },
     [navigate]
   )
@@ -174,6 +180,55 @@ export const StakeCardList = ({
     setSelectedSort(sort.selected as SortOrder)
   }, [sort.selected])
 
+  // Changing the filter/sort selection remounts the FlashList (see the `key`
+  // below), which resets the native scroll offset to 0 WITHOUT emitting a
+  // scroll event. Two problems fall out of that: the scroll position is lost
+  // even when the new selection has plenty of content, and scroll-driven
+  // header state (the fading navigation title on the stake home) stays stuck
+  // at the pre-remount offset. So on every remount we restore the previous
+  // offset — clamped to the fresh list's scrollable range, so a selection
+  // with less content lands as far down as it can (the top, when it doesn't
+  // scroll at all) — and re-sync the header to wherever we actually landed.
+  //
+  // The remount is detected during render (ref compare, not an effect dep
+  // list): `onScroll`'s identity is not guaranteed stable across parent
+  // re-renders, and restoring outside an actual remount would fight the
+  // user's live scrolling.
+  const listRef = useRef<FlashListRef<StakeCardType>>(null)
+  const listLayoutHeightRef = useRef(0)
+  const pendingRestoreOffsetRef = useRef<number | null>(null)
+  const listRemountKey = `${filter.selected}-${sort.selected}`
+  const prevListRemountKeyRef = useRef(listRemountKey)
+  if (prevListRemountKeyRef.current !== listRemountKey) {
+    prevListRemountKeyRef.current = listRemountKey
+    pendingRestoreOffsetRef.current = scrollOffsetRef.current.y
+  }
+
+  const handleLayout = useCallback((event: LayoutChangeEvent): void => {
+    listLayoutHeightRef.current = event.nativeEvent.layout.height
+  }, [])
+
+  // Fires once the freshly mounted list has measured its content — the
+  // earliest point where the scrollable range (and thus the clamp) is known.
+  // Restores are one-shot; ordinary content-size changes (background stake
+  // refreshes) leave the user's position alone.
+  const handleContentSizeChange = useCallback(
+    (_width: number, height: number): void => {
+      const target = pendingRestoreOffsetRef.current
+      if (target === null) return
+      pendingRestoreOffsetRef.current = null
+      if (target === 0) return
+      const maxOffset = Math.max(0, height - listLayoutHeightRef.current)
+      const clamped = Math.min(target, maxOffset)
+      listRef.current?.scrollToOffset({ offset: clamped, animated: false })
+      // Sync the shared header state ourselves — the imperative scroll isn't
+      // guaranteed to emit a scroll event (notably when clamped to 0).
+      scrollOffsetRef.current = { x: 0, y: clamped }
+      onScroll?.(clamped)
+    },
+    [onScroll]
+  )
+
   // Pass the header as a JSX element rather than a component reference.
   // FlashList instantiates a function passed to `ListHeaderComponent` as
   // `<HeaderComponent />`, so a new function identity (which happens every
@@ -200,7 +255,10 @@ export const StakeCardList = ({
       // gives each ordering a fresh layout pass (matches the v1 StakeCardList
       // and StakeSearchScreen approach). It stays stable per selection so it
       // doesn't thrash on background stake refreshes.
-      key={`stake-card-list-${filter.selected}-${sort.selected}`}
+      key={`stake-card-list-${listRemountKey}`}
+      ref={listRef}
+      onLayout={handleLayout}
+      onContentSizeChange={handleContentSizeChange}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

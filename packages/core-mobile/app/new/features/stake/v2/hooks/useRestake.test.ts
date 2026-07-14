@@ -46,6 +46,12 @@ jest.mock('utils/mmkv', () => ({
   zustandPersistStorage: {}
 }))
 
+const mockCapture = jest.fn()
+jest.mock('services/analytics/AnalyticsService', () => ({
+  __esModule: true,
+  default: { capture: (...args: unknown[]) => mockCapture(...args) }
+}))
+
 // The real module drags in EarnService → WalletService → ModuleManager (native
 // deps); the hook only reads two static staking-config fields. Mainnet values.
 jest.mock('services/earn/utils', () => ({
@@ -84,6 +90,7 @@ describe('useRestake', () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(FIXED_NOW)
     mockNavigate.mockReset()
+    mockCapture.mockReset()
     mockIsFastStakeTx.mockReset().mockReturnValue(false)
     mockIsDelegationTx.mockReset().mockReturnValue(false)
     mockIsDeveloperMode = false
@@ -101,22 +108,24 @@ describe('useRestake', () => {
 
   it('returns undefined for stakes that are not completed', () => {
     mockIsFastStakeTx.mockReturnValue(true)
-    expect(getOnRestake()(makeTx(), false)).toBeUndefined()
+    expect(getOnRestake()(makeTx(), false, 'card')).toBeUndefined()
   })
 
   it('returns undefined when the tx cannot seed restake params', () => {
     mockIsFastStakeTx.mockReturnValue(true)
-    expect(getOnRestake()(makeTx({ nodeId: undefined }), true)).toBeUndefined()
+    expect(
+      getOnRestake()(makeTx({ nodeId: undefined }), true, 'card')
+    ).toBeUndefined()
   })
 
   it('returns undefined when the tx is neither fast stake nor delegation', () => {
-    expect(getOnRestake()(makeTx(), true)).toBeUndefined()
+    expect(getOnRestake()(makeTx(), true, 'card')).toBeUndefined()
   })
 
   it('fast stake: seeds amount/prefill/entry flag and navigates to the fast confirm', () => {
     mockIsFastStakeTx.mockReturnValue(true)
 
-    const handler = getOnRestake()(makeTx(), true)
+    const handler = getOnRestake()(makeTx(), true, 'card')
     expect(handler).toBeDefined()
     handler?.()
 
@@ -129,6 +138,10 @@ describe('useRestake', () => {
     expect(mockNavigate).toHaveBeenCalledWith(
       `/addStakeV2/fastStake/confirm?stakeEndTime=${expectedStakeEndTime}&preferredNodeId=NodeID-A`
     )
+    expect(mockCapture).toHaveBeenCalledWith('StakeRestakeStarted', {
+      isAdvanced: false,
+      source: 'card'
+    })
   })
 
   it('delegation: seeds stores, resets the node selection and navigates to the delegate confirm', () => {
@@ -136,7 +149,7 @@ describe('useRestake', () => {
     // Simulate a stale selection from a previous delegate flow.
     setDelegateNodeSelection([{ nodeID: 'NodeID-STALE' }] as never[], 0)
 
-    const handler = getOnRestake()(makeTx(), true)
+    const handler = getOnRestake()(makeTx(), true, 'card')
     expect(handler).toBeDefined()
     handler?.()
 
@@ -155,6 +168,17 @@ describe('useRestake', () => {
     expect(mockNavigate).toHaveBeenCalledWith(
       `/addStakeV2/delegate/confirm?stakeEndTime=${expectedStakeEndTime}&restakeNodeId=NodeID-A`
     )
+    expect(mockCapture).toHaveBeenCalledWith('StakeRestakeStarted', {
+      isAdvanced: true,
+      source: 'card'
+    })
+  })
+
+  it('does not capture the restake start until the handler actually runs', () => {
+    mockIsFastStakeTx.mockReturnValue(true)
+    getOnRestake()(makeTx(), true, 'detail')
+    // Building the handler (rendering a card / the detail CTA) is not a tap.
+    expect(mockCapture).not.toHaveBeenCalled()
   })
 
   it('sums multiple staked assets into the seeded amount', () => {
@@ -166,7 +190,8 @@ describe('useRestake', () => {
           { amount: '5000000000' }
         ] as PChainTransaction['amountStaked']
       }),
-      true
+      true,
+      'card'
     )
     handler?.()
     expect(useStakeAmount.getState().toSubUnit()).toBe(30_000_000_000n)

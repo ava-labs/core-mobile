@@ -652,11 +652,47 @@ export const selectIsFastStakeBlocked = (state: RootState): boolean => {
   )
 }
 
+// The two fee gates are multivariate: their variant string carries the
+// convenience-fee rate in basis points (e.g. '1000' = 10%), so the same flag
+// both enables the fee and tunes its rate without a release. There is no
+// compiled-in rate on purpose — a gate served as a plain boolean `true` (no
+// variant) or with an unparsable variant yields 0, which
+// `selectIs*FeeBlocked` treats as off. Charging a fee always requires an
+// explicit rate from PostHog.
+const BPS_PER_UNIT = 10_000
+
+// Strict integer parse for the fee-rate variants — deliberately NOT
+// `parseIntFlag`, whose `parseInt` accepts partially numeric strings
+// ('1000abc' → 1000). This value charges users, so anything that isn't a
+// pure digit string reads as 0 and the fee stays off, and the result is
+// capped at 10,000 bps (100% of the reward) so no misconfigured variant can
+// ever charge more than the reward itself.
+const parseBpsFlag = (raw: unknown): number =>
+  typeof raw === 'string' && /^\d+$/.test(raw)
+    ? Math.min(parseInt(raw, 10), BPS_PER_UNIT)
+    : 0
+
+export const selectFastStakeFeeRate = (state: RootState): number =>
+  parseBpsFlag(
+    state.posthog.featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED]
+  ) / BPS_PER_UNIT
+
+export const selectDelegationFeeRate = (state: RootState): number =>
+  parseBpsFlag(
+    state.posthog.featureFlags[FeatureGates.DELEGATION_FEE_ENABLED]
+  ) / BPS_PER_UNIT
+
 export const selectIsFastStakeFeeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+    !featureFlags[FeatureGates.EVERYTHING] ||
+    // No positive rate, no fee: a '0' variant, a negative misconfiguration,
+    // a plain boolean gate, or an unparsable variant all report as blocked
+    // outright, so the flows take the fee-off path instead of advertising a
+    // 0% fee and holding the CTA on the reward estimate for a fee that
+    // never materialises.
+    selectFastStakeFeeRate(state) <= 0
   )
 }
 
@@ -664,7 +700,9 @@ export const selectIsDelegationFeeBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.DELEGATION_FEE_ENABLED] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+    !featureFlags[FeatureGates.EVERYTHING] ||
+    // Same zero-rate treatment as `selectIsFastStakeFeeBlocked`.
+    selectDelegationFeeRate(state) <= 0
   )
 }
 

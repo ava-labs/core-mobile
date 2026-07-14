@@ -16,6 +16,13 @@ import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
  * errors (network, etc.) are ignored here so they don't strand the user — the
  * normal submit + error-alert path handles those.
  *
+ * `isCheckingFunding` is DERIVED, not set from the effect: it's true whenever
+ * the check is enabled but the current inputs haven't completed a check yet.
+ * Setting it from the effect left a rendered frame between "the other CTA
+ * gates opened" and "the effect flipped the flag" in which the slide button
+ * flashed enabled — the flicker in CP-14717. Deriving it keeps the CTA held
+ * in the very same render the inputs change.
+ *
  * The check counts as complete only once `computeSteps` had all of its async
  * inputs (`isComputeReady`) and returned actual steps. Before that,
  * `computeSteps` resolves to an empty list without validating anything, which
@@ -23,8 +30,8 @@ import { isInsufficientFundsError } from '../utils/isInsufficientFundsError'
  * with a cached validator, so the pre-flight can fire before the fee-state /
  * base-fee queries resolve — treating that empty result as "funded" let an
  * unaffordable stake through with no inline error (it then failed after the
- * slide). While the inputs are still loading we report `isCheckingFunding`
- * and re-run the real check when `isComputeReady` flips true.
+ * slide). While the inputs are still loading the check stays pending and the
+ * real check runs when `isComputeReady` flips true.
  */
 export const useStakeFundingPreflight = ({
   enabled,
@@ -39,13 +46,21 @@ export const useStakeFundingPreflight = ({
 }): { isCheckingFunding: boolean; hasInsufficientFunds: boolean } => {
   const { computeSteps, isComputeReady } = useDelegationContext()
   const [fundingError, setFundingError] = useState<Error | null>(null)
-  const [isCheckingFunding, setIsCheckingFunding] = useState(false)
+  // The input snapshot the last completed check validated — null when nothing
+  // has been validated yet (or the preflight was disabled in between).
+  const [checkedKey, setCheckedKey] = useState<string | null>(null)
 
   const additionalOutputAmount = useMemo(
     () =>
       additionalOutputs?.reduce((sum, output) => sum + output.amount, 0n) ?? 0n,
     [additionalOutputs]
   )
+
+  const inputsKey = `${stakeAmountNanoAvax}:${additionalOutputAmount}`
+  // Synchronous by design (see the flicker note in the JSDoc): the moment the
+  // inputs change — or the check becomes enabled — this reads pending in the
+  // same render, with no effect-timing gap for the CTA to flash enabled in.
+  const isCheckingFunding = enabled && checkedKey !== inputsKey
 
   // Keep `computeSteps` in a ref so the effect doesn't re-run (and re-toggle
   // the CTA) just because `computeSteps` got a new identity. It's recreated
@@ -61,23 +76,20 @@ export const useStakeFundingPreflight = ({
 
   useEffect(() => {
     if (!enabled) {
-      // No check should be running while the preflight is disabled. Clear the
-      // flag here so a check that was cancelled mid-flight (e.g. `enabled`
-      // flipped off when the reward estimate started a background refetch)
-      // doesn't strand `isCheckingFunding` at `true` and leave the CTA
-      // permanently disabled — its `.finally` is skipped once `cancelled` is set.
-      setIsCheckingFunding(false)
+      // Invalidate the completed check so re-enabling re-runs it — the
+      // balance may have moved while the preflight was disabled (e.g. during
+      // a reward-estimate refetch).
+      setCheckedKey(null)
       return
     }
-    if (!isComputeReady) {
-      // `computeSteps` would resolve to an empty list without validating
-      // anything. Hold the CTA as "checking" until the inputs are ready; the
-      // dep below re-runs the real check the moment they are.
-      setIsCheckingFunding(true)
-      return
-    }
+    // Current inputs already validated — nothing to do.
+    if (checkedKey === inputsKey) return
+    // `computeSteps` would resolve to an empty list without validating
+    // anything. The derived pending state above already holds the CTA; the
+    // dep below re-runs the real check the moment the inputs are ready.
+    if (!isComputeReady) return
+
     let cancelled = false
-    setIsCheckingFunding(true)
     computeStepsRef
       .current(stakeAmountNanoAvax, additionalOutputAmount)
       .then(steps => {
@@ -90,17 +102,24 @@ export const useStakeFundingPreflight = ({
           return
         }
         setFundingError(null)
-        setIsCheckingFunding(false)
+        setCheckedKey(inputsKey)
       })
       .catch((e: unknown) => {
         if (cancelled) return
         setFundingError(e as Error)
-        setIsCheckingFunding(false)
+        setCheckedKey(inputsKey)
       })
     return () => {
       cancelled = true
     }
-  }, [enabled, isComputeReady, stakeAmountNanoAvax, additionalOutputAmount])
+  }, [
+    enabled,
+    isComputeReady,
+    checkedKey,
+    inputsKey,
+    stakeAmountNanoAvax,
+    additionalOutputAmount
+  ])
 
   return {
     isCheckingFunding,

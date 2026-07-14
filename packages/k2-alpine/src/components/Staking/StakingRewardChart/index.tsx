@@ -13,6 +13,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState
 } from 'react'
 import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
@@ -115,12 +116,28 @@ export const StakeRewardChart = forwardRef<
       }
     )
 
+    // `selectionX` is in pixels, so it must be (re)anchored whenever the
+    // geometry (`graphSize`/`gridWidth`, baked into `selectIndex`) changes.
+    // Only the very first anchoring applies `initialIndex`; later re-runs
+    // re-anchor whatever is CURRENTLY selected — including `undefined`
+    // (custom selection cleared via the ref) — because a layout pass or a
+    // data refresh must not override a selection the user has since changed
+    // (it used to snap a custom stake duration back to the initial preset,
+    // CP-14721).
+    const hasAnchoredRef = useRef(false)
     useEffect(() => {
       InteractionManager.runAfterInteractions(() => {
         if (graphSize.width > 0 && graphSize.height > 0) {
-          selectIndex(initialIndex, 0)
+          selectIndex(
+            hasAnchoredRef.current ? animatedSelectedIndex.value : initialIndex,
+            0
+          )
+          hasAnchoredRef.current = true
         }
       })
+      // `animatedSelectedIndex` is a stable SharedValue ref; its `.value` is
+      // read on purpose only when the geometry changes.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialIndex, selectIndex, graphSize])
 
     const {
@@ -218,7 +235,14 @@ export const StakeRewardChart = forwardRef<
                 marginHorizontal: 36
               }}
               onLayout={({ nativeEvent: { layout } }) =>
-                setGraphSize({ width: layout.width, height: layout.height })
+                // Only commit when the rect actually changed: a fresh object
+                // per event would re-run the anchoring effect above on every
+                // redundant layout pass.
+                setGraphSize(prev =>
+                  prev.width === layout.width && prev.height === layout.height
+                    ? prev
+                    : { width: layout.width, height: layout.height }
+                )
               }>
               <Canvas
                 style={{ width: graphSize.width, height: graphSize.height }}>
