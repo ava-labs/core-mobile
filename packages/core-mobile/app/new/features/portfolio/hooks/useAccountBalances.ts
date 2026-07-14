@@ -1,4 +1,8 @@
-import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  type QueryClient,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
