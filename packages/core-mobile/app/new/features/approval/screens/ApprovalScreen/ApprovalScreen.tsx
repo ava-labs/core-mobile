@@ -446,11 +446,16 @@ const ApprovalScreenInner = ({
     return (
       // `Details` no longer carries its own top margin (removed so it doesn't
       // double-space against the spend-limit block on the batch screen), so the
-      // 12px gap above the details card is supplied here at the composition
-      // level to keep it separated from the preceding card.
-      <View sx={{ marginTop: 12 }}>
+      // 12px gap is supplied here at the composition level. It must sit on each
+      // section — not just the wrapper — otherwise multi-section approvals (e.g.
+      // an Avalanche CCT export/import, which emits Source/Target, Amount and
+      // Network Fee cards) render flush against one another. This restores the
+      // pre-batch-screen behaviour where every section card was 12px apart.
+      <View>
         {filteredSections.map((detailSection, index) => (
-          <Details key={index} detailSection={detailSection} symbol={symbol} />
+          <View key={index} sx={{ marginTop: 12 }}>
+            <Details detailSection={detailSection} symbol={symbol} />
+          </View>
         ))}
       </View>
     )
