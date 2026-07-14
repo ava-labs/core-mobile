@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -41,6 +41,37 @@ export const balanceKey = (
       .join(','),
     filterOutDustUtxos
   ] as const
+
+/**
+ * Cache read with flag fallback. When the small-UTXO filter setting (or its
+ * PostHog gate) flips, `balanceKey` changes and the new key stays empty until
+ * the next refetch lands. Cache-only readers (meld off-ramp,
+ * wallet_getNetworkState) should serve the previous flag variant's data for
+ * that window rather than nothing — momentarily stale dust totals beat an
+ * empty token list. An exact-key hit (including a legitimately empty array
+ * from a completed fetch) always wins; the fallback is read-only and never
+ * written back.
+ */
+export const getCachedBalancesWithFlagFallback = ({
+  client,
+  account,
+  networks,
+  filterOutDustUtxos
+}: {
+  client: QueryClient
+  account: Account | undefined
+  networks: Network[] | undefined
+  filterOutDustUtxos: boolean
+}): AdjustedNormalizedBalancesForAccount[] | undefined => {
+  const exact = client.getQueryData(
+    balanceKey(account, networks, filterOutDustUtxos)
+  ) as AdjustedNormalizedBalancesForAccount[] | undefined
+  if (exact !== undefined) return exact
+
+  return client.getQueryData(
+    balanceKey(account, networks, !filterOutDustUtxos)
+  ) as AdjustedNormalizedBalancesForAccount[] | undefined
+}
 
 /**
  * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)

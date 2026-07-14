@@ -11,7 +11,10 @@ import {
   AdjustedNormalizedBalancesForAccount
 } from 'services/balance/types'
 import { Networks } from 'store/network'
-import { balanceKey, useAccountBalances } from './useAccountBalances'
+import {
+  getCachedBalancesWithFlagFallback,
+  useAccountBalances
+} from './useAccountBalances'
 
 /**
  * Returns token balances for a specific account.
@@ -89,11 +92,12 @@ export function getTokensWithBalanceForAccountFromCache({
 }): AdjustedLocalTokenWithBalance[] {
   if (!account) return []
 
-  const results = (
-    queryClient.getQueryData(
-      balanceKey(account, Object.values(networks), filterOutDustUtxos)
-    ) as AdjustedNormalizedBalancesForAccount[] | undefined
-  )?.filter(balance => balance.accountId === account.id)
+  const results = getCachedBalancesWithFlagFallback({
+    client: queryClient,
+    account,
+    networks: Object.values(networks),
+    filterOutDustUtxos
+  })?.filter(balance => balance.accountId === account.id)
 
   if (!results) return []
 
