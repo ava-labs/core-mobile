@@ -1,5 +1,7 @@
 import React, { PropsWithChildren, useEffect } from 'react'
 import {
+  isCancelledError,
+  onlineManager,
   Query,
   QueryCache,
   QueryClient,
@@ -10,7 +12,6 @@ import {
   removeOldestQuery
 } from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
-import { isCancelledError, onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
 import { queryStorage } from 'utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'

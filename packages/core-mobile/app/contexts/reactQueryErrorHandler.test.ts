@@ -72,11 +72,10 @@ describe('onQueryError', () => {
     expect(Logger.warn).not.toHaveBeenCalled()
   })
 
-  it('handles non-Error rejection values despite the typed signature', () => {
+  it('handles non-Error rejection values', () => {
     const query = queryWithHash('["chains"]')
-    const nonError = 'string failure' as unknown as Error
-    onQueryError(nonError, query)
-    onQueryError(nonError, query)
+    onQueryError('string failure', query)
+    onQueryError('string failure', query)
 
     expect(Logger.error).toHaveBeenCalledTimes(1)
     expect(Logger.warn).toHaveBeenCalledTimes(1)

@@ -26,12 +26,11 @@ const reportedErrors = new Set<string>()
  * and this handler is the gateway to Sentry.
  */
 export const onQueryError = (
-  error: Error,
+  error: unknown,
   query: { queryHash: string }
 ): void => {
   if (isCancelledError(error)) return
 
-  // Defensive: queryFns can reject with non-Error values despite the type.
   const message = error instanceof Error ? error.message : String(error)
   const key = `${query.queryHash}:${message}`
 
