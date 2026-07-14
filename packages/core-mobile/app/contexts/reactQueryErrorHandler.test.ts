@@ -20,11 +20,24 @@ describe('onQueryError', () => {
     resetReportedQueryErrors()
   })
 
-  it('reports the first occurrence of an error at error level', () => {
-    onQueryError(new Error('boom'), queryWithHash('["chains"]'))
+  it('reports the first occurrence of an error at error level with the query hash as a tag', () => {
+    const error = new Error('boom')
+    onQueryError(error, queryWithHash('["chains"]'))
 
     expect(Logger.error).toHaveBeenCalledTimes(1)
+    expect(Logger.error).toHaveBeenCalledWith(
+      '[ReactQueryProvider] Query error',
+      error,
+      { queryHash: '["chains"]' }
+    )
     expect(Logger.warn).not.toHaveBeenCalled()
+  })
+
+  it('truncates long query hashes to the sentry tag value limit', () => {
+    onQueryError(new Error('boom'), queryWithHash('x'.repeat(300)))
+
+    const tags = (Logger.error as jest.Mock).mock.calls[0][2]
+    expect(tags.queryHash).toHaveLength(200)
   })
 
   it('downgrades repeats of the same query error to warn', () => {

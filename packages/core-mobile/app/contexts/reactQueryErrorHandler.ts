@@ -44,7 +44,12 @@ export const onQueryError = (
     reportedErrors.add(key)
   }
 
-  Logger.error('[ReactQueryProvider] Query error', error)
+  // Tag with the query hash so Sentry can be searched/faceted by which
+  // query failed (truncated to Sentry's 200-char tag value limit; the
+  // beforeSend scrubber covers any sensitive values embedded in keys).
+  Logger.error('[ReactQueryProvider] Query error', error, {
+    queryHash: query.queryHash.slice(0, 200)
+  })
 }
 
 /**
