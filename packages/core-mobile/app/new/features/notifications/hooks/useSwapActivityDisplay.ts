@@ -186,6 +186,9 @@ export function useSwapActivityDisplay(
     if (!item) return undefined
 
     const { transfer } = item
+    // `null` means this isn't a CCT transfer (the SDK util gates on service
+    // type); only a positive recovered amount drives the notice.
+    const recoveredAtomic = getRecoveredAtomicAmount(transfer)
     const sourceChainId = getChainIdFromCaip2(transfer.sourceChain.chainId)
     const targetChainId = getChainIdFromCaip2(transfer.targetChain.chainId)
     const fromNetworkData =
@@ -241,7 +244,7 @@ export function useSwapActivityDisplay(
               required: transfer.target.requiredConfirmationCount
             }
           : undefined,
-      includesRecoveredFunds: (getRecoveredAtomicAmount(transfer) ?? 0n) > 0n
+      includesRecoveredFunds: recoveredAtomic !== null && recoveredAtomic > 0n
     }
   }, [
     item,

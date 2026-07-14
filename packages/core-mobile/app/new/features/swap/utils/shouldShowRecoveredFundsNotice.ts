@@ -16,4 +16,10 @@ export const shouldShowRecoveredFundsNotice = ({
   quote
 }: {
   quote: Quote | null | undefined
-}): boolean => !!quote && (getRecoveredAtomicAmount(quote) ?? 0n) > 0n
+}): boolean => {
+  if (!quote) return false
+  // `null` means this isn't a CCT quote (the SDK util gates on service type), so
+  // the notice only shows for a genuinely positive recovered amount.
+  const recovered = getRecoveredAtomicAmount(quote)
+  return recovered !== null && recovered > 0n
+}
