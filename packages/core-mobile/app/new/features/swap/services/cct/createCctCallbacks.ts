@@ -8,7 +8,9 @@ import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { filterOutSmallUtxos } from 'services/wallet/filterSmallUtxos'
 import { WalletType } from 'services/wallet/types'
+import { getAvaxAssetId } from 'services/wallet/utils'
 import { Account, XPAddressDictionary } from 'store/account/types'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { RequestContext } from 'store/rpc/types'
@@ -39,6 +41,10 @@ export type CctCallbackDeps = {
    * then import tx) — same path the X/P send flows use.
    */
   request: Request
+  // CP-13903: composite filter gate (PostHog flag AND user setting).
+  // Read lazily per call so mid-session toggles apply without rebuilding
+  // the TransferManager.
+  getFilterSmallUtxos: () => boolean
 }
 
 export type CctCallbacks = Pick<
@@ -182,8 +188,19 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   }
 
   const getUtxos: CctCallbacks['getUtxos'] = async chainAlias => {
+    // Read once, before any await: the asset id must describe the same
+    // network the signer was built for, even if developer mode flips
+    // while the UTXO fetch is in flight.
+    const isTestnet = deps.getIsDeveloperMode()
     const signer = await getReadOnlySigner()
-    return signer.getUTXOs(chainAlias)
+    const utxoSet = await signer.getUTXOs(chainAlias)
+    if (!deps.getFilterSmallUtxos()) return utxoSet
+    // CP-13903: drop dust from the spendable set, mirroring extension
+    // Fusion's getMaxUtxoSet. getAtomicUtxos stays deliberately unfiltered —
+    // filtering imports would strand exported dust in atomic memory.
+    return new utils.UtxoSet(
+      filterOutSmallUtxos(utxoSet.getUTXOs(), getAvaxAssetId(isTestnet))
+    )
   }
 
   const getWalletAddressesForChainAlias: CctCallbacks['getWalletAddressesForChainAlias'] =
