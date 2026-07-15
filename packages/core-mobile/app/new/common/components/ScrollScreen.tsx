@@ -100,8 +100,6 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   testID?: string
   /** Called when the scroll position reaches the end of the content */
   onScrolledToEnd?: (reachedEnd: boolean) => void
-  /** Whether this screen should not be scrollable */
-  noScroll?: boolean
 }
 
 const KeyboardScrollView = Animated.createAnimatedComponent(
@@ -140,7 +138,6 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // per-screen change with its own QA.
       mode = 'layout',
       disableStickyFooter,
-      noScroll,
       showNavigationHeaderTitle = true,
       hideHeaderBackground,
       headerCenterOverlay,
@@ -391,13 +388,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           animated: true
         })
       },
-      [
-        onScrollEndDragProp,
-        title,
-        subtitle,
-        headerLayout?.height,
-        titleHeight.value
-      ]
+      [onScrollEndDragProp, title, subtitle, headerLayout?.height, titleHeight]
     )
 
     // Commit a new layout object only when the measured rect actually changed.
@@ -499,7 +490,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
                     <Animated.View
                       onLayout={handleTitleLayout}
                       style={animatedTitleStyle}>
-                      <Text variant="heading2">{title}</Text>
+                      <Text variant="heading2" sx={titleSx}>
+                        {title}
+                      </Text>
                     </Animated.View>
                   ) : null}
 
@@ -716,9 +709,12 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             contentContainerStyle={[
               props?.contentContainerStyle,
               {
+                // `footerLayout` is measured on the padded footer wrapper, so
+                // its height already includes the bottom safe area — only add
+                // the inset when there's no measured footer.
                 paddingBottom:
-                  (footerLayout?.height ?? 0) +
-                  (disableStickyFooter ? insets.bottom : 0) +
+                  (footerLayout?.height ??
+                    (disableStickyFooter ? insets.bottom : 0)) +
                   EXTRA_PADDING_BOTTOM,
                 // Offset lives on the scroll view's margin when below the
                 // header; otherwise inset the content so it sits under the
