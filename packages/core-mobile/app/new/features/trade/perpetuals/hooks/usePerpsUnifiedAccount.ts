@@ -59,9 +59,11 @@ export function usePerpsUnifiedAccount(): UsePerpsUnifiedAccountResult {
     }
   })
 
+  const { mutateAsync: enableMutateAsync, isPending: isEnabling } =
+    enableMutation
   const enableUnifiedAccount = useCallback(async () => {
     try {
-      await enableMutation.mutateAsync()
+      await enableMutateAsync()
     } catch (e) {
       logHyperliquidError('[usePerpsUnifiedAccount] enable failed', e)
       if (isPerpsUserRejection(e)) {
@@ -72,12 +74,12 @@ export function usePerpsUnifiedAccount(): UsePerpsUnifiedAccountResult {
       }
       throw e
     }
-  }, [enableMutation])
+  }, [enableMutateAsync])
 
   return {
     isUnifiedAccount,
     isLoading,
-    isEnabling: enableMutation.isPending,
+    isEnabling,
     enableUnifiedAccount
   }
 }

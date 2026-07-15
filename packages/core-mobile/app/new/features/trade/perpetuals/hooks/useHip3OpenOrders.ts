@@ -27,6 +27,16 @@ const EMPTY: Hip3OpenOrdersAggregate = { orders: [], isLoading: false }
 const hip3OrdersCache = new Map<string, Record<string, readonly OpenOrder[]>>()
 const hip3SeededScopes = new Set<string>()
 
+/** Last cached per-dex orders for a scope (empty when unseen). */
+const initialOrdersFor = (
+  scopeKey: string
+): Record<string, readonly OpenOrder[]> =>
+  scopeKey.length > 0 ? hip3OrdersCache.get(scopeKey) ?? {} : {}
+
+/** Whether a scope has already completed its first REST seed this session. */
+const isScopeSeeded = (scopeKey: string): boolean =>
+  scopeKey.length > 0 && hip3SeededScopes.has(scopeKey)
+
 /**
  * Aggregates a user's open orders on HIP-3 (builder-deployed) dexs by fanning
  * out `getOpenOrders(user, dex)` across every builder dex (there is no single
@@ -60,10 +70,8 @@ export const useHip3OpenOrders = (
   /** Latest open orders per builder dex (seeded by REST, kept live by WS). */
   const [ordersByDex, setOrdersByDex] = useState<
     Record<string, readonly OpenOrder[]>
-  >(() => (scopeKey ? hip3OrdersCache.get(scopeKey) ?? {} : {}))
-  const [seeded, setSeeded] = useState(() =>
-    scopeKey ? hip3SeededScopes.has(scopeKey) : false
-  )
+  >(() => initialOrdersFor(scopeKey))
+  const [seeded, setSeeded] = useState(() => isScopeSeeded(scopeKey))
   /** `user|dexKey` of the cached orders — used to drop them on an account / dex switch. */
   const scopeRef = useRef('')
 

@@ -29,6 +29,10 @@ export const usePerpsActiveAssetData = (
 
   const query = useQuery({
     enabled: manager !== null && userAddress !== undefined && coin.length > 0,
+    // `manager` is intentionally excluded from the key: it is a non-serializable
+    // singleton gated by `enabled`, and the key must stay stable across manager
+    // re-inits. `userAddress`/`coin`/refresh-nonce already scope the data.
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.PERPS_ACTIVE_ASSET_DATA,
       userAddress,

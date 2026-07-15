@@ -15,6 +15,10 @@ export function useUserAbstraction(): UserAbstractionMode | undefined {
   const { manager, userAddress, clearinghouseRefreshNonce } = usePerps()
 
   const query = useQuery({
+    // `manager` is intentionally excluded from the key: it is a non-serializable
+    // singleton gated by `enabled`, and the key must stay stable across manager
+    // re-inits. `userAddress`/refresh-nonce already scope the data.
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.PERPS_USER_ABSTRACTION,
       userAddress,

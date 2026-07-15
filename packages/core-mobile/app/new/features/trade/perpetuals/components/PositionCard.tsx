@@ -31,6 +31,73 @@ import { PerpsCoinLogo } from './PerpsCoinLogo'
 
 const CARD_WIDTH = 280
 
+type Theme = ReturnType<typeof useTheme>['theme']
+type FormatCurrency = ReturnType<typeof useFormatCurrency>['formatCurrency']
+
+const pnlColorFor = (status: PriceChangeStatus, theme: Theme): string => {
+  if (status === PriceChangeStatus.Down) {
+    return theme.colors.$textDanger
+  }
+  if (status === PriceChangeStatus.Up) {
+    return theme.colors.$textSuccess
+  }
+  return theme.colors.$textPrimary
+}
+
+// TP/SL live in the open-orders feed; while it's still loading show `-` rather
+// than prematurely rendering `None`.
+const formatTrigger = (
+  pending: boolean,
+  value: number,
+  formatCurrency: FormatCurrency
+): string => {
+  if (pending) {
+    return '-'
+  }
+  if (value === 0) {
+    return 'None'
+  }
+  return formatCurrency({ amount: value })
+}
+
+const buildDetailRows = (
+  position: Position,
+  formatCurrency: FormatCurrency
+): GroupListItem[] => {
+  const rows: GroupListItem[] = []
+  if (
+    position.liquidationPrice !== undefined &&
+    position.liquidationDistance !== undefined
+  ) {
+    rows.push({
+      title: 'Liquidation price',
+      subtitle: `${position.liquidationDistance.toFixed(
+        2
+      )}% from current price`,
+      value: formatCurrency({ amount: position.liquidationPrice })
+    })
+  }
+  if (position.markPrice !== undefined) {
+    rows.push({
+      title: 'Mark price',
+      value: formatCurrency({ amount: position.markPrice })
+    })
+  }
+  if (position.entryPrice !== undefined) {
+    rows.push({
+      title: 'Entry price',
+      value: formatCurrency({ amount: position.entryPrice })
+    })
+  }
+  if (position.funding !== undefined) {
+    rows.push({
+      title: 'Funding',
+      value: formatCurrency({ amount: position.funding })
+    })
+  }
+  return rows
+}
+
 interface PositionCardProps {
   position: Position
   style?: { width?: number; marginRight?: number }
@@ -62,29 +129,22 @@ export const PositionCard = ({
   const [expanded, setExpanded] = useState(defaultExpanded)
   const progress = useSharedValue(defaultExpanded ? 1 : 0)
 
-  const pnlColor =
-    position.pnlStatus === PriceChangeStatus.Down
-      ? theme.colors.$textDanger
-      : position.pnlStatus === PriceChangeStatus.Up
-      ? theme.colors.$textSuccess
-      : theme.colors.$textPrimary
+  const pnlColor = pnlColorFor(position.pnlStatus, theme)
 
   const sideLabel = position.side === 'long' ? 'Long' : 'Short'
   const formattedPrice = formatCurrency({ amount: position.price })
   const formattedPnl = formatCurrency({ amount: position.pnl })
-  // TP/SL live in the open-orders feed; while it's still loading show `-`
-  // rather than prematurely rendering `None`.
   const triggersPending = position.triggersPending ?? false
-  const formattedTakeProfit = triggersPending
-    ? '-'
-    : position.takeProfit === 0
-    ? 'None'
-    : formatCurrency({ amount: position.takeProfit })
-  const formattedStopLoss = triggersPending
-    ? '-'
-    : position.stopLoss === 0
-    ? 'None'
-    : formatCurrency({ amount: position.stopLoss })
+  const formattedTakeProfit = formatTrigger(
+    triggersPending,
+    position.takeProfit,
+    formatCurrency
+  )
+  const formattedStopLoss = formatTrigger(
+    triggersPending,
+    position.stopLoss,
+    formatCurrency
+  )
 
   const handleExpandToggle = useCallback(() => {
     setExpanded(prev => {
@@ -103,47 +163,10 @@ export const PositionCard = ({
     transform: [{ rotate: `${progress.value * 180}deg` }]
   }))
 
-  const detailRows = useMemo<GroupListItem[]>(() => {
-    const rows: GroupListItem[] = []
-    if (
-      position.liquidationPrice !== undefined &&
-      position.liquidationDistance !== undefined
-    ) {
-      rows.push({
-        title: 'Liquidation price',
-        subtitle: `${position.liquidationDistance.toFixed(
-          2
-        )}% from current price`,
-        value: formatCurrency({ amount: position.liquidationPrice })
-      })
-    }
-    if (position.markPrice !== undefined) {
-      rows.push({
-        title: 'Mark price',
-        value: formatCurrency({ amount: position.markPrice })
-      })
-    }
-    if (position.entryPrice !== undefined) {
-      rows.push({
-        title: 'Entry price',
-        value: formatCurrency({ amount: position.entryPrice })
-      })
-    }
-    if (position.funding !== undefined) {
-      rows.push({
-        title: 'Funding',
-        value: formatCurrency({ amount: position.funding })
-      })
-    }
-    return rows
-  }, [
-    position.liquidationPrice,
-    position.liquidationDistance,
-    position.markPrice,
-    position.entryPrice,
-    position.funding,
-    formatCurrency
-  ])
+  const detailRows = useMemo<GroupListItem[]>(
+    () => buildDetailRows(position, formatCurrency),
+    [position, formatCurrency]
+  )
 
   const expandedHeight = useSharedValue(0)
 

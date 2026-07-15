@@ -33,35 +33,52 @@ export type PositionTriggers = {
  * top-level rows and sometimes as one parent row with the sibling nested under
  * `children`
  */
+/** A reduce-only / position TP-SL trigger row for `coin` (children inherit coin). */
+const isPositionTrigger = (
+  order: InfoOrderStatusWire,
+  coin: string
+): boolean => {
+  const orderCoin = order.coin ?? coin
+  return Boolean(
+    orderCoin === coin &&
+      order.isTrigger &&
+      (order.isPositionTpsl || order.reduceOnly)
+  )
+}
+
+/** Assign a matched trigger's price to the TP or SL slot by its order type. */
+const applyTrigger = (
+  order: InfoOrderStatusWire,
+  acc: { takeProfit: number; stopLoss: number }
+): void => {
+  const triggerPx = toNumber(order.triggerPx)
+  if (triggerPx <= 0) {
+    return
+  }
+  const type = order.orderType?.toLowerCase() ?? ''
+  if (type.includes('take profit') || type.includes('tp')) {
+    acc.takeProfit = triggerPx
+  } else if (type.includes('stop') || type.includes('sl')) {
+    acc.stopLoss = triggerPx
+  }
+}
+
 const foldTriggerOrder = (
   order: InfoOrderStatusWire,
   coin: string,
   acc: { takeProfit: number; stopLoss: number }
 ): void => {
-  // A child may omit `coin`; inherit the parent's when matching.
-  const orderCoin = order.coin ?? coin
-  if (
-    orderCoin === coin &&
-    order.isTrigger &&
-    (order.isPositionTpsl || order.reduceOnly)
-  ) {
-    const triggerPx = toNumber(order.triggerPx)
-    if (triggerPx > 0) {
-      const type = order.orderType?.toLowerCase() ?? ''
-      if (type.includes('take profit') || type.includes('tp')) {
-        acc.takeProfit = triggerPx
-      } else if (type.includes('stop') || type.includes('sl')) {
-        acc.stopLoss = triggerPx
-      }
-    }
+  if (isPositionTrigger(order, coin)) {
+    applyTrigger(order, acc)
   }
 
   const children = (order as { children?: readonly unknown[] }).children
-  if (Array.isArray(children)) {
-    for (const child of children) {
-      if (isRichOrder(child)) {
-        foldTriggerOrder(child, coin, acc)
-      }
+  if (!Array.isArray(children)) {
+    return
+  }
+  for (const child of children) {
+    if (isRichOrder(child)) {
+      foldTriggerOrder(child, coin, acc)
     }
   }
 }
