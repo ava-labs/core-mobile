@@ -1072,7 +1072,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={false}
           amount={toTokenValue}
-          balance={toToken?.balance}
+          balance={toToken ? getSwappableBalance(toToken) : undefined}
           shouldShowBalance={true}
           title="You receive"
           token={

@@ -50,11 +50,20 @@ describe('getSwappableBalance', () => {
     expect(getSwappableBalance(token)).toBe(0n)
   })
 
-  it('falls back to balance when available is present but not a bigint', () => {
+  it('falls back to balance when available is the key but the value is undefined', () => {
     const token = {
       type: TokenType.NATIVE,
       balance: 7000n,
       available: undefined
+    } as unknown as LocalTokenWithBalance
+    expect(getSwappableBalance(token)).toBe(7000n)
+  })
+
+  it('falls back to balance when available is a non-bigint value (e.g. a string)', () => {
+    const token = {
+      type: TokenType.NATIVE,
+      balance: 7000n,
+      available: '3000'
     } as unknown as LocalTokenWithBalance
     expect(getSwappableBalance(token)).toBe(7000n)
   })
