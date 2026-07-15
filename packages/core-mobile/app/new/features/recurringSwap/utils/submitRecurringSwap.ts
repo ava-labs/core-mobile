@@ -1,5 +1,9 @@
 import type { Hex } from 'viem'
-import type { Chain, RecurringQuoteResponse } from '@avalabs/fusion-sdk'
+import type {
+  Chain,
+  GasSettings,
+  RecurringQuoteResponse
+} from '@avalabs/fusion-sdk'
 import {
   ApprovalRevertedError,
   ErrorReason,
@@ -62,6 +66,22 @@ export type SubmitRecurringSwapParams = {
   fromTokenNetworkChainId: number
   toTokenNetworkChainId: number
   slippageBps?: number
+  // Gas settings forwarded to `executeFirstFill`. MUST carry an explicit
+  // EIP-1559 tier override (maxFeePerGas / maxPriorityFeePerGas): the SDK's
+  // one-click batch path spreads `maybe1559(gasSettings)` onto the batch txs
+  // without estimating fees, so an absent maxFeePerGas leaves the batch txs
+  // fee-less — tripping EvmSigner.signBatch's guard and forcing sequential
+  // per-tx approvals instead of the BatchApprovalScreen. Built by the
+  // SwapContext `recurringGasSettings` memo. (CP-14641)
+  gasSettings: GasSettings
+  // Whether the active wallet can batch-sign (MNEMONIC / SEEDLESS /
+  // PRIVATE_KEY). Drives `fallbackToDefaultOnBatchFailure`: software wallets
+  // reach the manual BatchApprovalScreen, so a batch failure there is a user
+  // rejection (or a real error) that must ABORT — not silently re-prompt via
+  // the sequential per-tx path. Hardware / WalletConnect never reach the
+  // screen (signBatch throws `BatchSigningUnsupportedError` first), so they
+  // still need the fallback to complete the swap one tx at a time. (CP-14641)
+  isBatchSigningSupported: boolean
 }
 
 export type SubmitRecurringSwapResult = { txHash: Hex }
@@ -102,7 +122,9 @@ export async function submitRecurringSwap(
     toTokenLocalId,
     fromTokenNetworkChainId,
     toTokenNetworkChainId,
-    slippageBps
+    slippageBps,
+    gasSettings,
+    isBatchSigningSupported
   } = params
 
   // Exact key to invalidate just this quote on expiry / SDK rejection (and
@@ -191,15 +213,28 @@ export async function submitRecurringSwap(
 
   let result: { txHash: Hex }
   try {
-    // `fallbackToDefaultOnBatchFailure: true` matches `transferAsset`'s UX —
-    // try the one-click approve+swap batch first, and if the wallet rejects
-    // the batch (Ledger, certain WalletConnect peers), fall back to two
-    // sequential signatures rather than bubbling the batch error.
+    // `fallbackToDefaultOnBatchFailure` is wallet-type-aware (CP-14641):
+    //
+    // HW/WC (isBatchSigningSupported === false): `EvmSigner.signBatch` throws
+    // `BatchSigningUnsupportedError` immediately — before any screen — so the
+    // flag MUST be true to let the SDK re-issue each tx one-by-one through the
+    // single-tx signing path (each hits the normal /approval + Ledger flow).
+    //
+    // Software wallets (isBatchSigningSupported === true): signBatch dispatches
+    // the manual `BatchApprovalScreen`. The flag MUST be false — the SDK's
+    // catch is a blanket `catch(e){ if(!flag) throw e }` that can't tell a user
+    // rejection from a real failure, so with the flag on, tapping Reject on the
+    // batch screen would silently re-prompt the whole thing as sequential per-tx
+    // approvals. Off = a batch reject/error aborts cleanly, as the user intends.
     result = await markrRecurring.executeFirstFill({
       quote,
       fromAddress: fromAddress as `0x${string}`,
       sourceChain,
-      fallbackToDefaultOnBatchFailure: true,
+      // Explicit 1559 fees so the SDK's batch path fills maxFeePerGas on the
+      // batch txs; without this the batch guard trips and the flow falls back
+      // to sequential per-tx approvals. (CP-14641)
+      gasSettings,
+      fallbackToDefaultOnBatchFailure: !isBatchSigningSupported,
       signerContext
     })
   } catch (err) {

@@ -6,6 +6,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { differenceInDays } from 'date-fns'
+import { formatDurationInDays } from 'features/stake/utils'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -85,14 +86,14 @@ export const DurationOptions = ({
                   <Text
                     variant="body1"
                     sx={{
-                      fontWeight: 500,
+                      fontFamily: 'Inter-SemiBold',
                       color: selectedTheme.colors.$textPrimary
                     }}>
                     {'numberOfDays' in item
-                      ? `${item.numberOfDays} days`
+                      ? formatDurationInDays(item.numberOfDays)
                       : item.stakeDurationFormat ===
                           StakeDurationFormat.Custom && customDurationInDays
-                      ? `${customDurationInDays} days`
+                      ? formatDurationInDays(customDurationInDays)
                       : 'Set'}
                   </Text>
                 </View>

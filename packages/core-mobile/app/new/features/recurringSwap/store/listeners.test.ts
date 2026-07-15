@@ -107,12 +107,48 @@ jest.mock('contexts/ReactQueryProvider', () => ({
   }
 }))
 
+// ─── posthog selector mock ────────────────────────────────────────────────────
+// The SWAP_RECURRING kill-switch drives whether the failure watcher wires up
+// the push-notification subscription pass. `listeners.ts` only consumes
+// `selectIsRecurringSwapsBlocked` from this barrel, so a minimal stub avoids
+// pulling the real module's heavy import graph (WalletFactory, etc.) into the
+// test.
+
+let mockIsRecurringSwapsBlocked = false
+jest.mock('store/posthog', () => ({
+  selectIsRecurringSwapsBlocked: () => mockIsRecurringSwapsBlocked
+}))
+
+// ─── notification-subscription mocks ──────────────────────────────────────────
+// The per-order push-subscribe pass (`ensureOrderSubscriptions`) resolves the
+// deviceArn then POSTs one subscribe per subscribable order. Stub both network
+// boundaries so the gating tests can assert whether the pass ran without
+// touching the real notification-sender clients.
+
+const mockRegisterAndGetDeviceArn = jest.fn<Promise<string>, []>(() =>
+  Promise.resolve('arn:test-device')
+)
+jest.mock('services/notifications/registerDeviceToNotificationSender', () => ({
+  registerAndGetDeviceArn: () => mockRegisterAndGetDeviceArn()
+}))
+
+const mockSubscribeForRecurringSwap = jest.fn<Promise<void>, [unknown]>(() =>
+  Promise.resolve()
+)
+jest.mock(
+  'services/notifications/recurringSwap/subscribeForRecurringSwap',
+  () => ({
+    subscribeForRecurringSwap: (arg: unknown) =>
+      mockSubscribeForRecurringSwap(arg)
+  })
+)
+
 // ─── Subject under test ───────────────────────────────────────────────────────
 
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import { TransferSignatureReason } from '@avalabs/fusion-sdk'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onRehydrationComplete } from 'store/app/slice'
 import { RECURRING_SCHEDULES_QK } from '../hooks/useRecurringSchedules'
 import { RecurringOrderStatus, type RecurringOrder } from '../types'
 import {
@@ -189,7 +225,13 @@ describe('startRecurringFailureWatcher', () => {
       clearPending: jest.fn(),
       isExpired: jest.fn<boolean, [string, number?]>(() => false)
     }
-    startRecurringFailureWatcher()
+    mockIsRecurringSwapsBlocked = false
+    mockRegisterAndGetDeviceArn.mockClear()
+    mockSubscribeForRecurringSwap.mockClear()
+    // Live reader — evaluated on every cache event — mirrors production
+    // (`selectIsRecurringSwapsBlocked(listenerApi.getState())`). Flipping
+    // `mockIsRecurringSwapsBlocked` between updates exercises the live re-read.
+    startRecurringFailureWatcher(() => mockIsRecurringSwapsBlocked)
   })
 
   // ── 1. New failure detection + de-dup ──────────────────────────────────────
@@ -609,6 +651,86 @@ describe('startRecurringFailureWatcher', () => {
 
     expect(mockPendingStoreState.clearPending).not.toHaveBeenCalled()
   })
+
+  // ── Kill-switch gating of the push-subscription pass ───────────────────────
+  // The SWAP_RECURRING kill-switch gates ONLY the per-order push-subscribe
+  // pass; the failure snackbar and pending-action reconciliation run
+  // regardless. The gate is read live per cache event (not snapshotted), so a
+  // mid-session flip takes effect on the next refetch.
+
+  it('subscribes subscribable orders when the kill-switch is off', async () => {
+    mockIsRecurringSwapsBlocked = false
+
+    fireQueryUpdate([BASE_SCHEDULE])
+    await flush()
+    await flush()
+
+    expect(mockSubscribeForRecurringSwap).toHaveBeenCalledTimes(1)
+    expect(mockSubscribeForRecurringSwap).toHaveBeenCalledWith({
+      orderId: BASE_SCHEDULE.orderId,
+      deviceArn: 'arn:test-device'
+    })
+  })
+
+  it('does NOT subscribe (or resolve a deviceArn) when the kill-switch is on', async () => {
+    mockIsRecurringSwapsBlocked = true
+
+    fireQueryUpdate([BASE_SCHEDULE])
+    await flush()
+    await flush()
+
+    expect(mockRegisterAndGetDeviceArn).not.toHaveBeenCalled()
+    expect(mockSubscribeForRecurringSwap).not.toHaveBeenCalled()
+  })
+
+  it('still surfaces the failure snackbar when the kill-switch is on', async () => {
+    mockIsRecurringSwapsBlocked = true
+    seedInitialObservation()
+    await flush()
+
+    fireQueryUpdate([
+      {
+        ...BASE_SCHEDULE,
+        failures: [
+          {
+            executionIndex: 1,
+            reasons: ['Quote expired before execution'],
+            tryCount: 3,
+            failedAt: 1_700_001_000
+          }
+        ]
+      } as RecurringOrder
+    ])
+    await flush()
+
+    expect(showSnackbarSpy).toHaveBeenCalledWith(
+      'Recurring swap execution failed'
+    )
+    // Snackbar fired, but the gated push-subscribe pass did not.
+    expect(mockSubscribeForRecurringSwap).not.toHaveBeenCalled()
+  })
+
+  it('re-reads the kill-switch live: a mid-session flip on gates the next refetch', async () => {
+    // First refetch while unblocked → subscribes.
+    mockIsRecurringSwapsBlocked = false
+    fireQueryUpdate([BASE_SCHEDULE])
+    await flush()
+    await flush()
+    expect(mockSubscribeForRecurringSwap).toHaveBeenCalledTimes(1)
+
+    // Flag flips on mid-session. A snapshot captured at wire time would keep
+    // subscribing; the live reader must gate the next refetch. Use a fresh
+    // order id so the subscribed-set dedupe isn't what suppresses the call.
+    mockSubscribeForRecurringSwap.mockClear()
+    mockIsRecurringSwapsBlocked = true
+    fireQueryUpdate([
+      { ...BASE_SCHEDULE, orderId: '0xorder2' } as RecurringOrder
+    ])
+    await flush()
+    await flush()
+
+    expect(mockSubscribeForRecurringSwap).not.toHaveBeenCalled()
+  })
 })
 
 // ─── addRecurringSwapListeners ────────────────────────────────────────────────
@@ -621,6 +743,10 @@ describe('addRecurringSwapListeners', () => {
   beforeEach(() => {
     mockCacheSubscribers = []
     mockInvalidate.mockReset()
+    mockIsRecurringSwapsBlocked = false
+    mockRegisterAndGetDeviceArn.mockClear()
+    mockSubscribeForRecurringSwap.mockClear()
+    Object.keys(mockMmkvStore).forEach(k => delete mockMmkvStore[k])
   })
 
   it('registers an onAppUnlocked listener that invalidates the recurring-schedules cache', () => {
@@ -641,13 +767,72 @@ describe('addRecurringSwapListeners', () => {
     })
   })
 
-  it('starts the React Query cache subscriber', () => {
+  it('starts the React Query cache subscriber on rehydration', () => {
     const startListening = jest.fn()
 
     expect(mockCacheSubscribers).toHaveLength(0)
 
     addRecurringSwapListeners(startListening as never)
 
+    // The subscriber is wired lazily by the onRehydrationComplete effect, not
+    // at registration time.
+    expect(mockCacheSubscribers).toHaveLength(0)
+
+    const call = startListening.mock.calls.find(
+      c => c[0]?.actionCreator === onRehydrationComplete
+    )
+    expect(call).toBeDefined()
+
+    const unsubscribe = jest.fn()
+    const getState = jest.fn()
+    call?.[0].effect(undefined, { unsubscribe, getState })
+
+    // Fires exactly once and drops itself so the subscriber can't double-wire.
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
     expect(mockCacheSubscribers).toHaveLength(1)
+  })
+
+  // The wired subscriber must read the kill-switch LIVE from
+  // `listenerApi.getState()` on every matching cache event, not snapshot it at
+  // wire time. These two cases lock in both branches through the real wiring
+  // path.
+
+  it('wires a live gate that reads state per event and subscribes when unblocked', async () => {
+    const startListening = jest.fn()
+    addRecurringSwapListeners(startListening as never)
+
+    const call = startListening.mock.calls.find(
+      c => c[0]?.actionCreator === onRehydrationComplete
+    )
+    const getState = jest.fn(() => ({}))
+    call?.[0].effect(undefined, { unsubscribe: jest.fn(), getState })
+
+    mockIsRecurringSwapsBlocked = false
+    fireQueryUpdate([BASE_SCHEDULE])
+    await flush()
+    await flush()
+
+    // getState was consulted for THIS event (live read, not a wire-time snapshot).
+    expect(getState).toHaveBeenCalled()
+    expect(mockSubscribeForRecurringSwap).toHaveBeenCalledTimes(1)
+  })
+
+  it('wires a live gate that skips the subscribe pass when blocked at event time', async () => {
+    const startListening = jest.fn()
+    addRecurringSwapListeners(startListening as never)
+
+    const call = startListening.mock.calls.find(
+      c => c[0]?.actionCreator === onRehydrationComplete
+    )
+    const getState = jest.fn(() => ({}))
+    call?.[0].effect(undefined, { unsubscribe: jest.fn(), getState })
+
+    mockIsRecurringSwapsBlocked = true
+    fireQueryUpdate([BASE_SCHEDULE])
+    await flush()
+    await flush()
+
+    expect(getState).toHaveBeenCalled()
+    expect(mockSubscribeForRecurringSwap).not.toHaveBeenCalled()
   })
 })

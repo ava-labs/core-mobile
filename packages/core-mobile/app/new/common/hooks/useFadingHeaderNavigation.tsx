@@ -69,34 +69,56 @@ export const useFadingHeaderNavigation = ({
   }, [targetLayout])
 
   const handleLayout = useCallback((event: LayoutChangeEvent): void => {
-    setNavigationHeaderLayout(event.nativeEvent.layout)
+    const { x, y, width, height } = event.nativeEvent.layout
+    // Only commit a new object when the rect actually changed. `onLayout` can
+    // fire repeatedly with identical values while the native header re-renders
+    // (e.g. after `setOptions`); committing a fresh object each time would
+    // re-render → re-set header options → re-layout, a churn loop.
+    setNavigationHeaderLayout(prev =>
+      prev &&
+      prev.x === x &&
+      prev.y === y &&
+      prev.width === width &&
+      prev.height === height
+        ? prev
+        : { x, y, width, height }
+    )
   }, [])
 
-  const handleScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
-  ): void => {
-    let contentOffsetY: number | undefined
+  // Stable identity (it only touches refs and shared values): consumers put
+  // this in effect dep lists (e.g. StakeCardList's remount resync), where a
+  // new function per render would re-fire their effects on every re-render.
+  const handleScroll = useCallback(
+    (
+      event:
+        | NativeSyntheticEvent<NativeScrollEvent>
+        | NativeScrollEvent
+        | number
+    ): void => {
+      let contentOffsetY: number | undefined
 
-    if (typeof event === 'number') {
-      // If event is just a numeric value, use it directly
-      contentOffsetY = event
-    } else if ('nativeEvent' in event) {
-      // If event is a NativeSyntheticEvent<NativeScrollEvent>
-      contentOffsetY = event.nativeEvent.contentOffset.y
-    } else {
-      // If event is a NativeScrollEvent
-      contentOffsetY = event.contentOffset.y
-    }
+      if (typeof event === 'number') {
+        // If event is just a numeric value, use it directly
+        contentOffsetY = event
+      } else if ('nativeEvent' in event) {
+        // If event is a NativeSyntheticEvent<NativeScrollEvent>
+        contentOffsetY = event.nativeEvent.contentOffset.y
+      } else {
+        // If event is a NativeScrollEvent
+        contentOffsetY = event.contentOffset.y
+      }
 
-    const latestTargetLayout = targetLayoutRef.current
+      const latestTargetLayout = targetLayoutRef.current
 
-    if (latestTargetLayout && contentOffsetY !== undefined) {
-      const h = latestTargetLayout.height
-      // Avoid divide-by-zero: 0 height makes progress NaN/Infinity and forces full-opacity separator (Android).
-      targetHiddenProgress.value = h > 0 ? clamp(contentOffsetY / h, 0, 1) : 0
-      scrollY.value = contentOffsetY
-    }
-  }
+      if (latestTargetLayout && contentOffsetY !== undefined) {
+        const h = latestTargetLayout.height
+        // Avoid divide-by-zero: 0 height makes progress NaN/Infinity and forces full-opacity separator (Android).
+        targetHiddenProgress.value = h > 0 ? clamp(contentOffsetY / h, 0, 1) : 0
+        scrollY.value = contentOffsetY
+      }
+    },
+    [targetHiddenProgress, scrollY]
+  )
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
     const headerHeight =

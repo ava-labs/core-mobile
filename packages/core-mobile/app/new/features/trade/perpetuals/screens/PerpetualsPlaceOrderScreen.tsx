@@ -8,18 +8,24 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TERMS_OF_USE_URL } from 'common/consts/urls'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
+import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
-import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
+
+const GEO_BLOCKED_MESSAGE =
+  'Perpetual Futures are not available in your location.'
 
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
-  const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const [submitting, setSubmitting] = useState(false)
 
@@ -33,6 +39,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     leverage,
     liquidationPrice
   } = usePlaceOrder()
+
+  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
 
   const isLong = side === 'long'
   const directionLabel = isLong ? 'Long' : 'Short'
@@ -58,16 +66,30 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   })
 
   const handleConfirm = useCallback(async () => {
-    // UI-only: simulate the order submission. SDK wiring (marketOrder /
-    // placeOrderWithTpSl + agent signer) lands in a follow-up.
     setSubmitting(true)
     try {
+      // Re-check geo fresh (bypassing the 5-min cache) right before submitting
+      // — the user may have toggled a VPN since the screen loaded. Abort and
+      // surface the restriction rather than placing an order. A re-check that
+      // fails outright counts as blocked (fail closed).
+      let blocked: boolean
+      try {
+        blocked = await recheckGeoBlock()
+      } catch {
+        blocked = true
+      }
+      if (blocked) {
+        showSnackbar(GEO_BLOCKED_MESSAGE)
+        return
+      }
+      // UI-only: simulate the order submission. SDK wiring (marketOrder /
+      // placeOrderWithTpSl + agent signer) lands in a follow-up.
       await new Promise(resolve => setTimeout(resolve, 1200))
       router.back()
     } finally {
       setSubmitting(false)
     }
-  }, [router])
+  }, [router, recheckGeoBlock])
 
   const renderFooter = useCallback(
     () => (
@@ -75,12 +97,12 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         mode="single"
         label={`Slide to buy ${directionLabel}`}
         loading={submitting}
-        disabled={amount <= 0}
+        disabled={amount <= 0 || isGeoBlocked}
         onConfirm={handleConfirm}
         testID="perpetuals_place_order_confirm"
       />
     ),
-    [directionLabel, submitting, amount, handleConfirm]
+    [directionLabel, submitting, amount, isGeoBlocked, handleConfirm]
   )
 
   const leverageBadge = (
@@ -105,7 +127,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       navigationTitle="Place your bet"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8, gap: 20, paddingBottom: 8 }}>
+      <View sx={{ paddingTop: 8, gap: 20 }}>
         <View sx={{ gap: 8 }}>
           <PositionPill coin={coin} price={entryPrice} side={side} />
 
@@ -174,23 +196,51 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
             testID="perpetuals_place_order_stop_loss"
           />
         </View>
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6
-          }}>
-          <Text
-            variant="caption"
-            sx={{
-              color: '$textSecondary'
-            }}>
-            Powered by
-          </Text>
-          <HyperliquidLogo color={alpha(theme.colors.$textPrimary, 0.6)} />
-        </View>
+        <TermsOfUseText />
       </View>
     </ScrollScreen>
+  )
+}
+
+const TermsOfUseText = (): JSX.Element => {
+  const { theme } = useTheme()
+  const { openUrl } = useInAppBrowser()
+
+  const openTermsOfUse = useCallback(() => {
+    openUrl(TERMS_OF_USE_URL)
+  }, [openUrl])
+
+  return (
+    <View sx={{ gap: 20 }}>
+      <Text variant="caption" style={{ textAlign: 'center' }}>
+        {`By trading, you agree to the `}
+        <Text
+          variant="caption"
+          onPress={openTermsOfUse}
+          suppressHighlighting
+          style={{ textDecorationLine: 'underline' }}
+          testID="perpetuals_place_order_terms_link">
+          Terms of Use
+        </Text>
+        {`.\nPerpetual futures involve unique risks.`}
+      </Text>
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 7,
+          height: 32
+        }}>
+        <Text
+          variant="caption"
+          sx={{
+            color: '$textSecondary'
+          }}>
+          Powered by
+        </Text>
+        <HyperliquidLogo color={alpha(theme.colors.$textPrimary, 0.6)} />
+      </View>
+    </View>
   )
 }

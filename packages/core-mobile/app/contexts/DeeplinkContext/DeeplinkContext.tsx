@@ -14,8 +14,12 @@ import Logger from 'utils/Logger'
 import {
   selectIsEarnBlocked,
   selectIsAllNotificationsBlocked,
-  selectIsInAppDefiBlocked
+  selectIsInAppDefiBlocked,
+  selectIsFusionAvalancheCctEnabled,
+  selectIsFusionEnabled
 } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
@@ -45,6 +49,19 @@ export const DeeplinkContextProvider = ({
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isIdled = useSelector(selectIsIdled)
+  // Stake-complete deeplinks redirect to the CCT swap (P → C AVAX) only when
+  // the whole swap surface is usable: the Fusion gate covers the swap screen
+  // itself, the CCT gate covers the Avalanche cross-chain pair.
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
+  const isFusionAvalancheCctEnabled = useSelector(
+    selectIsFusionAvalancheCctEnabled
+  )
+  const shouldRedirectStakeCompleteToCct =
+    isFusionEnabled && isFusionAvalancheCctEnabled
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const hasSeenSwapOnboarding = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.SWAP_ONBOARDING)
+  )
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
 
@@ -157,6 +174,9 @@ export const DeeplinkContextProvider = ({
         dispatch,
         isEarnBlocked,
         isInAppDefiBlocked,
+        shouldRedirectStakeCompleteToCct,
+        isDeveloperMode,
+        shouldShowSwapOnboarding: !hasSeenSwapOnboarding,
         openUrl
       })
       // once we used the url, we can expire it
@@ -168,6 +188,9 @@ export const DeeplinkContextProvider = ({
     dispatch,
     isEarnBlocked,
     isInAppDefiBlocked,
+    shouldRedirectStakeCompleteToCct,
+    isDeveloperMode,
+    hasSeenSwapOnboarding,
     openUrl,
     isIdled
   ])

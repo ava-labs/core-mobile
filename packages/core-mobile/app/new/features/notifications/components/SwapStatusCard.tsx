@@ -113,7 +113,7 @@ export const SwapStatusCard = ({
             variant="body1"
             sx={{
               lineHeight: 22,
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               color: statusColor
             }}>
             {statusTitle}

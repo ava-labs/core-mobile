@@ -225,6 +225,60 @@ describe('useEvmInjectedProvider', () => {
       const { result } = renderProvider()
       expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
     })
+
+    it('is built once per tab — a wallet_switchEthereumChain (tabChainId change) does NOT rebuild it (CP-14615)', () => {
+      // Rebuilding providerShimJs changes the WebView's
+      // injectedJavaScriptBeforeContentLoaded prop, which makes react-native-webview
+      // call resetupScripts and silently drop the switch's own response injection —
+      // the dApp's switchChain promise then hangs forever (endless spinner).
+      setupMocks({ tabChainId: undefined })
+      const { result, rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
+
+      // The tab gets pinned to Ethereum by a switch; the shim must stay identical.
+      setupMocks({ tabChainId: 1 })
+      rerender()
+      expect(result.current.providerShimJs).toBe('SHIM(0xa86a)')
+    })
+  })
+
+  describe('chain re-assert on committed URL (CP-14615 Part B)', () => {
+    it('re-asserts the live EVM chain via __coreProviderReassertChain on a commit', () => {
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+      act(() => {
+        result.current.handleCommittedUrl('https://example.com')
+      })
+      expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        expect.stringContaining("__coreProviderReassertChain('0xa86a')")
+      )
+    })
+
+    it('does NOT re-assert when the resolved live chain is non-EVM', () => {
+      const btc = {
+        vmName: NetworkVMType.BITCOIN,
+        chainId: 99999,
+        rpcUrl: 'https://btc.example'
+      }
+      setupMocks({
+        network: btc,
+        allNetworks: { ...mockAllNetworks, 99999: btc }
+      })
+      const { result } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+      mockInjectJavaScript.mockClear()
+      act(() => {
+        result.current.handleCommittedUrl('https://example.com')
+      })
+      expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+        expect.stringContaining('__coreProviderReassertChain')
+      )
+    })
   })
 
   describe('sendResponse', () => {

@@ -13,7 +13,9 @@ import { useSharedValue } from 'react-native-reanimated'
 import { MarketChart } from '../components/MarketChart'
 import { MarketDetailsHeader } from '../components/MarketDetailsHeader'
 import { MarketStatistics } from '../components/MarketStatistics'
+import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
+import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 
 const DEFAULT_COIN = 'BTC'
 
@@ -43,6 +45,8 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
 
   const { coin: coinParam } = useLocalSearchParams<{ coin?: string }>()
   const coin = (coinParam ?? DEFAULT_COIN).toUpperCase()
+
+  const { isGeoBlocked } = usePerpsAvailability()
 
   const { assetCtx, universe, pxDecimals } = useHyperliquidMarketContext(coin)
   const pricescale =
@@ -76,6 +80,12 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   }, [coin, router])
 
   const renderFooter = useCallback(() => {
+    // Perps unavailable in this region — replace the trade CTA with the
+    // geo-restriction notice. The rest of the screen stays browsable.
+    if (isGeoBlocked) {
+      return <PerpsGeoRestrictionWarning />
+    }
+
     if (!HAS_BALANCE) {
       return (
         <SlidingButton
@@ -115,6 +125,7 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
       />
     )
   }, [
+    isGeoBlocked,
     handleDeposit,
     handleShort,
     handleLong,

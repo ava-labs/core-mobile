@@ -1,7 +1,11 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { isAvalancheCctRoute, isNativeAvaxToken } from './isAvalancheCctRoute'
+import {
+  isAvalancheCctRoute,
+  isCctOnlySource,
+  isNativeAvaxToken
+} from './isAvalancheCctRoute'
 
 const makeToken = (
   overrides: Partial<LocalTokenWithBalance> = {}
@@ -57,6 +61,52 @@ describe('isNativeAvaxToken', () => {
 
   it('rejects undefined', () => {
     expect(isNativeAvaxToken(undefined)).toBe(false)
+  })
+})
+
+describe('isCctOnlySource', () => {
+  it('accepts native AVAX on X-Chain', () => {
+    expect(
+      isCctOnlySource(makeToken({ networkChainId: ChainId.AVALANCHE_X }))
+    ).toBe(true)
+  })
+
+  it('accepts native AVAX on P-Chain', () => {
+    expect(
+      isCctOnlySource(makeToken({ networkChainId: ChainId.AVALANCHE_P }))
+    ).toBe(true)
+  })
+
+  it('accepts native AVAX on X/P Fuji chains', () => {
+    expect(
+      isCctOnlySource(makeToken({ networkChainId: ChainId.AVALANCHE_TEST_X }))
+    ).toBe(true)
+    expect(
+      isCctOnlySource(makeToken({ networkChainId: ChainId.AVALANCHE_TEST_P }))
+    ).toBe(true)
+  })
+
+  it('rejects native AVAX on C-Chain (C-chain can swap to ERC-20s like USDC)', () => {
+    expect(
+      isCctOnlySource(
+        makeToken({ networkChainId: ChainId.AVALANCHE_MAINNET_ID })
+      )
+    ).toBe(false)
+  })
+
+  it('rejects non-native tokens on X/P chains', () => {
+    expect(
+      isCctOnlySource(
+        makeToken({
+          type: TokenType.ERC20,
+          networkChainId: ChainId.AVALANCHE_X
+        })
+      )
+    ).toBe(false)
+  })
+
+  it('rejects undefined', () => {
+    expect(isCctOnlySource(undefined)).toBe(false)
   })
 })
 

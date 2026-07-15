@@ -1,10 +1,10 @@
-/**
- * 10% of the gross estimated delegation rewards charged as a convenience fee
- * for Fast Stake transactions. Mirrors the rate used by core-web (see
- * `apps/core/app/components/Stake/constants.ts`) so both clients quote the
- * user the same effective APY.
- */
-export const FAST_STAKE_FEE_RATE = 0.1
+// The convenience-fee rates are no longer compiled in here: the
+// `fast-stake-fee-enabled` / `delegation-fee-enabled` gates are multivariate
+// and their variant string carries the rate in basis points. See
+// `selectFastStakeFeeRate` / `selectDelegationFeeRate` in `store/posthog`
+// (no variant means no fee; core-web still hardcodes its 10%). The fee basis
+// is unchanged: the rate applies to the NET estimated rewards, after the
+// validator's own delegation fee.
 
 /**
  * Core-owned, P-Chain escrow address the convenience fee is paid to on
@@ -32,3 +32,28 @@ export const getFastStakeFeeEscrowAddress = (isTestnet: boolean): string =>
   isTestnet
     ? FAST_STAKE_FEE_ESCROW_ADDRESS_FUJI
     : FAST_STAKE_FEE_ESCROW_ADDRESS_MAINNET
+
+/**
+ * Core-owned, P-Chain escrow address the advanced delegate service fee is paid
+ * to on mainnet. Distinct from the Fast Stake escrow so the two fee streams
+ * can be accounted for separately. Mirrors core-web.
+ */
+export const DELEGATION_FEE_ESCROW_ADDRESS_MAINNET =
+  'P-avax15e4vzdau3hgnk9a95xaj7q33l26rrzju9ttj63'
+
+/**
+ * Fuji counterpart of {@link DELEGATION_FEE_ESCROW_ADDRESS_MAINNET}. On testnet
+ * this shares the Fast Stake escrow address (mirrors core-web).
+ */
+export const DELEGATION_FEE_ESCROW_ADDRESS_FUJI =
+  FAST_STAKE_FEE_ESCROW_ADDRESS_FUJI
+
+/**
+ * Returns the escrow address that the advanced delegate service fee should be
+ * sent to for the given network environment. Mirrors
+ * {@link getFastStakeFeeEscrowAddress} for the delegate program.
+ */
+export const getDelegationFeeEscrowAddress = (isTestnet: boolean): string =>
+  isTestnet
+    ? DELEGATION_FEE_ESCROW_ADDRESS_FUJI
+    : DELEGATION_FEE_ESCROW_ADDRESS_MAINNET

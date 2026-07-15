@@ -4,8 +4,11 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   findNftToken,
   isCollectibleTransaction,
-  isPotentiallySwap
+  isInputOnlyContractCall,
+  isPotentiallySwap,
+  resolveTxUserAddress
 } from 'features/activity/utils'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType, Transaction } from 'store/transaction'
@@ -27,6 +30,7 @@ export const TokenActivityListItem: FC<Props> = ({
   } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
   const account = useSelector(selectActiveAccount)
+  const { getNetwork } = useNetworks()
   const currentPrice = useMarketTokenBySymbol({
     symbol: tx.tokens[0]?.symbol
   })?.currentPrice
@@ -116,7 +120,12 @@ export const TokenActivityListItem: FC<Props> = ({
       )
     }
 
-    const txType = fixUnknownTxType(tx, !!isFromAccount)
+    const userAddress = resolveTxUserAddress(
+      tx,
+      account,
+      getNetwork(Number(tx.chainId))
+    )
+    const txType = fixUnknownTxType(tx, !!isFromAccount, userAddress)
 
     return (
       <View
@@ -136,7 +145,7 @@ export const TokenActivityListItem: FC<Props> = ({
         />
       </View>
     )
-  }, [tx, isFromAccount, colors.$borderPrimary])
+  }, [tx, isFromAccount, colors.$borderPrimary, account, getNetwork])
 
   return (
     <ActivityListItem
@@ -156,9 +165,16 @@ export const TokenActivityListItem: FC<Props> = ({
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export function fixUnknownTxType(
   tx: Transaction,
-  isFromAccount: boolean
+  isFromAccount: boolean,
+  userAddress?: string
 ): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
+    // An input-only contract call (a leg leaves the user with nothing coming
+    // back) is not a swap — it's an ERC-20 approval, a cross-chain output leg,
+    // etc. Leaving it UNKNOWN makes the row show the Contract Call icon (via
+    // the isContractCall fallback in TransactionTypeIcon) and keeps it out of
+    // the Swap filter, matching the "Contract Call" title.
+    const contractCall = isInputOnlyContractCall(tx.tokens, userAddress)
     // if the tx has 3 tokens, it means we funded the gas
     if (tx.tokens.length > 2) {
       // if all the tokens have the same symbol, it's a send/receive
@@ -170,7 +186,7 @@ export function fixUnknownTxType(
           ? TransactionType.SEND
           : TransactionType.RECEIVE
       }
-      return TransactionType.SWAP
+      return contractCall ? TransactionType.UNKNOWN : TransactionType.SWAP
     }
     if (tx.tokens.length > 1) {
       if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
@@ -178,11 +194,11 @@ export function fixUnknownTxType(
           ? TransactionType.SEND
           : TransactionType.RECEIVE
       }
-      return TransactionType.SWAP
+      return contractCall ? TransactionType.UNKNOWN : TransactionType.SWAP
     }
     if (tx.tokens.length === 1) {
       if (isPotentiallySwap(tx)) {
-        return TransactionType.SWAP
+        return contractCall ? TransactionType.UNKNOWN : TransactionType.SWAP
       }
       return tx.isSender || isFromAccount
         ? TransactionType.SEND

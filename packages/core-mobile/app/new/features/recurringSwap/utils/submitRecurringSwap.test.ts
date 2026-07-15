@@ -1,4 +1,8 @@
-import type { Chain, RecurringQuoteResponse } from '@avalabs/fusion-sdk'
+import type {
+  Chain,
+  GasSettings,
+  RecurringQuoteResponse
+} from '@avalabs/fusion-sdk'
 
 // ─── Module mocks ─────────────────────────────────────────────────────────────
 
@@ -71,6 +75,15 @@ const QUOTE: RecurringQuoteResponse = {
   expiredAt: Math.floor(Date.now() / 1000) + 300
 }
 
+// Carries the explicit EIP-1559 override that must reach `executeFirstFill`
+// so the SDK fills fees on the batch txs (else the flow falls back to
+// sequential per-tx approvals). See buildFusionGasSettings. (CP-14641)
+const GAS_SETTINGS: GasSettings = {
+  estimateGasMarginBps: 300,
+  maxFeePerGas: 25_000_000_000n,
+  maxPriorityFeePerGas: 1_500_000_000n
+}
+
 const baseParams = {
   quote: QUOTE,
   fromAddress: FROM_ADDR,
@@ -86,7 +99,11 @@ const baseParams = {
   toTokenLocalId: 'NATIVE-avax',
   fromTokenNetworkChainId: 43114,
   toTokenNetworkChainId: 43114,
-  slippageBps: 50
+  slippageBps: 50,
+  gasSettings: GAS_SETTINGS,
+  // Default fixture is a software wallet — the only kind that reaches the
+  // manual BatchApprovalScreen.
+  isBatchSigningSupported: true
 }
 
 describe('submitRecurringSwap', () => {
@@ -114,8 +131,14 @@ describe('submitRecurringSwap', () => {
       quote: QUOTE,
       fromAddress: FROM_ADDR,
       sourceChain: SOURCE_CHAIN,
-      // Match `transferAsset`'s graceful one-click → sequential fallback.
-      fallbackToDefaultOnBatchFailure: true,
+      // Forwarded verbatim so the SDK's batch path fills maxFeePerGas on the
+      // batch txs — without it the batch guard trips and the flow falls back
+      // to sequential approvals. (CP-14641)
+      gasSettings: GAS_SETTINGS,
+      // Software wallet (isBatchSigningSupported: true) → NO fallback. The
+      // batch reaches the manual BatchApprovalScreen; a reject/error there must
+      // abort, not silently re-prompt as sequential per-tx approvals. CP-14641.
+      fallbackToDefaultOnBatchFailure: false,
       // The SDK forwards this verbatim onto `step.signerContext`, where
       // EvmSigner.signOne tags it with the action type derived from
       // `step.currentSignatureReason` (ScheduleRecurringSwap /
@@ -134,6 +157,53 @@ describe('submitRecurringSwap', () => {
         frequency: { unit: 'week', value: 1 }
       }
     })
+  })
+
+  // Regression guard for CP-14641: recurring first-fill must forward
+  // gasSettings carrying an explicit maxFeePerGas. If this drops, the SDK's
+  // one-click batch path leaves the batch txs fee-less, EvmSigner.signBatch's
+  // guard throws, and the flow falls back to sequential per-tx approvals
+  // instead of opening the BatchApprovalScreen.
+  it('forwards gasSettings with an explicit maxFeePerGas to executeFirstFill', async () => {
+    mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
+      txHash: '0xfill'
+    })
+
+    await submitRecurringSwap(baseParams)
+
+    const passed = mockMarkrRecurring.executeFirstFill.mock.calls[0]?.[0]
+    expect(passed.gasSettings).toEqual(GAS_SETTINGS)
+    expect(typeof passed.gasSettings.maxFeePerGas).toBe('bigint')
+  })
+
+  // CP-14641: a batch reject on a software wallet must abort, not fall back to
+  // sequential per-tx approvals. The SDK's blanket fallback catch can't tell a
+  // user rejection from a real failure, so software wallets disable it.
+  it('disables fallbackToDefaultOnBatchFailure for software wallets (batch reject aborts)', async () => {
+    mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
+      txHash: '0xfill'
+    })
+
+    await submitRecurringSwap({ ...baseParams, isBatchSigningSupported: true })
+
+    expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(
+      expect.objectContaining({ fallbackToDefaultOnBatchFailure: false })
+    )
+  })
+
+  // Hardware / WalletConnect never reach the batch screen (signBatch throws
+  // BatchSigningUnsupportedError first), so they still need the fallback to
+  // complete the swap one tx at a time.
+  it('enables fallbackToDefaultOnBatchFailure for hardware / WalletConnect wallets', async () => {
+    mockMarkrRecurring.executeFirstFill.mockResolvedValueOnce({
+      txHash: '0xfill'
+    })
+
+    await submitRecurringSwap({ ...baseParams, isBatchSigningSupported: false })
+
+    expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(
+      expect.objectContaining({ fallbackToDefaultOnBatchFailure: true })
+    )
   })
 
   it('fires RecurringSwapScheduled analytics + success snackbar after executeFirstFill resolves', async () => {

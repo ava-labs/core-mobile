@@ -16,6 +16,54 @@ describe('app/contexts/posthogUtils.ts', () => {
       })
     })
 
+    describe('multivariate fee gates', () => {
+      it('accepts a variant string (fee rate in bps) alongside plain booleans', () => {
+        expect(
+          sanitizeFeatureFlags({
+            featureFlags: {
+              [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000',
+              [FeatureGates.DELEGATION_FEE_ENABLED]: true
+            }
+          })
+        ).toStrictEqual({
+          [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000',
+          [FeatureGates.DELEGATION_FEE_ENABLED]: true
+        })
+      })
+
+      it('still drops variant strings served for regular boolean gates', () => {
+        expect(
+          sanitizeFeatureFlags({
+            featureFlags: {
+              [FeatureGates.FUSION]: '1000'
+            }
+          })
+        ).toStrictEqual({})
+      })
+
+      it('preserves the variant through version-payload gating', () => {
+        const featureFlags = sanitizeFeatureFlags(
+          {
+            featureFlags: {
+              [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000',
+              [FeatureGates.DELEGATION_FEE_ENABLED]: '250'
+            },
+            featureFlagPayloads: {
+              [FeatureGates.FAST_STAKE_FEE_ENABLED]: JSON.stringify('^1.32'),
+              [FeatureGates.DELEGATION_FEE_ENABLED]: JSON.stringify('^2')
+            }
+          },
+          '1.32.8'
+        )
+
+        // Version satisfied: the variant value survives instead of being
+        // collapsed to boolean `true`.
+        expect(featureFlags[FeatureGates.FAST_STAKE_FEE_ENABLED]).toBe('1000')
+        // Version not satisfied: the gate is disabled outright.
+        expect(featureFlags[FeatureGates.DELEGATION_FEE_ENABLED]).toBe(false)
+      })
+    })
+
     it('returns empty object if server returns empty featureFlags object', () => {
       expect(
         sanitizeFeatureFlags({

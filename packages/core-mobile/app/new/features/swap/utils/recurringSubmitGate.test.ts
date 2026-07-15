@@ -17,7 +17,9 @@ const READY: RecurringSubmitGateParams = {
   hasFromTokenValue: true,
   hasRecurringQuote: true,
   recurringSubmitting: false,
-  validationError: null
+  validationError: null,
+  isRecurringMinimumReady: true,
+  hasRecurringFees: true
 }
 
 describe('hasBlockingValidationError', () => {
@@ -75,6 +77,32 @@ describe('isRecurringReady', () => {
     expect(isRecurringReady({ ...READY, recurringSubmitting: true })).toBe(
       false
     )
+  })
+
+  // Race guard: the recurring quote can resolve before the Markr per-order
+  // minimum query settles. While the minimum is unknown the below-minimum
+  // validation check is skipped, so readiness must stay false until it settles
+  // — otherwise a quick tap could submit a sub-minimum per-order amount.
+  it('is false while the Markr minimum query has not settled', () => {
+    expect(isRecurringReady({ ...READY, isRecurringMinimumReady: false })).toBe(
+      false
+    )
+  })
+
+  it('is ready once the minimum query has settled (even with no floor)', () => {
+    // A settled "no minimum" (null) still counts as ready — the flag only
+    // tracks that the query is no longer in flight.
+    expect(isRecurringReady({ ...READY, isRecurringMinimumReady: true })).toBe(
+      true
+    )
+  })
+
+  // Cold-start fee guard: `recurringGasSettings` starts fee-less until live
+  // `networkFees` load. Submitting fee-less trips signBatch's guard and, on the
+  // software-wallet path (fallback disabled), hard-fails the whole swap — so
+  // readiness must stay false until the EIP-1559 override is filled. (CP-14641)
+  it('is false while the recurring batch gas fees are not yet filled', () => {
+    expect(isRecurringReady({ ...READY, hasRecurringFees: false })).toBe(false)
   })
 })
 

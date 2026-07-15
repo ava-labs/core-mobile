@@ -1,6 +1,7 @@
 import { AppListenerEffectAPI } from 'store/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { InteractionManager } from 'react-native'
+import { parseUri } from '@walletconnect/utils'
 import Logger from 'utils/Logger'
 import {
   onRehydrationComplete,
@@ -103,10 +104,68 @@ export const updateSessions = async ({
   }
 }
 
+/**
+ * A wc:v2 pairing uri carries its own `expiryTimestamp` (unix seconds); it is
+ * absent on legacy/v1 uris. The in-app browser re-surfaces stored `wc:` links
+ * on navigation, so an already-expired uri can be re-delivered here many times.
+ * Pairing with an expired uri throws and previously spammed "Failed to pair
+ * with dApp" toasts (CORE-REACT-NATIVE-62P), so we short-circuit it and show a
+ * single deduped, friendly snackbar instead of the generic error toast.
+ */
+const isExpiredWcUri = (uri: string): boolean => {
+  try {
+    const { expiryTimestamp } = parseUri(uri)
+    // `expiryTimestamp` is unix seconds. Treat at-or-past expiry as expired
+    // (`<=`) — marginally more conservative than the SDK's strict `<`, so a
+    // just-expired uri is skipped rather than attempted; the two only disagree
+    // when `Date.now()` lands exactly on the expiry-second boundary.
+    return expiryTimestamp !== undefined && expiryTimestamp * 1000 <= Date.now()
+  } catch {
+    // if the uri can't be parsed, let WalletConnectService.pair validate it as before
+    return false
+  }
+}
+
+const getWcTopic = (uri: string): string | undefined => {
+  try {
+    return parseUri(uri).topic
+  } catch {
+    return undefined
+  }
+}
+
+// Tracks the pairing TOPICS of expired uris we've already toasted, so a background
+// dapp tab replaying the same stale uri informs the user at most once instead of
+// spamming (CORE-REACT-NATIVE-62P). We key on the topic — never the full uri, which
+// embeds the v2 `symKey` secret — and keep it bounded (oldest evicts first) and
+// cleared on logout so it can't grow across a session.
+const EXPIRED_TOPIC_TOAST_CACHE_LIMIT = 100
+const toastedExpiredTopics = new Set<string>()
+
+const markExpiredTopicToasted = (topic: string): void => {
+  if (toastedExpiredTopics.size >= EXPIRED_TOPIC_TOAST_CACHE_LIMIT) {
+    const oldest = toastedExpiredTopics.values().next().value
+    if (oldest !== undefined) toastedExpiredTopics.delete(oldest)
+  }
+  toastedExpiredTopics.add(topic)
+}
+
 export const startSession = async (
   action: ReturnType<typeof newSession>
 ): Promise<void> => {
   const uri = action.payload
+
+  if (isExpiredWcUri(uri)) {
+    Logger.info('skipping pair for expired wallet connect uri')
+    const topic = getWcTopic(uri)
+    if (topic !== undefined && !toastedExpiredTopics.has(topic)) {
+      markExpiredTopicToasted(topic)
+      showSnackbar(
+        'This connection link has expired. Please try connecting again.'
+      )
+    }
+    return
+  }
 
   try {
     await WalletConnectService.pair(uri)
@@ -119,8 +178,11 @@ export const startSession = async (
   }
 }
 
-export const killAllSessions = async (): Promise<void> =>
-  WalletConnectService.killAllSessions()
+export const killAllSessions = async (): Promise<void> => {
+  // forget expired-topic toast history on logout so it can't grow across accounts
+  toastedExpiredTopics.clear()
+  return WalletConnectService.killAllSessions()
+}
 
 export const killSomeSessions = async (
   action: ReturnType<typeof killSessions>

@@ -203,9 +203,17 @@ const DefaultListScreen = <T,>({
     [scrollViewRef]
   )
 
+  // Stable header element — recreated only when the title text changes, so
+  // `useFadingHeaderNavigation`'s header-title sync effect doesn't re-run (and
+  // re-`setOptions`) on every render. See ScrollScreen for the same fix.
+  const navigationHeader = useMemo(
+    () => <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    [navigationTitle, title]
+  )
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout,
       hideHeaderBackground: shouldShowStickyHeader,
       hasSeparator: shouldShowStickyHeader
@@ -303,6 +311,11 @@ const DefaultListScreen = <T,>({
     }
   })
 
+  // Capture only the emptiness flag — referencing `data` inside the worklet
+  // would serialize the whole array to the UI thread, which throws on
+  // non-plain values (e.g. Big instances) since react-native-worklets 0.10.
+  const isListEmpty = data.length === 0
+
   const animatedTitleStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       scrollY.value,
@@ -315,7 +328,7 @@ const DefaultListScreen = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transform: [{ scale: isListEmpty ? 1 : scale }],
       transformOrigin: 'bottom left'
     }
   })

@@ -31,12 +31,35 @@ export type RecurringSubmitGateParams = {
   hasRecurringQuote: boolean
   recurringSubmitting: boolean
   validationError: ValidationErrorLike | null
+  /**
+   * True once the Markr per-order minimum query has *settled* (a value or a
+   * resolved "no minimum"), false while it's still loading. The below-minimum
+   * check is skipped while the minimum is unknown, so without this gate a user
+   * who taps quickly — recurring quote already resolved, minimum query still in
+   * flight — could submit a sub-minimum per-order amount the floor would have
+   * rejected. Gating readiness on the settled query closes that race.
+   */
+  isRecurringMinimumReady: boolean
+  /**
+   * True once `recurringGasSettings` carries an explicit EIP-1559 tier override
+   * (a `maxFeePerGas`). The recurring first-fill's one-click batch path spreads
+   * `maybe1559(gasSettings)` onto the batch txs WITHOUT estimating fees, so a
+   * fee-less `gasSettings` leaves them broadcast-unready — tripping
+   * `EvmSigner.signBatch`'s guard. Because software wallets submit with
+   * `fallbackToDefaultOnBatchFailure: false`, that guard is a hard error rather
+   * than a graceful per-tx fallback. `buildFusionGasSettings` only fills the
+   * override once live `networkFees` load, so gate submit until they do —
+   * otherwise a fast tap during the cold-start window fails the whole swap.
+   * (CP-14641)
+   */
+  hasRecurringFees: boolean
 }
 
 /**
  * The recurring "Next" button is enabled only when the schedule is fully
  * configured (frequency + order count), both tokens and an amount are present,
- * a recurring quote is in hand, no submit is already in flight, and there's no
+ * a recurring quote is in hand, the per-order minimum query has settled, the
+ * batch gas fees are filled, no submit is already in flight, and there's no
  * blocking validation error.
  */
 export function isRecurringReady(p: RecurringSubmitGateParams): boolean {
@@ -48,6 +71,8 @@ export function isRecurringReady(p: RecurringSubmitGateParams): boolean {
     p.hasToToken &&
     p.hasFromTokenValue &&
     p.hasRecurringQuote &&
+    p.isRecurringMinimumReady &&
+    p.hasRecurringFees &&
     !p.recurringSubmitting &&
     !hasBlockingValidationError(p.validationError)
   )

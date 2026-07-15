@@ -1,6 +1,11 @@
 import { SxProp } from 'dripsy'
 import React, { useEffect, useRef, useState } from 'react'
-import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  StyleProp,
+  StyleSheet,
+  ViewStyle
+} from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -65,6 +70,26 @@ export const GroupList = ({
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setTextMarginLeft(event.nativeEvent.layout.x)
+  }
+
+  // The static clip view must round at the SAME radii as the outer surface,
+  // otherwise a caller that overrides corners on the outer view (e.g.
+  // StakeDetailScreen's top-only JOINED_STACK_RADIUS) would clip its children
+  // at the default 12px, producing mismatched corners / a clipped seam.
+  // `StyleSheet.flatten` resolves registered style ids (numbers) and nested
+  // arrays down to a single object, so caller overrides always propagate —
+  // then mirror the radius fields onto the clip, defaulting to 12.
+  const flattenedStyle = (StyleSheet.flatten(style) ?? {}) as ViewStyle
+  const clipRadiusStyle: ViewStyle = {
+    borderRadius: flattenedStyle.borderRadius ?? 12,
+    borderTopLeftRadius: flattenedStyle.borderTopLeftRadius,
+    borderTopRightRadius: flattenedStyle.borderTopRightRadius,
+    borderBottomLeftRadius: flattenedStyle.borderBottomLeftRadius,
+    borderBottomRightRadius: flattenedStyle.borderBottomRightRadius,
+    borderTopStartRadius: flattenedStyle.borderTopStartRadius,
+    borderTopEndRadius: flattenedStyle.borderTopEndRadius,
+    borderBottomStartRadius: flattenedStyle.borderBottomStartRadius,
+    borderBottomEndRadius: flattenedStyle.borderBottomEndRadius
   }
 
   const handlePress = (item: GroupListItem, index: number): void => {
@@ -146,121 +171,132 @@ export const GroupList = ({
   }
 
   return (
+    // The surface (radius/background) + caller `style` stay on the outer view so
+    // every caller's contract is preserved (StakeDetailScreen overrides the top
+    // corner radius, CollectibleDetailsContent positions with `position:
+    // absolute`). Only `overflow: 'hidden'` moves to a STATIC inner clip view.
+    // Under RN's new architecture (Fabric) on Android, a `LinearTransition` view
+    // with `overflow: 'hidden'` settles at a stale (too-short) height when its
+    // children grow (accordion expand / async content mount), clipping the tail
+    // rows. A non-animated clip measures the real content height, so nothing is
+    // cut; the animated view keeps its rounded background via `borderRadius`
+    // alone (no clip needed to round a background).
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
       style={[
         {
           width: '100%',
           borderRadius: 12,
-          overflow: 'hidden',
           backgroundColor: theme.colors.$surfaceSecondary
         },
         style
       ]}>
-      {data.map((item, index) => {
-        const {
-          leftIcon,
-          rightIcon,
-          title,
-          subtitle,
-          value,
-          accordion,
-          onPress,
-          onLongPress,
-          containerSx,
-          hideSeparator,
-          disableRowAccessibility
-        } = item
+      <View style={[clipRadiusStyle, { overflow: 'hidden' }]}>
+        {data.map((item, index) => {
+          const {
+            leftIcon,
+            rightIcon,
+            title,
+            subtitle,
+            value,
+            accordion,
+            onPress,
+            onLongPress,
+            containerSx,
+            hideSeparator,
+            disableRowAccessibility
+          } = item
 
-        return (
-          <View key={index} sx={containerSx}>
-            <TouchableOpacity
-              accessible={!disableRowAccessibility}
-              testID={testID ? testID : `list_item__${title}`}
-              onPress={() => handlePress(item, index)}
-              disabled={!onPress && !accordion}
-              onLongPress={onLongPress}>
-              <View
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  minHeight: itemHeight,
-                  gap: 16,
-                  paddingHorizontal: 16
-                }}>
-                {leftIcon}
+          return (
+            <View key={index} sx={containerSx}>
+              <TouchableOpacity
+                accessible={!disableRowAccessibility}
+                testID={testID ? testID : `list_item__${title}`}
+                onPress={() => handlePress(item, index)}
+                disabled={!onPress && !accordion}
+                onLongPress={onLongPress}>
                 <View
                   sx={{
-                    flex: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12
-                  }}
-                  onLayout={handleLayout}>
-                  <View sx={{ marginVertical: 14, ...textContainerSx }}>
+                    minHeight: itemHeight,
+                    gap: 16,
+                    paddingHorizontal: 16
+                  }}>
+                  {leftIcon}
+                  <View
+                    sx={{
+                      flex: 1,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12
+                    }}
+                    onLayout={handleLayout}>
+                    <View sx={{ marginVertical: 14, ...textContainerSx }}>
+                      <View
+                        sx={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 8
+                        }}>
+                        {renderTitle(title, index)}
+                        {rightIcon !== undefined && rightIcon}
+                      </View>
+                      {renderSubTitle(subtitle, index)}
+                    </View>
+
                     <View
                       sx={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        gap: 8
+                        gap: 4,
+                        flex: 1,
+                        justifyContent: 'flex-end'
                       }}>
-                      {renderTitle(title, index)}
-                      {rightIcon !== undefined && rightIcon}
+                      {value !== undefined &&
+                        (typeof value === 'string' ? (
+                          <Text
+                            testID={`right_value__${value}`}
+                            variant="body1"
+                            numberOfLines={1}
+                            sx={{ color: '$textSecondary', ...valueSx }}>
+                            {value}
+                          </Text>
+                        ) : (
+                          value
+                        ))}
+                      {renderAccessory(item, index)}
                     </View>
-                    {renderSubTitle(subtitle, index)}
-                  </View>
-
-                  <View
-                    sx={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 4,
-                      flex: 1,
-                      justifyContent: 'flex-end'
-                    }}>
-                    {value !== undefined &&
-                      (typeof value === 'string' ? (
-                        <Text
-                          testID={`right_value__${value}`}
-                          variant="body1"
-                          numberOfLines={1}
-                          sx={{ color: '$textSecondary', ...valueSx }}>
-                          {value}
-                        </Text>
-                      ) : (
-                        value
-                      ))}
-                    {renderAccessory(item, index)}
                   </View>
                 </View>
-              </View>
-              {item.bottomAccessory}
-            </TouchableOpacity>
+                {item.bottomAccessory}
+              </TouchableOpacity>
 
-            {accordion !== undefined && expandedStates[index] && (
-              <Animated.View entering={FadeIn} exiting={FadeOut}>
+              {accordion !== undefined && expandedStates[index] && (
+                <Animated.View entering={FadeIn} exiting={FadeOut}>
+                  <Separator
+                    sx={{
+                      marginLeft: textMarginLeft,
+                      marginRight: separatorMarginRight
+                    }}
+                  />
+                  {accordion}
+                </Animated.View>
+              )}
+              {index < data.length - 1 && (
                 <Separator
                   sx={{
+                    opacity: hideSeparator ? 0 : 1,
                     marginLeft: textMarginLeft,
                     marginRight: separatorMarginRight
                   }}
                 />
-                {accordion}
-              </Animated.View>
-            )}
-            {index < data.length - 1 && (
-              <Separator
-                sx={{
-                  opacity: hideSeparator ? 0 : 1,
-                  marginLeft: textMarginLeft,
-                  marginRight: separatorMarginRight
-                }}
-              />
-            )}
-          </View>
-        )
-      })}
+              )}
+            </View>
+          )
+        })}
+      </View>
     </Animated.View>
   )
 }

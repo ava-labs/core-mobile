@@ -148,7 +148,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
             sx={{
               textAlign: 'center',
               color: '$white',
-              fontWeight: '500',
+              fontFamily: 'Inter-Medium',
               marginLeft: 8
             }}>
             WalletConnect QR Code

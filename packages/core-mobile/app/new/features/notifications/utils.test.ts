@@ -7,8 +7,10 @@ import {
 } from './types'
 import {
   buildAccountLabelMap,
+  classifyRecurringSwapStatus,
   filterByTab,
   isSwapTerminal,
+  isTerminalRecurringSwapNotification,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus,
@@ -368,4 +370,123 @@ describe('mapTransferToTargetChainStatus', () => {
       ).toBe(NotificationSwapStatus.InProgress)
     }
   )
+})
+
+// ─── classifyRecurringSwapStatus ─────────────────────────────────────────────
+
+describe('classifyRecurringSwapStatus', () => {
+  it.each([
+    ['failed', 'failed'],
+    ['cancelled', 'cancelled'],
+    ['completed', 'completed'],
+    ['active', 'fill'],
+    ['executed', 'fill']
+  ])('classifies "%s" as %s', (raw, expected) => {
+    expect(classifyRecurringSwapStatus(raw)).toBe(expected)
+  })
+
+  it('is case-insensitive', () => {
+    expect(classifyRecurringSwapStatus('FAILED')).toBe('failed')
+    expect(classifyRecurringSwapStatus('Executed')).toBe('fill')
+  })
+
+  it.each([['paused'], ['source-pending'], ['']])(
+    'classifies unrecognized status "%s" as unknown',
+    raw => {
+      expect(classifyRecurringSwapStatus(raw)).toBe('unknown')
+    }
+  )
+})
+
+// ─── isTerminalRecurringSwapNotification ──────────────────────────────────────
+
+const makeRecurringNotification = (
+  data?: Partial<{
+    status: string
+    numberOfOrders: number
+    executedOrders: number
+    remainingOrders: number
+  }>
+): AppNotification =>
+  makeNotification({
+    type: 'RECURRING_SWAP',
+    category: NotificationCategory.TRANSACTION,
+    ...(data
+      ? {
+          data: {
+            orderId: '0xorder',
+            owner: '0xowner',
+            chainId: 43114,
+            tokenIn: '0xin',
+            tokenOut: '0xout',
+            amountIn: '1',
+            amountOut: '2',
+            status: 'active',
+            numberOfOrders: 5,
+            executedOrders: 1,
+            remainingOrders: 4,
+            ...data
+          }
+        }
+      : {})
+  } as Partial<AppNotification> & Pick<AppNotification, 'type' | 'category'>)
+
+describe('isTerminalRecurringSwapNotification', () => {
+  it('returns false for a non-recurring notification', () => {
+    expect(isTerminalRecurringSwapNotification(balanceChange)).toBe(false)
+  })
+
+  it('returns false for a recurring notification without a data payload', () => {
+    expect(
+      isTerminalRecurringSwapNotification(makeRecurringNotification())
+    ).toBe(false)
+  })
+
+  it.each([['active'], ['paused'], ['executed']])(
+    'returns false for an ongoing fill (status "%s", fills remaining)',
+    status => {
+      expect(
+        isTerminalRecurringSwapNotification(
+          makeRecurringNotification({ status, remainingOrders: 3 })
+        )
+      ).toBe(false)
+    }
+  )
+
+  it.each([['completed'], ['cancelled'], ['failed']])(
+    'returns true for terminal status "%s"',
+    status => {
+      expect(
+        isTerminalRecurringSwapNotification(
+          makeRecurringNotification({ status, remainingOrders: 2 })
+        )
+      ).toBe(true)
+    }
+  )
+
+  it('returns true for the final leg of a finite schedule (no fills remain)', () => {
+    expect(
+      isTerminalRecurringSwapNotification(
+        makeRecurringNotification({
+          status: 'active',
+          numberOfOrders: 3,
+          executedOrders: 3,
+          remainingOrders: 0
+        })
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for an infinite/DCA schedule even with remainingOrders 0', () => {
+    // numberOfOrders === -1 never reaches a "no fills remain" terminal.
+    expect(
+      isTerminalRecurringSwapNotification(
+        makeRecurringNotification({
+          status: 'active',
+          numberOfOrders: -1,
+          remainingOrders: 0
+        })
+      )
+    ).toBe(false)
+  })
 })

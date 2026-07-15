@@ -94,6 +94,40 @@ export const fusionErrors = {
   belowMinimumAmount(formattedMin: string): FusionQuoteError {
     return new FusionQuoteError(`Minimum amount is ${formattedMin}.`)
   },
+  // Recurring: the full schedule total (amountPerOrder × numberOfOrders) must be
+  // funded up front. For native source tokens the first fill pre-wraps the whole
+  // total to WAVAX in one tx (the schedule can't pull native per order), so a
+  // total above balance reverts on-chain at estimateGas with INSUFFICIENT_FUNDS
+  // and surfaces as a generic "Recurring swap failed" toast. Block at input time
+  // instead. ERC-20 schedules also need the total to satisfy every future fill,
+  // so the same guard applies. Skipped for Unlimited (no finite total).
+  recurringTotalExceedsBalance(
+    numberOfOrders: number,
+    formattedTotal: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — ${numberOfOrders} orders require ${formattedTotal}.`
+    )
+  },
+  // ERC-20 source: token balance covers the principal but the native balance
+  // can't cover the one-time recurring schedule fee (charged in the gas token).
+  recurringScheduleFeeExceedsNativeBalance(
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedFee} for the schedule fee.`
+    )
+  },
+  // ERC-20 source: neither the token balance (principal) nor the native balance
+  // (schedule fee) is sufficient — surface both shortfalls in one message.
+  recurringInsufficientForTotalAndFee(
+    formattedTotal: string,
+    formattedFee: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance — needs ${formattedTotal} and ${formattedFee} for the schedule fee.`
+    )
+  },
   // Native token: gas alone exceeds balance (no bridge fee)
   networkFeeExceedsBalance(formattedFee: string): FusionQuoteError {
     return new FusionQuoteError(
@@ -194,14 +228,33 @@ export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
   return error.kind === 'network-fee-only'
 }
 
+// EIP-1193 standard code for a user-rejected request. The rejection can reach
+// us either as an Error instance OR as a plain JSON-RPC error object — e.g.
+// `providerErrors.userRejectedRequest()` serialized to `{ code, message }`
+// after crossing the VM-module boundary. A plain object is NOT `instanceof
+// Error`, so a message-only check on `Error` lets it through to the generic
+// "failed" path. The 4001 code survives serialization on both shapes and is
+// the reliable signal; we keep the message check as a fallback.
+const USER_REJECTED_REQUEST_CODE = 4001
+const USER_REJECTION_MESSAGE_PATTERN = /user (rejected|cancel(l|led))/i
+
 /**
- * Check if error is user rejection (user cancelled transaction)
- * Don't show error toast for these - user intentionally cancelled
+ * Check if error is a user rejection (user cancelled the transaction).
+ * Don't show an error toast for these — the user intentionally cancelled.
+ *
+ * Robust to the three shapes a rejection arrives in: an `Error` instance, a
+ * plain JSON-RPC error object (`{ code, message }`), and a bare string.
  */
 export function isUserRejectionError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false
-
-  return error.message.toLowerCase().includes('user rejected')
+  if (typeof error === 'string') {
+    return USER_REJECTION_MESSAGE_PATTERN.test(error)
+  }
+  if (!error || typeof error !== 'object') return false
+  const { code, message } = error as { code?: unknown; message?: unknown }
+  if (code === USER_REJECTED_REQUEST_CODE) return true
+  return (
+    typeof message === 'string' && USER_REJECTION_MESSAGE_PATTERN.test(message)
+  )
 }
 
 // The SDK has updated its error phrasing across versions, so the checkers
@@ -260,6 +313,16 @@ export function getSwapErrorMessage(error: unknown): string {
   // of the raw internal guard string. See CP-14507.
   if (message.includes(CCT_CALLBACKS_ERROR_TAG)) {
     return "This account isn't set up for cross-chain swaps. Please try a different account."
+  }
+
+  // Defensive: an import-only recovery (a CCT amountIn=0 route run from the
+  // swap screen) found no atomic UTXOs to import. That failed transfer is
+  // re-thrown as "Transfer failed: <reason>" and reaches the "Swap failed"
+  // toast here, so map it rather than leak the raw SDK reason. The UI normally
+  // only offers recovery once stuck funds are detected, so this shouldn't reach
+  // a user. See CP-14364.
+  if (message.toLowerCase().includes('no atomic utxos available to import')) {
+    return 'Nothing to recover for this route.'
   }
 
   // Common error patterns

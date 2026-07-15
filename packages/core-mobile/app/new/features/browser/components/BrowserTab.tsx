@@ -62,6 +62,12 @@ export interface BrowserTabRef {
   }
 }
 
+// http/https keep normal browsing working; `wc:` is added so WalletConnect
+// navigations reach our `onShouldStartLoadWithRequest` (see the WebView usage).
+// Module-scoped for a stable reference so the WebView's memoized handlers don't
+// churn each render.
+const WC_BROWSER_ORIGIN_WHITELIST = ['http://*', 'https://*', 'wc:*']
+
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
   // eslint-disable-next-line sonarjs/cognitive-complexity
   ({ tabId }, ref): JSX.Element => {
@@ -517,6 +523,20 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         description.includes('ERR_UNKNOWN_URL_SCHEME') &&
         isDeepLinkUrl(failedUrl)
       ) {
+        // Only the active tab may turn a failed custom-scheme navigation into a
+        // deeplink/pairing. Inactive/background tabs must not — that re-dispatch
+        // is the root cause of the "Failed to pair with dApp" spam
+        // (CORE-REACT-NATIVE-62P). Genuine load errors still fall through to
+        // `setError` below, so the app's error UI keeps working for any tab.
+        if (disabled) {
+          // Suppress the WebView's error overlay so a background tab isn't left
+          // on an error page when the user returns to it. We deliberately skip
+          // the goBack/goToDiscover recovery here: `goToDiscover` is a global
+          // dispatch (would move the *active* view) and `lastNavStateRef` isn't
+          // maintained for inactive tabs.
+          event.preventDefault()
+          return
+        }
         setPendingDeepLink({
           url: failedUrl,
           origin: DeepLinkOrigin.ORIGIN_IN_APP_BROWSER
@@ -615,6 +635,15 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onLoad={onLoad}
             onNavigationStateChange={onNavigationStateChange}
             onMessage={onMessageHandler}
+            // Whitelist `wc:` (only) alongside http/https so WalletConnect
+            // navigations pass the whitelist and reach `onShouldStartLoadWithRequest`
+            // instead of the library's blind `Linking.openURL` round-trip. That lets
+            // the existing `if (disabled) return false` guard block reconnect
+            // attempts from background/inactive tabs — the root cause of the
+            // "Failed to pair with dApp" spam (CORE-REACT-NATIVE-62P). `core:` is
+            // intentionally NOT whitelisted: it maps to many internal deeplink
+            // routes a page could reach with no Android gesture signal.
+            originWhitelist={WC_BROWSER_ORIGIN_WHITELIST}
             onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
             nestedScrollEnabled
             pullToRefreshEnabled
