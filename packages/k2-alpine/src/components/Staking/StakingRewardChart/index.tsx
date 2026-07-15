@@ -98,7 +98,12 @@ export const StakeRewardChart = forwardRef<
     // `data` inside the worklet would clone the whole array into the UI
     // runtime on every closure rebuild.
     const lastDataIndex = data.length - 1
-    const isGridWidthValid = Number.isFinite(gridWidth) && gridWidth > 0
+    // Explicitly requires ≥ 2 data points: the formula alone is not enough
+    // (an unmeasured width with EMPTY data yields (0−stroke)/(0−1) = +stroke,
+    // a positive finite number that would pass the numeric checks while
+    // `lastDataIndex` is −1).
+    const isGridWidthValid =
+      data.length > 1 && Number.isFinite(gridWidth) && gridWidth > 0
     const selectionX = useSharedValue<number | undefined>(undefined)
 
     const selectIndex = useCallback(
@@ -117,27 +122,45 @@ export const StakeRewardChart = forwardRef<
           // feed animated styles). Record the INTENT instead, so a selection
           // made while the reward data is still loading isn't lost: the
           // anchor effect below turns it into pixels once the grid is real.
+          // Deliberately NOT clamped: it's intent against data that hasn't
+          // arrived yet (`lastDataIndex` may be −1 here); the pixel path
+          // below clamps once the real grid exists.
           animatedSelectedIndex.value = index
           return
         }
-        selectionX.value = withTiming(gridWidth * index, {
+        // Defensive clamp: an out-of-range index (e.g. a stale consumer
+        // `initialIndex` after a data refresh) would otherwise anchor pixels
+        // outside the grid — indicator drawn off the chart while the
+        // reaction reports a different, clamped index.
+        const clampedIndex = Math.min(Math.max(index, 0), lastDataIndex)
+        selectionX.value = withTiming(gridWidth * clampedIndex, {
           duration: duration
         })
       },
-      [gridWidth, isGridWidthValid, selectionX, animatedSelectedIndex]
+      [
+        gridWidth,
+        isGridWidthValid,
+        lastDataIndex,
+        selectionX,
+        animatedSelectedIndex
+      ]
     )
 
     // Pixel position → selected index. Guards, in order:
-    // - `previous === null` is the reaction's initial evaluation, which runs
-    //   on mount AND every time this closure is re-created (any render where
-    //   `gridWidth` changed: first layout, reward data arriving). It reflects
-    //   no actual `selectionX` change, and before the first anchor it would
-    //   read `undefined` / stale pixels and clobber the consumer-provided
-    //   initial index — the intermittently "Custom" initial duration on the
-    //   staking screens.
-    // - `undefined` never comes from a gesture (pan positions are clamped
-    //   pixels), only from `selectIndex(undefined)` — which writes the
-    //   cleared index itself above.
+    // - `x === undefined` is load-bearing for CP-14721: the mapper evaluates
+    //   eagerly on registration AND on every re-registration (any render
+    //   where a captured value like `gridWidth` changed — first layout,
+    //   reward data arriving), NOT only when `selectionX` actually moves.
+    //   Until the anchor effect below runs, `selectionX` is still
+    //   `undefined`, and writing that through would clobber the
+    //   consumer-provided initial index — the intermittently "Custom"
+    //   initial duration on the staking screens. It is safe to skip because
+    //   `undefined` never comes from a gesture (pan positions are clamped
+    //   pixels); clearing goes through `selectIndex(undefined)`, which
+    //   writes the cleared index itself above. (Note Reanimated's `previous`
+    //   argument can NOT stand in for this: it is a persistent shared value,
+    //   `null` only on the very first evaluation of the component's life,
+    //   not on re-registrations.)
     // - `gridWidth` is garbage until BOTH the graph has a measured width and
     //   the data has ≥ 2 points ((0−stroke)/(len−1) is negative or even
     //   positive nonsense for empty data); an `=== 0` check misses those.
@@ -145,8 +168,7 @@ export const StakeRewardChart = forwardRef<
     //   from ever emitting an out-of-range index.
     useAnimatedReaction(
       () => selectionX.value,
-      (x, previous) => {
-        if (previous === null) return
+      x => {
         if (x === undefined) return
         if (!isGridWidthValid) return
 
