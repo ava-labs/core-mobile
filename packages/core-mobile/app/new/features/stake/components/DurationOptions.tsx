@@ -43,6 +43,14 @@ export const DurationOptions = ({
     return chunks
   }, [durations])
 
+  // Anchored at NOW and rounded (not midnight + truncation) so the Custom
+  // cell agrees with the Duration summary row and the confirm screen's
+  // "Time to unlock". Computed once per render — only the Custom cell
+  // renders it.
+  const customDurationInDays = customEndDate
+    ? getRoundedDurationInDays(Date.now(), customEndDate)
+    : undefined
+
   return (
     <View sx={{ padding: 16, gap: 8 }}>
       {rows.map((row, rowIndex) => (
@@ -58,12 +66,6 @@ export const DurationOptions = ({
             const globalIndex = rowIndex * 3 + index
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
-            // Anchored at NOW and rounded (not midnight + truncation) so
-            // the cell agrees with the Duration summary row and the confirm
-            // screen's "Time to unlock".
-            const customDurationInDays = customEndDate
-              ? getRoundedDurationInDays(Date.now(), customEndDate)
-              : undefined
 
             return (
               <TouchableOpacity

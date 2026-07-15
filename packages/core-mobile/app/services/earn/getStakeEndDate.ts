@@ -37,7 +37,9 @@ export const getStakeEndDate = ({
       // days outside leap years, so +1h would overshoot it.
       const end = addDays(currentDate, stakeDurationValue)
       return getUnixTime(
-        stakeDurationValue >= DAYS_IN_YEAR ? subHours(end, 1) : addHours(end, 1)
+        stakeDurationValue === DAYS_IN_YEAR
+          ? subHours(end, 1)
+          : addHours(end, 1)
       )
     }
     case StakeDurationFormat.Week:
