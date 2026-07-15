@@ -70,7 +70,7 @@ export const useSpendableXpBalance = ({
     xpAddresses.length > 0 &&
     (chain !== 'P' || feeState !== undefined)
 
-  const { data } = useQuery({
+  const { data, isFetching } = useQuery({
     // chain and isTestnet are derived from chainId, and account identity is
     // its id — the key below fully determines the fetch inputs.
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -99,7 +99,11 @@ export const useSpendableXpBalance = ({
   })
 
   return {
-    spendableBalance: data,
+    // Hide cached data while a refetch is in flight: react-query serves the
+    // previous value during background refetches, and a pre-spend balance
+    // must never re-enable Max after UTXOs moved. Max stays disabled until
+    // the current fetch lands.
+    spendableBalance: isFetching ? undefined : data,
     isSpendableBalanceRequired
   }
 }
