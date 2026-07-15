@@ -227,17 +227,19 @@ const StakeDurationScreen = ({
     }
 
     if (customEndDate) {
-      // Anchored at NOW and rounded, matching the confirm screen's
-      // "Time to unlock" — the previous midnight anchor made this row read
-      // one day higher than the review right after picking a date.
-      return getRoundedDurationInDays(Date.now(), customEndDate)
+      // Anchored at the reactive `now` (same clock the confirm screen's
+      // "Time to unlock" uses) and rounded — the previous midnight anchor
+      // made this row read one day higher than the review right after
+      // picking a date.
+      return getRoundedDurationInDays(now, customEndDate)
     }
   }, [
     durationsWithDays,
     selectedDurationIndex,
     estimatedRewards,
     defaultDurationIndex,
-    customEndDate
+    customEndDate,
+    now
   ])
 
   // Advanced delegate: the stake can't outlast the selected validator. The

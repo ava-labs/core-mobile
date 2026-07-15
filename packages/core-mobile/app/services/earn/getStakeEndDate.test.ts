@@ -2,6 +2,7 @@ import { fromUnixTime, addDays, getUnixTime } from 'date-fns'
 import {
   DURATION_OPTIONS_MAINNET,
   DURATION_OPTIONS_FUJI,
+  DurationOptionWithDays,
   getStakeEndDate,
   StakeDurationFormat,
   StakeDurationTitle
@@ -52,12 +53,14 @@ describe('getStakeEndDate', () => {
   it('defines every preset in whole days matching its label (web parity)', () => {
     const presets = [...DURATION_OPTIONS_MAINNET, ...DURATION_OPTIONS_FUJI]
     presets
-      .filter(option => option.title !== StakeDurationTitle.CUSTOM)
+      // Type guard (not a plain predicate) so `numberOfDays` narrows below.
+      .filter(
+        (option): option is DurationOptionWithDays =>
+          option.title !== StakeDurationTitle.CUSTOM
+      )
       .forEach(option => {
         expect(option.stakeDurationFormat).toBe(StakeDurationFormat.Day)
-        expect(option.stakeDurationValue).toBe(
-          'numberOfDays' in option ? option.numberOfDays : undefined
-        )
+        expect(option.stakeDurationValue).toBe(option.numberOfDays)
       })
   })
 
