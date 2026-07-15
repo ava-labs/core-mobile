@@ -17,7 +17,7 @@ import {
   useDelegationContext,
   OnDelegationProgress
 } from 'contexts/DelegationContext'
-import { differenceInDays, format, getUnixTime } from 'date-fns'
+import { format, getUnixTime } from 'date-fns'
 import {
   Href,
   useLocalSearchParams,
@@ -48,7 +48,10 @@ import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { StakeTargetValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
-import { formatDurationInDays } from 'features/stake/utils'
+import {
+  formatDurationInDays,
+  getRoundedDurationInDays
+} from 'features/stake/utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
 import { useStakeFundingPreflight } from '../hooks/useStakeFundingPreflight'
 import { StakeReviewSource } from '../types'
@@ -205,7 +208,7 @@ const StakeConfirmScreen = ({
   // Defensive parse — deep links / state restoration could land us here
   // with a missing or non-numeric `stakeEndTime`. Falling through with a
   // NaN would produce an Invalid Date and later crash inside `format()` /
-  // `differenceInDays()`. When invalid we surface a dismiss-the-flow alert
+  // the duration math. When invalid we surface a dismiss-the-flow alert
   // below; the placeholder below keeps downstream date hooks running with
   // a finite value until the alert dismisses the modal.
   const parsedStakeEndTime = useMemo(
@@ -421,7 +424,13 @@ const StakeConfirmScreen = ({
         value: isResolvingValidator ? (
           <ActivityIndicator />
         ) : (
-          formatDurationInDays(differenceInDays(validatedStakingEndTime, now))
+          // Rounded, not truncated: a custom end date carries the
+          // time-of-day the picker was seeded with, so by review time `now`
+          // has passed it and truncation would read one day short of what
+          // the duration screen advertised.
+          formatDurationInDays(
+            getRoundedDurationInDays(now, validatedStakingEndTime)
+          )
         )
       },
       {

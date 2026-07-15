@@ -5,8 +5,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { differenceInDays } from 'date-fns'
-import { formatDurationInDays } from 'features/stake/utils'
+import {
+  formatDurationInDays,
+  getRoundedDurationInDays
+} from 'features/stake/utils'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -33,12 +35,6 @@ export const DurationOptions = ({
     () => (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
     [isDeveloperMode]
   )
-  const today = useMemo(() => {
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return now
-  }, [])
-
   const rows = useMemo(() => {
     const chunks = []
     for (let i = 0; i < durations.length; i += 3) {
@@ -62,8 +58,11 @@ export const DurationOptions = ({
             const globalIndex = rowIndex * 3 + index
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
+            // Anchored at NOW and rounded (not midnight + truncation) so
+            // the cell agrees with the Duration summary row and the confirm
+            // screen's "Time to unlock".
             const customDurationInDays = customEndDate
-              ? differenceInDays(customEndDate, today)
+              ? getRoundedDurationInDays(Date.now(), customEndDate)
               : undefined
 
             return (
