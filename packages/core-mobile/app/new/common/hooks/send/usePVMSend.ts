@@ -58,7 +58,12 @@ const usePVMSend: SendAdapterPVM = ({
     // account/network/fee state — drop it so Max/validation never gate on
     // a stale balance while the refetch is in flight.
     setSpendableBalance(undefined)
-    if (!filterSmallUtxos || network === undefined) {
+    // P needs a loaded feeState: getMaximumUtxoSet builds txs to measure
+    // size, and an undefined feeState makes every build fail — the "capped"
+    // set comes back empty and Max/validation would gate on a bogus 0.
+    // getFeeState's identity changes when defaults load, re-firing this.
+    const feeState = getFeeState(gasPrice)
+    if (!filterSmallUtxos || network === undefined || feeState === undefined) {
       return
     }
     let cancelled = false
@@ -67,7 +72,7 @@ const usePVMSend: SendAdapterPVM = ({
       account,
       isTestnet: Boolean(network.isTestnet),
       xpAddresses,
-      feeState: getFeeState(gasPrice),
+      feeState,
       filterSmallUtxos
     })
       .then(balance => {

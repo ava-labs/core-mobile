@@ -57,12 +57,18 @@ export const useSpendableXpBalance = ({
     fromToken?.type === TokenType.NATIVE &&
     chain !== undefined
 
+  // P needs a loaded feeState: getMaximumUtxoSet builds txs to measure
+  // size, and an undefined feeState makes every build fail — the "capped"
+  // set comes back empty and a bogus 0 balance would be cached.
+  const feeState = chain === 'P' ? getFeeState() : undefined
+
   const enabled =
     isSpendableBalanceRequired &&
     activeAccount !== undefined &&
     fromNetwork !== undefined &&
     chain !== undefined &&
-    xpAddresses.length > 0
+    xpAddresses.length > 0 &&
+    (chain !== 'P' || feeState !== undefined)
 
   const { data } = useQuery({
     // chain and isTestnet are derived from chainId, and account identity is
@@ -81,7 +87,7 @@ export const useSpendableXpBalance = ({
             account: activeAccount,
             isTestnet: Boolean(fromNetwork.isTestnet),
             xpAddresses,
-            feeState: chain === 'P' ? getFeeState() : undefined,
+            feeState,
             filterSmallUtxos: true
           })
       : skipToken,
