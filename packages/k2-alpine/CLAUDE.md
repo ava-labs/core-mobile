@@ -265,5 +265,5 @@ This package is consumed by `@avalabs/core-mobile` via `workspace:*` dependency:
 
 - **Font scaling**: Disabled globally for consistency across devices
 - **Theme switching**: Handled by `K2AlpineThemeProvider` based on system color scheme
-- **Expo SDK**: Version 53.0.20 (ensure compatibility with core-mobile)
+- **Expo SDK**: Version 56 (ensure compatibility with core-mobile)
 - **Private package**: Not published to npm, internal workspace use only
