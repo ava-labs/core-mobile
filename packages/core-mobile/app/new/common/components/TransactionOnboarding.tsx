@@ -21,7 +21,7 @@ export const TransactionOnboarding = ({
   viewOnceKey,
   onPressNext,
   footerAccessory,
-  scrollEnabled,
+  scrollEnabled = false,
   isLoading
 }: {
   icon: {

@@ -71,7 +71,6 @@ export const OnboardingScreen = (): JSX.Element => {
       subtitle="Take a loan against your deposits and repay anytime"
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
-      scrollEnabled={true}
       isLoading={isLoading}
     />
   )
