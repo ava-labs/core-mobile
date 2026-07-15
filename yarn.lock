@@ -478,7 +478,7 @@ __metadata:
     "@avalabs/crypto-nitro": 0.3.2
     "@avalabs/crypto-sdk": 1.0.2
     "@avalabs/evm-module": 3.9.0
-    "@avalabs/fusion-sdk": 0.0.0-feat-fusion-sdk-expose-recover-20260714200727
+    "@avalabs/fusion-sdk": 0.27.0
     "@avalabs/glacier-sdk": 3.1.0-canary.672f5c3.0
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/perps-sdk": 0.0.0-feat-perps-sdk-20260521171718
@@ -940,9 +940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.0.0-feat-fusion-sdk-expose-recover-20260714200727":
-  version: 0.0.0-feat-fusion-sdk-expose-recover-20260714200727
-  resolution: "@avalabs/fusion-sdk@npm:0.0.0-feat-fusion-sdk-expose-recover-20260714200727"
+"@avalabs/fusion-sdk@npm:0.27.0":
+  version: 0.27.0
+  resolution: "@avalabs/fusion-sdk@npm:0.27.0"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -958,7 +958,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 6212d588ac3543f4e14dba72e14f1b7c8ea863e18e3e4be2ae7ea835bab05d5d446a25fa77384f2781c364f6e9a93c68dcdf631c9da432bee0d0584dee702366
+  checksum: a269a800e82f9992232dbeb77ac33fcd7325ba11bca24f313aff11f6f48438d0c6292598d35f2a0e581f0537fac148d21e82fbde3137a7c5c812e3f34bbb654f
   languageName: node
   linkType: hard
 
