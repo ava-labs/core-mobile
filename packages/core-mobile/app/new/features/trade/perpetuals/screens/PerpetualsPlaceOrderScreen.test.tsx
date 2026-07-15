@@ -52,6 +52,48 @@ jest.mock('../hooks/useTriggerToggles', () => ({
   })
 }))
 
+// Live market data + per-coin leverage. Mocked so the screen doesn't pull in
+// PerpsProvider -> the wallet stack, and so size / leverage seeding have data.
+jest.mock('../hooks/useHyperliquidMarketContext', () => ({
+  useHyperliquidMarketContext: () => ({
+    universe: { szDecimals: 3, maxLeverage: 40 },
+    assetCtx: { markPx: '100' }
+  })
+}))
+
+jest.mock('../hooks/usePerpsActiveAssetData', () => ({
+  usePerpsActiveAssetData: () => ({
+    leverage: undefined,
+    leverageType: undefined,
+    isLoading: false,
+    refetch: jest.fn()
+  })
+}))
+
+// Real order submission + trading gate. Mocked so the screen doesn't pull in
+// PerpsProvider -> store/account -> the wallet stack (which can't load under
+// Jest), and so we can assert the submit/gate behaviour directly.
+const mockSubmitOrder = jest.fn()
+jest.mock('../hooks/usePerpsOrderSubmit', () => ({
+  usePerpsOrderSubmit: () => ({
+    submitting: false,
+    submitOrder: mockSubmitOrder
+  })
+}))
+
+const mockTrading = { isTradingEnabled: true }
+jest.mock('../hooks/usePerpsEnableTradingGate', () => ({
+  usePerpsEnableTradingGate: () => ({
+    isTradingEnabled: mockTrading.isTradingEnabled,
+    requireTradingEnabled: () => mockTrading.isTradingEnabled,
+    enableTradingModal: null
+  })
+}))
+
+jest.mock('../components/PerpsEnableTradingModal', () => ({
+  PerpsEnableTradingModal: () => null
+}))
+
 jest.mock('../components/PositionPill', () => ({ PositionPill: () => null }))
 jest.mock('../components/TriggerToggleCard', () => ({
   TriggerToggleCard: () => null
@@ -116,7 +158,9 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     mockBack.mockReset()
     mockRecheck.mockReset()
     mockShowSnackbar.mockReset()
+    mockSubmitOrder.mockReset()
     mockState.isGeoBlocked = false
+    mockTrading.isTradingEnabled = true
   })
 
   it('disables the confirm button when geo-blocked', async () => {
@@ -145,23 +189,39 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     expect(mockBack).not.toHaveBeenCalled()
   })
 
-  it('does not warn when the fresh geo re-check passes', async () => {
-    // Fake timers so the simulated 1200ms submission delay doesn't slow the suite.
-    jest.useFakeTimers()
-    try {
-      mockRecheck.mockResolvedValueOnce(false)
-      const instance = await render()
-      await act(async () => {
-        const submission = confirmButton(instance).props.onConfirm()
-        await jest.advanceTimersByTimeAsync(1200)
-        await submission
-      })
-      expect(mockRecheck).toHaveBeenCalled()
-      expect(mockShowSnackbar).not.toHaveBeenCalled()
-      expect(mockBack).toHaveBeenCalled()
-    } finally {
-      jest.useRealTimers()
-    }
+  it('submits the order and dismisses when the fresh geo re-check passes', async () => {
+    mockRecheck.mockResolvedValueOnce(false)
+    mockSubmitOrder.mockResolvedValueOnce(true)
+    const instance = await render()
+    await act(async () => {
+      await confirmButton(instance).props.onConfirm()
+    })
+    expect(mockRecheck).toHaveBeenCalled()
+    expect(mockSubmitOrder).toHaveBeenCalled()
+    expect(mockShowSnackbar).not.toHaveBeenCalled()
+    expect(mockBack).toHaveBeenCalled()
+  })
+
+  it('stays on screen (order not submitted) when the order fails', async () => {
+    mockRecheck.mockResolvedValueOnce(false)
+    mockSubmitOrder.mockResolvedValueOnce(false)
+    const instance = await render()
+    await act(async () => {
+      await confirmButton(instance).props.onConfirm()
+    })
+    expect(mockSubmitOrder).toHaveBeenCalled()
+    expect(mockBack).not.toHaveBeenCalled()
+  })
+
+  it('gates on trading setup — surfaces enable-trading and does not submit', async () => {
+    mockTrading.isTradingEnabled = false
+    mockRecheck.mockResolvedValueOnce(false)
+    const instance = await render()
+    await act(async () => {
+      await confirmButton(instance).props.onConfirm()
+    })
+    expect(mockSubmitOrder).not.toHaveBeenCalled()
+    expect(mockBack).not.toHaveBeenCalled()
   })
 })
 

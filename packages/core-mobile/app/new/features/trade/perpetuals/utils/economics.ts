@@ -1,6 +1,5 @@
 // Pure position-economics helpers shared across the perpetuals order /
-// trigger / close / manage screens. UI-only approximations until the SDK's
-// clearinghouseState is wired — see MOCK_* below.
+// trigger / close / manage screens.
 
 export type TriggerKind = 'takeProfit' | 'stopLoss'
 
@@ -9,13 +8,8 @@ export interface PnlColors {
   $textDanger: string
 }
 
-// Mock placeholders to delete once the SDK provides real account state.
-export const MOCK_AVAILABLE_BALANCE = 150
-export const MOCK_POSITION_VALUE = 4.64
-export const MOCK_PNL = 1.18
-export const DEFAULT_COIN = 'NVDA'
-export const DEFAULT_ENTRY_PRICE = 62.78
-export const DEFAULT_MAX_LEVERAGE = 40
+/** Default market to open when a deep link omits the coin. */
+export const FALLBACK_COIN = 'AVAX'
 
 /** Isolated-margin liquidation estimate from entry, leverage and direction. */
 export const estimateLiquidationPrice = (

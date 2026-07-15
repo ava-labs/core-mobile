@@ -11,52 +11,47 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import type { ScrollView } from 'react-native-gesture-handler'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
-
-const HERO_VALUE = 1234.45
-const WITHDRAWABLE = 856.78
-const AVAILABLE_FOR_TRADING = 856.78
-const LOCKED = 35.0
-const IN_POSITIONS = 342.67
-const PENDING = 0.0
-const TOTAL_DEPOSITED = 2344.56
-const TOTAL_WITHDRAWN = 500.0
-const NET_DEPOSITS = 1844.56
-const NET_PNL = 418.43
-const ACCORDION_EXPAND_DURATION = 350
+import { usePerpsPositions } from '../hooks/usePerpsPositions'
+import { formatSigned, pnlColor } from '../utils/economics'
+import { toNumber } from '../utils/format'
 
 export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
   const { isGeoBlocked } = usePerpsAvailability()
-  const scrollViewRef = useRef<ScrollView>(null)
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const { accountValueUsd, withdrawableUsd, positions, clearinghouse } =
+    usePerpsPositions()
+
+  const heroValue = accountValueUsd ?? 0
+  const withdrawable = withdrawableUsd ?? 0
+  const availableForTrading = withdrawableUsd ?? 0
+  const openPositionsCount = positions.length
+
+  // Total unrealized P&L across open positions (mark-to-market).
+  const unrealizedPnl = useMemo(
+    () =>
+      positions.reduce((sum, p) => sum + toNumber(p.position.unrealizedPnl), 0),
+    [positions]
+  )
+  // Maintenance margin Hyperliquid keeps locked to keep open positions solvent
+  // (a per-coin fraction of notional, not a flat %). Real clearinghouse figure,
+  // surfaced as a subtitle since it's a subset of the collateral in positions.
+  const lockedMaintenanceMargin = toNumber(
+    clearinghouse?.crossMaintenanceMarginUsed
+  )
+  // Collateral committed to positions, defined as the remainder so the three
+  // rows sum exactly to the total account value:
+  //   total = available + collateralInPositions + unrealizedPnl
+  // For unified accounts this remainder also folds in the pooled spot balance.
+  const collateralInPositions = heroValue - withdrawable - unrealizedPnl
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
-  }, [])
-
-  // Clear any pending scroll on unmount so it can't fire after teardown.
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    }
-  }, [])
-
-  const handlePerformanceToggle = useCallback((expanded: boolean) => {
-    // Cancel any pending scroll (e.g. a quick collapse) before scheduling.
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    if (expanded) {
-      scrollTimeoutRef.current = setTimeout(
-        () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-        ACCORDION_EXPAND_DURATION
-      )
-    }
   }, [])
 
   const handlePositionsPress = useCallback(() => {
@@ -67,32 +62,24 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
     () => [
       {
         title: 'Withdrawable now',
-        value: formatCurrency({ amount: WITHDRAWABLE })
+        value: formatCurrency({ amount: withdrawable })
       }
     ],
-    [formatCurrency]
+    [formatCurrency, withdrawable]
   )
 
-  const accountRows = useMemo<GroupListItem[]>(
-    () => [
+  const accountRows = useMemo<GroupListItem[]>(() => {
+    const rows: GroupListItem[] = [
       {
         title: 'Available for trading',
-        value: formatCurrency({ amount: AVAILABLE_FOR_TRADING })
+        value: formatCurrency({ amount: availableForTrading })
       },
       {
-        title: 'Locked (Security hold)',
-        subtitle: 'Available March 9, 2026',
-        value: formatCurrency({ amount: LOCKED })
-      },
-      {
-        title: 'Pending settlements',
-        subtitle: 'Markets ending soon',
-        value: formatCurrency({ amount: PENDING })
-      },
-      {
-        title: 'In active positions',
-        subtitle: '3 positions',
-        value: formatCurrency({ amount: IN_POSITIONS }),
+        title: 'Collateral in positions',
+        subtitle: `${openPositionsCount} position${
+          openPositionsCount === 1 ? '' : 's'
+        }`,
+        value: formatCurrency({ amount: collateralInPositions }),
         accessory: (
           <Icons.Navigation.ChevronRight
             color={theme.colors.$textSecondary}
@@ -100,50 +87,44 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
           />
         ),
         onPress: handlePositionsPress
-      }
-    ],
-    [formatCurrency, handlePositionsPress, theme.colors.$textSecondary]
-  )
-
-  const performanceBreakdown = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Total deposited',
-        value: formatCurrency({ amount: TOTAL_DEPOSITED })
       },
       {
-        title: 'Total withdrawn',
-        value: formatCurrency({ amount: TOTAL_WITHDRAWN })
-      },
-      {
-        title: 'Net deposits',
-        value: formatCurrency({ amount: NET_DEPOSITS })
-      },
-      {
-        title: 'Net profit/loss',
-        value: `+${formatCurrency({ amount: NET_PNL })}`
-      }
-    ],
-    [formatCurrency]
-  )
-
-  const performanceRows = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Account performance',
-        subtitle: 'All-time performance',
-        onAccordionToggle: handlePerformanceToggle,
-        accordion: (
-          <GroupList
-            data={performanceBreakdown}
-            titleSx={{ fontFamily: 'Inter-Regular' }}
-            subtitleVariant="subtitle2"
-          />
+        title: 'Unrealized P&L',
+        value: (
+          <Text
+            variant="body1"
+            sx={{
+              color: pnlColor(
+                unrealizedPnl,
+                theme.colors,
+                theme.colors.$textPrimary
+              )
+            }}>
+            {formatSigned(unrealizedPnl, amount => formatCurrency({ amount }))}
+          </Text>
         )
       }
-    ],
-    [performanceBreakdown, handlePerformanceToggle]
-  )
+    ]
+    // Informational (not part of the sum above): a subset of the collateral
+    // Hyperliquid holds against open positions to keep them solvent.
+    if (lockedMaintenanceMargin > 0) {
+      rows.push({
+        title: 'Maintenance margin',
+        subtitle: 'Held within collateral in positions',
+        value: formatCurrency({ amount: lockedMaintenanceMargin })
+      })
+    }
+    return rows
+  }, [
+    formatCurrency,
+    availableForTrading,
+    collateralInPositions,
+    unrealizedPnl,
+    openPositionsCount,
+    lockedMaintenanceMargin,
+    handlePositionsPress,
+    theme.colors
+  ])
 
   const handleWithdraw = useCallback(() => {
     router.navigate('/perpetualsWithdraw')
@@ -177,7 +158,6 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
-      ref={scrollViewRef}
       isModal
       title="Available balance"
       subtitle="An overview of your Hyperliquid account"
@@ -206,7 +186,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
               lineHeight: 60,
               color: theme.colors.$textPrimary
             }}>
-            {formatCurrency({ amount: HERO_VALUE })}
+            {formatCurrency({ amount: heroValue })}
           </Text>
           <Text
             variant="subtitle2"
@@ -222,12 +202,6 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
           subtitleVariant="subtitle2"
         />
       </View>
-
-      <GroupList
-        data={performanceRows}
-        titleSx={{ fontFamily: 'Inter-Regular' }}
-        subtitleVariant="subtitle2"
-      />
     </ScrollScreen>
   )
 }

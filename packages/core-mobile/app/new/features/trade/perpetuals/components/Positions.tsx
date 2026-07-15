@@ -14,7 +14,7 @@ import {
   TouchableOpacity
 } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
-import { MY_POSITIONS_MOCK } from '../mocks'
+import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
 import { PositionCard } from './PositionCard'
 
 interface PositionsProps {
@@ -33,7 +33,7 @@ export const Positions = ({
   const { theme } = useTheme()
   const router = useRouter()
 
-  const positions = MY_POSITIONS_MOCK
+  const { positions } = usePerpsPositionsView()
 
   const [initialScrollX] = useState(() => scrollOffsetRef?.current ?? 0)
 

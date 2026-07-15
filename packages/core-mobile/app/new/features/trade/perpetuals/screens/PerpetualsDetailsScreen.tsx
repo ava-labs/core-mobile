@@ -16,16 +16,9 @@ import { MarketStatistics } from '../components/MarketStatistics'
 import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
-
-const DEFAULT_COIN = 'BTC'
-
-// TODO: revert to the real lookup before shipping — replace with
-// `clearinghouseState.withdrawable > 0` once the SDK's per-user balance
-// lookup is wired up. The footer switches between `Slide to deposit` (no
-// balance) and `Short / Long` (funded). Hardcoded `true` here forces the
-// funded branch so the order flow is reachable for this UI-only milestone;
-// it makes every user appear funded, so it must not ship as-is.
-const HAS_BALANCE = true
+import { usePerpsClearinghouse } from '../hooks/usePerpsClearinghouse'
+import { FALLBACK_COIN } from '../utils/economics'
+import { normalizePerpCoinParam, tickerOfCoin } from '../utils/coinDex'
 
 const RANGES: readonly { label: string; resolution: TvResolution }[] = [
   { label: '24H', resolution: '60' },
@@ -44,9 +37,15 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
 
   const { coin: coinParam } = useLocalSearchParams<{ coin?: string }>()
-  const coin = (coinParam ?? DEFAULT_COIN).toUpperCase()
+  // Preserve HIP-3 dex case (`xyz:CL`); only the ticker is upper-cased.
+  const coin = normalizePerpCoinParam(coinParam ?? FALLBACK_COIN)
 
   const { isGeoBlocked } = usePerpsAvailability()
+
+  // Funded when the account has any Hyperliquid equity: the footer shows
+  // `Short / Long` when funded, else `Slide to deposit`.
+  const { accountValueUsd } = usePerpsClearinghouse()
+  const hasBalance = (accountValueUsd ?? 0) > 0
 
   const { assetCtx, universe, pxDecimals } = useHyperliquidMarketContext(coin)
   const pricescale =
@@ -67,17 +66,27 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
     router.push('/perpetualsDeposit')
   }, [router])
 
+  // Pass the live mark price so the order screen seeds a real entry price (and
+  // sizes correctly) instead of falling back to the placeholder default.
+  const markPx = assetCtx?.markPx
+
   const handleShort = useCallback(() => {
+    const priceParam = markPx !== undefined ? `&price=${markPx}` : ''
     router.push(
-      `/perpetualsPlaceOrder?coin=${encodeURIComponent(coin)}&side=short`
+      `/perpetualsPlaceOrder?coin=${encodeURIComponent(
+        coin
+      )}&side=short${priceParam}`
     )
-  }, [coin, router])
+  }, [coin, markPx, router])
 
   const handleLong = useCallback(() => {
+    const priceParam = markPx !== undefined ? `&price=${markPx}` : ''
     router.push(
-      `/perpetualsPlaceOrder?coin=${encodeURIComponent(coin)}&side=long`
+      `/perpetualsPlaceOrder?coin=${encodeURIComponent(
+        coin
+      )}&side=long${priceParam}`
     )
-  }, [coin, router])
+  }, [coin, markPx, router])
 
   const renderFooter = useCallback(() => {
     // Perps unavailable in this region — replace the trade CTA with the
@@ -86,7 +95,7 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
       return <PerpsGeoRestrictionWarning />
     }
 
-    if (!HAS_BALANCE) {
+    if (!hasBalance) {
       return (
         <SlidingButton
           mode="single"
@@ -126,6 +135,7 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
     )
   }, [
     isGeoBlocked,
+    hasBalance,
     handleDeposit,
     handleShort,
     handleLong,
@@ -134,7 +144,10 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   ])
 
   return (
-    <ScrollScreen isModal navigationTitle={coin} renderFooter={renderFooter}>
+    <ScrollScreen
+      isModal
+      navigationTitle={tickerOfCoin(coin)}
+      renderFooter={renderFooter}>
       <MarketDetailsHeader
         coin={coin}
         assetCtx={assetCtx}

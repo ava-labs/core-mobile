@@ -11,7 +11,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, ViewStyle } from 'react-native'
@@ -26,6 +25,9 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { Position } from '../types'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
+import { DexBadge } from './DexBadge'
+import { PerpsCoinLogo } from './PerpsCoinLogo'
 
 const CARD_WIDTH = 280
 
@@ -70,14 +72,19 @@ export const PositionCard = ({
   const sideLabel = position.side === 'long' ? 'Long' : 'Short'
   const formattedPrice = formatCurrency({ amount: position.price })
   const formattedPnl = formatCurrency({ amount: position.pnl })
-  const formattedTakeProfit =
-    position.takeProfit === 0
-      ? 'None'
-      : formatCurrency({ amount: position.takeProfit })
-  const formattedStopLoss =
-    position.stopLoss === 0
-      ? 'None'
-      : formatCurrency({ amount: position.stopLoss })
+  // TP/SL live in the open-orders feed; while it's still loading show `-`
+  // rather than prematurely rendering `None`.
+  const triggersPending = position.triggersPending ?? false
+  const formattedTakeProfit = triggersPending
+    ? '-'
+    : position.takeProfit === 0
+    ? 'None'
+    : formatCurrency({ amount: position.takeProfit })
+  const formattedStopLoss = triggersPending
+    ? '-'
+    : position.stopLoss === 0
+    ? 'None'
+    : formatCurrency({ amount: position.stopLoss })
 
   const handleExpandToggle = useCallback(() => {
     setExpanded(prev => {
@@ -282,12 +289,13 @@ const PositionHeader = ({
         paddingHorizontal: 12,
         paddingTop: 14
       }}>
-      <TokenLogo size={36} symbol={position.symbol} />
+      <PerpsCoinLogo size={36} symbol={position.symbol} />
       <View sx={{ marginLeft: 10, flex: 1 }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
           <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
-            {position.symbol}
+            {tickerOfCoin(position.symbol)}
           </Text>
+          <DexBadge dex={dexOfCoin(position.symbol)} />
           <StatusArrow status={position.pnlStatus} size={10} />
           <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
             {sideLabel}

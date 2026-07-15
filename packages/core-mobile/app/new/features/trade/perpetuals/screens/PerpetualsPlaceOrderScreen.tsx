@@ -13,13 +13,20 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
+import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
+import { usePerpsOrderSubmit } from '../hooks/usePerpsOrderSubmit'
+import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
+import { tickerOfCoin } from '../utils/coinDex'
+import { positionSizeTokens } from '../utils/economics'
+import { roundSizeToSzDecimals, toNumber } from '../utils/format'
 
 const GEO_BLOCKED_MESSAGE =
   'Perpetual Futures are not available in your location.'
@@ -37,16 +44,57 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     amount,
     setAmount,
     leverage,
-    liquidationPrice
+    setLeverage,
+    liquidationPrice,
+    takeProfitEnabled,
+    takeProfitPrice,
+    stopLossEnabled,
+    stopLossPrice
   } = usePlaceOrder()
 
+  // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
+  // so it reflects HL rather than the local default before the user edits it.
+  const { leverage: hlLeverage } = usePerpsActiveAssetData(coin)
+  const seededLeverageRef = useRef(false)
+  useEffect(() => {
+    if (seededLeverageRef.current || hlLeverage === undefined) {
+      return
+    }
+    seededLeverageRef.current = true
+    setLeverage(hlLeverage)
+  }, [hlLeverage, setLeverage])
+
   const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
+  const { submitOrder } = usePerpsOrderSubmit()
+  const { requireTradingEnabled, enableTradingModal } =
+    usePerpsEnableTradingGate()
+
+  // Live market data for the coin: the current mark price to size the order and
+  // `szDecimals` to quantize the size. Both come from Hyperliquid — there is no
+  // fallback to the seeded/placeholder price, so sizing is only ever computed
+  // from real market data (the confirm button stays disabled until it loads).
+  const { universe, assetCtx } = useHyperliquidMarketContext(coin)
+  const szDecimals = universe?.szDecimals
+  const markPrice = toNumber(assetCtx?.markPx)
+  // Also require leverage (> 0), which is seeded from HL rather than a local
+  // default, before allowing a submit or sizing the order.
+  const marketDataReady =
+    markPrice > 0 && szDecimals !== undefined && leverage > 0
 
   const isLong = side === 'long'
+  // `amount` is the USD collateral from the dial; convert to a contract size
+  // (base units) via collateral × leverage / mark price, then quantize to the
+  // coin's szDecimals (HL rejects sizes with extra fractional precision).
+  const sizeContracts = marketDataReady
+    ? roundSizeToSzDecimals(
+        positionSizeTokens(amount, leverage, markPrice),
+        szDecimals
+      )
+    : 0
   const directionLabel = isLong ? 'Long' : 'Short'
-  const subtitle = `You're predicting the price of ${coin} will go ${
-    isLong ? 'up' : 'down'
-  }`
+  const subtitle = `You're predicting the price of ${tickerOfCoin(
+    coin
+  )} will go ${isLong ? 'up' : 'down'}`
 
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
@@ -82,14 +130,44 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         showSnackbar(GEO_BLOCKED_MESSAGE)
         return
       }
-      // UI-only: simulate the order submission. SDK wiring (marketOrder /
-      // placeOrderWithTpSl + agent signer) lands in a follow-up.
-      await new Promise(resolve => setTimeout(resolve, 1200))
-      router.back()
+      // Gate on the one-time setup (agent + Markr builder fee + unified
+      // account). If trading isn't enabled yet, surface the enable-trading flow
+      // instead of placing the order; the user re-slides once setup completes.
+      if (!requireTradingEnabled()) {
+        return
+      }
+      // A market order sized from the collateral dial, with optional TP/SL
+      // attached when their toggles are on. The manager signs via the agent
+      // key (or the master-wallet fallback) and refreshes balances on success.
+      const ok = await submitOrder({
+        coin,
+        isLong,
+        sizeContracts,
+        leverage,
+        orderKind: 'market',
+        takeProfitPx: takeProfitEnabled ? takeProfitPrice : undefined,
+        stopLossPx: stopLossEnabled ? stopLossPrice : undefined
+      })
+      if (ok) {
+        router.back()
+      }
     } finally {
       setSubmitting(false)
     }
-  }, [router, recheckGeoBlock])
+  }, [
+    router,
+    recheckGeoBlock,
+    submitOrder,
+    requireTradingEnabled,
+    coin,
+    isLong,
+    sizeContracts,
+    leverage,
+    takeProfitEnabled,
+    takeProfitPrice,
+    stopLossEnabled,
+    stopLossPrice
+  ])
 
   const renderFooter = useCallback(
     () => (
@@ -97,12 +175,19 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         mode="single"
         label={`Slide to buy ${directionLabel}`}
         loading={submitting}
-        disabled={amount <= 0 || isGeoBlocked}
+        disabled={amount <= 0 || isGeoBlocked || !marketDataReady}
         onConfirm={handleConfirm}
         testID="perpetuals_place_order_confirm"
       />
     ),
-    [directionLabel, submitting, amount, isGeoBlocked, handleConfirm]
+    [
+      directionLabel,
+      submitting,
+      amount,
+      isGeoBlocked,
+      marketDataReady,
+      handleConfirm
+    ]
   )
 
   const leverageBadge = (
@@ -114,91 +199,94 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         paddingVertical: 4
       }}>
       <Text variant="buttonSmall" sx={{ color: '$textPrimary' }}>
-        {`${leverage}×`}
+        {leverage > 0 ? `${leverage}×` : '-'}
       </Text>
     </View>
   )
 
   return (
-    <ScrollScreen
-      isModal
-      title="Place your bet"
-      subtitle={subtitle}
-      navigationTitle="Place your bet"
-      renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8, gap: 20 }}>
-        <View sx={{ gap: 8 }}>
-          <PositionPill coin={coin} price={entryPrice} side={side} />
+    <>
+      <ScrollScreen
+        isModal
+        title="Place your bet"
+        subtitle={subtitle}
+        navigationTitle="Place your bet"
+        renderFooter={renderFooter}
+        contentContainerStyle={{ padding: 16 }}>
+        <View sx={{ paddingTop: 8, gap: 20 }}>
+          <View sx={{ gap: 8 }}>
+            <PositionPill coin={coin} price={entryPrice} side={side} />
 
-          <View sx={{ gap: 4 }}>
-            <View
-              sx={{
-                backgroundColor: '$surfaceSecondary',
-                borderRadius: 12,
-                paddingVertical: 16
-              }}>
-              <CircularDial
-                value={amount}
-                onChange={setAmount}
-                max={availableBalance}
-                label="USD"
-                enableManualInput
-                testID="perpetuals_place_order_amount"
-                step={1}
-              />
+            <View sx={{ gap: 4 }}>
+              <View
+                sx={{
+                  backgroundColor: '$surfaceSecondary',
+                  borderRadius: 12,
+                  paddingVertical: 16
+                }}>
+                <CircularDial
+                  value={amount}
+                  onChange={setAmount}
+                  max={availableBalance}
+                  label="USD"
+                  enableManualInput
+                  testID="perpetuals_place_order_amount"
+                  step={1}
+                />
+              </View>
+              <Text
+                variant="caption"
+                sx={{ color: '$textSecondary', textAlign: 'center' }}>
+                {`Available balance: ${formatCurrency({
+                  amount: availableBalance
+                })}`}
+              </Text>
             </View>
-            <Text
-              variant="caption"
-              sx={{ color: '$textSecondary', textAlign: 'center' }}>
-              {`Available balance: ${formatCurrency({
-                amount: availableBalance
-              })}`}
-            </Text>
           </View>
+
+          <View sx={{ gap: 20 }}>
+            <GroupList
+              titleSx={{ fontFamily: 'Inter-Regular' }}
+              subtitleVariant="caption"
+              data={[
+                {
+                  title: 'Add leverage',
+                  subtitle: `Liquidated at ${formatCurrency({
+                    amount: liquidationPrice
+                  })}`,
+                  onPress: handleAddLeverage,
+                  value: leverageBadge
+                }
+              ]}
+            />
+
+            <TriggerToggleCard
+              title="Add take profit"
+              subtitle="Price target at which your position will automatically close and lock in your gains"
+              enabled={takeProfit.enabled}
+              onToggle={takeProfit.onToggle}
+              drillLabel="Price target"
+              drillValue={takeProfit.drillValue}
+              onPressDrill={handleOpenTakeProfit}
+              testID="perpetuals_place_order_take_profit"
+            />
+
+            <TriggerToggleCard
+              title="Add stop loss"
+              subtitle="Price level at which your position automatically closes to cap your losses"
+              enabled={stopLoss.enabled}
+              onToggle={stopLoss.onToggle}
+              drillLabel="Stop price"
+              drillValue={stopLoss.drillValue}
+              onPressDrill={handleOpenStopLoss}
+              testID="perpetuals_place_order_stop_loss"
+            />
+          </View>
+          <TermsOfUseText />
         </View>
-
-        <View sx={{ gap: 20 }}>
-          <GroupList
-            titleSx={{ fontFamily: 'Inter-Regular' }}
-            subtitleVariant="caption"
-            data={[
-              {
-                title: 'Add leverage',
-                subtitle: `Liquidated at ${formatCurrency({
-                  amount: liquidationPrice
-                })}`,
-                onPress: handleAddLeverage,
-                value: leverageBadge
-              }
-            ]}
-          />
-
-          <TriggerToggleCard
-            title="Add take profit"
-            subtitle="Price target at which your position will automatically close and lock in your gains"
-            enabled={takeProfit.enabled}
-            onToggle={takeProfit.onToggle}
-            drillLabel="Price target"
-            drillValue={takeProfit.drillValue}
-            onPressDrill={handleOpenTakeProfit}
-            testID="perpetuals_place_order_take_profit"
-          />
-
-          <TriggerToggleCard
-            title="Add stop loss"
-            subtitle="Price level at which your position automatically closes to cap your losses"
-            enabled={stopLoss.enabled}
-            onToggle={stopLoss.onToggle}
-            drillLabel="Stop price"
-            drillValue={stopLoss.drillValue}
-            onPressDrill={handleOpenStopLoss}
-            testID="perpetuals_place_order_stop_loss"
-          />
-        </View>
-        <TermsOfUseText />
-      </View>
-    </ScrollScreen>
+      </ScrollScreen>
+      {enableTradingModal}
+    </>
   )
 }
 

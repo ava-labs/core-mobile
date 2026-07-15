@@ -23,6 +23,16 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ navigate: jest.fn() })
 }))
 
+jest.mock('../hooks/usePerpsPositions', () => ({
+  usePerpsPositions: () => ({
+    positions: [],
+    clearinghouse: undefined,
+    accountValueUsd: 0,
+    withdrawableUsd: 0,
+    isLoading: false
+  })
+}))
+
 jest.mock('common/hooks/useFormatCurrency', () => ({
   useFormatCurrency: () => ({ formatCurrency: () => '$0' })
 }))

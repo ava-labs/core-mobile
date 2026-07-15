@@ -42,7 +42,7 @@
     "@avalabs/fusion-sdk": "0.25.0",
     "@avalabs/glacier-sdk": "3.1.0-canary.672f5c3.0",
     "@avalabs/k2-alpine": "workspace:*",
-    "@avalabs/perps-sdk": "0.0.0-feat-perps-sdk-20260521171718",
+    "@avalabs/perps-sdk": "0.3.0",
     "@avalabs/prediction-market-sdk": "0.3.0",
     "@avalabs/svm-module": "3.9.0",
     "@avalabs/types": "3.1.0-canary.672f5c3.0",

@@ -14,6 +14,12 @@ export type Position = {
   pnlStatus: PriceChangeStatus
   takeProfit: number
   stopLoss: number
+  /**
+   * `true` while the open-orders feed has not yet produced a settled TP/SL for
+   * this coin in the current session — the UI shows `-` rather than prematurely
+   * rendering `None`. Once resolved it stays `false` (values are sticky).
+   */
+  triggersPending?: boolean
   logoUri?: string
   /** Liquidation price; absent if not applicable */
   liquidationPrice?: number
@@ -52,14 +58,46 @@ export type PositionEntry = {
   logoUri?: string
 }
 
-export type PerpetualMarket = {
-  id: string
+/**
+ * Fields shared by every perp-market shape (raw data + display view model).
+ * `changePercent`'s exact form differs per layer — see each extension — but the
+ * price / volume / direction semantics are common.
+ */
+export type PerpMarketBase = {
+  /**
+   * Hyperliquid asset key. Native perps are bare tickers (e.g. "ETH"); HIP-3
+   * (builder-deployed) markets are namespaced as "dex:TICKER" (e.g. "xyz:GOLD").
+   */
   symbol: string
-  rank: number
-  volume: number
+  /** Mark price in USD. */
   price: number
-  tags?: string[]
+  /** 24h price change (see each extending type for its sign/scale). */
   changePercent: number
+  /** Direction of the 24h change. */
   changeStatus: PriceChangeStatus
-  logoUri?: string
+  /** 24h notional volume in USD. */
+  volume: number
+}
+
+/**
+ * Rich Hyperliquid-backed market data, flattened from `metaAndAssetCtxs`
+ * (universe entry + live asset context) by `usePerpsMarkets` / `useHip3Markets`.
+ * Here `changePercent` is a signed fraction (0.0123 = +1.23%). Adapted onto the
+ * {@link PerpMarketView} display model in `hooks/usePerpetualMarkets.ts`.
+ */
+export type PerpMarketData = PerpMarketBase & {
+  /** Builder dex name for HIP-3 markets, or "" for the native (main) dex. */
+  dex: string
+}
+
+/**
+ * Display view model for a perp-market list row, produced by
+ * `usePerpetualMarkets` from {@link PerpMarketData}. Adds list-only concerns
+ * (rank, category tags); here `changePercent` is a non-negative magnitude
+ * percentage (direction lives in `changeStatus`), matching the row UI.
+ */
+export type PerpMarketView = PerpMarketBase & {
+  id: string
+  rank: number
+  tags?: string[]
 }

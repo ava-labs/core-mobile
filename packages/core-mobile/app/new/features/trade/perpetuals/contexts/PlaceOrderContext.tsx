@@ -52,9 +52,14 @@ export interface PlaceOrderProviderProps {
   entryPrice: number
   availableBalance: number
   maxLeverage: number
+  /**
+   * Starting leverage. Hyperliquid always reports a per-coin leverage (even on
+   * first visit), so this is always a real value — the manage flow passes the
+   * position's leverage, the open flow the coin's current HL leverage.
+   */
+  initialLeverage: number
   /** Seed values for editing an existing position (Manage flow). */
   initialAmount?: number
-  initialLeverage?: number
   initialTakeProfitPrice?: number
   initialStopLossPrice?: number
   children: ReactNode
@@ -67,19 +72,18 @@ export const PlaceOrderProvider = ({
   availableBalance,
   maxLeverage,
   initialAmount = 0,
-  initialLeverage = 2,
+  initialLeverage,
   initialTakeProfitPrice,
   initialStopLossPrice,
   children
 }: PlaceOrderProviderProps): JSX.Element => {
   const [amount, setAmount] = useState(initialAmount)
-  // Keep the starting leverage within the market's bounds even if the default
-  // (or a seeded value) exceeds a low maxLeverage.
-  const clampedInitialLeverage = Math.min(
-    Math.max(1, initialLeverage),
-    Math.max(1, maxLeverage)
-  )
-  const [leverage, setLeverage] = useState(clampedInitialLeverage)
+  // Seed leverage directly from the always-present `initialLeverage`.
+  // `maxLeverage` is sourced from live market data and can lag a beat, so the
+  // seed is intentionally NOT clamped against it here (that would desync the
+  // one-time `leverage` state from the per-render baseline used by the manage
+  // screen); the leverage gauge enforces the market max on user edits.
+  const [leverage, setLeverage] = useState(initialLeverage)
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )
@@ -117,7 +121,7 @@ export const PlaceOrderProvider = ({
         leverage,
         side === 'long'
       ),
-      initialLeverage: clampedInitialLeverage,
+      initialLeverage,
       initialTakeProfitPrice,
       initialStopLossPrice
     }),
@@ -133,7 +137,7 @@ export const PlaceOrderProvider = ({
       takeProfitPrice,
       stopLossEnabled,
       stopLossPrice,
-      clampedInitialLeverage,
+      initialLeverage,
       initialTakeProfitPrice,
       initialStopLossPrice
     ]

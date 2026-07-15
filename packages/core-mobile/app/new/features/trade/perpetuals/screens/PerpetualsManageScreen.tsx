@@ -8,13 +8,17 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useState } from 'react'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
+import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
+import { DexBadge } from '../components/DexBadge'
+import { PerpsCoinLogo } from '../components/PerpsCoinLogo'
 import { formatSigned, pnlColor } from '../utils/economics'
 
 export const PerpetualsManageScreen = (): JSX.Element => {
@@ -79,17 +83,48 @@ export const PerpetualsManageScreen = (): JSX.Element => {
     openStopLoss: handleOpenStopLoss
   })
 
+  const { setPositionTpSl } = usePerpsPositionActions()
+  const { requireTradingEnabled, enableTradingModal } =
+    usePerpsEnableTradingGate()
+
   const handleUpdate = useCallback(async () => {
-    // UI-only: simulate the update. SDK wiring (updateLeverage /
-    // setPositionTpSl) lands in a follow-up.
+    // Setting TP/SL signs an L1 order, so ensure trading is set up first.
+    if (!requireTradingEnabled()) {
+      return
+    }
     setSubmitting(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200))
+      const tpChanged = effectiveTakeProfitPrice !== initialTakeProfitPrice
+      const slChanged = effectiveStopLossPrice !== initialStopLossPrice
+      if (tpChanged || slChanged) {
+        const ok = await setPositionTpSl({
+          coin,
+          sizeContracts: size,
+          positionIsLong: isLong,
+          takeProfitPx: effectiveTakeProfitPrice,
+          stopLossPx: effectiveStopLossPrice
+        })
+        if (!ok) {
+          return
+        }
+      }
+
       router.back()
     } finally {
       setSubmitting(false)
     }
-  }, [router])
+  }, [
+    requireTradingEnabled,
+    router,
+    setPositionTpSl,
+    coin,
+    size,
+    isLong,
+    effectiveTakeProfitPrice,
+    initialTakeProfitPrice,
+    effectiveStopLossPrice,
+    initialStopLossPrice
+  ])
 
   const renderFooter = useCallback(
     () => (
@@ -118,113 +153,120 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   )
 
   return (
-    <ScrollScreen
-      isModal
-      title="Manage position"
-      navigationTitle="Manage position"
-      renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8, gap: 10 }}>
-        <View
-          sx={{
-            backgroundColor: '$surfaceSecondary',
-            borderRadius: 12,
-            padding: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <TokenLogo size={32} symbol={coin} />
-            <View sx={{ gap: 2 }}>
-              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text variant="buttonMedium">{coin}</Text>
+    <>
+      <ScrollScreen
+        isModal
+        title="Manage position"
+        navigationTitle="Manage position"
+        renderFooter={renderFooter}
+        contentContainerStyle={{ padding: 16 }}>
+        <View sx={{ paddingTop: 8, gap: 10 }}>
+          <View
+            sx={{
+              backgroundColor: '$surfaceSecondary',
+              borderRadius: 12,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <PerpsCoinLogo size={32} symbol={coin} />
+              <View sx={{ gap: 2 }}>
                 <View
-                  style={{
-                    backgroundColor: alpha(
-                      isLong
-                        ? theme.colors.$textSuccess
-                        : theme.colors.$textDanger,
-                      0.1
-                    ),
-                    borderRadius: 6,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2
-                  }}>
-                  <Text
-                    variant="caption"
-                    sx={{ color: isLong ? '$textSuccess' : '$textDanger' }}>
-                    {isLong ? 'Long' : 'Short'}
-                  </Text>
+                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text variant="buttonMedium">{tickerOfCoin(coin)}</Text>
+                  <DexBadge dex={dexOfCoin(coin)} />
+                  <View
+                    style={{
+                      backgroundColor: alpha(
+                        isLong
+                          ? theme.colors.$textSuccess
+                          : theme.colors.$textDanger,
+                        0.1
+                      ),
+                      borderRadius: 6,
+                      paddingHorizontal: 6,
+                      paddingVertical: 2
+                    }}>
+                    <Text
+                      variant="caption"
+                      sx={{ color: isLong ? '$textSuccess' : '$textDanger' }}>
+                      {isLong ? 'Long' : 'Short'}
+                    </Text>
+                  </View>
                 </View>
+                <Text variant="caption" sx={{ color: '$textSecondary' }}>
+                  {`${leverage}x`}
+                </Text>
               </View>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                {`${leverage}x`}
+            </View>
+            <View sx={{ alignItems: 'flex-end', gap: 2 }}>
+              <Text variant="buttonMedium">
+                {formatCurrency({ amount: entryPrice })}
+              </Text>
+              <Text variant="caption" sx={{ color: profitColor }}>
+                {formattedPnl}
               </Text>
             </View>
           </View>
-          <View sx={{ alignItems: 'flex-end', gap: 2 }}>
-            <Text variant="buttonMedium">
-              {formatCurrency({ amount: entryPrice })}
-            </Text>
-            <Text variant="caption" sx={{ color: profitColor }}>
-              {formattedPnl}
-            </Text>
+
+          <GroupList
+            titleSx={{ fontFamily: 'Inter-Regular' }}
+            data={[
+              {
+                title: 'Size',
+                value: (
+                  <Text variant="body1">{`${size} ${tickerOfCoin(coin)}`}</Text>
+                )
+              },
+              {
+                title: 'Entry price',
+                value: (
+                  <Text variant="body1">
+                    {formatCurrency({ amount: entryPrice })}
+                  </Text>
+                )
+              },
+              {
+                title: 'Estimated profit',
+                value: (
+                  <Text variant="body1" sx={{ color: profitColor }}>
+                    {`${formattedPnl} (${
+                      pnlPct >= 0 ? '+' : ''
+                    }${pnlPct.toFixed(1)}%)`}
+                  </Text>
+                )
+              }
+            ]}
+          />
+
+          <View sx={{ gap: 10 }}>
+            <TriggerToggleCard
+              title="Set take profit"
+              subtitle="Price target at which your position will automatically close and lock in your gains"
+              enabled={takeProfit.enabled}
+              onToggle={takeProfit.onToggle}
+              drillLabel="Price target"
+              drillValue={takeProfit.drillValue}
+              onPressDrill={handleOpenTakeProfit}
+              testID="perpetuals_manage_take_profit"
+            />
+
+            <TriggerToggleCard
+              title="Set stop loss"
+              subtitle="Price level at which your position automatically closes to cap your losses"
+              enabled={stopLoss.enabled}
+              onToggle={stopLoss.onToggle}
+              drillLabel="Stop price"
+              drillValue={stopLoss.drillValue}
+              onPressDrill={handleOpenStopLoss}
+              testID="perpetuals_manage_stop_loss"
+            />
           </View>
         </View>
-
-        <GroupList
-          titleSx={{ fontFamily: 'Inter-Regular' }}
-          data={[
-            {
-              title: 'Size',
-              value: <Text variant="body1">{`${size} ${coin}`}</Text>
-            },
-            {
-              title: 'Entry price',
-              value: (
-                <Text variant="body1">
-                  {formatCurrency({ amount: entryPrice })}
-                </Text>
-              )
-            },
-            {
-              title: 'Estimated profit',
-              value: (
-                <Text variant="body1" sx={{ color: profitColor }}>
-                  {`${formattedPnl} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(
-                    1
-                  )}%)`}
-                </Text>
-              )
-            }
-          ]}
-        />
-
-        <View sx={{ gap: 10 }}>
-          <TriggerToggleCard
-            title="Set take profit"
-            subtitle="Price target at which your position will automatically close and lock in your gains"
-            enabled={takeProfit.enabled}
-            onToggle={takeProfit.onToggle}
-            drillLabel="Price target"
-            drillValue={takeProfit.drillValue}
-            onPressDrill={handleOpenTakeProfit}
-            testID="perpetuals_manage_take_profit"
-          />
-
-          <TriggerToggleCard
-            title="Set stop loss"
-            subtitle="Price level at which your position automatically closes to cap your losses"
-            enabled={stopLoss.enabled}
-            onToggle={stopLoss.onToggle}
-            drillLabel="Stop price"
-            drillValue={stopLoss.drillValue}
-            onPressDrill={handleOpenStopLoss}
-            testID="perpetuals_manage_stop_loss"
-          />
-        </View>
-      </View>
-    </ScrollScreen>
+      </ScrollScreen>
+      {enableTradingModal}
+    </>
   )
 }

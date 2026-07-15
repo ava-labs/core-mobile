@@ -1,11 +1,14 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Button, Text, TokenUnitInputWidget } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
+import { MIN_DEPOSIT_USDC, USDC_DECIMALS } from '../consts'
+import { useCChainUsdc } from '../hooks/useCChainUsdc'
+import { usePerpsDeposit } from '../hooks/usePerpsDeposit'
 
-const USDC_DECIMALS = 6
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
 
 const toUsdc = (amount: number): TokenUnit =>
@@ -14,10 +17,6 @@ const toUsdc = (amount: number): TokenUnit =>
     USDC_DECIMALS,
     USDC_TOKEN.symbol
   )
-
-const MIN_DEPOSIT_USDC = 10
-// Stub until we wire the real USDC wallet balance (C-Chain ERC-20).
-const WALLET_USDC_BALANCE = 28.1142
 
 const DEPOSIT_PRESETS = [
   { label: '$100', value: 100 },
@@ -34,7 +33,15 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
   const router = useRouter()
   const [amount, setAmount] = useState(0)
 
-  const walletBalance = useMemo(() => toUsdc(WALLET_USDC_BALANCE), [])
+  const { formattedBalance } = useCChainUsdc()
+  const walletUsdc = useMemo(
+    () => Number(formattedBalance.toString()),
+    [formattedBalance]
+  )
+  const walletBalance = useMemo(() => toUsdc(walletUsdc), [walletUsdc])
+
+  const { bestQuote, isQuoting, canDeposit, isDepositing, executeDeposit } =
+    usePerpsDeposit(amount > 0 ? String(amount) : '')
 
   const handleAmountChange = useCallback((value: TokenUnit): void => {
     setAmount(value.toDisplay({ asNumber: true }))
@@ -48,25 +55,46 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
 
   const hasInput = amount > 0
   const isBelowMin = hasInput && amount < MIN_DEPOSIT_USDC
-  const isValid = amount >= MIN_DEPOSIT_USDC
+  const exceedsBalance = hasInput && amount > walletUsdc
+  const isValid = amount >= MIN_DEPOSIT_USDC && !exceedsBalance
 
-  const handleSubmit = useCallback(() => {
-    // TODO: real deposit submission (USDC contract / Hyperliquid agent flow).
-    router.back()
-  }, [router])
+  const handleSubmit = useCallback(async () => {
+    if (!isValid || bestQuote === undefined) {
+      return
+    }
+    try {
+      await executeDeposit(bestQuote)
+      showSnackbar('Deposit submitted')
+      router.back()
+    } catch {
+      showSnackbar('Deposit failed. Please try again.')
+    }
+  }, [isValid, bestQuote, executeDeposit, router])
+
+  const footerLabel = isDepositing
+    ? 'Depositing...'
+    : isQuoting
+    ? 'Getting quote...'
+    : 'Deposit funds'
 
   const renderFooter = useCallback(
     () => (
       <Button
         type="primary"
         size="large"
-        disabled={!isValid}
+        disabled={!isValid || !canDeposit || isDepositing}
         onPress={handleSubmit}>
-        Deposit funds
+        {footerLabel}
       </Button>
     ),
-    [isValid, handleSubmit]
+    [isValid, canDeposit, isDepositing, footerLabel, handleSubmit]
   )
+
+  const helperText = isBelowMin
+    ? `Minimum deposit is ${MIN_DEPOSIT_USDC} USDC`
+    : exceedsBalance
+    ? 'Insufficient USDC balance'
+    : `Balance: ${formatWalletUsdc(walletUsdc)}`
 
   return (
     <ScrollScreen
@@ -86,18 +114,16 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
         onChange={handleAmountChange}
         formatInCurrency={formatInCurrency}
         presets={DEPOSIT_PRESETS}
-        valid={!isBelowMin}
+        valid={!isBelowMin && !exceedsBalance}
       />
 
-      {isBelowMin ? (
-        <Text variant="caption" sx={{ color: '$textDanger' }}>
-          {`Minimum deposit is ${MIN_DEPOSIT_USDC} USDC`}
-        </Text>
-      ) : (
-        <Text variant="caption" sx={{ color: '$textPrimary' }}>
-          {`Balance: ${formatWalletUsdc(WALLET_USDC_BALANCE)}`}
-        </Text>
-      )}
+      <Text
+        variant="caption"
+        sx={{
+          color: isBelowMin || exceedsBalance ? '$textDanger' : '$textPrimary'
+        }}>
+        {helperText}
+      </Text>
     </ScrollScreen>
   )
 }

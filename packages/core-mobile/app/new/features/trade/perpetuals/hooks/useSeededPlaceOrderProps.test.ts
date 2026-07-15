@@ -1,4 +1,10 @@
-import { DEFAULT_ENTRY_PRICE, DEFAULT_MAX_LEVERAGE } from '../utils/economics'
+// Stub the clearinghouse hook so importing the module under test doesn't pull
+// in PerpsProvider -> store/account -> the wallet/ModuleManager stack (which
+// can't load under Jest). This suite only exercises the pure resolver.
+jest.mock('./usePerpsClearinghouse', () => ({
+  usePerpsClearinghouse: () => ({ withdrawableUsd: undefined })
+}))
+
 import { resolveSeededPlaceOrderProps } from './useSeededPlaceOrderProps'
 
 describe('resolveSeededPlaceOrderProps', () => {
@@ -13,8 +19,18 @@ describe('resolveSeededPlaceOrderProps', () => {
     expect(props.side).toBe('short')
     expect(props.entryPrice).toBe(1973.1)
     expect(props.maxLeverage).toBe(25)
-    expect(props.initialLeverage).toBeUndefined()
+    // No leverage param → 0 until the live HL leverage is applied by the hook.
+    expect(props.initialLeverage).toBe(0)
     expect(props.initialAmount).toBeUndefined()
+  })
+
+  it('preserves HIP-3 dex case and only upper-cases the ticker', () => {
+    const props = resolveSeededPlaceOrderProps({
+      coin: 'xyz%3Acl',
+      side: 'long',
+      price: '100'
+    })
+    expect(props.coin).toBe('xyz:CL')
   })
 
   it('seeds the manage flow from entry/leverage/size/tp/sl', () => {
@@ -41,10 +57,14 @@ describe('resolveSeededPlaceOrderProps', () => {
       leverage: '999',
       size: '-3'
     })
-    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE) // negative → fallback
-    expect(props.maxLeverage).toBe(1) // clamped to >= 1
-    expect(props.initialLeverage).toBe(1) // clamped into [1, maxLeverage]
-    expect(props.initialAmount).toBe(0) // negative size floored
+    // No fabricated fallback: an invalid price resolves to 0 (the hook fills it
+    // in from the live mark price).
+    expect(props.entryPrice).toBe(0)
+    expect(props.maxLeverage).toBe(0) // filled from the market universe by the hook
+    // With no known cap yet, only the lower bound (>= 1) is enforced.
+    expect(props.initialLeverage).toBe(999)
+    // Undefined without a valid entry price to derive collateral from.
+    expect(props.initialAmount).toBeUndefined()
   })
 
   it('ignores non-finite numeric params (Infinity/NaN)', () => {
@@ -55,9 +75,9 @@ describe('resolveSeededPlaceOrderProps', () => {
       leverage: 'NaN',
       size: 'Infinity'
     })
-    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE)
-    expect(props.maxLeverage).toBe(DEFAULT_MAX_LEVERAGE)
-    expect(props.initialLeverage).toBeUndefined()
+    expect(props.entryPrice).toBe(0)
+    expect(props.maxLeverage).toBe(0)
+    expect(props.initialLeverage).toBe(0)
     expect(props.initialAmount).toBeUndefined()
   })
 
@@ -68,9 +88,9 @@ describe('resolveSeededPlaceOrderProps', () => {
       leverage: 'abc',
       size: 'abc'
     })
-    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE)
-    expect(props.maxLeverage).toBe(DEFAULT_MAX_LEVERAGE)
-    expect(props.initialLeverage).toBeUndefined()
+    expect(props.entryPrice).toBe(0)
+    expect(props.maxLeverage).toBe(0)
+    expect(props.initialLeverage).toBe(0)
     expect(props.initialAmount).toBeUndefined()
   })
 
@@ -90,9 +110,10 @@ describe('resolveSeededPlaceOrderProps', () => {
 
   it('defaults when params are absent', () => {
     const props = resolveSeededPlaceOrderProps({})
-    expect(props.coin).toBe('NVDA')
+    expect(props.coin).toBe('AVAX')
     expect(props.side).toBe('long')
-    expect(props.entryPrice).toBe(DEFAULT_ENTRY_PRICE)
-    expect(props.maxLeverage).toBe(DEFAULT_MAX_LEVERAGE)
+    // No fabricated price/leverage: the hook fills these from live market data.
+    expect(props.entryPrice).toBe(0)
+    expect(props.maxLeverage).toBe(0)
   })
 })
