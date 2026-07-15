@@ -94,6 +94,11 @@ export const StakeRewardChart = forwardRef<
 
     const gridWidth =
       (graphSize.width - GRAPH_STROKE_WIDTH * 2) / (data.length - 1)
+    // Captured as a plain number for the reaction worklet below: referencing
+    // `data` inside the worklet would clone the whole array into the UI
+    // runtime on every closure rebuild.
+    const lastDataIndex = data.length - 1
+    const isGridWidthValid = Number.isFinite(gridWidth) && gridWidth > 0
     const selectionX = useSharedValue<number | undefined>(undefined)
 
     const selectIndex = useCallback(
@@ -106,11 +111,20 @@ export const StakeRewardChart = forwardRef<
           animatedSelectedIndex.value = undefined
           return
         }
+        if (!isGridWidthValid) {
+          // The grid isn't measurable yet (no layout, or < 2 data points) —
+          // NaN/Infinity/negative pixels must never reach `selectionX` (they
+          // feed animated styles). Record the INTENT instead, so a selection
+          // made while the reward data is still loading isn't lost: the
+          // anchor effect below turns it into pixels once the grid is real.
+          animatedSelectedIndex.value = index
+          return
+        }
         selectionX.value = withTiming(gridWidth * index, {
           duration: duration
         })
       },
-      [gridWidth, selectionX, animatedSelectedIndex]
+      [gridWidth, isGridWidthValid, selectionX, animatedSelectedIndex]
     )
 
     // Pixel position → selected index. Guards, in order:
@@ -134,11 +148,11 @@ export const StakeRewardChart = forwardRef<
       (x, previous) => {
         if (previous === null) return
         if (x === undefined) return
-        if (!Number.isFinite(gridWidth) || gridWidth <= 0) return
+        if (!isGridWidthValid) return
 
         animatedSelectedIndex.value = Math.min(
           Math.max(Math.round(x / gridWidth), 0),
-          data.length - 1
+          lastDataIndex
         )
       }
     )
@@ -162,8 +176,17 @@ export const StakeRewardChart = forwardRef<
       // semantics), so the deferral bought nothing except a nondeterministic
       // window in which consumers observed the not-yet-anchored selection.
       if (graphSize.width > 0 && graphSize.height > 0 && data.length > 1) {
+        // First anchor: prefer whatever is already recorded on the shared
+        // value — a selection made through the ref while the reward data was
+        // still loading (see `selectIndex`'s intent path) — falling back to
+        // `initialIndex` for an unseeded value. Later anchors always re-apply
+        // the current selection, INCLUDING a deliberately cleared
+        // `undefined` (CP-14721), which is why the `??` fallback must not
+        // apply once anchored.
         selectIndex(
-          hasAnchoredRef.current ? animatedSelectedIndex.value : initialIndex,
+          hasAnchoredRef.current
+            ? animatedSelectedIndex.value
+            : animatedSelectedIndex.value ?? initialIndex,
           0
         )
         hasAnchoredRef.current = true
