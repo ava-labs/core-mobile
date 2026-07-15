@@ -434,6 +434,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const frame = useSafeAreaFrame()
 
     const minHeight = useMemo(() => {
+      if (Platform.OS === 'android') {
+        return frame.height + (headerLayout?.height ?? 0)
+      }
       return (
         frame.height +
         (headerLayout?.height ?? 0) -
