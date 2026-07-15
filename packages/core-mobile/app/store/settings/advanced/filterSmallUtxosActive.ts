@@ -1,4 +1,4 @@
-import { RootState } from 'store/types'
+import type { RootState } from 'store/types'
 import { selectIsFilterSmallUtxosAvailable } from 'store/posthog/slice'
 
 // Composite gate: PostHog kill-switch AND the user's saved toggle. Read this
