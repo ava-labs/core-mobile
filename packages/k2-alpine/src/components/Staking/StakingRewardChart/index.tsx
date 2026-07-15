@@ -16,7 +16,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
@@ -153,19 +153,21 @@ export const StakeRewardChart = forwardRef<
     // CP-14721).
     const hasAnchoredRef = useRef(false)
     useEffect(() => {
-      InteractionManager.runAfterInteractions(() => {
-        // Also require real data: anchoring against an empty/single-point
-        // grid would write garbage pixels (see the gridWidth note above).
-        // The effect re-runs once the data lands, since `selectIndex`'s
-        // identity changes with `gridWidth`.
-        if (graphSize.width > 0 && graphSize.height > 0 && data.length > 1) {
-          selectIndex(
-            hasAnchoredRef.current ? animatedSelectedIndex.value : initialIndex,
-            0
-          )
-          hasAnchoredRef.current = true
-        }
-      })
+      // Anchor synchronously the moment layout AND real data are available
+      // (an empty/single-point grid would produce garbage pixels — see the
+      // gridWidth note above; the effect re-runs once the data lands, since
+      // `selectIndex`'s identity changes with `gridWidth`). This used to be
+      // deferred via `InteractionManager.runAfterInteractions`, but on the
+      // New Architecture that API is a deprecated stub (plain `setImmediate`
+      // semantics), so the deferral bought nothing except a nondeterministic
+      // window in which consumers observed the not-yet-anchored selection.
+      if (graphSize.width > 0 && graphSize.height > 0 && data.length > 1) {
+        selectIndex(
+          hasAnchoredRef.current ? animatedSelectedIndex.value : initialIndex,
+          0
+        )
+        hasAnchoredRef.current = true
+      }
       // `animatedSelectedIndex` is a stable SharedValue ref; its `.value` is
       // read on purpose only when the geometry changes. `data.length` is
       // covered transitively by `selectIndex` (via `gridWidth`).
