@@ -300,12 +300,15 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       (event: LayoutChangeEvent) => {
         const { height, x, y, width } = event.nativeEvent.layout
         titleHeight.value = height
-        setHeaderTitleLayout({
-          x,
-          y,
-          width,
-          height
-        })
+        setHeaderTitleLayout(prev =>
+          prev &&
+          prev.x === x &&
+          prev.y === y &&
+          prev.width === width &&
+          prev.height === height
+            ? prev
+            : { x, y, width, height }
+        )
       },
       [titleHeight]
     )
@@ -440,16 +443,18 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       return (
         frame.height +
         (headerLayout?.height ?? 0) -
-        (renderFooter ? (footerLayout?.height ?? 0) - insets.bottom - 16 : 0) -
+        (renderFooter && footerLayout
+          ? footerLayout.height - insets.bottom - 16
+          : 0) -
         headerHeight
       )
     }, [
-      headerLayout?.height,
-      footerLayout?.height,
       frame.height,
-      headerHeight,
+      headerLayout?.height,
+      renderFooter,
+      footerLayout,
       insets.bottom,
-      renderFooter
+      headerHeight
     ])
 
     const animatedTitleStyle = useAnimatedStyle(() => {
@@ -493,7 +498,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
                     <Animated.View
                       onLayout={handleTitleLayout}
                       style={animatedTitleStyle}>
-                      <Text variant="heading2" sx={titleSx}>
+                      <Text variant="heading2" numberOfLines={4} sx={titleSx}>
                         {title}
                       </Text>
                     </Animated.View>
