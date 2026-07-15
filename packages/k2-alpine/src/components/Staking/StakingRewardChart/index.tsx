@@ -98,21 +98,48 @@ export const StakeRewardChart = forwardRef<
 
     const selectIndex = useCallback(
       (index: number | undefined, duration = 300): void => {
-        selectionX.value =
-          index !== undefined
-            ? withTiming(gridWidth * index, { duration: duration })
-            : undefined
+        if (index === undefined) {
+          // Clearing is written to BOTH shared values here, explicitly — the
+          // reaction below deliberately ignores `undefined` (see there), so
+          // this is the only path that may clear the selected index.
+          selectionX.value = undefined
+          animatedSelectedIndex.value = undefined
+          return
+        }
+        selectionX.value = withTiming(gridWidth * index, {
+          duration: duration
+        })
       },
-      [gridWidth, selectionX]
+      [gridWidth, selectionX, animatedSelectedIndex]
     )
 
+    // Pixel position → selected index. Guards, in order:
+    // - `previous === null` is the reaction's initial evaluation, which runs
+    //   on mount AND every time this closure is re-created (any render where
+    //   `gridWidth` changed: first layout, reward data arriving). It reflects
+    //   no actual `selectionX` change, and before the first anchor it would
+    //   read `undefined` / stale pixels and clobber the consumer-provided
+    //   initial index — the intermittently "Custom" initial duration on the
+    //   staking screens.
+    // - `undefined` never comes from a gesture (pan positions are clamped
+    //   pixels), only from `selectIndex(undefined)` — which writes the
+    //   cleared index itself above.
+    // - `gridWidth` is garbage until BOTH the graph has a measured width and
+    //   the data has ≥ 2 points ((0−stroke)/(len−1) is negative or even
+    //   positive nonsense for empty data); an `=== 0` check misses those.
+    // - Clamping keeps a stale pixel value read against a fresh `gridWidth`
+    //   from ever emitting an out-of-range index.
     useAnimatedReaction(
       () => selectionX.value,
-      x => {
-        if (gridWidth === 0) return
+      (x, previous) => {
+        if (previous === null) return
+        if (x === undefined) return
+        if (!Number.isFinite(gridWidth) || gridWidth <= 0) return
 
-        animatedSelectedIndex.value =
-          x === undefined ? undefined : Math.round(x / gridWidth)
+        animatedSelectedIndex.value = Math.min(
+          Math.max(Math.round(x / gridWidth), 0),
+          data.length - 1
+        )
       }
     )
 
@@ -127,7 +154,11 @@ export const StakeRewardChart = forwardRef<
     const hasAnchoredRef = useRef(false)
     useEffect(() => {
       InteractionManager.runAfterInteractions(() => {
-        if (graphSize.width > 0 && graphSize.height > 0) {
+        // Also require real data: anchoring against an empty/single-point
+        // grid would write garbage pixels (see the gridWidth note above).
+        // The effect re-runs once the data lands, since `selectIndex`'s
+        // identity changes with `gridWidth`.
+        if (graphSize.width > 0 && graphSize.height > 0 && data.length > 1) {
           selectIndex(
             hasAnchoredRef.current ? animatedSelectedIndex.value : initialIndex,
             0
@@ -136,7 +167,8 @@ export const StakeRewardChart = forwardRef<
         }
       })
       // `animatedSelectedIndex` is a stable SharedValue ref; its `.value` is
-      // read on purpose only when the geometry changes.
+      // read on purpose only when the geometry changes. `data.length` is
+      // covered transitively by `selectIndex` (via `gridWidth`).
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialIndex, selectIndex, graphSize])
 
