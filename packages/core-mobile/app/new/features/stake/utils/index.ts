@@ -143,3 +143,10 @@ export const convertToDurationInSeconds = (date: UTCDate): Seconds => {
 
   return convertToSeconds(BigInt(stakeDurationMs) as MilliSeconds)
 }
+
+/**
+ * Formats a whole-day count with the correctly pluralized unit
+ * ("1 day", "14 days") — several staking surfaces used to render "1 days".
+ */
+export const formatDurationInDays = (numberOfDays: number): string =>
+  `${numberOfDays} ${numberOfDays === 1 ? 'day' : 'days'}`

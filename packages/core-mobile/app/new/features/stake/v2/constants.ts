@@ -1,11 +1,10 @@
-/**
- * 10% of the net estimated delegation rewards (after the validator's own
- * delegation fee) charged as a convenience fee for Fast Stake transactions.
- * Mirrors the rate and basis used by core-web (see
- * `apps/core/app/components/Stake/constants.ts`) so both clients quote the
- * user the same effective APY.
- */
-export const FAST_STAKE_FEE_RATE = 0.1
+// The convenience-fee rates are no longer compiled in here: the
+// `fast-stake-fee-enabled` / `delegation-fee-enabled` gates are multivariate
+// and their variant string carries the rate in basis points. See
+// `selectFastStakeFeeRate` / `selectDelegationFeeRate` in `store/posthog`
+// (no variant means no fee; core-web still hardcodes its 10%). The fee basis
+// is unchanged: the rate applies to the NET estimated rewards, after the
+// validator's own delegation fee.
 
 /**
  * Core-owned, P-Chain escrow address the convenience fee is paid to on
@@ -33,15 +32,6 @@ export const getFastStakeFeeEscrowAddress = (isTestnet: boolean): string =>
   isTestnet
     ? FAST_STAKE_FEE_ESCROW_ADDRESS_FUJI
     : FAST_STAKE_FEE_ESCROW_ADDRESS_MAINNET
-
-/**
- * 10% of the net estimated delegation rewards (after the validator's own
- * delegation fee) charged as a service fee for the advanced delegate flow.
- * Mirrors core-web's `DELEGATION_FEE_RATE`; same rate and basis as Fast Stake
- * but gated behind a separate flag/escrow so the two programs can be tuned
- * independently.
- */
-export const DELEGATION_FEE_RATE = 0.1
 
 /**
  * Core-owned, P-Chain escrow address the advanced delegate service fee is paid

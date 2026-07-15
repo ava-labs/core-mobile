@@ -6,12 +6,12 @@ import { useNow } from 'hooks/time/useNow'
 import { useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { selectIsDelegationFeeBlocked } from 'store/posthog'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
-  DELEGATION_FEE_RATE,
-  getDelegationFeeEscrowAddress
-} from '../constants'
+  selectDelegationFeeRate,
+  selectIsDelegationFeeBlocked
+} from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { getDelegationFeeEscrowAddress } from '../constants'
 import { StakeReviewSource } from '../types'
 import { useDelegateNodeSelection } from '../store'
 import { getDelegateNodeLimits } from './useSelectedDelegateNodeLimits'
@@ -165,6 +165,9 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isDelegationFeeBlocked = useSelector(selectIsDelegationFeeBlocked)
   const isDelegationFeeEnabled = !isDelegationFeeBlocked
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectDelegationFeeRate`.
+  const delegationFeeRate = useSelector(selectDelegationFeeRate)
 
   // Restake only: the node's remaining delegation capacity must still cover
   // the original amount (the seeded shared amount). The normal flow enforces
@@ -228,7 +231,7 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
       error,
       feePolicy: isDelegationFeeEnabled
         ? {
-            rate: DELEGATION_FEE_RATE,
+            rate: delegationFeeRate,
             recipientAddresses: [getDelegationFeeEscrowAddress(isDeveloperMode)]
           }
         : null
@@ -241,6 +244,7 @@ export const useAdvancedReviewSource = (): StakeReviewSource => {
     isFetchingValidators,
     validatorsError,
     isDelegationFeeEnabled,
+    delegationFeeRate,
     isDeveloperMode
   ])
 }
