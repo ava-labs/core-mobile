@@ -154,6 +154,12 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   filterSmallUtxos?: boolean
 }
 
+/**
+ * X-chain send params: same shape as P minus the P-only feeState
+ * (X has fixed base fees; there is no pvm FeeState to thread).
+ */
+export type CreateSendXTxParams = Omit<CreateSendPTxParams, 'feeState'>
+
 //TODO: delete this enum
 export enum WalletType {
   UNSET = 'UNSET',

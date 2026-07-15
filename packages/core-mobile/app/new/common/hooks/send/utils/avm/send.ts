@@ -23,7 +23,8 @@ export const send = async ({
   toAddress,
   amount,
   xpAddresses,
-  xpAddressDictionary
+  xpAddressDictionary,
+  filterSmallUtxos
 }: {
   request: Request
   fromAddress: string
@@ -33,6 +34,7 @@ export const send = async ({
   amount: bigint
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
+  filterSmallUtxos: boolean
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
   return SentryWrapper.startSpan(
@@ -47,7 +49,8 @@ export const send = async ({
           isTestnet,
           destinationAddress: destinationAddress,
           sourceAddress: fromAddress,
-          xpAddresses
+          xpAddresses,
+          filterSmallUtxos
         })
 
         const txRequest = await getTransactionRequest({
