@@ -7,7 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import type { Transfer } from '@avalabs/fusion-sdk'
+import { getRecoveredAtomicAmount, type Transfer } from '@avalabs/fusion-sdk'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
@@ -71,6 +71,12 @@ export type SwapActivityDisplay = {
   fromConfirmations?: { count: number; required: number }
   /** Confirmation progress for the target (To) chain leg. */
   toConfirmations?: { count: number; required: number }
+  /**
+   * True when part of the imported amount was AVAX recovered from a previous
+   * incomplete cross-chain transfer (SDK `getRecoveredAtomicAmount` > 0n). Drives an
+   * informational note explaining why the received amount exceeds what was sent.
+   */
+  includesRecoveredFunds: boolean
 }
 
 /**
@@ -180,6 +186,9 @@ export function useSwapActivityDisplay(
     if (!item) return undefined
 
     const { transfer } = item
+    // `null` means this isn't a CCT transfer (the SDK util gates on service
+    // type); only a positive recovered amount drives the notice.
+    const recoveredAtomic = getRecoveredAtomicAmount(transfer)
     const sourceChainId = getChainIdFromCaip2(transfer.sourceChain.chainId)
     const targetChainId = getChainIdFromCaip2(transfer.targetChain.chainId)
     const fromNetworkData =
@@ -234,7 +243,8 @@ export function useSwapActivityDisplay(
               count: transfer.target.confirmationCount,
               required: transfer.target.requiredConfirmationCount
             }
-          : undefined
+          : undefined,
+      includesRecoveredFunds: recoveredAtomic !== null && recoveredAtomic > 0n
     }
   }, [
     item,
