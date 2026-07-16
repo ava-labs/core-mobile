@@ -1,3 +1,4 @@
+import { PChainTransactionType } from '@avalabs/glacier-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
@@ -275,6 +276,10 @@ export const TokenActivityListItemTitle = ({
         return [renderAmount(a1), ' ', s1, ' transferred']
       case TransactionType.APPROVE:
         return [renderAmount(a1), ' ', s1, ' approved']
+      case PChainTransactionType.EXPORT_TX:
+        return [renderAmount(a1), ' ', s1, ' ', 'exported']
+      case PChainTransactionType.IMPORT_TX:
+        return [renderAmount(a1), ' ', s1, ' ', 'imported']
 
       default: {
         if (isCollectibleTransaction(tx)) {
