@@ -10,9 +10,10 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
@@ -20,6 +21,7 @@ import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
 import { DexBadge } from '../components/DexBadge'
 import { PerpsCoinLogo } from '../components/PerpsCoinLogo'
 import { formatSigned, pnlColor } from '../utils/economics'
+import { extractPositionTriggerOrders } from '../utils/toPosition'
 
 export const PerpetualsManageScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -42,7 +44,6 @@ export const PerpetualsManageScreen = (): JSX.Element => {
     side,
     entryPrice,
     leverage,
-    initialLeverage,
     takeProfitEnabled,
     takeProfitPrice,
     initialTakeProfitPrice,
@@ -59,10 +60,38 @@ export const PerpetualsManageScreen = (): JSX.Element => {
     ? takeProfitPrice
     : undefined
   const effectiveStopLossPrice = stopLossEnabled ? stopLossPrice : undefined
-  const hasChanges =
-    leverage !== initialLeverage ||
-    effectiveTakeProfitPrice !== initialTakeProfitPrice ||
-    effectiveStopLossPrice !== initialStopLossPrice
+  const tpChanged = effectiveTakeProfitPrice !== initialTakeProfitPrice
+  const slChanged = effectiveStopLossPrice !== initialStopLossPrice
+
+  // The position's existing on-book TP/SL triggers (with order ids). A changed
+  // or turned-off side must cancel its existing trigger — HL has no modify, so
+  // editing is cancel + re-place, and re-placing alone would either duplicate
+  // the leg (price change) or leave the old one resting (side cleared).
+  const { orders: openOrders } = usePerpsAllOpenOrders()
+  const existingTriggers = useMemo(
+    () => extractPositionTriggerOrders(coin, openOrders),
+    [coin, openOrders]
+  )
+
+  const cancelOids = useMemo(() => {
+    const oids: number[] = []
+    if (existingTriggers.takeProfit !== undefined && tpChanged) {
+      oids.push(existingTriggers.takeProfit.oid)
+    }
+    if (existingTriggers.stopLoss !== undefined && slChanged) {
+      oids.push(existingTriggers.stopLoss.oid)
+    }
+    return oids
+  }, [existingTriggers, tpChanged, slChanged])
+
+  // Only place a side that is enabled AND changed — leaving an untouched side
+  // out avoids re-sending (and thus duplicating) it. A cleared side has an
+  // `undefined` effective price, so it cancels (above) without re-placing.
+  const takeProfitToPlace = tpChanged ? effectiveTakeProfitPrice : undefined
+  const stopLossToPlace = slChanged ? effectiveStopLossPrice : undefined
+  const hasPlacement =
+    takeProfitToPlace !== undefined || stopLossToPlace !== undefined
+  const hasAction = cancelOids.length > 0 || hasPlacement
 
   const isLong = side === 'long'
   const notional = size * entryPrice
@@ -83,47 +112,45 @@ export const PerpetualsManageScreen = (): JSX.Element => {
     openStopLoss: handleOpenStopLoss
   })
 
-  const { setPositionTpSl } = usePerpsPositionActions()
+  const { updatePositionTpSl } = usePerpsPositionActions()
   const { requireTradingEnabled, enableTradingModal } =
     usePerpsEnableTradingGate()
 
   const handleUpdate = useCallback(async () => {
+    if (!hasAction) {
+      return
+    }
     // Setting TP/SL signs an L1 order, so ensure trading is set up first.
     if (!requireTradingEnabled()) {
       return
     }
     setSubmitting(true)
     try {
-      const tpChanged = effectiveTakeProfitPrice !== initialTakeProfitPrice
-      const slChanged = effectiveStopLossPrice !== initialStopLossPrice
-      if (tpChanged || slChanged) {
-        const ok = await setPositionTpSl({
-          coin,
-          sizeContracts: size,
-          positionIsLong: isLong,
-          takeProfitPx: effectiveTakeProfitPrice,
-          stopLossPx: effectiveStopLossPrice
-        })
-        if (!ok) {
-          return
-        }
+      const ok = await updatePositionTpSl({
+        coin,
+        sizeContracts: size,
+        positionIsLong: isLong,
+        cancelOids,
+        takeProfitPx: takeProfitToPlace,
+        stopLossPx: stopLossToPlace
+      })
+      if (ok) {
+        router.back()
       }
-
-      router.back()
     } finally {
       setSubmitting(false)
     }
   }, [
+    hasAction,
     requireTradingEnabled,
     router,
-    setPositionTpSl,
+    updatePositionTpSl,
     coin,
     size,
     isLong,
-    effectiveTakeProfitPrice,
-    initialTakeProfitPrice,
-    effectiveStopLossPrice,
-    initialStopLossPrice
+    cancelOids,
+    takeProfitToPlace,
+    stopLossToPlace
   ])
 
   const renderFooter = useCallback(
@@ -141,7 +168,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         <Button
           type="primary"
           size="large"
-          disabled={!hasChanges || submitting}
+          disabled={!hasAction || submitting}
           testID="perpetuals_manage_update"
           onPress={handleUpdate}
           style={{ flex: 1 }}>
@@ -149,7 +176,7 @@ export const PerpetualsManageScreen = (): JSX.Element => {
         </Button>
       </View>
     ),
-    [router, hasChanges, submitting, handleUpdate]
+    [router, hasAction, submitting, handleUpdate]
   )
 
   return (

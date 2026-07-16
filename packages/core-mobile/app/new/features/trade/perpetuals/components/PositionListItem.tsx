@@ -47,7 +47,7 @@ export const PositionListItem = ({
         justifyContent: 'space-between',
         gap: 15
       }}>
-      <PerpsCoinLogo size={36} symbol={entry.symbol} />
+      <PerpsCoinLogo size={36} symbol={entry.coin} />
 
       <View
         sx={{

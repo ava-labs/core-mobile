@@ -1,7 +1,9 @@
 import {
+  Button,
   Icons,
   SegmentedControl,
   SlidingButton,
+  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -43,8 +45,15 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   const { isGeoBlocked } = usePerpsAvailability()
 
   // Funded when the account has any Hyperliquid equity: the footer shows
-  // `Short / Long` when funded, else `Slide to deposit`.
-  const { accountValueUsd } = usePerpsClearinghouse()
+  // `Short / Long` when funded, else `Slide to deposit`. When the balance can't
+  // be loaded (API outage) we don't know either way, so we must NOT fall back to
+  // "$0 → deposit" and mis-steer a funded user; show a retry instead.
+  const {
+    accountValueUsd,
+    isError: balanceError,
+    refetch: refetchBalance
+  } = usePerpsClearinghouse()
+  const balanceUnknown = accountValueUsd === undefined && balanceError
   const hasBalance = (accountValueUsd ?? 0) > 0
 
   const { assetCtx, universe, pxDecimals } = useHyperliquidMarketContext(coin)
@@ -95,6 +104,26 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
       return <PerpsGeoRestrictionWarning />
     }
 
+    // Balance unknown (outage): don't present the deposit CTA as if unfunded.
+    if (balanceUnknown) {
+      return (
+        <View sx={{ gap: 8, alignItems: 'center' }}>
+          <Text
+            variant="caption"
+            sx={{ color: '$textSecondary', textAlign: 'center' }}>
+            Couldn’t load your balance. Check your connection and try again.
+          </Text>
+          <Button
+            type="secondary"
+            size="large"
+            onPress={refetchBalance}
+            testID="perpetuals_details_balance_retry">
+            Retry
+          </Button>
+        </View>
+      )
+    }
+
     if (!hasBalance) {
       return (
         <SlidingButton
@@ -135,6 +164,8 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
     )
   }, [
     isGeoBlocked,
+    balanceUnknown,
+    refetchBalance,
     hasBalance,
     handleDeposit,
     handleShort,

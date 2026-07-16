@@ -1,6 +1,8 @@
+import { maxOpenSizeCoin, type ActiveAssetData } from '@avalabs/perps-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback } from 'react'
+import Logger from 'utils/Logger'
 import { PERPS_ACCOUNT_STALE_TIME } from '../consts'
 import { usePerps } from '../contexts/PerpsProvider'
 import { dexOfCoin } from '../utils/coinDex'
@@ -10,6 +12,10 @@ export type UsePerpsActiveAssetDataResult = {
   readonly leverage: number | undefined
   /** `"cross"` | `"isolated"` for the coin, from HL. */
   readonly leverageType: 'cross' | 'isolated' | undefined
+  /** HL's authoritative maximum buy size, in coin units. */
+  readonly maxBuySizeCoin: number | undefined
+  /** HL's authoritative maximum sell size, in coin units. */
+  readonly maxSellSizeCoin: number | undefined
   readonly isLoading: boolean
   /** Force a re-read (e.g. right after `updateLeverage`). */
   readonly refetch: () => Promise<number | undefined>
@@ -39,12 +45,23 @@ export const usePerpsActiveAssetData = (
       coin,
       clearinghouseRefreshNonce
     ],
-    queryFn: async () => {
+    queryFn: async (): Promise<ActiveAssetData> => {
       if (manager === null || userAddress === undefined) {
         throw new Error('Prerequisites missing')
       }
       // Pass the coin's dex so HIP-3 (builder-dex) markets resolve correctly.
-      return manager.info.getActiveAssetData(userAddress, coin, dexOfCoin(coin))
+      const dex = dexOfCoin(coin)
+      const activeAssetData = await manager.info.getActiveAssetData(
+        userAddress,
+        coin,
+        dex
+      )
+      Logger.info('[perps] activeAssetData', {
+        coin,
+        dex,
+        activeAssetData
+      })
+      return activeAssetData
     },
     staleTime: PERPS_ACCOUNT_STALE_TIME
   })
@@ -58,7 +75,10 @@ export const usePerpsActiveAssetData = (
   return {
     leverage: query.data?.leverage.value,
     leverageType: query.data?.leverage.type,
-    isLoading: query.isPending,
+    maxBuySizeCoin: maxOpenSizeCoin(query.data, true),
+    maxSellSizeCoin: maxOpenSizeCoin(query.data, false),
+    isLoading:
+      query.isPending || (query.isFetching && query.data === undefined),
     refetch
   }
 }

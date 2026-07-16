@@ -15,47 +15,38 @@ import {
 import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 
-/** Dump HL / SDK error fields that `Logger.error(msg, err)` often collapses. */
-export const logHyperliquidError = (label: string, error: unknown): void => {
-  // Prefer Logger.info — Logger.error uses console.groupCollapsed and Metro
-  // hides the dump, so failures looked like "no log after submitOrder start".
-  const dump = (payload: unknown): void => {
-    try {
-      Logger.info(label, JSON.parse(JSON.stringify(payload)))
-    } catch {
-      Logger.info(label, String(payload))
-    }
-  }
+/** Sentry tag applied to every perps failure so they can be filtered/grouped. */
+const PERPS_ERROR_TAGS = { feature: 'perps' } as const
 
+/** Extract the diagnostically useful fields of an HL / SDK error (many live on
+ * non-enumerable properties that a plain console/Sentry dump would drop). */
+const hyperliquidErrorFields = (error: unknown): unknown => {
   if (isApiError(error)) {
-    dump({
+    return {
       name: error.name,
       message: error.message,
       status: error.status,
       responseBody: error.responseBody,
       details: error.options?.details
-    })
-    return
+    }
   }
   if (isOrderError(error)) {
-    dump({
+    return {
       name: error.name,
       message: error.message,
       exchangeResponse: error.exchangeResponse
-    })
-    return
+    }
   }
   if (isResponseValidationError(error)) {
-    dump({
+    return {
       name: error.name,
       message: error.message,
       issues: error.issues,
       rawResponse: error.rawResponse
-    })
-    return
+    }
   }
   if (isPerpsError(error)) {
-    dump({
+    return {
       name: error.name,
       message: error.message,
       code: error.code,
@@ -64,14 +55,51 @@ export const logHyperliquidError = (label: string, error: unknown): void => {
         error.options?.cause instanceof Error
           ? error.options.cause.message
           : error.options?.cause
-    })
-    return
+    }
   }
   if (error instanceof Error) {
-    dump({ name: error.name, message: error.message, stack: error.stack })
-    return
+    return { name: error.name, message: error.message, stack: error.stack }
   }
-  dump(error)
+  return error
+}
+
+/**
+ * Record an HL / SDK error from a failure path. Writes to two sinks because
+ * they serve different purposes:
+ *  - `Logger.info` — the verbose, human-readable dev dump. `Logger.error` routes
+ *    through `console.groupCollapsed`, which Metro hides, so the readable copy
+ *    has to go through `info`.
+ *  - `Logger.error` — the ONLY level forwarded to Sentry, and the only one that
+ *    survives production's ERROR log level. Without it these real-money failures
+ *    (order / close / cancel rejects, TP/SL failures, submit throws, agent
+ *    approval) leave zero server-side telemetry to debug from. Skipped for user
+ *    rejections, which are deliberate cancellations, not errors worth alerting.
+ */
+export const logHyperliquidError = (label: string, error: unknown): void => {
+  let payload: unknown
+  try {
+    payload = JSON.parse(JSON.stringify(hyperliquidErrorFields(error)))
+  } catch {
+    payload = String(error)
+  }
+  Logger.info(label, payload)
+  if (!isPerpsUserRejection(error)) {
+    Logger.error(label, payload, PERPS_ERROR_TAGS)
+  }
+}
+
+/**
+ * Record a Hyperliquid business rejection (order / cancel refused via the
+ * response, as opposed to a thrown error). Same dual-sink rationale as
+ * {@link logHyperliquidError}: readable `info` dump for dev, `error` for Sentry
+ * + production so the reject is actually diagnosable.
+ */
+export const logHyperliquidReject = (
+  label: string,
+  detail: Record<string, unknown>
+): void => {
+  Logger.info(label, detail)
+  Logger.error(label, detail, PERPS_ERROR_TAGS)
 }
 
 /** Slippage tolerance applied to market orders (5%). */
@@ -171,7 +199,7 @@ export const finalizeOrderResult = (
   Logger.info('[perps] HL placeOrder response', res)
   const orderErr = extractOrderError(res, errCtx)
   if (orderErr !== undefined) {
-    Logger.info('[perps] HL placeOrder rejected', {
+    logHyperliquidReject('[perps] HL placeOrder rejected', {
       orderErr,
       response: res
     })
@@ -201,7 +229,10 @@ export const finalizeCancelResult = (
   Logger.info('[perps] HL cancel response', res)
   const cancelErr = extractCancelError(res, errCtx)
   if (cancelErr !== undefined) {
-    Logger.info('[perps] HL cancel rejected', { cancelErr, response: res })
+    logHyperliquidReject('[perps] HL cancel rejected', {
+      cancelErr,
+      response: res
+    })
     showSnackbar(cancelErr)
     return false
   }

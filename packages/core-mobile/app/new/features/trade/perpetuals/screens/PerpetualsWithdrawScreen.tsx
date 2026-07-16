@@ -1,18 +1,22 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
+  ActivityIndicator,
   Button,
   GroupList,
   type GroupListItem,
   Text,
   TokenUnitInputWidget,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
+import { isUserRejectionError } from 'features/swap/utils/fusionErrors'
 import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { USDC_DECIMALS } from '../consts'
+import { PerpsApiDownState } from '../components/PerpsApiDownState'
 import { usePerpsWithdraw } from '../hooks/usePerpsWithdraw'
 
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
@@ -32,10 +36,13 @@ const formatUsd = (amount: number): string => `$${formatNumber(amount)} USD`
 
 export const PerpetualsWithdrawScreen = (): JSX.Element => {
   const router = useRouter()
+  const { theme } = useTheme()
   const [amount, setAmount] = useState<number>(0)
 
   const {
     withdrawableUsd,
+    isWithdrawableLoading,
+    refetchWithdrawable,
     bestQuote,
     isQuoting,
     canWithdraw,
@@ -45,8 +52,11 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
     executeWithdraw
   } = usePerpsWithdraw(amount > 0 ? String(amount) : '')
 
-  const available = withdrawableUsd ?? 0
-  const availableBalance = useMemo(() => toUsdc(available), [available])
+  const available = withdrawableUsd
+  const availableBalance = useMemo(
+    () => (available === undefined ? undefined : toUsdc(available)),
+    [available]
+  )
 
   const handleAmountChange = useCallback((value: TokenUnit): void => {
     setAmount(value.toDisplay({ asNumber: true }))
@@ -77,6 +87,9 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
       showSnackbar('Withdrawal submitted')
       router.back()
     } catch (e) {
+      if (isUserRejectionError(e)) {
+        return
+      }
       showSnackbar(e instanceof Error ? e.message : 'Withdrawal failed')
     }
   }, [bestQuote, executeWithdraw, router])
@@ -110,12 +123,15 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
   )
 
   const availableRow: GroupListItem[] = useMemo(
-    () => [
-      {
-        title: 'Available to withdraw',
-        value: mutedValue(formatUsd(available))
-      }
-    ],
+    () =>
+      available === undefined
+        ? []
+        : [
+            {
+              title: 'Available to withdraw',
+              value: mutedValue(formatUsd(available))
+            }
+          ],
     [mutedValue, available]
   )
 
@@ -168,6 +184,34 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
     [amount, estimatedReceive, feeUsdc, isQuoting, mutedValue]
   )
 
+  if (available === undefined && isWithdrawableLoading) {
+    return (
+      <ScrollScreen
+        isModal
+        title="How much do you want to withdraw?"
+        navigationTitle="Enter withdraw amount"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <View
+          testID="perps-withdrawable-loading"
+          sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={theme.colors.$textPrimary} />
+        </View>
+      </ScrollScreen>
+    )
+  }
+
+  if (available === undefined) {
+    return (
+      <ScrollScreen
+        isModal
+        title="How much do you want to withdraw?"
+        navigationTitle="Enter withdraw amount"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <PerpsApiDownState onRetry={refetchWithdrawable} />
+      </ScrollScreen>
+    )
+  }
+
   return (
     <ScrollScreen
       renderFooter={renderFooter}
@@ -183,7 +227,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
           sx={{ width: '100%' }}
           autoFocus
           token={USDC_TOKEN}
-          balance={availableBalance}
+          balance={availableBalance ?? toUsdc(available)}
           amount={amount > 0 ? toUsdc(amount) : undefined}
           onChange={handleAmountChange}
           formatInCurrency={formatInCurrency}

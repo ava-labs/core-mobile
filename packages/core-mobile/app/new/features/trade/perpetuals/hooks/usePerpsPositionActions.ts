@@ -1,3 +1,4 @@
+import { extractCancelError, extractOrderError } from '@avalabs/perps-sdk'
 import { showSnackbar } from 'common/utils/toast'
 import { useCallback, useMemo, useState } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
@@ -6,18 +7,28 @@ import {
   finalizeCancelResult,
   finalizeOrderResult,
   isManagerTradable,
+  logHyperliquidReject,
   orderErrorContext,
   reportOrderError
 } from '../utils/orderExecution'
 import { useClearLoadingOnPerpsReconnect } from './useClearLoadingOnPerpsReconnect'
 import { usePerpsBuilderFee } from './usePerpsBuilderFee'
 
-export type SetPositionTpSlParams = {
+export type UpdatePositionTpSlParams = {
   coin: string
   /** Absolute position size (contracts) the TP/SL should reduce. */
   sizeContracts: number
   positionIsLong: boolean
+  /**
+   * Order ids of the position's existing TP/SL triggers to cancel before
+   * placing replacements — the side(s) the user turned off or re-priced.
+   * Hyperliquid has no "modify trigger": editing is cancel + re-place, and
+   * re-placing without cancelling stacks a duplicate leg on the book.
+   */
+  cancelOids: readonly number[]
+  /** New take-profit trigger price to place (omit to not place a TP leg). */
   takeProfitPx?: number
+  /** New stop-loss trigger price to place (omit to not place a SL leg). */
   stopLossPx?: number
 }
 
@@ -48,7 +59,7 @@ export const usePerpsPositionActions = (): {
     isCross: boolean
   ) => Promise<boolean>
   updateIsolatedMargin: (coin: string, usd: number) => Promise<boolean>
-  setPositionTpSl: (params: SetPositionTpSlParams) => Promise<boolean>
+  updatePositionTpSl: (params: UpdatePositionTpSlParams) => Promise<boolean>
 } => {
   const { manager, refreshAfterTrade } = usePerps()
   // Core's revenue on each fill. Attached to reduce-only closes just like
@@ -215,27 +226,61 @@ export const usePerpsPositionActions = (): {
     [manager, refreshAfterTrade]
   )
 
-  const setPositionTpSl = useCallback(
-    async (params: SetPositionTpSlParams): Promise<boolean> => {
+  const updatePositionTpSl = useCallback(
+    async (params: UpdatePositionTpSlParams): Promise<boolean> => {
       if (!isManagerTradable(manager)) {
         showSnackbar('Connect a wallet to trade')
         return false
       }
+      const hasPlacement =
+        params.takeProfitPx !== undefined || params.stopLossPx !== undefined
+      // Nothing to cancel and nothing to place — no-op (caller gates on this).
+      if (params.cancelOids.length === 0 && !hasPlacement) {
+        return false
+      }
+      const size = Math.abs(params.sizeContracts)
+      if (hasPlacement && (!Number.isFinite(size) || size <= 0)) {
+        return false
+      }
       setBusy(true)
       try {
-        const res = await manager.setPositionTpSl({
-          coin: params.coin,
-          sz: Math.abs(params.sizeContracts),
-          positionIsLong: params.positionIsLong,
-          takeProfitPx: params.takeProfitPx,
-          stopLossPx: params.stopLossPx
-        })
-        return finalizeOrderResult(
-          res,
-          errCtx,
-          'TP/SL updated',
-          refreshAfterTrade
-        )
+        // Cancel the stale triggers first so the placement below doesn't stack a
+        // duplicate leg, and so a fully-cleared side is actually removed.
+        for (const oid of params.cancelOids) {
+          const res = await manager.cancelOpenOrder({ coin: params.coin, oid })
+          const cancelErr = extractCancelError(res, errCtx)
+          if (cancelErr !== undefined) {
+            logHyperliquidReject('[perps] TP/SL trigger cancel rejected', {
+              cancelErr,
+              coin: params.coin,
+              oid
+            })
+            showSnackbar(cancelErr)
+            return false
+          }
+        }
+        if (hasPlacement) {
+          const res = await manager.setPositionTpSl({
+            coin: params.coin,
+            sz: size,
+            positionIsLong: params.positionIsLong,
+            takeProfitPx: params.takeProfitPx,
+            stopLossPx: params.stopLossPx
+          })
+          const orderErr = extractOrderError(res, errCtx)
+          if (orderErr !== undefined) {
+            logHyperliquidReject('[perps] TP/SL update rejected', {
+              orderErr,
+              coin: params.coin
+            })
+            showSnackbar(orderErr)
+            return false
+          }
+        }
+        // Single toast + single post-trade refresh for the whole edit.
+        showSnackbar(hasPlacement ? 'TP/SL updated' : 'TP/SL removed')
+        refreshAfterTrade()
+        return true
       } catch (e) {
         reportOrderError(e, 'Failed to update TP/SL')
         return false
@@ -253,6 +298,6 @@ export const usePerpsPositionActions = (): {
     cancelOrder,
     updateLeverage,
     updateIsolatedMargin,
-    setPositionTpSl
+    updatePositionTpSl
   }
 }

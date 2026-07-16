@@ -7,7 +7,6 @@ import { FALLBACK_COIN } from '../utils/economics'
 import { normalizePerpCoinParam } from '../utils/coinDex'
 import { toNumber as parseHlNumber } from '../utils/format'
 import { useHyperliquidMarketContext } from './useHyperliquidMarketContext'
-import { usePerpsClearinghouse } from './usePerpsClearinghouse'
 
 export type SeededPlaceOrderProps = Omit<PlaceOrderProviderProps, 'children'>
 
@@ -67,15 +66,11 @@ export const resolveSeededPlaceOrderProps = (
     coin: normalizePerpCoinParam(params.coin ?? FALLBACK_COIN),
     side: (params.side === 'short' ? 'short' : 'long') as OrderSide,
     entryPrice,
-    availableBalance: 0,
     maxLeverage,
     initialLeverage,
-    // Collateral implied by the position, so the trigger screen's projected
-    // P&L has a size to work with.
-    initialAmount:
-      initialLeverage > 0 && entryPrice > 0
-        ? (size * entryPrice) / initialLeverage
-        : undefined,
+    // Position notional in USD, used consistently by the amount dial and
+    // trigger-screen projected P&L.
+    initialAmount: entryPrice > 0 ? size * entryPrice : undefined,
     initialTakeProfitPrice: toPositive(params.tp),
     initialStopLossPrice: toPositive(params.sl)
   }
@@ -85,7 +80,6 @@ export const resolveSeededPlaceOrderProps = (
  * Shared by the place-order (open) and manage (edit) modal layouts. Resolves
  * the deep-link params, then fills in the fields that must come from live
  * Hyperliquid data rather than fabricated defaults:
- *  - `availableBalance` from the account's withdrawable clearinghouse balance
  *  - `maxLeverage` from the coin's market universe
  *  - `entryPrice` from the live mark price for the open flow (no `entry` param);
  *    the manage flow keeps the position's real entry price from the deep link.
@@ -93,7 +87,6 @@ export const resolveSeededPlaceOrderProps = (
 export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
   const params = useLocalSearchParams<SeedParams>()
   const resolved = resolveSeededPlaceOrderProps(params)
-  const { withdrawableUsd } = usePerpsClearinghouse()
   const { universe, assetCtx } = useHyperliquidMarketContext(resolved.coin)
 
   const liveMaxLeverage = universe?.maxLeverage
@@ -109,7 +102,6 @@ export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
     maxLeverage:
       liveMaxLeverage !== undefined && liveMaxLeverage > 0
         ? liveMaxLeverage
-        : resolved.maxLeverage,
-    availableBalance: withdrawableUsd ?? resolved.availableBalance
+        : resolved.maxLeverage
   }
 }

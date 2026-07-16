@@ -312,13 +312,13 @@ const PositionHeader = ({
         paddingHorizontal: 12,
         paddingTop: 14
       }}>
-      <PerpsCoinLogo size={36} symbol={position.symbol} />
+      <PerpsCoinLogo size={36} symbol={position.id} />
       <View sx={{ marginLeft: 10, flex: 1 }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
           <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
-            {tickerOfCoin(position.symbol)}
+            {tickerOfCoin(position.id)}
           </Text>
-          <DexBadge dex={dexOfCoin(position.symbol)} />
+          <DexBadge dex={dexOfCoin(position.id)} />
           <StatusArrow status={position.pnlStatus} size={10} />
           <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
             {sideLabel}

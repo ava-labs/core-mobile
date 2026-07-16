@@ -173,7 +173,7 @@ export function TradeScreen(): JSX.Element {
               paddingHorizontal: 16
             }}>
             <TradeBalance
-              balance={accountValueUsd ?? 0}
+              balance={accountValueUsd}
               onBalancePress={() => router.navigate('/perpetualsBalance')}
               onWithdrawPress={() => router.navigate('/perpetualsWithdraw')}
               onDepositPress={() => router.navigate('/perpetualsDeposit')}

@@ -40,6 +40,14 @@ export type PositionsSummary = {
 
 export type PositionEntry = {
   id: string
+  /**
+   * Full Hyperliquid asset key. Native perps are bare tickers (e.g. "ETH");
+   * HIP-3 (builder-deployed) markets are namespaced as "dex:TICKER" (e.g.
+   * "xyz:GOLD"). Used to resolve the coin logo and dex badge — do not strip the
+   * prefix here.
+   */
+  coin: string
+  /** Display ticker without the dex prefix (e.g. "GOLD"). */
   symbol: string
   side: PositionSide
   /** e.g. "Long closed", "Short closed" */

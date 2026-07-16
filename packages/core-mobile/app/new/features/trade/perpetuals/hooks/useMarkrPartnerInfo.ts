@@ -1,3 +1,4 @@
+import { HYPERLIQUID_PERPS_BUILDER_FEE_MAX_TENTHS_BPS } from '@avalabs/perps-sdk'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Config from 'react-native-config'
@@ -75,10 +76,19 @@ export function useMarkrPartnerInfo(
  * basis points), so this is an identity round/clamp — provided to keep call
  * sites explicit about the unit they expect and to guard against NaN /
  * negative payloads.
+ *
+ * This is the single client-side chokepoint for the fee (it feeds both the
+ * `builder.f` attached to every fill and the `maxFeeRateTenthsBps` the user
+ * signs in `approveBuilderFee`), so it also enforces Hyperliquid's protocol
+ * ceiling. The remote schema only checks nonnegativity; without this cap a
+ * misconfigured or compromised response (e.g. an absurdly large fee) would
+ * flow straight into the approval sheet and onto every order. Bounding to
+ * `HYPERLIQUID_PERPS_BUILDER_FEE_MAX_TENTHS_BPS` (100 = 0.10%, HL's max)
+ * limits the blast radius to a value we control.
  */
 export function markrFeeToHyperliquidTenthsBps(fee: number): number {
   if (!Number.isFinite(fee) || fee < 0) {
     return 0
   }
-  return Math.round(fee)
+  return Math.min(Math.round(fee), HYPERLIQUID_PERPS_BUILDER_FEE_MAX_TENTHS_BPS)
 }

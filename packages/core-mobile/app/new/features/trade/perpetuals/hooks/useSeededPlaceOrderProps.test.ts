@@ -21,7 +21,7 @@ describe('resolveSeededPlaceOrderProps', () => {
     expect(props.maxLeverage).toBe(25)
     // No leverage param → 0 until the live HL leverage is applied by the hook.
     expect(props.initialLeverage).toBe(0)
-    expect(props.initialAmount).toBeUndefined()
+    expect(props.initialAmount).toBe(0)
   })
 
   it('preserves HIP-3 dex case and only upper-cases the ticker', () => {
@@ -45,7 +45,7 @@ describe('resolveSeededPlaceOrderProps', () => {
     })
     expect(props.entryPrice).toBe(100)
     expect(props.initialLeverage).toBe(2)
-    expect(props.initialAmount).toBe((3 * 100) / 2) // size × entry / leverage
+    expect(props.initialAmount).toBe(3 * 100) // size × entry = position notional
     expect(props.initialTakeProfitPrice).toBe(120)
     expect(props.initialStopLossPrice).toBe(90)
   })

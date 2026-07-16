@@ -37,6 +37,9 @@ export type UsePerpsWithdrawResult = {
   isWithdrawing: boolean
   isServiceReady: boolean
   withdrawableUsd: number | undefined
+  isWithdrawableLoading: boolean
+  isWithdrawableUnavailable: boolean
+  refetchWithdrawable: () => void
   exceedsWithdrawable: boolean
   /** USDC the wallet will receive on C-Chain after bridge fees, from the quote. */
   estimatedReceive: number | undefined
@@ -50,7 +53,12 @@ export const usePerpsWithdraw = (
   const activeAccount = useSelector(selectActiveAccount)
   const evmAddress = activeAccount?.addressC
   const { decimals: cChainUsdcDecimals } = useCChainUsdc()
-  const { withdrawableUsd } = usePerpsClearinghouse()
+  const {
+    withdrawableUsd,
+    isWithdrawableLoading,
+    isWithdrawableUnavailable,
+    refetch: refetchWithdrawable
+  } = usePerpsClearinghouse()
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   const [debouncedAmount, setDebouncedAmount] = useState(amountString)
@@ -73,7 +81,11 @@ export const usePerpsWithdraw = (
     withdrawableUsd !== undefined && numericAmount > withdrawableUsd
 
   const amountUnits = useMemo(() => {
-    if (debouncedAmount.trim() === '' || exceedsWithdrawable) {
+    if (
+      withdrawableUsd === undefined ||
+      debouncedAmount.trim() === '' ||
+      exceedsWithdrawable
+    ) {
       return undefined
     }
     try {
@@ -82,7 +94,7 @@ export const usePerpsWithdraw = (
     } catch {
       return undefined
     }
-  }, [debouncedAmount, exceedsWithdrawable])
+  }, [debouncedAmount, exceedsWithdrawable, withdrawableUsd])
 
   const targetAsset = useMemo<Asset>(
     () => ({
@@ -187,6 +199,9 @@ export const usePerpsWithdraw = (
             destinationTokenSymbol: 'USDC'
           })
         )
+        if (transfer.status === 'failed') {
+          throw new Error(transfer.errorReason ?? 'Withdrawal failed')
+        }
       } finally {
         setIsWithdrawing(false)
       }
@@ -206,6 +221,7 @@ export const usePerpsWithdraw = (
     bestQuote !== undefined &&
     !isQuoting &&
     quoteError === null &&
+    withdrawableUsd !== undefined &&
     !exceedsWithdrawable &&
     evmAddress !== undefined &&
     amountString === debouncedAmount
@@ -218,6 +234,9 @@ export const usePerpsWithdraw = (
     isWithdrawing,
     isServiceReady: isFusionServiceReady,
     withdrawableUsd,
+    isWithdrawableLoading,
+    isWithdrawableUnavailable,
+    refetchWithdrawable,
     exceedsWithdrawable,
     estimatedReceive,
     executeWithdraw

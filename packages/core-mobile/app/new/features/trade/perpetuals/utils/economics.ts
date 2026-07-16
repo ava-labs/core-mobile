@@ -11,23 +11,43 @@ export interface PnlColors {
 /** Default market to open when a deep link omits the coin. */
 export const FALLBACK_COIN = 'AVAX'
 
-/** Isolated-margin liquidation estimate from entry, leverage and direction. */
+/**
+ * Isolated-margin liquidation estimate from entry, leverage and direction.
+ *
+ * Liquidation happens when equity falls to the maintenance margin, which
+ * Hyperliquid sets at roughly half the initial margin at max leverage —
+ * `mmf ≈ 1 / (2 · maxLeverage)` of the notional. Because that requirement
+ * scales with the notional *at the liquidation price*, the bound is:
+ *   - long:  entry · (1 − 1/leverage) / (1 − mmf)
+ *   - short: entry · (1 + 1/leverage) / (1 + mmf)
+ * e.g. a 10× long at $100 on a 10×-max coin liquidates near $94.74, not $90.
+ *
+ * `maxLeverage` is optional: when it is unknown (0) the maintenance term drops
+ * out and this reduces to the zero-maintenance bound (entry ± entry/leverage).
+ * This remains an estimate — cross-margin liquidation additionally depends on
+ * whole-account equity — so surfaces should label it as such.
+ */
 export const estimateLiquidationPrice = (
   entryPrice: number,
   leverage: number,
-  isLong: boolean
+  isLong: boolean,
+  maxLeverage = 0
 ): number => {
   if (leverage <= 0) return entryPrice
-  const delta = entryPrice / leverage
-  return isLong ? entryPrice - delta : entryPrice + delta
+  const maintenanceMarginFraction = maxLeverage > 0 ? 1 / (2 * maxLeverage) : 0
+  const side = isLong ? 1 : -1
+  const denominator = 1 - side * maintenanceMarginFraction
+  // Guard against a non-positive denominator (only possible with a degenerate
+  // maxLeverage < 1); fall back to entry rather than emit a nonsensical price.
+  if (denominator <= 0) return entryPrice
+  return (entryPrice * (1 - side / leverage)) / denominator
 }
 
-/** Position size in tokens implied by collateral × leverage at entry. */
+/** Position size in tokens implied by USD position notional at entry. */
 export const positionSizeTokens = (
-  collateral: number,
-  leverage: number,
+  positionNotionalUsd: number,
   entryPrice: number
-): number => (entryPrice > 0 ? (collateral * leverage) / entryPrice : 0)
+): number => (entryPrice > 0 ? positionNotionalUsd / entryPrice : 0)
 
 /** Signed P&L of closing `sizeTokens` at `exitPrice` for the given side. */
 export const projectedPnl = ({
@@ -84,21 +104,29 @@ export const requiredTriggerSide = (
   isLong: boolean
 ): 'above' | 'below' => ((kind === 'takeProfit') === isLong ? 'above' : 'below')
 
+/**
+ * Whether a trigger price sits on the side of the reference price that can
+ * actually lock profit / cap loss. `referencePrice` should be the *live mark*,
+ * not the position's entry: a trigger already on the wrong side of the current
+ * price fires (or is rejected) the instant it's placed. In the open flow entry
+ * equals live mark, so either reads the same there; the manage flow must pass
+ * the live mark so a stale entry doesn't wave through an already-crossed trigger.
+ */
 export const isTriggerValid = ({
   kind,
   isLong,
   price,
-  entryPrice
+  referencePrice
 }: {
   kind: TriggerKind
   isLong: boolean
   price: number | undefined
-  entryPrice: number
+  referencePrice: number
 }): boolean => {
-  if (price === undefined || price <= 0 || entryPrice <= 0) return false
-  // Strict: a trigger exactly at entry is neither above nor below, so it can
-  // never lock profit / cap loss and must be rejected.
+  if (price === undefined || price <= 0 || referencePrice <= 0) return false
+  // Strict: a trigger exactly at the reference is neither above nor below, so it
+  // can never lock profit / cap loss and must be rejected.
   return requiredTriggerSide(kind, isLong) === 'above'
-    ? price > entryPrice
-    : price < entryPrice
+    ? price > referencePrice
+    : price < referencePrice
 }

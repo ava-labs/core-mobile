@@ -13,9 +13,9 @@ interface PlaceOrderState {
   coin: string
   side: OrderSide
   entryPrice: number
-  availableBalance: number
   maxLeverage: number
 
+  /** Position notional in USD (not collateral or account balance). */
   amount: number
   setAmount: (value: number) => void
 
@@ -50,7 +50,6 @@ export interface PlaceOrderProviderProps {
   coin: string
   side: OrderSide
   entryPrice: number
-  availableBalance: number
   maxLeverage: number
   /**
    * Starting leverage. Hyperliquid always reports a per-coin leverage (even on
@@ -69,7 +68,6 @@ export const PlaceOrderProvider = ({
   coin,
   side,
   entryPrice,
-  availableBalance,
   maxLeverage,
   initialAmount = 0,
   initialLeverage,
@@ -102,7 +100,6 @@ export const PlaceOrderProvider = ({
       coin,
       side,
       entryPrice,
-      availableBalance,
       maxLeverage,
       amount,
       setAmount,
@@ -119,7 +116,8 @@ export const PlaceOrderProvider = ({
       liquidationPrice: estimateLiquidationPrice(
         entryPrice,
         leverage,
-        side === 'long'
+        side === 'long',
+        maxLeverage
       ),
       initialLeverage,
       initialTakeProfitPrice,
@@ -129,7 +127,6 @@ export const PlaceOrderProvider = ({
       coin,
       side,
       entryPrice,
-      availableBalance,
       maxLeverage,
       amount,
       leverage,

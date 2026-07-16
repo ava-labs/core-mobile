@@ -10,6 +10,23 @@ jest.mock('../hooks/usePerpsAvailability', () => ({
   })
 }))
 
+// Mutable so individual tests can drive the balance / error state.
+const mockPositions: {
+  accountValueUsd: number | undefined
+  withdrawableUsd: number | undefined
+  isError: boolean
+  isLoading: boolean
+  isWithdrawableLoading: boolean
+  isWithdrawableUnavailable: boolean
+} = {
+  accountValueUsd: 0,
+  withdrawableUsd: 0,
+  isError: false,
+  isLoading: false,
+  isWithdrawableLoading: false,
+  isWithdrawableUnavailable: false
+}
+
 jest.mock('../components/PerpsGeoRestrictionWarning', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
@@ -27,9 +44,14 @@ jest.mock('../hooks/usePerpsPositions', () => ({
   usePerpsPositions: () => ({
     positions: [],
     clearinghouse: undefined,
-    accountValueUsd: 0,
-    withdrawableUsd: 0,
-    isLoading: false
+    accountValueUsd: mockPositions.accountValueUsd,
+    withdrawableUsd: mockPositions.withdrawableUsd,
+    mode: undefined,
+    isLoading: mockPositions.isLoading,
+    isWithdrawableLoading: mockPositions.isWithdrawableLoading,
+    isWithdrawableUnavailable: mockPositions.isWithdrawableUnavailable,
+    isError: mockPositions.isError,
+    refetch: jest.fn()
   })
 }))
 
@@ -68,6 +90,7 @@ jest.mock('@avalabs/k2-alpine', () => {
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     alpha: (c: any) => c,
+    ActivityIndicator: pass(rn.ActivityIndicator),
     View: pass(rn.View),
     Text: pass(rn.Text),
     Button: () => null,
@@ -90,6 +113,12 @@ const render = async (): Promise<renderer.ReactTestRenderer> => {
 describe('PerpetualsBalanceScreen geo-restriction', () => {
   beforeEach(() => {
     mockState.isGeoBlocked = false
+    mockPositions.accountValueUsd = 0
+    mockPositions.withdrawableUsd = 0
+    mockPositions.isError = false
+    mockPositions.isLoading = false
+    mockPositions.isWithdrawableLoading = false
+    mockPositions.isWithdrawableUnavailable = false
   })
 
   it('shows the geo-restriction warning when geo-blocked', async () => {
@@ -104,6 +133,51 @@ describe('PerpetualsBalanceScreen geo-restriction', () => {
     const instance = await render()
     expect(
       instance.root.findAllByProps({ testID: 'geo-warning' })
+    ).toHaveLength(0)
+  })
+
+  it('shows the API-down state (not a $0 balance) when the balance fetch errors', async () => {
+    mockPositions.accountValueUsd = undefined
+    mockPositions.isError = true
+    const instance = await render()
+    expect(
+      instance.root.findAllByProps({ testID: 'perps-api-down' }).length
+    ).toBeGreaterThan(0)
+  })
+
+  it('shows a loader instead of a temporary $0 while the balance loads', async () => {
+    mockPositions.accountValueUsd = undefined
+    mockPositions.isLoading = true
+    const instance = await render()
+    expect(
+      instance.root.findAllByProps({ testID: 'perps-balance-loading' })
+    ).not.toHaveLength(0)
+  })
+
+  it('shows a loader while the authoritative withdrawable fallback runs', async () => {
+    mockPositions.withdrawableUsd = undefined
+    mockPositions.isWithdrawableLoading = true
+    const instance = await render()
+    expect(
+      instance.root.findAllByProps({ testID: 'perps-balance-loading' })
+    ).not.toHaveLength(0)
+  })
+
+  it('shows unavailable instead of $0 when withdrawable cannot be resolved', async () => {
+    mockPositions.withdrawableUsd = undefined
+    mockPositions.isWithdrawableUnavailable = true
+    const instance = await render()
+    expect(
+      instance.root.findAllByProps({ testID: 'perps-api-down' }).length
+    ).toBeGreaterThan(0)
+  })
+
+  it('renders the balance overview when the fetch succeeds', async () => {
+    mockPositions.accountValueUsd = 0
+    mockPositions.isError = false
+    const instance = await render()
+    expect(
+      instance.root.findAllByProps({ testID: 'perps-api-down' })
     ).toHaveLength(0)
   })
 })

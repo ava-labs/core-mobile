@@ -27,6 +27,28 @@ export type PositionTriggers = {
   stopLoss: number
 }
 
+/** A resting position trigger order: its Hyperliquid order id and trigger price. */
+export type PositionTriggerOrder = {
+  readonly oid: number
+  readonly triggerPx: number
+}
+
+/**
+ * The position's on-book TP/SL trigger orders (with order ids), so the manage
+ * flow can cancel them before placing replacements. `undefined` when a side has
+ * no resting trigger. Only rich (main-dex) orders carry trigger metadata; HIP-3
+ * (builder-dex) `openOrders` omit it, so those sides resolve to `undefined`.
+ */
+export type PositionTriggerOrders = {
+  readonly takeProfit?: PositionTriggerOrder
+  readonly stopLoss?: PositionTriggerOrder
+}
+
+type TriggerOrderAcc = {
+  takeProfit?: PositionTriggerOrder
+  stopLoss?: PositionTriggerOrder
+}
+
 /**
  * Fold a single rich trigger order (and any nested `children`) into the
  * accumulating TP/SL. Hyperliquid sometimes returns a position's TP/SL as two
@@ -46,27 +68,28 @@ const isPositionTrigger = (
   )
 }
 
-/** Assign a matched trigger's price to the TP or SL slot by its order type. */
+/** Assign a matched trigger (oid + price) to the TP or SL slot by its order type. */
 const applyTrigger = (
   order: InfoOrderStatusWire,
-  acc: { takeProfit: number; stopLoss: number }
+  acc: TriggerOrderAcc
 ): void => {
   const triggerPx = toNumber(order.triggerPx)
   if (triggerPx <= 0) {
     return
   }
+  const trigger: PositionTriggerOrder = { oid: order.oid, triggerPx }
   const type = order.orderType?.toLowerCase() ?? ''
   if (type.includes('take profit') || type.includes('tp')) {
-    acc.takeProfit = triggerPx
+    acc.takeProfit = trigger
   } else if (type.includes('stop') || type.includes('sl')) {
-    acc.stopLoss = triggerPx
+    acc.stopLoss = trigger
   }
 }
 
 const foldTriggerOrder = (
   order: InfoOrderStatusWire,
   coin: string,
-  acc: { takeProfit: number; stopLoss: number }
+  acc: TriggerOrderAcc
 ): void => {
   if (isPositionTrigger(order, coin)) {
     applyTrigger(order, acc)
@@ -84,22 +107,39 @@ const foldTriggerOrder = (
 }
 
 /**
- * Derive a position's TP/SL from the account's open orders. Hyperliquid does
- * not attach TP/SL to the clearinghouse position — they are separate reduce-only
- * trigger orders — so we match the position-TP/SL triggers for `coin` (including
- * ones nested as `children`) and split them into take-profit vs stop-loss.
+ * Derive a position's TP/SL trigger orders (order id + trigger price) from the
+ * account's open orders. Hyperliquid does not attach TP/SL to the clearinghouse
+ * position — they are separate reduce-only trigger orders — so we match the
+ * position-TP/SL triggers for `coin` (including ones nested as `children`) and
+ * split them into take-profit vs stop-loss. The order ids let the manage flow
+ * cancel the existing triggers before placing replacements.
  */
-export const extractPositionTriggers = (
+export const extractPositionTriggerOrders = (
   coin: string,
   orders: readonly AnyOpenOrder[]
-): PositionTriggers => {
-  const acc = { takeProfit: 0, stopLoss: 0 }
+): PositionTriggerOrders => {
+  const acc: TriggerOrderAcc = {}
   for (const order of orders) {
     if (isRichOrder(order)) {
       foldTriggerOrder(order, coin, acc)
     }
   }
   return acc
+}
+
+/**
+ * A position's TP/SL trigger *prices* (0 when unset), for display. Thin wrapper
+ * over {@link extractPositionTriggerOrders} that drops the order ids.
+ */
+export const extractPositionTriggers = (
+  coin: string,
+  orders: readonly AnyOpenOrder[]
+): PositionTriggers => {
+  const { takeProfit, stopLoss } = extractPositionTriggerOrders(coin, orders)
+  return {
+    takeProfit: takeProfit?.triggerPx ?? 0,
+    stopLoss: stopLoss?.triggerPx ?? 0
+  }
 }
 
 const statusOfSigned = (value: number): PriceChangeStatus => {
@@ -227,6 +267,7 @@ export const toPositionEntry = (fill: UserFill): PositionEntry => {
 
   return {
     id: `${fill.hash}-${fill.tid ?? fill.oid}`,
+    coin: fill.coin,
     symbol: tickerOfCoin(fill.coin),
     side: sideOfFill(fill),
     outcome: fill.dir,

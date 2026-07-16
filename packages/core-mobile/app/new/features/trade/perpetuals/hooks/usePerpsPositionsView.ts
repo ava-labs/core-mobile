@@ -9,6 +9,12 @@ export type PerpsPositionsView = {
   readonly positions: readonly Position[]
   /** Raw (unmapped) `AssetPosition[]` for summary aggregation. */
   readonly rawPositions: ReturnType<typeof usePerpsPositions>['positions']
+  /**
+   * `true` until BOTH the main-dex and HIP-3 position feeds have responded, so
+   * consumers can wait and render the merged set at once rather than showing
+   * main-dex positions first and popping HIP-3 ones in a beat later.
+   */
+  readonly isLoading: boolean
 }
 
 /**
@@ -32,7 +38,7 @@ const stickyTriggers = new Map<
  * only when the actual result changes.
  */
 export const usePerpsPositionsView = (): PerpsPositionsView => {
-  const { positions: rawPositions } = usePerpsPositions()
+  const { positions: rawPositions, isLoading } = usePerpsPositions()
   const { orders, isLoading: ordersLoading } = usePerpsAllOpenOrders()
 
   const positions = useMemo<Position[]>(() => {
@@ -63,5 +69,5 @@ export const usePerpsPositionsView = (): PerpsPositionsView => {
     })
   }, [rawPositions, orders, ordersLoading])
 
-  return { positions, rawPositions }
+  return { positions, rawPositions, isLoading }
 }

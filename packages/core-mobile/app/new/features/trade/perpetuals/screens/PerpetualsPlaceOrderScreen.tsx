@@ -31,6 +31,37 @@ import { roundSizeToSzDecimals, toNumber } from '../utils/format'
 const GEO_BLOCKED_MESSAGE =
   'Perpetual Futures are not available in your location.'
 
+const isBlockedBeforeSubmit = async (
+  recheckGeoBlock: () => Promise<boolean>
+): Promise<boolean> => {
+  try {
+    return await recheckGeoBlock()
+  } catch {
+    return true
+  }
+}
+
+const positionCapacityMessage = (
+  isLoading: boolean,
+  maxOpenSizeCoin: number | undefined
+): string => {
+  if (isLoading) {
+    return 'Loading position limit…'
+  }
+  if (maxOpenSizeCoin === 0) {
+    return 'No available position capacity'
+  }
+  return 'Position limit unavailable'
+}
+
+/**
+ * Keep exactly 1,000 dial intervals so the Max preset lands on HL's precise
+ * limit even when it is fractional. A fixed step (for example `$1`) would snap
+ * `$150.37` down to `$150` and leave a small unusable remainder.
+ */
+const positionDialStep = (maxPositionNotionalUsd: number): number =>
+  maxPositionNotionalUsd / 1000
+
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
@@ -40,7 +71,6 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     coin,
     side,
     entryPrice,
-    availableBalance,
     amount,
     setAmount,
     leverage,
@@ -54,7 +84,12 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
   // so it reflects HL rather than the local default before the user edits it.
-  const { leverage: hlLeverage } = usePerpsActiveAssetData(coin)
+  const {
+    leverage: hlLeverage,
+    maxBuySizeCoin,
+    maxSellSizeCoin,
+    isLoading: activeAssetLoading
+  } = usePerpsActiveAssetData(coin)
   const seededLeverageRef = useRef(false)
   useEffect(() => {
     if (seededLeverageRef.current || hlLeverage === undefined) {
@@ -82,14 +117,28 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     markPrice > 0 && szDecimals !== undefined && leverage > 0
 
   const isLong = side === 'long'
-  // `amount` is the USD collateral from the dial; convert to a contract size
-  // (base units) via collateral × leverage / mark price, then quantize to the
-  // coin's szDecimals (HL rejects sizes with extra fractional precision).
+  const maxOpenSizeCoin = isLong ? maxBuySizeCoin : maxSellSizeCoin
+  const maxPositionNotionalUsd =
+    maxOpenSizeCoin !== undefined && markPrice > 0
+      ? maxOpenSizeCoin * markPrice
+      : undefined
+  const orderCapacityReady =
+    maxPositionNotionalUsd !== undefined && maxPositionNotionalUsd > 0
+  const amountExceedsCapacity =
+    maxPositionNotionalUsd !== undefined && amount > maxPositionNotionalUsd
+  const capacityMessage = positionCapacityMessage(
+    activeAssetLoading,
+    maxOpenSizeCoin
+  )
+  const dialStep =
+    maxPositionNotionalUsd !== undefined
+      ? positionDialStep(maxPositionNotionalUsd)
+      : undefined
+  // `amount` is the USD position notional from the dial. Convert it to
+  // contract size via notional / mark price, then quantize to the coin's
+  // szDecimals (HL rejects sizes with extra fractional precision).
   const sizeContracts = marketDataReady
-    ? roundSizeToSzDecimals(
-        positionSizeTokens(amount, leverage, markPrice),
-        szDecimals
-      )
+    ? roundSizeToSzDecimals(positionSizeTokens(amount, markPrice), szDecimals)
     : 0
   const directionLabel = isLong ? 'Long' : 'Short'
   const subtitle = `You're predicting the price of ${tickerOfCoin(
@@ -120,12 +169,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       // — the user may have toggled a VPN since the screen loaded. Abort and
       // surface the restriction rather than placing an order. A re-check that
       // fails outright counts as blocked (fail closed).
-      let blocked: boolean
-      try {
-        blocked = await recheckGeoBlock()
-      } catch {
-        blocked = true
-      }
+      const blocked = await isBlockedBeforeSubmit(recheckGeoBlock)
       if (blocked) {
         showSnackbar(GEO_BLOCKED_MESSAGE)
         return
@@ -136,7 +180,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       if (!requireTradingEnabled()) {
         return
       }
-      // A market order sized from the collateral dial, with optional TP/SL
+      // A market order sized from the position-notional dial, with optional TP/SL
       // attached when their toggles are on. The manager signs via the agent
       // key (or the master-wallet fallback) and refreshes balances on success.
       const ok = await submitOrder({
@@ -175,7 +219,13 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         mode="single"
         label={`Slide to buy ${directionLabel}`}
         loading={submitting}
-        disabled={amount <= 0 || isGeoBlocked || !marketDataReady}
+        disabled={
+          amount <= 0 ||
+          isGeoBlocked ||
+          !marketDataReady ||
+          !orderCapacityReady ||
+          amountExceedsCapacity
+        }
         onConfirm={handleConfirm}
         testID="perpetuals_place_order_confirm"
       />
@@ -186,6 +236,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       amount,
       isGeoBlocked,
       marketDataReady,
+      orderCapacityReady,
+      amountExceedsCapacity,
       handleConfirm
     ]
   )
@@ -224,22 +276,38 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
                   borderRadius: 12,
                   paddingVertical: 16
                 }}>
-                <CircularDial
-                  value={amount}
-                  onChange={setAmount}
-                  max={availableBalance}
-                  label="USD"
-                  enableManualInput
-                  testID="perpetuals_place_order_amount"
-                  step={1}
-                />
+                {orderCapacityReady ? (
+                  <CircularDial
+                    value={amount}
+                    onChange={setAmount}
+                    max={maxPositionNotionalUsd}
+                    label="USD"
+                    enableManualInput
+                    testID="perpetuals_place_order_amount"
+                    step={dialStep}
+                  />
+                ) : (
+                  <View
+                    testID="perpetuals_place_order_capacity_unavailable"
+                    sx={{
+                      minHeight: 48,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                    <Text variant="body2" sx={{ color: '$textSecondary' }}>
+                      {capacityMessage}
+                    </Text>
+                  </View>
+                )}
               </View>
               <Text
                 variant="caption"
                 sx={{ color: '$textSecondary', textAlign: 'center' }}>
-                {`Available balance: ${formatCurrency({
-                  amount: availableBalance
-                })}`}
+                {maxPositionNotionalUsd === undefined
+                  ? 'Maximum position: —'
+                  : `Maximum position: ${formatCurrency({
+                      amount: maxPositionNotionalUsd
+                    })}`}
               </Text>
             </View>
           </View>
@@ -251,7 +319,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
               data={[
                 {
                   title: 'Add leverage',
-                  subtitle: `Liquidated at ${formatCurrency({
+                  subtitle: `Est. liquidation at ${formatCurrency({
                     amount: liquidationPrice
                   })}`,
                   onPress: handleAddLeverage,

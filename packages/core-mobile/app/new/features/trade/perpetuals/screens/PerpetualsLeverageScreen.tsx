@@ -67,11 +67,12 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   const liquidationPrice = estimateLiquidationPrice(
     entryPrice,
     draftLeverage,
-    side === 'long'
+    side === 'long',
+    maxLeverage
   )
   const liquidationPct = pctFromEntry(liquidationPrice, entryPrice)
   const direction = liquidationPct >= 0 ? 'above' : 'below'
-  const liquidationCaption = `Liquidated at ${formatCurrency({
+  const liquidationCaption = `Est. liquidation at ${formatCurrency({
     amount: liquidationPrice
   })} (${liquidationPct >= 0 ? '+' : ''}${liquidationPct.toFixed(
     2

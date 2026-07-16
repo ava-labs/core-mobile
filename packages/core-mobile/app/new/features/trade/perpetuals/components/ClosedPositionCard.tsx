@@ -55,13 +55,13 @@ export const ClosedPositionCard = ({
           paddingHorizontal: 12,
           paddingTop: 14
         }}>
-        <PerpsCoinLogo size={36} symbol={entry.symbol} />
+        <PerpsCoinLogo size={36} symbol={entry.coin} />
         <View sx={{ marginLeft: 10, flex: 1 }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
             <Text variant="body2" sx={{ fontFamily: 'Inter-Medium' }}>
-              {tickerOfCoin(entry.symbol)}
+              {tickerOfCoin(entry.coin)}
             </Text>
-            <DexBadge dex={dexOfCoin(entry.symbol)} />
+            <DexBadge dex={dexOfCoin(entry.coin)} />
             <StatusArrow
               status={
                 entry.side === 'long'

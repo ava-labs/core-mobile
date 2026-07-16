@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -13,6 +14,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { PerpsApiDownState } from '../components/PerpsApiDownState'
 import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { usePerpsPositions } from '../hooks/usePerpsPositions'
@@ -24,12 +26,34 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
   const { isGeoBlocked } = usePerpsAvailability()
-  const { accountValueUsd, withdrawableUsd, positions, clearinghouse } =
-    usePerpsPositions()
+  const {
+    accountValueUsd,
+    withdrawableUsd,
+    mode,
+    positions,
+    clearinghouse,
+    isLoading,
+    isWithdrawableLoading,
+    isWithdrawableUnavailable,
+    isError: balanceError,
+    refetch: refetchBalance
+  } = usePerpsPositions()
 
-  const heroValue = accountValueUsd ?? 0
-  const withdrawable = withdrawableUsd ?? 0
-  const availableForTrading = withdrawableUsd ?? 0
+  // An /info outage with no data to fall back on: the figures below would all
+  // render as "$0", indistinguishable from an empty account. Show the API-down
+  // state with a retry instead of a misleading zeroed-out balance.
+  const balanceUnknown =
+    (accountValueUsd === undefined && (balanceError || !isLoading)) ||
+    (withdrawableUsd === undefined &&
+      (isWithdrawableUnavailable || !isWithdrawableLoading))
+  const balanceLoading =
+    (accountValueUsd === undefined && isLoading) ||
+    (withdrawableUsd === undefined && isWithdrawableLoading)
+  const isPortfolioMargin = mode === 'portfolioMargin'
+
+  const heroValue = accountValueUsd
+  const withdrawable = withdrawableUsd
+  const availableBalance = withdrawableUsd
   const openPositionsCount = positions.length
 
   // Total unrealized P&L across open positions (mark-to-market).
@@ -39,16 +63,20 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
     [positions]
   )
   // Maintenance margin Hyperliquid keeps locked to keep open positions solvent
-  // (a per-coin fraction of notional, not a flat %). Real clearinghouse figure,
-  // surfaced as a subtitle since it's a subset of the collateral in positions.
+  // (a per-coin fraction of notional, not a flat %). It's a subset of reserved
+  // collateral, so it is surfaced within that row rather than added on top.
   const lockedMaintenanceMargin = toNumber(
     clearinghouse?.crossMaintenanceMarginUsed
   )
-  // Collateral committed to positions, defined as the remainder so the three
-  // rows sum exactly to the total account value:
-  //   total = available + collateralInPositions + unrealizedPnl
-  // For unified accounts this remainder also folds in the pooled spot balance.
-  const collateralInPositions = heroValue - withdrawable - unrealizedPnl
+  // Reserved collateral = total equity − what can leave the account now. In
+  // standard mode this tracks the perp ledger's committed margin; in unified /
+  // portfolio-margin modes it also includes spot holds and maintenance limits.
+  // Unrealized P&L is already reflected in equity and remains informational.
+  // Guard the FP residue so it never shows "-$0".
+  const reservedCollateral =
+    heroValue !== undefined && withdrawable !== undefined
+      ? Math.max(0, heroValue - withdrawable)
+      : undefined
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
@@ -59,27 +87,44 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   }, [router])
 
   const withdrawableRows = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Withdrawable now',
-        value: formatCurrency({ amount: withdrawable })
-      }
-    ],
+    () =>
+      withdrawable === undefined
+        ? []
+        : [
+            {
+              title: 'Withdrawable now',
+              value: formatCurrency({ amount: withdrawable })
+            }
+          ],
     [formatCurrency, withdrawable]
   )
 
   const accountRows = useMemo<GroupListItem[]>(() => {
-    const rows: GroupListItem[] = [
+    if (availableBalance === undefined || reservedCollateral === undefined) {
+      return []
+    }
+    const positionsLabel = `${openPositionsCount} position${
+      openPositionsCount === 1 ? '' : 's'
+    }`
+    // Maintenance margin is held within reserved collateral.
+    const collateralSubtitle =
+      lockedMaintenanceMargin > 0
+        ? `${positionsLabel} · ${formatCurrency({
+            amount: lockedMaintenanceMargin
+          })} maintenance margin`
+        : positionsLabel
+
+    return [
       {
-        title: 'Available for trading',
-        value: formatCurrency({ amount: availableForTrading })
+        title: isPortfolioMargin ? 'Available USDC' : 'Available balance',
+        value: formatCurrency({ amount: availableBalance })
       },
       {
-        title: 'Collateral in positions',
-        subtitle: `${openPositionsCount} position${
-          openPositionsCount === 1 ? '' : 's'
-        }`,
-        value: formatCurrency({ amount: collateralInPositions }),
+        title: isPortfolioMargin
+          ? 'Reserved USDC collateral'
+          : 'Reserved collateral',
+        subtitle: collateralSubtitle,
+        value: formatCurrency({ amount: reservedCollateral }),
         accessory: (
           <Icons.Navigation.ChevronRight
             color={theme.colors.$textSecondary}
@@ -105,24 +150,15 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         )
       }
     ]
-    // Informational (not part of the sum above): a subset of the collateral
-    // Hyperliquid holds against open positions to keep them solvent.
-    if (lockedMaintenanceMargin > 0) {
-      rows.push({
-        title: 'Maintenance margin',
-        subtitle: 'Held within collateral in positions',
-        value: formatCurrency({ amount: lockedMaintenanceMargin })
-      })
-    }
-    return rows
   }, [
     formatCurrency,
-    availableForTrading,
-    collateralInPositions,
+    availableBalance,
+    reservedCollateral,
     unrealizedPnl,
     openPositionsCount,
     lockedMaintenanceMargin,
     handlePositionsPress,
+    isPortfolioMargin,
     theme.colors
   ])
 
@@ -156,6 +192,34 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
     [handleWithdraw, handleTopUp]
   )
 
+  if (balanceLoading) {
+    return (
+      <ScrollScreen
+        isModal
+        title="Available balance"
+        navigationTitle="Available balance"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <View
+          testID="perps-balance-loading"
+          sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={theme.colors.$textPrimary} />
+        </View>
+      </ScrollScreen>
+    )
+  }
+
+  if (balanceUnknown) {
+    return (
+      <ScrollScreen
+        isModal
+        title="Available balance"
+        navigationTitle="Available balance"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <PerpsApiDownState onRetry={refetchBalance} />
+      </ScrollScreen>
+    )
+  }
+
   return (
     <ScrollScreen
       isModal
@@ -186,14 +250,16 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
               lineHeight: 60,
               color: theme.colors.$textPrimary
             }}>
-            {formatCurrency({ amount: heroValue })}
+            {heroValue !== undefined
+              ? formatCurrency({ amount: heroValue })
+              : '—'}
           </Text>
           <Text
             variant="subtitle2"
             sx={{
               color: alpha(theme.colors.$textPrimary, 0.6)
             }}>
-            Total account value
+            {isPortfolioMargin ? 'USDC account value' : 'Total account value'}
           </Text>
         </View>
         <GroupList

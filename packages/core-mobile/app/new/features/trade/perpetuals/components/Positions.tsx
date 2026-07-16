@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -33,9 +33,14 @@ export const Positions = ({
   const { theme } = useTheme()
   const router = useRouter()
 
-  const { positions } = usePerpsPositionsView()
+  const { positions, isLoading } = usePerpsPositionsView()
 
   const [initialScrollX] = useState(() => scrollOffsetRef?.current ?? 0)
+
+  // Once we've shown a full set, never blank out again: on reload we keep the
+  // current positions on screen and let them update in place (stale-while-
+  // revalidate). Only the very first load waits for both dexes (below).
+  const hasShownRef = useRef(false)
 
   const handlePositionsPress = useCallback(() => {
     router.navigate('/perpetualsPositions')
@@ -50,9 +55,20 @@ export const Positions = ({
     [scrollOffsetRef]
   )
 
+  // Nothing to show (empty account, or the very first bytes haven't landed).
   if (positions.length === 0) {
     return null
   }
+  // First load only: hold until BOTH the main-dex and HIP-3 feeds have
+  // responded, so positions reveal as one complete set rather than main-dex
+  // cards showing first and HIP-3 ones popping in a moment later. After we've
+  // shown a full set once, `hasShownRef` keeps the carousel visible through any
+  // reload — stale positions stay on screen and update in place when the fresh
+  // data arrives, instead of blanking out mid-refresh.
+  if (isLoading && !hasShownRef.current) {
+    return null
+  }
+  hasShownRef.current = true
 
   return (
     <View sx={{ gap: 8 }}>

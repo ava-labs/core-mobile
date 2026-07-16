@@ -478,10 +478,10 @@ __metadata:
     "@avalabs/crypto-nitro": 0.3.2
     "@avalabs/crypto-sdk": 1.0.2
     "@avalabs/evm-module": 3.9.0
-    "@avalabs/fusion-sdk": 0.25.0
+    "@avalabs/fusion-sdk": 0.0.0-fix-fusion-hyperliquid-withdra-20260716134252
     "@avalabs/glacier-sdk": 3.1.0-canary.672f5c3.0
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/perps-sdk": 0.3.0
+    "@avalabs/perps-sdk": 0.0.0-fix-perps-unified-portfolio-ba-20260716132651
     "@avalabs/prediction-market-sdk": 0.3.0
     "@avalabs/svm-module": 3.9.0
     "@avalabs/tsconfig-mobile": "workspace:*"
@@ -940,9 +940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.25.0":
-  version: 0.25.0
-  resolution: "@avalabs/fusion-sdk@npm:0.25.0"
+"@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-hyperliquid-withdra-20260716134252":
+  version: 0.0.0-fix-fusion-hyperliquid-withdra-20260716134252
+  resolution: "@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-hyperliquid-withdra-20260716134252"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -958,7 +958,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: ada16f36c2d744167b96798ef1ad03fea94a427d55cd1472bba43d6f74615199ff8a302c3983002480f5d3b6cc99534da9476c36c5be4b5b06bdca3a3cdb361a
+  checksum: 290da193d7c4542f6bb2bbb6b655c0d73d1f6cce1c0c55f634db576a6a166f1566a9116bd45ff6911566d059c671e5cc00692f33dd1a0e4b9b757fcaa16b5b99
   languageName: node
   linkType: hard
 
@@ -1076,14 +1076,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/perps-sdk@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@avalabs/perps-sdk@npm:0.3.0"
+"@avalabs/perps-sdk@npm:0.0.0-fix-perps-unified-portfolio-ba-20260716132651":
+  version: 0.0.0-fix-perps-unified-portfolio-ba-20260716132651
+  resolution: "@avalabs/perps-sdk@npm:0.0.0-fix-perps-unified-portfolio-ba-20260716132651"
   peerDependencies:
     "@msgpack/msgpack": ^3.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 4ee299ba8f1442e5b1cc1bf014a796c8ba2f49c4b1553532d1e1b54e759cb8ad1ca93b1035990af6496dddf64e5b12e1980fe436eea678a75ca4fafdbd9cb873
+  checksum: aa53d9459322fee03eec8227c2a189f8a57376878a06b205c9b35ad4ec3e14b95e5d127e7999155a930d1a7e35ae95718d603e0c8dd5aa2c55a1052acd236da4
   languageName: node
   linkType: hard
 

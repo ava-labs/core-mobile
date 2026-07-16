@@ -29,6 +29,24 @@ const EMPTY: Hip3PositionsAggregate = {
 }
 
 /**
+ * Module-level stale-while-revalidate cache keyed by `user|dexKey`, mirroring
+ * {@link useHip3OpenOrders}. Lets a remount (tab switch, navigation, the perps
+ * home header re-rendering) seed the last per-dex clearinghouses immediately —
+ * so HIP-3 positions don't blank out and re-pop on every reload — and only
+ * flips out of the loading state on the first REST seed per scope per session.
+ */
+const hip3StatesCache = new Map<string, Record<string, ClearinghouseState>>()
+const hip3SeededScopes = new Set<string>()
+
+const initialStatesFor = (
+  scopeKey: string
+): Record<string, ClearinghouseState> =>
+  scopeKey.length > 0 ? hip3StatesCache.get(scopeKey) ?? {} : {}
+
+const isScopeSeeded = (scopeKey: string): boolean =>
+  scopeKey.length > 0 && hip3SeededScopes.has(scopeKey)
+
+/**
  * Aggregates a user's HIP-3 (builder-deployed) perp positions and isolated
  * account value by subscribing to `clearinghouseState(user, dex)` over WS for
  * every builder dex (there is no single cross-dex positions endpoint), seeded
@@ -53,14 +71,28 @@ export const useHip3Positions = (
   const dexKey = dexes.join(',')
   const enabled =
     ready && manager !== null && user !== undefined && dexes.length > 0
+  const scopeKey =
+    user !== undefined && dexes.length > 0 ? `${user}|${dexKey}` : ''
 
   /** Latest clearinghouse state per builder dex (seeded by REST, kept live by WS). */
   const [statesByDex, setStatesByDex] = useState<
     Record<string, ClearinghouseState>
-  >({})
-  const [seeded, setSeeded] = useState(false)
+  >(() => initialStatesFor(scopeKey))
+  const [seeded, setSeeded] = useState(() => isScopeSeeded(scopeKey))
   /** `user|dexKey` of the cached states — used to drop them on an account / dex switch. */
   const scopeRef = useRef('')
+
+  // Keep the module cache warm so a remount starts from the last known states
+  // instead of an empty/loading state (avoids positions blinking on reload).
+  useEffect(() => {
+    if (scopeKey.length === 0) {
+      return
+    }
+    hip3StatesCache.set(scopeKey, statesByDex)
+    if (seeded) {
+      hip3SeededScopes.add(scopeKey)
+    }
+  }, [scopeKey, statesByDex, seeded])
 
   // Live per-dex WS subscriptions. `wsResubscribeNonce` forces a resubscribe
   // after a reconnect; `clearinghouseRefreshNonce` is intentionally NOT a dep
