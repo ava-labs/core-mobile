@@ -43,7 +43,10 @@ export const WebView = ({
       setSupportMultipleWindows={false}
       onError={event => {
         onError?.(event)
-        Logger.error('WebView onError', event.nativeEvent.description)
+        // Load failures are external (site down, connection lost, bad cert)
+        // and already surfaced to the user by the WebView error view — warn
+        // so they don't reach Sentry.
+        Logger.warn('WebView onError', event.nativeEvent.description)
       }}
       onLoadEnd={() => {
         Logger.trace('------> onLoadEnd')
