@@ -188,7 +188,7 @@ const SelectNodeScreen = (): JSX.Element => {
   )
 
   const openAdvancedFilters = useCallback((): void => {
-    navigate({ pathname: '/addStakeV2/delegate/advancedFilters' })
+    navigate({ pathname: '/stakeAdvancedFilters' })
   }, [navigate])
 
   const renderItem = useCallback(
