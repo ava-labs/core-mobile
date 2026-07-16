@@ -5,7 +5,7 @@ import { FlatList } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -17,13 +17,23 @@ import {
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
-import { selectAccounts, selectActiveAccount } from 'store/account'
+import {
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccount
+} from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { LoadingState } from 'common/components/LoadingState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { FusionTransfer } from 'features/swap/types'
+import StakeCompleteItem from '../components/StakeCompleteItem'
+import {
+  StakeCompleteNotificationItem,
+  useStakeCompleteNotifications
+} from '../hooks/useStakeCompleteNotifications'
+import { useDismissedStakeNotifications } from '../store/dismissedStakeNotifications'
 import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
@@ -62,6 +72,7 @@ const TAB_ITEMS = [
 // are ordered purely by recency — no special pinning for in_progress swaps.
 type CombinedItem =
   | { kind: 'swap'; item: FusionTransfer }
+  | { kind: 'stake'; item: StakeCompleteNotificationItem }
   | { kind: 'notification'; item: AppNotification }
 
 const SWIPE_DELAY = 100 // ms between each swipe animation
@@ -150,9 +161,52 @@ const renderNotificationItem = (
   return <GenericNotificationItem notification={item} {...props} />
 }
 
+// Module-level row wrapper: keeps the swipe/press ternaries out of
+// `renderItem`'s cognitive-complexity budget.
+const StakeCompleteRow = ({
+  stakeItem,
+  index,
+  isLast,
+  isClearingAll,
+  accounts,
+  accountLabelMap,
+  onDismiss,
+  onPress
+}: {
+  stakeItem: StakeCompleteNotificationItem
+  index: number
+  isLast: boolean
+  isClearingAll: boolean
+  accounts: ReturnType<typeof selectAccounts>
+  accountLabelMap: Map<string, string>
+  onDismiss: (items: StakeCompleteNotificationItem[]) => void
+  onPress: (item: StakeCompleteNotificationItem) => void
+}): React.JSX.Element => {
+  const address = accounts[stakeItem.accountId]?.addressC?.toLowerCase()
+  return (
+    <SwipeableRow
+      animateOut={isClearingAll && index < MAX_ANIMATED_ITEMS}
+      animateDelay={index * SWIPE_DELAY}
+      onSwipeComplete={() => onDismiss([stakeItem])}
+      onPress={isClearingAll ? undefined : () => onPress(stakeItem)}
+      enabled={!isClearingAll}>
+      <StakeCompleteItem
+        item={stakeItem}
+        accountLabel={address ? accountLabelMap.get(address) ?? null : null}
+        showSeparator={!isLast}
+        testID={`stake-complete-${stakeItem.txHash}`}
+      />
+    </SwipeableRow>
+  )
+}
+
 export const NotificationsScreen = (): JSX.Element => {
+  const dispatch = useDispatch()
   const { removeTransfer, clearCompletedTransfers, transfers } =
     useFusionTransfers()
+  const { items: stakeCompleteItems } = useStakeCompleteNotifications()
+  const { dismiss: dismissStakeNotifications } =
+    useDismissedStakeNotifications()
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
@@ -211,17 +265,34 @@ export const NotificationsScreen = (): JSX.Element => {
       (selectedTab === NotificationTab.ALL ||
         selectedTab === NotificationTab.TRANSACTIONS)
 
+    // Locally-derived stake-complete entries live in the same tabs as the
+    // other transaction-shaped items. The hook itself gates on the earn flag.
+    const showStakes =
+      selectedTab === NotificationTab.ALL ||
+      selectedTab === NotificationTab.TRANSACTIONS
+
     return [
       ...(showSwaps
         ? Object.values(transfers).map(
             (s): CombinedItem => ({ kind: 'swap', item: s })
           )
         : []),
+      ...(showStakes
+        ? stakeCompleteItems.map(
+            (item): CombinedItem => ({ kind: 'stake', item })
+          )
+        : []),
       ...notifications.map(
         (n): CombinedItem => ({ kind: 'notification', item: n })
       )
     ].sort((a, b) => b.item.timestamp - a.item.timestamp)
-  }, [isFusionEnabled, transfers, notifications, selectedTab])
+  }, [
+    isFusionEnabled,
+    transfers,
+    stakeCompleteItems,
+    notifications,
+    selectedTab
+  ])
   // ──────────────────────────────────────────────────────────────────────────
 
   // Items that "Clear All" will remove: backend notifications + completed swaps
@@ -230,6 +301,7 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
+          item.kind === 'stake' ||
           (item.kind === 'swap' && isSwapTerminal(item.item.transfer))
       ),
     [combinedItems]
@@ -246,6 +318,9 @@ export const NotificationsScreen = (): JSX.Element => {
     clearAllTimerRef.current = setTimeout(() => {
       markAllAsRead()
       if (isFusionEnabled) clearCompletedTransfers()
+      if (stakeCompleteItems.length > 0) {
+        dismissStakeNotifications(stakeCompleteItems)
+      }
       setIsClearingAll(false)
     }, totalTime)
   }, [
@@ -253,12 +328,15 @@ export const NotificationsScreen = (): JSX.Element => {
     clearableItems.length,
     markAllAsRead,
     isFusionEnabled,
-    clearCompletedTransfers
+    clearCompletedTransfers,
+    stakeCompleteItems,
+    dismissStakeNotifications
   ])
 
   // Full empty state: no backend notifications AND no swap activities
   const hasNoContentAtAll =
     totalUnreadCount === 0 &&
+    stakeCompleteItems.length === 0 &&
     (!isFusionEnabled || Object.keys(transfers).length === 0)
   const isCurrentViewEmpty =
     combinedItems.length === 0 && !isClearingAll && !isLoading
@@ -332,6 +410,25 @@ export const NotificationsScreen = (): JSX.Element => {
     ]
   )
 
+  // Mirrors the push-notification tap semantics
+  // (`handleProcessNotificationData`): stake-complete pushes carry an
+  // accountId and switch the active account before navigating, so the
+  // center's rows do the same for stakes owned by non-active accounts.
+  const handleStakeCompletePress = useCallback(
+    (item: StakeCompleteNotificationItem) => {
+      if (activeAccount?.id !== item.accountId) {
+        dispatch(setActiveAccount(item.accountId))
+      }
+      router.dismiss()
+      router.navigate({
+        // @ts-ignore route is defined under (modals)/stakeDetail
+        pathname: '/stakeDetail',
+        params: { txHash: item.txHash, source: 'deeplink' }
+      })
+    },
+    [activeAccount?.id, dispatch]
+  )
+
   const renderFooter = useCallback(() => {
     // Hide footer only when there are no notifications at all or loading
     if (showFullEmptyState || isLoading) {
@@ -349,6 +446,7 @@ export const NotificationsScreen = (): JSX.Element => {
 
   const keyExtractor = useCallback((combined: CombinedItem) => {
     if (combined.kind === 'swap') return `swap-${combined.item.transfer.id}`
+    if (combined.kind === 'stake') return `stake-${combined.item.txHash}`
     return `notification-${combined.item.id}`
   }, [])
 
@@ -378,6 +476,21 @@ export const NotificationsScreen = (): JSX.Element => {
               testID={`swap-activity-${transfer.transfer.id}`}
             />
           </SwipeableRow>
+        )
+      }
+
+      if (combined.kind === 'stake') {
+        return (
+          <StakeCompleteRow
+            stakeItem={combined.item}
+            index={index}
+            isLast={isLast}
+            isClearingAll={isClearingAll}
+            accounts={accounts}
+            accountLabelMap={accountLabelMap}
+            onDismiss={dismissStakeNotifications}
+            onPress={handleStakeCompletePress}
+          />
         )
       }
 
@@ -416,6 +529,9 @@ export const NotificationsScreen = (): JSX.Element => {
       handleSwapActivityPress,
       dismissNotification,
       handleNotificationPress,
+      dismissStakeNotifications,
+      handleStakeCompletePress,
+      accounts,
       accountLabelMap
     ]
   )
