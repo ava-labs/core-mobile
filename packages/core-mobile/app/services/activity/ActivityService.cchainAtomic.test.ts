@@ -1,0 +1,106 @@
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { PChainTransactionType } from '@avalabs/glacier-sdk'
+import GlacierService from 'services/glacier/GlacierService'
+import ModuleManager from 'vmModule/ModuleManager'
+import ActivityService from './ActivityService'
+
+jest.mock('services/glacier/GlacierService')
+jest.mock('vmModule/ModuleManager')
+
+const C_CHAIN_ID = 43114
+const account = { addressC: '0xUser' } as never
+const cChainNetwork = {
+  chainId: C_CHAIN_ID,
+  vmName: NetworkVMType.EVM,
+  isTestnet: false,
+  explorerUrl: 'https://subnets.avax.network/c-chain',
+  networkToken: { symbol: 'AVAX' }
+} as never
+
+const evmTx = {
+  hash: '0xevm',
+  timestamp: 1_700_000_050,
+  from: '0xUser',
+  to: '0xOther',
+  tokens: [{ type: 'native', symbol: 'AVAX', amount: '2' }],
+  chainId: String(C_CHAIN_ID),
+  txType: 'Send',
+  isContractCall: false
+}
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  ;(ModuleManager.loadModuleByNetwork as jest.Mock).mockResolvedValue({
+    getTransactionHistory: jest
+      .fn()
+      .mockResolvedValue({ transactions: [evmTx], nextPageToken: 'evm-next' })
+  })
+})
+
+describe('ActivityService C-Chain atomic merge', () => {
+  it('merges atomic import/export into C-Chain first page, sorted desc, deduped', async () => {
+    ;(
+      GlacierService.listCChainAtomicTransactions as jest.Mock
+    ).mockResolvedValue({
+      transactions: [
+        {
+          txHash: '0ximport',
+          timestamp: 1_700_000_100,
+          txType: 'ImportTx',
+          destinationChain: 'c-chain',
+          sourceChain: 'p-chain',
+          evmOutputs: [
+            {
+              toAddress: '0xUser',
+              asset: {
+                symbol: 'AVAX',
+                name: 'Avalanche',
+                denomination: 9,
+                amount: '1000000000'
+              }
+            }
+          ]
+        }
+      ],
+      nextPageToken: ''
+    })
+
+    const res = await ActivityService.getActivities({
+      network: cChainNetwork,
+      account,
+      nextPageToken: undefined,
+      shouldAnalyzeBridgeTxs: false
+    })
+
+    const hashes = res.transactions.map(t => t.hash)
+    expect(hashes).toContain('0ximport')
+    expect(hashes).toContain('0xevm')
+    expect(hashes.indexOf('0ximport')).toBeLessThan(hashes.indexOf('0xevm'))
+    const imp = res.transactions.find(t => t.hash === '0ximport')
+    expect(imp?.txType).toBe(PChainTransactionType.IMPORT_TX)
+    expect(res.nextPageToken).toBe('evm-next')
+  })
+
+  it('does NOT fetch atomic txs on non-first pages', async () => {
+    await ActivityService.getActivities({
+      network: cChainNetwork,
+      account,
+      nextPageToken: 'evm-next',
+      shouldAnalyzeBridgeTxs: false
+    })
+    expect(GlacierService.listCChainAtomicTransactions).not.toHaveBeenCalled()
+  })
+
+  it('does NOT fetch atomic txs for non-C-Chain networks', async () => {
+    await ActivityService.getActivities({
+      network: {
+        ...(cChainNetwork as unknown as Record<string, unknown>),
+        chainId: 1
+      } as never,
+      account,
+      nextPageToken: undefined,
+      shouldAnalyzeBridgeTxs: false
+    })
+    expect(GlacierService.listCChainAtomicTransactions).not.toHaveBeenCalled()
+  })
+})

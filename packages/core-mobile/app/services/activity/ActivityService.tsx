@@ -13,8 +13,12 @@ import { getCachedTokenList } from 'hooks/networks/useTokenList'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import GlacierService from 'services/glacier/GlacierService'
+import { Transaction } from 'store/transaction'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
+import { convertCChainAtomicTransaction } from './utils/convertCChainAtomicTransaction'
 
 const UNKNOWN_TOKEN_SYMBOL = 'Unknown'
 
@@ -57,9 +61,63 @@ export class ActivityService {
       convertTransaction(tx, shouldAnalyzeBridgeTxs)
     )
 
-    return {
+    const withAtomic = await this.mergeCChainAtomicTransactions({
       transactions,
+      network: networkWithTokens,
+      address,
+      nextPageToken
+    })
+
+    return {
+      transactions: withAtomic,
       nextPageToken: rawTxHistory.nextPageToken
+    }
+  }
+
+  /**
+   * C-Chain atomic import/export txs come from a separate Glacier endpoint the
+   * EVM module never calls (CP-14760). Fetch them for the first page only and
+   * merge — the recent-activity view is a single 100-item page, so this covers
+   * the token detail + activity tab. Best-effort: a failure here must not break
+   * the primary EVM history.
+   */
+  private async mergeCChainAtomicTransactions({
+    transactions,
+    network,
+    address,
+    nextPageToken
+  }: {
+    transactions: Transaction[]
+    network: Network
+    address: string
+    nextPageToken?: string
+  }): Promise<Transaction[]> {
+    if (nextPageToken !== undefined) return transactions
+    if (!isAvalancheCChainId(network.chainId)) return transactions
+
+    try {
+      const atomic = await GlacierService.listCChainAtomicTransactions({
+        address,
+        isTestnet: Boolean(network.isTestnet)
+      })
+
+      const converted = atomic.transactions.map(tx =>
+        convertCChainAtomicTransaction(tx, {
+          chainId: network.chainId,
+          explorerUrl: network.explorerUrl
+        })
+      )
+
+      const seen = new Set(transactions.map(t => t.hash))
+      const merged = [
+        ...transactions,
+        ...converted.filter(t => !seen.has(t.hash))
+      ]
+      merged.sort((a, b) => b.timestamp - a.timestamp)
+      return merged
+    } catch (error) {
+      Logger.error('Failed to fetch C-Chain atomic transactions', error)
+      return transactions
     }
   }
 
