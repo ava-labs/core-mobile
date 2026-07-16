@@ -47,6 +47,7 @@ describe('convertCChainAtomicTransaction', () => {
     })
 
     expect(tx.hash).toBe('0xexport')
+    expect(tx.timestamp).toBe(1_700_000_000 * 1000)
     expect(tx.txType).toBe(PChainTransactionType.EXPORT_TX)
     expect(tx.chainId).toBe(String(C_CHAIN_ID))
     expect(tx.isSender).toBe(true)

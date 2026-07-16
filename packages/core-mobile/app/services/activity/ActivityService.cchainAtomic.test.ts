@@ -19,7 +19,7 @@ const cChainNetwork = {
 
 const evmTx = {
   hash: '0xevm',
-  timestamp: 1_700_000_050,
+  timestamp: 1_700_000_050_000, // ms — EVM module emits blockTimestamp*1000
   from: '0xUser',
   to: '0xOther',
   tokens: [{ type: 'native', symbol: 'AVAX', amount: '2' }],

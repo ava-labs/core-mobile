@@ -62,7 +62,11 @@ export const convertCChainAtomicTransaction = (
     isIncoming: !exported,
     isOutgoing: exported,
     isSender: exported,
-    timestamp: tx.timestamp,
+    // Glacier returns atomic-tx timestamps in seconds; the internal Transaction
+    // timestamp is milliseconds (the EVM module emits blockTimestamp*1000, and
+    // activity date-grouping does `new Date(tx.timestamp)`). Normalize to ms so
+    // atomic rows interleave/sort correctly with EVM txs.
+    timestamp: tx.timestamp * 1000,
     hash: tx.txHash,
     from: exported ? userAddress ?? '' : '',
     to: exported ? '' : userAddress ?? '',
