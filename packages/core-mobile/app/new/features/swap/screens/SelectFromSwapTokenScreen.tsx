@@ -24,6 +24,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
+import { getSwappableBalanceDisplayValue } from '../utils/getSwappableBalance'
 
 /**
  * Token selection screen for the "from" side of a swap.
@@ -149,7 +150,7 @@ export const SelectFromSwapTokenScreen = ({
                   {item.name}
                 </Text>
                 <Text variant="subtitle2">
-                  {item.balanceDisplayValue} {item.symbol}
+                  {getSwappableBalanceDisplayValue(item)} {item.symbol}
                 </Text>
               </View>
             </View>
