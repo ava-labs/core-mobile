@@ -54,3 +54,33 @@ describe('getStakeTitle (completed)', () => {
     expect(title('123450')).toBe('0.0001 AVAX rewarded')
   })
 })
+
+describe('getStakeTitle (active)', () => {
+  // The remaining-time suffix depends on the current clock, so these assert
+  // only the amount prefix — the part this formatting change owns.
+  const activeTitle = (estimatedReward?: string): string =>
+    getStakeTitle({
+      stake: {
+        estimatedReward,
+        // Far enough out that the stake reads as ongoing.
+        endTimestamp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+        emittedUtxos: []
+      } as unknown as PChainTransaction,
+      pChainNetworkToken,
+      isActive: true
+    })
+
+  it('trims estimated rewards to the familiar two-decimal shape', () => {
+    expect(activeTitle('1750000000')).toMatch(/^1\.75 AVAX reward unlocked in /)
+  })
+
+  it('surfaces dust estimated rewards with up to four decimals', () => {
+    expect(activeTitle('100000')).toMatch(/^0\.0001 AVAX reward unlocked in /)
+  })
+
+  it('falls back to the unknown-amount marker without an estimate', () => {
+    expect(activeTitle(undefined)).toMatch(
+      new RegExp(`^${UNKNOWN_AMOUNT} AVAX reward unlocked in `)
+    )
+  })
+})
