@@ -13,7 +13,6 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   addDays,
   addHours,
-  differenceInDays,
   format,
   getUnixTime,
   millisecondsToSeconds
@@ -31,7 +30,8 @@ import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedR
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
 import {
   convertToDurationInSeconds,
-  formatDurationInDays
+  formatDurationInDays,
+  getRoundedDurationInDays
 } from 'features/stake/utils'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
@@ -227,16 +227,19 @@ const StakeDurationScreen = ({
     }
 
     if (customEndDate) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return differenceInDays(customEndDate, today)
+      // Anchored at the reactive `now` (same clock the confirm screen's
+      // "Time to unlock" uses) and rounded — the previous midnight anchor
+      // made this row read one day higher than the review right after
+      // picking a date.
+      return getRoundedDurationInDays(now, customEndDate)
     }
   }, [
     durationsWithDays,
     selectedDurationIndex,
     estimatedRewards,
     defaultDurationIndex,
-    customEndDate
+    customEndDate,
+    now
   ])
 
   // Advanced delegate: the stake can't outlast the selected validator. The
