@@ -13,3 +13,23 @@ describe('migration 29 — quickSwaps default-fill', () => {
     expect(after.settings.advanced.isLeftHanded).toBe(false)
   })
 })
+
+describe('migration 30 — filterSmallUtxos default-fill', () => {
+  it('fills filterSmallUtxos with true when missing', () => {
+    const before = {
+      settings: { advanced: { developerMode: false, isLeftHanded: false } }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[30](before)
+    expect(after.settings.advanced.filterSmallUtxos).toBe(true)
+    // untouched siblings survive
+    expect(after.settings.advanced.developerMode).toBe(false)
+  })
+
+  it('preserves an existing false value', () => {
+    const before = { settings: { advanced: { filterSmallUtxos: false } } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[30](before)
+    expect(after.settings.advanced.filterSmallUtxos).toBe(false)
+  })
+})
