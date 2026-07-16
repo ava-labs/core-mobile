@@ -199,12 +199,13 @@ class AvalancheWalletService {
       destinationAddress
     )
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
+    }
 
     return unsignedTx
   }
@@ -233,11 +234,13 @@ class AvalancheWalletService {
       feeState
     })
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
   }
@@ -268,11 +271,13 @@ class AvalancheWalletService {
       feeState
     })
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
   }
@@ -467,12 +472,13 @@ class AvalancheWalletService {
       destinationAddress
     )
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
+    }
 
     return unsignedTx
   }
@@ -554,11 +560,13 @@ class AvalancheWalletService {
       throw error
     }
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
   }
@@ -661,26 +669,56 @@ class AvalancheWalletService {
   private async validateFee({
     isTestnet,
     unsignedTx,
-    evmBaseFeeInNAvax
+    evmBaseFeeInNAvax,
+    pChainFeePriceInNAvax
   }: {
     isTestnet: boolean
     unsignedTx: UnsignedTx
     evmBaseFeeInNAvax?: bigint
+    pChainFeePriceInNAvax?: bigint
   }): Promise<void> {
-    if (evmBaseFeeInNAvax === undefined) {
-      throw new Error('Missing evm fee data')
-    }
-
-    Logger.info('validating burned amount')
-
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
       isTestnet
     )
 
+    // validateBurnedAmount interprets `baseFee` per VM: the EVM base fee for
+    // C-chain atomic txs, the P-chain dynamic fee price for PVM txs. The
+    // static X-chain path ignores it.
+    let baseFee: bigint
+    const vm = unsignedTx.getVM()
+    if (vm === 'EVM') {
+      if (evmBaseFeeInNAvax === undefined) {
+        throw new Error('Missing evm fee data')
+      }
+      baseFee = evmBaseFeeInNAvax
+    } else if (vm === 'PVM') {
+      let price = pChainFeePriceInNAvax
+      if (price === undefined) {
+        try {
+          price = (await avalancheProvider.getApiP().getFeeState()).price
+        } catch (error) {
+          // Fail open: without a reference price the check can't run, and a
+          // transient RPC failure must not block staking/claim actions.
+          // (Substituting 0 would be worse — a zero expected fee makes any
+          // real burn look excessive and fails the validation.)
+          Logger.warn(
+            'skipping burned amount validation, unable to fetch P-Chain fee state',
+            error
+          )
+          return
+        }
+      }
+      baseFee = price
+    } else {
+      baseFee = 0n
+    }
+
+    Logger.info('validating burned amount')
+
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
-      baseFee: evmBaseFeeInNAvax,
+      baseFee,
       feeTolerance: EVM_FEE_TOLERANCE
     })
 
