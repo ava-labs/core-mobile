@@ -177,6 +177,32 @@ class BiometricsSDK {
     }
   }
 
+  /**
+   * Checks whether the keychain still holds any credential capable of unlocking
+   * a wallet: the current PIN/biometry encryption keys or a legacy (not-yet
+   * migrated) entry. Used on launch to reconcile persisted wallet state against
+   * secure storage — if a wallet is supposedly present but no credential exists
+   * (e.g. an interrupted wallet deletion), the app can route to onboarding
+   * instead of trapping the user on a non-functional PIN screen. (CP-14585)
+   *
+   * Fails safe: returns true on any error so a transient keychain failure never
+   * causes a real wallet to be wiped.
+   */
+  async hasWalletData(): Promise<boolean> {
+    try {
+      const results = await Promise.all([
+        hasGenericPassword(passcodeGetOptions),
+        hasGenericPassword(bioGetOptions),
+        hasGenericPassword({ service: LEGACY_SERVICE_KEY }),
+        hasGenericPassword({ service: LEGACY_SERVICE_KEY_BIO })
+      ])
+      return results.some(Boolean)
+    } catch (e) {
+      Logger.error('Failed to check wallet data existence', e)
+      return true
+    }
+  }
+
   async loadEncryptionKeyWithPin(pin: string): Promise<boolean> {
     const credentials = await Keychain.getGenericPassword(passcodeGetOptions)
     if (!credentials) return false

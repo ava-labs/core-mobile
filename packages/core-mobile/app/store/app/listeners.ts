@@ -54,10 +54,7 @@ const init = async (
 ): Promise<void> => {
   const { dispatch } = listenerApi
   const state = listenerApi.getState()
-
-  // check wallet state during app launch, if it's active, reset it to inactive
-  const isWalletActive = selectWalletState(state) === WalletState.ACTIVE
-  isWalletActive && dispatch(setWalletState(WalletState.INACTIVE))
+  const walletState = selectWalletState(state)
 
   const fontScale = await DeviceInfo.getFontScale()
   AnalyticsService.capture('ApplicationLaunched', { FontScale: fontScale })
@@ -67,6 +64,26 @@ const init = async (
   if (Platform.OS === 'android') {
     await BiometricsSDK.warmup()
   }
+
+  // Reconcile the persisted wallet state against secure storage. If the app
+  // believes a wallet exists but the keychain no longer holds any credential to
+  // unlock it (e.g. an interrupted wallet deletion after a seedless session
+  // expiry), tear it down so the user lands on onboarding instead of being
+  // trapped on a PIN screen that can never succeed. Otherwise, if the wallet was
+  // previously active, require the user to unlock it again. (CP-14585)
+  if (walletState !== WalletState.NONEXISTENT) {
+    const hasWalletData = await BiometricsSDK.hasWalletData()
+    if (!hasWalletData) {
+      // Flip to NONEXISTENT synchronously (before setIsReady below) so the
+      // navigator settles straight to onboarding in a single render instead of
+      // briefly showing the PIN screen; onLogOut then performs the full wipe.
+      dispatch(setWalletState(WalletState.NONEXISTENT))
+      dispatch(onLogOut())
+    } else if (walletState === WalletState.ACTIVE) {
+      dispatch(setWalletState(WalletState.INACTIVE))
+    }
+  }
+
   dispatch(setIsReady(true))
 }
 

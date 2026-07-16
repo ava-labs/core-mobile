@@ -8,7 +8,10 @@ import BiometricsSDK, {
   passcodeSetOptions,
   walletSecretOptions
 } from 'utils/BiometricsSDK'
-import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
+import Keychain, {
+  BIOMETRY_TYPE,
+  hasGenericPassword
+} from 'react-native-keychain'
 import { commonStorage, CommonStorageKeys } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
@@ -21,6 +24,7 @@ jest.mock('react-native-keychain', () => ({
   resetGenericPassword: jest.fn(),
   getAllGenericPasswordServices: jest.fn(),
   getSupportedBiometryType: jest.fn(),
+  hasGenericPassword: jest.fn(),
   ACCESS_CONTROL: {
     BIOMETRY_CURRENT_SET: 'BIOMETRY_CURRENT_SET',
     APPLICATION_PASSWORD: 'APPLICATION_PASSWORD'
@@ -73,6 +77,7 @@ jest.mock('expo-local-authentication', () => ({
 
 // Cast mocks for type safety
 const mockKeychain = Keychain as jest.Mocked<typeof Keychain>
+const mockHasGenericPassword = hasGenericPassword as jest.Mock
 const mockCommonStorage = commonStorage as jest.Mocked<typeof commonStorage>
 const mockEncrypt = encrypt as jest.Mock
 const mockDecrypt = decrypt as jest.Mock
@@ -388,6 +393,39 @@ describe('BiometricsSDK', () => {
         CommonStorageKeys.SECURE_ACCESS_SET,
         'PIN'
       )
+    })
+  })
+
+  describe('hasWalletData', () => {
+    const LEGACY_SERVICE_KEY = 'sec-storage-service'
+
+    it('returns true when a PIN encryption key exists', async () => {
+      mockHasGenericPassword.mockImplementation(async options =>
+        options.service === ENCRYPTION_KEY_SERVICE ? true : false
+      )
+
+      expect(await BiometricsSDK.hasWalletData()).toBe(true)
+    })
+
+    it('returns true when only a legacy (not-yet-migrated) entry exists', async () => {
+      mockHasGenericPassword.mockImplementation(async options =>
+        options.service === LEGACY_SERVICE_KEY ? true : false
+      )
+
+      expect(await BiometricsSDK.hasWalletData()).toBe(true)
+    })
+
+    it('returns false when no keychain entries exist', async () => {
+      mockHasGenericPassword.mockResolvedValue(false)
+
+      expect(await BiometricsSDK.hasWalletData()).toBe(false)
+    })
+
+    it('returns true (fail-safe) when the keychain check throws', async () => {
+      mockHasGenericPassword.mockRejectedValue(new Error('keychain error'))
+
+      expect(await BiometricsSDK.hasWalletData()).toBe(true)
+      expect(mockLogger.error).toHaveBeenCalled()
     })
   })
 
