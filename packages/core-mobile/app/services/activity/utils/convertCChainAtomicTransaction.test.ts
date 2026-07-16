@@ -101,4 +101,27 @@ describe('convertCChainAtomicTransaction', () => {
     )
     expect(tx.tokens[0]?.amount).toBe('1234.5')
   })
+
+  it('sums multiple evmInputs legs of the same asset on an export', () => {
+    const tx = convertCChainAtomicTransaction(
+      {
+        ...exportTx,
+        evmInputs: [
+          {
+            fromAddress: USER,
+            asset: { ...AVAX_ASSET, amount: '1000000000' }, // 1 AVAX
+            credentials: []
+          },
+          {
+            fromAddress: USER,
+            asset: { ...AVAX_ASSET, amount: '500000000' }, // 0.5 AVAX
+            credentials: []
+          }
+        ]
+      } as unknown as CChainExportTransaction,
+      { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
+    )
+    expect(tx.tokens[0]?.amount).toBe('1.5')
+    expect(tx.tokens[0]?.amount).not.toContain(',')
+  })
 })

@@ -41,6 +41,16 @@ export class ActivityService {
     // Populate network with tokens for SVM networks if needed
     const networkWithTokens = await this.enrichNetworkWithTokens(network)
 
+    // Kick off the C-Chain atomic fetch concurrently with the EVM history
+    // fetch below — it doesn't depend on the EVM result, and both are
+    // separate Glacier round-trips, so starting them in parallel avoids
+    // serializing the C-Chain activity critical path.
+    const atomicPromise = this.fetchCChainAtomicTransactions({
+      network: networkWithTokens,
+      address,
+      nextPageToken
+    })
+
     const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
 
     const rawTxHistory = await module.getTransactionHistory({
@@ -61,12 +71,10 @@ export class ActivityService {
       convertTransaction(tx, shouldAnalyzeBridgeTxs)
     )
 
-    const withAtomic = await this.mergeCChainAtomicTransactions({
-      transactions,
-      network: networkWithTokens,
-      address,
-      nextPageToken
-    })
+    const atomicTxs = await atomicPromise
+    const withAtomic = atomicTxs.length
+      ? this.mergeAtomicTransactions(transactions, atomicTxs)
+      : transactions
 
     return {
       transactions: withAtomic,
@@ -76,24 +84,24 @@ export class ActivityService {
 
   /**
    * C-Chain atomic import/export txs come from a separate Glacier endpoint the
-   * EVM module never calls (CP-14760). Fetch them for the first page only and
-   * merge — the recent-activity view is a single 100-item page, so this covers
-   * the token detail + activity tab. Best-effort: a failure here must not break
-   * the primary EVM history.
+   * EVM module never calls (CP-14760). Fetch them for the first page only —
+   * the recent-activity view is a single 100-item page, so this covers the
+   * token detail + activity tab. Best-effort: a failure here must not break
+   * the primary EVM history, so all errors are swallowed and logged, which
+   * also makes it safe to kick off this fetch before awaiting the EVM
+   * history fetch (the returned promise never rejects).
    */
-  private async mergeCChainAtomicTransactions({
-    transactions,
+  private async fetchCChainAtomicTransactions({
     network,
     address,
     nextPageToken
   }: {
-    transactions: Transaction[]
     network: Network
     address: string
     nextPageToken?: string
   }): Promise<Transaction[]> {
-    if (nextPageToken !== undefined) return transactions
-    if (!isAvalancheCChainId(network.chainId)) return transactions
+    if (nextPageToken !== undefined) return []
+    if (!isAvalancheCChainId(network.chainId)) return []
 
     try {
       const atomic = await GlacierService.listCChainAtomicTransactions({
@@ -101,24 +109,29 @@ export class ActivityService {
         isTestnet: Boolean(network.isTestnet)
       })
 
-      const converted = atomic.transactions.map(tx =>
+      return atomic.transactions.map(tx =>
         convertCChainAtomicTransaction(tx, {
           chainId: network.chainId,
           explorerUrl: network.explorerUrl
         })
       )
-
-      const seen = new Set(transactions.map(t => t.hash))
-      const merged = [
-        ...transactions,
-        ...converted.filter(t => !seen.has(t.hash))
-      ]
-      merged.sort((a, b) => b.timestamp - a.timestamp)
-      return merged
     } catch (error) {
       Logger.error('Failed to fetch C-Chain atomic transactions', error)
-      return transactions
+      return []
     }
+  }
+
+  private mergeAtomicTransactions(
+    transactions: Transaction[],
+    atomicTxs: Transaction[]
+  ): Transaction[] {
+    const seen = new Set(transactions.map(t => t.hash))
+    const merged = [
+      ...transactions,
+      ...atomicTxs.filter(t => !seen.has(t.hash))
+    ]
+    merged.sort((a, b) => b.timestamp - a.timestamp)
+    return merged
   }
 
   /**

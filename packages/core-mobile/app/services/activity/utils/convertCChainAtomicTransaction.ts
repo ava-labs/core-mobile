@@ -28,23 +28,31 @@ export const convertCChainAtomicTransaction = (
   network: { chainId: number; explorerUrl?: string }
 ): Transaction => {
   const exported = isExport(tx)
-  const leg = exported ? tx.evmInputs[0] : tx.evmOutputs[0]
-  const asset = leg?.asset
+  const legs = exported ? tx.evmInputs : tx.evmOutputs
+  const primaryAsset = legs[0]?.asset
   const userAddress = exported
-    ? (leg as CChainExportTransaction['evmInputs'][number] | undefined)
+    ? (legs[0] as CChainExportTransaction['evmInputs'][number] | undefined)
         ?.fromAddress
-    : (leg as CChainImportTransaction['evmOutputs'][number] | undefined)
+    : (legs[0] as CChainImportTransaction['evmOutputs'][number] | undefined)
         ?.toAddress
 
-  const amount = asset
-    ? formatAtomicAmount(asset.amount, asset.denomination, asset.symbol)
+  const totalRaw = legs
+    .filter(l => l.asset?.assetId === primaryAsset?.assetId)
+    .reduce((sum, l) => sum + BigInt(l.asset.amount), 0n)
+
+  const amount = primaryAsset
+    ? formatAtomicAmount(
+        totalRaw.toString(),
+        primaryAsset.denomination,
+        primaryAsset.symbol
+      )
     : '0'
 
   const token = {
     type: TokenType.NATIVE as const,
-    name: asset?.name ?? 'Avalanche',
-    symbol: asset?.symbol ?? 'AVAX',
-    decimal: asset ? String(asset.denomination) : undefined,
+    name: primaryAsset?.name ?? 'Avalanche',
+    symbol: primaryAsset?.symbol ?? 'AVAX',
+    decimal: primaryAsset ? String(primaryAsset.denomination) : undefined,
     amount,
     ...(exported
       ? { from: { address: userAddress ?? '' } }
