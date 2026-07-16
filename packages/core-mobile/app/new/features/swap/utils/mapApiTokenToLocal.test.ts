@@ -238,6 +238,68 @@ describe('mapApiTokenToLocal', () => {
       }
     })
 
+    it('carries P-chain available (swappable) fields from balance data (CP-14788)', () => {
+      const apiToken: ApiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 9, // P-chain nAVAX
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'avax:11111111111111111111111111111111LpoYY',
+        top250Rank: null,
+        contractType: null
+      }
+
+      // Total balance 10 AVAX but only 3 available (7 staked).
+      const balanceData = {
+        balance: 10_000_000_000n,
+        available: 3_000_000_000n,
+        availableDisplayValue: '3',
+        availableInCurrency: 150,
+        balanceInCurrency: 500,
+        priceInCurrency: 50
+      } as unknown as LocalTokenWithBalance
+
+      const result = mapApiTokenToLocal(apiToken, 4503599627370470, balanceData)
+
+      // available must survive the rebuild so getSwappableBalance uses it
+      expect((result as any).available).toBe(3_000_000_000n)
+      expect((result as any).availableDisplayValue).toBe('3')
+      expect((result as any).availableInCurrency).toBe(150)
+      expect(result.balance).toBe(10_000_000_000n)
+    })
+
+    it('does not add available fields for a token without them (EVM)', () => {
+      const apiToken: ApiToken = {
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        address: '',
+        decimals: 18,
+        isNative: true,
+        internalId: 'avax-native',
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null,
+        contractType: null
+      }
+
+      const balanceData: Partial<LocalTokenWithBalance> = {
+        balance: 5000000000000000000n,
+        balanceInCurrency: 250,
+        priceInCurrency: 50
+      }
+
+      const result = mapApiTokenToLocal(
+        apiToken,
+        ChainId.AVALANCHE_MAINNET_ID,
+        balanceData as LocalTokenWithBalance
+      )
+
+      expect('available' in result).toBe(false)
+    })
+
     it('should format balance display correctly for USDC (6 decimals)', () => {
       const apiToken: ApiToken = {
         symbol: 'USDC',

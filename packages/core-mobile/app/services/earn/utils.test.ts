@@ -311,6 +311,14 @@ describe('isEndTimeOverOneYear', () => {
     const result = isEndTimeOverOneYear(lessThanOneYearFromNow)
     expect(result).toBeFalsy()
   })
+  it('returns true for the 365-day preset end (365d minus the 1h backoff)', () => {
+    // Duration-based on purpose: the calendar comparison this replaced
+    // dropped this case across leap windows and around midnight.
+    const presetEnd = new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000 - 60 * 60 * 1000
+    )
+    expect(isEndTimeOverOneYear(presetEnd)).toBeTruthy()
+  })
 })
 
 describe('getSortedValidatorsByEndTime', () => {
