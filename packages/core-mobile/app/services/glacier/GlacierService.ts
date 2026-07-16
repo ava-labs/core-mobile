@@ -3,7 +3,11 @@ import {
   Erc721Token,
   Glacier,
   ListAddressChainsResponse,
-  ListValidatorDetailsResponse
+  ListValidatorDetailsResponse,
+  ListCChainAtomicTransactionsResponse,
+  BlockchainId,
+  Network,
+  SortOrder
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
@@ -119,6 +123,37 @@ class GlacierService {
     params: ListPrimaryNetworkValidatorsParams
   ): Promise<ListValidatorDetailsResponse> {
     return this.glacierSdk.primaryNetwork.listValidators(params)
+  }
+
+  /**
+   * Lists C-Chain atomic (import/export) transactions for an address. These
+   * live on Glacier's primary-network endpoint and are NOT returned by the
+   * regular EVM `listTransactions` used by the EVM module — hence they are
+   * missing from C-Chain activity unless fetched separately (CP-14760).
+   *
+   * `address` must be the 0x C-Chain EVM address; the endpoint accepts 0x
+   * addresses for C-Chain atomic lookups.
+   */
+  async listCChainAtomicTransactions({
+    address,
+    isTestnet,
+    pageSize = 100
+  }: {
+    address: string
+    isTestnet: boolean
+    pageSize?: number
+  }): Promise<ListCChainAtomicTransactionsResponse> {
+    const response =
+      await this.glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
+        {
+          blockchainId: BlockchainId.C_CHAIN,
+          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          addresses: address,
+          pageSize,
+          sortOrder: SortOrder.DESC
+        }
+      )
+    return response as ListCChainAtomicTransactionsResponse
   }
 }
 
