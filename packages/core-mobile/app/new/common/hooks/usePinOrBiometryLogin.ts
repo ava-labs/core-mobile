@@ -97,8 +97,23 @@ export function usePinOrBiometryLogin({
         }
 
         // Load encryption key
-        const isValidPin = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
-        if (!isValidPin) {
+        const pinResult = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+
+        if (pinResult === 'no-credentials') {
+          // The encryption key is gone (e.g. an interrupted wallet deletion),
+          // so no PIN can ever unlock this wallet. Recover by deleting the
+          // stale wallet and routing to onboarding instead of reporting an
+          // endless "wrong PIN". (CP-14585)
+          Logger.error(
+            'Encryption key missing on PIN entry; deleting wallet',
+            new Error('no-credentials')
+          )
+          onStopLoading()
+          deleteWallet()
+          return
+        }
+
+        if (pinResult === 'wrong-pin') {
           throw new Error('BAD_DECRYPT')
         }
 
@@ -138,7 +153,8 @@ export function usePinOrBiometryLogin({
       onStopLoading,
       increaseAttempt,
       onWrongPin,
-      alertBadData
+      alertBadData,
+      deleteWallet
     ]
   )
 
