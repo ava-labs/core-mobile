@@ -122,6 +122,7 @@ import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 import { resolveReceiveAmount } from '../utils/resolveReceiveAmount'
+import { getSwappableBalance } from '../utils/getSwappableBalance'
 
 // Disable KeyboardAwareScrollView's built-in scroll-into-view. The swap card is
 // short, so KAS clamps its scroll to the maximum and yanks the card up past the
@@ -286,7 +287,7 @@ function computeValidationError({
   if (
     debouncedFromTokenValue !== undefined &&
     fromToken !== undefined &&
-    debouncedFromTokenValue > fromToken.balance
+    debouncedFromTokenValue > getSwappableBalance(fromToken)
   ) {
     return fusionErrors.exceedsBalance()
   }
@@ -1018,7 +1019,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={!isSwapping}
           amount={fromTokenValue}
-          balance={fromToken?.balance}
+          balance={fromToken ? getSwappableBalance(fromToken) : undefined}
           shouldShowBalance={true}
           title="You pay"
           token={
@@ -1073,7 +1074,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={false}
           amount={toTokenValue}
-          balance={toToken?.balance}
+          balance={toToken ? getSwappableBalance(toToken) : undefined}
           shouldShowBalance={true}
           title="You receive"
           token={

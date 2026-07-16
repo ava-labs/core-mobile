@@ -1,7 +1,11 @@
 import { fromUnixTime, addDays, getUnixTime } from 'date-fns'
 import {
+  DURATION_OPTIONS_MAINNET,
+  DURATION_OPTIONS_FUJI,
+  DurationOptionWithDays,
   getStakeEndDate,
-  StakeDurationFormat
+  StakeDurationFormat,
+  StakeDurationTitle
 } from 'services/earn/getStakeEndDate'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 
@@ -14,14 +18,50 @@ describe('getStakeEndDate', () => {
   const startDateUnix = 1729807200 // Thu Oct 24 2024 22:00:00 UTC
   const currentDate = fromUnixTime(startDateUnix) // Date representation in UTC
 
-  it('calculates end date in days', () => {
+  it('calculates end date in days with +1h of submit-drift slack', () => {
     const result = getStakeEndDate({
       startDateUnix,
       stakeDurationFormat: StakeDurationFormat.Day,
       stakeDurationValue: 1,
       isDeveloperMode: false
     })
-    expect(result).toBe(startDateUnix + 24 * 60 * 60) // Thu Oct 25 2024 22:00:00 UTC
+    // 1 day + 1 hour: the slack keeps the realized duration from rounding
+    // below the selected days once the start is re-anchored at submit time.
+    expect(result).toBe(startDateUnix + 25 * 60 * 60)
+  })
+
+  it('gives a 180-day selection exactly 180 days (+1h), not 6 calendar months', () => {
+    const result = getStakeEndDate({
+      startDateUnix,
+      stakeDurationFormat: StakeDurationFormat.Day,
+      stakeDurationValue: 180,
+      isDeveloperMode: false
+    })
+    expect(result).toBe(startDateUnix + (180 * 24 + 1) * 60 * 60)
+  })
+
+  it('backs the 365-day selection off by 1h to stay under the protocol max', () => {
+    const result = getStakeEndDate({
+      startDateUnix,
+      stakeDurationFormat: StakeDurationFormat.Day,
+      stakeDurationValue: 365,
+      isDeveloperMode: false
+    })
+    expect(result).toBe(startDateUnix + (365 * 24 - 1) * 60 * 60)
+  })
+
+  it('defines every preset in whole days matching its label (web parity)', () => {
+    const presets = [...DURATION_OPTIONS_MAINNET, ...DURATION_OPTIONS_FUJI]
+    presets
+      // Type guard (not a plain predicate) so `numberOfDays` narrows below.
+      .filter(
+        (option): option is DurationOptionWithDays =>
+          option.title !== StakeDurationTitle.CUSTOM
+      )
+      .forEach(option => {
+        expect(option.stakeDurationFormat).toBe(StakeDurationFormat.Day)
+        expect(option.stakeDurationValue).toBe(option.numberOfDays)
+      })
   })
 
   it('calculates end date in weeks', () => {
