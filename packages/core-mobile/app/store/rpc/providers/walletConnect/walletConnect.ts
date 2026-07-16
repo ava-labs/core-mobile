@@ -50,12 +50,32 @@ const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_RENAME_ACCOUNT
 ]
 
+// Read-only methods that dApps fire automatically, not from a user action —
+// e.g. core.app polls wallet_getNetworkState every ~3s while connected. Their
+// failures must still be returned to the dApp (it recovers on its own), but
+// never surfaced as an error toast: after a testnet/mainnet switch there is an
+// inherent propagation window (session update + chainChanged over the relay)
+// during which these background requests keep arriving scoped to the previous
+// environment, and validateRequest rejects each one — toasting every rejection
+// showed the user 1-2 "Invalid environment" snackbars per toggle. User-initiated
+// methods (signing etc.) keep the toast so the user learns why their action
+// failed. CP-14617.
+const dappAutomatedReadMethods: RpcMethod[] = [
+  RpcMethod.WALLET_GET_NETWORK_STATE,
+  RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
+  RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+  RpcMethod.AVALANCHE_GET_BRIDGE_STATE
+]
+
 class WalletConnectProvider implements AgnosticRpcProvider {
   provider = RpcProvider.WALLET_CONNECT
 
   onError: AgnosticRpcProvider['onError'] = async ({ request, error }) => {
-    // only show error toast if it is not a user rejected error
-    const shouldShowErrorToast = !isUserRejectedError(error)
+    // only show error toast if it is not a user rejected error and the request
+    // was user-initiated (background dApp polls must not toast — CP-14617)
+    const shouldShowErrorToast =
+      !isUserRejectedError(error) &&
+      !dappAutomatedReadMethods.includes(request.method)
 
     if (isSessionProposal(request)) {
       shouldShowErrorToast &&
