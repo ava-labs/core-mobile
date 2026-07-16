@@ -12,7 +12,8 @@ import { Transaction } from 'store/transaction'
 
 const isExport = (
   tx: CChainImportTransaction | CChainExportTransaction
-): tx is CChainExportTransaction => tx.txType === 'ExportTx'
+): tx is CChainExportTransaction =>
+  tx.txType === CChainExportTransaction.txType.EXPORT_TX
 
 const formatAtomicAmount = (
   rawAmount: string,
