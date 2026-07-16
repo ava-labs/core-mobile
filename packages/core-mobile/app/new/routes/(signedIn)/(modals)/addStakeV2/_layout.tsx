@@ -1,8 +1,7 @@
 import { Stack } from 'common/components/Stack'
 import {
   modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions,
-  useModalScreensOptions
+  modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { DelegationContextProvider } from 'contexts/DelegationContext'
 import { clearRestakePrefill, takeRestakeEntry } from 'features/stake/v2/store'
@@ -22,7 +21,6 @@ import React, { useEffect, useRef } from 'react'
 export default function StakeLayoutV2(): JSX.Element {
   const [, setStakeAmount] = useStakeAmount()
   const { minStakeAmount } = useStakingParams()
-  const { secondaryModalScreensOptions } = useModalScreensOptions()
 
   // Seed the shared stake amount with the minimum stakable amount on
   // entry so the dial starts at a valid value (and `Next` is enabled
@@ -61,21 +59,6 @@ export default function StakeLayoutV2(): JSX.Element {
          * files, so most need no explicit Stack.Screen declarations here
          * beyond the chooser's modal-first-screen options.
          */}
-        {/*
-         * The Delegate advanced filters open as a sheet stacked over the
-         * node picker (a modal within the add-stake modal), so it gets the
-         * secondary-modal presentation rather than the default card push.
-         */}
-        <Stack.Screen
-          name="delegate/advancedFilters"
-          options={{
-            ...secondaryModalScreensOptions,
-            // No header back button — the sheet is dismissed via the footer
-            // Cancel/Apply buttons (and the sheet swipe gesture).
-            headerLeft: () => null,
-            headerBackVisible: false
-          }}
-        />
         {/*
          * The confirm screens host the left-to-right "slide to stake"
          * button. On iOS 26 the back-pop gesture works across the whole
