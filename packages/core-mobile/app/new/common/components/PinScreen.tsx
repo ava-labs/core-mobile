@@ -12,6 +12,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
+import { ensureWalletSecret } from 'common/utils/ensureWalletSecret'
+import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
@@ -56,6 +58,7 @@ export const PinScreen = ({
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
+  const { deleteWallet } = useDeleteWallet()
   const walletId = useSelector(selectActiveWalletId)
 
   const isProcessing = useSharedValue(false)
@@ -91,9 +94,11 @@ export const PinScreen = ({
           if (!walletId) {
             throw new Error('Wallet ID is not set')
           }
-          const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-          if (!result.success) {
-            throw result.error
+          //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+          const canProceed = await ensureWalletSecret(walletId, deleteWallet)
+          if (!canProceed) {
+            // Wallet secret is gone; deleteWallet routes the user to onboarding.
+            return
           }
         }
         await unlock()
@@ -101,7 +106,14 @@ export const PinScreen = ({
         Logger.error('Failed to login:', error)
       }
     }, 0)
-  }, [handleStartLoading, isInitialLogin, isProcessing, unlock, walletId])
+  }, [
+    handleStartLoading,
+    isInitialLogin,
+    isProcessing,
+    unlock,
+    walletId,
+    deleteWallet
+  ])
 
   const {
     enteredPin,
