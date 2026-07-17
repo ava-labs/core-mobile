@@ -180,6 +180,10 @@ export default function WalletLayout(): JSX.Element {
             options={secondaryModalScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/stakeAdvancedFilters"
+            options={secondaryModalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/selectReceiveNetwork"
             options={secondaryModalScreensOptions}
           />

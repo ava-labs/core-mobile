@@ -13,7 +13,6 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   addDays,
   addHours,
-  differenceInDays,
   format,
   getUnixTime,
   millisecondsToSeconds
@@ -29,7 +28,11 @@ import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomE
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
-import { convertToDurationInSeconds } from 'features/stake/utils'
+import {
+  convertToDurationInSeconds,
+  formatDurationInDays,
+  getRoundedDurationInDays
+} from 'features/stake/utils'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
 import { useDebounce } from 'hooks/useDebounce'
@@ -187,7 +190,7 @@ const StakeDurationScreen = ({
     return (estimatedRewards ?? []).map((item, index) => {
       return {
         value: item.estimatedTokenReward.toDisplay({ asNumber: true }),
-        duration: `${item.duration.numberOfDays} days`,
+        duration: formatDurationInDays(item.duration.numberOfDays),
         index
       }
     })
@@ -224,16 +227,19 @@ const StakeDurationScreen = ({
     }
 
     if (customEndDate) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return differenceInDays(customEndDate, today)
+      // Anchored at the reactive `now` (same clock the confirm screen's
+      // "Time to unlock" uses) and rounded — the previous midnight anchor
+      // made this row read one day higher than the review right after
+      // picking a date.
+      return getRoundedDurationInDays(now, customEndDate)
     }
   }, [
     durationsWithDays,
     selectedDurationIndex,
     estimatedRewards,
     defaultDurationIndex,
-    customEndDate
+    customEndDate,
+    now
   ])
 
   // Advanced delegate: the stake can't outlast the selected validator. The
@@ -335,7 +341,7 @@ const StakeDurationScreen = ({
         title: 'Duration',
         value:
           selectedDurationInDays !== undefined
-            ? `${selectedDurationInDays} days`
+            ? formatDurationInDays(selectedDurationInDays)
             : '',
         accordion: (
           <DurationOptions

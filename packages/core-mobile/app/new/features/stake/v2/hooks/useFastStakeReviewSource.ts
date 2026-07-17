@@ -2,9 +2,12 @@ import { useLocalSearchParams } from 'expo-router'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsFastStakeFeeBlocked } from 'store/posthog'
+import {
+  selectFastStakeFeeRate,
+  selectIsFastStakeFeeBlocked
+} from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { FAST_STAKE_FEE_RATE, getFastStakeFeeEscrowAddress } from '../constants'
+import { getFastStakeFeeEscrowAddress } from '../constants'
 import { StakeReviewSource } from '../types'
 import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
 import { useFastStakeNode } from './useFastStakeNode'
@@ -48,6 +51,9 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectFastStakeFeeRate`.
+  const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // `useFastStakeNode` already treats `undefined` `stakingEndTime` as the
   // "skip query" signal, so this guards against doing a useless Glacier
@@ -73,7 +79,7 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
       error,
       feePolicy: isFastStakeFeeEnabled
         ? {
-            rate: FAST_STAKE_FEE_RATE,
+            rate: fastStakeFeeRate,
             recipientAddresses: [getFastStakeFeeEscrowAddress(isDeveloperMode)]
           }
         : null
@@ -84,6 +90,7 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
     isFetching,
     error,
     isFastStakeFeeEnabled,
+    fastStakeFeeRate,
     isDeveloperMode
   ])
 }

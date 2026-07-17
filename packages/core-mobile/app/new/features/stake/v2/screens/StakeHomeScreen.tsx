@@ -13,7 +13,7 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -26,6 +26,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   StakeCardList,
   StakeCardListHeaderProps
@@ -44,6 +45,16 @@ export const StakeHomeScreen = (): JSX.Element => {
   const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
   const { navigate } = useRouter()
+
+  // Focus (not mount): tab screens stay mounted across tab switches, so a
+  // mount effect would count only the first visit per session. Firing on
+  // focus matches the legacy `StakeOpened` tab-press semantics (and the
+  // `EarnOpened` pattern on the Earn home).
+  useFocusEffect(
+    useCallback(() => {
+      AnalyticsService.capture('StakeHomeViewed')
+    }, [])
+  )
 
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined

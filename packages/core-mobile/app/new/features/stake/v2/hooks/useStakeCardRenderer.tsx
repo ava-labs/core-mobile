@@ -117,7 +117,7 @@ export const useStakeCardRenderer = ({
           // Undefined for active stakes and for txs that can't seed a
           // restake, hiding the card's Restake button (web parity: only
           // completed stakes offer Restake).
-          onRestake={getOnRestake(stake, stakeIsCompleted)}
+          onRestake={getOnRestake(stake, stakeIsCompleted, 'card')}
         />
       )
     },

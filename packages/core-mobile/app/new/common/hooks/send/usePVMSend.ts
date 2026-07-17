@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
@@ -42,6 +44,45 @@ const usePVMSend: SendAdapterPVM = ({
   const provider = useAvalancheXpProvider()
   const wallet = useActiveWallet()
   const { xpAddresses, xpAddressDictionary } = useXPAddresses(account)
+  const filterSmallUtxos = useSelector(selectIsFilterSmallUtxosActive)
+
+  // CP-13903: with the small-UTXO filter on, the displayed balance can
+  // include dust the send tx builder will refuse to spend (and the
+  // VM-module balance fallback never filters), so Max and validation must
+  // use the spendable balance from the same filtered UTXO set
+  // createSendPTx consumes.
+  const [spendableBalance, setSpendableBalance] = useState<bigint>()
+
+  useEffect(() => {
+    // Any dep change means the previous value may describe a different
+    // account/network/fee state — drop it so Max/validation never gate on
+    // a stale balance while the refetch is in flight.
+    setSpendableBalance(undefined)
+    // P needs a loaded feeState: getMaximumUtxoSet builds txs to measure
+    // size, and an undefined feeState makes every build fail — the "capped"
+    // set comes back empty and Max/validation would gate on a bogus 0.
+    // getFeeState's identity changes when defaults load, re-firing this.
+    const feeState = getFeeState(gasPrice)
+    if (!filterSmallUtxos || network === undefined || feeState === undefined) {
+      return
+    }
+    let cancelled = false
+    AvalancheWalletService.getSpendableAvaxBalance({
+      chain: 'P',
+      account,
+      isTestnet: Boolean(network.isTestnet),
+      xpAddresses,
+      feeState,
+      filterSmallUtxos
+    })
+      .then(balance => {
+        if (!cancelled) setSpendableBalance(balance)
+      })
+      .catch(Logger.error)
+    return () => {
+      cancelled = true
+    }
+  }, [filterSmallUtxos, network, account, xpAddresses, getFeeState, gasPrice])
 
   const createSendPTx = useCallback(
     async (amountInNAvax: bigint, price?: bigint): Promise<UnsignedTx> => {
@@ -55,10 +96,19 @@ const usePVMSend: SendAdapterPVM = ({
         destinationAddress,
         sourceAddress: fromAddress,
         feeState: getFeeState(price),
-        xpAddresses
+        xpAddresses,
+        filterSmallUtxos
       })
     },
-    [addressToSend, account, network, fromAddress, getFeeState, xpAddresses]
+    [
+      addressToSend,
+      account,
+      network,
+      fromAddress,
+      getFeeState,
+      xpAddresses,
+      filterSmallUtxos
+    ]
   )
 
   useEffect(() => {
@@ -106,7 +156,8 @@ const usePVMSend: SendAdapterPVM = ({
         toAddress: addressToSend,
         feeState: getFeeState(gasPrice),
         xpAddresses,
-        xpAddressDictionary
+        xpAddressDictionary,
+        filterSmallUtxos
       })
     } finally {
       setIsSending(false)
@@ -124,7 +175,8 @@ const usePVMSend: SendAdapterPVM = ({
     gasPrice,
     wallet,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    filterSmallUtxos
   ])
 
   const handleError = useCallback(
@@ -147,7 +199,13 @@ const usePVMSend: SendAdapterPVM = ({
         maxFee,
         token: selectedToken as TokenWithBalancePVM,
         gasPrice,
-        estimatedFee
+        estimatedFee,
+        // While the spendable balance is loading (or if its fetch failed),
+        // this is undefined and validation deliberately degrades to the
+        // displayed balance — same as pre-filter behavior: worst case the
+        // send fails at build instead of validation. Max (getMaxAmount)
+        // never degrades this way.
+        spendableBalance: filterSmallUtxos ? spendableBalance : undefined
       })
 
       setError(undefined)
@@ -162,7 +220,9 @@ const usePVMSend: SendAdapterPVM = ({
     gasPrice,
     estimatedFee,
     setError,
-    handleError
+    handleError,
+    filterSmallUtxos,
+    spendableBalance
   ])
 
   // P-Chain uses dynamic fees
@@ -174,7 +234,14 @@ const usePVMSend: SendAdapterPVM = ({
       return
     }
 
-    const balance = selectedToken.available ?? 0n
+    // With the filter on, wait for the spendable balance — a Max derived
+    // from the dust-inclusive displayed balance would build an over-spend.
+    const balance = filterSmallUtxos
+      ? spendableBalance
+      : selectedToken.available ?? 0n
+    if (balance === undefined) {
+      return
+    }
     const estimatedFeePercent = balance / 100n
     const maxAmountValue = balance - estimatedFeePercent
     const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
@@ -184,7 +251,7 @@ const usePVMSend: SendAdapterPVM = ({
       selectedToken.decimals,
       selectedToken.symbol
     )
-  }, [selectedToken])
+  }, [selectedToken, filterSmallUtxos, spendableBalance])
 
   useEffect(() => {
     if (canValidate) {

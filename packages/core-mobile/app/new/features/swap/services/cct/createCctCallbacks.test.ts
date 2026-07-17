@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RpcMethod } from '@avalabs/vm-module-types'
+import type { TransferStepDetails } from '@avalabs/fusion-sdk'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { WalletType } from 'services/wallet/types'
@@ -16,6 +17,10 @@ jest.mock('common/hooks/send/utils/getInternalExternalAddrs', () => ({
   getInternalExternalAddrs: jest.fn()
 }))
 
+jest.mock('services/wallet/utils', () => ({
+  getAvaxAssetId: () => 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+}))
+
 jest.mock('@avalabs/avalanchejs', () => ({
   utils: {
     getManagerForVM: jest.fn(() => ({
@@ -23,7 +28,16 @@ jest.mock('@avalabs/avalanchejs', () => ({
     })),
     bufferToHex: jest.fn((bytes: unknown) =>
       typeof bytes === 'string' ? bytes : '0xmock'
-    )
+    ),
+    UtxoSet: class {
+      private readonly utxos: unknown[]
+      constructor(utxos: unknown[]) {
+        this.utxos = utxos
+      }
+      getUTXOs(): unknown[] {
+        return this.utxos
+      }
+    }
   }
 }))
 
@@ -59,6 +73,7 @@ const makeDeps = (
       } as any
     }),
     request: jest.fn(async () => 'mock-tx-hash') as any,
+    getFilterSmallUtxos: () => false,
     ...overrides
   }
 }
@@ -193,6 +208,11 @@ describe('createCctCallbacks', () => {
       toBytes: () => '0xtxbytes'
     } as any
 
+    // The SDK's avalancheSendTx signature takes a TransferStepDetails as its
+    // second arg (approval step context); mobile's callback ignores it, so a
+    // stub satisfies the call sites.
+    const fakeStep = {} as TransferStepDetails
+
     let mockedRequest: jest.Mock
 
     beforeEach(() => {
@@ -208,12 +228,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      const txHash = await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      const txHash = await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -234,12 +257,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'X',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'X',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.X
@@ -252,12 +278,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'C',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'C',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.C
@@ -270,12 +299,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'C',
-        txType: 'export',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'C',
+          txType: 'export',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].context).toEqual({
         [RequestContext.SUPPRESS_TX_FEEDBACK]: true
@@ -287,12 +319,15 @@ describe('createCctCallbacks', () => {
         makeDeps({ request: mockedRequest })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 25n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 25n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       // No SUPPRESS_TX_FEEDBACK flag so the final-leg success toast fires.
       const context = mockedRequest.mock.calls[0]?.[0].context
@@ -307,12 +342,15 @@ describe('createCctCallbacks', () => {
         })
       )
 
-      await avalancheSendTx({
-        baseFeeInNanoAvax: 1n,
-        chainAlias: 'P',
-        txType: 'import',
-        unsignedTx: fakeUnsignedTx
-      })
+      await avalancheSendTx(
+        {
+          baseFeeInNanoAvax: 1n,
+          chainAlias: 'P',
+          txType: 'import',
+          unsignedTx: fakeUnsignedTx
+        },
+        fakeStep
+      )
 
       expect(mockedRequest.mock.calls[0]?.[0].chainId).toBe(
         AvalancheCaip2ChainId.P_TESTNET
@@ -330,14 +368,68 @@ describe('createCctCallbacks', () => {
         })
       )
       await expect(
-        avalancheSendTx({
-          baseFeeInNanoAvax: 1n,
-          chainAlias: 'P',
-          txType: 'import',
-          unsignedTx: fakeUnsignedTx
-        })
+        avalancheSendTx(
+          {
+            baseFeeInNanoAvax: 1n,
+            chainAlias: 'P',
+            txType: 'import',
+            unsignedTx: fakeUnsignedTx
+          },
+          fakeStep
+        )
       ).rejects.toThrow(/xpAddressDictionary empty/)
       expect(mockedRequest).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getUtxos small-UTXO filtering (CP-13903)', () => {
+    const avaxAssetId = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
+    const mockUtxo = (assetId: string, amount: bigint) =>
+      ({
+        getAssetId: () => assetId,
+        output: { amount: () => amount }
+      } as never)
+
+    const dust = mockUtxo(avaxAssetId, 1_000n)
+    const big = mockUtxo(avaxAssetId, 5_000_000n)
+
+    const signer = {
+      getAtomicUTXOs: jest.fn(),
+      getUTXOs: jest.fn(),
+      getAddresses: jest.fn(),
+      getChangeAddress: jest.fn()
+    }
+
+    const originalUtxoSet = {
+      getUTXOs: () => [dust, big]
+    }
+
+    beforeEach(() => {
+      mockedGetReadOnlySigner.mockResolvedValue(signer)
+      signer.getUTXOs.mockResolvedValue(originalUtxoSet)
+    })
+
+    it('passes the original UtxoSet through untouched when the setting is off', async () => {
+      const { getUtxos } = createCctCallbacks(
+        makeDeps({
+          getFilterSmallUtxos: () => false
+        })
+      )
+      const result = await getUtxos('P')
+      // Reference identity: the SDK must receive the signer's own UtxoSet,
+      // not a rewrapped copy, when filtering is off.
+      expect(result).toBe(originalUtxoSet)
+      expect(result.getUTXOs()).toHaveLength(2)
+    })
+
+    it('drops dust UTXOs when the setting is on', async () => {
+      const { getUtxos } = createCctCallbacks(
+        makeDeps({
+          getFilterSmallUtxos: () => true
+        })
+      )
+      const result = await getUtxos('P')
+      expect(result.getUTXOs()).toEqual([big])
     })
   })
 })

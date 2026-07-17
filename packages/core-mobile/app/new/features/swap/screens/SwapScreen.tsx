@@ -76,6 +76,7 @@ import { RecurringSchedulesBanner } from 'features/recurringSwap/components/Recu
 import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
 import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
+import { RecoveredFundsNotice } from '../components/RecoveredFundsNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
@@ -96,6 +97,7 @@ import {
   isCctOnlySource
 } from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
+import { shouldShowRecoveredFundsNotice } from '../utils/shouldShowRecoveredFundsNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -120,6 +122,7 @@ import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
 import { resolveReceiveAmount } from '../utils/resolveReceiveAmount'
+import { getSwappableBalance } from '../utils/getSwappableBalance'
 
 // Disable KeyboardAwareScrollView's built-in scroll-into-view. The swap card is
 // short, so KAS clamps its scroll to the maximum and yanks the card up past the
@@ -284,7 +287,7 @@ function computeValidationError({
   if (
     debouncedFromTokenValue !== undefined &&
     fromToken !== undefined &&
-    debouncedFromTokenValue > fromToken.balance
+    debouncedFromTokenValue > getSwappableBalance(fromToken)
   ) {
     return fusionErrors.exceedsBalance()
   }
@@ -1016,7 +1019,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={!isSwapping}
           amount={fromTokenValue}
-          balance={fromToken?.balance}
+          balance={fromToken ? getSwappableBalance(fromToken) : undefined}
           shouldShowBalance={true}
           title="You pay"
           token={
@@ -1071,7 +1074,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={false}
           amount={toTokenValue}
-          balance={toToken?.balance}
+          balance={toToken ? getSwappableBalance(toToken) : undefined}
           shouldShowBalance={true}
           title="You receive"
           token={
@@ -1470,6 +1473,10 @@ export const SwapScreen = (): JSX.Element => {
     quote: activeQuote
   })
 
+  const showRecoveredFundsNotice = shouldShowRecoveredFundsNotice({
+    quote: activeQuote
+  })
+
   // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
   // without the whole screen. It mirrors the one-shot `canSwap` gate: a
   // blocking (non-warning) validation error must disable Next. Recurring
@@ -1857,6 +1864,9 @@ export const SwapScreen = (): JSX.Element => {
         }
       />
       {renderCctTwoTxNotice()}
+      {showRecoveredFundsNotice && (
+        <RecoveredFundsNotice sx={{ marginTop: 16 }} />
+      )}
       {/* CP-14600: guarantee the last detail rows clear the sticky footer, where
           the footer-height-driven bottom padding can be applied a frame late
           while the quote rows are still streaming in. */}

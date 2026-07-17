@@ -17,8 +17,13 @@ import {
   useDelegationContext,
   OnDelegationProgress
 } from 'contexts/DelegationContext'
-import { differenceInDays, format, getUnixTime } from 'date-fns'
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
+import { format, getUnixTime } from 'date-fns'
+import {
+  Href,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter
+} from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useLedgerStaking } from 'features/stake/hooks/useLedgerStaking'
 import { useEarnCalcEstimatedRewards } from 'hooks/earn/useEarnCalcEstimatedRewards'
@@ -43,6 +48,10 @@ import { AdditionalDelegatorOutput } from 'services/wallet/types'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { StakeTargetValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
+import {
+  formatDurationInDays,
+  getRoundedDurationInDays
+} from 'features/stake/utils'
 import { StakeStatusScreen } from '../components/StakeStatusScreen'
 import { useStakeFundingPreflight } from '../hooks/useStakeFundingPreflight'
 import { StakeReviewSource } from '../types'
@@ -135,6 +144,16 @@ const toEstimationFeePercent = (
 ): number => Number(validator?.delegationFee ?? 0)
 
 /**
+ * A restake is the only flow that sets either node param (`useRestake`'s
+ * fast / delegate branches). Module-level so the `||` stays out of the
+ * component's cognitive-complexity budget.
+ */
+const isRestakeEntry = (
+  preferredNodeId: string | undefined,
+  restakeNodeId: string | undefined
+): boolean => Boolean(preferredNodeId || restakeNodeId)
+
+/**
  * V2 "Almost done, review your stake..." screen.
  *
  * Designed to be shared across staking flows (Fast Stake today; the
@@ -160,7 +179,7 @@ const StakeConfirmScreen = ({
    */
   isAdvanced: boolean
 }): JSX.Element => {
-  const { back, dismissAll } = useRouter()
+  const { back, dismissAll, dismissTo } = useRouter()
   const navigation = useNavigation()
   const dispatch = useDispatch()
   // Drives the post-slide screens. `isSubmitting` latches when the user
@@ -175,13 +194,21 @@ const StakeConfirmScreen = ({
   const { steps } = useDelegationContext()
   const { annualPercentageYieldBPS } = useStakingParams()
   // Optional in the type because deep links / state restoration can land here
-  // without the param — the defensive parsing below relies on it being
-  // possibly `undefined`, so the type must reflect that too.
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
+  // without the params — the defensive parsing below relies on them being
+  // possibly `undefined`, so the type must reflect that too. The node params
+  // are only ever set by `useRestake` (fast path / delegate path), so their
+  // presence identifies a restake for analytics.
+  const { stakeEndTime, preferredNodeId, restakeNodeId } =
+    useLocalSearchParams<{
+      stakeEndTime?: string
+      preferredNodeId?: string
+      restakeNodeId?: string
+    }>()
+  const isRestake = isRestakeEntry(preferredNodeId, restakeNodeId)
   // Defensive parse — deep links / state restoration could land us here
   // with a missing or non-numeric `stakeEndTime`. Falling through with a
   // NaN would produce an Invalid Date and later crash inside `format()` /
-  // `differenceInDays()`. When invalid we surface a dismiss-the-flow alert
+  // the duration math. When invalid we surface a dismiss-the-flow alert
   // below; the placeholder below keeps downstream date hooks running with
   // a finite value until the alert dismisses the modal.
   const parsedStakeEndTime = useMemo(
@@ -292,13 +319,15 @@ const StakeConfirmScreen = ({
     ]
   }, [convenienceFee, feePolicy])
 
-  // Per-event analytics built from the route's `isAdvanced` flag and the
-  // runtime-computed fee amount. `convenienceFeeAvax` is only added when
-  // the flow actually applies a fee — keeps the "fee not paid" vs
-  // "fee not applicable" distinction the analytics contract promises.
+  // Per-event analytics built from the route's `isAdvanced` flag, the
+  // restake marker, and the runtime-computed fee amount.
+  // `convenienceFeeAvax` is only added when the flow actually applies a
+  // fee — keeps the "fee not paid" vs "fee not applicable" distinction the
+  // analytics contract promises.
   const delegationAnalyticsProps = useMemo(
     () => ({
       isAdvanced,
+      isRestake,
       ...(feePolicy
         ? {
             convenienceFeeAvax: convenienceFee
@@ -307,20 +336,25 @@ const StakeConfirmScreen = ({
           }
         : {})
     }),
-    [isAdvanced, feePolicy, convenienceFee]
+    [isAdvanced, isRestake, feePolicy, convenienceFee]
   )
 
   // Bundle captured on `StakeIssueDelegation`, which has a stricter shape
-  // (no `isAdvanced`) than the success/fail events. Undefined when the
-  // flow doesn't charge a fee, matching the analytics type's union arm.
-  const issueDelegationAnalyticsProps = useMemo(() => {
-    if (!feePolicy) return undefined
-    return {
-      convenienceFeeAvax: convenienceFee
-        ? convenienceFee.toDisplay({ asNumber: true })
-        : 0
-    }
-  }, [feePolicy, convenienceFee])
+  // (no `isAdvanced`) than the success/fail events. Always carries the
+  // restake marker; the fee is added only when one applies.
+  const issueDelegationAnalyticsProps = useMemo(
+    () => ({
+      isRestake,
+      ...(feePolicy
+        ? {
+            convenienceFeeAvax: convenienceFee
+              ? convenienceFee.toDisplay({ asNumber: true })
+              : 0
+          }
+        : {})
+    }),
+    [isRestake, feePolicy, convenienceFee]
+  )
 
   // Percentage form of the fee rate, formatted for display so that
   // floating-point artifacts (e.g. `0.07 * 100 = 7.000000000000001`) don't
@@ -390,7 +424,13 @@ const StakeConfirmScreen = ({
         value: isResolvingValidator ? (
           <ActivityIndicator />
         ) : (
-          `${differenceInDays(validatedStakingEndTime, now)} days`
+          // Rounded, not truncated: a custom end date carries the
+          // time-of-day the picker was seeded with, so by review time `now`
+          // has passed it and truncation would read one day short of what
+          // the duration screen advertised.
+          formatDurationInDays(
+            getRoundedDurationInDays(now, validatedStakingEndTime)
+          )
         )
       },
       {
@@ -721,17 +761,23 @@ const StakeConfirmScreen = ({
     )
   }, [phase, navigation])
 
-  // Auto-close the entire stake flow shortly after success. Going back on
-  // the parent navigator pops the whole addStakeV2 modal and returns to
-  // wherever the flow was opened from. (`dismissAll()` only pops the inner
-  // stack back to the chooser/start screen, which we don't want.)
+  // Auto-close the entire stake flow shortly after success, always landing
+  // on the stake home. Popping just the add-stake modal (the parent
+  // navigator's `goBack()`) would return to wherever the flow was opened
+  // from — for a restake that can be the stake detail or search modal
+  // stacked beneath, both now-stale surfaces. `dismissTo` POPs back to the
+  // existing stake tab route instead, dismissing every modal above it in
+  // one action. (`navigate` is wrong here: since React Navigation 7 it
+  // pushes a fresh route instead of popping to the existing one, which
+  // presented a second stake home as a modal. `dismissAll()` is also
+  // wrong: it only pops the inner stack back to the chooser/start screen.)
   useEffect(() => {
     if (phase !== 'success') return
     const timeout = setTimeout(() => {
-      navigation.getParent()?.goBack()
+      dismissTo('/stake' as Href)
     }, SUCCESS_DISMISS_DELAY_MS)
     return () => clearTimeout(timeout)
-  }, [phase, navigation])
+  }, [phase, dismissTo])
 
   // Invalid `stakeEndTime` route param (deep link / state restoration with
   // a missing or NaN value). We can't proceed with a fake duration, so

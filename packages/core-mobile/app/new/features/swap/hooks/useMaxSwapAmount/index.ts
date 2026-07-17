@@ -18,6 +18,7 @@ import {
   getTotalAdditiveNativeFee
 } from '../../utils/getTotalAdditiveSourceFee'
 import { usePreQuote } from './usePreQuote'
+import { useSpendableXpBalance } from './useSpendableXpBalance'
 import {
   computeMaxAmount,
   getPreQuoteAmount,
@@ -157,14 +158,26 @@ export const useMaxSwapAmount = ({
     bufferedAdditiveFee
   )
 
+  const { spendableBalance, isSpendableBalanceRequired } =
+    useSpendableXpBalance({ fromToken, fromNetwork })
+
   const max = useMemo(() => {
+    // CP-13903: a native X/P Max must come from the dust-filtered UTXO set
+    // the CCT callbacks spend. Until it loads, keep Max disabled — falling
+    // back to the displayed balance could build an over-spend.
+    if (isSpendableBalanceRequired && spendableBalance === undefined) {
+      return undefined
+    }
     return computeMaxAmount({
       fromToken,
       isNative,
       bufferedGas: bufferedFee,
       additiveFee: additiveFeeForMax,
       hasEstimationError:
-        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
+        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed,
+      spendableBalance: isSpendableBalanceRequired
+        ? spendableBalance
+        : undefined
     })
   }, [
     fromToken,
@@ -173,7 +186,9 @@ export const useMaxSwapAmount = ({
     additiveFeeForMax,
     feeEstimationError,
     preQuoteFailed,
-    isFeeEstimationFetching
+    isFeeEstimationFetching,
+    isSpendableBalanceRequired,
+    spendableBalance
   ])
 
   return {

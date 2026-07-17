@@ -1,5 +1,7 @@
 import React, { PropsWithChildren, useEffect } from 'react'
 import {
+  isCancelledError,
+  onlineManager,
   Query,
   QueryCache,
   QueryClient,
@@ -10,7 +12,6 @@ import {
   removeOldestQuery
 } from '@tanstack/react-query-persist-client'
 import NetInfo from '@react-native-community/netinfo'
-import { onlineManager } from '@tanstack/react-query'
 import { AppState, AppStateStatus } from 'react-native'
 import { queryStorage } from 'utils/mmkv'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
@@ -18,6 +19,7 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { useNetworksListener } from 'hooks/networks/useNetworksListener'
 import { useWatchlistListener } from 'hooks/watchlist/useWatchlistListener'
 import Logger from 'utils/Logger'
+import { onQueryError } from './reactQueryErrorHandler'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,9 +29,7 @@ export const queryClient = new QueryClient({
     }
   },
   queryCache: new QueryCache({
-    onError: (error: unknown) => {
-      Logger.error('[ReactQueryProvider] Query error', error)
-    }
+    onError: onQueryError
   })
 })
 
@@ -94,7 +94,16 @@ onlineManager.setEventListener(setOnline => {
       // (null = cold start, false = was offline), invalidate all queries
       // so active observers refetch fresh data.
       if (state.isInternetReachable && wasReachable !== true) {
-        queryClient.invalidateQueries()
+        // The returned promise rejects with CancelledError when an
+        // in-flight refetch gets cancelled (e.g. connectivity flaps
+        // mid-refetch) — routine, but unhandled it lands in Sentry
+        // (CORE-REACT-NATIVE-ABX). Real refetch failures are already
+        // reported by the QueryCache onError handler.
+        queryClient.invalidateQueries().catch(error => {
+          if (!isCancelledError(error)) {
+            Logger.warn('[ReactQueryProvider] invalidateQueries failed', error)
+          }
+        })
       }
     } else if (state.isConnected === false) {
       lastReachable = false

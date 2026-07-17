@@ -147,15 +147,70 @@ export type AnalyticsEvents = {
      * from "fee not applicable".
      */
     convenienceFeeAvax?: number
+    /**
+     * True when the stake was reached via Restake on a completed stake
+     * (see `StakeRestakeStarted`). Only the V2 confirm sends this.
+     */
+    isRestake?: boolean
   }
   StakeDelegationFail: {
     isAdvanced: boolean
     convenienceFeeAvax?: number
+    isRestake?: boolean
   }
+  /**
+   * Stake detail screen viewed, once per visit. Fired when the stake has
+   * resolved so the variant is known. `source` attributes the entry point;
+   * in-app navigations pass it explicitly, anything unattributed (e.g. a
+   * push-notification deep link) falls back to `deeplink`.
+   */
+  StakeDetailViewed: {
+    variant: 'active' | 'completed'
+    source: 'home' | 'search' | 'deeplink'
+  }
+  /**
+   * User started a staking flow from the chooser ("Choose a way to start
+   * staking"). Mirrors the PRD's `staking_flow_started` (entry CTA tap).
+   * Fired only when the flow actually begins — a tap blocked by the AVAX
+   * balance guard does not count, so funnel conversion isn't diluted by
+   * users who never entered the flow. Restake entries bypass the chooser
+   * and are intentionally NOT counted here (they get their own events).
+   */
+  StakeFlowStarted: {
+    /** `false` = Fast Stake, `true` = advanced Delegate (matches `StakeDelegationSuccess`). */
+    isAdvanced: boolean
+  }
+  /**
+   * Stake home screen gained focus (tab switch or navigation). Successor to
+   * the legacy `StakeOpened`, which fired on the old-gen Stake tab press and
+   * was dropped with the old navigation code (#2621) without a replacement.
+   */
+  StakeHomeViewed: undefined
   StakeIssueClaim: undefined
-  StakeIssueDelegation: undefined | { convenienceFeeAvax: number }
-  StakeOpened: undefined
+  /** V1 sends no payload; the V2 confirm always sends `isRestake` and adds the fee when one applies. */
+  StakeIssueDelegation:
+    | undefined
+    | { convenienceFeeAvax?: number; isRestake?: boolean }
   StakeOpenDurationSelect: undefined
+  /**
+   * User tapped Restake on a completed stake (the card button or the detail
+   * CTA) and the flow actually started. Deliberately separate from
+   * `StakeFlowStarted` so restakes don't dilute the fresh-stake funnel; the
+   * downstream lifecycle reuses the delegation events with `isRestake`.
+   */
+  StakeRestakeStarted: {
+    /** `false` = original stake was a Fast Stake, `true` = advanced delegation. */
+    isAdvanced: boolean
+    /** Which Restake entry point was tapped. */
+    source: 'card' | 'detail'
+  }
+  /** Stake search screen opened (once per open, not re-fired on back-focus). */
+  StakeSearchOpened: undefined
+  /**
+   * User actually typed a search query, once per search-screen visit. No
+   * payload by design — the query text (node IDs) stays out of analytics.
+   */
+  StakeSearchQueryEntered: undefined
   StakeTransactionStarted: {
     encrypted: { txHash: string; chainId: number }
   }
@@ -234,6 +289,7 @@ export type AnalyticsEvents = {
     caip2TargetChainId: string
   }
   QuickSwapsToggled: { isEnabled: boolean }
+  FilterSmallUtxosToggled: { isEnabled: boolean }
   QuickSwapsBypassFired: {
     caip2SourceChainId: string
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'

@@ -19,3 +19,6 @@ packages/*/coverage/
 
 /docs/local/
 /.codex/config.toml
+
+# Claude Code personal settings (team-shared settings live in .claude/settings.json)
+.claude/settings.local.json

@@ -1,5 +1,6 @@
 import type { NetworkFees } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
+import { getSwappableBalance } from '../../utils/getSwappableBalance'
 
 enum ChainFamily {
   EVM = 'evm',
@@ -79,7 +80,7 @@ export const getPreQuoteAmount = (
     return minimumTransferAmount
   }
   if (!fromToken) return minimumTransferAmount
-  const halfBalance = fromToken.balance / 2n
+  const halfBalance = getSwappableBalance(fromToken) / 2n
   return halfBalance > minimumTransferAmount
     ? halfBalance
     : minimumTransferAmount
@@ -105,24 +106,37 @@ export const computeMaxAmount = ({
   isNative,
   bufferedGas,
   additiveFee,
-  hasEstimationError
+  hasEstimationError,
+  spendableBalance
 }: {
   fromToken: LocalTokenWithBalance | undefined
   isNative: boolean
   bufferedGas: bigint | undefined
   additiveFee: bigint | undefined
   hasEstimationError: boolean
+  /**
+   * CP-13903: dust-filtered spendable balance for native X/P sources.
+   * When set it replaces the displayed balance, which can include dust
+   * the CCT spend set excludes.
+   */
+  spendableBalance?: bigint
 }): bigint | undefined => {
   if (!fromToken) return undefined
 
+  // Use the swappable balance (excludes P/X-chain staked/locked funds) as the
+  // ceiling so Max can't select more than the user can actually swap (CP-14788).
+  // For native X/P sources the dust-filtered spendable balance (CP-13903), when
+  // set, takes precedence since it reflects the CCT spend set exactly.
+  const balance = spendableBalance ?? getSwappableBalance(fromToken)
+
   if (isNative) {
     // Fall back to full balance if fee estimation failed
-    if (hasEstimationError) return fromToken.balance
+    if (hasEstimationError) return balance
 
     // Wait for fee estimate before enabling Max button
     if (bufferedGas === undefined) return undefined
 
-    const max = fromToken.balance - bufferedGas - (additiveFee ?? 0n)
+    const max = balance - bufferedGas - (additiveFee ?? 0n)
     return max > 0n ? max : undefined
   }
 
@@ -131,6 +145,6 @@ export const computeMaxAmount = ({
 
   // For non-native tokens (ERC20/SPL): gas is paid in the chain's native asset, but additive fees
   // denominated in the source token must be deducted.
-  const max = fromToken.balance - additiveFee
+  const max = balance - additiveFee
   return max > 0n ? max : undefined
 }

@@ -4,6 +4,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { DEFAULT_TOKEN_DECIMALS } from '../consts'
 import { ApiToken } from '../types'
 import { getLocalTokenIdFromApi } from './getLocalTokenIdFromApi'
+import { buildAvailableFields } from './buildAvailableFields'
 
 export const mapApiTokenToLocal = (
   apiToken: ApiToken,
@@ -65,6 +66,11 @@ export const mapApiTokenToLocal = (
     balanceDisplayValue,
     balanceInCurrency: balanceData?.balanceInCurrency ?? 0,
     priceInCurrency: balanceData?.priceInCurrency ?? 0,
+
+    // Carry P/X-chain swappable-balance fields (available*, balancePerType) so a
+    // preselected P/X source keeps them through the rebuild (CP-14788). No-op for
+    // other token types.
+    ...buildAvailableFields(balanceData, decimals, apiToken.symbol),
 
     // Required fields for different token types
     reputation: null,
