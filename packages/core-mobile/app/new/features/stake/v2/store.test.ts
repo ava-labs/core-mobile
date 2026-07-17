@@ -14,6 +14,13 @@ const BASELINE = createDefaultDelegateFilters({
 
 const allOff = disableAllDelegateFilters
 
+// The zustand store is module-level state shared by every test in this file —
+// reset it after each test so no describe block leaks a seeded store into the
+// next.
+afterEach(() => {
+  useDelegateFilters.getState().reset()
+})
+
 describe('resolveEffectiveDelegateFilters', () => {
   it('falls back to the baseline for dimensions the user has not enabled', () => {
     const effective = resolveEffectiveDelegateFilters(
@@ -54,10 +61,6 @@ describe('countEnabledFilters', () => {
 })
 
 describe('useDelegateFilters.seedDefaults', () => {
-  afterEach(() => {
-    useDelegateFilters.getState().reset()
-  })
-
   it('stores the baseline and opens the user filters all-off at baseline values', () => {
     useDelegateFilters.getState().seedDefaults(BASELINE)
     const { filters, defaults } = useDelegateFilters.getState()

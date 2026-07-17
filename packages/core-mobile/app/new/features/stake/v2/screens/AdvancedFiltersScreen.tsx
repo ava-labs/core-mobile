@@ -113,8 +113,9 @@ const FilterCard: FC<FilterCardProps> = ({
  * exactly what they see on reopen. A user-enabled dimension replaces the
  * baseline, so e.g. enabling uptime and dragging it below 75% genuinely
  * loosens the list. Numeric values are kept inside the live bounds; a
- * disabled row seeds its control at the baseline value so flipping the
- * toggle on starts there.
+ * disabled row keeps its last saved value (the baseline value on a fresh
+ * flow, the range minimum when it has none), so flipping the toggle back on
+ * starts where the user left off.
  */
 const seedDraft = (
   applied: DelegateFilters,
