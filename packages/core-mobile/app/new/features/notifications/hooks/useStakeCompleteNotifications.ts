@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import {
   StakeCompleteNotificationRecord,
-  stakeCompleteNotificationRecordsStore
+  useStakeCompleteNotificationRecords
 } from '../store/stakeCompleteNotificationRecords'
 
 /**
@@ -73,7 +73,7 @@ export const deriveStakeCompleteNotifications = ({
 export const useStakeCompleteNotifications = (): {
   items: StakeCompleteNotificationItem[]
 } => {
-  const records = stakeCompleteNotificationRecordsStore(state => state.records)
+  const { records } = useStakeCompleteNotificationRecords()
 
   const items = useMemo(
     () =>

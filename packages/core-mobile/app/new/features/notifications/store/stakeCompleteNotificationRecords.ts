@@ -92,3 +92,14 @@ export const stakeCompleteNotificationRecordsStore =
       }
     )
   )
+
+/**
+ * React entry point. Components must go through this `use`-named wrapper —
+ * the zustand store call is a hook, and the React Compiler only recognizes
+ * it as one by naming convention (calling the store directly corrupts the
+ * hook order). Non-React code (listeners) uses
+ * `stakeCompleteNotificationRecordsStore.getState()` instead.
+ */
+export const useStakeCompleteNotificationRecords =
+  (): StakeCompleteNotificationRecordsState =>
+    stakeCompleteNotificationRecordsStore()
