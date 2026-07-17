@@ -28,9 +28,14 @@ const StakeCompleteItem: FC<StakeCompleteItemProps> = ({
   } = useTheme()
 
   const baseSubtitle = 'Your staking period has ended'
-  const subtitle = accountLabel
-    ? `${accountLabel} · ${baseSubtitle}`
-    : baseSubtitle
+  // Cross-environment items are tappable from either mode (tapping switches
+  // the app), so testnet ones carry an explicit marker.
+  const parts = [
+    accountLabel,
+    item.isDeveloperMode ? 'Testnet' : null,
+    baseSubtitle
+  ].filter(Boolean)
+  const subtitle = parts.join(' · ')
 
   return (
     <NotificationListItem

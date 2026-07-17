@@ -15,7 +15,10 @@ import {
   selectIsFusionEnabled,
   selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced'
 import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
 import {
   selectAccounts,
@@ -411,11 +414,17 @@ export const NotificationsScreen = (): JSX.Element => {
   )
 
   // Mirrors the push-notification tap semantics
-  // (`handleProcessNotificationData`): stake-complete pushes carry an
-  // accountId and switch the active account before navigating, so the
-  // center's rows do the same for stakes owned by non-active accounts.
+  // (`handleProcessNotificationData`): stake-complete pushes carry the
+  // scheduling environment and an accountId, and tapping them switches
+  // both BEFORE navigating. The center's rows do the same — the item list
+  // spans both environments (the underlying service feeds the cross-mode
+  // push scheduler), so without the mode switch a testnet stake tapped
+  // from mainnet lands on a stake detail that can never resolve.
   const handleStakeCompletePress = useCallback(
     (item: StakeCompleteNotificationItem) => {
+      if (item.isDeveloperMode !== isDeveloperMode) {
+        dispatch(toggleDeveloperMode())
+      }
       if (activeAccount?.id !== item.accountId) {
         dispatch(setActiveAccount(item.accountId))
       }
@@ -426,7 +435,7 @@ export const NotificationsScreen = (): JSX.Element => {
         params: { txHash: item.txHash, source: 'deeplink' }
       })
     },
-    [activeAccount?.id, dispatch]
+    [activeAccount?.id, isDeveloperMode, dispatch]
   )
 
   const renderFooter = useCallback(() => {

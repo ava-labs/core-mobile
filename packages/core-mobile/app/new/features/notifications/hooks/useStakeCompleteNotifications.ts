@@ -31,12 +31,22 @@ export interface StakeCompleteNotificationItem {
   accountId: string
   /** Stake end time in ms (list-ordering timestamp). */
   timestamp: number
+  /**
+   * Environment the stake lives on. The underlying service returns stakes
+   * for BOTH networks (it feeds the push scheduler, which notifies across
+   * modes), so the center mirrors the pushes: items from both environments
+   * are listed and tapping one switches the app to the stake's environment
+   * first — same semantics as tapping the push itself
+   * (`handleProcessNotificationData`).
+   */
+  isDeveloperMode: boolean
 }
 
 interface TransformedStake {
   txHash: string
   endTimestamp: number | undefined
   accountId: string
+  isDeveloperMode: boolean
   isOnGoing: boolean
 }
 
@@ -69,7 +79,8 @@ export const deriveStakeCompleteNotifications = ({
         {
           txHash: stake.txHash,
           accountId: stake.accountId,
-          timestamp: endMs
+          timestamp: endMs,
+          isDeveloperMode: stake.isDeveloperMode
         }
       ]
     })

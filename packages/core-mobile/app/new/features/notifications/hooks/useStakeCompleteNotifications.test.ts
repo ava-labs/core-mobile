@@ -11,16 +11,18 @@ const NOW_S = NOW_MS / 1000
 const stake = (
   txHash: string,
   endTimestamp: number | undefined,
-  accountId = 'account-1'
+  { accountId = 'account-1', isDeveloperMode = false } = {}
 ): {
   txHash: string
   endTimestamp: number | undefined
   accountId: string
+  isDeveloperMode: boolean
   isOnGoing: boolean
 } => ({
   txHash,
   endTimestamp,
   accountId,
+  isDeveloperMode,
   isOnGoing: endTimestamp !== undefined && endTimestamp > NOW_S
 })
 
@@ -79,10 +81,27 @@ describe('deriveStakeCompleteNotifications', () => {
 
   it('carries the owning account id through', () => {
     const items = deriveStakeCompleteNotifications({
-      stakes: [stake('a', NOW_S - DAY_S, 'account-42')],
+      stakes: [stake('a', NOW_S - DAY_S, { accountId: 'account-42' })],
       dismissedTxHashes: {},
       now: NOW_MS
     })
     expect(items[0]?.accountId).toBe('account-42')
+  })
+
+  it('keeps stakes from both environments, tagged with their mode', () => {
+    // The service feeds the cross-mode push scheduler, so the list spans
+    // mainnet AND testnet; tapping switches the app to the item's mode.
+    const items = deriveStakeCompleteNotifications({
+      stakes: [
+        stake('mainnet', NOW_S - DAY_S),
+        stake('testnet', NOW_S - 2 * DAY_S, { isDeveloperMode: true })
+      ],
+      dismissedTxHashes: {},
+      now: NOW_MS
+    })
+    expect(items.map(i => [i.txHash, i.isDeveloperMode])).toEqual([
+      ['mainnet', false],
+      ['testnet', true]
+    ])
   })
 })
