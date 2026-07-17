@@ -88,10 +88,14 @@ export const resolveEffectiveDelegateFilters = (
     : defaults.minTimeRemaining
 })
 
-// Seeds the user-facing filters from the baseline: same values (so the sheet's
-// controls start at the web defaults) but every toggle off — the baseline
-// itself filters from `defaults`, not from here.
-const disableAll = (filters: DelegateFilters): DelegateFilters => ({
+/**
+ * Seeds the user-facing filters from the baseline: same values (so the sheet's
+ * controls start at the web defaults) but every toggle off — the baseline
+ * itself filters from `defaults`, not from here.
+ */
+export const disableAllDelegateFilters = (
+  filters: DelegateFilters
+): DelegateFilters => ({
   uptime: { ...filters.uptime, enabled: false },
   maxFee: { ...filters.maxFee, enabled: false },
   minAvailable: { ...filters.minAvailable, enabled: false },
@@ -124,7 +128,8 @@ export const useDelegateFilters = create<DelegateFiltersStore>(set => ({
   setFilters: filters => set({ filters }),
   // Seed the baseline, and the user filters as all-off (values kept as seeds
   // for the sheet's controls) — a fresh flow opens with no toggle on.
-  seedDefaults: defaults => set({ filters: disableAll(defaults), defaults }),
+  seedDefaults: defaults =>
+    set({ filters: disableAllDelegateFilters(defaults), defaults }),
   reset: () =>
     set({
       filters: DEFAULT_DELEGATE_FILTERS,

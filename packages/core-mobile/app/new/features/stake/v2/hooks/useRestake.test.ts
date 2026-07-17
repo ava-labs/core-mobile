@@ -5,6 +5,7 @@ import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import {
   clearRestakePrefill,
   createDefaultDelegateFilters,
+  disableAllDelegateFilters,
   getRestakePrefill,
   setDelegateNodeSelection,
   takeRestakeEntry,
@@ -167,12 +168,9 @@ describe('useRestake', () => {
       minStakeDays: 14
     })
     expect(useDelegateFilters.getState().defaults).toEqual(seeded)
-    expect(useDelegateFilters.getState().filters).toEqual({
-      uptime: { ...seeded.uptime, enabled: false },
-      maxFee: { ...seeded.maxFee, enabled: false },
-      minAvailable: { ...seeded.minAvailable, enabled: false },
-      minTimeRemaining: { ...seeded.minTimeRemaining, enabled: false }
-    })
+    expect(useDelegateFilters.getState().filters).toEqual(
+      disableAllDelegateFilters(seeded)
+    )
 
     expect(mockNavigate).toHaveBeenCalledWith(
       `/addStakeV2/delegate/confirm?stakeEndTime=${expectedStakeEndTime}&restakeNodeId=NodeID-A`

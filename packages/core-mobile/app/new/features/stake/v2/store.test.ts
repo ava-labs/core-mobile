@@ -2,6 +2,7 @@ import {
   countEnabledFilters,
   createDefaultDelegateFilters,
   DelegateFilters,
+  disableAllDelegateFilters,
   resolveEffectiveDelegateFilters,
   useDelegateFilters
 } from './store'
@@ -11,12 +12,7 @@ const BASELINE = createDefaultDelegateFilters({
   minStakeDays: 14
 })
 
-const allOff = (filters: DelegateFilters): DelegateFilters => ({
-  uptime: { ...filters.uptime, enabled: false },
-  maxFee: { ...filters.maxFee, enabled: false },
-  minAvailable: { ...filters.minAvailable, enabled: false },
-  minTimeRemaining: { ...filters.minTimeRemaining, enabled: false }
-})
+const allOff = disableAllDelegateFilters
 
 describe('resolveEffectiveDelegateFilters', () => {
   it('falls back to the baseline for dimensions the user has not enabled', () => {
