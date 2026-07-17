@@ -35,10 +35,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 
@@ -186,6 +183,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const scrollContentHeight = useRef(0)
     const scrollViewHeight = useRef(0)
     const hasReachedEndRef = useRef(false)
+    // Measured height of the scroll viewport, mirrored into state so it can
+    // drive the content container's `minHeight` (see below).
+    const [scrollViewLayoutHeight, setScrollViewLayoutHeight] = useState(0)
     const titleHeight = useSharedValue<number>(0)
     const subtitleHeight = useSharedValue<number>(0)
 
@@ -270,7 +270,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
 
     const handleScrollViewLayout = useCallback(
       (e: LayoutChangeEvent) => {
-        scrollViewHeight.current = e.nativeEvent.layout.height
+        const { height } = e.nativeEvent.layout
+        scrollViewHeight.current = height
+        setScrollViewLayoutHeight(prev => (prev === height ? prev : height))
         updateIsScrollable()
         checkScrollableAfterLayout()
       },
@@ -434,34 +436,23 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       }
     })
 
-    const frame = useSafeAreaFrame()
-
-    const minHeight = useMemo(() => {
-      let footerHeight: number
-      if (renderFooter && footerLayout) {
-        // Android subtracts the full bottom inset; iOS keeps 16pt of it in content
-        const bottomInset =
-          Platform.OS === 'android' ? insets.bottom : insets.bottom + 16
-        footerHeight = footerLayout.height - bottomInset
-      } else {
-        footerHeight = Platform.OS === 'android' ? -16 : 0
-      }
-
-      const height =
-        frame.height + (headerLayout?.height ?? 0) - footerHeight - headerHeight
-
-      return shouldAvoidKeyboard
-        ? height - (Platform.OS === 'android' ? 24 : -24)
-        : height
-    }, [
-      renderFooter,
-      footerLayout,
-      frame.height,
-      headerLayout?.height,
-      headerHeight,
-      shouldAvoidKeyboard,
-      insets.bottom
-    ])
+    // The content container must be at least as tall as the scroll viewport
+    // (short content still fills the screen; the footer is already accounted
+    // for by the container's `paddingBottom`) PLUS the collapsible title
+    // region when one exists, so the release snap (`handleScrollEndDrag`)
+    // always has enough scroll range to tuck the title fully under the
+    // navigation header instead of stalling mid-fade at the content's max
+    // offset. Both terms come from measured layouts rather than
+    // `useSafeAreaFrame` math: the frame/inset relationship varies across
+    // Android nav modes (gesture vs 3-button), devices and build variants, so
+    // a computed value only held in the environment its constants were tuned
+    // in. `undefined` until the first layout lands.
+    const collapsibleHeaderHeight =
+      title || subtitle ? headerLayout?.height ?? 0 : 0
+    const minHeight =
+      scrollViewLayoutHeight > 0
+        ? scrollViewLayoutHeight + collapsibleHeaderHeight
+        : undefined
 
     const animatedTitleStyle = useAnimatedStyle(() => {
       const scale = interpolate(
@@ -681,12 +672,13 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // while the body scrolls. iOS/non-modal keep the under-header layout so
       // content still scrolls beneath the transparent header. (CP-14679)
       const scrollBelowHeader = Platform.OS === 'android' && Boolean(isModal)
-      // Attach the internal composed size/layout handlers only when their work
+      // Attach the internal composed content-size handler only when its work
       // is needed: `onScrolledToEnd` (scroll-to-end tracking) or
       // `scrollBelowHeader` (the Android modal nested-scroll path, which needs
       // `isScrollable`). Otherwise the caller's callback is passed through
-      // directly so keyboard-avoiding screens don't run JS on every layout /
-      // content-size change for a no-op. (CP-14679)
+      // directly so keyboard-avoiding screens don't run JS on every
+      // content-size change for a no-op. (CP-14679) `onLayout` is always
+      // composed: it measures the viewport that drives `minHeight`.
       const pickScrollHandler = <T,>(composed: T, passthrough: T): T =>
         onScrolledToEnd || scrollBelowHeader ? composed : passthrough
       return (
@@ -743,10 +735,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
               handleContentSizeChangeComposed,
               onContentSizeChangeProp
             )}
-            onLayout={pickScrollHandler(
-              handleScrollViewLayoutComposed,
-              onLayoutProp
-            )}>
+            onLayout={handleScrollViewLayoutComposed}>
             {renderHeaderContent()}
             {children}
           </KeyboardScrollView>
@@ -774,10 +763,11 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
+              // `footerLayout` is measured on the padded footer wrapper, so
+              // its height already includes the bottom safe area — only add
+              // the inset when there's no measured footer.
               paddingBottom:
-                (footerLayout?.height ?? 0) +
-                insets.bottom +
-                EXTRA_PADDING_BOTTOM,
+                (footerLayout?.height ?? insets.bottom) + EXTRA_PADDING_BOTTOM,
               paddingTop: headerHeight,
               minHeight
             }
@@ -789,9 +779,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
               ? handleContentSizeChangeComposed
               : onContentSizeChangeProp
           }
-          onLayout={
-            onScrolledToEnd ? handleScrollViewLayoutComposed : onLayoutProp
-          }>
+          onLayout={handleScrollViewLayoutComposed}>
           {renderHeaderContent()}
           {children}
         </ScrollView>
