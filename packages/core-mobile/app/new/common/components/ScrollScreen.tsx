@@ -371,9 +371,11 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     )
 
     // Snap the header on release, mirroring ListScreenV2's `onScrollEndDrag`:
-    // a drag released inside the collapsible header region either commits past
-    // it (offset past the title+description block → fully collapsed, nav title
-    // fully in) or bounces back to fully expanded — never rests half-faded.
+    // a drag released inside the collapsible header region either commits to
+    // fully collapsed (nav title fully in) or bounces back to fully expanded —
+    // never rests half-faded. The commit threshold is the title height alone
+    // (subtitle excluded), matching ListScreenV2; the scroll target is the
+    // full measured header region.
     const handleScrollEndDrag = useCallback(
       (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
         onScrollEndDragProp?.(event)
