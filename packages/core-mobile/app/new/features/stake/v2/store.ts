@@ -53,38 +53,61 @@ export const createDefaultDelegateFilters = ({
 })
 
 /**
- * Number of filters the user has changed from the seeded defaults — drives the
- * count badge. Returns 0 while the filters still match the defaults seeded on
- * flow entry, so the picker opens looking "unfiltered" even though the
- * web-parity defaults are applied; only a deviation surfaces the badge.
+ * Number of filters the user has toggled on — drives the count badge. The
+ * badge counts exactly the rows that read as "on" in the Advanced filters
+ * sheet (even at their default values), so what the user enabled is what the
+ * badge reports. Returns 0 while the user hasn't enabled anything, so the
+ * picker opens looking "unfiltered" even though the web-parity baseline
+ * filters underneath.
  */
-export const countModifiedFilters = (
+export const countEnabledFilters = (filters: DelegateFilters): number =>
+  [
+    filters.uptime.enabled,
+    filters.maxFee.enabled,
+    filters.minAvailable.enabled,
+    filters.minTimeRemaining.enabled
+  ].filter(Boolean).length
+
+/**
+ * The filters that actually narrow the node list. Per dimension, a
+ * user-enabled filter REPLACES the baseline web default (so enabling uptime
+ * and dragging it below 75% genuinely loosens the list); a dimension the
+ * user hasn't enabled falls back to the baseline seeded on flow entry.
+ */
+export const resolveEffectiveDelegateFilters = (
   filters: DelegateFilters,
   defaults: DelegateFilters
-): number => {
-  const changed = (
-    a: { enabled: boolean; value: number },
-    b: { enabled: boolean; value: number }
-  ): boolean => a.enabled !== b.enabled || (a.enabled && a.value !== b.value)
+): DelegateFilters => ({
+  uptime: filters.uptime.enabled ? filters.uptime : defaults.uptime,
+  maxFee: filters.maxFee.enabled ? filters.maxFee : defaults.maxFee,
+  minAvailable: filters.minAvailable.enabled
+    ? filters.minAvailable
+    : defaults.minAvailable,
+  minTimeRemaining: filters.minTimeRemaining.enabled
+    ? filters.minTimeRemaining
+    : defaults.minTimeRemaining
+})
 
-  let count = 0
-  // `uptime` carries its threshold in `min`; the others use `value`.
-  if (
-    filters.uptime.enabled !== defaults.uptime.enabled ||
-    (filters.uptime.enabled && filters.uptime.min !== defaults.uptime.min)
-  ) {
-    count++
-  }
-  if (changed(filters.maxFee, defaults.maxFee)) count++
-  if (changed(filters.minAvailable, defaults.minAvailable)) count++
-  if (changed(filters.minTimeRemaining, defaults.minTimeRemaining)) count++
-  return count
-}
+// Seeds the user-facing filters from the baseline: same values (so the sheet's
+// controls start at the web defaults) but every toggle off — the baseline
+// itself filters from `defaults`, not from here.
+const disableAll = (filters: DelegateFilters): DelegateFilters => ({
+  uptime: { ...filters.uptime, enabled: false },
+  maxFee: { ...filters.maxFee, enabled: false },
+  minAvailable: { ...filters.minAvailable, enabled: false },
+  minTimeRemaining: { ...filters.minTimeRemaining, enabled: false }
+})
 
 type DelegateFiltersStore = {
+  /**
+   * The user's explicit filters — `enabled` mirrors the Advanced filters
+   * sheet's toggles verbatim. NOT what filters the list by itself: the
+   * web-parity baseline (`defaults`) applies underneath, and a user-enabled
+   * dimension replaces it (see `resolveEffectiveDelegateFilters`).
+   */
   filters: DelegateFilters
-  // The defaults seeded on flow entry, retained so the count badge can tell
-  // whether the user has deviated from them (see `countModifiedFilters`).
+  // The web-parity baseline seeded on flow entry. Filters every dimension the
+  // user hasn't explicitly enabled.
   defaults: DelegateFilters
   setFilters: (filters: DelegateFilters) => void
   seedDefaults: (defaults: DelegateFilters) => void
@@ -99,9 +122,9 @@ export const useDelegateFilters = create<DelegateFiltersStore>(set => ({
   filters: DEFAULT_DELEGATE_FILTERS,
   defaults: DEFAULT_DELEGATE_FILTERS,
   setFilters: filters => set({ filters }),
-  // Seed both the applied filters and the baseline they're compared against, so
-  // the freshly-seeded state reads as "unmodified" (no badge).
-  seedDefaults: defaults => set({ filters: defaults, defaults }),
+  // Seed the baseline, and the user filters as all-off (values kept as seeds
+  // for the sheet's controls) — a fresh flow opens with no toggle on.
+  seedDefaults: defaults => set({ filters: disableAll(defaults), defaults }),
   reset: () =>
     set({
       filters: DEFAULT_DELEGATE_FILTERS,
