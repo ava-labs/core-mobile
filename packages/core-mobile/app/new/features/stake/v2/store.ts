@@ -141,11 +141,11 @@ export const resetDelegateFilters = (): void =>
   useDelegateFilters.getState().reset()
 
 /**
- * Seeds the filters (and the baseline they're diffed against) with the
- * web-parity defaults (see `createDefaultDelegateFilters`). Call from non-React
- * contexts (e.g. when a new Delegate flow starts) so the node picker opens
- * pre-filtered like web — yet looks "unfiltered" until the user deviates — and
- * a previous session's filters don't carry over.
+ * Seeds the web-parity baseline (see `createDefaultDelegateFilters`) and
+ * resets the user filters to all-off. Call from non-React contexts (e.g. when
+ * a new Delegate flow starts) so the node picker opens pre-filtered like web —
+ * with no toggle shown as on — and a previous session's filters don't carry
+ * over.
  */
 export const applyDefaultDelegateFilters = (params: {
   minFeePercent: number

@@ -159,11 +159,20 @@ describe('useRestake', () => {
     // Stale node selection cleared so the confirm can't read it.
     expect(useDelegateNodeSelection.getState().nodes).toHaveLength(0)
 
-    // Web-parity default filters seeded from the (mocked) staking config:
-    // fee ≤ 2%, remaining time ≥ 14 days.
-    expect(useDelegateFilters.getState().filters).toEqual(
-      createDefaultDelegateFilters({ minFeePercent: 2, minStakeDays: 14 })
-    )
+    // Web-parity baseline seeded from the (mocked) staking config — fee ≤ 2%,
+    // remaining time ≥ 14 days — while the user-facing filters open with every
+    // toggle off (the baseline filters underneath; the sheet shows none on).
+    const seeded = createDefaultDelegateFilters({
+      minFeePercent: 2,
+      minStakeDays: 14
+    })
+    expect(useDelegateFilters.getState().defaults).toEqual(seeded)
+    expect(useDelegateFilters.getState().filters).toEqual({
+      uptime: { ...seeded.uptime, enabled: false },
+      maxFee: { ...seeded.maxFee, enabled: false },
+      minAvailable: { ...seeded.minAvailable, enabled: false },
+      minTimeRemaining: { ...seeded.minTimeRemaining, enabled: false }
+    })
 
     expect(mockNavigate).toHaveBeenCalledWith(
       `/addStakeV2/delegate/confirm?stakeEndTime=${expectedStakeEndTime}&restakeNodeId=NodeID-A`
