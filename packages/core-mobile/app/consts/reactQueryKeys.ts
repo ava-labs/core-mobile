@@ -81,7 +81,6 @@ export enum ReactQueryKeys {
 
   // notifications
   NOTIFICATION_CENTER_LIST = 'notificationCenterList',
-  STAKE_COMPLETE_NOTIFICATIONS = 'stakeCompleteNotifications',
   PRICE_ALERT_CHART = 'priceAlertChart',
 
   // token detail chart

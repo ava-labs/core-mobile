@@ -36,7 +36,7 @@ import {
   StakeCompleteNotificationItem,
   useStakeCompleteNotifications
 } from '../hooks/useStakeCompleteNotifications'
-import { useDismissedStakeNotifications } from '../store/dismissedStakeNotifications'
+import { stakeCompleteNotificationRecordsStore } from '../store/stakeCompleteNotificationRecords'
 import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
@@ -208,8 +208,14 @@ export const NotificationsScreen = (): JSX.Element => {
   const { removeTransfer, clearCompletedTransfers, transfers } =
     useFusionTransfers()
   const { items: stakeCompleteItems } = useStakeCompleteNotifications()
-  const { dismiss: dismissStakeNotifications } =
-    useDismissedStakeNotifications()
+  const removeStakeNotificationRecords = stakeCompleteNotificationRecordsStore(
+    state => state.remove
+  )
+  const dismissStakeNotifications = useCallback(
+    (items: StakeCompleteNotificationItem[]) =>
+      removeStakeNotificationRecords(items.map(item => item.txHash)),
+    [removeStakeNotificationRecords]
+  )
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()

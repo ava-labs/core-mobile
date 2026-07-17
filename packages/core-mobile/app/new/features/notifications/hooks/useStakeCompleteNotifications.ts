@@ -1,14 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { getUnixTime, subDays } from 'date-fns'
 import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import EarnService from 'services/earn/EarnService'
-import { selectAccounts } from 'store/account'
-import { selectIsEarnBlocked } from 'store/posthog'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveWallet } from 'store/wallet/slice'
-import { useDismissedStakeNotifications } from '../store/dismissedStakeNotifications'
+import {
+  StakeCompleteNotificationRecord,
+  stakeCompleteNotificationRecordsStore
+} from '../store/stakeCompleteNotificationRecords'
 
 /**
  * The notification center is an inbox of RECENT items (the backend feed is
@@ -20,10 +14,6 @@ export const STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS = 30
 export const STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS = 20
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
-// Stakes can run up to a year, so anything that ENDED inside the window may
-// have STARTED up to (max duration + window) ago — mirror the scheduler's
-// one-year lookback, extended by the window.
-const FETCH_LOOKBACK_DAYS = 365 + STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS
 
 export interface StakeCompleteNotificationItem {
   txHash: string
@@ -32,9 +22,8 @@ export interface StakeCompleteNotificationItem {
   /** Stake end time in ms (list-ordering timestamp). */
   timestamp: number
   /**
-   * Environment the stake lives on. The underlying service returns stakes
-   * for BOTH networks (it feeds the push scheduler, which notifies across
-   * modes), so the center mirrors the pushes: items from both environments
+   * Environment the stake lives on. The push scheduler notifies across BOTH
+   * networks, so the center mirrors the pushes: items from both environments
    * are listed and tapping one switches the app to the stake's environment
    * first — same semantics as tapping the push itself
    * (`handleProcessNotificationData`).
@@ -42,111 +31,58 @@ export interface StakeCompleteNotificationItem {
   isDeveloperMode: boolean
 }
 
-interface TransformedStake {
-  txHash: string
-  endTimestamp: number | undefined
-  accountId: string
-  isDeveloperMode: boolean
-  isOnGoing: boolean
-}
-
 /**
- * Pure derivation — exported for tests. `endTimestamp` arrives in unix
- * SECONDS (Glacier); item timestamps are ms.
+ * Pure derivation — exported for tests. A record whose `endTimestamp` (ms)
+ * has passed is a push that has fired.
  */
 export const deriveStakeCompleteNotifications = ({
-  stakes,
-  dismissedTxHashes,
+  records,
   now
 }: {
-  stakes: TransformedStake[] | undefined
-  dismissedTxHashes: Record<string, number>
+  records: Record<string, StakeCompleteNotificationRecord>
   now: number
 }): StakeCompleteNotificationItem[] => {
   const windowStartMs =
     now - STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS * MS_PER_DAY
 
-  return (stakes ?? [])
-    .flatMap<StakeCompleteNotificationItem>(stake => {
-      if (stake.endTimestamp === undefined) return []
-      const endMs = stake.endTimestamp * 1000
-      // Completed only (`endMs <= now` rather than `!isOnGoing`, which is
-      // also false for stakes that have not started yet), inside the window,
-      // and not dismissed by the user.
-      if (endMs > now || endMs < windowStartMs) return []
-      if (dismissedTxHashes[stake.txHash] !== undefined) return []
-      return [
-        {
-          txHash: stake.txHash,
-          accountId: stake.accountId,
-          timestamp: endMs,
-          isDeveloperMode: stake.isDeveloperMode
-        }
-      ]
-    })
-    .sort((a, b) => b.timestamp - a.timestamp)
+  return Object.values(records)
+    .filter(
+      record =>
+        record.endTimestamp <= now && record.endTimestamp >= windowStartMs
+    )
+    .sort((a, b) => b.endTimestamp - a.endTimestamp)
     .slice(0, STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS)
+    .map(record => ({
+      txHash: record.txHash,
+      accountId: record.accountId,
+      timestamp: record.endTimestamp,
+      isDeveloperMode: record.isDeveloperMode
+    }))
 }
 
 /**
- * Locally-derived stake-complete entries for the notification center
- * (CP-14749). Mirrors the local push-notification scheduler's scope — ALL
- * accounts of the active wallet (`getTransformedStakesForAllAccounts`) — so
- * every completed stake the user got a push for also shows up here.
- *
- * Derived from on-chain stakes rather than from fired notifications: the
- * chain is the source of truth, so the inbox survives reinstalls (within the
- * window). Dismissals are tracked locally (see
- * `dismissedStakeNotificationsStore`).
+ * Stake-complete entries for the notification center (CP-14749), sourced
+ * from the local push notifications this device scheduled (see
+ * `stakeCompleteNotificationRecordsStore`): a record whose end time has
+ * passed is a push the user actually received. This keeps the center 1:1
+ * with the pushes — it respects the notification settings (nothing is
+ * recorded while they are off) and never surprises the user with stakes no
+ * push was ever sent for. The trade-off is that the list is device-local,
+ * like the pushes themselves.
  */
 export const useStakeCompleteNotifications = (): {
   items: StakeCompleteNotificationItem[]
-  isLoading: boolean
 } => {
-  const activeWallet = useSelector(selectActiveWallet)
-  const accounts = useSelector(selectAccounts)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const isEarnBlocked = useSelector(selectIsEarnBlocked)
-  const { dismissedTxHashes } = useDismissedStakeNotifications()
-
-  const accountList = useMemo(() => Object.values(accounts), [accounts])
-
-  const { data: stakes, isLoading } = useQuery({
-    // Object segments are hashed structurally by react-query, and both come
-    // from stable redux references — the key only changes when the wallet or
-    // account set actually changes.
-    queryKey: [
-      ReactQueryKeys.STAKE_COMPLETE_NOTIFICATIONS,
-      activeWallet,
-      isDeveloperMode,
-      accountList
-    ],
-    enabled: !isEarnBlocked && !!activeWallet && accountList.length > 0,
-    // Same cadence as the backend notification feed.
-    staleTime: 1000 * 60,
-    queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const wallet = activeWallet!
-      const result = await EarnService.getTransformedStakesForAllAccounts({
-        walletId: wallet.id,
-        walletType: wallet.type,
-        accounts: accountList,
-        isTestnet: isDeveloperMode,
-        startTimestamp: getUnixTime(subDays(new Date(), FETCH_LOOKBACK_DAYS))
-      })
-      return result ?? []
-    }
-  })
+  const records = stakeCompleteNotificationRecordsStore(state => state.records)
 
   const items = useMemo(
     () =>
       deriveStakeCompleteNotifications({
-        stakes,
-        dismissedTxHashes,
+        records,
         now: Date.now()
       }),
-    [stakes, dismissedTxHashes]
+    [records]
   )
 
-  return { items, isLoading }
+  return { items }
 }

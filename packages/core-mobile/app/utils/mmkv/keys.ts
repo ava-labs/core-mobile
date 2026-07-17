@@ -28,7 +28,7 @@ export enum ZustandStorageKeys {
   MARKET_VIEW = 'marketView',
   FAVORITES_VIEW = 'favoritesView',
   TRACK_SEARCH_VIEW = 'trackSearchView',
-  DISMISSED_STAKE_NOTIFICATIONS = 'dismissedStakeNotifications',
+  STAKE_COMPLETE_NOTIFICATION_RECORDS = 'stakeCompleteNotificationRecords',
   LEDGER_WALLET_MAP = 'ledgerWalletMap',
   APP_REVIEW = 'appReview',
   FUSION_TRANSFERS = 'fusionTransfers',

@@ -1,107 +1,131 @@
 import {
+  StakeCompleteNotificationRecord,
+  stakeCompleteNotificationRecordsStore
+} from '../store/stakeCompleteNotificationRecords'
+import {
   deriveStakeCompleteNotifications,
   STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS,
   STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS
 } from './useStakeCompleteNotifications'
 
-const DAY_S = 24 * 60 * 60
+const DAY_MS = 24 * 60 * 60 * 1000
 const NOW_MS = new Date('2026-07-16T12:00:00Z').getTime()
-const NOW_S = NOW_MS / 1000
 
-const stake = (
+const record = (
   txHash: string,
-  endTimestamp: number | undefined,
+  endTimestamp: number,
   { accountId = 'account-1', isDeveloperMode = false } = {}
-): {
-  txHash: string
-  endTimestamp: number | undefined
-  accountId: string
-  isDeveloperMode: boolean
-  isOnGoing: boolean
-} => ({
+): StakeCompleteNotificationRecord => ({
   txHash,
   endTimestamp,
   accountId,
-  isDeveloperMode,
-  isOnGoing: endTimestamp !== undefined && endTimestamp > NOW_S
+  isDeveloperMode
 })
 
+const toMap = (
+  records: StakeCompleteNotificationRecord[]
+): Record<string, StakeCompleteNotificationRecord> =>
+  Object.fromEntries(records.map(r => [r.txHash, r]))
+
 describe('deriveStakeCompleteNotifications', () => {
-  it('keeps only stakes completed inside the window, newest first, in ms', () => {
+  it('keeps only fired records inside the window, newest first', () => {
     const items = deriveStakeCompleteNotifications({
-      stakes: [
-        stake(
+      records: toMap([
+        record(
           'old',
-          NOW_S - (STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS + 1) * DAY_S
+          NOW_MS - (STAKE_COMPLETE_NOTIFICATION_WINDOW_DAYS + 1) * DAY_MS
         ),
-        stake('recent', NOW_S - 2 * DAY_S),
-        stake('newest', NOW_S - 1 * DAY_S),
-        stake('future', NOW_S + 5 * DAY_S), // still active
-        stake('missing-end', undefined)
-      ],
-      dismissedTxHashes: {},
+        record('recent', NOW_MS - 2 * DAY_MS),
+        record('newest', NOW_MS - 1 * DAY_MS),
+        record('unfired', NOW_MS + 5 * DAY_MS) // trigger still pending
+      ]),
       now: NOW_MS
     })
 
     expect(items.map(i => i.txHash)).toEqual(['newest', 'recent'])
-    expect(items[0]?.timestamp).toBe((NOW_S - 1 * DAY_S) * 1000)
-  })
-
-  it('filters out dismissed stakes', () => {
-    const items = deriveStakeCompleteNotifications({
-      stakes: [stake('a', NOW_S - DAY_S), stake('b', NOW_S - 2 * DAY_S)],
-      dismissedTxHashes: { a: (NOW_S - DAY_S) * 1000 },
-      now: NOW_MS
-    })
-    expect(items.map(i => i.txHash)).toEqual(['b'])
+    expect(items[0]?.timestamp).toBe(NOW_MS - 1 * DAY_MS)
   })
 
   it('caps the list at the max item count', () => {
-    const stakes = Array.from({ length: 50 }, (_, i) =>
-      stake(`tx-${i}`, NOW_S - (i + 1) * 3600)
+    const records = toMap(
+      Array.from({ length: 50 }, (_, i) =>
+        record(`tx-${i}`, NOW_MS - (i + 1) * 3600 * 1000)
+      )
     )
-    const items = deriveStakeCompleteNotifications({
-      stakes,
-      dismissedTxHashes: {},
-      now: NOW_MS
-    })
+    const items = deriveStakeCompleteNotifications({ records, now: NOW_MS })
     expect(items).toHaveLength(STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS)
     expect(items[0]?.txHash).toBe('tx-0')
   })
 
-  it('returns empty for undefined stakes', () => {
+  it('returns empty for no records', () => {
     expect(
-      deriveStakeCompleteNotifications({
-        stakes: undefined,
-        dismissedTxHashes: {},
-        now: NOW_MS
-      })
+      deriveStakeCompleteNotifications({ records: {}, now: NOW_MS })
     ).toEqual([])
   })
 
   it('carries the owning account id through', () => {
     const items = deriveStakeCompleteNotifications({
-      stakes: [stake('a', NOW_S - DAY_S, { accountId: 'account-42' })],
-      dismissedTxHashes: {},
+      records: toMap([
+        record('a', NOW_MS - DAY_MS, { accountId: 'account-42' })
+      ]),
       now: NOW_MS
     })
     expect(items[0]?.accountId).toBe('account-42')
   })
 
-  it('keeps stakes from both environments, tagged with their mode', () => {
-    // The service feeds the cross-mode push scheduler, so the list spans
-    // mainnet AND testnet; tapping switches the app to the item's mode.
+  it('keeps records from both environments, tagged with their mode', () => {
+    // The push scheduler notifies across mainnet AND testnet, so the list
+    // spans both; tapping switches the app to the item's mode.
     const items = deriveStakeCompleteNotifications({
-      stakes: [
-        stake('mainnet', NOW_S - DAY_S),
-        stake('testnet', NOW_S - 2 * DAY_S, { isDeveloperMode: true })
-      ],
-      dismissedTxHashes: {},
+      records: toMap([
+        record('mainnet', NOW_MS - DAY_MS),
+        record('testnet', NOW_MS - 2 * DAY_MS, { isDeveloperMode: true })
+      ]),
       now: NOW_MS
     })
     expect(items.map(i => [i.txHash, i.isDeveloperMode])).toEqual([
       ['mainnet', false],
       ['testnet', true]
     ])
+  })
+})
+
+describe('stakeCompleteNotificationRecordsStore', () => {
+  const reset = (): void =>
+    stakeCompleteNotificationRecordsStore.setState({ records: {} })
+
+  beforeEach(reset)
+
+  it('upserts by txHash and prunes long-fired records', () => {
+    const { upsert } = stakeCompleteNotificationRecordsStore.getState()
+    upsert([
+      record('ancient', Date.now() - 61 * DAY_MS),
+      record('kept', Date.now() - DAY_MS)
+    ])
+    upsert([record('kept', Date.now() - DAY_MS), record('new', Date.now())])
+
+    expect(
+      Object.keys(stakeCompleteNotificationRecordsStore.getState().records)
+    ).toEqual(['kept', 'new'])
+  })
+
+  it('remove deletes only the given txHashes', () => {
+    const { upsert, remove } = stakeCompleteNotificationRecordsStore.getState()
+    upsert([record('a', Date.now() - DAY_MS), record('b', Date.now() - DAY_MS)])
+    remove(['a'])
+    expect(
+      Object.keys(stakeCompleteNotificationRecordsStore.getState().records)
+    ).toEqual(['b'])
+  })
+
+  it('removePending drops only records that have not fired yet', () => {
+    const now = Date.now()
+    const { upsert, removePending } =
+      stakeCompleteNotificationRecordsStore.getState()
+    upsert([record('fired', now - DAY_MS), record('pending', now + DAY_MS)])
+    removePending(now)
+    expect(
+      Object.keys(stakeCompleteNotificationRecordsStore.getState().records)
+    ).toEqual(['fired'])
   })
 })
