@@ -437,24 +437,30 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const frame = useSafeAreaFrame()
 
     const minHeight = useMemo(() => {
-      if (Platform.OS === 'android') {
-        return frame.height + (headerLayout?.height ?? 0)
+      let footerHeight: number
+      if (renderFooter && footerLayout) {
+        // Android subtracts the full bottom inset; iOS keeps 16pt of it in content
+        const bottomInset =
+          Platform.OS === 'android' ? insets.bottom : insets.bottom + 16
+        footerHeight = footerLayout.height - bottomInset
+      } else {
+        footerHeight = Platform.OS === 'android' ? -16 : 0
       }
-      return (
-        frame.height +
-        (headerLayout?.height ?? 0) -
-        (renderFooter && footerLayout
-          ? footerLayout.height - insets.bottom - 16
-          : 0) -
-        headerHeight
-      )
+
+      const height =
+        frame.height + (headerLayout?.height ?? 0) - footerHeight - headerHeight
+
+      return shouldAvoidKeyboard
+        ? height - (Platform.OS === 'android' ? 24 : -24)
+        : height
     }, [
-      frame.height,
-      headerLayout?.height,
       renderFooter,
       footerLayout,
-      insets.bottom,
-      headerHeight
+      frame.height,
+      headerLayout?.height,
+      headerHeight,
+      shouldAvoidKeyboard,
+      insets.bottom
     ])
 
     const animatedTitleStyle = useAnimatedStyle(() => {
@@ -727,7 +733,8 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
                 // Offset lives on the scroll view's margin when below the
                 // header; otherwise inset the content so it sits under the
                 // transparent header.
-                paddingTop: scrollBelowHeader ? 0 : headerHeight
+                paddingTop: scrollBelowHeader ? 0 : headerHeight,
+                minHeight
               }
             ]}
             onScroll={onScroll}
