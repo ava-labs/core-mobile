@@ -328,7 +328,8 @@ export class BalanceService {
     currency,
     onBalanceLoaded,
     xpAddresses,
-    xpub
+    xpub,
+    filterOutDustUtxos
   }: {
     networks: Network[]
     account: Account
@@ -336,6 +337,7 @@ export class BalanceService {
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
     xpAddresses: string[]
     xpub?: string
+    filterOutDustUtxos: boolean
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
@@ -347,7 +349,8 @@ export class BalanceService {
       networks: supportedNetworks,
       accounts: [account],
       xpAddressesByAccountId: new Map([[account.id, xpAddresses]]),
-      xpubByAccountId: new Map([[account.id, xpub]])
+      xpubByAccountId: new Map([[account.id, xpub]]),
+      filterOutDustUtxos
     })
 
     const { balanceApiThrew, failedChainIds } =
@@ -415,7 +418,8 @@ export class BalanceService {
     currency,
     onBalanceLoaded,
     xpAddressesByAccountId,
-    xpubByAccountId
+    xpubByAccountId,
+    filterOutDustUtxos
   }: {
     networks: Network[]
     accounts: Account[]
@@ -423,6 +427,7 @@ export class BalanceService {
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
     xpAddressesByAccountId: Map<string, string[]>
     xpubByAccountId: Map<string, string | undefined>
+    filterOutDustUtxos: boolean
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
 
@@ -437,7 +442,8 @@ export class BalanceService {
       networks: supportedNetworks,
       accounts,
       xpAddressesByAccountId,
-      xpubByAccountId
+      xpubByAccountId,
+      filterOutDustUtxos
     })
 
     const accountById = accounts.reduce((acc, a) => {
@@ -517,8 +523,9 @@ export class BalanceService {
             }
           }
 
-          if (matchedAccounts.length === 0 && accounts.length === 1) {
-            matchedAccounts.push(accounts[0]!)
+          const onlyAccount = accounts.length === 1 ? accounts[0] : undefined
+          if (matchedAccounts.length === 0 && onlyAccount) {
+            matchedAccounts.push(onlyAccount)
           }
 
           if (matchedAccounts.length === 0) {

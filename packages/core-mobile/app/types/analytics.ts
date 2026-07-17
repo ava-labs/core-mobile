@@ -289,6 +289,7 @@ export type AnalyticsEvents = {
     caip2TargetChainId: string
   }
   QuickSwapsToggled: { isEnabled: boolean }
+  FilterSmallUtxosToggled: { isEnabled: boolean }
   QuickSwapsBypassFired: {
     caip2SourceChainId: string
     maxBuy: 'unlimited' | '1000' | '5000' | '10000' | '50000'

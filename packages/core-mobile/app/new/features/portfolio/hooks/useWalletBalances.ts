@@ -7,6 +7,7 @@ import {
 } from 'services/balance/types'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { balancesKey } from './useAccountsBalances'
 
 const emptyBalances: AdjustedNormalizedBalancesForAccount[] = []
@@ -24,6 +25,7 @@ export function useWalletBalances(accountIds: string[]): {
 } {
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
+  const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   const enabledChainIdsKey = useMemo(
     () =>
@@ -35,8 +37,8 @@ export function useWalletBalances(accountIds: string[]): {
   )
 
   const queryKey = useMemo(
-    () => balancesKey({ currency, enabledChainIdsKey }),
-    [currency, enabledChainIdsKey]
+    () => balancesKey({ currency, enabledChainIdsKey, filterOutDustUtxos }),
+    [currency, enabledChainIdsKey, filterOutDustUtxos]
   )
 
   const select = useCallback(

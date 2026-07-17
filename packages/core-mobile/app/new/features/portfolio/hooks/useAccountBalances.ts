@@ -1,4 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  type QueryClient,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -12,6 +16,7 @@ import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectWalletById } from 'store/wallet/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { useOnlineStatus } from 'common/hooks/useOnlineStatus'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import * as store from '../store'
 
 /**
@@ -26,15 +31,51 @@ const staleTime = 20_000
  */
 const refetchInterval = __DEV__ ? 30_000 : 5_000
 
-export const balanceKey = (account: Account | undefined, network?: Network[]) =>
+export const balanceKey = (
+  account: Account | undefined,
+  network: Network[] | undefined,
+  filterOutDustUtxos: boolean
+) =>
   [
     ReactQueryKeys.ACCOUNT_BALANCE,
     account?.id,
     network
       ?.map(n => n.chainId)
       .sort()
-      .join(',')
+      .join(','),
+    filterOutDustUtxos
   ] as const
+
+/**
+ * Cache read with flag fallback. When the small-UTXO filter setting (or its
+ * PostHog gate) flips, `balanceKey` changes and the new key stays empty until
+ * the next refetch lands. Cache-only readers (meld off-ramp,
+ * wallet_getNetworkState) should serve the previous flag variant's data for
+ * that window rather than nothing — momentarily stale dust totals beat an
+ * empty token list. An exact-key hit (including a legitimately empty array
+ * from a completed fetch) always wins; the fallback is read-only and never
+ * written back.
+ */
+export const getCachedBalancesWithFlagFallback = ({
+  client,
+  account,
+  networks,
+  filterOutDustUtxos
+}: {
+  client: QueryClient
+  account: Account | undefined
+  networks: Network[] | undefined
+  filterOutDustUtxos: boolean
+}): AdjustedNormalizedBalancesForAccount[] | undefined => {
+  const exact = client.getQueryData(
+    balanceKey(account, networks, filterOutDustUtxos)
+  ) as AdjustedNormalizedBalancesForAccount[] | undefined
+  if (exact !== undefined) return exact
+
+  return client.getQueryData(
+    balanceKey(account, networks, !filterOutDustUtxos)
+  ) as AdjustedNormalizedBalancesForAccount[] | undefined
+}
 
 /**
  * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
@@ -64,6 +105,7 @@ export function useAccountBalances(
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+  const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   const isNotReady = !account || enabledNetworks.length === 0 || !wallet
 
@@ -77,7 +119,7 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account, enabledNetworks),
+    queryKey: balanceKey(account, enabledNetworks, filterOutDustUtxos),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
@@ -96,9 +138,10 @@ export function useAccountBalances(
         currency: currency.toLowerCase(),
         xpAddresses,
         xpub,
+        filterOutDustUtxos,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balanceKey(account, enabledNetworks),
+            balanceKey(account, enabledNetworks, filterOutDustUtxos),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
               if (!prev) return [balance]
               const filtered = prev.filter(p => p.chainId !== balance.chainId)

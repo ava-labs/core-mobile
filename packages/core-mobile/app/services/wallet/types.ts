@@ -146,7 +146,19 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   amountInNAvax: bigint
   sourceAddress: string
   feeState?: pvm.FeeState
+  /**
+   * CP-13903: when true, drop AVAX UTXOs < SMALL_UTXO_THRESHOLD_NAVAX from
+   * the spendable set (after the tx-size cap), mirroring core-extension's
+   * getMaxUtxoSet. Callers pass selectIsFilterSmallUtxosActive.
+   */
+  filterSmallUtxos?: boolean
 }
+
+/**
+ * X-chain send params: same shape as P minus the P-only feeState
+ * (X has fixed base fees; there is no pvm FeeState to thread).
+ */
+export type CreateSendXTxParams = Omit<CreateSendPTxParams, 'feeState'>
 
 //TODO: delete this enum
 export enum WalletType {

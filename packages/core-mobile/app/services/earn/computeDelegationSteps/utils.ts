@@ -57,7 +57,7 @@ export const getDelegationFee = async ({
     endDate: getUnixTime(new Date()) + 60 * 60 * 24 * 30,
     rewardAddress,
     isTestnet,
-    shouldValidateBurnedAmount: true,
+    shouldValidateBurnedAmount: false,
     feeState,
     pFeeAdjustmentThreshold,
     xpAddresses
@@ -264,7 +264,7 @@ export const getImportPFee = async ({
     isTestnet,
     sourceChain: 'C',
     destinationAddress,
-    shouldValidateBurnedAmount: true,
+    shouldValidateBurnedAmount: false,
     feeState,
     xpAddresses
   })
@@ -366,7 +366,7 @@ export const getExportCFee = async ({
     isTestnet,
     destinationChain: 'P',
     destinationAddress: addressPVM,
-    shouldValidateBurnedAmount: true,
+    shouldValidateBurnedAmount: false,
     avalancheEvmProvider,
     xpAddresses
   })

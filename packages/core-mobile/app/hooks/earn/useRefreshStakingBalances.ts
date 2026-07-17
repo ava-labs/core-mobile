@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectEnabledNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
 export const useRefreshStakingBalances = (
@@ -15,6 +16,7 @@ export const useRefreshStakingBalances = (
   const activeAccount = useSelector(selectActiveAccount)
   const { xpAddresses } = useXPAddresses(activeAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
+  const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
 
   return useCallback(
     ({ shouldRefreshStakes }: { shouldRefreshStakes: boolean }) => {
@@ -25,7 +27,11 @@ export const useRefreshStakingBalances = (
           })
         }
         queryClient.invalidateQueries({
-          queryKey: balanceKey(activeAccount, Object.values(enabledNetworks))
+          queryKey: balanceKey(
+            activeAccount,
+            Object.values(enabledNetworks),
+            filterOutDustUtxos
+          )
         })
       }, timeout)
     },
@@ -35,7 +41,8 @@ export const useRefreshStakingBalances = (
       activeAccount,
       isDeveloperMode,
       enabledNetworks,
-      xpAddresses
+      xpAddresses,
+      filterOutDustUtxos
     ]
   )
 }

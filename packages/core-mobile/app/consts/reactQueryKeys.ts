@@ -3,6 +3,7 @@ export enum ReactQueryKeys {
   ACCOUNTS_BALANCES = 'accountsBalances',
   BALANCE_SUPPORTED_CHAINS = 'balanceSupportedChains',
   XP_ADDRESSES = 'xpAddresses',
+  SPENDABLE_XP_BALANCE = 'spendableXpBalance',
 
   // defi
   DEFI_EXCHANGE_RATES = 'defiExchangeRates',
