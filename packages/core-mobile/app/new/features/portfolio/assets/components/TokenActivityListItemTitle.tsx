@@ -277,9 +277,9 @@ export const TokenActivityListItemTitle = ({
       case TransactionType.APPROVE:
         return [renderAmount(a1), ' ', s1, ' approved']
       case PChainTransactionType.EXPORT_TX:
-        return [renderAmount(a1), ' ', s1, ' ', 'exported']
+        return [renderAmount(a1), ' ', s1, ' exported']
       case PChainTransactionType.IMPORT_TX:
-        return [renderAmount(a1), ' ', s1, ' ', 'imported']
+        return [renderAmount(a1), ' ', s1, ' imported']
 
       default: {
         if (isCollectibleTransaction(tx)) {

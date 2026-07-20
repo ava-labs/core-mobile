@@ -36,7 +36,9 @@ const importTx = {
   sourceChain: 'p-chain',
   destinationChain: 'c-chain',
   txType: 'ImportTx',
-  evmOutputs: [{ toAddress: USER, asset: AVAX_ASSET }]
+  evmOutputs: [{ toAddress: USER, asset: AVAX_ASSET }],
+  amountUnlocked: [AVAX_ASSET],
+  amountCreated: [AVAX_ASSET]
 } as unknown as CChainImportTransaction
 
 describe('convertCChainAtomicTransaction', () => {
@@ -46,24 +48,24 @@ describe('convertCChainAtomicTransaction', () => {
       explorerUrl: EXPLORER
     })
 
-    expect(tx.hash).toBe('0xexport')
-    expect(tx.timestamp).toBe(1_700_000_000 * 1000)
-    expect(tx.txType).toBe(PChainTransactionType.EXPORT_TX)
-    expect(tx.chainId).toBe(String(C_CHAIN_ID))
-    expect(tx.isSender).toBe(true)
-    expect(tx.isOutgoing).toBe(true)
-    expect(tx.isIncoming).toBe(false)
-    expect(tx.isContractCall).toBe(false)
-    expect(tx.from).toBe(USER)
-    expect(tx.explorerLink).toBe(`${EXPLORER}/tx/0xexport`)
-    expect(tx.tokens).toHaveLength(1)
-    expect(tx.tokens[0]).toMatchObject({
+    expect(tx?.hash).toBe('0xexport')
+    expect(tx?.timestamp).toBe(1_700_000_000 * 1000)
+    expect(tx?.txType).toBe(PChainTransactionType.EXPORT_TX)
+    expect(tx?.chainId).toBe(String(C_CHAIN_ID))
+    expect(tx?.isSender).toBe(true)
+    expect(tx?.isOutgoing).toBe(true)
+    expect(tx?.isIncoming).toBe(false)
+    expect(tx?.isContractCall).toBe(false)
+    expect(tx?.from).toBe(USER)
+    expect(tx?.explorerLink).toBe(`${EXPLORER}/tx/0xexport`)
+    expect(tx?.tokens).toHaveLength(1)
+    expect(tx?.tokens[0]).toMatchObject({
       type: TokenType.NATIVE,
       symbol: 'AVAX',
       amount: '1.5',
       from: { address: USER }
     })
-    expect(tx.tokens[0]?.amount).not.toContain(',')
+    expect(tx?.tokens[0]?.amount).not.toContain(',')
   })
 
   it('maps an import as an incoming AVAX leg arriving at the user', () => {
@@ -72,12 +74,12 @@ describe('convertCChainAtomicTransaction', () => {
       explorerUrl: EXPLORER
     })
 
-    expect(tx.txType).toBe(PChainTransactionType.IMPORT_TX)
-    expect(tx.isSender).toBe(false)
-    expect(tx.isOutgoing).toBe(false)
-    expect(tx.isIncoming).toBe(true)
-    expect(tx.to).toBe(USER)
-    expect(tx.tokens[0]).toMatchObject({
+    expect(tx?.txType).toBe(PChainTransactionType.IMPORT_TX)
+    expect(tx?.isSender).toBe(false)
+    expect(tx?.isOutgoing).toBe(false)
+    expect(tx?.isIncoming).toBe(true)
+    expect(tx?.to).toBe(USER)
+    expect(tx?.tokens[0]).toMatchObject({
       type: TokenType.NATIVE,
       symbol: 'AVAX',
       amount: '1.5',
@@ -89,40 +91,56 @@ describe('convertCChainAtomicTransaction', () => {
     const tx = convertCChainAtomicTransaction(
       {
         ...exportTx,
-        evmInputs: [
-          {
-            fromAddress: USER,
-            asset: { ...AVAX_ASSET, amount: '1234500000000' }, // 1234.5 AVAX
-            credentials: []
-          }
-        ]
+        amountCreated: [{ ...AVAX_ASSET, amount: '1234500000000' }] // 1234.5 AVAX
       } as unknown as CChainExportTransaction,
       { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
     )
-    expect(tx.tokens[0]?.amount).toBe('1234.5')
+    expect(tx?.tokens[0]?.amount).toBe('1234.5')
   })
 
-  it('sums multiple evmInputs legs of the same asset on an export', () => {
+  it('sums multiple created legs of the same asset', () => {
     const tx = convertCChainAtomicTransaction(
       {
         ...exportTx,
-        evmInputs: [
-          {
-            fromAddress: USER,
-            asset: { ...AVAX_ASSET, amount: '1000000000' }, // 1 AVAX
-            credentials: []
-          },
-          {
-            fromAddress: USER,
-            asset: { ...AVAX_ASSET, amount: '500000000' }, // 0.5 AVAX
-            credentials: []
-          }
+        amountCreated: [
+          { ...AVAX_ASSET, amount: '1000000000' }, // 1 AVAX
+          { ...AVAX_ASSET, amount: '500000000' } // 0.5 AVAX
         ]
       } as unknown as CChainExportTransaction,
       { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
     )
-    expect(tx.tokens[0]?.amount).toBe('1.5')
-    expect(tx.tokens[0]?.amount).not.toContain(',')
+    expect(tx?.tokens[0]?.amount).toBe('1.5')
+    expect(tx?.tokens[0]?.amount).not.toContain(',')
+  })
+
+  it('shows the created amount, excluding the atomic export fee on the inputs', () => {
+    const tx = convertCChainAtomicTransaction(
+      {
+        ...exportTx,
+        // Consumed on C-Chain (evmInputs / amountUnlocked) = transferred + the
+        // atomic export fee (1.501). Created on the destination = 1.5. The row
+        // must show the net created amount, not the fee-inclusive input total.
+        evmInputs: [
+          {
+            fromAddress: USER,
+            asset: { ...AVAX_ASSET, amount: '1501000000' },
+            credentials: []
+          }
+        ],
+        amountUnlocked: [{ ...AVAX_ASSET, amount: '1501000000' }],
+        amountCreated: [{ ...AVAX_ASSET, amount: '1500000000' }]
+      } as unknown as CChainExportTransaction,
+      { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
+    )
+    expect(tx?.tokens[0]?.amount).toBe('1.5')
+  })
+
+  it('returns null for an export with no evm legs (no phantom row)', () => {
+    const tx = convertCChainAtomicTransaction(
+      { ...exportTx, evmInputs: [] } as unknown as CChainExportTransaction,
+      { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
+    )
+    expect(tx).toBeNull()
   })
 
   it('does not throw when a leg is missing its asset and falls back to 0', () => {
@@ -130,8 +148,9 @@ describe('convertCChainAtomicTransaction', () => {
       convertCChainAtomicTransaction(
         {
           ...exportTx,
-          // First (primary) leg has no asset — must not slip through the
-          // filter and crash the BigInt(l.asset.amount) reduce.
+          // First (primary) leg has no asset, so no primary assetId can be
+          // resolved — the created-amount sum finds no matching leg and the
+          // amount safely falls back to 0 instead of throwing.
           evmInputs: [
             { fromAddress: USER, credentials: [] },
             {
@@ -145,6 +164,6 @@ describe('convertCChainAtomicTransaction', () => {
       )
 
     expect(convert).not.toThrow()
-    expect(convert().tokens[0]?.amount).toBe('0')
+    expect(convert()?.tokens[0]?.amount).toBe('0')
   })
 })

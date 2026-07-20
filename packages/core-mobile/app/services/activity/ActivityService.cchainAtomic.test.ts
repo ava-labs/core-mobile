@@ -53,11 +53,21 @@ describe('ActivityService C-Chain atomic merge', () => {
             {
               toAddress: '0xUser',
               asset: {
+                assetId: 'avax',
                 symbol: 'AVAX',
                 name: 'Avalanche',
                 denomination: 9,
                 amount: '1000000000'
               }
+            }
+          ],
+          amountCreated: [
+            {
+              assetId: 'avax',
+              symbol: 'AVAX',
+              name: 'Avalanche',
+              denomination: 9,
+              amount: '1000000000'
             }
           ]
         }
@@ -102,5 +112,24 @@ describe('ActivityService C-Chain atomic merge', () => {
       shouldAnalyzeBridgeTxs: false
     })
     expect(GlacierService.listCChainAtomicTransactions).not.toHaveBeenCalled()
+  })
+
+  it('never breaks the EVM history when the atomic fetch rejects', async () => {
+    // The fetch is kicked off before the EVM history is awaited, so its
+    // promise must never reject — a Glacier failure has to degrade to "no
+    // atomic rows", leaving the EVM history fully intact.
+    ;(
+      GlacierService.listCChainAtomicTransactions as jest.Mock
+    ).mockRejectedValue(new Error('glacier atomic endpoint down'))
+
+    const res = await ActivityService.getActivities({
+      network: cChainNetwork,
+      account,
+      nextPageToken: undefined,
+      shouldAnalyzeBridgeTxs: false
+    })
+
+    expect(res.transactions.map(t => t.hash)).toEqual(['0xevm'])
+    expect(res.nextPageToken).toBe('evm-next')
   })
 })

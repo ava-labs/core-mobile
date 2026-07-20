@@ -109,12 +109,14 @@ export class ActivityService {
         isTestnet: Boolean(network.isTestnet)
       })
 
-      return atomic.transactions.map(tx =>
-        convertCChainAtomicTransaction(tx, {
-          chainId: network.chainId,
-          explorerUrl: network.explorerUrl
-        })
-      )
+      return atomic.transactions
+        .map(tx =>
+          convertCChainAtomicTransaction(tx, {
+            chainId: network.chainId,
+            explorerUrl: network.explorerUrl
+          })
+        )
+        .filter((tx): tx is Transaction => tx !== null)
     } catch (error) {
       Logger.error('Failed to fetch C-Chain atomic transactions', error)
       return []

@@ -1,4 +1,6 @@
 import {
+  CChainExportTransaction,
+  CChainImportTransaction,
   Erc1155Token,
   Erc721Token,
   Glacier,
@@ -153,7 +155,22 @@ class GlacierService {
           sortOrder: SortOrder.DESC
         }
       )
-    return response as ListCChainAtomicTransactionsResponse
+    const atomic = response as ListCChainAtomicTransactionsResponse
+
+    // The primary-network endpoint is typed as a union over P/X/C-Chain
+    // responses; for `blockchainId: c-chain` it only ever serves C-Chain
+    // atomic (import/export) txs. Narrow to those explicitly so the cast is
+    // honest and any unexpected txType can't slip through and be rendered as a
+    // mislabelled import row downstream (convertCChainAtomicTransaction treats
+    // anything that isn't ExportTx as an import).
+    return {
+      ...atomic,
+      transactions: atomic.transactions.filter(
+        tx =>
+          tx.txType === CChainExportTransaction.txType.EXPORT_TX ||
+          tx.txType === CChainImportTransaction.txType.IMPORT_TX
+      )
+    }
   }
 }
 
