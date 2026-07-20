@@ -1,0 +1,5 @@
+.env
+node_modules/
+dist/
+GUIDE.ko.md
+.active-threads.json

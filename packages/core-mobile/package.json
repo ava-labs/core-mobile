@@ -126,7 +126,7 @@
     "@walletconnect/types": "2.17.2",
     "@walletconnect/utils": "2.17.2",
     "assert": "2.1.0",
-    "axios": "1.12.2",
+    "axios": "1.18.1",
     "base-64": "1.0.0",
     "big.js": "6.2.2",
     "bip174": "2.1.0",

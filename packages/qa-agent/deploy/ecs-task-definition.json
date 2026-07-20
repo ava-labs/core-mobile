@@ -1,0 +1,44 @@
+{
+  "family": "mobile-qai",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/mobile-qai-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/mobile-qai-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "mobile-qai",
+      "image": "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/mobile-qai:latest",
+      "essential": true,
+      "environment": [
+        { "name": "JIRA_BASE_URL", "value": "https://ava-labs.atlassian.net" },
+        { "name": "TESTRAIL_BASE_URL", "value": "https://avalabs.testrail.io" },
+        { "name": "JIRA_PROJECT_KEY", "value": "CP" },
+        { "name": "SLACK_BOT_TOKEN", "value": "REPLACE_ME" },
+        { "name": "SLACK_APP_TOKEN", "value": "REPLACE_ME" },
+        { "name": "SLACK_QA_GROUP_ID", "value": "REPLACE_ME" },
+        { "name": "BITRISE_API_TOKEN", "value": "REPLACE_ME" },
+        { "name": "BITRISE_APP_SLUG", "value": "REPLACE_ME" },
+        { "name": "JIRA_EMAIL", "value": "REPLACE_ME" },
+        { "name": "JIRA_API_TOKEN", "value": "REPLACE_ME" },
+        { "name": "TESTRAIL_EMAIL", "value": "REPLACE_ME" },
+        { "name": "TESTRAIL_API_KEY", "value": "REPLACE_ME" }
+      ],
+      "secrets": [
+        {
+          "name": "QA_ANTHROPIC_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:QA_ANTHROPIC_API_KEY"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mobile-qai",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

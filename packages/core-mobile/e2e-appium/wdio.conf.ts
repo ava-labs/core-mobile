@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import path from 'node:path'
 
 import {
@@ -9,6 +10,10 @@ import {
   uploadScreenshotToResult
 } from './testrail/testrail.service'
 import {
+  createFailureTicketIfNeeded,
+  type FailedTestInfo
+} from './helpers/jira'
+import {
   inferRunPlatforms,
   resolveDeviceCaps,
   unusedPlatformCaps
@@ -16,6 +21,7 @@ import {
 
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
+const suiteFailures: Record<string, FailedTestInfo[]> = {}
 
 const platformToRun =
   process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
@@ -256,16 +262,49 @@ export const config: WebdriverIO.Config = {
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
 
+    let screenshotBase64: string | undefined
     if (runId) {
       await addCaseToRun(runId, caseId)
       const resultId = await sendResult(runId, caseId, statusId, error)
 
       if (!passed && resultId) {
-        const screenshotBase64 = await driver.takeScreenshot()
+        screenshotBase64 = await driver.takeScreenshot()
         await uploadScreenshotToResult(resultId, screenshotBase64)
       }
     } else {
       console.error('testRun not found')
     }
+
+    // Collect failure info for Jira ticket (created in afterSuite)
+    if (!passed) {
+      const suiteTitle = test.parent
+      if (!suiteFailures[suiteTitle]) suiteFailures[suiteTitle] = []
+      suiteFailures[suiteTitle].push({
+        name: test.title,
+        errorLog: error?.message ?? 'Unknown error',
+        screenshotBase64
+      })
+    }
+  },
+
+  // hook afterSuite: create Jira ticket if any tests failed
+  afterSuite: async suite => {
+    const failures = suiteFailures[suite.title]
+    if (!failures || failures.length === 0) return
+
+    const specFile = suite.file
+      ? suite.file.replace(/.*e2e-appium\//, '')
+      : 'unknown'
+
+    await createFailureTicketIfNeeded({
+      specTitle: suite.title,
+      specFile,
+      failedTests: failures,
+      buildUrl: process.env.BITRISE_BUILD_URL
+    }).catch(e => {
+      console.error('Failed to create Jira ticket:', e.message)
+    })
+
+    delete suiteFailures[suite.title]
   }
 }

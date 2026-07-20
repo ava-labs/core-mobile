@@ -926,4 +926,43 @@ workflows:
         - variables: |-
             IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
             IS_SEEDLESS_TRANSACTIONS=$IS_SEEDLESS_TRANSACTIONS
+  # Deploy Slack Socket Mode bot (mobile-qai) to ECS Fargate.
+  # Stack: Linux with Docker (e.g. linux-docker-amazon). Manual trigger.
+  # Secrets: see packages/qa-agent/README.md — Anthropic stays in AWS Secrets Manager.
+  deploy-mobile-qai:
+    envs:
+    - AWS_REGION: us-east-1
+      opts:
+        is_expand: false
+    - CLUSTER: mobile-qai
+      opts:
+        is_expand: false
+    - SERVICE: mobile-qai
+      opts:
+        is_expand: false
+    steps:
+    - activate-ssh-key@4: {}
+    - git-clone@8: {}
+    - script:
+        title: Ensure AWS CLI + Docker
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            if ! command -v aws >/dev/null 2>&1; then
+              curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+              unzip -q /tmp/awscliv2.zip -d /tmp
+              sudo /tmp/aws/install || sudo /tmp/aws/install --update
+            fi
+            aws --version
+            docker version
+    - script:
+        title: Deploy mobile-qai to ECS Fargate
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            set -ex
+            cd packages/qa-agent
+            chmod +x deploy/bitrise-deploy.sh
+            ./deploy/bitrise-deploy.sh
  

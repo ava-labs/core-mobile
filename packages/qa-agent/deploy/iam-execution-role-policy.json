@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EcrPull",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "Logs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:ACCOUNT_ID:log-group:/ecs/mobile-qai:*"
+    },
+    {
+      "Sid": "ReadAnthropicSecret",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ],
+      "Resource": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:QA_ANTHROPIC_API_KEY*"
+    }
+  ]
+}

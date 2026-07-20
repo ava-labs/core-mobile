@@ -21,6 +21,13 @@ export async function getTestRun(
   isSeedlessTransactions = false
 ) {
   const today = new Date().toISOString().split('T')[0]
+  // Include git tag/branch version so RC status can filter automation by title
+  // e.g. "[VM Smoke] iOS 1.0.35-rc1 Test Run: 2026-07-15"
+  const gitRef =
+    process.env.BITRISE_GIT_TAG ||
+    process.env.GIT_TAG ||
+    process.env.BITRISEIO_GIT_TAG_NAME ||
+    ''
 
   let runType: string
   if (isSeedlessTransactions) {
@@ -35,7 +42,9 @@ export async function getTestRun(
     runType = '[VM Full Regression]'
   }
 
-  const title = `${runType} ${platform} Test Run: ${today}`
+  const title = gitRef
+    ? `${runType} ${platform} ${gitRef} Test Run: ${today}`
+    : `${runType} ${platform} Test Run: ${today}`
 
   try {
     // testRun exists, return it
