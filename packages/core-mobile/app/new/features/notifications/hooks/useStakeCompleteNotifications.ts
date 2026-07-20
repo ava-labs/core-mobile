@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccounts } from 'store/account'
+import { selectIsEarnBlocked } from 'store/posthog'
 import {
   StakeCompleteNotificationRecord,
   useStakeCompleteNotificationRecords
@@ -85,15 +86,22 @@ export const useStakeCompleteNotifications = (): {
 } => {
   const { records } = useStakeCompleteNotificationRecords()
   const accounts = useSelector(selectAccounts)
+  // With earn feature-flagged off, every earn surface is blocked — hide the
+  // items rather than render rows whose tap would open a blocked screen
+  // (the push deeplink path guards the same way in `handleDeeplink`). The
+  // records stay in the store, so the items return if the flag comes back.
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
   const items = useMemo(
     () =>
-      deriveStakeCompleteNotifications({
-        records,
-        accounts,
-        now: Date.now()
-      }),
-    [records, accounts]
+      isEarnBlocked
+        ? []
+        : deriveStakeCompleteNotifications({
+            records,
+            accounts,
+            now: Date.now()
+          }),
+    [isEarnBlocked, records, accounts]
   )
 
   return { items }
