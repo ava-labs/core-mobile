@@ -23,9 +23,13 @@ IMAGE_TAG="${IMAGE_TAG:-latest}"
 
 ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
 
-echo "==> Ensure ECR repo exists"
-aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1 \
-  || aws ecr create-repository --repository-name "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null
+echo "==> Check ECR repo exists (${REPO_NAME})"
+if ! aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+  echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
+  echo "Create it once with admin credentials:"
+  echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
+  exit 1
+fi
 
 echo "==> Login to ECR"
 aws ecr get-login-password --region "${AWS_REGION}" \

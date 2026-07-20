@@ -17,7 +17,16 @@ No Secrets Manager needed for the app itself (key is already injected). Empty / 
 - VPC with **private or public subnets** that have outbound internet (Slack / Anthropic / Jira).
 - Security group: **no inbound** required; allow all outbound.
 
-## 3) ECS
+## 3) ECR (one-time)
+CI user (`bitrise-devicefarm-sa`) cannot create repositories. Create once with admin creds:
+
+```bash
+aws ecr create-repository --repository-name mobile-qai --region us-east-1
+```
+
+Also grant that CI user push access on `mobile-qai` (`ecr:PutImage`, layer upload APIs, `GetAuthorizationToken`, etc.).
+
+## 4) ECS
 1. Create cluster `mobile-qai` (Fargate).
 2. Create CloudWatch log group `/ecs/mobile-qai`.
 3. Edit `ecs-task-definition.json`:
@@ -30,13 +39,13 @@ No Secrets Manager needed for the app itself (key is already injected). Empty / 
    - No load balancer
    - Assign public IP: **ENABLED** if subnets need it for egress
 
-## 4) Deploy image (prefer Bitrise)
+## 5) Deploy image (prefer Bitrise)
 
 Local AWS/Docker is often blocked. **Use Bitrise** — workflow `deploy-mobile-qai` runs `deploy/bitrise-deploy.sh` with CI AWS creds (ECR + ECS + Secrets Manager describe).
 
 1. Put non-Anthropic secrets in Bitrise Secrets (see README).
 2. Trigger workflow **`deploy-mobile-qai`** (Linux Docker stack).
-3. If the ECS **service does not exist yet**, either create it in the console (step 3) or set on the Bitrise build:  
+3. If the ECS **service does not exist yet**, either create it in the console (step 4) or set on the Bitrise build:  
    `CREATE_SERVICE=1`, `SUBNET_IDS=subnet-…,subnet-…`, `SECURITY_GROUP_IDS=sg-…`
 
 Manual fallback (needs local AWS+Docker):
@@ -51,7 +60,7 @@ export SERVICE=mobile-qai
 ./deploy/deploy-fargate.sh
 ```
 
-## 5) Verify
+## 6) Verify
 
 ```bash
 aws logs tail /ecs/mobile-qai --follow --region us-east-1

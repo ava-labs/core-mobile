@@ -69,9 +69,13 @@ require_env \
 echo "==> Caller identity"
 aws sts get-caller-identity --region "${AWS_REGION}"
 
-echo "==> Ensure ECR repo exists"
-aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1 \
-  || aws ecr create-repository --repository-name "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null
+echo "==> Check ECR repo exists (${REPO_NAME})"
+if ! aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
+  echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
+  echo "Create it once with admin credentials (CI user cannot CreateRepository):"
+  echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
+  exit 1
+fi
 
 echo "==> Login to ECR"
 aws ecr get-login-password --region "${AWS_REGION}" \
