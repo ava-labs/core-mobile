@@ -16,10 +16,12 @@
 #   TESTRAIL_EMAIL, TESTRAIL_API_KEY
 # Optional:
 #   SLACK_RC_CHANNEL_ID, SLACK_USER_TOKEN, JIRA_MOBILE_BOARD_ID
-#   ACCOUNT_ID (default 975050371175), AWS_REGION (default us-east-1)
+#   AWS_REGION (default us-east-1)
 #   CLUSTER / SERVICE / REPO_NAME (default mobile-qai)
 #   IMAGE_TAG (default BITRISE_GIT_COMMIT or latest)
 #   CREATE_SERVICE=1 + SUBNET_IDS + SECURITY_GROUP_IDS  (first-time service create)
+# Required (no defaults — set as Bitrise Secret / env):
+#   ACCOUNT_ID
 
 set -euo pipefail
 
@@ -27,7 +29,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
-ACCOUNT_ID="${ACCOUNT_ID:-975050371175}"
+ACCOUNT_ID="${ACCOUNT_ID:?Set ACCOUNT_ID}"
 REPO_NAME="${REPO_NAME:-mobile-qai}"
 CLUSTER="${CLUSTER:-mobile-qai}"
 SERVICE="${SERVICE:-mobile-qai}"
@@ -51,6 +53,7 @@ require_env() {
 }
 
 require_env \
+  ACCOUNT_ID \
   AWS_ACCESS_KEY_ID \
   AWS_SECRET_ACCESS_KEY \
   SLACK_BOT_TOKEN \

@@ -35,7 +35,10 @@ export interface CreateFailureTicketParams {
 
 // Check if an open ticket with the same title already exists
 async function findOpenTicket(ticketTitle: string): Promise<string | null> {
-  const jql = `project = ${process.env.JIRA_PROJECT_KEY} AND summary = "${ticketTitle}" AND status != Done ORDER BY created DESC`
+  const escapedTicketTitle = ticketTitle
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+  const jql = `project = ${process.env.JIRA_PROJECT_KEY} AND summary = "${escapedTicketTitle}" AND status != Done ORDER BY created DESC`
   const response = await jiraClient().post('/rest/api/3/issue/search', {
     jql,
     maxResults: 1,

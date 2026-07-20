@@ -128,7 +128,13 @@ function priorityFor(kind: RcHitKind): number {
 }
 
 function cleanText(text: string): string {
-  return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 500)
+  let sanitized = text
+  let previous: string
+  do {
+    previous = sanitized
+    sanitized = sanitized.replace(/<[^>]+>/g, ' ')
+  } while (sanitized !== previous)
+  return sanitized.replace(/\s+/g, ' ').trim().slice(0, 500)
 }
 
 async function permalinkFor(

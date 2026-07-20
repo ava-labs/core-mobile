@@ -4,7 +4,7 @@
 #
 # Usage:
 #   export AWS_REGION=us-east-1
-#   export ACCOUNT_ID=975050371175
+#   export ACCOUNT_ID=<your-aws-account-id>
 #   export CLUSTER=mobile-qai
 #   export SERVICE=mobile-qai
 #   ./deploy/deploy-fargate.sh

@@ -22,10 +22,6 @@ export function addMessage(msg: Omit<StoredMessage, 'date'>): void {
   pruneOldEntries()
 }
 
-export function getTodaysMessages(): StoredMessage[] {
-  return messagesByDate.get(todayKey()) ?? []
-}
-
 export function getRecentMessages(): StoredMessage[] {
   return Array.from(messagesByDate.values()).flat()
 }

@@ -934,9 +934,6 @@ workflows:
     - AWS_REGION: us-east-1
       opts:
         is_expand: false
-    - ACCOUNT_ID: "975050371175"
-      opts:
-        is_expand: false
     - CLUSTER: mobile-qai
       opts:
         is_expand: false

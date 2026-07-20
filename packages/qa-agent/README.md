@@ -169,7 +169,7 @@ Bitrise workflow deploy-mobile-qai
 **Bitrise**
 1. Stack: Linux with Docker (e.g. `linux-docker-amazon`)
 2. Add Secrets (names must match):  
-   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,  
+   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `ACCOUNT_ID`,  
    `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `SLACK_QA_GROUP_ID`,  
    `BITRISE_API_TOKEN` (token the *bot* uses to trigger builds),  
    `JIRA_EMAIL`, `JIRA_API_TOKEN`, `TESTRAIL_EMAIL`, `TESTRAIL_API_KEY`  
