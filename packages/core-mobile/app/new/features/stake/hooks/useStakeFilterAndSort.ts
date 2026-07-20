@@ -17,9 +17,11 @@ export const useStakeFilterAndSort = ({
    * Adds the stake-type filters (Fast stakes / Delegation) after the status
    * ones, mirroring core-web's stake-table filter set. Opt-in so the legacy
    * (V1) stake list keeps its original All/Active/Completed choices; the V2
-   * home screen turns it on. The web-parity semantics intentionally overlap:
-   * Delegation matches on txType (which includes fast stakes), while Fast
-   * stakes matches on the convenience-fee escrow output (`isFastStakeTx`).
+   * home screen turns it on. The two type filters are mutually exclusive,
+   * matching the card badges: Fast stakes matches on the convenience-fee
+   * escrow output (`isFastStakeTx`), Delegation on txType MINUS fast stakes.
+   * Fee-less fast stakes carry no escrow output, so — like their badge —
+   * they land under Delegation.
    */
   includeTypeFilters?: boolean
 }): {
@@ -54,7 +56,7 @@ export const useStakeFilterAndSort = ({
           case StakeFilter.FastStakes:
             return isFastStakeTx(tx, isDeveloperMode)
           case StakeFilter.Delegation:
-            return isDelegationTx(tx)
+            return isDelegationTx(tx) && !isFastStakeTx(tx, isDeveloperMode)
           default:
             return true
         }
