@@ -22,8 +22,9 @@ import { NodeValidator } from 'types/earn'
 import { useDelegateNodeSort } from '../hooks/useDelegateNodeSort'
 import { DelegateNodeItem } from '../components/DelegateNodeItem'
 import {
-  countModifiedFilters,
+  countEnabledFilters,
   DelegateFilters,
+  resolveEffectiveDelegateFilters,
   setDelegateNodeSelection,
   useDelegateFilters
 } from '../store'
@@ -98,10 +99,16 @@ const SelectNodeScreen = (): JSX.Element => {
   const minStakeSubUnit = minStakeAmount.toSubUnit()
   const filters = useDelegateFilters(state => state.filters)
   const filterDefaults = useDelegateFilters(state => state.defaults)
-  // Badge counts only filters the user has changed from the seeded defaults, so
-  // the picker opens looking unfiltered even though the web-parity defaults are
+  // Badge counts the filters the user has toggled on (matching the sheet), so
+  // the picker opens looking unfiltered even though the web-parity baseline is
   // applied.
-  const activeFilterCount = countModifiedFilters(filters, filterDefaults)
+  const activeFilterCount = countEnabledFilters(filters)
+  // What actually narrows the list: user-enabled dimensions replace the
+  // web-parity baseline; the rest fall back to it.
+  const effectiveFilters = useMemo(
+    () => resolveEffectiveDelegateFilters(filters, filterDefaults),
+    [filters, filterDefaults]
+  )
 
   const validators = useMemo(() => {
     const all = data?.validators ?? []
@@ -143,12 +150,12 @@ const SelectNodeScreen = (): JSX.Element => {
         // sub-units (bigint) so the dep stays a primitive.
         if (available.toSubUnit() < minStakeSubUnit) continue
 
-        // Advanced filters — each only narrows the list when its toggle is on.
+        // Advanced filters (user-enabled dimensions over the web baseline).
         if (
           !passesAdvancedFilters(
             v,
             available.toDisplay({ asNumber: true }),
-            filters
+            effectiveFilters
           )
         ) {
           continue
@@ -167,7 +174,7 @@ const SelectNodeScreen = (): JSX.Element => {
     minStakeSubUnit,
     tokenDecimals,
     tokenSymbol,
-    filters
+    effectiveFilters
   ])
 
   const handlePressNode = useCallback(
@@ -188,7 +195,7 @@ const SelectNodeScreen = (): JSX.Element => {
   )
 
   const openAdvancedFilters = useCallback((): void => {
-    navigate({ pathname: '/addStakeV2/delegate/advancedFilters' })
+    navigate({ pathname: '/stakeAdvancedFilters' })
   }, [navigate])
 
   const renderItem = useCallback(
