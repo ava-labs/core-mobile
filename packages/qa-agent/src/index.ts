@@ -2,7 +2,7 @@ import './loadEnv'
 console.log('[env] JIRA_BASE_URL=', process.env.JIRA_BASE_URL)
 console.log(
   '[env] QA_ANTHROPIC_API_KEY:',
-  process.env.QA_ANTHROPIC_API_KEY ? `${process.env.QA_ANTHROPIC_API_KEY.slice(0, 12)}...` : 'MISSING'
+  process.env.QA_ANTHROPIC_API_KEY ? 'SET' : 'MISSING'
 )
 
 import fs from 'fs'
@@ -361,7 +361,13 @@ app.event('message', async ({ event, client, say }) => {
     if (!isGroupMention) return
 
     const userName = await resolveUserName(client, msg.user)
-    const groupText = rawText.replace(/<[^>]+>/g, '').trim()
+    let sanitizedText = rawText
+    let previousText: string
+    do {
+      previousText = sanitizedText
+      sanitizedText = sanitizedText.replace(/<[^>]+>/g, '')
+    } while (sanitizedText !== previousText)
+    const groupText = sanitizedText.trim()
     if (!groupText) return
 
     const threadLink = msg.thread_ts
