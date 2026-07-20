@@ -42,8 +42,8 @@ const StakeCompleteItem: FC<StakeCompleteItemProps> = ({
       title="Stake complete"
       subtitle={subtitle}
       icon={
-        // Same circular container `NotificationIcon` renders; the Database
-        // glyph is the staking marker used across the stake surfaces.
+        // Same circular container `NotificationIcon` renders; the Psychiatry
+        // glyph is the stake tab's icon, so the row reads as "staking".
         <View
           sx={{
             width: ICON_SIZE,
@@ -53,7 +53,7 @@ const StakeCompleteItem: FC<StakeCompleteItemProps> = ({
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <Icons.Custom.Database color={colors.$textPrimary} />
+          <Icons.Custom.Psychiatry color={colors.$textPrimary} />
         </View>
       }
       timestamp={item.timestamp}

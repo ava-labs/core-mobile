@@ -35,15 +35,17 @@ export const handleScheduleStakingCompleteNotifications = async (
   // the full batch — not just newly created triggers — also backfills
   // records for triggers scheduled before this store existed.
   // `endTimestamp` arrives in unix seconds (same conversion as
-  // `scheduleNotification`).
+  // `scheduleNotification`). An `accountId` is required: the center labels
+  // rows by account and drops records whose account is unknown, so a record
+  // without one could never render.
   stakeCompleteNotificationRecordsStore.getState().upsert(
     stakeCompleteNotification.flatMap(data =>
-      data.txHash && data.endTimestamp
+      data.txHash && data.endTimestamp && data.accountId
         ? [
             {
               txHash: data.txHash,
               endTimestamp: fromUnixTime(data.endTimestamp).getTime(),
-              accountId: data.accountId ?? '',
+              accountId: data.accountId,
               isDeveloperMode: data.isDeveloperMode ?? false
             }
           ]
