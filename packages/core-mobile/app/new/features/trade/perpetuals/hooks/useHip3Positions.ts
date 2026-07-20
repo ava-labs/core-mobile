@@ -11,6 +11,11 @@ import {
   seedHip3Clearinghouses,
   startHip3ClearinghouseFeed
 } from '../utils/hip3Feed'
+import {
+  getCachedHip3Positions,
+  hasSeededHip3Positions,
+  setCachedHip3Positions
+} from '../utils/clearPerpsSessionCaches'
 import { useHip3Markets } from './useHip3Markets'
 
 export type Hip3PositionsAggregate = {
@@ -35,21 +40,13 @@ const EMPTY: Hip3PositionsAggregate = {
  * so HIP-3 positions don't blank out and re-pop on every reload — and only
  * flips out of the loading state on the first REST seed per scope per session.
  */
-const hip3StatesCache = new Map<string, Record<string, ClearinghouseState>>()
-const hip3SeededScopes = new Set<string>()
-
-export const clearHip3PositionsCache = (): void => {
-  hip3StatesCache.clear()
-  hip3SeededScopes.clear()
-}
-
 const initialStatesFor = (
   scopeKey: string
 ): Record<string, ClearinghouseState> =>
-  scopeKey.length > 0 ? hip3StatesCache.get(scopeKey) ?? {} : {}
+  scopeKey.length > 0 ? getCachedHip3Positions(scopeKey) ?? {} : {}
 
 const isScopeSeeded = (scopeKey: string): boolean =>
-  scopeKey.length > 0 && hip3SeededScopes.has(scopeKey)
+  scopeKey.length > 0 && hasSeededHip3Positions(scopeKey)
 
 /**
  * Aggregates a user's HIP-3 (builder-deployed) perp positions and isolated
@@ -93,10 +90,7 @@ export const useHip3Positions = (
     if (scopeKey.length === 0) {
       return
     }
-    hip3StatesCache.set(scopeKey, statesByDex)
-    if (seeded) {
-      hip3SeededScopes.add(scopeKey)
-    }
+    setCachedHip3Positions(scopeKey, statesByDex, seeded)
   }, [scopeKey, statesByDex, seeded])
 
   // Live per-dex WS subscriptions. `wsResubscribeNonce` forces a resubscribe

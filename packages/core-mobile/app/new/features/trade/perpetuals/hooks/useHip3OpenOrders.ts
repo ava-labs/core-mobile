@@ -7,6 +7,11 @@ import {
   seedHip3OpenOrders,
   startHip3OpenOrdersFeed
 } from '../utils/hip3Feed'
+import {
+  getCachedHip3OpenOrders,
+  hasSeededHip3OpenOrders,
+  setCachedHip3OpenOrders
+} from '../utils/clearPerpsSessionCaches'
 import { useHip3Markets } from './useHip3Markets'
 
 export type Hip3OpenOrdersAggregate = {
@@ -24,23 +29,15 @@ const EMPTY: Hip3OpenOrdersAggregate = { orders: [], isLoading: false }
  * per-dex orders immediately (no loading blink) and only flips out of the
  * loading state on the first seed per scope per app session.
  */
-const hip3OrdersCache = new Map<string, Record<string, readonly OpenOrder[]>>()
-const hip3SeededScopes = new Set<string>()
-
-export const clearHip3OpenOrdersCache = (): void => {
-  hip3OrdersCache.clear()
-  hip3SeededScopes.clear()
-}
-
 /** Last cached per-dex orders for a scope (empty when unseen). */
 const initialOrdersFor = (
   scopeKey: string
 ): Record<string, readonly OpenOrder[]> =>
-  scopeKey.length > 0 ? hip3OrdersCache.get(scopeKey) ?? {} : {}
+  scopeKey.length > 0 ? getCachedHip3OpenOrders(scopeKey) ?? {} : {}
 
 /** Whether a scope has already completed its first REST seed this session. */
 const isScopeSeeded = (scopeKey: string): boolean =>
-  scopeKey.length > 0 && hip3SeededScopes.has(scopeKey)
+  scopeKey.length > 0 && hasSeededHip3OpenOrders(scopeKey)
 
 /**
  * Aggregates a user's open orders on HIP-3 (builder-deployed) dexs by fanning
@@ -86,10 +83,7 @@ export const useHip3OpenOrders = (
     if (scopeKey.length === 0) {
       return
     }
-    hip3OrdersCache.set(scopeKey, ordersByDex)
-    if (seeded) {
-      hip3SeededScopes.add(scopeKey)
-    }
+    setCachedHip3OpenOrders(scopeKey, ordersByDex, seeded)
   }, [scopeKey, ordersByDex, seeded])
 
   // Live per-dex WS subscriptions. `wsResubscribeNonce` forces a resubscribe

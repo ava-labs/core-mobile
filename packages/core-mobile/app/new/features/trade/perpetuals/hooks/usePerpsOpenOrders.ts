@@ -1,6 +1,12 @@
 import { type Address, type InfoOrderStatusWire } from '@avalabs/perps-sdk'
 import { useEffect, useRef, useState } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
+import {
+  getCachedPerpsOpenOrders,
+  getPerpsSessionCacheGeneration,
+  hasLoadedPerpsOpenOrders,
+  setCachedPerpsOpenOrders
+} from '../utils/clearPerpsSessionCaches'
 
 export type PerpsOpenOrders = {
   /** Open orders with full trigger / TP-SL metadata (main dex only). */
@@ -17,16 +23,6 @@ export type PerpsOpenOrders = {
  * only "loading" until its first fetch settles once per app session; after that
  * the cached list is shown and only replaced when a newer fetch returns.
  */
-const ordersCache = new Map<Address, readonly InfoOrderStatusWire[]>()
-const loadedUsers = new Set<Address>()
-let cacheGeneration = 0
-
-export const clearPerpsOpenOrdersCache = (): void => {
-  cacheGeneration += 1
-  ordersCache.clear()
-  loadedUsers.clear()
-}
-
 const commitOpenOrdersResult = ({
   user,
   data,
@@ -40,11 +36,10 @@ const commitOpenOrdersResult = ({
   shouldUpdate: boolean
   update: (orders: readonly InfoOrderStatusWire[]) => void
 }): void => {
-  if (generation !== cacheGeneration) {
+  if (generation !== getPerpsSessionCacheGeneration()) {
     return
   }
-  ordersCache.set(user, data)
-  loadedUsers.add(user)
+  setCachedPerpsOpenOrders(user, data)
   if (shouldUpdate) {
     update(data)
   }
@@ -77,10 +72,10 @@ export const usePerpsOpenOrders = (
   // last orders immediately (no loading blink); only a never-loaded user starts
   // in the loading state.
   const [orders, setOrders] = useState<readonly InfoOrderStatusWire[]>(() =>
-    user !== undefined ? ordersCache.get(user) ?? [] : []
+    user !== undefined ? getCachedPerpsOpenOrders(user) ?? [] : []
   )
   const [isLoading, setIsLoading] = useState(
-    () => user !== undefined && !loadedUsers.has(user)
+    () => user !== undefined && !hasLoadedPerpsOpenOrders(user)
   )
   const prevUserRef = useRef<Address | undefined>(undefined)
 
@@ -99,13 +94,13 @@ export const usePerpsOpenOrders = (
     // loaded) and only show loading when we have nothing cached yet. Guarded by
     // a ref so reconnect-driven resubscribes for the *same* user don't reset.
     if (prevUserRef.current !== user) {
-      setOrders(ordersCache.get(user) ?? [])
-      setIsLoading(!loadedUsers.has(user))
+      setOrders(getCachedPerpsOpenOrders(user) ?? [])
+      setIsLoading(!hasLoadedPerpsOpenOrders(user))
       prevUserRef.current = user
     }
 
     let cancelled = false
-    const generation = cacheGeneration
+    const generation = getPerpsSessionCacheGeneration()
     // Monotonic request id: WS pushes can fire many `fetchRich` calls whose
     // responses may resolve out of order. Only the latest request may commit,
     // otherwise a stale (possibly pre-trigger / empty) snapshot can overwrite a

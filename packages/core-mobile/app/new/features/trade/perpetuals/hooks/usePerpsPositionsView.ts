@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import type { Position } from '../types'
+import {
+  getCachedPerpsStickyTriggers,
+  setCachedPerpsStickyTriggers
+} from '../utils/clearPerpsSessionCaches'
 import { toPosition } from '../utils/toPosition'
 import { usePerpsAllOpenOrders } from './usePerpsAllOpenOrders'
 import { usePerpsPositions } from './usePerpsPositions'
@@ -23,15 +27,6 @@ export type PerpsPositionsView = {
  * survives screen remounts and live WS/REST order refetches without exposing
  * one account's trigger values after an account switch.
  */
-const stickyTriggers = new Map<
-  string,
-  { takeProfit: number; stopLoss: number }
->()
-
-export const clearPerpsStickyTriggers = (): void => {
-  stickyTriggers.clear()
-}
-
 /**
  * Positions with display-ready, flicker-free TP/SL. Take-profit / stop-loss
  * live in the open-orders feed (not the clearinghouse position) and that feed
@@ -55,14 +50,16 @@ export const usePerpsPositionsView = (): PerpsPositionsView => {
       // Only trust the computed triggers once the feed has settled; commit them
       // to the sticky cache as the source of truth for display.
       if (!ordersLoading && cacheKey !== undefined) {
-        stickyTriggers.set(cacheKey, {
+        setCachedPerpsStickyTriggers(cacheKey, {
           takeProfit: base.takeProfit,
           stopLoss: base.stopLoss
         })
       }
 
       const cached =
-        cacheKey === undefined ? undefined : stickyTriggers.get(cacheKey)
+        cacheKey === undefined
+          ? undefined
+          : getCachedPerpsStickyTriggers(cacheKey)
       if (cached === undefined) {
         // Never settled this session — show `-` until the first load completes.
         return { ...base, triggersPending: true }
