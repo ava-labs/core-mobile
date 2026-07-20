@@ -147,15 +147,39 @@ AWS_REGION=us-east-1 ./scripts/start-from-secrets.sh
 
 The script never prints the secret value.
 
-### Deploy always-on (ECS Fargate, us-east-1)
+### Deploy always-on (ECS Fargate via Bitrise)
 
-Socket Mode → always-on container, no ALB.
+Socket Mode → always-on container, no ALB. **Do not run this from a locked-down laptop** — use Bitrise (same AWS keys as Device Farm can reach ECR / ECS / Secrets Manager).
 
-- `Dockerfile` — image build
-- `deploy/ecs-task-definition.json` — Fargate task (injects Anthropic from Secrets Manager)
-- `deploy/iam-execution-role-policy.json` — execution role needs `GetSecretValue`
-- `deploy/deploy-fargate.sh` — build/push ECR + roll service
-- **One-time infra:** see `deploy/FIRST_TIME_SETUP.md`
+```
+Bitrise workflow deploy-mobile-qai
+  → docker build + push ECR
+  → register ECS task (Slack/Jira/… from Bitrise Secrets)
+  → ECS injects QA_ANTHROPIC_API_KEY from Secrets Manager at start
+```
+
+| File | Role |
+|------|------|
+| `Dockerfile` | Image build |
+| `deploy/bitrise-deploy.sh` | CI deploy (preferred) |
+| `deploy/deploy-fargate.sh` | Local/manual deploy (needs AWS+Docker perms) |
+| `deploy/ecs-task-definition.json` | Template reference |
+| `deploy/FIRST_TIME_SETUP.md` | One-time IAM / cluster / service |
+
+**Bitrise**
+1. Stack: Linux with Docker (e.g. `linux-docker-amazon`)
+2. Add Secrets (names must match):  
+   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,  
+   `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `SLACK_QA_GROUP_ID`,  
+   `BITRISE_API_TOKEN` (token the *bot* uses to trigger builds),  
+   `JIRA_EMAIL`, `JIRA_API_TOKEN`, `TESTRAIL_EMAIL`, `TESTRAIL_API_KEY`  
+   Optional: `SLACK_RC_CHANNEL_ID`, `SLACK_USER_TOKEN`  
+   (`BITRISE_APP_SLUG` is usually already set by Bitrise)
+3. One-time AWS infra: `deploy/FIRST_TIME_SETUP.md` (IAM roles, cluster, service, secret `QA_ANTHROPIC_API_KEY`)
+4. Start build → workflow **`deploy-mobile-qai`**
+5. Verify: `aws logs tail /ecs/mobile-qai --follow --region us-east-1` → `mobile-qai is running!`
+
+Anthropic key never goes into Bitrise Secrets or git — only AWS Secrets Manager → ECS task `secrets` block.
 ---
 
 ## Jira Ticket Fields Reference

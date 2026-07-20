@@ -30,7 +30,16 @@ No Secrets Manager needed for the app itself (key is already injected). Empty / 
    - No load balancer
    - Assign public IP: **ENABLED** if subnets need it for egress
 
-## 4) Deploy image
+## 4) Deploy image (prefer Bitrise)
+
+Local AWS/Docker is often blocked. **Use Bitrise** — workflow `deploy-mobile-qai` runs `deploy/bitrise-deploy.sh` with CI AWS creds (ECR + ECS + Secrets Manager describe).
+
+1. Put non-Anthropic secrets in Bitrise Secrets (see README).
+2. Trigger workflow **`deploy-mobile-qai`** (Linux Docker stack).
+3. If the ECS **service does not exist yet**, either create it in the console (step 3) or set on the Bitrise build:  
+   `CREATE_SERVICE=1`, `SUBNET_IDS=subnet-…,subnet-…`, `SECURITY_GROUP_IDS=sg-…`
+
+Manual fallback (needs local AWS+Docker):
 
 ```bash
 cd packages/qa-agent
