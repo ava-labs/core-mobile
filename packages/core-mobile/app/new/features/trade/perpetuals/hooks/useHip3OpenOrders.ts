@@ -27,6 +27,11 @@ const EMPTY: Hip3OpenOrdersAggregate = { orders: [], isLoading: false }
 const hip3OrdersCache = new Map<string, Record<string, readonly OpenOrder[]>>()
 const hip3SeededScopes = new Set<string>()
 
+export const clearHip3OpenOrdersCache = (): void => {
+  hip3OrdersCache.clear()
+  hip3SeededScopes.clear()
+}
+
 /** Last cached per-dex orders for a scope (empty when unseen). */
 const initialOrdersFor = (
   scopeKey: string

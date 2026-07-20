@@ -94,19 +94,22 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
     []
   )
 
+  const handleMarketPress = useCallback(
+    (symbol: string) => {
+      router.navigate(`/perpetualsDetails?coin=${encodeURIComponent(symbol)}`)
+    },
+    [router]
+  )
+
   const renderItem: ListRenderItem<PerpMarketView> = useCallback(
     ({ item, index }) => (
       <PerpetualListItem
         market={item}
         isFirst={index === 0}
-        onPress={() => {
-          router.navigate(
-            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
-          )
-        }}
+        onPress={handleMarketPress}
       />
     ),
-    [router]
+    [handleMarketPress]
   )
 
   const keyExtractor = useCallback((item: PerpMarketView) => item.id, [])

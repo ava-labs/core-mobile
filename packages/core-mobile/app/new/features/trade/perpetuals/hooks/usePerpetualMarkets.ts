@@ -10,6 +10,7 @@ import { usePerpsMarkets } from './usePerpsMarkets'
 
 export type UsePerpetualMarketsResult = {
   markets: PerpMarketView[]
+  categoryIndex: CoinCategoryIndex
   isLoading: boolean
   isRefreshing: boolean
   refetch: () => void
@@ -50,7 +51,7 @@ export const usePerpetualMarkets = (): UsePerpetualMarketsResult => {
       )
   }, [perpMarkets, categoryIndex])
 
-  return { markets, isLoading, isRefreshing, refetch }
+  return { markets, categoryIndex, isLoading, isRefreshing, refetch }
 }
 
 /** Category chip labels for a coin, or `undefined` when it has none. */

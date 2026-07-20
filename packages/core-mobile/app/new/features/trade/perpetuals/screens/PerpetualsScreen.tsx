@@ -28,11 +28,9 @@ import { usePerps } from '../contexts/PerpsProvider'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { usePerpetualMarkets } from '../hooks/usePerpetualMarkets'
 import { usePerpsLiveMidsFeed } from '../hooks/usePerpsLiveMids'
-import { usePerpCategories } from '../hooks/usePerpCategories'
 import { PerpsCategoryChip } from '../hooks/usePerpsMarketFilters'
 import {
   availableCategories,
-  buildCoinCategoryIndex,
   CATEGORY_LABELS,
   CategoryId
 } from '../utils/marketCategories'
@@ -69,19 +67,14 @@ export const PerpetualsScreen = ({
   const categoryScrollOffsetRef = useRef(0)
   const positionsScrollOffsetRef = useRef(0)
 
-  const { markets, isLoading, isRefreshing, refetch } = usePerpetualMarkets()
+  const { markets, categoryIndex, isLoading, isRefreshing, refetch } =
+    usePerpetualMarkets()
   // Perps manager init failure = our trading partner (Hyperliquid) is down.
   const { error: perpsError, retryInit } = usePerps()
 
   // Open the shared live-mid WS feed for as long as this screen is mounted;
   // individual rows read their own coin's mid via `useLiveMid`.
   usePerpsLiveMidsFeed()
-
-  const hip3Categories = usePerpCategories()
-  const categoryIndex = useMemo(
-    () => buildCoinCategoryIndex(hip3Categories),
-    [hip3Categories]
-  )
 
   const categories = useMemo<PerpsCategoryChip[]>(() => {
     const names = markets.map(m => m.symbol)
@@ -134,19 +127,22 @@ export const PerpetualsScreen = ({
     }
   }, [selectedFilter, categoryFilteredMarkets])
 
+  const handleMarketPress = useCallback(
+    (symbol: string) => {
+      router.navigate(`/perpetualsDetails?coin=${encodeURIComponent(symbol)}`)
+    },
+    [router]
+  )
+
   const renderItem: ListRenderItem<PerpMarketView> = useCallback(
     ({ item, index }) => (
       <PerpetualListItem
         market={item}
         isFirst={index === 0}
-        onPress={() =>
-          router.navigate(
-            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
-          )
-        }
+        onPress={handleMarketPress}
       />
     ),
-    [router]
+    [handleMarketPress]
   )
 
   const keyExtractor = useCallback((item: PerpMarketView) => item.id, [])

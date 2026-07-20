@@ -19,6 +19,36 @@ export type PerpsOpenOrders = {
  */
 const ordersCache = new Map<Address, readonly InfoOrderStatusWire[]>()
 const loadedUsers = new Set<Address>()
+let cacheGeneration = 0
+
+export const clearPerpsOpenOrdersCache = (): void => {
+  cacheGeneration += 1
+  ordersCache.clear()
+  loadedUsers.clear()
+}
+
+const commitOpenOrdersResult = ({
+  user,
+  data,
+  generation,
+  shouldUpdate,
+  update
+}: {
+  user: Address
+  data: readonly InfoOrderStatusWire[]
+  generation: number
+  shouldUpdate: boolean
+  update: (orders: readonly InfoOrderStatusWire[]) => void
+}): void => {
+  if (generation !== cacheGeneration) {
+    return
+  }
+  ordersCache.set(user, data)
+  loadedUsers.add(user)
+  if (shouldUpdate) {
+    update(data)
+  }
+}
 
 /**
  * Live list of main-dex open orders **with full trigger / TP-SL metadata**.
@@ -75,6 +105,7 @@ export const usePerpsOpenOrders = (
     }
 
     let cancelled = false
+    const generation = cacheGeneration
     // Monotonic request id: WS pushes can fire many `fetchRich` calls whose
     // responses may resolve out of order. Only the latest request may commit,
     // otherwise a stale (possibly pre-trigger / empty) snapshot can overwrite a
@@ -83,16 +114,18 @@ export const usePerpsOpenOrders = (
 
     const fetchRich = (): void => {
       const requestId = ++latestRequestId
-      void manager.info
+      manager.info
         .getFrontendOpenOrders(user)
         .then(data => {
           // Always cache the latest result so remounts start warm, even if this
           // instance unmounted before committing.
-          ordersCache.set(user, data)
-          loadedUsers.add(user)
-          if (!cancelled && requestId === latestRequestId) {
-            setOrders(data)
-          }
+          commitOpenOrdersResult({
+            user,
+            data,
+            generation,
+            shouldUpdate: !cancelled && requestId === latestRequestId,
+            update: setOrders
+          })
         })
         .catch(() => {
           // Silent — a transient REST failure keeps the last list; the next WS

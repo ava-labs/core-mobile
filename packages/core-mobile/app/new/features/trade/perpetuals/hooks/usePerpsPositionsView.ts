@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { usePerps } from '../contexts/PerpsProvider'
 import type { Position } from '../types'
 import { toPosition } from '../utils/toPosition'
 import { usePerpsAllOpenOrders } from './usePerpsAllOpenOrders'
@@ -18,16 +19,18 @@ export type PerpsPositionsView = {
 }
 
 /**
- * Last settled TP/SL per position, keyed by coin. Module-level so it survives
- * screen remounts and live WS/REST order refetches: once a coin's triggers have
- * settled (open orders finished their first load), we show the cached value and
- * only replace it when a *new settled* computation differs — never blinking
- * back to a `-` placeholder or a transient `None`.
+ * Last settled TP/SL per position, keyed by user and coin. Module-level so it
+ * survives screen remounts and live WS/REST order refetches without exposing
+ * one account's trigger values after an account switch.
  */
 const stickyTriggers = new Map<
   string,
   { takeProfit: number; stopLoss: number }
 >()
+
+export const clearPerpsStickyTriggers = (): void => {
+  stickyTriggers.clear()
+}
 
 /**
  * Positions with display-ready, flicker-free TP/SL. Take-profit / stop-loss
@@ -38,6 +41,7 @@ const stickyTriggers = new Map<
  * only when the actual result changes.
  */
 export const usePerpsPositionsView = (): PerpsPositionsView => {
+  const { userAddress } = usePerps()
   const { positions: rawPositions, isLoading } = usePerpsPositions()
   const { orders, isLoading: ordersLoading } = usePerpsAllOpenOrders()
 
@@ -45,17 +49,20 @@ export const usePerpsPositionsView = (): PerpsPositionsView => {
     return rawPositions.map(assetPosition => {
       const base = toPosition(assetPosition, orders)
       const coin = assetPosition.position.coin
+      const cacheKey =
+        userAddress === undefined ? undefined : `${userAddress}|${coin}`
 
       // Only trust the computed triggers once the feed has settled; commit them
       // to the sticky cache as the source of truth for display.
-      if (!ordersLoading) {
-        stickyTriggers.set(coin, {
+      if (!ordersLoading && cacheKey !== undefined) {
+        stickyTriggers.set(cacheKey, {
           takeProfit: base.takeProfit,
           stopLoss: base.stopLoss
         })
       }
 
-      const cached = stickyTriggers.get(coin)
+      const cached =
+        cacheKey === undefined ? undefined : stickyTriggers.get(cacheKey)
       if (cached === undefined) {
         // Never settled this session — show `-` until the first load completes.
         return { ...base, triggersPending: true }
@@ -67,7 +74,7 @@ export const usePerpsPositionsView = (): PerpsPositionsView => {
         triggersPending: false
       }
     })
-  }, [rawPositions, orders, ordersLoading])
+  }, [rawPositions, orders, ordersLoading, userAddress])
 
   return { positions, rawPositions, isLoading }
 }

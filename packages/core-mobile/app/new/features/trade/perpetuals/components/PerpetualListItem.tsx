@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import React from 'react'
+import React, { useCallback } from 'react'
 import Animated from 'react-native-reanimated'
 import { useLiveMid } from '../hooks/usePerpsLiveMids'
 import { usePriceFlash } from '../hooks/usePriceFlash'
@@ -25,7 +25,7 @@ const PerpetualListItemComponent = ({
 }: {
   market: PerpMarketView
   isFirst: boolean
-  onPress?: () => void
+  onPress?: (symbol: string) => void
 }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
@@ -43,10 +43,13 @@ const PerpetualListItemComponent = ({
   })
   const formattedPrice = formatCurrency({ amount: price })
   const formattedPercent = `${market.changePercent.toFixed(2)}%`
+  const handlePress = useCallback(() => {
+    onPress?.(market.symbol)
+  }, [market.symbol, onPress])
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       style={{
         paddingHorizontal: 16,
         flexDirection: 'row',

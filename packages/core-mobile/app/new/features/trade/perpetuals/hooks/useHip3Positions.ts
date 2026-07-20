@@ -38,6 +38,11 @@ const EMPTY: Hip3PositionsAggregate = {
 const hip3StatesCache = new Map<string, Record<string, ClearinghouseState>>()
 const hip3SeededScopes = new Set<string>()
 
+export const clearHip3PositionsCache = (): void => {
+  hip3StatesCache.clear()
+  hip3SeededScopes.clear()
+}
+
 const initialStatesFor = (
   scopeKey: string
 ): Record<string, ClearinghouseState> =>

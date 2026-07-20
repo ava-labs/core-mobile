@@ -5,7 +5,7 @@ import {
   type HyperliquidWsClient,
   type InfoClient
 } from '@avalabs/perps-sdk'
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import {
   createPerpsWsClient,
@@ -20,7 +20,7 @@ import {
  * external store (not component state) means a price tick only re-renders the
  * rows whose price actually changed — not the whole list on every message.
  */
-let mids: Record<string, string> = {}
+const mids: Record<string, string> = {}
 const listeners = new Set<() => void>()
 
 /**
@@ -38,7 +38,7 @@ export const perpsMidsActivity = {
 }
 
 const setLiveMids = (next: Record<string, string>): void => {
-  mids = { ...mids, ...next }
+  Object.assign(mids, next)
   lastMidsActivityAt = Date.now()
   listeners.forEach(listener => listener())
 }
@@ -86,6 +86,14 @@ type MidsFeedContext = {
   isCancelled: () => boolean
   unsubscribers: Array<() => void>
 }
+
+type SharedMidsFeed = MidsFeedContext & {
+  nonce: number
+  cancelled: boolean
+}
+
+let sharedMidsFeed: SharedMidsFeed | undefined
+let midsFeedNonce = 0
 
 /**
  * Subscribe to one dex's `allMids` feed: seed from REST then stream over WS into
@@ -137,52 +145,101 @@ const builderDexNames = (
     )
     .map(entry => entry.name)
 
+const stopMidsFeed = (feed: SharedMidsFeed): void => {
+  if (feed.cancelled) {
+    return
+  }
+  feed.cancelled = true
+  feed.unsubscribers.forEach(unsubscribe => unsubscribe())
+  feed.ws.disconnect()
+}
+
+const startMidsFeed = (nonce: number): SharedMidsFeed => {
+  const client = getPerpsInfoClient()
+  const ws = createPerpsWsClient()
+  const feed: SharedMidsFeed = {
+    nonce,
+    cancelled: false,
+    ws,
+    client,
+    isCancelled: () => feed.cancelled,
+    unsubscribers: []
+  }
+
+  ws.connect()
+
+  // Native (main) dex — keys are bare tickers.
+  subscribeDexMids(feed, '')
+
+  // Builder (HIP-3) dexs — one `allMids` feed per dex, keys namespaced.
+  client
+    .getPerpDexs()
+    .then(perpDexs => {
+      if (feed.cancelled) {
+        return
+      }
+      for (const dex of builderDexNames(perpDexs)) {
+        subscribeDexMids(feed, dex)
+      }
+    })
+    .catch(() => {
+      // Silent — HIP-3 mids just won't stream if discovery fails.
+    })
+
+  return feed
+}
+
+const acquireMidsFeed = (initialNonce: number): (() => void) => {
+  if (activeFeeds === 0) {
+    midsFeedNonce = initialNonce
+    sharedMidsFeed = startMidsFeed(midsFeedNonce)
+  }
+
+  activeFeeds += 1
+
+  let released = false
+  return () => {
+    if (released) {
+      return
+    }
+    released = true
+    activeFeeds = Math.max(0, activeFeeds - 1)
+    if (activeFeeds === 0 && sharedMidsFeed !== undefined) {
+      stopMidsFeed(sharedMidsFeed)
+      sharedMidsFeed = undefined
+    }
+  }
+}
+
+const reconnectMidsFeed = (nonce: number): void => {
+  if (nonce === midsFeedNonce) {
+    return
+  }
+  midsFeedNonce = nonce
+  if (activeFeeds > 0) {
+    if (sharedMidsFeed !== undefined) {
+      stopMidsFeed(sharedMidsFeed)
+      sharedMidsFeed = undefined
+    }
+    sharedMidsFeed = startMidsFeed(midsFeedNonce)
+  }
+}
+
 /**
- * Opens the shared `allMids` feed for the lifetime of the mounting screen:
+ * Acquires the shared `allMids` feed for the lifetime of the mounting screen:
  * seeds from REST then streams updates over WebSocket into the live-mid store.
  * Covers the native (main) dex plus every builder-deployed HIP-3 dex — each
  * builder dex is a separate `allMids` subscription whose keys are namespaced
  * (`dex:TICKER`). Holds no React state, so ticks never re-render the host
- * screen — only the subscribed rows update.
+ * screen — only the subscribed rows update. The first mounted screen opens the
+ * socket and the final unmount closes it; overlapping screens reuse the feed.
  */
 export const usePerpsLiveMidsFeed = (): void => {
   // Re-subscribing when the connection monitor bumps this nonce tears down and
   // re-creates the socket, forcing a fresh connect after a sustained stall.
   const { wsResubscribeNonce } = usePerps()
+  const initialNonceRef = useRef(wsResubscribeNonce)
 
-  useEffect(() => {
-    let cancelled = false
-    const isCancelled = (): boolean => cancelled
-    const client = getPerpsInfoClient()
-    const ws = createPerpsWsClient()
-    activeFeeds += 1
-    ws.connect()
-    const unsubscribers: Array<() => void> = []
-    const ctx: MidsFeedContext = { ws, client, isCancelled, unsubscribers }
-
-    // Native (main) dex — keys are bare tickers.
-    subscribeDexMids(ctx, '')
-
-    // Builder (HIP-3) dexs — one `allMids` feed per dex, keys namespaced.
-    client
-      .getPerpDexs()
-      .then(perpDexs => {
-        if (cancelled) {
-          return
-        }
-        for (const dex of builderDexNames(perpDexs)) {
-          subscribeDexMids(ctx, dex)
-        }
-      })
-      .catch(() => {
-        // Silent — HIP-3 mids just won't stream if discovery fails.
-      })
-
-    return () => {
-      cancelled = true
-      activeFeeds = Math.max(0, activeFeeds - 1)
-      unsubscribers.forEach(unsubscribe => unsubscribe())
-      ws.disconnect()
-    }
-  }, [wsResubscribeNonce])
+  useEffect(() => acquireMidsFeed(initialNonceRef.current), [])
+  useEffect(() => reconnectMidsFeed(wsResubscribeNonce), [wsResubscribeNonce])
 }
