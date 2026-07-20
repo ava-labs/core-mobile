@@ -13,6 +13,8 @@ type StakeCompleteItemProps = {
    * `BalanceChangeItem`).
    */
   accountLabel?: string | null
+  /** The app's current environment — see the cross-environment tag below. */
+  isDeveloperMode: boolean
   showSeparator: boolean
   testID?: string
 }
@@ -20,6 +22,7 @@ type StakeCompleteItemProps = {
 const StakeCompleteItem: FC<StakeCompleteItemProps> = ({
   item,
   accountLabel,
+  isDeveloperMode,
   showSeparator,
   testID
 }) => {
@@ -28,13 +31,17 @@ const StakeCompleteItem: FC<StakeCompleteItemProps> = ({
   } = useTheme()
 
   const baseSubtitle = 'Your staking period has ended'
-  // Cross-environment items are tappable from either mode (tapping switches
-  // the app), so testnet ones carry an explicit marker.
-  const parts = [
-    accountLabel,
-    item.isDeveloperMode ? 'Testnet' : null,
-    baseSubtitle
-  ].filter(Boolean)
+  // The list spans both environments and tapping a cross-environment item
+  // switches the app, so any item NOT from the current mode is tagged with
+  // its environment as a cue — 'Testnet' from mainnet, 'Mainnet' from
+  // testnet. Same-environment items need no tag.
+  const environmentTag =
+    item.isDeveloperMode !== isDeveloperMode
+      ? item.isDeveloperMode
+        ? 'Testnet'
+        : 'Mainnet'
+      : null
+  const parts = [accountLabel, environmentTag, baseSubtitle].filter(Boolean)
   const subtitle = parts.join(' · ')
 
   return (

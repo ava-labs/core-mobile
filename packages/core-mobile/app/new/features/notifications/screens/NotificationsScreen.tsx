@@ -173,6 +173,7 @@ const StakeCompleteRow = ({
   isClearingAll,
   accounts,
   accountLabelMap,
+  isDeveloperMode,
   onDismiss,
   onPress
 }: {
@@ -182,6 +183,7 @@ const StakeCompleteRow = ({
   isClearingAll: boolean
   accounts: ReturnType<typeof selectAccounts>
   accountLabelMap: Map<string, string>
+  isDeveloperMode: boolean
   onDismiss: (items: StakeCompleteNotificationItem[]) => void
   onPress: (item: StakeCompleteNotificationItem) => void
 }): React.JSX.Element => {
@@ -196,6 +198,7 @@ const StakeCompleteRow = ({
       <StakeCompleteItem
         item={stakeItem}
         accountLabel={address ? accountLabelMap.get(address) ?? null : null}
+        isDeveloperMode={isDeveloperMode}
         showSeparator={!isLast}
         testID={`stake-complete-${stakeItem.txHash}`}
       />
@@ -507,6 +510,7 @@ export const NotificationsScreen = (): JSX.Element => {
             isClearingAll={isClearingAll}
             accounts={accounts}
             accountLabelMap={accountLabelMap}
+            isDeveloperMode={isDeveloperMode}
             onDismiss={dismissStakeNotifications}
             onPress={handleStakeCompletePress}
           />
@@ -551,7 +555,8 @@ export const NotificationsScreen = (): JSX.Element => {
       dismissStakeNotifications,
       handleStakeCompletePress,
       accounts,
-      accountLabelMap
+      accountLabelMap,
+      isDeveloperMode
     ]
   )
 
