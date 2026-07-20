@@ -14,8 +14,8 @@ Slack-based QA AI agent for Core Mobile. Mention `@core-mobile-qai` or DM to use
 | 4 | `create jira bug ticket` | Asks title + priority → creates ticket with Slack thread link attached |
 | 5 | `automation daily report` | Fetches TestRail automation results → pass rate + failed test list |
 | 6 | `1.0.34 RC status` | Scans channel/thread chatter for RC lifecycle signals (incl. casual store-submission notes) → bugs / manual / automation |
-| 7 | `sprint status` / `이번 스프린트` | 지라에서 스프린트 상태 점검 |
-| 8 | `1D select 버그 찾아줘` | Mobile Application 컴포넌트 티켓 키워드 검색 |
+| 7 | `sprint status` / `this sprint` | Check sprint status in Jira |
+| 8 | `find the 1D select bug` | Keyword search for Mobile Application component tickets |
 
 ---
 
@@ -63,13 +63,13 @@ Three-section report:
 
 > Channel scan looks at recent messages/threads (including replies under bot parents) plus Slack search. Casual notes like “submitted to App store…” count. If nothing version-related is found → say RC signals aren't in the channel yet. Add Slack scope `search:read` for search fallback.
 
-### 7 — 지라에서 스프린트 상태 점검
-- Active Mobile sprint (`current` / `이번 스프린트`) or a named sprint (`Mobile Sprint 121`)
+### 7 — Sprint status check (Jira)
+- Active Mobile sprint (`current` / `this sprint`) or a named sprint (`Mobile Sprint 121`)
 - Any status: Done, Declined, To Do, In Progress, Blocked, Code Review, Testing, Backlog — counts and/or ticket lists
 - "remaining/open" = unfinished work (excludes Done + Declined)
 - Story Points: planned vs completed (+ declined / remaining)
 
-### 8 — Mobile Jira 티켓 검색
+### 8 — Mobile Jira ticket search
 - Always filtered to **Component = Mobile Application**
 - Keyword / symptom search (e.g. chart `1D` select bug) → matching ticket keys + links
 - Includes closed tickets by default so historical bugs are findable

@@ -619,13 +619,7 @@ export function isCurrentSprintAlias(raw: string): boolean {
     key === 'this' ||
     key === 'this week' ||
     key === 'this sprint' ||
-    key === 'current sprint' ||
-    key === '이번' ||
-    key === '이번주' ||
-    key === '이번 주' ||
-    key === '이번 스프린트' ||
-    key === '현재' ||
-    key === '현재 스프린트'
+    key === 'current sprint'
   )
 }
 
@@ -731,7 +725,7 @@ function statusAliases(filter: string): string[] {
     qa: ['Testing'],
     blocked: ['Blocked'],
     block: ['Blocked'],
-    // "남은 거" / still open in the sprint
+    // still open / remaining work in the sprint
     open: OPEN_STATUSES,
     remaining: OPEN_STATUSES,
     left: OPEN_STATUSES,

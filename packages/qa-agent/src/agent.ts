@@ -242,7 +242,7 @@ const tools: Anthropic.Tool[] = [
         sprint: {
           type: 'string',
           description:
-            'Sprint reference: "Mobile Sprint 121", "121", or "current"/"this week"/"이번 스프린트". Defaults to current if omitted.',
+            'Sprint reference: "Mobile Sprint 121", "121", or "current"/"this week"/"this sprint". Defaults to current if omitted.',
         },
         statusFilter: {
           type: 'string',
@@ -572,7 +572,7 @@ RC release testing status (Feature 6):
   - This is NOT limited to formal announcements — treat casual thread replies the same
     (e.g. Ray: "1.0.35 submitted to App store and Play store for review").
   - Prefer the *base* version for channel search (e.g. "1.0.35", not only "1.0.35-rc3").
-  - CRITICAL: If the user asks from a DM but mentions a team channel (<#C…> / "채널에서 읽어줘"),
+  - CRITICAL: If the user asks from a DM but mentions a team channel (<#C…> / "read from the channel"),
     pass that channelId to search_rc_announcement (or rely on mentioned channels in context).
     Do NOT only scan the DM — store submissions live in the team channel threads.
 - Then ALWAYS call: search_version_tickets + get_manual_test_progress + get_automation_report_for_version
@@ -586,7 +586,7 @@ Channel lifecycle hits from search_rc_announcement (VERY IMPORTANT):
 - Read hasSubmission / hasSignOff / summary / latestLifecycle from the tool JSON first.
 - If hasSubmission === true OR any hit.kind === submission OR summary mentions STORE SUBMISSION:
   - MUST lead with "*🚀 Store submission*" and quote/link the hit.
-  - NEVER say "submission not detected" / "아직 감지되지 않음" in that case.
+  - NEVER say "submission not detected" in that case.
   - rc3 smoke / rc_cut hits are secondary context only.
 - Else if hasSignOff: lead with sign-off.
 - Else report rc_cut / testing as current stage.
@@ -606,7 +606,7 @@ Today's QA briefing:
 - Cover both direct requests and group (@qa-core) mentions
 
 Find a Mobile Jira ticket by symptom/keyword (Feature 8):
-- Triggered by: "find the bug about…", "1D 셀렉트 안되라던 버그 찾아줘", "예전에 있던 swap 티켓 뭐였지"
+- Triggered by: "find the bug about…", "find the 1D select bug", "what was that old swap ticket"
 - ALWAYS call search_mobile_jira_tickets — it is hard-scoped to Component = "Mobile Application" only.
 - Put distinctive English keywords in query (e.g. "1D select", "chart time filter"). May retry with fewer/broader terms if empty.
 - For bugs specifically, pass issueType "Bug". includeClosed defaults true (historical tickets).
@@ -615,12 +615,12 @@ Find a Mobile Jira ticket by symptom/keyword (Feature 8):
 
 Sprint status check (Feature 7 — Jira board, NOT RC version):
 - Triggered by ANY sprint board question: status breakdown, how many / list for a status, or story points.
-  Examples: declined count, "To Do 남은 거 뭐야", "In Progress 몇 개", "Blocked 리스트", "Done이랑 Declined 리스트", SP planned vs completed
+  Examples: declined count, "what's left in To Do", "how many In Progress", "Blocked list", "Done and Declined lists", SP planned vs completed
 - Supported statuses (not only Done/Declined): Done, Declined, To Do, Backlog, In Progress, Code Review, Testing, Blocked
-- "remaining" / "open" / "남은" → listStatuses or statusFilter "remaining" (excludes Done + Declined)
-- "sprint 121" = Mobile Sprint 121. "이번 스프린트"/current = active board sprint. NEVER confuse with app version 1.0.x / RC tools.
+- "remaining" / "open" → listStatuses or statusFilter "remaining" (excludes Done + Declined)
+- "sprint 121" = Mobile Sprint 121. "this sprint"/current = active board sprint. NEVER confuse with app version 1.0.x / RC tools.
 - ALWAYS call get_sprint_ticket_stats(sprint?, statusFilter?, listStatuses?)
-  - Count only ("Blocked 몇 개?") → statusFilter "Blocked" OR read byStatus
+  - Count only ("how many Blocked?") → statusFilter "Blocked" OR read byStatus
   - Want the actual tickets → listStatuses with that status (e.g. "To Do", "In Progress,Blocked")
   - Multiple statuses → comma-separated listStatuses
   - Current sprint → sprint "current" or omit

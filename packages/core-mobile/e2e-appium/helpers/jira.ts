@@ -22,10 +22,10 @@ export interface FailedTestInfo {
 }
 
 async function findOpenTicket(ticketTitle: string): Promise<string | null> {
-  const jql = `project = ${JIRA_PROJECT_KEY} AND summary = "${ticketTitle.replace(
-    /"/g,
-    '\\"'
-  )}" AND status != Done ORDER BY created DESC`
+  const escapedTicketTitle = ticketTitle
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+  const jql = `project = ${JIRA_PROJECT_KEY} AND summary = "${escapedTicketTitle}" AND status != Done ORDER BY created DESC`
   const response = await client.post('/rest/api/3/issue/search', {
     jql,
     maxResults: 1,
