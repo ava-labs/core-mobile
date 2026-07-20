@@ -157,6 +157,25 @@ describe('stakeCompleteNotificationRecordsStore', () => {
     ).toEqual(['fired'])
   })
 
+  it('removeFired drops every fired record, beyond the rendered cap', () => {
+    // Clear All uses this — the rendered list is capped at
+    // STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS, so clearing must not be limited
+    // to the visible page.
+    const now = Date.now()
+    const { upsert, removeFired } =
+      stakeCompleteNotificationRecordsStore.getState()
+    upsert([
+      ...Array.from({ length: 30 }, (_, i) =>
+        record(`fired-${i}`, now - (i + 1) * 3600 * 1000)
+      ),
+      record('pending', now + DAY_MS)
+    ])
+    removeFired(now)
+    expect(
+      Object.keys(stakeCompleteNotificationRecordsStore.getState().records)
+    ).toEqual(['pending'])
+  })
+
   it('clear wipes every record (logout / wallet deletion)', () => {
     const { upsert, clear } = stakeCompleteNotificationRecordsStore.getState()
     upsert([

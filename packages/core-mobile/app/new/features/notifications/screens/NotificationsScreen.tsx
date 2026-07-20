@@ -208,8 +208,10 @@ export const NotificationsScreen = (): JSX.Element => {
   const { removeTransfer, clearCompletedTransfers, transfers } =
     useFusionTransfers()
   const { items: stakeCompleteItems } = useStakeCompleteNotifications()
-  const { remove: removeStakeNotificationRecords } =
-    useStakeCompleteNotificationRecords()
+  const {
+    remove: removeStakeNotificationRecords,
+    removeFired: removeFiredStakeNotificationRecords
+  } = useStakeCompleteNotificationRecords()
   const dismissStakeNotifications = useCallback(
     (items: StakeCompleteNotificationItem[]) =>
       removeStakeNotificationRecords(items.map(item => item.txHash)),
@@ -327,7 +329,10 @@ export const NotificationsScreen = (): JSX.Element => {
       markAllAsRead()
       if (isFusionEnabled) clearCompletedTransfers()
       if (stakeCompleteItems.length > 0) {
-        dismissStakeNotifications(stakeCompleteItems)
+        // Every FIRED record, not just the rendered items — the visible list
+        // is capped, so removing only those would let capped-out older items
+        // surface right after clearing.
+        removeFiredStakeNotificationRecords(Date.now())
       }
       setIsClearingAll(false)
     }, totalTime)
@@ -337,8 +342,8 @@ export const NotificationsScreen = (): JSX.Element => {
     markAllAsRead,
     isFusionEnabled,
     clearCompletedTransfers,
-    stakeCompleteItems,
-    dismissStakeNotifications
+    stakeCompleteItems.length,
+    removeFiredStakeNotificationRecords
   ])
 
   // Full empty state: no backend notifications AND no swap activities

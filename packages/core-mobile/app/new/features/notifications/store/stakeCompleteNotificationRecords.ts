@@ -43,6 +43,13 @@ export interface StakeCompleteNotificationRecordsState {
    */
   removePending: (now: number) => void
   /**
+   * Drops every record that HAS fired. Backs the center's Clear All — the
+   * rendered list is capped (`STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS`), so
+   * removing only the visible items would let capped-out older items surface
+   * right after clearing. Not-yet-fired records stay for future pushes.
+   */
+  removeFired: (now: number) => void
+  /**
    * Wipes every record. Called on logout / wallet deletion — records are
    * wallet data (they reference account ids), and the zustand MMKV storage
    * is not part of the logout wipe, so without this the next wallet on the
@@ -88,6 +95,14 @@ export const stakeCompleteNotificationRecordsStore =
             records: Object.fromEntries(
               Object.entries(state.records).filter(
                 ([, record]) => record.endTimestamp <= now
+              )
+            )
+          })),
+        removeFired: now =>
+          set(state => ({
+            records: Object.fromEntries(
+              Object.entries(state.records).filter(
+                ([, record]) => record.endTimestamp > now
               )
             )
           })),
