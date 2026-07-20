@@ -8,7 +8,7 @@ import {
   PChainTransactionType
 } from '@avalabs/glacier-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Transaction } from 'store/transaction'
+import type { Transaction } from 'store/transaction/types'
 
 const isExport = (
   tx: CChainImportTransaction | CChainExportTransaction
