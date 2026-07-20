@@ -149,7 +149,7 @@ class NotificationsService {
     isDeveloperMode = false
   }: {
     txHash: string
-    timestamp: number // unix timestamp in milliseconds
+    timestamp: number // unix timestamp in SECONDS (fromUnixTime converts to ms below)
     channelId: ChannelId
     accountId: string
     isDeveloperMode?: boolean

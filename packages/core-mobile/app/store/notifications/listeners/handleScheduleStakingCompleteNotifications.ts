@@ -34,10 +34,11 @@ export const handleScheduleStakingCompleteNotifications = async (
   // pushes after they fire (Notifee only keeps PENDING triggers). Upserting
   // the full batch — not just newly created triggers — also backfills
   // records for triggers scheduled before this store existed.
-  // `endTimestamp` arrives in unix seconds (same conversion as
-  // `scheduleNotification`). An `accountId` is required: the center labels
-  // rows by account and drops records whose account is unknown, so a record
-  // without one could never render.
+  // `endTimestamp` arrives in unix SECONDS (Glacier's PChainTransaction /
+  // `getUnixTime` at the dispatch sites); records store milliseconds. An
+  // `accountId` is required: the center labels rows by account and drops
+  // records whose account is unknown, so a record without one could never
+  // render.
   stakeCompleteNotificationRecordsStore.getState().upsert(
     stakeCompleteNotification.flatMap(data =>
       data.txHash && data.endTimestamp && data.accountId
