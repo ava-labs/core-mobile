@@ -31,6 +31,7 @@ export function usePinOrBiometryLogin({
   enteredPin: string
   onEnterPin: (pinKey: string) => void
   verified: boolean
+  resetLoginState: () => void
   verifyBiometric: () => Promise<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
@@ -158,6 +159,15 @@ export function usePinOrBiometryLogin({
     ]
   )
 
+  // Clears the sticky `verified` flag and the entered PIN so a subsequent
+  // PIN/biometry check re-triggers the login effect from a clean slate. Used by
+  // callers to recover after a post-verification login failure (e.g. transient
+  // secret load / unlock) instead of leaving the user stuck. (CP-14585)
+  const resetLoginState = useCallback(() => {
+    setVerified(false)
+    setEnteredPin('')
+  }, [])
+
   const onEnterPin = (pin: string): void => {
     if (pin.length > 6) {
       return
@@ -283,6 +293,7 @@ export function usePinOrBiometryLogin({
     enteredPin,
     onEnterPin,
     verified,
+    resetLoginState,
     verifyBiometric,
     disableKeypad,
     timeRemaining,

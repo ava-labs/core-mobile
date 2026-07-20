@@ -78,47 +78,15 @@ export const PinScreen = ({
     pinInputRef.current?.startLoadingAnimation()
   }, [])
 
-  const handleStopLoading = (onComplete?: () => void): void => {
+  const handleStopLoading = useCallback((onComplete?: () => void): void => {
     pinInputRef.current?.stopLoadingAnimation(onComplete)
-  }
-
-  const handleLoginSuccess = useCallback(() => {
-    handleStartLoading()
-    pinInputRef.current?.blur()
-    isProcessing.value = true
-
-    // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
-    setTimeout(async () => {
-      try {
-        if (isInitialLogin) {
-          if (!walletId) {
-            throw new Error('Wallet ID is not set')
-          }
-          //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-          const canProceed = await ensureWalletSecret(walletId, deleteWallet)
-          if (!canProceed) {
-            // Wallet secret is gone; deleteWallet routes the user to onboarding.
-            return
-          }
-        }
-        await unlock()
-      } catch (error) {
-        Logger.error('Failed to login:', error)
-      }
-    }, 0)
-  }, [
-    handleStartLoading,
-    isInitialLogin,
-    isProcessing,
-    unlock,
-    walletId,
-    deleteWallet
-  ])
+  }, [])
 
   const {
     enteredPin,
     onEnterPin,
     verified,
+    resetLoginState,
     verifyBiometric,
     disableKeypad,
     timeRemaining,
@@ -177,6 +145,49 @@ export const PinScreen = ({
     pinInputRef.current?.focus()
     setIsEnteringPin(true)
   }, [disableKeypad])
+
+  const handleLoginSuccess = useCallback(() => {
+    handleStartLoading()
+    pinInputRef.current?.blur()
+    isProcessing.value = true
+
+    // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
+    setTimeout(async () => {
+      try {
+        if (isInitialLogin) {
+          if (!walletId) {
+            throw new Error('Wallet ID is not set')
+          }
+          //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+          const canProceed = await ensureWalletSecret(walletId, deleteWallet)
+          if (!canProceed) {
+            // Wallet secret is gone; deleteWallet routes the user to onboarding.
+            return
+          }
+        }
+        await unlock()
+      } catch (error) {
+        Logger.error('Failed to login:', error)
+        // Recover the UI so the user can retry instead of being stuck on a
+        // spinner: stop the loading animation, restore the PIN input, clear the
+        // sticky verification + entered PIN so a re-entered PIN re-triggers
+        // login, then refocus for another attempt. (CP-14585)
+        isProcessing.value = false
+        resetLoginState()
+        handleStopLoading(focusPinInput)
+      }
+    }, 0)
+  }, [
+    handleStartLoading,
+    handleStopLoading,
+    isInitialLogin,
+    isProcessing,
+    unlock,
+    walletId,
+    deleteWallet,
+    resetLoginState,
+    focusPinInput
+  ])
 
   const blurPinInput = (): void => {
     pinInputRef.current?.blur()

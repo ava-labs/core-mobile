@@ -51,6 +51,21 @@ describe('ensureWalletSecret', () => {
     expect(onMissing).toHaveBeenCalledTimes(1)
   })
 
+  it.each(['NoSaltError', 'InvalidVersionError'])(
+    'returns false and triggers recovery when the secret data is corrupt (%s)',
+    async errorName => {
+      const error = new Error('corrupt secret data')
+      error.name = errorName
+      mockLoadWalletSecret.mockResolvedValue({ success: false, error })
+      const onMissing = jest.fn()
+
+      const result = await ensureWalletSecret(walletId, onMissing)
+
+      expect(result).toBe(false)
+      expect(onMissing).toHaveBeenCalledTimes(1)
+    }
+  )
+
   it('rethrows and does NOT recover on a transient keychain failure', async () => {
     mockLoadWalletSecret.mockResolvedValue({
       success: false,
