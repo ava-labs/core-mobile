@@ -8,7 +8,8 @@ jest.mock('@invertase/react-native-apple-authentication', () => ({
     signIn: jest.fn(),
     Scope: { EMAIL: 'EMAIL' },
     ResponseType: { ALL: 'ALL' },
-    Error: { SIGNIN_CANCELLED: 'SIGNIN_CANCELLED' }
+    // Real runtime value from the native module's getConstants()
+    Error: { SIGNIN_CANCELLED: 'E_SIGNIN_CANCELLED_ERROR' }
   }
 }))
 
@@ -72,7 +73,19 @@ describe('AppleSignInService.android', () => {
   describe('preserved behavior', () => {
     it('still throws USER_CANCELED when the user cancels', async () => {
       const cancelled = Object.assign(new Error('cancelled'), {
-        code: 'SIGNIN_CANCELLED'
+        code: appleAuthAndroid.Error.SIGNIN_CANCELLED
+      })
+      signInMock.mockRejectedValueOnce(cancelled)
+
+      await expect(AppleSignInService.signIn()).rejects.toThrow('USER_CANCELED')
+    })
+
+    it('treats bridge rejections carrying E_SIGNIN_CANCELLED_ERROR in the message as USER_CANCELED', async () => {
+      // The library's native module cancels via promise.reject(String), which
+      // the RN bridge surfaces as code EUNSPECIFIED with the constant as the
+      // message — so the code-based check above never sees these.
+      const cancelled = Object.assign(new Error('E_SIGNIN_CANCELLED_ERROR'), {
+        code: 'EUNSPECIFIED'
       })
       signInMock.mockRejectedValueOnce(cancelled)
 

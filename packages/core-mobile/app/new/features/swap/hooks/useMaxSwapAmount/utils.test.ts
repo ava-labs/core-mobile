@@ -101,6 +101,32 @@ describe('computeMaxAmount', () => {
     expect(result).toBeUndefined()
   })
 
+  it('uses spendableBalance instead of the displayed balance when provided (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: false,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(2000n)
+  })
+
+  it('uses spendableBalance for the estimation-error fallback too (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: undefined,
+      additiveFee: 0n,
+      hasEstimationError: true,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(3000n)
+  })
+
   it('returns balance minus gas for native token with no additive fees', () => {
     const token = makeToken(5000n)
     const result = computeMaxAmount({

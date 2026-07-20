@@ -24,7 +24,8 @@ export const send = async ({
   feeState,
   account,
   xpAddresses,
-  xpAddressDictionary
+  xpAddressDictionary,
+  filterSmallUtxos
 }: {
   walletId: string
   walletType: WalletType
@@ -37,6 +38,7 @@ export const send = async ({
   account: Account
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
+  filterSmallUtxos: boolean
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
 
@@ -53,7 +55,8 @@ export const send = async ({
           destinationAddress,
           sourceAddress: fromAddress,
           feeState,
-          xpAddresses
+          xpAddresses,
+          filterSmallUtxos
         })
         const txRequest = await getTransactionRequest({
           unsignedTx,

@@ -4,12 +4,12 @@ import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { selectEnabledNetworksByTestnet } from 'store/network/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
-import { balanceKey } from 'features/portfolio/hooks/useAccountBalances'
-import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { getCachedBalancesWithFlagFallback } from 'features/portfolio/hooks/useAccountBalances'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import { getTokensByNetworkFromCache } from './getTokensByNetworkFromCache'
@@ -81,9 +81,14 @@ class WalletGetNetworkStateHandler
 
     const activeAccount = selectActiveAccount(state)
 
-    const cachedBalancesForAccount = queryClient.getQueryData(
-      balanceKey(activeAccount, enabledNetworks)
-    ) as AdjustedNormalizedBalancesForAccount[] | undefined
+    const filterOutDustUtxos = selectIsFilterSmallUtxosActive(state)
+
+    const cachedBalancesForAccount = getCachedBalancesWithFlagFallback({
+      client: queryClient,
+      account: activeAccount,
+      networks: enabledNetworks,
+      filterOutDustUtxos
+    })
 
     const networks = enabledNetworks.map(network => {
       const { enabledTokens, disabledTokens } = getTokensByNetworkFromCache({

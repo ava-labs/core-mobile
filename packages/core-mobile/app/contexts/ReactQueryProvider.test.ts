@@ -27,8 +27,9 @@ jest.mock('@react-native-community/netinfo', () => ({
 }))
 
 jest.mock('@tanstack/react-query', () => {
-  mockInvalidateQueries = jest.fn()
+  mockInvalidateQueries = jest.fn().mockResolvedValue(undefined)
   return {
+    isCancelledError: jest.fn().mockReturnValue(false),
     QueryClient: jest.fn().mockImplementation(() => ({
       invalidateQueries: mockInvalidateQueries,
       setQueryData: jest.fn(),

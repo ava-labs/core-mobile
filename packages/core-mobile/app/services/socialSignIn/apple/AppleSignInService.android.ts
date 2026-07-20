@@ -45,11 +45,15 @@ class AppleSigninService implements AppleSigninServiceInterface {
 
       return { oidcToken: response.id_token }
     } catch (error) {
+      // The native module cancels via promise.reject(String), which the RN
+      // bridge surfaces with code EUNSPECIFIED and the constant as the
+      // message — so match the message as well as the code.
       if (
         error instanceof Error &&
-        'code' in error &&
-        (error as Error & { code: string }).code ===
-          appleAuthAndroid.Error.SIGNIN_CANCELLED
+        (('code' in error &&
+          (error as Error & { code: string }).code ===
+            appleAuthAndroid.Error.SIGNIN_CANCELLED) ||
+          error.message.includes('E_SIGNIN_CANCELLED_ERROR'))
       ) {
         throw new Error('USER_CANCELED')
       }
