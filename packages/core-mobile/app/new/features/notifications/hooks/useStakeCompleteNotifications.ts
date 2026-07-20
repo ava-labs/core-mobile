@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
 import {
   StakeCompleteNotificationRecord,
   useStakeCompleteNotificationRecords
@@ -33,13 +35,19 @@ export interface StakeCompleteNotificationItem {
 
 /**
  * Pure derivation — exported for tests. A record whose `endTimestamp` (ms)
- * has passed is a push that has fired.
+ * has passed is a push that has fired. Records whose account no longer
+ * exists are dropped: accounts vanish with their wallet, so this guard also
+ * hides a removed wallet's records — tapping one would otherwise activate a
+ * dead account id.
  */
 export const deriveStakeCompleteNotifications = ({
   records,
+  accounts,
   now
 }: {
   records: Record<string, StakeCompleteNotificationRecord>
+  /** Existing accounts keyed by account id (`selectAccounts`). */
+  accounts: Record<string, unknown>
   now: number
 }): StakeCompleteNotificationItem[] => {
   const windowStartMs =
@@ -48,7 +56,9 @@ export const deriveStakeCompleteNotifications = ({
   return Object.values(records)
     .filter(
       record =>
-        record.endTimestamp <= now && record.endTimestamp >= windowStartMs
+        record.endTimestamp <= now &&
+        record.endTimestamp >= windowStartMs &&
+        record.accountId in accounts
     )
     .sort((a, b) => b.endTimestamp - a.endTimestamp)
     .slice(0, STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS)
@@ -74,14 +84,16 @@ export const useStakeCompleteNotifications = (): {
   items: StakeCompleteNotificationItem[]
 } => {
   const { records } = useStakeCompleteNotificationRecords()
+  const accounts = useSelector(selectAccounts)
 
   const items = useMemo(
     () =>
       deriveStakeCompleteNotifications({
         records,
+        accounts,
         now: Date.now()
       }),
-    [records]
+    [records, accounts]
   )
 
   return { items }

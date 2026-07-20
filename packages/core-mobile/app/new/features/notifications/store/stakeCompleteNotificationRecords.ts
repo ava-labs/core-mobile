@@ -42,6 +42,13 @@ export interface StakeCompleteNotificationRecordsState {
    * wrong. If scheduling resumes, the scheduler's next pass re-records them.
    */
   removePending: (now: number) => void
+  /**
+   * Wipes every record. Called on logout / wallet deletion — records are
+   * wallet data (they reference account ids), and the zustand MMKV storage
+   * is not part of the logout wipe, so without this the next wallet on the
+   * device would see the previous wallet's stake notifications.
+   */
+  clear: () => void
 }
 
 export const stakeCompleteNotificationRecordsStore =
@@ -83,7 +90,8 @@ export const stakeCompleteNotificationRecordsStore =
                 ([, record]) => record.endTimestamp <= now
               )
             )
-          }))
+          })),
+        clear: () => set({ records: {} })
       }),
       {
         name: ZustandStorageKeys.STAKE_COMPLETE_NOTIFICATION_RECORDS,

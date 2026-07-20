@@ -27,6 +27,9 @@ const toMap = (
 ): Record<string, StakeCompleteNotificationRecord> =>
   Object.fromEntries(records.map(r => [r.txHash, r]))
 
+// Existing accounts keyed by id, mirroring `selectAccounts`'s shape.
+const ACCOUNTS = { 'account-1': {}, 'account-42': {} }
+
 describe('deriveStakeCompleteNotifications', () => {
   it('keeps only fired records inside the window, newest first', () => {
     const items = deriveStakeCompleteNotifications({
@@ -39,6 +42,7 @@ describe('deriveStakeCompleteNotifications', () => {
         record('newest', NOW_MS - 1 * DAY_MS),
         record('unfired', NOW_MS + 5 * DAY_MS) // trigger still pending
       ]),
+      accounts: ACCOUNTS,
       now: NOW_MS
     })
 
@@ -52,14 +56,22 @@ describe('deriveStakeCompleteNotifications', () => {
         record(`tx-${i}`, NOW_MS - (i + 1) * 3600 * 1000)
       )
     )
-    const items = deriveStakeCompleteNotifications({ records, now: NOW_MS })
+    const items = deriveStakeCompleteNotifications({
+      records,
+      accounts: ACCOUNTS,
+      now: NOW_MS
+    })
     expect(items).toHaveLength(STAKE_COMPLETE_NOTIFICATION_MAX_ITEMS)
     expect(items[0]?.txHash).toBe('tx-0')
   })
 
   it('returns empty for no records', () => {
     expect(
-      deriveStakeCompleteNotifications({ records: {}, now: NOW_MS })
+      deriveStakeCompleteNotifications({
+        records: {},
+        accounts: ACCOUNTS,
+        now: NOW_MS
+      })
     ).toEqual([])
   })
 
@@ -68,9 +80,24 @@ describe('deriveStakeCompleteNotifications', () => {
       records: toMap([
         record('a', NOW_MS - DAY_MS, { accountId: 'account-42' })
       ]),
+      accounts: ACCOUNTS,
       now: NOW_MS
     })
     expect(items[0]?.accountId).toBe('account-42')
+  })
+
+  it('drops records whose account no longer exists (removed wallet)', () => {
+    // Accounts vanish with their wallet, so a removed wallet's records must
+    // not surface — tapping one would activate a dead account id.
+    const items = deriveStakeCompleteNotifications({
+      records: toMap([
+        record('kept', NOW_MS - DAY_MS),
+        record('ghost', NOW_MS - 2 * DAY_MS, { accountId: 'gone-account' })
+      ]),
+      accounts: ACCOUNTS,
+      now: NOW_MS
+    })
+    expect(items.map(i => i.txHash)).toEqual(['kept'])
   })
 
   it('keeps records from both environments, tagged with their mode', () => {
@@ -81,6 +108,7 @@ describe('deriveStakeCompleteNotifications', () => {
         record('mainnet', NOW_MS - DAY_MS),
         record('testnet', NOW_MS - 2 * DAY_MS, { isDeveloperMode: true })
       ]),
+      accounts: ACCOUNTS,
       now: NOW_MS
     })
     expect(items.map(i => [i.txHash, i.isDeveloperMode])).toEqual([
@@ -127,5 +155,15 @@ describe('stakeCompleteNotificationRecordsStore', () => {
     expect(
       Object.keys(stakeCompleteNotificationRecordsStore.getState().records)
     ).toEqual(['fired'])
+  })
+
+  it('clear wipes every record (logout / wallet deletion)', () => {
+    const { upsert, clear } = stakeCompleteNotificationRecordsStore.getState()
+    upsert([
+      record('fired', Date.now() - DAY_MS),
+      record('pending', Date.now() + DAY_MS)
+    ])
+    clear()
+    expect(stakeCompleteNotificationRecordsStore.getState().records).toEqual({})
   })
 })
