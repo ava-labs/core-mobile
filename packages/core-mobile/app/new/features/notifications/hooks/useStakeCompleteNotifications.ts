@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccounts } from 'store/account'
 import { selectIsEarnBlocked } from 'store/posthog'
@@ -92,6 +92,17 @@ export const useStakeCompleteNotifications = (): {
   // records stay in the store, so the items return if the flag comes back.
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
+  // "Fired" is a pure function of time, so a stake completing while the
+  // center stays open would otherwise not surface until remount (`records`
+  // don't change when a trigger fires — re-renders alone can't recompute the
+  // memo). Tick `now` each minute so the derivation follows the clock; the
+  // interval only lives while a consumer (the center screen) is mounted.
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+
   const items = useMemo(
     () =>
       isEarnBlocked
@@ -99,9 +110,9 @@ export const useStakeCompleteNotifications = (): {
         : deriveStakeCompleteNotifications({
             records,
             accounts,
-            now: Date.now()
+            now
           }),
-    [isEarnBlocked, records, accounts]
+    [isEarnBlocked, records, accounts, now]
   )
 
   return { items }
