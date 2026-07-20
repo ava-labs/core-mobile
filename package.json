@@ -4,7 +4,10 @@
   "license": "Limited Ecosystem License",
   "version": "1.0.0",
   "workspaces": [
-    "packages/*"
+    "packages/core-mobile",
+    "packages/eslint-mobile",
+    "packages/k2-alpine",
+    "packages/tsconfig-mobile"
   ],
   "scripts": {
     "prepare": "husky",
