@@ -69,12 +69,25 @@ require_env \
 echo "==> Caller identity"
 aws sts get-caller-identity --region "${AWS_REGION}"
 
-echo "==> Check ECR repo exists (${REPO_NAME})"
-if ! aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
-  echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
-  echo "Create it once with admin credentials (CI user cannot CreateRepository):"
-  echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
-  exit 1
+echo "==> Check ECR repo (${REPO_NAME})"
+if ! describe_out="$(aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" 2>&1)"; then
+  if echo "${describe_out}" | grep -q 'RepositoryNotFoundException'; then
+    echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
+    echo "Create it once with admin credentials (CI user cannot CreateRepository):"
+    echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
+    exit 1
+  fi
+  if echo "${describe_out}" | grep -qi 'AccessDenied'; then
+    echo "WARN: CI user cannot describe ECR repo (AccessDenied)."
+    echo "      Assuming '${REPO_NAME}' already exists — continuing to login/push."
+    echo "      If push fails, grant bitrise-devicefarm-sa ECR push + DescribeRepositories on this repo."
+  else
+    echo "ERROR: failed to describe ECR repo:"
+    echo "${describe_out}"
+    exit 1
+  fi
+else
+  echo "    found"
 fi
 
 echo "==> Login to ECR"

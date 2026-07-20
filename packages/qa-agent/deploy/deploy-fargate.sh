@@ -23,12 +23,23 @@ IMAGE_TAG="${IMAGE_TAG:-latest}"
 
 ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}"
 
-echo "==> Check ECR repo exists (${REPO_NAME})"
-if ! aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" >/dev/null 2>&1; then
-  echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
-  echo "Create it once with admin credentials:"
-  echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
-  exit 1
+echo "==> Check ECR repo (${REPO_NAME})"
+if ! describe_out="$(aws ecr describe-repositories --repository-names "${REPO_NAME}" --region "${AWS_REGION}" 2>&1)"; then
+  if echo "${describe_out}" | grep -q 'RepositoryNotFoundException'; then
+    echo "ERROR: ECR repository '${REPO_NAME}' not found in ${AWS_REGION}."
+    echo "Create it once with admin credentials:"
+    echo "  aws ecr create-repository --repository-name ${REPO_NAME} --region ${AWS_REGION}"
+    exit 1
+  fi
+  if echo "${describe_out}" | grep -qi 'AccessDenied'; then
+    echo "WARN: cannot describe ECR repo (AccessDenied). Assuming it exists — continuing."
+  else
+    echo "ERROR: failed to describe ECR repo:"
+    echo "${describe_out}"
+    exit 1
+  fi
+else
+  echo "    found"
 fi
 
 echo "==> Login to ECR"
