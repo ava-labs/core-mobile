@@ -91,13 +91,8 @@ const mockTrading = { isTradingEnabled: true }
 jest.mock('../hooks/usePerpsEnableTradingGate', () => ({
   usePerpsEnableTradingGate: () => ({
     isTradingEnabled: mockTrading.isTradingEnabled,
-    requireTradingEnabled: () => mockTrading.isTradingEnabled,
-    enableTradingModal: null
+    requireTradingEnabled: () => mockTrading.isTradingEnabled
   })
-}))
-
-jest.mock('../components/PerpsEnableTradingModal', () => ({
-  PerpsEnableTradingModal: () => null
 }))
 
 jest.mock('../components/PositionPill', () => ({ PositionPill: () => null }))

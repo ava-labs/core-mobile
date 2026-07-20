@@ -1,35 +1,21 @@
-import {
-  Button,
-  Checklist,
-  type ChecklistItem,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
+import { Checklist, View, type ChecklistItem } from '@avalabs/k2-alpine'
 import { isPerpsUserRejection } from '@avalabs/perps-sdk'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'common/utils/toast'
-import React, { useCallback, useEffect } from 'react'
-import { Modal, Pressable } from 'react-native'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import { usePerpsBuilderFee } from '../hooks/usePerpsBuilderFee'
 import { usePerpsUnifiedAccount } from '../hooks/usePerpsUnifiedAccount'
 
-export type PerpsEnableTradingModalProps = {
-  readonly open: boolean
-  readonly onClose: () => void
-  /** Fired once all required setup steps complete in this session. */
-  readonly onAllStepsCompleted?: () => void
-}
-
 /**
- * "Set up trading account" sheet: agent approval, builder-fee approval, and
- * unified-account enablement. All three steps are required before trading
- * (matches core-web's `PerpsEnableTradingModal`).
+ * "Set up trading account" form sheet: agent approval, builder-fee approval,
+ * and unified-account enablement. All three steps are required before trading
+ * (matches core-web's `PerpsEnableTradingModal`). Presented as a modal route
+ * on top of the perps screen that required trading setup.
  */
-export const PerpsEnableTradingModal = ({
-  open,
-  onClose,
-  onAllStepsCompleted
-}: PerpsEnableTradingModalProps): JSX.Element | null => {
+export const PerpetualsEnableTradingScreen = (): JSX.Element => {
+  const router = useRouter()
   const { hasAgent, approveBackgroundTrading, isAgentApprovalSubmitting } =
     usePerps()
   const {
@@ -46,6 +32,17 @@ export const PerpsEnableTradingModal = ({
 
   const isBuilderFeeStepDone =
     builderFeeTenthsBps === undefined || isBuilderFeeApproved
+
+  // The last step's handler dismisses eagerly while the effect below also
+  // reacts to the queries flipping done — guard so we only pop this sheet once.
+  const dismissedRef = useRef(false)
+  const dismiss = useCallback(() => {
+    if (dismissedRef.current) {
+      return
+    }
+    dismissedRef.current = true
+    router.canGoBack() && router.back()
+  }, [router])
 
   const handleEnableAgent = useCallback(async () => {
     try {
@@ -64,41 +61,26 @@ export const PerpsEnableTradingModal = ({
   const handleEnableBuilderFee = useCallback(async () => {
     try {
       await approveBuilderFee()
-      if (isUnifiedAccount) {
-        onAllStepsCompleted?.()
-      }
     } catch {
       // `usePerpsBuilderFee.approve` already toasts rejection and failures.
     }
-  }, [approveBuilderFee, isUnifiedAccount, onAllStepsCompleted])
+  }, [approveBuilderFee])
 
   const handleEnableUnifiedAccount = useCallback(async () => {
     try {
       await enableUnifiedAccount()
-      onAllStepsCompleted?.()
-      onClose()
+      dismiss()
     } catch {
       // `usePerpsUnifiedAccount.enableUnifiedAccount` already toasts failures.
     }
-  }, [enableUnifiedAccount, onAllStepsCompleted, onClose])
+  }, [enableUnifiedAccount, dismiss])
 
-  // Close when all steps are already satisfied (e.g. reopen after prior setup).
+  // Dismiss when all steps are already satisfied (e.g. reopen after prior setup).
   useEffect(() => {
-    if (!open) {
-      return
-    }
     if (hasAgent && isBuilderFeeStepDone && isUnifiedAccount) {
-      onAllStepsCompleted?.()
-      onClose()
+      dismiss()
     }
-  }, [
-    open,
-    hasAgent,
-    isBuilderFeeStepDone,
-    isUnifiedAccount,
-    onAllStepsCompleted,
-    onClose
-  ])
+  }, [hasAgent, isBuilderFeeStepDone, isUnifiedAccount, dismiss])
 
   const steps: ChecklistItem[] = [
     {
@@ -135,56 +117,15 @@ export const PerpsEnableTradingModal = ({
     }
   ]
 
-  if (!open) {
-    return null
-  }
-
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}>
-      <Pressable
-        onPress={onClose}
-        style={{
-          flex: 1,
-          justifyContent: 'flex-end',
-          backgroundColor: 'rgba(0,0,0,0.5)'
-        }}>
-        <Pressable
-          // Swallow taps on the sheet so they don't dismiss via the backdrop.
-          onPress={event => event.stopPropagation()}
-          style={{ width: '100%' }}>
-          <View
-            testID="perps-enable-trading-modal"
-            sx={{
-              backgroundColor: '$surfacePrimary',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              padding: 24,
-              gap: 24
-            }}>
-            <View sx={{ gap: 8 }}>
-              <Text variant="heading3">Set up trading account</Text>
-              <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                Complete these one-time steps to get started trading on
-                Hyperliquid
-              </Text>
-            </View>
-
-            <Checklist items={steps} />
-
-            <Button
-              type="tertiary"
-              size="large"
-              onPress={onClose}
-              testID="perps-enable-trading-close">
-              Not now
-            </Button>
-          </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+    <ScrollScreen
+      isModal
+      title="Set up trading account"
+      subtitle="Complete these one-time steps to get started trading on Hyperliquid"
+      contentContainerStyle={{ padding: 16 }}>
+      <View style={{ marginTop: 24 }}>
+        <Checklist items={steps} />
+      </View>
+    </ScrollScreen>
   )
 }

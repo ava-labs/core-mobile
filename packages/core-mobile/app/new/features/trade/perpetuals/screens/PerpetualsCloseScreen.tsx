@@ -121,8 +121,7 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
   const { closePosition, busy } = usePerpsPositionActions()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
+  const { requireTradingEnabled } = usePerpsEnableTradingGate()
   // `szDecimals` quantizes the close size so the SDK's floatToWire doesn't throw
   // on the float residue a raw division leaves behind. Static per coin.
   const { universe } = useHyperliquidMarketContext(coin)
@@ -187,62 +186,59 @@ const MarketCloseBody = (props: CloseParams): JSX.Element => {
   )
 
   return (
-    <>
-      <ScrollScreen
-        isModal
-        title="Market close"
-        navigationTitle="Market close"
-        renderFooter={renderFooter}
-        contentContainerStyle={{ padding: 16 }}>
-        <View sx={{ paddingTop: 8, gap: 10 }}>
-          <PositionPill coin={coin} price={price} side={side} />
-          <View
-            sx={{
-              backgroundColor: '$surfaceSecondary',
-              borderRadius: 12,
-              paddingVertical: 16
-            }}>
-            <CircularDial
-              value={receive}
-              onChange={setReceive}
-              max={positionValue}
-              label="Size"
-              presets={MARKET_PRESETS}
-              enableManualInput
-              testID="perpetuals_market_close_amount"
-            />
-          </View>
-          <GroupList
-            titleSx={{ fontFamily: 'Inter-Regular' }}
-            data={[
-              {
-                title: 'Size',
-                value: (
-                  <Text variant="body1" sx={{ color: '$textPrimary' }}>
-                    {formatCurrency({ amount: receive })}
-                  </Text>
-                )
-              },
-              {
-                title: 'Estimated profit',
-                value: <ProfitText value={estimatedProfit} />
-              }
-            ]}
+    <ScrollScreen
+      isModal
+      title="Market close"
+      navigationTitle="Market close"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ paddingTop: 8, gap: 10 }}>
+        <PositionPill coin={coin} price={price} side={side} />
+        <View
+          sx={{
+            backgroundColor: '$surfaceSecondary',
+            borderRadius: 12,
+            paddingVertical: 16
+          }}>
+          <CircularDial
+            value={receive}
+            onChange={setReceive}
+            max={positionValue}
+            label="Size"
+            presets={MARKET_PRESETS}
+            enableManualInput
+            testID="perpetuals_market_close_amount"
           />
-          {leavesDustBelowMin ? (
-            <Text
-              variant="caption"
-              sx={{ color: '$textDanger', textAlign: 'center' }}
-              testID="perpetuals_market_close_min_error">
-              {`Keep at least ${formatCurrency({
-                amount: HYPERLIQUID_MIN_ORDER_NOTIONAL_USD
-              })} open or close the full position.`}
-            </Text>
-          ) : null}
         </View>
-      </ScrollScreen>
-      {enableTradingModal}
-    </>
+        <GroupList
+          titleSx={{ fontFamily: 'Inter-Regular' }}
+          data={[
+            {
+              title: 'Size',
+              value: (
+                <Text variant="body1" sx={{ color: '$textPrimary' }}>
+                  {formatCurrency({ amount: receive })}
+                </Text>
+              )
+            },
+            {
+              title: 'Estimated profit',
+              value: <ProfitText value={estimatedProfit} />
+            }
+          ]}
+        />
+        {leavesDustBelowMin ? (
+          <Text
+            variant="caption"
+            sx={{ color: '$textDanger', textAlign: 'center' }}
+            testID="perpetuals_market_close_min_error">
+            {`Keep at least ${formatCurrency({
+              amount: HYPERLIQUID_MIN_ORDER_NOTIONAL_USD
+            })} open or close the full position.`}
+          </Text>
+        ) : null}
+      </View>
+    </ScrollScreen>
   )
 }
 
@@ -252,8 +248,7 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
   const { limitClose, busy } = usePerpsPositionActions()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
+  const { requireTradingEnabled } = usePerpsEnableTradingGate()
   // `szDecimals` quantizes the close size so the SDK's floatToWire doesn't throw
   // on the float residue a raw division leaves behind. Static per coin.
   const { universe } = useHyperliquidMarketContext(coin)
@@ -326,94 +321,91 @@ const LimitCloseBody = (props: CloseParams): JSX.Element => {
   )
 
   return (
-    <>
-      <ScrollScreen
-        isModal
-        title="Limit close"
-        navigationTitle="Limit close"
-        shouldAvoidKeyboard
-        renderFooter={renderFooter}
-        contentContainerStyle={{ padding: 16 }}>
-        <View sx={{ paddingTop: 8, gap: 10 }}>
-          <PositionPill coin={coin} price={price} side={side} />
-          <View
-            sx={{
-              backgroundColor: '$surfaceSecondary',
-              borderRadius: 12,
-              paddingVertical: 32,
-              paddingHorizontal: 16,
-              alignItems: 'center',
-              gap: 16
-            }}>
-            <View sx={{ alignItems: 'center', gap: 4 }}>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                Set limit price
-              </Text>
-              <View>
-                <AutoSizeTextInput
-                  prefix="$"
-                  value={limitText}
-                  onChangeText={handleChangeText}
-                  keyboardType="decimal-pad"
-                  placeholder="0.00"
-                  autoFocus
-                  testID="perpetuals_limit_close_price"
-                />
-              </View>
-            </View>
-            <View sx={{ flexDirection: 'row', gap: 7 }}>
-              {LIMIT_OFFSETS.map(offset => {
-                const target = (price * (1 + offset / 100)).toFixed(2)
-                const selected = limitText === target
-                return (
-                  <TouchableOpacity
-                    key={offset}
-                    onPress={() => setLimitText(target)}
-                    style={{
-                      backgroundColor: selected
-                        ? theme.colors.$textPrimary
-                        : theme.colors.$borderPrimary,
-                      borderRadius: 360,
-                      paddingHorizontal: 14,
-                      paddingVertical: 6,
-                      minWidth: 64,
-                      alignItems: 'center'
-                    }}>
-                    <Text
-                      variant="buttonSmall"
-                      sx={{
-                        color: selected ? '$surfacePrimary' : '$textPrimary'
-                      }}>
-                      {`+${offset}%`}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              })}
+    <ScrollScreen
+      isModal
+      title="Limit close"
+      navigationTitle="Limit close"
+      shouldAvoidKeyboard
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ paddingTop: 8, gap: 10 }}>
+        <PositionPill coin={coin} price={price} side={side} />
+        <View
+          sx={{
+            backgroundColor: '$surfaceSecondary',
+            borderRadius: 12,
+            paddingVertical: 32,
+            paddingHorizontal: 16,
+            alignItems: 'center',
+            gap: 16
+          }}>
+          <View sx={{ alignItems: 'center', gap: 4 }}>
+            <Text variant="caption" sx={{ color: '$textSecondary' }}>
+              Set limit price
+            </Text>
+            <View>
+              <AutoSizeTextInput
+                prefix="$"
+                value={limitText}
+                onChangeText={handleChangeText}
+                keyboardType="decimal-pad"
+                placeholder="0.00"
+                autoFocus
+                testID="perpetuals_limit_close_price"
+              />
             </View>
           </View>
-          <GroupList
-            titleSx={{ fontFamily: 'Inter-Regular' }}
-            data={[
-              {
-                title: 'Size',
-                value: (
-                  <Text variant="body1" sx={{ color: '$textPrimary' }}>
-                    {receive !== undefined
-                      ? formatCurrency({ amount: receive })
-                      : DASH}
+          <View sx={{ flexDirection: 'row', gap: 7 }}>
+            {LIMIT_OFFSETS.map(offset => {
+              const target = (price * (1 + offset / 100)).toFixed(2)
+              const selected = limitText === target
+              return (
+                <TouchableOpacity
+                  key={offset}
+                  onPress={() => setLimitText(target)}
+                  style={{
+                    backgroundColor: selected
+                      ? theme.colors.$textPrimary
+                      : theme.colors.$borderPrimary,
+                    borderRadius: 360,
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    minWidth: 64,
+                    alignItems: 'center'
+                  }}>
+                  <Text
+                    variant="buttonSmall"
+                    sx={{
+                      color: selected ? '$surfacePrimary' : '$textPrimary'
+                    }}>
+                    {`+${offset}%`}
                   </Text>
-                )
-              },
-              {
-                title: 'Estimated profit',
-                value: <ProfitText value={estimatedProfit} />
-              }
-            ]}
-          />
+                </TouchableOpacity>
+              )
+            })}
+          </View>
         </View>
-      </ScrollScreen>
-      {enableTradingModal}
-    </>
+        <GroupList
+          titleSx={{ fontFamily: 'Inter-Regular' }}
+          data={[
+            {
+              title: 'Size',
+              value: (
+                <Text variant="body1" sx={{ color: '$textPrimary' }}>
+                  {receive !== undefined
+                    ? formatCurrency({ amount: receive })
+                    : DASH}
+                </Text>
+              )
+            },
+            {
+              title: 'Estimated profit',
+              value: <ProfitText value={estimatedProfit} />
+            }
+          ]}
+        />
+      </View>
+    </ScrollScreen>
   )
 }
 
