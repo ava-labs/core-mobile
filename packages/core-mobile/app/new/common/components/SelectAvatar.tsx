@@ -114,6 +114,7 @@ export const SelectAvatar = memo(
         isModal={isModal}
         subtitle={description}
         renderFooter={renderFooter}
+        disableHeaderSnap
         scrollEnabled={false}
         contentContainerStyle={{
           flex: 1
