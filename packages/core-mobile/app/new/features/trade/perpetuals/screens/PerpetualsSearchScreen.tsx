@@ -14,8 +14,9 @@ import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
 import { PerpetualListItem } from '../components/PerpetualListItem'
-import { PERP_MARKETS_MOCK } from '../mocks'
-import { PerpetualMarket } from '../types'
+import { usePerpetualMarkets } from '../hooks/usePerpetualMarkets'
+import { usePerpsLiveMidsFeed } from '../hooks/usePerpsLiveMids'
+import { PerpMarketView } from '../types'
 
 const cactusIcon = require('../../../../assets/icons/cactus.png')
 
@@ -29,7 +30,7 @@ const SORT_OPTIONS: { id: PerpetualSort; title: string }[] = [
 
 // Signed % change so a Down status sorts below a flat/Up one — mirrors the
 // ordering used by the main PerpetualsScreen filter.
-const signedChange = (market: PerpetualMarket): number =>
+const signedChange = (market: PerpMarketView): number =>
   market.changeStatus === PriceChangeStatus.Down
     ? -market.changePercent
     : market.changeStatus === PriceChangeStatus.Up
@@ -42,12 +43,17 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
   const [isSearchBarFocused, setIsSearchBarFocused] = useState(false)
   const [selectedSort, setSelectedSort] = useState<PerpetualSort>('volume')
 
+  const { markets } = usePerpetualMarkets()
+
+  // Keep search-result prices live too.
+  usePerpsLiveMidsFeed()
+
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
       return []
     }
-    const filtered = PERP_MARKETS_MOCK.filter(market =>
+    const filtered = markets.filter(market =>
       market.symbol.toLowerCase().includes(trimmed)
     )
     switch (selectedSort) {
@@ -60,7 +66,7 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
       default:
         return filtered
     }
-  }, [searchText, selectedSort])
+  }, [searchText, selectedSort, markets])
 
   const sortGroups = useMemo<DropdownGroup[]>(
     () => [
@@ -88,22 +94,25 @@ export const PerpetualsSearchScreen = (): JSX.Element => {
     []
   )
 
-  const renderItem: ListRenderItem<PerpetualMarket> = useCallback(
+  const handleMarketPress = useCallback(
+    (symbol: string) => {
+      router.navigate(`/perpetualsDetails?coin=${encodeURIComponent(symbol)}`)
+    },
+    [router]
+  )
+
+  const renderItem: ListRenderItem<PerpMarketView> = useCallback(
     ({ item, index }) => (
       <PerpetualListItem
         market={item}
         isFirst={index === 0}
-        onPress={() => {
-          router.navigate(
-            `/perpetualsDetails?coin=${encodeURIComponent(item.symbol)}`
-          )
-        }}
+        onPress={handleMarketPress}
       />
     ),
-    [router]
+    [handleMarketPress]
   )
 
-  const keyExtractor = useCallback((item: PerpetualMarket) => item.id, [])
+  const keyExtractor = useCallback((item: PerpMarketView) => item.id, [])
 
   const handleCancel = useCallback(async () => {
     // Dismiss the keyboard before closing so it doesn't linger on Android.

@@ -784,3 +784,105 @@ describe('createEvmSigner.sign — single-tx auto-approve context', () => {
     expect(call.context[RequestContext.SWAP_AUTO_APPROVE]).toBeUndefined()
   })
 })
+
+describe('createEvmSigner.signTypedData', () => {
+  const typedData = {
+    domain: {
+      name: 'HyperliquidSignTransaction',
+      version: '1',
+      chainId: 43114,
+      verifyingContract:
+        '0x0000000000000000000000000000000000000000' as `0x${string}`
+    },
+    types: {
+      'HyperliquidTransaction:SendAsset': [
+        { name: 'hyperliquidChain', type: 'string' },
+        { name: 'destination', type: 'string' },
+        { name: 'nonce', type: 'uint64' }
+      ]
+    },
+    primaryType: 'HyperliquidTransaction:SendAsset',
+    message: {
+      hyperliquidChain: 'Mainnet',
+      destination: '0xabc',
+      nonce: 1_700_000_000_000n
+    }
+  }
+
+  it('signs via eth_signTypedData_v4 with EIP712Domain prepended', async () => {
+    const request = jest.fn().mockResolvedValue('0xsig')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: false,
+      maxBuy: '5000',
+      isBatchSigningSupported: true
+    }))
+
+    expect(signer.signTypedData).toBeDefined()
+    const result = await signer.signTypedData!(
+      {
+        typedData,
+        address: '0xabc',
+        chainId: 43114
+      },
+      makeStepDetails({
+        currentSignatureReason: TransferSignatureReason.HyperliquidSendAsset,
+        requiredSignatures: 2,
+        currentSignature: 2
+      })
+    )
+
+    expect(result).toBe('0xsig')
+    expect(request).toHaveBeenCalledTimes(1)
+    const call = request.mock.calls[0][0]
+    expect(call.method).toBe(RpcMethod.SIGN_TYPED_DATA_V4)
+    expect(call.chainId).toBe('eip155:43114')
+    expect(call.params[0]).toBe('0xabc')
+    expect(call.params[1]).toEqual({
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+          { name: 'verifyingContract', type: 'address' }
+        ],
+        'HyperliquidTransaction:SendAsset':
+          typedData.types['HyperliquidTransaction:SendAsset']
+      },
+      domain: typedData.domain,
+      primaryType: typedData.primaryType,
+      message: {
+        hyperliquidChain: 'Mainnet',
+        destination: '0xabc',
+        nonce: '1700000000000'
+      }
+    })
+  })
+
+  it('falls back to the params chainId when domain.chainId is absent', async () => {
+    const request = jest.fn().mockResolvedValue('0xsig')
+    const signer = createEvmSigner(request, () => ({
+      isQuickSwapsActive: false,
+      maxBuy: '5000',
+      isBatchSigningSupported: true
+    }))
+
+    expect(signer.signTypedData).toBeDefined()
+    await signer.signTypedData!(
+      {
+        typedData: {
+          ...typedData,
+          domain: {
+            name: 'RelayNonceMapping',
+            version: '1',
+            verifyingContract: '0x0000000000000000000000000000000000000000'
+          }
+        },
+        address: '0xabc',
+        chainId: 1
+      },
+      makeStepDetails()
+    )
+
+    expect(request.mock.calls[0][0].chainId).toBe('eip155:1')
+  })
+})

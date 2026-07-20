@@ -1,18 +1,24 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
+  ActivityIndicator,
   Button,
   GroupList,
   type GroupListItem,
   Text,
   TokenUnitInputWidget,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
+import { isUserRejectionError } from 'features/swap/utils/fusionErrors'
 import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
+import { USDC_DECIMALS } from '../consts'
+import { PerpsApiDownState } from '../components/PerpsApiDownState'
+import { usePerpsWithdraw } from '../hooks/usePerpsWithdraw'
 
-const USDC_DECIMALS = 6
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
 
 const toUsdc = (amount: number): TokenUnit =>
@@ -22,11 +28,7 @@ const toUsdc = (amount: number): TokenUnit =>
     USDC_TOKEN.symbol
   )
 
-// Stubs until we wire the real Hyperliquid clearinghouse-derived values.
-const AVAILABLE_USDC = 1234.45
-const PENDING_SETTLEMENTS_USDC = 439.54
-const PENDING_POSITION_COUNT = 3
-const FEE_USDC = 0.5
+const DASH = '—'
 
 const formatUsdcAmount = (amount: number): string =>
   `${formatNumber(amount)} USDC`
@@ -34,9 +36,27 @@ const formatUsd = (amount: number): string => `$${formatNumber(amount)} USD`
 
 export const PerpetualsWithdrawScreen = (): JSX.Element => {
   const router = useRouter()
+  const { theme } = useTheme()
   const [amount, setAmount] = useState<number>(0)
 
-  const availableBalance = useMemo(() => toUsdc(AVAILABLE_USDC), [])
+  const {
+    withdrawableUsd,
+    isWithdrawableLoading,
+    refetchWithdrawable,
+    bestQuote,
+    isQuoting,
+    canWithdraw,
+    isWithdrawing,
+    exceedsWithdrawable,
+    estimatedReceive,
+    executeWithdraw
+  } = usePerpsWithdraw(amount > 0 ? String(amount) : '')
+
+  const available = withdrawableUsd
+  const availableBalance = useMemo(
+    () => (available === undefined ? undefined : toUsdc(available)),
+    [available]
+  )
 
   const handleAmountChange = useCallback((value: TokenUnit): void => {
     setAmount(value.toDisplay({ asNumber: true }))
@@ -49,27 +69,48 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
   )
 
   const hasInput = amount > 0
-  const exceedsBalance = amount > AVAILABLE_USDC
-  const isValid = hasInput && !exceedsBalance
+  const exceedsBalance = exceedsWithdrawable
 
-  const youReceive = Math.max(0, amount - FEE_USDC)
+  // Fee and receive come only from the live bridge quote — no fabricated
+  // fallback. Until a quote resolves they render as a dash / "Calculating…".
+  const feeUsdc =
+    estimatedReceive !== undefined
+      ? Math.max(0, amount - estimatedReceive)
+      : undefined
 
-  const handleSubmit = useCallback(() => {
-    // TODO: real withdraw submission (Hyperliquid → C-Chain via SDK).
-    router.back()
-  }, [router])
+  const handleSubmit = useCallback(async () => {
+    if (bestQuote === undefined) {
+      return
+    }
+    try {
+      await executeWithdraw(bestQuote)
+      showSnackbar('Withdrawal submitted')
+      router.back()
+    } catch (e) {
+      if (isUserRejectionError(e)) {
+        return
+      }
+      showSnackbar(e instanceof Error ? e.message : 'Withdrawal failed')
+    }
+  }, [bestQuote, executeWithdraw, router])
+
+  const footerLabel = isWithdrawing
+    ? 'Withdrawing...'
+    : isQuoting
+    ? 'Getting quote...'
+    : 'Withdraw'
 
   const renderFooter = useCallback(
     () => (
       <Button
         type="primary"
         size="large"
-        disabled={!isValid}
+        disabled={!hasInput || !canWithdraw || isWithdrawing}
         onPress={handleSubmit}>
-        Withdraw
+        {footerLabel}
       </Button>
     ),
-    [isValid, handleSubmit]
+    [hasInput, canWithdraw, isWithdrawing, footerLabel, handleSubmit]
   )
 
   const mutedValue = useCallback(
@@ -82,39 +123,16 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
   )
 
   const availableRow: GroupListItem[] = useMemo(
-    () => [
-      {
-        title: 'Available to withdraw',
-        value: mutedValue(formatUsd(AVAILABLE_USDC)),
-        accordion: (
-          <View
-            sx={{
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 12
-            }}>
-            <View sx={{ gap: 2, flex: 1 }}>
-              <Text variant="body1">Pending settlements</Text>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                {`Locked in ${PENDING_POSITION_COUNT} active position${
-                  PENDING_POSITION_COUNT > 1 ? 's' : ''
-                }.`}
-              </Text>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                Available after markets end.
-              </Text>
-            </View>
-            <Text variant="body1" sx={{ color: '$textSecondary' }}>
-              {formatUsd(PENDING_SETTLEMENTS_USDC)}
-            </Text>
-          </View>
-        )
-      }
-    ],
-    [mutedValue]
+    () =>
+      available === undefined
+        ? []
+        : [
+            {
+              title: 'Available to withdraw',
+              value: mutedValue(formatUsd(available))
+            }
+          ],
+    [mutedValue, available]
   )
 
   const breakdown: GroupListItem[] = useMemo(
@@ -138,24 +156,61 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
       },
       {
         title: 'Fees',
-        value: (
-          <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="body1" sx={{ color: '$textSecondary' }}>
-              {formatUsdcAmount(FEE_USDC)}
-            </Text>
-            <Text variant="caption" sx={{ color: '$textSecondary' }}>
-              {formatUsd(FEE_USDC)}
-            </Text>
-          </View>
-        )
+        value:
+          feeUsdc !== undefined ? (
+            <View sx={{ alignItems: 'flex-end' }}>
+              <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                {formatUsdcAmount(feeUsdc)}
+              </Text>
+              <Text variant="caption" sx={{ color: '$textSecondary' }}>
+                {formatUsd(feeUsdc)}
+              </Text>
+            </View>
+          ) : (
+            mutedValue(isQuoting ? 'Calculating…' : DASH)
+          )
       },
       {
         title: "You'll receive",
-        value: mutedValue(formatUsdcAmount(youReceive))
+        value: mutedValue(
+          estimatedReceive !== undefined
+            ? formatUsdcAmount(estimatedReceive)
+            : isQuoting
+            ? 'Calculating…'
+            : DASH
+        )
       }
     ],
-    [amount, youReceive, mutedValue]
+    [amount, estimatedReceive, feeUsdc, isQuoting, mutedValue]
   )
+
+  if (available === undefined && isWithdrawableLoading) {
+    return (
+      <ScrollScreen
+        isModal
+        title="How much do you want to withdraw?"
+        navigationTitle="Enter withdraw amount"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <View
+          testID="perps-withdrawable-loading"
+          sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={theme.colors.$textPrimary} />
+        </View>
+      </ScrollScreen>
+    )
+  }
+
+  if (available === undefined) {
+    return (
+      <ScrollScreen
+        isModal
+        title="How much do you want to withdraw?"
+        navigationTitle="Enter withdraw amount"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <PerpsApiDownState onRetry={refetchWithdrawable} />
+      </ScrollScreen>
+    )
+  }
 
   return (
     <ScrollScreen
@@ -172,7 +227,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
           sx={{ width: '100%' }}
           autoFocus
           token={USDC_TOKEN}
-          balance={availableBalance}
+          balance={availableBalance ?? toUsdc(available)}
           amount={amount > 0 ? toUsdc(amount) : undefined}
           onChange={handleAmountChange}
           formatInCurrency={formatInCurrency}
@@ -181,7 +236,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
 
         {exceedsBalance ? (
           <Text variant="caption" sx={{ color: '$textDanger' }}>
-            {`Maximum withdrawal is ${formatUsdcAmount(AVAILABLE_USDC)}`}
+            {`Maximum withdrawal is ${formatUsdcAmount(available)}`}
           </Text>
         ) : null}
       </View>

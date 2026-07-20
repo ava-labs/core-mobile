@@ -29,10 +29,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { TradeBalance } from '../components/TradeBalance'
 import { PerpetualsScreen } from '../perpetuals/screens/PerpetualsScreen'
+import { usePerpsPositions } from '../perpetuals/hooks/usePerpsPositions'
 
 const GRADIENT_HEIGHT = 110
-// TODO: replace with the real perps balance once the SDK is wired.
-const MOCK_TRADE_BALANCE = 10250000.23
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
@@ -45,6 +44,7 @@ export function TradeScreen(): JSX.Element {
   const frame = useSafeAreaFrame()
   const router = useRouter()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+  const { accountValueUsd } = usePerpsPositions()
 
   const hasViewedPerpsOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.PERPETUALS_ONBOARDING)
@@ -173,7 +173,7 @@ export function TradeScreen(): JSX.Element {
               paddingHorizontal: 16
             }}>
             <TradeBalance
-              balance={MOCK_TRADE_BALANCE}
+              balance={accountValueUsd}
               onBalancePress={() => router.navigate('/perpetualsBalance')}
               onWithdrawPress={() => router.navigate('/perpetualsWithdraw')}
               onDepositPress={() => router.navigate('/perpetualsDeposit')}
@@ -190,7 +190,8 @@ export function TradeScreen(): JSX.Element {
       balanceHeight,
       theme.colors.$surfacePrimary,
       handleBalanceLayout,
-      router
+      router,
+      accountValueUsd
     ]
   )
 

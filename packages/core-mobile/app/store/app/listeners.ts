@@ -33,6 +33,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { useDisableLockAppStore } from 'features/accountSettings/store'
+import { clearPerpsSessionCaches } from 'features/trade/perpetuals/utils/clearPerpsSessionCaches'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import {
   onAppLocked,
@@ -197,6 +198,11 @@ const clearData = async (
     queryClient.clear()
   } catch (e) {
     Logger.error('failed to clear React Query cache', e)
+  }
+  try {
+    clearPerpsSessionCaches()
+  } catch (e) {
+    Logger.error('failed to clear perps session caches', e)
   }
 }
 

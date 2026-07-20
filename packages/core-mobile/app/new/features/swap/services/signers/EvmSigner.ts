@@ -6,6 +6,7 @@ import {
   EvmTransactionRequest,
   ServiceType,
   TokenType,
+  type EvmTypedData,
   type Quote
 } from '@avalabs/fusion-sdk'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
@@ -32,6 +33,57 @@ export type SignBatchOptionsGetter = () => {
   // approval (MNEMONIC / SEEDLESS / PRIVATE_KEY). From
   // QUICK_SWAPS_SOFTWARE_WALLET_TYPES.
   isBatchSigningSupported: boolean
+}
+
+/**
+ * `EIP712Domain` type definition required by `eth_signTypedData_v4`. Some
+ * fusion-sdk typed-data payloads omit it (they only carry the action types),
+ * so we prepend it before handing the payload to the wallet.
+ */
+const EIP712_DOMAIN_TYPE = [
+  { name: 'name', type: 'string' },
+  { name: 'version', type: 'string' },
+  { name: 'chainId', type: 'uint256' },
+  { name: 'verifyingContract', type: 'address' }
+] as const
+
+/**
+ * eth_signTypedData_v4 payloads must be JSON-serializable. Some fusion-sdk
+ * typed-data messages can carry `bigint` nonces — coerce them to decimal
+ * strings so the approval / Ledger / seedless paths don't blow up.
+ */
+const sanitizeEip712Json = (value: unknown): unknown => {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  if (Array.isArray(value)) {
+    return value.map(sanitizeEip712Json)
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        key,
+        sanitizeEip712Json(entry)
+      ])
+    )
+  }
+  return value
+}
+
+const toSignTypedDataV4Payload = (typedData: EvmTypedData): object => {
+  const domainChainId = typedData.domain.chainId
+  return sanitizeEip712Json({
+    types: {
+      EIP712Domain: EIP712_DOMAIN_TYPE,
+      ...typedData.types
+    },
+    domain: {
+      ...typedData.domain,
+      ...(domainChainId !== undefined ? { chainId: Number(domainChainId) } : {})
+    },
+    primaryType: typedData.primaryType,
+    message: typedData.message
+  }) as object
 }
 
 // Common hex-encoded tx fields shared by single-tx eth_sendTransaction
@@ -435,6 +487,39 @@ export function createEvmSigner(
         return result as `0x${string}`
       } catch (err) {
         Logger.error('[fusion::evmSigner.signMessage]', err)
+        throw err
+      }
+    },
+
+    /**
+     * Required for EIP-712 typed-data steps (e.g. 2-phase withdraw:
+     * authorize + sendAsset). Without this, fusion-sdk throws when a
+     * quote needs a typed-data signer.
+     */
+    signTypedData: async ({ typedData, address, chainId }, stepDetails) => {
+      assert(address, 'Invalid typed-data signing request: missing "address"')
+      assert(
+        typedData?.primaryType,
+        'Invalid typed-data signing request: missing "primaryType"'
+      )
+
+      const signerChainId = Number(typedData.domain.chainId ?? chainId)
+      assert(
+        Number.isFinite(signerChainId) && signerChainId > 0,
+        'Invalid typed-data signing request: missing "chainId"'
+      )
+
+      try {
+        const result = await request({
+          method: RpcMethod.SIGN_TYPED_DATA_V4,
+          params: [address, toSignTypedDataV4Payload(typedData)],
+          chainId: getEvmCaip2ChainId(signerChainId),
+          context: buildRequestContext(stepDetails)
+        })
+
+        return result as `0x${string}`
+      } catch (err) {
+        Logger.error('[fusion::evmSigner.signTypedData]', err)
         throw err
       }
     },

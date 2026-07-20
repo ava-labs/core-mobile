@@ -534,7 +534,7 @@ export type AnalyticsEvents = {
   PerpetualsBalanceViewed: undefined
   PerpetualsPositionsViewed: undefined
   PerpetualsPositionsFilterChanged: {
-    filter: 'All' | 'Closed' | 'Won' | 'Ending soon'
+    filter: 'All' | 'Active' | 'Won' | 'Lost'
   }
   PerpetualsPositionExpanded: { symbol: string }
   PerpetualsPositionsSearched: { query: string; resultCount: number }

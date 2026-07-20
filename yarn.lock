@@ -478,10 +478,10 @@ __metadata:
     "@avalabs/crypto-nitro": 0.3.2
     "@avalabs/crypto-sdk": 1.0.2
     "@avalabs/evm-module": 3.9.0
-    "@avalabs/fusion-sdk": 0.27.0
+    "@avalabs/fusion-sdk": 0.0.0-fix-fusion-hyperliquid-withdra-20260716134252
     "@avalabs/glacier-sdk": 3.1.0-canary.672f5c3.0
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/perps-sdk": 0.0.0-feat-perps-sdk-20260521171718
+    "@avalabs/perps-sdk": 0.0.0-fix-perps-unified-portfolio-ba-20260716132651
     "@avalabs/prediction-market-sdk": 0.3.0
     "@avalabs/svm-module": 3.9.0
     "@avalabs/tsconfig-mobile": "workspace:*"
@@ -940,9 +940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@avalabs/fusion-sdk@npm:0.27.0"
+"@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-hyperliquid-withdra-20260716134252":
+  version: 0.0.0-fix-fusion-hyperliquid-withdra-20260716134252
+  resolution: "@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-hyperliquid-withdra-20260716134252"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -958,7 +958,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: a269a800e82f9992232dbeb77ac33fcd7325ba11bca24f313aff11f6f48438d0c6292598d35f2a0e581f0537fac148d21e82fbde3137a7c5c812e3f34bbb654f
+  checksum: 290da193d7c4542f6bb2bbb6b655c0d73d1f6cce1c0c55f634db576a6a166f1566a9116bd45ff6911566d059c671e5cc00692f33dd1a0e4b9b757fcaa16b5b99
   languageName: node
   linkType: hard
 
@@ -1076,14 +1076,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/perps-sdk@npm:0.0.0-feat-perps-sdk-20260521171718":
-  version: 0.0.0-feat-perps-sdk-20260521171718
-  resolution: "@avalabs/perps-sdk@npm:0.0.0-feat-perps-sdk-20260521171718"
+"@avalabs/perps-sdk@npm:0.0.0-fix-perps-unified-portfolio-ba-20260716132651":
+  version: 0.0.0-fix-perps-unified-portfolio-ba-20260716132651
+  resolution: "@avalabs/perps-sdk@npm:0.0.0-fix-perps-unified-portfolio-ba-20260716132651"
   peerDependencies:
     "@msgpack/msgpack": ^3.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 80072ea31c6d60e07596d2d8346f1a18e5c3bc87bff53990b77d8d4c53e3d53a4121766c719c1fec538fd66a741d56e245de1b0c6510c5d4a6a99d44b0c1d2df
+  checksum: aa53d9459322fee03eec8227c2a189f8a57376878a06b205c9b35ad4ec3e14b95e5d127e7999155a930d1a7e35ae95718d603e0c8dd5aa2c55a1052acd236da4
   languageName: node
   linkType: hard
 
@@ -37048,7 +37048,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
+  checksum: c05a6ae9fc4f1f1111d47e61df17db4805be799c9f03de1ed52fa302e8dd7a9ece0e49a85e553817a7e53f4a79098045c90eebb768f42d555b257e0488a3c6f1
   languageName: node
   linkType: hard
 
