@@ -38,7 +38,7 @@ export const convertCChainAtomicTransaction = (
         ?.toAddress
 
   const totalRaw = legs
-    .filter(l => l.asset?.assetId === primaryAsset?.assetId)
+    .filter(l => l.asset && l.asset.assetId === primaryAsset?.assetId)
     .reduce((sum, l) => sum + BigInt(l.asset.amount), 0n)
 
   const amount = primaryAsset

@@ -124,4 +124,27 @@ describe('convertCChainAtomicTransaction', () => {
     expect(tx.tokens[0]?.amount).toBe('1.5')
     expect(tx.tokens[0]?.amount).not.toContain(',')
   })
+
+  it('does not throw when a leg is missing its asset and falls back to 0', () => {
+    const convert = (): ReturnType<typeof convertCChainAtomicTransaction> =>
+      convertCChainAtomicTransaction(
+        {
+          ...exportTx,
+          // First (primary) leg has no asset — must not slip through the
+          // filter and crash the BigInt(l.asset.amount) reduce.
+          evmInputs: [
+            { fromAddress: USER, credentials: [] },
+            {
+              fromAddress: USER,
+              asset: { ...AVAX_ASSET, amount: '1000000000' }, // 1 AVAX
+              credentials: []
+            }
+          ]
+        } as unknown as CChainExportTransaction,
+        { chainId: C_CHAIN_ID, explorerUrl: EXPLORER }
+      )
+
+    expect(convert).not.toThrow()
+    expect(convert().tokens[0]?.amount).toBe('0')
+  })
 })
