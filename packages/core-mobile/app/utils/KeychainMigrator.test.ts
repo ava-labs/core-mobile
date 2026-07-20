@@ -18,6 +18,9 @@ describe('KeychainMigrator', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     keychainMigrator = new KeychainMigrator(activeWalletId)
+    // The migration stores the encryption key with the PIN just before loading
+    // it, so the load succeeds by default. (CP-14585)
+    mockBiometricsSDK.loadEncryptionKeyWithPin.mockResolvedValue('success')
   })
 
   describe('getMigrationStatus', () => {
@@ -229,6 +232,25 @@ describe('KeychainMigrator', () => {
       })
 
       await expect(keychainMigrator.runPinMigration(pin)).rejects.toThrow(error)
+    })
+
+    it('should throw if the encryption key fails to load after migration', async () => {
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: true,
+        value: mnemonic
+      })
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
+        newEncryptionKey
+      )
+      mockBiometricsSDK.getAccessType.mockReturnValue('PIN')
+      mockBiometricsSDK.loadEncryptionKeyWithPin.mockResolvedValue(
+        'no-credentials'
+      )
+
+      await expect(keychainMigrator.runPinMigration(pin)).rejects.toThrow(
+        'Failed to load encryption key after migration: no-credentials'
+      )
+      expect(mockBiometricsSDK.storeWalletSecret).not.toHaveBeenCalled()
     })
 
     it('should throw error on exception', async () => {

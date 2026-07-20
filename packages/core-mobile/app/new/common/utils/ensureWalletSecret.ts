@@ -2,10 +2,19 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
 /**
+ * Deterministic decrypt failures for structurally corrupt secret data. These
+ * are thrown by `decrypt` (see EncryptionHelper) and can never succeed on
+ * retry, so they are terminal rather than transient. Matched by `error.name`
+ * because the messages are dynamic. (CP-14585)
+ */
+const TERMINAL_SECRET_ERROR_NAMES = ['NoSaltError', 'InvalidVersionError']
+
+/**
  * A wallet secret failure is *terminal* (the secret can never unlock the
- * wallet) only when the credential is genuinely absent or cannot be decrypted.
- * A transient keychain/IO error must NOT be treated as a missing secret, or a
- * flaky read would destroy a real wallet. (CP-14585)
+ * wallet) only when the credential is genuinely absent, cannot be decrypted, or
+ * the stored data is structurally corrupt. A transient keychain/IO error must
+ * NOT be treated as a missing secret, or a flaky read would destroy a real
+ * wallet. (CP-14585)
  */
 const isTerminalSecretError = (error?: Error): boolean => {
   const message = error?.message ?? ''
@@ -13,7 +22,11 @@ const isTerminalSecretError = (error?: Error): boolean => {
     message.includes('No credentials found') ||
     message.includes('Failed to decrypt') ||
     message.includes('BAD_DECRYPT') || // Android bad-decrypt
-    message.includes('Decrypt failed') // iOS bad-decrypt
+    message.includes('Decrypt failed') || // iOS bad-decrypt
+    // Corrupt/unreadable secret data (missing salt, unknown version) — a
+    // deterministic failure that will never decrypt on retry.
+    (error?.name !== undefined &&
+      TERMINAL_SECRET_ERROR_NAMES.includes(error.name))
   )
 }
 
