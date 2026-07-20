@@ -130,8 +130,7 @@ export const ReceiveScreen = (): ReactNode => {
       <View
         style={{
           alignItems: 'center',
-          marginTop: 44,
-          marginBottom: 100
+          marginTop: 44
         }}>
         <View
           style={{

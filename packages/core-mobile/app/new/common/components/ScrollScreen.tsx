@@ -483,9 +483,15 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       if (title || subtitle || renderHeader) {
         const hasTitle = Boolean(title || subtitle)
         return (
-          <View collapsable={false} onLayout={handleHeaderLayout}>
+          <View collapsable={false}>
+            {/* The measured view deliberately excludes the `hasTitle &&
+                renderHeader` sibling below: `headerLayout` drives the snap
+                region and the `minHeight` title reservation, and custom header
+                content (e.g. DeviceConnectionScreen's Bluetooth banner) must
+                not be treated as collapsible space. */}
             <View
               collapsable={false}
+              onLayout={handleHeaderLayout}
               style={[headerStyle, hasTitle ? { gap: 4 } : undefined]}>
               {hasTitle ? (
                 <View
