@@ -9,7 +9,7 @@
 # QA_ANTHROPIC_API_KEY from Secrets Manager at container start.
 #
 # Required Bitrise Secrets / env (non-Anthropic app config):
-#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY   (or use SSO + `aws configure export-credentials`)
 #   SLACK_BOT_TOKEN, SLACK_APP_TOKEN, SLACK_QA_GROUP_ID
 #   BITRISE_API_TOKEN, BITRISE_APP_SLUG   (bot triggers builds — app slug of core-mobile)
 #   JIRA_EMAIL, JIRA_API_TOKEN
@@ -19,6 +19,7 @@
 #   AWS_REGION (default us-east-1)
 #   CLUSTER / SERVICE / REPO_NAME (default mobile-qai)
 #   IMAGE_TAG (default BITRISE_GIT_COMMIT or latest)
+#   SECRET_ARN  (skip Secrets Manager describe — paste full ARN from console)
 #   CREATE_SERVICE=1 + SUBNET_IDS + SECURITY_GROUP_IDS  (first-time service create)
 # Required (no defaults — set as Bitrise Secret / env):
 #   ACCOUNT_ID
@@ -52,10 +53,17 @@ require_env() {
   fi
 }
 
+# Static keys OR an already-authenticated AWS CLI session (SSO / instance role)
+if [[ -z "${AWS_ACCESS_KEY_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
+  if ! aws sts get-caller-identity --region "${AWS_REGION}" >/dev/null 2>&1; then
+    echo "ERROR: set AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY, or login with AWS SSO."
+    exit 1
+  fi
+  echo "==> Using existing AWS CLI credentials (no static access key env)"
+fi
+
 require_env \
   ACCOUNT_ID \
-  AWS_ACCESS_KEY_ID \
-  AWS_SECRET_ACCESS_KEY \
   SLACK_BOT_TOKEN \
   SLACK_APP_TOKEN \
   SLACK_QA_GROUP_ID \
@@ -104,11 +112,22 @@ docker push "${ECR_URI}:${IMAGE_TAG}"
 docker push "${ECR_URI}:latest"
 
 echo "==> Resolve Secrets Manager ARN for ${SECRET_ID}"
-SECRET_ARN="$(aws secretsmanager describe-secret \
-  --secret-id "${SECRET_ID}" \
-  --region "${AWS_REGION}" \
-  --query ARN \
-  --output text)"
+if [[ -n "${SECRET_ARN:-}" ]]; then
+  echo "    using SECRET_ARN from env"
+else
+  if ! SECRET_ARN="$(aws secretsmanager describe-secret \
+    --secret-id "${SECRET_ID}" \
+    --region "${AWS_REGION}" \
+    --query ARN \
+    --output text 2>&1)"; then
+    echo "ERROR: cannot resolve Secrets Manager ARN for '${SECRET_ID}'."
+    echo "Either grant secretsmanager:DescribeSecret, or set SECRET_ARN explicitly:"
+    echo "  export SECRET_ARN='arn:aws:secretsmanager:${AWS_REGION}:${ACCOUNT_ID}:secret:QA_ANTHROPIC_API_KEY-xxxxxxxx'"
+    echo "  (copy full ARN from AWS Console → Secrets Manager → QA_ANTHROPIC_API_KEY)"
+    echo "Detail: ${SECRET_ARN}"
+    exit 1
+  fi
+fi
 echo "    ${SECRET_ARN}"
 
 echo "==> Ensure CloudWatch log group"
