@@ -37,4 +37,30 @@ describe('ensureWalletSecret', () => {
     expect(result).toBe(false)
     expect(onMissing).toHaveBeenCalledTimes(1)
   })
+
+  it('returns false and triggers recovery when the secret cannot be decrypted', async () => {
+    mockLoadWalletSecret.mockResolvedValue({
+      success: false,
+      error: new Error('BAD_DECRYPT')
+    })
+    const onMissing = jest.fn()
+
+    const result = await ensureWalletSecret(walletId, onMissing)
+
+    expect(result).toBe(false)
+    expect(onMissing).toHaveBeenCalledTimes(1)
+  })
+
+  it('rethrows and does NOT recover on a transient keychain failure', async () => {
+    mockLoadWalletSecret.mockResolvedValue({
+      success: false,
+      error: new Error('The user name or passphrase you entered is not correct')
+    })
+    const onMissing = jest.fn()
+
+    await expect(ensureWalletSecret(walletId, onMissing)).rejects.toThrow(
+      'The user name or passphrase you entered is not correct'
+    )
+    expect(onMissing).not.toHaveBeenCalled()
+  })
 })
