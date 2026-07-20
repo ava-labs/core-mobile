@@ -85,31 +85,40 @@ export const useFadingHeaderNavigation = ({
     )
   }, [])
 
-  const handleScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
-  ): void => {
-    let contentOffsetY: number | undefined
+  // Stable identity (it only touches refs and shared values): consumers put
+  // this in effect dep lists (e.g. StakeCardList's remount resync), where a
+  // new function per render would re-fire their effects on every re-render.
+  const handleScroll = useCallback(
+    (
+      event:
+        | NativeSyntheticEvent<NativeScrollEvent>
+        | NativeScrollEvent
+        | number
+    ): void => {
+      let contentOffsetY: number | undefined
 
-    if (typeof event === 'number') {
-      // If event is just a numeric value, use it directly
-      contentOffsetY = event
-    } else if ('nativeEvent' in event) {
-      // If event is a NativeSyntheticEvent<NativeScrollEvent>
-      contentOffsetY = event.nativeEvent.contentOffset.y
-    } else {
-      // If event is a NativeScrollEvent
-      contentOffsetY = event.contentOffset.y
-    }
+      if (typeof event === 'number') {
+        // If event is just a numeric value, use it directly
+        contentOffsetY = event
+      } else if ('nativeEvent' in event) {
+        // If event is a NativeSyntheticEvent<NativeScrollEvent>
+        contentOffsetY = event.nativeEvent.contentOffset.y
+      } else {
+        // If event is a NativeScrollEvent
+        contentOffsetY = event.contentOffset.y
+      }
 
-    const latestTargetLayout = targetLayoutRef.current
+      const latestTargetLayout = targetLayoutRef.current
 
-    if (latestTargetLayout && contentOffsetY !== undefined) {
-      const h = latestTargetLayout.height
-      // Avoid divide-by-zero: 0 height makes progress NaN/Infinity and forces full-opacity separator (Android).
-      targetHiddenProgress.value = h > 0 ? clamp(contentOffsetY / h, 0, 1) : 0
-      scrollY.value = contentOffsetY
-    }
-  }
+      if (latestTargetLayout && contentOffsetY !== undefined) {
+        const h = latestTargetLayout.height
+        // Avoid divide-by-zero: 0 height makes progress NaN/Infinity and forces full-opacity separator (Android).
+        targetHiddenProgress.value = h > 0 ? clamp(contentOffsetY / h, 0, 1) : 0
+        scrollY.value = contentOffsetY
+      }
+    },
+    [targetHiddenProgress, scrollY]
+  )
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
     const headerHeight =

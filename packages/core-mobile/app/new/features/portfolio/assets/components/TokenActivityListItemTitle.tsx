@@ -11,13 +11,14 @@ import {
   isCollectibleTransaction,
   isPotentiallySwap,
   resolvePaymentSymbol,
-  resolveUserIsRecipient
+  resolveTxUserAddress,
+  resolveUserIsRecipient,
+  selectSwapTokens
 } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { getAddressByNetwork } from 'store/account/utils'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
@@ -89,7 +90,6 @@ export const TokenActivityListItemTitle = ({
 
   // Smart swap title generation that identifies input vs output tokens
   const getSwapTitle = useCallback(
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     (transaction: TokenActivityTransaction): ReactNode[] => {
       // worst case scenario, just return 'Swap'
       if (!transaction.tokens || transaction.tokens.length === 0) {
@@ -97,55 +97,73 @@ export const TokenActivityListItemTitle = ({
         return ['Swap']
       }
 
-      // For swap transactions, we need to identify the user's actual input and output tokens
-      // Get the current user's address for the specific network from Redux store
+      // For swap transactions, we need to identify the user's actual input and
+      // output tokens. Get the current user's address for the specific network
+      // from the Redux store, then resolve the input/output legs.
+      // `selectSwapTokens` prefers the non-native input leg so a token→token
+      // swap that also carries a native protocol/gas-fee leg (e.g. recurring
+      // fills) is labelled by the ERC-20 principal, not the small native fee.
       const network = getNetwork(Number(transaction.chainId))
-      const userAddress =
-        network && activeAccount
-          ? getAddressByNetwork(activeAccount, network)
-          : transaction.from
+      const userAddress = resolveTxUserAddress(
+        transaction,
+        activeAccount,
+        network
+      )
 
-      // Find tokens that are actually sent FROM the user (input tokens)
-      // Note: For swaps, the user's wallet should be in transaction.from
-      const inputTokens = transaction.tokens.filter(token => {
-        return token.from?.address === userAddress
-      })
+      const { inputToken, outputToken } = selectSwapTokens(
+        transaction.tokens,
+        userAddress
+      )
 
-      // Find tokens that are actually sent TO the user (output tokens)
-      const outputTokens = transaction.tokens.filter(token => {
-        return token.to?.address === userAddress
-      })
+      // Resolve symbols through the network-token fallback rather than reading
+      // `token.symbol` raw: Glacier often returns an empty symbol for native
+      // assets (and occasionally ERC-20s), which would render as a dropped
+      // symbol + double space (e.g. "0.05  swapped"). `resolvePaymentSymbol`
+      // mirrors the `s1` fallback used by the other single-leg labels
+      // (token.symbol → network token symbol when NATIVE → token.type).
+      const inputSymbol = inputToken
+        ? resolvePaymentSymbol(inputToken, network?.networkToken.symbol)
+        : undefined
+      const outputSymbol = outputToken
+        ? resolvePaymentSymbol(outputToken, network?.networkToken.symbol)
+        : undefined
 
-      // If we can identify input and output tokens, use them
-      if (inputTokens.length > 0 && outputTokens.length > 0) {
-        const inputToken = inputTokens[0]
-        const outputToken = outputTokens[0]
-
-        if (inputToken && outputToken) {
-          return [
-            renderAmount(inputToken.amount),
-            ' ',
-            inputToken.symbol,
-            ' swapped for ',
-            renderAmount(outputToken.amount),
-            ' ',
-            outputToken.symbol
-          ]
-        }
+      // If we can identify both input and output tokens, use them.
+      if (inputToken && outputToken) {
+        return [
+          renderAmount(inputToken.amount),
+          ' ',
+          inputSymbol,
+          ' swapped for ',
+          renderAmount(outputToken.amount),
+          ' ',
+          outputSymbol
+        ]
       }
 
-      // If input is known but output is not visible (e.g. cross-chain swap where
-      // the destination token lands on a different chain), show just the input.
-      if (inputTokens.length > 0 && outputTokens.length === 0) {
-        const inputToken = inputTokens[0]
-        if (inputToken) {
-          return [
-            renderAmount(inputToken.amount),
-            ' ',
-            inputToken.symbol,
-            ' swapped'
-          ]
+      // Input known, no output leg to the user. Two very different txs land
+      // here and are indistinguishable by their token legs alone:
+      //   • a cross-chain swap whose output token lands on another chain
+      //   • an unclassified contract call with a single leg — e.g. an ERC-20
+      //     approval, whose Approval event the indexer surfaces as a
+      //     user→spender token with no return.
+      // The indexer classifies genuine swaps as `txType === SWAP`, so only
+      // trust the "swapped" label there. Otherwise (`UNKNOWN` etc.) `method`
+      // and `txType` give us nothing to prove a swap or an approval, so fall
+      // back to a neutral "Contract Call" rather than fabricating either.
+      if (inputToken) {
+        if (transaction.txType === TransactionType.SWAP) {
+          return [renderAmount(inputToken.amount), ' ', inputSymbol, ' swapped']
         }
+        // Keep the leg amount + symbol so the row still conveys what moved
+        // (e.g. "10 USDC Contract Call"), matching the "10 USDC sent" style
+        // of the other single-leg labels.
+        return [
+          renderAmount(inputToken.amount),
+          ' ',
+          inputSymbol,
+          ' Contract Call'
+        ]
       }
 
       // fallback to original logic if we can't identify input and output tokens
@@ -188,10 +206,11 @@ export const TokenActivityListItemTitle = ({
       // tolerate undefined and we render the generic "NFT" label.
       const nftToken = findNftToken(transaction)
       const network = getNetwork(Number(transaction.chainId))
-      const userAddress =
-        network && activeAccount
-          ? getAddressByNetwork(activeAccount, network)
-          : transaction.from
+      const userAddress = resolveTxUserAddress(
+        transaction,
+        activeAccount,
+        network
+      )
       const userAddressLower = userAddress?.toLowerCase()
 
       const userIsRecipient = resolveUserIsRecipient({

@@ -2,13 +2,14 @@ import { StakeTargetValidator } from 'types/earn'
 
 /**
  * How a stake-confirm flow charges (or doesn't charge) a convenience fee
- * on top of the gross delegation reward. Lives on `StakeReviewSource` so
+ * on top of the net delegation reward (after the validator's own fee).
+ * Lives on `StakeReviewSource` so
  * each flow can declare its own policy; the screen does the actual
- * `gross × rate` math and builds the escrow output.
+ * `net × rate` math and builds the escrow output.
  */
 export interface StakeFeePolicy {
   /**
-   * Multiplier applied to `grossEstimatedReward.estimatedTokenReward`.
+   * Multiplier applied to `netEstimatedReward.estimatedTokenReward`.
    * Expressed as a fraction in the [0, 1) range (e.g. 0.1 = 10%).
    */
   rate: number

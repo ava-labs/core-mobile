@@ -59,7 +59,7 @@ When Android `WindowInsets` reports `0` for the top system bar inset (common on 
 
 Disables Material3 lift-on-scroll on the native header's `AppBarLayout` (`init { isLiftOnScroll = false; setBackgroundColor(Color.TRANSPARENT) }`). By default, when content scrolls under the bar, `AppBarLayout` repaints itself with `colorSurfaceContainer` (the "lifted" state). On our transparent formsheet headers (e.g. the swap `ListScreenV2` "Select a token" picker, in dark mode) that opaque surface appeared as a darker band fading in over the header on scroll, and it drew on top of the sheet grabber. We always supply our own `headerBackground` (via `useFadingHeaderNavigation`), so the auto-lift surface is never wanted — keeping the bar transparent removes the band and stops it covering the grabber.
 
-### react-native-reanimated+4.2.1.patch
+### react-native-reanimated+4.5.1.patch
 
 added isActive prop for useAnimatedSensor
 

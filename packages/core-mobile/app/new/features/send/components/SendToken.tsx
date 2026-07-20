@@ -20,6 +20,8 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { usePrevious } from 'common/hooks/usePrevious'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
+import { Platform } from 'react-native'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
@@ -31,6 +33,10 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
+
+// Delay (after the form-sheet transition ends) before auto-focusing the amount
+// input on Android, so the sheet/keyboard layout settles first. See CP-14672.
+const ANDROID_AMOUNT_FOCUS_BUFFER_MS = 500
 
 export const SendToken = ({
   onSend,
@@ -119,6 +125,23 @@ export const SendToken = ({
       selectedToken?.symbol ?? ''
     )
   }, [network.networkToken.decimals, selectedToken])
+
+  // Android: focus the amount input only after the form-sheet enter transition
+  // has ended AND a short layout/keyboard settle buffer. Focusing during the
+  // still-settling window leaves a broken InputConnection (cursor shows but
+  // keystrokes never reach JS). iOS keeps the input's own autoFocus. See CP-14672.
+  //
+  // Gating `enabled` on `tokenBalance` also handles a late-mounting widget: the
+  // input only renders once `tokenBalance` is truthy, so if it isn't ready when
+  // the transition ends, `enabled` flips to true when it becomes available and
+  // the helper re-arms (enabled is one of its effect deps) and focuses then.
+  useAfterScreenEnterTransition(
+    () => tokenUnitInputWidgetRef.current?.focus(),
+    {
+      enabled: Platform.OS === 'android' && !!tokenBalance,
+      layoutBufferMs: ANDROID_AMOUNT_FOCUS_BUFFER_MS
+    }
+  )
 
   const addressToSendWithoutPrefix = useMemo(() => {
     if (selectedToken === undefined && toAddress?.recipientType !== 'address') {
@@ -342,7 +365,11 @@ export const SendToken = ({
           onChange={setAmount}
           validateAmount={validateSendAmount}
           disabled={isSending || selectedToken === undefined}
-          autoFocus
+          // iOS auto-focuses immediately on mount. Android focuses later, once
+          // the form-sheet transition and keyboard layout have settled (see the
+          // useAfterScreenEnterTransition call above); focusing on mount there
+          // leaves a broken InputConnection ~1 in 5 times. See CP-14672.
+          autoFocus={Platform.OS === 'ios'}
           maxAmount={maxAmount}
         />
       )}

@@ -16,9 +16,11 @@ import {
   CreateExportPTxParams,
   CreateImportCTxParams,
   CreateImportPTxParams,
-  CreateSendPTxParams
+  CreateSendPTxParams,
+  CreateSendXTxParams
 } from './types'
 import { getAvaxAssetId } from './utils'
+import { filterOutSmallUtxos } from './filterSmallUtxos'
 class AvalancheWalletService {
   /**
    * Get atomic transactions that are in VM memory.
@@ -48,6 +50,81 @@ class AvalancheWalletService {
       pChainUtxo,
       cChainUtxo
     }
+  }
+
+  /**
+   * Get importable atomic UTXOs for every CCT route across the primary network
+   * (C/P/X), one read-only signer call per (destination, source) pair. Used by
+   * the stuck-funds banner to detect AVAX stranded in atomic memory after an
+   * incomplete cross-chain transfer. Read-only: never prompts the device.
+   */
+  public async getAllAtomicUTXOs({
+    account,
+    isTestnet,
+    xpAddresses
+  }: {
+    account: Account
+    isTestnet: boolean
+    xpAddresses: string[]
+  }): Promise<
+    {
+      dest: Avalanche.ChainIDAlias
+      source: Avalanche.ChainIDAlias
+      utxos: utils.UtxoSet
+    }[]
+  > {
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
+
+    const routes: [Avalanche.ChainIDAlias, Avalanche.ChainIDAlias][] = [
+      ['P', 'C'],
+      ['P', 'X'],
+      ['C', 'P'],
+      ['C', 'X'],
+      ['X', 'C'],
+      ['X', 'P']
+    ]
+
+    // allSettled (not all): a single flaky route must not reject the whole
+    // detection query, or one bad chain would hide genuinely stuck funds that
+    // loaded fine on the other routes. Drop only the routes that failed.
+    const settled = await Promise.allSettled(
+      routes.map(async ([dest, source]) => ({
+        dest,
+        source,
+        utxos: await readOnlySigner.getAtomicUTXOs(dest, source)
+      }))
+    )
+
+    // Log dropped routes so intermittent RPC/chain failures are observable on
+    // the 60s poll without breaking detection for the routes that succeeded.
+    settled.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const [dest, source] = routes[index] as [
+          Avalanche.ChainIDAlias,
+          Avalanche.ChainIDAlias
+        ]
+        Logger.warn(
+          `[getAllAtomicUTXOs] atomic UTXO fetch failed for ${source}->${dest}`,
+          result.reason
+        )
+      }
+    })
+
+    return settled
+      .filter(
+        (
+          result
+        ): result is PromiseFulfilledResult<{
+          dest: Avalanche.ChainIDAlias
+          source: Avalanche.ChainIDAlias
+          utxos: utils.UtxoSet
+        }> => result.status === 'fulfilled'
+      )
+      .map(result => result.value)
   }
 
   /**
@@ -122,12 +199,13 @@ class AvalancheWalletService {
       destinationAddress
     )
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
+    }
 
     return unsignedTx
   }
@@ -156,11 +234,13 @@ class AvalancheWalletService {
       feeState
     })
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
   }
@@ -191,13 +271,92 @@ class AvalancheWalletService {
       feeState
     })
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
+  }
+
+  /**
+   * The exact UTXO set the send tx builders spend from: full set for X,
+   * size-capped for P (64KB tx limit), minus dust when the small-UTXO
+   * filter is on. Max-amount derivation MUST use this same set — deriving
+   * Max from the (unfiltered) displayed balance builds an over-spend.
+   */
+  private async getSendUtxoSet({
+    readOnlySigner,
+    chain,
+    isTestnet,
+    feeState,
+    filterSmallUtxos
+  }: {
+    readOnlySigner: Avalanche.AddressWallet
+    chain: 'P' | 'X'
+    isTestnet: boolean
+    feeState?: pvm.FeeState
+    filterSmallUtxos?: boolean
+  }): Promise<utils.UtxoSet> {
+    const utxoSet = await readOnlySigner.getUTXOs(chain)
+    let filteredUtxos = utxoSet.getUTXOs()
+    if (chain === 'P') {
+      // P-chain has a tx size limit of 64KB
+      filteredUtxos = Avalanche.getMaximumUtxoSet({
+        wallet: readOnlySigner,
+        utxos: filteredUtxos,
+        sizeSupportedTx: Avalanche.SizeSupportedTx.BaseP,
+        feeState
+      })
+    }
+    if (filterSmallUtxos === true) {
+      filteredUtxos = filterOutSmallUtxos(
+        filteredUtxos,
+        getAvaxAssetId(isTestnet)
+      )
+    }
+    return new utils.UtxoSet(filteredUtxos)
+  }
+
+  /**
+   * Spendable AVAX (nAVAX) computed from the same UTXO set
+   * createSendPTx/createSendXTx will spend, so Max amounts stay consistent
+   * with what a send can actually consume (CP-13903).
+   */
+  public async getSpendableAvaxBalance({
+    chain,
+    account,
+    isTestnet,
+    xpAddresses,
+    feeState,
+    filterSmallUtxos
+  }: {
+    chain: 'P' | 'X'
+    account: Account
+    isTestnet: boolean
+    xpAddresses: string[]
+    feeState?: pvm.FeeState
+    filterSmallUtxos?: boolean
+  }): Promise<bigint> {
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
+
+    const utxoSet = await this.getSendUtxoSet({
+      readOnlySigner,
+      chain,
+      isTestnet,
+      feeState,
+      filterSmallUtxos
+    })
+
+    return Avalanche.getAssetBalance(utxoSet, getAvaxAssetId(isTestnet))
+      .available
   }
 
   /**
@@ -210,7 +369,8 @@ class AvalancheWalletService {
     destinationAddress,
     sourceAddress,
     feeState,
-    xpAddresses
+    xpAddresses,
+    filterSmallUtxos
   }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
@@ -222,15 +382,13 @@ class AvalancheWalletService {
       xpAddresses
     })
 
-    // P-chain has a tx size limit of 64KB
-    let utxoSet = await readOnlySigner.getUTXOs('P')
-    const filteredUtxos = Avalanche.getMaximumUtxoSet({
-      wallet: readOnlySigner,
-      utxos: utxoSet.getUTXOs(),
-      sizeSupportedTx: Avalanche.SizeSupportedTx.BaseP,
-      feeState
+    const utxoSet = await this.getSendUtxoSet({
+      readOnlySigner,
+      chain: 'P',
+      isTestnet,
+      feeState,
+      filterSmallUtxos
     })
-    utxoSet = new utils.UtxoSet(filteredUtxos)
     const changeAddress = utils.parse(sourceAddress)[2]
 
     return readOnlySigner.baseTX({
@@ -256,8 +414,9 @@ class AvalancheWalletService {
     isTestnet,
     destinationAddress,
     sourceAddress,
-    xpAddresses
-  }: CreateSendPTxParams): Promise<UnsignedTx> {
+    xpAddresses,
+    filterSmallUtxos
+  }: CreateSendXTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
     }
@@ -268,8 +427,12 @@ class AvalancheWalletService {
       xpAddresses
     })
 
-    // P-chain has a tx size limit of 64KB
-    const utxoSet = await readOnlySigner.getUTXOs('X')
+    const utxoSet = await this.getSendUtxoSet({
+      readOnlySigner,
+      chain: 'X',
+      isTestnet,
+      filterSmallUtxos
+    })
     const changeAddress = utils.parse(sourceAddress)[2]
     return readOnlySigner.baseTX({
       utxoSet,
@@ -309,12 +472,13 @@ class AvalancheWalletService {
       destinationAddress
     )
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
+    }
 
     return unsignedTx
   }
@@ -396,11 +560,13 @@ class AvalancheWalletService {
       throw error
     }
 
-    shouldValidateBurnedAmount &&
-      this.validateFee({
+    if (shouldValidateBurnedAmount) {
+      await this.validateFee({
         isTestnet,
-        unsignedTx
+        unsignedTx,
+        pChainFeePriceInNAvax: feeState?.price
       })
+    }
 
     return unsignedTx
   }
@@ -503,26 +669,56 @@ class AvalancheWalletService {
   private async validateFee({
     isTestnet,
     unsignedTx,
-    evmBaseFeeInNAvax
+    evmBaseFeeInNAvax,
+    pChainFeePriceInNAvax
   }: {
     isTestnet: boolean
     unsignedTx: UnsignedTx
     evmBaseFeeInNAvax?: bigint
+    pChainFeePriceInNAvax?: bigint
   }): Promise<void> {
-    if (evmBaseFeeInNAvax === undefined) {
-      throw new Error('Missing evm fee data')
-    }
-
-    Logger.info('validating burned amount')
-
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
       isTestnet
     )
 
+    // validateBurnedAmount interprets `baseFee` per VM: the EVM base fee for
+    // C-chain atomic txs, the P-chain dynamic fee price for PVM txs. The
+    // static X-chain path ignores it.
+    let baseFee: bigint
+    const vm = unsignedTx.getVM()
+    if (vm === 'EVM') {
+      if (evmBaseFeeInNAvax === undefined) {
+        throw new Error('Missing evm fee data')
+      }
+      baseFee = evmBaseFeeInNAvax
+    } else if (vm === 'PVM') {
+      let price = pChainFeePriceInNAvax
+      if (price === undefined) {
+        try {
+          price = (await avalancheProvider.getApiP().getFeeState()).price
+        } catch (error) {
+          // Fail open: without a reference price the check can't run, and a
+          // transient RPC failure must not block staking/claim actions.
+          // (Substituting 0 would be worse — a zero expected fee makes any
+          // real burn look excessive and fails the validation.)
+          Logger.warn(
+            'skipping burned amount validation, unable to fetch P-Chain fee state',
+            error
+          )
+          return
+        }
+      }
+      baseFee = price
+    } else {
+      baseFee = 0n
+    }
+
+    Logger.info('validating burned amount')
+
     const { isValid, txFee } = utils.validateBurnedAmount({
       unsignedTx,
       context: avalancheProvider.getContext(),
-      baseFee: evmBaseFeeInNAvax,
+      baseFee,
       feeTolerance: EVM_FEE_TOLERANCE
     })
 

@@ -65,6 +65,22 @@ const init = (): void => {
       environment: Config.ENVIRONMENT,
       debug: false,
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
+      // Expected field conditions that carry no actionable signal. Entries
+      // are substring-matched against the event message by Sentry's inbound
+      // filter, so one entry covers every capture site.
+      ignoreErrors: [
+        // Generic whatwg-fetch failure whenever the device is offline or a
+        // request is interrupted.
+        'Network request failed',
+        // Firebase AppCheck attestation failing in the field (offline,
+        // rooted device, attestation outage) — thrown by getToken() and
+        // reported by every appCheckFetch caller with its own prefix.
+        '[appCheck/token-error]',
+        // iOS APNs registration hasn't completed yet (e.g. app woken in the
+        // background) when a notification listener asks for an FCM token —
+        // resolves itself on the next foreground token fetch.
+        '[messaging/unregistered]'
+      ],
       beforeSend: scrubSentryData,
       beforeSendTransaction: scrubSentryData,
       beforeBreadcrumb: breadcrumb => {

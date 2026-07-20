@@ -23,6 +23,7 @@ import {
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import React, {
   useCallback,
   useDeferredValue,
@@ -120,6 +121,23 @@ export const StakeSearchScreen = (): JSX.Element => {
   const trimmedQuery = deferredSearchText.trim()
   const hasQuery = trimmedQuery.length > 0
 
+  // Mount-once (NOT focus): returning from a stake detail pushed on top
+  // re-focuses this screen but is still the same search session, so it must
+  // not count as another "opened".
+  useEffect(() => {
+    AnalyticsService.capture('StakeSearchOpened')
+  }, [])
+
+  // Once per visit, on the first non-empty (deferred) query — measures how
+  // many openers actually search. Deliberately payload-free: the query text
+  // is node IDs and stays out of analytics.
+  const hasCapturedQueryRef = useRef(false)
+  useEffect(() => {
+    if (!hasQuery || hasCapturedQueryRef.current) return
+    hasCapturedQueryRef.current = true
+    AnalyticsService.capture('StakeSearchQueryEntered')
+  }, [hasQuery])
+
   const filteredStakes = useMemo(() => {
     if (!hasQuery) return []
     const q = trimmedQuery.toLowerCase()
@@ -169,7 +187,11 @@ export const StakeSearchScreen = (): JSX.Element => {
       await dismissKeyboardIfNeeded()
       // Push the detail onto this search modal's own stack (slides in over the
       // results) rather than opening the global /stakeDetail modal.
-      navigate({ pathname: '/stakeSearch/stakeDetail', params: { txHash } })
+      // `source` feeds StakeDetailViewed's entry-point attribution.
+      navigate({
+        pathname: '/stakeSearch/stakeDetail',
+        params: { txHash, source: 'search' }
+      })
     },
     [navigate]
   )

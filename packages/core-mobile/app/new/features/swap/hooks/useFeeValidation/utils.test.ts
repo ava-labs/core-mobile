@@ -33,6 +33,20 @@ const makeErc20Token = (balance: bigint): LocalTokenWithBalance =>
     balance
   } as unknown as LocalTokenWithBalance)
 
+// Native P/X-chain AVAX: `balance` includes staked/locked funds, `available` is
+// the swappable portion (CP-14788).
+const makeStakedNativeToken = (
+  balance: bigint,
+  available: bigint
+): LocalTokenWithBalance =>
+  ({
+    type: TokenType.NATIVE,
+    decimals: 18,
+    symbol: 'AVAX',
+    balance,
+    available
+  } as unknown as LocalTokenWithBalance)
+
 const makeNetwork = (symbol: string, decimals: number): Network =>
   ({
     networkToken: { symbol, decimals }
@@ -86,6 +100,30 @@ describe('validateNativeToken', () => {
     it('returns undefined when balance covers fee + amount', () => {
       const error = validateNativeToken({
         fromToken: makeNativeToken(250n),
+        amount: 100n,
+        bufferedGasFee: GAS,
+        bufferedAdditiveFee: 0n
+      })
+      expect(error).toBeUndefined()
+    })
+  })
+
+  describe('P/X-chain staked balance (CP-14788)', () => {
+    it('validates against available, not total balance (amount + fee exceeds available)', () => {
+      // total balance 250 would cover amount(100) + gas(100), but only 150 is
+      // available (rest staked), so amount + fee (200) exceeds available.
+      const error = validateNativeToken({
+        fromToken: makeStakedNativeToken(250n, 150n),
+        amount: 100n,
+        bufferedGasFee: GAS,
+        bufferedAdditiveFee: 0n
+      })
+      expect(error?.message).toContain('network fee')
+    })
+
+    it('returns undefined when available covers fee + amount', () => {
+      const error = validateNativeToken({
+        fromToken: makeStakedNativeToken(10000n, 250n),
         amount: 100n,
         bufferedGasFee: GAS,
         bufferedAdditiveFee: 0n

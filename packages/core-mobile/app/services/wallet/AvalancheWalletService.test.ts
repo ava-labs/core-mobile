@@ -1,11 +1,25 @@
 import { AddDelegatorProps } from 'services/wallet/types'
 import { add, getUnixTime, sub } from 'date-fns'
-import { Utxo } from '@avalabs/avalanchejs'
+import { pvm, Utxo } from '@avalabs/avalanchejs'
 import { PChainId } from '@avalabs/glacier-sdk'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
 import { Account } from 'store/account'
+import NetworkService from 'services/network/NetworkService'
 import AvalancheWalletService from './AvalancheWalletService'
+
+const mockValidateBurnedAmount = jest.fn()
+jest.mock('@avalabs/avalanchejs', () => {
+  const actual = jest.requireActual('@avalabs/avalanchejs')
+  return {
+    ...actual,
+    utils: {
+      ...actual.utils,
+      validateBurnedAmount: (...args: unknown[]) =>
+        mockValidateBurnedAmount(...args)
+    }
+  }
+})
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -155,13 +169,34 @@ describe('WalletService', () => {
         isTestnet: true
       } as AddDelegatorProps
 
-      mockValidateFee.mockImplementationOnce(() => {
-        throw new Error('test fee validation error')
-      })
+      // Async rejection (not a sync throw) so this only passes when the
+      // call site actually awaits validateFee.
+      mockValidateFee.mockRejectedValueOnce(
+        new Error('test fee validation error')
+      )
 
       await expect(async () => {
         await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('test fee validation error')
+    })
+
+    it('should forward the P-chain fee price from feeState to validateFee', async () => {
+      const params = {
+        account: { index: 0 } as Account,
+        nodeId: validNodeId,
+        stakeAmountInNAvax: fujiValidStakeAmount,
+        startDate: validStartDate,
+        endDate: validEndDateFuji,
+        rewardAddress: validRewardAddress,
+        isTestnet: true,
+        feeState: { price: 7n } as pvm.FeeState
+      } as AddDelegatorProps
+
+      await AvalancheWalletService.createAddDelegatorTx(params)
+
+      expect(mockValidateFee).toHaveBeenCalledWith(
+        expect.objectContaining({ pChainFeePriceInNAvax: 7n })
+      )
     })
 
     it('should not throw if failed to validate fee when shouldValidateBurnedAmount is false', async () => {
@@ -209,6 +244,162 @@ describe('WalletService', () => {
         rewardAddresses: [validRewardAddress]
       })
       expect(unsignedTx).toStrictEqual(mockUnsignedTx)
+    })
+  })
+
+  describe('validateFee', () => {
+    const mockGetFeeState = jest.fn()
+    const mockProvider = {
+      getContext: () => ({}),
+      getApiP: () => ({ getFeeState: mockGetFeeState })
+    }
+
+    let providerSpy: jest.SpyInstance
+
+    const callValidateFee = (args: {
+      isTestnet: boolean
+      unsignedTx: unknown
+      evmBaseFeeInNAvax?: bigint
+      pChainFeePriceInNAvax?: bigint
+    }): Promise<void> =>
+      (
+        AvalancheWalletService as unknown as {
+          validateFee: (a: typeof args) => Promise<void>
+        }
+      ).validateFee(args)
+
+    const evmTx = { getVM: () => 'EVM', getTx: jest.fn() }
+    const pvmTx = { getVM: () => 'PVM', getTx: jest.fn() }
+
+    beforeAll(() => {
+      // The createAddDelegatorTx describe above replaces validateFee with a
+      // mock and never restores it — undo that so we test the real method.
+      const maybeMocked = (
+        AvalancheWalletService as unknown as Record<
+          'validateFee',
+          { mockRestore?: () => void }
+        >
+      ).validateFee
+      maybeMocked.mockRestore?.()
+
+      providerSpy = jest
+        .spyOn(NetworkService, 'getAvalancheProviderXP')
+        // @ts-ignore
+        .mockResolvedValue(mockProvider)
+    })
+
+    beforeEach(() => {
+      mockGetFeeState.mockReset().mockResolvedValue({ price: 5n })
+      mockValidateBurnedAmount.mockReset()
+      mockValidateBurnedAmount.mockReturnValue({ isValid: true, txFee: 1n })
+    })
+
+    afterAll(() => {
+      providerSpy.mockRestore()
+    })
+
+    it('throws for EVM txs when the evm base fee is missing', async () => {
+      await expect(
+        callValidateFee({ isTestnet: true, unsignedTx: evmTx })
+      ).rejects.toThrow('Missing evm fee data')
+      expect(mockValidateBurnedAmount).not.toHaveBeenCalled()
+    })
+
+    it('uses the evm base fee for EVM txs', async () => {
+      await callValidateFee({
+        isTestnet: true,
+        unsignedTx: evmTx,
+        evmBaseFeeInNAvax: 3n
+      })
+
+      expect(mockValidateBurnedAmount).toHaveBeenCalledWith(
+        expect.objectContaining({ baseFee: 3n })
+      )
+    })
+
+    it('uses the caller-provided P-chain fee price for PVM txs', async () => {
+      await callValidateFee({
+        isTestnet: true,
+        unsignedTx: pvmTx,
+        pChainFeePriceInNAvax: 7n
+      })
+
+      expect(mockValidateBurnedAmount).toHaveBeenCalledWith(
+        expect.objectContaining({ baseFee: 7n })
+      )
+      expect(mockGetFeeState).not.toHaveBeenCalled()
+    })
+
+    it('fetches the fee state for PVM txs when no price is provided', async () => {
+      await callValidateFee({ isTestnet: true, unsignedTx: pvmTx })
+
+      expect(mockGetFeeState).toHaveBeenCalled()
+      expect(mockValidateBurnedAmount).toHaveBeenCalledWith(
+        expect.objectContaining({ baseFee: 5n })
+      )
+    })
+
+    it('skips validation when the fee-state fetch fails for PVM txs', async () => {
+      mockGetFeeState.mockRejectedValue(new Error('rpc down'))
+
+      await expect(
+        callValidateFee({ isTestnet: true, unsignedTx: pvmTx })
+      ).resolves.toBeUndefined()
+      expect(mockValidateBurnedAmount).not.toHaveBeenCalled()
+    })
+
+    it('throws when the burned amount is invalid', async () => {
+      mockValidateBurnedAmount.mockReturnValue({ isValid: false, txFee: 9n })
+
+      await expect(
+        callValidateFee({
+          isTestnet: true,
+          unsignedTx: pvmTx,
+          pChainFeePriceInNAvax: 7n
+        })
+      ).rejects.toThrow('Excessive burn amount')
+    })
+  })
+
+  describe('getAllAtomicUTXOs', () => {
+    // Returns a sentinel UtxoSet tagged with the (dest, source) it was called
+    // with, so we can assert each route maps to the right signer call.
+    const getAtomicUTXOsMock = jest
+      .fn()
+      .mockImplementation((dest: string, source: string) => ({ dest, source }))
+    const atomicMockWallet = jest.fn().mockReturnValue({
+      getAtomicUTXOs: getAtomicUTXOsMock
+    })
+
+    let readOnlySignerSpy: jest.SpyInstance
+
+    beforeAll(() => {
+      readOnlySignerSpy = jest // @ts-ignore
+        .spyOn(AvalancheWalletService, 'getReadOnlySigner')
+        // @ts-ignore
+        .mockImplementation(() => atomicMockWallet())
+    })
+
+    afterAll(() => {
+      readOnlySignerSpy.mockRestore()
+    })
+
+    it('returns all six CCT routes, one signer call per (dest, source) pair', async () => {
+      const result = await AvalancheWalletService.getAllAtomicUTXOs({
+        account: { index: 0 } as Account,
+        isTestnet: true,
+        xpAddresses: ['P-fuji1abc']
+      })
+
+      const pairs = result.map(r => `${r.source}->${r.dest}`).sort()
+      expect(pairs).toStrictEqual(
+        ['C->P', 'X->P', 'P->C', 'X->C', 'P->X', 'C->X'].sort()
+      )
+      // each entry's utxos came from getAtomicUTXOs(dest, source)
+      result.forEach(r => {
+        expect(r.utxos).toStrictEqual({ dest: r.dest, source: r.source })
+      })
+      expect(getAtomicUTXOsMock).toHaveBeenCalledTimes(6)
     })
   })
 })

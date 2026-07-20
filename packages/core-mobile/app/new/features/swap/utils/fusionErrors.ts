@@ -315,6 +315,16 @@ export function getSwapErrorMessage(error: unknown): string {
     return "This account isn't set up for cross-chain swaps. Please try a different account."
   }
 
+  // Defensive: an import-only recovery (a CCT amountIn=0 route run from the
+  // swap screen) found no atomic UTXOs to import. That failed transfer is
+  // re-thrown as "Transfer failed: <reason>" and reaches the "Swap failed"
+  // toast here, so map it rather than leak the raw SDK reason. The UI normally
+  // only offers recovery once stuck funds are detected, so this shouldn't reach
+  // a user. See CP-14364.
+  if (message.toLowerCase().includes('no atomic utxos available to import')) {
+    return 'Nothing to recover for this route.'
+  }
+
   // Common error patterns
   if (message.includes('insufficient funds')) {
     return 'Insufficient balance to cover swap amount and fees.'

@@ -11,6 +11,7 @@ import {
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
+import { usePerpsAvailability } from '../perpetuals/hooks/usePerpsAvailability'
 
 export const TradeBalance = ({
   balance,
@@ -27,12 +28,16 @@ export const TradeBalance = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
+  const { isGeoBlocked } = usePerpsAvailability()
 
   const hasFunds = balance !== undefined && balance > 0
-  const formattedBalance = formatCurrency({
-    amount: balance ?? 0,
-    notation: 'compact'
-  })
+  const formattedBalance =
+    balance === undefined
+      ? '—'
+      : formatCurrency({
+          amount: balance,
+          notation: 'compact'
+        })
 
   const { createParentPressHandler, createChildPressHandler } =
     usePreventParentPress()
@@ -52,6 +57,10 @@ export const TradeBalance = ({
   const handleOnDepositPress = createChildPressHandler(() => {
     onDepositPress?.()
   })
+
+  if (isGeoBlocked && !hasFunds) {
+    return <></>
+  }
 
   return (
     <AnimatedPressable
@@ -83,36 +92,38 @@ export const TradeBalance = ({
         </Text>
       </View>
 
-      {hasFunds ? (
-        <View style={{ flexDirection: 'row', gap: 3 }}>
-          <Button
-            type="secondary"
-            size="small"
-            onPress={handleOnWithdrawPress}
-            style={{
-              borderRadius: 20,
-              borderTopRightRadius: 4,
-              borderBottomRightRadius: 4
-            }}>
-            Withdraw
+      {!isGeoBlocked && balance !== undefined ? (
+        hasFunds ? (
+          <View style={{ flexDirection: 'row', gap: 3 }}>
+            <Button
+              type="secondary"
+              size="small"
+              onPress={handleOnWithdrawPress}
+              style={{
+                borderRadius: 20,
+                borderTopRightRadius: 4,
+                borderBottomRightRadius: 4
+              }}>
+              Withdraw
+            </Button>
+            <Button
+              type="secondary"
+              size="small"
+              onPress={handleOnTopUpPress}
+              style={{
+                borderRadius: 20,
+                borderTopLeftRadius: 4,
+                borderBottomLeftRadius: 4
+              }}>
+              Top up
+            </Button>
+          </View>
+        ) : (
+          <Button type="primary" size="small" onPress={handleOnDepositPress}>
+            Deposit funds
           </Button>
-          <Button
-            type="secondary"
-            size="small"
-            onPress={handleOnTopUpPress}
-            style={{
-              borderRadius: 20,
-              borderTopLeftRadius: 4,
-              borderBottomLeftRadius: 4
-            }}>
-            Top up
-          </Button>
-        </View>
-      ) : (
-        <Button type="primary" size="small" onPress={handleOnDepositPress}>
-          Deposit funds
-        </Button>
-      )}
+        )
+      ) : null}
     </AnimatedPressable>
   )
 }

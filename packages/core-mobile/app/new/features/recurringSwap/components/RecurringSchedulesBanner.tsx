@@ -24,7 +24,14 @@ import { RecurringOrderStatus } from '../types'
 // renderHeader returns a fresh JSX instance, which without `memo` mounts
 // a new RecurringSchedulesBanner subtree and re-runs `useRecurringSchedules`
 // on every parent render.
-function RecurringSchedulesBannerImpl(): JSX.Element | null {
+function RecurringSchedulesBannerImpl({
+  sx
+}: {
+  // Applied to the banner root; only takes effect when the banner renders, so
+  // callers pass spacing (e.g. marginBottom) here rather than wrapping in a
+  // container that would reserve space while the banner is self-hidden.
+  sx?: React.ComponentProps<typeof View>['sx']
+} = {}): JSX.Element | null {
   const router = useRouter()
   const {
     theme: { colors }
@@ -62,7 +69,8 @@ function RecurringSchedulesBannerImpl(): JSX.Element | null {
           backgroundColor: '$surfaceSecondary',
           borderRadius: 18,
           paddingVertical: 16,
-          paddingHorizontal: 12
+          paddingHorizontal: 12,
+          ...sx
         }}>
         <Icons.Notification.RotateRight
           width={24}

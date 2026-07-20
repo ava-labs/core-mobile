@@ -111,6 +111,23 @@ describe('SentryService', () => {
     })
 
     // -----------------------------------------------------------------------
+    describe('init', () => {
+      it('ignores expected field errors that carry no actionable signal', () => {
+        service.init()
+
+        expect(Sentry.init).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ignoreErrors: expect.arrayContaining([
+              'Network request failed',
+              '[appCheck/token-error]',
+              '[messaging/unregistered]'
+            ])
+          })
+        )
+      })
+    })
+
+    // -----------------------------------------------------------------------
     describe('captureException', () => {
       it('passes an Error directly with message as extra', () => {
         const error = new Error('original error')

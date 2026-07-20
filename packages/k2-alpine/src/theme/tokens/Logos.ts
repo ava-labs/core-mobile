@@ -8,8 +8,6 @@ import Halliday from '../../assets/logos/halliday.svg'
 import Moonpay from '../../assets/logos/moonpay.svg'
 import PoweredByCircleDark from '../../assets/logos/powered-by-circle-dark.svg'
 import PoweredByCircleLight from '../../assets/logos/powered-by-circle-light.svg'
-import PoweredByParaswapDark from '../../assets/logos/powered-by-paraswap-dark.svg'
-import PoweredByParaswapLight from '../../assets/logos/powered-by-paraswap-light.svg'
 import CoinbasePay from '../../assets/logos/provider-coinbase.svg'
 import Stripe from '../../assets/logos/provider-stripe.svg'
 import Topper from '../../assets/logos/provider-topper.svg'
@@ -60,8 +58,6 @@ export const Logos = {
     Moonpay: Moonpay,
     PoweredByCircleDark: PoweredByCircleDark,
     PoweredByCircleLight: PoweredByCircleLight,
-    PoweredByParaswapDark: PoweredByParaswapDark,
-    PoweredByParaswapLight: PoweredByParaswapLight,
     Stripe: Stripe,
     CoinbasePay: CoinbasePay,
     Topper: Topper,

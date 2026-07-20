@@ -19,6 +19,11 @@ export const PRIVACY_POLICY_URL = 'https://www.avalabs.org/privacy-policy'
 
 export const HELP_URL = 'https://support.core.app/en/'
 
+// Help-center article explaining perpetual futures (and regional availability).
+// Note: not yet published at time of writing (CP-14520).
+export const PERPS_HELP_URL =
+  'https://support.core.app/en/articles/core-mobile-what-are-perpetual-futures'
+
 export const BUG_REPORT_URL = `https://docs.google.com/forms/d/e/1FAIpQLSdUQiVnJoqQ1g_6XTREpkSB5vxKKK8ba5DRjhzQf1XVeET8Rw/viewform?usp=pp_url&entry.2070152111=${PRESELECTED_PLATFORM}&entry.903657115=${VERSION}`
 
 export const FEATURE_REQUEST_URL = `https://docs.google.com/forms/d/e/1FAIpQLSdQ9nOPPGjVPmrLXh3B9NR1NuXXUiW2fKW1ylrXpiW_vZB_hw/viewform?entry.2070152111=${PRESELECTED_PLATFORM}`

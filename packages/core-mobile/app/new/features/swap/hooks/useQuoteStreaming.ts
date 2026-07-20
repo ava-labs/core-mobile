@@ -25,6 +25,9 @@ interface UseQuoteStreamingParams {
   toAddress: string | undefined
   slippageBps: number | undefined
   onNoQuotesError?: (retry: () => void) => void
+  // When true, a 0 amount is a valid request: an AVALANCHE_CCT route where the
+  // SDK emits an import-only recovery quote for amountIn=0.
+  allowZeroAmount?: boolean
 }
 
 interface UseQuoteStreamingResult {
@@ -48,7 +51,8 @@ export function useQuoteStreaming(
     fromAddress,
     toAddress,
     slippageBps,
-    onNoQuotesError
+    onNoQuotesError,
+    allowZeroAmount = false
   } = params
 
   // Subscribe to FusionService ready state
@@ -70,16 +74,19 @@ export function useQuoteStreaming(
       return { quoter: null, error: null }
     }
 
-    // Validate all required parameters
+    // Empty input never quotes. A CCT route additionally allows an explicit 0
+    // (import-only recovery quote); every other route needs a positive amount.
+    // Negatives are always rejected, even when allowZeroAmount is set.
     if (
       !fromToken ||
       !fromNetwork ||
       !toToken ||
       !toNetwork ||
-      !fromAmount ||
-      fromAmount <= 0n ||
       !fromAddress ||
-      !toAddress
+      !toAddress ||
+      fromAmount === undefined ||
+      fromAmount < 0n ||
+      (fromAmount === 0n && !allowZeroAmount)
     ) {
       return { quoter: null, error: null }
     }
@@ -128,6 +135,7 @@ export function useQuoteStreaming(
     fromAddress,
     toAddress,
     slippageBps,
+    allowZeroAmount,
     retryCount
   ])
 
@@ -185,13 +193,23 @@ export function useQuoteStreaming(
         case 'done':
           setIsLoading(false)
           if (data.reason === 'no-quotes') {
-            setError(fusionErrors.noQuotes())
-            onNoQuotesError?.(retry)
-            SentryService.captureMessage(
-              'Fusion quoter: no-quotes',
-              data.data,
-              { source: SentryTag.FusionSdk }
-            )
+            // A zero-amount CCT route is an import-only recovery probe: "no
+            // quotes" just means there's nothing stranded to recover, which is
+            // a normal state (the user may simply be typing/clearing the
+            // amount). Don't treat it as an error — no alert, no inline error,
+            // no Sentry noise. When funds ARE stranded the SDK emits a real
+            // quote instead, so the recovery flow is unaffected. See CP-14674.
+            const isZeroAmountRecoveryProbe =
+              allowZeroAmount && fromAmount === 0n
+            if (!isZeroAmountRecoveryProbe) {
+              setError(fusionErrors.noQuotes())
+              onNoQuotesError?.(retry)
+              SentryService.captureMessage(
+                'Fusion quoter: no-quotes',
+                data.data,
+                { source: SentryTag.FusionSdk }
+              )
+            }
           }
           if (data.reason === 'no-eligible-services') {
             setError(fusionErrors.noEligibleServices())
@@ -209,7 +227,15 @@ export function useQuoteStreaming(
     return () => {
       unsubscribe()
     }
-  }, [quoterResult, setBestQuote, setAllQuotes, onNoQuotesError, retry])
+  }, [
+    quoterResult,
+    setBestQuote,
+    setAllQuotes,
+    onNoQuotesError,
+    retry,
+    allowZeroAmount,
+    fromAmount
+  ])
 
   return {
     isLoading,

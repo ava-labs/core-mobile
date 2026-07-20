@@ -74,12 +74,20 @@ export const buildRequestItemsForAccounts = ({
   networks,
   accounts,
   xpAddressesByAccountId,
-  xpubByAccountId
+  xpubByAccountId,
+  filterOutDustUtxos
 }: {
   networks: Network[]
   accounts: Account[]
   xpAddressesByAccountId: Map<string, string[]>
   xpubByAccountId: Map<string, string | undefined>
+  /**
+   * CP-13903: forwarded to the Balance API's avax-namespace items. The
+   * server default is `true`, so this must always be explicit. Pass
+   * `selectIsFilterSmallUtxosActive` for user-facing balances; pass `false`
+   * for account discovery (dust-only accounts must still be detected).
+   */
+  filterOutDustUtxos: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): GetBalancesRequestBody['data'][] => {
   const evmReferences = new Set<string>()
@@ -258,7 +266,7 @@ export const buildRequestItemsForAccounts = ({
         avaxItems.push({
           namespace: BlockchainNamespace.AVAX,
           references: avaxRefs,
-          filterOutDustUtxos: false,
+          filterOutDustUtxos,
           extendedPublicKeyDetails: xpubChunk
         })
       }
@@ -277,7 +285,7 @@ export const buildRequestItemsForAccounts = ({
         avaxItems.push({
           namespace: BlockchainNamespace.AVAX,
           references: avaxRefs,
-          filterOutDustUtxos: false,
+          filterOutDustUtxos,
           addressDetails: addressChunk
         })
       }

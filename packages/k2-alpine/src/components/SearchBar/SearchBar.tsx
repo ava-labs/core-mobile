@@ -25,6 +25,11 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   containerStyle?: ViewStyle
   rightComponent?: JSX.Element
   useCancel?: boolean
+  /**
+   * Called when the built-in Cancel button is pressed (after the input is
+   * cleared and blurred). Use it to e.g. dismiss the containing modal.
+   */
+  onCancel?: () => void
 }
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -59,6 +64,7 @@ export const SearchBar = forwardRef<TextInput, Props>(function SearchBar(
     containerStyle,
     rightComponent,
     useCancel,
+    onCancel,
     ...rest
   },
   ref
@@ -90,10 +96,11 @@ export const SearchBar = forwardRef<TextInput, Props>(function SearchBar(
    * Sets the behavior for when the user cancels
    * the search
    */
-  function onCancel(): void {
+  function handleCancel(): void {
     setIsFocused(false)
     clearText()
     textInputRef.current?.blur()
+    onCancel?.()
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,7 +223,7 @@ export const SearchBar = forwardRef<TextInput, Props>(function SearchBar(
             alignSelf: 'center',
             alignItems: 'center'
           }}
-          onPress={onCancel}>
+          onPress={handleCancel}>
           Cancel
         </Text>
       )}

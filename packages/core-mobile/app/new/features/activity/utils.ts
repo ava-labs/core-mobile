@@ -1,3 +1,4 @@
+import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType, TxToken } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
@@ -6,6 +7,7 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { isNftTokenType } from 'services/nft/utils'
 import { Account } from 'store/account'
+import { getAddressByNetwork } from 'store/account/utils'
 import { Transaction } from 'store/transaction'
 
 export type ActivityListItem =
@@ -238,4 +240,117 @@ export const getNftLabel = (nftToken: TxToken | undefined): string => {
   if (name) return name
   if (symbol) return symbol
   return 'NFT'
+}
+
+/**
+ * Resolves the user's swap input and output legs from a transaction's token
+ * transfers, given the user's address on the tx's network.
+ *
+ * A swap can list more than one leg sent FROM the user: recurring-swap fills
+ * (and any token→token swap that also charges a native protocol/gas-fee) carry
+ * both the ERC-20 swap input AND a small native fee leg to the router. The
+ * native leg isn't the traded principal, so when multiple input legs exist we
+ * prefer the non-native one. A genuine native-input swap (e.g. AVAX→USDT) has a
+ * single native input leg and still resolves to it.
+ *
+ * `outputToken` is the first leg sent TO the user (undefined for cross-chain
+ * swaps whose destination token lands on another chain). Callers treat a
+ * defined `inputToken` with an undefined `outputToken` as "input-only".
+ */
+export function selectSwapTokens(
+  tokens: TxToken[],
+  userAddress: string | undefined
+): { inputToken: TxToken | undefined; outputToken: TxToken | undefined } {
+  if (!userAddress) {
+    return { inputToken: undefined, outputToken: undefined }
+  }
+
+  const userAddressLower = userAddress.toLowerCase()
+
+  const inputTokens = tokens.filter(
+    token => token.from?.address?.toLowerCase() === userAddressLower
+  )
+  const outputTokens = tokens.filter(
+    token => token.to?.address?.toLowerCase() === userAddressLower
+  )
+
+  const inputToken =
+    inputTokens.find(token => token.type !== TokenType.NATIVE) ?? inputTokens[0]
+  const outputToken = outputTokens[0]
+
+  return { inputToken, outputToken }
+}
+
+/**
+ * The active user's address on a transaction's network, resolved the same way
+ * the swap-title does: prefer the account's per-network address, falling back
+ * to `tx.from` when the account or network can't be resolved. Sharing this
+ * keeps the title, the row icon, and the Swap filter reading the same address.
+ */
+export function resolveTxUserAddress(
+  tx: Transaction,
+  account: Account | undefined,
+  network: Network | undefined
+): string | undefined {
+  return network && account ? getAddressByNetwork(account, network) : tx.from
+}
+
+/**
+ * Decides whether a transaction belongs on a given token's detail screen.
+ *
+ * A token-detail screen lists the txs that involve that token, and this must
+ * agree with the row's title. The title resolves the user's actual input/output
+ * legs via `selectSwapTokens` (which drops the small native protocol/fee leg a
+ * recurring/DCA fill carries, and isn't limited to the first two legs), so we
+ * file the row under exactly those tokens. This keeps a "X WAVAX swapped for Y"
+ * recurring fill on the WAVAX (and output-token) screens — where the swap
+ * actually happened — instead of the native AVAX screen it lands on when only
+ * the fee leg carries the native symbol. Symbols are resolved through
+ * `resolvePaymentSymbol` so a native leg with an empty Glacier symbol still
+ * matches its network token.
+ *
+ * When the user's legs can't be resolved (no user address, or no leg to/from
+ * the user), fall back to a positional symbol match over the first two legs.
+ * Both paths resolve symbols through `resolvePaymentSymbol`, so a native leg
+ * whose Glacier symbol is empty still maps to the network token symbol (e.g.
+ * AVAX) instead of silently dropping off the native token's screen.
+ */
+export function transactionInvolvesTokenSymbol({
+  tokens,
+  tokenSymbol,
+  userAddress,
+  networkTokenSymbol
+}: {
+  tokens: TxToken[]
+  tokenSymbol: string
+  userAddress: string | undefined
+  networkTokenSymbol: string | undefined
+}): boolean {
+  const matchesLeg = (leg: TxToken | undefined): boolean =>
+    leg !== undefined &&
+    tokenSymbol === resolvePaymentSymbol(leg, networkTokenSymbol)
+
+  const { inputToken, outputToken } = selectSwapTokens(tokens, userAddress)
+
+  if (inputToken || outputToken) {
+    return matchesLeg(inputToken) || matchesLeg(outputToken)
+  }
+
+  return matchesLeg(tokens[0]) || matchesLeg(tokens[1])
+}
+
+/**
+ * True when the only identifiable leg leaves the user (input) with nothing
+ * coming back (no output leg). A genuine swap returns a token to the user, so
+ * an input-only shape is an unclassified contract call — an ERC-20 approval, a
+ * cross-chain swap whose output lands on another chain, etc. Mirrors the
+ * "Contract Call" branch of the swap-title so the row icon and Swap filter stay
+ * consistent with the rendered label.
+ */
+export function isInputOnlyContractCall(
+  tokens: TxToken[],
+  userAddress: string | undefined
+): boolean {
+  const { inputToken, outputToken } = selectSwapTokens(tokens, userAddress)
+  return Boolean(inputToken) && !outputToken
 }

@@ -7,6 +7,8 @@ import {
 } from '@avalabs/core-chains-sdk'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import { AppListenerEffectAPI } from 'store/types'
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
+import { transactionSnackbar } from 'new/common/utils/toast'
 import { RpcMethod, RpcProvider } from '../../types'
 import { walletConnectProvider } from './walletConnect'
 
@@ -382,6 +384,77 @@ describe('walletConnectProvider', () => {
           '0xtxhash'
         )
       })
+    })
+  })
+
+  describe('onError — toast suppression for dapp-automated read methods', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      jest
+        .spyOn(WalletConnectService, 'rejectRequest')
+        .mockResolvedValue(undefined)
+    })
+
+    const invalidEnvironmentError = rpcErrors.internal(
+      'Invalid environment. Please turn on developer mode and try again'
+    )
+
+    it.each([
+      RpcMethod.WALLET_GET_NETWORK_STATE,
+      RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
+      RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+      RpcMethod.AVALANCHE_GET_BRIDGE_STATE
+    ])('rejects %s without showing an error toast (CP-14617)', async method => {
+      const request = makeMockRequest(method, 'eip155:43114')
+
+      await walletConnectProvider.onError({
+        request,
+        error: invalidEnvironmentError,
+        listenerApi: mockListenerApi
+      })
+
+      expect(WalletConnectService.rejectRequest).toHaveBeenCalledWith(
+        'test-topic',
+        1,
+        invalidEnvironmentError
+      )
+      expect(transactionSnackbar.error).not.toHaveBeenCalled()
+    })
+
+    it('still shows an error toast for user-initiated signing methods', async () => {
+      const request = makeMockRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      await walletConnectProvider.onError({
+        request,
+        error: invalidEnvironmentError,
+        listenerApi: mockListenerApi
+      })
+
+      expect(WalletConnectService.rejectRequest).toHaveBeenCalledWith(
+        'test-topic',
+        1,
+        invalidEnvironmentError
+      )
+      expect(transactionSnackbar.error).toHaveBeenCalled()
+    })
+
+    it('does not show an error toast for user-rejected errors', async () => {
+      const request = makeMockRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      await walletConnectProvider.onError({
+        request,
+        error: providerErrors.userRejectedRequest(),
+        listenerApi: mockListenerApi
+      })
+
+      expect(WalletConnectService.rejectRequest).toHaveBeenCalled()
+      expect(transactionSnackbar.error).not.toHaveBeenCalled()
     })
   })
 })

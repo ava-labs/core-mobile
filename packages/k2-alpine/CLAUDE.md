@@ -186,8 +186,8 @@ Metro config (`metro.config.js`) uses `react-native-svg-transformer`:
 ### Patch Files
 
 Located in `patches/`:
-- `@expo+config+8.5.6.patch`: Expo config patches
-- `react-native-reanimated+3.18.0.patch`: Reanimated patches
+- `@expo+config+56.0.9.patch`: Expo config patches
+- `react-native-reanimated+4.5.1.patch`: Reanimated patches
 
 Applied automatically via `patch-package` in postinstall.
 
@@ -201,7 +201,7 @@ Applied automatically via `patch-package` in postinstall.
 
 **Key libraries**:
 - **Dripsy (4.3.7)**: Theme-based styling system
-- **React Native Reanimated (3.18.0)**: High-performance animations
+- **React Native Reanimated (4.5.1)**: High-performance animations
 - **React Native Gesture Handler (2.24.0)**: Touch gesture system
 - **Expo packages**: blur, linear-gradient, video, fonts, splash-screen
 - **@shopify/react-native-skia**: Canvas/graphics rendering
@@ -265,5 +265,5 @@ This package is consumed by `@avalabs/core-mobile` via `workspace:*` dependency:
 
 - **Font scaling**: Disabled globally for consistency across devices
 - **Theme switching**: Handled by `K2AlpineThemeProvider` based on system color scheme
-- **Expo SDK**: Version 53.0.20 (ensure compatibility with core-mobile)
+- **Expo SDK**: Version 56 (ensure compatibility with core-mobile)
 - **Private package**: Not published to npm, internal workspace use only

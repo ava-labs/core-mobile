@@ -25,15 +25,39 @@ describe('estimateLiquidationPrice', () => {
   it('returns entry for non-positive leverage', () => {
     expect(estimateLiquidationPrice(100, 0, true)).toBe(100)
   })
+
+  it('omits the maintenance-margin term when maxLeverage is unknown', () => {
+    // No maxLeverage → zero-maintenance bound (entry ± entry/leverage).
+    expect(estimateLiquidationPrice(100, 10, true)).toBeCloseTo(90, 6)
+    expect(estimateLiquidationPrice(100, 10, false)).toBeCloseTo(110, 6)
+  })
+
+  it('accounts for maintenance margin, moving the estimate toward entry', () => {
+    // 10× on a 10×-max coin: mmf = 1 / (2 · 10) = 0.05.
+    // long:  100 · (1 − 0.1) / (1 − 0.05) = 94.7368…
+    expect(estimateLiquidationPrice(100, 10, true, 10)).toBeCloseTo(94.7368, 3)
+    // short: 100 · (1 + 0.1) / (1 + 0.05) = 104.7619…
+    expect(estimateLiquidationPrice(100, 10, false, 10)).toBeCloseTo(
+      104.7619,
+      3
+    )
+  })
+
+  it('gives less buffer at max leverage than the zero-maintenance bound', () => {
+    const withMm = estimateLiquidationPrice(100, 10, true, 10)
+    const withoutMm = estimateLiquidationPrice(100, 10, true)
+    // Real liquidation is closer to entry (higher for a long) → smaller buffer.
+    expect(withMm).toBeGreaterThan(withoutMm)
+  })
 })
 
 describe('positionSizeTokens', () => {
-  it('is collateral × leverage / entry', () => {
-    expect(positionSizeTokens(100, 2, 50)).toBe(4)
+  it('is position notional / entry', () => {
+    expect(positionSizeTokens(100, 50)).toBe(2)
   })
 
   it('is 0 when entry is non-positive', () => {
-    expect(positionSizeTokens(100, 2, 0)).toBe(0)
+    expect(positionSizeTokens(100, 0)).toBe(0)
   })
 })
 
@@ -126,15 +150,16 @@ describe('requiredTriggerSide', () => {
 })
 
 describe('isTriggerValid', () => {
-  const entryPrice = 100
+  // Reference price the trigger is validated against (the live mark in the app).
+  const referencePrice = 100
 
-  it('take-profit must be above entry for a long, below for a short', () => {
+  it('take-profit must be above the reference for a long, below for a short', () => {
     expect(
       isTriggerValid({
         kind: 'takeProfit',
         isLong: true,
         price: 110,
-        entryPrice
+        referencePrice
       })
     ).toBe(true)
     expect(
@@ -142,7 +167,7 @@ describe('isTriggerValid', () => {
         kind: 'takeProfit',
         isLong: true,
         price: 90,
-        entryPrice
+        referencePrice
       })
     ).toBe(false)
     expect(
@@ -150,39 +175,54 @@ describe('isTriggerValid', () => {
         kind: 'takeProfit',
         isLong: false,
         price: 90,
-        entryPrice
+        referencePrice
       })
     ).toBe(true)
   })
 
-  it('stop-loss must be below entry for a long, above for a short', () => {
+  it('stop-loss must be below the reference for a long, above for a short', () => {
     expect(
-      isTriggerValid({ kind: 'stopLoss', isLong: true, price: 90, entryPrice })
+      isTriggerValid({
+        kind: 'stopLoss',
+        isLong: true,
+        price: 90,
+        referencePrice
+      })
     ).toBe(true)
     expect(
-      isTriggerValid({ kind: 'stopLoss', isLong: true, price: 110, entryPrice })
+      isTriggerValid({
+        kind: 'stopLoss',
+        isLong: true,
+        price: 110,
+        referencePrice
+      })
     ).toBe(false)
     expect(
       isTriggerValid({
         kind: 'stopLoss',
         isLong: false,
         price: 110,
-        entryPrice
+        referencePrice
       })
     ).toBe(true)
   })
 
-  it('rejects a trigger exactly at entry (strict side)', () => {
+  it('rejects a trigger exactly at the reference (strict side)', () => {
     expect(
       isTriggerValid({
         kind: 'takeProfit',
         isLong: false,
         price: 100,
-        entryPrice
+        referencePrice
       })
     ).toBe(false)
     expect(
-      isTriggerValid({ kind: 'stopLoss', isLong: true, price: 100, entryPrice })
+      isTriggerValid({
+        kind: 'stopLoss',
+        isLong: true,
+        price: 100,
+        referencePrice
+      })
     ).toBe(false)
   })
 
@@ -192,11 +232,16 @@ describe('isTriggerValid', () => {
         kind: 'takeProfit',
         isLong: true,
         price: undefined,
-        entryPrice
+        referencePrice
       })
     ).toBe(false)
     expect(
-      isTriggerValid({ kind: 'takeProfit', isLong: true, price: 0, entryPrice })
+      isTriggerValid({
+        kind: 'takeProfit',
+        isLong: true,
+        price: 0,
+        referencePrice
+      })
     ).toBe(false)
   })
 })

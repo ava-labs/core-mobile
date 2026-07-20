@@ -14,6 +14,11 @@ import {
   selectMarkrSwapMaxRetries,
   selectSentrySampleRate,
   selectStakeAnnualPercentageYieldBPS,
+  selectFastStakeFeeRate,
+  selectDelegationFeeRate,
+  selectIsFastStakeFeeBlocked,
+  selectIsDelegationFeeBlocked,
+  selectIsFilterSmallUtxosAvailable,
   posthogSlice
 } from './slice'
 import { DefaultFeatureFlagConfig, initialState } from './types'
@@ -349,5 +354,117 @@ describe('selectIsFusionEnabled', () => {
       }
     })
     expect(selectIsFusionEnabled(state)).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Stake convenience-fee rate selectors (multivariate fee gates)
+// ---------------------------------------------------------------------------
+
+describe('selectFastStakeFeeRate / selectDelegationFeeRate', () => {
+  it('parses the variant string as basis points', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '250'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0.1)
+    expect(selectDelegationFeeRate(state)).toBe(0.025)
+  })
+
+  it('treats a variant of "0" as a valid zero rate (no fallback)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '0'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+  })
+
+  it('caps the rate at 10,000 bps (100% of the reward)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '500000'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(1)
+  })
+
+  it('rejects partially numeric variants outright (strict parse)', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '1000abc',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '10.5'
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(true)
+  })
+
+  it('yields 0 (fee off) when the gate is a plain boolean with no variant', () => {
+    const state = stateWithFlags({
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: true,
+      [FeatureGates.DELEGATION_FEE_ENABLED]: true
+    })
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
+  })
+
+  it('yields 0 (fee off) when the flag is absent', () => {
+    const state = stateWithFlags({})
+    expect(selectFastStakeFeeRate(state)).toBe(0)
+    expect(selectDelegationFeeRate(state)).toBe(0)
+  })
+})
+
+describe('selectIsFastStakeFeeBlocked / selectIsDelegationFeeBlocked with variants', () => {
+  it('reports enabled for a positive-rate variant', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '250',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '1000'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(false)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(false)
+  })
+
+  it('treats a variant of "0" exactly like the flag being off', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '0',
+      [FeatureGates.DELEGATION_FEE_ENABLED]: '0'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+    expect(selectIsDelegationFeeBlocked(state)).toBe(true)
+  })
+
+  it('treats a negative-rate misconfiguration as off', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: '-100'
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+  })
+
+  it('treats a plain boolean gate (no rate variant) as blocked', () => {
+    const state = stateWithFlags({
+      [FeatureGates.EVERYTHING]: true,
+      [FeatureGates.FAST_STAKE_FEE_ENABLED]: true
+    })
+    expect(selectIsFastStakeFeeBlocked(state)).toBe(true)
+  })
+})
+
+describe('selectIsFilterSmallUtxosAvailable', () => {
+  it('is false by default (flag defaults off)', () => {
+    expect(selectIsFilterSmallUtxosAvailable(createMockRootState({}))).toBe(
+      false
+    )
+  })
+
+  it('is true when FILTER_SMALL_UTXOS and EVERYTHING are on', () => {
+    const state = createMockRootState({
+      featureFlags: {
+        [FeatureGates.FILTER_SMALL_UTXOS]: true,
+        [FeatureGates.EVERYTHING]: true
+      }
+    })
+    expect(selectIsFilterSmallUtxosAvailable(state)).toBe(true)
   })
 })

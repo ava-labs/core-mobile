@@ -87,4 +87,16 @@ describe('validate pvm send', () => {
       })
     ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
   })
+
+  it('should validate against spendableBalance instead of available when provided (CP-13903)', async () => {
+    expect(() =>
+      validate({
+        address: mockActiveAccount.addressPVM,
+        amount: 1000n,
+        maxFee: 1n,
+        token: mockNativeTokenWithBalance, // available: 10000n
+        spendableBalance: 100n
+      })
+    ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
+  })
 })

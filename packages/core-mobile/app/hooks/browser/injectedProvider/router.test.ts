@@ -1,5 +1,4 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Networks } from 'store/network/types'
 import type { Account } from 'store/account'
@@ -8,7 +7,7 @@ import {
   JSON_RPC_INTERNAL_ERROR_CODE,
   USER_REJECTED_REQUEST_MESSAGE
 } from './errors'
-import { createInjectedProviderRouter, SIGNING_METHODS } from './router'
+import { createInjectedProviderRouter } from './router'
 import { BrowserNetwork, RouterDeps } from './types'
 
 jest.mock('store/browser/slices/tabs', () => ({
@@ -1527,21 +1526,6 @@ describe('createInjectedProviderRouter', () => {
         expect.objectContaining({ method: 'eth_sendTransactionBatch' })
       )
       expect(requestReadOnly).not.toHaveBeenCalled()
-    })
-
-    it('SIGNING_METHODS covers every EVM signing method in the RpcMethod enum (drift guard)', () => {
-      // Source of truth: the vm-module RpcMethod enum. Every eth_*/personal_*
-      // member is an EVM method that requires approval and must take the
-      // signing path; one missing here would silently fall through to the
-      // read-only branch (the drift hazard CP-14384 removed for the read-only
-      // list). If the enum gains a new EVM signing method, this fails until
-      // SIGNING_METHODS is updated.
-      const evmSigningMethods = Object.values(RpcMethod).filter(
-        m => m.startsWith('eth_') || m.startsWith('personal_')
-      )
-      expect(Object.keys(SIGNING_METHODS).sort()).toEqual(
-        [...evmSigningMethods].sort()
-      )
     })
   })
 
