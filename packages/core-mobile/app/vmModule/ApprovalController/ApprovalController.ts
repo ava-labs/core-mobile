@@ -33,6 +33,9 @@ import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
 import { ledgerParamsStore } from 'features/ledger/store'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { providerErrors } from '@metamask/rpc-errors'
+import { isAddressApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import { WalletType } from 'services/wallet/types'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
@@ -537,6 +540,34 @@ class ApprovalController implements VmModuleApprovalController {
     const { request, displayData, signingData } = params
     const requestId = request.requestId
     this.userCancelledMap.delete(requestId)
+
+    // A dApp may only sign with accounts the user granted to its WalletConnect
+    // session (session.namespaces) — enforced pre-vm-module via
+    // isAddressApproved and lost in the migration (CP-14604). signingData
+    // .account is the module-resolved signer, so this checks exactly the
+    // address that would sign. In-app and injected-browser requests
+    // (CORE_MOBILE_TOPIC) are excluded: they keep their own account gating,
+    // and getSession would throw while the WC client is still initializing.
+    // Avalanche signingData variants carry no `account` and are knowingly not
+    // checked: the avax namespace is only ever granted to Core-domain dApps,
+    // and those methods always sign with the active account the user sees.
+    if ('account' in signingData && !isInAppRequest(request)) {
+      const session = WalletConnectService.getSession(request.sessionId)
+      if (
+        session &&
+        !isAddressApproved(
+          signingData.account,
+          request.chainId,
+          session.namespaces
+        )
+      ) {
+        return {
+          error: providerErrors.unauthorized(
+            'Requested address is not authorized'
+          )
+        }
+      }
+    }
 
     // Quick Swaps bypass — sync find then async run keeps the common
     // (no-validator) path microtask-free so the modal navigation
