@@ -162,6 +162,10 @@ export const PinScreen = ({
           const canProceed = await ensureWalletSecret(walletId, deleteWallet)
           if (!canProceed) {
             // Wallet secret is gone; deleteWallet routes the user to onboarding.
+            // Clear the loading UI first so a delayed navigation can't strand
+            // the user on a spinner. (No retry here — this path is terminal.)
+            isProcessing.value = false
+            handleStopLoading()
             return
           }
         }
