@@ -125,9 +125,13 @@ describe('<MarketHistory />', () => {
     expect(json).toContain('Open Long')
     // subtitle: size (0.0714 * 63.06 = $4.50) @ price ($63.06)
     expect(json).toContain('$4.50 @ $63.06')
-    // trailing timestamp from toPositionEntry: the minute (":57") is stable
-    // across runner timezones, unlike the date/hour, so assert only that.
-    expect(json).toContain(':57')
+    // trailing timestamp from toPositionEntry, computed the same way the
+    // production code formats it so the assertion holds in any runner TZ.
+    const expectedTime = new Date(1752969420000).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    })
+    expect(json).toContain(expectedTime)
   })
 
   it('caps at the 5 most recent fills', async () => {

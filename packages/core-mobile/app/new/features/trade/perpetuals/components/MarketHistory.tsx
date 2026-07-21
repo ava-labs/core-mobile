@@ -12,7 +12,7 @@ import {
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useMemo } from 'react'
 import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
-import { PositionEntry } from '../types'
+import type { PositionEntry } from '../types'
 import { toRecentCoinEntries } from '../utils/toPosition'
 
 const MAX_ENTRIES = 5
