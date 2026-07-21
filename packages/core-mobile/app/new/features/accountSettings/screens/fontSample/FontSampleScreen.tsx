@@ -6,7 +6,8 @@ import Logger from 'utils/Logger'
 import {
   FONT_SAMPLE_KEYS,
   FONT_SAMPLE_LANGUAGES,
-  FONT_SAMPLE_VARIANTS
+  FONT_SAMPLE_VARIANTS,
+  RELAXED_LINE_HEIGHT_RATIO
 } from './fontSampleData'
 
 /**
@@ -63,6 +64,12 @@ export const FontSampleScreen = (): React.JSX.Element => {
               English fallbacks, not a font-rendering result. Check logs.
             </Text>
           )}
+          <Text variant="body2" sx={{ color: colors.$textSecondary }}>
+            Each variant is shown twice: “as-is” uses the k2-alpine token
+            lineHeight (== fontSize on headings, which clips CJK/Devanagari on
+            iOS); “relaxed” uses {RELAXED_LINE_HEIGHT_RATIO}× fontSize. Compare
+            to choose per-variant lineHeights that fit non-Latin scripts.
+          </Text>
           {FONT_SAMPLE_LANGUAGES.map(lang => {
             const t = i18n.getFixedT(lang.code)
             const sample = FONT_SAMPLE_KEYS.map(k => t(k)).join(' · ')
@@ -72,16 +79,28 @@ export const FontSampleScreen = (): React.JSX.Element => {
                 <Text variant="heading6">
                   {lang.label} ({lang.code})
                 </Text>
-                {FONT_SAMPLE_VARIANTS.map(v => (
-                  <View key={v.variant} sx={{ gap: 2 }}>
-                    <Text
-                      variant="caption"
-                      sx={{ color: colors.$textSecondary }}>
-                      {v.variant} · {v.family}
-                    </Text>
-                    <Text variant={v.variant}>{sample}</Text>
-                  </View>
-                ))}
+                {FONT_SAMPLE_VARIANTS.map(v => {
+                  const relaxed = Math.round(v.size * RELAXED_LINE_HEIGHT_RATIO)
+                  return (
+                    <View key={v.variant} sx={{ gap: 2 }}>
+                      <Text
+                        variant="caption"
+                        sx={{ color: colors.$textSecondary }}>
+                        {v.variant} · {v.family} {v.size} · as-is (lineHeight{' '}
+                        {v.lineHeight})
+                      </Text>
+                      <Text variant={v.variant}>{sample}</Text>
+                      <Text
+                        variant="caption"
+                        sx={{ color: colors.$textSecondary }}>
+                        relaxed (lineHeight {relaxed})
+                      </Text>
+                      <Text variant={v.variant} sx={{ lineHeight: relaxed }}>
+                        {sample}
+                      </Text>
+                    </View>
+                  )
+                })}
                 <View sx={{ gap: 2 }}>
                   <Text variant="caption" sx={{ color: colors.$textSecondary }}>
                     mixed (Latin + script) · body1
