@@ -26,6 +26,10 @@ export const FontSampleScreen = (): React.JSX.Element => {
   const [loadFailed, setLoadFailed] = useState(false)
 
   useEffect(() => {
+    // only load when the screen is actually usable (dev/testnet mode); hooks
+    // must run unconditionally, so guard inside the effect rather than skipping
+    // the hook
+    if (!isDeveloperMode) return
     let mounted = true
     // ensure every sample locale's catalog is in the i18n store so getFixedT
     // returns real translations (non-active locales load lazily via the
@@ -50,7 +54,7 @@ export const FontSampleScreen = (): React.JSX.Element => {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [isDeveloperMode])
 
   // Gate the route itself, not just the Advanced Settings entry point — the
   // screen is deep-linkable, and it's meant to be a developer-only QA tool.
@@ -100,7 +104,9 @@ export const FontSampleScreen = (): React.JSX.Element => {
                 </Text>
                 {FONT_SAMPLE_VARIANTS.map(variant => {
                   const spec = text[variant]
-                  const relaxed = Math.round(
+                  // ceil, not round — never let the "relaxed" lineHeight fall
+                  // below the intended ratio (which could reintroduce clipping)
+                  const relaxed = Math.ceil(
                     spec.fontSize * RELAXED_LINE_HEIGHT_RATIO
                   )
                   return (
