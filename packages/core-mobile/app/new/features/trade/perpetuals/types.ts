@@ -59,10 +59,8 @@ export type PositionEntry = {
   /** Optional realised PnL; when present we show a colored pill */
   pnl?: number
   pnlStatus?: PriceChangeStatus
-  /** Free-text date like "Yesterday" or "02/28/26" */
-  dateLabel: string
-  /** Free-text time like "2:57 PM" */
-  timeLabel: string
+  /** Fill time, Unix ms — render via formatRelativeDateTime */
+  timestamp: number
   logoUri?: string
 }
 

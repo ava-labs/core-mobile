@@ -9,6 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { formatRelativeDateTime } from 'common/utils/formatRelativeDateTime'
 import React, { useMemo } from 'react'
 import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
 import type { PositionEntry } from '../types'
@@ -101,7 +102,7 @@ const FillTimestamp = ({ entry }: { entry: PositionEntry }): JSX.Element => {
         textAlign: 'right',
         color: alpha(theme.colors.$textPrimary, 0.6)
       }}>
-      {[entry.dateLabel, entry.timeLabel].filter(Boolean).join('\n')}
+      {formatRelativeDateTime(entry.timestamp)}
     </Text>
   )
 }
