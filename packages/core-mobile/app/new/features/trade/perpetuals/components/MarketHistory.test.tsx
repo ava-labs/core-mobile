@@ -17,8 +17,16 @@ jest.mock('common/hooks/useFormatCurrency', () => ({
   })
 }))
 
-// Mock @avalabs/k2-alpine so we don't need a dripsy theme provider. GroupList
-// renders each item's leftIcon/title/subtitle/value so assertions can see them.
+// String host type (not rn.View): composite RN Views forward testID to an
+// inner host component and double-count in findAllByProps.
+jest.mock('./PerpsCoinLogo', () => {
+  const r = require('react') as typeof import('react')
+  return {
+    PerpsCoinLogo: () => r.createElement('View', { testID: 'coin-logo' })
+  }
+})
+
+// Mock @avalabs/k2-alpine so we don't need a dripsy theme provider.
 jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
@@ -35,42 +43,19 @@ jest.mock('@avalabs/k2-alpine', () => {
     Text: passthrough(rn.Text as any),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     View: passthrough(rn.View as any),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    GroupList: ({ data }: any) =>
-      r.createElement(
-        rn.View,
-        { testID: 'group-list' },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data.map((item: any, i: number) =>
-          r.createElement(
-            rn.View,
-            { key: i },
-            item.leftIcon,
-            item.title,
-            item.subtitle,
-            item.value
-          )
-        )
-      ),
     StatusArrow: () => null,
     PriceChangeStatus: { Up: 'up', Down: 'down', Neutral: 'neutral' },
-    Icons: {
-      Content: {
-        // Use a plain host element type (not RN's real View) so it renders
-        // as a single test instance: RN's View forwards unknown props to an
-        // inner native host component, which would double-count matches
-        // when a test asserts on testID via findAllByProps.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Add: (props: any) =>
-          r.createElement('View', { ...props, testID: 'icon-add' }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Remove: (props: any) =>
-          r.createElement('View', { ...props, testID: 'icon-remove' })
-      }
-    },
     alpha: (color: string) => color,
     useTheme: () => ({
-      theme: { isDark: false, colors: { $textPrimary: '#28282E' } }
+      theme: {
+        isDark: false,
+        colors: {
+          $textPrimary: '#28282E',
+          $textSuccess: '#1FC626',
+          $textDanger: '#E84142',
+          $borderPrimary: '#F2F2F3'
+        }
+      }
     })
   }
 })
@@ -124,7 +109,8 @@ describe('<MarketHistory />', () => {
     expect(json).toContain('Close Long')
     expect(json).toContain('Open Long')
     // subtitle: size (0.0714 * 63.06 = $4.50) @ price ($63.06)
-    expect(json).toContain('$4.50 @ $63.06')
+    expect(json).toContain('$4.50')
+    expect(json).toContain('$63.06')
     // trailing timestamp from toPositionEntry, computed the same way the
     // production code formats it so the assertion holds in any runner TZ.
     const expectedTime = new Date(1752969420000).toLocaleTimeString('en-US', {
@@ -139,20 +125,18 @@ describe('<MarketHistory />', () => {
       fill({ tid: n, hash: `0x${n}` })
     )
     const instance = await render('ETH')
-    const rows = instance.root.findAllByProps({ testID: 'group-list' })
-    expect(rows.length).toBeGreaterThan(0)
-    expect(instance.root.findAllByProps({ testID: 'icon-add' })).toHaveLength(5)
+    expect(instance.root.findAllByProps({ testID: 'coin-logo' })).toHaveLength(
+      5
+    )
   })
 
-  it('shows a minus icon for closing fills and a plus icon for opening fills', async () => {
+  it('shows the realised PnL pill on closing fills, like the History screen', async () => {
     mockFills.fills = [
-      fill({ dir: 'Close Long', tid: 1, hash: '0x1' }),
-      fill({ dir: 'Open Short', tid: 2, hash: '0x2' })
+      fill({ dir: 'Close Long', closedPnl: '1.2', tid: 1, hash: '0x1' }),
+      fill({ dir: 'Open Long', tid: 2, hash: '0x2' })
     ]
     const instance = await render('ETH')
-    expect(
-      instance.root.findAllByProps({ testID: 'icon-remove' })
-    ).toHaveLength(1)
-    expect(instance.root.findAllByProps({ testID: 'icon-add' })).toHaveLength(1)
+    const json = JSON.stringify(instance.toJSON())
+    expect(json).toContain('+$1.20')
   })
 })
