@@ -119,8 +119,13 @@ const StakeDurationScreen = ({
       ? DURATION_OPTIONS_WITH_DAYS_FUJI
       : DURATION_OPTIONS_WITH_DAYS_MAINNET
     // Delegate flow: swap the 1 Year preset for "Node max" — stake until the
-    // selected validator's end time (see `withNodeMaxOption`).
-    return nodeEndDays === undefined
+    // selected validator's end time (see `withNodeMaxOption`). A node ending
+    // within the day (normally unreachable — the picker's minimum-time filter
+    // and the restake guard screen such nodes out) would make that a
+    // meaningless "Node Max / 0 days" card, so keep the base list instead;
+    // every day preset then renders disabled via `maxNumberOfDays` and the
+    // node-end guard on Next explains why.
+    return nodeEndDays === undefined || nodeEndDays < 1
       ? base
       : withNodeMaxOption(base, nodeEndDays)
   }, [isDeveloperMode, nodeEndDays])
