@@ -85,9 +85,13 @@ export const DurationOptions = ({
             const globalIndex = rowIndex * 3 + index
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
+            // Node Max is exempt: it ends at the node's exact end time so it
+            // always fits, even when its rounded day label exceeds the
+            // conservative `maxNumberOfDays` cap.
             const isDisabled =
               maxNumberOfDays !== undefined &&
               'numberOfDays' in item &&
+              item.title !== StakeDurationTitle.NODE_MAX &&
               item.numberOfDays > maxNumberOfDays
 
             return (

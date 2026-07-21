@@ -13,9 +13,11 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   addDays,
   addHours,
+  differenceInDays,
   format,
   getUnixTime,
-  millisecondsToSeconds
+  millisecondsToSeconds,
+  subHours
 } from 'date-fns'
 import { Href, useRouter } from 'expo-router'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
@@ -108,12 +110,25 @@ const StakeDurationScreen = ({
   const { formatCurrency } = useFormatCurrency()
   const now = useNow()
   const rewardChartRef = useRef<StakeRewardChartHandle>(null)
-  // Days until the selected node's end time (delegate flow only). A plain
-  // number so the memo below only re-runs when the day count actually
-  // changes, not on every `now` tick.
-  const nodeEndDays = maxEndDate
-    ? getRoundedDurationInDays(now, maxEndDate)
-    : undefined
+  // Days until the selected node's end time (delegate flow only). Captured
+  // ONCE at mount: this number drives the option list's contents and
+  // ordering, and `now` ticking across a rounding boundary mid-session would
+  // otherwise re-sort the list under the index-tracked selection. The
+  // exact-time `exceedsNodeEndTime` guard below (on the reactive `now`)
+  // stays authoritative for correctness.
+  const [nodeEndDays] = useState<number | undefined>(() =>
+    maxEndDate ? getRoundedDurationInDays(Date.now(), maxEndDate) : undefined
+  )
+  // Conservative cap for DISABLING presets: a day preset actually ends at
+  // now + N days + 1h of submit-drift slack, so it only fits the node when
+  // N ≤ floor(remaining − 1h). The rounded `nodeEndDays` can round UP
+  // (179.6d → 180), which would leave an overshooting preset enabled only
+  // to fail on Next.
+  const [coverableNodeDays] = useState<number | undefined>(() =>
+    maxEndDate
+      ? Math.max(0, differenceInDays(subHours(maxEndDate, 1), new Date()))
+      : undefined
+  )
   const durationsWithDays: DurationOptionWithDays[] = useMemo(() => {
     const base = isDeveloperMode
       ? DURATION_OPTIONS_WITH_DAYS_FUJI
@@ -150,7 +165,11 @@ const StakeDurationScreen = ({
       option => option.title === defaultTitle
     )
     const defaultOption = durationsWithDays[defaultIndex]
-    if (defaultOption && defaultOption.numberOfDays <= nodeEndDays) {
+    if (
+      defaultOption &&
+      coverableNodeDays !== undefined &&
+      defaultOption.numberOfDays <= coverableNodeDays
+    ) {
       return defaultIndex
     }
     // The usual default (3 Months) outlasts the selected node, so its card
@@ -161,7 +180,7 @@ const StakeDurationScreen = ({
       option => option.title === StakeDurationTitle.NODE_MAX
     )
     return nodeMaxIndex >= 0 ? nodeMaxIndex : staticDefault
-  }, [isDeveloperMode, nodeEndDays, durationsWithDays])
+  }, [isDeveloperMode, nodeEndDays, coverableNodeDays, durationsWithDays])
   const customDurationIndex = useMemo(
     () => getCustomDurationIndex(isDeveloperMode),
     [isDeveloperMode]
@@ -178,8 +197,12 @@ const StakeDurationScreen = ({
         // A preset the node can't cover renders disabled — starting on it
         // would select a disabled card. Fall through to the custom-date
         // branch instead, where the existing node-end guard explains why the
-        // original duration no longer fits.
-        (nodeEndDays === undefined || duration.numberOfDays <= nodeEndDays)
+        // original duration no longer fits. Node Max always fits (it ends at
+        // the node's exact end time), even when its rounded day label
+        // exceeds the conservative cap.
+        (coverableNodeDays === undefined ||
+          duration.title === StakeDurationTitle.NODE_MAX ||
+          duration.numberOfDays <= coverableNodeDays)
     )
     return index >= 0 ? index : undefined
   })
@@ -401,7 +424,7 @@ const StakeDurationScreen = ({
             onSelectDuration={handleSelectDuration}
             customEndDate={customEndDate}
             durations={[...durationsWithDays, CUSTOM]}
-            maxNumberOfDays={nodeEndDays}
+            maxNumberOfDays={coverableNodeDays}
           />
         )
       },
@@ -418,7 +441,7 @@ const StakeDurationScreen = ({
     getDurationInDays,
     estimatedReward,
     durationsWithDays,
-    nodeEndDays
+    coverableNodeDays
   ])
 
   useEffect(() => {
