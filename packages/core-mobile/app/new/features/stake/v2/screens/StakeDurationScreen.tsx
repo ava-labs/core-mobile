@@ -124,10 +124,22 @@ const StakeDurationScreen = ({
       ? base
       : withNodeMaxOption(base, nodeEndDays)
   }, [isDeveloperMode, nodeEndDays])
-  const defaultDurationIndex = useMemo(
-    () => getDefaultDurationIndex(isDeveloperMode),
-    [isDeveloperMode]
-  )
+  const defaultDurationIndex = useMemo(() => {
+    const staticDefault = getDefaultDurationIndex(isDeveloperMode)
+    if (nodeEndDays === undefined) return staticDefault
+    const defaultOption = durationsWithDays[staticDefault]
+    if (defaultOption && defaultOption.numberOfDays <= nodeEndDays) {
+      return staticDefault
+    }
+    // The usual default (3 Months) outlasts the selected node, so its card
+    // renders disabled — defaulting to it would open the screen with a
+    // disabled card selected. Fall back to Node Max, the longest option this
+    // node can cover.
+    const nodeMaxIndex = durationsWithDays.findIndex(
+      option => option.title === StakeDurationTitle.NODE_MAX
+    )
+    return nodeMaxIndex >= 0 ? nodeMaxIndex : staticDefault
+  }, [isDeveloperMode, nodeEndDays, durationsWithDays])
   const customDurationIndex = useMemo(
     () => getCustomDurationIndex(isDeveloperMode),
     [isDeveloperMode]
@@ -139,7 +151,13 @@ const StakeDurationScreen = ({
   const [initialPresetIndex] = useState<number | undefined>(() => {
     if (initialDurationDays === undefined) return undefined
     const index = durationsWithDays.findIndex(
-      duration => duration.numberOfDays === initialDurationDays
+      duration =>
+        duration.numberOfDays === initialDurationDays &&
+        // A preset the node can't cover renders disabled — starting on it
+        // would select a disabled card. Fall through to the custom-date
+        // branch instead, where the existing node-end guard explains why the
+        // original duration no longer fits.
+        (nodeEndDays === undefined || duration.numberOfDays <= nodeEndDays)
     )
     return index >= 0 ? index : undefined
   })
