@@ -39,7 +39,7 @@
     "@avalabs/crypto-nitro": "0.3.2",
     "@avalabs/crypto-sdk": "1.0.2",
     "@avalabs/evm-module": "3.9.0",
-    "@avalabs/fusion-sdk": "0.0.0-fix-fusion-hyperliquid-withdra-20260716134252",
+    "@avalabs/fusion-sdk": "0.0.0-feat-enable-hvm-big-blocks-20260720201517",
     "@avalabs/glacier-sdk": "3.1.0-canary.672f5c3.0",
     "@avalabs/k2-alpine": "workspace:*",
     "@avalabs/perps-sdk": "0.0.0-fix-perps-unified-portfolio-ba-20260716132651",
