@@ -6,7 +6,9 @@ import { Confetti } from 'common/components/Confetti'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
+import { i18n } from 'i18n'
 import React, { FC, PropsWithChildren } from 'react'
+import { I18nextProvider } from 'react-i18next'
 import { ConfettiMethods } from 'react-native-fast-confetti'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import SentryService from 'services/sentry/SentryService'
@@ -49,13 +51,15 @@ const ContextApp = (): JSX.Element => {
     <Sentry.ErrorBoundary
       fallback={TopLevelErrorFallback}
       beforeCapture={beforeCapture}>
-      <ContextProviders>
-        <RootSiblingParent>
-          <App />
-        </RootSiblingParent>
-        <JailbreakCheck />
-        <Confetti ref={setGlobalConfetti} />
-      </ContextProviders>
+      <I18nextProvider i18n={i18n}>
+        <ContextProviders>
+          <RootSiblingParent>
+            <App />
+          </RootSiblingParent>
+          <JailbreakCheck />
+          <Confetti ref={setGlobalConfetti} />
+        </ContextProviders>
+      </I18nextProvider>
     </Sentry.ErrorBoundary>
   )
 }
