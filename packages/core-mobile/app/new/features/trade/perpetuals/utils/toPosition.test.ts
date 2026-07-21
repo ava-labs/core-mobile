@@ -1,5 +1,5 @@
 import type { UserFill } from '@avalabs/perps-sdk'
-import { toRecentCoinEntries } from './toPosition'
+import { toPositionEntry, toRecentCoinEntries } from './toPosition'
 
 const fill = (overrides: Partial<UserFill> = {}): UserFill => ({
   closedPnl: '0',
@@ -54,5 +54,25 @@ describe('toRecentCoinEntries', () => {
   it('returns an empty array when no fills match', () => {
     expect(toRecentCoinEntries([fill({ coin: 'BTC' })], 'ETH', 5)).toEqual([])
     expect(toRecentCoinEntries([], 'ETH', 5)).toEqual([])
+  })
+})
+
+describe('toPositionEntry date labels', () => {
+  it('leaves dateLabel empty for fills from today (time-only row)', () => {
+    const entry = toPositionEntry(fill({ time: Date.now() }))
+    expect(entry.dateLabel).toBe('')
+    expect(entry.timeLabel).toMatch(/^\d{1,2}:\d{2} (AM|PM)$/)
+  })
+
+  it("labels fills from the previous day 'Yesterday'", () => {
+    const entry = toPositionEntry(
+      fill({ time: Date.now() - 24 * 60 * 60 * 1000 })
+    )
+    expect(entry.dateLabel).toBe('Yesterday')
+  })
+
+  it('labels older fills MM/dd/yy', () => {
+    const entry = toPositionEntry(fill({ time: 1752969420000 }))
+    expect(entry.dateLabel).toMatch(/^\d{2}\/\d{2}\/\d{2}$/)
   })
 })

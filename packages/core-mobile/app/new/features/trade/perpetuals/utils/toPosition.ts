@@ -5,6 +5,7 @@ import type {
   OpenOrder,
   UserFill
 } from '@avalabs/perps-sdk'
+import { format, isSameDay, isYesterday } from 'date-fns'
 import {
   Position,
   PositionEntry,
@@ -253,6 +254,18 @@ const sideOfFill = (fill: UserFill): PositionSide => {
   return fill.side === 'A' ? 'short' : 'long'
 }
 
+// Matches the activity list convention (ActivityListItem.formatDate):
+// time-only for today, "Yesterday", else MM/dd/yy.
+const dateLabelOf = (date: Date): string => {
+  if (isSameDay(date, new Date())) {
+    return ''
+  }
+  if (isYesterday(date)) {
+    return 'Yesterday'
+  }
+  return format(date, 'MM/dd/yy')
+}
+
 /**
  * Map a Hyperliquid `UserFill` onto the upstream {@link PositionEntry} history
  * row. `size` is expressed in quote currency (fill size × price); realised P&L
@@ -275,15 +288,8 @@ export const toPositionEntry = (fill: UserFill): PositionEntry => {
     avgPrice: px,
     pnl: hasPnl ? closedPnl : undefined,
     pnlStatus: hasPnl ? statusOfSigned(closedPnl) : undefined,
-    dateLabel: date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: '2-digit'
-    }),
-    timeLabel: date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    })
+    dateLabel: dateLabelOf(date),
+    timeLabel: format(date, 'h:mm a')
   }
 }
 

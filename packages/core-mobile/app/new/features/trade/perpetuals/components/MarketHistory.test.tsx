@@ -133,4 +133,12 @@ describe('<MarketHistory />', () => {
       instance.root.findAllByProps({ testID: 'history-row' })
     ).toHaveLength(5)
   })
+
+  it("shows 'Yesterday' for fills from the previous day", async () => {
+    mockFills.fills = [
+      fill({ time: Date.now() - 24 * 60 * 60 * 1000, tid: 1, hash: '0x1' })
+    ]
+    const instance = await render('ETH')
+    expect(JSON.stringify(instance.toJSON())).toContain('Yesterday')
+  })
 })

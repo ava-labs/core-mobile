@@ -113,9 +113,7 @@ export const PositionListItem = ({
               color: alpha(theme.colors.$textPrimary, 0.6),
               textAlign: 'right'
             }}>
-            {entry.dateLabel}
-            {'\n'}
-            {entry.timeLabel}
+            {[entry.dateLabel, entry.timeLabel].filter(Boolean).join('\n')}
           </Text>
         </View>
       </View>

@@ -101,9 +101,7 @@ const FillTimestamp = ({ entry }: { entry: PositionEntry }): JSX.Element => {
         textAlign: 'right',
         color: alpha(theme.colors.$textPrimary, 0.6)
       }}>
-      {entry.dateLabel}
-      {'\n'}
-      {entry.timeLabel}
+      {[entry.dateLabel, entry.timeLabel].filter(Boolean).join('\n')}
     </Text>
   )
 }
