@@ -2,6 +2,7 @@ import { Text, View, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { i18n } from 'i18n'
 import React, { useEffect, useState } from 'react'
+import Logger from 'utils/Logger'
 import {
   FONT_SAMPLE_KEYS,
   FONT_SAMPLE_LANGUAGES,
@@ -19,21 +20,30 @@ export const FontSampleScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const [ready, setReady] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
 
   useEffect(() => {
     let mounted = true
-    const done = (): void => {
-      // guard against a setState after the screen unmounts if the load
-      // settles late
-      if (mounted) setReady(true)
-    }
     // ensure every sample locale's catalog is in the i18n store so getFixedT
     // returns real translations (non-active locales load lazily via the
     // synchronous RequireBackend)
     i18n
       .loadLanguages(FONT_SAMPLE_LANGUAGES.map(l => l.code))
-      .then(done)
-      .catch(done)
+      .then(() => {
+        // guard against a setState after the screen unmounts if the load
+        // settles late
+        if (mounted) setReady(true)
+      })
+      .catch((err: unknown) => {
+        // surface (don't swallow) a catalog load failure — otherwise the
+        // screen would render English fallbacks and read as a passing font
+        // check
+        Logger.error('[FontSample] failed to load locale catalogs', err)
+        if (mounted) {
+          setLoadFailed(true)
+          setReady(true)
+        }
+      })
     return () => {
       mounted = false
     }
@@ -47,6 +57,12 @@ export const FontSampleScreen = (): React.JSX.Element => {
       contentContainerStyle={{ padding: 16 }}>
       {ready ? (
         <View sx={{ marginTop: 16, gap: 28 }}>
+          {loadFailed && (
+            <Text variant="body2">
+              ⚠️ Some locale catalogs failed to load — glyphs below may be
+              English fallbacks, not a font-rendering result. Check logs.
+            </Text>
+          )}
           {FONT_SAMPLE_LANGUAGES.map(lang => {
             const t = i18n.getFixedT(lang.code)
             const sample = FONT_SAMPLE_KEYS.map(k => t(k)).join(' · ')
