@@ -45,7 +45,10 @@ describe('toRecentCoinEntries', () => {
   })
 
   it('matches the full coin key so HIP-3 markets do not collide with native tickers', () => {
-    const fills = [fill({ coin: 'xyz:GOLD', tid: 1 }), fill({ coin: 'GOLD', tid: 2 })]
+    const fills = [
+      fill({ coin: 'xyz:GOLD', tid: 1 }),
+      fill({ coin: 'GOLD', tid: 2 })
+    ]
     const entries = toRecentCoinEntries(fills, 'xyz:GOLD', 5)
     expect(entries).toHaveLength(1)
     expect(entries[0]?.coin).toBe('xyz:GOLD')
