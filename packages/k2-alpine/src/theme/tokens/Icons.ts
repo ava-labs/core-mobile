@@ -19,6 +19,7 @@ import IconYubikey from '../../assets/icons/yubikey.svg'
 import IconApple from '../../assets/icons/apple.svg'
 import IconGoogle from '../../assets/icons/google.svg'
 import IconAdd from '../../assets/icons/add.svg'
+import IconRemove from '../../assets/icons/remove.svg'
 import IconArrowForwardIOS from '../../assets/icons/arrow_forward_ios.svg'
 import IconClear from '../../assets/icons/clear.svg'
 import IconCopy from '../../assets/icons/copy.svg'
@@ -291,6 +292,7 @@ export const Icons = {
   },
   Content: {
     Add: IconAdd,
+    Remove: IconRemove,
     HideImage: IconHideImage,
     Close: IconClose,
     Link: IconLink
