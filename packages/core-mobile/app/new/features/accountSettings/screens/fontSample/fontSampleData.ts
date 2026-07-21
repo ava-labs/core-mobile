@@ -21,23 +21,17 @@ export const FONT_SAMPLE_KEYS = [
 ] as const
 
 // A representative spread of k2-alpine Text variants covering all three bundled
-// (Latin-only) font families. `size`/`lineHeight` mirror the k2-alpine text
-// tokens (theme/tokens/text.ts) so the screen can render each variant both
-// "as-is" (token lineHeight) and "relaxed" — surfacing that variants with
-// lineHeight === fontSize clip CJK/Devanagari on iOS.
+// (Latin-only) font families. Only the variant NAMES live here — the screen
+// reads each variant's fontFamily/fontSize/lineHeight from `theme.text[variant]`
+// at runtime, so this QA screen never drifts from the k2-alpine tokens.
 export const FONT_SAMPLE_VARIANTS = [
-  { variant: 'heading2', family: 'Aeonik-Bold', size: 36, lineHeight: 36 },
-  { variant: 'heading4', family: 'Aeonik-Bold', size: 24, lineHeight: 27 },
-  { variant: 'heading5', family: 'Inter-SemiBold', size: 21, lineHeight: 21 },
-  { variant: 'body1', family: 'Inter-Regular', size: 15, lineHeight: 18 },
-  {
-    variant: 'buttonMedium',
-    family: 'Inter-SemiBold',
-    size: 15,
-    lineHeight: 18
-  },
-  { variant: 'caption', family: 'Inter-Regular', size: 11, lineHeight: 14 },
-  { variant: 'mono', family: 'DejaVuSansMono', size: 12, lineHeight: 16 }
+  'heading2',
+  'heading4',
+  'heading5',
+  'body1',
+  'buttonMedium',
+  'caption',
+  'mono'
 ] as const
 
 // Multiplier applied to fontSize for the "relaxed" line-height comparison row —

@@ -17,9 +17,8 @@ import {
  * which hard-code Latin-only families, so the fallback path is exercised.
  */
 export const FontSampleScreen = (): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { theme } = useTheme()
+  const { colors, text } = theme
   const [ready, setReady] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
 
@@ -79,23 +78,26 @@ export const FontSampleScreen = (): React.JSX.Element => {
                 <Text variant="heading6">
                   {lang.label} ({lang.code})
                 </Text>
-                {FONT_SAMPLE_VARIANTS.map(v => {
-                  const relaxed = Math.round(v.size * RELAXED_LINE_HEIGHT_RATIO)
+                {FONT_SAMPLE_VARIANTS.map(variant => {
+                  const spec = text[variant]
+                  const relaxed = Math.round(
+                    spec.fontSize * RELAXED_LINE_HEIGHT_RATIO
+                  )
                   return (
-                    <View key={v.variant} sx={{ gap: 2 }}>
+                    <View key={variant} sx={{ gap: 2 }}>
                       <Text
                         variant="caption"
                         sx={{ color: colors.$textSecondary }}>
-                        {v.variant} · {v.family} {v.size} · as-is (lineHeight{' '}
-                        {v.lineHeight})
+                        {variant} · {spec.fontFamily} {spec.fontSize} · as-is
+                        (lineHeight {spec.lineHeight})
                       </Text>
-                      <Text variant={v.variant}>{sample}</Text>
+                      <Text variant={variant}>{sample}</Text>
                       <Text
                         variant="caption"
                         sx={{ color: colors.$textSecondary }}>
                         relaxed (lineHeight {relaxed})
                       </Text>
-                      <Text variant={v.variant} sx={{ lineHeight: relaxed }}>
+                      <Text variant={variant} sx={{ lineHeight: relaxed }}>
                         {sample}
                       </Text>
                     </View>
