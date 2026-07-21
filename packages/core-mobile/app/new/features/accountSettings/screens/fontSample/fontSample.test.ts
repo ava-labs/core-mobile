@@ -1,14 +1,16 @@
 // Verifies the screen's engine: getFixedT renders real per-language glyphs from
 // the catalogs (the render itself is a thin map over this). MMKV is mocked so
 // initI18n can seed synchronously in the test environment.
-jest.mock('utils/mmkv/storages', () => ({
-  commonStorage: { getString: jest.fn(), set: jest.fn() }
-}))
-
 import i18n from 'i18next'
 import { initI18n } from 'i18n'
 import { SUPPORTED_LANGUAGE_CODES } from 'store/settings/language/types'
 import { FONT_SAMPLE_KEYS, FONT_SAMPLE_LANGUAGES } from './fontSampleData'
+
+// jest.mock is hoisted above the imports by babel-jest, so keeping it after the
+// import block (per the import/first convention) does not change behavior.
+jest.mock('utils/mmkv/storages', () => ({
+  commonStorage: { getString: jest.fn(), set: jest.fn() }
+}))
 
 describe('FontSample data + i18n-driven glyphs', () => {
   beforeAll(async () => {

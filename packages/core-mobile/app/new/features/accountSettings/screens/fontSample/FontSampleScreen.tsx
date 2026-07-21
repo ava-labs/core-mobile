@@ -21,13 +21,22 @@ export const FontSampleScreen = (): React.JSX.Element => {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
+    let mounted = true
+    const done = (): void => {
+      // guard against a setState after the screen unmounts if the load
+      // settles late
+      if (mounted) setReady(true)
+    }
     // ensure every sample locale's catalog is in the i18n store so getFixedT
     // returns real translations (non-active locales load lazily via the
     // synchronous RequireBackend)
     i18n
       .loadLanguages(FONT_SAMPLE_LANGUAGES.map(l => l.code))
-      .then(() => setReady(true))
-      .catch(() => setReady(true))
+      .then(done)
+      .catch(done)
+    return () => {
+      mounted = false
+    }
   }, [])
 
   return (
