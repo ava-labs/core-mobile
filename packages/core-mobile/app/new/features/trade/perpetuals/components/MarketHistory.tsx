@@ -90,7 +90,12 @@ const FillTitle = ({ entry }: { entry: PositionEntry }): JSX.Element => (
     />
     <Text
       variant="buttonMedium"
-      sx={{ fontSize: 16, lineHeight: 22, color: '$textPrimary' }}>
+      sx={{
+        fontFamily: 'Inter-Medium',
+        fontSize: 16,
+        lineHeight: 22,
+        color: '$textPrimary'
+      }}>
       {entry.outcome}
     </Text>
   </View>
