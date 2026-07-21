@@ -12,6 +12,9 @@ jest.mock('utils/mmkv/storages', () => ({
   commonStorage: { getString: jest.fn(), set: jest.fn() }
 }))
 
+const hasNonAscii = (value: string): boolean =>
+  value.split('').some(ch => ch.charCodeAt(0) > 127)
+
 describe('FontSample data + i18n-driven glyphs', () => {
   beforeAll(async () => {
     await initI18n()
@@ -31,12 +34,19 @@ describe('FontSample data + i18n-driven glyphs', () => {
     }
   })
 
-  it('getFixedT returns real per-language glyphs (not the English key)', () => {
-    expect(i18n.getFixedT('ja-JP')('Settings')).toBe('設定')
-    expect(i18n.getFixedT('zh-CN')('Settings')).toBe('设置')
-    expect(i18n.getFixedT('zh-TW')('Settings')).toBe('設定')
-    expect(i18n.getFixedT('ko-KR')('Settings')).toBe('설정')
-    expect(i18n.getFixedT('hi-IN')('Settings')).toBe('सेटिंग्स')
-    expect(i18n.getFixedT('en-US')('Settings')).toBe('Settings')
+  it('getFixedT returns real non-Latin glyphs for the non-English locales', () => {
+    // Assert "translated + non-ASCII" rather than exact strings, so the test
+    // survives real translations landing from Crowdin (CJK/Devanagari values
+    // stay non-ASCII regardless of wording).
+    const en = i18n.getFixedT('en-US')('Settings')
+    expect(en).toBe('Settings')
+
+    for (const { code } of FONT_SAMPLE_LANGUAGES.filter(
+      l => l.code !== 'en-US'
+    )) {
+      const value = i18n.getFixedT(code)('Settings')
+      expect(value).not.toBe(en) // a real translation, not the English key
+      expect(hasNonAscii(value)).toBe(true) // contains non-Latin glyphs
+    }
   })
 })

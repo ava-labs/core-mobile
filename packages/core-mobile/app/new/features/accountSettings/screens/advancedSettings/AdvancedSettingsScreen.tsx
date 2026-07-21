@@ -1,7 +1,7 @@
 import { GroupList, GroupListItem, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { FilterSmallUtxos } from './components/FilterSmallUtxos'
@@ -13,12 +13,15 @@ export const AdvancedSettingsScreen = (): React.JSX.Element | null => {
 
   // Dev-only QA tools — shown in developer (testnet) mode so they're reachable
   // on internal builds but hidden from normal production users.
-  const devTools: GroupListItem[] = [
-    {
-      title: 'Font sample (i18n QA)',
-      onPress: () => navigate('/accountSettings/fontSample')
-    }
-  ]
+  const devTools: GroupListItem[] = useMemo(
+    () => [
+      {
+        title: 'Font sample (i18n QA)',
+        onPress: () => navigate('/accountSettings/fontSample')
+      }
+    ],
+    [navigate]
+  )
 
   return (
     <ScrollScreen
