@@ -32,9 +32,9 @@ export const DurationOptions = ({
   customEndDate?: Date
   /**
    * Overrides the default preset list — the delegate flow passes its
-   * node-aware list (1 Year swapped for Node max, see `withNodeMaxOption`).
-   * Must keep the default lists' length/positions so the index-based helpers
-   * below stay valid.
+   * node-aware list (1 Year swapped for Node max, see `withNodeMaxOption`,
+   * re-sorted by days). Must keep the default lists' LENGTH with Custom last,
+   * so `getCustomDurationIndex` stays valid; day-option positions may differ.
    */
   durations?: DurationOption[]
   /**

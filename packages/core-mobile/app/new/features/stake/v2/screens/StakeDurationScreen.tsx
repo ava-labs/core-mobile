@@ -125,16 +125,33 @@ const StakeDurationScreen = ({
     // meaningless "Node Max / 0 days" card, so keep the base list instead;
     // every day preset then renders disabled via `maxNumberOfDays` and the
     // node-end guard on Next explains why.
-    return nodeEndDays === undefined || nodeEndDays < 1
-      ? base
-      : withNodeMaxOption(base, nodeEndDays)
+    if (nodeEndDays === undefined || nodeEndDays < 1) {
+      return base
+    }
+    // Sorted by days so the reward chart stays monotonic when Node Max lands
+    // between fixed presets (a node ending in 100 days would otherwise plot
+    // ..., 90, 180, 100). Index-dependent lookups below resolve by title, not
+    // position; the Custom option is appended after this list, so its index
+    // (the list length) is unaffected.
+    return withNodeMaxOption(base, nodeEndDays).sort(
+      (a, b) => a.numberOfDays - b.numberOfDays
+    )
   }, [isDeveloperMode, nodeEndDays])
   const defaultDurationIndex = useMemo(() => {
     const staticDefault = getDefaultDurationIndex(isDeveloperMode)
     if (nodeEndDays === undefined) return staticDefault
-    const defaultOption = durationsWithDays[staticDefault]
+    // The dynamic list is re-sorted around Node Max, so resolve the default
+    // by TITLE rather than by the static list's position.
+    const staticList = isDeveloperMode
+      ? DURATION_OPTIONS_WITH_DAYS_FUJI
+      : DURATION_OPTIONS_WITH_DAYS_MAINNET
+    const defaultTitle = staticList[staticDefault]?.title
+    const defaultIndex = durationsWithDays.findIndex(
+      option => option.title === defaultTitle
+    )
+    const defaultOption = durationsWithDays[defaultIndex]
     if (defaultOption && defaultOption.numberOfDays <= nodeEndDays) {
-      return staticDefault
+      return defaultIndex
     }
     // The usual default (3 Months) outlasts the selected node, so its card
     // renders disabled — defaulting to it would open the screen with a
