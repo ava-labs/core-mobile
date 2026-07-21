@@ -17,16 +17,10 @@ jest.mock('common/hooks/useFormatCurrency', () => ({
   })
 }))
 
-// String host type (not rn.View): composite RN Views forward testID to an
-// inner host component and double-count in findAllByProps.
-jest.mock('./PerpsCoinLogo', () => {
-  const r = require('react') as typeof import('react')
-  return {
-    PerpsCoinLogo: () => r.createElement('View', { testID: 'coin-logo' })
-  }
-})
-
-// Mock @avalabs/k2-alpine so we don't need a dripsy theme provider.
+// Mock @avalabs/k2-alpine so we don't need a dripsy theme provider. GroupList
+// renders each item's title/subtitle/value inside string host Views (not
+// rn.View: composite RN Views forward testID to an inner host component and
+// double-count in findAllByProps).
 jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
@@ -43,19 +37,27 @@ jest.mock('@avalabs/k2-alpine', () => {
     Text: passthrough(rn.Text as any),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     View: passthrough(rn.View as any),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    GroupList: ({ data }: any) =>
+      r.createElement(
+        'View',
+        { testID: 'group-list' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data.map((item: any, i: number) =>
+          r.createElement(
+            'View',
+            { testID: 'history-row', key: i },
+            item.title,
+            item.subtitle,
+            item.value
+          )
+        )
+      ),
     StatusArrow: () => null,
     PriceChangeStatus: { Up: 'up', Down: 'down', Neutral: 'neutral' },
     alpha: (color: string) => color,
     useTheme: () => ({
-      theme: {
-        isDark: false,
-        colors: {
-          $textPrimary: '#28282E',
-          $textSuccess: '#1FC626',
-          $textDanger: '#E84142',
-          $borderPrimary: '#F2F2F3'
-        }
-      }
+      theme: { isDark: false, colors: { $textPrimary: '#28282E' } }
     })
   }
 })
@@ -109,8 +111,7 @@ describe('<MarketHistory />', () => {
     expect(json).toContain('Close Long')
     expect(json).toContain('Open Long')
     // subtitle: size (0.0714 * 63.06 = $4.50) @ price ($63.06)
-    expect(json).toContain('$4.50')
-    expect(json).toContain('$63.06')
+    expect(json).toContain('$4.50 @ $63.06')
     // trailing timestamp from toPositionEntry, computed the same way the
     // production code formats it so the assertion holds in any runner TZ.
     const expectedTime = new Date(1752969420000).toLocaleTimeString('en-US', {
@@ -118,6 +119,9 @@ describe('<MarketHistory />', () => {
       minute: '2-digit'
     })
     expect(json).toContain(expectedTime)
+    expect(
+      instance.root.findAllByProps({ testID: 'history-row' })
+    ).toHaveLength(2)
   })
 
   it('caps at the 5 most recent fills', async () => {
@@ -125,18 +129,8 @@ describe('<MarketHistory />', () => {
       fill({ tid: n, hash: `0x${n}` })
     )
     const instance = await render('ETH')
-    expect(instance.root.findAllByProps({ testID: 'coin-logo' })).toHaveLength(
-      5
-    )
-  })
-
-  it('shows the realised PnL pill on closing fills, like the History screen', async () => {
-    mockFills.fills = [
-      fill({ dir: 'Close Long', closedPnl: '1.2', tid: 1, hash: '0x1' }),
-      fill({ dir: 'Open Long', tid: 2, hash: '0x2' })
-    ]
-    const instance = await render('ETH')
-    const json = JSON.stringify(instance.toJSON())
-    expect(json).toContain('+$1.20')
+    expect(
+      instance.root.findAllByProps({ testID: 'history-row' })
+    ).toHaveLength(5)
   })
 })
