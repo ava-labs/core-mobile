@@ -41,11 +41,14 @@ import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useSelector } from 'react-redux'
 import {
+  CUSTOM,
   DURATION_OPTIONS_WITH_DAYS_FUJI,
   DURATION_OPTIONS_WITH_DAYS_MAINNET,
   DurationOptionWithDays,
   getStakeEndDate,
-  THREE_MONTHS
+  StakeDurationTitle,
+  THREE_MONTHS,
+  withNodeMaxOption
 } from 'services/earn/getStakeEndDate'
 import { UnixTime } from 'services/earn/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -105,13 +108,22 @@ const StakeDurationScreen = ({
   const { formatCurrency } = useFormatCurrency()
   const now = useNow()
   const rewardChartRef = useRef<StakeRewardChartHandle>(null)
-  const durationsWithDays: DurationOptionWithDays[] = useMemo(
-    () =>
-      isDeveloperMode
-        ? DURATION_OPTIONS_WITH_DAYS_FUJI
-        : DURATION_OPTIONS_WITH_DAYS_MAINNET,
-    [isDeveloperMode]
-  )
+  // Days until the selected node's end time (delegate flow only). A plain
+  // number so the memo below only re-runs when the day count actually
+  // changes, not on every `now` tick.
+  const nodeEndDays = maxEndDate
+    ? getRoundedDurationInDays(now, maxEndDate)
+    : undefined
+  const durationsWithDays: DurationOptionWithDays[] = useMemo(() => {
+    const base = isDeveloperMode
+      ? DURATION_OPTIONS_WITH_DAYS_FUJI
+      : DURATION_OPTIONS_WITH_DAYS_MAINNET
+    // Delegate flow: swap the 1 Year preset for "Node max" — stake until the
+    // selected validator's end time (see `withNodeMaxOption`).
+    return nodeEndDays === undefined
+      ? base
+      : withNodeMaxOption(base, nodeEndDays)
+  }, [isDeveloperMode, nodeEndDays])
   const defaultDurationIndex = useMemo(
     () => getDefaultDurationIndex(isDeveloperMode),
     [isDeveloperMode]
@@ -348,6 +360,8 @@ const StakeDurationScreen = ({
             selectedIndex={selectedDurationIndex}
             onSelectDuration={handleSelectDuration}
             customEndDate={customEndDate}
+            durations={[...durationsWithDays, CUSTOM]}
+            maxNumberOfDays={nodeEndDays}
           />
         )
       },
@@ -362,13 +376,25 @@ const StakeDurationScreen = ({
     handleSelectDuration,
     customEndDate,
     getDurationInDays,
-    estimatedReward
+    estimatedReward,
+    durationsWithDays,
+    nodeEndDays
   ])
 
   useEffect(() => {
     if (selectedChartIndex !== undefined) {
-      if (durationsWithDays[selectedChartIndex]) {
-        const selectedDuration = durationsWithDays[selectedChartIndex]
+      const selectedDuration = durationsWithDays[selectedChartIndex]
+      if (selectedDuration) {
+        // "Node max" stakes until the validator's exact end time — computing
+        // it as now + N rounded days (like the other presets) could overshoot
+        // the node by up to half a day and trip the exceedsNodeEndTime guard.
+        if (
+          selectedDuration.title === StakeDurationTitle.NODE_MAX &&
+          nodeEndTimeUnix !== undefined
+        ) {
+          setStakeEndTime(nodeEndTimeUnix)
+          return
+        }
         const calculatedStakeEndTime = getStakeEndDate({
           startDateUnix: millisecondsToSeconds(now),
           stakeDurationFormat: selectedDuration.stakeDurationFormat,
@@ -385,7 +411,8 @@ const StakeDurationScreen = ({
     now,
     durationsWithDays,
     isDeveloperMode,
-    customEndDate
+    customEndDate,
+    nodeEndTimeUnix
   ])
 
   const renderFooter = useCallback(() => {
