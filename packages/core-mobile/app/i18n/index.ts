@@ -29,6 +29,12 @@ export const initI18n = (): Promise<unknown> => {
     .use(initReactI18next)
     .init({
       lng,
+      // force synchronous init so i18n.language + the active-locale resources
+      // are ready by the time init() returns (before registerComponent / first
+      // render) — the inline `resources` and the synchronous RequireBackend
+      // both resolve without a tick, so no async gap / no cold-start flash.
+      // (v26 renamed the old `initImmediate` option to `initAsync`.)
+      initAsync: false,
       fallbackLng: DEFAULT_LANGUAGE,
       supportedLngs: SUPPORTED_LANGUAGE_CODES,
       load: 'currentOnly',
