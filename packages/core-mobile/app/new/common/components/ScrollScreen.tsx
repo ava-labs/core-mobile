@@ -768,6 +768,17 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           {...props}
+          // On an Android form sheet, let this scroll view participate in the
+          // sheet's nested scrolling: swipes scroll the content, and an
+          // at-top downward drag hands off to the sheet's drag-to-dismiss —
+          // same behavior the keyboard-aware branch gets via its
+          // `nestedScrollEnabled` negotiation. Without it the gesture-handler
+          // ScrollView consumes every drag and dismissal dies in the content
+          // area. No `isScrollable` gate is needed here: the content
+          // container's `minHeight` (viewport + collapsible header) makes
+          // every screen scrollable, so the short-content case #3961 fixed
+          // by omitting this prop no longer exists. (CP-14765)
+          nestedScrollEnabled={Platform.OS === 'android' && Boolean(isModal)}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
