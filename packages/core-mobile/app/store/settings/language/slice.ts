@@ -13,7 +13,11 @@ export const languageSlice = createSlice({
   initialState,
   reducers: {
     setSelectedLanguage: (state, action: PayloadAction<string>) => {
-      state.selected = action.payload
+      // clamp at the reducer boundary so state can never hold an unsupported
+      // code (the selector clamps on read; this clamps on write)
+      state.selected = SUPPORTED_LANGUAGE_CODES.includes(action.payload)
+        ? action.payload
+        : DEFAULT_LANGUAGE
     }
   }
 })

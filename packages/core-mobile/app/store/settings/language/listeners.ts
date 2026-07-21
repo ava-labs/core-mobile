@@ -2,14 +2,16 @@ import i18n from 'i18next'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { commonStorage } from 'utils/mmkv/storages'
 import Logger from 'utils/Logger'
-import { setSelectedLanguage } from './slice'
+import { selectSelectedLanguage, setSelectedLanguage } from './slice'
 import { LANGUAGE_MMKV_KEY } from './types'
 
 export const handleLanguageChange = (
-  action: ReturnType<typeof setSelectedLanguage>,
-  _listenerApi: AppListenerEffectAPI
+  _action: ReturnType<typeof setSelectedLanguage>,
+  listenerApi: AppListenerEffectAPI
 ): void => {
-  const code = action.payload
+  // derive the effective (validated/clamped) code from state rather than the
+  // raw action payload, so an unsupported code can never be persisted or loaded
+  const code = selectSelectedLanguage(listenerApi.getState())
   // write-through to the synchronous bootstrap cache (Redux stays the
   // official persisted preference; this is what the cold-start seed reads)
   commonStorage.set(LANGUAGE_MMKV_KEY, code)

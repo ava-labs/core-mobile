@@ -20,6 +20,11 @@ describe('language slice', () => {
     expect(next.selected).toBe('es-ES')
   })
 
+  it('setSelectedLanguage clamps an unsupported code to en-US', () => {
+    const next = languageReducer(initialState, setSelectedLanguage('xx-XX'))
+    expect(next.selected).toBe('en-US')
+  })
+
   it('selector falls back to en-US for an unsupported code', () => {
     const next = { selected: 'xx-XX' } as typeof initialState
     expect(selectSelectedLanguage(wrap(next))).toBe('en-US')

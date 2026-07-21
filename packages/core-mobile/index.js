@@ -86,7 +86,7 @@ FCMService.listenForMessagesBackground()
 // PRESS events for notifications displayed by notifee (data-only Android push).
 NotificationsService.registerBackgroundNotificationHandler()
 
-initI18n()
+initI18n().catch(err => Logger.error('[i18n] init failed', err))
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
