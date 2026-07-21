@@ -30,7 +30,10 @@ describe('FontSample data + i18n-driven glyphs', () => {
   it('every sample key exists in the en-US catalog', () => {
     const en = i18n.getFixedT('en-US')
     for (const key of FONT_SAMPLE_KEYS) {
-      expect(en(key)).toBe(key) // natural-string key => value equals key in en
+      // t(key) === key is trivially true under natural-key fallback, so assert
+      // real presence via exists(); keep toBe(key) for the convention
+      expect(i18n.exists(key, { lng: 'en-US' })).toBe(true)
+      expect(en(key)).toBe(key)
     }
   })
 
