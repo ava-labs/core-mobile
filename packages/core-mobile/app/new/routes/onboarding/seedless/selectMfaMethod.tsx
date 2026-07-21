@@ -40,6 +40,7 @@ const SelectMfaMethodScreen = (): JSX.Element => {
       showNavigationHeaderTitle={false}
       title={`Verify recovery\nmethods`}
       subtitle="Verify your recovery method(s) to continue."
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View
         style={{

@@ -23,6 +23,7 @@ export const SelectRecoveryMethods = ({
       title={`Verify recovery\nmethods`}
       navigationTitle="Verify recovery methods"
       subtitle="Verify your recovery method(s) to continue."
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       {isLoading ? (
         <Loader />
