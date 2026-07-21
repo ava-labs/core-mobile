@@ -2,6 +2,8 @@ import { Text, View, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { i18n } from 'i18n'
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import {
   FONT_SAMPLE_KEYS,
@@ -19,6 +21,7 @@ import {
 export const FontSampleScreen = (): React.JSX.Element => {
   const { theme } = useTheme()
   const { colors, text } = theme
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [ready, setReady] = useState(false)
   const [loadFailed, setLoadFailed] = useState(false)
 
@@ -48,6 +51,22 @@ export const FontSampleScreen = (): React.JSX.Element => {
       mounted = false
     }
   }, [])
+
+  // Gate the route itself, not just the Advanced Settings entry point — the
+  // screen is deep-linkable, and it's meant to be a developer-only QA tool.
+  if (!isDeveloperMode) {
+    return (
+      <ScrollScreen
+        title="Font sample"
+        isModal
+        contentContainerStyle={{ padding: 16 }}>
+        <Text variant="body1" sx={{ marginTop: 16 }}>
+          Enable Testnet mode in Settings to view the font sample
+          (developer-only QA tool).
+        </Text>
+      </ScrollScreen>
+    )
+  }
 
   return (
     <ScrollScreen
