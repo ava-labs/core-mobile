@@ -1,0 +1,27 @@
+import type { RootState } from 'store/types'
+import {
+  languageReducer,
+  selectSelectedLanguage,
+  setSelectedLanguage
+} from './slice'
+import { initialState } from './types'
+
+const wrap = (language: typeof initialState) =>
+  ({ settings: { language } } as unknown as RootState)
+
+describe('language slice', () => {
+  it('defaults to en-US', () => {
+    expect(initialState.selected).toBe('en-US')
+    expect(selectSelectedLanguage(wrap(initialState))).toBe('en-US')
+  })
+
+  it('setSelectedLanguage updates the value', () => {
+    const next = languageReducer(initialState, setSelectedLanguage('es-ES'))
+    expect(next.selected).toBe('es-ES')
+  })
+
+  it('selector falls back to en-US for an unsupported code', () => {
+    const next = { selected: 'xx-XX' } as typeof initialState
+    expect(selectSelectedLanguage(wrap(next))).toBe('en-US')
+  })
+})
