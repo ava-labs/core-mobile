@@ -65,9 +65,10 @@ export const FontSampleScreen = (): React.JSX.Element => {
           )}
           <Text variant="body2" sx={{ color: colors.$textSecondary }}>
             Each variant is shown twice: “as-is” uses the k2-alpine token
-            lineHeight (== fontSize on headings, which clips CJK/Devanagari on
-            iOS); “relaxed” uses {RELAXED_LINE_HEIGHT_RATIO}× fontSize. Compare
-            to choose per-variant lineHeights that fit non-Latin scripts.
+            lineHeight (which on several variants equals fontSize and clips
+            CJK/Devanagari on iOS — see each row’s labelled value); “relaxed”
+            uses {RELAXED_LINE_HEIGHT_RATIO}× fontSize. Compare to choose
+            per-variant lineHeights that fit non-Latin scripts.
           </Text>
           {FONT_SAMPLE_LANGUAGES.map(lang => {
             const t = i18n.getFixedT(lang.code)
