@@ -37,6 +37,9 @@ export const initI18n = (): Promise<unknown> => {
       partialBundledLanguages: true,
       interpolation: { escapeValue: false },
       returnNull: false,
+      // No Suspense boundary wraps the tree; keep useTranslation synchronous
+      // so a consumer mounting before a namespace resolves never throws.
+      react: { useSuspense: false },
       resources: { [lng]: { translation: LOCALES[lng]?.() ?? {} } }
     })
 }

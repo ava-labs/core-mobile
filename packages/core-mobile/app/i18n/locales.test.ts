@@ -16,4 +16,10 @@ describe('LOCALES registry', () => {
   it('es-ES thunk returns the distinct Spanish value', () => {
     expect(LOCALES['es-ES']?.().Settings).toBe('Ajustes')
   })
+
+  it('has exactly the supported codes — no drift, no orphans', () => {
+    expect(Object.keys(LOCALES).sort()).toEqual(
+      [...SUPPORTED_LANGUAGE_CODES].sort()
+    )
+  })
 })
