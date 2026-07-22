@@ -54,26 +54,31 @@ const toHistoryRow = (entry: PositionEntry): GroupListItem => ({
   value: <FillTimestamp entry={entry} />
 })
 
-const FillTitle = ({ entry }: { entry: PositionEntry }): JSX.Element => (
-  <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-    <StatusArrow
-      status={
-        entry.side === 'long' ? PriceChangeStatus.Up : PriceChangeStatus.Down
-      }
-      size={10}
-    />
-    <Text
-      variant="buttonMedium"
-      sx={{
-        fontFamily: 'Inter-Medium',
-        fontSize: 16,
-        lineHeight: 22,
-        color: '$textPrimary'
-      }}>
-      {entry.outcome}
-    </Text>
-  </View>
-)
+const FillTitle = ({ entry }: { entry: PositionEntry }): JSX.Element => {
+  const { theme } = useTheme()
+
+  return (
+    <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <StatusArrow
+        color={entry.side === 'long' ? '#1FA95E' : theme.colors.$textDanger}
+        status={
+          entry.side === 'long' ? PriceChangeStatus.Up : PriceChangeStatus.Down
+        }
+        size={10}
+      />
+      <Text
+        variant="buttonMedium"
+        sx={{
+          fontFamily: 'Inter-Medium',
+          fontSize: 16,
+          lineHeight: 22,
+          color: '$textPrimary'
+        }}>
+        {entry.outcome}
+      </Text>
+    </View>
+  )
+}
 
 const FillSubtitle = ({ entry }: { entry: PositionEntry }): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
