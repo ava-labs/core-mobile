@@ -1,9 +1,9 @@
 import React from 'react'
 import renderer, { act } from 'react-test-renderer'
 
-const mockRefreshAfterTrade = jest.fn()
+const mockRefreshClearinghouse = jest.fn()
 jest.mock('../contexts/PerpsProvider', () => ({
-  usePerps: () => ({ refreshAfterTrade: mockRefreshAfterTrade })
+  usePerps: () => ({ refreshClearinghouse: mockRefreshClearinghouse })
 }))
 
 const mockInvalidateQueries = jest.fn()
@@ -36,12 +36,12 @@ const renderHook = async (
 
 describe('usePerpsPullToRefresh', () => {
   beforeEach(() => {
-    mockRefreshAfterTrade.mockReset()
+    mockRefreshClearinghouse.mockReset()
     mockInvalidateQueries.mockReset()
     mockInvalidateQueries.mockResolvedValue(undefined)
   })
 
-  it('bumps the perps refresh and spins until the clearinghouse refetch settles', async () => {
+  it('bumps the perps refresh nonce and spins until the clearinghouse refetch settles', async () => {
     const hook = await renderHook()
     expect(hook.current().isRefreshing).toBe(false)
 
@@ -49,9 +49,33 @@ describe('usePerpsPullToRefresh', () => {
       hook.current().onRefresh()
     })
 
-    expect(mockRefreshAfterTrade).toHaveBeenCalledTimes(1)
+    expect(mockRefreshClearinghouse).toHaveBeenCalledTimes(1)
     expect(mockInvalidateQueries).toHaveBeenCalledWith({
       queryKey: ['perpsClearinghouse']
+    })
+    expect(hook.current().isRefreshing).toBe(false)
+  })
+
+  it('ignores re-entrant pulls while a refresh is in flight', async () => {
+    let resolveInvalidate!: () => void
+    mockInvalidateQueries.mockReturnValueOnce(
+      new Promise<void>(resolve => {
+        resolveInvalidate = resolve
+      })
+    )
+    const hook = await renderHook()
+
+    act(() => {
+      hook.current().onRefresh()
+    })
+    act(() => {
+      hook.current().onRefresh()
+    })
+    expect(mockRefreshClearinghouse).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveInvalidate()
     })
     expect(hook.current().isRefreshing).toBe(false)
   })

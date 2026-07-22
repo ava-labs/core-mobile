@@ -266,4 +266,10 @@ describe('pctParts', () => {
       suffix: 'Set a price'
     })
   })
+  it('treats zero as at current price, neither above nor below', () => {
+    expect(pctParts(0)).toEqual({
+      percent: '',
+      suffix: 'At current price'
+    })
+  })
 })

@@ -230,10 +230,13 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: insets.bottom + 16 + (segmentedControlLayout?.height ?? 0),
+      // The measured control height already contains its own
+      // `insets.bottom + 16` bottom padding — only add breathing room here,
+      // or the safe-area inset gets counted twice.
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       minHeight: tabHeight
     }
-  }, [tabHeight, insets.bottom, segmentedControlLayout?.height])
+  }, [tabHeight, segmentedControlLayout?.height])
 
   const tabs = useMemo(
     () => [

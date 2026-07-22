@@ -6,23 +6,28 @@ import { usePerps } from '../contexts/PerpsProvider'
 /**
  * Pull-to-refresh for the perps lists (positions / open orders / activity).
  *
- * `refreshAfterTrade` bumps the clearinghouse nonce, which re-runs every
- * nonce-keyed REST fetch (clearinghouse state, main-dex + HIP-3 open orders)
- * and invalidates the perps react-query caches. The nonce-driven fetches
- * expose no promise, so the spinner is tied to the clearinghouse query's
- * refetch (the same REST round-trip class) plus any caller-supplied refresh
- * (e.g. the user-fills refetch backing closed positions / activity).
+ * `refreshClearinghouse` bumps the shared nonce, which re-runs every
+ * nonce-keyed fetch (the clearinghouse query has the nonce in its key; the
+ * main-dex + HIP-3 open-orders effects re-fetch on it). Those fetches expose
+ * no promise, so the spinner is tied to an awaited invalidation of the
+ * clearinghouse query (the same REST round-trip class) plus any
+ * caller-supplied refresh (e.g. the user-fills refetch backing closed
+ * positions / activity). Re-entrant pulls while a refresh is in flight are
+ * ignored so an early settle can't hide a later pending one.
  */
 export const usePerpsPullToRefresh = (
   extraRefresh?: () => Promise<unknown>
 ): { isRefreshing: boolean; onRefresh: () => void } => {
   const queryClient = useQueryClient()
-  const { refreshAfterTrade } = usePerps()
+  const { refreshClearinghouse } = usePerps()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const onRefresh = useCallback(() => {
+    if (isRefreshing) {
+      return
+    }
     setIsRefreshing(true)
-    refreshAfterTrade()
+    refreshClearinghouse()
     const waits: Promise<unknown>[] = [
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.PERPS_CLEARINGHOUSE]
@@ -32,7 +37,7 @@ export const usePerpsPullToRefresh = (
       waits.push(extraRefresh())
     }
     void Promise.allSettled(waits).then(() => setIsRefreshing(false))
-  }, [queryClient, refreshAfterTrade, extraRefresh])
+  }, [isRefreshing, queryClient, refreshClearinghouse, extraRefresh])
 
   return { isRefreshing, onRefresh }
 }

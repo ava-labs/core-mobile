@@ -141,8 +141,10 @@ export const pctParts = (
   emptyText = 'Set a price target'
 ): { percent: string; suffix: string } => {
   if (pct === undefined) return { percent: '', suffix: emptyText }
-  const sign = pct >= 0 ? '+' : ''
-  const direction = pct >= 0 ? 'above' : 'below'
+  // Zero is neither above nor below — e.g. a limit set exactly at the market.
+  if (pct === 0) return { percent: '', suffix: 'At current price' }
+  const sign = pct > 0 ? '+' : ''
+  const direction = pct > 0 ? 'above' : 'below'
   return {
     percent: `${sign}${pct.toFixed(2)}%`,
     suffix: ` ${direction} current price`
