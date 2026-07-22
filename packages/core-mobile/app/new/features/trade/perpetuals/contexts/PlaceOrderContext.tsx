@@ -1,14 +1,20 @@
+import type { PerpUniverseEntry } from '@avalabs/perps-sdk'
 import React, {
   createContext,
   useCallback,
   useContext,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from 'react'
+import type { MarginMode } from '../types'
 import { estimateLiquidationPrice } from '../utils/economics'
 
 export type OrderSide = 'long' | 'short'
+
+export type { MarginMode }
 
 interface PlaceOrderState {
   coin: string
@@ -28,6 +34,22 @@ interface PlaceOrderState {
 
   leverage: number
   setLeverage: (value: number) => void
+
+  /**
+   * Cross vs isolated margin for the coin. On Hyperliquid this is the
+   * `isCross` flag of the per-coin leverage setting, not an order parameter.
+   * Seeded from HL's `leverageType` by the consuming screens.
+   */
+  marginMode: MarginMode
+  setMarginMode: (value: MarginMode) => void
+
+  /**
+   * Per-coin market metadata (max leverage, `onlyIsolated`, size precision),
+   * from the layout's single market-context subscription. Shared here so the
+   * sheets in the stack don't each open their own WebSocket for the same coin.
+   * `undefined` until the market data loads.
+   */
+  universe: PerpUniverseEntry | undefined
 
   // `enabled` is only ever set true once a price exists (see useTriggerToggles
   // + the trigger screen's Done), so there's no dangling enabled-but-unset
@@ -69,6 +91,15 @@ export interface PlaceOrderProviderProps {
    * position's leverage, the open flow the coin's current HL leverage.
    */
   initialLeverage: number
+  /** Live per-coin market metadata; `undefined` until loaded. */
+  universe?: PerpUniverseEntry
+  /**
+   * Hyperliquid's authoritative margin mode for the coin (`onlyIsolated`
+   * already applied); `undefined` until known. Seeds `marginMode` here in the
+   * provider — the always-mounted layout — so the value is correct before any
+   * sheet's Done can commit, regardless of which screens are mounted.
+   */
+  hlMarginMode?: MarginMode
   /** Seed values for editing an existing position (Manage flow). */
   initialAmount?: number
   initialTakeProfitPrice?: number
@@ -83,6 +114,8 @@ export const PlaceOrderProvider = ({
   maxLeverage,
   initialAmount = 0,
   initialLeverage,
+  universe,
+  hlMarginMode,
   initialTakeProfitPrice,
   initialStopLossPrice,
   children
@@ -95,6 +128,24 @@ export const PlaceOrderProvider = ({
   // one-time `leverage` state from the per-render baseline used by the manage
   // screen); the leverage gauge enforces the market max on user edits.
   const [leverage, setLeverage] = useState(initialLeverage)
+  // HL's default for a fresh asset is cross; re-seeded from the actual
+  // per-coin mode below once it loads.
+  const [marginMode, setMarginMode] = useState<MarginMode>('cross')
+
+  // Seed once from HL's per-coin mode. A layout effect (not useEffect) so the
+  // context is updated before paint in the same commit that enables the
+  // sheets' Done buttons (they gate on the same leverageType/universe data) —
+  // a passive effect would leave one interactive frame where a commit could
+  // send the unseeded 'cross' default. Seed-once so a later refetch (e.g.
+  // after the margin sheet commits a change) can't overwrite user intent.
+  const seededMarginModeRef = useRef(false)
+  useLayoutEffect(() => {
+    if (seededMarginModeRef.current || hlMarginMode === undefined) {
+      return
+    }
+    seededMarginModeRef.current = true
+    setMarginMode(hlMarginMode)
+  }, [hlMarginMode])
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )
@@ -133,6 +184,9 @@ export const PlaceOrderProvider = ({
       setAmount,
       leverage,
       setLeverage,
+      marginMode,
+      setMarginMode,
+      universe,
       takeProfitEnabled,
       setTakeProfitEnabled,
       takeProfitPrice,
@@ -159,6 +213,8 @@ export const PlaceOrderProvider = ({
       maxLeverage,
       amount,
       leverage,
+      marginMode,
+      universe,
       takeProfitEnabled,
       takeProfitPrice,
       stopLossEnabled,

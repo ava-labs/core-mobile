@@ -3,6 +3,7 @@ import renderer, { act } from 'react-test-renderer'
 import {
   PlaceOrderProvider,
   usePlaceOrder,
+  type MarginMode,
   type OrderSide
 } from './PlaceOrderContext'
 
@@ -14,27 +15,42 @@ const Probe = (): null => {
   return null
 }
 
-const renderProvider = (props?: {
+interface RenderProps {
   initialSide?: OrderSide
   initialTakeProfitPrice?: number
   initialStopLossPrice?: number
-}): renderer.ReactTestRenderer => {
+  hlMarginMode?: MarginMode
+}
+
+const providerElement = (props?: RenderProps): JSX.Element => (
+  <PlaceOrderProvider
+    coin="BTC"
+    initialSide={props?.initialSide ?? 'long'}
+    entryPrice={100}
+    maxLeverage={40}
+    initialLeverage={5}
+    initialTakeProfitPrice={props?.initialTakeProfitPrice}
+    initialStopLossPrice={props?.initialStopLossPrice}
+    hlMarginMode={props?.hlMarginMode}>
+    <Probe />
+  </PlaceOrderProvider>
+)
+
+const renderProvider = (props?: RenderProps): renderer.ReactTestRenderer => {
   let instance!: renderer.ReactTestRenderer
   act(() => {
-    instance = renderer.create(
-      <PlaceOrderProvider
-        coin="BTC"
-        initialSide={props?.initialSide ?? 'long'}
-        entryPrice={100}
-        maxLeverage={40}
-        initialLeverage={5}
-        initialTakeProfitPrice={props?.initialTakeProfitPrice}
-        initialStopLossPrice={props?.initialStopLossPrice}>
-        <Probe />
-      </PlaceOrderProvider>
-    )
+    instance = renderer.create(providerElement(props))
   })
   return instance
+}
+
+const rerenderProvider = (
+  instance: renderer.ReactTestRenderer,
+  props?: RenderProps
+): void => {
+  act(() => {
+    instance.update(providerElement(props))
+  })
 }
 
 describe('PlaceOrderContext switchSide', () => {
@@ -87,5 +103,29 @@ describe('PlaceOrderContext switchSide', () => {
 
     // Long liquidation sits below entry, short above — they must differ.
     expect(ctx.liquidationPrice).not.toBe(longLiquidation)
+  })
+})
+
+describe('PlaceOrderProvider marginMode seeding', () => {
+  it("defaults to 'cross' while HL's mode is unknown", () => {
+    renderProvider()
+    expect(ctx.marginMode).toBe('cross')
+  })
+
+  it('seeds from hlMarginMode as soon as it resolves', () => {
+    const instance = renderProvider()
+    rerenderProvider(instance, { hlMarginMode: 'isolated' })
+    expect(ctx.marginMode).toBe('isolated')
+  })
+
+  it('seeds only once — a later hlMarginMode change does not re-seed', () => {
+    // After a user commits a mode change, the query refetches and hlMarginMode
+    // can transiently report a different value; that must not clobber state
+    // the user (or the margin sheet) has since set.
+    const instance = renderProvider()
+    rerenderProvider(instance, { hlMarginMode: 'cross' })
+    expect(ctx.marginMode).toBe('cross')
+    rerenderProvider(instance, { hlMarginMode: 'isolated' })
+    expect(ctx.marginMode).toBe('cross')
   })
 })
