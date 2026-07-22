@@ -33,7 +33,10 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
   // context ALWAYS mirrors HL (otherwise a tap made before the data resolved
   // would leave it on the unseeded default — wrong Place Order row, redundant
   // or skipped commits); only the local draft is protected once the user has
-  // picked an option, so we never fight an edit.
+  // picked an option, so we never fight an edit — except on isolated-only
+  // markets, where `onlyIsolated` can resolve true after a Cross tap (the
+  // universe and leverage queries are independent) and a cross draft would be
+  // invalid on-exchange, so it is forced back to isolated.
   const userTouchedRef = useRef(false)
   useEffect(() => {
     if (leverageType === undefined) {
@@ -41,7 +44,7 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
     }
     const mode = onlyIsolated ? 'isolated' : leverageType
     setMarginMode(mode)
-    if (!userTouchedRef.current) {
+    if (!userTouchedRef.current || onlyIsolated) {
       setDraftMode(mode)
     }
   }, [leverageType, onlyIsolated, setMarginMode])

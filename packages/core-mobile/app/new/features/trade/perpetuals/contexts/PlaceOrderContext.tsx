@@ -5,7 +5,7 @@ import React, {
   useState,
   type ReactNode
 } from 'react'
-import { MarginMode } from '../types'
+import type { MarginMode } from '../types'
 import { estimateLiquidationPrice } from '../utils/economics'
 
 export type OrderSide = 'long' | 'short'

@@ -279,4 +279,24 @@ describe('PerpetualsMarginModeScreen', () => {
     expect(mockSetMarginMode).toHaveBeenCalledWith('cross')
     expect(hasCheckmark(instance, 'Isolated')).toBe(true)
   })
+
+  it('forces a Cross draft back to Isolated when onlyIsolated resolves late', async () => {
+    // The universe and leverage queries are independent: the user can tap
+    // Cross before the market is known to be isolated-only.
+    mockMarket.universe = undefined
+    const instance = await render()
+    await act(async () => {
+      row(instance, 'Cross').props.onPress()
+    })
+    expect(hasCheckmark(instance, 'Cross')).toBe(true)
+
+    mockMarket.universe = { onlyIsolated: true }
+    await act(async () => {
+      instance.update(<PerpetualsMarginModeScreen />)
+    })
+    // The touched guard must not preserve a draft that is invalid on-exchange.
+    expect(hasCheckmark(instance, 'Isolated')).toBe(true)
+    expect(hasCheckmark(instance, 'Cross')).toBe(false)
+    expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
+  })
 })
