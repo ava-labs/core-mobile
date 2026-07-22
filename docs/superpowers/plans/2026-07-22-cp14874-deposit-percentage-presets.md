@@ -12,7 +12,7 @@
 
 - Spec: `docs/superpowers/specs/2026-07-22-cp14874-deposit-percentage-presets-design.md`
 - No k2-alpine changes. Do not touch `PerpetualsCloseScreen` (`MARKET_PRESETS`) or predictions screens — their presets are intentional.
-- No preset-disabling logic for the 10 USDC minimum; existing inline validation handles amounts below minimum.
+- No preset-disabling logic for the 5 USDC minimum (`MIN_DEPOSIT_USDC`); existing inline validation handles amounts below minimum.
 - Run commands from `packages/core-mobile/`.
 
 ---

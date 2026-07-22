@@ -18,6 +18,12 @@ export const usdcAmountFromTokenUnit = (value: TokenUnit): number =>
  * Converts a USD float (e.g. the Hyperliquid withdrawable) to a USDC
  * `TokenUnit`, rounding down so the resulting balance never overstates what is
  * actually available.
+ *
+ * Goes through TokenUnit's decimal math rather than
+ * `Math.floor(amount * 1e6)`: the float multiply misrepresents some values
+ * (`8.2 * 1e6 === 8199999.999999999`) and would under-floor them by a subunit.
  */
-export const floorToUsdcUnit = (amount: number): TokenUnit =>
-  new TokenUnit(Math.floor(amount * 10 ** USDC_DECIMALS), USDC_DECIMALS, 'USDC')
+export const floorToUsdcUnit = (amount: number): TokenUnit => {
+  const unit = new TokenUnit(0n, USDC_DECIMALS, 'USDC').add(amount)
+  return new TokenUnit(unit.toSubUnit(), USDC_DECIMALS, 'USDC')
+}
