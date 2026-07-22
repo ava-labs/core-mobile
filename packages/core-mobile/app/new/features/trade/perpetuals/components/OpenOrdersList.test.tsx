@@ -108,6 +108,7 @@ jest.mock('@avalabs/k2-alpine', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Button: ({ children, ...rest }: any) =>
       r.createElement(rn.View, rest, children),
+    ActivityIndicator: () => null,
     PriceChangeStatus: { Up: 'up', Down: 'down', Neutral: 'neutral' },
     StatusArrow: () => null,
     useTheme: () => ({
@@ -171,7 +172,7 @@ describe('OpenOrdersList', () => {
     ).toBeGreaterThan(0)
   })
 
-  it('disables only the tapped row while its cancel is in flight', async () => {
+  it('shows the spinner only on the tapped row while its cancel is in flight', async () => {
     mockOrders.orders = [
       richOrder({ oid: 1, coin: 'BTC' }),
       richOrder({ oid: 2, coin: 'ETH' })
@@ -191,18 +192,25 @@ describe('OpenOrdersList', () => {
       instance.root.findAllByProps({
         testID: `open_order_cancel__${oid}`
       })[0]?.props
+    const spinnerCount = (oid: number): number =>
+      instance.root.findAllByProps({
+        testID: `open_order_cancelling__${oid}`
+      }).length
 
     act(() => {
       cancelFor(1).onPress()
     })
-    // Only the tapped row dims — the other row's Cancel stays active.
-    expect(cancelFor(1).disabled).toBe(true)
-    expect(cancelFor(2).disabled).toBe(false)
+    // Only the tapped row swaps to a spinner — the other Cancel stays put.
+    expect(cancelFor(1)).toBeUndefined()
+    expect(spinnerCount(1)).toBeGreaterThan(0)
+    expect(cancelFor(2)).toBeDefined()
+    expect(spinnerCount(2)).toBe(0)
 
     await act(async () => {
       resolveCancel(true)
     })
-    expect(cancelFor(1).disabled).toBe(false)
+    expect(cancelFor(1)).toBeDefined()
+    expect(spinnerCount(1)).toBe(0)
   })
 
   it('cancels an order via usePerpsPositionActions', async () => {

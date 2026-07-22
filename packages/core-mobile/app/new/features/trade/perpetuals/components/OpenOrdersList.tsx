@@ -4,7 +4,7 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
@@ -64,30 +64,12 @@ export const OpenOrdersList = ({
 
   const rows = useMemo(() => toOpenOrderRows(orders), [orders])
 
-  // Track cancellation per row, not via the shared `busy` flag — disabling
-  // every Cancel while one is in flight dims them all (disabled renders at
-  // 0.3 opacity), which reads as every button having been pressed. Different
-  // orders may cancel concurrently; only a re-tap of the same row is blocked.
-  const [cancellingIds, setCancellingIds] = useState<ReadonlySet<string>>(
-    () => new Set()
-  )
+  // Each row shows its own in-flight spinner (see OpenOrderListItem), so the
+  // shared `busy` flag is deliberately unused here — it would dim every
+  // Cancel button while one cancel runs. Concurrent cancels are fine on HL.
   const handleCancel = useCallback(
-    async (item: OpenOrderRow): Promise<void> => {
-      if (cancellingIds.has(item.id)) {
-        return
-      }
-      setCancellingIds(prev => new Set(prev).add(item.id))
-      try {
-        await cancelOrder(item.coin, item.oid)
-      } finally {
-        setCancellingIds(prev => {
-          const next = new Set(prev)
-          next.delete(item.id)
-          return next
-        })
-      }
-    },
-    [cancellingIds, cancelOrder]
+    (item: OpenOrderRow): Promise<boolean> => cancelOrder(item.coin, item.oid),
+    [cancelOrder]
   )
 
   const renderItem: ListRenderItem<OpenOrderRow> = useCallback(
@@ -95,11 +77,10 @@ export const OpenOrdersList = ({
       <OpenOrderListItem
         item={item}
         isFirst={index === 0}
-        cancelling={cancellingIds.has(item.id)}
         onCancel={handleCancel}
       />
     ),
-    [cancellingIds, handleCancel]
+    [handleCancel]
   )
 
   const keyExtractor = useCallback((item: OpenOrderRow) => item.id, [])
@@ -133,7 +114,6 @@ export const OpenOrdersList = ({
       isRefreshing={isRefreshing}
       onRefresh={onRefresh}
       listKey="open-orders"
-      extraData={{ cancellingIds }}
     />
   )
 }

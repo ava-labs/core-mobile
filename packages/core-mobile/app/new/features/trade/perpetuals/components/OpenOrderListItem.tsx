@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   PriceChangeStatus,
@@ -8,31 +9,57 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { PerpsCoinLogo } from './PerpsCoinLogo'
 import type { OpenOrderRow } from './OpenOrdersList'
 
 interface OpenOrderListItemProps {
   item: OpenOrderRow
   isFirst?: boolean
-  /**
-   * Whether this row's cancel is in flight. Held by the parent keyed by order
-   * id (NOT local state) — FlashList recycles cells, so state living inside
-   * the item component can leak onto a different order after a recycle.
-   */
-  cancelling: boolean
-  onCancel: (item: OpenOrderRow) => void
+  /** Performs the cancel; resolves when the exchange call settles. */
+  onCancel: (item: OpenOrderRow) => Promise<boolean>
 }
 
-/** One resting open order: coin, side, size @ limit price, notional, Cancel. */
+/**
+ * One resting open order: coin, side, size @ limit price, notional, Cancel.
+ * The in-flight cancel state is local — the Cancel button swaps to a spinner
+ * for this row only, so other rows stay untouched while one cancel runs.
+ */
 export const OpenOrderListItem = ({
   item,
   isFirst,
-  cancelling,
   onCancel
 }: OpenOrderListItemProps): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
+
+  const [cancelling, setCancelling] = useState(false)
+  // FlashList recycles cells: this instance can be handed a different order
+  // mid-flight. Reset the transient state during render (so the wrong row
+  // never paints a spinner) and track the shown id so a stale promise can't
+  // flip state for an order this cell no longer displays.
+  const [renderedId, setRenderedId] = useState(item.id)
+  if (renderedId !== item.id) {
+    setRenderedId(item.id)
+    setCancelling(false)
+  }
+  const shownIdRef = useRef(item.id)
+  shownIdRef.current = item.id
+
+  const handleCancel = async (): Promise<void> => {
+    if (cancelling) {
+      return
+    }
+    const cancellingId = item.id
+    setCancelling(true)
+    try {
+      await onCancel(item)
+    } finally {
+      if (shownIdRef.current === cancellingId) {
+        setCancelling(false)
+      }
+    }
+  }
 
   return (
     <View
@@ -82,14 +109,21 @@ export const OpenOrderListItem = ({
           <Text variant="buttonMedium">
             {formatCurrency({ amount: item.notionalUsd })}
           </Text>
-          <Button
-            type="secondary"
-            size="small"
-            disabled={cancelling}
-            onPress={() => onCancel(item)}
-            testID={`open_order_cancel__${item.oid}`}>
-            Cancel
-          </Button>
+          {cancelling ? (
+            <View
+              sx={{ height: 28, justifyContent: 'center' }}
+              testID={`open_order_cancelling__${item.oid}`}>
+              <ActivityIndicator size="small" />
+            </View>
+          ) : (
+            <Button
+              type="secondary"
+              size="small"
+              onPress={handleCancel}
+              testID={`open_order_cancel__${item.oid}`}>
+              Cancel
+            </Button>
+          )}
         </View>
       </View>
     </View>
