@@ -49,7 +49,7 @@ export const PerpsActivityList = ({
   )
 
   const renderHeader = useCallback(() => {
-    return <View sx={{ height: 20 }} />
+    return <View sx={{ height: 12 }} />
   }, [])
 
   return (
