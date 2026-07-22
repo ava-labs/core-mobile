@@ -3,13 +3,15 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { Networks } from 'store/network'
 
 export const getNetworksFromCache = ({
-  includeSolana = false,
-  includeHyperliquid = false
+  includeSolana,
+  includeHyperliquid
 }: {
   includeSolana: boolean
   includeHyperliquid: boolean
 }): Networks | undefined => {
-  return queryClient.getQueryCache().find({
-    queryKey: [ReactQueryKeys.NETWORKS, includeSolana, includeHyperliquid]
-  })?.state.data as Networks | undefined
+  return queryClient.getQueryData<Networks>([
+    ReactQueryKeys.NETWORKS,
+    includeSolana,
+    includeHyperliquid
+  ])
 }

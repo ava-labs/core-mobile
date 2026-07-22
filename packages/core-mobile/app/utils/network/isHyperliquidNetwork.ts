@@ -16,9 +16,11 @@ export function isHyperliquidNetwork(network?: Network): boolean {
     return false
   }
 
+  const normalizedChainName = network.chainName?.trim().toLowerCase()
+
   return (
     isHyperliquidChainId(network.chainId) ||
-    network.chainName === HYPEREVM_CHAIN_NAME ||
-    network.chainName === HYPERCORE_CHAIN_NAME
+    normalizedChainName === HYPEREVM_CHAIN_NAME.toLowerCase() ||
+    normalizedChainName === HYPERCORE_CHAIN_NAME.toLowerCase()
   )
 }
