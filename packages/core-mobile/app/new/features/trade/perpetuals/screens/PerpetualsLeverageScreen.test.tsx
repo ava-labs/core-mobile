@@ -28,14 +28,27 @@ jest.mock('../hooks/usePerpsPositionActions', () => ({
   })
 }))
 
+const mockAsset = {
+  leverageType: 'isolated' as 'cross' | 'isolated' | undefined
+}
 jest.mock('../hooks/usePerpsActiveAssetData', () => ({
   usePerpsActiveAssetData: () => ({
     leverage: 2,
-    leverageType: mockCtx.marginMode,
+    leverageType: mockAsset.leverageType,
     maxBuySizeCoin: undefined,
     maxSellSizeCoin: undefined,
     isLoading: false,
     refetch: jest.fn().mockResolvedValue(3)
+  })
+}))
+
+const mockMarket = {
+  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
+}
+jest.mock('../hooks/useHyperliquidMarketContext', () => ({
+  useHyperliquidMarketContext: () => ({
+    universe: mockMarket.universe,
+    assetCtx: undefined
   })
 }))
 
@@ -92,6 +105,8 @@ describe('PerpetualsLeverageScreen margin mode', () => {
     mockBack.mockReset()
     mockUpdateLeverage.mockReset()
     mockSetLeverage.mockReset()
+    mockAsset.leverageType = 'isolated'
+    mockMarket.universe = { onlyIsolated: false }
   })
 
   it('commits leverage with the isCross flag from the current margin mode', async () => {
@@ -131,5 +146,35 @@ describe('PerpetualsLeverageScreen margin mode', () => {
     })
 
     expect(mockUpdateLeverage).toHaveBeenCalledWith('BTC', 5, true)
+  })
+
+  // Context marginMode is seeded from leverageType + universe; until both
+  // resolve, a commit would send the unseeded 'cross' default.
+  it('keeps Done disabled until the per-coin leverage data loads', async () => {
+    mockAsset.leverageType = undefined
+    const instance = await render()
+
+    const gauge = instance.root.findByProps({ min: 1 })
+    await act(async () => {
+      gauge.props.onChange(5)
+    })
+    const done = instance.root.findByProps({
+      testID: 'perpetuals_leverage_done'
+    })
+    expect(done.props.disabled).toBe(true)
+  })
+
+  it('keeps Done disabled until the universe loads', async () => {
+    mockMarket.universe = undefined
+    const instance = await render()
+
+    const gauge = instance.root.findByProps({ min: 1 })
+    await act(async () => {
+      gauge.props.onChange(5)
+    })
+    const done = instance.root.findByProps({
+      testID: 'perpetuals_leverage_done'
+    })
+    expect(done.props.disabled).toBe(true)
   })
 })

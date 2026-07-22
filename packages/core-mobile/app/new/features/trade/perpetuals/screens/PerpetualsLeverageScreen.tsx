@@ -4,6 +4,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { estimateLiquidationPrice, pctFromEntry } from '../utils/economics'
@@ -22,8 +23,12 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
     marginMode
   } = usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
-  const { leverage: hlLeverage, refetch: refetchLeverage } =
-    usePerpsActiveAssetData(coin)
+  const {
+    leverage: hlLeverage,
+    leverageType,
+    refetch: refetchLeverage
+  } = usePerpsActiveAssetData(coin)
+  const { universe } = useHyperliquidMarketContext(coin)
 
   // Local draft so gauge edits don't mutate the order until confirmed.
   const [draftLeverage, setDraftLeverage] = useState(leverage)
@@ -95,12 +100,21 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_leverage_done"
-        disabled={isUnchanged || busy}
+        // Also gate on the per-coin data + universe (same as the margin
+        // sheet): `marginMode` is mirrored from them into the context by the
+        // index screen, so before they resolve a commit would send the
+        // unseeded 'cross' default — silently flipping an isolated user.
+        disabled={
+          isUnchanged ||
+          busy ||
+          leverageType === undefined ||
+          universe === undefined
+        }
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [handleConfirm, isUnchanged, busy]
+    [handleConfirm, isUnchanged, busy, leverageType, universe]
   )
 
   return (
