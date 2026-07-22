@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useMemo,
   useState,
@@ -12,6 +13,12 @@ export type OrderSide = 'long' | 'short'
 interface PlaceOrderState {
   coin: string
   side: OrderSide
+  /**
+   * Flip the order direction in place (open flow only). Clears TP/SL prices
+   * and toggles because trigger prices are direction-specific — a long's TP
+   * sits on the wrong side of the price for a short. No-op if unchanged.
+   */
+  switchSide: (side: OrderSide) => void
   entryPrice: number
   maxLeverage: number
 
@@ -66,7 +73,7 @@ export interface PlaceOrderProviderProps {
 
 export const PlaceOrderProvider = ({
   coin,
-  side,
+  side: initialSide,
   entryPrice,
   maxLeverage,
   initialAmount = 0,
@@ -75,6 +82,7 @@ export const PlaceOrderProvider = ({
   initialStopLossPrice,
   children
 }: PlaceOrderProviderProps): JSX.Element => {
+  const [side, setSide] = useState(initialSide)
   const [amount, setAmount] = useState(initialAmount)
   // Seed leverage directly from the always-present `initialLeverage`.
   // `maxLeverage` is sourced from live market data and can lag a beat, so the
@@ -95,10 +103,25 @@ export const PlaceOrderProvider = ({
     initialStopLossPrice
   )
 
+  const switchSide = useCallback(
+    (newSide: OrderSide) => {
+      if (newSide === side) {
+        return
+      }
+      setSide(newSide)
+      setTakeProfitEnabled(false)
+      setTakeProfitPrice(undefined)
+      setStopLossEnabled(false)
+      setStopLossPrice(undefined)
+    },
+    [side]
+  )
+
   const value = useMemo<PlaceOrderState>(
     () => ({
       coin,
       side,
+      switchSide,
       entryPrice,
       maxLeverage,
       amount,
@@ -126,6 +149,7 @@ export const PlaceOrderProvider = ({
     [
       coin,
       side,
+      switchSide,
       entryPrice,
       maxLeverage,
       amount,
