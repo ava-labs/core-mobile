@@ -2,8 +2,7 @@ import React from 'react'
 import {
   containsTallScript,
   detectTallScript,
-  resolveTallScriptLineHeight,
-  resolveTextLineHeight
+  resolveTallScriptLineHeight
 } from './tallScriptLineHeight'
 
 describe('containsTallScript', () => {
@@ -74,32 +73,6 @@ describe('resolveTallScriptLineHeight (ratio only)', () => {
   it('leaves an already-generous variant untouched', () => {
     expect(
       resolveTallScriptLineHeight({ fontSize: 15, lineHeight: 24 }, '送信')
-    ).toBeUndefined()
-  })
-})
-
-describe('resolveTextLineHeight', () => {
-  const spec = { fontSize: 36, lineHeight: 36 }
-
-  it('resolves the per-script lineHeight for CJK when the caller sets none', () => {
-    expect(resolveTextLineHeight({ spec, children: '设置' })).toBe(44)
-  })
-  it('resolves the larger Devanagari lineHeight', () => {
-    expect(resolveTextLineHeight({ spec, children: 'हिन्दी' })).toBe(49)
-  })
-  it('returns undefined for Latin text', () => {
-    expect(
-      resolveTextLineHeight({ spec, children: 'Settings' })
-    ).toBeUndefined()
-  })
-  it('never overrides a caller-provided lineHeight, even for CJK', () => {
-    expect(
-      resolveTextLineHeight({ spec, children: '设置', callerLineHeight: 40 })
-    ).toBeUndefined()
-  })
-  it('returns undefined when the variant spec is missing', () => {
-    expect(
-      resolveTextLineHeight({ spec: undefined, children: '设置' })
     ).toBeUndefined()
   })
 })

@@ -12,7 +12,7 @@ import {
 import React from 'react'
 import { useDripsyTheme } from 'dripsy'
 import type { TextVariant } from '../theme/tokens/text'
-import { resolveTextLineHeight } from '../utils/tallScriptLineHeight'
+import { resolveTallScriptLineHeight } from '../utils/tallScriptLineHeight'
 
 export const TouchableHighlight = styled(RNTouchableHighlight)()
 
@@ -32,23 +32,26 @@ export const Text = React.forwardRef<
 >((props, ref) => {
   const { theme } = useDripsyTheme()
   const variant = (props.variant ?? 'body1') as TextVariant
+  const spec = theme.text[variant]
   // Relax lineHeight for CJK/Devanagari content using a per-script ratio —
   // several text variants set lineHeight at/near fontSize, which clips tall
-  // (non-Latin) glyphs on iOS. A caller-set lineHeight (sx or style) always wins.
-  const scriptLineHeight = resolveTextLineHeight({
-    spec: theme.text[variant],
-    children: props.children,
-    callerLineHeight:
-      (props.sx as { lineHeight?: number } | undefined)?.lineHeight ??
-      (props.style as { lineHeight?: number } | undefined)?.lineHeight
-  })
+  // (non-Latin) glyphs on iOS.
+  const scriptLineHeight = spec
+    ? resolveTallScriptLineHeight(spec, props.children)
+    : undefined
   return React.createElement(StyledText, {
     ...props,
-    // spread props.sx last so a caller override always wins
-    sx:
+    // Inject via the `style` prop (prepended), not by spreading into `sx`.
+    // Dripsy composes styles as [variant, ...style, sx] (last wins), so this
+    // overrides the variant's lineHeight yet is still overridden by any
+    // caller-provided `style` or `sx` — including function- or array-form values,
+    // which an object-spread of `sx` would silently drop. Nested/array `style` is
+    // flattened by RN, so no manual StyleSheet.flatten or caller-lineHeight
+    // detection is needed.
+    style:
       scriptLineHeight !== undefined
-        ? { lineHeight: scriptLineHeight, ...props.sx }
-        : props.sx,
+        ? [{ lineHeight: scriptLineHeight }, props.style]
+        : props.style,
     allowFontScaling: false,
     ref
   })

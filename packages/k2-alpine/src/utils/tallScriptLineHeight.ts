@@ -79,23 +79,3 @@ export const resolveTallScriptLineHeight = (
   const relaxed = Math.ceil(spec.fontSize * RATIO[script])
   return relaxed > spec.lineHeight ? relaxed : undefined
 }
-
-/**
- * Decides the lineHeight the `Text` primitive should inject for a given render.
- * A caller-provided lineHeight always wins (returns `undefined` so nothing is
- * overridden); otherwise falls back to the per-script tall-script adjustment for
- * the resolved variant spec.
- */
-export const resolveTextLineHeight = ({
-  spec,
-  children,
-  callerLineHeight
-}: {
-  spec?: { fontSize: number; lineHeight: number }
-  children: ReactNode
-  callerLineHeight?: number
-}): number | undefined => {
-  if (callerLineHeight !== undefined) return undefined
-  if (!spec) return undefined
-  return resolveTallScriptLineHeight(spec, children)
-}
