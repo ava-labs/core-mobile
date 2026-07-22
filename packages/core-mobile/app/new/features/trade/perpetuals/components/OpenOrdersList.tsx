@@ -132,7 +132,14 @@ export const OpenOrdersList = ({
         </View>
       </View>
     ),
-    [theme.colors, formatCurrency, busy, cancelOrder]
+    [
+      theme.colors.$textSuccess,
+      theme.colors.$textDanger,
+      theme.colors.$textPrimary,
+      formatCurrency,
+      busy,
+      cancelOrder
+    ]
   )
 
   const keyExtractor = useCallback((item: OpenOrderRow) => item.id, [])
@@ -159,6 +166,7 @@ export const OpenOrdersList = ({
       containerStyle={containerStyle}
       contentContainerStyle={containerStyle}
       listKey="open-orders"
+      extraData={{ busy }}
     />
   )
 }
