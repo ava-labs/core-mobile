@@ -79,13 +79,16 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     takeProfitEnabled,
     takeProfitPrice,
     stopLossEnabled,
-    stopLossPrice
+    stopLossPrice,
+    marginMode,
+    setMarginMode
   } = usePlaceOrder()
 
   // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
   // so it reflects HL rather than the local default before the user edits it.
   const {
     leverage: hlLeverage,
+    leverageType,
     maxBuySizeCoin,
     maxSellSizeCoin,
     isLoading: activeAssetLoading
@@ -98,6 +101,17 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     seededLeverageRef.current = true
     setLeverage(hlLeverage)
   }, [hlLeverage, setLeverage])
+
+  // Same seeding pattern for the margin mode: HL persists cross/isolated per
+  // coin, so reflect the actual value instead of the local 'cross' default.
+  const seededMarginModeRef = useRef(false)
+  useEffect(() => {
+    if (seededMarginModeRef.current || leverageType === undefined) {
+      return
+    }
+    seededMarginModeRef.current = true
+    setMarginMode(leverageType)
+  }, [leverageType, setMarginMode])
 
   const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
   const { submitOrder } = usePerpsOrderSubmit()
@@ -147,6 +161,10 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
+  }, [router])
+
+  const handleMarginMode = useCallback(() => {
+    router.navigate('/perpetualsPlaceOrder/margin')
   }, [router])
 
   const handleOpenTakeProfit = useCallback(() => {
@@ -313,6 +331,21 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
           </View>
 
           <View sx={{ gap: 20 }}>
+            <GroupList
+              titleSx={{ fontFamily: 'Inter-Regular' }}
+              data={[
+                {
+                  title: 'Margin mode',
+                  onPress: handleMarginMode,
+                  value: (
+                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                      {marginMode === 'cross' ? 'Cross' : 'Isolated'}
+                    </Text>
+                  )
+                }
+              ]}
+            />
+
             <GroupList
               titleSx={{ fontFamily: 'Inter-Regular' }}
               subtitleVariant="caption"

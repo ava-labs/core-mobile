@@ -2,8 +2,9 @@ import React from 'react'
 import renderer, { act } from 'react-test-renderer'
 
 const mockBack = jest.fn()
+const mockNavigate = jest.fn()
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: mockBack, navigate: jest.fn() })
+  useRouter: () => ({ back: mockBack, navigate: mockNavigate })
 }))
 
 const mockState = { isGeoBlocked: false }
@@ -22,6 +23,7 @@ jest.mock('common/utils/toast', () => ({
   showSnackbar: (...args: any[]) => mockShowSnackbar(...args)
 }))
 
+const mockSetMarginMode = jest.fn()
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
@@ -30,7 +32,9 @@ jest.mock('../contexts/PlaceOrderContext', () => ({
     amount: 10,
     setAmount: jest.fn(),
     leverage: 2,
-    liquidationPrice: 1
+    liquidationPrice: 1,
+    marginMode: 'cross',
+    setMarginMode: mockSetMarginMode
   })
 }))
 
@@ -56,7 +60,8 @@ jest.mock('../hooks/useTriggerToggles', () => ({
 const mockActiveAsset = {
   maxBuySizeCoin: 1.5 as number | undefined,
   maxSellSizeCoin: 1 as number | undefined,
-  isLoading: false
+  isLoading: false,
+  leverageType: undefined as 'cross' | 'isolated' | undefined
 }
 jest.mock('../hooks/useHyperliquidMarketContext', () => ({
   useHyperliquidMarketContext: () => ({
@@ -68,7 +73,7 @@ jest.mock('../hooks/useHyperliquidMarketContext', () => ({
 jest.mock('../hooks/usePerpsActiveAssetData', () => ({
   usePerpsActiveAssetData: () => ({
     leverage: undefined,
-    leverageType: undefined,
+    leverageType: mockActiveAsset.leverageType,
     maxBuySizeCoin: mockActiveAsset.maxBuySizeCoin,
     maxSellSizeCoin: mockActiveAsset.maxSellSizeCoin,
     isLoading: mockActiveAsset.isLoading,
@@ -134,7 +139,9 @@ jest.mock('@avalabs/k2-alpine', () => {
     alpha: (c: any) => c,
     View: pass(rn.View),
     Text: pass(rn.Text),
-    GroupList: () => null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    GroupList: (props: any) =>
+      r.createElement(rn.View, { testID: 'group_list', ...props }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CircularDial: (props: any) => r.createElement(rn.View, props),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,6 +170,8 @@ const confirmButton = (instance: renderer.ReactTestRenderer): any =>
 describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
   beforeEach(() => {
     mockBack.mockReset()
+    mockNavigate.mockReset()
+    mockSetMarginMode.mockReset()
     mockRecheck.mockReset()
     mockShowSnackbar.mockReset()
     mockSubmitOrder.mockReset()
@@ -171,6 +180,7 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     mockActiveAsset.maxBuySizeCoin = 1.5
     mockActiveAsset.maxSellSizeCoin = 1
     mockActiveAsset.isLoading = false
+    mockActiveAsset.leverageType = undefined
   })
 
   it('disables the confirm button when geo-blocked', async () => {
@@ -315,5 +325,29 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
       link.props.onPress()
     })
     expect(mockOpenUrl).toHaveBeenCalledWith(TERMS_OF_USE_URL)
+  })
+})
+
+describe('PerpetualsPlaceOrderScreen margin mode', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const marginRow = (instance: renderer.ReactTestRenderer): any =>
+    instance.root
+      .findAllByProps({ testID: 'group_list' })
+      .map(list => list.props.data?.[0])
+      .find(item => item?.title === 'Margin mode')
+
+  it('shows the current margin mode and opens the margin sheet', async () => {
+    const instance = await render()
+    const item = marginRow(instance)
+    expect(item).toBeDefined()
+    expect(item.value.props.children).toBe('Cross')
+    item.onPress()
+    expect(mockNavigate).toHaveBeenCalledWith('/perpetualsPlaceOrder/margin')
+  })
+
+  it('seeds context marginMode from HL leverageType once loaded', async () => {
+    mockActiveAsset.leverageType = 'isolated'
+    await render()
+    expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
   })
 })
