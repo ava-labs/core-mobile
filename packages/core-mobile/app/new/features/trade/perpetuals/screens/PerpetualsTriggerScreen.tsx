@@ -74,7 +74,9 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     setTakeProfitEnabled,
     stopLossPrice,
     setStopLossPrice,
-    setStopLossEnabled
+    setStopLossEnabled,
+    limitPriceEnabled,
+    limitPrice
   } = usePlaceOrder()
   const isLong = side === 'long'
 
@@ -93,14 +95,18 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     return Number.isFinite(parsed) ? parsed : undefined
   }, [priceText])
 
-  // Validate the trigger and show its % against the *live* mark price, not the
-  // position's entry. In the manage flow `entryPrice` is the historical fill, so
-  // a TP/SL already on the wrong side of the current price would fire (or be
-  // rejected) the instant the user submits. The open flow seeds `entryPrice`
-  // from live mark, so the fallback keeps it correct there (and until mark loads).
+  // Validate the trigger and show its % against the intended ENTRY price: the
+  // limit price when a limit entry is set (a TP between limit and mark is valid
+  // on HL), otherwise the live mark (see comment below), falling back to the
+  // seeded entry until mark loads.
   const { assetCtx } = useHyperliquidMarketContext(coin)
   const liveMarkPrice = toNumber(assetCtx?.markPx)
-  const currentPrice = liveMarkPrice > 0 ? liveMarkPrice : entryPrice
+  const currentPrice =
+    limitPriceEnabled && limitPrice !== undefined
+      ? limitPrice
+      : liveMarkPrice > 0
+      ? liveMarkPrice
+      : entryPrice
 
   const pct =
     price !== undefined ? pctFromEntry(price, currentPrice) : undefined
