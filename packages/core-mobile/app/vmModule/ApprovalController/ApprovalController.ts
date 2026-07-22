@@ -551,10 +551,19 @@ class ApprovalController implements VmModuleApprovalController {
     // Avalanche signingData variants carry no `account` and are knowingly not
     // checked: the avax namespace is only ever granted to Core-domain dApps,
     // and those methods always sign with the active account the user sees.
+    // Fails closed: a request with no live session (deleted/expired mid-flight,
+    // or WC uninitialized) has no grants to check against, so it's rejected —
+    // its response is undeliverable anyway.
     if ('account' in signingData && !isInAppRequest(request)) {
-      const session = WalletConnectService.getSession(request.sessionId)
+      const session = (() => {
+        try {
+          return WalletConnectService.getSession(request.sessionId)
+        } catch {
+          return undefined
+        }
+      })()
       if (
-        session &&
+        !session ||
         !isAddressApproved(
           signingData.account,
           request.chainId,
