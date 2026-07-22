@@ -75,4 +75,11 @@ describe('resolveTallScriptLineHeight (ratio only)', () => {
       resolveTallScriptLineHeight({ fontSize: 15, lineHeight: 24 }, '送信')
     ).toBeUndefined()
   })
+  it('fast-path returns undefined once lineHeight clears the Devanagari ratio', () => {
+    // fontSize 20 → tallest (Devanagari) relaxed = ceil(20*1.35) = 27; a
+    // lineHeight of 27 already clears it, so even Devanagari needs no bump.
+    expect(
+      resolveTallScriptLineHeight({ fontSize: 20, lineHeight: 27 }, 'हिन्दी')
+    ).toBeUndefined()
+  })
 })

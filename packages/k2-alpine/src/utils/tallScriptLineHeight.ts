@@ -74,6 +74,13 @@ export const resolveTallScriptLineHeight = (
   spec: { fontSize: number; lineHeight: number },
   children: ReactNode
 ): number | undefined => {
+  // Fast path: Devanagari has the largest ratio, so `ceil(fontSize * DEVANAGARI)`
+  // is the biggest lineHeight any script could ask for. If the variant already
+  // clears that, no detected script can exceed it — skip the flatten + regex
+  // scan entirely (this runs on every Text render).
+  const maxRelaxed = Math.ceil(spec.fontSize * DEVANAGARI_LINE_HEIGHT_RATIO)
+  if (spec.lineHeight >= maxRelaxed) return undefined
+
   const script = detectTallScript(children)
   if (script === undefined) return undefined
   const relaxed = Math.ceil(spec.fontSize * RATIO[script])

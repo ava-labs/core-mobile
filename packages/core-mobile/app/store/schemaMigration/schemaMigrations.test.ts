@@ -58,4 +58,11 @@ describe('migration 31 — language default-fill', () => {
     const after = (migrations as any)[31]({})
     expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
   })
+
+  it('clamps an unsupported/corrupt persisted code back to the default', () => {
+    const before = { settings: { language: { selected: 'xx-ZZ' } } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31](before)
+    expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
+  })
 })
