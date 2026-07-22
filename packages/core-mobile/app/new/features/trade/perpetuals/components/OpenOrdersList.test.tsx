@@ -36,6 +36,16 @@ jest.mock('../hooks/usePerpsPositionActions', () => ({
   usePerpsPositionActions: () => ({ busy: false, cancelOrder: mockCancelOrder })
 }))
 
+// Mocked so the component doesn't pull in PerpsProvider -> the wallet stack
+// (which can't load under Jest).
+const mockOnRefresh = jest.fn()
+jest.mock('../hooks/usePerpsPullToRefresh', () => ({
+  usePerpsPullToRefresh: () => ({
+    isRefreshing: false,
+    onRefresh: mockOnRefresh
+  })
+}))
+
 jest.mock('common/hooks/useFormatCurrency', () => ({
   useFormatCurrency: () => ({ formatCurrency: () => '$0' })
 }))

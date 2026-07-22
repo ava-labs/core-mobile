@@ -152,10 +152,6 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
-              name="(modals)/perpetualsPositionsHistory"
-              options={modalScreensOptions}
-            />
-            <Stack.Screen
               name="(modals)/perpetualsBalance"
               options={modalScreensOptions}
             />

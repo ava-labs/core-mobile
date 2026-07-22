@@ -17,6 +17,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
+import { usePerpsPullToRefresh } from '../hooks/usePerpsPullToRefresh'
 import { tickerOfCoin } from '../utils/coinDex'
 import { toNumber } from '../utils/format'
 import { PerpsCoinLogo } from './PerpsCoinLogo'
@@ -68,6 +69,9 @@ export const OpenOrdersList = ({
   const { formatCurrency } = useFormatCurrency()
   const { orders } = usePerpsAllOpenOrders()
   const { busy, cancelOrder } = usePerpsPositionActions()
+  // Pull-to-refresh: the nonce bump re-runs both open-orders REST fetches
+  // (main dex + HIP-3) alongside the clearinghouse state.
+  const { isRefreshing, onRefresh } = usePerpsPullToRefresh()
 
   const rows = useMemo(() => toOpenOrderRows(orders), [orders])
 
@@ -157,14 +161,21 @@ export const OpenOrdersList = ({
     []
   )
 
+  const renderHeader = useCallback(() => {
+    return <View sx={{ height: 20 }} />
+  }, [])
+
   return (
     <CollapsibleTabList
       data={rows}
+      renderHeader={renderHeader}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       renderEmpty={renderEmpty}
       containerStyle={containerStyle}
       contentContainerStyle={containerStyle}
+      isRefreshing={isRefreshing}
+      onRefresh={onRefresh}
       listKey="open-orders"
       extraData={{ busy }}
     />

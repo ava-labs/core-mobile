@@ -19,7 +19,8 @@ import { getPerpsInfoClient } from '../services/perpsClients'
 export const usePerpsUserFills = (): {
   fills: readonly UserFill[]
   isLoading: boolean
-  refetch: () => void
+  /** Re-runs the fills query; resolves when the refetch settles. */
+  refetch: () => Promise<unknown>
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const userAddress = activeAccount?.addressC as Address | undefined

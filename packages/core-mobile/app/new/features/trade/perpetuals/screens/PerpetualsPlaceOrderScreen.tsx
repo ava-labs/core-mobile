@@ -330,111 +330,110 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     <>
       <ScrollScreen
         isModal
-        title="Place your bet"
-        subtitle={subtitle}
-        navigationTitle="Place your bet"
+        title="Place your order"
         renderFooter={renderFooter}
         contentContainerStyle={{ padding: 16 }}>
         <View sx={{ paddingTop: 8, gap: 20 }}>
-          <View sx={{ gap: 8 }}>
+          <View sx={{ gap: 4 }}>
             <PositionPill coin={coin} price={entryPrice} side={side} />
 
-            <View sx={{ gap: 4 }}>
+            <View
+              sx={{
+                backgroundColor: '$surfaceSecondary',
+                borderRadius: 12,
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                overflow: 'hidden'
+              }}>
               <View
                 sx={{
-                  backgroundColor: '$surfaceSecondary',
-                  borderRadius: 12,
-                  overflow: 'hidden'
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14
                 }}>
-                <View
-                  sx={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14
-                  }}>
-                  <Text variant="subtitle1" sx={{ fontSize: 16 }}>
-                    Set limit price
-                  </Text>
-                  <Toggle
-                    value={limitPriceEnabled}
-                    onValueChange={handleToggleLimitPrice}
-                    testID="perpetuals_place_order_limit_toggle"
-                  />
-                </View>
+                <Text variant="subtitle1" sx={{ fontSize: 16 }}>
+                  Set limit price
+                </Text>
+                <Toggle
+                  value={limitPriceEnabled}
+                  onValueChange={handleToggleLimitPrice}
+                  testID="perpetuals_place_order_limit_toggle"
+                />
+              </View>
 
-                {limitPriceEnabled && limitPrice !== undefined ? (
-                  <>
-                    <Separator sx={{ marginHorizontal: 16 }} />
-                    <TouchableOpacity
-                      onPress={handleOpenLimitPrice}
-                      testID="perpetuals_place_order_limit_drill">
-                      <View
-                        sx={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                          paddingHorizontal: 16,
-                          paddingVertical: 14
-                        }}>
-                        <View sx={{ gap: 2 }}>
-                          <Text variant="subtitle1" sx={{ fontSize: 16 }}>
-                            Price
-                          </Text>
-                          <Text
-                            variant="caption"
-                            sx={{ color: '$textSecondary' }}>
-                            {limitPriceLabel}
-                          </Text>
-                        </View>
-                        <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                          {formatCurrency({ amount: limitPrice })}
+              {limitPriceEnabled && limitPrice !== undefined ? (
+                <>
+                  <Separator sx={{ marginHorizontal: 16 }} />
+                  <TouchableOpacity
+                    onPress={handleOpenLimitPrice}
+                    testID="perpetuals_place_order_limit_drill">
+                    <View
+                      sx={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        paddingHorizontal: 16,
+                        paddingVertical: 14
+                      }}>
+                      <View sx={{ gap: 2 }}>
+                        <Text variant="subtitle1" sx={{ fontSize: 16 }}>
+                          Price
+                        </Text>
+                        <Text
+                          variant="caption"
+                          sx={{ color: '$textSecondary' }}>
+                          {limitPriceLabel}
                         </Text>
                       </View>
-                    </TouchableOpacity>
-                  </>
-                ) : null}
-
-                <Separator sx={{ marginHorizontal: 16 }} />
-                <View sx={{ paddingVertical: 16 }}>
-                  {orderCapacityReady ? (
-                    <CircularDial
-                      value={amount}
-                      onChange={setAmount}
-                      max={maxPositionNotionalUsd}
-                      label="USD"
-                      enableManualInput
-                      testID="perpetuals_place_order_amount"
-                      step={dialStep}
-                    />
-                  ) : (
-                    <View
-                      testID="perpetuals_place_order_capacity_unavailable"
-                      sx={{
-                        minHeight: 48,
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                      <Text variant="body2" sx={{ color: '$textSecondary' }}>
-                        {capacityMessage}
+                      <Text variant="body1">
+                        {formatCurrency({ amount: limitPrice })}
                       </Text>
                     </View>
-                  )}
-                </View>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <Separator sx={{ marginHorizontal: 16 }} />
+              )}
+
+              <View sx={{ paddingVertical: 16 }}>
+                {orderCapacityReady ? (
+                  <CircularDial
+                    value={amount}
+                    onChange={setAmount}
+                    max={maxPositionNotionalUsd}
+                    label="USD"
+                    enableManualInput
+                    testID="perpetuals_place_order_amount"
+                    step={dialStep}
+                  />
+                ) : (
+                  <View
+                    testID="perpetuals_place_order_capacity_unavailable"
+                    sx={{
+                      minHeight: 48,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                    <Text variant="body2" sx={{ color: '$textSecondary' }}>
+                      {capacityMessage}
+                    </Text>
+                  </View>
+                )}
               </View>
-              <Text
-                variant="caption"
-                sx={{ color: '$textSecondary', textAlign: 'center' }}>
-                {maxPositionNotionalUsd === undefined
-                  ? 'Maximum position: —'
-                  : `Maximum position: ${formatCurrency({
-                      amount: maxPositionNotionalUsd
-                    })}`}
-              </Text>
             </View>
+            <Text
+              variant="caption"
+              sx={{ color: '$textSecondary', textAlign: 'center' }}>
+              {maxPositionNotionalUsd === undefined
+                ? 'Maximum position: —'
+                : `Maximum position: ${formatCurrency({
+                    amount: maxPositionNotionalUsd
+                  })}`}
+            </Text>
           </View>
 
           <View sx={{ gap: 20 }}>

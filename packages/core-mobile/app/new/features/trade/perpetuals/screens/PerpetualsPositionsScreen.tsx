@@ -1,5 +1,4 @@
 import {
-  Icons,
   NavigationTitleHeader,
   PriceChangeStatus,
   SegmentedControl,
@@ -8,27 +7,18 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
-import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { ErrorState } from 'common/components/ErrorState'
-import NavigationBarButton from 'common/components/NavigationBarButton'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useRouter } from 'expo-router'
-import {
-  TradeFilterChip,
-  TradeFilters
-} from 'features/trade/components/TradeFilters'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -37,48 +27,35 @@ import {
   Platform
 } from 'react-native'
 import Animated, { useSharedValue } from 'react-native-reanimated'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { ClosedPositionCard } from '../components/ClosedPositionCard'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { OpenOrdersList } from '../components/OpenOrdersList'
-import { PositionCard } from '../components/PositionCard'
+import { PerpsActivityList } from '../components/PerpsActivityList'
+import PositionsList from '../components/PositionsList'
 import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
 import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
-import { usePositionActions } from '../hooks/usePositionActions'
 import { toNumber } from '../utils/format'
-import { toPositionEntries, toPositionsSummary } from '../utils/toPosition'
-import { Position, PositionEntry } from '../types'
+import { toPositionsSummary } from '../utils/toPosition'
 
-const FILTERS: TradeFilterChip[] = ['All', 'Active', 'Won', 'Lost']
-
-const SEGMENT_ITEMS = [{ title: 'All positions' }, { title: 'Open orders' }]
-
-/** How many rows to reveal per lazy-load page as the user scrolls. */
-const PAGE_SIZE = 15
+const SEGMENT_ITEMS = [
+  { title: 'All positions' },
+  { title: 'Open orders' },
+  {
+    title: 'Activity'
+  }
+]
 
 /** Rolling window for the "24h change" stat. */
 const MS_24H = 24 * 60 * 60 * 1000
-
-/** Union row so the list can render both open positions and closed history. */
-type PositionRow =
-  | { readonly kind: 'open'; readonly id: string; readonly position: Position }
-  | {
-      readonly kind: 'closed'
-      readonly id: string
-      readonly entry: PositionEntry
-    }
 
 export const PerpetualsPositionsScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const headerHeight = useEffectiveHeaderHeight()
-  const router = useRouter()
   const insets = useSafeAreaInsets()
-  const [selectedFilter, setSelectedFilter] = useState<string>('Active')
-  const filterScrollOffsetRef = useRef(0)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
   useEffect(() => {
@@ -127,31 +104,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
     [selectedSegmentIndex]
   )
 
-  const handleSelectFilter = useCallback((chip: string) => {
-    setSelectedFilter(chip)
-    AnalyticsService.capture('PerpetualsPositionsFilterChanged', {
-      filter: chip as 'All' | 'Active' | 'Won' | 'Lost'
-    })
-  }, [])
-
-  const handleSearchPress = useCallback(() => {
-    router.navigate('/perpetualsPositionsSearch')
-  }, [router])
-
-  const handleHistoryPress = useCallback(() => {
-    router.navigate('/perpetualsPositionsHistory')
-  }, [router])
-
-  const renderHeaderRight = useCallback(
-    () => (
-      <NavigationBarButton onPress={handleHistoryPress}>
-        <Icons.Navigation.History color={theme.colors.$textPrimary} />
-      </NavigationBarButton>
-    ),
-    [handleHistoryPress, theme.colors.$textPrimary]
-  )
-
-  const { positions, rawPositions } = usePerpsPositionsView()
+  const { rawPositions } = usePerpsPositionsView()
   const summary = useMemo(
     () => toPositionsSummary(rawPositions),
     [rawPositions]
@@ -161,57 +114,6 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   // not the clearinghouse — HL only keeps *open* positions in clearinghouse
   // state. Keep the closing fills so they can be listed alongside open ones.
   const { fills } = usePerpsUserFills()
-  const closedEntries = useMemo(
-    () =>
-      toPositionEntries(fills).filter(entry =>
-        entry.outcome.toLowerCase().includes('close')
-      ),
-    [fills]
-  )
-
-  const rows = useMemo<PositionRow[]>(() => {
-    const openRows: PositionRow[] = positions.map(position => ({
-      kind: 'open',
-      id: `open-${position.id}`,
-      position
-    }))
-    const toClosedRows = (entries: PositionEntry[]): PositionRow[] =>
-      entries.map(entry => ({
-        kind: 'closed',
-        id: `closed-${entry.id}`,
-        entry
-      }))
-
-    switch (selectedFilter) {
-      case 'Active':
-        // Open positions only.
-        return openRows
-      case 'Won':
-        // Closed positions that realized a profit.
-        return toClosedRows(closedEntries.filter(e => (e.pnl ?? 0) > 0))
-      case 'Lost':
-        // Closed positions that realized a loss.
-        return toClosedRows(closedEntries.filter(e => (e.pnl ?? 0) < 0))
-      default:
-        // 'All' → open positions first, then closed history.
-        return [...openRows, ...toClosedRows(closedEntries)]
-    }
-  }, [positions, closedEntries, selectedFilter])
-
-  // Lazy-load: only render the first N rows and reveal more on scroll-end.
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  // Reset the window when the filter (and thus the dataset) changes.
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE)
-  }, [selectedFilter])
-  const displayedRows = useMemo(
-    () => rows.slice(0, visibleCount),
-    [rows, visibleCount]
-  )
-  const hasMore = visibleCount < rows.length
-  const handleEndReached = useCallback(() => {
-    setVisibleCount(prev => (prev < rows.length ? prev + PAGE_SIZE : prev))
-  }, [rows.length])
 
   // Realized P&L from positions closed within the last 24h (from fills).
   const realized24hPnl = useMemo(() => {
@@ -256,8 +158,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
   )
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: headerLayout,
-    renderHeaderRight
+    targetLayout: headerLayout
   })
 
   const renderHeader = useCallback(
@@ -299,13 +200,6 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
             />
           </View>
         </View>
-        <TradeFilters
-          chips={FILTERS}
-          selectedChip={selectedFilter}
-          onSelectChip={handleSelectFilter}
-          onSearchPress={handleSearchPress}
-          scrollOffsetRef={filterScrollOffsetRef}
-        />
       </View>
     ),
     [
@@ -317,84 +211,8 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
       change24hColor,
       pnlSign,
       formattedPnl,
-      pnlColor,
-      selectedFilter,
-      handleSelectFilter,
-      handleSearchPress
+      pnlColor
     ]
-  )
-
-  const positionActions = usePositionActions()
-
-  const renderItem: ListRenderItem<PositionRow> = useCallback(
-    ({ item, index }) => {
-      if (item.kind === 'closed') {
-        // Same card style as an active position, minus the chevron / TP-SL —
-        // shows the closing time instead (can't be expanded / managed / closed).
-        return (
-          <View
-            sx={{
-              paddingHorizontal: 16,
-              marginTop: index === 0 ? 0 : 10
-            }}>
-            <ClosedPositionCard entry={item.entry} />
-          </View>
-        )
-      }
-      return (
-        <View sx={{ paddingHorizontal: 16, marginTop: index === 0 ? 0 : 10 }}>
-          <PositionCard
-            position={item.position}
-            fullWidth
-            expandable
-            onMarketClose={() => positionActions.marketClose(item.position)}
-            onLimitClose={() => positionActions.limitClose(item.position)}
-            onManage={() => positionActions.manage(item.position)}
-          />
-        </View>
-      )
-    },
-    [positionActions]
-  )
-
-  const keyExtractor = useCallback((item: PositionRow) => item.id, [])
-
-  const emptyState = useMemo(() => {
-    switch (selectedFilter) {
-      case 'Active':
-        return {
-          title: 'No open positions',
-          description: 'Open a position from the Perps tab to see it here'
-        }
-      case 'Won':
-        return {
-          title: 'No winning trades yet',
-          description: 'Positions you close in profit will show up here'
-        }
-      case 'Lost':
-        return {
-          title: 'No losing trades yet',
-          description: 'Positions you close at a loss will show up here'
-        }
-      default:
-        return {
-          title: 'No positions yet',
-          description: 'Open a position from the Perps tab to see it here'
-        }
-    }
-  }, [selectedFilter])
-
-  const renderEmpty = useCallback(
-    () => (
-      <CollapsibleTabs.ContentWrapper>
-        <ErrorState
-          icon={undefined}
-          title={emptyState.title}
-          description={emptyState.description}
-        />
-      </CollapsibleTabs.ContentWrapper>
-    ),
-    [emptyState]
   )
 
   const frame = useSafeAreaFrame()
@@ -425,18 +243,7 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
           <Animated.View
             entering={getListItemEnteringAnimation(10)}
             style={{ flex: 1 }}>
-            <CollapsibleTabList
-              data={displayedRows}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              renderEmpty={renderEmpty}
-              extraData={{ selectedFilter }}
-              containerStyle={contentContainerStyle}
-              contentContainerStyle={contentContainerStyle}
-              listKey="my-positions"
-              onEndReached={handleEndReached}
-              isFetchingNextPage={hasMore}
-            />
+            <PositionsList containerStyle={contentContainerStyle} />
           </Animated.View>
         )
       },
@@ -449,18 +256,19 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
             <OpenOrdersList containerStyle={contentContainerStyle} />
           </Animated.View>
         )
+      },
+      {
+        tabName: 'activity',
+        component: (
+          <Animated.View
+            entering={getListItemEnteringAnimation(10)}
+            style={{ flex: 1 }}>
+            <PerpsActivityList containerStyle={contentContainerStyle} />
+          </Animated.View>
+        )
       }
     ],
-    [
-      displayedRows,
-      renderItem,
-      keyExtractor,
-      renderEmpty,
-      selectedFilter,
-      contentContainerStyle,
-      handleEndReached,
-      hasMore
-    ]
+    [contentContainerStyle]
   )
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
@@ -484,15 +292,18 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
           right: 0
         }}
         onLayout={handleSegmentedControlLayout}>
-        <BottomTabWrapper>
+        <LinearGradientBottomWrapper>
           <SegmentedControl
             dynamicItemWidth={false}
             items={SEGMENT_ITEMS}
             selectedSegmentIndex={selectedSegmentIndex}
             onSelectSegment={handleSelectSegment}
-            style={{ marginHorizontal: 16, marginBottom: 16 }}
+            style={{
+              paddingHorizontal: 16,
+              paddingBottom: insets.bottom + 16
+            }}
           />
-        </BottomTabWrapper>
+        </LinearGradientBottomWrapper>
       </View>
 
       {/*
