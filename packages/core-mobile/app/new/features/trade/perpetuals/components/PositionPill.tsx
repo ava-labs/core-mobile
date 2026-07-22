@@ -1,8 +1,5 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import {
-  DropdownGroup,
-  DropdownMenu
-} from 'common/components/DropdownMenu'
+import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo } from 'react'
 import type { OrderSide } from '../contexts/PlaceOrderContext'

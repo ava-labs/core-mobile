@@ -56,31 +56,40 @@ import { PositionPill } from './PositionPill'
 
 const SIDE_SELECT = 'perpetuals_place_order_side_select'
 
+const render = async (
+  element: React.ReactElement
+): Promise<renderer.ReactTestRenderer> => {
+  let instance!: renderer.ReactTestRenderer
+  await act(async () => {
+    instance = renderer.create(element)
+  })
+  return instance
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sideMenu = (instance: renderer.ReactTestRenderer): any =>
+  instance.root.findAllByProps({ testID: SIDE_SELECT })[0]
+
 describe('PositionPill side select', () => {
   it('renders no dropdown trigger without onChangeSide', async () => {
-    let instance
-    await act(async () => {
-      instance = renderer.create(
-        <PositionPill coin="BTC" price={100} side="long" />
-      )
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(instance!.root.findAllByProps({ testID: SIDE_SELECT })).toHaveLength(
+    const instance = await render(
+      <PositionPill coin="BTC" price={100} side="long" />
+    )
+    expect(instance.root.findAllByProps({ testID: SIDE_SELECT })).toHaveLength(
       0
     )
   })
 
   it('offers Long and Short with the current side selected', async () => {
-    let instance
-    await act(async () => {
-      instance = renderer.create(
-        <PositionPill coin="BTC" price={100} side="long" onChangeSide={jest.fn()} />
-      )
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const menu = instance!.root.findAllByProps({ testID: SIDE_SELECT })[0]
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(menu!.props.groups).toEqual([
+    const instance = await render(
+      <PositionPill
+        coin="BTC"
+        price={100}
+        side="long"
+        onChangeSide={jest.fn()}
+      />
+    )
+    expect(sideMenu(instance).props.groups).toEqual([
       {
         key: 'perp-order-side',
         items: [
@@ -93,44 +102,36 @@ describe('PositionPill side select', () => {
 
   it('reports the picked side through onChangeSide', async () => {
     const onChangeSide = jest.fn()
-    let instance
+    const instance = await render(
+      <PositionPill
+        coin="BTC"
+        price={100}
+        side="long"
+        onChangeSide={onChangeSide}
+      />
+    )
+    const menu = sideMenu(instance)
+
     await act(async () => {
-      instance = renderer.create(
-        <PositionPill
-          coin="BTC"
-          price={100}
-          side="long"
-          onChangeSide={onChangeSide}
-        />
-      )
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const menu = instance!.root.findAllByProps({ testID: SIDE_SELECT })[0]
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await act(async () => {
-      menu!.props.onPressAction({ nativeEvent: { event: 'short' } })
+      menu.props.onPressAction({ nativeEvent: { event: 'short' } })
     })
     expect(onChangeSide).toHaveBeenCalledWith('short')
   })
 
   it('ignores unknown menu events', async () => {
     const onChangeSide = jest.fn()
-    let instance
+    const instance = await render(
+      <PositionPill
+        coin="BTC"
+        price={100}
+        side="long"
+        onChangeSide={onChangeSide}
+      />
+    )
+    const menu = sideMenu(instance)
+
     await act(async () => {
-      instance = renderer.create(
-        <PositionPill
-          coin="BTC"
-          price={100}
-          side="long"
-          onChangeSide={onChangeSide}
-        />
-      )
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const menu = instance!.root.findAllByProps({ testID: SIDE_SELECT })[0]
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await act(async () => {
-      menu!.props.onPressAction({ nativeEvent: { event: 'bogus' } })
+      menu.props.onPressAction({ nativeEvent: { event: 'bogus' } })
     })
     expect(onChangeSide).not.toHaveBeenCalled()
   })
