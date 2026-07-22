@@ -97,9 +97,7 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
     [busy, handleConfirm]
   )
 
-  const checkmark = (
-    <Icons.Navigation.Check color={theme.colors.$textPrimary} />
-  )
+  const checkmark = <Icons.Navigation.Check color={theme.colors.$textPrimary} />
   // Keeps row text width stable between selected/unselected states.
   const accessoryPlaceholder = <View sx={{ width: 24, height: 24 }} />
 

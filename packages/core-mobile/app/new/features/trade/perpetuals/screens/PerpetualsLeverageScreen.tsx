@@ -12,8 +12,15 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
 
-  const { coin, side, entryPrice, maxLeverage, leverage, setLeverage, marginMode } =
-    usePlaceOrder()
+  const {
+    coin,
+    side,
+    entryPrice,
+    maxLeverage,
+    leverage,
+    setLeverage,
+    marginMode
+  } = usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
   const { leverage: hlLeverage, refetch: refetchLeverage } =
     usePerpsActiveAssetData(coin)

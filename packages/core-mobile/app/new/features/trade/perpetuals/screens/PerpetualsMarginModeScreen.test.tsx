@@ -40,9 +40,7 @@ jest.mock('../hooks/usePerpsActiveAssetData', () => ({
 }))
 
 const mockMarket = {
-  universe: { onlyIsolated: false } as
-    | { onlyIsolated?: boolean }
-    | undefined
+  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
 }
 jest.mock('../hooks/useHyperliquidMarketContext', () => ({
   useHyperliquidMarketContext: () => ({
