@@ -1,7 +1,9 @@
 import { Network } from '@avalabs/core-chains-sdk'
+import { Networks } from 'store/network/types'
 import {
   HYPERCORE_CHAIN_ID,
   HYPEREVM_CHAIN_ID,
+  filterOutHyperliquidNetworks,
   isHyperliquidChainId,
   isHyperliquidNetwork
 } from './isHyperliquidNetwork'
@@ -58,5 +60,41 @@ describe('isHyperliquidNetwork', () => {
 
   it('returns false for undefined', () => {
     expect(isHyperliquidNetwork(undefined)).toBe(false)
+  })
+})
+
+describe('filterOutHyperliquidNetworks', () => {
+  it('removes Hyperliquid networks by chain id and name', () => {
+    const networks = {
+      1: { chainId: 1, chainName: 'Ethereum' },
+      999: { chainId: 999, chainName: 'HyperEVM' },
+      9999: { chainId: 9999, chainName: 'HyperCore' },
+      43114: { chainId: 43114, chainName: 'Avalanche' }
+    } as unknown as Networks
+
+    const result = filterOutHyperliquidNetworks(networks)
+
+    expect(result[999]).toBeUndefined()
+    expect(result[9999]).toBeUndefined()
+    expect(result[1]?.chainName).toEqual('Ethereum')
+    expect(result[43114]?.chainName).toEqual('Avalanche')
+  })
+
+  it('returns an equivalent object when nothing matches', () => {
+    const networks = {
+      1: { chainId: 1, chainName: 'Ethereum' }
+    } as unknown as Networks
+
+    expect(filterOutHyperliquidNetworks(networks)).toEqual(networks)
+  })
+
+  it('does not mutate the input', () => {
+    const networks = {
+      999: { chainId: 999, chainName: 'HyperEVM' }
+    } as unknown as Networks
+
+    filterOutHyperliquidNetworks(networks)
+
+    expect(networks[999]).toBeDefined()
   })
 })
