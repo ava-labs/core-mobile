@@ -111,12 +111,21 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
   const pct =
     price !== undefined ? pctFromEntry(price, currentPrice) : undefined
 
-  // P&L is always measured from the real entry price, not the current mark.
-  const sizeTokens = positionSizeTokens(amount, entryPrice)
+  // The position will actually be entered at the limit price when one is set,
+  // so both sizing and projected P&L are measured from it; otherwise from the
+  // seeded entry (the manage flow's historical fill / open flow's mark).
+  const effectiveEntryPrice =
+    limitPriceEnabled && limitPrice !== undefined ? limitPrice : entryPrice
+  const sizeTokens = positionSizeTokens(amount, effectiveEntryPrice)
   // Needs both a trigger price and a sized position to mean anything.
   const projected =
     price !== undefined && sizeTokens > 0
-      ? projectedPnl({ exitPrice: price, entryPrice, sizeTokens, isLong })
+      ? projectedPnl({
+          exitPrice: price,
+          entryPrice: effectiveEntryPrice,
+          sizeTokens,
+          isLong
+        })
       : undefined
 
   const pctColor = pnlColor(pct, theme.colors, theme.colors.$textSecondary)
