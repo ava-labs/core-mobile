@@ -4,15 +4,18 @@ import NetworkService from 'services/network/NetworkService'
 import { Networks } from 'store/network'
 
 export const useGetNetworks = ({
-  includeSolana
+  includeSolana,
+  includeHyperliquid
 }: {
   includeSolana: boolean
+  includeHyperliquid: boolean
 }): UseQueryResult<Networks, Error> => {
   return useQuery({
-    queryKey: [ReactQueryKeys.NETWORKS, includeSolana],
+    queryKey: [ReactQueryKeys.NETWORKS, includeSolana, includeHyperliquid],
     queryFn: () =>
       NetworkService.getNetworks({
-        includeSolana
+        includeSolana,
+        includeHyperliquid
       }),
     staleTime: 240000, // 4 mins,
     networkMode: 'always'

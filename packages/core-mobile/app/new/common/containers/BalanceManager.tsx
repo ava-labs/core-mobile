@@ -2,7 +2,10 @@ import { useEffect } from 'react'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
+import {
+  selectIsHyperliquidSupportBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog/slice'
 import { addCustomNetwork, selectEnabledNetworks } from 'store/network/slice'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import NetworkService from 'services/network/NetworkService'
@@ -36,23 +39,36 @@ export const BalanceManager = (): null => {
   const queryClient = useQueryClient()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const isHyperliquidSupportBlocked = useSelector(
+    selectIsHyperliquidSupportBlocked
+  )
 
   useEffect(() => {
     // TODO test if this is needed
     const ensureNetworksAreAvailable = async (): Promise<void> => {
       if (enabledNetworks.length === 0) {
         await queryClient.prefetchQuery({
-          queryKey: [ReactQueryKeys.NETWORKS, !isSolanaSupportBlocked],
+          queryKey: [
+            ReactQueryKeys.NETWORKS,
+            !isSolanaSupportBlocked,
+            !isHyperliquidSupportBlocked
+          ],
           queryFn: () =>
             NetworkService.getNetworks({
-              includeSolana: !isSolanaSupportBlocked
+              includeSolana: !isSolanaSupportBlocked,
+              includeHyperliquid: !isHyperliquidSupportBlocked
             })
         })
       }
     }
 
     ensureNetworksAreAvailable()
-  }, [enabledNetworks.length, isSolanaSupportBlocked, queryClient])
+  }, [
+    enabledNetworks.length,
+    isSolanaSupportBlocked,
+    isHyperliquidSupportBlocked,
+    queryClient
+  ])
 
   // @ts-ignore
   useEffect(() => {

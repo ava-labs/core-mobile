@@ -12,7 +12,10 @@ import {
 } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import {
+  selectIsHyperliquidSupportBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from '../types'
@@ -152,9 +155,11 @@ export const selectActiveNetwork = (state: RootState): Network => {
 
 export const selectAllNetworks = (state: RootState): Networks => {
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const isHyperliquidSupportBlocked = selectIsHyperliquidSupportBlocked(state)
   const customNetworks = selectCustomNetworks(state)
   const rawNetworks = getNetworksFromCache({
-    includeSolana: !isSolanaSupportBlocked
+    includeSolana: !isSolanaSupportBlocked,
+    includeHyperliquid: !isHyperliquidSupportBlocked
   })
   return { ...rawNetworks, ...customNetworks }
 }
@@ -170,8 +175,10 @@ export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const customNetworks = selectCustomNetworks(state)
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const isHyperliquidSupportBlocked = selectIsHyperliquidSupportBlocked(state)
   const rawNetworks = getNetworksFromCache({
-    includeSolana: !isSolanaSupportBlocked
+    includeSolana: !isSolanaSupportBlocked,
+    includeHyperliquid: !isHyperliquidSupportBlocked
   })
 
   const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
