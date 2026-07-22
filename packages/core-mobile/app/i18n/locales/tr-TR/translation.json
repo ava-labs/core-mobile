@@ -1,6 +1,6 @@
 {
-  "Settings": "Settings",
-  "Send": "Send",
+  "Account": "Account",
   "Receive": "Receive",
-  "Account": "Account"
+  "Send": "Send",
+  "Settings": "Settings"
 }

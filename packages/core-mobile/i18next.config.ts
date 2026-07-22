@@ -26,6 +26,11 @@ export default defineConfig({
     keySeparator: false,
     nsSeparator: false,
     primaryLanguage: 'en-US',
+    // Non-destructive: keep manually-seeded keys (and any not currently
+    // referenced in source) instead of pruning them. i18next-cli defaults
+    // removeUnusedKeys to true, which would wipe the seed catalog while
+    // there are ~zero t()/<Trans> consumers yet.
+    removeUnusedKeys: false,
     // Natural-English keys: the key IS the English string. EN source gets
     // key===value; every other locale stays empty for Crowdin to fill.
     // Note: i18next-cli 1.66.x calls defaultValue as
