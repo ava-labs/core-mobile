@@ -10,7 +10,7 @@ const mockSetLimitPrice = jest.fn()
 const mockSetLimitPriceEnabled = jest.fn()
 const mockPlaceOrder = {
   coin: 'BTC',
-  side: 'long',
+  side: 'long' as 'long' | 'short',
   entryPrice: 100,
   limitPrice: undefined as number | undefined,
   setLimitPrice: mockSetLimitPrice,
@@ -21,7 +21,16 @@ jest.mock('../contexts/PlaceOrderContext', () => ({
 }))
 
 jest.mock('../hooks/useHyperliquidMarketContext', () => ({
-  useHyperliquidMarketContext: () => ({ assetCtx: { markPx: '100' } })
+  useHyperliquidMarketContext: () => ({
+    assetCtx: { markPx: '100' },
+    universe: { szDecimals: 3 }
+  })
+}))
+
+// The presets anchor to the live mid when the feed has one.
+const mockMid = { value: undefined as number | undefined }
+jest.mock('../hooks/usePerpsLiveMids', () => ({
+  useLiveMid: () => mockMid.value
 }))
 
 jest.mock('common/hooks/useFormatCurrency', () => ({
@@ -37,7 +46,12 @@ jest.mock('common/components/ScrollScreen', () => {
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ScrollScreen: ({ children, renderFooter }: any) =>
-      r.createElement(rn.View, null, children, renderFooter ? renderFooter() : null)
+      r.createElement(
+        rn.View,
+        null,
+        children,
+        renderFooter ? renderFooter() : null
+      )
   }
 })
 jest.mock('@avalabs/k2-alpine', () => {
@@ -84,6 +98,8 @@ describe('PerpetualsLimitPriceScreen', () => {
     mockSetLimitPrice.mockReset()
     mockSetLimitPriceEnabled.mockReset()
     mockPlaceOrder.limitPrice = undefined
+    mockPlaceOrder.side = 'long'
+    mockMid.value = undefined
   })
 
   it('disables Done until a positive price is entered', async () => {
@@ -121,5 +137,45 @@ describe('PerpetualsLimitPriceScreen', () => {
       testID: 'perpetuals_limit_price_input'
     })
     expect(input.props.value).toBe('55')
+  })
+
+  const pressPreset = async (
+    instance: renderer.ReactTestRenderer,
+    label: string
+  ): Promise<void> => {
+    const chip = instance.root.findByProps({
+      testID: `perpetuals_limit_price_preset__${label}`
+    })
+    await act(async () => {
+      chip.props.onPress()
+    })
+  }
+
+  const inputValue = (instance: renderer.ReactTestRenderer): string =>
+    instance.root.findByProps({ testID: 'perpetuals_limit_price_input' }).props
+      .value
+
+  it('applies long presets below the mid price', async () => {
+    mockMid.value = 100
+    const instance = await renderScreen()
+    await pressPreset(instance, '-5%')
+    expect(inputValue(instance)).toBe('95')
+    await pressPreset(instance, 'Mid')
+    expect(inputValue(instance)).toBe('100')
+  })
+
+  it('applies short presets above the mid price', async () => {
+    mockPlaceOrder.side = 'short'
+    mockMid.value = 100
+    const instance = await renderScreen()
+    await pressPreset(instance, '+10%')
+    expect(inputValue(instance)).toBe('110')
+  })
+
+  it('falls back to the mark price when no mid has ticked', async () => {
+    // markPx is mocked at 100; mid intentionally undefined.
+    const instance = await renderScreen()
+    await pressPreset(instance, '-1%')
+    expect(inputValue(instance)).toBe('99')
   })
 })

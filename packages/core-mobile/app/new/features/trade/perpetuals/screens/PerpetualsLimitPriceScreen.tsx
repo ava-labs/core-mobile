@@ -1,4 +1,11 @@
-import { Button, FiatAmountInput, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  Button,
+  FiatAmountInput,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { roundToHyperliquidPrice } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
@@ -7,6 +14,7 @@ import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { PositionPill } from '../components/PositionPill'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
+import { useLiveMid } from '../hooks/usePerpsLiveMids'
 import { pctFromEntry, pctParts, pnlColor } from '../utils/economics'
 import { toNumber } from '../utils/format'
 
@@ -19,8 +27,14 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const router = useRouter()
 
-  const { coin, side, entryPrice, limitPrice, setLimitPrice, setLimitPriceEnabled } =
-    usePlaceOrder()
+  const {
+    coin,
+    side,
+    entryPrice,
+    limitPrice,
+    setLimitPrice,
+    setLimitPriceEnabled
+  } = usePlaceOrder()
 
   const [priceText, setPriceText] = useState(
     limitPrice !== undefined ? String(limitPrice) : ''
@@ -34,11 +48,47 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
 
   // Relation to the live mark price (falls back to the seeded entry until the
   // market feed loads) — informational only, never a validation error.
-  const { assetCtx } = useHyperliquidMarketContext(coin)
+  const { assetCtx, universe } = useHyperliquidMarketContext(coin)
   const liveMarkPrice = toNumber(assetCtx?.markPx)
   const currentPrice = liveMarkPrice > 0 ? liveMarkPrice : entryPrice
-  const pct = price !== undefined ? pctFromEntry(price, currentPrice) : undefined
+  const pct =
+    price !== undefined ? pctFromEntry(price, currentPrice) : undefined
   const pctColor = pnlColor(pct, theme.colors, theme.colors.$textSecondary)
+
+  // Quick presets (web parity): offsets anchor to the live mid (mark / seeded
+  // entry as fallbacks until the feeds tick) and are side-aware — a long
+  // rests below the market, a short above; "Mid" is the mid itself. Values
+  // are snapped to Hyperliquid's price grid so a preset is always a valid px.
+  const liveMid = useLiveMid(coin)
+  const szDecimals = universe?.szDecimals
+  const referencePrice = liveMid ?? currentPrice
+  const isLong = side === 'long'
+
+  const presets = useMemo(() => {
+    const sign = isLong ? -1 : 1
+    const prefix = isLong ? '-' : '+'
+    return [
+      { label: `${prefix}1%`, offset: sign * 0.01 },
+      { label: `${prefix}5%`, offset: sign * 0.05 },
+      { label: `${prefix}10%`, offset: sign * 0.1 },
+      { label: 'Mid', offset: 0 }
+    ]
+  }, [isLong])
+
+  const handlePreset = useCallback(
+    (offset: number): void => {
+      if (referencePrice <= 0) {
+        return
+      }
+      const raw = referencePrice * (1 + offset)
+      const snapped =
+        szDecimals !== undefined
+          ? roundToHyperliquidPrice(raw, szDecimals)
+          : raw
+      setPriceText(String(snapped))
+    },
+    [referencePrice, szDecimals]
+  )
 
   const formatInCurrency = useCallback(
     (n: number): string => `$${formatNumber(n)}`,
@@ -113,6 +163,24 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
             subTextPosition="bottom"
             returnKeyType="none"
           />
+          <View
+            sx={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8,
+              marginTop: 16
+            }}>
+            {presets.map(preset => (
+              <Button
+                key={preset.label}
+                type="secondary"
+                size="small"
+                onPress={() => handlePreset(preset.offset)}
+                testID={`perpetuals_limit_price_preset__${preset.label}`}>
+                {preset.label}
+              </Button>
+            ))}
+          </View>
         </View>
       </View>
     </ScrollScreen>
