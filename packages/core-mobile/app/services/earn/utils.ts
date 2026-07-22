@@ -1,11 +1,4 @@
-import {
-  add,
-  addYears,
-  fromUnixTime,
-  getUnixTime,
-  isSameDay,
-  subDays
-} from 'date-fns'
+import { add, addYears, fromUnixTime, getUnixTime, subDays } from 'date-fns'
 import { AdvancedSortFilter, NodeValidator, NodeValidators } from 'types/earn'
 import { random } from 'lodash'
 import { FujiParams, MainnetParams, StakingConfig } from 'utils/NetworkParams'
@@ -322,10 +315,26 @@ export const getAdvancedSortedValidators = (
   }
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+const DAYS_IN_YEAR = 365
+
+/**
+ * Whether the requested stake end is ~a year or more out — the
+ * validator-search special case: no validator's own period can extend past
+ * such an end, so the endTime filter/sort must switch strategy instead of
+ * demanding `validatorEnd > stakeEnd` (which would empty the result set).
+ *
+ * Duration-based (rounded whole days ≥ 365) on purpose, NOT calendar-based:
+ * the previous `addYears`/`isSameDay` comparison misclassified the 365-day
+ * preset (now + 365d − 1h, see `getStakeEndDate`) whenever a Feb 29 fell
+ * inside the window (calendar year = 366 days) or the −1h slack crossed a
+ * calendar-day boundary (taps between 00:00-01:00) — breaking the 1 Year
+ * preset's node search outright.
+ */
 export const isEndTimeOverOneYear = (stakingEndTime: Date): boolean => {
   return (
-    stakingEndTime >= addYears(new Date(), 1) ||
-    isSameDay(stakingEndTime, addYears(new Date(), 1))
+    Math.round((stakingEndTime.getTime() - Date.now()) / MS_PER_DAY) >=
+    DAYS_IN_YEAR
   )
 }
 

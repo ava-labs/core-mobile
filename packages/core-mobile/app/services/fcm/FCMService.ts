@@ -289,6 +289,12 @@ class FCMService {
         dispatch: action => action,
         isEarnBlocked: false,
         isInAppDefiBlocked: false,
+        // Stake-complete is a Notifee local notification routed through
+        // DeeplinkContext, never an FCM push, so this handler keeps the
+        // legacy claim target (consistent with the hardcoded flags above).
+        shouldRedirectStakeCompleteToCct: false,
+        isDeveloperMode: false,
+        shouldShowSwapOnboarding: false,
         openUrl: link =>
           router.navigate({
             pathname: '/browser',

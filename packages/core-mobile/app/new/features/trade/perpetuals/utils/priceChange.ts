@@ -1,5 +1,6 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import type { PerpsAssetCtx } from '@avalabs/perps-sdk'
+import { changeStatusOf } from './format'
 
 export interface PriceChange {
   markPx?: number
@@ -15,13 +16,6 @@ const parseNum = (s: string | undefined): number | undefined => {
   return Number.isFinite(n) ? n : undefined
 }
 
-const statusFor = (pct: number | undefined): PriceChangeStatus => {
-  if (pct === undefined) return PriceChangeStatus.Neutral
-  if (pct > 0) return PriceChangeStatus.Up
-  if (pct < 0) return PriceChangeStatus.Down
-  return PriceChangeStatus.Neutral
-}
-
 export const computePriceChange = (
   assetCtx: PerpsAssetCtx | undefined
 ): PriceChange => {
@@ -35,7 +29,7 @@ export const computePriceChange = (
     markPx !== undefined && prevDayPx !== undefined && prevDayPx !== 0
       ? ((markPx - prevDayPx) / prevDayPx) * 100
       : undefined
-  return { markPx, prevDayPx, delta, pct, status: statusFor(pct) }
+  return { markPx, prevDayPx, delta, pct, status: changeStatusOf(pct ?? 0) }
 }
 
 export const formatPercent = (pct: number | undefined): string | undefined =>

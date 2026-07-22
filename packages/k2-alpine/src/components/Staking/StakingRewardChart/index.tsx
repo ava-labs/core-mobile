@@ -13,9 +13,10 @@ import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState
 } from 'react'
-import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
@@ -93,34 +94,129 @@ export const StakeRewardChart = forwardRef<
 
     const gridWidth =
       (graphSize.width - GRAPH_STROKE_WIDTH * 2) / (data.length - 1)
+    // Captured as a plain number for the reaction worklet below: referencing
+    // `data` inside the worklet would clone the whole array into the UI
+    // runtime on every closure rebuild.
+    const lastDataIndex = data.length - 1
+    // Explicitly requires ≥ 2 data points: the formula alone is not enough
+    // (an unmeasured width with EMPTY data yields (0−stroke)/(0−1) = +stroke,
+    // a positive finite number that would pass the numeric checks while
+    // `lastDataIndex` is −1).
+    const isGridWidthValid =
+      data.length > 1 && Number.isFinite(gridWidth) && gridWidth > 0
     const selectionX = useSharedValue<number | undefined>(undefined)
 
     const selectIndex = useCallback(
       (index: number | undefined, duration = 300): void => {
-        selectionX.value =
-          index !== undefined
-            ? withTiming(gridWidth * index, { duration: duration })
-            : undefined
+        if (index === undefined) {
+          // Clearing is written to BOTH shared values here, explicitly — the
+          // reaction below deliberately ignores `undefined` (see there), so
+          // this is the only path that may clear the selected index.
+          selectionX.value = undefined
+          animatedSelectedIndex.value = undefined
+          return
+        }
+        if (!isGridWidthValid) {
+          // The grid isn't measurable yet (no layout, or < 2 data points) —
+          // NaN/Infinity/negative pixels must never reach `selectionX` (they
+          // feed animated styles). Record the INTENT instead, so a selection
+          // made while the reward data is still loading isn't lost: the
+          // anchor effect below turns it into pixels once the grid is real.
+          // Deliberately NOT clamped: it's intent against data that hasn't
+          // arrived yet (`lastDataIndex` may be −1 here); the pixel path
+          // below clamps once the real grid exists.
+          animatedSelectedIndex.value = index
+          return
+        }
+        // Defensive clamp: an out-of-range index (e.g. a stale consumer
+        // `initialIndex` after a data refresh) would otherwise anchor pixels
+        // outside the grid — indicator drawn off the chart while the
+        // reaction reports a different, clamped index.
+        const clampedIndex = Math.min(Math.max(index, 0), lastDataIndex)
+        selectionX.value = withTiming(gridWidth * clampedIndex, {
+          duration: duration
+        })
       },
-      [gridWidth, selectionX]
+      [
+        gridWidth,
+        isGridWidthValid,
+        lastDataIndex,
+        selectionX,
+        animatedSelectedIndex
+      ]
     )
 
+    // Pixel position → selected index. Guards, in order:
+    // - `x === undefined` is load-bearing for CP-14721: the mapper evaluates
+    //   eagerly on registration AND on every re-registration (any render
+    //   where a captured value like `gridWidth` changed — first layout,
+    //   reward data arriving), NOT only when `selectionX` actually moves.
+    //   Until the anchor effect below runs, `selectionX` is still
+    //   `undefined`, and writing that through would clobber the
+    //   consumer-provided initial index — the intermittently "Custom"
+    //   initial duration on the staking screens. It is safe to skip because
+    //   `undefined` never comes from a gesture (pan positions are clamped
+    //   pixels); clearing goes through `selectIndex(undefined)`, which
+    //   writes the cleared index itself above. (Note Reanimated's `previous`
+    //   argument can NOT stand in for this: it is a persistent shared value,
+    //   `null` only on the very first evaluation of the component's life,
+    //   not on re-registrations.)
+    // - `gridWidth` is garbage until BOTH the graph has a measured width and
+    //   the data has ≥ 2 points ((0−stroke)/(len−1) is negative or even
+    //   positive nonsense for empty data); an `=== 0` check misses those.
+    // - Clamping keeps a stale pixel value read against a fresh `gridWidth`
+    //   from ever emitting an out-of-range index.
     useAnimatedReaction(
       () => selectionX.value,
       x => {
-        if (gridWidth === 0) return
+        if (x === undefined) return
+        if (!isGridWidthValid) return
 
-        animatedSelectedIndex.value =
-          x === undefined ? undefined : Math.round(x / gridWidth)
+        animatedSelectedIndex.value = Math.min(
+          Math.max(Math.round(x / gridWidth), 0),
+          lastDataIndex
+        )
       }
     )
 
+    // `selectionX` is in pixels, so it must be (re)anchored whenever the
+    // geometry (`graphSize`/`gridWidth`, baked into `selectIndex`) changes.
+    // Only the very first anchoring applies `initialIndex`; later re-runs
+    // re-anchor whatever is CURRENTLY selected — including `undefined`
+    // (custom selection cleared via the ref) — because a layout pass or a
+    // data refresh must not override a selection the user has since changed
+    // (it used to snap a custom stake duration back to the initial preset,
+    // CP-14721).
+    const hasAnchoredRef = useRef(false)
     useEffect(() => {
-      InteractionManager.runAfterInteractions(() => {
-        if (graphSize.width > 0 && graphSize.height > 0) {
-          selectIndex(initialIndex, 0)
-        }
-      })
+      // Anchor synchronously the moment layout AND real data are available
+      // (an empty/single-point grid would produce garbage pixels — see the
+      // gridWidth note above; the effect re-runs once the data lands, since
+      // `selectIndex`'s identity changes with `gridWidth`). This used to be
+      // deferred via `InteractionManager.runAfterInteractions`, but on the
+      // New Architecture that API is a deprecated stub (plain `setImmediate`
+      // semantics), so the deferral bought nothing except a nondeterministic
+      // window in which consumers observed the not-yet-anchored selection.
+      if (graphSize.width > 0 && graphSize.height > 0 && data.length > 1) {
+        // First anchor: prefer whatever is already recorded on the shared
+        // value — a selection made through the ref while the reward data was
+        // still loading (see `selectIndex`'s intent path) — falling back to
+        // `initialIndex` for an unseeded value. Later anchors always re-apply
+        // the current selection, INCLUDING a deliberately cleared
+        // `undefined` (CP-14721), which is why the `??` fallback must not
+        // apply once anchored.
+        selectIndex(
+          hasAnchoredRef.current
+            ? animatedSelectedIndex.value
+            : animatedSelectedIndex.value ?? initialIndex,
+          0
+        )
+        hasAnchoredRef.current = true
+      }
+      // `animatedSelectedIndex` is a stable SharedValue ref; its `.value` is
+      // read on purpose only when the geometry changes. `data.length` is
+      // covered transitively by `selectIndex` (via `gridWidth`).
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialIndex, selectIndex, graphSize])
 
     const {
@@ -218,7 +314,14 @@ export const StakeRewardChart = forwardRef<
                 marginHorizontal: 36
               }}
               onLayout={({ nativeEvent: { layout } }) =>
-                setGraphSize({ width: layout.width, height: layout.height })
+                // Only commit when the rect actually changed: a fresh object
+                // per event would re-run the anchoring effect above on every
+                // redundant layout pass.
+                setGraphSize(prev =>
+                  prev.width === layout.width && prev.height === layout.height
+                    ? prev
+                    : { width: layout.width, height: layout.height }
+                )
               }>
               <Canvas
                 style={{ width: graphSize.width, height: graphSize.height }}>

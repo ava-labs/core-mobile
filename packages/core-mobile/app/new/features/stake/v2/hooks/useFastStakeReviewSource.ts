@@ -2,9 +2,12 @@ import { useLocalSearchParams } from 'expo-router'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsFastStakeFeeBlocked } from 'store/posthog'
+import {
+  selectFastStakeFeeRate,
+  selectIsFastStakeFeeBlocked
+} from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { FAST_STAKE_FEE_RATE, getFastStakeFeeEscrowAddress } from '../constants'
+import { getFastStakeFeeEscrowAddress } from '../constants'
 import { StakeReviewSource } from '../types'
 import { parseStakeEndTimeParam } from '../utils/parseStakeEndTimeParam'
 import { useFastStakeNode } from './useFastStakeNode'
@@ -28,9 +31,14 @@ import { useFastStakeNode } from './useFastStakeNode'
  */
 export const useFastStakeReviewSource = (): StakeReviewSource => {
   const [stakingAmount] = useStakeAmount()
-  // Optional in the type because the param can be missing at runtime (deep
+  // Optional in the type because the params can be missing at runtime (deep
   // links / state restoration); the defensive parse below depends on that.
-  const { stakeEndTime } = useLocalSearchParams<{ stakeEndTime?: string }>()
+  // `preferredNodeId` only arrives on the restake path — the original
+  // stake's node gets first refusal before auto-selection kicks in.
+  const { stakeEndTime, preferredNodeId } = useLocalSearchParams<{
+    stakeEndTime?: string
+    preferredNodeId?: string
+  }>()
   // Defensive parse — missing / non-finite / non-positive params yield
   // `undefined` and surface as a source error below, instead of cascading a
   // NaN into the Glacier query (which would then produce a confusing
@@ -43,13 +51,17 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFastStakeFeeBlocked = useSelector(selectIsFastStakeFeeBlocked)
   const isFastStakeFeeEnabled = !isFastStakeFeeBlocked
+  // Flag-driven (multivariate variant in bps; no variant → 0 → fee off)
+  // — see `selectFastStakeFeeRate`.
+  const fastStakeFeeRate = useSelector(selectFastStakeFeeRate)
 
   // `useFastStakeNode` already treats `undefined` `stakingEndTime` as the
   // "skip query" signal, so this guards against doing a useless Glacier
   // round-trip with a bogus stake duration.
   const { data, isFetching, error } = useFastStakeNode({
     stakingAmount,
-    stakingEndTime
+    stakingEndTime,
+    preferredNodeId
   })
 
   return useMemo<StakeReviewSource>(() => {
@@ -67,7 +79,7 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
       error,
       feePolicy: isFastStakeFeeEnabled
         ? {
-            rate: FAST_STAKE_FEE_RATE,
+            rate: fastStakeFeeRate,
             recipientAddresses: [getFastStakeFeeEscrowAddress(isDeveloperMode)]
           }
         : null
@@ -78,6 +90,7 @@ export const useFastStakeReviewSource = (): StakeReviewSource => {
     isFetching,
     error,
     isFastStakeFeeEnabled,
+    fastStakeFeeRate,
     isDeveloperMode
   ])
 }

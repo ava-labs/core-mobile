@@ -3,6 +3,7 @@ export enum ReactQueryKeys {
   ACCOUNTS_BALANCES = 'accountsBalances',
   BALANCE_SUPPORTED_CHAINS = 'balanceSupportedChains',
   XP_ADDRESSES = 'xpAddresses',
+  SPENDABLE_XP_BALANCE = 'spendableXpBalance',
 
   // defi
   DEFI_EXCHANGE_RATES = 'defiExchangeRates',
@@ -52,6 +53,7 @@ export enum ReactQueryKeys {
   FUSION_TOKENS = 'fusionTokens',
   FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
+  FUSION_STUCK_ATOMIC_FUNDS = 'fusionStuckAtomicFunds',
 
   // recurring swaps (DCA). `RECURRING_ALLOWANCE` was dropped — the SDK
   // reads on-chain allowance internally inside `executeFirstFill` so mobile
@@ -89,5 +91,22 @@ export enum ReactQueryKeys {
   PREDICTIONS_SERIES = 'predictionsSeries',
   PREDICTIONS_MARKET_DETAIL = 'predictionsMarketDetail',
   PREDICTIONS_EVENT_DETAIL = 'predictionsEventDetail',
-  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes'
+  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes',
+
+  // regional feature availability (geo-restriction)
+  FEATURE_AVAILABILITY = 'featureAvailability',
+
+  // perps (Hyperliquid)
+  PERPS_MARKETS = 'perpsMarkets',
+  PERPS_HIP3_MARKETS = 'perpsHip3Markets',
+  PERPS_CATEGORIES = 'perpsCategories',
+  PERPS_COIN_SVG = 'perpsCoinSvg',
+  PERPS_CLEARINGHOUSE = 'perpsClearinghouse',
+  PERPS_POSITIONS = 'perpsPositions',
+  PERPS_OPEN_ORDERS = 'perpsOpenOrders',
+  PERPS_USER_FILLS = 'perpsUserFills',
+  PERPS_ACTIVE_ASSET_DATA = 'perpsActiveAssetData',
+  PERPS_MARKR_PARTNER_INFO = 'perpsMarkrPartnerInfo',
+  PERPS_MAX_BUILDER_FEE = 'perpsMaxBuilderFee',
+  PERPS_USER_ABSTRACTION = 'perpsUserAbstraction'
 }

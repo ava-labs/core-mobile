@@ -9,7 +9,9 @@ import {
   buildGroupedData,
   getDateGroups,
   isCollectibleTransaction,
-  isSupportedNftChainId
+  isSupportedNftChainId,
+  resolveTxUserAddress,
+  transactionInvolvesTokenSymbol
 } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo } from 'react'
@@ -75,13 +77,17 @@ export const useTokenActivity = ({
       ) {
         return true
       }
-      return (
-        !token?.symbol ||
-        (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol) ||
-        (tx.tokens[1]?.symbol && token.symbol === tx.tokens[1].symbol)
-      )
+      if (!token?.symbol) {
+        return true
+      }
+      return transactionInvolvesTokenSymbol({
+        tokens: tx.tokens,
+        tokenSymbol: token.symbol,
+        userAddress: resolveTxUserAddress(tx, account, network),
+        networkTokenSymbol: network?.networkToken?.symbol
+      })
     })
-  }, [token?.symbol, transactions])
+  }, [token?.symbol, transactions, account, network])
 
   const lowValueFilteredTransactions = useLowValueFilteredActivityTransactions(
     transactionsBySymbol,

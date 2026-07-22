@@ -131,7 +131,12 @@ const getUnlockedUnstakedAmount = async ({
       currency: selectedCurrency,
       avaxXPNetwork: network,
       xpAddresses,
-      xpub
+      xpub,
+      // CP-13903: intentionally unfiltered. This is the import-completion
+      // delta check (polls unlockedUnstaked before/after importP) — dust is
+      // constant across the import, and unfiltered totals detect the landed
+      // amount most accurately. Not a user-facing balance.
+      filterOutDustUtxos: false
     })
 
     return pChainBalance.balancePerType.unlockedUnstaked

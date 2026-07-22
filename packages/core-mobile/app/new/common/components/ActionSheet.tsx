@@ -28,7 +28,11 @@ export const ActionSheet = ({
   isModal,
   shouldAvoidKeyboard,
   renderFooterOverride,
-  requireScrollToConfirm
+  requireScrollToConfirm,
+  headerCenterOverlay,
+  renderHeaderLeft,
+  showNavigationHeaderTitle,
+  centerContent
 }: {
   title?: string
   navigationTitle?: string
@@ -39,6 +43,17 @@ export const ActionSheet = ({
   shouldAvoidKeyboard?: boolean
   renderFooterOverride?: () => JSX.Element | null
   requireScrollToConfirm?: boolean
+  /** Overlay rendered absolutely over the header area (e.g. progress dots). */
+  headerCenterOverlay?: React.ReactNode
+  /** When provided, overrides the native header's left slot (e.g. a page-aware
+   * back button). Applied via navigation.setOptions while mounted. */
+  renderHeaderLeft?: () => JSX.Element | null
+  /** Forwarded to ScrollScreen — hide the compact fading navigation title
+   * (e.g. when a header-center overlay already conveys progress). */
+  showNavigationHeaderTitle?: boolean
+  /** Grow the scroll content to fill the sheet and vertically center the
+   * children. Use for short, confirmation-style content (icon + prompt). */
+  centerContent?: boolean
 } & ActionButtonsProps): JSX.Element => {
   const navigation = useNavigation()
   const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false)
@@ -46,6 +61,14 @@ export const ActionSheet = ({
   const handleScrolledToEnd = useCallback((reachedEnd: boolean) => {
     setHasScrolledToEnd(reachedEnd)
   }, [])
+
+  // Drive the native header's left slot from the caller. Only touch the option
+  // when a renderer is provided so screens that rely on the static modal
+  // headerLeft (the default dismiss BackBarButton) are left untouched.
+  useEffect(() => {
+    if (!renderHeaderLeft) return
+    navigation.setOptions({ headerLeft: renderHeaderLeft })
+  }, [navigation, renderHeaderLeft])
 
   const adjustedConfirm = useMemo(() => {
     if (requireScrollToConfirm)
@@ -100,13 +123,25 @@ export const ActionSheet = ({
         maxWidth: '80%'
       }}
       navigationTitle={navigationTitle}
+      showNavigationHeaderTitle={showNavigationHeaderTitle}
+      headerCenterOverlay={headerCenterOverlay}
       renderFooter={renderFooter}
       onScrolledToEnd={requireScrollToConfirm ? handleScrolledToEnd : undefined}
       contentContainerStyle={{
         padding: 16,
-        paddingTop: 0
+        paddingTop: 0,
+        // Let the content fill the sheet so `justifyContent` can vertically
+        // center it (a ScrollView otherwise sizes its content to its children).
+        ...(centerContent ? { flexGrow: 1 } : {})
       }}>
-      <View sx={{ flex: 1, ...sx }}>{children}</View>
+      <View
+        sx={{
+          flex: 1,
+          ...(centerContent ? { justifyContent: 'center' } : {}),
+          ...sx
+        }}>
+        {children}
+      </View>
     </ScrollScreen>
   )
 }

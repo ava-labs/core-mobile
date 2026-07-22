@@ -17,7 +17,11 @@ import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { isTypedData } from '@avalabs/evm-module'
 import isString from 'lodash.isstring'
 import { LegacyTxData } from '@ethereumjs/tx'
-import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
+import {
+  LEDGER_ERROR_CODES,
+  LedgerAppType,
+  LEDGER_BLIND_SIGN_MESSAGE
+} from 'services/ledger/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { getLedgerAppName } from 'features/ledger/utils'
 import {
@@ -230,6 +234,11 @@ export const handleLedgerError = ({
     throw new Error(
       'Ledger is processing another request. Please try again later.'
     )
+  } else if (
+    message.includes(LEDGER_ERROR_CODES.BLIND_SIGN_REQUIRED) &&
+    ledgerAppName === LedgerAppType.AVALANCHE
+  ) {
+    throw new Error(LEDGER_BLIND_SIGN_MESSAGE)
   } else if (message.includes(LEDGER_ERROR_CODES.BLIND_SIGNATURE)) {
     throw new Error(
       `This transaction cannot be clear-signed. Please enable blind signing in the Ledger ${ledgerAppName} app settings and try again.`

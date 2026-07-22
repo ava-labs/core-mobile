@@ -5,12 +5,16 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { differenceInDays } from 'date-fns'
+import {
+  formatDurationInDays,
+  getRoundedDurationInDays
+} from 'features/stake/utils'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
   DURATION_OPTIONS_FUJI,
   DURATION_OPTIONS_MAINNET,
+  DurationOption,
   StakeDurationFormat,
   StakeDurationTitle
 } from 'services/earn/getStakeEndDate'
@@ -19,25 +23,37 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 export const DurationOptions = ({
   selectedIndex,
   onSelectDuration,
-  customEndDate
+  customEndDate,
+  durations: durationsProp,
+  maxNumberOfDays
 }: {
   selectedIndex?: number
   onSelectDuration: (selectedIndex: number) => void
   customEndDate?: Date
+  /**
+   * Overrides the default preset list — the delegate flow passes its
+   * node-aware list (1 Year swapped for Node max, see `withNodeMaxOption`,
+   * re-sorted by days). Must keep the default lists' LENGTH with Custom last,
+   * so `getCustomDurationIndex` stays valid; day-option positions may differ.
+   */
+  durations?: DurationOption[]
+  /**
+   * Disables day-based presets longer than this (the delegate flow passes
+   * the days until the selected node's end time, so presets the node can't
+   * cover read as unavailable instead of failing on Next). Custom stays
+   * enabled — its picker is capped separately.
+   */
+  maxNumberOfDays?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const durations = useMemo(
-    () => (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
-    [isDeveloperMode]
+    () =>
+      durationsProp ??
+      (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
+    [durationsProp, isDeveloperMode]
   )
-  const today = useMemo(() => {
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return now
-  }, [])
-
   const rows = useMemo(() => {
     const chunks = []
     for (let i = 0; i < durations.length; i += 3) {
@@ -45,6 +61,14 @@ export const DurationOptions = ({
     }
     return chunks
   }, [durations])
+
+  // Anchored at NOW and rounded (not midnight + truncation) so the Custom
+  // cell agrees with the Duration summary row and the confirm screen's
+  // "Time to unlock". Computed once per render — only the Custom cell
+  // renders it.
+  const customDurationInDays = customEndDate
+    ? getRoundedDurationInDays(Date.now(), customEndDate)
+    : undefined
 
   return (
     <View sx={{ padding: 16, gap: 8 }}>
@@ -61,14 +85,20 @@ export const DurationOptions = ({
             const globalIndex = rowIndex * 3 + index
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
-            const customDurationInDays = customEndDate
-              ? differenceInDays(customEndDate, today)
-              : undefined
+            // Node Max is exempt: it ends at the node's exact end time so it
+            // always fits, even when its rounded day label exceeds the
+            // conservative `maxNumberOfDays` cap.
+            const isDisabled =
+              maxNumberOfDays !== undefined &&
+              'numberOfDays' in item &&
+              item.title !== StakeDurationTitle.NODE_MAX &&
+              item.numberOfDays > maxNumberOfDays
 
             return (
               <TouchableOpacity
                 key={item.title}
-                style={{ flex: 1 }}
+                style={{ flex: 1, opacity: isDisabled ? 0.4 : 1 }}
+                disabled={isDisabled}
                 onPress={() => onSelectDuration(globalIndex)}>
                 <View
                   sx={{
@@ -89,10 +119,10 @@ export const DurationOptions = ({
                       color: selectedTheme.colors.$textPrimary
                     }}>
                     {'numberOfDays' in item
-                      ? `${item.numberOfDays} days`
+                      ? formatDurationInDays(item.numberOfDays)
                       : item.stakeDurationFormat ===
                           StakeDurationFormat.Custom && customDurationInDays
-                      ? `${customDurationInDays} days`
+                      ? formatDurationInDays(customDurationInDays)
                       : 'Set'}
                   </Text>
                 </View>

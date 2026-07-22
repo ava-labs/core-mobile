@@ -1,6 +1,5 @@
 import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
 import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
-import { formatTokenAmount } from 'utils/Utils'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
@@ -16,10 +15,12 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { SwapSide } from '@paraswap/sdk'
+import { Keyboard, LayoutChangeEvent, Platform } from 'react-native'
+import type { ScrollView } from 'react-native-gesture-handler'
 import { useNavigation } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import {
   TokenInputWidget,
   TokenInputWidgetRef
@@ -51,18 +52,21 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { formatTokenAmount } from 'utils/Utils'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsBatchSigningSupported } from 'store/settings/advanced/quickSwapsActive'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import {
   selectIsRecurringSwapsBlocked,
   selectIsSolanaSwapBlocked,
-  selectMarkrSwapMaxRetries
+  selectMarkrSwapMaxRetries,
+  selectIsFusionAvalancheCctEnabled
 } from 'store/posthog'
 import { useRecurringSwapContext } from 'features/recurringSwap/contexts/RecurringSwapContext'
 import { useRecurringEligibility } from 'features/recurringSwap/hooks/useRecurringEligibility'
@@ -72,6 +76,7 @@ import { RecurringSchedulesBanner } from 'features/recurringSwap/components/Recu
 import { submitRecurringSwap } from 'features/recurringSwap/utils/submitRecurringSwap'
 import type { NumberOfOrders } from 'features/recurringSwap/types'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
+import { RecoveredFundsNotice } from '../components/RecoveredFundsNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
@@ -85,11 +90,14 @@ import {
   isUserRejectionError
 } from '../utils/fusionErrors'
 import { clampToNAvax } from '../utils/clampToNAvax'
+import { StuckFundsBanner } from '../components/StuckFundsBanner'
 import {
   isAvalancheCctRoute,
+  isAvalancheCctZeroAmountRoute,
   isCctOnlySource
 } from '../utils/isAvalancheCctRoute'
 import { shouldShowAvalancheCctTwoTxNotice } from '../utils/shouldShowAvalancheCctTwoTxNotice'
+import { shouldShowRecoveredFundsNotice } from '../utils/shouldShowRecoveredFundsNotice'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -113,6 +121,32 @@ import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { useAutoAdvanceOnFeeValidationError } from '../hooks/useAutoAdvanceOnFeeValidationError'
 import { getTokenKey } from '../utils/tokenKey'
+import { resolveReceiveAmount } from '../utils/resolveReceiveAmount'
+import { getSwappableBalance } from '../utils/getSwappableBalance'
+
+// Disable KeyboardAwareScrollView's built-in scroll-into-view. The swap card is
+// short, so KAS clamps its scroll to the maximum and yanks the card up past the
+// header. A large negative offset makes its "input near keyboard" check never
+// fire, so we drive the scroll ourselves when the keyboard appears (see below).
+// Mirrors PerpetualsWithdrawScreen's use of a negative offset.
+const DISABLE_KAS_AUTOSCROLL_OFFSET = -1000
+
+// Gap left above the swap card when we scroll "You pay" into view, so it sits a
+// touch below the header rather than flush against it.
+const YOU_PAY_SCROLL_TOP_MARGIN = 8
+
+// Debounce before we scroll "You pay" into view. On open the swap card slides
+// (Animated.View layout={LinearTransition}) as the banner above it settles, so
+// its position changes for several frames. Scrolling on every keyboard / layout
+// event chased that moving target, which moved the focused input and made the
+// keyboard oscillate + the header flicker. Debouncing means we scroll ONCE,
+// after the card has stopped moving.
+const YOU_PAY_SCROLL_DEBOUNCE_MS = 120
+
+// Only re-scroll on a card-position change that happens within this window after
+// the keyboard opens (the slide-in). A later change from a user action, such as
+// expanding the stuck-funds banner, falls outside it, so it does NOT scroll.
+const YOU_PAY_SCROLL_SETTLE_MS = 700
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -187,6 +221,9 @@ function buildSwapDetailItems({
 /**
  * Computes the current swap validation error (or null if inputs are valid).
  * Extracted from SwapScreen to keep the component's cognitive complexity within limit.
+ *
+ * `allowZeroAmount` relaxes the "enter an amount" gate for AVALANCHE_CCT routes,
+ * where 0 is a valid input that triggers the SDK's import-only recovery quote.
  */
 function computeValidationError({
   fromTokenValue,
@@ -198,7 +235,8 @@ function computeValidationError({
   numberOfOrders,
   recurringTotalAmountIn,
   recurringAdditiveNativeFee,
-  nativeFromToken
+  nativeFromToken,
+  allowZeroAmount = false
 }: {
   fromTokenValue: bigint | undefined
   debouncedFromTokenValue: bigint | undefined
@@ -210,9 +248,11 @@ function computeValidationError({
   recurringTotalAmountIn: bigint | undefined
   recurringAdditiveNativeFee: bigint
   nativeFromToken: LocalTokenWithBalance | undefined
+  allowZeroAmount?: boolean
 }): FusionQuoteError | null {
   if (fromTokenValue === undefined) return null
   if (debouncedFromTokenValue !== undefined && debouncedFromTokenValue === 0n) {
+    if (allowZeroAmount) return null
     return fusionErrors.enterAmount()
   }
   // Recurring: validate the full schedule commitment (principal + additive
@@ -247,7 +287,7 @@ function computeValidationError({
   if (
     debouncedFromTokenValue !== undefined &&
     fromToken !== undefined &&
-    debouncedFromTokenValue > fromToken.balance
+    debouncedFromTokenValue > getSwappableBalance(fromToken)
   ) {
     return fusionErrors.exceedsBalance()
   }
@@ -337,6 +377,7 @@ function buildPriceImpactItem({
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isBatchSigningSupported = useSelector(selectIsBatchSigningSupported)
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
   const [fusionInitError] = useFusionServiceInitError()
@@ -402,7 +443,6 @@ export const SwapScreen = (): JSX.Element => {
     activeQuote,
     allQuotes,
     isQuoteLoading,
-    setDestination,
     slippage,
     autoSlippage,
     setAmount,
@@ -410,7 +450,8 @@ export const SwapScreen = (): JSX.Element => {
     swapStatus,
     successTransferId,
     advanceBestQuote,
-    setUserClickedMax
+    setUserClickedMax,
+    recurringGasSettings
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -441,6 +482,7 @@ export const SwapScreen = (): JSX.Element => {
   const showSolanaSwap = hasSolanaAddress && !isSolanaSwapBlocked
 
   const isRecurringBlocked = useSelector(selectIsRecurringSwapsBlocked)
+  const isAvalancheCctEnabled = useSelector(selectIsFusionAvalancheCctEnabled)
   const recurring = useRecurringSwapContext()
 
   // Recurring is Markr-only, so its per-order floor is Markr's minimum
@@ -479,6 +521,116 @@ export const SwapScreen = (): JSX.Element => {
   const showRecurringToggle =
     !isRecurringBlocked && eligibility.eligible && hasFromAmount
   const [recurringSubmitting, setRecurringSubmitting] = useState(false)
+
+  // Keyboard-avoidance for "You pay". KAS's own scroll-into-view is disabled (see
+  // the negative bottomOffset), so we scroll the swap card just below the header
+  // ourselves. `fromSectionYRef` tracks where the card sits in the scroll content,
+  // and a keyboard-height bottom spacer gives the room to scroll it (iOS doesn't
+  // resize for the keyboard, and Android's resize room alone isn't enough once the
+  // banners push the card down). See the effects below for the sequence.
+  const scrollRef = useRef<ScrollView>(null)
+  const headerHeight = useEffectiveHeaderHeight()
+  const isYouPayFocusedRef = useRef(false)
+  const fromSectionYRef = useRef(0)
+  const keyboardHeightRef = useRef(0)
+  const keyboardShownAtRef = useRef(0)
+  const scrollDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
+  const snapRafRef = useRef<number | undefined>(undefined)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const scrollYouPayIntoView = useCallback(
+    (animated: boolean) => {
+      // On the Android form sheet, ScrollScreen offsets the scroll view below
+      // the header via `marginTop: headerHeight` (CP-14679), so the scroll
+      // content already starts under the header — don't subtract headerHeight
+      // again or the card lands a full header-height too low (CP-14744). iOS
+      // insets the content under the transparent header (paddingTop), so the
+      // subtraction still applies there. This screen is always `isModal`, so
+      // the Android condition matches ScrollScreen's `scrollBelowHeader`.
+      const headerOffset = Platform.OS === 'android' ? 0 : headerHeight
+      scrollRef.current?.scrollTo({
+        y: Math.max(
+          0,
+          fromSectionYRef.current - headerOffset - YOU_PAY_SCROLL_TOP_MARGIN
+        ),
+        animated
+      })
+    },
+    [headerHeight]
+  )
+  // Debounced final scroll: reset on each keyboard/layout event and scroll once
+  // things settle, so we don't chase the card while it slides in (which moved the
+  // focused input repeatedly and oscillated the keyboard / flickered the header).
+  const scheduleScroll = useCallback(() => {
+    if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+    scrollDebounceRef.current = setTimeout(() => {
+      if (!isYouPayFocusedRef.current || keyboardHeightRef.current === 0) return
+      scrollYouPayIntoView(true)
+    }, YOU_PAY_SCROLL_DEBOUNCE_MS)
+  }, [scrollYouPayIntoView])
+  const handleFromSectionLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const y = event.nativeEvent.layout.y
+      const changed = y !== fromSectionYRef.current
+      fromSectionYRef.current = y
+      // Re-scroll only while the card is still settling right after the keyboard
+      // opened (the slide-in). The time gate means a later user action that moves
+      // the card, such as expanding the stuck-funds banner, does NOT scroll.
+      if (
+        changed &&
+        isYouPayFocusedRef.current &&
+        keyboardHeightRef.current > 0 &&
+        Date.now() - keyboardShownAtRef.current < YOU_PAY_SCROLL_SETTLE_MS
+      ) {
+        scheduleScroll()
+      }
+    },
+    [scheduleScroll]
+  )
+  const handleYouPayFocus = useCallback(() => {
+    isYouPayFocusedRef.current = true
+  }, [])
+  const handleYouPayBlur = useCallback(() => {
+    isYouPayFocusedRef.current = false
+    keyboardHeightRef.current = 0
+    setKeyboardHeight(0)
+    if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+    if (snapRafRef.current !== undefined) {
+      cancelAnimationFrame(snapRafRef.current)
+    }
+  }, [])
+  // On keyboard show for "You pay": render the scroll-room spacer, snap the
+  // header to its scrolled state immediately (so the big title doesn't flash
+  // while the card slides in), then schedule the debounced scroll that lands the
+  // final position. The snap is deferred a frame so it runs after the spacer has
+  // laid out (and therefore has room to scroll); its id is tracked so a pending
+  // snap is cancelled on blur / unmount (and before scheduling a new one) rather
+  // than firing after the effect is gone. The spacer is cleared on blur, not
+  // keyboardDidHide, so a transient hide doesn't flap it. Focus-gated so other
+  // inputs (e.g. RecurringDetailsRows' number-pad alert) are ignored.
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', event => {
+      if (!isYouPayFocusedRef.current) return
+      keyboardShownAtRef.current = Date.now()
+      keyboardHeightRef.current = event.endCoordinates.height
+      setKeyboardHeight(event.endCoordinates.height)
+      if (snapRafRef.current !== undefined) {
+        cancelAnimationFrame(snapRafRef.current)
+      }
+      snapRafRef.current = requestAnimationFrame(() =>
+        scrollYouPayIntoView(false)
+      )
+      scheduleScroll()
+    })
+    return () => {
+      if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
+      if (snapRafRef.current !== undefined) {
+        cancelAnimationFrame(snapRafRef.current)
+      }
+      showSub.remove()
+    }
+  }, [scheduleScroll, scrollYouPayIntoView])
 
   // Subscribe to the recurring quote when the toggle is on so we have fresh
   // calldata ready by the time the user presses Next. `slippage` in SwapContext
@@ -651,6 +803,20 @@ export const SwapScreen = (): JSX.Element => {
     [recurringQuote.data?.fees]
   )
 
+  // CCT routes accept 0 (the SDK emits an import-only recovery quote), so the
+  // "enter an amount" gate is relaxed and the submit button reads "Recover".
+  const allowZeroAmount = isAvalancheCctZeroAmountRoute({
+    isAvalancheCctEnabled,
+    fromToken,
+    toToken
+  })
+
+  // Recovery flow = an enabled CCT route with a 0 amount. Note the amount input
+  // emits 0n for a cleared/empty field as well, so clearing the amount also
+  // enters recovery (button reads "Recover"). Distinguishing an empty field from
+  // an explicit typed 0 is tracked as a follow-up.
+  const isCctRecovery = allowZeroAmount && debouncedFromTokenValue === 0n
+
   const validateInputs = useCallback(() => {
     // fromTokenValue drives the reset — if it's undefined (token just changed),
     // clear any error immediately without waiting for the debounce to settle.
@@ -665,7 +831,8 @@ export const SwapScreen = (): JSX.Element => {
         numberOfOrders: recurring.numberOfOrders,
         recurringTotalAmountIn: recurringQuote.data?.totalAmountIn,
         recurringAdditiveNativeFee,
-        nativeFromToken
+        nativeFromToken,
+        allowZeroAmount
       })
     )
   }, [
@@ -678,23 +845,38 @@ export const SwapScreen = (): JSX.Element => {
     recurring.numberOfOrders,
     recurringQuote.data?.totalAmountIn,
     recurringAdditiveNativeFee,
-    nativeFromToken
+    nativeFromToken,
+    allowZeroAmount
   ])
 
   const applyQuote = useCallback(() => {
-    if (!debouncedFromTokenValue || !activeQuote) {
+    // The "You receive" amount comes from the recurring quote's first-fill
+    // estimate when recurring is on (the one-time `activeQuote` is frozen in
+    // that mode — see `syncDebouncedAmount`), and from `activeQuote` otherwise.
+    // Fees are already baked into `amountOut` by the SDK/backend.
+    const action = resolveReceiveAmount({
+      isRecurring: recurring.isRecurring,
+      fromTokenValue,
+      recurringAmountOut: recurringQuote.data?.amountOut,
+      hasActiveQuote: !!activeQuote,
+      activeQuoteAmountOut: activeQuote?.amountOut,
+      debouncedFromTokenValue,
+      isCctRecovery
+    })
+    if (action.type === 'set') {
+      setToTokenValue(action.value)
+    } else if (action.type === 'clear') {
       setToTokenValue(undefined)
-      return
     }
-
-    // Fusion SDK Quote has amountOut as bigint - fees are already included
-    // No need to apply fee deduction - the SDK/backend handles all fees
-    const amountOut = activeQuote.amountOut
-
-    if (amountOut) {
-      setToTokenValue(amountOut)
-    }
-  }, [activeQuote, debouncedFromTokenValue])
+    // 'keep' → leave the current value untouched (avoids flashing empty mid-refetch)
+  }, [
+    recurring.isRecurring,
+    fromTokenValue,
+    recurringQuote.data?.amountOut,
+    activeQuote,
+    debouncedFromTokenValue,
+    isCctRecovery
+  ])
 
   const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -706,7 +888,10 @@ export const SwapScreen = (): JSX.Element => {
     if (!activeQuote) return
     AnalyticsService.capture('SwapReviewOrder', {
       provider: activeQuote.aggregator.name,
-      slippage
+      slippage,
+      serviceType: activeQuote.serviceType,
+      caip2SourceChainId: activeQuote.sourceChain.chainId,
+      caip2TargetChainId: activeQuote.targetChain.chainId
     })
 
     dismissKeyboardIfNeeded()
@@ -715,7 +900,16 @@ export const SwapScreen = (): JSX.Element => {
   }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
-    (amount: bigint): void => {
+    (amount: bigint, valueString: string): void => {
+      // An empty/cleared field emits valueString '' (a typed 0 emits '0'); both
+      // carry amount 0n. Map empty to undefined so the rest of the screen can
+      // tell them apart: undefined = no amount (never a recovery, no quote),
+      // 0n = an explicit typed 0 (the CCT recovery input).
+      if (valueString === '') {
+        setFromTokenValue(undefined)
+        setUserClickedMax(false)
+        return
+      }
       // CCT atomic txs operate in nAVAX (1e9). For 18-decimal C-Chain AVAX,
       // floor the trailing wei so what the user sees is what gets sent.
       // Mirrors the staking flow's `toFixed(9)` clamp.
@@ -730,25 +924,14 @@ export const SwapScreen = (): JSX.Element => {
           ? clampToNAvax(amount, decimals)
           : amount
       setFromTokenValue(next)
-      setDestination(SwapSide.SELL)
       setUserClickedMax(false)
     },
-    [fromToken, toToken, setDestination, setUserClickedMax]
+    [fromToken, toToken, setUserClickedMax]
   )
 
   const handlePressMax = useCallback((): void => {
     setUserClickedMax(true)
   }, [setUserClickedMax])
-
-  const handleToAmountChange = useCallback(
-    (amount: bigint): void => {
-      setToTokenValue(amount)
-      setDestination(SwapSide.BUY)
-      setAmount(amount)
-      setUserClickedMax(false)
-    },
-    [setDestination, setAmount, setUserClickedMax]
-  )
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
     await dismissKeyboardIfNeeded()
@@ -836,7 +1019,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={!isSwapping}
           amount={fromTokenValue}
-          balance={fromToken?.balance}
+          balance={fromToken ? getSwappableBalance(fromToken) : undefined}
           shouldShowBalance={true}
           title="You pay"
           token={
@@ -853,6 +1036,8 @@ export const SwapScreen = (): JSX.Element => {
           onAmountChange={handleFromAmountChange}
           onPressMax={handlePressMax}
           onSelectToken={handleSelectFromToken}
+          onFocus={handleYouPayFocus}
+          onBlur={handleYouPayBlur}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
         />
@@ -869,7 +1054,9 @@ export const SwapScreen = (): JSX.Element => {
     fromMaxSwapAmount,
     validationError,
     fromTokenValue,
-    isSwapping
+    isSwapping,
+    handleYouPayFocus,
+    handleYouPayBlur
   ])
 
   const renderToSection = useCallback((): JSX.Element => {
@@ -887,7 +1074,7 @@ export const SwapScreen = (): JSX.Element => {
           disabled={isSwapping}
           editable={false}
           amount={toTokenValue}
-          balance={toToken?.balance}
+          balance={toToken ? getSwappableBalance(toToken) : undefined}
           shouldShowBalance={true}
           title="You receive"
           token={
@@ -901,20 +1088,22 @@ export const SwapScreen = (): JSX.Element => {
           }
           network={getNetwork(toToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
-          onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
-          isLoadingAmount={isQuoteLoading}
+          isLoadingAmount={
+            recurring.isRecurring ? recurringQuote.isFetching : isQuoteLoading
+          }
         />
       </View>
     )
   }, [
     theme,
     formatInCurrency,
-    handleToAmountChange,
     toToken,
     getNetwork,
     toTokenValue,
     isQuoteLoading,
+    recurring.isRecurring,
+    recurringQuote.isFetching,
     handleSelectToToken,
     isSwapping
   ])
@@ -1182,10 +1371,13 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!debouncedFromTokenValue) {
+    // `!debouncedFromTokenValue` is also true for 0n, but a CCT recovery (an
+    // explicit 0) has a real amountOut to show, so don't clear it here — let
+    // applyQuote govern the To for that case (matches applyQuote's own guard).
+    if (!debouncedFromTokenValue && !isCctRecovery) {
       setToTokenValue(undefined)
     }
-  }, [debouncedFromTokenValue])
+  }, [debouncedFromTokenValue, isCctRecovery])
 
   usePreventScreenRemoval(isSwapping)
 
@@ -1281,6 +1473,10 @@ export const SwapScreen = (): JSX.Element => {
     quote: activeQuote
   })
 
+  const showRecoveredFundsNotice = shouldShowRecoveredFundsNotice({
+    quote: activeQuote
+  })
+
   // Submit-gate logic lives in `recurringSubmitGate` so it is unit testable
   // without the whole screen. It mirrors the one-shot `canSwap` gate: a
   // blocking (non-warning) validation error must disable Next. Recurring
@@ -1303,6 +1499,12 @@ export const SwapScreen = (): JSX.Element => {
     // can't slip through the window where the recurring quote has resolved but
     // the floor hasn't (the below-minimum check is skipped while it's unknown).
     isRecurringMinimumReady: markrMinimumTransferAmount !== undefined,
+    // Gate Next until `recurringGasSettings` carries an explicit maxFeePerGas.
+    // `buildFusionGasSettings` only fills the EIP-1559 tier override once live
+    // `networkFees` load, and the software-wallet batch path submits with the
+    // per-tx fallback disabled — so submitting fee-less during the cold-start
+    // window trips signBatch's guard and hard-fails the whole swap. (CP-14641)
+    hasRecurringFees: recurringGasSettings.maxFeePerGas !== undefined,
     canSwap
   })
 
@@ -1349,7 +1551,9 @@ export const SwapScreen = (): JSX.Element => {
         toTokenLocalId: toToken.localId,
         fromTokenNetworkChainId: fromToken.networkChainId,
         toTokenNetworkChainId: toToken.networkChainId,
-        slippageBps: recurringSlippageBps
+        slippageBps: recurringSlippageBps,
+        gasSettings: recurringGasSettings,
+        isBatchSigningSupported
       })
       // submitRecurringSwap fires the success snackbar + analytics +
       // staggered query invalidations on its own (the SDK call's resolution
@@ -1394,6 +1598,8 @@ export const SwapScreen = (): JSX.Element => {
     fromTokenValue,
     getNetwork,
     recurringSlippageBps,
+    recurringGasSettings,
+    isBatchSigningSupported,
     dismissAll
   ])
 
@@ -1416,7 +1622,13 @@ export const SwapScreen = (): JSX.Element => {
           size="large"
           onPress={handleNext}
           disabled={!canSubmit || isBusy}>
-          {isBusy ? <ActivityIndicator size="small" /> : 'Next'}
+          {isBusy ? (
+            <ActivityIndicator size="small" />
+          ) : isCctRecovery ? (
+            'Recover'
+          ) : (
+            'Next'
+          )}
         </Button>
       </>
     )
@@ -1426,7 +1638,8 @@ export const SwapScreen = (): JSX.Element => {
     isSwapping,
     recurringSubmitting,
     isLombard,
-    renderLombardLogo
+    renderLombardLogo,
+    isCctRecovery
   ])
 
   const renderCctTwoTxNotice = useCallback(() => {
@@ -1515,74 +1728,102 @@ export const SwapScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
+      ref={scrollRef}
       title="Swap"
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard
+      // Android uses adjustResize (window shrinks for the keyboard) + our own
+      // spacer/scroll, so we disable KeyboardAwareScrollView there: with it
+      // enabled, typing runs its maybeScroll, whose "input above the viewport"
+      // branch scrolls to the top under our negative bottomOffset. iOS has no
+      // adjustResize, so it keeps KAS for scroll room.
+      enabled={Platform.OS !== 'android'}
+      bottomOffset={DISABLE_KAS_AUTOSCROLL_OFFSET}
+      // Android: let this ScrollView participate in the parent form sheet's
+      // nested scrolling so our programmatic scroll (and vertical swipes) move
+      // the content instead of being captured by the sheet's drag-to-dismiss.
+      // Passed through to the underlying ScrollView via ScrollScreen's props.
+      nestedScrollEnabled={Platform.OS === 'android'}
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {/* Stuck-funds banner — surfaces AVAX stranded in atomic memory from an
+          incomplete cross-chain transfer. Self-hides (and reserves no space)
+          when there are none, so the margins live on the banner itself. */}
+      <StuckFundsBanner sx={{ marginTop: 10, marginBottom: 20 }} />
       {/* Schedule-management entry point: surfaces above the new-swap flow so
           users with existing schedules see + manage them before entering a
           new pair. Self-hides via `count === 0` when there are none. */}
       {!isRecurringBlocked && (
-        <View sx={{ marginBottom: 20 }}>
-          <RecurringSchedulesBanner />
-        </View>
+        <RecurringSchedulesBanner sx={{ marginBottom: 20 }} />
       )}
-      {renderFromAndToSections()}
+      {/* onLayout captures where the swap card sits in the scroll content so
+          focusing "You pay" can scroll it to just below the header. */}
+      <View onLayout={handleFromSectionLayout}>
+        {renderFromAndToSections()}
+      </View>
       {renderAdditiveFeesNotice()}
       {renderError()}
-      {/* Disclaimer banner — only when recurring is ON. Per Figma it sits
-          between the swap card and the toggle. */}
-      {showRecurringToggle && recurring.isRecurring && (
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 8
-          }}>
-          <Icons.Action.Info
-            color={theme.colors.$textPrimary}
-            width={20}
-            height={20}
-          />
-          <Text variant="body2" sx={{ color: '$textPrimary', flexShrink: 1 }}>
-            Swap rate is for the first swap, subsequent swaps will change
-            depending on the market
-          </Text>
-        </View>
-      )}
-      {/* Recurring toggle — rendered whenever the pair is eligible, regardless
-          of the on/off state (per Figma's "Recurring OFF" + "Recurring ON"
-          screens). Sits above the Pricing/Slippage/Price-impact rows. */}
+      {/* Recurring section: disclaimer (ON only) + toggle + details (ON only).
+          Wrapped in a container whose `key` flips with `isRecurring`, so
+          toggling REMOUNTS the subtree. Under Fabric on Android, mounting the
+          disclaimer / details between already-laid-out siblings doesn't
+          reliably reflow the column — the disclaimer overlapped the swap card
+          above and the toggle below (same class as the CP-14600 issue handled
+          below). Remounting forces a clean layout pass. The toggle sits inside
+          the keyed wrapper because it's the persistent element whose remount
+          drives the reflow. Per Figma the disclaimer sits between the swap card
+          and the toggle. */}
       {showRecurringToggle && (
-        <View sx={{ marginTop: 12 }}>
-          <GroupList
-            data={[
-              {
-                title: 'Make this a recurring swap',
-                value: (
-                  <Toggle
-                    value={recurring.isRecurring}
-                    onValueChange={recurring.setIsRecurring}
-                  />
-                )
+        <View key={recurring.isRecurring ? 'recurring-on' : 'recurring-off'}>
+          {recurring.isRecurring && (
+            <View
+              sx={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                marginTop: 8
+              }}>
+              <Icons.Action.Info
+                color={theme.colors.$textPrimary}
+                width={20}
+                height={20}
+              />
+              {/* `flex: 1` (not `flexShrink: 1`) gives the Text a bounded width
+                  so it wraps to two lines instead of overflowing the row. */}
+              <Text variant="body2" sx={{ color: '$textPrimary', flex: 1 }}>
+                Swap rate is for the first swap, subsequent swaps will change
+                depending on the market
+              </Text>
+            </View>
+          )}
+          <View sx={{ marginTop: 12 }}>
+            <GroupList
+              data={[
+                {
+                  title: 'Make this a recurring swap',
+                  value: (
+                    <Toggle
+                      value={recurring.isRecurring}
+                      onValueChange={recurring.setIsRecurring}
+                    />
+                  )
+                }
+              ]}
+              separatorMarginRight={16}
+            />
+          </View>
+          {recurring.isRecurring && (
+            <RecurringDetailsRows
+              amountPerOrder={fromTokenValue}
+              fromTokenSymbol={fromToken?.symbol}
+              fromTokenDecimals={
+                fromToken && 'decimals' in fromToken
+                  ? fromToken.decimals
+                  : undefined
               }
-            ]}
-            separatorMarginRight={16}
-          />
+            />
+          )}
         </View>
-      )}
-      {showRecurringToggle && recurring.isRecurring && (
-        <RecurringDetailsRows
-          amountPerOrder={fromTokenValue}
-          fromTokenSymbol={fromToken?.symbol}
-          fromTokenDecimals={
-            fromToken && 'decimals' in fromToken
-              ? fromToken.decimals
-              : undefined
-          }
-        />
       )}
       {/* CP-14600: the Pricing/Slippage/Price-impact rows are empty until the
           quote resolves, then this GroupList card grows from zero height. Under
@@ -1623,10 +1864,16 @@ export const SwapScreen = (): JSX.Element => {
         }
       />
       {renderCctTwoTxNotice()}
+      {showRecoveredFundsNotice && (
+        <RecoveredFundsNotice sx={{ marginTop: 16 }} />
+      )}
       {/* CP-14600: guarantee the last detail rows clear the sticky footer, where
           the footer-height-driven bottom padding can be applied a frame late
           while the quote rows are still streaming in. */}
       <View style={{ height: 24 }} />
+      {/* Scroll room so the focused "You pay" card can clear the banners above
+          it. Present only while the keyboard is up for "You pay". */}
+      {keyboardHeight > 0 && <View style={{ height: keyboardHeight }} />}
     </ScrollScreen>
   )
 }

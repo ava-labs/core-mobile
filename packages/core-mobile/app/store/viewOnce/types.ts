@@ -15,7 +15,8 @@ export enum ViewOnceKey {
   /** @deprecated */
   MIGRATE_TOKEN_FAVORITE_IDSv2,
   NOTIFICATIONS_CLEANED_UP_ANDROID_16,
-  PERPETUALS_ONBOARDING
+  PERPETUALS_ONBOARDING,
+  CCT_BANNER
 }
 
 export type ViewOnceObjectType = {

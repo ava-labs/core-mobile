@@ -19,6 +19,18 @@ const makeToken = (
     type
   } as LocalTokenWithBalance)
 
+// P/X-chain AVAX: `balance` includes staked/locked funds, `available` is the
+// swappable (unlocked/unstaked) portion.
+const makeStakedToken = (
+  balance: bigint,
+  available: bigint
+): LocalTokenWithBalance =>
+  ({
+    balance,
+    available,
+    type: TokenType.NATIVE
+  } as unknown as LocalTokenWithBalance)
+
 describe('buildFeeOptions', () => {
   it('returns only feeUnitsMarginBps when networkFee is undefined', () => {
     const result = buildFeeOptions(2000, undefined)
@@ -89,6 +101,32 @@ describe('computeMaxAmount', () => {
     expect(result).toBeUndefined()
   })
 
+  it('uses spendableBalance instead of the displayed balance when provided (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: false,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(2000n)
+  })
+
+  it('uses spendableBalance for the estimation-error fallback too (CP-13903)', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: undefined,
+      additiveFee: 0n,
+      hasEstimationError: true,
+      spendableBalance: 3000n
+    })
+    expect(result).toBe(3000n)
+  })
+
   it('returns balance minus gas for native token with no additive fees', () => {
     const token = makeToken(5000n)
     const result = computeMaxAmount({
@@ -115,6 +153,47 @@ describe('computeMaxAmount', () => {
 
   it('returns undefined for native when fees exceed balance', () => {
     const token = makeToken(500n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 400n,
+      additiveFee: 200n,
+      hasEstimationError: false
+    })
+    expect(result).toBeUndefined()
+  })
+
+  // -------------------------------------------------------------------------
+  // P/X-chain staked-balance tests (CP-14788)
+  // -------------------------------------------------------------------------
+
+  it('caps native max at available (not full balance) for a P-chain token with staked funds', () => {
+    // balance 10000 includes staked; only 3000 is available to swap
+    const token = makeStakedToken(10000n, 3000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: false
+    })
+    expect(result).toBe(2000n)
+  })
+
+  it('returns available (not full balance) for a P-chain token on estimation error', () => {
+    const token = makeStakedToken(10000n, 3000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 0n,
+      hasEstimationError: true
+    })
+    expect(result).toBe(3000n)
+  })
+
+  it('returns undefined for a P-chain token when fees exceed available', () => {
+    const token = makeStakedToken(10000n, 500n)
     const result = computeMaxAmount({
       fromToken: token,
       isNative: true,
@@ -236,6 +315,12 @@ describe('getPreQuoteAmount', () => {
   it('returns half balance when it exceeds minimumTransferAmount', () => {
     const token = makeToken(1000n)
     expect(getPreQuoteAmount(100n, token)).toBe(500n)
+  })
+
+  it('uses half of available (not full balance) for a P-chain staked token', () => {
+    // full balance 1000 would give 500, but only 200 is available → half is 100
+    const token = makeStakedToken(1000n, 200n)
+    expect(getPreQuoteAmount(50n, token)).toBe(100n)
   })
 })
 

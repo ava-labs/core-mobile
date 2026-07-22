@@ -11,7 +11,8 @@ export enum KeySlot {
   SeedlessPubKeys = 'SeedlessPubKeysV2',
   OidcProvider = 'OidcProvider',
   OidcUserId = 'OidcUserId',
-  KeystoneData = 'KeystoneData'
+  KeystoneData = 'KeystoneData',
+  PerpsAgents = 'PerpsAgents'
 }
 
 /**
