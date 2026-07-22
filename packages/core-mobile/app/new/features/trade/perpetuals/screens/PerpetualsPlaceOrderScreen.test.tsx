@@ -340,6 +340,8 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
 describe('PerpetualsPlaceOrderScreen limit price', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
+    mockSubmitOrder.mockReset()
+    mockRecheck.mockReset()
     mockPlaceOrder.limitPriceEnabled = false
     mockPlaceOrder.limitPrice = undefined
     // The prior describe block's last test flips this to false without a
@@ -391,6 +393,20 @@ describe('PerpetualsPlaceOrderScreen limit price', () => {
         sizeContracts: 0.05
       })
     )
+  })
+
+  it('caps the dial at the limit price, not the mark, when a limit is set', async () => {
+    mockPlaceOrder.limitPriceEnabled = true
+    mockPlaceOrder.limitPrice = 50
+    const instance = await render()
+    const dial = instance.root.findByProps({
+      testID: 'perpetuals_place_order_amount'
+    })
+
+    // HL max buy size 1.5 BTC × $50 limit = $75 position notional — sizing at
+    // the mark ($100) instead would let a full dial exceed maxOpenSizeCoin.
+    expect(dial.props.max).toBe(75)
+    expect(dial.props.max / dial.props.step).toBeCloseTo(1000)
   })
 
   it('submits a market order without limitPx when the toggle is off', async () => {

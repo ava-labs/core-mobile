@@ -153,9 +153,19 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const isLong = side === 'long'
   const maxOpenSizeCoin = isLong ? maxBuySizeCoin : maxSellSizeCoin
+  const { isLimitOrder, sizingPrice } = resolveOrderSizing(
+    limitPriceEnabled,
+    limitPrice,
+    markPrice
+  )
+  // Capacity is denominated at the same effective entry price the order is
+  // sized at: the limit price when a limit is enabled, otherwise the mark.
+  // Using the mark unconditionally would let a full dial (at maxOpenSizeCoin
+  // notional/mark) convert to more contracts than maxOpenSizeCoin once
+  // divided by a lower limit price, exceeding HL's per-asset size cap.
   const maxPositionNotionalUsd =
-    maxOpenSizeCoin !== undefined && markPrice > 0
-      ? maxOpenSizeCoin * markPrice
+    maxOpenSizeCoin !== undefined && sizingPrice > 0
+      ? maxOpenSizeCoin * sizingPrice
       : undefined
   const orderCapacityReady =
     maxPositionNotionalUsd !== undefined && maxPositionNotionalUsd > 0
@@ -169,11 +179,6 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     maxPositionNotionalUsd !== undefined
       ? positionDialStep(maxPositionNotionalUsd)
       : undefined
-  const { isLimitOrder, sizingPrice } = resolveOrderSizing(
-    limitPriceEnabled,
-    limitPrice,
-    markPrice
-  )
   // `amount` is the USD position notional from the dial. Convert it to
   // contract size via notional / sizing price, then quantize to the coin's
   // szDecimals (HL rejects sizes with extra fractional precision).
