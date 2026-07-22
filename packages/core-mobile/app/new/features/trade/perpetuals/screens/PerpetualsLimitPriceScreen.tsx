@@ -1,10 +1,4 @@
-import {
-  Button,
-  FiatAmountInput,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, FiatAmountInput, View } from '@avalabs/k2-alpine'
 import { roundToHyperliquidPrice } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
@@ -15,7 +9,6 @@ import { PositionPill } from '../components/PositionPill'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { useLiveMid } from '../hooks/usePerpsLiveMids'
-import { pctFromEntry, pctParts, pnlColor } from '../utils/economics'
 import { toNumber } from '../utils/format'
 
 /**
@@ -24,7 +17,6 @@ import { toNumber } from '../utils/format'
  * marketable one simply fills immediately), so validation is `price > 0` only.
  */
 export const PerpetualsLimitPriceScreen = (): JSX.Element => {
-  const { theme } = useTheme()
   const router = useRouter()
 
   const {
@@ -46,14 +38,11 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
   }, [priceText])
 
-  // Relation to the live mark price (falls back to the seeded entry until the
-  // market feed loads) — informational only, never a validation error.
+  // Live mark (falls back to the seeded entry until the market feed loads) —
+  // only used as the preset anchor's fallback below.
   const { assetCtx, universe } = useHyperliquidMarketContext(coin)
   const liveMarkPrice = toNumber(assetCtx?.markPx)
   const currentPrice = liveMarkPrice > 0 ? liveMarkPrice : entryPrice
-  const pct =
-    price !== undefined ? pctFromEntry(price, currentPrice) : undefined
-  const pctColor = pnlColor(pct, theme.colors, theme.colors.$textSecondary)
 
   // Quick presets (web parity): offsets anchor to the live mid (mark / seeded
   // entry as fallbacks until the feeds tick) and are side-aware — a long
@@ -93,20 +82,6 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
   const formatInCurrency = useCallback(
     (n: number): string => `$${formatNumber(n)}`,
     []
-  )
-
-  const formatInSubTextNumber = useCallback(
-    (): JSX.Element => (
-      <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
-        <Text
-          variant="subtitle2"
-          sx={{ color: pctColor, fontFamily: 'Inter-SemiBold' }}>
-          {pctParts(pct, 'Set a limit price').percent}
-        </Text>
-        {pctParts(pct, 'Set a limit price').suffix}
-      </Text>
-    ),
-    [pct, pctColor]
   )
 
   const handleDone = useCallback(async () => {
@@ -159,8 +134,6 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
             isAmountValid
             onChange={setPriceText}
             formatInCurrency={formatInCurrency}
-            formatInSubTextNumber={formatInSubTextNumber}
-            subTextPosition="bottom"
             returnKeyType="none"
           />
           <View
