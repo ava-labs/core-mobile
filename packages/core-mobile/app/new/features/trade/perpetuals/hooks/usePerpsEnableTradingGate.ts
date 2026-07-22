@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router'
+import { useNavigation, useRouter } from 'expo-router'
 import { useCallback, useMemo } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import { usePerpsBuilderFee } from './usePerpsBuilderFee'
@@ -36,6 +36,7 @@ export type PerpsEnableTradingGate = {
  */
 export const usePerpsEnableTradingGate = (): PerpsEnableTradingGate => {
   const router = useRouter()
+  const navigation = useNavigation()
   const { hasAgent, isLoadingAgent } = usePerps()
   const {
     isApproved: isBuilderFeeApproved,
@@ -58,11 +59,16 @@ export const usePerpsEnableTradingGate = (): PerpsEnableTradingGate => {
 
   const requireTradingEnabled = useCallback((): boolean => {
     if (!isTradingEnabled) {
-      router.navigate('/perpetualsEnableTrading')
+      // Callers may await before gating (e.g. place-order's geo re-check). If
+      // the user dismissed the calling screen during that await, don't present
+      // the setup sheet over wherever they are now — just abort the submit.
+      if (navigation.isFocused()) {
+        router.navigate('/perpetualsEnableTrading')
+      }
       return false
     }
     return true
-  }, [isTradingEnabled, router])
+  }, [isTradingEnabled, navigation, router])
 
   return { isTradingEnabled, isTradingStatusLoading, requireTradingEnabled }
 }

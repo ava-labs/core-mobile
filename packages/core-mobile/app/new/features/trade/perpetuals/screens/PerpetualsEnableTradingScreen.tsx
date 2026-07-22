@@ -2,7 +2,7 @@ import { Checklist, View, type ChecklistItem } from '@avalabs/k2-alpine'
 import { isPerpsUserRejection } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'common/utils/toast'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import { usePerpsBuilderFee } from '../hooks/usePerpsBuilderFee'
@@ -21,6 +21,7 @@ import { usePerpsUnifiedAccount } from '../hooks/usePerpsUnifiedAccount'
  */
 export const PerpetualsEnableTradingScreen = (): JSX.Element => {
   const router = useRouter()
+  const navigation = useNavigation()
   const { coin, side, price } = useLocalSearchParams<{
     coin?: string
     side?: string
@@ -46,6 +47,19 @@ export const PerpetualsEnableTradingScreen = (): JSX.Element => {
   // The last step's handler dismisses eagerly while the effect below also
   // reacts to the queries flipping done — guard so we only navigate once.
   const dismissedRef = useRef(false)
+
+  // A native swipe-dismissal doesn't go through `dismiss()`, but an in-flight
+  // step's continuation (e.g. the unified-account tx resolving after the user
+  // swiped away) still would — firing back()/replace() against a stack this
+  // sheet is no longer on and popping/replacing the screen underneath. Mark
+  // the sheet dismissed on any removal so those continuations become no-ops.
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', () => {
+        dismissedRef.current = true
+      }),
+    [navigation]
+  )
   const dismiss = useCallback(() => {
     if (dismissedRef.current) {
       return

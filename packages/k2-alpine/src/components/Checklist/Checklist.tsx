@@ -11,7 +11,7 @@ export interface ChecklistItem {
   readonly description: string
   /**
    * When `true`, the row's action button is replaced by the completion icon
-   * (defaults to `Icons.Action.CheckCircle` in `$textSuccess`).
+   * (defaults to `Icons.Navigation.Check` in `$textSuccess`).
    */
   readonly done: boolean
   /** Label of the action button while the item is pending. */
@@ -23,7 +23,7 @@ export interface ChecklistItem {
    * later steps on earlier ones (e.g. step 2 unlocks once step 1 is `done`).
    */
   readonly actionDisabled?: boolean
-  /** Show a spinner in place of the action label while the action is running. */
+  /** Replace the action button with a spinner while the action is running. */
   readonly loading?: boolean
   /** Optional `testID` for the pending-state action button. */
   readonly actionTestId?: string
