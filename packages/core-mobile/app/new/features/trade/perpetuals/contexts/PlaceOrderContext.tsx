@@ -5,11 +5,12 @@ import React, {
   useState,
   type ReactNode
 } from 'react'
+import { MarginMode } from '../types'
 import { estimateLiquidationPrice } from '../utils/economics'
 
 export type OrderSide = 'long' | 'short'
 
-export type MarginMode = 'cross' | 'isolated'
+export type { MarginMode }
 
 interface PlaceOrderState {
   coin: string
