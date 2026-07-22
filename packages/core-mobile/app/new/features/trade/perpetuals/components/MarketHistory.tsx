@@ -60,7 +60,11 @@ const FillTitle = ({ entry }: { entry: PositionEntry }): JSX.Element => {
   return (
     <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       <StatusArrow
-        color={entry.side === 'long' ? '#1FA95E' : theme.colors.$textDanger}
+        color={
+          entry.side === 'long'
+            ? theme.colors.$textSuccess
+            : theme.colors.$textDanger
+        }
         status={
           entry.side === 'long' ? PriceChangeStatus.Up : PriceChangeStatus.Down
         }

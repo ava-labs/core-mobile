@@ -1,5 +1,6 @@
 import React from 'react'
 import renderer, { act } from 'react-test-renderer'
+import { format } from 'date-fns'
 import type { UserFill } from '@avalabs/perps-sdk'
 
 const mockFills: { fills: UserFill[] } = { fills: [] }
@@ -93,6 +94,10 @@ describe('<MarketHistory />', () => {
     mockFills.fills = []
   })
 
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
   it('renders nothing when there are no fills for the coin', async () => {
     mockFills.fills = [fill({ coin: 'BTC' })]
     const instance = await render('ETH')
@@ -112,12 +117,9 @@ describe('<MarketHistory />', () => {
     expect(json).toContain('Open Long')
     // subtitle: size (0.0714 * 63.06 = $4.50) @ price ($63.06)
     expect(json).toContain('$4.50 @ $63.06')
-    // trailing timestamp from toPositionEntry, computed the same way the
-    // production code formats it so the assertion holds in any runner TZ.
-    const expectedTime = new Date(1752969420000).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    })
+    // trailing timestamp, formatted with the same date-fns pattern the
+    // production code uses so the assertion holds in any runner TZ.
+    const expectedTime = format(new Date(1752969420000), 'h:mm a')
     expect(json).toContain(expectedTime)
     expect(
       instance.root.findAllByProps({ testID: 'history-row' })
@@ -135,8 +137,15 @@ describe('<MarketHistory />', () => {
   })
 
   it("shows 'Yesterday' for fills from the previous day", async () => {
+    // freeze time: a Date.now()-based offset is flaky around DST transitions
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2025-07-20T12:00:00'))
     mockFills.fills = [
-      fill({ time: Date.now() - 24 * 60 * 60 * 1000, tid: 1, hash: '0x1' })
+      fill({
+        time: new Date('2025-07-19T15:30:00').getTime(),
+        tid: 1,
+        hash: '0x1'
+      })
     ]
     const instance = await render('ETH')
     expect(JSON.stringify(instance.toJSON())).toContain('Yesterday')
