@@ -39,7 +39,10 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
   // invalid on-exchange, so it is forced back to isolated.
   const userTouchedRef = useRef(false)
   useEffect(() => {
-    if (leverageType === undefined) {
+    // Wait for the universe too (like the index screen's seeding effect): with
+    // it unresolved `onlyIsolated` reads false, so an isolated-only market
+    // would briefly seed `cross`.
+    if (leverageType === undefined || universe === undefined) {
       return
     }
     const mode = onlyIsolated ? 'isolated' : leverageType
@@ -47,7 +50,7 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
     if (!userTouchedRef.current || onlyIsolated) {
       setDraftMode(mode)
     }
-  }, [leverageType, onlyIsolated, setMarginMode])
+  }, [leverageType, universe, onlyIsolated, setMarginMode])
 
   const selectMode = useCallback((mode: MarginMode) => {
     userTouchedRef.current = true
@@ -90,16 +93,23 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_margin_mode_done"
-        // Gate on the per-coin data (seeds draftMode) AND on the context
-        // leverage: the latter is seeded by the index screen one render after
-        // the same query resolves, so without it Done could push leverage 0
-        // (also covers direct navigation that skips the index screen).
-        disabled={busy || leverageType === undefined || leverage <= 0}
+        // Gate on the per-coin data + universe (they seed draftMode; before
+        // the universe loads an isolated-only market still shows Cross as
+        // selectable) AND on the context leverage: the latter is seeded by the
+        // index screen one render after the same query resolves, so without it
+        // Done could push leverage 0 (also covers direct navigation that
+        // skips the index screen).
+        disabled={
+          busy ||
+          leverageType === undefined ||
+          universe === undefined ||
+          leverage <= 0
+        }
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [busy, leverageType, leverage, handleConfirm]
+    [busy, leverageType, universe, leverage, handleConfirm]
   )
 
   const renderAccessory = useCallback(

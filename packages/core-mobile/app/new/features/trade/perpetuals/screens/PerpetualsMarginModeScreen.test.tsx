@@ -257,6 +257,14 @@ describe('PerpetualsMarginModeScreen', () => {
     expect(doneButton(instance).props.disabled).toBe(true)
   })
 
+  it('disables Done until the universe has loaded', async () => {
+    // Before the universe resolves, `onlyIsolated` reads false and Cross is
+    // selectable — committing then could push an invalid cross update.
+    mockMarket.universe = undefined
+    const instance = await render()
+    expect(doneButton(instance).props.disabled).toBe(true)
+  })
+
   it('disables Done while the context leverage is not yet seeded', async () => {
     mockCtx.leverage = 0
     const instance = await render()
