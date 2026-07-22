@@ -26,7 +26,8 @@ describe('language slice', () => {
   })
 
   it('selector falls back to en-US for an unsupported code', () => {
-    const next = { selected: 'xx-XX' } as typeof initialState
+    // simulate untrusted rehydrated state holding a code outside LanguageCode
+    const next = { selected: 'xx-XX' } as unknown as typeof initialState
     expect(selectSelectedLanguage(wrap(next))).toBe('en-US')
   })
 })

@@ -86,7 +86,19 @@ FCMService.listenForMessagesBackground()
 // PRESS events for notifications displayed by notifee (data-only Android push).
 NotificationsService.registerBackgroundNotificationHandler()
 
-initI18n().catch(err => Logger.error('[i18n] init failed', err))
+// If init rejects, registerComponent below still mounts the tree against an
+// uninitialized i18n. Capture via SentryService directly (not just Logger):
+// SentryService.init() has already run above, whereas Logger only forwards to
+// Sentry after shouldLogErrorToSentry is armed later — so a cold-start i18n
+// failure would otherwise reach Sentry nowhere in release.
+initI18n().catch(err => {
+  const message = '[i18n] init failed'
+  Logger.error(message, err)
+  SentryService.captureException(message, {
+    value: err,
+    tags: { errorId: 'i18n_init_failed' }
+  })
+})
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {

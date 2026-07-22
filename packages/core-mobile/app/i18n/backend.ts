@@ -1,4 +1,5 @@
 import { BackendModule, ReadCallback, Services, InitOptions } from 'i18next'
+import { isLanguageCode } from 'store/settings/language/types'
 import { LOCALES } from './locales'
 
 /**
@@ -14,7 +15,9 @@ export const RequireBackend: BackendModule = {
     _i18nextOptions: InitOptions
   ) => undefined,
   read: (language: string, _namespace: string, callback: ReadCallback) => {
-    const load = LOCALES[language]
+    // i18next may call read() with an arbitrary language string — narrow before
+    // indexing the (LanguageCode-keyed) registry.
+    const load = isLanguageCode(language) ? LOCALES[language] : undefined
     if (!load) {
       callback(new Error(`i18n: unsupported locale ${language}`), false)
       return

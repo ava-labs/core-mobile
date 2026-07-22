@@ -3,7 +3,8 @@ import { RootState } from 'store/types'
 import {
   DEFAULT_LANGUAGE,
   initialState,
-  SUPPORTED_LANGUAGE_CODES
+  isLanguageCode,
+  LanguageCode
 } from './types'
 
 const reducerName = 'language'
@@ -13,9 +14,10 @@ export const languageSlice = createSlice({
   initialState,
   reducers: {
     setSelectedLanguage: (state, action: PayloadAction<string>) => {
-      // clamp at the reducer boundary so state can never hold an unsupported
-      // code (the selector clamps on read; this clamps on write)
-      state.selected = SUPPORTED_LANGUAGE_CODES.includes(action.payload)
+      // payload is `string` — this is the untrusted write boundary. Clamp so
+      // state can only ever hold a LanguageCode (the selector clamps on read;
+      // this clamps on write).
+      state.selected = isLanguageCode(action.payload)
         ? action.payload
         : DEFAULT_LANGUAGE
     }
@@ -23,11 +25,11 @@ export const languageSlice = createSlice({
 })
 
 // selectors
-export const selectSelectedLanguage = (state: RootState): string => {
+export const selectSelectedLanguage = (state: RootState): LanguageCode => {
+  // redux-persist rehydrates `selected` from disk as untrusted data, so narrow
+  // on read rather than trusting the declared type.
   const selected = state.settings.language.selected
-  return SUPPORTED_LANGUAGE_CODES.includes(selected)
-    ? selected
-    : DEFAULT_LANGUAGE
+  return isLanguageCode(selected) ? selected : DEFAULT_LANGUAGE
 }
 
 // actions

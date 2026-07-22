@@ -4,7 +4,7 @@ export type Language = {
   nativeName: string
 }
 
-export const SUPPORTED_LANGUAGES: Language[] = [
+export const SUPPORTED_LANGUAGES = [
   { code: 'en-US', name: 'English', nativeName: 'English' },
   { code: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '简体中文' },
   { code: 'zh-TW', name: 'Chinese (Traditional)', nativeName: '繁體中文' },
@@ -16,19 +16,39 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'ru-RU', name: 'Russian', nativeName: 'Русский' },
   { code: 'es-ES', name: 'Spanish', nativeName: 'Español' },
   { code: 'tr-TR', name: 'Turkish', nativeName: 'Türkçe' }
-]
+] as const
 
-export const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map(l => l.code)
+/**
+ * The closed set of locale codes, derived from `SUPPORTED_LANGUAGES` so it can
+ * never drift from that list or from `LOCALES` (which is typed
+ * `Record<LanguageCode, …>`). Add a locale in one place → compile error until
+ * the others match. (Kept as plain `as const` rather than `as const satisfies
+ * readonly Language[]` because the repo's prettier 2.6.2 can't parse that
+ * chain; the entries still structurally match `Language`.)
+ */
+export type LanguageCode = typeof SUPPORTED_LANGUAGES[number]['code']
 
-export const DEFAULT_LANGUAGE = 'en-US'
+export const SUPPORTED_LANGUAGE_CODES: readonly LanguageCode[] =
+  SUPPORTED_LANGUAGES.map(l => l.code)
+
+export const DEFAULT_LANGUAGE: LanguageCode = 'en-US'
+
+/**
+ * Runtime narrowing for the genuinely untrusted boundaries where a bare `string`
+ * arrives — the MMKV bootstrap seed, redux-persist rehydration (selector read),
+ * and i18next calling the backend `read` with an arbitrary language. Lets those
+ * sites narrow to `LanguageCode` instead of re-widening to `string`.
+ */
+export const isLanguageCode = (value: string): value is LanguageCode =>
+  (SUPPORTED_LANGUAGE_CODES as readonly string[]).includes(value)
 
 /** Non-encrypted MMKV key holding the persisted language for the synchronous bootstrap seed. */
 export const LANGUAGE_MMKV_KEY = 'language'
 
-export const initialState = {
-  selected: DEFAULT_LANGUAGE
+export type LanguageState = {
+  selected: LanguageCode
 }
 
-export type LanguageState = {
-  selected: string
+export const initialState: LanguageState = {
+  selected: DEFAULT_LANGUAGE
 }

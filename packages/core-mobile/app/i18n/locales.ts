@@ -1,3 +1,5 @@
+import { LanguageCode } from 'store/settings/language/types'
+
 type Catalog = Record<string, string>
 
 /**
@@ -6,7 +8,7 @@ type Catalog = Record<string, string>
  * thunk is called — so non-active locales are never loaded. Requires must be
  * literal (not computed) for Metro to bundle them.
  */
-export const LOCALES: Record<string, () => Catalog> = {
+export const LOCALES: Record<LanguageCode, () => Catalog> = {
   'en-US': () => require('./locales/en-US/translation.json'),
   'zh-CN': () => require('./locales/zh-CN/translation.json'),
   'zh-TW': () => require('./locales/zh-TW/translation.json'),

@@ -51,4 +51,11 @@ describe('migration 31 — language default-fill', () => {
     const after = (migrations as any)[31](before)
     expect(after.settings.language.selected).toBe('ja-JP')
   })
+
+  it('fills language for a very old state with no settings at all', () => {
+    // relies on the source's `state.settings?.language?.selected` optional chain
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31]({})
+    expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
+  })
 })
