@@ -12,7 +12,7 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
 
-  const { coin, side, entryPrice, maxLeverage, leverage, setLeverage } =
+  const { coin, side, entryPrice, maxLeverage, leverage, setLeverage, marginMode } =
     usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
   const { leverage: hlLeverage, refetch: refetchLeverage } =
@@ -48,7 +48,10 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   // succeeds, read the leverage back from HL so local state reflects the
   // actual on-chain value rather than assuming the draft was applied.
   const handleConfirm = useCallback(async () => {
-    const ok = await updateLeverage(coin, draftLeverage, true)
+    // Preserve the user's margin mode — HL's updateLeverage sets cross vs
+    // isolated via this flag, so `true` here would silently flip an isolated
+    // user back to cross.
+    const ok = await updateLeverage(coin, draftLeverage, marginMode === 'cross')
     if (!ok) {
       return
     }
@@ -58,6 +61,7 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   }, [
     coin,
     draftLeverage,
+    marginMode,
     updateLeverage,
     refetchLeverage,
     setLeverage,
