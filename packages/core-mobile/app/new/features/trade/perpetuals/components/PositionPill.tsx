@@ -86,14 +86,19 @@ export const PositionPill = ({
       sx={{
         backgroundColor: '$surfaceSecondary',
         borderRadius: 12,
-        padding: 16,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottomLeftRadius: 4,
         borderBottomRightRadius: 4
       }}>
-      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          padding: 16
+        }}>
         <PerpsCoinLogo size={27} symbol={coin} />
         <Text variant="body1" sx={{ color: '$textPrimary' }}>
           {tickerOfCoin(coin)}
@@ -106,6 +111,9 @@ export const PositionPill = ({
       {onChangeSide !== undefined && side !== undefined ? (
         <DropdownMenu
           groups={sideGroups}
+          style={{
+            padding: 16
+          }}
           onPressAction={handleSideAction}
           testID="perpetuals_place_order_side_select">
           {sideLabel}
