@@ -262,4 +262,21 @@ describe('PerpetualsMarginModeScreen', () => {
     const instance = await render()
     expect(doneButton(instance).props.disabled).toBe(true)
   })
+
+  it('still seeds the context when the user taps before HL data loads, preserving the draft', async () => {
+    mockAsset.leverageType = undefined
+    const instance = await render()
+    await act(async () => {
+      row(instance, 'Isolated').props.onPress()
+    })
+    expect(mockSetMarginMode).not.toHaveBeenCalled()
+
+    mockAsset.leverageType = 'cross'
+    await act(async () => {
+      instance.update(<PerpetualsMarginModeScreen />)
+    })
+    // Context mirrors HL even after the tap; the user's draft is untouched.
+    expect(mockSetMarginMode).toHaveBeenCalledWith('cross')
+    expect(hasCheckmark(instance, 'Isolated')).toBe(true)
+  })
 })

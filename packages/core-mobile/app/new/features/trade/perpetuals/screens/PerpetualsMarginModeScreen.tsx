@@ -29,17 +29,21 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
   // Local draft so a selection doesn't hit the exchange until Done.
   const [draftMode, setDraftMode] = useState<MarginMode>(marginMode)
 
-  // Seed from HL's authoritative per-coin mode once it loads, but only before
-  // the user picks an option (so we never fight an edit) — mirrors the
-  // leverage seeding on PerpetualsLeverageScreen.
+  // Seed from HL's authoritative per-coin mode once it loads. The shared
+  // context ALWAYS mirrors HL (otherwise a tap made before the data resolved
+  // would leave it on the unseeded default — wrong Place Order row, redundant
+  // or skipped commits); only the local draft is protected once the user has
+  // picked an option, so we never fight an edit.
   const userTouchedRef = useRef(false)
   useEffect(() => {
-    if (userTouchedRef.current || leverageType === undefined) {
+    if (leverageType === undefined) {
       return
     }
     const mode = onlyIsolated ? 'isolated' : leverageType
-    setDraftMode(mode)
     setMarginMode(mode)
+    if (!userTouchedRef.current) {
+      setDraftMode(mode)
+    }
   }, [leverageType, onlyIsolated, setMarginMode])
 
   const selectMode = useCallback((mode: MarginMode) => {
