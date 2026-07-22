@@ -64,8 +64,9 @@ export const DefaultFeatureFlagConfig = {
   // CP-13903 kill-switch. `false` = feature fully off: balance requests keep
   // dust, tx building keeps dust, Settings row hidden.
   [FeatureGates.FILTER_SMALL_UTXOS]: false,
-  // Hyperliquid networks kill-switch. `false` = HyperEVM/HyperCore are
-  // stripped from the network list entirely.
+  // Hyperliquid networks kill-switch. HyperEVM/HyperCore are stripped from the
+  // network list unless this gate AND FeatureGates.EVERYTHING are both enabled
+  // (see selectIsHyperliquidSupportBlocked).
   [FeatureGates.HYPERLIQUID_SUPPORT]: false
 }
 
