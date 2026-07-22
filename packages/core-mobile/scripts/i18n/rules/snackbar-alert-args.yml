@@ -1,0 +1,14 @@
+id: i18n-snackbar-alert-arg
+language: tsx
+message: Hardcoded string passed to showSnackbar/showAlert — wrap with t() during the i18n sweep.
+severity: warning
+rule:
+  kind: call_expression
+  all:
+    - has:
+        field: function
+        regex: (showSnackbar|showAlert)$
+    - has:
+        kind: string
+        stopBy: end
+        pattern: $STR

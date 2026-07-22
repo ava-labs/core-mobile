@@ -1,0 +1,13 @@
+id: i18n-jsx-string-prop
+language: tsx
+message: Hardcoded user-facing string in a JSX prop (title/label/placeholder/message/description) — wrap with t()/<Trans> during the i18n sweep.
+severity: warning
+rule:
+  kind: jsx_attribute
+  all:
+    - has:
+        kind: property_identifier
+        regex: ^(title|label|placeholder|message|description)$
+    - has:
+        kind: string
+        pattern: $STR
