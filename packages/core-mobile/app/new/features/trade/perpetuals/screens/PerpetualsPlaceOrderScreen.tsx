@@ -21,13 +21,12 @@ import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
 import { usePerpsOrderSubmit } from '../hooks/usePerpsOrderSubmit'
-import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
-import { tickerOfCoin } from '../utils/coinDex'
 import { pctFromEntry, pctParts, positionSizeTokens } from '../utils/economics'
 import { roundSizeToSzDecimals, toNumber } from '../utils/format'
 
@@ -114,7 +113,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     stopLossPrice,
     limitPriceEnabled,
     setLimitPriceEnabled,
-    limitPrice
+    limitPrice,
+    marginMode
   } = usePlaceOrder()
 
   // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
@@ -134,17 +134,20 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     setLeverage(hlLeverage)
   }, [hlLeverage, setLeverage])
 
-  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
-  const { submitOrder } = usePerpsOrderSubmit()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
-
   // Live market data for the coin: the current mark price to size the order and
   // `szDecimals` to quantize the size. Both come from Hyperliquid — there is no
   // fallback to the seeded/placeholder price, so sizing is only ever computed
   // from real market data (the confirm button stays disabled until it loads).
   const { universe, assetCtx } = useHyperliquidMarketContext(coin)
   const szDecimals = universe?.szDecimals
+
+  // Context `marginMode` is seeded from HL by PlaceOrderProvider (the layout),
+  // so it's correct here without this screen having to be mounted first.
+
+  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
+  const { submitOrder } = usePerpsOrderSubmit()
+  const { requireTradingEnabled, enableTradingModal } =
+    usePerpsEnableTradingGate()
   const markPrice = toNumber(assetCtx?.markPx)
   // Also require leverage (> 0), which is seeded from HL rather than a local
   // default, before allowing a submit or sizing the order.
@@ -188,12 +191,13 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const limitPriceLabel = limitPricePctLabel(limitPrice, markPrice, entryPrice)
   const directionLabel = isLong ? 'Long' : 'Short'
-  const subtitle = `You're predicting the price of ${tickerOfCoin(
-    coin
-  )} will go ${isLong ? 'up' : 'down'}`
 
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
+  }, [router])
+
+  const handleMarginMode = useCallback(() => {
+    router.navigate('/perpetualsPlaceOrder/margin')
   }, [router])
 
   const handleOpenTakeProfit = useCallback(() => {
@@ -437,6 +441,21 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
           </View>
 
           <View sx={{ gap: 20 }}>
+            <GroupList
+              titleSx={{ fontFamily: 'Inter-Regular' }}
+              data={[
+                {
+                  title: 'Margin mode',
+                  onPress: handleMarginMode,
+                  value: (
+                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                      {marginMode === 'cross' ? 'Cross' : 'Isolated'}
+                    </Text>
+                  )
+                }
+              ]}
+            />
+
             <GroupList
               titleSx={{ fontFamily: 'Inter-Regular' }}
               subtitleVariant="caption"
