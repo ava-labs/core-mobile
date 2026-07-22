@@ -132,4 +132,24 @@ describe('ActivityService C-Chain atomic merge', () => {
     expect(res.transactions.map(t => t.hash)).toEqual(['0xevm'])
     expect(res.nextPageToken).toBe('evm-next')
   })
+
+  it('threads the caller pageSize through to the atomic Glacier fetch', async () => {
+    // The atomic request should match the caller's page size rather than
+    // always pulling Glacier's 100-item default.
+    ;(
+      GlacierService.listCChainAtomicTransactions as jest.Mock
+    ).mockResolvedValue({ transactions: [], nextPageToken: '' })
+
+    await ActivityService.getActivities({
+      network: cChainNetwork,
+      account,
+      nextPageToken: undefined,
+      shouldAnalyzeBridgeTxs: false,
+      pageSize: 25
+    })
+
+    expect(GlacierService.listCChainAtomicTransactions).toHaveBeenCalledWith(
+      expect.objectContaining({ pageSize: 25 })
+    )
+  })
 })

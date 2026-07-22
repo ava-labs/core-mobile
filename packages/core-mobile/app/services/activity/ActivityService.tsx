@@ -48,7 +48,8 @@ export class ActivityService {
     const atomicPromise = this.fetchCChainAtomicTransactions({
       network: networkWithTokens,
       address,
-      nextPageToken
+      nextPageToken,
+      pageSize
     })
 
     const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
@@ -84,21 +85,24 @@ export class ActivityService {
 
   /**
    * C-Chain atomic import/export txs come from a separate Glacier endpoint the
-   * EVM module never calls (CP-14760). Fetch them for the first page only —
-   * the recent-activity view is a single 100-item page, so this covers the
-   * token detail + activity tab. Best-effort: a failure here must not break
-   * the primary EVM history, so all errors are swallowed and logged, which
-   * also makes it safe to kick off this fetch before awaiting the EVM
+   * EVM module never calls (CP-14760). Fetch them for the first page only,
+   * sized to the caller's `pageSize` so the atomic request stays aligned with
+   * the EVM page instead of always pulling Glacier's 100-item default; this
+   * covers the token detail + activity tab. Best-effort: a failure here must
+   * not break the primary EVM history, so all errors are swallowed and logged,
+   * which also makes it safe to kick off this fetch before awaiting the EVM
    * history fetch (the returned promise never rejects).
    */
   private async fetchCChainAtomicTransactions({
     network,
     address,
-    nextPageToken
+    nextPageToken,
+    pageSize
   }: {
     network: Network
     address: string
     nextPageToken?: string
+    pageSize?: number
   }): Promise<Transaction[]> {
     if (nextPageToken !== undefined) return []
     if (!isAvalancheCChainId(network.chainId)) return []
@@ -106,7 +110,8 @@ export class ActivityService {
     try {
       const atomic = await GlacierService.listCChainAtomicTransactions({
         address,
-        isTestnet: Boolean(network.isTestnet)
+        isTestnet: Boolean(network.isTestnet),
+        pageSize
       })
 
       return atomic.transactions
