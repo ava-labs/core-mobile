@@ -2,7 +2,9 @@ import type { PerpUniverseEntry } from '@avalabs/perps-sdk'
 import React, {
   createContext,
   useContext,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode
 } from 'react'
@@ -79,6 +81,13 @@ export interface PlaceOrderProviderProps {
   initialLeverage: number
   /** Live per-coin market metadata; `undefined` until loaded. */
   universe?: PerpUniverseEntry
+  /**
+   * Hyperliquid's authoritative margin mode for the coin (`onlyIsolated`
+   * already applied); `undefined` until known. Seeds `marginMode` here in the
+   * provider — the always-mounted layout — so the value is correct before any
+   * sheet's Done can commit, regardless of which screens are mounted.
+   */
+  hlMarginMode?: MarginMode
   /** Seed values for editing an existing position (Manage flow). */
   initialAmount?: number
   initialTakeProfitPrice?: number
@@ -94,6 +103,7 @@ export const PlaceOrderProvider = ({
   initialAmount = 0,
   initialLeverage,
   universe,
+  hlMarginMode,
   initialTakeProfitPrice,
   initialStopLossPrice,
   children
@@ -105,9 +115,24 @@ export const PlaceOrderProvider = ({
   // one-time `leverage` state from the per-render baseline used by the manage
   // screen); the leverage gauge enforces the market max on user edits.
   const [leverage, setLeverage] = useState(initialLeverage)
-  // HL's default for a fresh asset is cross; screens re-seed from the actual
-  // per-coin `leverageType` once activeAssetData loads.
+  // HL's default for a fresh asset is cross; re-seeded from the actual
+  // per-coin mode below once it loads.
   const [marginMode, setMarginMode] = useState<MarginMode>('cross')
+
+  // Seed once from HL's per-coin mode. A layout effect (not useEffect) so the
+  // context is updated before paint in the same commit that enables the
+  // sheets' Done buttons (they gate on the same leverageType/universe data) —
+  // a passive effect would leave one interactive frame where a commit could
+  // send the unseeded 'cross' default. Seed-once so a later refetch (e.g.
+  // after the margin sheet commits a change) can't overwrite user intent.
+  const seededMarginModeRef = useRef(false)
+  useLayoutEffect(() => {
+    if (seededMarginModeRef.current || hlMarginMode === undefined) {
+      return
+    }
+    seededMarginModeRef.current = true
+    setMarginMode(hlMarginMode)
+  }, [hlMarginMode])
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )

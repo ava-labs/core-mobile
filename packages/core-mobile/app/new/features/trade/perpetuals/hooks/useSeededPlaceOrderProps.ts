@@ -7,6 +7,7 @@ import { FALLBACK_COIN } from '../utils/economics'
 import { normalizePerpCoinParam } from '../utils/coinDex'
 import { toNumber as parseHlNumber } from '../utils/format'
 import { useHyperliquidMarketContext } from './useHyperliquidMarketContext'
+import { usePerpsActiveAssetData } from './usePerpsActiveAssetData'
 
 export type SeededPlaceOrderProps = Omit<PlaceOrderProviderProps, 'children'>
 
@@ -88,6 +89,7 @@ export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
   const params = useLocalSearchParams<SeedParams>()
   const resolved = resolveSeededPlaceOrderProps(params)
   const { universe, assetCtx } = useHyperliquidMarketContext(resolved.coin)
+  const { leverageType } = usePerpsActiveAssetData(resolved.coin)
 
   const liveMaxLeverage = universe?.maxLeverage
   const liveMarkPrice = parseHlNumber(assetCtx?.markPx)
@@ -105,6 +107,16 @@ export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
         : resolved.maxLeverage,
     // Shared through PlaceOrderContext so the sheets in the stack (leverage,
     // margin mode) read this subscription instead of opening their own socket.
-    universe
+    universe,
+    // HL's authoritative margin mode, undefined until BOTH queries resolve:
+    // with the universe unresolved `onlyIsolated` would read false and an
+    // isolated-only (HIP-3) market could briefly seed cross. The provider
+    // seeds context `marginMode` from this before any sheet can commit.
+    hlMarginMode:
+      universe !== undefined && leverageType !== undefined
+        ? universe.onlyIsolated === true
+          ? 'isolated'
+          : leverageType
+        : undefined
   }
 }

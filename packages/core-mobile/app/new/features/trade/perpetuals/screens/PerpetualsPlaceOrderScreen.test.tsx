@@ -23,7 +23,6 @@ jest.mock('common/utils/toast', () => ({
   showSnackbar: (...args: any[]) => mockShowSnackbar(...args)
 }))
 
-const mockSetMarginMode = jest.fn()
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
@@ -33,8 +32,7 @@ jest.mock('../contexts/PlaceOrderContext', () => ({
     setAmount: jest.fn(),
     leverage: 2,
     liquidationPrice: 1,
-    marginMode: 'cross',
-    setMarginMode: mockSetMarginMode
+    marginMode: 'cross'
   })
 }))
 
@@ -60,8 +58,7 @@ jest.mock('../hooks/useTriggerToggles', () => ({
 const mockActiveAsset = {
   maxBuySizeCoin: 1.5 as number | undefined,
   maxSellSizeCoin: 1 as number | undefined,
-  isLoading: false,
-  leverageType: undefined as 'cross' | 'isolated' | undefined
+  isLoading: false
 }
 const mockMarket = {
   universe: { szDecimals: 3, maxLeverage: 40 } as
@@ -78,7 +75,6 @@ jest.mock('../hooks/useHyperliquidMarketContext', () => ({
 jest.mock('../hooks/usePerpsActiveAssetData', () => ({
   usePerpsActiveAssetData: () => ({
     leverage: undefined,
-    leverageType: mockActiveAsset.leverageType,
     maxBuySizeCoin: mockActiveAsset.maxBuySizeCoin,
     maxSellSizeCoin: mockActiveAsset.maxSellSizeCoin,
     isLoading: mockActiveAsset.isLoading,
@@ -176,7 +172,6 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
   beforeEach(() => {
     mockBack.mockReset()
     mockNavigate.mockReset()
-    mockSetMarginMode.mockReset()
     mockRecheck.mockReset()
     mockShowSnackbar.mockReset()
     mockSubmitOrder.mockReset()
@@ -185,7 +180,6 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     mockActiveAsset.maxBuySizeCoin = 1.5
     mockActiveAsset.maxSellSizeCoin = 1
     mockActiveAsset.isLoading = false
-    mockActiveAsset.leverageType = undefined
   })
 
   it('disables the confirm button when geo-blocked', async () => {
@@ -336,8 +330,6 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
 describe('PerpetualsPlaceOrderScreen margin mode', () => {
   beforeEach(() => {
     mockNavigate.mockReset()
-    mockSetMarginMode.mockReset()
-    mockActiveAsset.leverageType = undefined
     mockMarket.universe = { szDecimals: 3, maxLeverage: 40 }
   })
 
@@ -357,23 +349,6 @@ describe('PerpetualsPlaceOrderScreen margin mode', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/perpetualsPlaceOrder/margin')
   })
 
-  it('seeds context marginMode from HL leverageType once loaded', async () => {
-    mockActiveAsset.leverageType = 'isolated'
-    await render()
-    expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
-  })
-
-  it('does not seed marginMode before the universe loads', async () => {
-    mockActiveAsset.leverageType = 'cross'
-    mockMarket.universe = undefined
-    await render()
-    expect(mockSetMarginMode).not.toHaveBeenCalled()
-  })
-
-  it('seeds isolated for isolated-only markets even when HL reports cross', async () => {
-    mockActiveAsset.leverageType = 'cross'
-    mockMarket.universe = { szDecimals: 3, maxLeverage: 40, onlyIsolated: true }
-    await render()
-    expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
-  })
+  // Context `marginMode` seeding from HL lives in PlaceOrderProvider (see
+  // PlaceOrderContext.test.tsx), not in this screen.
 })

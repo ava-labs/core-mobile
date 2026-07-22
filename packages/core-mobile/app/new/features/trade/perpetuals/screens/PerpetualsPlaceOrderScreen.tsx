@@ -80,15 +80,13 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     takeProfitPrice,
     stopLossEnabled,
     stopLossPrice,
-    marginMode,
-    setMarginMode
+    marginMode
   } = usePlaceOrder()
 
   // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
   // so it reflects HL rather than the local default before the user edits it.
   const {
     leverage: hlLeverage,
-    leverageType,
     maxBuySizeCoin,
     maxSellSizeCoin,
     isLoading: activeAssetLoading
@@ -109,25 +107,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const { universe, assetCtx } = useHyperliquidMarketContext(coin)
   const szDecimals = universe?.szDecimals
 
-  // Same seeding pattern for the margin mode: HL persists cross/isolated per
-  // coin, so reflect the actual value instead of the local 'cross' default.
-  // Some (HIP-3) markets are isolated-only, matching the margin sheet's seed.
-  // Wait for the universe too: `leverageType` and `universe` load from
-  // independent queries, and HL can report cross for an isolated-only market —
-  // seeding before `onlyIsolated` is known could lock in an invalid cross mode.
-  const onlyIsolated = universe?.onlyIsolated === true
-  const seededMarginModeRef = useRef(false)
-  useEffect(() => {
-    if (
-      seededMarginModeRef.current ||
-      leverageType === undefined ||
-      universe === undefined
-    ) {
-      return
-    }
-    seededMarginModeRef.current = true
-    setMarginMode(onlyIsolated ? 'isolated' : leverageType)
-  }, [leverageType, universe, onlyIsolated, setMarginMode])
+  // Context `marginMode` is seeded from HL by PlaceOrderProvider (the layout),
+  // so it's correct here without this screen having to be mounted first.
 
   const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
   const { submitOrder } = usePerpsOrderSubmit()
