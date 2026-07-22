@@ -38,6 +38,18 @@ describe('isHyperliquidNetwork', () => {
     ).toBe(true)
   })
 
+  it('matches chain name case-insensitively and ignores surrounding whitespace', () => {
+    expect(
+      isHyperliquidNetwork({ chainId: 1234, chainName: 'hyperevm' } as Network)
+    ).toBe(true)
+    expect(
+      isHyperliquidNetwork({
+        chainId: 1234,
+        chainName: ' HYPERCORE '
+      } as Network)
+    ).toBe(true)
+  })
+
   it('returns false for other networks', () => {
     expect(
       isHyperliquidNetwork({ chainId: 1, chainName: 'Ethereum' } as Network)
