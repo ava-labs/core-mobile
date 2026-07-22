@@ -1,18 +1,12 @@
 import { Button, GroupList, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlaceOrder, type MarginMode } from '../contexts/PlaceOrderContext'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { usePerpsPositions } from '../hooks/usePerpsPositions'
-
-const CROSS_DESCRIPTION =
-  'All cross positions share the same cross margin as collateral. In the event of liquidation, your cross margin balance and any remaining open positions under assets in this mode may be forfeited.'
-
-const ISOLATED_DESCRIPTION =
-  'Manage your risk on individual positions by restricting the amount of margin allocated to each. If the margin ratio of an isolated position reaches 100%, the position will be liquidated. Margin can be added or removed to individual positions in this mode.'
 
 export const PerpetualsMarginModeScreen = (): JSX.Element => {
   const router = useRouter()
@@ -100,12 +94,42 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
     [busy, leverageType, handleConfirm]
   )
 
-  const checkmark = <Icons.Navigation.Check color={theme.colors.$textPrimary} />
-  // Keeps row text width stable between selected/unselected states.
-  const accessoryPlaceholder = <View sx={{ width: 24, height: 24 }} />
+  const renderAccessory = useCallback(
+    (mode: MarginMode) => {
+      return (
+        <View sx={{ width: 24, height: 24, marginRight: 16 }}>
+          {mode === draftMode ? (
+            <Icons.Navigation.Check color={theme.colors.$textPrimary} />
+          ) : null}
+        </View>
+      )
+    },
+    [draftMode, theme.colors.$textPrimary]
+  )
 
-  const crossDisabled = locked || onlyIsolated
-  const isolatedDisabled = locked
+  const data = useMemo(() => {
+    const crossDisabled = locked || onlyIsolated
+    const isolatedDisabled = locked
+
+    return [
+      {
+        title: 'Cross',
+        subtitle:
+          'All cross positions share the same cross margin as collateral. In the event of liquidation, your cross margin balance and any remaining open positions under assets in this mode may be forfeited.',
+        accessory: renderAccessory('cross'),
+        onPress: crossDisabled ? undefined : () => selectMode('cross'),
+        containerSx: crossDisabled ? { opacity: 0.4 } : undefined
+      },
+      {
+        title: 'Isolated',
+        subtitle:
+          'Manage your risk on individual positions by restricting the amount of margin allocated to each. If the margin ratio of an isolated position reaches 100%, the position will be liquidated. Margin can be added or removed to individual positions in this mode.',
+        accessory: renderAccessory('isolated'),
+        onPress: isolatedDisabled ? undefined : () => selectMode('isolated'),
+        containerSx: isolatedDisabled ? { opacity: 0.4 } : undefined
+      }
+    ]
+  }, [locked, onlyIsolated, renderAccessory, selectMode])
 
   return (
     <ScrollScreen
@@ -116,34 +140,18 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
           ? 'Close your open position to change margin mode for this market'
           : 'Select which mode to use for your margin'
       }
-      navigationTitle="Margin mode"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ paddingTop: 8 }}>
-        <GroupList
-          subtitleVariant="caption"
-          data={[
-            {
-              title: 'Cross',
-              subtitle: CROSS_DESCRIPTION,
-              accessory:
-                draftMode === 'cross' ? checkmark : accessoryPlaceholder,
-              onPress: crossDisabled ? undefined : () => selectMode('cross'),
-              containerSx: crossDisabled ? { opacity: 0.4 } : undefined
-            },
-            {
-              title: 'Isolated',
-              subtitle: ISOLATED_DESCRIPTION,
-              accessory:
-                draftMode === 'isolated' ? checkmark : accessoryPlaceholder,
-              onPress: isolatedDisabled
-                ? undefined
-                : () => selectMode('isolated'),
-              containerSx: isolatedDisabled ? { opacity: 0.4 } : undefined
-            }
-          ]}
-        />
-      </View>
+      <GroupList
+        subtitleVariant="subtitle2"
+        data={data}
+        subtitleSx={{
+          marginRight: 60
+        }}
+        style={{
+          marginTop: 8
+        }}
+      />
     </ScrollScreen>
   )
 }
