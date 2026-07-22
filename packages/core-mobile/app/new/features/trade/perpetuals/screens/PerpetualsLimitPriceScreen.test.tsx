@@ -54,6 +54,9 @@ jest.mock('common/components/ScrollScreen', () => {
       )
   }
 })
+// The real FiatAmountInput only seeds from `amount` and must be driven via
+// its imperative setValue for programmatic changes — the mock records those.
+const mockInputSetValue = jest.fn()
 jest.mock('@avalabs/k2-alpine', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
@@ -68,14 +71,22 @@ jest.mock('@avalabs/k2-alpine', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Button: ({ children, ...rest }: any) =>
       r.createElement(rn.View, rest, children),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    FiatAmountInput: ({ onChange, amount, ...rest }: any) =>
-      r.createElement(rn.TextInput, {
-        ...rest,
-        value: amount,
-        onChangeText: onChange,
-        testID: 'perpetuals_limit_price_input'
-      }),
+    FiatAmountInput: r.forwardRef(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ onChange, amount, ...rest }: any, ref) => {
+        r.useImperativeHandle(ref, () => ({
+          setValue: mockInputSetValue,
+          focus: jest.fn(),
+          blur: jest.fn()
+        }))
+        return r.createElement(rn.TextInput, {
+          ...rest,
+          value: amount,
+          onChangeText: onChange,
+          testID: 'perpetuals_limit_price_input'
+        })
+      }
+    ),
     useTheme: () => ({
       theme: { colors: { $textPrimary: '#fff', $textSecondary: '#999' } }
     })
@@ -100,6 +111,7 @@ describe('PerpetualsLimitPriceScreen', () => {
     mockPlaceOrder.limitPrice = undefined
     mockPlaceOrder.side = 'long'
     mockMid.value = undefined
+    mockInputSetValue.mockReset()
   })
 
   it('disables Done until a positive price is entered', async () => {
@@ -160,8 +172,12 @@ describe('PerpetualsLimitPriceScreen', () => {
     const instance = await renderScreen()
     await pressPreset(instance, '-5%')
     expect(inputValue(instance)).toBe('95')
+    // The displayed number must be pushed through the widget's imperative
+    // setValue — state alone leaves the on-screen amount stale.
+    expect(mockInputSetValue).toHaveBeenCalledWith('95')
     await pressPreset(instance, 'Mid')
     expect(inputValue(instance)).toBe('100')
+    expect(mockInputSetValue).toHaveBeenCalledWith('100')
   })
 
   it('applies short presets above the mid price', async () => {

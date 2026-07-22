@@ -1,9 +1,14 @@
-import { Button, FiatAmountInput, View } from '@avalabs/k2-alpine'
+import {
+  Button,
+  FiatAmountInput,
+  View,
+  type FiatAmountInputHandle
+} from '@avalabs/k2-alpine'
 import { roundToHyperliquidPrice } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { PositionPill } from '../components/PositionPill'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
@@ -64,6 +69,11 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
     ]
   }, [isLong])
 
+  // FiatAmountInput only reads `amount` to seed its internal state, so a
+  // programmatic value change must ALSO go through its imperative setValue —
+  // updating our state alone leaves the displayed number stale.
+  const inputRef = useRef<FiatAmountInputHandle>(null)
+
   const handlePreset = useCallback(
     (offset: number): void => {
       if (referencePrice <= 0) {
@@ -74,6 +84,7 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
         szDecimals !== undefined
           ? roundToHyperliquidPrice(raw, szDecimals)
           : raw
+      inputRef.current?.setValue(String(snapped))
       setPriceText(String(snapped))
     },
     [referencePrice, szDecimals]
@@ -128,6 +139,7 @@ export const PerpetualsLimitPriceScreen = (): JSX.Element => {
             borderTopRightRadius: 4
           }}>
           <FiatAmountInput
+            ref={inputRef}
             autoFocus
             currency="USD"
             amount={priceText}
