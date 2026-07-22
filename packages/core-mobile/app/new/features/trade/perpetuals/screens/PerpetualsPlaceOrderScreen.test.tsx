@@ -63,9 +63,14 @@ const mockActiveAsset = {
   isLoading: false,
   leverageType: undefined as 'cross' | 'isolated' | undefined
 }
+const mockMarket = {
+  universe: { szDecimals: 3, maxLeverage: 40 } as
+    | { szDecimals?: number; maxLeverage?: number; onlyIsolated?: boolean }
+    | undefined
+}
 jest.mock('../hooks/useHyperliquidMarketContext', () => ({
   useHyperliquidMarketContext: () => ({
-    universe: { szDecimals: 3, maxLeverage: 40 },
+    universe: mockMarket.universe,
     assetCtx: { markPx: '100' }
   })
 }))
@@ -333,6 +338,7 @@ describe('PerpetualsPlaceOrderScreen margin mode', () => {
     mockNavigate.mockReset()
     mockSetMarginMode.mockReset()
     mockActiveAsset.leverageType = undefined
+    mockMarket.universe = { szDecimals: 3, maxLeverage: 40 }
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -353,6 +359,20 @@ describe('PerpetualsPlaceOrderScreen margin mode', () => {
 
   it('seeds context marginMode from HL leverageType once loaded', async () => {
     mockActiveAsset.leverageType = 'isolated'
+    await render()
+    expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
+  })
+
+  it('does not seed marginMode before the universe loads', async () => {
+    mockActiveAsset.leverageType = 'cross'
+    mockMarket.universe = undefined
+    await render()
+    expect(mockSetMarginMode).not.toHaveBeenCalled()
+  })
+
+  it('seeds isolated for isolated-only markets even when HL reports cross', async () => {
+    mockActiveAsset.leverageType = 'cross'
+    mockMarket.universe = { szDecimals: 3, maxLeverage: 40, onlyIsolated: true }
     await render()
     expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
   })

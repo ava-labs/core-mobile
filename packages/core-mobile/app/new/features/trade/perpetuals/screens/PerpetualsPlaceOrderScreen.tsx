@@ -112,15 +112,22 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   // Same seeding pattern for the margin mode: HL persists cross/isolated per
   // coin, so reflect the actual value instead of the local 'cross' default.
   // Some (HIP-3) markets are isolated-only, matching the margin sheet's seed.
+  // Wait for the universe too: `leverageType` and `universe` load from
+  // independent queries, and HL can report cross for an isolated-only market —
+  // seeding before `onlyIsolated` is known could lock in an invalid cross mode.
   const onlyIsolated = universe?.onlyIsolated === true
   const seededMarginModeRef = useRef(false)
   useEffect(() => {
-    if (seededMarginModeRef.current || leverageType === undefined) {
+    if (
+      seededMarginModeRef.current ||
+      leverageType === undefined ||
+      universe === undefined
+    ) {
       return
     }
     seededMarginModeRef.current = true
     setMarginMode(onlyIsolated ? 'isolated' : leverageType)
-  }, [leverageType, onlyIsolated, setMarginMode])
+  }, [leverageType, universe, onlyIsolated, setMarginMode])
 
   const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
   const { submitOrder } = usePerpsOrderSubmit()

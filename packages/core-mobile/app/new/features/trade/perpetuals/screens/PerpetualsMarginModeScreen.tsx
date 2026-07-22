@@ -83,15 +83,16 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_margin_mode_done"
-        // leverageType and leverage both come from the same activeAssetData
-        // query, so gating on it guarantees leverage/draftMode are seeded
-        // before a commit can fire (otherwise Done could push leverage 0).
-        disabled={busy || leverageType === undefined}
+        // Gate on the per-coin data (seeds draftMode) AND on the context
+        // leverage: the latter is seeded by the index screen one render after
+        // the same query resolves, so without it Done could push leverage 0
+        // (also covers direct navigation that skips the index screen).
+        disabled={busy || leverageType === undefined || leverage <= 0}
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [busy, leverageType, handleConfirm]
+    [busy, leverageType, leverage, handleConfirm]
   )
 
   const renderAccessory = useCallback(

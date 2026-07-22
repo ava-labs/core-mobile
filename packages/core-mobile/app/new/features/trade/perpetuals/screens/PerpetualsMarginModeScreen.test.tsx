@@ -7,11 +7,11 @@ jest.mock('expo-router', () => ({
 }))
 
 const mockSetMarginMode = jest.fn()
-const mockCtx = { marginMode: 'cross' as 'cross' | 'isolated' }
+const mockCtx = { marginMode: 'cross' as 'cross' | 'isolated', leverage: 2 }
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
-    leverage: 2,
+    leverage: mockCtx.leverage,
     marginMode: mockCtx.marginMode,
     setMarginMode: mockSetMarginMode
   })
@@ -159,6 +159,7 @@ describe('PerpetualsMarginModeScreen', () => {
     mockSetMarginMode.mockReset()
     mockUpdateLeverage.mockReset()
     mockCtx.marginMode = 'cross'
+    mockCtx.leverage = 2
     mockAsset.leverageType = 'cross'
     mockMarket.universe = { onlyIsolated: false }
     mockPositions.positions = []
@@ -252,6 +253,12 @@ describe('PerpetualsMarginModeScreen', () => {
 
   it('disables Done until the per-coin HL data has loaded', async () => {
     mockAsset.leverageType = undefined
+    const instance = await render()
+    expect(doneButton(instance).props.disabled).toBe(true)
+  })
+
+  it('disables Done while the context leverage is not yet seeded', async () => {
+    mockCtx.leverage = 0
     const instance = await render()
     expect(doneButton(instance).props.disabled).toBe(true)
   })
