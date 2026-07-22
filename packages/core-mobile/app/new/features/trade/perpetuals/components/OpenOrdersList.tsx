@@ -14,7 +14,7 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo } from 'react'
-import { StyleProp, ViewStyle } from 'react-native'
+import { ViewStyle } from 'react-native'
 import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { tickerOfCoin } from '../utils/coinDex'
@@ -62,7 +62,7 @@ export const toOpenOrderRows = (
 export const OpenOrdersList = ({
   containerStyle
 }: {
-  containerStyle?: StyleProp<ViewStyle>
+  containerStyle?: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
