@@ -16,7 +16,7 @@ describe('resolveSeededPlaceOrderProps', () => {
       maxLeverage: '25'
     })
     expect(props.coin).toBe('ETH')
-    expect(props.side).toBe('short')
+    expect(props.initialSide).toBe('short')
     expect(props.entryPrice).toBe(1973.1)
     expect(props.maxLeverage).toBe(25)
     // No leverage param → 0 until the live HL leverage is applied by the hook.
@@ -111,7 +111,7 @@ describe('resolveSeededPlaceOrderProps', () => {
   it('defaults when params are absent', () => {
     const props = resolveSeededPlaceOrderProps({})
     expect(props.coin).toBe('AVAX')
-    expect(props.side).toBe('long')
+    expect(props.initialSide).toBe('long')
     // No fabricated price/leverage: the hook fills these from live market data.
     expect(props.entryPrice).toBe(0)
     expect(props.maxLeverage).toBe(0)

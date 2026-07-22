@@ -55,7 +55,12 @@ const PlaceOrderContext = createContext<PlaceOrderState | undefined>(undefined)
 
 export interface PlaceOrderProviderProps {
   coin: string
-  side: OrderSide
+  /**
+   * Seed only — sets the initial `PlaceOrderState.side` via `useState`. The
+   * place-order screen flips the live side afterwards via `switchSide`, so
+   * this prop is not kept in sync with it.
+   */
+  initialSide: OrderSide
   entryPrice: number
   maxLeverage: number
   /**
@@ -73,7 +78,7 @@ export interface PlaceOrderProviderProps {
 
 export const PlaceOrderProvider = ({
   coin,
-  side: initialSide,
+  initialSide,
   entryPrice,
   maxLeverage,
   initialAmount = 0,

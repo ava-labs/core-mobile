@@ -294,6 +294,44 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     expect(dial.props.step).toBe(0.0005)
   })
 
+  it('warns when the amount exceeds the flipped side capacity and disables confirm', async () => {
+    // amount is mocked at 10; capacity here is 0.05 BTC × $100 mark = $5, so
+    // the dialed amount exceeds the new side's capacity.
+    mockActiveAsset.maxBuySizeCoin = 0.05
+    const instance = await render()
+
+    expect(
+      instance.root.findAll(node =>
+        node.children.some(
+          child =>
+            typeof child === 'string' && child.includes('Reduce your position')
+        )
+      ).length
+    ).toBeGreaterThan(0)
+    expect(confirmButton(instance).props.disabled).toBe(true)
+  })
+
+  it('shows the normal maximum-position caption when capacity is ample', async () => {
+    const instance = await render()
+
+    expect(
+      instance.root.findAll(node =>
+        node.children.some(
+          child =>
+            typeof child === 'string' && child.includes('Maximum position:')
+        )
+      ).length
+    ).toBeGreaterThan(0)
+    expect(
+      instance.root.findAll(node =>
+        node.children.some(
+          child =>
+            typeof child === 'string' && child.includes('Reduce your position')
+        )
+      )
+    ).toHaveLength(0)
+  })
+
   it('stays on screen (order not submitted) when the order fails', async () => {
     mockRecheck.mockResolvedValueOnce(false)
     mockSubmitOrder.mockResolvedValueOnce(false)

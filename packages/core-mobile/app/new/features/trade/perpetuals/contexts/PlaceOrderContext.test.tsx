@@ -15,7 +15,7 @@ const Probe = (): null => {
 }
 
 const renderProvider = (props?: {
-  side?: OrderSide
+  initialSide?: OrderSide
   initialTakeProfitPrice?: number
   initialStopLossPrice?: number
 }): renderer.ReactTestRenderer => {
@@ -24,7 +24,7 @@ const renderProvider = (props?: {
     instance = renderer.create(
       <PlaceOrderProvider
         coin="BTC"
-        side={props?.side ?? 'long'}
+        initialSide={props?.initialSide ?? 'long'}
         entryPrice={100}
         maxLeverage={40}
         initialLeverage={5}
@@ -40,7 +40,7 @@ const renderProvider = (props?: {
 describe('PlaceOrderContext switchSide', () => {
   it('flips the side and clears TP/SL prices and toggles', () => {
     renderProvider({
-      side: 'long',
+      initialSide: 'long',
       initialTakeProfitPrice: 120,
       initialStopLossPrice: 90
     })
@@ -61,7 +61,7 @@ describe('PlaceOrderContext switchSide', () => {
 
   it('is a no-op (keeps TP/SL) when switching to the current side', () => {
     renderProvider({
-      side: 'long',
+      initialSide: 'long',
       initialTakeProfitPrice: 120,
       initialStopLossPrice: 90
     })
@@ -78,7 +78,7 @@ describe('PlaceOrderContext switchSide', () => {
   })
 
   it('recomputes the liquidation price for the new side', () => {
-    renderProvider({ side: 'long' })
+    renderProvider({ initialSide: 'long' })
     const longLiquidation = ctx.liquidationPrice
 
     act(() => {

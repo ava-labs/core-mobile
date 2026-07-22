@@ -62,6 +62,32 @@ const positionCapacityMessage = (
 const positionDialStep = (maxPositionNotionalUsd: number): number =>
   maxPositionNotionalUsd / 1000
 
+/**
+ * Caption under the amount dial. Flipping Long/Short swaps the capacity
+ * source (`maxBuySizeCoin` vs `maxSellSizeCoin`), so a previously valid
+ * dialed amount can end up above the new side's max — the dial visually
+ * clamps its readout, but `amount` itself is left untouched (no
+ * auto-clamping), so this surfaces that mismatch instead of silently
+ * disabling the confirm button.
+ */
+const positionCaptionText = (
+  maxPositionNotionalUsd: number | undefined,
+  amountExceedsCapacity: boolean,
+  formatCurrency: (props: { amount: number }) => string
+): string => {
+  if (maxPositionNotionalUsd === undefined) {
+    return 'Maximum position: —'
+  }
+  if (amountExceedsCapacity) {
+    return `Reduce your position to ${formatCurrency({
+      amount: maxPositionNotionalUsd
+    })} or less`
+  }
+  return `Maximum position: ${formatCurrency({
+    amount: maxPositionNotionalUsd
+  })}`
+}
+
 export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
@@ -308,12 +334,17 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
               </View>
               <Text
                 variant="caption"
-                sx={{ color: '$textSecondary', textAlign: 'center' }}>
-                {maxPositionNotionalUsd === undefined
-                  ? 'Maximum position: —'
-                  : `Maximum position: ${formatCurrency({
-                      amount: maxPositionNotionalUsd
-                    })}`}
+                sx={{
+                  color: amountExceedsCapacity
+                    ? '$textDanger'
+                    : '$textSecondary',
+                  textAlign: 'center'
+                }}>
+                {positionCaptionText(
+                  maxPositionNotionalUsd,
+                  amountExceedsCapacity,
+                  formatCurrency
+                )}
               </Text>
             </View>
           </View>

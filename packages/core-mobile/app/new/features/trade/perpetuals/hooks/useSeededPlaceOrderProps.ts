@@ -64,7 +64,7 @@ export const resolveSeededPlaceOrderProps = (
 
   return {
     coin: normalizePerpCoinParam(params.coin ?? FALLBACK_COIN),
-    side: (params.side === 'short' ? 'short' : 'long') as OrderSide,
+    initialSide: (params.side === 'short' ? 'short' : 'long') as OrderSide,
     entryPrice,
     maxLeverage,
     initialLeverage,
