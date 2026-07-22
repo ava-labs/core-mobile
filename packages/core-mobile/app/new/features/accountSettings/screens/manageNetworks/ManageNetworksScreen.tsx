@@ -120,8 +120,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
           !isHyperliquidNetwork(network)
       )
     )
-    // Hyperliquid networks are not Avalanche L1s — when the hyperliquid-support
-    // feature flag is off they never reach this screen at all
+    // Hyperliquid networks are not Avalanche L1s. Backend-provided ones are
+    // stripped upstream while the hyperliquid-support feature flag is off;
+    // user-added custom networks always render in the Custom networks section
     const hyperliquidNetworks = filterNetworks(
       Object.values(networks).filter(
         network =>
@@ -158,7 +159,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
       sectionedNetworks.push({
         title: 'Avalanche L1s',
         key: 'avalanche-l1s',
-        data: filterNetworks(layer1Networks)
+        data: layer1Networks
       })
     }
 
