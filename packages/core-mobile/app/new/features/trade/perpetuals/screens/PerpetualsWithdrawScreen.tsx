@@ -18,6 +18,7 @@ import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { USDC_DECIMALS } from '../consts'
 import { PerpsApiDownState } from '../components/PerpsApiDownState'
 import { usePerpsWithdraw } from '../hooks/usePerpsWithdraw'
+import { floorToUsdcUnit, usdcAmountFromTokenUnit } from '../utils/usdcAmount'
 
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
 
@@ -53,13 +54,14 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
   } = usePerpsWithdraw(amount > 0 ? String(amount) : '')
 
   const available = withdrawableUsd
+  // Floored, so Max never fills a hair more than the true withdrawable.
   const availableBalance = useMemo(
-    () => (available === undefined ? undefined : toUsdc(available)),
+    () => (available === undefined ? undefined : floorToUsdcUnit(available)),
     [available]
   )
 
   const handleAmountChange = useCallback((value: TokenUnit): void => {
-    setAmount(value.toDisplay({ asNumber: true }))
+    setAmount(usdcAmountFromTokenUnit(value))
   }, [])
 
   const formatInCurrency = useCallback(
@@ -227,7 +229,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
           sx={{ width: '100%' }}
           autoFocus
           token={USDC_TOKEN}
-          balance={availableBalance ?? toUsdc(available)}
+          balance={availableBalance ?? floorToUsdcUnit(available)}
           amount={amount > 0 ? toUsdc(amount) : undefined}
           onChange={handleAmountChange}
           formatInCurrency={formatInCurrency}

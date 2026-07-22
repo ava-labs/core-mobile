@@ -8,6 +8,7 @@ import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { MIN_DEPOSIT_USDC, USDC_DECIMALS } from '../consts'
 import { useCChainUsdc } from '../hooks/useCChainUsdc'
 import { usePerpsDeposit } from '../hooks/usePerpsDeposit'
+import { usdcAmountFromTokenUnit } from '../utils/usdcAmount'
 
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
 
@@ -38,7 +39,7 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
     usePerpsDeposit(amount > 0 ? String(amount) : '')
 
   const handleAmountChange = useCallback((value: TokenUnit): void => {
-    setAmount(value.toDisplay({ asNumber: true }))
+    setAmount(usdcAmountFromTokenUnit(value))
   }, [])
 
   const formatInCurrency = useCallback(
