@@ -102,28 +102,30 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     setLeverage(hlLeverage)
   }, [hlLeverage, setLeverage])
 
-  // Same seeding pattern for the margin mode: HL persists cross/isolated per
-  // coin, so reflect the actual value instead of the local 'cross' default.
-  const seededMarginModeRef = useRef(false)
-  useEffect(() => {
-    if (seededMarginModeRef.current || leverageType === undefined) {
-      return
-    }
-    seededMarginModeRef.current = true
-    setMarginMode(leverageType)
-  }, [leverageType, setMarginMode])
-
-  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
-  const { submitOrder } = usePerpsOrderSubmit()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
-
   // Live market data for the coin: the current mark price to size the order and
   // `szDecimals` to quantize the size. Both come from Hyperliquid — there is no
   // fallback to the seeded/placeholder price, so sizing is only ever computed
   // from real market data (the confirm button stays disabled until it loads).
   const { universe, assetCtx } = useHyperliquidMarketContext(coin)
   const szDecimals = universe?.szDecimals
+
+  // Same seeding pattern for the margin mode: HL persists cross/isolated per
+  // coin, so reflect the actual value instead of the local 'cross' default.
+  // Some (HIP-3) markets are isolated-only, matching the margin sheet's seed.
+  const onlyIsolated = universe?.onlyIsolated === true
+  const seededMarginModeRef = useRef(false)
+  useEffect(() => {
+    if (seededMarginModeRef.current || leverageType === undefined) {
+      return
+    }
+    seededMarginModeRef.current = true
+    setMarginMode(onlyIsolated ? 'isolated' : leverageType)
+  }, [leverageType, onlyIsolated, setMarginMode])
+
+  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
+  const { submitOrder } = usePerpsOrderSubmit()
+  const { requireTradingEnabled, enableTradingModal } =
+    usePerpsEnableTradingGate()
   const markPrice = toNumber(assetCtx?.markPx)
   // Also require leverage (> 0), which is seeded from HL rather than a local
   // default, before allowing a submit or sizing the order.

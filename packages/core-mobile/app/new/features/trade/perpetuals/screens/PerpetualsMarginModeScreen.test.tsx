@@ -249,4 +249,10 @@ describe('PerpetualsMarginModeScreen', () => {
     expect(hasCheckmark(instance, 'Isolated')).toBe(true)
     expect(mockSetMarginMode).toHaveBeenCalledWith('isolated')
   })
+
+  it('disables Done until the per-coin HL data has loaded', async () => {
+    mockAsset.leverageType = undefined
+    const instance = await render()
+    expect(doneButton(instance).props.disabled).toBe(true)
+  })
 })

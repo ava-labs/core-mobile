@@ -329,6 +329,12 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
 })
 
 describe('PerpetualsPlaceOrderScreen margin mode', () => {
+  beforeEach(() => {
+    mockNavigate.mockReset()
+    mockSetMarginMode.mockReset()
+    mockActiveAsset.leverageType = undefined
+  })
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const marginRow = (instance: renderer.ReactTestRenderer): any =>
     instance.root

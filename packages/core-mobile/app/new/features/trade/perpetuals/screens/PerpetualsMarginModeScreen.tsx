@@ -89,12 +89,15 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_margin_mode_done"
-        disabled={busy}
+        // leverageType and leverage both come from the same activeAssetData
+        // query, so gating on it guarantees leverage/draftMode are seeded
+        // before a commit can fire (otherwise Done could push leverage 0).
+        disabled={busy || leverageType === undefined}
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [busy, handleConfirm]
+    [busy, leverageType, handleConfirm]
   )
 
   const checkmark = <Icons.Navigation.Check color={theme.colors.$textPrimary} />
