@@ -3,12 +3,10 @@ import {
   type OrderSide,
   type PlaceOrderProviderProps
 } from '../contexts/PlaceOrderContext'
-import {
-  DEFAULT_COIN,
-  DEFAULT_ENTRY_PRICE,
-  DEFAULT_MAX_LEVERAGE,
-  MOCK_AVAILABLE_BALANCE
-} from '../utils/economics'
+import { FALLBACK_COIN } from '../utils/economics'
+import { normalizePerpCoinParam } from '../utils/coinDex'
+import { toNumber as parseHlNumber } from '../utils/format'
+import { useHyperliquidMarketContext } from './useHyperliquidMarketContext'
 
 export type SeededPlaceOrderProps = Omit<PlaceOrderProviderProps, 'children'>
 
@@ -50,37 +48,60 @@ const toPositive = (value: string | undefined): number | undefined => {
 export const resolveSeededPlaceOrderProps = (
   params: SeedParams
 ): SeededPlaceOrderProps => {
-  const entryPrice =
-    toPositive(params.entry) ?? toPositive(params.price) ?? DEFAULT_ENTRY_PRICE
-  const maxLeverage = Math.max(
-    1,
-    toNumber(params.maxLeverage) ?? DEFAULT_MAX_LEVERAGE
-  )
+  // No fabricated fallbacks: an absent/invalid price or max leverage resolves
+  // to 0 here and is filled in from live Hyperliquid market data by the hook.
+  const entryPrice = toPositive(params.entry) ?? toPositive(params.price) ?? 0
+  const maxLeverage = toNumber(params.maxLeverage) ?? 0
   const rawLeverage = toNumber(params.leverage)
+  const leverageCap = maxLeverage > 0 ? maxLeverage : Number.POSITIVE_INFINITY
+  // `0` until the coin's live HL leverage is applied (the open flow seeds it in
+  // the place-order screen). The manage flow provides the position's leverage.
   const initialLeverage =
     rawLeverage !== undefined
-      ? Math.min(Math.max(1, rawLeverage), maxLeverage)
-      : undefined
+      ? Math.min(Math.max(1, rawLeverage), leverageCap)
+      : 0
   const size = Math.max(0, toNumber(params.size) ?? 0)
 
   return {
-    coin: (params.coin ?? DEFAULT_COIN).toUpperCase(),
+    coin: normalizePerpCoinParam(params.coin ?? FALLBACK_COIN),
     side: (params.side === 'short' ? 'short' : 'long') as OrderSide,
     entryPrice,
-    availableBalance: MOCK_AVAILABLE_BALANCE,
     maxLeverage,
     initialLeverage,
-    // Collateral implied by the position, so the trigger screen's projected
-    // P&L has a size to work with.
-    initialAmount:
-      initialLeverage !== undefined && initialLeverage > 0
-        ? (size * entryPrice) / initialLeverage
-        : undefined,
+    // Position notional in USD, used consistently by the amount dial and
+    // trigger-screen projected P&L.
+    initialAmount: entryPrice > 0 ? size * entryPrice : undefined,
     initialTakeProfitPrice: toPositive(params.tp),
     initialStopLossPrice: toPositive(params.sl)
   }
 }
 
-/** Shared by the place-order (open) and manage (edit) modal layouts. */
-export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps =>
-  resolveSeededPlaceOrderProps(useLocalSearchParams<SeedParams>())
+/**
+ * Shared by the place-order (open) and manage (edit) modal layouts. Resolves
+ * the deep-link params, then fills in the fields that must come from live
+ * Hyperliquid data rather than fabricated defaults:
+ *  - `maxLeverage` from the coin's market universe
+ *  - `entryPrice` from the live mark price for the open flow (no `entry` param);
+ *    the manage flow keeps the position's real entry price from the deep link.
+ */
+export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
+  const params = useLocalSearchParams<SeedParams>()
+  const resolved = resolveSeededPlaceOrderProps(params)
+  const { universe, assetCtx } = useHyperliquidMarketContext(resolved.coin)
+
+  const liveMaxLeverage = universe?.maxLeverage
+  const liveMarkPrice = parseHlNumber(assetCtx?.markPx)
+  // The manage flow carries the position's own entry price; only the open flow
+  // (no `entry` param) should adopt the live mark price.
+  const isOpenFlow = params.entry === undefined
+
+  return {
+    ...resolved,
+    entryPrice:
+      isOpenFlow && liveMarkPrice > 0 ? liveMarkPrice : resolved.entryPrice,
+    maxLeverage:
+      liveMaxLeverage !== undefined && liveMaxLeverage > 0
+        ? liveMaxLeverage
+        : resolved.maxLeverage
+  }
+}

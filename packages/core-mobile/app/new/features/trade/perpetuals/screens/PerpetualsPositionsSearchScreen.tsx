@@ -7,8 +7,8 @@ import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { PositionCard } from '../components/PositionCard'
+import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
 import { usePositionActions } from '../hooks/usePositionActions'
-import { MY_POSITIONS_MOCK } from '../mocks'
 import { Position } from '../types'
 
 const cactusIcon = require('../../../../assets/icons/cactus.png')
@@ -17,15 +17,16 @@ export const PerpetualsPositionsSearchScreen = (): JSX.Element => {
   const router = useRouter()
   const [searchText, setSearchText] = useState('')
   const positionActions = usePositionActions()
+  const { positions } = usePerpsPositionsView()
   const results = useMemo(() => {
     const trimmed = searchText.trim().toLowerCase()
     if (trimmed.length === 0) {
       return []
     }
-    return MY_POSITIONS_MOCK.filter(position =>
+    return positions.filter(position =>
       position.symbol.toLowerCase().includes(trimmed)
     )
-  }, [searchText])
+  }, [searchText, positions])
 
   useEffect(() => {
     const trimmed = searchText.trim()

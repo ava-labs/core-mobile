@@ -1,8 +1,10 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 import type { OrderSide } from '../contexts/PlaceOrderContext'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
+import { DexBadge } from './DexBadge'
+import { PerpsCoinLogo } from './PerpsCoinLogo'
 
 interface PositionPillProps {
   coin: string
@@ -33,10 +35,11 @@ export const PositionPill = ({
         borderBottomRightRadius: 4
       }}>
       <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <TokenLogo size={27} symbol={coin} />
+        <PerpsCoinLogo size={27} symbol={coin} />
         <Text variant="body1" sx={{ color: '$textPrimary' }}>
-          {coin}
+          {tickerOfCoin(coin)}
         </Text>
+        <DexBadge dex={dexOfCoin(coin)} />
         <Text variant="body1" sx={{ color: '$textSecondary' }}>
           {formatCurrency({ amount: price })}
         </Text>

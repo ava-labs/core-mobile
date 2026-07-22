@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -11,52 +12,74 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import type { ScrollView } from 'react-native-gesture-handler'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { PerpsApiDownState } from '../components/PerpsApiDownState'
 import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
-
-const HERO_VALUE = 1234.45
-const WITHDRAWABLE = 856.78
-const AVAILABLE_FOR_TRADING = 856.78
-const LOCKED = 35.0
-const IN_POSITIONS = 342.67
-const PENDING = 0.0
-const TOTAL_DEPOSITED = 2344.56
-const TOTAL_WITHDRAWN = 500.0
-const NET_DEPOSITS = 1844.56
-const NET_PNL = 418.43
-const ACCORDION_EXPAND_DURATION = 350
+import { usePerpsPositions } from '../hooks/usePerpsPositions'
+import { formatSigned, pnlColor } from '../utils/economics'
+import { toNumber } from '../utils/format'
 
 export const PerpetualsBalanceScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const router = useRouter()
   const { isGeoBlocked } = usePerpsAvailability()
-  const scrollViewRef = useRef<ScrollView>(null)
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const {
+    accountValueUsd,
+    withdrawableUsd,
+    mode,
+    positions,
+    clearinghouse,
+    isLoading,
+    isWithdrawableLoading,
+    isWithdrawableUnavailable,
+    isError: balanceError,
+    refetch: refetchBalance
+  } = usePerpsPositions()
+
+  // An /info outage with no data to fall back on: the figures below would all
+  // render as "$0", indistinguishable from an empty account. Show the API-down
+  // state with a retry instead of a misleading zeroed-out balance.
+  const balanceUnknown =
+    (accountValueUsd === undefined && (balanceError || !isLoading)) ||
+    (withdrawableUsd === undefined &&
+      (isWithdrawableUnavailable || !isWithdrawableLoading))
+  const balanceLoading =
+    (accountValueUsd === undefined && isLoading) ||
+    (withdrawableUsd === undefined && isWithdrawableLoading)
+  const isPortfolioMargin = mode === 'portfolioMargin'
+
+  const heroValue = accountValueUsd
+  const withdrawable = withdrawableUsd
+  const availableBalance = withdrawableUsd
+  const openPositionsCount = positions.length
+
+  // Total unrealized P&L across open positions (mark-to-market).
+  const unrealizedPnl = useMemo(
+    () =>
+      positions.reduce((sum, p) => sum + toNumber(p.position.unrealizedPnl), 0),
+    [positions]
+  )
+  // Maintenance margin Hyperliquid keeps locked to keep open positions solvent
+  // (a per-coin fraction of notional, not a flat %). It's a subset of reserved
+  // collateral, so it is surfaced within that row rather than added on top.
+  const lockedMaintenanceMargin = toNumber(
+    clearinghouse?.crossMaintenanceMarginUsed
+  )
+  // Reserved collateral = total equity − what can leave the account now. In
+  // standard mode this tracks the perp ledger's committed margin; in unified /
+  // portfolio-margin modes it also includes spot holds and maintenance limits.
+  // Unrealized P&L is already reflected in equity and remains informational.
+  // Guard the FP residue so it never shows "-$0".
+  const reservedCollateral =
+    heroValue !== undefined && withdrawable !== undefined
+      ? Math.max(0, heroValue - withdrawable)
+      : undefined
 
   useEffect(() => {
     AnalyticsService.capture('PerpetualsBalanceViewed')
-  }, [])
-
-  // Clear any pending scroll on unmount so it can't fire after teardown.
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    }
-  }, [])
-
-  const handlePerformanceToggle = useCallback((expanded: boolean) => {
-    // Cancel any pending scroll (e.g. a quick collapse) before scheduling.
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    if (expanded) {
-      scrollTimeoutRef.current = setTimeout(
-        () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-        ACCORDION_EXPAND_DURATION
-      )
-    }
   }, [])
 
   const handlePositionsPress = useCallback(() => {
@@ -64,35 +87,44 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
   }, [router])
 
   const withdrawableRows = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Withdrawable now',
-        value: formatCurrency({ amount: WITHDRAWABLE })
-      }
-    ],
-    [formatCurrency]
+    () =>
+      withdrawable === undefined
+        ? []
+        : [
+            {
+              title: 'Withdrawable now',
+              value: formatCurrency({ amount: withdrawable })
+            }
+          ],
+    [formatCurrency, withdrawable]
   )
 
-  const accountRows = useMemo<GroupListItem[]>(
-    () => [
+  const accountRows = useMemo<GroupListItem[]>(() => {
+    if (availableBalance === undefined || reservedCollateral === undefined) {
+      return []
+    }
+    const positionsLabel = `${openPositionsCount} position${
+      openPositionsCount === 1 ? '' : 's'
+    }`
+    // Maintenance margin is held within reserved collateral.
+    const collateralSubtitle =
+      lockedMaintenanceMargin > 0
+        ? `${positionsLabel} · ${formatCurrency({
+            amount: lockedMaintenanceMargin
+          })} maintenance margin`
+        : positionsLabel
+
+    return [
       {
-        title: 'Available for trading',
-        value: formatCurrency({ amount: AVAILABLE_FOR_TRADING })
+        title: isPortfolioMargin ? 'Available USDC' : 'Available balance',
+        value: formatCurrency({ amount: availableBalance })
       },
       {
-        title: 'Locked (Security hold)',
-        subtitle: 'Available March 9, 2026',
-        value: formatCurrency({ amount: LOCKED })
-      },
-      {
-        title: 'Pending settlements',
-        subtitle: 'Markets ending soon',
-        value: formatCurrency({ amount: PENDING })
-      },
-      {
-        title: 'In active positions',
-        subtitle: '3 positions',
-        value: formatCurrency({ amount: IN_POSITIONS }),
+        title: isPortfolioMargin
+          ? 'Reserved USDC collateral'
+          : 'Reserved collateral',
+        subtitle: collateralSubtitle,
+        value: formatCurrency({ amount: reservedCollateral }),
         accessory: (
           <Icons.Navigation.ChevronRight
             color={theme.colors.$textSecondary}
@@ -100,50 +132,35 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
           />
         ),
         onPress: handlePositionsPress
-      }
-    ],
-    [formatCurrency, handlePositionsPress, theme.colors.$textSecondary]
-  )
-
-  const performanceBreakdown = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Total deposited',
-        value: formatCurrency({ amount: TOTAL_DEPOSITED })
       },
       {
-        title: 'Total withdrawn',
-        value: formatCurrency({ amount: TOTAL_WITHDRAWN })
-      },
-      {
-        title: 'Net deposits',
-        value: formatCurrency({ amount: NET_DEPOSITS })
-      },
-      {
-        title: 'Net profit/loss',
-        value: `+${formatCurrency({ amount: NET_PNL })}`
-      }
-    ],
-    [formatCurrency]
-  )
-
-  const performanceRows = useMemo<GroupListItem[]>(
-    () => [
-      {
-        title: 'Account performance',
-        subtitle: 'All-time performance',
-        onAccordionToggle: handlePerformanceToggle,
-        accordion: (
-          <GroupList
-            data={performanceBreakdown}
-            titleSx={{ fontFamily: 'Inter-Regular' }}
-            subtitleVariant="subtitle2"
-          />
+        title: 'Unrealized P&L',
+        value: (
+          <Text
+            variant="body1"
+            sx={{
+              color: pnlColor(
+                unrealizedPnl,
+                theme.colors,
+                theme.colors.$textPrimary
+              )
+            }}>
+            {formatSigned(unrealizedPnl, amount => formatCurrency({ amount }))}
+          </Text>
         )
       }
-    ],
-    [performanceBreakdown, handlePerformanceToggle]
-  )
+    ]
+  }, [
+    formatCurrency,
+    availableBalance,
+    reservedCollateral,
+    unrealizedPnl,
+    openPositionsCount,
+    lockedMaintenanceMargin,
+    handlePositionsPress,
+    isPortfolioMargin,
+    theme.colors
+  ])
 
   const handleWithdraw = useCallback(() => {
     router.navigate('/perpetualsWithdraw')
@@ -175,9 +192,36 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
     [handleWithdraw, handleTopUp]
   )
 
+  if (balanceLoading) {
+    return (
+      <ScrollScreen
+        isModal
+        title="Available balance"
+        navigationTitle="Available balance"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <View
+          testID="perps-balance-loading"
+          sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={theme.colors.$textPrimary} />
+        </View>
+      </ScrollScreen>
+    )
+  }
+
+  if (balanceUnknown) {
+    return (
+      <ScrollScreen
+        isModal
+        title="Available balance"
+        navigationTitle="Available balance"
+        contentContainerStyle={{ flexGrow: 1 }}>
+        <PerpsApiDownState onRetry={refetchBalance} />
+      </ScrollScreen>
+    )
+  }
+
   return (
     <ScrollScreen
-      ref={scrollViewRef}
       isModal
       title="Available balance"
       subtitle="An overview of your Hyperliquid account"
@@ -206,14 +250,16 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
               lineHeight: 60,
               color: theme.colors.$textPrimary
             }}>
-            {formatCurrency({ amount: HERO_VALUE })}
+            {heroValue !== undefined
+              ? formatCurrency({ amount: heroValue })
+              : '—'}
           </Text>
           <Text
             variant="subtitle2"
             sx={{
               color: alpha(theme.colors.$textPrimary, 0.6)
             }}>
-            Total account value
+            {isPortfolioMargin ? 'USDC account value' : 'Total account value'}
           </Text>
         </View>
         <GroupList
@@ -222,12 +268,6 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
           subtitleVariant="subtitle2"
         />
       </View>
-
-      <GroupList
-        data={performanceRows}
-        titleSx={{ fontFamily: 'Inter-Regular' }}
-        subtitleVariant="subtitle2"
-      />
     </ScrollScreen>
   )
 }

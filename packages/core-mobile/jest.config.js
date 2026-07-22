@@ -69,6 +69,7 @@ module.exports = {
         '@avalabs/crypto-sdk',
         '@avalabs/crypto-nitro',
         '@avalabs/fusion-sdk',
+        '@avalabs/perps-sdk',
         'camelcase-keys',
         'map-obj',
         'camelcase',

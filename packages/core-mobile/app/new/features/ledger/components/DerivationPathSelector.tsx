@@ -236,13 +236,11 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
       title="First, choose your setup method"
       subtitle="Select how you would like to set up your Ledger wallet. Both options are secure"
       isModal
+      hasParent
       contentContainerStyle={{
         padding: 16,
-        gap: 16,
-        paddingBottom: 100
+        gap: 16
       }}>
-      <View style={{ marginTop: 8 }} />
-
       {derivationPathOptions.map(option => (
         <OptionCard
           key={option.type}

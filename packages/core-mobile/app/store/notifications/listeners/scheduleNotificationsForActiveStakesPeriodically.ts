@@ -4,14 +4,16 @@ import { selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { selectAccounts } from 'store/account'
 import EarnService from 'services/earn/EarnService'
-import NotificationsService from 'services/notifications/NotificationsService'
 import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getUnixTime } from 'date-fns'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { turnOnNotificationsFor } from '../slice'
+import {
+  scheduleStakingCompleteNotifications,
+  turnOnNotificationsFor
+} from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
 const SCHEDULE_INTERVAL = 60000 * 3 // 3 minutes
@@ -120,8 +122,12 @@ const scheduleNotificationsForActiveStakes = async (
 
     if (onGoingTransactions && onGoingTransactions.length > 0) {
       Logger.info('updating staking complete notifications')
-      await NotificationsService.updateStakeCompleteNotification(
-        onGoingTransactions
+      // Dispatched (rather than calling NotificationsService directly) so
+      // every scheduling request flows through the same listener — which
+      // also records the notifications for the notification center (see
+      // `handleScheduleStakingCompleteNotifications`).
+      listenerApi.dispatch(
+        scheduleStakingCompleteNotifications(onGoingTransactions)
       )
     }
   }, 5000)

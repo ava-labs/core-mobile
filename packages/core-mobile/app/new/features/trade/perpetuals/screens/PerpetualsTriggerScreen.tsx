@@ -14,6 +14,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { PositionPill } from '../components/PositionPill'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import {
   formatSigned,
   isTriggerValid,
@@ -24,6 +25,7 @@ import {
   requiredTriggerSide,
   type TriggerKind
 } from '../utils/economics'
+import { toNumber } from '../utils/format'
 
 // The percentage is colored by sign; the " above/below current price" suffix
 // stays in the secondary text color (per design).
@@ -80,7 +82,6 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     side,
     entryPrice,
     amount,
-    leverage,
     takeProfitPrice,
     setTakeProfitPrice,
     setTakeProfitEnabled,
@@ -105,9 +106,20 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     return Number.isFinite(parsed) ? parsed : undefined
   }, [priceText])
 
-  const pct = price !== undefined ? pctFromEntry(price, entryPrice) : undefined
+  // Validate the trigger and show its % against the *live* mark price, not the
+  // position's entry. In the manage flow `entryPrice` is the historical fill, so
+  // a TP/SL already on the wrong side of the current price would fire (or be
+  // rejected) the instant the user submits. The open flow seeds `entryPrice`
+  // from live mark, so the fallback keeps it correct there (and until mark loads).
+  const { assetCtx } = useHyperliquidMarketContext(coin)
+  const liveMarkPrice = toNumber(assetCtx?.markPx)
+  const currentPrice = liveMarkPrice > 0 ? liveMarkPrice : entryPrice
 
-  const sizeTokens = positionSizeTokens(amount, leverage, entryPrice)
+  const pct =
+    price !== undefined ? pctFromEntry(price, currentPrice) : undefined
+
+  // P&L is always measured from the real entry price, not the current mark.
+  const sizeTokens = positionSizeTokens(amount, entryPrice)
   // Needs both a trigger price and a sized position to mean anything.
   const projected =
     price !== undefined && sizeTokens > 0
@@ -143,13 +155,18 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     [pct, pctColor]
   )
 
-  const valid = isTriggerValid({ kind, isLong, price, entryPrice })
+  const valid = isTriggerValid({
+    kind,
+    isLong,
+    price,
+    referencePrice: currentPrice
+  })
   // Show the directional error once a price is entered on the wrong side.
   const showError = price !== undefined && !valid
   const errorMessage = `${copy.label} must be ${requiredTriggerSide(
     kind,
     isLong
-  )} entry price`
+  )} current price`
 
   const handleDone = useCallback(async () => {
     await dismissKeyboardIfNeeded()

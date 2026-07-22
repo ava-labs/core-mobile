@@ -2,8 +2,13 @@ import { PriceChangeIndicator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import type { PerpUniverseEntry, PerpsAssetCtx } from '@avalabs/perps-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
+import Animated from 'react-native-reanimated'
 import { Rect } from 'react-content-loader/native'
+import { usePriceFlash } from '../hooks/usePriceFlash'
+import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
 import { computePriceChange, formatPercent } from '../utils/priceChange'
+import { DexBadge } from './DexBadge'
+import { PerpsCoinLogo } from './PerpsCoinLogo'
 import { Skeleton } from './Skeleton'
 
 const DASH = '—'
@@ -24,6 +29,9 @@ export const MarketDetailsHeader = ({
 
   const { markPx, pct, status } = computePriceChange(assetCtx)
 
+  // Blink green/red as the live WS `markPx` ticks up/down.
+  const flashStyle = usePriceFlash(markPx ?? 0)
+
   const formattedPrice =
     markPx !== undefined ? formatCurrency({ amount: markPx }) : DASH
   const formattedChangePct = formatPercent(pct) ?? DASH
@@ -40,9 +48,15 @@ export const MarketDetailsHeader = ({
         paddingTop: 8
       }}>
       <View sx={{ gap: 4 }}>
-        <Text variant="heading2" sx={{ color: '$textSecondary' }}>
-          {coin}
-        </Text>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <PerpsCoinLogo symbol={coin} size={40} />
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text variant="heading2" sx={{ color: '$textSecondary' }}>
+              {tickerOfCoin(coin)}
+            </Text>
+            <DexBadge dex={dexOfCoin(coin)} />
+          </View>
+        </View>
         {assetCtx === undefined ? (
           <Skeleton width={180} height={52}>
             {/* mark price (heading2) */}
@@ -52,7 +66,17 @@ export const MarketDetailsHeader = ({
           </Skeleton>
         ) : (
           <>
-            <Text variant="heading2">{formattedPrice}</Text>
+            <Animated.View
+              style={[
+                {
+                  borderRadius: 6,
+                  paddingHorizontal: 4,
+                  alignSelf: 'flex-start'
+                },
+                flashStyle
+              ]}>
+              <Text variant="heading2">{formattedPrice}</Text>
+            </Animated.View>
             <PriceChangeIndicator
               status={status}
               formattedPercent={formattedChangePct}
