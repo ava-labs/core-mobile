@@ -9,6 +9,8 @@ import { estimateLiquidationPrice } from '../utils/economics'
 
 export type OrderSide = 'long' | 'short'
 
+export type MarginMode = 'cross' | 'isolated'
+
 interface PlaceOrderState {
   coin: string
   side: OrderSide
@@ -21,6 +23,14 @@ interface PlaceOrderState {
 
   leverage: number
   setLeverage: (value: number) => void
+
+  /**
+   * Cross vs isolated margin for the coin. On Hyperliquid this is the
+   * `isCross` flag of the per-coin leverage setting, not an order parameter.
+   * Seeded from HL's `leverageType` by the consuming screens.
+   */
+  marginMode: MarginMode
+  setMarginMode: (value: MarginMode) => void
 
   // `enabled` is only ever set true once a price exists (see useTriggerToggles
   // + the trigger screen's Done), so there's no dangling enabled-but-unset
@@ -82,6 +92,9 @@ export const PlaceOrderProvider = ({
   // one-time `leverage` state from the per-render baseline used by the manage
   // screen); the leverage gauge enforces the market max on user edits.
   const [leverage, setLeverage] = useState(initialLeverage)
+  // HL's default for a fresh asset is cross; screens re-seed from the actual
+  // per-coin `leverageType` once activeAssetData loads.
+  const [marginMode, setMarginMode] = useState<MarginMode>('cross')
   const [takeProfitEnabled, setTakeProfitEnabled] = useState(
     initialTakeProfitPrice !== undefined
   )
@@ -105,6 +118,8 @@ export const PlaceOrderProvider = ({
       setAmount,
       leverage,
       setLeverage,
+      marginMode,
+      setMarginMode,
       takeProfitEnabled,
       setTakeProfitEnabled,
       takeProfitPrice,
@@ -130,6 +145,7 @@ export const PlaceOrderProvider = ({
       maxLeverage,
       amount,
       leverage,
+      marginMode,
       takeProfitEnabled,
       takeProfitPrice,
       stopLossEnabled,
