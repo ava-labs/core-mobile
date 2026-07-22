@@ -35,6 +35,14 @@ interface PlaceOrderState {
   stopLossPrice: number | undefined
   setStopLossPrice: (value: number | undefined) => void
 
+  // Same contract as TP/SL: `enabled` only flips true once a price exists
+  // (the limit-price screen's Done), and disabling keeps the price so
+  // re-enabling restores it.
+  limitPriceEnabled: boolean
+  setLimitPriceEnabled: (value: boolean) => void
+  limitPrice: number | undefined
+  setLimitPrice: (value: number | undefined) => void
+
   liquidationPrice: number
 
   // Seeded baseline (effective, after clamping) so the Manage flow can tell
@@ -94,6 +102,8 @@ export const PlaceOrderProvider = ({
   const [stopLossPrice, setStopLossPrice] = useState<number | undefined>(
     initialStopLossPrice
   )
+  const [limitPriceEnabled, setLimitPriceEnabled] = useState(false)
+  const [limitPrice, setLimitPrice] = useState<number | undefined>(undefined)
 
   const value = useMemo<PlaceOrderState>(
     () => ({
@@ -113,8 +123,14 @@ export const PlaceOrderProvider = ({
       setStopLossEnabled,
       stopLossPrice,
       setStopLossPrice,
+      limitPriceEnabled,
+      setLimitPriceEnabled,
+      limitPrice,
+      setLimitPrice,
+      // A limit order enters at the limit price, not the current mark, so the
+      // liquidation estimate keys off it while the toggle is on.
       liquidationPrice: estimateLiquidationPrice(
-        entryPrice,
+        limitPriceEnabled && limitPrice !== undefined ? limitPrice : entryPrice,
         leverage,
         side === 'long',
         maxLeverage
@@ -134,6 +150,8 @@ export const PlaceOrderProvider = ({
       takeProfitPrice,
       stopLossEnabled,
       stopLossPrice,
+      limitPriceEnabled,
+      limitPrice,
       initialLeverage,
       initialTakeProfitPrice,
       initialStopLossPrice
