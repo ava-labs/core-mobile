@@ -18,6 +18,10 @@ export const AdvancedSettingsScreen = (): React.JSX.Element | null => {
       {
         title: 'Font sample (i18n QA)',
         onPress: () => navigate('/accountSettings/fontSample')
+      },
+      {
+        title: 'Font validation (i18n QA)',
+        onPress: () => navigate('/accountSettings/fontValidation')
       }
     ],
     [navigate]

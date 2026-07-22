@@ -34,6 +34,7 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="verifyPinForPrivateKey" />
       <Stack.Screen name="verifyPinForImportPrivateKey" />
       <Stack.Screen name="fontSample" />
+      <Stack.Screen name="fontValidation" />
     </Stack>
   )
 }

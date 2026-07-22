@@ -34,6 +34,6 @@ export const FONT_SAMPLE_VARIANTS = [
   'mono'
 ] as const
 
-// Multiplier applied to fontSize for the "relaxed" line-height comparison row —
-// enough headroom for CJK glyphs + Devanagari matras without clipping.
-export const RELAXED_LINE_HEIGHT_RATIO = 1.4
+// Multiplier applied to fontSize for the "relaxed" line-height comparison row.
+// Tune this to find the smallest ratio that clears CJK/Devanagari clipping.
+export const RELAXED_LINE_HEIGHT_RATIO = 1.3
