@@ -7,6 +7,9 @@ jest.mock('./locales', () => ({
     'es-ES': () => ({ Settings: 'Ajustes' }),
     'de-DE': () => {
       throw new Error('corrupt bundled catalog')
+    },
+    'fr-FR': () => {
+      throw 'not-an-error'
     }
   }
 }))
@@ -32,6 +35,12 @@ describe('RequireBackend', () => {
   it('errors (not throws) when a supported locale thunk throws', () => {
     const cb = jest.fn()
     RequireBackend.read?.('de-DE', 'translation', cb)
+    expect(cb).toHaveBeenCalledWith(expect.any(Error), false)
+  })
+
+  it('normalizes a non-Error throwable into an Error for the callback', () => {
+    const cb = jest.fn()
+    RequireBackend.read?.('fr-FR', 'translation', cb)
     expect(cb).toHaveBeenCalledWith(expect.any(Error), false)
   })
 })

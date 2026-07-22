@@ -25,7 +25,8 @@ export const RequireBackend: BackendModule = {
     try {
       callback(null, load())
     } catch (e) {
-      callback(e as Error, false)
+      // normalize non-Error throwables so i18next always receives an Error shape
+      callback(e instanceof Error ? e : new Error(String(e)), false)
     }
   }
 }

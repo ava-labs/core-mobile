@@ -62,31 +62,35 @@ export const initI18n = (): Promise<unknown> => {
   const lng: LanguageCode =
     stored && isLanguageCode(stored) ? stored : DEFAULT_LANGUAGE
 
-  return i18n
-    .use(RequireBackend)
-    .use(initReactI18next)
-    .init({
-      lng,
-      // force synchronous init so i18n.language + the active-locale resources
-      // are ready by the time init() returns (before registerComponent / first
-      // render) — the inline `resources` and the synchronous RequireBackend
-      // both resolve without a tick, so no async gap / no cold-start flash.
-      // (`initImmediate` was renamed to `initAsync` in i18next v24; v26 only
-      // removed the deprecated `initImmediate` alias.)
-      initAsync: false,
-      fallbackLng: DEFAULT_LANGUAGE,
-      supportedLngs: [...SUPPORTED_LANGUAGE_CODES],
-      load: 'currentOnly',
-      keySeparator: false,
-      nsSeparator: false,
-      partialBundledLanguages: true,
-      interpolation: { escapeValue: false },
-      returnNull: false,
-      // No Suspense boundary wraps the tree; keep useTranslation synchronous
-      // so a consumer mounting before a namespace resolves never throws.
-      react: { useSuspense: false },
-      resources: { [lng]: { translation: loadActiveCatalog(lng) } }
-    })
+  // Register plugins only once — i18next is a singleton, so repeated initI18n
+  // calls (tests / dev fast-refresh) would otherwise register the backend/react
+  // plugins multiple times. init() is still safe to call on each invocation.
+  if (!i18n.isInitialized) {
+    i18n.use(RequireBackend).use(initReactI18next)
+  }
+
+  return i18n.init({
+    lng,
+    // force synchronous init so i18n.language + the active-locale resources
+    // are ready by the time init() returns (before registerComponent / first
+    // render) — the inline `resources` and the synchronous RequireBackend
+    // both resolve without a tick, so no async gap / no cold-start flash.
+    // (`initImmediate` was renamed to `initAsync` in i18next v24; v26 only
+    // removed the deprecated `initImmediate` alias.)
+    initAsync: false,
+    fallbackLng: DEFAULT_LANGUAGE,
+    supportedLngs: [...SUPPORTED_LANGUAGE_CODES],
+    load: 'currentOnly',
+    keySeparator: false,
+    nsSeparator: false,
+    partialBundledLanguages: true,
+    interpolation: { escapeValue: false },
+    returnNull: false,
+    // No Suspense boundary wraps the tree; keep useTranslation synchronous
+    // so a consumer mounting before a namespace resolves never throws.
+    react: { useSuspense: false },
+    resources: { [lng]: { translation: loadActiveCatalog(lng) } }
+  })
 }
 
 export { default as i18n } from 'i18next'

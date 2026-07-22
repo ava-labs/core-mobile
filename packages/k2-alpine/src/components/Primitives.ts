@@ -1,5 +1,6 @@
 import {
   styled,
+  useDripsyTheme,
   Text as DripsyText,
   ScrollView as DripsyScrollView,
   FlatList as DripsyFlatList
@@ -10,7 +11,6 @@ import {
   TouchableOpacity as RNTouchableOpacity
 } from 'react-native'
 import React from 'react'
-import { useDripsyTheme } from 'dripsy'
 import type { TextVariant } from '../theme/tokens/text'
 import { resolveTallScriptLineHeight } from '../utils/tallScriptLineHeight'
 
