@@ -70,6 +70,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   const {
     coin,
     side,
+    switchSide,
     entryPrice,
     amount,
     setAmount,
@@ -267,7 +268,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         contentContainerStyle={{ padding: 16 }}>
         <View sx={{ paddingTop: 8, gap: 20 }}>
           <View sx={{ gap: 8 }}>
-            <PositionPill coin={coin} price={entryPrice} side={side} />
+            <PositionPill coin={coin} price={entryPrice} side={side} onChangeSide={switchSide} />
 
             <View sx={{ gap: 4 }}>
               <View

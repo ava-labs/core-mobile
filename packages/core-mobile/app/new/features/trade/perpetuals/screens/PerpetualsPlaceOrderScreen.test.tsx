@@ -22,10 +22,13 @@ jest.mock('common/utils/toast', () => ({
   showSnackbar: (...args: any[]) => mockShowSnackbar(...args)
 }))
 
+const mockSwitchSide = jest.fn()
+const mockOrder = { side: 'long' as 'long' | 'short' }
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
-    side: 'long',
+    side: mockOrder.side,
+    switchSide: mockSwitchSide,
     entryPrice: 1,
     amount: 10,
     setAmount: jest.fn(),
@@ -100,24 +103,34 @@ jest.mock('../components/PerpsEnableTradingModal', () => ({
   PerpsEnableTradingModal: () => null
 }))
 
-jest.mock('../components/PositionPill', () => ({ PositionPill: () => null }))
+const mockPillProps = jest.fn()
+jest.mock('../components/PositionPill', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  PositionPill: (props: any) => {
+    mockPillProps(props)
+    return null
+  }
+}))
 jest.mock('../components/TriggerToggleCard', () => ({
   TriggerToggleCard: () => null
 }))
 jest.mock('../../../../assets/icons/hyperliquid-logo.svg', () => () => null)
 
+const mockScrollScreenProps = jest.fn()
 jest.mock('common/components/ScrollScreen', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
   return {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ScrollScreen: ({ children, renderFooter }: any) =>
-      r.createElement(
+    ScrollScreen: ({ children, renderFooter, ...rest }: any) => {
+      mockScrollScreenProps(rest)
+      return r.createElement(
         rn.View,
         null,
         children,
         renderFooter ? renderFooter() : null
       )
+    }
   }
 })
 
@@ -166,6 +179,10 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     mockRecheck.mockReset()
     mockShowSnackbar.mockReset()
     mockSubmitOrder.mockReset()
+    mockOrder.side = 'long'
+    mockSwitchSide.mockReset()
+    mockPillProps.mockReset()
+    mockScrollScreenProps.mockReset()
     mockState.isGeoBlocked = false
     mockTrading.isTradingEnabled = true
     mockActiveAsset.maxBuySizeCoin = 1.5
@@ -315,5 +332,39 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
       link.props.onPress()
     })
     expect(mockOpenUrl).toHaveBeenCalledWith(TERMS_OF_USE_URL)
+  })
+})
+
+describe('PerpetualsPlaceOrderScreen side select', () => {
+  beforeEach(() => {
+    mockOrder.side = 'long'
+    mockSwitchSide.mockReset()
+    mockPillProps.mockReset()
+    mockScrollScreenProps.mockReset()
+  })
+
+  it('hands the context switchSide to the position pill', async () => {
+    await render()
+    expect(mockPillProps).toHaveBeenCalledWith(
+      expect.objectContaining({ side: 'long', onChangeSide: mockSwitchSide })
+    )
+  })
+
+  it('derives labels and capacity from the short side', async () => {
+    mockOrder.side = 'short'
+    const instance = await render()
+
+    expect(confirmButton(instance).props.label).toBe('Slide to buy Short')
+    expect(mockScrollScreenProps).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subtitle: expect.stringContaining('go down')
+      })
+    )
+
+    // Short capacity comes from maxSellSizeCoin (1 BTC × $100), not buy (1.5).
+    const dial = instance.root.findByProps({
+      testID: 'perpetuals_place_order_amount'
+    })
+    expect(dial.props.max).toBe(100)
   })
 })
