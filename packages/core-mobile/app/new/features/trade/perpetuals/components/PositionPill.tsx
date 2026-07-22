@@ -119,7 +119,7 @@ export const PositionPill = ({
           {sideLabel}
         </DropdownMenu>
       ) : (
-        sideLabel
+        <View sx={{ padding: 16 }}>{sideLabel}</View>
       )}
     </View>
   )
