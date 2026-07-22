@@ -2,6 +2,7 @@ import {
   Icons,
   NavigationTitleHeader,
   PriceChangeStatus,
+  SegmentedControl,
   StatusArrow,
   Text,
   useTheme,
@@ -10,10 +11,12 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import {
   CollapsibleTabs,
-  CollapsibleTabsRef
+  CollapsibleTabsRef,
+  OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -27,14 +30,20 @@ import {
   TradeFilters
 } from 'features/trade/components/TradeFilters'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
-import Animated from 'react-native-reanimated'
+import {
+  InteractionManager,
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform
+} from 'react-native'
+import Animated, { useSharedValue } from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
 import { ClosedPositionCard } from '../components/ClosedPositionCard'
+import { OpenOrdersList } from '../components/OpenOrdersList'
 import { PositionCard } from '../components/PositionCard'
 import { usePerpsPositionsView } from '../hooks/usePerpsPositionsView'
 import { usePerpsUserFills } from '../hooks/usePerpsUserFills'
@@ -44,6 +53,8 @@ import { toPositionEntries, toPositionsSummary } from '../utils/toPosition'
 import { Position, PositionEntry } from '../types'
 
 const FILTERS: TradeFilterChip[] = ['All', 'Active', 'Won', 'Lost']
+
+const SEGMENT_ITEMS = [{ title: 'All positions' }, { title: 'Open orders' }]
 
 /** How many rows to reveal per lazy-load page as the user scrolls. */
 const PAGE_SIZE = 15
@@ -82,6 +93,39 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
     const { x, y, width, height } = event.nativeEvent.layout
     setHeaderLayout({ x, y, width, height })
   }, [])
+
+  const selectedSegmentIndex = useSharedValue(0)
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
+    LayoutRectangle | undefined
+  >(undefined)
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      selectedSegmentIndex.value = index
+      InteractionManager.runAfterInteractions(() => {
+        if (tabViewRef.current?.getCurrentIndex() !== index) {
+          tabViewRef.current?.setIndex(index)
+        }
+      })
+    },
+    [selectedSegmentIndex]
+  )
+
+  const handleTabChange: OnTabChange = useCallback(
+    data => {
+      if (selectedSegmentIndex.value === data.prevIndex) {
+        selectedSegmentIndex.value = data.index
+      }
+    },
+    [selectedSegmentIndex]
+  )
 
   const handleSelectFilter = useCallback((chip: string) => {
     setSelectedFilter(chip)
@@ -368,10 +412,10 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: insets.bottom + 16,
+      paddingBottom: insets.bottom + 16 + (segmentedControlLayout?.height ?? 0),
       minHeight: tabHeight
     }
-  }, [tabHeight, insets.bottom])
+  }, [tabHeight, insets.bottom, segmentedControlLayout?.height])
 
   const tabs = useMemo(
     () => [
@@ -393,6 +437,16 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
               onEndReached={handleEndReached}
               isFetchingNextPage={hasMore}
             />
+          </Animated.View>
+        )
+      },
+      {
+        tabName: 'openOrders',
+        component: (
+          <Animated.View
+            entering={getListItemEnteringAnimation(10)}
+            style={{ flex: 1 }}>
+            <OpenOrdersList containerStyle={contentContainerStyle} />
           </Animated.View>
         )
       }
@@ -417,10 +471,31 @@ export const PerpetualsPositionsScreen = (): JSX.Element => {
         ref={tabViewRef}
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
+        onTabChange={handleTabChange}
         onScrollY={onScroll}
         tabs={tabs}
       />
-      {/* 
+
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
+        <BottomTabWrapper>
+          <SegmentedControl
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+            style={{ marginHorizontal: 16, marginBottom: 16 }}
+          />
+        </BottomTabWrapper>
+      </View>
+
+      {/*
         This is a workaround to display the header background + separator on Android.
         Android returns a header height of 0, so we need to display the background + separator manually.
       */}
