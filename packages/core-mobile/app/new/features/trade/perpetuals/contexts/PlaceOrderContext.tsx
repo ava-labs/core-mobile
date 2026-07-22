@@ -1,3 +1,4 @@
+import type { PerpUniverseEntry } from '@avalabs/perps-sdk'
 import React, {
   createContext,
   useContext,
@@ -32,6 +33,14 @@ interface PlaceOrderState {
    */
   marginMode: MarginMode
   setMarginMode: (value: MarginMode) => void
+
+  /**
+   * Per-coin market metadata (max leverage, `onlyIsolated`, size precision),
+   * from the layout's single market-context subscription. Shared here so the
+   * sheets in the stack don't each open their own WebSocket for the same coin.
+   * `undefined` until the market data loads.
+   */
+  universe: PerpUniverseEntry | undefined
 
   // `enabled` is only ever set true once a price exists (see useTriggerToggles
   // + the trigger screen's Done), so there's no dangling enabled-but-unset
@@ -68,6 +77,8 @@ export interface PlaceOrderProviderProps {
    * position's leverage, the open flow the coin's current HL leverage.
    */
   initialLeverage: number
+  /** Live per-coin market metadata; `undefined` until loaded. */
+  universe?: PerpUniverseEntry
   /** Seed values for editing an existing position (Manage flow). */
   initialAmount?: number
   initialTakeProfitPrice?: number
@@ -82,6 +93,7 @@ export const PlaceOrderProvider = ({
   maxLeverage,
   initialAmount = 0,
   initialLeverage,
+  universe,
   initialTakeProfitPrice,
   initialStopLossPrice,
   children
@@ -121,6 +133,7 @@ export const PlaceOrderProvider = ({
       setLeverage,
       marginMode,
       setMarginMode,
+      universe,
       takeProfitEnabled,
       setTakeProfitEnabled,
       takeProfitPrice,
@@ -147,6 +160,7 @@ export const PlaceOrderProvider = ({
       amount,
       leverage,
       marginMode,
+      universe,
       takeProfitEnabled,
       takeProfitPrice,
       stopLossEnabled,

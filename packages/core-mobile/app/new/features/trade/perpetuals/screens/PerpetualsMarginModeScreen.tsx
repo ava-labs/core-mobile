@@ -3,7 +3,6 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlaceOrder, type MarginMode } from '../contexts/PlaceOrderContext'
-import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { usePerpsPositions } from '../hooks/usePerpsPositions'
@@ -11,10 +10,12 @@ import { usePerpsPositions } from '../hooks/usePerpsPositions'
 export const PerpetualsMarginModeScreen = (): JSX.Element => {
   const router = useRouter()
   const { theme } = useTheme()
-  const { coin, leverage, marginMode, setMarginMode } = usePlaceOrder()
+  // `universe` comes from the shared context (fed by the layout's single
+  // market subscription) so this sheet doesn't open its own WebSocket.
+  const { coin, leverage, marginMode, setMarginMode, universe } =
+    usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
   const { leverageType } = usePerpsActiveAssetData(coin)
-  const { universe } = useHyperliquidMarketContext(coin)
   const { positions } = usePerpsPositions()
 
   // Some (HIP-3) markets are isolated-only: cross margin is disabled on-exchange.
@@ -98,18 +99,21 @@ export const PerpetualsMarginModeScreen = (): JSX.Element => {
         // selectable) AND on the context leverage: the latter is seeded by the
         // index screen one render after the same query resolves, so without it
         // Done could push leverage 0 (also covers direct navigation that
-        // skips the index screen).
+        // skips the index screen). None of this applies while `locked`: no
+        // commit can happen (Done just closes the sheet), so it stays enabled
+        // even if the data is slow or fails to load.
         disabled={
-          busy ||
-          leverageType === undefined ||
-          universe === undefined ||
-          leverage <= 0
+          !locked &&
+          (busy ||
+            leverageType === undefined ||
+            universe === undefined ||
+            leverage <= 0)
         }
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [busy, leverageType, universe, leverage, handleConfirm]
+    [locked, busy, leverageType, universe, leverage, handleConfirm]
   )
 
   const renderAccessory = useCallback(

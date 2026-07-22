@@ -7,7 +7,11 @@ jest.mock('expo-router', () => ({
 }))
 
 const mockSetLeverage = jest.fn()
-const mockCtx = { marginMode: 'isolated' as 'cross' | 'isolated' }
+const mockCtx = {
+  marginMode: 'isolated' as 'cross' | 'isolated',
+  // Shared from the layout's market subscription via PlaceOrderContext.
+  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
+}
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
@@ -16,7 +20,8 @@ jest.mock('../contexts/PlaceOrderContext', () => ({
     maxLeverage: 40,
     leverage: 2,
     setLeverage: mockSetLeverage,
-    marginMode: mockCtx.marginMode
+    marginMode: mockCtx.marginMode,
+    universe: mockCtx.universe
   })
 }))
 
@@ -39,16 +44,6 @@ jest.mock('../hooks/usePerpsActiveAssetData', () => ({
     maxSellSizeCoin: undefined,
     isLoading: false,
     refetch: jest.fn().mockResolvedValue(3)
-  })
-}))
-
-const mockMarket = {
-  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
-}
-jest.mock('../hooks/useHyperliquidMarketContext', () => ({
-  useHyperliquidMarketContext: () => ({
-    universe: mockMarket.universe,
-    assetCtx: undefined
   })
 }))
 
@@ -106,7 +101,7 @@ describe('PerpetualsLeverageScreen margin mode', () => {
     mockUpdateLeverage.mockReset()
     mockSetLeverage.mockReset()
     mockAsset.leverageType = 'isolated'
-    mockMarket.universe = { onlyIsolated: false }
+    mockCtx.universe = { onlyIsolated: false }
   })
 
   it('commits leverage with the isCross flag from the current margin mode', async () => {
@@ -165,7 +160,7 @@ describe('PerpetualsLeverageScreen margin mode', () => {
   })
 
   it('keeps Done disabled until the universe loads', async () => {
-    mockMarket.universe = undefined
+    mockCtx.universe = undefined
     const instance = await render()
 
     const gauge = instance.root.findByProps({ min: 1 })

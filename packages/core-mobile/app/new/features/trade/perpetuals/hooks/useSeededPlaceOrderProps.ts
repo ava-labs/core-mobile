@@ -102,6 +102,9 @@ export const useSeededPlaceOrderProps = (): SeededPlaceOrderProps => {
     maxLeverage:
       liveMaxLeverage !== undefined && liveMaxLeverage > 0
         ? liveMaxLeverage
-        : resolved.maxLeverage
+        : resolved.maxLeverage,
+    // Shared through PlaceOrderContext so the sheets in the stack (leverage,
+    // margin mode) read this subscription instead of opening their own socket.
+    universe
   }
 }

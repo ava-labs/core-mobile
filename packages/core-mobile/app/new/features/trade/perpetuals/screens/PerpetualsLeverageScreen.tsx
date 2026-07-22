@@ -4,7 +4,6 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
-import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { estimateLiquidationPrice, pctFromEntry } from '../utils/economics'
@@ -13,6 +12,8 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
 
+  // `universe` comes from the shared context (fed by the layout's single
+  // market subscription) so this sheet doesn't open its own WebSocket.
   const {
     coin,
     side,
@@ -20,7 +21,8 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
     maxLeverage,
     leverage,
     setLeverage,
-    marginMode
+    marginMode,
+    universe
   } = usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
   const {
@@ -28,7 +30,6 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
     leverageType,
     refetch: refetchLeverage
   } = usePerpsActiveAssetData(coin)
-  const { universe } = useHyperliquidMarketContext(coin)
 
   // Local draft so gauge edits don't mutate the order until confirmed.
   const [draftLeverage, setDraftLeverage] = useState(leverage)

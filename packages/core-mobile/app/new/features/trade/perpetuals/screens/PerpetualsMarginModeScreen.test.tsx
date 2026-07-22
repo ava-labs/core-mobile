@@ -7,13 +7,19 @@ jest.mock('expo-router', () => ({
 }))
 
 const mockSetMarginMode = jest.fn()
-const mockCtx = { marginMode: 'cross' as 'cross' | 'isolated', leverage: 2 }
+const mockCtx = {
+  marginMode: 'cross' as 'cross' | 'isolated',
+  leverage: 2,
+  // Shared from the layout's market subscription via PlaceOrderContext.
+  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
+}
 jest.mock('../contexts/PlaceOrderContext', () => ({
   usePlaceOrder: () => ({
     coin: 'BTC',
     leverage: mockCtx.leverage,
     marginMode: mockCtx.marginMode,
-    setMarginMode: mockSetMarginMode
+    setMarginMode: mockSetMarginMode,
+    universe: mockCtx.universe
   })
 }))
 
@@ -36,16 +42,6 @@ jest.mock('../hooks/usePerpsActiveAssetData', () => ({
     maxSellSizeCoin: undefined,
     isLoading: false,
     refetch: jest.fn()
-  })
-}))
-
-const mockMarket = {
-  universe: { onlyIsolated: false } as { onlyIsolated?: boolean } | undefined
-}
-jest.mock('../hooks/useHyperliquidMarketContext', () => ({
-  useHyperliquidMarketContext: () => ({
-    universe: mockMarket.universe,
-    assetCtx: undefined
   })
 }))
 
@@ -161,7 +157,7 @@ describe('PerpetualsMarginModeScreen', () => {
     mockCtx.marginMode = 'cross'
     mockCtx.leverage = 2
     mockAsset.leverageType = 'cross'
-    mockMarket.universe = { onlyIsolated: false }
+    mockCtx.universe = { onlyIsolated: false }
     mockPositions.positions = []
   })
 
@@ -230,6 +226,20 @@ describe('PerpetualsMarginModeScreen', () => {
     expect(mockBack).toHaveBeenCalled()
   })
 
+  it('keeps Done enabled while locked even before HL data loads', async () => {
+    // When locked, Done only dismisses the sheet — a slow or failed data load
+    // must not trap the user behind a disabled button.
+    mockPositions.positions = [{ position: { coin: 'BTC' } }]
+    mockAsset.leverageType = undefined
+    mockCtx.universe = undefined
+    mockCtx.leverage = 0
+    const instance = await render()
+    expect(doneButton(instance).props.disabled).toBe(false)
+    await pressDone(instance)
+    expect(mockUpdateLeverage).not.toHaveBeenCalled()
+    expect(mockBack).toHaveBeenCalled()
+  })
+
   it('does not lock for positions in other markets', async () => {
     mockPositions.positions = [{ position: { coin: 'ETH' } }]
     const instance = await render()
@@ -237,7 +247,7 @@ describe('PerpetualsMarginModeScreen', () => {
   })
 
   it('disables Cross and seeds Isolated on isolated-only markets', async () => {
-    mockMarket.universe = { onlyIsolated: true }
+    mockCtx.universe = { onlyIsolated: true }
     const instance = await render()
     expect(row(instance, 'Cross').props.disabled).toBe(true)
     expect(row(instance, 'Isolated').props.disabled).toBe(false)
@@ -260,7 +270,7 @@ describe('PerpetualsMarginModeScreen', () => {
   it('disables Done until the universe has loaded', async () => {
     // Before the universe resolves, `onlyIsolated` reads false and Cross is
     // selectable — committing then could push an invalid cross update.
-    mockMarket.universe = undefined
+    mockCtx.universe = undefined
     const instance = await render()
     expect(doneButton(instance).props.disabled).toBe(true)
   })
@@ -291,14 +301,14 @@ describe('PerpetualsMarginModeScreen', () => {
   it('forces a Cross draft back to Isolated when onlyIsolated resolves late', async () => {
     // The universe and leverage queries are independent: the user can tap
     // Cross before the market is known to be isolated-only.
-    mockMarket.universe = undefined
+    mockCtx.universe = undefined
     const instance = await render()
     await act(async () => {
       row(instance, 'Cross').props.onPress()
     })
     expect(hasCheckmark(instance, 'Cross')).toBe(true)
 
-    mockMarket.universe = { onlyIsolated: true }
+    mockCtx.universe = { onlyIsolated: true }
     await act(async () => {
       instance.update(<PerpetualsMarginModeScreen />)
     })
