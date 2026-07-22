@@ -25,6 +25,10 @@ import { SentryTag, SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ChainInfo } from '@avalabs/glacier-sdk'
 import GlacierService from 'services/glacier/GlacierService'
+import {
+  isHyperliquidChainId,
+  isHyperliquidNetwork
+} from 'utils/network/isHyperliquidNetwork'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -32,9 +36,11 @@ if (!Config.PROXY_URL)
 
 class NetworkService {
   async getNetworks({
-    includeSolana
+    includeSolana,
+    includeHyperliquid
   }: {
     includeSolana: boolean
+    includeHyperliquid: boolean
   }): Promise<Networks> {
     const networks = await this.fetchNetworks({
       includeSolana
@@ -53,6 +59,20 @@ class NetworkService {
     })
 
     delete networks[ChainId.AVALANCHE_LOCAL_ID]
+
+    if (!includeHyperliquid) {
+      // Hyperliquid networks (HyperEVM/HyperCore) are served by the backend for
+      // Core extension/web but are not supported on mobile yet — hide them
+      // unless the hyperliquid-support feature flag is enabled
+      Object.entries(networks).forEach(([chainId, network]) => {
+        if (
+          isHyperliquidChainId(Number(chainId)) ||
+          isHyperliquidNetwork(network)
+        ) {
+          delete networks[Number(chainId)]
+        }
+      })
+    }
 
     return {
       ...networks,

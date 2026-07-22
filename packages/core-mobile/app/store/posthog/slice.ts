@@ -283,6 +283,16 @@ export const selectIsSolanaSupportBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsHyperliquidSupportBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.HYPERLIQUID_SUPPORT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectIsMeldOnrampBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

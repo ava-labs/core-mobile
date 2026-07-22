@@ -54,7 +54,11 @@ export enum FeatureGates {
   // being off (see `selectIs*FeeBlocked` in `store/posthog`).
   FAST_STAKE_FEE_ENABLED = 'fast-stake-fee-enabled',
   DELEGATION_FEE_ENABLED = 'delegation-fee-enabled',
-  FILTER_SMALL_UTXOS = 'filter-small-utxos'
+  FILTER_SMALL_UTXOS = 'filter-small-utxos',
+  // Gates visibility of Hyperliquid networks (HyperEVM/HyperCore) that the
+  // backend serves for extension/web. Mobile has no Hyperliquid support yet,
+  // so this stays off until we ship it (CP-14595).
+  HYPERLIQUID_SUPPORT = 'hyperliquid-support'
 }
 
 export enum FeatureVars {

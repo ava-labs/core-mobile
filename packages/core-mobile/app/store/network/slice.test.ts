@@ -32,7 +32,8 @@ jest.mock('hooks/networks/utils/getNetworksFromCache', () => ({
 }))
 
 jest.mock('store/posthog/slice', () => ({
-  selectIsSolanaSupportBlocked: jest.fn(() => false)
+  selectIsSolanaSupportBlocked: jest.fn(() => false),
+  selectIsHyperliquidSupportBlocked: jest.fn(() => true)
 }))
 
 const mockGetNetworks = getNetworksFromCache as jest.MockedFunction<

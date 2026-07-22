@@ -60,7 +60,10 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks({ includeSolana: false })
+      const result = await NetworkService.getNetworks({
+        includeSolana: false,
+        includeHyperliquid: false
+      })
 
       expect(result).toEqual({
         1: { chainName: 'Ethereum' },
@@ -95,7 +98,10 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks({ includeSolana: false })
+      const result = await NetworkService.getNetworks({
+        includeSolana: false,
+        includeHyperliquid: false
+      })
 
       // Verify Logger was called for both fetch errors with the proxy source tag.
       // The underlying error object is passed as the second arg so Sentry preserves
@@ -123,6 +129,65 @@ describe('NetworkService', () => {
       })
     })
 
+    it('should exclude Hyperliquid networks when includeHyperliquid is false', async () => {
+      jest
+        .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
+        .mockResolvedValue({
+          ...mockNetworks,
+          999: { chainName: 'HyperEVM' },
+          9999: { chainName: 'HyperCore' }
+        })
+      jest
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchDeBankNetworks'
+        )
+        .mockResolvedValue({} as Networks)
+      jest
+        .spyOn(NetworkService, 'getAvalancheNetworkP')
+        .mockReturnValue({ chainName: 'Avalanche P' } as unknown as Network)
+      jest
+        .spyOn(NetworkService, 'getAvalancheNetworkX')
+        .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
+
+      const result = await NetworkService.getNetworks({
+        includeSolana: false,
+        includeHyperliquid: false
+      })
+
+      expect(result[999]).toBeUndefined()
+      expect(result[9999]).toBeUndefined()
+      expect(result[1]?.chainName).toEqual('Ethereum')
+    })
+
+    it('should include Hyperliquid networks when includeHyperliquid is true', async () => {
+      jest
+        .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
+        .mockResolvedValue({
+          ...mockNetworks,
+          999: { chainName: 'HyperEVM' }
+        })
+      jest
+        .spyOn(
+          NetworkService as unknown as TNetworkService,
+          'fetchDeBankNetworks'
+        )
+        .mockResolvedValue({} as Networks)
+      jest
+        .spyOn(NetworkService, 'getAvalancheNetworkP')
+        .mockReturnValue({ chainName: 'Avalanche P' } as unknown as Network)
+      jest
+        .spyOn(NetworkService, 'getAvalancheNetworkX')
+        .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
+
+      const result = await NetworkService.getNetworks({
+        includeSolana: false,
+        includeHyperliquid: true
+      })
+
+      expect(result[999]?.chainName).toEqual('HyperEVM')
+    })
+
     it('should exclude ChainId.AVALANCHE_LOCAL_ID from the final network data', async () => {
       jest
         .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
@@ -140,7 +205,10 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks({ includeSolana: false })
+      const result = await NetworkService.getNetworks({
+        includeSolana: false,
+        includeHyperliquid: false
+      })
 
       expect(result[ChainId.AVALANCHE_LOCAL_ID]).toBeUndefined()
       expect(result[1]?.chainName).toEqual('Ethereum')
