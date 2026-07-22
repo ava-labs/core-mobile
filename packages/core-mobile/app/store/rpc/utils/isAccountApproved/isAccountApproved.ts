@@ -17,11 +17,15 @@ export const isAddressApproved = (
     return false
   }
 
-  return Boolean(
-    namespaces[namespace]?.accounts.some(
-      acc => acc.split(':')[2]?.toLowerCase() === address.toLowerCase()
-    )
-  )
+  // Only EVM hex addresses are case-insensitive (EIP-55 checksums vary the
+  // casing); other namespaces (e.g. base58 Solana) must match exactly.
+  const matches =
+    namespace === 'eip155'
+      ? (acc: string): boolean =>
+          acc.split(':')[2]?.toLowerCase() === address.toLowerCase()
+      : (acc: string): boolean => acc.split(':')[2] === address
+
+  return Boolean(namespaces[namespace]?.accounts.some(matches))
 }
 
 export const isAccountApproved = (
