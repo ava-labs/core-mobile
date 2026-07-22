@@ -39,7 +39,7 @@ describe('isAddressApproved', () => {
     ).toBe(true)
   })
 
-  it('matches case-insensitively', () => {
+  it('matches EVM addresses case-insensitively (EIP-55 checksum casing)', () => {
     expect(
       isAddressApproved(
         '0xca0e993876152cca6053eedfc753092c8ce712d0',
@@ -73,6 +73,16 @@ describe('isAddressApproved', () => {
     expect(
       isAddressApproved(
         '4Nd1mYQZ6X8jY6nWn6iVrDpcLzJq9z2NKV1S1nGiqNz1',
+        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        namespaces
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for a case variant of a granted Solana account (base58 is case-sensitive)', () => {
+    expect(
+      isAddressApproved(
+        '9gqmz7fttgv5hvscrr9qqt6spbs7i4cklddj4tuae3sw',
         'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
         namespaces
       )
