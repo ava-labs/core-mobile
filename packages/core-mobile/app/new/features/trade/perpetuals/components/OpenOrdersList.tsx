@@ -1,26 +1,17 @@
-import {
-  alpha,
-  Button,
-  PriceChangeStatus,
-  StatusArrow,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import type { InfoOrderStatusWire, OpenOrder } from '@avalabs/perps-sdk'
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { ViewStyle } from 'react-native'
 import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
 import { usePerpsPullToRefresh } from '../hooks/usePerpsPullToRefresh'
 import { tickerOfCoin } from '../utils/coinDex'
 import { toNumber } from '../utils/format'
-import { PerpsCoinLogo } from './PerpsCoinLogo'
+import { OpenOrderListItem } from './OpenOrderListItem'
 
 export type OpenOrderRow = {
   readonly id: string
@@ -65,85 +56,50 @@ export const OpenOrdersList = ({
 }: {
   containerStyle?: ViewStyle
 }): JSX.Element => {
-  const { theme } = useTheme()
-  const { formatCurrency } = useFormatCurrency()
   const { orders } = usePerpsAllOpenOrders()
-  const { busy, cancelOrder } = usePerpsPositionActions()
+  const { cancelOrder } = usePerpsPositionActions()
   // Pull-to-refresh: the nonce bump re-runs both open-orders REST fetches
   // (main dex + HIP-3) alongside the clearinghouse state.
   const { isRefreshing, onRefresh } = usePerpsPullToRefresh()
 
   const rows = useMemo(() => toOpenOrderRows(orders), [orders])
 
+  // Track cancellation per row, not via the shared `busy` flag — disabling
+  // every Cancel while one is in flight dims them all (disabled renders at
+  // 0.3 opacity), which reads as every button having been pressed. Different
+  // orders may cancel concurrently; only a re-tap of the same row is blocked.
+  const [cancellingIds, setCancellingIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  )
+  const handleCancel = useCallback(
+    async (item: OpenOrderRow): Promise<void> => {
+      if (cancellingIds.has(item.id)) {
+        return
+      }
+      setCancellingIds(prev => new Set(prev).add(item.id))
+      try {
+        await cancelOrder(item.coin, item.oid)
+      } finally {
+        setCancellingIds(prev => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
+      }
+    },
+    [cancellingIds, cancelOrder]
+  )
+
   const renderItem: ListRenderItem<OpenOrderRow> = useCallback(
     ({ item, index }) => (
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          marginTop: index === 0 ? 0 : 10
-        }}>
-        <View
-          sx={{
-            backgroundColor: '$surfaceSecondary',
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10
-          }}>
-          <PerpsCoinLogo size={36} symbol={item.coin} />
-          <View sx={{ flex: 1 }}>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text variant="buttonMedium">{item.ticker}</Text>
-              <StatusArrow
-                status={
-                  item.isLong ? PriceChangeStatus.Up : PriceChangeStatus.Down
-                }
-                size={10}
-              />
-              <Text
-                variant="buttonMedium"
-                sx={{
-                  color: item.isLong
-                    ? theme.colors.$textSuccess
-                    : theme.colors.$textDanger
-                }}>
-                {item.isLong ? 'Long' : 'Short'}
-              </Text>
-            </View>
-            <Text
-              variant="body2"
-              sx={{ color: alpha(theme.colors.$textPrimary, 0.6) }}>
-              {`${item.sizeContracts} @ ${formatCurrency({
-                amount: item.limitPx
-              })}`}
-            </Text>
-          </View>
-          <View sx={{ alignItems: 'flex-end', gap: 6 }}>
-            <Text variant="buttonMedium">
-              {formatCurrency({ amount: item.notionalUsd })}
-            </Text>
-            <Button
-              type="secondary"
-              size="small"
-              disabled={busy}
-              onPress={() => cancelOrder(item.coin, item.oid)}
-              testID={`open_order_cancel__${item.oid}`}>
-              Cancel
-            </Button>
-          </View>
-        </View>
-      </View>
+      <OpenOrderListItem
+        item={item}
+        isFirst={index === 0}
+        cancelling={cancellingIds.has(item.id)}
+        onCancel={handleCancel}
+      />
     ),
-    [
-      theme.colors.$textSuccess,
-      theme.colors.$textDanger,
-      theme.colors.$textPrimary,
-      formatCurrency,
-      busy,
-      cancelOrder
-    ]
+    [cancellingIds, handleCancel]
   )
 
   const keyExtractor = useCallback((item: OpenOrderRow) => item.id, [])
@@ -177,7 +133,7 @@ export const OpenOrdersList = ({
       isRefreshing={isRefreshing}
       onRefresh={onRefresh}
       listKey="open-orders"
-      extraData={{ busy }}
+      extraData={{ cancellingIds }}
     />
   )
 }

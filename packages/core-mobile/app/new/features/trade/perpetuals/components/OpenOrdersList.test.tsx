@@ -171,6 +171,40 @@ describe('OpenOrdersList', () => {
     ).toBeGreaterThan(0)
   })
 
+  it('disables only the tapped row while its cancel is in flight', async () => {
+    mockOrders.orders = [
+      richOrder({ oid: 1, coin: 'BTC' }),
+      richOrder({ oid: 2, coin: 'ETH' })
+    ]
+    let resolveCancel!: (ok: boolean) => void
+    mockCancelOrder.mockReturnValueOnce(
+      new Promise<boolean>(resolve => {
+        resolveCancel = resolve
+      })
+    )
+    let instance!: renderer.ReactTestRenderer
+    await act(async () => {
+      instance = renderer.create(<OpenOrdersList />)
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cancelFor = (oid: number): any =>
+      instance.root.findAllByProps({
+        testID: `open_order_cancel__${oid}`
+      })[0]?.props
+
+    act(() => {
+      cancelFor(1).onPress()
+    })
+    // Only the tapped row dims — the other row's Cancel stays active.
+    expect(cancelFor(1).disabled).toBe(true)
+    expect(cancelFor(2).disabled).toBe(false)
+
+    await act(async () => {
+      resolveCancel(true)
+    })
+    expect(cancelFor(1).disabled).toBe(false)
+  })
+
   it('cancels an order via usePerpsPositionActions', async () => {
     mockOrders.orders = [richOrder({ oid: 7, coin: 'ETH' })]
     let instance!: renderer.ReactTestRenderer
