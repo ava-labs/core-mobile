@@ -19,6 +19,7 @@ import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWar
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { usePerpsClearinghouse } from '../hooks/usePerpsClearinghouse'
+import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
 import { FALLBACK_COIN } from '../utils/economics'
 import { normalizePerpCoinParam, tickerOfCoin } from '../utils/coinDex'
 
@@ -56,6 +57,9 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   const balanceUnknown = accountValueUsd === undefined && balanceError
   const hasBalance = (accountValueUsd ?? 0) > 0
 
+  const { isTradingEnabled, isTradingStatusLoading } =
+    usePerpsEnableTradingGate()
+
   const { assetCtx, universe, pxDecimals } = useHyperliquidMarketContext(coin)
   const pricescale =
     pxDecimals !== undefined ? Math.pow(10, pxDecimals) : undefined
@@ -79,23 +83,34 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
   // sizes correctly) instead of falling back to the placeholder default.
   const markPx = assetCtx?.markPx
 
-  const handleShort = useCallback(() => {
-    const priceParam = markPx !== undefined ? `&price=${markPx}` : ''
-    router.push(
-      `/perpetualsPlaceOrder?coin=${encodeURIComponent(
-        coin
-      )}&side=short${priceParam}`
-    )
-  }, [coin, markPx, router])
+  const navigateToOrder = useCallback(
+    (side: 'short' | 'long') => {
+      const priceParam = markPx !== undefined ? `&price=${markPx}` : ''
+      const query = `coin=${encodeURIComponent(coin)}&side=${side}${priceParam}`
+      // Funded but one-time trading setup incomplete: the Short / Long slide
+      // opens the enable-trading sheet instead of the order form, carrying the
+      // selected side so the sheet continues into place-order once setup
+      // completes. While setup status is still resolving we proceed to
+      // place-order (its submit-time gate catches the rare miss) so an
+      // already-set-up user is never detoured on cold load.
+      if (!isTradingStatusLoading && !isTradingEnabled) {
+        router.push(`/perpetualsEnableTrading?${query}`)
+        return
+      }
+      router.push(`/perpetualsPlaceOrder?${query}`)
+    },
+    [coin, markPx, isTradingStatusLoading, isTradingEnabled, router]
+  )
 
-  const handleLong = useCallback(() => {
-    const priceParam = markPx !== undefined ? `&price=${markPx}` : ''
-    router.push(
-      `/perpetualsPlaceOrder?coin=${encodeURIComponent(
-        coin
-      )}&side=long${priceParam}`
-    )
-  }, [coin, markPx, router])
+  const handleShort = useCallback(
+    () => navigateToOrder('short'),
+    [navigateToOrder]
+  )
+
+  const handleLong = useCallback(
+    () => navigateToOrder('long'),
+    [navigateToOrder]
+  )
 
   const renderFooter = useCallback(() => {
     // Perps unavailable in this region — replace the trade CTA with the

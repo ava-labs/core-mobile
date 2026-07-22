@@ -12,6 +12,13 @@ export type PerpsEnableTradingGate = {
    */
   readonly isTradingEnabled: boolean
   /**
+   * `true` while any of the setup queries (agent key, builder-fee approval,
+   * unified account) is still resolving — `isTradingEnabled` is not yet
+   * meaningful. Proactive UI (e.g. the details-screen "enable trading" CTA)
+   * should not react to `isTradingEnabled === false` until this settles.
+   */
+  readonly isTradingStatusLoading: boolean
+  /**
    * Call at the top of a submit handler. Returns `true` when one-time trading
    * setup is complete; otherwise presents the enable-trading form sheet and
    * returns `false` so the caller can bail out (the user re-submits once set
@@ -29,12 +36,17 @@ export type PerpsEnableTradingGate = {
  */
 export const usePerpsEnableTradingGate = (): PerpsEnableTradingGate => {
   const router = useRouter()
-  const { hasAgent } = usePerps()
+  const { hasAgent, isLoadingAgent } = usePerps()
   const {
     isApproved: isBuilderFeeApproved,
-    feeTenthsBps: builderFeeTenthsBps
+    feeTenthsBps: builderFeeTenthsBps,
+    isLoading: isBuilderFeeLoading
   } = usePerpsBuilderFee()
-  const { isUnifiedAccount } = usePerpsUnifiedAccount()
+  const { isUnifiedAccount, isLoading: isUnifiedAccountLoading } =
+    usePerpsUnifiedAccount()
+
+  const isTradingStatusLoading =
+    isLoadingAgent || isBuilderFeeLoading || isUnifiedAccountLoading
 
   const isTradingEnabled = useMemo(
     () =>
@@ -52,5 +64,5 @@ export const usePerpsEnableTradingGate = (): PerpsEnableTradingGate => {
     return true
   }, [isTradingEnabled, router])
 
-  return { isTradingEnabled, requireTradingEnabled }
+  return { isTradingEnabled, isTradingStatusLoading, requireTradingEnabled }
 }

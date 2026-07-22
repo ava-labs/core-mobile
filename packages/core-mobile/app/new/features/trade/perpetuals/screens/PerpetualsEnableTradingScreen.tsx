@@ -2,7 +2,7 @@ import { Checklist, View, type ChecklistItem } from '@avalabs/k2-alpine'
 import { isPerpsUserRejection } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'common/utils/toast'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { usePerps } from '../contexts/PerpsProvider'
 import { usePerpsBuilderFee } from '../hooks/usePerpsBuilderFee'
@@ -13,9 +13,19 @@ import { usePerpsUnifiedAccount } from '../hooks/usePerpsUnifiedAccount'
  * and unified-account enablement. All three steps are required before trading
  * (matches core-web's `PerpsEnableTradingModal`). Presented as a modal route
  * on top of the perps screen that required trading setup.
+ *
+ * When opened by a Short / Long slide on the market details screen, the
+ * `coin`/`side`(/`price`) params carry the order the user started; once setup
+ * completes, the sheet continues into place-order with that selection instead
+ * of just dismissing.
  */
 export const PerpetualsEnableTradingScreen = (): JSX.Element => {
   const router = useRouter()
+  const { coin, side, price } = useLocalSearchParams<{
+    coin?: string
+    side?: string
+    price?: string
+  }>()
   const { hasAgent, approveBackgroundTrading, isAgentApprovalSubmitting } =
     usePerps()
   const {
@@ -34,15 +44,28 @@ export const PerpetualsEnableTradingScreen = (): JSX.Element => {
     builderFeeTenthsBps === undefined || isBuilderFeeApproved
 
   // The last step's handler dismisses eagerly while the effect below also
-  // reacts to the queries flipping done — guard so we only pop this sheet once.
+  // reacts to the queries flipping done — guard so we only navigate once.
   const dismissedRef = useRef(false)
   const dismiss = useCallback(() => {
     if (dismissedRef.current) {
       return
     }
     dismissedRef.current = true
+    // Continue into the order the user originally slid for. `replace` (not
+    // back + push) so it's one atomic navigation action and back from
+    // place-order returns to the details screen, not this sheet.
+    if (coin !== undefined && (side === 'long' || side === 'short')) {
+      const priceParam =
+        price !== undefined ? `&price=${encodeURIComponent(price)}` : ''
+      router.replace(
+        `/perpetualsPlaceOrder?coin=${encodeURIComponent(
+          coin
+        )}&side=${side}${priceParam}`
+      )
+      return
+    }
     router.canGoBack() && router.back()
-  }, [router])
+  }, [router, coin, side, price])
 
   const handleEnableAgent = useCallback(async () => {
     try {
