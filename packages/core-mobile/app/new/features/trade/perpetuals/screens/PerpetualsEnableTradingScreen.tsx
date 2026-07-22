@@ -64,11 +64,11 @@ export const PerpetualsEnableTradingScreen = (): JSX.Element => {
     if (dismissedRef.current) {
       return
     }
-    dismissedRef.current = true
     // Continue into the order the user originally slid for. `replace` (not
     // back + push) so it's one atomic navigation action and back from
     // place-order returns to the details screen, not this sheet.
     if (coin !== undefined && (side === 'long' || side === 'short')) {
+      dismissedRef.current = true
       const priceParam =
         price !== undefined ? `&price=${encodeURIComponent(price)}` : ''
       router.replace(
@@ -78,7 +78,12 @@ export const PerpetualsEnableTradingScreen = (): JSX.Element => {
       )
       return
     }
-    router.canGoBack() && router.back()
+    // Only latch the guard when we actually navigate — a failed dismiss must
+    // stay retryable rather than leaving the sheet open with a spent guard.
+    if (router.canGoBack()) {
+      dismissedRef.current = true
+      router.back()
+    }
   }, [router, coin, side, price])
 
   const handleEnableAgent = useCallback(async () => {
