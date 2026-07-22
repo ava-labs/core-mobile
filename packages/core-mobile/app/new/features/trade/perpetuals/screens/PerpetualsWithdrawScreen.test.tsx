@@ -8,7 +8,10 @@ import renderer, { act } from 'react-test-renderer'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockWidgetProps: { current: any } = { current: undefined }
 const mockWithdrawArgs: string[] = []
-const mockWithdrawState = { withdrawableUsd: 44.148877 }
+const mockWithdrawState = {
+  withdrawableUsd: 44.148877,
+  exceedsWithdrawable: false
+}
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn() })
@@ -36,7 +39,7 @@ jest.mock('../hooks/usePerpsWithdraw', () => ({
       isWithdrawing: false,
       isServiceReady: true,
       isWithdrawableUnavailable: false,
-      exceedsWithdrawable: false,
+      exceedsWithdrawable: mockWithdrawState.exceedsWithdrawable,
       estimatedReceive: undefined,
       executeWithdraw: jest.fn()
     }
@@ -102,6 +105,7 @@ describe('PerpetualsWithdrawScreen amount precision', () => {
     mockWidgetProps.current = undefined
     mockWithdrawArgs.length = 0
     mockWithdrawState.withdrawableUsd = 44.148877
+    mockWithdrawState.exceedsWithdrawable = false
   })
 
   it('keeps the full-precision Max amount instead of display-rounding it up', async () => {
@@ -129,5 +133,16 @@ describe('PerpetualsWithdrawScreen amount precision', () => {
     mockWithdrawState.withdrawableUsd = 44.1488779
     await render()
     expect(mockWidgetProps.current.balance.toSubUnit()).toBe(44148877n)
+  })
+
+  it('floors the max-withdrawal hint so it never names a rejected amount', async () => {
+    mockWithdrawState.exceedsWithdrawable = true
+    const instance = await render()
+    // 2dp formatting would round 44.148877 up to "44.15 USDC" — an amount the
+    // hook itself rejects as exceeding the withdrawable.
+    const texts = instance.root
+      .findAllByType('Text' as never)
+      .map(t => t.children.join(''))
+    expect(texts).toContain('Maximum withdrawal is 44.14 USDC')
   })
 })

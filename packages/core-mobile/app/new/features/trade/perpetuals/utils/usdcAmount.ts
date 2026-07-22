@@ -31,3 +31,14 @@ export const floorToUsdcUnit = (amount: number): TokenUnit => {
   const unit = new TokenUnit(0n, USDC_DECIMALS, 'USDC').add(amount)
   return new TokenUnit(unit.toSubUnit(), USDC_DECIMALS, 'USDC')
 }
+
+const SUBUNITS_PER_CENT = 10n ** BigInt(USDC_DECIMALS - 2)
+
+/**
+ * Floors a USD amount to whole cents, so that a 2-decimal display
+ * (`formatNumber` rounds half-up) never shows more than is actually available
+ * — e.g. a 44.148877 withdrawable must not be advertised as "44.15".
+ * Truncates in bigint subunits to avoid float-multiply drift.
+ */
+export const floorToCents = (amount: number): number =>
+  Number(floorToUsdcUnit(amount).toSubUnit() / SUBUNITS_PER_CENT) / 100

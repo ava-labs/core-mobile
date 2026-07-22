@@ -18,7 +18,11 @@ import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { USDC_DECIMALS } from '../consts'
 import { PerpsApiDownState } from '../components/PerpsApiDownState'
 import { usePerpsWithdraw } from '../hooks/usePerpsWithdraw'
-import { floorToUsdcUnit, usdcAmountFromTokenUnit } from '../utils/usdcAmount'
+import {
+  floorToCents,
+  floorToUsdcUnit,
+  usdcAmountFromTokenUnit
+} from '../utils/usdcAmount'
 
 const USDC_TOKEN = { maxDecimals: USDC_DECIMALS, symbol: 'USDC' }
 
@@ -131,7 +135,8 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
         : [
             {
               title: 'Available to withdraw',
-              value: mutedValue(formatUsd(available))
+              // Floored to cents: half-up 2dp formatting must not overstate.
+              value: mutedValue(formatUsd(floorToCents(available)))
             }
           ],
     [mutedValue, available]
@@ -202,7 +207,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
     )
   }
 
-  if (available === undefined) {
+  if (available === undefined || availableBalance === undefined) {
     return (
       <ScrollScreen
         isModal
@@ -229,7 +234,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
           sx={{ width: '100%' }}
           autoFocus
           token={USDC_TOKEN}
-          balance={availableBalance ?? floorToUsdcUnit(available)}
+          balance={availableBalance}
           amount={amount > 0 ? toUsdc(amount) : undefined}
           onChange={handleAmountChange}
           formatInCurrency={formatInCurrency}
@@ -238,7 +243,10 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
 
         {exceedsBalance ? (
           <Text variant="caption" sx={{ color: '$textDanger' }}>
-            {`Maximum withdrawal is ${formatUsdcAmount(available)}`}
+            {/* Floored to cents so the hint never names a rejected amount. */}
+            {`Maximum withdrawal is ${formatUsdcAmount(
+              floorToCents(available)
+            )}`}
           </Text>
         ) : null}
       </View>

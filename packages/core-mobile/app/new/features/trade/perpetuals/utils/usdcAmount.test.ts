@@ -1,5 +1,9 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { floorToUsdcUnit, usdcAmountFromTokenUnit } from './usdcAmount'
+import {
+  floorToCents,
+  floorToUsdcUnit,
+  usdcAmountFromTokenUnit
+} from './usdcAmount'
 
 const usdc = (subUnits: bigint): TokenUnit => new TokenUnit(subUnits, 6, 'USDC')
 
@@ -25,5 +29,17 @@ describe('floorToUsdcUnit', () => {
     // float multiply under-floors these by one subunit.
     expect(floorToUsdcUnit(8.2).toSubUnit()).toBe(8200000n)
     expect(floorToUsdcUnit(0.000249).toSubUnit()).toBe(249n)
+  })
+})
+
+describe('floorToCents', () => {
+  it('truncates instead of letting 2dp formatting round up', () => {
+    // formatNumber(44.148877) renders "44.15" — more than is withdrawable.
+    expect(floorToCents(44.148877)).toBe(44.14)
+  })
+
+  it('keeps exact-cent values unchanged', () => {
+    expect(floorToCents(8.2)).toBe(8.2)
+    expect(floorToCents(44.15)).toBe(44.15)
   })
 })
