@@ -3,6 +3,7 @@ import {
   formatSigned,
   isTriggerValid,
   pctFromEntry,
+  pctParts,
   pnlColor,
   positionSizeTokens,
   projectedPnl,
@@ -243,5 +244,26 @@ describe('isTriggerValid', () => {
         referencePrice
       })
     ).toBe(false)
+  })
+})
+
+describe('pctParts', () => {
+  it('formats a positive pct as above current price', () => {
+    expect(pctParts(1.94)).toEqual({
+      percent: '+1.94%',
+      suffix: ' above current price'
+    })
+  })
+  it('formats a negative pct as below current price', () => {
+    expect(pctParts(-2.5)).toEqual({
+      percent: '-2.50%',
+      suffix: ' below current price'
+    })
+  })
+  it('returns the empty text when pct is undefined', () => {
+    expect(pctParts(undefined, 'Set a price')).toEqual({
+      percent: '',
+      suffix: 'Set a price'
+    })
   })
 })

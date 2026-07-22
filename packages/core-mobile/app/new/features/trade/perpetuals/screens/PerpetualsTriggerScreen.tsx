@@ -19,6 +19,7 @@ import {
   formatSigned,
   isTriggerValid,
   pctFromEntry,
+  pctParts,
   pnlColor,
   positionSizeTokens,
   projectedPnl,
@@ -26,20 +27,6 @@ import {
   type TriggerKind
 } from '../utils/economics'
 import { toNumber } from '../utils/format'
-
-// The percentage is colored by sign; the " above/below current price" suffix
-// stays in the secondary text color (per design).
-const pctParts = (
-  pct: number | undefined
-): { percent: string; suffix: string } => {
-  if (pct === undefined) return { percent: '', suffix: 'Set a price target' }
-  const sign = pct >= 0 ? '+' : ''
-  const direction = pct >= 0 ? 'above' : 'below'
-  return {
-    percent: `${sign}${pct.toFixed(2)}%`,
-    suffix: ` ${direction} current price`
-  }
-}
 
 const COPY: Record<
   TriggerKind,
