@@ -18,12 +18,6 @@ const toUsdc = (amount: number): TokenUnit =>
     USDC_TOKEN.symbol
   )
 
-const DEPOSIT_PRESETS = [
-  { label: '$100', value: 100 },
-  { label: '$250', value: 250 },
-  { label: '$500', value: 500 }
-] as const
-
 const formatWalletUsdc = (amount: number): string =>
   `${formatNumber(amount)} USDC`
 
@@ -113,7 +107,6 @@ export const PerpetualsDepositScreen = (): JSX.Element => {
         amount={amount > 0 ? toUsdc(amount) : undefined}
         onChange={handleAmountChange}
         formatInCurrency={formatInCurrency}
-        presets={DEPOSIT_PRESETS}
         valid={!isBelowMin && !exceedsBalance}
       />
 

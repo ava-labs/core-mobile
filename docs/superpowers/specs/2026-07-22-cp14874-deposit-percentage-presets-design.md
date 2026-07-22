@@ -29,11 +29,11 @@ predictions screens keep their own presets intentionally).
 
 ## Behavior notes
 
-- Balance is still the stub `WALLET_USDC_BALANCE = 28.1142`; 25% ≈ 7.03 USDC is
-  below the 10 USDC minimum, so tapping it shows the existing
-  "Minimum deposit is 10 USDC" inline error and the Deposit button stays
-  disabled. This is accepted — real balance wiring is a separate task, and the
-  existing validation handles it. No preset-disabling logic.
+- The screen now uses the real C-Chain USDC balance (`useCChainUsdc`), so the
+  percentage presets are balance-proportional for real. If 25%/50% of a small
+  balance falls below the 10 USDC minimum, the existing
+  "Minimum deposit is 10 USDC" inline error shows and the Deposit button stays
+  disabled. No preset-disabling logic.
 - `Max` = 100% of wallet balance (widget default `maxPercentage = 1`).
 
 ## Testing
