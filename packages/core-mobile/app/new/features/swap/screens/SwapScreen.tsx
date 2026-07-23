@@ -959,9 +959,10 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
-    const [to, from] = [fromToken, toToken]
-    setFromToken(from)
-    setToToken(to)
+    const nextFromToken = toToken
+    const nextToToken = fromToken
+    setFromToken(nextFromToken)
+    setToToken(nextToToken)
     setFromTokenValue(undefined)
     setToTokenValue(undefined)
     setAmount(undefined)
