@@ -35,6 +35,7 @@ import {
   FILTER_SMALL_UTXOS_DEFAULT,
   QUICK_SWAPS_DEFAULT
 } from '../settings/advanced/types'
+import { DEFAULT_LANGUAGE, isLanguageCode } from '../settings/language/types'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -570,6 +571,23 @@ export const migrations = {
           filterSmallUtxos:
             state.settings?.advanced?.filterSmallUtxos ??
             FILTER_SMALL_UTXOS_DEFAULT
+        }
+      }
+    }
+  },
+  31: (state: any) => {
+    // CP-14849: introduce settings.language, defaulting to en-US regardless
+    // of device locale. Preserves an already-set value, but clamps an
+    // unsupported/corrupt persisted code back to the default — rehydration
+    // bypasses the reducer clamp, so normalize at the migration source rather
+    // than relying on the selector clamp forever.
+    const persisted = state.settings?.language?.selected
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        language: {
+          selected: isLanguageCode(persisted) ? persisted : DEFAULT_LANGUAGE
         }
       }
     }

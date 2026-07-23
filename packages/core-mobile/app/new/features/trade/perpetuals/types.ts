@@ -2,11 +2,15 @@ import { PriceChangeStatus } from '@avalabs/k2-alpine'
 
 export type PositionSide = 'long' | 'short'
 
+export type MarginMode = 'cross' | 'isolated'
+
 export type Position = {
   id: string
   symbol: string
   side: PositionSide
   leverage: number
+  /** Cross vs isolated margin, from the position's Hyperliquid leverage setting. */
+  marginMode: MarginMode
   /** Position size in tokens (base units). */
   size: number
   price: number
