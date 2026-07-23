@@ -83,6 +83,7 @@ const KeystoneSignerScreen = ({
   return (
     <ScrollScreen
       isModal
+      disableHeaderSnap
       titleSx={{
         maxWidth: '80%'
       }}

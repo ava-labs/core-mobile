@@ -36,11 +36,11 @@ function AppUpdateScreen(): JSX.Element {
     <ScrollScreen
       renderFooter={renderFooter}
       isModal
+      disableHeaderSnap
       contentContainerStyle={{
-        flex: 1,
-        marginTop: 70
+        flex: 1
       }}>
-      <View sx={{ alignItems: 'center', gap: 50 }}>
+      <View sx={{ alignItems: 'center', gap: 50, marginTop: 70 }}>
         <CoreLogoWithTokens />
         <View
           style={{

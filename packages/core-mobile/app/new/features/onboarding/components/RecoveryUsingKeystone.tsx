@@ -17,6 +17,7 @@ export const RecoveryUsingKeystone = ({
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title="Scan the QR code"
+      disableHeaderSnap
       contentContainerStyle={{
         padding: 16
       }}>
