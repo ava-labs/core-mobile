@@ -9,6 +9,10 @@ declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'translation'
     resources: Resources
+    // Both separators are disabled at runtime (app/i18n/index.ts). Mirror that
+    // here so natural-English keys containing ':' or '.' are treated as flat
+    // literal keys, not parsed as namespace:key / nested paths.
     keySeparator: false
+    nsSeparator: false
   }
 }

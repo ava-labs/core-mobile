@@ -31,8 +31,10 @@ export default defineConfig({
     // removeUnusedKeys to true, which would wipe the seed catalog while
     // there are ~zero t()/<Trans> consumers yet.
     removeUnusedKeys: false,
-    // Natural-English keys: the key IS the English string. EN source gets
-    // key===value; every other locale stays empty for Crowdin to fill.
+    // Natural-English keys: the key IS the English string. On extraction a
+    // NEW key is written as key===value in EN and "" in every other locale
+    // (a Crowdin placeholder); existing non-EN translations are preserved
+    // (removeUnusedKeys:false above).
     // Note: i18next-cli 1.66.x calls defaultValue as
     // (key, namespace, language, value) — the language is the 3rd arg.
     defaultValue: (key: string, _namespace: string, language: string) =>
@@ -42,6 +44,12 @@ export default defineConfig({
     // Generate types from the EN source of truth (the flat `translation`
     // namespace written by `extract`).
     input: ['app/i18n/locales/en-US/translation.json'],
-    output: 'app/i18n/@types/resources.d.ts'
+    // `output` is the augmentation file and `resourcesFile` is the generated
+    // Resources interface. The generator always writes `resourcesFile` and
+    // SKIPS `output` when it already exists — so our hand-written i18next.d.ts
+    // (which sets defaultNS + keySeparator/nsSeparator) is preserved. Set both
+    // explicitly rather than relying on the output===resourcesFile write-order.
+    output: 'app/i18n/@types/i18next.d.ts',
+    resourcesFile: 'app/i18n/@types/resources.d.ts'
   }
 })

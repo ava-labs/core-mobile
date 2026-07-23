@@ -28,7 +28,7 @@
     "i18n:extract": "i18next-cli extract",
     "i18n:types": "i18next-cli types",
     "i18n:instrument": "i18next-cli instrument --dry-run",
-    "i18n:check": "i18next-cli extract --ci"
+    "i18n:check": "i18next-cli extract --ci && i18next-cli types --ci"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "3.9.0",
