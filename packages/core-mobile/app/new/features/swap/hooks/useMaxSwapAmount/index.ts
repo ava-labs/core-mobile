@@ -225,6 +225,7 @@ export const useMaxSwapAmount = ({
 
   const isMaxLoading = computeIsMaxLoading({
     fromToken,
+    toToken,
     isNative,
     bufferedGas: bufferedFee,
     additiveFee: additiveFeeForMax,

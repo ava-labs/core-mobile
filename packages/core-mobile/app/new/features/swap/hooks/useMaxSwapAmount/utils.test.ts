@@ -430,6 +430,7 @@ describe('getRouteAdditiveBps', () => {
 describe('computeIsMaxLoading', () => {
   const baseParams = {
     fromToken: makeToken(1_000_000n),
+    toToken: makeToken(0n, TokenType.ERC20),
     isNative: true,
     bufferedGas: undefined as bigint | undefined,
     additiveFee: undefined as bigint | undefined,
@@ -441,6 +442,12 @@ describe('computeIsMaxLoading', () => {
 
   it('is false without a from token', () => {
     expect(computeIsMaxLoading({ ...baseParams, fromToken: undefined })).toBe(
+      false
+    )
+  })
+
+  it('is false without a to token — nothing is in flight for an incomplete pair', () => {
+    expect(computeIsMaxLoading({ ...baseParams, toToken: undefined })).toBe(
       false
     )
   })
