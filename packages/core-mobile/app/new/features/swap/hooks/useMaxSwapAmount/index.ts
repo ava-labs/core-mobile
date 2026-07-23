@@ -50,7 +50,9 @@ const useHoldMaxWhileRecalculating = ({
   fromToken: LocalTokenWithBalance | undefined
   shouldHold: boolean
 }): bigint | undefined => {
-  const lastKnownRef = useRef<{ tokenKey: string; value: bigint }>()
+  const lastKnownRef = useRef<{ tokenKey: string; value: bigint } | undefined>(
+    undefined
+  )
   const tokenKey = fromToken ? getTokenKey(fromToken) : undefined
 
   // Ref writes happen post-commit (never during render — Strict Mode /
@@ -64,8 +66,11 @@ const useHoldMaxWhileRecalculating = ({
   }, [max, tokenKey])
 
   if (max !== undefined) return max
-  return shouldHold && lastKnownRef.current?.tokenKey === tokenKey
-    ? lastKnownRef.current.value
+  const lastKnown = lastKnownRef.current
+  return shouldHold &&
+    lastKnown !== undefined &&
+    lastKnown.tokenKey === tokenKey
+    ? lastKnown.value
     : undefined
 }
 
