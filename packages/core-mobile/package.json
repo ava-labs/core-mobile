@@ -27,7 +27,7 @@
     "appium:smokeAndroid": "IS_SMOKE=true PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "i18n:extract": "i18next-cli extract",
     "i18n:types": "i18next-cli types",
-    "i18n:instrument": "i18next-cli instrument",
+    "i18n:instrument": "i18next-cli instrument --dry-run",
     "i18n:check": "i18next-cli extract --ci"
   },
   "dependencies": {

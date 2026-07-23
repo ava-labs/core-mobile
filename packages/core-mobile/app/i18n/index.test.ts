@@ -31,4 +31,17 @@ describe('initI18n', () => {
     await initI18n()
     expect(i18n.language).toBe('en-US')
   })
+
+  it('falls back to English for an empty-string value in a non-EN catalog', async () => {
+    mockGetString.mockReturnValue('es-ES')
+    await initI18n()
+    // The extraction pipeline seeds not-yet-translated keys as "" in non-EN
+    // catalogs (for Crowdin to fill), with the EN source of truth present.
+    // Simulate that for an existing key: EN has the value, es-ES is empty.
+    i18n.addResource('en-US', 'translation', 'Send', 'Send')
+    i18n.addResource('es-ES', 'translation', 'Send', '')
+    // returnEmptyString:false → the empty es-ES value is treated as missing and
+    // falls back to en-US ('Send') instead of rendering blank.
+    expect(i18n.t('Send')).toBe('Send')
+  })
 })
