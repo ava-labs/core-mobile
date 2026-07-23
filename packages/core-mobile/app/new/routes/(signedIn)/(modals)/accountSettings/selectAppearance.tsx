@@ -25,6 +25,7 @@ const SelectAppearanceScreen = (): JSX.Element => {
       title={`Customize the\napp appearance`}
       navigationTitle="Customize the app appearance"
       isModal
+      disableHeaderSnap
       contentContainerStyle={{
         padding: 16
       }}>

@@ -34,6 +34,7 @@ export const AddRecoveryMethods = ({
       showNavigationHeaderTitle={false}
       title="Add a recovery method"
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
+      disableHeaderSnap
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View

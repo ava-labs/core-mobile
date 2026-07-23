@@ -37,6 +37,7 @@ export const TermsAndConditions = ({
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title="Terms and conditions"
+      disableHeaderSnap
       contentContainerStyle={{
         flexGrow: 1,
         paddingLeft: 16,

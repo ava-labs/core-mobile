@@ -121,6 +121,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     <ScrollScreen
       title="Import private key"
       isModal
+      disableHeaderSnap
       shouldAvoidKeyboard
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>

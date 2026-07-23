@@ -100,6 +100,7 @@ export const CreatePin = ({
       showNavigationHeaderTitle={false}
       isModal={isModal}
       shouldAvoidKeyboard
+      disableHeaderSnap
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={

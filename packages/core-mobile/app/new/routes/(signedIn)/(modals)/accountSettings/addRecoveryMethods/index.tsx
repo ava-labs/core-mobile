@@ -116,6 +116,7 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
       title={`Manage recovery\nmethods`}
       isModal
       hasParent
+      disableHeaderSnap
       navigationTitle="Manage recovery methods"
       renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
