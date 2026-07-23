@@ -25,8 +25,7 @@ import React, {
 import Animated, {
   Easing,
   LinearTransition,
-  ZoomIn,
-  ZoomOut
+  ZoomIn
 } from 'react-native-reanimated'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { LogoWithNetwork } from './LogoWithNetwork'
@@ -35,6 +34,14 @@ export type TokenInputWidgetRef = {
   focus: () => void
   blur: () => void
 }
+
+// Fixed slot width for the 25% / 50% / Max buttons. Shared by the button's
+// minWidth and its animating wrapper so the row's layout never depends on
+// entering-animation state (see the comment at the render site).
+const PERCENTAGE_BUTTON_WIDTH = 72
+
+// Entering stagger between adjacent percentage buttons (left → right).
+const PERCENTAGE_BUTTON_STAGGER_MS = 40
 
 type TokenInputWidgetProps = {
   title: string
@@ -371,16 +378,31 @@ export const TokenInputWidget = forwardRef<
                 )
                 .map((button, index) => (
                   // Each button zooms around its own center rather than the
-                  // whole row scaling as one block.
+                  // whole row scaling as one block. The wrapper has a FIXED
+                  // width: siblings whose entering hasn't started yet don't
+                  // occupy layout on Fabric, and in this right-anchored row
+                  // that read as 25%/Max sliding apart while 50% popped in
+                  // late. Fixed slots pin the layout from the first frame,
+                  // and the explicit stagger makes the start order a
+                  // deliberate left-to-right cascade instead of arbitrary.
+                  // No `exiting` on purpose: an exit animation leaves ghost
+                  // entries in Reanimated's layout-animation registry, and a
+                  // quick blur → refocus remounts the same-keyed buttons on
+                  // top of them — the entering cascade then replays skewed
+                  // (25%/Max sliding apart, 50% surfacing late). Instant
+                  // removal keeps every focus identical to the first, and the
+                  // dismissing keyboard masks the missing zoom-out anyway.
                   <Animated.View
                     key={button.text}
-                    entering={ZoomIn.duration(150)}
-                    exiting={ZoomOut.duration(150)}>
+                    style={{ width: PERCENTAGE_BUTTON_WIDTH }}
+                    entering={ZoomIn.duration(150).delay(
+                      index * PERCENTAGE_BUTTON_STAGGER_MS
+                    )}>
                     <Button
                       size="small"
                       type={button.isSelected ? 'primary' : 'secondary'}
                       style={{
-                        minWidth: 72
+                        minWidth: PERCENTAGE_BUTTON_WIDTH
                       }}
                       disabled={
                         disabled ||
