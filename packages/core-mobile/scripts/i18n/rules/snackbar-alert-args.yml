@@ -1,0 +1,23 @@
+# showSnackbar/showAlert calls appear in BOTH .tsx and plain .ts (hooks/utils),
+# so this rule is paired with snackbar-alert-args-ts.yml (language: typescript).
+# ast-grep binds one grammar per rule, so the .ts coverage lives in the twin.
+id: i18n-snackbar-alert-arg-tsx
+language: tsx
+# NOTE: only matches string LITERALS. Interpolated copy (template_string) and
+# variables fall through here AND through i18next-cli instrument — the report
+# is not exhaustive; the sweep must still eyeball these call sites.
+message: Hardcoded string literal passed to showSnackbar/showAlert (.tsx) — wrap with t() during the i18n sweep. NOTE template-literal/variable args are NOT flagged.
+severity: warning
+rule:
+  kind: call_expression
+  all:
+    # Un-anchored suffix regex is deliberate: it also catches member calls like
+    # `Alert.showAlert(...)` (matched against the callee node text). Trade-off:
+    # a hypothetical `fooShowAlert()` would also match — accepted for a report.
+    - has:
+        field: function
+        regex: (showSnackbar|showAlert)$
+    - has:
+        kind: string
+        stopBy: end
+        pattern: $STR

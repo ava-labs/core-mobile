@@ -86,6 +86,11 @@ export const initI18n = (): Promise<unknown> => {
     partialBundledLanguages: true,
     interpolation: { escapeValue: false },
     returnNull: false,
+    // Treat an empty-string value as missing so it falls back to `fallbackLng`
+    // (English) instead of rendering blank. The extraction pipeline seeds
+    // not-yet-translated keys as "" in non-EN catalogs (for Crowdin to fill),
+    // so without this an untranslated key would show empty in other languages.
+    returnEmptyString: false,
     // No Suspense boundary wraps the tree; keep useTranslation synchronous
     // so a consumer mounting before a namespace resolves never throws.
     react: { useSuspense: false },
