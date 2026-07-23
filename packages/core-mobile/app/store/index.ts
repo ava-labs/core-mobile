@@ -30,7 +30,7 @@ import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
 import { chartPreferencesReducer as chartPreferences } from './chartPreferences/slice'
 
-const VERSION = 30
+const VERSION = 31
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
