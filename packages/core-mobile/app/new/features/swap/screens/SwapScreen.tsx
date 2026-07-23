@@ -949,9 +949,13 @@ export const SwapScreen = (): JSX.Element => {
   // the reversed pair gets a fresh quote rather than carrying the old
   // receive-amount over, since rates aren't symmetric across services.
   const handleToggleTokens = useCallback(() => {
-    // Can't pay with a token the user holds none of.
+    // Can't pay with a token the user holds none of. Surfaced as a transient
+    // snackbar, NOT via `validationError` — a blocking validation error would
+    // wedge the current (unchanged, still-valid) direction: it feeds
+    // `activeError` → `canSwap`, disabling Next until an unrelated edit
+    // reruns `validateInputs`.
     if (toToken && getSwappableBalance(toToken) === 0n) {
-      setValidationError(fusionErrors.noDestinationToken(toToken.symbol))
+      showSnackbar(fusionErrors.noDestinationToken(toToken.symbol).message)
       return
     }
 
