@@ -20,6 +20,7 @@ import {
 import { usePreQuote } from './usePreQuote'
 import { useSpendableXpBalance } from './useSpendableXpBalance'
 import {
+  computeIsMaxLoading,
   computeMaxAmount,
   getPreQuoteAmount,
   getRouteAdditiveBps,
@@ -51,6 +52,14 @@ export const useMaxSwapAmount = ({
   minimumTransferAmount: bigint | null | undefined
 }): {
   max: bigint | undefined
+  /**
+   * True while an async input the max depends on is still pending (the
+   * dust-filtered X/P spendable balance, the gas estimate for native sources,
+   * or the pre-quote's additive fee for ERC20/SPL sources). Lets the UI tell
+   * a *calculating* `max === undefined` apart from a *terminal* one (fees
+   * exceed the balance), which never resolves.
+   */
+  isMaxLoading: boolean
   rawAdditiveFee: bigint
   bufferedAdditiveFee: bigint
   routeAdditiveBps: number
@@ -161,6 +170,19 @@ export const useMaxSwapAmount = ({
   const { spendableBalance, isSpendableBalanceRequired } =
     useSpendableXpBalance({ fromToken, fromNetwork })
 
+  const hasEstimationError =
+    (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
+
+  const isMaxLoading = computeIsMaxLoading({
+    fromToken,
+    isNative,
+    bufferedGas: bufferedFee,
+    additiveFee: additiveFeeForMax,
+    hasEstimationError,
+    isSpendableBalanceRequired,
+    spendableBalance
+  })
+
   const max = useMemo(() => {
     // CP-13903: a native X/P Max must come from the dust-filtered UTXO set
     // the CCT callbacks spend. Until it loads, keep Max disabled — falling
@@ -173,8 +195,7 @@ export const useMaxSwapAmount = ({
       isNative,
       bufferedGas: bufferedFee,
       additiveFee: additiveFeeForMax,
-      hasEstimationError:
-        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed,
+      hasEstimationError,
       spendableBalance: isSpendableBalanceRequired
         ? spendableBalance
         : undefined
@@ -184,15 +205,14 @@ export const useMaxSwapAmount = ({
     isNative,
     bufferedFee,
     additiveFeeForMax,
-    feeEstimationError,
-    preQuoteFailed,
-    isFeeEstimationFetching,
+    hasEstimationError,
     isSpendableBalanceRequired,
     spendableBalance
   ])
 
   return {
     max,
+    isMaxLoading,
     rawAdditiveFee,
     bufferedAdditiveFee,
     routeAdditiveBps,

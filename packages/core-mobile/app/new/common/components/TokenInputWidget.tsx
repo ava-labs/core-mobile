@@ -24,9 +24,9 @@ import React, {
 } from 'react'
 import Animated, {
   Easing,
-  FadeIn,
-  FadeOut,
-  LinearTransition
+  LinearTransition,
+  ZoomIn,
+  ZoomOut
 } from 'react-native-reanimated'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { LogoWithNetwork } from './LogoWithNetwork'
@@ -40,6 +40,13 @@ type TokenInputWidgetProps = {
   title: string
   amount?: bigint
   maximum?: bigint
+  /**
+   * True while `maximum` is still being calculated. Keeps the Max button
+   * mounted (disabled) so it doesn't pop in after its siblings; when false
+   * with `maximum` undefined, the maximum is terminally unavailable (e.g.
+   * fees exceed the balance) and the Max button is hidden instead.
+   */
+  isMaximumLoading?: boolean
   token?: { symbol: string; logoUri?: string; decimals: number }
   balance?: bigint
   shouldShowBalance?: boolean
@@ -80,6 +87,7 @@ export const TokenInputWidget = forwardRef<
     shouldShowBalance,
     network,
     maximum,
+    isMaximumLoading = false,
     amount,
     onAmountChange,
     onPressMax,
@@ -341,36 +349,55 @@ export const TokenInputWidget = forwardRef<
             marginTop: 14
           }}>
           {isAmountInputFocused && (
-            <Animated.View
-              style={{
+            <View
+              sx={{
                 alignSelf: 'flex-end',
                 flexDirection: 'row',
                 gap: 7
-              }}
-              entering={FadeIn}
-              exiting={FadeOut}>
+              }}>
               {percentageButtons
-                // Hide Max button when maximum is still loading or could not be calculated
+                // Hide Max only when the maximum is terminally unavailable
+                // (fees exceed the balance — it would stay disabled forever).
+                // While it's merely still calculating it stays MOUNTED
+                // (disabled below): filtering it out and back in replayed its
+                // ZoomIn after the siblings', reading as a flicker.
                 .filter(
-                  button => !(button.percent === 1 && maximum === undefined)
+                  button =>
+                    !(
+                      button.percent === 1 &&
+                      maximum === undefined &&
+                      !isMaximumLoading
+                    )
                 )
                 .map((button, index) => (
-                  <Button
-                    key={index}
-                    size="small"
-                    type={button.isSelected ? 'primary' : 'secondary'}
-                    style={{
-                      minWidth: 72
-                    }}
-                    disabled={disabled || balance === undefined}
-                    onPress={() => {
-                      handlePressPercentageButton(button, index)
-                      tokenAmountInputRef.current?.blur()
-                    }}>
-                    {button.text}
-                  </Button>
+                  // Each button zooms around its own center rather than the
+                  // whole row scaling as one block.
+                  <Animated.View
+                    key={button.text}
+                    entering={ZoomIn.duration(150)}
+                    exiting={ZoomOut.duration(150)}>
+                    <Button
+                      size="small"
+                      type={button.isSelected ? 'primary' : 'secondary'}
+                      style={{
+                        minWidth: 72
+                      }}
+                      disabled={
+                        disabled ||
+                        balance === undefined ||
+                        // Max is unusable until the fee-adjusted maximum is
+                        // known (or when fees exceed the balance entirely).
+                        (button.percent === 1 && maximum === undefined)
+                      }
+                      onPress={() => {
+                        handlePressPercentageButton(button, index)
+                        tokenAmountInputRef.current?.blur()
+                      }}>
+                      {button.text}
+                    </Button>
+                  </Animated.View>
                 ))}
-            </Animated.View>
+            </View>
           )}
         </View>
       </Animated.View>

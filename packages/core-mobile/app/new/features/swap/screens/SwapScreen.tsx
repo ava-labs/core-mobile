@@ -48,7 +48,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
   FadeIn,
   FadeOut,
-  LinearTransition
+  LinearTransition,
+  ZoomIn,
+  ZoomOut
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -680,6 +682,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const {
     max: fromMaxSwapAmount,
+    isMaxLoading: isFromMaxLoading,
     rawAdditiveFee: maxRawAdditiveFee,
     bufferedAdditiveFee: maxBufferedAdditiveFee,
     routeAdditiveBps: maxRouteAdditiveBps,
@@ -1082,6 +1085,7 @@ export const SwapScreen = (): JSX.Element => {
           onFocus={handleYouPayFocus}
           onBlur={handleYouPayBlur}
           maximum={fromMaxSwapAmount}
+          isMaximumLoading={isFromMaxLoading}
           valid={!validationError}
         />
       </View>
@@ -1095,6 +1099,7 @@ export const SwapScreen = (): JSX.Element => {
     getNetwork,
     fromToken,
     fromMaxSwapAmount,
+    isFromMaxLoading,
     validationError,
     fromTokenValue,
     isSwapping,
@@ -1750,11 +1755,13 @@ export const SwapScreen = (): JSX.Element => {
           </View>
           {/* Toggle-tokens button, centered over the separator between the two
               cards. Hidden while "You pay" is being edited so it doesn't sit
-              under the user's thumb mid-typing (pre-Fusion design, CP-13847). */}
+              under the user's thumb mid-typing (pre-Fusion design, CP-13847).
+              Quick zoom in/out (scale) per design feedback — a plain fade felt
+              too sluggish next to the keyboard transition. */}
           {isInputFocused === false && (
             <Animated.View
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={ZoomIn.duration(150)}
+              exiting={ZoomOut.duration(150)}
               style={{
                 position: 'absolute',
                 top: -20,

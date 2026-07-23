@@ -148,3 +148,34 @@ export const computeMaxAmount = ({
   const max = balance - additiveFee
   return max > 0n ? max : undefined
 }
+
+/**
+ * True while an async input the max depends on is still pending: the
+ * dust-filtered X/P spendable balance, the gas estimate (native sources), or
+ * the pre-quote's additive fee (ERC20/SPL sources). Distinguishes a
+ * *calculating* `max === undefined` from a *terminal* one (fees exceed the
+ * balance), which never resolves. On estimation error there is nothing left
+ * to wait for — computeMaxAmount falls back to the full balance.
+ */
+export const computeIsMaxLoading = ({
+  fromToken,
+  isNative,
+  bufferedGas,
+  additiveFee,
+  hasEstimationError,
+  isSpendableBalanceRequired,
+  spendableBalance
+}: {
+  fromToken: LocalTokenWithBalance | undefined
+  isNative: boolean
+  bufferedGas: bigint | undefined
+  additiveFee: bigint | undefined
+  hasEstimationError: boolean
+  isSpendableBalanceRequired: boolean
+  spendableBalance: bigint | undefined
+}): boolean => {
+  if (!fromToken) return false
+  if (isSpendableBalanceRequired && spendableBalance === undefined) return true
+  if (hasEstimationError) return false
+  return isNative ? bufferedGas === undefined : additiveFee === undefined
+}
