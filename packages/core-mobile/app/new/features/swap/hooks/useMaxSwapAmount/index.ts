@@ -1,5 +1,5 @@
 import { TokenType } from '@avalabs/vm-module-types'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -53,15 +53,20 @@ const useHoldMaxWhileRecalculating = ({
   const lastKnownRef = useRef<{ tokenKey: string; value: bigint }>()
   const tokenKey = fromToken ? getTokenKey(fromToken) : undefined
 
-  if (lastKnownRef.current && lastKnownRef.current.tokenKey !== tokenKey) {
-    lastKnownRef.current = undefined
-  }
-  if (max !== undefined && tokenKey !== undefined) {
-    lastKnownRef.current = { tokenKey, value: max }
-  }
+  // Ref writes happen post-commit (never during render — Strict Mode /
+  // concurrent renders may be replayed or discarded). A stale entry from a
+  // previous token needs no eager clearing: the read below only honors an
+  // entry whose tokenKey matches the current token.
+  useEffect(() => {
+    if (max !== undefined && tokenKey !== undefined) {
+      lastKnownRef.current = { tokenKey, value: max }
+    }
+  }, [max, tokenKey])
 
   if (max !== undefined) return max
-  return shouldHold ? lastKnownRef.current?.value : undefined
+  return shouldHold && lastKnownRef.current?.tokenKey === tokenKey
+    ? lastKnownRef.current.value
+    : undefined
 }
 
 /**
