@@ -6,6 +6,7 @@ import {
   isPerpsError,
   isPerpsUserRejection,
   isResponseValidationError,
+  shouldInvalidateAgentForExchangeError,
   type BuilderInfo,
   type ExchangeCancelResponse,
   type ExchangePlaceOrderResponse,
@@ -105,6 +106,48 @@ export const logHyperliquidReject = (
 /** Slippage tolerance applied to market orders (5%). */
 export const DEFAULT_SLIPPAGE = 0.05
 
+/**
+ * Rejections meaning the signing agent key is no longer registered on
+ * Hyperliquid ("User or API Wallet 0x… does not exist") — HL prunes agents
+ * (e.g. on expiry), leaving the locally stored key dead until re-approved.
+ * The SDK matcher only covers thrown ApiErrors with agent/unauthorized
+ * wording, and this rejection usually arrives as a business-reject STRING via
+ * `extractOrderError` / `extractCancelError`, so both shapes are matched.
+ */
+const AGENT_MISSING_MESSAGE = /user or api wallet.*does not exist/i
+
+export const isAgentSessionError = (input: unknown): boolean => {
+  if (typeof input === 'string') {
+    return AGENT_MISSING_MESSAGE.test(input)
+  }
+  if (shouldInvalidateAgentForExchangeError(input)) {
+    return true
+  }
+  return input instanceof Error && AGENT_MISSING_MESSAGE.test(input.message)
+}
+
+export const AGENT_SESSION_EXPIRED_MESSAGE =
+  'Your trading session expired. Please try again.'
+
+/**
+ * Route a Hyperliquid rejection/failure toast, detecting a dead agent key:
+ * on an agent-session error the stored key is invalidated (the manager falls
+ * back to master-wallet signing, so a retry succeeds, and the next
+ * enable-trading gate re-prompts for background trading) and a session-expired
+ * message is shown instead of the raw exchange text.
+ */
+export const toastPerpsExchangeError = (
+  message: string,
+  onAgentInvalidated?: () => void
+): void => {
+  if (onAgentInvalidated !== undefined && isAgentSessionError(message)) {
+    onAgentInvalidated()
+    showSnackbar(AGENT_SESSION_EXPIRED_MESSAGE)
+    return
+  }
+  showSnackbar(message)
+}
+
 export type PerpsOrderKind = 'market' | 'limit'
 
 export type PlacePerpsOrderParams = {
@@ -194,7 +237,8 @@ export const finalizeOrderResult = (
   res: ExchangePlaceOrderResponse,
   errCtx: OrderErrorContext,
   successMessage: string,
-  onSuccess: () => void
+  onSuccess: () => void,
+  onAgentInvalidated?: () => void
 ): boolean => {
   Logger.info('[perps] HL placeOrder response', res)
   const orderErr = extractOrderError(res, errCtx)
@@ -203,7 +247,7 @@ export const finalizeOrderResult = (
       orderErr,
       response: res
     })
-    showSnackbar(orderErr)
+    toastPerpsExchangeError(orderErr, onAgentInvalidated)
     return false
   }
   showSnackbar(successMessage)
@@ -212,11 +256,21 @@ export const finalizeOrderResult = (
 }
 
 /** Log + toast an order failure, suppressing the toast on user rejection. */
-export const reportOrderError = (error: unknown, fallback: string): void => {
+export const reportOrderError = (
+  error: unknown,
+  fallback: string,
+  onAgentInvalidated?: () => void
+): void => {
   logHyperliquidError('[perps] order error', error)
-  if (!isPerpsUserRejection(error)) {
-    showSnackbar(error instanceof Error ? error.message : fallback)
+  if (isPerpsUserRejection(error)) {
+    return
   }
+  if (onAgentInvalidated !== undefined && isAgentSessionError(error)) {
+    onAgentInvalidated()
+    showSnackbar(AGENT_SESSION_EXPIRED_MESSAGE)
+    return
+  }
+  showSnackbar(error instanceof Error ? error.message : fallback)
 }
 
 /** Inspect a cancel response: toast + return false on error, else success. */
@@ -224,7 +278,8 @@ export const finalizeCancelResult = (
   res: ExchangeCancelResponse,
   errCtx: OrderErrorContext,
   successMessage: string,
-  onSuccess: () => void
+  onSuccess: () => void,
+  onAgentInvalidated?: () => void
 ): boolean => {
   Logger.info('[perps] HL cancel response', res)
   const cancelErr = extractCancelError(res, errCtx)
@@ -233,7 +288,7 @@ export const finalizeCancelResult = (
       cancelErr,
       response: res
     })
-    showSnackbar(cancelErr)
+    toastPerpsExchangeError(cancelErr, onAgentInvalidated)
     return false
   }
   showSnackbar(successMessage)

@@ -2,8 +2,11 @@ import {
   alpha,
   CircularDial,
   GroupList,
+  Separator,
   SlidingButton,
   Text,
+  Toggle,
+  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -18,14 +21,13 @@ import HyperliquidLogo from '../../../../assets/icons/hyperliquid-logo.svg'
 import { PositionPill } from '../components/PositionPill'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
+import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { usePerpsActiveAssetData } from '../hooks/usePerpsActiveAssetData'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
 import { usePerpsOrderSubmit } from '../hooks/usePerpsOrderSubmit'
-import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
-import { tickerOfCoin } from '../utils/coinDex'
-import { positionSizeTokens } from '../utils/economics'
+import { pctFromEntry, pctParts, positionSizeTokens } from '../utils/economics'
 import { roundSizeToSzDecimals, toNumber } from '../utils/format'
 
 const GEO_BLOCKED_MESSAGE =
@@ -55,6 +57,35 @@ const positionCapacityMessage = (
 }
 
 /**
+ * A limit order costs `limitPx` per contract; a market order costs ~mark.
+ * `isLimitOrder` gates both sizing and the submit params on one condition.
+ */
+const resolveOrderSizing = (
+  limitPriceEnabled: boolean,
+  limitPrice: number | undefined,
+  markPrice: number
+): { isLimitOrder: boolean; sizingPrice: number } =>
+  limitPriceEnabled && limitPrice !== undefined
+    ? { isLimitOrder: true, sizingPrice: limitPrice }
+    : { isLimitOrder: false, sizingPrice: markPrice }
+
+// "+x% above/below current price" for the drill row — informational copy for
+// the limit's relation to the live mark (falls back to the seeded entry when
+// the mark hasn't loaded).
+const limitPricePctLabel = (
+  limitPrice: number | undefined,
+  markPrice: number,
+  entryPrice: number
+): string => {
+  if (limitPrice === undefined) {
+    return ''
+  }
+  const referencePrice = markPrice > 0 ? markPrice : entryPrice
+  const { percent, suffix } = pctParts(pctFromEntry(limitPrice, referencePrice))
+  return `${percent}${suffix}`
+}
+
+/**
  * Keep exactly 1,000 dial intervals so the Max preset lands on HL's precise
  * limit even when it is fractional. A fixed step (for example `$1`) would snap
  * `$150.37` down to `$150` and leave a small unusable remainder.
@@ -80,6 +111,9 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     takeProfitPrice,
     stopLossEnabled,
     stopLossPrice,
+    limitPriceEnabled,
+    setLimitPriceEnabled,
+    limitPrice,
     marginMode
   } = usePlaceOrder()
 
@@ -122,9 +156,19 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const isLong = side === 'long'
   const maxOpenSizeCoin = isLong ? maxBuySizeCoin : maxSellSizeCoin
+  const { isLimitOrder, sizingPrice } = resolveOrderSizing(
+    limitPriceEnabled,
+    limitPrice,
+    markPrice
+  )
+  // Capacity is denominated at the same effective entry price the order is
+  // sized at: the limit price when a limit is enabled, otherwise the mark.
+  // Using the mark unconditionally would let a full dial (at maxOpenSizeCoin
+  // notional/mark) convert to more contracts than maxOpenSizeCoin once
+  // divided by a lower limit price, exceeding HL's per-asset size cap.
   const maxPositionNotionalUsd =
-    maxOpenSizeCoin !== undefined && markPrice > 0
-      ? maxOpenSizeCoin * markPrice
+    maxOpenSizeCoin !== undefined && sizingPrice > 0
+      ? maxOpenSizeCoin * sizingPrice
       : undefined
   const orderCapacityReady =
     maxPositionNotionalUsd !== undefined && maxPositionNotionalUsd > 0
@@ -139,15 +183,14 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
       ? positionDialStep(maxPositionNotionalUsd)
       : undefined
   // `amount` is the USD position notional from the dial. Convert it to
-  // contract size via notional / mark price, then quantize to the coin's
+  // contract size via notional / sizing price, then quantize to the coin's
   // szDecimals (HL rejects sizes with extra fractional precision).
   const sizeContracts = marketDataReady
-    ? roundSizeToSzDecimals(positionSizeTokens(amount, markPrice), szDecimals)
+    ? roundSizeToSzDecimals(positionSizeTokens(amount, sizingPrice), szDecimals)
     : 0
+
+  const limitPriceLabel = limitPricePctLabel(limitPrice, markPrice, entryPrice)
   const directionLabel = isLong ? 'Long' : 'Short'
-  const subtitle = `You're predicting the price of ${tickerOfCoin(
-    coin
-  )} will go ${isLong ? 'up' : 'down'}`
 
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
@@ -169,6 +212,26 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     openTakeProfit: handleOpenTakeProfit,
     openStopLoss: handleOpenStopLoss
   })
+
+  const handleOpenLimitPrice = useCallback(() => {
+    router.navigate('/perpetualsPlaceOrder/limitPrice')
+  }, [router])
+
+  // Mirrors useTriggerToggles: on with no price opens the editor (enabled only
+  // flips once a price is confirmed there), on with a price re-enables, off
+  // keeps the price for re-enable.
+  const handleToggleLimitPrice = useCallback(
+    (next: boolean) => {
+      if (!next) {
+        setLimitPriceEnabled(false)
+      } else if (limitPrice !== undefined) {
+        setLimitPriceEnabled(true)
+      } else {
+        handleOpenLimitPrice()
+      }
+    },
+    [limitPrice, setLimitPriceEnabled, handleOpenLimitPrice]
+  )
 
   const handleConfirm = useCallback(async () => {
     setSubmitting(true)
@@ -196,7 +259,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
         isLong,
         sizeContracts,
         leverage,
-        orderKind: 'market',
+        orderKind: isLimitOrder ? 'limit' : 'market',
+        limitPx: isLimitOrder ? limitPrice : undefined,
         takeProfitPx: takeProfitEnabled ? takeProfitPrice : undefined,
         stopLossPx: stopLossEnabled ? stopLossPrice : undefined
       })
@@ -215,6 +279,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     isLong,
     sizeContracts,
     leverage,
+    isLimitOrder,
+    limitPrice,
     takeProfitEnabled,
     takeProfitPrice,
     stopLossEnabled,
@@ -268,22 +334,76 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     <>
       <ScrollScreen
         isModal
-        title="Place your bet"
-        subtitle={subtitle}
-        navigationTitle="Place your bet"
+        title="Place your order"
         renderFooter={renderFooter}
         contentContainerStyle={{ padding: 16 }}>
         <View sx={{ paddingTop: 8, gap: 20 }}>
-          <View sx={{ gap: 8 }}>
+          <View sx={{ gap: 4 }}>
             <PositionPill coin={coin} price={entryPrice} side={side} />
 
-            <View sx={{ gap: 4 }}>
+            <View
+              sx={{
+                backgroundColor: '$surfaceSecondary',
+                borderRadius: 12,
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 8,
+                overflow: 'hidden'
+              }}>
               <View
                 sx={{
-                  backgroundColor: '$surfaceSecondary',
-                  borderRadius: 12,
-                  paddingVertical: 16
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14
                 }}>
+                <Text variant="subtitle1" sx={{ fontSize: 16 }}>
+                  Set limit price
+                </Text>
+                <Toggle
+                  value={limitPriceEnabled}
+                  onValueChange={handleToggleLimitPrice}
+                  testID="perpetuals_place_order_limit_toggle"
+                />
+              </View>
+
+              {limitPriceEnabled && limitPrice !== undefined ? (
+                <>
+                  <Separator sx={{ marginHorizontal: 16 }} />
+                  <TouchableOpacity
+                    onPress={handleOpenLimitPrice}
+                    testID="perpetuals_place_order_limit_drill">
+                    <View
+                      sx={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        paddingHorizontal: 16,
+                        paddingVertical: 14
+                      }}>
+                      <View sx={{ gap: 2 }}>
+                        <Text variant="subtitle1" sx={{ fontSize: 16 }}>
+                          Price
+                        </Text>
+                        <Text
+                          variant="caption"
+                          sx={{ color: '$textSecondary' }}>
+                          {limitPriceLabel}
+                        </Text>
+                      </View>
+                      <Text variant="body1">
+                        {formatCurrency({ amount: limitPrice })}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <Separator sx={{ marginHorizontal: 16 }} />
+              )}
+
+              <View sx={{ paddingVertical: 16 }}>
                 {orderCapacityReady ? (
                   <CircularDial
                     value={amount}
@@ -308,16 +428,16 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
                   </View>
                 )}
               </View>
-              <Text
-                variant="caption"
-                sx={{ color: '$textSecondary', textAlign: 'center' }}>
-                {maxPositionNotionalUsd === undefined
-                  ? 'Maximum position: —'
-                  : `Maximum position: ${formatCurrency({
-                      amount: maxPositionNotionalUsd
-                    })}`}
-              </Text>
             </View>
+            <Text
+              variant="caption"
+              sx={{ color: '$textSecondary', textAlign: 'center' }}>
+              {maxPositionNotionalUsd === undefined
+                ? 'Maximum position: —'
+                : `Maximum position: ${formatCurrency({
+                    amount: maxPositionNotionalUsd
+                  })}`}
+            </Text>
           </View>
 
           <View sx={{ gap: 20 }}>

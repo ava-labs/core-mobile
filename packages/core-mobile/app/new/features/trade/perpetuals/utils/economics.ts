@@ -130,3 +130,23 @@ export const isTriggerValid = ({
     ? price > referencePrice
     : price < referencePrice
 }
+
+/**
+ * Split a signed % (vs the current price) into a colored percent chunk and a
+ * plain-suffix chunk ("+1.94%" / " above current price"). `emptyText` is the
+ * whole suffix when no price is set yet.
+ */
+export const pctParts = (
+  pct: number | undefined,
+  emptyText = 'Set a price target'
+): { percent: string; suffix: string } => {
+  if (pct === undefined) return { percent: '', suffix: emptyText }
+  // Zero is neither above nor below — e.g. a limit set exactly at the market.
+  if (pct === 0) return { percent: '', suffix: 'At current price' }
+  const sign = pct > 0 ? '+' : ''
+  const direction = pct > 0 ? 'above' : 'below'
+  return {
+    percent: `${sign}${pct.toFixed(2)}%`,
+    suffix: ` ${direction} current price`
+  }
+}

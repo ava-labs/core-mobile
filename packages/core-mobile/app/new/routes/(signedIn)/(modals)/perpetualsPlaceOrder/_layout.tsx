@@ -18,6 +18,7 @@ export default function PerpetualsPlaceOrderLayout(): JSX.Element {
         <Stack.Screen name="leverage" options={stackScreensOptions} />
         <Stack.Screen name="margin" options={stackScreensOptions} />
         <Stack.Screen name="trigger" options={stackScreensOptions} />
+        <Stack.Screen name="limitPrice" options={stackScreensOptions} />
       </Stack>
     </PlaceOrderProvider>
   )
