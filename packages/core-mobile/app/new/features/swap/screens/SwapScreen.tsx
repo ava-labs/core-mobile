@@ -957,12 +957,20 @@ export const SwapScreen = (): JSX.Element => {
     // wedge the current (unchanged, still-valid) direction: it feeds
     // `activeError` → `canSwap`, disabling Next until an unrelated edit
     // reruns `validateInputs`.
-    if (toToken && getSwappableBalance(toToken) === 0n) {
-      showSnackbar(fusionErrors.noDestinationToken(toToken.symbol).message)
+    // Prefer the live account token over the `toToken` snapshot, both for the
+    // balance check and as the next pay token: destination tokens picked from
+    // zero-balance/target-chain lists can carry a stale 0 balance even when
+    // the account holds some.
+    const liveToToken = toToken
+      ? accountTokens.find(t => getTokenKey(t) === getTokenKey(toToken)) ??
+        toToken
+      : undefined
+    if (liveToToken && getSwappableBalance(liveToToken) === 0n) {
+      showSnackbar(fusionErrors.noDestinationToken(liveToToken.symbol).message)
       return
     }
 
-    const nextFromToken = toToken
+    const nextFromToken = liveToToken
     const nextToToken = fromToken
     setFromToken(nextFromToken)
     setToToken(nextToToken)
@@ -973,6 +981,7 @@ export const SwapScreen = (): JSX.Element => {
   }, [
     fromToken,
     toToken,
+    accountTokens,
     setFromToken,
     setToToken,
     setAmount,

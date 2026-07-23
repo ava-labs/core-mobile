@@ -167,8 +167,11 @@ export const useMaxSwapAmount = ({
     bufferedAdditiveFee
   )
 
-  const { spendableBalance, isSpendableBalanceRequired } =
-    useSpendableXpBalance({ fromToken, fromNetwork })
+  const {
+    spendableBalance,
+    isSpendableBalanceRequired,
+    hasSpendableBalanceError
+  } = useSpendableXpBalance({ fromToken, fromNetwork })
 
   const hasEstimationError =
     (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
@@ -180,7 +183,8 @@ export const useMaxSwapAmount = ({
     additiveFee: additiveFeeForMax,
     hasEstimationError,
     isSpendableBalanceRequired,
-    spendableBalance
+    spendableBalance,
+    hasSpendableBalanceError
   })
 
   const max = useMemo(() => {
