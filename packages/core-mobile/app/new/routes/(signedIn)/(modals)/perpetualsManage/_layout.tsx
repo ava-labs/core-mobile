@@ -16,6 +16,7 @@ export default function PerpetualsManageLayout(): JSX.Element {
       <Stack screenOptions={modalStackNavigatorScreenOptions}>
         <Stack.Screen name="index" options={modalFirstScreenOptions} />
         <Stack.Screen name="trigger" options={stackScreensOptions} />
+        <Stack.Screen name="adjustMargin" options={stackScreensOptions} />
       </Stack>
     </PlaceOrderProvider>
   )

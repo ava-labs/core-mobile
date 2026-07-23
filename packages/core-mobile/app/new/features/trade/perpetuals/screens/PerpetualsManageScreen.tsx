@@ -11,16 +11,19 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { TriggerToggleCard } from '../components/TriggerToggleCard'
 import { usePlaceOrder } from '../contexts/PlaceOrderContext'
 import { usePerpsAllOpenOrders } from '../hooks/usePerpsAllOpenOrders'
 import { usePerpsEnableTradingGate } from '../hooks/usePerpsEnableTradingGate'
 import { usePerpsPositionActions } from '../hooks/usePerpsPositionActions'
+import { usePerpsPositions } from '../hooks/usePerpsPositions'
 import { useTriggerToggles } from '../hooks/useTriggerToggles'
 import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
 import { DexBadge } from '../components/DexBadge'
 import { PerpsCoinLogo } from '../components/PerpsCoinLogo'
 import { formatSigned, pnlColor } from '../utils/economics'
+import { toNumber } from '../utils/format'
 import { extractPositionTriggerOrders } from '../utils/toPosition'
 
 export const PerpetualsManageScreen = (): JSX.Element => {
@@ -62,6 +65,19 @@ export const PerpetualsManageScreen = (): JSX.Element => {
   const effectiveStopLossPrice = stopLossEnabled ? stopLossPrice : undefined
   const tpChanged = effectiveTakeProfitPrice !== initialTakeProfitPrice
   const slChanged = effectiveStopLossPrice !== initialStopLossPrice
+
+  // The live clearinghouse position for this coin: the Margin row must show
+  // the current margin (a route-param snapshot would go stale after an
+  // adjustment) and only isolated positions can have their margin adjusted.
+  const { positions } = usePerpsPositions()
+  const livePosition = useMemo(
+    () =>
+      positions.find(p => p.position.coin.toUpperCase() === coin.toUpperCase())
+        ?.position,
+    [positions, coin]
+  )
+  const isIsolated = livePosition?.leverage.type === 'isolated'
+  const marginUsed = toNumber(livePosition?.marginUsed)
 
   // The position's existing on-book TP/SL triggers (with order ids). A changed
   // or turned-off side must cancel its existing trigger — HL has no modify, so
@@ -264,7 +280,23 @@ export const PerpetualsManageScreen = (): JSX.Element => {
                     }${pnlPct.toFixed(1)}%)`}
                   </Text>
                 )
-              }
+              },
+              // Margin can only be added/removed on isolated positions —
+              // cross positions share the account-wide collateral.
+              ...(isIsolated
+                ? [
+                    {
+                      title: 'Margin',
+                      value: (
+                        <Text variant="body1">
+                          {`${formatNumber(marginUsed)} USDC`}
+                        </Text>
+                      ),
+                      onPress: () =>
+                        router.navigate('/perpetualsManage/adjustMargin')
+                    }
+                  ]
+                : [])
             ]}
           />
 
