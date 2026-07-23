@@ -4,6 +4,8 @@ import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
+  CircularButton,
+  getButtonBackgroundColor,
   GroupList,
   GroupListItem,
   Icons,
@@ -46,7 +48,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
   FadeIn,
   FadeOut,
-  LinearTransition
+  LinearTransition,
+  ZoomIn,
+  ZoomOut
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -539,6 +543,9 @@ export const SwapScreen = (): JSX.Element => {
   )
   const snapRafRef = useRef<number | undefined>(undefined)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
+  // Mirrors `isYouPayFocusedRef` as state so the UI can react: the toggle-tokens
+  // button hides while "You pay" is being edited (matching the pre-Fusion design).
+  const [isInputFocused, setIsInputFocused] = useState(false)
   const scrollYouPayIntoView = useCallback(
     (animated: boolean) => {
       // On the Android form sheet, ScrollScreen offsets the scroll view below
@@ -590,9 +597,11 @@ export const SwapScreen = (): JSX.Element => {
   )
   const handleYouPayFocus = useCallback(() => {
     isYouPayFocusedRef.current = true
+    setIsInputFocused(true)
   }, [])
   const handleYouPayBlur = useCallback(() => {
     isYouPayFocusedRef.current = false
+    setIsInputFocused(false)
     keyboardHeightRef.current = 0
     setKeyboardHeight(0)
     if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
@@ -673,6 +682,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const {
     max: fromMaxSwapAmount,
+    isMaxLoading: isFromMaxLoading,
     rawAdditiveFee: maxRawAdditiveFee,
     bufferedAdditiveFee: maxBufferedAdditiveFee,
     routeAdditiveBps: maxRouteAdditiveBps,
@@ -933,6 +943,51 @@ export const SwapScreen = (): JSX.Element => {
     setUserClickedMax(true)
   }, [setUserClickedMax])
 
+  const swapButtonBackgroundColor = useMemo(
+    () => getButtonBackgroundColor('secondary', theme),
+    [theme]
+  )
+
+  // Reverses the swap direction (You pay ⇄ You receive). Amounts are cleared —
+  // the reversed pair gets a fresh quote rather than carrying the old
+  // receive-amount over, since rates aren't symmetric across services.
+  const handleToggleTokens = useCallback(() => {
+    // Can't pay with a token the user holds none of. Surfaced as a transient
+    // snackbar, NOT via `validationError` — a blocking validation error would
+    // wedge the current (unchanged, still-valid) direction: it feeds
+    // `activeError` → `canSwap`, disabling Next until an unrelated edit
+    // reruns `validateInputs`.
+    // Prefer the live account token over the `toToken` snapshot, both for the
+    // balance check and as the next pay token: destination tokens picked from
+    // zero-balance/target-chain lists can carry a stale 0 balance even when
+    // the account holds some.
+    const liveToToken = toToken
+      ? accountTokens.find(t => getTokenKey(t) === getTokenKey(toToken)) ??
+        toToken
+      : undefined
+    if (liveToToken && getSwappableBalance(liveToToken) === 0n) {
+      showSnackbar(fusionErrors.noDestinationToken(liveToToken.symbol).message)
+      return
+    }
+
+    const nextFromToken = liveToToken
+    const nextToToken = fromToken
+    setFromToken(nextFromToken)
+    setToToken(nextToToken)
+    setFromTokenValue(undefined)
+    setToTokenValue(undefined)
+    setAmount(undefined)
+    setUserClickedMax(false)
+  }, [
+    fromToken,
+    toToken,
+    accountTokens,
+    setFromToken,
+    setToToken,
+    setAmount,
+    setUserClickedMax
+  ])
+
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
     await dismissKeyboardIfNeeded()
 
@@ -1039,6 +1094,7 @@ export const SwapScreen = (): JSX.Element => {
           onFocus={handleYouPayFocus}
           onBlur={handleYouPayBlur}
           maximum={fromMaxSwapAmount}
+          isMaximumLoading={isFromMaxLoading}
           valid={!validationError}
         />
       </View>
@@ -1052,6 +1108,7 @@ export const SwapScreen = (): JSX.Element => {
     getNetwork,
     fromToken,
     fromMaxSwapAmount,
+    isFromMaxLoading,
     validationError,
     fromTokenValue,
     isSwapping,
@@ -1684,20 +1741,69 @@ export const SwapScreen = (): JSX.Element => {
     return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
-        <View
+        <Animated.View
           style={{
-            backgroundColor: theme.colors.$surfaceSecondary
+            backgroundColor: theme.colors.$surfaceSecondary,
+            zIndex: 100
           }}>
-          <Separator sx={{ marginHorizontal: 16 }} />
-        </View>
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Separator
+              sx={{
+                marginLeft: 16,
+                marginRight: isInputFocused ? 0 : 20,
+                flex: 1
+              }}
+            />
+            <Separator
+              sx={{
+                marginLeft: isInputFocused ? 0 : 20,
+                marginRight: 16,
+                flex: 1
+              }}
+            />
+          </View>
+          {/* Toggle-tokens button, centered over the separator between the two
+              cards. Hidden while "You pay" is being edited so it doesn't sit
+              under the user's thumb mid-typing (pre-Fusion design, CP-13847).
+              Quick zoom in/out (scale) per design feedback — a plain fade felt
+              too sluggish next to the keyboard transition. */}
+          {isInputFocused === false && (
+            <Animated.View
+              entering={ZoomIn.duration(150)}
+              exiting={ZoomOut.duration(150)}
+              style={{
+                position: 'absolute',
+                top: -20,
+                left: 0,
+                right: 0
+              }}>
+              <CircularButton
+                testID="swap_vertical_icon"
+                backgroundColor={swapButtonBackgroundColor}
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignSelf: 'center'
+                }}
+                disabled={isSwapping}
+                onPress={handleToggleTokens}>
+                <Icons.Custom.SwapVertical />
+              </CircularButton>
+            </Animated.View>
+          )}
+        </Animated.View>
         {renderToSection()}
       </Animated.View>
     )
   }, [
     fromToken,
+    handleToggleTokens,
+    isInputFocused,
+    isSwapping,
     isTokensLoading,
     renderFromSection,
     renderToSection,
+    swapButtonBackgroundColor,
     theme.colors.$surfaceSecondary,
     toToken
   ])

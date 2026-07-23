@@ -1,5 +1,5 @@
 import { TokenType } from '@avalabs/vm-module-types'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -17,14 +17,62 @@ import {
   getTotalAdditiveSourceFee,
   getTotalAdditiveNativeFee
 } from '../../utils/getTotalAdditiveSourceFee'
+import { getTokenKey } from '../../utils/tokenKey'
 import { usePreQuote } from './usePreQuote'
 import { useSpendableXpBalance } from './useSpendableXpBalance'
 import {
+  computeIsMaxLoading,
   computeMaxAmount,
   getPreQuoteAmount,
   getRouteAdditiveBps,
   resolveAdditiveFeeForMax
 } from './utils'
+
+/**
+ * Bridges transient max recalculations with the last known value.
+ *
+ * The fee estimate is re-fetched from scratch every time the pre-quote
+ * refreshes (its query key includes the quote id), which flips the computed
+ * max to undefined for the duration of each re-estimate — and the Max button
+ * into its disabled look every quote cycle. While such a recalculation is in
+ * flight (`shouldHold`), keep serving the last max computed for the SAME
+ * source token; a token change drops the held value immediately.
+ *
+ * Callers must NOT hold across the X/P spendable-balance refetch (CP-13903):
+ * a stale spendable-derived Max could overspend the current UTXO set.
+ */
+const useHoldMaxWhileRecalculating = ({
+  max,
+  fromToken,
+  shouldHold
+}: {
+  max: bigint | undefined
+  fromToken: LocalTokenWithBalance | undefined
+  shouldHold: boolean
+}): bigint | undefined => {
+  const lastKnownRef = useRef<{ tokenKey: string; value: bigint } | undefined>(
+    undefined
+  )
+  const tokenKey = fromToken ? getTokenKey(fromToken) : undefined
+
+  // Ref writes happen post-commit (never during render — Strict Mode /
+  // concurrent renders may be replayed or discarded). A stale entry from a
+  // previous token needs no eager clearing: the read below only honors an
+  // entry whose tokenKey matches the current token.
+  useEffect(() => {
+    if (max !== undefined && tokenKey !== undefined) {
+      lastKnownRef.current = { tokenKey, value: max }
+    }
+  }, [max, tokenKey])
+
+  if (max !== undefined) return max
+  const lastKnown = lastKnownRef.current
+  return shouldHold &&
+    lastKnown !== undefined &&
+    lastKnown.tokenKey === tokenKey
+    ? lastKnown.value
+    : undefined
+}
 
 /**
  * Returns the maximum amount the user can swap from their balance.
@@ -51,6 +99,14 @@ export const useMaxSwapAmount = ({
   minimumTransferAmount: bigint | null | undefined
 }): {
   max: bigint | undefined
+  /**
+   * True while an async input the max depends on is still pending (the
+   * dust-filtered X/P spendable balance, the gas estimate for native sources,
+   * or the pre-quote's additive fee for ERC20/SPL sources). Lets the UI tell
+   * a *calculating* `max === undefined` apart from a *terminal* one (fees
+   * exceed the balance), which never resolves.
+   */
+  isMaxLoading: boolean
   rawAdditiveFee: bigint
   bufferedAdditiveFee: bigint
   routeAdditiveBps: number
@@ -158,14 +214,35 @@ export const useMaxSwapAmount = ({
     bufferedAdditiveFee
   )
 
-  const { spendableBalance, isSpendableBalanceRequired } =
-    useSpendableXpBalance({ fromToken, fromNetwork })
+  const {
+    spendableBalance,
+    isSpendableBalanceRequired,
+    hasSpendableBalanceError
+  } = useSpendableXpBalance({ fromToken, fromNetwork })
 
-  const max = useMemo(() => {
+  const hasEstimationError =
+    (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
+
+  const isMaxLoading = computeIsMaxLoading({
+    fromToken,
+    toToken,
+    isNative,
+    bufferedGas: bufferedFee,
+    additiveFee: additiveFeeForMax,
+    hasEstimationError,
+    isSpendableBalanceRequired,
+    spendableBalance,
+    hasSpendableBalanceError
+  })
+
+  const isSpendableBalancePending =
+    isSpendableBalanceRequired && spendableBalance === undefined
+
+  const computedMax = useMemo(() => {
     // CP-13903: a native X/P Max must come from the dust-filtered UTXO set
     // the CCT callbacks spend. Until it loads, keep Max disabled — falling
     // back to the displayed balance could build an over-spend.
-    if (isSpendableBalanceRequired && spendableBalance === undefined) {
+    if (isSpendableBalancePending) {
       return undefined
     }
     return computeMaxAmount({
@@ -173,8 +250,7 @@ export const useMaxSwapAmount = ({
       isNative,
       bufferedGas: bufferedFee,
       additiveFee: additiveFeeForMax,
-      hasEstimationError:
-        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed,
+      hasEstimationError,
       spendableBalance: isSpendableBalanceRequired
         ? spendableBalance
         : undefined
@@ -184,15 +260,26 @@ export const useMaxSwapAmount = ({
     isNative,
     bufferedFee,
     additiveFeeForMax,
-    feeEstimationError,
-    preQuoteFailed,
-    isFeeEstimationFetching,
+    hasEstimationError,
     isSpendableBalanceRequired,
+    isSpendableBalancePending,
     spendableBalance
   ])
 
+  // Hold the last known max through pre-quote / gas-estimate refreshes so the
+  // Max button doesn't drop into its disabled look on every quote cycle. The
+  // spendable-balance refetch is deliberately NOT held (CP-13903 — see the
+  // hook doc). Pressing Max still goes through live fee validation, so a
+  // briefly-stale value can't submit an over-drawn amount.
+  const max = useHoldMaxWhileRecalculating({
+    max: computedMax,
+    fromToken,
+    shouldHold: isMaxLoading && !isSpendableBalancePending
+  })
+
   return {
     max,
+    isMaxLoading,
     rawAdditiveFee,
     bufferedAdditiveFee,
     routeAdditiveBps,
