@@ -4,6 +4,8 @@ import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
+  CircularButton,
+  getButtonBackgroundColor,
   GroupList,
   GroupListItem,
   Icons,
@@ -539,6 +541,9 @@ export const SwapScreen = (): JSX.Element => {
   )
   const snapRafRef = useRef<number | undefined>(undefined)
   const [keyboardHeight, setKeyboardHeight] = useState(0)
+  // Mirrors `isYouPayFocusedRef` as state so the UI can react: the toggle-tokens
+  // button hides while "You pay" is being edited (matching the pre-Fusion design).
+  const [isInputFocused, setIsInputFocused] = useState(false)
   const scrollYouPayIntoView = useCallback(
     (animated: boolean) => {
       // On the Android form sheet, ScrollScreen offsets the scroll view below
@@ -590,9 +595,11 @@ export const SwapScreen = (): JSX.Element => {
   )
   const handleYouPayFocus = useCallback(() => {
     isYouPayFocusedRef.current = true
+    setIsInputFocused(true)
   }, [])
   const handleYouPayBlur = useCallback(() => {
     isYouPayFocusedRef.current = false
+    setIsInputFocused(false)
     keyboardHeightRef.current = 0
     setKeyboardHeight(0)
     if (scrollDebounceRef.current) clearTimeout(scrollDebounceRef.current)
@@ -932,6 +939,37 @@ export const SwapScreen = (): JSX.Element => {
   const handlePressMax = useCallback((): void => {
     setUserClickedMax(true)
   }, [setUserClickedMax])
+
+  const swapButtonBackgroundColor = useMemo(
+    () => getButtonBackgroundColor('secondary', theme),
+    [theme]
+  )
+
+  // Reverses the swap direction (You pay ⇄ You receive). Amounts are cleared —
+  // the reversed pair gets a fresh quote rather than carrying the old
+  // receive-amount over, since rates aren't symmetric across services.
+  const handleToggleTokens = useCallback(() => {
+    // Can't pay with a token the user holds none of.
+    if (toToken && getSwappableBalance(toToken) === 0n) {
+      setValidationError(fusionErrors.noDestinationToken(toToken.symbol))
+      return
+    }
+
+    const [to, from] = [fromToken, toToken]
+    setFromToken(from)
+    setToToken(to)
+    setFromTokenValue(undefined)
+    setToTokenValue(undefined)
+    setAmount(undefined)
+    setUserClickedMax(false)
+  }, [
+    fromToken,
+    toToken,
+    setFromToken,
+    setToToken,
+    setAmount,
+    setUserClickedMax
+  ])
 
   const handleSelectFromToken = useCallback(async (): Promise<void> => {
     await dismissKeyboardIfNeeded()
@@ -1684,20 +1722,67 @@ export const SwapScreen = (): JSX.Element => {
     return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
-        <View
+        <Animated.View
           style={{
-            backgroundColor: theme.colors.$surfaceSecondary
+            backgroundColor: theme.colors.$surfaceSecondary,
+            zIndex: 100
           }}>
-          <Separator sx={{ marginHorizontal: 16 }} />
-        </View>
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Separator
+              sx={{
+                marginLeft: 16,
+                marginRight: isInputFocused ? 0 : 20,
+                flex: 1
+              }}
+            />
+            <Separator
+              sx={{
+                marginLeft: isInputFocused ? 0 : 20,
+                marginRight: 16,
+                flex: 1
+              }}
+            />
+          </View>
+          {/* Toggle-tokens button, centered over the separator between the two
+              cards. Hidden while "You pay" is being edited so it doesn't sit
+              under the user's thumb mid-typing (pre-Fusion design, CP-13847). */}
+          {isInputFocused === false && (
+            <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
+              style={{
+                position: 'absolute',
+                top: -20,
+                left: 0,
+                right: 0
+              }}>
+              <CircularButton
+                testID="swap_vertical_icon"
+                backgroundColor={swapButtonBackgroundColor}
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignSelf: 'center'
+                }}
+                disabled={isSwapping}
+                onPress={handleToggleTokens}>
+                <Icons.Custom.SwapVertical />
+              </CircularButton>
+            </Animated.View>
+          )}
+        </Animated.View>
         {renderToSection()}
       </Animated.View>
     )
   }, [
     fromToken,
+    handleToggleTokens,
+    isInputFocused,
+    isSwapping,
     isTokensLoading,
     renderFromSection,
     renderToSection,
+    swapButtonBackgroundColor,
     theme.colors.$surfaceSecondary,
     toToken
   ])
