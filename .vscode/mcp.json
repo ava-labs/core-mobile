@@ -3,6 +3,17 @@
     "sentry": {
       "type": "http",
       "url": "https://mcp.sentry.dev/mcp"
+    },
+    "appium-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "appium-mcp@latest"],
+      "env": {
+        "ANDROID_HOME": "/Users/eunji.song/Library/Android/sdk",
+        "CAPABILITIES_CONFIG": "/Users/eunji.song/core-mobile/packages/core-mobile/e2e-appium/capabilities.json",
+        "NO_UI": "true",
+        "APPIUM_MCP_ON_CLIENT_DISCONNECT": "skip"
+      }
     }
   }
 }
