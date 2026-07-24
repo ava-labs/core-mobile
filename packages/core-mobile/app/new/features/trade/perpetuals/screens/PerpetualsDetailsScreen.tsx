@@ -8,10 +8,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import {
-  RESOLUTION_TO_INTERVAL,
-  type TvResolution
-} from '@avalabs/perps-sdk'
+import { RESOLUTION_TO_INTERVAL, type TvResolution } from '@avalabs/perps-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useRef, useState } from 'react'

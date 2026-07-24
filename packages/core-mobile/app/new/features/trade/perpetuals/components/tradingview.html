@@ -68,20 +68,26 @@
         // SDK constants are injected by the RN host via
         // `injectedJavaScriptBeforeContentLoaded`. Fall back to a minimal set if
         // injection didn't land (e.g. older RN-WebView builds).
-        var SUPPORTED_RES = window.__PERPS_TV_RESOLUTIONS || [
-          '60',
-          '240',
-          '1D',
-          '1W',
-          '1M'
-        ]
+        // Fallbacks mirror the full perps-sdk RESOLUTION_TO_INTERVAL map so
+        // every resolution the RN picker can request still resolves here.
         var RES_TO_HL = window.__PERPS_RES_TO_INTERVAL || {
+          1: '1m',
+          3: '3m',
+          5: '5m',
+          15: '15m',
+          30: '30m',
           60: '1h',
+          120: '2h',
           240: '4h',
+          480: '8h',
+          720: '12h',
           '1D': '1d',
+          '3D': '3d',
           '1W': '1w',
           '1M': '1M'
         }
+        var SUPPORTED_RES =
+          window.__PERPS_TV_RESOLUTIONS || Object.keys(RES_TO_HL)
 
         // Palette mirrors core-web's perps page (apps/core/app/perps/utils/palette.ts).
         var PERPS_GREEN = '#1FA95E'
