@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { BalanceText } from 'common/components/BalanceText'
-import { format, isSameDay, isYesterday } from 'date-fns'
+import { formatRelativeDateTime } from 'common/utils/formatRelativeDateTime'
 
 type Props = {
   title: ReactNode
@@ -47,23 +47,6 @@ const ActivityListItem: FC<Props> = ({
       : status === PriceChangeStatus.Down
       ? colors.$textDanger
       : colors.$textSecondary
-
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp)
-
-    if (isSameDay(date, new Date())) {
-      // Today: show just time in 12-hour format
-      return format(date, 'h:mm a')
-    }
-
-    if (isYesterday(date)) {
-      // Yesterday: show "Yesterday HH:MM AM/PM"
-      return `Yesterday\n${format(date, 'h:mm a')}`
-    }
-
-    // Older dates: show "MM/DD/YY HH:MM AM/PM"
-    return `${format(date, 'MM/dd/yy')}\n${format(date, 'h:mm a')}`
-  }
 
   return (
     <TouchableOpacity onPress={onPress}>
@@ -139,7 +122,7 @@ const ActivityListItem: FC<Props> = ({
               <Text
                 variant="body2"
                 sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
-                {formatDate(timestamp)}
+                {formatRelativeDateTime(timestamp)}
               </Text>
             )}
             {accessoryType === 'outbound' && (
