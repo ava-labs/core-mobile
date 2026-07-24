@@ -70,6 +70,10 @@ jest.mock('services/ledger/LedgerService', () => ({
   __esModule: true,
   default: { disconnect: jest.fn() }
 }))
+jest.mock('services/walletconnectv2/WalletConnectService', () => ({
+  __esModule: true,
+  default: { getSession: jest.fn() }
+}))
 jest.mock(
   'services/walletconnectv2/walletConnectCache/walletConnectCache',
   () => {
@@ -160,6 +164,9 @@ const mockGetPublicKeyFor = jest.requireMock('services/wallet/WalletService')
   .default.getPublicKeyFor as jest.Mock
 const mockDisconnect = jest.requireMock('services/ledger/LedgerService').default
   .disconnect as jest.Mock
+const mockGetSession = jest.requireMock(
+  'services/walletconnectv2/WalletConnectService'
+).default.getSession as jest.Mock
 
 global.confetti = { restart: jest.fn() } as unknown as typeof global.confetti
 
@@ -1085,6 +1092,234 @@ describe('ApprovalController', () => {
       approvalController.handleGoBackIfNeeded({ excludeApproval: true })
 
       expect(mockRouter.back).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // ── session account authorization (CP-14604) ─────────────────────────────
+
+  describe('session account authorization', () => {
+    const displayData = {} as never
+
+    // Accept-path assertions flush pending (micro)tasks first so they keep
+    // failing loudly if navigation ever moves behind an await inside
+    // requestApproval (the returned promise itself only settles on
+    // approve/reject, so it can't be awaited here). Matches the helper in
+    // the cancel-bridge describe block.
+    const flushMicrotasks = (): Promise<void> =>
+      new Promise(resolve => setTimeout(resolve, 0))
+    const SOLANA_CHAIN_ID = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+    const GRANTED_SVM_ADDRESS = '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
+    const UNGRANTED_SVM_ADDRESS = '4Nd1mYQZ6X8jY6nWn6iVrDpcLzJq9z2NKV1S1nGiqNz1'
+
+    const makeSolanaSigningData = (account: string) =>
+      ({
+        type: RpcMethod.SOLANA_SIGN_TRANSACTION,
+        account,
+        data: 'serialized-tx'
+      } as never)
+
+    const sessionWithGrantedAccounts = {
+      namespaces: {
+        solana: {
+          accounts: [`${SOLANA_CHAIN_ID}:${GRANTED_SVM_ADDRESS}`],
+          methods: ['solana_signTransaction'],
+          events: []
+        }
+      }
+    } as never
+
+    it('rejects when the signing account was never granted to the WC session', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(UNGRANTED_SVM_ADDRESS)
+      })
+
+      expect(mockGetSession).toHaveBeenCalledWith(DAPP_SESSION_ID)
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+      expect(mockWalletConnectCacheSet).not.toHaveBeenCalled()
+    })
+
+    it('shows the approval screen when the signing account is granted to the WC session', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('never queries the WC client for in-app / injected-browser requests (WC may be uninitialized)', async () => {
+      const request = makeInjectedDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(UNGRANTED_SVM_ADDRESS)
+      })
+      await flushMicrotasks()
+
+      expect(mockGetSession).not.toHaveBeenCalled()
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('rejects (fails closed) when no WC session exists for the topic', async () => {
+      mockGetSession.mockReturnValue(undefined)
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('rejects (fails closed) when the WC client is not initialized (getSession throws)', async () => {
+      mockGetSession.mockImplementation(() => {
+        throw new Error('WalletConnect client is not initialized')
+      })
+
+      const request = makeDappRequest(
+        RpcMethod.SOLANA_SIGN_TRANSACTION,
+        SOLANA_CHAIN_ID
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: makeSolanaSigningData(GRANTED_SVM_ADDRESS)
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('rejects an EVM transaction whose from-address was never granted to the WC session', async () => {
+      mockGetSession.mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [`eip155:43114:${EVM_ADDRESS}`],
+            methods: ['eth_sendTransaction'],
+            events: []
+          }
+        }
+      } as never)
+
+      const request = makeDappRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      const result = await approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.ETH_SEND_TRANSACTION,
+          account: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
+          data: {}
+        } as never
+      })
+
+      expect('error' in result && result.error).toMatchObject({
+        message: 'Requested address is not authorized'
+      })
+      expect(mockRouter.navigate).not.toHaveBeenCalled()
+    })
+
+    it('accepts an EVM address granted under a different chain of the eip155 namespace', async () => {
+      mockGetSession.mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [`eip155:1:${EVM_ADDRESS}`],
+            methods: ['eth_sendTransaction'],
+            events: []
+          }
+        }
+      } as never)
+
+      const request = makeDappRequest(
+        RpcMethod.ETH_SEND_TRANSACTION,
+        'eip155:43114'
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.ETH_SEND_TRANSACTION,
+          // lowercased vs the checksummed EVM_ADDRESS in the session grant —
+          // dApp-supplied casing must not defeat authorization
+          account: EVM_ADDRESS.toLowerCase(),
+          data: {}
+        } as never
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
+    })
+
+    it('skips the check for signing data that carries no account (avalanche transactions)', async () => {
+      mockGetSession.mockReturnValue(sessionWithGrantedAccounts)
+
+      const request = makeDappRequest(
+        RpcMethod.AVALANCHE_SEND_TRANSACTION,
+        AvalancheCaip2ChainId.P
+      )
+
+      approvalController.requestApproval({
+        request,
+        displayData,
+        signingData: {
+          type: RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          unsignedTxJson: '{}',
+          data: {},
+          vm: 'PVM'
+        } as never
+      })
+      await flushMicrotasks()
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(
+        expect.objectContaining({ pathname: '/approval' })
+      )
     })
   })
 
