@@ -168,6 +168,10 @@ export default function WalletLayout(): JSX.Element {
               options={secondaryModalScreensOptions}
             />
             <Stack.Screen
+              name="(modals)/perpetualsEnableTrading"
+              options={secondaryModalScreensOptions}
+            />
+            <Stack.Screen
               name="(modals)/perpetualsManage"
               options={modalScreensOptions}
             />

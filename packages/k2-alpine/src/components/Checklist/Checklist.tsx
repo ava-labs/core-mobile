@@ -11,7 +11,7 @@ export interface ChecklistItem {
   readonly description: string
   /**
    * When `true`, the row's action button is replaced by the completion icon
-   * (defaults to `Icons.Action.CheckCircle` in `$textSuccess`).
+   * (defaults to `Icons.Navigation.Check` in `$textSuccess`).
    */
   readonly done: boolean
   /** Label of the action button while the item is pending. */
@@ -23,7 +23,7 @@ export interface ChecklistItem {
    * later steps on earlier ones (e.g. step 2 unlocks once step 1 is `done`).
    */
   readonly actionDisabled?: boolean
-  /** Show a spinner in place of the action label while the action is running. */
+  /** Replace the action button with a spinner while the action is running. */
   readonly loading?: boolean
   /** Optional `testID` for the pending-state action button. */
   readonly actionTestId?: string
@@ -91,18 +91,20 @@ const ChecklistRow = ({
         <Text variant="body1" sx={{ fontFamily: 'Inter-Medium' }}>
           {title}
         </Text>
-        <Text variant="caption" sx={{ color: '$textSecondary' }}>
+        <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
           {description}
         </Text>
       </View>
       {done ? (
         completedIcon ?? (
-          <Icons.Action.CheckCircle
+          <Icons.Navigation.Check
             width={28}
             height={28}
             color={theme.colors.$textSuccess}
           />
         )
+      ) : loading ? (
+        <ActivityIndicator size="small" />
       ) : (
         <Button
           type="secondary"
@@ -110,7 +112,7 @@ const ChecklistRow = ({
           disabled={actionDisabled}
           onPress={onAction}
           testID={actionTestId}>
-          {loading ? <ActivityIndicator size="small" /> : actionLabel}
+          {actionLabel}
         </Button>
       )}
     </View>
