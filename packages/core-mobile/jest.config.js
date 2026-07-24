@@ -29,11 +29,7 @@ module.exports = {
     '^react-native-permissions$':
       '<rootDir>/node_modules/react-native-permissions/mock.js'
   },
-  testPathIgnorePatterns: [
-    '<rootDir>/e2e/tests/playwright/',
-    '<rootDir>/e2e-appium/',
-    '<rootDir>/scripts/'
-  ],
+  testPathIgnorePatterns: ['<rootDir>/e2e-appium/', '<rootDir>/scripts/'],
   setupFilesAfterEnv: [
     '<rootDir>/tests/jestSetup/posthog.js',
     '<rootDir>/tests/msw/jestSetup.js',
