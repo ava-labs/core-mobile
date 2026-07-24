@@ -9,9 +9,14 @@ export interface TokenUnitInputPreset {
   label: string
   /**
    * Display amount applied to the input when this preset is tapped
-   * (e.g. `100` for 100 tokens).
+   * (e.g. `100` for 100 tokens). Ignored when `percent` is set.
    */
-  value: number
+  value?: number
+  /**
+   * Fraction of the live `balance` applied when tapped (e.g. `0.25` for 25%).
+   * Unlike `value`, this tracks `balance` prop updates after mount.
+   */
+  percent?: number
 }
 
 // Internal button model. A button either applies a fixed display `value`
@@ -60,15 +65,21 @@ export const TokenUnitInputWidget = ({
   /** When false, the amount renders in the danger color. */
   valid?: boolean
   /**
-   * Custom quick-amount buttons rendered as fixed display amounts (e.g.
-   * `$100 / $250 / $500`). When provided, overrides the default
+   * Custom quick-amount buttons, either fixed display amounts (e.g.
+   * `$100 / $250 / $500` via `value`) or balance fractions (e.g.
+   * `25% / 50% / 100%` via `percent`). When provided, overrides the default
    * `25% / 50% / Max` percentage buttons.
    */
   presets?: readonly TokenUnitInputPreset[]
 }): JSX.Element => {
   const [buttons, setButtons] = useState<AmountButton[]>(() =>
     presets && presets.length > 0
-      ? presets.map(p => ({ text: p.label, value: p.value, isSelected: false }))
+      ? presets.map(p => ({
+          text: p.label,
+          value: p.value,
+          percent: p.percent,
+          isSelected: false
+        }))
       : [
           { text: '25%', percent: 0.25, isSelected: false },
           { text: '50%', percent: 0.5, isSelected: false },
@@ -82,14 +93,21 @@ export const TokenUnitInputWidget = ({
     // straight from `balance.mul` (bigint math), fixed presets round to the
     // nearest subunit. Going through `displayValue * 10 ** decimals` could
     // diverge by a subunit from the bigint parsing `TokenUnitInput` uses.
+    // `percent` wins over `value` (matching the `TokenUnitInputPreset` docs).
     const valueUnit =
-      button.value !== undefined
-        ? new TokenUnit(
-            Math.round(button.value * 10 ** token.maxDecimals),
+      button.percent !== undefined
+        ? balance.mul(button.percent)
+        : new TokenUnit(
+            Math.round((button.value ?? 0) * 10 ** token.maxDecimals),
             token.maxDecimals,
             token.symbol
           )
-        : balance.mul(button.percent ?? 0)
+    // A zero percentage result (e.g. a fraction of an empty balance) would
+    // replace the placeholder with a literal "0" and highlight the button —
+    // keep it a no-op. Fixed-value presets apply as-is.
+    if (button.percent !== undefined && valueUnit.isZero()) {
+      return
+    }
     textInputRef.current?.setValue(
       valueUnit.toDisplay({ asNumber: true }).toString()
     )
@@ -109,9 +127,9 @@ export const TokenUnitInputWidget = ({
         prevButtons.map(b => ({
           ...b,
           isSelected:
-            b.value !== undefined
-              ? value.toDisplay({ asNumber: true }) === b.value
-              : value.toDisplay() === balance.mul(b.percent ?? 0).toDisplay()
+            b.percent !== undefined
+              ? value.toDisplay() === balance.mul(b.percent).toDisplay()
+              : value.toDisplay({ asNumber: true }) === b.value
         }))
       )
 

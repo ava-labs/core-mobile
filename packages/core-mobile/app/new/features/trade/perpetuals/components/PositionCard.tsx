@@ -6,6 +6,7 @@ import {
   Icons,
   Pressable,
   PriceChangeStatus,
+  SplitButton,
   StatusArrow,
   Text,
   useTheme,
@@ -222,6 +223,14 @@ export const PositionCard = ({
     </>
   )
 
+  const handleMarketClose = useCallback(() => {
+    onMarketClose?.()
+  }, [onMarketClose])
+
+  const handleLimitClose = useCallback(() => {
+    onLimitClose?.()
+  }, [onLimitClose])
+
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
@@ -248,21 +257,17 @@ export const PositionCard = ({
             onLayout={handleExpandedLayout}>
             <View>
               <View
-                sx={{ flexDirection: 'row', gap: 4, paddingHorizontal: 14 }}>
-                <Button
-                  type="secondary"
-                  size="small"
-                  onPress={onMarketClose}
-                  style={{ flex: 1 }}>
-                  Market close
-                </Button>
-                <Button
-                  type="secondary"
-                  size="small"
-                  onPress={onLimitClose}
-                  style={{ flex: 1 }}>
-                  Limit close
-                </Button>
+                sx={{ flexDirection: 'row', gap: 16, paddingHorizontal: 14 }}>
+                <SplitButton
+                  left={{
+                    children: 'Market close',
+                    onPress: handleMarketClose
+                  }}
+                  right={{
+                    children: 'Limit close',
+                    onPress: handleLimitClose
+                  }}
+                />
                 <Button
                   type="secondary"
                   size="small"
