@@ -126,6 +126,31 @@
           }
         }
 
+        // TV hardcodes its toolbar scroll-fade gradients to theme colors
+        // (#0f0f0f dark / #fff light) that don't match our surfacePrimary BG.
+        // Repaint them via custom_css_url; attribute selectors keep working
+        // across library rebuilds (the class-name hashes change per build).
+        function customCssUrl() {
+          var to = /^#[0-9a-fA-F]{6}$/.test(BG) ? BG + '00' : 'transparent'
+          var fades = [
+            ['fadeTop', '180deg'],
+            ['fadeBot', '0deg'],
+            ['fadeBottom', '0deg'],
+            ['fadeLeft', '90deg'],
+            ['fadeRight', '270deg']
+          ]
+          var css = fades
+            .map(function (f) {
+              return (
+                '[class^="' + f[0] + '-"],[class*=" ' + f[0] + '-"]' +
+                '{background-image:linear-gradient(' + f[1] + ',' +
+                BG + ',' + to + ') !important;}'
+              )
+            })
+            .join('')
+          return 'data:text/css;base64,' + btoa(css)
+        }
+
         var TV_STUDIES_OVERRIDES = {
           'volume.volume.plottype': 'columns',
           'volume.volume.transparency': 70,
@@ -341,12 +366,12 @@
               locale: 'en',
               theme: IS_LIGHT ? 'light' : 'dark',
               toolbar_bg: BG,
+              custom_css_url: customCssUrl(),
               custom_font_family:
                 "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
               disabled_features: [
                 'use_localstorage_for_settings',
                 'header_widget',
-                'left_toolbar',
                 'timeframes_toolbar',
                 'legend_widget',
                 'border_around_the_chart',
