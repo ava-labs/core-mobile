@@ -66,22 +66,28 @@
         document.body.style.backgroundColor = BG
 
         // SDK constants are injected by the RN host via
-        // `injectedJavaScriptBeforeContentLoaded`. Fall back to a minimal set if
-        // injection didn't land (e.g. older RN-WebView builds).
-        var SUPPORTED_RES = window.__PERPS_TV_RESOLUTIONS || [
-          '60',
-          '240',
-          '1D',
-          '1W',
-          '1M'
-        ]
+        // `injectedJavaScriptBeforeContentLoaded`. If injection didn't land
+        // (e.g. older RN-WebView builds), fall back to a copy of the full
+        // perps-sdk RESOLUTION_TO_INTERVAL map so every resolution the RN
+        // picker can request still resolves here.
         var RES_TO_HL = window.__PERPS_RES_TO_INTERVAL || {
+          1: '1m',
+          3: '3m',
+          5: '5m',
+          15: '15m',
+          30: '30m',
           60: '1h',
+          120: '2h',
           240: '4h',
+          480: '8h',
+          720: '12h',
           '1D': '1d',
+          '3D': '3d',
           '1W': '1w',
           '1M': '1M'
         }
+        var SUPPORTED_RES =
+          window.__PERPS_TV_RESOLUTIONS || Object.keys(RES_TO_HL)
 
         // Palette mirrors core-web's perps page (apps/core/app/perps/utils/palette.ts).
         var PERPS_GREEN = '#1FA95E'
@@ -124,6 +130,31 @@
             'mainSeriesProperties.showPriceLine': true,
             'mainSeriesProperties.priceLineWidth': 2
           }
+        }
+
+        // TV hardcodes its toolbar scroll-fade gradients to theme colors
+        // (#0f0f0f dark / #fff light) that don't match our surfacePrimary BG.
+        // Repaint them via custom_css_url; attribute selectors keep working
+        // across library rebuilds (the class-name hashes change per build).
+        function customCssUrl() {
+          var to = /^#[0-9a-fA-F]{6}$/.test(BG) ? BG + '00' : 'transparent'
+          var fades = [
+            ['fadeTop', '180deg'],
+            ['fadeBot', '0deg'],
+            ['fadeBottom', '0deg'],
+            ['fadeLeft', '90deg'],
+            ['fadeRight', '270deg']
+          ]
+          var css = fades
+            .map(function (f) {
+              return (
+                '[class^="' + f[0] + '-"],[class*=" ' + f[0] + '-"]' +
+                '{background-image:linear-gradient(' + f[1] + ',' +
+                BG + ',' + to + ') !important;}'
+              )
+            })
+            .join('')
+          return 'data:text/css;base64,' + btoa(css)
         }
 
         var TV_STUDIES_OVERRIDES = {
@@ -341,12 +372,14 @@
               locale: 'en',
               theme: IS_LIGHT ? 'light' : 'dark',
               toolbar_bg: BG,
+              custom_css_url: customCssUrl(),
               custom_font_family:
                 "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              // Drawing toolbar stays available but starts collapsed.
+              enabled_features: ['hide_left_toolbar_by_default'],
               disabled_features: [
                 'use_localstorage_for_settings',
                 'header_widget',
-                'left_toolbar',
                 'timeframes_toolbar',
                 'legend_widget',
                 'border_around_the_chart',
