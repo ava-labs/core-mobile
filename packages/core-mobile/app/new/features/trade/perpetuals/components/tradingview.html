@@ -375,9 +375,10 @@
               custom_css_url: customCssUrl(),
               custom_font_family:
                 "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              // Drawing toolbar stays available but starts collapsed.
+              enabled_features: ['hide_left_toolbar_by_default'],
               disabled_features: [
                 'use_localstorage_for_settings',
-                'left_toolbar',
                 'header_widget',
                 'timeframes_toolbar',
                 'legend_widget',
