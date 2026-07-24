@@ -142,7 +142,15 @@ class KeychainMigrator {
     if (accessType === 'BIO') {
       await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
     }
-    await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+    // Cache the encryption key so the wallet secret can be stored below. Assert
+    // the load succeeded so a non-success result fails here with a clear cause
+    // rather than surfacing later as an opaque "Encryption key not found".
+    const loadResult = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+    if (loadResult !== 'success') {
+      throw new Error(
+        `Failed to load encryption key after migration: ${loadResult}`
+      )
+    }
 
     // Store wallet secret with new encryption key
     await BiometricsSDK.storeWalletSecret(

@@ -12,6 +12,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
+import { ensureWalletSecret } from 'common/utils/ensureWalletSecret'
+import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
@@ -56,6 +58,7 @@ export const PinScreen = ({
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
+  const { deleteWallet } = useDeleteWallet()
   const walletId = useSelector(selectActiveWalletId)
 
   const isProcessing = useSharedValue(false)
@@ -75,38 +78,15 @@ export const PinScreen = ({
     pinInputRef.current?.startLoadingAnimation()
   }, [])
 
-  const handleStopLoading = (onComplete?: () => void): void => {
+  const handleStopLoading = useCallback((onComplete?: () => void): void => {
     pinInputRef.current?.stopLoadingAnimation(onComplete)
-  }
-
-  const handleLoginSuccess = useCallback(() => {
-    handleStartLoading()
-    pinInputRef.current?.blur()
-    isProcessing.value = true
-
-    // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
-    setTimeout(async () => {
-      try {
-        if (isInitialLogin) {
-          if (!walletId) {
-            throw new Error('Wallet ID is not set')
-          }
-          const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-          if (!result.success) {
-            throw result.error
-          }
-        }
-        await unlock()
-      } catch (error) {
-        Logger.error('Failed to login:', error)
-      }
-    }, 0)
-  }, [handleStartLoading, isInitialLogin, isProcessing, unlock, walletId])
+  }, [])
 
   const {
     enteredPin,
     onEnterPin,
     verified,
+    resetLoginState,
     verifyBiometric,
     disableKeypad,
     timeRemaining,
@@ -165,6 +145,53 @@ export const PinScreen = ({
     pinInputRef.current?.focus()
     setIsEnteringPin(true)
   }, [disableKeypad])
+
+  const handleLoginSuccess = useCallback(() => {
+    handleStartLoading()
+    pinInputRef.current?.blur()
+    isProcessing.value = true
+
+    // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
+    setTimeout(async () => {
+      try {
+        if (isInitialLogin) {
+          if (!walletId) {
+            throw new Error('Wallet ID is not set')
+          }
+          //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+          const canProceed = await ensureWalletSecret(walletId, deleteWallet)
+          if (!canProceed) {
+            // Wallet secret is gone; deleteWallet routes the user to onboarding.
+            // Clear the loading UI first so a delayed navigation can't strand
+            // the user on a spinner. (No retry here — this path is terminal.)
+            isProcessing.value = false
+            handleStopLoading()
+            return
+          }
+        }
+        await unlock()
+      } catch (error) {
+        Logger.error('Failed to login:', error)
+        // Recover the UI so the user can retry instead of being stuck on a
+        // spinner: stop the loading animation, restore the PIN input, clear the
+        // sticky verification + entered PIN so a re-entered PIN re-triggers
+        // login, then refocus for another attempt. (CP-14585)
+        isProcessing.value = false
+        resetLoginState()
+        handleStopLoading(focusPinInput)
+      }
+    }, 0)
+  }, [
+    handleStartLoading,
+    handleStopLoading,
+    isInitialLogin,
+    isProcessing,
+    unlock,
+    walletId,
+    deleteWallet,
+    resetLoginState,
+    focusPinInput
+  ])
 
   const blurPinInput = (): void => {
     pinInputRef.current?.blur()

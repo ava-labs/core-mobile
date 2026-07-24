@@ -35,6 +35,17 @@ const LEGACY_SERVICE_KEY = 'sec-storage-service'
  */
 const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
 
+/**
+ * A wrong PIN surfaces from `decrypt` as a platform-specific bad-decrypt error
+ * (BAD_DECRYPT on Android, "Decrypt failed" on iOS) rather than a distinct
+ * return value. Everything else (corrupt data, salt/version issues, transient
+ * keychain failures) is a genuine error the caller must handle separately.
+ */
+const isWrongPinError = (error: unknown): boolean =>
+  error instanceof Error &&
+  (error.message.includes('BAD_DECRYPT') ||
+    error.message.includes('Decrypt failed'))
+
 const getWalletServiceKey = (walletId: string): string =>
   `sec-storage-service-${walletId}`
 export const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
@@ -177,13 +188,37 @@ class BiometricsSDK {
     }
   }
 
-  async loadEncryptionKeyWithPin(pin: string): Promise<boolean> {
+  /**
+   * Attempts to load the PIN-derived encryption key. Distinguishes a genuinely
+   * absent credential from a wrong PIN so callers can tell "this wallet can
+   * never be unlocked" (route to onboarding) apart from "try again". (CP-14585)
+   *
+   * - `no-credentials`: the keychain has no encryption-key entry at all (e.g. an
+   *   interrupted wallet deletion removed it) — derived from the same
+   *   `getGenericPassword` read used for a normal unlock, so no extra inference.
+   * - `wrong-pin`: the entry exists but the PIN did not decrypt it. `decrypt`
+   *   surfaces a wrong PIN by throwing a bad-decrypt error (BAD_DECRYPT on
+   *   Android, "Decrypt failed" on iOS), which we map to this result.
+   * - `success`: decrypted; the key is cached.
+   *
+   * Any other error (transient keychain failure from `getGenericPassword`,
+   * corrupt data, salt/version issues, etc.) is rethrown rather than reported
+   * as `no-credentials`/`wrong-pin`, so a flaky read never looks like a missing
+   * wallet and callers can handle bad-data cases distinctly.
+   */
+  async loadEncryptionKeyWithPin(
+    pin: string
+  ): Promise<'success' | 'wrong-pin' | 'no-credentials'> {
     const credentials = await Keychain.getGenericPassword(passcodeGetOptions)
-    if (!credentials) return false
-    const decrypted = await decrypt(credentials.password, pin)
-    if (!decrypted) return false
-    this.#encryptionKey = decrypted.data
-    return true
+    if (!credentials) return 'no-credentials'
+    try {
+      const decrypted = await decrypt(credentials.password, pin)
+      this.#encryptionKey = decrypted.data
+      return 'success'
+    } catch (e) {
+      if (isWrongPinError(e)) return 'wrong-pin'
+      throw e
+    }
   }
 
   async loadEncryptionKeyWithBiometry(): Promise<boolean> {
@@ -427,7 +462,7 @@ class BiometricsSDK {
         const legacyResult = await this.loadLegacyWalletWithPin(pin)
         return legacyResult.success
       } else {
-        return await this.loadEncryptionKeyWithPin(pin)
+        return (await this.loadEncryptionKeyWithPin(pin)) === 'success'
       }
     } catch (error) {
       Logger.error('Failed to validate PIN', error)

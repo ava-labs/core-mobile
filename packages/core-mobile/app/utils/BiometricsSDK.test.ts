@@ -183,25 +183,49 @@ describe('BiometricsSDK', () => {
         passcodeGetOptions
       )
       expect(mockDecrypt).toHaveBeenCalledWith(mockEncryptedData, mockPin)
-      expect(result).toBe(true)
+      expect(result).toBe('success')
     })
 
-    it('should return false if loading with PIN fails at decryption', async () => {
+    it('should return wrong-pin when decrypt throws BAD_DECRYPT (Android)', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue({
         ...mockKeychainResult,
         password: mockEncryptedData
       })
-      mockDecrypt.mockResolvedValue(false)
+      mockDecrypt.mockRejectedValue(new Error('BAD_DECRYPT'))
 
       const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
 
-      expect(result).toBe(false)
+      expect(result).toBe('wrong-pin')
     })
 
-    it('should return false if no credentials found for PIN', async () => {
+    it('should return wrong-pin when decrypt throws Decrypt failed (iOS)', async () => {
+      mockKeychain.getGenericPassword.mockResolvedValue({
+        ...mockKeychainResult,
+        password: mockEncryptedData
+      })
+      mockDecrypt.mockRejectedValue(new Error('Decrypt failed'))
+
+      const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
+
+      expect(result).toBe('wrong-pin')
+    })
+
+    it('should rethrow non-wrong-pin decrypt errors (e.g. corrupt data)', async () => {
+      mockKeychain.getGenericPassword.mockResolvedValue({
+        ...mockKeychainResult,
+        password: mockEncryptedData
+      })
+      mockDecrypt.mockRejectedValue(new Error('data has no salt'))
+
+      await expect(
+        BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
+      ).rejects.toThrow('data has no salt')
+    })
+
+    it('should return no-credentials if no encryption key exists for PIN', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
-      expect(result).toBe(false)
+      expect(result).toBe('no-credentials')
     })
 
     it('should load encryption key with biometry', async () => {

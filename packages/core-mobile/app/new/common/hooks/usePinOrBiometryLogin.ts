@@ -31,6 +31,7 @@ export function usePinOrBiometryLogin({
   enteredPin: string
   onEnterPin: (pinKey: string) => void
   verified: boolean
+  resetLoginState: () => void
   verifyBiometric: () => Promise<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
@@ -97,8 +98,23 @@ export function usePinOrBiometryLogin({
         }
 
         // Load encryption key
-        const isValidPin = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
-        if (!isValidPin) {
+        const pinResult = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+
+        if (pinResult === 'no-credentials') {
+          // The encryption key is gone (e.g. an interrupted wallet deletion),
+          // so no PIN can ever unlock this wallet. Recover by deleting the
+          // stale wallet and routing to onboarding instead of reporting an
+          // endless "wrong PIN". (CP-14585)
+          Logger.error(
+            'Encryption key missing on PIN entry; deleting wallet',
+            new Error('no-credentials')
+          )
+          onStopLoading()
+          deleteWallet()
+          return
+        }
+
+        if (pinResult === 'wrong-pin') {
           throw new Error('BAD_DECRYPT')
         }
 
@@ -138,9 +154,19 @@ export function usePinOrBiometryLogin({
       onStopLoading,
       increaseAttempt,
       onWrongPin,
-      alertBadData
+      alertBadData,
+      deleteWallet
     ]
   )
+
+  // Clears the sticky `verified` flag and the entered PIN so a subsequent
+  // PIN/biometry check re-triggers the login effect from a clean slate. Used by
+  // callers to recover after a post-verification login failure (e.g. transient
+  // secret load / unlock) instead of leaving the user stuck. (CP-14585)
+  const resetLoginState = useCallback(() => {
+    setVerified(false)
+    setEnteredPin('')
+  }, [])
 
   const onEnterPin = (pin: string): void => {
     if (pin.length > 6) {
@@ -267,6 +293,7 @@ export function usePinOrBiometryLogin({
     enteredPin,
     onEnterPin,
     verified,
+    resetLoginState,
     verifyBiometric,
     disableKeypad,
     timeRemaining,
