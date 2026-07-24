@@ -86,8 +86,9 @@ jest.mock('@avalabs/k2-alpine', () => {
       r.createElement(rn.View, rest, children),
     SegmentedControl: () => null,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ScrollView: ({ children, ...rest }: any) =>
-      r.createElement(rn.ScrollView, rest, children),
+    ScrollView: r.forwardRef(({ children, ...rest }: any, ref: any) =>
+      r.createElement(rn.ScrollView, { ...rest, ref }, children)
+    ),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SlidingButton: (_props: any) =>
       r.createElement(rn.View, { testID: 'sliding-button' }),

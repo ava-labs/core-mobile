@@ -66,10 +66,10 @@
         document.body.style.backgroundColor = BG
 
         // SDK constants are injected by the RN host via
-        // `injectedJavaScriptBeforeContentLoaded`. Fall back to a minimal set if
-        // injection didn't land (e.g. older RN-WebView builds).
-        // Fallbacks mirror the full perps-sdk RESOLUTION_TO_INTERVAL map so
-        // every resolution the RN picker can request still resolves here.
+        // `injectedJavaScriptBeforeContentLoaded`. If injection didn't land
+        // (e.g. older RN-WebView builds), fall back to a copy of the full
+        // perps-sdk RESOLUTION_TO_INTERVAL map so every resolution the RN
+        // picker can request still resolves here.
         var RES_TO_HL = window.__PERPS_RES_TO_INTERVAL || {
           1: '1m',
           3: '3m',
