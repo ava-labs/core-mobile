@@ -90,8 +90,13 @@ const buildHelperText = ({
     }
   }
   if (maxForMode > 0) {
+    // Remove mode's cap is the position's removable margin, not the account
+    // balance — labelling it "Balance" would show an unrelated number.
     return {
-      text: `Balance: ${formatNumber(Math.max(0, withdrawableUsd ?? 0))} USDC`,
+      text:
+        mode === 'add'
+          ? `Balance: ${formatNumber(Math.max(0, withdrawableUsd ?? 0))} USDC`
+          : `Available to remove: ${formatNumber(maxForMode)} USDC`,
       isDanger: false
     }
   }
@@ -384,7 +389,7 @@ export const PerpetualsAdjustMarginScreen = (): JSX.Element => {
                 formatInCurrency={amountCaption}
                 presets={AMOUNT_PRESETS}
                 valid={!exceedsMax}
-                cardSx={{ backgroundColor: 'transparent', paddingTop: 12 }}
+                cardSx={{ paddingTop: 12 }}
               />
             </View>
           </View>

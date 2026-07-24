@@ -93,17 +93,19 @@ export const TokenUnitInputWidget = ({
     // straight from `balance.mul` (bigint math), fixed presets round to the
     // nearest subunit. Going through `displayValue * 10 ** decimals` could
     // diverge by a subunit from the bigint parsing `TokenUnitInput` uses.
+    // `percent` wins over `value` (matching the `TokenUnitInputPreset` docs).
     const valueUnit =
-      button.value !== undefined
-        ? new TokenUnit(
-            Math.round(button.value * 10 ** token.maxDecimals),
+      button.percent !== undefined
+        ? balance.mul(button.percent)
+        : new TokenUnit(
+            Math.round((button.value ?? 0) * 10 ** token.maxDecimals),
             token.maxDecimals,
             token.symbol
           )
-        : balance.mul(button.percent ?? 0)
-    // A zero result (e.g. a percentage of an empty balance) would replace the
-    // placeholder with a literal "0" and highlight the button — keep it a no-op.
-    if (valueUnit.isZero()) {
+    // A zero percentage result (e.g. a fraction of an empty balance) would
+    // replace the placeholder with a literal "0" and highlight the button —
+    // keep it a no-op. Fixed-value presets apply as-is.
+    if (button.percent !== undefined && valueUnit.isZero()) {
       return
     }
     textInputRef.current?.setValue(
@@ -125,9 +127,9 @@ export const TokenUnitInputWidget = ({
         prevButtons.map(b => ({
           ...b,
           isSelected:
-            b.value !== undefined
-              ? value.toDisplay({ asNumber: true }) === b.value
-              : value.toDisplay() === balance.mul(b.percent ?? 0).toDisplay()
+            b.percent !== undefined
+              ? value.toDisplay() === balance.mul(b.percent).toDisplay()
+              : value.toDisplay({ asNumber: true }) === b.value
         }))
       )
 

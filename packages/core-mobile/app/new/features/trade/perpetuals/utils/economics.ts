@@ -143,7 +143,12 @@ export const maxRemovableMarginUsd = ({
  */
 export const floorToDecimals = (value: number, decimals: number): number => {
   if (!Number.isFinite(value)) return 0
-  const factor = 10 ** decimals
+  // Clamp to a safe non-negative integer so a bad `decimals` can't produce a
+  // NaN/zero factor and leak NaN to callers.
+  const safeDecimals = Number.isFinite(decimals)
+    ? Math.max(0, Math.trunc(decimals))
+    : 0
+  const factor = 10 ** safeDecimals
   return Math.max(0, Math.floor(value * factor) / factor)
 }
 
