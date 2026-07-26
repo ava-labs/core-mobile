@@ -14,6 +14,7 @@ import {
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { CORE_HEADERS } from 'utils/api/constants'
+import { getCoreAuthHeaders } from 'utils/api/common/getCoreAuthHeaders'
 import { GlacierFetchHttpRequest } from './GlacierFetchHttpRequest'
 
 /**
@@ -36,7 +37,12 @@ class GlacierService {
   private glacierSdk = new Glacier(
     {
       BASE: Config.GLACIER_URL,
-      HEADERS: CORE_HEADERS
+      // Resolved per request: the Glacier proxy (core-proxy-api) requires an
+      // AppCheck token (or Core API key) on every call.
+      HEADERS: async () => ({
+        ...CORE_HEADERS,
+        ...(await getCoreAuthHeaders())
+      })
     },
     GlacierFetchHttpRequest
   )
