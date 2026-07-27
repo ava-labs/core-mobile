@@ -4,8 +4,10 @@ import Logger from 'utils/Logger'
 import {
   Environment,
   Module,
-  ConstructorParams
+  ConstructorParams,
+  RuntimeParams
 } from '@avalabs/vm-module-types'
+import { getCoreAuthHeaders } from 'utils/api/common/getCoreAuthHeaders'
 import {
   NetworkVMType,
   Network,
@@ -88,7 +90,9 @@ class ModuleManager {
 
     const environment = isDev ? Environment.DEV : Environment.PRODUCTION
 
-    const moduleInitParams: ConstructorParams = {
+    const moduleInitParams: ConstructorParams & {
+      runtime: Required<Pick<RuntimeParams, 'getAuthHeaders'>>
+    } = {
       environment,
       approvalController,
       appInfo: {
@@ -97,7 +101,11 @@ class ModuleManager {
       },
       runtime: {
         fetch: global.fetch,
-        httpAgent: new http.Agent()
+        httpAgent: new http.Agent(),
+        // Required by EvmModule/AvalancheModule: their internal Glacier calls
+        // go through core-proxy-api, which needs AppCheck (or a Core API key)
+        // on every request.
+        getAuthHeaders: getCoreAuthHeaders
       }
     }
 

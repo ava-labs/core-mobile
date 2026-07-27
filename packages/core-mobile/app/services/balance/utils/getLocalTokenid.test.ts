@@ -26,4 +26,13 @@ describe('getLocalTokenId', () => {
       | NetworkContractToken
     expect(getLocalTokenId(token)).toBe('ERC20-USDC')
   })
+
+  it('falls back to type-symbol for hypercore spot tokens (no address field)', () => {
+    const token = {
+      type: TokenType.HYPERCORE_SPOT,
+      symbol: 'HYPE',
+      index: 150
+    } as unknown as TokenWithBalance | NetworkContractToken
+    expect(getLocalTokenId(token)).toBe('HYPERCORE_SPOT-HYPE')
+  })
 })

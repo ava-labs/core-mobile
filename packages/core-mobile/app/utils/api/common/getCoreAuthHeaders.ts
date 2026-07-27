@@ -1,7 +1,7 @@
 import Config from 'react-native-config'
 import AppCheckService from 'services/fcm/AppCheckService'
+import { APPCHECK_HEADER } from 'utils/api/common/appCheckFetch'
 
-const APPCHECK_HEADER = 'X-Firebase-AppCheck'
 const CORE_API_KEY_HEADER = 'x-core-api-key'
 
 /**

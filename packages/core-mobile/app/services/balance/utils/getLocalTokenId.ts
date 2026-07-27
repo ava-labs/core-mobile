@@ -13,7 +13,7 @@ export function getLocalTokenId(
     return fallbackTokenId
   }
 
-  if (!token.address) {
+  if (!('address' in token) || !token.address) {
     Logger.error('Token address is missing', { token })
     return fallbackTokenId
   }
