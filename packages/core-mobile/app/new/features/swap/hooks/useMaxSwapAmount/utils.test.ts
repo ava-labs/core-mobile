@@ -3,6 +3,7 @@ import type { NetworkFees } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
 import {
   buildFeeOptions,
+  computeIsMaxLoading,
   computeMaxAmount,
   getPreQuoteAmount,
   getRouteAdditiveBps,
@@ -423,5 +424,97 @@ describe('getRouteAdditiveBps', () => {
     expect(
       getRouteAdditiveBps('bitcoin:mainnet', 'bitcoin:mainnet', config)
     ).toBe(1500)
+  })
+})
+
+describe('computeIsMaxLoading', () => {
+  const baseParams = {
+    fromToken: makeToken(1_000_000n),
+    toToken: makeToken(0n, TokenType.ERC20),
+    isNative: true,
+    bufferedGas: undefined as bigint | undefined,
+    additiveFee: undefined as bigint | undefined,
+    hasEstimationError: false,
+    isSpendableBalanceRequired: false,
+    spendableBalance: undefined as bigint | undefined,
+    hasSpendableBalanceError: false
+  }
+
+  it('is false without a from token', () => {
+    expect(computeIsMaxLoading({ ...baseParams, fromToken: undefined })).toBe(
+      false
+    )
+  })
+
+  it('is false without a to token — nothing is in flight for an incomplete pair', () => {
+    expect(computeIsMaxLoading({ ...baseParams, toToken: undefined })).toBe(
+      false
+    )
+  })
+
+  it('is true while the X/P spendable balance is pending', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined
+      })
+    ).toBe(true)
+  })
+
+  it('is false when the X/P spendable query settled in error (terminal — Max hides)', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined,
+        hasSpendableBalanceError: true
+      })
+    ).toBe(false)
+  })
+
+  it('is true for a native source while the gas estimate is pending', () => {
+    expect(computeIsMaxLoading({ ...baseParams, bufferedGas: undefined })).toBe(
+      true
+    )
+  })
+
+  it('is false for a native source once the gas estimate arrives', () => {
+    expect(computeIsMaxLoading({ ...baseParams, bufferedGas: 100n })).toBe(
+      false
+    )
+  })
+
+  it('is true for a non-native source while the additive fee is pending', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        isNative: false,
+        additiveFee: undefined
+      })
+    ).toBe(true)
+  })
+
+  it('is false for a non-native source once the additive fee arrives', () => {
+    expect(
+      computeIsMaxLoading({ ...baseParams, isNative: false, additiveFee: 0n })
+    ).toBe(false)
+  })
+
+  it('is false on estimation error — computeMaxAmount falls back to balance', () => {
+    expect(
+      computeIsMaxLoading({ ...baseParams, hasEstimationError: true })
+    ).toBe(false)
+  })
+
+  it('spendable pending wins over an available gas estimate', () => {
+    expect(
+      computeIsMaxLoading({
+        ...baseParams,
+        bufferedGas: 100n,
+        isSpendableBalanceRequired: true,
+        spendableBalance: undefined
+      })
+    ).toBe(true)
   })
 })

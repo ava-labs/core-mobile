@@ -148,3 +148,48 @@ export const computeMaxAmount = ({
   const max = balance - additiveFee
   return max > 0n ? max : undefined
 }
+
+/**
+ * True while an async input the max depends on is still pending: the
+ * dust-filtered X/P spendable balance, the gas estimate (native sources), or
+ * the pre-quote's additive fee (ERC20/SPL sources). Distinguishes a
+ * *calculating* `max === undefined` from a *terminal* one (fees exceed the
+ * balance, or the spendable-balance query settled in error), which never
+ * resolves — the UI hides Max on terminal states so it can't sit disabled
+ * forever. On estimation error there is nothing left to wait for —
+ * computeMaxAmount falls back to the full balance.
+ *
+ * Requires BOTH tokens: the pre-quote (and therefore the gas/additive-fee
+ * estimates) is only ever requested for a complete pair, so with no toToken
+ * nothing is in flight — reporting "loading" there would hold the Max button
+ * in a state that can never resolve.
+ */
+export const computeIsMaxLoading = ({
+  fromToken,
+  toToken,
+  isNative,
+  bufferedGas,
+  additiveFee,
+  hasEstimationError,
+  isSpendableBalanceRequired,
+  spendableBalance,
+  hasSpendableBalanceError
+}: {
+  fromToken: LocalTokenWithBalance | undefined
+  toToken: LocalTokenWithBalance | undefined
+  isNative: boolean
+  bufferedGas: bigint | undefined
+  additiveFee: bigint | undefined
+  hasEstimationError: boolean
+  isSpendableBalanceRequired: boolean
+  spendableBalance: bigint | undefined
+  hasSpendableBalanceError: boolean
+}): boolean => {
+  if (!fromToken || !toToken) return false
+  if (isSpendableBalanceRequired && spendableBalance === undefined) {
+    // A settled query error is terminal — the balance will not arrive.
+    return !hasSpendableBalanceError
+  }
+  if (hasEstimationError) return false
+  return isNative ? bufferedGas === undefined : additiveFee === undefined
+}
