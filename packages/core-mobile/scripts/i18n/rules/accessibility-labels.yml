@@ -1,0 +1,13 @@
+id: i18n-accessibility-label
+language: tsx
+message: Hardcoded accessibilityLabel/accessibilityHint — wrap with t() during the i18n sweep (FR-1.6).
+severity: warning
+rule:
+  kind: jsx_attribute
+  all:
+    - has:
+        kind: property_identifier
+        regex: ^(accessibilityLabel|accessibilityHint)$
+    - has:
+        kind: string
+        pattern: $STR

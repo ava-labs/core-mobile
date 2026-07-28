@@ -24,7 +24,11 @@
     "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh",
     "appium:smoke": "IS_SMOKE=true wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "appium:smokeIos": "IS_SMOKE=true PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
-    "appium:smokeAndroid": "IS_SMOKE=true PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'"
+    "appium:smokeAndroid": "IS_SMOKE=true PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
+    "i18n:extract": "i18next-cli extract",
+    "i18n:types": "i18next-cli types",
+    "i18n:instrument": "i18next-cli instrument --dry-run",
+    "i18n:check": "i18next-cli extract --ci && i18next-cli types --ci"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "3.9.0",
@@ -263,6 +267,7 @@
     "zustand": "5.0.6"
   },
   "devDependencies": {
+    "@ast-grep/cli": "^0.44.1",
     "@avalabs/tsconfig-mobile": "workspace:*",
     "@aws-sdk/client-device-farm": "3.986.0",
     "@babel/core": "7.29.7",
@@ -328,6 +333,7 @@
     "detox": "20.41.1",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
+    "i18next-cli": "^1.66.2",
     "jest": "30.1.3",
     "json-stringify-pretty-compact": "4.0.0",
     "mocha": "11.7.5",
@@ -399,7 +405,9 @@
       "@avalabs/crypto-nitro>react-native-nitro-modules": true,
       "@avalabs/bridge-unified>@lombard.finance/sdk>@lombard.finance/sdk-common>vite>esbuild": false,
       "@shopify/react-native-skia": false,
-      "@avalabs/k2-alpine>@shopify/react-native-skia": false
+      "@avalabs/k2-alpine>@shopify/react-native-skia": false,
+      "@ast-grep/cli": false,
+      "ts-node>@swc/core": false
     }
   },
   "react-native": {
