@@ -3,6 +3,7 @@ import {
   NetworkContractToken,
   TokenType
 } from '@avalabs/vm-module-types'
+import Logger from 'utils/Logger'
 import { getLocalTokenId } from './getLocalTokenId'
 
 describe('getLocalTokenId', () => {
@@ -27,12 +28,15 @@ describe('getLocalTokenId', () => {
     expect(getLocalTokenId(token)).toBe('ERC20-USDC')
   })
 
-  it('falls back to type-symbol for hypercore spot tokens (no address field)', () => {
+  it('falls back to type-symbol for hypercore spot tokens without logging an error', () => {
+    const errorSpy = jest.spyOn(Logger, 'error')
     const token = {
       type: TokenType.HYPERCORE_SPOT,
       symbol: 'HYPE',
       index: 150
     } as unknown as TokenWithBalance | NetworkContractToken
     expect(getLocalTokenId(token)).toBe('HYPERCORE_SPOT-HYPE')
+    expect(errorSpy).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
   })
 })
