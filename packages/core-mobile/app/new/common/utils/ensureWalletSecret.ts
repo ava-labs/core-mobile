@@ -20,7 +20,6 @@ const isTerminalSecretError = (error?: Error): boolean => {
   const message = error?.message ?? ''
   return (
     message.includes('No credentials found') ||
-    message.includes('Failed to decrypt') ||
     message.includes('BAD_DECRYPT') || // Android bad-decrypt
     message.includes('Decrypt failed') || // iOS bad-decrypt
     // Corrupt/unreadable secret data (missing salt, unknown version) — a
@@ -55,6 +54,17 @@ export const ensureWalletSecret = async (
   }
 
   if (isTerminalSecretError(result.error)) {
+    // Refuse destructive recovery while legacy keychain entries still exist:
+    // an interrupted legacy migration can leave the new encryption key present
+    // with the secret missing or encrypted under an older key, yet the wallet
+    // remains fully re-creatable from the legacy data. The probe is strict —
+    // a transient keychain failure throws rather than reading as "no legacy
+    // data". (CP-14585)
+    if (await BiometricsSDK.hasLegacyWalletData()) {
+      throw new Error(
+        'Wallet secret unreadable but legacy wallet data exists; refusing recovery deletion'
+      )
+    }
     Logger.error(
       'Wallet secret missing after PIN verification; deleting wallet',
       result.error

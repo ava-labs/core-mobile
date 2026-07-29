@@ -3,7 +3,7 @@ import { ensureWalletSecret } from './ensureWalletSecret'
 
 jest.mock('utils/BiometricsSDK', () => ({
   __esModule: true,
-  default: { loadWalletSecret: jest.fn() }
+  default: { loadWalletSecret: jest.fn(), hasLegacyWalletData: jest.fn() }
 }))
 jest.mock('utils/Logger', () => ({
   __esModule: true,
@@ -11,9 +11,16 @@ jest.mock('utils/Logger', () => ({
 }))
 
 const mockLoadWalletSecret = BiometricsSDK.loadWalletSecret as jest.Mock
+const mockHasLegacyWalletData = BiometricsSDK.hasLegacyWalletData as jest.Mock
 
 describe('ensureWalletSecret', () => {
   const walletId = 'wallet-1'
+
+  beforeEach(() => {
+    // Default: no legacy entries — the terminal cases below are only allowed
+    // to recover destructively when nothing re-creatable remains. (CP-14585)
+    mockHasLegacyWalletData.mockResolvedValue(false)
+  })
 
   it('returns true and does not recover when the wallet secret loads', async () => {
     mockLoadWalletSecret.mockResolvedValue({ success: true, value: 'secret' })
@@ -65,6 +72,34 @@ describe('ensureWalletSecret', () => {
       expect(onMissing).toHaveBeenCalledTimes(1)
     }
   )
+
+  it('throws and does NOT recover when legacy wallet data still exists (interrupted migration)', async () => {
+    mockLoadWalletSecret.mockResolvedValue({
+      success: false,
+      error: new Error('No credentials found')
+    })
+    mockHasLegacyWalletData.mockResolvedValue(true)
+    const onMissing = jest.fn()
+
+    await expect(ensureWalletSecret(walletId, onMissing)).rejects.toThrow(
+      'legacy wallet data exists'
+    )
+    expect(onMissing).not.toHaveBeenCalled()
+  })
+
+  it('rethrows and does NOT recover when the legacy probe itself fails', async () => {
+    mockLoadWalletSecret.mockResolvedValue({
+      success: false,
+      error: new Error('No credentials found')
+    })
+    mockHasLegacyWalletData.mockRejectedValue(new Error('keychain unavailable'))
+    const onMissing = jest.fn()
+
+    await expect(ensureWalletSecret(walletId, onMissing)).rejects.toThrow(
+      'keychain unavailable'
+    )
+    expect(onMissing).not.toHaveBeenCalled()
+  })
 
   it('rethrows and does NOT recover on a transient keychain failure', async () => {
     mockLoadWalletSecret.mockResolvedValue({

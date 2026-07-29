@@ -18,9 +18,10 @@ describe('KeychainMigrator', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     keychainMigrator = new KeychainMigrator(activeWalletId)
-    // The migration stores the encryption key with the PIN just before loading
-    // it, so the load succeeds by default. (CP-14585)
-    mockBiometricsSDK.loadEncryptionKeyWithPin.mockResolvedValue('success')
+    // By default the keychain holds *something* (legacy data awaiting
+    // migration); individual tests override this to simulate a wiped
+    // keychain. (CP-14585)
+    mockBiometricsSDK.hasAnyWalletData.mockResolvedValue(true)
   })
 
   describe('getMigrationStatus', () => {
@@ -49,6 +50,28 @@ describe('KeychainMigrator', () => {
       mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
       const status = await keychainMigrator.getMigrationStatus('BIO')
       expect(status).toBe('runBiometricMigration')
+    })
+
+    it.each(['PIN', 'BIO'] as const)(
+      'should return "noKeychainData" when the keychain holds no wallet data at all (%s)',
+      async accessType => {
+        mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+        mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
+        mockBiometricsSDK.hasAnyWalletData.mockResolvedValue(false)
+        const status = await keychainMigrator.getMigrationStatus(accessType)
+        expect(status).toBe('noKeychainData')
+      }
+    )
+
+    it('should propagate a keychain probe failure instead of reporting "noKeychainData"', async () => {
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
+      mockBiometricsSDK.hasAnyWalletData.mockRejectedValue(
+        new Error('keychain unavailable')
+      )
+      await expect(keychainMigrator.getMigrationStatus('PIN')).rejects.toThrow(
+        'keychain unavailable'
+      )
     })
   })
 
@@ -149,6 +172,21 @@ describe('KeychainMigrator', () => {
       })
     })
 
+    it('should return "noKeychainData" without attempting any migration', async () => {
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
+      mockBiometricsSDK.hasAnyWalletData.mockResolvedValue(false)
+
+      expect(await keychainMigrator.migrateIfNeeded('PIN', pin)).toStrictEqual({
+        success: true,
+        value: 'noKeychainData'
+      })
+      // No PIN validation, no legacy reads — a wiped keychain must not be
+      // reported as a wrong PIN. (CP-14585)
+      expect(mockBiometricsSDK.isPinCorrect).not.toHaveBeenCalled()
+      expect(mockBiometricsSDK.loadLegacyWalletWithPin).not.toHaveBeenCalled()
+    })
+
     it('should throw MigrationFailedError when underlying migration fails', async () => {
       mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
       mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
@@ -194,12 +232,18 @@ describe('KeychainMigrator', () => {
       expect(
         mockBiometricsSDK.storeEncryptionKeyWithBiometry
       ).not.toHaveBeenCalled()
-      expect(mockBiometricsSDK.loadEncryptionKeyWithPin).toHaveBeenCalledWith(
-        pin
-      )
       expect(mockBiometricsSDK.storeWalletSecret).toHaveBeenCalledWith(
         activeWalletId,
         mnemonic
+      )
+      // The secret must be durable BEFORE the new encryption key exists —
+      // a crash in between must leave the migration re-runnable instead of
+      // a key-without-secret state that reads as a wiped wallet. (CP-14585)
+      expect(
+        mockBiometricsSDK.storeWalletSecret.mock.invocationCallOrder[0]
+      ).toBeLessThan(
+        mockBiometricsSDK.storeEncryptionKeyWithPin.mock
+          .invocationCallOrder[0] as number
       )
       expect(mockBiometricsSDK.clearLegacyWalletData).toHaveBeenCalled()
       expect(mockLogger.info).toHaveBeenCalledWith(
@@ -232,25 +276,6 @@ describe('KeychainMigrator', () => {
       })
 
       await expect(keychainMigrator.runPinMigration(pin)).rejects.toThrow(error)
-    })
-
-    it('should throw if the encryption key fails to load after migration', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
-        success: true,
-        value: mnemonic
-      })
-      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
-        newEncryptionKey
-      )
-      mockBiometricsSDK.getAccessType.mockReturnValue('PIN')
-      mockBiometricsSDK.loadEncryptionKeyWithPin.mockResolvedValue(
-        'no-credentials'
-      )
-
-      await expect(keychainMigrator.runPinMigration(pin)).rejects.toThrow(
-        'Failed to load encryption key after migration: no-credentials'
-      )
-      expect(mockBiometricsSDK.storeWalletSecret).not.toHaveBeenCalled()
     })
 
     it('should throw error on exception', async () => {
@@ -288,6 +313,13 @@ describe('KeychainMigrator', () => {
         mnemonic
       )
       expect(mockBiometricsSDK.clearLegacyWalletData).not.toHaveBeenCalled()
+      // Secret-before-key crash safety (CP-14585)
+      expect(
+        mockBiometricsSDK.storeWalletSecret.mock.invocationCallOrder[0]
+      ).toBeLessThan(
+        mockBiometricsSDK.storeEncryptionKeyWithBiometry.mock
+          .invocationCallOrder[0] as number
+      )
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Biometric-based keychain migration (partial) completed successfully.'
       )
@@ -352,6 +384,13 @@ describe('KeychainMigrator', () => {
         mnemonic
       )
       expect(mockBiometricsSDK.clearLegacyWalletData).toHaveBeenCalled()
+      // Secret-before-keys crash safety (CP-14585)
+      expect(
+        mockBiometricsSDK.storeWalletSecret.mock.invocationCallOrder[0]
+      ).toBeLessThan(
+        mockBiometricsSDK.storeEncryptionKeyWithPin.mock
+          .invocationCallOrder[0] as number
+      )
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Partial keychain migration completed successfully.'
       )

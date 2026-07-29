@@ -82,6 +82,77 @@ export function usePinOrBiometryLogin({
     [deleteWallet]
   )
 
+  // The keychain no longer holds any credential that could unlock this wallet
+  // (e.g. an interrupted wallet deletion wiped it while persisted redux state
+  // survived). Recovery deletes the stale wallet and routes to onboarding, but
+  // always behind an explicit acknowledgment — this hook also backs in-session
+  // verification flows (VerifyPin, VerifyWithPinOrBiometry), where silently
+  // landing the user in onboarding would be jarring. (CP-14585)
+  const alertMissingWalletData = useCallback(
+    () =>
+      Alert.alert(
+        'Wallet data not found',
+        'Please set up the wallet again!',
+        [
+          {
+            text: 'Okay',
+            onPress: deleteWallet
+          }
+        ],
+        { cancelable: false }
+      ),
+    [deleteWallet]
+  )
+
+  // Runs the keychain migration for a PIN login. Returns true when the
+  // keychain holds no wallet credential at all (new or legacy) and recovery
+  // was triggered — without this check the migrator would try a legacy
+  // migration, find nothing, and report an endless "wrong PIN". (CP-14585)
+  const migrateDetectingWipedKeychain = useCallback(
+    async (walletId: string, pin: string): Promise<boolean> => {
+      const migrator = new KeychainMigrator(walletId)
+      const migrationResult = await migrator.migrateIfNeeded('PIN', pin)
+      if (
+        migrationResult.success &&
+        migrationResult.value === MigrationStatus.NoKeychainData
+      ) {
+        Logger.error(
+          'No keychain wallet data on PIN entry; recovering to onboarding',
+          new Error('no-keychain-data')
+        )
+        onStopLoading()
+        alertMissingWalletData()
+        return true
+      }
+      return false
+    },
+    [onStopLoading, alertMissingWalletData]
+  )
+
+  // Handles a missing PIN encryption key ('no-credentials'). Reachable from
+  // the in-session flows that skip migration (PinScreenOverlay, VerifyPin) or
+  // a race against an ongoing deletion — the initial-login path is normally
+  // intercepted by the NoKeychainData check. Only recovers when the keychain
+  // is provably empty: if any other credential exists (e.g. the bio key of a
+  // partially completed biometric migration, or legacy entries), the wallet
+  // is still recoverable and deleting it would destroy real data — that case
+  // surfaces as a failed PIN check instead, matching pre-CP-14585 behavior.
+  // The probe is strict: a transient failure throws (non-destructive) rather
+  // than reading as an empty keychain. (CP-14585)
+  const handleMissingEncryptionKey = useCallback(async (): Promise<void> => {
+    if (await BiometricsSDK.hasAnyWalletData()) {
+      throw new BadPinError({
+        message: 'Encryption key missing but other wallet data exists'
+      })
+    }
+    Logger.error(
+      'Encryption key missing on PIN entry; recovering to onboarding',
+      new Error('no-credentials')
+    )
+    onStopLoading()
+    alertMissingWalletData()
+  }, [onStopLoading, alertMissingWalletData])
+
   const checkEnteredPin = useCallback(
     async (pin: string) => {
       try {
@@ -93,24 +164,20 @@ export function usePinOrBiometryLogin({
         }
 
         if (isInitialLogin) {
-          const migrator = new KeychainMigrator(activeWalletId)
-          await migrator.migrateIfNeeded('PIN', pin)
+          const recovered = await migrateDetectingWipedKeychain(
+            activeWalletId,
+            pin
+          )
+          if (recovered) {
+            return
+          }
         }
 
         // Load encryption key
         const pinResult = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
 
         if (pinResult === 'no-credentials') {
-          // The encryption key is gone (e.g. an interrupted wallet deletion),
-          // so no PIN can ever unlock this wallet. Recover by deleting the
-          // stale wallet and routing to onboarding instead of reporting an
-          // endless "wrong PIN". (CP-14585)
-          Logger.error(
-            'Encryption key missing on PIN entry; deleting wallet',
-            new Error('no-credentials')
-          )
-          onStopLoading()
-          deleteWallet()
+          await handleMissingEncryptionKey()
           return
         }
 
@@ -155,7 +222,8 @@ export function usePinOrBiometryLogin({
       increaseAttempt,
       onWrongPin,
       alertBadData,
-      deleteWallet
+      handleMissingEncryptionKey,
+      migrateDetectingWipedKeychain
     ]
   )
 
@@ -204,6 +272,19 @@ export function usePinOrBiometryLogin({
               //already prompted user for bio, assume verified
               setVerified(true)
               resetRateLimiter()
+              return new NothingToLoad()
+            }
+            if (
+              result.success &&
+              result.value === MigrationStatus.NoKeychainData
+            ) {
+              // Nothing in the keychain can unlock this wallet — same
+              // recovery as the PIN path. (CP-14585)
+              Logger.error(
+                'No keychain wallet data on biometric login; recovering to onboarding',
+                new Error('no-keychain-data')
+              )
+              alertMissingWalletData()
               return new NothingToLoad()
             }
             if (
@@ -268,6 +349,7 @@ export function usePinOrBiometryLogin({
     }, [
       activeWalletId,
       alertBadData,
+      alertMissingWalletData,
       resetRateLimiter,
       isInitialLogin,
       onBiometricPrompt

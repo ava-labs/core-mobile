@@ -189,6 +189,36 @@ class BiometricsSDK {
   }
 
   /**
+   * Strict probe: does ANY wallet credential exist in the keychain — a new
+   * encryption key (PIN or biometry) or a legacy wallet entry? Unlike the
+   * `has*` helpers above, this does NOT swallow errors: a transient keychain
+   * failure throws, so callers can distinguish "the keychain is definitely
+   * empty" from "the keychain could not be read" before doing anything
+   * destructive. (CP-14585)
+   */
+  async hasAnyWalletData(): Promise<boolean> {
+    return (
+      (await hasGenericPassword(passcodeGetOptions)) ||
+      (await hasGenericPassword(bioGetOptions)) ||
+      (await this.hasLegacyWalletData())
+    )
+  }
+
+  /**
+   * Strict probe for the legacy keychain entries only. Like
+   * {@link hasAnyWalletData}, this throws on a transient keychain failure
+   * instead of returning false. While legacy entries exist the wallet is
+   * always re-creatable by re-running the keychain migration, so destructive
+   * recovery must never fire when this returns true. (CP-14585)
+   */
+  async hasLegacyWalletData(): Promise<boolean> {
+    return (
+      (await hasGenericPassword({ service: LEGACY_SERVICE_KEY_BIO })) ||
+      (await hasGenericPassword({ service: LEGACY_SERVICE_KEY }))
+    )
+  }
+
+  /**
    * Attempts to load the PIN-derived encryption key. Distinguishes a genuinely
    * absent credential from a wrong PIN so callers can tell "this wallet can
    * never be unlocked" (route to onboarding) apart from "try again". (CP-14585)
@@ -323,10 +353,9 @@ class BiometricsSDK {
       if (!credentials)
         return { success: false, error: new Error('No credentials found') }
 
+      // decrypt never returns falsy — a failed decrypt throws (BAD_DECRYPT /
+      // "Decrypt failed") and is wrapped into { success: false } below.
       const decrypted = await decrypt(credentials.password, this.encryptionKey)
-      if (!decrypted)
-        return { success: false, error: new Error('Failed to decrypt') }
-
       return { success: true, value: decrypted.data }
     } catch (error) {
       return {

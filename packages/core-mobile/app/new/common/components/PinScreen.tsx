@@ -147,6 +147,13 @@ export const PinScreen = ({
   }, [disableKeypad])
 
   const handleLoginSuccess = useCallback(() => {
+    // The triggering effect depends on this callback's identity, so it can
+    // re-fire while `verified` is still true (e.g. `focusPinInput` changes with
+    // `disableKeypad`). Don't schedule a second unlock for the same login.
+    if (isProcessing.value) {
+      return
+    }
+
     handleStartLoading()
     pinInputRef.current?.blur()
     isProcessing.value = true

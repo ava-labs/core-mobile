@@ -12,7 +12,16 @@ export enum MigrationStatus {
   RunPinMigration = 'runPinMigration',
   RunBiometricMigration = 'runBiometricMigration',
   CompletePartialMigration = 'completePartialMigration',
-  NoMigrationNeeded = 'noMigrationNeeded'
+  NoMigrationNeeded = 'noMigrationNeeded',
+  /**
+   * The keychain holds no wallet credential at all — no new encryption keys
+   * and no legacy entries to migrate from (e.g. an interrupted wallet deletion
+   * wiped the keychain while persisted redux state survived). There is nothing
+   * to migrate and no PIN/biometry that could ever unlock this wallet; callers
+   * should route to recovery instead of attempting a migration that would
+   * surface as an endless "wrong PIN". (CP-14585)
+   */
+  NoKeychainData = 'noKeychainData'
 }
 
 class KeychainMigrator {
@@ -44,6 +53,14 @@ class KeychainMigrator {
       return MigrationStatus.CompletePartialMigration
     }
 
+    // No new keys. Distinguish "legacy data awaiting migration" from a
+    // keychain with no wallet credential at all. The probe is strict — a
+    // transient keychain failure throws instead of returning false — so a
+    // flaky read can never present as a wiped wallet. (CP-14585)
+    if (!(await BiometricsSDK.hasAnyWalletData())) {
+      return MigrationStatus.NoKeychainData
+    }
+
     //no keys exist
     return accessType === 'PIN'
       ? MigrationStatus.RunPinMigration
@@ -55,7 +72,12 @@ class KeychainMigrator {
     pin?: string
   ): Promise<Result<MigrationStatus>> {
     const migrationStatus = await this.getMigrationStatus(accessType)
-    if (migrationStatus === MigrationStatus.NoMigrationNeeded) {
+    if (
+      migrationStatus === MigrationStatus.NoMigrationNeeded ||
+      // Nothing to migrate from — surface the status so the caller can route
+      // to recovery rather than attempting a doomed migration. (CP-14585)
+      migrationStatus === MigrationStatus.NoKeychainData
+    ) {
       return { success: true, value: migrationStatus }
     }
 
@@ -135,6 +157,18 @@ class KeychainMigrator {
     const newEncryptionKey =
       await BiometricsSDK.generateMigrationEncryptionKey()
 
+    // Store the re-encrypted wallet secret BEFORE the new encryption keys
+    // (generateMigrationEncryptionKey already cached the key this encrypts
+    // with). The presence of a new key is what makes getMigrationStatus
+    // report NoMigrationNeeded, so writing keys first opens a crash window
+    // where the key exists but the secret doesn't — a state that reads as a
+    // wiped wallet after unlock. Secret-first means any interruption leaves
+    // the migration re-runnable from the still-intact legacy data. (CP-14585)
+    await BiometricsSDK.storeWalletSecret(
+      this.activeWalletId,
+      mnemonicResult.value
+    )
+
     // Store new encryption key for PIN and also Biometry (if applicable)
     await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
 
@@ -142,21 +176,6 @@ class KeychainMigrator {
     if (accessType === 'BIO') {
       await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
     }
-    // Cache the encryption key so the wallet secret can be stored below. Assert
-    // the load succeeded so a non-success result fails here with a clear cause
-    // rather than surfacing later as an opaque "Encryption key not found".
-    const loadResult = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
-    if (loadResult !== 'success') {
-      throw new Error(
-        `Failed to load encryption key after migration: ${loadResult}`
-      )
-    }
-
-    // Store wallet secret with new encryption key
-    await BiometricsSDK.storeWalletSecret(
-      this.activeWalletId,
-      mnemonicResult.value
-    )
 
     await BiometricsSDK.clearLegacyWalletData()
     Logger.info('PIN-based keychain migration completed successfully.')
@@ -177,14 +196,16 @@ class KeychainMigrator {
     const newEncryptionKey =
       await BiometricsSDK.generateMigrationEncryptionKey()
 
-    // Store raw encryption key in biometric storage ONLY
-    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
-
-    // Re-encrypt mnemonic and store it
+    // Re-encrypt mnemonic and store it — BEFORE the new encryption key, so a
+    // crash here leaves the migration re-runnable from legacy data instead of
+    // a key-without-secret state that reads as a wiped wallet. (CP-14585)
     await BiometricsSDK.storeWalletSecret(
       this.activeWalletId,
       mnemonicResult.value
     )
+
+    // Store raw encryption key in biometric storage ONLY
+    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
 
     // DO NOT clear legacy data yet, we need it for PIN completion
     Logger.info(
@@ -207,15 +228,16 @@ class KeychainMigrator {
     // 2. Generate new encryption key
     const newEncryptionKey =
       await BiometricsSDK.generateMigrationEncryptionKey()
-    // 3. Store new encryption key for both PIN and Biometry
-    await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
-    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
-
-    // 4. Store mnemonic with new encryption key
+    // 3. Store mnemonic with the new (cached) encryption key — before the
+    // keys, so an interruption leaves the migration re-runnable from legacy
+    // data rather than a key-without-secret state. (CP-14585)
     await BiometricsSDK.storeWalletSecret(
       this.activeWalletId,
       mnemonicResult.value
     )
+    // 4. Store new encryption key for both PIN and Biometry
+    await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
+    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
 
     // 5. Now that both keys are stored, we can safely remove the legacy data
     await BiometricsSDK.clearLegacyWalletData()
