@@ -33,11 +33,13 @@ const mockNativeTokenWithBalance: TokenWithBalancePVM = {
 
 describe('validate pvm send', () => {
   it('should succeed when all requirements met', async () => {
+    // Fixture addresses use the fuji (testnet) HRP.
     validate({
       address: mockActiveAccount.addressPVM,
       amount: 1000n,
       maxFee: 1n,
-      token: mockNativeTokenWithBalance
+      token: mockNativeTokenWithBalance,
+      isTestnet: true
     })
   })
 
@@ -47,7 +49,8 @@ describe('validate pvm send', () => {
         address: mockActiveAccount.addressPVM,
         amount: 1000n,
         maxFee: 0n,
-        token: mockNativeTokenWithBalance
+        token: mockNativeTokenWithBalance,
+        isTestnet: true
       })
     ).toThrow(SendErrorMessage.INVALID_NETWORK_FEE)
   })
@@ -58,7 +61,21 @@ describe('validate pvm send', () => {
         address: 'invalidAddress',
         amount: 1000n,
         maxFee: 1n,
-        token: mockNativeTokenWithBalance
+        token: mockNativeTokenWithBalance,
+        isTestnet: true
+      })
+    ).toThrow(SendErrorMessage.INVALID_ADDRESS)
+  })
+
+  it('should fail when address HRP does not match the active network (M7)', async () => {
+    // fuji (testnet) address rejected when the active network is mainnet.
+    expect(() =>
+      validate({
+        address: mockActiveAccount.addressPVM,
+        amount: 1000n,
+        maxFee: 1n,
+        token: mockNativeTokenWithBalance,
+        isTestnet: false
       })
     ).toThrow(SendErrorMessage.INVALID_ADDRESS)
   })
@@ -69,7 +86,8 @@ describe('validate pvm send', () => {
         address: mockActiveAccount.addressPVM,
         amount: 0n,
         maxFee: 1n,
-        token: mockNativeTokenWithBalance
+        token: mockNativeTokenWithBalance,
+        isTestnet: true
       })
     ).toThrow(SendErrorMessage.AMOUNT_REQUIRED)
   })
@@ -83,7 +101,8 @@ describe('validate pvm send', () => {
         token: {
           ...mockNativeTokenWithBalance,
           available: 100n
-        }
+        },
+        isTestnet: true
       })
     ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
   })
@@ -95,7 +114,8 @@ describe('validate pvm send', () => {
         amount: 1000n,
         maxFee: 1n,
         token: mockNativeTokenWithBalance, // available: 10000n
-        spendableBalance: 100n
+        spendableBalance: 100n,
+        isTestnet: true
       })
     ).toThrow(SendErrorMessage.INSUFFICIENT_BALANCE)
   })
