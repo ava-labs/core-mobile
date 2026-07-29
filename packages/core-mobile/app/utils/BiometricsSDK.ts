@@ -69,10 +69,22 @@ export const bioSetOptions: SetOptions = {
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 }
 
-export const walletSecretOptions = (walletId: string): SetOptions => ({
+export const walletSecretOptions = (
+  walletId: string,
+  // Prefer a hardware-backed keystore (TEE/StrongBox). When the device has no
+  // secure hardware (emulators, some low-end devices) key generation with
+  // SECURE_HARDWARE throws, so we fall back to the software-backed keystore so
+  // wallet creation can still succeed. Reads/resets ignore securityLevel, so
+  // the default keeps their behavior unchanged.
+  secureHardware = true
+): SetOptions => ({
   service: getWalletServiceKey(walletId),
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-  securityLevel: iOS ? undefined : Keychain.SECURITY_LEVEL.SECURE_HARDWARE
+  securityLevel: iOS
+    ? undefined
+    : secureHardware
+    ? Keychain.SECURITY_LEVEL.SECURE_HARDWARE
+    : Keychain.SECURITY_LEVEL.SECURE_SOFTWARE
 })
 
 class BiometricsSDK {
@@ -251,12 +263,32 @@ class BiometricsSDK {
   }
 
   // Wallet Secret Management
+  /**
+   * Whether this device can generate keys in a hardware-backed keystore
+   * (TEE/StrongBox). Emulators and some low-end devices cannot. On iOS the
+   * Keychain/Secure Enclave is always used and `securityLevel` does not apply,
+   * so we report `true` (no warning).
+   */
+  async isSecureHardwareAvailable(): Promise<boolean> {
+    if (iOS) return true
+    try {
+      const level = await Keychain.getSecurityLevel()
+      return level === Keychain.SECURITY_LEVEL.SECURE_HARDWARE
+    } catch (e) {
+      Logger.error('Failed to determine keystore security level', e)
+      return false
+    }
+  }
+
   async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
     const encrypted = await encrypt(secret, this.encryptionKey)
+    // Fall back to the software keystore when no secure hardware is present so
+    // wallet creation still succeeds; the caller warns the user in that case.
+    const secureHardware = await this.isSecureHardwareAvailable()
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      walletSecretOptions(walletId)
+      walletSecretOptions(walletId, secureHardware)
     )
     return true
   }
