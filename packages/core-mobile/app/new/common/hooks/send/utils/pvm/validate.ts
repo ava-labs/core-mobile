@@ -4,9 +4,7 @@ import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { SendErrorMessage } from '../types'
 
-// SECURITY (M7): extract the bech32 HRP from an address that may carry a
-// chain-alias prefix (e.g. "P-avax1…"), so we can reject addresses whose
-// network (avax/fuji) does not match the active network.
+// Reject addresses whose network (avax/fuji) does not match the active network.
 const getAddressHrp = (address: string): string => {
   const bech32Part = address.includes('-')
     ? address.slice(address.indexOf('-') + 1)
@@ -15,10 +13,6 @@ const getAddressHrp = (address: string): string => {
   return hrp
 }
 
-// SECURITY (M7): require both a structurally valid bech32 address and an HRP
-// matching the active network. Previously any avax OR fuji address was
-// accepted regardless of the active network, so a cross-network address could
-// be sent to.
 const assertValidAddressForNetwork = (
   address: string,
   isTestnet: boolean
@@ -61,10 +55,6 @@ export const validate = ({
    * refuse to spend.
    */
   spendableBalance?: bigint
-  /**
-   * SECURITY (M7): active network's testnet flag. The address HRP must match
-   * (mainnet→avax, testnet→fuji) so a cross-network address can't be sent to.
-   */
   isTestnet: boolean
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)

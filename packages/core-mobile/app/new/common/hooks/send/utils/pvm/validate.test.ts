@@ -67,7 +67,7 @@ describe('validate pvm send', () => {
     ).toThrow(SendErrorMessage.INVALID_ADDRESS)
   })
 
-  it('should fail when address HRP does not match the active network (M7)', async () => {
+  it('should fail when address HRP does not match the active network', async () => {
     // fuji (testnet) address rejected when the active network is mainnet.
     expect(() =>
       validate({

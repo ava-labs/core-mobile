@@ -133,7 +133,7 @@ const useAVMSend: SendAdapterAVM = ({
         // send fails at build instead of validation. Max (getMaxAmount)
         // never degrades this way.
         spendableBalance: filterSmallUtxos ? spendableBalance : undefined,
-        // SECURITY (M7): enforce the destination HRP matches the active network.
+        // Enforce the destination HRP matches the active network.
         isTestnet: Boolean(network?.isTestnet)
       })
 
