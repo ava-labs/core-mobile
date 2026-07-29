@@ -315,8 +315,12 @@ export function makeOrderActionHook(
         // are module-scoped and aren't cleared on unmount/account-switch; with
         // the bare prefix a post-switch firing would refetch the *new*
         // account's query, whereas the scoped key only ever touches the
-        // (now-inactive) query it was meant for — a harmless stale-mark, never
-        // a cross-account refetch. The builder lowercases the owner so this
+        // (now-inactive) query it was meant for. Note the helper refetches with
+        // `refetchType: 'all'` (see CP-14651), so a post-switch firing does
+        // issue a real `listOrders` call for the acting account rather than just
+        // marking it stale — which is the intent here: the catch-up must settle
+        // the status of the order the user acted on, whichever account is active
+        // by the time it fires. The builder lowercases the owner so this
         // matches the query key even though `args.address` (Markr's per-order
         // owner) may differ in checksum casing from the wallet's `addressC`.
         scheduleStaggeredInvalidate(
