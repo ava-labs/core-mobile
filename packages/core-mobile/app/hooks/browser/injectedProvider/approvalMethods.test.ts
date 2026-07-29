@@ -18,7 +18,9 @@ describe('approvalMethods', () => {
   const AVALANCHE_SIGNING = [
     'avalanche_sendTransaction',
     'avalanche_signTransaction',
-    'avalanche_signMessage'
+    'avalanche_signMessage',
+    // added to the RpcMethod enum in vm-module-types 4.x (agent identity)
+    'avalanche_declareAgentIdentity'
   ]
   const CROSS_NAMESPACE = [
     'solana_signTransaction',

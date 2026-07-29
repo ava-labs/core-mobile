@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { NetworkContractToken } from '@avalabs/vm-module-types'
+import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -15,5 +15,10 @@ export const getNetworkContractTokens = async (
     return module.getTokens(mapToVmNetwork(network))
   })
 
-  return tokens ?? []
+  // Hypercore spot tokens are not contract tokens (no EVM address) and are
+  // not supported by this app's token pipeline.
+  return (tokens ?? []).filter(
+    (token): token is NetworkContractToken =>
+      token.type !== TokenType.HYPERCORE_SPOT
+  )
 }

@@ -13,7 +13,13 @@ export function getLocalTokenId(
     return fallbackTokenId
   }
 
-  if (!token.address) {
+  // Hypercore spot tokens carry no address by design (identified by index) —
+  // fall back without logging.
+  if (token.type === TokenType.HYPERCORE_SPOT) {
+    return fallbackTokenId
+  }
+
+  if (!('address' in token) || !token.address) {
     Logger.error('Token address is missing', { token })
     return fallbackTokenId
   }
