@@ -396,6 +396,7 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(
             JSON.stringify({
               id: 2,
+              origin: 'https://example.com',
               request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
             })
           )
@@ -840,6 +841,7 @@ describe('useEvmInjectedProvider', () => {
 
           const payload = JSON.stringify({
             id: 10,
+            origin: 'https://example.com',
             request: {
               method: dappMethod,
               params: ['param1', 'param2']
@@ -901,6 +903,7 @@ describe('useEvmInjectedProvider', () => {
           result.current.handleProviderMessage(
             JSON.stringify({
               id: 99,
+              origin: 'https://malicious.example',
               request: {
                 method: 'personal_sign',
                 params: ['0xMessage', '0xAddress']
@@ -932,6 +935,7 @@ describe('useEvmInjectedProvider', () => {
 
         const payload = JSON.stringify({
           id: 20,
+          origin: 'https://example.com',
           request: {
             method: 'personal_sign',
             params: ['0xMessage', '0xAddress']
@@ -962,6 +966,7 @@ describe('useEvmInjectedProvider', () => {
 
         const payload = JSON.stringify({
           id: 21,
+          origin: 'https://example.com',
           request: {
             method: 'personal_sign',
             params: ['0xMessage', '0xAddress']
@@ -1068,6 +1073,7 @@ describe('useEvmInjectedProvider', () => {
 
         const payload = JSON.stringify({
           id: 23,
+          origin: 'https://example.com',
           request: { method: 'eth_sign', params: [] }
         })
 
@@ -1097,6 +1103,7 @@ describe('useEvmInjectedProvider', () => {
 
         const payload = JSON.stringify({
           id: 24,
+          origin: 'https://example.com',
           request: { method: 'eth_sign', params: [] }
         })
 
@@ -1330,6 +1337,7 @@ describe('useEvmInjectedProvider', () => {
 
         const payload = JSON.stringify({
           id: 300,
+          origin: 'https://example.com',
           request: { method: 'personal_sign' }
         })
 
@@ -1653,6 +1661,7 @@ describe('useEvmInjectedProvider', () => {
         result.current.handleProviderMessage(
           JSON.stringify({
             id: 99,
+            origin: 'https://uniswap.org',
             request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
           })
         )
@@ -1692,6 +1701,7 @@ describe('useEvmInjectedProvider', () => {
         result.current.handleProviderMessage(
           JSON.stringify({
             id: 99,
+            origin: 'https://uniswap.org',
             request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
           })
         )
@@ -1724,6 +1734,7 @@ describe('useEvmInjectedProvider', () => {
         result.current.handleProviderMessage(
           JSON.stringify({
             id: 99,
+            origin: 'https://uniswap.org',
             request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
           })
         )

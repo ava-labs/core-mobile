@@ -69,6 +69,13 @@ type UseEvmInjectedProviderResult = {
   emitEvent: (eventName: string, data: unknown) => void
   dappMetadata: React.RefObject<DomainMetadata | null>
   handleCommittedUrl: (url: string) => void
+  /**
+   * Call when onNavigationStateChange fires with a URL whose origin differs
+   * from the currently-committed origin. Cancels in-flight signing requests
+   * from the old origin and blocks late-registering ones so they cannot
+   * complete after the page has navigated away.
+   */
+  handleProvisionalCrossOriginNavigation: (provisionalUrl: string) => void
 }
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
@@ -129,7 +136,9 @@ export function useEvmInjectedProvider(
     }
     const hexChainId = '0x' + activeNetwork.chainId.toString(16)
     webViewRef.current?.injectJavaScript(
-      `window.__coreProviderEmit('chainChanged', '${hexChainId}'); true;`
+      `window.__coreProviderEmit('chainChanged', ${JSON.stringify(
+        hexChainId
+      )}); true;`
     )
   }, [activeNetwork, tabChainId, webViewRef])
 
@@ -167,6 +176,11 @@ export function useEvmInjectedProvider(
     (url: string) => {
       const prevUrl = currentUrlRef.current
       const prevOrigin = getOriginFromUrl(prevUrl)
+      Logger.warn(
+        `[ProviderSecurity] handleCommittedUrl: ${prevOrigin ?? 'none'} -> ${
+          getOriginFromUrl(url) ?? 'none'
+        } url=${url}`
+      )
       currentUrlRef.current = url
       const newOrigin = getOriginFromUrl(url)
 
@@ -344,7 +358,9 @@ export function useEvmInjectedProvider(
       // render later — recording it here lets that effect dedupe it. (CP-14385)
       if (eventName === 'accountsChanged')
         lastEmittedAccountsRef.current = dataJson
-      const js = `window.__coreProviderEmit('${eventName}', ${dataJson}); true;`
+      const js = `window.__coreProviderEmit(${JSON.stringify(
+        eventName
+      )}, ${dataJson}); true;`
       webViewRef.current?.injectJavaScript(js)
     },
     [webViewRef]
@@ -715,12 +731,44 @@ export function useEvmInjectedProvider(
     }
   }, [])
 
+  // Fires when onNavigationStateChange detects a provisional cross-origin
+  // navigation (before onLoad/handleCommittedUrl). Cancels in-flight signing
+  // requests from the current origin and sets liveOrigin so any signing
+  // request that registers during the provisional window is auto-aborted
+  // (matches the commit-time protection in handleCommittedUrl, but earlier).
+  // Does NOT update currentUrlRef — that remains the last committed URL until
+  // onLoad fires, preventing provisional-navigation origin spoofing.
+  const handleProvisionalCrossOriginNavigation = useCallback(
+    (provisionalUrl: string) => {
+      const provisionalOrigin = getOriginFromUrl(provisionalUrl)
+      const currentOrigin = getOriginFromUrl(currentUrlRef.current)
+      if (
+        !provisionalOrigin ||
+        !currentOrigin ||
+        provisionalOrigin === currentOrigin
+      )
+        return
+      Logger.warn(
+        `[ProviderSecurity] provisional cross-origin nav: ${currentOrigin} -> ${provisionalOrigin}`
+      )
+      routerRef.current?.cancelByOrigin(provisionalOrigin)
+      applyConnectNavEffect(
+        connectApprovalRegistry.rejectByTab(tabId, {
+          code: EIP1193_USER_REJECTED_CODE,
+          message: USER_REJECTED_REQUEST_MESSAGE
+        })
+      )
+    },
+    [tabId]
+  )
+
   return {
     providerShimJs,
     handleProviderMessage,
     handleDomainMetadata,
     emitEvent,
     dappMetadata,
-    handleCommittedUrl
+    handleCommittedUrl,
+    handleProvisionalCrossOriginNavigation
   }
 }
