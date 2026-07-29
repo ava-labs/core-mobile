@@ -4,10 +4,9 @@ import { getProvidedUtxos } from './getProvidedUtxos'
 describe('getProvidedUtxos', () => {
   const vm = PVM
 
-  it('returns empty array on error', () => {
-    const utxos = getProvidedUtxos({ utxoHexes: ['invalidHex'], vm })
-
-    expect(utxos).toEqual([])
+  it('throws on decode error (fail closed) instead of silently discarding UTXOs', () => {
+    // malformed/hostile UTXO must not be swallowed into an empty set.
+    expect(() => getProvidedUtxos({ utxoHexes: ['invalidHex'], vm })).toThrow()
   })
 
   it('returns the correct UTXOs', () => {
