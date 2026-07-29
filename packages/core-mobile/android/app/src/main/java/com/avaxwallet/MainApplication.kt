@@ -24,7 +24,11 @@ class MainApplication : Application(), ReactApplication {
             context = applicationContext,
             packageList = PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MainPackage())
+              // MainPackage exposes the SecureActivity native module used by
+              // useSecureScreen to toggle FLAG_SECURE on the recovery-phrase /
+              // private-key screens. Without this registration the module is
+              // undefined at runtime and the hook silently no-ops.
+              add(MainPackage())
             }
         )
     }
