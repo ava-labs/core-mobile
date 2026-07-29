@@ -11,6 +11,94 @@ import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
+const MAX_BTC_FEE_RATE = 10_000
+
+// Validate the shape of each UTXO A UTXO missing `script` (or with malformed numeric fields) must be rejected
+const isValidInputUtxo = (utxo: unknown): utxo is BitcoinInputUTXO => {
+  if (!utxo || typeof utxo !== 'object') return false
+  const u = utxo as Record<string, unknown>
+  return (
+    typeof u.txHash === 'string' &&
+    u.txHash.length > 0 &&
+    typeof u.script === 'string' &&
+    u.script.length > 0 &&
+    typeof u.index === 'number' &&
+    Number.isInteger(u.index) &&
+    u.index >= 0 &&
+    typeof u.value === 'number' &&
+    Number.isInteger(u.value) &&
+    u.value >= 0 &&
+    typeof u.blockHeight === 'number' &&
+    typeof u.confirmations === 'number'
+  )
+}
+
+// Rebuild the transaction for a changed fee rate 
+const rebuildTxForFeeRate = async ({
+  transactionData,
+  network,
+  account,
+  finalFeeRate
+}: {
+  transactionData: BitcoinExecuteTxData
+  network: Network
+  account: Account
+  finalFeeRate: number
+}): Promise<BtcTransactionRequest> => {
+  const { to, amount, balance } = transactionData
+
+  // Bound the (attacker/UI-influenced) fee rate before constructing a new tx.
+  if (
+    !Number.isInteger(finalFeeRate) ||
+    finalFeeRate < 0 ||
+    finalFeeRate > MAX_BTC_FEE_RATE
+  ) {
+    throw new Error('Invalid fee rate')
+  }
+
+  // Validate the UTXO set shape rather than an unchecked cast. filter with the
+  // type guard narrows to BitcoinInputUTXO[] (no cast) and lets us reject if
+  // anything was dropped.
+  const rawUtxos = balance.utxos
+  if (!Array.isArray(rawUtxos) || rawUtxos.length === 0) {
+    throw new Error('Invalid UTXO set')
+  }
+  const sourceUtxos = rawUtxos.filter(isValidInputUtxo)
+  if (sourceUtxos.length !== rawUtxos.length) {
+    throw new Error('Invalid UTXO set')
+  }
+
+  const provider = await ModuleManager.bitcoinModule.getProvider(
+    mapToVmNetwork(network)
+  )
+  const updatedTx = createTransferTx(
+    to,
+    account.addressBTC,
+    amount,
+    finalFeeRate,
+    sourceUtxos,
+    provider.getNetwork()
+  )
+
+  if (!updatedTx.inputs || !updatedTx.outputs) {
+    throw new Error('Unable to create transaction')
+  }
+
+  // The rebuilt tx must still pay the approved destination the approved amount.
+  // Reject if the recipient output drifted (only the change output may differ
+  // after a fee change).
+  const paysApprovedRecipient = updatedTx.outputs.some(
+    output => output.address === to && output.value === amount
+  )
+  if (!paysApprovedRecipient) {
+    throw new Error(
+      'Recreated transaction does not match the approved destination/amount'
+    )
+  }
+
+  return { inputs: updatedTx.inputs, outputs: updatedTx.outputs }
+}
+
 export const btcSendTransaction = async ({
   transactionData,
   network,
@@ -28,31 +116,19 @@ export const btcSendTransaction = async ({
   walletType: WalletType
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
-  const { to, amount, balance, feeRate, inputs, outputs } = transactionData
+  const { feeRate, inputs, outputs } = transactionData
 
   try {
-    let transaction: BtcTransactionRequest = { inputs, outputs }
-
     // we need to re-create the transaction when fee rate has changed
-    if (finalFeeRate !== 0 && finalFeeRate !== feeRate) {
-      const provider = await ModuleManager.bitcoinModule.getProvider(
-        mapToVmNetwork(network)
-      )
-      const updatedTx = createTransferTx(
-        to,
-        account.addressBTC,
-        amount,
-        finalFeeRate,
-        balance.utxos as BitcoinInputUTXO[],
-        provider.getNetwork()
-      )
-
-      if (!updatedTx.inputs || !updatedTx.outputs) {
-        throw new Error('Unable to create transaction')
-      }
-
-      transaction = { inputs: updatedTx.inputs, outputs: updatedTx.outputs }
-    }
+    const transaction: BtcTransactionRequest =
+      finalFeeRate !== 0 && finalFeeRate !== feeRate
+        ? await rebuildTxForFeeRate({
+            transactionData,
+            network,
+            account,
+            finalFeeRate
+          })
+        : { inputs, outputs }
 
     const signedTx = await WalletService.sign({
       walletId,
