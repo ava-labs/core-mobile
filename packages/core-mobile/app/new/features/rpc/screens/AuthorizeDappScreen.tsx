@@ -8,7 +8,10 @@ import { router } from 'expo-router'
 import { SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
 import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { ActionSheet } from 'new/common/components/ActionSheet'
-import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import {
+  assessDappTrust,
+  DappTrustLevel
+} from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { DappLogo } from 'common/components/DappLogo'
@@ -61,22 +64,31 @@ const AuthorizeDappScreen = ({
     [selectedAccounts]
   )
 
-  const isMaliciousDapp =
-    scanResponse && isSiteScanResponseMalicious(scanResponse)
+  const trust = assessDappTrust({
+    verifyContext: request.data.verifyContext,
+    metadataUrl: peerMeta.url,
+    scanResponse,
+    scanFailed
+  })
+  const hasDisplayUrl = trust.displayUrl.trim().length > 0
 
-  const alert = isMaliciousDapp
-    ? {
-        type: AlertType.DANGER,
-        message:
-          'This application has been flagged as malicious, I understand the risk.'
-      }
-    : scanFailed
-    ? {
-        type: AlertType.WARNING,
-        message:
-          'Security scan unavailable. Proceed only if you trust this dApp.'
-      }
-    : undefined
+  const alert =
+    trust.level === DappTrustLevel.MALICIOUS
+      ? {
+          type: AlertType.DANGER,
+          message: `${trust.reasons[0]} I understand the risk.`
+        }
+      : trust.level === DappTrustLevel.SUSPICIOUS
+      ? {
+          type: AlertType.DANGER,
+          message: `${trust.reasons[0]} Connect only if you trust it.`
+        }
+      : trust.level === DappTrustLevel.UNVERIFIED
+      ? {
+          type: AlertType.WARNING,
+          message: trust.reasons[0]
+        }
+      : undefined
 
   return (
     <ActionSheet
@@ -111,12 +123,26 @@ const AuthorizeDappScreen = ({
               variant="body1"
               style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
               <Text variant="body1" style={{ fontFamily: 'Inter-SemiBold' }}>
-                {peerMeta.url}
+                {hasDisplayUrl ? trust.displayUrl : 'This dApp'}
               </Text>
               {
                 ' wants to connect. This will allow the site to view your wallet address and balance, and request approval for transactions and message signatures.'
               }
             </Text>
+            {!trust.originAttested && (
+              <Text
+                variant="caption"
+                sx={{ color: '$textSecondary' }}
+                style={{
+                  textAlign: 'center',
+                  width: SCREEN_WIDTH * 0.85,
+                  marginTop: 8
+                }}>
+                {hasDisplayUrl
+                  ? 'This address is self-reported by the dApp and could not be verified.'
+                  : 'This dApp did not provide a verifiable website address.'}
+              </Text>
+            )}
           </View>
         </View>
         <SelectAccounts
