@@ -316,11 +316,13 @@ export function makeOrderActionHook(
         // the bare prefix a post-switch firing would refetch the *new*
         // account's query, whereas the scoped key only ever touches the
         // (now-inactive) query it was meant for. Note the helper refetches with
-        // `refetchType: 'all'` (see CP-14651), so a post-switch firing does
-        // issue a real `listOrders` call for the acting account rather than just
-        // marking it stale — which is the intent here: the catch-up must settle
-        // the status of the order the user acted on, whichever account is active
-        // by the time it fires. The builder lowercases the owner so this
+        // `refetchType: 'all'` (see CP-14651), so a post-switch firing issues a
+        // real `listOrders` call rather than just marking the query stale. That
+        // call always targets the acting account — the owner of the order that
+        // was cancelled/paused/resumed — and never the account that happens to
+        // be active when the timer fires. That is the intent: the catch-up has
+        // to settle the status of the order the user acted on, wherever the user
+        // has navigated to since. The builder lowercases the owner so this
         // matches the query key even though `args.address` (Markr's per-order
         // owner) may differ in checksum casing from the wallet's `addressC`.
         scheduleStaggeredInvalidate(
