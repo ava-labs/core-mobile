@@ -79,4 +79,26 @@ describe('NftProcessor.fetchImage', () => {
       NftProcessor.fetchImage('https://example.com/broken')
     ).rejects.toThrow('network down')
   })
+
+  // non-https schemes or private/loopback hosts, and must never hit the network.
+  it('refuses to fetch non-https URLs', async () => {
+    await expect(
+      NftProcessor.fetchImage('http://example.com/image.bin')
+    ).rejects.toThrow(/non-https/)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('refuses to fetch localhost', async () => {
+    await expect(
+      NftProcessor.fetchImage('https://localhost/image.bin')
+    ).rejects.toThrow(/private\/reserved/)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('refuses to fetch private IP ranges', async () => {
+    await expect(
+      NftProcessor.fetchImage('https://192.168.0.1/image.bin')
+    ).rejects.toThrow(/private\/reserved/)
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
 })

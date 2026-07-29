@@ -1,7 +1,9 @@
 import { NftContentType, NftImageData, NftItemExternalData } from './types'
-import { convertIPFSResolver } from './utils'
+import { assertSafeNftUrl, convertIPFSResolver } from './utils'
 
 const BASE64_SVG_PREFIX = 'data:image/svg+xml;base64,'
+// Cap the size of inline base64 metadata before decoding/parsing so a hostile tokenUri can't force a huge allocation / JSON.parse.
+const MAX_INLINE_METADATA_BYTES = 1_000_000
 
 export class NftProcessor {
   async fetchImage(imageData: string): Promise<NftImageData> {
@@ -14,11 +16,15 @@ export class NftProcessor {
     }
 
     const imageUrl = convertIPFSResolver(imageData)
+    // restrict the resolved URL to https public hosts before fetch.
+    assertSafeNftUrl(imageUrl)
     const type = await this.identifyByMagicNumber(imageUrl)
     return { uri: imageUrl, type }
   }
 
   private async identifyByMagicNumber(url: string): Promise<NftContentType> {
+    // guard again at the fetch site.
+    assertSafeNftUrl(url)
     const response = await fetch(url, {
       method: 'GET',
       headers: { Range: 'bytes=0-256' }
@@ -86,12 +92,20 @@ export class NftProcessor {
     const base64MetaPrefix = 'data:application/json;base64,'
     if (tokenUri.startsWith(base64MetaPrefix)) {
       const base64Metadata = tokenUri.substring(base64MetaPrefix.length)
-      const metadata = JSON.parse(
-        Buffer.from(base64Metadata, 'base64').toString()
-      )
-      return metadata as NftItemExternalData
+      if (base64Metadata.length > MAX_INLINE_METADATA_BYTES) {
+        throw new Error('[NftProcessor] inline metadata exceeds size limit')
+      }
+      try {
+        const metadata = JSON.parse(
+          Buffer.from(base64Metadata, 'base64').toString()
+        )
+        return metadata as NftItemExternalData
+      } catch {
+        throw new Error('[NftProcessor] failed to parse inline metadata')
+      }
     } else {
       const ipfsPath = convertIPFSResolver(tokenUri)
+      assertSafeNftUrl(ipfsPath)
 
       const response = await fetch(ipfsPath)
 

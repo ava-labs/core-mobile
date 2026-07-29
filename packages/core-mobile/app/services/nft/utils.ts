@@ -21,6 +21,62 @@ export const convertIPFSResolver = (url: string): string => {
   }
 }
 
+// NFT tokenUri/image URLs are attacker-controlled restrict local network / loopback 
+const PRIVATE_IPV4_PATTERNS = [
+  /^127\./, // loopback
+  /^10\./, // private
+  /^169\.254\./, // link-local
+  /^192\.168\./, // private
+  /^172\.(1[6-9]|2\d|3[0-1])\./ // private
+]
+
+const isPrivateOrReservedHost = (hostname: string): boolean => {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '')
+
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local')
+  ) {
+    return true
+  }
+
+  // IPv6 literal: block loopback, link-local (fe80::/10) and unique-local
+  // (fc00::/7) ranges.
+  if (host.includes(':')) {
+    return (
+      host === '::1' ||
+      host === '::' ||
+      host.startsWith('fe80:') ||
+      host.startsWith('fc') ||
+      host.startsWith('fd')
+    )
+  }
+
+  // IPv4 / dotted-quad
+  if (host === '0.0.0.0') return true
+  return PRIVATE_IPV4_PATTERNS.some(pattern => pattern.test(host))
+}
+
+export const assertSafeNftUrl = (rawUrl: string): void => {
+  let parsed: URL
+  try {
+    parsed = new URL(rawUrl)
+  } catch {
+    throw new Error(`[Nft] Refusing to fetch invalid URL: ${rawUrl}`)
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error(
+      `[Nft] Refusing to fetch non-https URL (scheme: ${parsed.protocol})`
+    )
+  }
+
+  if (isPrivateOrReservedHost(parsed.hostname)) {
+    throw new Error('[Nft] Refusing to fetch private/reserved host')
+  }
+}
+
 export const isNftTokenType = (
   type: TokenType | undefined
 ): type is TokenType.ERC721 | TokenType.ERC1155 => {
