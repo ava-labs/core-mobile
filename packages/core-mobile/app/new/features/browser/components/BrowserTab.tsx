@@ -30,7 +30,11 @@ import RNWebView, {
   WebViewNavigation,
   WebViewNavigationEvent
 } from 'react-native-webview'
-import { WebViewErrorEvent } from 'react-native-webview/lib/WebViewTypes'
+import {
+  FileDownloadEvent,
+  WebViewErrorEvent
+} from 'react-native-webview/lib/WebViewTypes'
+import { openInSystemBrowser } from 'utils/openInSystemBrowser'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -92,7 +96,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       providerShimJs,
       handleProviderMessage,
       handleDomainMetadata,
-      handleCommittedUrl
+      handleCommittedUrl,
+      handleProvisionalCrossOriginNavigation
     } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
@@ -123,6 +128,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       activeHistoryUrl.length > 0 ? activeHistoryUrl : ''
     )
     const [error, setError] = useState<unknown | undefined>(undefined)
+    // True while a cross-origin navigation is provisional (URL committed but new
+    // document not yet rendered). The overlay blocks interaction with the old page
+    // so its UI/buttons cannot be used while the address bar shows a different origin.
+    const [isProvisionalNavigation, setIsProvisionalNavigation] =
+      useState(false)
 
     const lastNavStateRef = useRef<{
       url: string
@@ -134,6 +144,14 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       canGoForward: false
     })
     const lastSyncedUrlRef = useRef<string>('')
+    // Ref mirror of isProvisionalNavigation state — read synchronously in native
+    // callbacks (onLoad) where the React state update from onNavigationStateChange
+    // may not have committed yet.
+    const isProvisionalNavigationRef = useRef(false)
+    // Set while we're waiting for the nav_response_verified message that
+    // confirms the cross-origin load was not a 204 No Content spoof.
+    const pendingVerificationUrlRef = useRef<string | null>(null)
+    const pendingVerificationTitleRef = useRef<string | undefined>(undefined)
     const backAttemptUrlRef = useRef<string | null>(null)
     const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null
@@ -339,6 +357,35 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       })
     }, [])
 
+    // Surfaces a URL we trust as actually-rendered to the user-facing URL bar
+    // and to the EVM provider's origin tracker. The address-bar/history sync
+    // is idempotent per URL, but the provider must be notified on every
+    // commit: a reload keeps the same URL yet creates a fresh document whose
+    // shim _accounts cache starts empty and needs re-priming.
+    const syncCommittedUrl = useCallback(
+      (url: string, title?: string): void => {
+        if (!url || url.startsWith('about:')) return
+
+        Logger.warn(`[ProviderSecurity] syncCommittedUrl: url=${url}`)
+        handleCommittedUrl(url)
+
+        if (lastSyncedUrlRef.current === url) return
+        lastSyncedUrlRef.current = url
+
+        dispatch(
+          addHistoryForActiveTab({
+            title: title ?? url,
+            url
+          })
+        )
+
+        if (!inputRef?.current?.isFocused()) {
+          setUrlEntry(url)
+        }
+      },
+      [handleCommittedUrl, dispatch, inputRef, setUrlEntry]
+    )
+
     const onMessageHandler = useCallback(
       (event: WebViewMessageEvent) => {
         try {
@@ -399,6 +446,59 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               }
               break
             }
+            case 'nav_response_verified': {
+              // Result of the post-load JavaScript verification injected when
+              // onLoad fires after a provisional cross-origin navigation (see
+              // onLoad above). Detects HTTP 204 No Content responses that
+              // update window.location without replacing the document — the
+              // mechanism behind URL-bar spoofing (APPSEC address-bar spoof).
+              const pendingUrl = pendingVerificationUrlRef.current
+              const pendingTitle = pendingVerificationTitleRef.current
+              pendingVerificationUrlRef.current = null
+              pendingVerificationTitleRef.current = undefined
+
+              if (!pendingUrl) break
+
+              let status = -1
+              let originMismatch = false
+              try {
+                const verifiedData = JSON.parse(wrapper.payload) as {
+                  status: number
+                  originMismatch: boolean
+                }
+                status = verifiedData.status
+                originMismatch = verifiedData.originMismatch
+              } catch {
+                // Malformed payload — treat conservatively (accept navigation).
+              }
+
+              isProvisionalNavigationRef.current = false
+              setIsProvisionalNavigation(false)
+
+              // 204/205 means no content was loaded (confirmed via responseStatus API,
+              // Chrome 102+). originMismatch is the fallback for older Chrome: if the
+              // navigation timing entry still points at the previous page's origin
+              // while window.location has advanced to the spoofed domain, no new
+              // document was created.
+              const isSpoof =
+                status === 204 || status === 205 || originMismatch === true
+
+              if (isSpoof) {
+                Logger.warn(
+                  `[ProviderSecurity] Blocked 204 URL-bar spoof: ${pendingUrl} status=${status} originMismatch=${originMismatch}`
+                )
+                // Do NOT update the URL bar — keep the last committed origin.
+                // Navigate back away from the spoofed URL state.
+                if (lastNavStateRef.current.canGoBack) {
+                  webViewRef.current?.goBack()
+                } else {
+                  goToDiscover()
+                }
+              } else {
+                syncCommittedUrl(pendingUrl, pendingTitle)
+              }
+              break
+            }
             default:
               break
           }
@@ -416,34 +516,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         showWalletConnectDialog,
         handleProviderMessage,
         handleDomainMetadata,
-        urlToLoad
+        urlToLoad,
+        goToDiscover,
+        syncCommittedUrl
       ]
     )
-
-    // Surfaces a URL we trust as actually-rendered to the user-facing URL bar
-    // and to the EVM provider's origin tracker. The address-bar/history sync
-    // is idempotent per URL, but the provider must be notified on every
-    // commit: a reload keeps the same URL yet creates a fresh document whose
-    // shim _accounts cache starts empty and needs re-priming.
-    const syncCommittedUrl = (url: string, title?: string): void => {
-      if (!url || url.startsWith('about:')) return
-
-      handleCommittedUrl(url)
-
-      if (lastSyncedUrlRef.current === url) return
-      lastSyncedUrlRef.current = url
-
-      dispatch(
-        addHistoryForActiveTab({
-          title: title ?? url,
-          url
-        })
-      )
-
-      if (!inputRef?.current?.isFocused()) {
-        setUrlEntry(url)
-      }
-    }
 
     const onLoad = (event: WebViewNavigationEvent): void => {
       if (
@@ -452,15 +529,62 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       )
         return
 
+      Logger.warn(`[ProviderSecurity] onLoad: url=${event.nativeEvent.url}`)
+
       if (error) {
         setError(undefined)
       }
 
-      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android) —
-      // both fire only after the navigation has rendered, so this is the
-      // single trusted point at which we surface a cross-origin URL change.
-      // iOS's HistoryShim also routes pushState/replaceState through here so
-      // SPA URL changes on iOS land here too.
+      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android).
+      // Both fire after the navigation completes — but crucially they also fire
+      // for HTTP 204 No Content responses, where the browser commits the URL
+      // change yet keeps the OLD document rendered. An attacker page can exploit
+      // this to spoof the address bar (navigate to a trusted URL that returns
+      // 204; URL bar updates but the attacker's DOM remains).
+      //
+      // When this load completed a provisional cross-origin navigation, keep the
+      // overlay up and inject JavaScript to verify that the server actually
+      // delivered a new document (responseStatus 200, not 204).  The result
+      // arrives via the 'nav_response_verified' message handler below.
+      if (isProvisionalNavigationRef.current) {
+        pendingVerificationUrlRef.current = event.nativeEvent.url
+        pendingVerificationTitleRef.current = event.nativeEvent.title
+        webViewRef.current?.injectJavaScript(`
+          (function() {
+            try {
+              var e = performance.getEntriesByType('navigation');
+              var nav = e.length ? e[e.length - 1] : null;
+              // responseStatus is Chrome 102+ — 0 means unavailable on older builds.
+              var status = nav && nav.responseStatus !== undefined ? nav.responseStatus : 0;
+              // Cross-check: if no new document was created (204), the navigation
+              // timing entry still refers to the old page's URL, while
+              // window.location has already advanced to the spoofed URL.
+              var entryUrl = nav ? nav.name : '';
+              var currentHref = window.location.href;
+              var entryOrigin = '';
+              var currentOrigin = '';
+              try { entryOrigin = new URL(entryUrl).origin; } catch(_e) {}
+              try { currentOrigin = new URL(currentHref).origin; } catch(_e) {}
+              var originMismatch = entryOrigin.length > 0 && currentOrigin.length > 0 && entryOrigin !== currentOrigin;
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                method: 'nav_response_verified',
+                payload: JSON.stringify({ status: status, originMismatch: originMismatch })
+              }));
+            } catch (err) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                method: 'nav_response_verified',
+                payload: JSON.stringify({ status: -1, originMismatch: false })
+              }));
+            }
+          })();
+          true;
+        `)
+        return
+      }
+
+      setIsProvisionalNavigation(false)
+
+      // SPA URL changes on iOS land here too (routed through the HistoryShim).
       syncCommittedUrl(event.nativeEvent.url, event.nativeEvent.title)
     }
 
@@ -474,9 +598,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         canGoForward: navState.canGoForward
       }
 
-      if (!navState.loading) {
-        setCurrentUrl(navState.url ?? '')
-      }
+      const nextUrl = navState.url ?? ''
 
       // Only sync same-origin URL changes from this event — it fires off iOS
       // WKWebView's provisional navigation and Android's
@@ -496,6 +618,30 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         })
       ) {
         syncCommittedUrl(nextUrl, navState.title)
+      } else if (nextUrl && lastSyncedUrlRef.current) {
+        // Provisional cross-origin navigation: cancel in-flight signing requests
+        // from the current committed origin and block late-registering ones.
+        // The URL bar is intentionally NOT updated here — it stays on the
+        // committed origin until onLoad fires, preventing provisional-navigation
+        // address-bar spoofing (the exact timing attack the PoC exploits).
+        try {
+          const nextOrigin = new URL(nextUrl).origin
+          const lastOrigin = new URL(lastSyncedUrlRef.current).origin
+          if (
+            nextOrigin !== 'null' &&
+            lastOrigin !== 'null' &&
+            nextOrigin !== lastOrigin
+          ) {
+            Logger.warn(
+              `[ProviderSecurity] onNavigationStateChange: provisional cross-origin ${lastOrigin} -> ${nextOrigin}`
+            )
+            handleProvisionalCrossOriginNavigation(nextUrl)
+            isProvisionalNavigationRef.current = true
+            setIsProvisionalNavigation(true)
+          }
+        } catch {
+          // Malformed URL — ignore
+        }
       }
 
       // Cancel pending "no-op back" fallback only when the URL actually changes.
@@ -527,6 +673,14 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     const onError = (event: WebViewErrorEvent): void => {
+      Logger.warn(
+        `[ProviderSecurity] onError: navigation failed url=${event.nativeEvent.url} desc=${event.nativeEvent.description}`
+      )
+      // Clear any in-flight 204-verification so the overlay doesn't get stuck.
+      pendingVerificationUrlRef.current = null
+      pendingVerificationTitleRef.current = undefined
+      isProvisionalNavigationRef.current = false
+
       // Fallback: unknown schemes can sometimes reach `onError` without triggering
       // `onShouldStartLoadWithRequest` (depending on redirect/navigation type).
       const failedUrl = event.nativeEvent.url ?? ''
@@ -563,6 +717,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         return
       }
 
+      setIsProvisionalNavigation(false)
       progress.value = 0
       setError(event.nativeEvent)
     }
@@ -590,6 +745,44 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       [disabled, setPendingDeepLink]
     )
 
+    // Fires when the native layer cancels rendering of a response served as an
+    // attachment (`Content-Disposition: attachment`) or with a non-displayable
+    // `Content-Type` (e.g. `application/octet-stream`). Sites that host
+    // user-uploaded files set these headers precisely so browsers DOWNLOAD the
+    // file instead of executing it; rendering such a response inside the WebView
+    // would give an attacker script execution in the host site's origin (UXSS —
+    // e.g. requesting signatures/transactions as if from the trusted dApp).
+    //
+    // Registering this handler is also what makes the native
+    // `decidePolicyForNavigationResponse` cancel the render at all: without an
+    // `onFileDownload` callback the fork falls through to
+    // `WKNavigationResponsePolicyAllow` and renders the attachment. We never
+    // render it — instead we hand the URL to the system browser, which
+    // downloads it safely outside our origin.
+    const onFileDownload = useCallback(
+      ({ nativeEvent: { downloadUrl } }: FileDownloadEvent): void => {
+        Logger.warn(
+          `[ProviderSecurity] Blocked in-webview render of downloadable response: ${downloadUrl}`
+        )
+        if (!isValidHttpUrl(downloadUrl)) return
+        showAlert({
+          title: 'Download detected',
+          description:
+            'This link points to a file that cannot be displayed safely in the in-app browser. Open it in your default browser to download it?',
+          buttons: [
+            { text: 'Cancel' },
+            {
+              text: 'Open',
+              onPress: () => {
+                openInSystemBrowser(downloadUrl)
+              }
+            }
+          ]
+        })
+      },
+      []
+    )
+
     const renderLoading = (): JSX.Element => {
       return (
         <LoadingState
@@ -610,6 +803,21 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     return (
       <View style={{ flex: 1 }}>
         {/* Main content */}
+        {isProvisionalNavigation && !error && !!urlToLoad?.length && (
+          <LoadingState
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10,
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+              backgroundColor: theme.colors.$surfacePrimary
+            }}
+          />
+        )}
         {error ? (
           <ErrorState
             sx={{ flex: 1, paddingTop: insets.top, backgroundColor }}
@@ -670,6 +878,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             }}
             onLoadProgress={onProgress}
             onError={onError}
+            onFileDownload={onFileDownload}
           />
         )}
       </View>
