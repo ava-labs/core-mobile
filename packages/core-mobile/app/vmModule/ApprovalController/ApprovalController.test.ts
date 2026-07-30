@@ -1321,6 +1321,121 @@ describe('ApprovalController', () => {
         expect.objectContaining({ pathname: '/approval' })
       )
     })
+
+    // avalanche_signMessage's signer is resolved from LIVE state at approval
+    // time, so the request-time gate (in handleRequestViaVMModule) can be
+    // outrun by a mid-flight account/wallet switch. ApprovalController re-checks
+    // the account that is actually about to sign. CP-14604.
+    describe('avalanche_signMessage approval-time recheck (TOCTOU)', () => {
+      const X = AvalancheCaip2ChainId.X
+      const GRANTED_AVM = 'X-fuji1granted00000000000000000000000000000'
+      const UNGRANTED_AVM = 'X-fuji1ungranted000000000000000000000000000'
+
+      const avmAccount = (addressAVM: string): never =>
+        ({
+          addressC: '0xc0000000000000000000000000000000000000c0',
+          addressBTC: 'bc1qbtc',
+          addressCoreEth: '0xcoreeth',
+          addressAVM,
+          index: 1
+        } as never)
+
+      const avaxSessionGranting = (addressAVM: string): never =>
+        ({
+          namespaces: {
+            avax: {
+              accounts: [`${X}:${addressAVM}`],
+              methods: ['avalanche_signMessage'],
+              events: []
+            }
+          }
+        } as never)
+
+      const signMessageSigningData = {
+        type: RpcMethod.AVALANCHE_SIGN_MESSAGE,
+        data: 'deadbeef',
+        accountIndex: 1
+      } as never
+
+      const captureOnApprove = (): ((params: unknown) => Promise<void>) =>
+        mockWalletConnectCacheSet.mock.calls[
+          mockWalletConnectCacheSet.mock.calls.length - 1
+        ][0].onApprove
+
+      it('rejects at approval time when the live signer is not granted', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        // getAddressForChainId is mocked in this suite — resolve the live
+        // signer to its (ungranted) X-chain address so real grant matching runs
+        mockGetAddressForChainId.mockReturnValue(UNGRANTED_AVM)
+
+        const resultPromise = approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        // user switched to an ungranted account before tapping Approve
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(UNGRANTED_AVM)
+        })
+
+        const result = await resultPromise
+        expect('error' in result && result.error).toMatchObject({
+          message: 'Requested address is not authorized'
+        })
+        expect(mockOnApprove).not.toHaveBeenCalled()
+      })
+
+      it('signs when the live signer is granted', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        mockGetAddressForChainId.mockReturnValue(GRANTED_AVM)
+
+        approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(GRANTED_AVM)
+        })
+
+        expect(mockOnApprove).toHaveBeenCalledWith(
+          expect.objectContaining({ signingData: signMessageSigningData })
+        )
+      })
+
+      it('fails closed when the session is gone by approval time', async () => {
+        mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
+        mockGetAddressForChainId.mockReturnValue(GRANTED_AVM)
+
+        const resultPromise = approvalController.requestApproval({
+          request: makeDappRequest(RpcMethod.AVALANCHE_SIGN_MESSAGE, X),
+          displayData,
+          signingData: signMessageSigningData
+        })
+        await flushMicrotasks()
+
+        mockGetSession.mockReturnValue(undefined) // dropped mid-flight
+        await captureOnApprove()({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          account: avmAccount(GRANTED_AVM)
+        })
+
+        const result = await resultPromise
+        expect('error' in result && result.error).toMatchObject({
+          message: 'Requested address is not authorized'
+        })
+        expect(mockOnApprove).not.toHaveBeenCalled()
+      })
+    })
   })
 
   // ── requestApproval ───────────────────────────────────────────────────────

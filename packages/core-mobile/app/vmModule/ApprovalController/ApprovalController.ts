@@ -7,7 +7,8 @@ import {
   BatchApprovalParams,
   BatchApprovalResponse,
   RpcRequest,
-  RequestPublicKeyParams
+  RequestPublicKeyParams,
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
@@ -35,7 +36,10 @@ import { ledgerParamsStore } from 'features/ledger/store'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { providerErrors } from '@metamask/rpc-errors'
-import { isAddressApproved } from 'store/rpc/utils/isAccountApproved/isAccountApproved'
+import {
+  isAddressApproved,
+  isAccountApproved
+} from 'store/rpc/utils/isAccountApproved/isAccountApproved'
 import { WalletType } from 'services/wallet/types'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
@@ -355,6 +359,19 @@ class ApprovalController implements VmModuleApprovalController {
     this.activeApprovals.delete(requestId)
   }
 
+  // WalletConnect session for a request's topic, or undefined. getSession throws
+  // while the WC client is still initializing (and returns undefined for an
+  // unknown/expired topic); both collapse to undefined so callers fail closed.
+  private getSessionOrUndefined(
+    sessionId: string
+  ): ReturnType<typeof WalletConnectService.getSession> {
+    try {
+      return WalletConnectService.getSession(sessionId)
+    } catch {
+      return undefined
+    }
+  }
+
   // Cancel a parked approval whose request was aborted. Runs the REAL reject so
   // the orphaned promise settles and Ledger BLE + store are torn down; once
   // on-device Ledger signing has begun (`ledgerSigning`) the cancel is a no-op.
@@ -507,6 +524,33 @@ class ApprovalController implements VmModuleApprovalController {
     // up; a late Approve tap must not sign/broadcast. (CP-14422)
     if (this.userCancelledMap.get(requestId)) return
 
+    // avalanche_signMessage picks its signer from LIVE state at approval time
+    // (getAccountSelector → active account or dApp-supplied index), so re-verify
+    // the account that is actually about to sign against the WC session grant.
+    // The request-time gate in handleRequestViaVMModule checks dispatch-time
+    // state and can be outrun by a mid-flight account/wallet switch; every other
+    // method pins its signer as signingData.account (already grant-checked in
+    // requestApproval). In-app requests keep their own gating; fails closed on a
+    // missing session. CP-14604.
+    if (
+      signingData.type === RpcMethod.AVALANCHE_SIGN_MESSAGE &&
+      !isInAppRequest(request)
+    ) {
+      const session = this.getSessionOrUndefined(request.sessionId)
+      if (
+        !session ||
+        !isAccountApproved(params.account, request.chainId, session.namespaces)
+      ) {
+        this.clearCancelBridge(requestId)
+        resolve({
+          error: providerErrors.unauthorized(
+            'Requested address is not authorized'
+          )
+        })
+        return
+      }
+    }
+
     // Cache the actual selected signer so onTransactionConfirmed /
     // onTransactionReverted emit the real address for dApp txs — including
     // the injected browser (which the !isInAppRequest gate excluded,
@@ -548,20 +592,16 @@ class ApprovalController implements VmModuleApprovalController {
     // address that would sign. In-app and injected-browser requests
     // (CORE_MOBILE_TOPIC) are excluded: they keep their own account gating,
     // and getSession would throw while the WC client is still initializing.
-    // Avalanche signingData variants carry no `account` and are knowingly not
-    // checked: the avax namespace is only ever granted to Core-domain dApps,
-    // and those methods always sign with the active account the user sees.
+    // Avalanche signingData variants carry no `account`, so they aren't checked
+    // here: AVALANCHE_SEND/SIGN_TRANSACTION sign with the server-injected active
+    // account (getContext in handleRequestViaVMModule), and avalanche_signMessage
+    // — the one method whose signer is a dApp-supplied account index — is grant-
+    // checked upstream in handleRequestViaVMModule (isAvalancheSignMessageAuthorized).
     // Fails closed: a request with no live session (deleted/expired mid-flight,
     // or WC uninitialized) has no grants to check against, so it's rejected —
     // its response is undeliverable anyway.
     if ('account' in signingData && !isInAppRequest(request)) {
-      const session = (() => {
-        try {
-          return WalletConnectService.getSession(request.sessionId)
-        } catch {
-          return undefined
-        }
-      })()
+      const session = this.getSessionOrUndefined(request.sessionId)
       if (
         !session ||
         !isAddressApproved(
