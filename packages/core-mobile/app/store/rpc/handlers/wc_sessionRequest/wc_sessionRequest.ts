@@ -25,6 +25,7 @@ import {
 import {
   CoreAccountAddresses,
   getAddressForChainId,
+  getScanUrl,
   isVerifiedCoreDomain,
   VerifyContext,
   isCoreMethod,
@@ -209,8 +210,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const state = listenerApi.getState()
     const { params } = request.data
     const { proposer, requiredNamespaces, optionalNamespaces } = params
-    const dappUrl = proposer.metadata.url
     const isCoreApp = isVerifiedCoreDomain(request.data.verifyContext)
+    // Scan the origin WalletConnect actually attested (verifyContext), not the
+    // self-declared metadata.url, which a malicious peer can spoof to a benign
+    // site to blind Blockaid's malicious-site detection.
+    const dappUrl = getScanUrl(
+      request.data.verifyContext,
+      proposer.metadata.url
+    )
 
     const normalizedRequired = normalizeNamespaces(requiredNamespaces)
     const normalizedOptional = normalizeNamespaces(

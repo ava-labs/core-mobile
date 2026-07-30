@@ -5,15 +5,16 @@ import Logger from 'utils/Logger'
 
 type WalletConnectKey = keyof typeof walletConnectCache
 
-type CacheEntry<K extends WalletConnectKey> = (typeof walletConnectCache)[K]
+type CacheEntry<K extends WalletConnectKey> = typeof walletConnectCache[K]
 
 // Distinguish singleton caches (get()) from keyed caches (get(id))
 type IsKeyedCache<C> = C extends { get: (id: string) => unknown } ? true : false
 
-type InferParamType<K extends WalletConnectKey> =
-  IsKeyedCache<CacheEntry<K>> extends true
-    ? ReturnType<(typeof walletConnectCache)[K]['get']>
-    : ReturnType<(typeof walletConnectCache)[K]['get']>
+type InferParamType<K extends WalletConnectKey> = IsKeyedCache<
+  CacheEntry<K>
+> extends true
+  ? ReturnType<typeof walletConnectCache[K]['get']>
+  : ReturnType<typeof walletConnectCache[K]['get']>
 
 export function withWalletConnectCache<K extends WalletConnectKey>(
   key: K,
@@ -47,7 +48,7 @@ export function withWalletConnectCache<K extends WalletConnectKey>(
         } catch (err) {
           Logger.error('Error getting wallet connect cache', err)
         }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [])
 
       if (!params) return null

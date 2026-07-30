@@ -359,7 +359,10 @@ describe('session_request handler', () => {
     })
 
     it('should not add non-EVM namespaces when metadata.url is spoofed (UNKNOWN validation)', async () => {
-      const testRequest = createRequest(validRequiredNamespaces, 'https://core.app')
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app'
+      )
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
@@ -389,6 +392,55 @@ describe('session_request handler', () => {
           ...testNamespacesToApprove,
           ...testNonEVMNamespacesToApprove
         }
+      })
+
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
+    it('should scan the attested origin, not the spoofed metadata.url', async () => {
+      mockIsBlockaidDappScanBlocked.mockReturnValue(false)
+
+      // dApp declares metadata.url = core.app (benign) but WalletConnect Verify
+      // attests the real origin is evil.com. The scan must target evil.com.
+      const spoofedVerifyContext: TestVerifyContext = {
+        verified: {
+          origin: 'https://evil.com',
+          validation: 'INVALID',
+          verifyUrl: 'https://verify.walletconnect.com'
+        }
+      }
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app',
+        spoofedVerifyContext
+      )
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(utils.scanAndNavigateToSessionProposal).toHaveBeenCalledWith({
+        dappUrl: 'https://evil.com',
+        request: testRequest,
+        namespaces: testNamespacesToApprove
+      })
+
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
+    it('should fall back to metadata.url for the scan when Verify provides no origin', async () => {
+      mockIsBlockaidDappScanBlocked.mockReturnValue(false)
+
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://traderjoe.xyz',
+        unknownVerifyContext
+      )
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(utils.scanAndNavigateToSessionProposal).toHaveBeenCalledWith({
+        dappUrl: 'https://traderjoe.xyz',
+        request: testRequest,
+        namespaces: testNamespacesToApprove
       })
 
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
@@ -486,7 +538,10 @@ describe('session_request handler', () => {
         }
       ]
 
-      const testRequest = createRequest(validRequiredNamespaces, 'https://core.app')
+      const testRequest = createRequest(
+        validRequiredNamespaces,
+        'https://core.app'
+      )
 
       const result = await handler.approve({
         request: testRequest,
