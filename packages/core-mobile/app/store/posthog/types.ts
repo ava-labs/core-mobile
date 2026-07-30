@@ -63,7 +63,11 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.DELEGATION_FEE_ENABLED]: false,
   // CP-13903 kill-switch. `false` = feature fully off: balance requests keep
   // dust, tx building keeps dust, Settings row hidden.
-  [FeatureGates.FILTER_SMALL_UTXOS]: false
+  [FeatureGates.FILTER_SMALL_UTXOS]: false,
+  // Hyperliquid networks kill-switch. HyperEVM/HyperCore are stripped from the
+  // network list unless this gate AND FeatureGates.EVERYTHING are both enabled
+  // (see selectIsHyperliquidSupportBlocked).
+  [FeatureGates.HYPERLIQUID_SUPPORT]: false
 }
 
 export const initialState = {

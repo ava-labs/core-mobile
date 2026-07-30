@@ -56,7 +56,8 @@ export const usePerpsPositionActions = (): {
   updateLeverage: (
     coin: string,
     leverage: number,
-    isCross: boolean
+    isCross: boolean,
+    successMessage?: string
   ) => Promise<boolean>
   updateIsolatedMargin: (coin: string, usd: number) => Promise<boolean>
   updatePositionTpSl: (params: UpdatePositionTpSlParams) => Promise<boolean>
@@ -182,7 +183,8 @@ export const usePerpsPositionActions = (): {
     async (
       coin: string,
       leverage: number,
-      isCross: boolean
+      isCross: boolean,
+      successMessage = 'Leverage updated'
     ): Promise<boolean> => {
       if (!isManagerTradable(manager)) {
         showSnackbar('Connect a wallet to trade')
@@ -191,7 +193,7 @@ export const usePerpsPositionActions = (): {
       setBusy(true)
       try {
         await manager.updateLeverage({ coin, leverage, isCross })
-        showSnackbar('Leverage updated')
+        showSnackbar(successMessage)
         refreshAfterTrade()
         return true
       } catch (e) {

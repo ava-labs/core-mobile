@@ -4,6 +4,9 @@
 jest.mock('./usePerpsClearinghouse', () => ({
   usePerpsClearinghouse: () => ({ withdrawableUsd: undefined })
 }))
+jest.mock('./usePerpsActiveAssetData', () => ({
+  usePerpsActiveAssetData: () => ({ leverageType: undefined })
+}))
 
 import { resolveSeededPlaceOrderProps } from './useSeededPlaceOrderProps'
 

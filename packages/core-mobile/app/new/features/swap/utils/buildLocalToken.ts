@@ -23,6 +23,12 @@ const resolveDecimals = (
   return DEFAULT_TOKEN_DECIMALS
 }
 
+// Hypercore spot tokens carry no EVM address, hence the `in` guard.
+const getBalanceDataAddress = (
+  balanceData: LocalTokenWithBalance | undefined
+): string | undefined =>
+  balanceData && 'address' in balanceData ? balanceData.address : undefined
+
 export const buildLocalToken = ({
   accountTokens,
   tokenInfo,
@@ -60,7 +66,7 @@ export const buildLocalToken = ({
 
   const address = isNative
     ? ''
-    : balanceData?.address ?? tokenInfo.platforms?.[caip2Id] ?? ''
+    : getBalanceDataAddress(balanceData) ?? tokenInfo.platforms?.[caip2Id] ?? ''
 
   // NATIVE_DECIMALS keys AVAX at 18 (C-Chain), but native AVAX on P/X-Chain is
   // 9-decimal nAVAX. Override so balances/amounts render at the chain's actual

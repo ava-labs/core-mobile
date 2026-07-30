@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import {
   DURATION_OPTIONS_FUJI,
   DURATION_OPTIONS_MAINNET,
+  DurationOption,
   StakeDurationFormat,
   StakeDurationTitle
 } from 'services/earn/getStakeEndDate'
@@ -22,18 +23,36 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 export const DurationOptions = ({
   selectedIndex,
   onSelectDuration,
-  customEndDate
+  customEndDate,
+  durations: durationsProp,
+  maxNumberOfDays
 }: {
   selectedIndex?: number
   onSelectDuration: (selectedIndex: number) => void
   customEndDate?: Date
+  /**
+   * Overrides the default preset list — the delegate flow passes its
+   * node-aware list (1 Year swapped for Node max, see `withNodeMaxOption`,
+   * re-sorted by days). Must keep the default lists' LENGTH with Custom last,
+   * so `getCustomDurationIndex` stays valid; day-option positions may differ.
+   */
+  durations?: DurationOption[]
+  /**
+   * Disables day-based presets longer than this (the delegate flow passes
+   * the days until the selected node's end time, so presets the node can't
+   * cover read as unavailable instead of failing on Next). Custom stays
+   * enabled — its picker is capped separately.
+   */
+  maxNumberOfDays?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const durations = useMemo(
-    () => (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
-    [isDeveloperMode]
+    () =>
+      durationsProp ??
+      (isDeveloperMode ? DURATION_OPTIONS_FUJI : DURATION_OPTIONS_MAINNET),
+    [durationsProp, isDeveloperMode]
   )
   const rows = useMemo(() => {
     const chunks = []
@@ -66,11 +85,20 @@ export const DurationOptions = ({
             const globalIndex = rowIndex * 3 + index
             const isSelected = globalIndex === selectedIndex
             const selectedTheme = isSelected ? inversedTheme : theme
+            // Node Max is exempt: it ends at the node's exact end time so it
+            // always fits, even when its rounded day label exceeds the
+            // conservative `maxNumberOfDays` cap.
+            const isDisabled =
+              maxNumberOfDays !== undefined &&
+              'numberOfDays' in item &&
+              item.title !== StakeDurationTitle.NODE_MAX &&
+              item.numberOfDays > maxNumberOfDays
 
             return (
               <TouchableOpacity
                 key={item.title}
-                style={{ flex: 1 }}
+                style={{ flex: 1, opacity: isDisabled ? 0.4 : 1 }}
+                disabled={isDisabled}
                 onPress={() => onSelectDuration(globalIndex)}>
                 <View
                   sx={{

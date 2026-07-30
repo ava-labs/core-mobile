@@ -1,4 +1,5 @@
 import { QUICK_SWAPS_DEFAULT } from '../settings/advanced/types'
+import { DEFAULT_LANGUAGE } from '../settings/language/types'
 import { migrations } from './schemaMigrations'
 
 describe('migration 29 — quickSwaps default-fill', () => {
@@ -31,5 +32,37 @@ describe('migration 30 — filterSmallUtxos default-fill', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const after = (migrations as any)[30](before)
     expect(after.settings.advanced.filterSmallUtxos).toBe(false)
+  })
+})
+
+describe('migration 31 — language default-fill', () => {
+  it('fills settings.language.selected with en-US when missing', () => {
+    const before = { settings: { advanced: { developerMode: false } } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31](before)
+    expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
+    // untouched siblings survive
+    expect(after.settings.advanced.developerMode).toBe(false)
+  })
+
+  it('preserves an existing selected language', () => {
+    const before = { settings: { language: { selected: 'ja-JP' } } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31](before)
+    expect(after.settings.language.selected).toBe('ja-JP')
+  })
+
+  it('fills language for a very old state with no settings at all', () => {
+    // relies on the source's `state.settings?.language?.selected` optional chain
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31]({})
+    expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
+  })
+
+  it('clamps an unsupported/corrupt persisted code back to the default', () => {
+    const before = { settings: { language: { selected: 'xx-ZZ' } } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const after = (migrations as any)[31](before)
+    expect(after.settings.language.selected).toBe(DEFAULT_LANGUAGE)
   })
 })

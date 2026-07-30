@@ -14,6 +14,7 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
+import { initI18n } from 'i18n'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 import { setupDeBankCaching } from './app/utils/setupDeBankCaching'
@@ -85,6 +86,19 @@ FCMService.listenForMessagesBackground()
 // PRESS events for notifications displayed by notifee (data-only Android push).
 NotificationsService.registerBackgroundNotificationHandler()
 
+// If init rejects, registerComponent below still mounts the tree against an
+// uninitialized i18n. Capture via SentryService directly (not just Logger):
+// SentryService.init() has already run above, whereas Logger only forwards to
+// Sentry after shouldLogErrorToSentry is armed later — so a cold-start i18n
+// failure would otherwise reach Sentry nowhere in release.
+initI18n().catch(err => {
+  const message = '[i18n] init failed'
+  Logger.error(message, err)
+  SentryService.captureException(message, {
+    value: err,
+    tags: { errorId: 'i18n_init_failed' }
+  })
+})
 AppRegistry.registerComponent(expo.name, () => AppEntryPoint)
 
 if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {

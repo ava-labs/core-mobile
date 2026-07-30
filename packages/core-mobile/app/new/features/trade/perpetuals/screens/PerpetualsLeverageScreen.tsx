@@ -12,11 +12,24 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   const router = useRouter()
   const { formatCurrency } = useFormatCurrency()
 
-  const { coin, side, entryPrice, maxLeverage, leverage, setLeverage } =
-    usePlaceOrder()
+  // `universe` comes from the shared context (fed by the layout's single
+  // market subscription) so this sheet doesn't open its own WebSocket.
+  const {
+    coin,
+    side,
+    entryPrice,
+    maxLeverage,
+    leverage,
+    setLeverage,
+    marginMode,
+    universe
+  } = usePlaceOrder()
   const { updateLeverage, busy } = usePerpsPositionActions()
-  const { leverage: hlLeverage, refetch: refetchLeverage } =
-    usePerpsActiveAssetData(coin)
+  const {
+    leverage: hlLeverage,
+    leverageType,
+    refetch: refetchLeverage
+  } = usePerpsActiveAssetData(coin)
 
   // Local draft so gauge edits don't mutate the order until confirmed.
   const [draftLeverage, setDraftLeverage] = useState(leverage)
@@ -48,7 +61,10 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   // succeeds, read the leverage back from HL so local state reflects the
   // actual on-chain value rather than assuming the draft was applied.
   const handleConfirm = useCallback(async () => {
-    const ok = await updateLeverage(coin, draftLeverage, true)
+    // Preserve the user's margin mode — HL's updateLeverage sets cross vs
+    // isolated via this flag, so `true` here would silently flip an isolated
+    // user back to cross.
+    const ok = await updateLeverage(coin, draftLeverage, marginMode === 'cross')
     if (!ok) {
       return
     }
@@ -58,6 +74,7 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
   }, [
     coin,
     draftLeverage,
+    marginMode,
     updateLeverage,
     refetchLeverage,
     setLeverage,
@@ -84,12 +101,21 @@ export const PerpetualsLeverageScreen = (): JSX.Element => {
         type="primary"
         size="large"
         testID="perpetuals_leverage_done"
-        disabled={isUnchanged || busy}
+        // Also gate on the per-coin data + universe (same as the margin
+        // sheet): `marginMode` is mirrored from them into the context by the
+        // index screen, so before they resolve a commit would send the
+        // unseeded 'cross' default — silently flipping an isolated user.
+        disabled={
+          isUnchanged ||
+          busy ||
+          leverageType === undefined ||
+          universe === undefined
+        }
         onPress={handleConfirm}>
         Done
       </Button>
     ),
-    [handleConfirm, isUnchanged, busy]
+    [handleConfirm, isUnchanged, busy, leverageType, universe]
   )
 
   return (

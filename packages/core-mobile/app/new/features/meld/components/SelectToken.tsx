@@ -126,6 +126,7 @@ export const SelectToken = ({
     <ScrollScreen
       title={title}
       isModal
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16, flexGrow: 1 }}>
       <Space y={16} />
       {isLoadingCryptoCurrencies ? (

@@ -28,6 +28,7 @@ export const ScanQrCode = ({
     <ScrollScreen
       title="Scan QR code"
       subtitle="Open any authenticator app and scan the QR code below or enter the code manually"
+      disableHeaderSnap
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View

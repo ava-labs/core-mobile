@@ -1,3 +1,4 @@
+import { PChainTransactionType } from '@avalabs/glacier-sdk'
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -60,6 +61,10 @@ export const TokenActivityListItem: FC<Props> = ({
 
         return PriceChangeStatus.Up
       }
+      case PChainTransactionType.IMPORT_TX:
+        return PriceChangeStatus.Up
+      case PChainTransactionType.EXPORT_TX:
+        return PriceChangeStatus.Down
       default: {
         if (isCollectibleTransaction(tx)) {
           return PriceChangeStatus.Neutral

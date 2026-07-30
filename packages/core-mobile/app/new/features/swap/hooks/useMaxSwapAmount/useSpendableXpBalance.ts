@@ -28,6 +28,10 @@ import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
  *   balance in that case, or Max can exceed the spendable set)
  * - `isSpendableBalanceRequired` — true when the source token is native X/P
  *   AVAX and the small-UTXO filter is active
+ * - `hasSpendableBalanceError` — true when the query has settled in error
+ *   (retries exhausted, no refetch in flight). The undefined balance is then
+ *   terminal, not "still loading" — the UI hides Max instead of keeping it
+ *   disabled forever.
  */
 export const useSpendableXpBalance = ({
   fromToken,
@@ -38,6 +42,7 @@ export const useSpendableXpBalance = ({
 }): {
   spendableBalance: bigint | undefined
   isSpendableBalanceRequired: boolean
+  hasSpendableBalanceError: boolean
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const filterSmallUtxos = useSelector(selectIsFilterSmallUtxosActive)
@@ -70,7 +75,7 @@ export const useSpendableXpBalance = ({
     xpAddresses.length > 0 &&
     (chain !== 'P' || feeState !== undefined)
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError } = useQuery({
     // chain and isTestnet are derived from chainId, and account identity is
     // its id — the key below fully determines the fetch inputs.
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -104,6 +109,9 @@ export const useSpendableXpBalance = ({
     // must never re-enable Max after UTXOs moved. Max stays disabled until
     // the current fetch lands.
     spendableBalance: isFetching ? undefined : data,
-    isSpendableBalanceRequired
+    isSpendableBalanceRequired,
+    // Masked while a refetch is in flight — a retry underway means the
+    // undefined balance may still resolve, so it's a loading state again.
+    hasSpendableBalanceError: isError && !isFetching
   }
 }

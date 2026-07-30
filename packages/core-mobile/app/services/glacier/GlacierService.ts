@@ -1,13 +1,20 @@
 import {
+  CChainExportTransaction,
+  CChainImportTransaction,
   Erc1155Token,
   Erc721Token,
   Glacier,
   ListAddressChainsResponse,
-  ListValidatorDetailsResponse
+  ListValidatorDetailsResponse,
+  ListCChainAtomicTransactionsResponse,
+  BlockchainId,
+  Network,
+  SortOrder
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { CORE_HEADERS } from 'utils/api/constants'
+import { getCoreAuthHeaders } from 'utils/api/common/getCoreAuthHeaders'
 import { GlacierFetchHttpRequest } from './GlacierFetchHttpRequest'
 
 /**
@@ -30,7 +37,12 @@ class GlacierService {
   private glacierSdk = new Glacier(
     {
       BASE: Config.GLACIER_URL,
-      HEADERS: CORE_HEADERS
+      // Resolved per request: the Glacier proxy (core-proxy-api) requires an
+      // AppCheck token (or Core API key) on every call.
+      HEADERS: async () => ({
+        ...CORE_HEADERS,
+        ...(await getCoreAuthHeaders())
+      })
     },
     GlacierFetchHttpRequest
   )
@@ -119,6 +131,52 @@ class GlacierService {
     params: ListPrimaryNetworkValidatorsParams
   ): Promise<ListValidatorDetailsResponse> {
     return this.glacierSdk.primaryNetwork.listValidators(params)
+  }
+
+  /**
+   * Lists C-Chain atomic (import/export) transactions for an address. These
+   * live on Glacier's primary-network endpoint and are NOT returned by the
+   * regular EVM `listTransactions` used by the EVM module — hence they are
+   * missing from C-Chain activity unless fetched separately (CP-14760).
+   *
+   * `address` must be the 0x C-Chain EVM address; the endpoint accepts 0x
+   * addresses for C-Chain atomic lookups.
+   */
+  async listCChainAtomicTransactions({
+    address,
+    isTestnet,
+    pageSize = 100
+  }: {
+    address: string
+    isTestnet: boolean
+    pageSize?: number
+  }): Promise<ListCChainAtomicTransactionsResponse> {
+    const response =
+      await this.glacierSdk.primaryNetworkTransactions.listLatestPrimaryNetworkTransactions(
+        {
+          blockchainId: BlockchainId.C_CHAIN,
+          network: isTestnet ? Network.FUJI : Network.MAINNET,
+          addresses: address,
+          pageSize,
+          sortOrder: SortOrder.DESC
+        }
+      )
+    const atomic = response as ListCChainAtomicTransactionsResponse
+
+    // The primary-network endpoint is typed as a union over P/X/C-Chain
+    // responses; for `blockchainId: c-chain` it only ever serves C-Chain
+    // atomic (import/export) txs. Narrow to those explicitly so the cast is
+    // honest and any unexpected txType can't slip through and be rendered as a
+    // mislabelled import row downstream (convertCChainAtomicTransaction treats
+    // anything that isn't ExportTx as an import).
+    return {
+      ...atomic,
+      transactions: atomic.transactions.filter(
+        tx =>
+          tx.txType === CChainExportTransaction.txType.EXPORT_TX ||
+          tx.txType === CChainImportTransaction.txType.IMPORT_TX
+      )
+    }
   }
 }
 

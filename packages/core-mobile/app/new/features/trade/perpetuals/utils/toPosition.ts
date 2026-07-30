@@ -189,6 +189,7 @@ export const toPosition = (
     symbol: tickerOfCoin(position.coin),
     side,
     leverage: position.leverage.value,
+    marginMode: position.leverage.type,
     size,
     price: markPrice,
     pnl,

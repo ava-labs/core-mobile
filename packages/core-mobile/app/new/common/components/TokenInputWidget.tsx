@@ -24,9 +24,8 @@ import React, {
 } from 'react'
 import Animated, {
   Easing,
-  FadeIn,
-  FadeOut,
-  LinearTransition
+  LinearTransition,
+  ZoomIn
 } from 'react-native-reanimated'
 import { getNetworkLongDisplayName } from 'common/utils/getNetworkDisplayName'
 import { LogoWithNetwork } from './LogoWithNetwork'
@@ -36,10 +35,25 @@ export type TokenInputWidgetRef = {
   blur: () => void
 }
 
+// Fixed slot width for the 25% / 50% / Max buttons. Shared by the button's
+// minWidth and its animating wrapper so the row's layout never depends on
+// entering-animation state (see the comment at the render site).
+const PERCENTAGE_BUTTON_WIDTH = 72
+
+// Entering stagger between adjacent percentage buttons (left → right).
+const PERCENTAGE_BUTTON_STAGGER_MS = 40
+
 type TokenInputWidgetProps = {
   title: string
   amount?: bigint
   maximum?: bigint
+  /**
+   * True while `maximum` is still being calculated. Keeps the Max button
+   * mounted (disabled) so it doesn't pop in after its siblings; when false
+   * with `maximum` undefined, the maximum is terminally unavailable (e.g.
+   * fees exceed the balance) and the Max button is hidden instead.
+   */
+  isMaximumLoading?: boolean
   token?: { symbol: string; logoUri?: string; decimals: number }
   balance?: bigint
   shouldShowBalance?: boolean
@@ -80,6 +94,7 @@ export const TokenInputWidget = forwardRef<
     shouldShowBalance,
     network,
     maximum,
+    isMaximumLoading = false,
     amount,
     onAmountChange,
     onPressMax,
@@ -341,36 +356,70 @@ export const TokenInputWidget = forwardRef<
             marginTop: 14
           }}>
           {isAmountInputFocused && (
-            <Animated.View
-              style={{
+            <View
+              sx={{
                 alignSelf: 'flex-end',
                 flexDirection: 'row',
                 gap: 7
-              }}
-              entering={FadeIn}
-              exiting={FadeOut}>
+              }}>
               {percentageButtons
-                // Hide Max button when maximum is still loading or could not be calculated
+                // Hide Max only when the maximum is terminally unavailable
+                // (fees exceed the balance — it would stay disabled forever).
+                // While it's merely still calculating it stays MOUNTED
+                // (disabled below): filtering it out and back in replayed its
+                // ZoomIn after the siblings', reading as a flicker.
                 .filter(
-                  button => !(button.percent === 1 && maximum === undefined)
+                  button =>
+                    !(
+                      button.percent === 1 &&
+                      maximum === undefined &&
+                      !isMaximumLoading
+                    )
                 )
                 .map((button, index) => (
-                  <Button
-                    key={index}
-                    size="small"
-                    type={button.isSelected ? 'primary' : 'secondary'}
-                    style={{
-                      minWidth: 72
-                    }}
-                    disabled={disabled || balance === undefined}
-                    onPress={() => {
-                      handlePressPercentageButton(button, index)
-                      tokenAmountInputRef.current?.blur()
-                    }}>
-                    {button.text}
-                  </Button>
+                  // Each button zooms around its own center rather than the
+                  // whole row scaling as one block. The wrapper has a FIXED
+                  // width: siblings whose entering hasn't started yet don't
+                  // occupy layout on Fabric, and in this right-anchored row
+                  // that read as 25%/Max sliding apart while 50% popped in
+                  // late. Fixed slots pin the layout from the first frame,
+                  // and the explicit stagger makes the start order a
+                  // deliberate left-to-right cascade instead of arbitrary.
+                  // No `exiting` on purpose: an exit animation leaves ghost
+                  // entries in Reanimated's layout-animation registry, and a
+                  // quick blur → refocus remounts the same-keyed buttons on
+                  // top of them — the entering cascade then replays skewed
+                  // (25%/Max sliding apart, 50% surfacing late). Instant
+                  // removal keeps every focus identical to the first, and the
+                  // dismissing keyboard masks the missing zoom-out anyway.
+                  <Animated.View
+                    key={button.text}
+                    style={{ width: PERCENTAGE_BUTTON_WIDTH }}
+                    entering={ZoomIn.duration(150).delay(
+                      index * PERCENTAGE_BUTTON_STAGGER_MS
+                    )}>
+                    <Button
+                      size="small"
+                      type={button.isSelected ? 'primary' : 'secondary'}
+                      style={{
+                        minWidth: PERCENTAGE_BUTTON_WIDTH
+                      }}
+                      disabled={
+                        disabled ||
+                        balance === undefined ||
+                        // Max is unusable until the fee-adjusted maximum is
+                        // known (or when fees exceed the balance entirely).
+                        (button.percent === 1 && maximum === undefined)
+                      }
+                      onPress={() => {
+                        handlePressPercentageButton(button, index)
+                        tokenAmountInputRef.current?.blur()
+                      }}>
+                      {button.text}
+                    </Button>
+                  </Animated.View>
                 ))}
-            </Animated.View>
+            </View>
           )}
         </View>
       </Animated.View>

@@ -96,6 +96,7 @@ export const VerifyPin = ({
     <ScrollScreen
       title={`Enter your\ncurrent PIN`}
       isModal
+      disableHeaderSnap
       contentContainerStyle={{
         padding: 16,
         flex: 1

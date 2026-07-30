@@ -75,6 +75,11 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   shouldAvoidKeyboard?: boolean
   /** Whether the screen should avoid the footer when the keyboard appears */
   disableStickyFooter?: boolean
+  /** Opt out of the release snap that commits the collapsible title to fully
+   * collapsed/expanded when a drag ends inside the header region. Also drops
+   * the extra scroll range reserved for that snap, so short content is no
+   * longer scrollable by the title height. */
+  disableHeaderSnap?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
   /** Custom header component to be rendered */
@@ -135,6 +140,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       // per-screen change with its own QA.
       mode = 'layout',
       disableStickyFooter,
+      disableHeaderSnap,
       showNavigationHeaderTitle = true,
       hideHeaderBackground,
       headerCenterOverlay,
@@ -380,6 +386,8 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
         onScrollEndDragProp?.(event)
 
+        if (disableHeaderSnap) return
+
         // The no-title branch renders a phantom absolute header — its height
         // must not trigger snapping.
         if (!title && !subtitle) return
@@ -395,7 +403,14 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           animated: true
         })
       },
-      [onScrollEndDragProp, title, subtitle, headerLayout?.height, titleHeight]
+      [
+        onScrollEndDragProp,
+        disableHeaderSnap,
+        title,
+        subtitle,
+        headerLayout?.height,
+        titleHeight
+      ]
     )
 
     // Commit a new layout object only when the measured rect actually changed.
@@ -450,7 +465,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // a computed value only held in the environment its constants were tuned
     // in. `undefined` until the first layout lands.
     const collapsibleHeaderHeight =
-      title || subtitle ? headerLayout?.height ?? 0 : 0
+      (title || subtitle) && !disableHeaderSnap ? headerLayout?.height ?? 0 : 0
     const minHeight =
       scrollViewLayoutHeight > 0
         ? scrollViewLayoutHeight + collapsibleHeaderHeight

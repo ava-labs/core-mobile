@@ -327,14 +327,29 @@ const PositionHeader = ({
         <View
           sx={{
             marginTop: 2,
+            flexDirection: 'row',
+            alignItems: 'center',
             alignSelf: 'flex-start',
-            backgroundColor: alpha(theme.colors.$textPrimary, 0.1),
-            borderRadius: 6,
-            paddingHorizontal: 6,
-            paddingVertical: 2
+            gap: 8
           }}>
-          <Text variant="caption" sx={{ fontFamily: 'Inter-Medium' }}>
-            {position.leverage}×
+          <View
+            sx={{
+              backgroundColor: alpha(theme.colors.$textPrimary, 0.1),
+              borderRadius: 6,
+              paddingHorizontal: 6,
+              paddingVertical: 2
+            }}>
+            <Text variant="caption" sx={{ fontFamily: 'Inter-Medium' }}>
+              {position.leverage}×
+            </Text>
+          </View>
+          <Text
+            variant="caption"
+            sx={{
+              color: theme.colors.$textSecondary,
+              fontFamily: 'Inter-Medium'
+            }}>
+            {position.marginMode === 'cross' ? 'Cross' : 'Isolated'}
           </Text>
         </View>
       </View>

@@ -2,10 +2,12 @@ import { fromUnixTime, addDays, getUnixTime } from 'date-fns'
 import {
   DURATION_OPTIONS_MAINNET,
   DURATION_OPTIONS_FUJI,
+  DURATION_OPTIONS_WITH_DAYS_MAINNET,
   DurationOptionWithDays,
   getStakeEndDate,
   StakeDurationFormat,
-  StakeDurationTitle
+  StakeDurationTitle,
+  withNodeMaxOption
 } from 'services/earn/getStakeEndDate'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 
@@ -109,5 +111,42 @@ describe('getStakeEndDate', () => {
 
     expect(result).toBe(mockCustomEndDate)
     expect(getMinimumStakeEndTime).toHaveBeenCalledWith(true, currentDate)
+  })
+})
+
+describe('withNodeMaxOption', () => {
+  const base: DurationOptionWithDays[] = DURATION_OPTIONS_WITH_DAYS_MAINNET
+
+  it('swaps the 1 Year preset for a Node max option with the given days', () => {
+    const result = withNodeMaxOption(base, 134)
+    const nodeMax = result.find(o => o.title === StakeDurationTitle.NODE_MAX)
+    expect(nodeMax).toEqual({
+      title: StakeDurationTitle.NODE_MAX,
+      numberOfDays: 134,
+      stakeDurationFormat: StakeDurationFormat.Day,
+      stakeDurationValue: 134
+    })
+    expect(result.some(o => o.title === StakeDurationTitle.ONE_YEAR)).toBe(
+      false
+    )
+  })
+
+  it('keeps every other preset and the list positions intact', () => {
+    // Index-based helpers (default/custom index) rely on positions not
+    // shifting when the delegate flow swaps the option in.
+    const result = withNodeMaxOption(base, 200)
+    expect(result).toHaveLength(base.length)
+    base.forEach((option, index) => {
+      if (option.title !== StakeDurationTitle.ONE_YEAR) {
+        expect(result[index]).toBe(option)
+      } else {
+        expect(result[index]?.title).toBe(StakeDurationTitle.NODE_MAX)
+      }
+    })
+  })
+
+  it('does not mutate the source list', () => {
+    withNodeMaxOption(base, 10)
+    expect(base.some(o => o.title === StakeDurationTitle.ONE_YEAR)).toBe(true)
   })
 })

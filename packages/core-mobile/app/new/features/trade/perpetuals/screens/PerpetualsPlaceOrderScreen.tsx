@@ -79,7 +79,8 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     takeProfitEnabled,
     takeProfitPrice,
     stopLossEnabled,
-    stopLossPrice
+    stopLossPrice,
+    marginMode
   } = usePlaceOrder()
 
   // Seed the displayed leverage from Hyperliquid's actual per-coin value once,
@@ -99,17 +100,20 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
     setLeverage(hlLeverage)
   }, [hlLeverage, setLeverage])
 
-  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
-  const { submitOrder } = usePerpsOrderSubmit()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
-
   // Live market data for the coin: the current mark price to size the order and
   // `szDecimals` to quantize the size. Both come from Hyperliquid — there is no
   // fallback to the seeded/placeholder price, so sizing is only ever computed
   // from real market data (the confirm button stays disabled until it loads).
   const { universe, assetCtx } = useHyperliquidMarketContext(coin)
   const szDecimals = universe?.szDecimals
+
+  // Context `marginMode` is seeded from HL by PlaceOrderProvider (the layout),
+  // so it's correct here without this screen having to be mounted first.
+
+  const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
+  const { submitOrder } = usePerpsOrderSubmit()
+  const { requireTradingEnabled, enableTradingModal } =
+    usePerpsEnableTradingGate()
   const markPrice = toNumber(assetCtx?.markPx)
   // Also require leverage (> 0), which is seeded from HL rather than a local
   // default, before allowing a submit or sizing the order.
@@ -147,6 +151,10 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const handleAddLeverage = useCallback(() => {
     router.navigate('/perpetualsPlaceOrder/leverage')
+  }, [router])
+
+  const handleMarginMode = useCallback(() => {
+    router.navigate('/perpetualsPlaceOrder/margin')
   }, [router])
 
   const handleOpenTakeProfit = useCallback(() => {
@@ -313,6 +321,21 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
           </View>
 
           <View sx={{ gap: 20 }}>
+            <GroupList
+              titleSx={{ fontFamily: 'Inter-Regular' }}
+              data={[
+                {
+                  title: 'Margin mode',
+                  onPress: handleMarginMode,
+                  value: (
+                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                      {marginMode === 'cross' ? 'Cross' : 'Isolated'}
+                    </Text>
+                  )
+                }
+              ]}
+            />
+
             <GroupList
               titleSx={{ fontFamily: 'Inter-Regular' }}
               subtitleVariant="caption"

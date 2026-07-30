@@ -99,6 +99,7 @@ export enum StakeDurationTitle {
   THREE_MONTHS = '3 Months',
   SIX_MONTHS = '6 Months',
   ONE_YEAR = '1 Year',
+  NODE_MAX = 'Node Max',
   CUSTOM = 'Custom'
 }
 
@@ -191,6 +192,34 @@ export const DURATION_OPTIONS_FUJI: DurationOption[] = [
   ...DURATION_OPTIONS_WITH_DAYS_FUJI,
   CUSTOM
 ]
+
+/**
+ * Replaces the 1 Year preset with a "Node max" option running until the
+ * selected validator's end time (CP-14775, matching web). Delegation
+ * flow only — it is the one flow where a node is picked before the duration.
+ * Two motivations: a full 365 days is never actually stakeable (validators
+ * have at most 365 days minus the minutes since they were accepted), and
+ * when the node ends sooner than the longer presets this is the only
+ * one-tap way to stake the maximum without entering a custom date.
+ *
+ * `numberOfDays` drives the card label and the reward estimate; the duration
+ * screen resolves the actual end timestamp from the node itself so the stake
+ * ends exactly at the validator's end time, not at a rounded day count.
+ */
+export const withNodeMaxOption = (
+  options: DurationOptionWithDays[],
+  nodeEndDays: number
+): DurationOptionWithDays[] =>
+  options.map(option =>
+    option.title === StakeDurationTitle.ONE_YEAR
+      ? {
+          title: StakeDurationTitle.NODE_MAX,
+          numberOfDays: nodeEndDays,
+          stakeDurationFormat: StakeDurationFormat.Day,
+          stakeDurationValue: nodeEndDays
+        }
+      : option
+  )
 
 export type DurationOptionWithDays = Extract<
   DurationOption,

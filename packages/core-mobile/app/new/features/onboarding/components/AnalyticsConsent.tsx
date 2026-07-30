@@ -47,6 +47,7 @@ export const AnalyticsConsent = ({
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title="Unlock airdrops"
+      disableHeaderSnap
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 20 }}>

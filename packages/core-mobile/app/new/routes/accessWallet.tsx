@@ -83,6 +83,7 @@ const AccessWalletScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       title="How would you like to access your existing wallet?"
+      disableHeaderSnap
       contentContainerStyle={{ padding: 16 }}>
       <View
         style={{

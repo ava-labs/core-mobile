@@ -3,7 +3,7 @@ import { fetch as expoFetch } from 'expo/fetch'
 import AppCheckService from 'services/fcm/AppCheckService'
 import Logger from 'utils/Logger'
 
-const APPCHECK_HEADER = 'X-Firebase-AppCheck'
+export const APPCHECK_HEADER = 'X-Firebase-AppCheck'
 
 const shouldRetry = (status: number): boolean =>
   status === 401 || status === 403

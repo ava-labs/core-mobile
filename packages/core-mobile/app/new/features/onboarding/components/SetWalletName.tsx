@@ -71,6 +71,7 @@ export const SetWalletName = ({
       shouldAvoidKeyboard
       showNavigationHeaderTitle={false}
       title="Add a name for your wallet"
+      disableHeaderSnap
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View

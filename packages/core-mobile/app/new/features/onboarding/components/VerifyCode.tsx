@@ -97,6 +97,7 @@ export const VerifyCode = <T,>({
     <ScrollScreen
       showNavigationHeaderTitle={showNavigationHeaderTitle}
       title="Verify code"
+      disableHeaderSnap
       shouldAvoidKeyboard
       subtitle="Enter the code generated from your authenticator app"
       contentContainerStyle={{ padding: 16, flex: 1 }}>

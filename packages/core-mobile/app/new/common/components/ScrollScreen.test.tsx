@@ -220,6 +220,27 @@ describe('ScrollScreen header snap on release', () => {
     expect(mockScrollTo).not.toHaveBeenCalled()
   })
 
+  it('does not snap when disableHeaderSnap is set', async () => {
+    const instance = await setupSnappable({ disableHeaderSnap: true })
+
+    await releaseDragAt(instance, MEASURED_TITLE_HEIGHT - 20)
+    await releaseDragAt(instance, MEASURED_TITLE_HEIGHT + 10)
+
+    expect(mockScrollTo).not.toHaveBeenCalled()
+  })
+
+  it('still forwards the event to a caller-provided onScrollEndDrag when disableHeaderSnap is set', async () => {
+    const onScrollEndDrag = jest.fn()
+    const instance = await setupSnappable({
+      disableHeaderSnap: true,
+      onScrollEndDrag
+    })
+
+    await releaseDragAt(instance, 20)
+
+    expect(onScrollEndDrag).toHaveBeenCalledTimes(1)
+  })
+
   it('forwards the event to a caller-provided onScrollEndDrag', async () => {
     const onScrollEndDrag = jest.fn()
     const instance = await setupSnappable({ onScrollEndDrag })
@@ -271,6 +292,17 @@ describe('ScrollScreen content minHeight', () => {
     await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
     // The no-title phantom header still measures a layout; it must not add
     // snap room since the release snap is disabled without a title.
+    await fireHeaderRegionLayout(instance, MEASURED_TITLE_REGION_HEIGHT)
+
+    expect(getContentContainerMinHeight(instance)).toBe(
+      MEASURED_VIEWPORT_HEIGHT
+    )
+  })
+
+  it('does not add snap room when disableHeaderSnap is set', async () => {
+    const instance = await render({ disableHeaderSnap: true })
+
+    await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
     await fireHeaderRegionLayout(instance, MEASURED_TITLE_REGION_HEIGHT)
 
     expect(getContentContainerMinHeight(instance)).toBe(
