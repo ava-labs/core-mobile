@@ -54,6 +54,7 @@ export const currencies: Currency[] = [
   { name: 'United States Dollar', symbol: CurrencySymbol.USD },
   { name: 'Euro', symbol: CurrencySymbol.EUR },
   { name: 'Australian Dollar', symbol: CurrencySymbol.AUD },
+  { name: 'Brazilian Real', symbol: CurrencySymbol.BRL },
   { name: 'Canadian Dollar', symbol: CurrencySymbol.CAD },
   { name: 'Swiss Franc', symbol: CurrencySymbol.CHF },
   { name: 'Chilean Peso', symbol: CurrencySymbol.CLP },
