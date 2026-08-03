@@ -10,6 +10,7 @@ import {
   onClosingTransitionEnd,
   onClosingTransitionStart
 } from 'common/utils/navigationGuard'
+import { dismissKeyboardOnRemove } from 'common/utils/dismissKeyboardOnRemove'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { LedgerSetupProvider } from 'features/ledger'
 import { useLedgerAppStateListener } from 'features/ledger/hooks/useLedgerAppStateListener'
@@ -17,6 +18,7 @@ import { CollectiblesProvider } from 'features/portfolio/collectibles/Collectibl
 import { PerpsProvider } from 'features/trade/perpetuals/contexts/PerpsProvider'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
@@ -57,6 +59,13 @@ export default function WalletLayout(): JSX.Element {
           <Stack
             screenOptions={{ headerShown: false }}
             screenListeners={{
+              // Android keeps the soft keyboard up when a modal route unmounts,
+              // so it lingers over the screen underneath (CP-14715). This root
+              // Stack hosts every modal group, so one listener covers them all.
+              // iOS already tears the IME down on unmount, so scope to Android.
+              ...(Platform.OS === 'android' && {
+                beforeRemove: dismissKeyboardOnRemove
+              }),
               transitionStart: e => {
                 if (e.data.closing) onClosingTransitionStart()
               },
