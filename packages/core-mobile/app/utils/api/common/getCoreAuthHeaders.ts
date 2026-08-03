@@ -1,13 +1,14 @@
-import Config from 'react-native-config'
 import AppCheckService from 'services/fcm/AppCheckService'
 import { APPCHECK_HEADER } from 'utils/api/common/appCheckFetch'
 
-const CORE_API_KEY_HEADER = 'x-core-api-key'
-
 /**
  * Resolves the auth headers required by core-proxy-api (e.g. the Glacier
- * proxy): a Firebase AppCheck token, plus the Core API key when one is
- * configured (dev/E2E builds — it both authorizes and bypasses rate limits).
+ * proxy): a Firebase AppCheck token.
+ *
+ * The proxy authorizes on the AppCheck token alone. We intentionally do NOT
+ * send an `x-core-api-key` — the proxy rejects a request that carries an
+ * invalid/legacy key with a 401 even when a valid AppCheck token is present,
+ * so attaching the (now-defunct) Glacier key breaks every Glacier call.
  *
  * Meant to be invoked per request (e.g. as a glacier-sdk HEADERS resolver or
  * the vm-modules `runtime.getAuthHeaders`) so the short-lived AppCheck token
@@ -17,9 +18,6 @@ const CORE_API_KEY_HEADER = 'x-core-api-key'
 export const getCoreAuthHeaders = async (): Promise<Record<string, string>> => {
   const { token } = await AppCheckService.getToken()
   return {
-    [APPCHECK_HEADER]: token,
-    ...(Config.CORE_API_KEY
-      ? { [CORE_API_KEY_HEADER]: Config.CORE_API_KEY }
-      : {})
+    [APPCHECK_HEADER]: token
   }
 }

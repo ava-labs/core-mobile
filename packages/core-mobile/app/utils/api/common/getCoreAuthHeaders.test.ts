@@ -5,12 +5,6 @@ jest.mock('services/fcm/AppCheckService', () => ({
   getToken: jest.fn()
 }))
 
-jest.mock('react-native-config', () => ({
-  CORE_API_KEY: undefined
-}))
-
-const Config = require('react-native-config')
-
 const mockGetToken = AppCheckService.getToken as jest.MockedFunction<
   typeof AppCheckService.getToken
 >
@@ -18,28 +12,15 @@ const mockGetToken = AppCheckService.getToken as jest.MockedFunction<
 describe('getCoreAuthHeaders', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    Config.CORE_API_KEY = undefined
   })
 
-  it('returns the AppCheck token header', async () => {
+  it('returns only the AppCheck token header (no x-core-api-key)', async () => {
     mockGetToken.mockResolvedValue({ token: 'appcheck-token' } as Awaited<
       ReturnType<typeof AppCheckService.getToken>
     >)
 
     await expect(getCoreAuthHeaders()).resolves.toEqual({
       'X-Firebase-AppCheck': 'appcheck-token'
-    })
-  })
-
-  it('includes the Core API key header when configured', async () => {
-    Config.CORE_API_KEY = 'core-api-key'
-    mockGetToken.mockResolvedValue({ token: 'appcheck-token' } as Awaited<
-      ReturnType<typeof AppCheckService.getToken>
-    >)
-
-    await expect(getCoreAuthHeaders()).resolves.toEqual({
-      'X-Firebase-AppCheck': 'appcheck-token',
-      'x-core-api-key': 'core-api-key'
     })
   })
 

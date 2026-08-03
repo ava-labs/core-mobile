@@ -103,8 +103,8 @@ class ModuleManager {
         fetch: global.fetch,
         httpAgent: new http.Agent(),
         // Required by EvmModule/AvalancheModule: their internal Glacier calls
-        // go through core-proxy-api, which needs AppCheck (or a Core API key)
-        // on every request.
+        // go through core-proxy-api, which authorizes on the Firebase AppCheck
+        // token supplied here on every request.
         getAuthHeaders: getCoreAuthHeaders
       }
     }
