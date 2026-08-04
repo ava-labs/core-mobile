@@ -76,9 +76,11 @@ jest.mock('./LinearGradientBottomWrapper', () => ({
   LinearGradientBottomWrapper: ({ children }: any) => children
 }))
 
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { ScrollScreen } from './ScrollScreen'
 
+// Mirrors the `useEffectiveHeaderHeight` mock above.
+const HEADER_HEIGHT = 100
 const MEASURED_VIEWPORT_HEIGHT = 640
 const MEASURED_TITLE_REGION_HEIGHT = 80
 const MEASURED_TITLE_HEIGHT = 40
@@ -323,5 +325,88 @@ describe('ScrollScreen content minHeight', () => {
     await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
 
     expect(onLayout).toHaveBeenCalledTimes(1)
+  })
+})
+
+// CP-14765: on an Android form sheet the non-keyboard branch used to render a
+// full-height gesture-handler ScrollView, which claimed every vertical drag and
+// locked the sheet's BottomSheetBehavior out of swipe-to-dismiss entirely. It
+// now takes the same treatment the keyboard branch got in CP-14679: a plain RN
+// ScrollView (so the sheet can negotiate nested scrolling) offset *below* the
+// header with `marginTop`, leaving the grabber/header strip permanently
+// draggable.
+describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)', () => {
+  const fireContentSizeChange = async (
+    instance: ReactTestRenderer,
+    height: number
+  ): Promise<void> => {
+    const scrollView = instance.root.findByType(ScrollView)
+    await act(async () => {
+      scrollView.props.onContentSizeChange(390, height)
+    })
+  }
+
+  const getScrollViewStyle = (
+    instance: ReactTestRenderer
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any =>
+    StyleSheet.flatten(instance.root.findByType(ScrollView).props.style) ?? {}
+
+  const getContentContainerPaddingTop = (
+    instance: ReactTestRenderer
+  ): number | undefined =>
+    StyleSheet.flatten(
+      instance.root.findByType(ScrollView).props.contentContainerStyle
+    )?.paddingTop
+
+  describe('on Android', () => {
+    beforeEach(() => {
+      jest.replaceProperty(Platform, 'OS', 'android')
+    })
+
+    it('offsets a modal below the header with a margin so the sheet keeps a draggable strip', async () => {
+      const instance = await render({ isModal: true })
+
+      expect(getScrollViewStyle(instance).marginTop).toBe(HEADER_HEIGHT)
+      expect(getContentContainerPaddingTop(instance)).toBe(0)
+    })
+
+    it('leaves nested scrolling off while the content fits, so a body swipe dismisses', async () => {
+      const instance = await render({ isModal: true })
+
+      await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
+      await fireContentSizeChange(instance, MEASURED_VIEWPORT_HEIGHT)
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(false)
+    })
+
+    it('turns nested scrolling on once the content overflows, so a body swipe scrolls', async () => {
+      const instance = await render({ isModal: true })
+
+      await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
+      await fireContentSizeChange(instance, MEASURED_VIEWPORT_HEIGHT * 2)
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(true)
+    })
+
+    it('leaves non-modal screens under the transparent header', async () => {
+      const instance = await render({ isModal: false })
+
+      expect(getScrollViewStyle(instance).marginTop).toBeUndefined()
+      expect(getContentContainerPaddingTop(instance)).toBe(HEADER_HEIGHT)
+    })
+  })
+
+  it('leaves iOS modals under the transparent header', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios')
+
+    const instance = await render({ isModal: true })
+
+    expect(getScrollViewStyle(instance).marginTop).toBeUndefined()
+    expect(getContentContainerPaddingTop(instance)).toBe(HEADER_HEIGHT)
   })
 })
