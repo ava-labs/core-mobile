@@ -26,6 +26,7 @@ import {
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/api/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
+import { usesDebugAppCheckProvider } from 'utils/Utils'
 import { WalletType } from 'services/wallet/types'
 import { isUnsupportedXpDerivationError } from 'services/wallet/KeystoneWallet/errors'
 import { ModuleErrors, VmModuleErrors } from './errors'
@@ -34,8 +35,6 @@ import { approvalController } from './ApprovalController/ApprovalController'
 // https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 // Syntax for namespace is defined in CAIP-2
 const NAMESPACE_REGEX = new RegExp('[-a-z0-9]{3,8}')
-
-const isDev = typeof __DEV__ === 'boolean' && __DEV__
 
 class ModuleManager {
   #modules: Module[] | undefined
@@ -88,7 +87,13 @@ class ModuleManager {
   init = async (): Promise<void> => {
     if (this.#modules !== undefined) return
 
-    const environment = isDev ? Environment.DEV : Environment.PRODUCTION
+    // Must track the AppCheck provider, not `__DEV__`: the modules' internal
+    // Glacier calls go to core-proxy-api, and its prod deployment rejects the
+    // debug AppCheck tokens that internal/e2e builds send. See
+    // usesDebugAppCheckProvider.
+    const environment = usesDebugAppCheckProvider()
+      ? Environment.DEV
+      : Environment.PRODUCTION
 
     const moduleInitParams: ConstructorParams & {
       runtime: Required<Pick<RuntimeParams, 'getAuthHeaders'>>

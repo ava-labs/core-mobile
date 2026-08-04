@@ -4,11 +4,11 @@ import {
 } from '@react-native-firebase/app-check'
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
-import { isDebugOrInternalBuild, isE2EBuild } from 'utils/Utils'
+import { usesDebugAppCheckProvider } from 'utils/Utils'
 
 class AppCheckService {
   init = (): void => {
-    const shouldUseDebugProvider = isDebugOrInternalBuild() || isE2EBuild
+    const shouldUseDebugProvider = usesDebugAppCheckProvider()
 
     const rnfbProvider = firebase
       .appCheck()
