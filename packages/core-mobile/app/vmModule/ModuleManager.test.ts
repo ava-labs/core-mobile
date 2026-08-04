@@ -3,6 +3,7 @@ import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { SvmModule } from '@avalabs/svm-module'
 import { NetworkVMType, Network } from '@avalabs/core-chains-sdk'
+import { Environment } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -359,6 +360,73 @@ describe('ModuleManager', () => {
 
         expect(result).toEqual([undefined])
       })
+    })
+  })
+
+  /**
+   * The modules resolve their Glacier host from `environment` alone — `getEnv()`
+   * in each module is a closed switch on the enum, with no URL override, and it
+   * never reads PROXY_URL/GLACIER_URL. So it must agree with the AppCheck
+   * provider: internal and e2e builds send debug AppCheck tokens that the
+   * production core-proxy-api rejects. `__DEV__` is false in those builds, so
+   * gating on it 401'd every X/P balance and activity call.
+   */
+  describe('environment passed to the vm modules', () => {
+    const originalDev = (globalThis as unknown as { __DEV__: boolean }).__DEV__
+
+    afterEach(() => {
+      ;(globalThis as unknown as { __DEV__: boolean }).__DEV__ = originalDev
+    })
+
+    const initAndCaptureEnvironment = async (
+      bundleId: string
+    ): Promise<unknown> => {
+      // internal and external release builds both ship a non-dev bundle
+      ;(globalThis as unknown as { __DEV__: boolean }).__DEV__ = false
+
+      const captured: Record<string, unknown>[] = []
+      const stubModule = (): jest.Mock =>
+        jest.fn(params => {
+          captured.push(params)
+        })
+
+      await jest.isolateModulesAsync(async () => {
+        // keep the rest of the surface (getVersion etc. is read at import time)
+        jest.doMock('react-native-device-info', () => ({
+          ...jest.requireActual(
+            'react-native-device-info/jest/react-native-device-info-mock'
+          ),
+          getBundleId: () => bundleId
+        }))
+        jest.doMock('@avalabs/evm-module', () => ({ EvmModule: stubModule() }))
+        jest.doMock('@avalabs/bitcoin-module', () => ({
+          BitcoinModule: stubModule()
+        }))
+        jest.doMock('@avalabs/avalanche-module', () => ({
+          AvalancheModule: stubModule()
+        }))
+        jest.doMock('@avalabs/svm-module', () => ({ SvmModule: stubModule() }))
+
+        await require('vmModule/ModuleManager').default.init()
+      })
+
+      expect(captured).toHaveLength(4)
+      // all four must agree, or chains disagree on which host to call
+      expect(new Set(captured.map(params => params.environment)).size).toBe(1)
+
+      return captured[0]?.environment
+    }
+
+    it('uses DEV for an internal release build', async () => {
+      await expect(
+        initAndCaptureEnvironment('org.avalabs.avaxwallet.internal')
+      ).resolves.toBe(Environment.DEV)
+    })
+
+    it('uses PRODUCTION for an external release build', async () => {
+      await expect(
+        initAndCaptureEnvironment('org.avalabs.avaxwallet')
+      ).resolves.toBe(Environment.PRODUCTION)
     })
   })
 })
