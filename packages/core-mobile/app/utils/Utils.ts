@@ -145,5 +145,24 @@ export const isDebugOrInternalBuild = (): boolean => {
  */
 export const isE2EBuild = !!Config.E2E_MNEMONIC
 
+/**
+ * True when this build authenticates to backend services with an AppCheck
+ * *debug* token instead of real device attestation (playIntegrity / appAttest):
+ * local dev, internal builds, and e2e builds.
+ *
+ * Debug tokens are registered against the internal Firebase project, which the
+ * production core-proxy-api does not trust. Any build that returns true here
+ * must therefore also talk to the dev/staging services, so both the AppCheck
+ * provider and the vm-module `Environment` are derived from this one predicate.
+ *
+ * Do NOT reintroduce a bare `__DEV__` check for this: `__DEV__` only says
+ * whether the JS is a dev-mode bundle, and internal/e2e builds are release-mode
+ * bundles (`__DEV__ === false`) that still use the debug provider. Reading
+ * `__DEV__` is what pointed internal builds at the prod proxy while sending an
+ * internal-project AppCheck token, 401ing every X/P Glacier call (CP-14673).
+ */
+export const usesDebugAppCheckProvider = (): boolean =>
+  isDebugOrInternalBuild() || isE2EBuild
+
 export const isIOS = Platform.OS === 'ios'
 export const isAndroid = Platform.OS === 'android'
