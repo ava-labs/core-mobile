@@ -33,7 +33,7 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true
 })
 
-type SentryEnvironment = 'development' | 'internal' | 'production'
+type SentryEnvironment = 'development' | 'internal' | 'production' | 'unknown'
 
 /**
  * The Sentry environment this build reports under, derived from the build's own
@@ -52,15 +52,25 @@ type SentryEnvironment = 'development' | 'internal' | 'production'
  * back to reading `Config.ENVIRONMENT` here.
  *
  * e2e builds need no branch of their own: `isAvailable` is false whenever
- * `isE2EBuild` is true, so they never initialise Sentry at all.
+ * `isE2EBuild` is true, so no release-mode e2e build ever initialises Sentry.
  *
  * Evaluated lazily inside `init()` because `isDebugOrInternalBuild()` reads the
  * bundle id from a native module.
  */
 const resolveEnvironment = (): SentryEnvironment => {
   if (__DEV__) return 'development'
-  if (isDebugOrInternalBuild()) return 'internal'
-  return 'production'
+
+  try {
+    return isDebugOrInternalBuild() ? 'internal' : 'production'
+  } catch {
+    // `init()` runs from index.js before any error boundary exists, so an
+    // unguarded throw out of the native bundle-id read would abort Sentry.init
+    // and leave the whole session with no error reporting. Losing the build
+    // label is the cheaper failure. Deliberately not 'production': a failure
+    // here must never put unattributable events back into the production
+    // environment this ticket cleaned up (CP-13250).
+    return 'unknown'
+  }
 }
 
 function scrubSentryData<T extends ErrorEvent | TransactionEvent>(event: T): T {

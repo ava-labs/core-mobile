@@ -206,6 +206,18 @@ describe('SentryService', () => {
           expect(environmentPassedToSentry()).toBe('production')
         })
 
+        it('still initialises Sentry when the native bundle-id read throws', () => {
+          bundleIdSpy.mockImplementation(() => {
+            throw new TypeError('native module not ready')
+          })
+
+          expect(() => initAsReleaseBuild()).not.toThrow()
+          expect(Sentry.init).toHaveBeenCalled()
+          // Not 'production' — a failed lookup must not pollute the production
+          // environment.
+          expect(environmentPassedToSentry()).toBe('unknown')
+        })
+
         it('reports local dev bundles as development', () => {
           bundleIdSpy.mockReturnValue('org.avalabs.corewallet')
 
