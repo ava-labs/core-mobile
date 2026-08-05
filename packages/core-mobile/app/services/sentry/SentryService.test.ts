@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native'
+import DeviceInfo from 'react-native-device-info'
 
 // ---------------------------------------------------------------------------
 // Shared scope mock – reused across all withScope callback invocations
@@ -124,6 +125,95 @@ describe('SentryService', () => {
             ])
           })
         )
+      })
+
+      // CP-13250: internal builds used to inherit `ENVIRONMENT=production` from
+      // `.env.internal` and file their errors against the production
+      // environment. The environment must track build identity instead.
+      describe('environment', () => {
+        // `service` above was loaded through jest.isolateModules, so the copy
+        // of react-native-device-info that `utils/Utils` closed over lives in
+        // that isolated registry — spying on this file's import would not
+        // affect it. Load a service instance alongside the device-info module
+        // from one shared registry so the bundle id can be controlled.
+        let envService: typeof import('./SentryService').default
+        let bundleIdSpy: jest.SpyInstance<string, []>
+
+        beforeAll(() => {
+          const g = global as unknown as Record<string, unknown>
+          const prevDev = g.__DEV__
+          g.__DEV__ = false
+          jest.isolateModules(() => {
+            const deviceInfoModule = require('react-native-device-info')
+            const deviceInfo: typeof DeviceInfo =
+              deviceInfoModule.default ?? deviceInfoModule
+            bundleIdSpy = jest.spyOn(deviceInfo, 'getBundleId')
+            envService = loadService()
+          })
+          g.__DEV__ = prevDev
+        })
+
+        // mockReset (not mockRestore) so the spy stays installed for the
+        // remaining cases in this block.
+        afterEach(() => {
+          bundleIdSpy.mockReset()
+        })
+
+        const environmentPassedToSentry = (): unknown =>
+          (Sentry.init as jest.Mock).mock.calls[0]?.[0]?.environment
+
+        /**
+         * The environment is resolved when `init()` runs, not when the module
+         * loads, so `__DEV__` has to be false at call time to exercise the
+         * release-build branches. (`isAvailable` is the one captured at load
+         * time, which the `beforeAll` above already handles.)
+         */
+        const initAsReleaseBuild = (): void => {
+          const g = global as unknown as Record<string, unknown>
+          const prevDev = g.__DEV__
+          g.__DEV__ = false
+          try {
+            envService.init()
+          } finally {
+            g.__DEV__ = prevDev
+          }
+        }
+
+        it('reports internal iOS builds as internal, not production', () => {
+          bundleIdSpy.mockReturnValue('org.avalabs.avaxwallet.internal')
+
+          initAsReleaseBuild()
+
+          expect(environmentPassedToSentry()).toBe('internal')
+        })
+
+        it('reports internal Android builds as internal, not production', () => {
+          bundleIdSpy.mockReturnValue('com.avaxwallet.internal')
+
+          initAsReleaseBuild()
+
+          expect(environmentPassedToSentry()).toBe('internal')
+        })
+
+        // The react-native-config mock in this file deliberately omits
+        // ENVIRONMENT, so the pre-fix implementation would report `undefined`
+        // here rather than a real environment name.
+        it('reports store builds as production', () => {
+          bundleIdSpy.mockReturnValue('org.avalabs.corewallet')
+
+          initAsReleaseBuild()
+
+          expect(environmentPassedToSentry()).toBe('production')
+        })
+
+        it('reports local dev bundles as development', () => {
+          bundleIdSpy.mockReturnValue('org.avalabs.corewallet')
+
+          // __DEV__ is true here, matching a Metro-served debug build.
+          envService.init()
+
+          expect(environmentPassedToSentry()).toBe('development')
+        })
       })
     })
 
