@@ -173,23 +173,10 @@ export const selectNetwork =
   }
 
 /**
- * Builds the developer-mode-filtered network map from its three real inputs,
- * memoized on reference equality (cache size 1).
- *
- * Identity stability matters here because `selectNetworks` is a `createSelector`
- * *input* to `selectEnabledNetworks` and `selectEnabledNetworksMap`. While it
- * allocated a fresh object on every call, reselect's reference-equality input
- * check could never hit, so both of those emitted a brand-new array/map on
- * every call and every `useSelector` consumer re-rendered on every dispatched
- * action, anywhere in the app — 21 files, including per-row components and
- * `useAccountBalances`, which the token detail screen instantiates several
- * times. That was the wasted-render driver in CP-14918.
- *
- * Freshness is preserved because `rawNetworks` — the react-query cached
- * /networks response — is an input: when that query is replaced its reference
- * changes and this recomputes. Same for custom networks and developer mode.
- * That is also why this cannot simply become a `createSelector`: the network
- * list is not Redux state, so a Redux-input-only memo would go stale.
+ * `buildNetworks`: reference-stable output for `selectNetworks` (a
+ * `createSelector` input) -- a fresh object per call defeats reselect's
+ * identity check and re-renders every `useSelector` consumer app-wide on
+ * every dispatch. CP-14918.
  */
 const buildNetworks = memoizeByReference(
   (

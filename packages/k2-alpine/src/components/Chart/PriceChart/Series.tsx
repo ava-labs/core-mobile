@@ -70,14 +70,9 @@ type CandlesProps = {
 }
 
 /**
- * CP-14918 item 1: candles used to render a `<Line>` + `<RoundedRect>` PER
- * candle — 2N React elements, 2N Skia declarative nodes, 2N JSI objects for
- * N=48 candles. Collapsed to 4 `SkPath`s (up/down body, up/down wick) built
- * once in a `useMemo`, mirroring the existing `traceSmoothLine` pattern used
- * for the line series. Wick paths are drawn before body paths so any given
- * candle's body still paints over its own wick, exactly matching the
- * original per-candle Line-then-RoundedRect paint order (adjacent candles
- * never overlap, so cross-candle draw order is immaterial).
+ * `Candles`: 4 `SkPath`s (up/down body, up/down wick) instead of 2N
+ * `<Line>`+`<RoundedRect>` elements. Wicks draw before bodies so paint order
+ * matches the original per-candle behavior. CP-14918 item 1.
  */
 export const Candles: FC<CandlesProps> = memo(
   ({

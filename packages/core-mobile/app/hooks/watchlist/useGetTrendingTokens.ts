@@ -30,12 +30,7 @@ export const useTrendingTokensQuery = (): UseQueryResult<
       return tokens ?? []
     },
     refetchInterval: 120000 // 2 mins
-    // CP-14918 fix-round-1: NOT `notifyOnChangeProps: 'all'` -- see the
-    // detailed comment in useTopTokens.ts. Left at the v5 default so the
-    // provider's `{ data, isLoading, isRefetching, refetch }` destructure
-    // marks exactly those 4 fields tracked, and an isStale-only /
-    // staleTime-elapsed transition doesn't reach the provider (let alone
-    // its 20+ consumers).
+    // Deliberately NOT `notifyOnChangeProps: 'all'` -- see useTopTokens.ts. CP-14918.
   })
 }
 

@@ -16,8 +16,6 @@ import { useMarketToken } from 'common/hooks/useMarketToken'
 import { useTokenPriceDisplay } from 'common/hooks/useTokenPriceDisplay'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-// CP-14918 TEMP PROBE
-import { perfRenderProfile, perfWhy } from 'utils/performance/perfProbe'
 import React, {
   FC,
   memo,
@@ -263,66 +261,37 @@ export const TokenPriceChart: FC<Props> = ({
     onRangeBaselineChange?.(rangeBaseline)
   }, [rangeBaseline, onRangeBaselineChange])
 
-  // CP-14918 TEMP PROBE: what re-renders the chart 7-10x per navigation?
-  perfWhy('chart', {
-    token,
-    width,
-    chartType,
-    currency,
-    marketToken,
-    coingeckoId,
-    symbol,
-    candles,
-    candlesLen: candles.length,
-    state,
-    effectiveState,
-    isFetching,
-    isLoadingTopTokens,
-    isLoadingTrendingTokens,
-    formattedPrice,
-    range,
-    rangeBaseline,
-    formatPrice,
-    formatVolume,
-    onPriceHeaderPress
-  })
-
   return (
     <View style={{ paddingBottom: 18, gap: 12 }}>
-      {/* CP-14918 TEMP PROBE: chartHeader vs priceChartInner commit attribution */}
       {!hideHeader && (
-        <React.Profiler id="chartHeader" onRender={perfRenderProfile}>
-          <ChartHeader
-            candles={candles}
-            symbol={symbol}
-            activeIndex={activeIndex}
-            crosshairX={crosshairX}
-            isActive={isActive}
-            containerWidth={width}
-            onPriceHeaderPress={onPriceHeaderPress}
-            formatPrice={formatPrice}
-            isLoading={effectiveState === 'loading'}
-            priceText={
-              formattedPrice === UNKNOWN_AMOUNT ? undefined : formattedPrice
-            }
-          />
-        </React.Profiler>
-      )}
-      <React.Profiler id="priceChartInner" onRender={perfRenderProfile}>
-        <PriceChart
+        <ChartHeader
           candles={candles}
-          width={width}
-          height={height}
-          mode={chartType}
-          state={effectiveState}
-          isFetching={isFetching}
-          externalIsActive={isActive}
-          externalActiveIndex={activeIndex}
-          externalCrosshairX={crosshairX}
+          symbol={symbol}
+          activeIndex={activeIndex}
+          crosshairX={crosshairX}
+          isActive={isActive}
+          containerWidth={width}
+          onPriceHeaderPress={onPriceHeaderPress}
           formatPrice={formatPrice}
-          formatVolume={formatVolume}
+          isLoading={effectiveState === 'loading'}
+          priceText={
+            formattedPrice === UNKNOWN_AMOUNT ? undefined : formattedPrice
+          }
         />
-      </React.Profiler>
+      )}
+      <PriceChart
+        candles={candles}
+        width={width}
+        height={height}
+        mode={chartType}
+        state={effectiveState}
+        isFetching={isFetching}
+        externalIsActive={isActive}
+        externalActiveIndex={activeIndex}
+        externalCrosshairX={crosshairX}
+        formatPrice={formatPrice}
+        formatVolume={formatVolume}
+      />
       <View
         sx={{
           flexDirection: 'row',

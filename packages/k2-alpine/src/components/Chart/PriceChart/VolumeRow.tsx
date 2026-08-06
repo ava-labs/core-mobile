@@ -31,29 +31,11 @@ const NO_HIGHLIGHT = -1
 type BarGeom = { x: number; barHeight: number; radius: number }
 
 /**
- * CP-14918 item 2: this used to allocate one `makeMutable` PER candle
- * (N reanimated shareables registered synchronously on mount — most of the
- * chart's measured "~76 mutables/commit"), because the crosshair-following
- * highlight was modeled as "every bar has its own independent opacity."
- * Read closely, the falloff (`distance >= 1 ? IDLE : lerp(...)`) only ever
- * produces a non-idle opacity for the bar(s) immediately adjacent to the
- * crosshair's fractional index — every other bar is always exactly
- * `IDLE_OPACITY`. So the idle bars are baked into one static `SkPath` (its
- * geometry never changes once computed) and only the single nearest bar is
- * redrawn on top via one dynamic `RoundedRect`, driven by a single
- * `SharedValue<number>` fractional-index reaction instead of N independent
- * mutables. Bar geometry is mirrored into a SharedValue from an effect
- * (never captured directly inside a worklet closure) so the UI-thread
- * lookup never re-converts a fresh N-object array — same pattern as
- * PriceChart.tsx's item 4 fix.
- *
- * KNOWN VISUAL DELTA (see task-V-report.md): the original design let the
- * highlight crossfade continuously between the two candles straddling a
- * non-integer fractional index (both bars visible at partial opacity while
- * dragging between them). This restructure snaps to the single nearest
- * candle (`Math.round`) at full opacity instead of interpolating between
- * two — needs a visual pass on a real drag gesture to confirm it reads
- * the same to users.
+ * Bar highlight: one static `SkPath` for idle bars + one dynamic
+ * `RoundedRect` for the nearest bar, driven by a single `SharedValue` (was:
+ * one `makeMutable` per candle). Snaps to the nearest candle instead of
+ * crossfading between two — visible UX change, Open decision #3 (doc
+ * §15.7), not yet resolved. CP-14918 item 2.
  */
 export const VolumeRow: FC<Props> = ({
   candles,

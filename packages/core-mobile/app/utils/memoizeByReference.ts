@@ -1,17 +1,8 @@
 /**
- * Memoizes a pure function on reference equality of its arguments, keeping a
- * single cached result (the same strategy reselect uses for `createSelector`
- * inputs).
- *
- * Used to give derived selectors a stable output identity. A selector that
- * allocates a fresh object on every call silently defeats every downstream
- * `createSelector` memo and every `useSelector` reference comparison, which
- * re-renders all of its consumers on every dispatched action (CP-14918).
- *
- * Hand-rolled rather than imported from reselect because `reselect` is only a
- * transitive dependency here (via `@reduxjs/toolkit`) and is not declared in
- * this package's `package.json`, so relying on its named exports at runtime is
- * not safe under the monorepo's Metro resolution.
+ * Gives a derived selector a stable output identity so
+ * `useSelector`/`createSelector` reference checks don't fire on every
+ * dispatch -- CP-14918. Hand-rolled: `reselect` is only a transitive dep
+ * here, not safe to import directly under this monorepo's Metro resolution.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const memoizeByReference = <TArgs extends any[], TResult>(

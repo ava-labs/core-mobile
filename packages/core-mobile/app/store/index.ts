@@ -108,26 +108,7 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
         immutableCheck: false
       })
 
-      // CP-14918 TEMP PROBE: time every dispatch, bucketed by action type, so
-      // Redux reducer+listener work shows up in the non-render JS budget.
-
-      const perfDispatchProbe =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        () => (next: any) => (action: any) => {
-          const p = require('utils/performance/perfProbe')
-          const t0 = p.perfNow()
-          const r = next(action)
-          const type =
-            typeof action?.type === 'string' ? action.type : 'unknown'
-          p.perfCount('rdx:' + type.slice(0, 30), p.perfNow() - t0)
-          return r
-        }
-
-      const middlewares = [
-        ...defaultMiddleWare,
-        transactionApi.middleware,
-        perfDispatchProbe
-      ]
+      const middlewares = [...defaultMiddleWare, transactionApi.middleware]
 
       // when storybook is enabled, no need to set up listeners
       if (!DevDebuggingConfig.STORYBOOK_ENABLED) {

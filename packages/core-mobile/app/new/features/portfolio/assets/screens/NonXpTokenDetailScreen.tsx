@@ -6,25 +6,7 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { ActionButtons } from 'features/portfolio/assets/components/ActionButtons'
 import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
 import { useTokenDetailData } from 'features/portfolio/assets/hooks/useTokenDetailData'
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState
-} from 'react'
-// CP-14918 TEMP PROBE
-import { queryClient } from 'contexts/ReactQueryProvider'
-import {
-  perfCount,
-  perfDumpQueryCache,
-  perfHeap,
-  perfMark,
-  perfNow,
-  perfRenderProfile,
-  perfWhy,
-  perfWhyReset
-} from 'utils/performance/perfProbe'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { InteractionManager, useWindowDimensions } from 'react-native'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -56,21 +38,6 @@ type Props = {
 const TOKEN_PRICE_CHART_HEIGHT = 375
 
 export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
-  // CP-14918 TEMP PROBE: fires per render, so it also counts render passes
-  perfMark('detail.render')
-  useLayoutEffect(() => {
-    perfMark('detail.painted')
-    perfHeap('painted') // CP-14918 TEMP PROBE
-  }, [])
-  // CP-14918 TEMP PROBE: restart the PERFWHY pass counter on each mount
-  useEffect(() => () => perfWhyReset('detail'), [])
-  // CP-14918 TEMP PROBE: one-shot react-query cache size inventory, well after
-  // paint so the stringify cost cannot pollute the navigation measurement
-  useEffect(() => {
-    const t = setTimeout(() => perfDumpQueryCache(queryClient), 6000)
-    return () => clearTimeout(t)
-  }, [])
-
   // Defer the Skia price chart past the push animation. Mounting a Canvas plus
   // its Simultaneous(LongPress, Pan) gesture in the first commit put native
   // binding and gesture-recogniser construction inside the tap-to-paint window
@@ -87,8 +54,6 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   const headerHeight = useEffectiveHeaderHeight()
   const insets = useSafeAreaInsets()
 
-  // CP-14918 TEMP PROBE: cost of the data hook itself, per pass
-  const t0Hook = perfNow()
   const {
     formattedBalance,
     selectedCurrency,
@@ -102,52 +67,21 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
     handleOpenTrackTokenDetail,
     activity
   } = useTokenDetailData(token)
-  perfCount('detail.hookMs', perfNow() - t0Hook)
-
-  // CP-14918 TEMP PROBE: which consumed value changed since the last pass.
-  // `NOTHING` means a subscription inside one of the hooks above notified
-  // without changing any output — a wasted render.
-  perfWhy('detail', {
-    token,
-    isChartReady,
-    frameObj: frame,
-    frameW: frame.width,
-    frameH: frame.height,
-    headerHeight,
-    insetsObj: insets,
-    insetsTop: insets.top,
-    formattedBalance,
-    selectedCurrency,
-    isBalanceAccurate,
-    isBalanceLoading,
-    isPrivacyModeEnabled,
-    isPriceChartBlocked,
-    actionButtons,
-    handleExplorerLink,
-    trackTokenId,
-    handleOpenTrackTokenDetail,
-    activityObj: activity,
-    activityIsRefreshing: activity.isRefreshing,
-    activityRefresh: activity.refresh
-  })
 
   const renderHeader = useCallback(() => {
     if (!token) return null
     return (
       <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-        {/* CP-14918 TEMP PROBE */}
-        <React.Profiler id="tokenHeader" onRender={perfRenderProfile}>
-          <TokenHeader
-            token={token}
-            formattedBalance={formattedBalance}
-            currency={selectedCurrency}
-            errorMessage={
-              isBalanceAccurate ? undefined : 'Unable to load all balances'
-            }
-            isLoading={isBalanceLoading}
-            isPrivacyModeEnabled={isPrivacyModeEnabled}
-          />
-        </React.Profiler>
+        <TokenHeader
+          token={token}
+          formattedBalance={formattedBalance}
+          currency={selectedCurrency}
+          errorMessage={
+            isBalanceAccurate ? undefined : 'Unable to load all balances'
+          }
+          isLoading={isBalanceLoading}
+          isPrivacyModeEnabled={isPrivacyModeEnabled}
+        />
       </View>
     )
   }, [
@@ -167,69 +101,43 @@ export const NonXpTokenDetailScreen = ({ token }: Props): JSX.Element => {
   )
 
   return (
-    // CP-14918 TEMP PROBE: per-commit JS render time for this whole subtree
-    <React.Profiler id="tokenDetail" onRender={perfRenderProfile}>
-      <ScrollScreen
-        navigationTitle={token?.name ?? ''}
-        refreshControl={
-          <RefreshControl
-            progressViewOffset={headerHeight}
-            refreshing={activity.isRefreshing}
-            onRefresh={activity.refresh}
-          />
-        }
-        renderHeader={renderHeader}>
-        {/* CP-14918 TEMP PROBE: per-child commit attribution */}
-        <React.Profiler id="actionButtons" onRender={perfRenderProfile}>
-          <ActionButtons
-            buttons={actionButtons}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingVertical: 24
-            }}
-          />
-        </React.Profiler>
-        {isPriceChartBlocked || !token ? null : isChartReady ? (
-          <React.Profiler
-            id="priceChart"
-            onRender={perfRenderProfile}
-            // CP-14918 TEMP PROBE: onCommit/onPostCommit aren't in @types/react's
-            // ProfilerProps but RN's Fabric renderer supports them at runtime
-            // (verified in ReactFabric-dev.js commitProfilerUpdate /
-            // commitProfilerPostCommitImpl) — splits render vs layout-effect vs
-            // passive-effect cost, which onRender's actualDuration alone can't.
-            {...({
-              onCommit: (_id: string, _phase: string, effectDuration: number) =>
-                perfCount('commit.priceChart.layoutFx', effectDuration),
-              onPostCommit: (
-                _id: string,
-                _phase: string,
-                passiveFxDuration: number
-              ) => perfCount('commit.priceChart.passiveFx', passiveFxDuration)
-            } as Record<string, unknown>)}>
-            <TokenPriceChart
-              token={token}
-              width={frame.width}
-              onPriceHeaderPress={
-                trackTokenId ? handleOpenTrackTokenDetail : undefined
-              }
-            />
-          </React.Profiler>
-        ) : (
-          // Reserves the space `TokenPriceChart` will occupy so its deferred
-          // mount above doesn't reflow `TransactionHistory` below it.
-          <View style={{ height: TOKEN_PRICE_CHART_HEIGHT }} />
-        )}
-        <React.Profiler id="txHistory" onRender={perfRenderProfile}>
-          <TransactionHistory
-            mode="plain"
-            token={token}
-            handleExplorerLink={handleExplorerLink}
-            activity={activity}
-            containerStyle={containerStyle}
-          />
-        </React.Profiler>
-      </ScrollScreen>
-    </React.Profiler>
+    <ScrollScreen
+      navigationTitle={token?.name ?? ''}
+      refreshControl={
+        <RefreshControl
+          progressViewOffset={headerHeight}
+          refreshing={activity.isRefreshing}
+          onRefresh={activity.refresh}
+        />
+      }
+      renderHeader={renderHeader}>
+      <ActionButtons
+        buttons={actionButtons}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 24
+        }}
+      />
+      {isPriceChartBlocked || !token ? null : isChartReady ? (
+        <TokenPriceChart
+          token={token}
+          width={frame.width}
+          onPriceHeaderPress={
+            trackTokenId ? handleOpenTrackTokenDetail : undefined
+          }
+        />
+      ) : (
+        // Reserves the space `TokenPriceChart` will occupy so its deferred
+        // mount above doesn't reflow `TransactionHistory` below it.
+        <View style={{ height: TOKEN_PRICE_CHART_HEIGHT }} />
+      )}
+      <TransactionHistory
+        mode="plain"
+        token={token}
+        handleExplorerLink={handleExplorerLink}
+        activity={activity}
+        containerStyle={containerStyle}
+      />
+    </ScrollScreen>
   )
 }

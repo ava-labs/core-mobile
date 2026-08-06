@@ -39,36 +39,14 @@ const tabLabelStyle = {
 const tabBarInactiveTintOpacity = 0.6
 
 /**
- * Freeze inactive tabs (via react-freeze, the same primitive backing
- * react-native-screens' freezeOnBlur) so their query subscriptions and
- * effects pause while backgrounded, instead of re-rendering on every store/
- * query notification for the lifetime of the app session.
- *
- * This was previously disabled on iOS only (see git history around
- * CP-11923, "our testing showed that enabling freezeOnBlur on iOS caused
- * issues with SegmentedControl and the Browser tab"). That note predates a
- * full rewrite of freezeOnBlur upstream in react-native-bottom-tabs (we've
- * since gone from 0.10.1 -> 1.1.0, including a rework of the freeze
- * mechanism itself, per callstack/react-native-bottom-tabs#71) and was
- * never re-verified after that upgrade landed (#3481). No linked ticket,
- * repro steps, or currently-open upstream issue corroborates an ongoing
- * SegmentedControl-specific problem with the current version, so we're
- * flipping it on for iOS too (CP-14918).
- *
- * The Browser tab stays exempted below (freezeOnBlur: false on its
- * Screen) for a concrete, still-live reason: useEvmInjectedProvider.ts's
- * activeAccountRef (~L387-391) is kept fresh by a useEffect, and
- * react-freeze suppresses effects (not just paint) while frozen. The
- * WebView's own JS/message-channel keeps running while its owning
- * BottomTabs.Screen subtree is frozen, so a backgrounded dApp's async
- * request can hit router.ts's dispatchSigningRequest signer fallback
- * (~L327, getActiveAccount()?.addressC) with an indefinitely stale
- * account instead of the one-render-tick staleness the CP-14385 comment
- * at useEvmInjectedProvider.ts:638-646 already had to patch. Do not
- * change useEvmInjectedProvider.ts to fix this here — hardening the
- * signing path (e.g. reading the account from store.getState() instead
- * of a render-gated ref) is its own ticket; only once that lands should
- * Browser's freezeOnBlur be revisited.
+ * Inactive tabs freeze via react-freeze (`freezeOnBlur = true`, flipped on
+ * for iOS -- CP-14918, doc §15.4/§15.9). Browser stays exempted
+ * (`browserFreezeOnBlur = false`): freezing it would suspend the effect that
+ * keeps `useEvmInjectedProvider.ts`'s `activeAccountRef` fresh while the
+ * WebView keeps running, letting a backgrounded dApp sign with an
+ * indefinitely stale account. Do NOT re-enable Browser's freeze until the
+ * signing path reads the account from `store.getState()` directly instead
+ * (separate ticket).
  */
 const freezeOnBlur = true
 const browserFreezeOnBlur = false

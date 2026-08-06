@@ -64,22 +64,9 @@ export const rangeBounds = (
   return { minPrice, maxPrice }
 }
 
-// CP-14918: even a single hoisted `Intl.DateTimeFormat` instance costs
-// ~4ms/call on-device (Hermes -> JSI -> Android ICU for every `.format()`
-// call, ~96 calls/mount) — the constructor was never the bottleneck, the
-// per-call native crossing was. These are hand-rolled, fixed-en-US
-// replacements for the exact formats previously produced by
-// `Intl.DateTimeFormat(undefined, opts).format(d)` (equivalently
-// `d.toLocaleDateString`/`toLocaleTimeString(undefined, opts)`, which the
-// spec defines in terms of the same internal `Intl.DateTimeFormat`).
-//
-// LOCALE CAVEAT: `undefined` resolves to the *device* locale, not the app's
-// i18n language setting, so a non-English-locale device previously saw
-// localized month/weekday names (and locale-specific hour-cycle/AM-PM
-// conventions) here. Hand-rolling fixes English output regardless of device
-// locale — a real behavior change for non-en-US devices that the parity
-// tests (pinned to en-US, matching this repo's Jest/Node ICU default) cannot
-// catch. See task-U-report.md for the flag.
+// Hand-rolled to avoid ~4ms/call Intl JSI crossings (~96 calls/mount).
+// Hardcodes en-US regardless of device locale -- Open decision #2 (doc
+// §15.7), not yet resolved. CP-14918.
 const MONTH_ABBR = [
   'Jan',
   'Feb',
@@ -118,17 +105,9 @@ const formatMonthDay = (d: Date): string => {
  * `{ hour: 'numeric', minute: '2-digit', hour12: false }`-equivalent,
  * zero-padded to 2 digits, hours 0-23 (h23), e.g. midnight -> "00:00".
  *
- * CP-14918 correction (task Z fix-wave): this used to map midnight to "24"
- * to match Node/V8's ICU en-US `Intl.DateTimeFormat` output for `hour12:
- * false` (h24 hour cycle, hours 1-24) — but Node's ICU is not the runtime
- * this code actually runs on. An on-device parity probe
- * (`runIntlParityProbe` in `_cp14918PerfProbe.ts`) proved Hermes/Android
- * ICU renders midnight as "00:00" (h23), not "24:00" — every one of 25
- * mismatches it captured was exactly this case (task-N2-report.md:
- * `PERFPROBE intlParity ok=15 mismatch=25`, all midnight-hour). The device
- * is the correct reference, so this now emits "00:00" — matching both
- * on-device Intl and every other clock in the app. `helpers.test.ts`'s
- * Node-ICU-reference comparisons special-case this same divergence.
+ * Emits `00:00` for midnight, not Node ICU's `24:00` -- matches
+ * Hermes/Android ICU (h23). Do not revert; `helpers.test.ts` pins this.
+ * CP-14918.
  */
 const formatHour24Minute = (d: Date): string => {
   assertValidDate(d)
@@ -140,21 +119,9 @@ const formatHour24Minute = (d: Date): string => {
  * for en-US) — e.g. "9:41\u202fAM", "12:00\u202fPM". Hour is NOT
  * zero-padded; minute is.
  *
- * CP-14918 correction (device-confirm fix-wave, task-Z2-device-confirm.md):
- * an on-device run of `runIntlParityProbe` reported `ok=20 mismatch=20` —
- * EVERY 12-hour comparison failing, always at the byte between minutes and
- * AM/PM. Hexdump: Hermes/Android ICU emits U+202F (NARROW NO-BREAK SPACE,
- * UTF-8 `e2 80 af`) there, not the ASCII space (`0x20`) this used to emit.
- * This is the ICU 72+ change to the CLDR "hour-minute" pattern's separator
- * (bare space -> NNBSP before the day-period marker); Node's bundled ICU in
- * this repo's Jest environment predates that change and still emits ASCII
- * space (verified: `Intl.DateTimeFormat` on Node here -> "9:05 AM", 0x20).
- * The device is the correct reference — this is what users actually saw
- * pre-migration — so this now emits U+202F (`AM_PM_SEPARATOR` below, NOT a
- * plain space), matching on-device Intl. `helpers.test.ts` normalizes this
- * exact, documented divergence when comparing against its Node-ICU
- * reference, and pins the U+202F literal in a dedicated byte-exact
- * assertion so a future "cleanup" back to an ASCII space fails loudly.
+ * `AM_PM_SEPARATOR` must stay U+202F (narrow no-break space), not ASCII
+ * space -- matches Hermes/Android ICU 72+. Byte-pinned by
+ * `helpers.test.ts`; do not "clean up" back to a plain space. CP-14918.
  */
 const AM_PM_SEPARATOR = '\u202f' // NARROW NO-BREAK SPACE — see doc comment above.
 

@@ -310,42 +310,22 @@ const intlFormatLastUpdate = (ts: number): string => {
   return `Last update: ${datePart} at ${timePart}`
 }
 
-// CP-14918 (task Z fix-wave): Node/V8's ICU renders en-US `hour12: false` as
-// the h24 hour cycle (hours 1-24), so `intlFormatActiveTime` above legitimately
-// prints "24:MM" at midnight — that was verified against real Node `Intl`
-// output when this test file was written. But an on-device parity probe
-// (`runIntlParityProbe`, task-N2-report.md: `PERFPROBE intlParity ok=15
-// mismatch=25`, captured 2026-08-05) proved every single mismatch between
-// Hermes/Android ICU and the (then-)hand-rolled formatter was exactly this
-// case, and that Hermes/Android ICU actually renders midnight as "00:00"
-// (h23), not "24:00". The device is the correct reference, not Node's ICU,
-// so `formatHour24Minute` (helpers.ts) was changed to emit "00:00" — which
-// now legitimately diverges from `intlFormatActiveTime`'s Node-ICU output at
-// exactly the hour-0 boundary. This wrapper patches that one known,
-// documented divergence onto the Node-ICU reference before comparing, so the
-// parity tests keep asserting real equivalence everywhere else while pinning
-// the corrected "00:MM" literal at midnight instead of chasing the wrong
-// (Node-only) reference.
+// Node ICU renders midnight as "24:00" (h24); Hermes/Android ICU renders
+// "00:00" (h23), which is what `formatHour24Minute` (helpers.ts) emits. This
+// wrapper patches that one known divergence onto the Node-ICU reference
+// before comparing, so parity tests keep asserting real equivalence
+// everywhere else. CP-14918.
 const expectedActiveTime = (ts: number, nowMs?: number): string => {
   const reference = intlFormatActiveTime(ts, nowMs)
   const isMidnightHour = new Date(ts).getHours() === 0
   return isMidnightHour ? reference.replace(/24:(\d{2})$/, '00:$1') : reference
 }
 
-// CP-14918 (device-confirm fix-wave, task-Z2-device-confirm.md): an on-device
-// run of `runIntlParityProbe` reported `ok=20 mismatch=20` — EVERY 12-hour
-// comparison failing, always at the byte between minutes and AM/PM. Hexdump
-// evidence: Hermes/Android ICU emits U+202F (NARROW NO-BREAK SPACE, UTF-8
-// `e2 80 af`) there — the ICU 72+ CLDR "hour-minute" pattern separator
-// change — not the ASCII space (`0x20`) `intlFormatLastUpdate` below
-// produces on Node's (older) bundled ICU in this Jest environment (verified
-// directly: `Intl.DateTimeFormat` on Node here -> "9:05 AM", 0x20). The
-// device is the correct reference — that is what users actually saw
-// pre-migration — so `formatHour12Minute` (helpers.ts) now emits U+202F,
-// which legitimately diverges from the Node-ICU reference at that one byte.
-// Same treatment as `expectedActiveTime` above: patch this one known,
-// documented divergence onto the Node-ICU reference before comparing, so
-// these tests keep asserting real equivalence everywhere else.
+// Hermes/Android ICU 72+ emits U+202F (narrow no-break space) between minutes
+// and AM/PM; Node's bundled ICU in this Jest environment emits ASCII 0x20. The
+// device behavior is the correct reference, so `formatHour12Minute` (helpers.ts)
+// emits U+202F. Same treatment as `expectedActiveTime` above: patch this one
+// known divergence onto the Node-ICU reference before comparing. CP-14918.
 const expectedLastUpdate = (ts: number): string =>
   intlFormatLastUpdate(ts).replace(/ (AM|PM)$/, '\u202f$1')
 
@@ -442,7 +422,7 @@ describe('formatActiveTime / formatLastUpdate — Intl parity sweep', () => {
     expect(formatLastUpdate(ts)).toBe(expectedLastUpdate(ts))
   })
 
-  it('pins the AM/PM separator to U+202F (NNBSP), not an ASCII space — device-confirmed divergence from Node ICU (task-Z2-device-confirm.md)', () => {
+  it('pins the AM/PM separator to U+202F (NNBSP), not an ASCII space — device-confirmed divergence from Node ICU', () => {
     // This asserts the exact byte directly, NOT via `expectedLastUpdate`'s
     // Node-ICU reference (which would just prove the normalization regex
     // works, not that the hand-rolled formatter emits the right codepoint).

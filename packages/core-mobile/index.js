@@ -47,66 +47,6 @@ if (__DEV__) {
   console.reportErrorsAsExceptions = false
 }
 
-// CP-14918 TEMP PROBE: discover whether a JS-reachable Hermes sampling
-// profiler exists (dev menu has no item; CDP Profiler domain is unreachable).
-try {
-  const hi = global.HermesInternal
-  // eslint-disable-next-line no-console
-  console.log(
-    'PERFHERMES exists=' +
-      typeof hi +
-      ' keys=' +
-      JSON.stringify(Object.keys(hi ?? {})) +
-      ' ownNames=' +
-      JSON.stringify(Object.getOwnPropertyNames(hi ?? {}))
-  )
-  try {
-    // eslint-disable-next-line no-console
-    console.log(
-      'PERFHERMES runtimeProps=' +
-        JSON.stringify(hi?.getRuntimeProperties?.() ?? null)
-    )
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log('PERFHERMES runtimeProps failed: ' + e.message)
-  }
-  const cand = [
-    'enableSamplingProfiler',
-    'disableSamplingProfiler',
-    'dumpSampledTraceToFile',
-    'dumpSampledTrace',
-    'samplingProfiler'
-  ]
-  // eslint-disable-next-line no-console
-  console.log(
-    'PERFHERMES types=' +
-      JSON.stringify(cand.map(k => k + ':' + typeof (hi ?? {})[k]))
-  )
-  const { NativeModules, TurboModuleRegistry } = require('react-native')
-  // eslint-disable-next-line no-console
-  console.log(
-    'PERFHERMES nativeModules=' +
-      JSON.stringify(
-        Object.keys(NativeModules ?? {}).filter(k =>
-          /profil|hermes|sampl|trace/i.test(k)
-        )
-      )
-  )
-  for (const n of ['HermesSamplingProfiler', 'SamplingProfiler', 'Profiler']) {
-    let got = null
-    try {
-      got = TurboModuleRegistry?.get?.(n) ? 'present' : 'null'
-    } catch (e) {
-      got = 'throw:' + e.message
-    }
-    // eslint-disable-next-line no-console
-    console.log('PERFHERMES turbo ' + n + '=' + got)
-  }
-} catch (e) {
-  // eslint-disable-next-line no-console
-  console.log('PERFHERMES probe failed: ' + e.message)
-}
-
 // Expo SDK 56's winter runtime replaces globalThis.fetch with expo/fetch,
 // whose Android response-body handling can corrupt payloads (surfaces as
 // "JSON Parse error: Unexpected character" in avalanchejs P-Chain RPC calls

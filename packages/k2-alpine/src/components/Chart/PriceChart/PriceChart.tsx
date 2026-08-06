@@ -20,8 +20,6 @@ import Animated, {
 import { useTheme } from '../../../hooks'
 import { colors as baseColors } from '../../../theme/tokens/colors'
 import { Text } from '../../Primitives'
-// CP-14918 TEMP PROBE
-import { perfCount, perfNow } from './_cp14918PerfProbe'
 import { ChartFooter } from './ChartFooter'
 import {
   CANDLE_BODY_MAX_WIDTH,
@@ -93,10 +91,8 @@ const renderPlaceholderState = ({
   return null
 }
 
-// CP-14918 item 4 (see the `lineYsSV`/`volumesSV` declarations below):
-// pulled out to module scope so the same computation can back both the
-// lazy shared-value initializer (mount) and the sync effect (updates)
-// without duplicating the flattening logic.
+// Module scope so the lazy shared-value init and the sync effect share the
+// same flattening logic. CP-14918.
 const computeLineYs = (points: { x: number; y: number }[]): Float32Array => {
   const ys = new Float32Array(points.length)
   points.forEach((p, i) => {
@@ -113,19 +109,9 @@ const computeVolumes = (candles: OhlcCandle[]): Float32Array => {
   return vols
 }
 
-// CP-14918 TEMP PROBE: module-level so the mount-effect (request) and the
-// labelFont-ready-effect (resolve) can share the timestamp across renders.
-let fontRequestT0: number | undefined
-
-// CP-14918 item 3: `useFont` has no internal cache (see
-// @shopify/react-native-skia's Data.js/Typeface.js) — every call re-runs
-// `Skia.Data.fromURI` + `Skia.Typeface.MakeFreeTypeFaceFromData` on a fresh
-// async native round trip and allocates a brand-new SkTypeface/SkFont, even
-// though the bytes never change. Load the axis-label font once at module
-// scope and hand the same SkFont to every PriceChart mount. (Unrelated to
-// `usePreloadSkiaFonts`'s `SkiaPreload`, which warms Skia's glyph
-// rasterization *atlas* at app start but still calls `useFont` itself, so it
-// does not remove this per-mount typeface allocation.)
+// `useFont` has no internal cache -- every call reallocates a native
+// `SkTypeface`. Module-scope singleton (`labelFontCache`/`labelFontPromise`),
+// shared across every mount. CP-14918.
 const LABEL_FONT_SIZE = 11
 let labelFontCache: SkFont | null = null
 let labelFontPromise: Promise<SkFont | null> | null = null
@@ -150,13 +136,8 @@ const loadLabelFontOnce = (): Promise<SkFont | null> => {
       labelFontListeners.forEach(listener => listener())
       return font
     } catch {
-      // CP-14918 fix round 1: don't cache a failed load forever. The old
-      // per-mount `useFont` retried naturally on every mount; caching a
-      // resolved-null promise here would turn one transient load failure
-      // (e.g. a flaky first `Skia.Data.fromURI` read) into session-permanent
-      // blank axis labels on every future PriceChart, since every mount
-      // short-circuits on `if (labelFontPromise) return labelFontPromise`.
-      // Clearing it lets the next mount's `loadLabelFontOnce()` call retry.
+      // Don't cache a failed load forever -- clear `labelFontPromise` in the
+      // catch so the next mount retries. CP-14918.
       labelFontPromise = null
       return null
     }
@@ -199,30 +180,7 @@ export const PriceChart: FC<Props> = ({
 }) => {
   const { theme } = useTheme()
 
-  // CP-14918 TEMP PROBE: component body cost (shared values, derived, gesture
-  // build) per render pass, plus the font-ready gap / second-Skia-rebuild check.
-  const t0Body = perfNow()
-
   const labelFont = useLabelFont()
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(`PERFMARK priceChart.fontRequested ${perfNow().toFixed(1)}`)
-    fontRequestT0 = perfNow()
-  }, [])
-
-  useEffect(() => {
-    if (labelFont && fontRequestT0 !== undefined) {
-      const gap = perfNow() - fontRequestT0
-      // eslint-disable-next-line no-console
-      console.log(
-        `PERFMARK priceChart.fontReady gapMs=${gap.toFixed(
-          1
-        )} ${perfNow().toFixed(1)}`
-      )
-      fontRequestT0 = undefined
-    }
-  }, [labelFont])
 
   const { minPrice, maxPrice } = useMemo(() => rangeBounds(candles), [candles])
 
@@ -397,25 +355,10 @@ export const PriceChart: FC<Props> = ({
     [candles]
   )
 
-  // CP-14918 item 4: `activeLineY`/`animatedBarHeight` only ever read the Y
-  // (resp. volume) field off `linePoints`/`candles` at the crosshair's
-  // fractional index. Closing over the full 48-object arrays forced a fresh
-  // shareable conversion of both arrays to the UI runtime on every
-  // dependency change; flattening just the field each worklet actually
-  // reads into a typed array, mirrored into a SharedValue from an effect
-  // (not captured directly in the worklet closure), removes that
-  // conversion cost from the hot path.
-  //
-  // CP-14918 fix round 1: lazy-initialize from the CURRENT render's
-  // `linePoints`/`candles` (mirrors VolumeRow.tsx's `barGeomSV` init)
-  // instead of an empty array. Initializing empty and populating only via
-  // the effect below left a one-JS-tick window, on mount and on every
-  // range switch, where the worklets read a stale-length array against
-  // fresh clamp bounds — bounds-safe (indexes are clamped to the stale
-  // array's own length) but could briefly highlight the wrong candle if a
-  // crosshair drag was in flight when the range changed. The effect is
-  // kept for subsequent updates; the lazy-init closure runs once per mount,
-  // same as `useState`'s lazy initializer.
+  // `lineYsSV`/`volumesSV`: worklets read a flattened `Float32Array`, not the
+  // full object array, to avoid a shareable-conversion per dep change.
+  // Lazy-inits from the CURRENT render's data (not empty) -- avoids a
+  // stale-length window on mount/range-switch. CP-14918.
   const lineYsSV = useSharedValue<Float32Array>(() => computeLineYs(linePoints))
   useEffect(() => {
     lineYsSV.value = computeLineYs(linePoints)
@@ -483,24 +426,9 @@ export const PriceChart: FC<Props> = ({
   //     direction so the user can drag the crosshair vertically without
   //     losing it.
   //
-  // CP-14918 item 5 (investigated, not landed here): removing this
-  // suppression alone does NOT let the React Compiler regain memoization
-  // for this component. Verified by sweeping a copy of this file with only
-  // this comment stripped (no other changes): the compiler still bails,
-  // now with ~15 "existing manual memoization could not be preserved" /
-  // "dependency may be mutated later" errors instead of the single
-  // "found suppression" one — coming from `modeAnim`, `chartContentOpacity`,
-  // and `spinnerOpacity`'s effects above, all of which list a SharedValue
-  // directly in their own dependency arrays (pre-existing, unrelated to
-  // this gesture memo). Making this component fully compiler-eligible
-  // needs a restructure of every SharedValue-in-deps effect in this file,
-  // not just this one spot — out of scope for this pass; see
-  // task-V-report.md for the isolated repro. A `useRef`-container
-  // workaround was also tried and separately rejected: it trades this
-  // bailout for "Cannot access refs during render" once the worklets below
-  // read through it, so it isn't a viable path either without deeper
-  // restructuring (and this is the highest-risk code in the file to change
-  // without on-device gesture verification).
+  // Gesture memo still bails from React Compiler -- a `SharedValue`-in-deps
+  // pattern shared by 3 effects in this file, not just here. Known, accepted
+  // limitation; out of scope for this pass. CP-14918 item 5.
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const gesture = useMemo(() => {
     const clampX = (x: number): number => {
@@ -592,9 +520,6 @@ export const PriceChart: FC<Props> = ({
     return Gesture.Simultaneous(longPress, pan)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- SharedValues are stable refs.
   }, [candles.length, width, innerWidth, chartInset])
-
-  // CP-14918 TEMP PROBE: component body cost, end of pair started at t0Body
-  perfCount('priceChart.bodyMs', perfNow() - t0Body)
 
   const placeholder = renderPlaceholderState({
     state,

@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useEffect, useMemo } from 'react'
+import React, { FC, memo, useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { LayoutChangeEvent, Pressable, View, ViewStyle } from 'react-native'
 import Animated, {
@@ -14,8 +14,6 @@ import { Icons } from '../../../theme/tokens/Icons'
 import { PriceChangeIndicator } from '../../PriceChangeIndicator/PriceChangeIndicator'
 import { PriceChangeStatus } from '../../PriceChangeIndicator/types'
 import { Text } from '../../Primitives'
-// CP-14918 TEMP PROBE
-import { perfTime, runIntlParityProbe } from './_cp14918PerfProbe'
 import { DURATIONS } from './constants'
 import {
   crosshairInnerAnchorTarget,
@@ -219,35 +217,24 @@ export const ChartHeader: FC<Props> = memo(
       isActive
     )
 
-    // CP-14918 TEMP PROBE: runtime Intl-vs-hand-rolled parity check.
-    // `runIntlParityProbe` is a no-op after its first call (and in
-    // non-__DEV__ builds), so mounting more than one ChartHeader is safe.
-    useEffect(() => {
-      runIntlParityProbe()
-    }, [])
-
     // Crosshair-inactive state only ever reads the LAST candle (see `active`
     // below), so the mount-time eager cost is a single O(1) format instead
     // of formatting all ~48 candles. The full array (needed for crosshair
     // drag lookups) is computed lazily by `fullFormatted` below.
     const lastFormatted = useMemo(
-      // CP-14918 TEMP PROBE: eager mount-time cost — now O(1), one candle.
+      // CP-14918: eager mount-time cost — now O(1), one candle.
       () =>
-        perfTime('chartHeader.formatStrings', () =>
-          formatCandleDisplayStringAt(candles, candles.length - 1, formatPrice)
-        ),
+        formatCandleDisplayStringAt(candles, candles.length - 1, formatPrice),
       [candles, formatPrice]
     )
 
     const needsFull = useIsFullFormatNeeded(idx)
     const fullFormatted = useMemo(() => {
       if (!needsFull) return undefined
-      // CP-14918 TEMP PROBE: the ~96-call Intl formatting cost, deferred off
+      // CP-14918: the ~96-call Intl formatting cost, deferred off
       // the mount path to an idle tick or the first crosshair activation
       // (whichever comes first) — see `useIsFullFormatNeeded`.
-      return perfTime('chartHeader.formatStringsDeferred', () =>
-        formatCandleDisplayStrings(candles, formatPrice)
-      )
+      return formatCandleDisplayStrings(candles, formatPrice)
     }, [candles, formatPrice, needsFull])
 
     const lastCandle = lastFormatted

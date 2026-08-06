@@ -7,8 +7,6 @@ import { useLocalSearchParams } from 'expo-router'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-// CP-14918 TEMP PROBE
-import { perfWhy } from 'utils/performance/perfProbe'
 import { NonXpTokenDetailScreen } from './NonXpTokenDetailScreen'
 import { XpTokenDetailScreen } from './XpTokenDetailScreen'
 
@@ -58,35 +56,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [tokensForChain, localId]
   )
 
-  // CP-14918 TEMP PROBE: does the child re-render because this parent did?
-  perfWhy('route', {
-    localId,
-    chainId,
-    activeAccount,
-    tokensForChain,
-    tokensLen: tokensForChain.length,
-    token
-  })
-
-  // CP-14918 C1/C2 fix: keep the preloaded, param-less instance a fully
-  // inert render. Before this gate, that instance still mounted
-  // `NonXpTokenDetailScreen` with `token=undefined`, which builds a REAL
-  // child hook tree: `useTokenDetailData(undefined)` (3 background balance
-  // observers), the RTK-Query 15s transaction poll, the unconditional
-  // `isChartReady` mount effect (which defeats the chart-mount deferral —
-  // see "Fix 3" — on nav #1 specifically, since by the time the real push
-  // reuses this instance `isChartReady` is often already true), and the
-  // one-shot `perfDumpQueryCache` timer. None of that is "frozen off" —
-  // see the corrected comment in PortfolioScreen.tsx; a preloaded route is
-  // never frozen. Rendering an empty fragment here means the preload only
-  // warms this route's module graph and this component's own render, which
-  // is all `router.prefetch` is for. When the real push reuses this SAME
-  // instance (see the comment on `hasRouteParams` above), `hasRouteParams`
-  // flips to `true` in that render pass and the child tree below mounts
-  // fresh, on the tap-to-paint path — where the chart-defer/placeholder
-  // logic is actually exercised, on nav #1 as intended. (An empty fragment,
-  // not `null`, keeps this function's `React.JSX.Element` return type
-  // intact rather than widening it to `| null` for every caller.)
+  // Render-null gate: the preloaded, param-less instance must stay fully
+  // inert -- do not remove `hasRouteParams` / the empty-fragment return, or
+  // the preload mounts a real `useTokenDetailData(undefined)` child tree
+  // (background balance observers, RTK-Query poll) forever. CP-14918
+  // (closes C1/C2, §15.5).
   if (!hasRouteParams) {
     return <></>
   }

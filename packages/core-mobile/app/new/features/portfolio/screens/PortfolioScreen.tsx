@@ -65,12 +65,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWalletsCount } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-// CP-14918 TEMP PROBE
-import {
-  perfHeap,
-  perfMark,
-  perfRenderProfile // CP-14918 TEMP PROBE
-} from 'utils/performance/perfProbe'
 
 const SEGMENT_ITEMS_DEFAULT = [
   { title: 'Assets' },
@@ -112,33 +106,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { navigate, push, prefetch } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
 
-  // CP-14918 TEMP PROBE: warm tokenDetail's module graph + first render off
-  // the tap-to-paint path, once per Portfolio-tab lifetime. Prefetched
-  // without params. This is NOT inert because native-stack "freezes" it —
-  // a preloaded route has activityState=0, and native-stack's
-  // `shouldFreeze` explicitly excludes preloaded routes
-  // (`!isPreloaded && ...`), so `enableFreeze` never applies here; the
-  // preloaded instance's JS keeps running like any other mounted screen.
-  // Inertness instead comes from `TokenDetailScreen` itself: it derives
-  // `hasRouteParams` from the (absent) route params and renders an empty
-  // fragment when they're missing, so the preloaded, param-less instance
-  // mounts no child hook tree at all (see TokenDetailScreen.tsx). StackRouter has no
-  // `getId` configured for this route, so the later real push (with
-  // localId/chainId) reuses this same preloaded route instance by name
-  // rather than remounting (@react-navigation/routers/src/StackRouter.tsx
-  // PUSH case) — `hasRouteParams` flips to true on that same instance and
-  // the child tree (including the chart-defer/placeholder logic) mounts
-  // fresh, on the tap-to-paint path.
-  //
-  // `InteractionManager.runAfterInteractions` is a deprecated stub on this
-  // RN version (Libraries/Interaction/InteractionManager.js) — it no longer
-  // tracks touches/animations, it's just `setImmediate(task)`. So this gives
-  // no interaction-aware deferral, only what a plain `useEffect` already
-  // gives: the callback runs after Portfolio's own commit, one macrotask
-  // later. That's still the right shape here — prefetch's cost is a
-  // preloaded-render React schedules off-screen, so "after this component's
-  // commit" is all that's needed to keep it off Portfolio's first paint;
-  // there's no actual interaction/animation to wait out.
+  // Prefetches `/tokenDetail` once per Portfolio-tab lifetime. NOT inert --
+  // a preloaded route is never frozen (native-stack excludes preloaded
+  // routes from `shouldFreeze`); inertness comes from `TokenDetailScreen`'s
+  // `hasRouteParams` gate instead. No `getId` on this route, so the later
+  // real push reuses this same instance. CP-14918.
   useEffect(() => {
     const handle = InteractionManager.runAfterInteractions(() => {
       prefetch('/tokenDetail')
@@ -461,20 +433,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleGoToTokenDetail = useCallback(
     (token: LocalTokenWithBalance): void => {
-      perfMark('nav.push') // CP-14918 TEMP PROBE
-      perfHeap('navStart') // CP-14918 TEMP PROBE
       const { name, symbol, localId, networkChainId } = token
       AnalyticsService.capture('PortfolioTokenSelected', {
         name,
         symbol,
         chainId: networkChainId
       })
-      perfMark('nav.afterCapture') // CP-14918 TEMP PROBE
       push({
         pathname: '/tokenDetail',
         params: { localId, chainId: networkChainId }
       })
-      perfMark('nav.afterPush') // CP-14918 TEMP PROBE
     },
     [push]
   )
@@ -525,20 +493,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [activeAccount?.id, handleScrollResync, scrollToTop])
   )
 
-  // tabHeight and contentContainerStyle used to be two separate useMemos,
-  // with tabHeight's own reactive inputs (frame.height, headerHeight,
-  // stickyHeaderLayout?.height) hidden behind contentContainerStyle's dep
-  // array, which only listed tabHeight's *identity*
-  // (`[segmentedControlLayout?.height, tabHeight]`). React Compiler's
-  // reactive-scope analysis merges the two chained computations and infers
-  // the finer-grained dependencies directly, which then disagreed with the
-  // manually-declared array and made the compiler bail out of memoizing
-  // this whole component (CP-14918). tabHeight isn't used anywhere else, so
-  // collapsing both into one useMemo with the complete, flat dependency
-  // list keeps contentContainerStyle referentially stable (still needed —
-  // it's a dependency of the `tabs` useMemo below) while giving the
-  // compiler a single reactive scope whose declared deps match what it
-  // infers.
+  // Single `useMemo` with a flat, complete dependency array -- splitting
+  // `tabHeight` back out from `contentContainerStyle` reintroduces a React
+  // Compiler bailout on this component. CP-14918.
   const contentContainerStyle = useMemo(() => {
     const tabHeight = Platform.select({
       ios: frame.height - headerHeight,
@@ -631,50 +588,46 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [handleSelectSegment, selectedSegmentIndex, segmentItems])
 
   return (
-    // CP-14918 TEMP PROBE: does the Assets/Portfolio tree keep re-rendering
-    // while we navigate to the token detail screen (despite enableFreeze)?
-    <React.Profiler id="portfolioRoot" onRender={perfRenderProfile}>
-      <BlurredBarsContentLayout>
-        <CollapsibleTabs.Container
-          ref={tabViewRef}
-          renderHeader={renderHeader}
-          renderTabBar={renderEmptyTabBar}
-          onTabChange={handleTabChange}
-          onScrollY={onScroll}
-          tabs={tabs}
-        />
+    <BlurredBarsContentLayout>
+      <CollapsibleTabs.Container
+        ref={tabViewRef}
+        renderHeader={renderHeader}
+        renderTabBar={renderEmptyTabBar}
+        onTabChange={handleTabChange}
+        onScrollY={onScroll}
+        tabs={tabs}
+      />
 
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0
-          }}
-          onLayout={handleSegmentedControlLayout}>
-          <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
-        </View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
+        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
+      </View>
 
-        {/* 
+      {/*
         This is a workaround to display the header background + separator on Android.
         Android returns a header height of 0, so we need to display the background + separator manually.
       */}
-        {Platform.OS === 'android' && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: headerHeight
-            }}>
-            <BlurredBackgroundView
-              separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
-            />
-          </View>
-        )}
-      </BlurredBarsContentLayout>
-    </React.Profiler>
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
+        </View>
+      )}
+    </BlurredBarsContentLayout>
   )
 }
 
