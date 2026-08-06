@@ -4,10 +4,10 @@ import {
   Group,
   Path,
   Skia,
-  useFont
+  type SkFont
 } from '@shopify/react-native-skia'
-import React, { FC, useEffect, useMemo } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, Image, View } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
@@ -91,6 +91,80 @@ const renderPlaceholderState = ({
   return null
 }
 
+// Module scope so the lazy shared-value init and the sync effect share the
+// same flattening logic. CP-14918.
+const computeLineYs = (points: { x: number; y: number }[]): Float32Array => {
+  const ys = new Float32Array(points.length)
+  points.forEach((p, i) => {
+    ys[i] = p.y
+  })
+  return ys
+}
+
+const computeVolumes = (candles: OhlcCandle[]): Float32Array => {
+  const vols = new Float32Array(candles.length)
+  candles.forEach((c, i) => {
+    vols[i] = c.volume ?? -1
+  })
+  return vols
+}
+
+// `useFont` has no internal cache -- every call reallocates a native
+// `SkTypeface`. Module-scope singleton (`labelFontCache`/`labelFontPromise`),
+// shared across every mount. CP-14918.
+const LABEL_FONT_SIZE = 11
+let labelFontCache: SkFont | null = null
+let labelFontPromise: Promise<SkFont | null> | null = null
+const labelFontListeners = new Set<() => void>()
+
+const loadLabelFontOnce = (): Promise<SkFont | null> => {
+  if (labelFontPromise) return labelFontPromise
+  labelFontPromise = (async (): Promise<SkFont | null> => {
+    try {
+      const source = require('../../../assets/fonts/Inter-Medium.ttf')
+      const uri = Image.resolveAssetSource(source).uri
+      const data = await Skia.Data.fromURI(uri)
+      const typeface = Skia.Typeface.MakeFreeTypeFaceFromData(data)
+      if (!typeface) {
+        // Same permanent-cache hazard as the catch block below — a failed
+        // (non-throwing) typeface creation must not stick around forever.
+        labelFontPromise = null
+        return null
+      }
+      const font = Skia.Font(typeface, LABEL_FONT_SIZE)
+      labelFontCache = font
+      labelFontListeners.forEach(listener => listener())
+      return font
+    } catch {
+      // Don't cache a failed load forever -- clear `labelFontPromise` in the
+      // catch so the next mount retries. CP-14918.
+      labelFontPromise = null
+      return null
+    }
+  })()
+  return labelFontPromise
+}
+
+/** Module-scoped singleton — see comment above `loadLabelFontOnce`. */
+const useLabelFont = (): SkFont | null => {
+  const [font, setFont] = useState<SkFont | null>(labelFontCache)
+
+  useEffect(() => {
+    if (labelFontCache) {
+      setFont(labelFontCache)
+      return
+    }
+    const listener = (): void => setFont(labelFontCache)
+    labelFontListeners.add(listener)
+    loadLabelFontOnce()
+    return () => {
+      labelFontListeners.delete(listener)
+    }
+  }, [])
+
+  return font
+}
+
 export const PriceChart: FC<Props> = ({
   candles,
   width,
@@ -106,10 +180,7 @@ export const PriceChart: FC<Props> = ({
 }) => {
   const { theme } = useTheme()
 
-  const labelFont = useFont(
-    require('../../../assets/fonts/Inter-Medium.ttf'),
-    11
-  )
+  const labelFont = useLabelFont()
 
   const { minPrice, maxPrice } = useMemo(() => rangeBounds(candles), [candles])
 
@@ -284,11 +355,27 @@ export const PriceChart: FC<Props> = ({
     [candles]
   )
 
+  // `lineYsSV`/`volumesSV`: worklets read a flattened `Float32Array`, not the
+  // full object array, to avoid a shareable-conversion per dep change.
+  // Lazy-inits from the CURRENT render's data (not empty) -- avoids a
+  // stale-length window on mount/range-switch. CP-14918.
+  const lineYsSV = useSharedValue<Float32Array>(() => computeLineYs(linePoints))
+  useEffect(() => {
+    lineYsSV.value = computeLineYs(linePoints)
+  }, [linePoints, lineYsSV])
+
+  // -1 sentinel for "no volume" (real volumes are always >= 0).
+  const volumesSV = useSharedValue<Float32Array>(() => computeVolumes(candles))
+  useEffect(() => {
+    volumesSV.value = computeVolumes(candles)
+  }, [candles, volumesSV])
+
   // Y on the close-price line at the crosshair X (linear interp between the
   // two neighboring close prices, so the dot glides vertically only).
   const activeLineY = useDerivedValue(() => {
-    if (linePoints.length === 0 || innerWidth === 0) return 0
-    const last = linePoints.length - 1
+    const ys = lineYsSV.value
+    const last = ys.length - 1
+    if (last < 0 || innerWidth === 0) return 0
     const fracIndex = Math.max(
       0,
       Math.min(last, ((crosshairX.value - chartInset) / innerWidth) * last)
@@ -296,17 +383,18 @@ export const PriceChart: FC<Props> = ({
     const lo = Math.floor(fracIndex)
     const hi = Math.ceil(fracIndex)
     const t = fracIndex - lo
-    const a = linePoints[lo]
-    const b = linePoints[hi]
-    if (!a || !b) return 0
-    return a.y + (b.y - a.y) * t
-  }, [linePoints, innerWidth])
+    const a = ys[lo]
+    const b = ys[hi]
+    if (a === undefined || b === undefined) return 0
+    return a + (b - a) * t
+  }, [innerWidth, chartInset])
 
   // Bottom inset for the crosshair line so it stops 8px above the active
   // volume bar; interpolated between adjacent bar heights for smoothness.
   const animatedBarHeight = useDerivedValue(() => {
-    if (candles.length === 0 || maxVolume === 0 || innerWidth === 0) return 0
-    const last = candles.length - 1
+    const vols = volumesSV.value
+    const last = vols.length - 1
+    if (last < 0 || maxVolume === 0 || innerWidth === 0) return 0
     const fracIndex =
       last > 0
         ? Math.max(
@@ -320,13 +408,13 @@ export const PriceChart: FC<Props> = ({
     const lo = Math.floor(fracIndex)
     const hi = Math.ceil(fracIndex)
     const t = fracIndex - lo
-    const a = candles[lo]
-    const b = candles[hi]
-    const ha = a && a.volume != null ? (a.volume / maxVolume) * volH : 0
-    const hb = b && b.volume != null ? (b.volume / maxVolume) * volH : 0
+    const va = vols[lo]
+    const vb = vols[hi]
+    const ha = va !== undefined && va >= 0 ? (va / maxVolume) * volH : 0
+    const hb = vb !== undefined && vb >= 0 ? (vb / maxVolume) * volH : 0
     const interp = ha + (hb - ha) * t
     return interp + 8
-  }, [candles, maxVolume, volH, innerWidth])
+  }, [maxVolume, volH, innerWidth, chartInset])
 
   // Two simultaneous gestures coordinate the crosshair interaction:
   //   - LongPress (≥200ms with <3px wander): activates the crosshair at the
@@ -337,6 +425,10 @@ export const PriceChart: FC<Props> = ({
   //     touch. Once LongPress has already activated, Pan accepts any
   //     direction so the user can drag the crosshair vertically without
   //     losing it.
+  //
+  // Gesture memo still bails from React Compiler -- a `SharedValue`-in-deps
+  // pattern shared by 3 effects in this file, not just here. Known, accepted
+  // limitation; out of scope for this pass. CP-14918 item 5.
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const gesture = useMemo(() => {
     const clampX = (x: number): number => {

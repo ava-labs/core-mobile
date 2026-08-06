@@ -13,7 +13,7 @@ import {
   formatLastUpdate,
   formatVolume as defaultFormatVolume
 } from './helpers'
-import { useActiveIndex } from './hooks'
+import { useActiveIndex, useIsFullFormatNeeded } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -45,10 +45,15 @@ export const ChartFooter: FC<Props> = ({
 }) => {
   const idx = useActiveIndex(activeIndex)
 
-  const formattedVolumes = useMemo(
-    () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
-    [candles, formatVolume]
-  )
+  // `needsFull` also gates on `showVolume` -- in line mode (default) this
+  // text is permanently invisible; without the gate, a crosshair drag still
+  // pays the full O(candles) format cost for nothing visible. CP-14918
+  // (closes I3, §15.1).
+  const needsFull = useIsFullFormatNeeded(showVolume ? idx : null) && showVolume
+  const formattedVolumes = useMemo(() => {
+    if (!needsFull) return undefined
+    return candles.map(c => (c.volume != null ? formatVolume(c.volume) : ''))
+  }, [candles, formatVolume, needsFull])
   const idleText = useMemo(() => {
     const latest = candles[candles.length - 1]
     return latest ? formatLastUpdate(latest.ts) : ''
@@ -95,7 +100,7 @@ export const ChartFooter: FC<Props> = ({
     }
   })
 
-  const activeText = idx !== null ? formattedVolumes[idx] ?? '' : ''
+  const activeText = idx !== null ? formattedVolumes?.[idx] ?? '' : ''
 
   return (
     <View

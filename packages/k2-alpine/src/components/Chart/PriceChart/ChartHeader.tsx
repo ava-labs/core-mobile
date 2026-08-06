@@ -17,9 +17,10 @@ import { Text } from '../../Primitives'
 import { DURATIONS } from './constants'
 import {
   crosshairInnerAnchorTarget,
+  formatCandleDisplayStringAt,
   formatCandleDisplayStrings
 } from './helpers'
-import { useActiveIndex } from './hooks'
+import { useActiveIndex, useIsFullFormatNeeded } from './hooks'
 import { OhlcCandle } from './types'
 
 const useLayoutWidthHandler = (
@@ -216,13 +217,28 @@ export const ChartHeader: FC<Props> = memo(
       isActive
     )
 
-    const formatted = useMemo(
-      () => formatCandleDisplayStrings(candles, formatPrice),
+    // Crosshair-inactive state only ever reads the LAST candle (see `active`
+    // below), so the mount-time eager cost is a single O(1) format instead
+    // of formatting all ~48 candles. The full array (needed for crosshair
+    // drag lookups) is computed lazily by `fullFormatted` below.
+    const lastFormatted = useMemo(
+      // CP-14918: eager mount-time cost — now O(1), one candle.
+      () =>
+        formatCandleDisplayStringAt(candles, candles.length - 1, formatPrice),
       [candles, formatPrice]
     )
 
-    const lastCandle = formatted[formatted.length - 1]
-    const active = idx !== null ? formatted[idx] : undefined
+    const needsFull = useIsFullFormatNeeded(idx)
+    const fullFormatted = useMemo(() => {
+      if (!needsFull) return undefined
+      // CP-14918: the ~96-call Intl formatting cost, deferred off
+      // the mount path to an idle tick or the first crosshair activation
+      // (whichever comes first) — see `useIsFullFormatNeeded`.
+      return formatCandleDisplayStrings(candles, formatPrice)
+    }, [candles, formatPrice, needsFull])
+
+    const lastCandle = lastFormatted
+    const active = idx !== null ? fullFormatted?.[idx] : undefined
 
     const priceText =
       active?.priceText ??
