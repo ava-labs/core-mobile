@@ -1,12 +1,11 @@
 import {
-  Line,
   LinearGradient,
   Path,
-  RoundedRect,
+  Skia,
   type SkPath,
   vec
 } from '@shopify/react-native-skia'
-import React, { FC, memo } from 'react'
+import React, { FC, memo, useMemo } from 'react'
 import Animated, {
   SharedValue,
   useAnimatedStyle
@@ -70,6 +69,16 @@ type CandlesProps = {
   downColor: string
 }
 
+/**
+ * CP-14918 item 1: candles used to render a `<Line>` + `<RoundedRect>` PER
+ * candle — 2N React elements, 2N Skia declarative nodes, 2N JSI objects for
+ * N=48 candles. Collapsed to 4 `SkPath`s (up/down body, up/down wick) built
+ * once in a `useMemo`, mirroring the existing `traceSmoothLine` pattern used
+ * for the line series. Wick paths are drawn before body paths so any given
+ * candle's body still paints over its own wick, exactly matching the
+ * original per-candle Line-then-RoundedRect paint order (adjacent candles
+ * never overlap, so cross-candle draw order is immaterial).
+ */
 export const Candles: FC<CandlesProps> = memo(
   ({
     candles,
@@ -82,67 +91,105 @@ export const Candles: FC<CandlesProps> = memo(
     priceMax,
     upColor,
     downColor
-  }) => (
-    <>
-      {candles.map((c, i) => {
-        const xCenter = indexToX(i, candles.length, innerWidth) + chartInset
-        const x = xCenter - bodyWidth / 2
-        const isUp = c.close >= c.open
-        const color = isUp ? upColor : downColor
-        const top =
-          priceToY({
-            price: Math.max(c.open, c.close),
-            priceMin,
-            priceMax,
-            height: priceAreaH
-          }) + priceTopPadding
-        const bottom =
-          priceToY({
-            price: Math.min(c.open, c.close),
-            priceMin,
-            priceMax,
-            height: priceAreaH
-          }) + priceTopPadding
-        const bodyHeight = Math.max(1, bottom - top)
-        const wickTop =
-          priceToY({
-            price: c.high,
-            priceMin,
-            priceMax,
-            height: priceAreaH
-          }) + priceTopPadding
-        const wickBottom =
-          priceToY({
-            price: c.low,
-            priceMin,
-            priceMax,
-            height: priceAreaH
-          }) + priceTopPadding
-        const bodyRadius = Math.min(bodyWidth, bodyHeight) / 2
-        const wickStroke = Math.max(1, bodyWidth / 4)
-        return (
-          <React.Fragment key={c.ts}>
-            <Line
-              p1={vec(xCenter, wickTop)}
-              p2={vec(xCenter, wickBottom)}
-              color={color}
-              strokeWidth={wickStroke}
-              strokeCap="round"
-              opacity={0.5}
-            />
-            <RoundedRect
-              x={x}
-              y={top}
-              width={bodyWidth}
-              height={bodyHeight}
-              r={bodyRadius}
-              color={color}
-            />
-          </React.Fragment>
-        )
-      })}
-    </>
-  )
+  }) => {
+    const { upBody, downBody, upWick, downWick, wickStrokeWidth } =
+      useMemo(() => {
+        const bodies = { up: Skia.Path.Make(), down: Skia.Path.Make() }
+        const wicks = { up: Skia.Path.Make(), down: Skia.Path.Make() }
+        // Constant across all candles (depends only on the shared `bodyWidth`
+        // prop) — matches the per-iteration computation it replaces exactly.
+        const stroke = Math.max(1, bodyWidth / 4)
+
+        candles.forEach((c, i) => {
+          const xCenter = indexToX(i, candles.length, innerWidth) + chartInset
+          const x = xCenter - bodyWidth / 2
+          const isUp = c.close >= c.open
+          const top =
+            priceToY({
+              price: Math.max(c.open, c.close),
+              priceMin,
+              priceMax,
+              height: priceAreaH
+            }) + priceTopPadding
+          const bottom =
+            priceToY({
+              price: Math.min(c.open, c.close),
+              priceMin,
+              priceMax,
+              height: priceAreaH
+            }) + priceTopPadding
+          const bodyHeight = Math.max(1, bottom - top)
+          const wickTop =
+            priceToY({
+              price: c.high,
+              priceMin,
+              priceMax,
+              height: priceAreaH
+            }) + priceTopPadding
+          const wickBottom =
+            priceToY({
+              price: c.low,
+              priceMin,
+              priceMax,
+              height: priceAreaH
+            }) + priceTopPadding
+          const bodyRadius = Math.min(bodyWidth, bodyHeight) / 2
+
+          const bodyPath = isUp ? bodies.up : bodies.down
+          bodyPath.addRRect(
+            Skia.RRectXY(
+              Skia.XYWHRect(x, top, bodyWidth, bodyHeight),
+              bodyRadius,
+              bodyRadius
+            )
+          )
+
+          const wickPath = isUp ? wicks.up : wicks.down
+          wickPath.moveTo(xCenter, wickTop)
+          wickPath.lineTo(xCenter, wickBottom)
+        })
+
+        return {
+          upBody: bodies.up,
+          downBody: bodies.down,
+          upWick: wicks.up,
+          downWick: wicks.down,
+          wickStrokeWidth: stroke
+        }
+      }, [
+        candles,
+        innerWidth,
+        chartInset,
+        bodyWidth,
+        priceAreaH,
+        priceTopPadding,
+        priceMin,
+        priceMax
+      ])
+
+    return (
+      <>
+        <Path
+          path={upWick}
+          color={upColor}
+          style="stroke"
+          strokeWidth={wickStrokeWidth}
+          strokeCap="round"
+          opacity={0.5}
+        />
+        <Path
+          path={downWick}
+          color={downColor}
+          style="stroke"
+          strokeWidth={wickStrokeWidth}
+          strokeCap="round"
+          opacity={0.5}
+        />
+        <Path path={upBody} color={upColor} style="fill" />
+        <Path path={downBody} color={downColor} style="fill" />
+      </>
+    )
+  }
 )
 
 type LineChartDotProps = {

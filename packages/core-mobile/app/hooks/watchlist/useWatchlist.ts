@@ -14,6 +14,8 @@ import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { getCaip2ChainIdForToken } from 'utils/caip2ChainIds'
 import { isNetworkContractToken } from 'utils/isNetworkContractToken'
+// CP-14918 TEMP PROBE
+import { perfCount, perfNow } from 'utils/performance/perfProbe'
 import { useTopTokens } from './useTopTokens'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
 
@@ -39,6 +41,7 @@ type UseWatchListReturnType = {
 }
 
 export const useWatchlist = (): UseWatchListReturnType => {
+  const t0Watchlist = perfNow() // CP-14918 TEMP PROBE
   const favoriteIds = useSelector(selectWatchlistFavoriteIds)
   const {
     data: topTokensResponse,
@@ -184,6 +187,8 @@ export const useWatchlist = (): UseWatchListReturnType => {
     },
     [allTokens]
   )
+
+  perfCount('watchlist.hookMs', perfNow() - t0Watchlist) // CP-14918 TEMP PROBE
 
   return {
     favorites,

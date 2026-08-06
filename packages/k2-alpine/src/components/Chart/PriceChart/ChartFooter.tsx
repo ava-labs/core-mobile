@@ -9,11 +9,13 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { Text } from '../../Primitives'
+// CP-14918 TEMP PROBE
+import { perfTime } from './_cp14918PerfProbe'
 import {
   formatLastUpdate,
   formatVolume as defaultFormatVolume
 } from './helpers'
-import { useActiveIndex } from './hooks'
+import { useActiveIndex, useIsFullFormatNeeded } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -45,10 +47,31 @@ export const ChartFooter: FC<Props> = ({
 }) => {
   const idx = useActiveIndex(activeIndex)
 
-  const formattedVolumes = useMemo(
-    () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
-    [candles, formatVolume]
-  )
+  // The crosshair-inactive state reads only `idleText` below (last candle,
+  // O(1)) — it never touches `formattedVolumes` — so the full per-candle
+  // volume-string map is entirely deferred: nothing eager to compute here
+  // at mount. See `useIsFullFormatNeeded` for the idle-tick / first-drag
+  // gating (mirrors ChartHeader's treatment of `formatCandleDisplayStrings`).
+  //
+  // CP-14918 (task Z fix-wave): also gate on `showVolume` itself. `activeText`
+  // below is only ever rendered with non-zero opacity when `showVolume` is
+  // true (see `activeOpacity`'s `withTiming(showVolume && active ? 1 : 0,
+  // ...)` above) — in line mode, the default chart type, `showVolume` is
+  // false and this text is permanently invisible. Without this gate, dragging
+  // the crosshair (or just waiting out the idle tick) in line mode still paid
+  // the full O(candles) volume-formatting cost for strings nobody can see.
+  // Passing `null` instead of `idx` when `showVolume` is false stops a
+  // crosshair drag from flipping this true; the `&& showVolume` also blocks
+  // the idle-tick branch, which doesn't depend on `idx` at all.
+  const needsFull = useIsFullFormatNeeded(showVolume ? idx : null) && showVolume
+  const formattedVolumes = useMemo(() => {
+    if (!needsFull) return undefined
+    // CP-14918 TEMP PROBE: cost of the per-candle volume-formatting map,
+    // deferred off the mount path.
+    return perfTime('chartFooter.formatVolumesDeferred', () =>
+      candles.map(c => (c.volume != null ? formatVolume(c.volume) : ''))
+    )
+  }, [candles, formatVolume, needsFull])
   const idleText = useMemo(() => {
     const latest = candles[candles.length - 1]
     return latest ? formatLastUpdate(latest.ts) : ''
@@ -95,7 +118,7 @@ export const ChartFooter: FC<Props> = ({
     }
   })
 
-  const activeText = idx !== null ? formattedVolumes[idx] ?? '' : ''
+  const activeText = idx !== null ? formattedVolumes?.[idx] ?? '' : ''
 
   return (
     <View

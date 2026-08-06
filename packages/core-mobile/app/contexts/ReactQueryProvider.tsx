@@ -33,6 +33,36 @@ export const queryClient = new QueryClient({
   })
 })
 
+// CP-14918 TEMP PROBE: attribute the non-render JS burn during navigation.
+// Counts query-cache activity by queryKey root so we can see WHAT churns
+// (balance polls? watchlist? chart data?) rather than only that JS is busy.
+;(() => {
+  const bump = (name: string): void => {
+    require('utils/performance/perfProbe').perfCount(name, 0)
+  }
+  const root = (k: unknown): string => {
+    const first = Array.isArray(k) ? k[0] : k
+    return typeof first === 'string' ? first.slice(0, 26) : String(first)
+  }
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryClient.getQueryCache().subscribe((ev: any) => {
+      const t = ev?.type
+      if (t === 'updated' && ev?.action?.type === 'success') {
+        bump('rq.success:' + root(ev?.query?.queryKey))
+      } else if (t === 'added' || t === 'removed') {
+        bump('rq.' + t)
+      } else if (t === 'observerAdded' || t === 'observerRemoved') {
+        bump('rq.' + t + ':' + root(ev?.query?.queryKey))
+      } else if (t === 'observerResultsUpdated') {
+        bump('rq.notify:' + root(ev?.query?.queryKey))
+      }
+    })
+  } catch {
+    // ignore
+  }
+})()
+
 const clientPersister = createSyncStoragePersister({
   storage: {
     getItem: (key: string) => {

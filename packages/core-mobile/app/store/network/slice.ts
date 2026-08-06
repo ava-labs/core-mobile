@@ -18,6 +18,7 @@ import {
 } from 'store/posthog'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
+import { memoizeByReference } from 'utils/memoizeByReference'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -171,6 +172,59 @@ export const selectNetwork =
     return allNetworks[chainId]
   }
 
+/**
+ * Builds the developer-mode-filtered network map from its three real inputs,
+ * memoized on reference equality (cache size 1).
+ *
+ * Identity stability matters here because `selectNetworks` is a `createSelector`
+ * *input* to `selectEnabledNetworks` and `selectEnabledNetworksMap`. While it
+ * allocated a fresh object on every call, reselect's reference-equality input
+ * check could never hit, so both of those emitted a brand-new array/map on
+ * every call and every `useSelector` consumer re-rendered on every dispatched
+ * action, anywhere in the app — 21 files, including per-row components and
+ * `useAccountBalances`, which the token detail screen instantiates several
+ * times. That was the wasted-render driver in CP-14918.
+ *
+ * Freshness is preserved because `rawNetworks` — the react-query cached
+ * /networks response — is an input: when that query is replaced its reference
+ * changes and this recomputes. Same for custom networks and developer mode.
+ * That is also why this cannot simply become a `createSelector`: the network
+ * list is not Redux state, so a Redux-input-only memo would go stale.
+ */
+const buildNetworks = memoizeByReference(
+  (
+    rawNetworks: Networks | undefined,
+    customNetworks: Networks,
+    isDeveloperMode: boolean
+  ): Networks => {
+    const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = rawNetworks?.[chainId]
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+
+    const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = customNetworks[chainId]
+
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+    return { ...populatedNetworks, ...populatedCustomNetworks }
+  }
+)
+
 export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const customNetworks = selectCustomNetworks(state)
@@ -181,31 +235,7 @@ export const selectNetworks = (state: RootState): Networks => {
     includeHyperliquid: !isHyperliquidSupportBlocked
   })
 
-  const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = rawNetworks?.[chainId]
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
-
-  const populatedCustomNetworks = Object.keys(customNetworks).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = customNetworks[chainId]
-
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
-  return { ...populatedNetworks, ...populatedCustomNetworks }
+  return buildNetworks(rawNetworks, customNetworks, isDeveloperMode)
 }
 
 export const selectEnabledNetworks = createSelector(

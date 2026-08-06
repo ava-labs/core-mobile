@@ -39,12 +39,39 @@ const tabLabelStyle = {
 const tabBarInactiveTintOpacity = 0.6
 
 /**
- * On Android, we enable freezeOnBlur to improve performance.
- * On iOS, it remains disabled since performance is already good.
- * Additionally, our testing showed that enabling freezeOnBlur on iOS
- * caused issues with SegmentedControl and the Browser tab.
+ * Freeze inactive tabs (via react-freeze, the same primitive backing
+ * react-native-screens' freezeOnBlur) so their query subscriptions and
+ * effects pause while backgrounded, instead of re-rendering on every store/
+ * query notification for the lifetime of the app session.
+ *
+ * This was previously disabled on iOS only (see git history around
+ * CP-11923, "our testing showed that enabling freezeOnBlur on iOS caused
+ * issues with SegmentedControl and the Browser tab"). That note predates a
+ * full rewrite of freezeOnBlur upstream in react-native-bottom-tabs (we've
+ * since gone from 0.10.1 -> 1.1.0, including a rework of the freeze
+ * mechanism itself, per callstack/react-native-bottom-tabs#71) and was
+ * never re-verified after that upgrade landed (#3481). No linked ticket,
+ * repro steps, or currently-open upstream issue corroborates an ongoing
+ * SegmentedControl-specific problem with the current version, so we're
+ * flipping it on for iOS too (CP-14918).
+ *
+ * The Browser tab stays exempted below (freezeOnBlur: false on its
+ * Screen) for a concrete, still-live reason: useEvmInjectedProvider.ts's
+ * activeAccountRef (~L387-391) is kept fresh by a useEffect, and
+ * react-freeze suppresses effects (not just paint) while frozen. The
+ * WebView's own JS/message-channel keeps running while its owning
+ * BottomTabs.Screen subtree is frozen, so a backgrounded dApp's async
+ * request can hit router.ts's dispatchSigningRequest signer fallback
+ * (~L327, getActiveAccount()?.addressC) with an indefinitely stale
+ * account instead of the one-render-tick staleness the CP-14385 comment
+ * at useEvmInjectedProvider.ts:638-646 already had to patch. Do not
+ * change useEvmInjectedProvider.ts to fix this here — hardening the
+ * signing path (e.g. reading the account from store.getState() instead
+ * of a render-gated ref) is its own ticket; only once that lands should
+ * Browser's freezeOnBlur be revisited.
  */
-const freezeOnBlur = isIOS ? false : true
+const freezeOnBlur = true
+const browserFreezeOnBlur = false
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
@@ -136,7 +163,9 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon,
-          freezeOnBlur
+          // Exempted from freezeOnBlur - see comment above `freezeOnBlur`
+          // for why (stale activeAccountRef in the injected-provider bridge).
+          freezeOnBlur: browserFreezeOnBlur
         }}
       />
       <BottomTabs.Screen
