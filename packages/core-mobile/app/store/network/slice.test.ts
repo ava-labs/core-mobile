@@ -115,7 +115,12 @@ describe('network slice', () => {
         },
         settings: {
           advanced: {
-            isDeveloperMode: false
+            // `selectIsDeveloperMode` reads `developerMode`, not
+            // `isDeveloperMode`. With the wrong key it resolved to undefined,
+            // so `network.isTestnet === isDeveloperMode` was false for every
+            // mock network and every selector here returned empty — which made
+            // the content assertions below pass vacuously.
+            developerMode: false
           }
         },
         posthog: {
@@ -239,6 +244,44 @@ describe('network slice', () => {
         expect(result.every(n => n !== undefined)).toBe(true)
         // Verify it's not a sparse array - should not have length in the thousands
         expect(result.length).toBeLessThan(1000)
+      })
+
+      /**
+       * CP-14918 regression guards, asserting reference identity only.
+       *
+       * `selectNetworks` allocated a fresh object on every call, so this
+       * createSelector's reference-equality input check could never hit: it
+       * emitted a brand-new array on every call, and because `useSelector`
+       * compares by reference, every consumer re-rendered on every dispatched
+       * action, anywhere in the app.
+       *
+       * Both cases pass two DIFFERENT root state objects that share the same
+       * slice references — what Redux produces when a dispatch touches an
+       * unrelated slice, which is the condition that was broken. Passing the
+       * identical state object would prove nothing, since createSelector also
+       * memoizes on its own arguments and short-circuits before running any
+       * input selector.
+       */
+      it('should keep a stable identity across dispatches it does not depend on', () => {
+        const state = createMockState()
+
+        const first = selectEnabledNetworks(state)
+        const second = selectEnabledNetworks({ ...state } as RootState)
+
+        expect(second).toBe(first)
+      })
+
+      // Guards the other direction: the memo must not outlive its inputs, or
+      // the network list would go stale when the /networks query is replaced
+      // (that response lives in the react-query cache, not in Redux state).
+      it('should recompute when the cached networks response is replaced', () => {
+        const state = createMockState()
+        const first = selectEnabledNetworks(state)
+
+        mockGetNetworks.mockReturnValue({ ...mockNetworks })
+        const second = selectEnabledNetworks({ ...state } as RootState)
+
+        expect(second).not.toBe(first)
       })
     })
 
