@@ -40,7 +40,7 @@ import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/u
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -103,8 +103,20 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
-  const { navigate, push } = useRouter()
+  const { navigate, push, prefetch } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+
+  // Prefetches `/tokenDetail` once per Portfolio-tab lifetime. NOT inert --
+  // a preloaded route is never frozen (native-stack excludes preloaded
+  // routes from `shouldFreeze`); inertness comes from `TokenDetailScreen`'s
+  // `hasRouteParams` gate instead. No `getId` on this route, so the later
+  // real push reuses this same instance. CP-14918.
+  useEffect(() => {
+    const handle = InteractionManager.runAfterInteractions(() => {
+      prefetch('/tokenDetail')
+    })
+    return () => handle.cancel()
+  }, [prefetch])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -597,7 +609,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
 
-      {/* 
+      {/*
         This is a workaround to display the header background + separator on Android.
         Android returns a header height of 0, so we need to display the background + separator manually.
       */}

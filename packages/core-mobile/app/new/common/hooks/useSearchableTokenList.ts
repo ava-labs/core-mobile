@@ -59,6 +59,11 @@ export function useSearchableTokenList({
   const allNetworkTokens = useMemo(() => {
     if (tokens === undefined) return []
 
+    // Zero-balance contract tokens get thrown away by `isGreaterThanZero`
+    // anyway when `hideZeroBalance` is set -- skipping the merge/filter/sort
+    // here is output-identical and removes a ~56k-token map. CP-14918.
+    if (hideZeroBalance) return []
+
     return (
       tokens.map(token => {
         return {
@@ -76,7 +81,7 @@ export function useSearchableTokenList({
         } as LocalTokenWithBalance
       }) ?? []
     )
-  }, [tokens])
+  }, [tokens, hideZeroBalance])
 
   const [searchText, setSearchText] = useState('')
   const tokenVisibility = useSelector(selectTokenVisibility)
