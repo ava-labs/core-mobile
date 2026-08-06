@@ -1,4 +1,4 @@
-import { rpcErrors } from '@metamask/rpc-errors'
+import { rpcErrors, providerErrors } from '@metamask/rpc-errors'
 import {
   Module,
   RpcMethod as VmModuleRpcMethod
@@ -14,8 +14,14 @@ import {
 } from 'utils/caip2ChainIds'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
-import { Account, selectActiveAccount } from 'store/account'
+import {
+  Account,
+  selectActiveAccount,
+  selectAccountByIndex
+} from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { isAvalancheSignMessageAuthorized } from 'store/rpc/utils/isAvalancheSignMessageAuthorized/isAvalancheSignMessageAuthorized'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
@@ -124,6 +130,33 @@ export const handleRequestViaVMModule = async ({
       listenerApi
     })
 
+    return
+  }
+
+  // avalanche_signMessage picks its signer by a dApp-supplied account index
+  // (params [message, accountIndex]), not a signingData.account address, so it
+  // slips past the ApprovalController grant check. Enforce the WalletConnect
+  // session grant here — on the same account the approval screen will sign with
+  // (selectAccountByIndex, or the active account when no index is given). No-op
+  // for every other method and for in-app / injected-browser requests; fails
+  // closed on a missing session. CP-14604.
+  if (
+    !isAvalancheSignMessageAuthorized({
+      method,
+      isInAppRequest: request.data.topic === CORE_MOBILE_TOPIC,
+      params,
+      caip2ChainId,
+      activeAccount,
+      getAccountByIndex: index =>
+        selectAccountByIndex(activeWallet.id, index)(state),
+      getSession: () => WalletConnectService.getSession(request.data.topic)
+    })
+  ) {
+    rpcProvider.onError({
+      request,
+      error: providerErrors.unauthorized('Requested address is not authorized'),
+      listenerApi
+    })
     return
   }
 

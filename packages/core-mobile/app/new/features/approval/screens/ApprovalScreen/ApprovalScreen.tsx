@@ -40,6 +40,7 @@ import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
   getAccountSelector,
   getAccountUnavailableMessage,
+  getDisplayAccountAddress,
   getEthSendTxValidationError,
   getHasBalanceChange,
   getInitialGasLimit,
@@ -113,6 +114,15 @@ const ApprovalScreenInner = ({
 
   const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
+  // Address shown in the Account row. Falls back to the resolved signer for
+  // methods whose module omits `displayData.account` (avalanche_signMessage),
+  // so the sheet always names the account that will sign. CP-14604.
+  const displayAccountAddress = getDisplayAccountAddress({
+    displayAccount: displayData.account,
+    signingData,
+    caip2ChainId,
+    resolvedAccount: account
+  })
   // The request targets an account that isn't in the active wallet, so it can't
   // be signed — surface a clear reason rather than just a disabled button.
   const requestedAccountUnavailable = isRequestedAccountUnavailable(
@@ -444,14 +454,14 @@ const ApprovalScreenInner = ({
   }, [displayData.dAppInfo, renderDappInfo])
 
   const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
-    if (displayData.account && displayData.network) {
+    if (displayAccountAddress && displayData.network) {
       return (
         <View
           sx={{
             backgroundColor: '$surfaceSecondary',
             borderRadius: 12
           }}>
-          <Account address={displayData.account} />
+          <Account address={displayAccountAddress} />
           <Separator sx={{ marginHorizontal: 16 }} />
           <Network
             logoUri={displayData.network.logoUri}
@@ -474,10 +484,10 @@ const ApprovalScreenInner = ({
       )
     }
 
-    if (displayData.account) {
-      return <Account address={displayData.account} />
+    if (displayAccountAddress) {
+      return <Account address={displayAccountAddress} />
     }
-  }, [displayData.account, displayData.network, symbol, chainId])
+  }, [displayAccountAddress, displayData.network, symbol, chainId])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (

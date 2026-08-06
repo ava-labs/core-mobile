@@ -5,19 +5,15 @@ import {
 } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { isAddressApprovedInNamespace } from 'services/walletconnectv2/utils'
 
-export const isAccountApproved = (
-  account: CoreAccountAddresses,
+// A granted account under ANY chain of the request's namespace authorizes the
+// address — sessions grant per-namespace account access, not per-chain.
+export const isAddressApproved = (
+  address: string,
   caip2ChainId: string,
   namespaces: SessionTypes.Namespaces
 ): boolean => {
-  const address = getAddressForChainId(caip2ChainId, account)
   const namespace = caip2ChainId.split(':')[0]
-
-  if (!namespace || !namespaces[namespace] || !address) {
-    return false
-  }
-
-  const accounts = namespaces[namespace]?.accounts
+  const accounts = namespace ? namespaces[namespace]?.accounts : undefined
 
   if (!accounts) {
     return false
@@ -31,4 +27,16 @@ export const isAccountApproved = (
     caip10Account: `${caip2ChainId}:${address}`,
     accounts
   })
+}
+
+export const isAccountApproved = (
+  account: CoreAccountAddresses,
+  caip2ChainId: string,
+  namespaces: SessionTypes.Namespaces
+): boolean => {
+  const address = getAddressForChainId(caip2ChainId, account)
+
+  return Boolean(
+    address && isAddressApproved(address, caip2ChainId, namespaces)
+  )
 }
