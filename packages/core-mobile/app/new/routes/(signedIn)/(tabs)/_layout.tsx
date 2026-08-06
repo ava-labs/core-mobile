@@ -39,12 +39,17 @@ const tabLabelStyle = {
 const tabBarInactiveTintOpacity = 0.6
 
 /**
- * On Android, we enable freezeOnBlur to improve performance.
- * On iOS, it remains disabled since performance is already good.
- * Additionally, our testing showed that enabling freezeOnBlur on iOS
- * caused issues with SegmentedControl and the Browser tab.
+ * Inactive tabs freeze via react-freeze (`freezeOnBlur = true`, flipped on
+ * for iOS -- CP-14918, doc §15.4/§15.9). Browser stays exempted
+ * (`browserFreezeOnBlur = false`): freezing it would suspend the effect that
+ * keeps `useEvmInjectedProvider.ts`'s `activeAccountRef` fresh while the
+ * WebView keeps running, letting a backgrounded dApp sign with an
+ * indefinitely stale account. Do NOT re-enable Browser's freeze until the
+ * signing path reads the account from `store.getState()` directly instead
+ * (separate ticket).
  */
-const freezeOnBlur = isIOS ? false : true
+const freezeOnBlur = true
+const browserFreezeOnBlur = false
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
@@ -136,7 +141,9 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon,
-          freezeOnBlur
+          // Exempted from freezeOnBlur - see comment above `freezeOnBlur`
+          // for why (stale activeAccountRef in the injected-provider bridge).
+          freezeOnBlur: browserFreezeOnBlur
         }}
       />
       <BottomTabs.Screen
