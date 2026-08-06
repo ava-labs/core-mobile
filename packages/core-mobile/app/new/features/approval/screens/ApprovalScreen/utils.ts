@@ -17,6 +17,10 @@ import {
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
+import {
+  CoreAccountAddresses,
+  getAddressForChainId
+} from 'store/rpc/handlers/wc_sessionRequest/utils'
 
 export const removeWebsiteItemIfNecessary = (
   item: DetailItem,
@@ -79,6 +83,45 @@ export const getAccountSelector = (
     return selectAccountByIndex(walletId, signingData.accountIndex)
   }
   return selectActiveAccount
+}
+
+// Address to show in the approval screen's Account row.
+//
+// Every other signing method pins its signer as an address, and its module puts
+// that address in `displayData.account`. `avalanche_signMessage` doesn't: its
+// signer is a dApp-supplied account *index* (or the active account), so the
+// avalanche module emits `network` with no `account` and the sheet renders the
+// network alone — leaving the user unable to see which account is about to sign.
+// That is precisely the check CP-14468 ("signing uses a different address than
+// the one shown in the approval prompt") exists to make possible.
+//
+// So fall back to the account the screen ALREADY resolved via getAccountSelector
+// — the same object handed to `onApprove` — which makes displayed-address ==
+// signing-address true by construction rather than by two sources agreeing.
+// Scoped to avalanche_signMessage: methods whose module already renders an
+// account (e.g. solana_signMessage's "Account" detail row) must not gain a
+// second, duplicate display. CP-14604.
+export const getDisplayAccountAddress = ({
+  displayAccount,
+  signingData,
+  caip2ChainId,
+  resolvedAccount
+}: {
+  displayAccount: string | undefined
+  signingData: SigningData
+  caip2ChainId: string
+  resolvedAccount: CoreAccountAddresses | undefined
+}): string | undefined => {
+  if (displayAccount) return displayAccount
+
+  if (
+    signingData.type !== RpcMethod.AVALANCHE_SIGN_MESSAGE ||
+    !resolvedAccount
+  ) {
+    return undefined
+  }
+
+  return getAddressForChainId(caip2ChainId, resolvedAccount)
 }
 
 // True when the request targets a specific account that isn't part of the active

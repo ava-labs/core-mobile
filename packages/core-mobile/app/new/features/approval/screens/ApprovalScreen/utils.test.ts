@@ -12,6 +12,7 @@ import {
   removeWebsiteItemIfNecessary,
   overrideContractItem,
   getAccountSelector,
+  getDisplayAccountAddress,
   isRequestedAccountUnavailable,
   getAccountUnavailableMessage
 } from './utils'
@@ -297,6 +298,83 @@ describe('isRequestedAccountUnavailable', () => {
 
   it('is false when the request does not target a specific account', () => {
     expect(isRequestedAccountUnavailable(withoutAccount, undefined)).toBe(false)
+  })
+})
+
+describe('getDisplayAccountAddress', () => {
+  const P_CHAIN = 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+  const X_CHAIN = 'avax:imji8papUf2EhV3le337w1vgFauqkJg-'
+  const SOLANA = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+
+  const resolvedAccount = {
+    addressC: '0xC0FFEE',
+    addressBTC: 'bc1qbtc',
+    addressAVM: 'X-avax1xchain',
+    addressPVM: 'P-avax1pchain',
+    addressCoreEth: '0xC0FFEE',
+    addressSVM: 'SoLaNaAddress'
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const avalancheSignMessage = { type: RpcMethod.AVALANCHE_SIGN_MESSAGE } as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const solanaSignMessage = { type: RpcMethod.SOLANA_SIGN_MESSAGE } as any
+
+  it('prefers the address the module supplied', () => {
+    expect(
+      getDisplayAccountAddress({
+        displayAccount: 'module-supplied',
+        signingData: avalancheSignMessage,
+        caip2ChainId: P_CHAIN,
+        resolvedAccount
+      })
+    ).toBe('module-supplied')
+  })
+
+  it('falls back to the resolved signer for avalanche_signMessage on P-Chain', () => {
+    expect(
+      getDisplayAccountAddress({
+        displayAccount: undefined,
+        signingData: avalancheSignMessage,
+        caip2ChainId: P_CHAIN,
+        resolvedAccount
+      })
+    ).toBe('P-avax1pchain')
+  })
+
+  it('uses the X-Chain address when the request targets X-Chain', () => {
+    expect(
+      getDisplayAccountAddress({
+        displayAccount: undefined,
+        signingData: avalancheSignMessage,
+        caip2ChainId: X_CHAIN,
+        resolvedAccount
+      })
+    ).toBe('X-avax1xchain')
+  })
+
+  // Guards against a duplicate Account display: the SVM module already renders
+  // an "Account" row inside details for solana_signMessage.
+  it('does not fall back for methods whose module already shows the account', () => {
+    expect(
+      getDisplayAccountAddress({
+        displayAccount: undefined,
+        signingData: solanaSignMessage,
+        caip2ChainId: SOLANA,
+        resolvedAccount
+      })
+    ).toBeUndefined()
+  })
+
+  it('returns undefined when no account resolved', () => {
+    expect(
+      getDisplayAccountAddress({
+        displayAccount: undefined,
+        signingData: avalancheSignMessage,
+        caip2ChainId: P_CHAIN,
+        resolvedAccount: undefined
+      })
+    ).toBeUndefined()
   })
 })
 
