@@ -1,6 +1,7 @@
 import type { Skia } from '@shopify/react-native-skia'
 import { PriceChangeStatus } from '../../PriceChangeIndicator/types'
 import {
+  CHART_INSET,
   HEADER_LEFT_ZONE_THRESHOLD,
   HEADER_RIGHT_ZONE_THRESHOLD
 } from './constants'
@@ -47,6 +48,117 @@ export const touchXToIndex = (
   if (candleCount === 1) return 0
   const rounded = Math.round((touchX / width) * (candleCount - 1))
   return Math.max(0, Math.min(candleCount - 1, rounded))
+}
+
+/** Sentinel for "no candle is highlighted" in a `VolumeCrossfade` — no
+ * candle index is ever negative. */
+export const NO_HIGHLIGHT_INDEX = -1
+
+export type VolumeCrossfade = {
+  lowIndex: number
+  highIndex: number
+  /** 1 when the crosshair sits exactly on `lowIndex`, 0 when it has drifted
+   * all the way to `highIndex`. */
+  lowWeight: number
+  /** 1 when the crosshair sits exactly on `highIndex`, 0 when it has
+   * drifted all the way to `lowIndex`. `lowWeight + highWeight === 1`
+   * whenever a highlight is active. */
+  highWeight: number
+}
+
+/** Nothing highlighted — both indices are the sentinel, both weights 0. */
+export const IDLE_VOLUME_CROSSFADE: VolumeCrossfade = {
+  lowIndex: NO_HIGHLIGHT_INDEX,
+  highIndex: NO_HIGHLIGHT_INDEX,
+  lowWeight: 0,
+  highWeight: 0
+}
+
+/**
+ * Two-bar crossfade weights for `VolumeRow`'s crosshair highlight —
+ * restores main's original per-candle interpolation (each candle's opacity
+ * was `ACTIVE - (ACTIVE - IDLE) * distance` for `distance = |fracIndex -
+ * i| < 1`, `IDLE` otherwise, where `fracIndex` is the crosshair's position
+ * in candle-index units) without reintroducing one `SharedValue` per
+ * candle: at most two candles — `floor(fracIndex)` and `ceil(fracIndex)` —
+ * can ever be within one candle-width of the crosshair, so this returns
+ * just those two plus a 0-1 weight each. `IDLE + (ACTIVE - IDLE) * weight`
+ * per side is main's target *composite* opacity for that candle (weight is
+ * `1 - distance` for that side) — see `crossfadeRectOpacity` for how
+ * `VolumeRow` actually paints a rect to land on that target once its
+ * static idle `Path` (drawn underneath, at `VOLUME_IDLE_OPACITY`) is
+ * composited in too.
+ *
+ * Purely geometric — callers gate on crosshair-active state themselves
+ * (see `VolumeRow`'s `useAnimatedReaction`) and fall back to
+ * `IDLE_VOLUME_CROSSFADE` when inactive, so this only needs to guard
+ * against a degenerate track.
+ *
+ * Worklet — called from a `useAnimatedReaction` on the UI thread.
+ */
+export const volumeCrosshairWeights = (
+  x: number,
+  candleCount: number,
+  innerWidth: number
+): VolumeCrossfade => {
+  'worklet'
+  if (candleCount <= 1 || innerWidth <= 0) {
+    return IDLE_VOLUME_CROSSFADE
+  }
+  const last = candleCount - 1
+  const fracIndex = Math.max(
+    0,
+    Math.min(last, ((x - CHART_INSET) / innerWidth) * last)
+  )
+  const lowIndex = Math.floor(fracIndex)
+  const highIndex = Math.min(last, lowIndex + 1)
+  const highWeight = fracIndex - lowIndex
+  const lowWeight = 1 - highWeight
+  return { lowIndex, highIndex, lowWeight, highWeight }
+}
+
+/** Idle opacity of every bar in `VolumeRow`'s static `Path` — including
+ * the two candles a highlight rect may be drawn on top of. */
+export const VOLUME_IDLE_OPACITY = 0.1
+/** Fully-highlighted opacity a candle reaches when the crosshair sits
+ * exactly on it. */
+export const VOLUME_ACTIVE_OPACITY = 1
+
+/**
+ * `VolumeRow` paints a highlight rect ON TOP OF its static idle `Path`,
+ * which already painted that same bar at `VOLUME_IDLE_OPACITY` — the two
+ * source-over layers are the same color, so they don't blend hues, but
+ * their alphas still combine as `1 - (1 - VOLUME_IDLE_OPACITY) * (1 -
+ * rectOpacity)`. Painting the rect at the raw target opacity (`IDLE +
+ * (ACTIVE - IDLE) * weight`, see `volumeCrosshairWeights`) would double-count
+ * the idle layer's contribution and overshoot the target everywhere except
+ * `weight` 0 and 1. Solving `1 - (1 - IDLE) * (1 - rectOpacity) = IDLE +
+ * (ACTIVE - IDLE) * weight` for `rectOpacity` gives:
+ *
+ *   rectOpacity = (ACTIVE - IDLE) * weight / (1 - IDLE)
+ *
+ * With the current constants (`ACTIVE = 1`, `IDLE = 0.1`) the `(1 - IDLE)`
+ * factors cancel and this simplifies to exactly `weight` — kept as the
+ * general formula (rather than hardcoding that simplification) so the
+ * compositing invariant survives either constant changing.
+ *
+ * `weight = 0` maps to `rectOpacity = 0` — a fully transparent rect is a
+ * true no-op, so the bar is left showing exactly the idle `Path`'s
+ * `VOLUME_IDLE_OPACITY`, not something inflated by a stray draw.
+ * `weight = 1` maps to `rectOpacity = 1`, matching `VOLUME_ACTIVE_OPACITY`
+ * (an opaque top layer fully occludes the idle layer beneath it, so
+ * stacking order/count beyond that doesn't matter — this is also why the
+ * last-candle edge case, where `lowIndex === highIndex` and both rects
+ * draw at the same spot, still lands exactly on `VOLUME_ACTIVE_OPACITY`).
+ *
+ * Worklet — called from `useDerivedValue` callbacks on the UI thread.
+ */
+export const crossfadeRectOpacity = (weight: number): number => {
+  'worklet'
+  return (
+    ((VOLUME_ACTIVE_OPACITY - VOLUME_IDLE_OPACITY) * weight) /
+    (1 - VOLUME_IDLE_OPACITY)
+  )
 }
 
 export const rangeBounds = (

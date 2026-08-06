@@ -1,8 +1,15 @@
+import { CHART_INSET } from './constants'
 import {
+  crossfadeRectOpacity,
+  IDLE_VOLUME_CROSSFADE,
+  NO_HIGHLIGHT_INDEX,
   priceToY,
   indexToX,
   touchXToIndex,
   rangeBounds,
+  VOLUME_ACTIVE_OPACITY,
+  VOLUME_IDLE_OPACITY,
+  volumeCrosshairWeights,
   yAxisTicks,
   traceSmoothLine,
   formatActiveTime,
@@ -97,6 +104,147 @@ describe('touchXToIndex', () => {
 
   it('handles empty input safely', () => {
     expect(touchXToIndex(100, 0, 300)).toBe(0)
+  })
+})
+
+// CP-14918: restores VolumeRow's original two-bar crosshair crossfade
+// (main), which the perf restructure had collapsed to a single-bar snap.
+// `volumeCrosshairWeights` is the pure interpolation this is built on —
+// exactly the two candles nearest the crosshair (`lowIndex`/`highIndex`)
+// ever get a non-zero weight; everything else is implicitly idle.
+describe('volumeCrosshairWeights', () => {
+  // 4 candles, last index 3, innerWidth 300 -> candle centers land at
+  // x = CHART_INSET + i * 100 for i in [0, 3].
+  const candleCount = 4
+  const innerWidth = 300
+  const xForIndex = (i: number): number => CHART_INSET + i * 100
+
+  it('gives full weight to that candle and zero to its neighbor when the crosshair sits exactly on a candle center', () => {
+    const result = volumeCrosshairWeights(xForIndex(1), candleCount, innerWidth)
+    expect(result.lowIndex).toBe(1)
+    expect(result.highIndex).toBe(2)
+    expect(result.lowWeight).toBe(1)
+    expect(result.highWeight).toBe(0)
+  })
+
+  it('splits weight 50/50 at the midpoint between two candle centers', () => {
+    const result = volumeCrosshairWeights(
+      xForIndex(1) + 50,
+      candleCount,
+      innerWidth
+    )
+    expect(result.lowIndex).toBe(1)
+    expect(result.highIndex).toBe(2)
+    expect(result.lowWeight).toBe(0.5)
+    expect(result.highWeight).toBe(0.5)
+  })
+
+  it('gives the first candle full weight at the left edge', () => {
+    const result = volumeCrosshairWeights(xForIndex(0), candleCount, innerWidth)
+    expect(result.lowIndex).toBe(0)
+    expect(result.highIndex).toBe(1)
+    expect(result.lowWeight).toBe(1)
+    expect(result.highWeight).toBe(0)
+  })
+
+  it('gives the last candle full weight at the right edge', () => {
+    const last = candleCount - 1
+    const result = volumeCrosshairWeights(
+      xForIndex(last),
+      candleCount,
+      innerWidth
+    )
+    expect(result.lowIndex).toBe(last)
+    expect(result.highIndex).toBe(last)
+    expect(result.lowWeight).toBe(1)
+    expect(result.highWeight).toBe(0)
+  })
+
+  it('clamps an out-of-range x below the track to the same result as the left edge', () => {
+    const edge = volumeCrosshairWeights(xForIndex(0), candleCount, innerWidth)
+    const belowRange = volumeCrosshairWeights(-1000, candleCount, innerWidth)
+    expect(belowRange).toEqual(edge)
+  })
+
+  it('clamps an out-of-range x beyond the track to the same result as the right edge', () => {
+    const last = candleCount - 1
+    const edge = volumeCrosshairWeights(
+      xForIndex(last),
+      candleCount,
+      innerWidth
+    )
+    const beyondRange = volumeCrosshairWeights(100_000, candleCount, innerWidth)
+    expect(beyondRange).toEqual(edge)
+  })
+
+  it('returns the idle sentinel for a single candle or fewer (nothing to crossfade between)', () => {
+    expect(volumeCrosshairWeights(0, 1, innerWidth)).toEqual(
+      IDLE_VOLUME_CROSSFADE
+    )
+    expect(volumeCrosshairWeights(0, 0, innerWidth)).toEqual(
+      IDLE_VOLUME_CROSSFADE
+    )
+    expect(volumeCrosshairWeights(0, 1, innerWidth).lowIndex).toBe(
+      NO_HIGHLIGHT_INDEX
+    )
+  })
+
+  it('returns the idle sentinel when innerWidth is non-positive', () => {
+    expect(volumeCrosshairWeights(50, candleCount, 0)).toEqual(
+      IDLE_VOLUME_CROSSFADE
+    )
+  })
+})
+
+// CP-14918: `VolumeRow` paints a highlight rect on top of its static idle
+// `Path`, which already painted that same bar at `VOLUME_IDLE_OPACITY`.
+// `crossfadeRectOpacity` compensates for that source-over stacking so the
+// two layers still composite to `volumeCrosshairWeights`'s target opacity
+// (`IDLE + (ACTIVE - IDLE) * weight`) exactly, rather than overshooting it.
+// This pins the compositing formula itself:
+// `1 - (1 - IDLE) * (1 - crossfadeRectOpacity(w)) === IDLE + (ACTIVE - IDLE) * w`.
+describe('crossfadeRectOpacity', () => {
+  const composite = (rectOpacity: number): number =>
+    1 - (1 - VOLUME_IDLE_OPACITY) * (1 - rectOpacity)
+  const target = (weight: number): number =>
+    VOLUME_IDLE_OPACITY + (VOLUME_ACTIVE_OPACITY - VOLUME_IDLE_OPACITY) * weight
+
+  it.each([0, 0.25, 0.5, 1])(
+    'composites to the exact per-candle target opacity for weight=%s',
+    weight => {
+      const rectOpacity = crossfadeRectOpacity(weight)
+      expect(composite(rectOpacity)).toBeCloseTo(target(weight), 12)
+    }
+  )
+
+  it('is 0 at weight=0 — a true no-op, leaving the idle bar exactly at VOLUME_IDLE_OPACITY', () => {
+    expect(crossfadeRectOpacity(0)).toBe(0)
+    expect(composite(crossfadeRectOpacity(0))).toBeCloseTo(
+      VOLUME_IDLE_OPACITY,
+      12
+    )
+  })
+
+  it('is 1 at weight=1 — fully opaque, matching VOLUME_ACTIVE_OPACITY regardless of stacking', () => {
+    expect(crossfadeRectOpacity(1)).toBe(1)
+    expect(composite(crossfadeRectOpacity(1))).toBeCloseTo(
+      VOLUME_ACTIVE_OPACITY,
+      12
+    )
+  })
+
+  it('simplifies to exactly `weight` for the current constants (ACTIVE=1, IDLE=0.1)', () => {
+    ;[0, 0.25, 0.5, 0.73, 1].forEach(weight => {
+      expect(crossfadeRectOpacity(weight)).toBeCloseTo(weight, 12)
+    })
+  })
+
+  it('the last-candle edge case (lowIndex === highIndex) still lands on full opacity once both rects are stacked', () => {
+    // lowWeight=1, highWeight=0 at the right edge (see `volumeCrosshairWeights`).
+    const afterLowRect = composite(crossfadeRectOpacity(1))
+    const afterBothRects =
+      1 - (1 - afterLowRect) * (1 - crossfadeRectOpacity(0))
+    expect(afterBothRects).toBe(VOLUME_ACTIVE_OPACITY)
   })
 })
 
