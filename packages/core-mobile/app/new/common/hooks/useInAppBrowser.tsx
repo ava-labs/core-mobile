@@ -72,7 +72,7 @@ const useInAppBrowser = (): {
     const [result, error] = await resolve(moonpayURL(addressC))
     if (error) {
       return showSnackbar(
-        'We cannot send your to our partner, MoonPay, at this time. Please try again soon'
+        'We cannot send you to our partner, MoonPay, at this time. Please try again soon'
       )
     } else {
       const moonpayUrl = result?.url ?? ''
@@ -85,7 +85,7 @@ const useInAppBrowser = (): {
       const appId = Config.COINBASE_APP_ID
       if (!appId) {
         return showSnackbar(
-          'We cannot send your to our partner, Coinbase, at this time. Please try again soon'
+          'We cannot send you to our partner, Coinbase, at this time. Please try again soon'
         )
       }
       const coinbaseUrl = generateOnRampURL({
