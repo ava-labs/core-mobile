@@ -346,6 +346,18 @@ describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)
     })
   }
 
+  const fireScroll = async (
+    instance: ReactTestRenderer,
+    offsetY: number
+  ): Promise<void> => {
+    const scrollView = instance.root.findByType(ScrollView)
+    await act(async () => {
+      scrollView.props.onScroll({
+        nativeEvent: { contentOffset: { y: offsetY } }
+      })
+    })
+  }
+
   const getScrollViewStyle = (
     instance: ReactTestRenderer
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -382,7 +394,12 @@ describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)
       ).toBe(false)
     })
 
-    it('turns nested scrolling on once the content overflows, so a body swipe scrolls', async () => {
+    // CP-14765 follow-up: overflow alone must NOT disable dismissal. Gating
+    // only on overflow made dismissal depend on content height — the delegate
+    // "How long do you want to stake?" step renders one extra caption that Fast
+    // Stake doesn't, which was enough to kill swipe-to-dismiss on that screen
+    // while the identical Fast Stake screen kept it.
+    it('keeps nested scrolling off while overflowing content sits at the top, so a body swipe still dismisses', async () => {
       const instance = await render({ isModal: true })
 
       await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
@@ -390,7 +407,46 @@ describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)
 
       expect(
         instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(false)
+    })
+
+    it('turns nested scrolling on once overflowing content is scrolled away from the top, so a body swipe scrolls', async () => {
+      const instance = await render({ isModal: true })
+
+      await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
+      await fireContentSizeChange(instance, MEASURED_VIEWPORT_HEIGHT * 2)
+      await fireScroll(instance, 120)
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
       ).toBe(true)
+    })
+
+    it('hands dismissal back once the user scrolls to the top again', async () => {
+      const instance = await render({ isModal: true })
+
+      await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
+      await fireContentSizeChange(instance, MEASURED_VIEWPORT_HEIGHT * 2)
+      await fireScroll(instance, 120)
+      await fireScroll(instance, 0)
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(false)
+    })
+
+    // Android reports sub-pixel offsets while settling; those must still read
+    // as "at the top" or the sheet silently loses dismissal at rest.
+    it('treats a sub-pixel resting offset as the top', async () => {
+      const instance = await render({ isModal: true })
+
+      await fireScrollViewLayout(instance, MEASURED_VIEWPORT_HEIGHT)
+      await fireContentSizeChange(instance, MEASURED_VIEWPORT_HEIGHT * 2)
+      await fireScroll(instance, 0.5)
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(false)
     })
 
     it('leaves non-modal screens under the transparent header', async () => {
