@@ -197,6 +197,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     const subtitleHeight = useSharedValue<number>(0)
 
     const SCROLL_END_THRESHOLD = 20
+    // Offsets at or below this count as "parked at the top" (see
+    // `isAtScrollTop`). Small enough that a real scroll never reads as top.
+    const SCROLL_TOP_EPSILON = 1
 
     // Whether the content actually overflows the viewport. Drives Android
     // `nestedScrollEnabled` on the keyboard-aware branch: when the content
@@ -205,6 +208,29 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // of being captured by the sheet's drag-to-dismiss. When the content fits,
     // we leave it off so a short modal stays swipe-to-dismiss. (CP-14679)
     const [isScrollable, setIsScrollable] = useState(false)
+
+    // Whether the scroll offset is parked at the very top. Combined with
+    // `isScrollable` to decide who owns a downward drag on an Android form
+    // sheet (see `nestedScrollEnabled` below).
+    //
+    // `isScrollable` alone was too coarse: it handed EVERY downward drag on
+    // overflowing content to the ScrollView, so a form sheet lost
+    // swipe-to-dismiss entirely the moment its content grew past the viewport.
+    // That made dismissal depend on content height — the delegate
+    // "How long do you want to stake?" step renders one extra node-end caption
+    // that Fast Stake doesn't, which was enough to cross the threshold and kill
+    // dismissal on that screen alone (CP-14765).
+    //
+    // Android reads `nestedScrollEnabled` at touch-down, so gating on the
+    // offset assigns the whole gesture up front, which is what we want:
+    //   • at the top   → nested scrolling off, the sheet takes the downward
+    //                    drag and dismisses. Dragging UP still scrolls, since
+    //                    this flag only governs nested-scroll participation
+    //                    with the parent, not the ScrollView's own scrolling.
+    //   • scrolled     → nested scrolling on, so a downward drag scrolls back
+    //                    toward the top instead of being captured by the
+    //                    sheet's drag-to-dismiss (the CP-14679 behaviour).
+    const [isAtScrollTop, setIsAtScrollTop] = useState(true)
 
     const updateIsScrollable = useCallback(() => {
       // Only the Android form-sheet nested-scroll path reads this (see
@@ -351,6 +377,11 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       showNavigationHeaderTitle
     })
 
+    // Only the Android form-sheet path reads `isAtScrollTop`; matches the
+    // `updateIsScrollable` gate so iOS / non-modal screens never re-render for
+    // a value nothing consumes.
+    const tracksScrollTop = Platform.OS === 'android' && Boolean(isModal)
+
     const onScroll = useCallback(
       (
         event:
@@ -360,7 +391,7 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
       ) => {
         onFadingScroll(event)
 
-        if (onScrolledToEnd) {
+        if (onScrolledToEnd || tracksScrollTop) {
           let offsetY = 0
           if (typeof event === 'number') {
             offsetY = event
@@ -369,10 +400,20 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           } else {
             offsetY = event.contentOffset.y
           }
-          checkScrolledToEnd(offsetY)
+          if (onScrolledToEnd) {
+            checkScrolledToEnd(offsetY)
+          }
+          if (tracksScrollTop) {
+            // Epsilon rather than `=== 0`: Android reports sub-pixel offsets
+            // when settling, which would otherwise read as "scrolled" and keep
+            // dismissal disabled at rest. Only commit on a change so this
+            // doesn't re-render on every scroll frame.
+            const atTop = offsetY <= SCROLL_TOP_EPSILON
+            setIsAtScrollTop(prev => (prev === atTop ? prev : atTop))
+          }
         }
       },
-      [onFadingScroll, onScrolledToEnd, checkScrolledToEnd]
+      [onFadingScroll, onScrolledToEnd, checkScrolledToEnd, tracksScrollTop]
     )
 
     // Snap the header on release, mirroring ListScreenV2's `onScrollEndDrag`:
@@ -722,7 +763,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
             // actually overflows — a short modal keeps swipe-to-dismiss. (The
             // gesture-handler ScrollView branch below arbitrates this on its own
             // and doesn't need the prop.) (CP-14679)
-            nestedScrollEnabled={scrollBelowHeader && isScrollable}
+            nestedScrollEnabled={
+              scrollBelowHeader && isScrollable && !isAtScrollTop
+            }
             // `props.style` is merged last so a caller's style is preserved
             // (it would otherwise be dropped: `{...props}` spreads `style` but
             // this explicit `style` prop replaces it). Defaults come first so
@@ -807,7 +850,9 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
           {...props}
           // See (1) above — only meaningful on the Android modal path, where a
           // parent sheet exists to negotiate with.
-          nestedScrollEnabled={scrollBelowHeader && isScrollable}
+          nestedScrollEnabled={
+            scrollBelowHeader && isScrollable && !isAtScrollTop
+          }
           // Defaults first so `flex: 1` still applies unless the caller
           // overrides it (previous behaviour: `props.style` replaced it
           // outright), and the Android modal offset last so the fix can't be
