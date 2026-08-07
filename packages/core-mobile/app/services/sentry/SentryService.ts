@@ -1,5 +1,5 @@
 import Config from 'react-native-config'
-import { isE2EBuild } from 'utils/Utils'
+import { isDebugOrInternalBuild, isE2EBuild } from 'utils/Utils'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
@@ -33,6 +33,46 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: true
 })
 
+type SentryEnvironment = 'development' | 'internal' | 'production' | 'unknown'
+
+/**
+ * The Sentry environment this build reports under, derived from the build's own
+ * identity rather than from the `ENVIRONMENT` value baked into the env file.
+ *
+ * `ENVIRONMENT` does double duty in CI: `bitrise.yml` sets it to `production`
+ * on the internal workflows so that `scripts/bitrise/setEnv.sh` selects
+ * `.env.internal`. That is deliberate for backend selection, but the same value
+ * used to be handed straight to `Sentry.init({ environment })`, so every
+ * internal build filed its errors under `production` — ~8k events across ~750
+ * users in a 30-day window, including AppCheck debug-token failures that are
+ * impossible on a real production build (CP-13250).
+ *
+ * Build identity is the trustworthy signal, so reuse the predicate that already
+ * decides the AppCheck provider and the vm-module host (CP-14673). Do NOT go
+ * back to reading `Config.ENVIRONMENT` here.
+ *
+ * e2e builds need no branch of their own: `isAvailable` is false whenever
+ * `isE2EBuild` is true, so no release-mode e2e build ever initialises Sentry.
+ *
+ * Evaluated lazily inside `init()` because `isDebugOrInternalBuild()` reads the
+ * bundle id from a native module.
+ */
+const resolveEnvironment = (): SentryEnvironment => {
+  if (__DEV__) return 'development'
+
+  try {
+    return isDebugOrInternalBuild() ? 'internal' : 'production'
+  } catch {
+    // `init()` runs from index.js before any error boundary exists, so an
+    // unguarded throw out of the native bundle-id read would abort Sentry.init
+    // and leave the whole session with no error reporting. Losing the build
+    // label is the cheaper failure. Deliberately not 'production': a failure
+    // here must never put unattributable events back into the production
+    // environment this ticket cleaned up (CP-13250).
+    return 'unknown'
+  }
+}
+
 function scrubSentryData<T extends ErrorEvent | TransactionEvent>(event: T): T {
   /**
    * eliminating breadcrumbs. This should eliminate
@@ -62,7 +102,7 @@ const init = (): void => {
       // TODO: re-enable patchGlobalPromise here https://ava-labs.atlassian.net/browse/CP-8616
       patchGlobalPromise: false,
       dsn: Config.SENTRY_DSN,
-      environment: Config.ENVIRONMENT,
+      environment: resolveEnvironment(),
       debug: false,
       spotlight: DevDebuggingConfig.SENTRY_SPOTLIGHT,
       // Expected field conditions that carry no actionable signal. Entries
