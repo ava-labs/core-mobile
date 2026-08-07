@@ -53,6 +53,7 @@
     "@scure/btc-signer/@noble/hashes": "1.8.0",
     "bip32": "3.0.1",
     "bip39": "3.1.0",
+    "crypto-js": "4.2.0",
     "lodash@4.17.3": "4.17.21",
     "@ledgerhq/hw-transport": "6.31.0",
     "@noble/curves": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
