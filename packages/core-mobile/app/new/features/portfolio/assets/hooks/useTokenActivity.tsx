@@ -183,16 +183,38 @@ export const useTokenActivity = ({
     refresh
   ])
 
-  return {
-    combinedData,
-    filter,
-    sort,
-    isLoading,
-    isError: Boolean(isError),
-    isRefreshing,
-    refresh,
-    renderEmptyState
-  }
+  const isErrorBool = Boolean(isError)
+
+  // NOTE: this hook's file fails React Compiler compilation (bailout:
+  // "existing memoization could not be preserved", triggered by the
+  // transactionsBySymbol useMemo above where the compiler infers a coarser
+  // `token` dependency than the manual `token?.symbol`). Because the whole
+  // hook is left uncompiled, this return value needs its own explicit
+  // useMemo — a bare object literal here would get a new identity on every
+  // render regardless of whether any field actually changed, which is what
+  // was making `activity` / `activity.refresh` in useTokenDetailData churn.
+  return useMemo(
+    () => ({
+      combinedData,
+      filter,
+      sort,
+      isLoading,
+      isError: isErrorBool,
+      isRefreshing,
+      refresh,
+      renderEmptyState
+    }),
+    [
+      combinedData,
+      filter,
+      sort,
+      isLoading,
+      isErrorBool,
+      isRefreshing,
+      refresh,
+      renderEmptyState
+    ]
+  )
 }
 
 function isTokenCollectibleSupported(chainId: number, symbol: string): boolean {

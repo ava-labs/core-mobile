@@ -1,7 +1,17 @@
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { Networks } from 'store/network'
+import { memoizeByReference } from 'utils/memoizeByReference'
 import { filterOutHyperliquidNetworks } from 'utils/network/isHyperliquidNetwork'
+
+/**
+ * Memoized on reference equality -- `filterOutHyperliquidNetworks` allocates
+ * fresh on every call, which broke every downstream `createSelector` memo.
+ * CP-14918.
+ */
+const filterOutHyperliquidNetworksMemoized = memoizeByReference(
+  filterOutHyperliquidNetworks
+)
 
 export const getNetworksFromCache = ({
   includeSolana,
@@ -19,5 +29,5 @@ export const getNetworksFromCache = ({
     return networks
   }
 
-  return filterOutHyperliquidNetworks(networks)
+  return filterOutHyperliquidNetworksMemoized(networks)
 }
