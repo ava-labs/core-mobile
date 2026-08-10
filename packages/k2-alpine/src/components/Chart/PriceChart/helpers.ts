@@ -1,4 +1,4 @@
-import type { Skia } from '@shopify/react-native-skia'
+import type { SkPath } from '@shopify/react-native-skia'
 import { PriceChangeStatus } from '../../PriceChangeIndicator/types'
 import {
   CHART_INSET,
@@ -6,8 +6,6 @@ import {
   HEADER_RIGHT_ZONE_THRESHOLD
 } from './constants'
 import { OhlcCandle } from './types'
-
-type SkPath = ReturnType<typeof Skia.Path.Make>
 
 /** Larger prices map to smaller y. Returns midpoint when min === max. */
 export const priceToY = ({
@@ -254,7 +252,9 @@ const formatWeekdayMonthDayYear = (d: Date): string => {
   } ${d.getDate()}, ${d.getFullYear()}`
 }
 
-/** e.g. "Last update: Wed, Apr 29, 2026 at 9:41 AM" */
+/** e.g. "Last update: Wed, Apr 29, 2026 at 9:41\u202fAM" — the AM/PM
+ * separator is U+202F (narrow no-break space), not an ASCII space; see
+ * `AM_PM_SEPARATOR`. */
 export const formatLastUpdate = (ts: number): string => {
   const d = new Date(ts)
   const datePart = formatWeekdayMonthDayYear(d)
