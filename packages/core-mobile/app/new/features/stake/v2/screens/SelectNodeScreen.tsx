@@ -9,7 +9,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useNodes } from 'hooks/earn/useNodes'
@@ -284,11 +284,19 @@ const SelectNodeScreen = (): JSX.Element => {
   }, [isFetching, error, validators.length, searchText])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title={`Find and select your\npreferred node`}
       data={validators}
       renderItem={renderItem}
       isModal
+      // Deliberately NOT `headerOutsideList`: that variant puts the title and
+      // search bar in a fixed region above the list, and on an Android form
+      // sheet a partial drag on that region (one that doesn't travel far enough
+      // to dismiss) leaves the sheet's nested-scroll interaction half-finished
+      // and the list permanently unscrollable — taps still work, and it only
+      // clears by closing and reopening the sheet. Device-verified on a Pixel 8
+      // Pro: with the header inside the list (this default path) the same
+      // partial drag snaps back and scrolling keeps working.
       keyExtractor={item => item.validator.nodeID}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
