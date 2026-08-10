@@ -18,6 +18,7 @@ import {
 } from 'store/posthog'
 import { selectActiveAccountHasSolanaAddress } from 'store/account'
 import { defaultEnabledL2ChainIds } from 'services/network/consts'
+import { memoizeByReference } from 'utils/memoizeByReference'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -171,6 +172,46 @@ export const selectNetwork =
     return allNetworks[chainId]
   }
 
+/**
+ * `buildNetworks`: reference-stable output for `selectNetworks` (a
+ * `createSelector` input) -- a fresh object per call defeats reselect's
+ * identity check and re-renders every `useSelector` consumer app-wide on
+ * every dispatch. CP-14918.
+ */
+const buildNetworks = memoizeByReference(
+  (
+    rawNetworks: Networks | undefined,
+    customNetworks: Networks,
+    isDeveloperMode: boolean
+  ): Networks => {
+    const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = rawNetworks?.[chainId]
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+
+    const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = customNetworks[chainId]
+
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+    return { ...populatedNetworks, ...populatedCustomNetworks }
+  }
+)
+
 export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const customNetworks = selectCustomNetworks(state)
@@ -181,31 +222,7 @@ export const selectNetworks = (state: RootState): Networks => {
     includeHyperliquid: !isHyperliquidSupportBlocked
   })
 
-  const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = rawNetworks?.[chainId]
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
-
-  const populatedCustomNetworks = Object.keys(customNetworks).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = customNetworks[chainId]
-
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
-  return { ...populatedNetworks, ...populatedCustomNetworks }
+  return buildNetworks(rawNetworks, customNetworks, isDeveloperMode)
 }
 
 export const selectEnabledNetworks = createSelector(

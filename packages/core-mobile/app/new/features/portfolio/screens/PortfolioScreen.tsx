@@ -481,19 +481,24 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [activeAccount?.id, handleScrollResync, scrollToTop])
   )
 
-  const tabHeight = useMemo(() => {
-    return Platform.select({
+  // Single `useMemo` with a flat, complete dependency array -- splitting
+  // `tabHeight` back out from `contentContainerStyle` reintroduces a React
+  // Compiler bailout on this component. CP-14918.
+  const contentContainerStyle = useMemo(() => {
+    const tabHeight = Platform.select({
       ios: frame.height - headerHeight,
       android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
     })
-  }, [frame.height, headerHeight, stickyHeaderLayout?.height])
-
-  const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [
+    frame.height,
+    headerHeight,
+    stickyHeaderLayout?.height,
+    segmentedControlLayout?.height
+  ])
 
   const tabs = useMemo(() => {
     const baseTabs = [
