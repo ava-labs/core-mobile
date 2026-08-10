@@ -4,7 +4,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -111,6 +111,21 @@ export function useAccountBalances(
 
   const enabled = !isNotReady
 
+  // Identifies the exact set of networks this account is currently fetching
+  // balances for. Mirrors the inputs of `balanceKey` (minus `filterOutDustUtxos`,
+  // tracked separately below) so the "has this fetch attempt settled" latch
+  // below resets whenever react-query would hand us a genuinely different
+  // query (new account, or the enabled-network set changed) rather than a
+  // routine background refetch of the same query.
+  const networksKey = useMemo(
+    () =>
+      enabledNetworks
+        .map(n => n.chainId)
+        .sort()
+        .join(','),
+    [enabledNetworks]
+  )
+
   const {
     data,
     isFetching,
@@ -171,16 +186,42 @@ export function useAccountBalances(
     }
   }, [isNotReady, isOnline, account?.id, setIsRefetching, refetchFn])
 
+  // `hasSettledFetch` latches on `isFetching` flipping false -- prevents a
+  // later background refetch of the same query from reopening the shimmer.
+  // Resets only when account or enabled-network-set changes. CP-14918.
+  const [hasSettledFetch, setHasSettledFetch] = useState(false)
+
+  // `lastResetKeyRef` guards against react-freeze's thaw re-running this
+  // effect from scratch -- only call `setHasSettledFetch(false)` when the
+  // dep key actually changed, not on every thaw. CP-14918.
+  const lastResetKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    const resetKey = `${account?.id ?? ''}|${networksKey}|${filterOutDustUtxos}`
+    if (lastResetKeyRef.current === resetKey) return
+    lastResetKeyRef.current = resetKey
+    setHasSettledFetch(false)
+  }, [account?.id, networksKey, filterOutDustUtxos])
+
+  useEffect(() => {
+    if (!isFetching && data !== undefined) {
+      setHasSettledFetch(true)
+    }
+  }, [isFetching, data])
+
   const isLoading = useMemo(() => {
     if (isError || !isOnline) return false
+    if (!account || !data) return true
+    if (hasSettledFetch) return false
 
-    return (
-      !account ||
-      !data ||
-      data.length === 0 ||
-      data.length < enabledNetworks.length
-    )
-  }, [account, data, enabledNetworks.length, isError, isOnline])
+    return data.length === 0 || data.length < enabledNetworks.length
+  }, [
+    account,
+    data,
+    enabledNetworks.length,
+    isError,
+    isOnline,
+    hasSettledFetch
+  ])
 
   return {
     data: data ?? [],
