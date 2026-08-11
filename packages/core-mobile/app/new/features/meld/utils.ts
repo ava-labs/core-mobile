@@ -89,7 +89,10 @@ export const getErrorMessage = (
     const response = error.response as {
       status?: number
       statusText?: string
-      data?: CreateCryptoQuoteError | CreateCryptoQuoteNotFoundError
+      data?:
+        | CreateCryptoQuoteError
+        | CreateCryptoQuoteNotFoundError
+        | { message: string }
     }
     if (response.data && 'status' in response.data) {
       return {

@@ -429,29 +429,3 @@ export const ServiceProviderNames: Record<string, string> = {
 }
 
 export const SOLANA_MELD_CHAIN_ID = 101
-
-// Meld does not normalize crypto currency codes across providers. The same
-// C-Chain Avalanche asset is catalogued as AVAXC / USDC_AVAXC by Transak (the
-// codes Core uses), but as AVAX / USDC_AVAX by Swapped and Mercuryo. Sending
-// Core's AVAXC to Swapped yields NO_VALID_QUOTES. This maps Core's code to the
-// per-provider code so each provider is quoted with a code it recognises.
-// Delivery is unchanged: confirmed C-Chain (Swapped accepts the 0x C-Chain
-// address and rejects X-Chain addresses).
-const PROVIDER_CRYPTO_CODE_OVERRIDES: Record<string, Record<string, string>> = {
-  [ServiceProviders.SWAPPED]: {
-    [MELD_CURRENCY_CODES.AVAXC]: 'AVAX',
-    [MELD_CURRENCY_CODES.USDC_AVAXC]: 'USDC_AVAX'
-  },
-  [ServiceProviders.MERCURYO]: {
-    [MELD_CURRENCY_CODES.AVAXC]: 'AVAX',
-    [MELD_CURRENCY_CODES.USDC_AVAXC]: 'USDC_AVAX'
-  }
-}
-
-export const providerCryptoCode = (
-  code: string | undefined,
-  provider: string | undefined
-): string | undefined => {
-  if (!code || !provider) return code
-  return PROVIDER_CRYPTO_CODE_OVERRIDES[provider]?.[code] ?? code
-}

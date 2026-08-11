@@ -18,8 +18,7 @@ import { humanize } from 'utils/string/humanize'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  ServiceProviderNames,
-  providerCryptoCode
+  ServiceProviderNames
 } from '../consts'
 import {
   useMeldCountryCode,
@@ -194,21 +193,6 @@ export const useSelectAmount = ({
       : token?.currencyCode ?? ''
   }, [category, token?.currencyCode, selectedCurrency])
 
-  // Translate the crypto-side code to the selected provider's code so the
-  // session is created with a code that provider recognises (see
-  // providerCryptoCode). Delivery chain/address is unchanged.
-  const sessionDestinationCurrencyCode =
-    category === ServiceProviderCategories.CRYPTO_ONRAMP
-      ? providerCryptoCode(destinationCurrencyCode, serviceProvider) ??
-        destinationCurrencyCode
-      : destinationCurrencyCode
-
-  const sessionSourceCurrencyCode =
-    category === ServiceProviderCategories.CRYPTO_OFFRAMP
-      ? providerCryptoCode(sourceCurrencyCode, serviceProvider) ??
-        sourceCurrencyCode
-      : sourceCurrencyCode
-
   const { createSessionWidget } = useCreateSessionWidget({
     category,
     sessionType:
@@ -221,8 +205,8 @@ export const useSelectAmount = ({
         category === ServiceProviderCategories.CRYPTO_OFFRAMP
           ? true
           : undefined,
-      destinationCurrencyCode: sessionDestinationCurrencyCode,
-      sourceCurrencyCode: sessionSourceCurrencyCode,
+      destinationCurrencyCode,
+      sourceCurrencyCode,
       walletAddress,
       serviceProvider
     }
