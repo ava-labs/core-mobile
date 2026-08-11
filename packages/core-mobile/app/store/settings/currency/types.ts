@@ -62,7 +62,8 @@ export const currencies: Currency[] = [
   { name: 'Danish Krone', symbol: CurrencySymbol.DKK },
   { name: 'British Pound Sterling', symbol: CurrencySymbol.GBP },
   { name: 'Hong Kong Dollar', symbol: CurrencySymbol.HKD },
-  { name: 'Hungarian Forint', symbol: CurrencySymbol.HUF }
+  { name: 'Hungarian Forint', symbol: CurrencySymbol.HUF },
+  { name: 'Mexican Peso', symbol: CurrencySymbol.MXN }
 ]
 
 export const DEFAULT_CURRENCY = CurrencySymbol.USD

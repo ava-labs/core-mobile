@@ -6,6 +6,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectEnabledNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsFilterSmallUtxosActive } from 'store/settings/advanced/filterSmallUtxosActive'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
 export const useRefreshStakingBalances = (
@@ -17,6 +18,7 @@ export const useRefreshStakingBalances = (
   const { xpAddresses } = useXPAddresses(activeAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const filterOutDustUtxos = useSelector(selectIsFilterSmallUtxosActive)
+  const currency = useSelector(selectSelectedCurrency)
 
   return useCallback(
     ({ shouldRefreshStakes }: { shouldRefreshStakes: boolean }) => {
@@ -27,11 +29,12 @@ export const useRefreshStakingBalances = (
           })
         }
         queryClient.invalidateQueries({
-          queryKey: balanceKey(
-            activeAccount,
-            Object.values(enabledNetworks),
-            filterOutDustUtxos
-          )
+          queryKey: balanceKey({
+            account: activeAccount,
+            networks: Object.values(enabledNetworks),
+            filterOutDustUtxos,
+            currency
+          })
         })
       }, timeout)
     },
@@ -42,7 +45,8 @@ export const useRefreshStakingBalances = (
       isDeveloperMode,
       enabledNetworks,
       xpAddresses,
-      filterOutDustUtxos
+      filterOutDustUtxos,
+      currency
     ]
   )
 }
