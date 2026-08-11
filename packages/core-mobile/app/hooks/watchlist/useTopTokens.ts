@@ -30,15 +30,6 @@ export const useTopTokensQuery = (): UseQueryResult<TopTokensData, Error> => {
   })
 }
 
-/**
- * Shared, deduped read of the top-tokens query. Must be called under
- * <WatchlistQueriesProvider> (mounted once in `(signedIn)/_layout.tsx`).
- * Throws otherwise, rather than silently creating a second observer.
- *
- * Returns a narrow `{ data, isLoading, isRefetching, refetch }` shape, not
- * the full `UseQueryResult` -- see the comment on `WatchlistQueryValue` in
- * watchlistQueriesContext.ts.
- */
 export const useTopTokens = (): WatchlistQueryValue<TopTokensData> => {
   const query = useContext(TopTokensQueryContext)
   if (!query) {

@@ -11,8 +11,8 @@ import {
  * per key (was: one per `useWatchlist()` caller, 20+ call sites). Context
  * value must stay narrow + tracked-props default (not `'all'`) -- see
  * `useTopTokens.ts`; reintroducing either re-opens the fan-out. Dropped, not
- * restored: the old per-call-site `useIsFocused()` pause gate -- Open
- * decision #1 (doc §15.7), not yet resolved. CP-14918.
+ * restored: the old per-call-site `useIsFocused()` pause gate -- tracked as
+ * CP-14922.
  */
 export const WatchlistQueriesProvider: FC<PropsWithChildren> = ({
   children

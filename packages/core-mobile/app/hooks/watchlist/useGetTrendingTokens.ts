@@ -35,20 +35,10 @@ export const useTrendingTokensQuery = (): UseQueryResult<
 }
 
 /**
- * Shared, deduped read of the trending-tokens query, with the same `select`
- * ergonomics the old per-call-site `useQuery({ select })` had. `select` is
- * applied locally (memoized on `[select, query.data]`, matching react-query's
- * own per-observer select memoization) rather than inside the shared
- * `useQuery` call, since a `select` baked into the single shared observer
- * would only ever serve whichever caller happened to render first.
- *
- * Must be called under <WatchlistQueriesProvider> (mounted once in
- * `(signedIn)/_layout.tsx`). Throws otherwise, rather than silently creating
- * a second observer.
- *
- * Returns a narrow `{ data, isLoading, isRefetching, refetch }` shape, not
- * the full `UseQueryResult` -- see the comment on `WatchlistQueryValue` in
- * watchlistQueriesContext.ts.
+ * `select` is applied locally (memoized on `[select, query.data]`, matching
+ * react-query's own per-observer select memoization) rather than baked into
+ * the shared query -- a `select` inside the single shared observer would
+ * only ever serve whichever caller happened to render first.
  */
 export const useGetTrendingTokens = <TData = TrendingToken[]>(
   select?: (data: TrendingToken[]) => TData

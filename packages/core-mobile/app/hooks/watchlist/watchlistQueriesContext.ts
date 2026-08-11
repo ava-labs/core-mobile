@@ -1,4 +1,4 @@
-import { UseQueryResult } from '@tanstack/react-query'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { createContext } from 'react'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
 import { TrendingToken } from 'utils/api/types'
