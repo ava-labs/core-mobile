@@ -109,9 +109,8 @@ const computeVolumes = (candles: OhlcCandle[]): Float32Array => {
   return vols
 }
 
-// `useFont` has no internal cache -- every call reallocates a native
-// `SkTypeface`. Module-scope singleton (`labelFontCache`/`labelFontPromise`),
-// shared across every mount. CP-14918.
+// `useFont` has no cache — every mount reallocates a native `SkTypeface`,
+// hence a module-scope singleton shared across mounts. CP-14918.
 const LABEL_FONT_SIZE = 11
 let labelFontCache: SkFont | null = null
 let labelFontPromise: Promise<SkFont | null> | null = null
@@ -136,8 +135,7 @@ const loadLabelFontOnce = (): Promise<SkFont | null> => {
       labelFontListeners.forEach(listener => listener())
       return font
     } catch {
-      // Don't cache a failed load forever -- clear `labelFontPromise` in the
-      // catch so the next mount retries. CP-14918.
+      // Don't cache a failed load — the next mount must be able to retry.
       labelFontPromise = null
       return null
     }
@@ -355,10 +353,9 @@ export const PriceChart: FC<Props> = ({
     [candles]
   )
 
-  // `lineYsSV`/`volumesSV`: worklets read a flattened `Float32Array`, not the
-  // full object array, to avoid a shareable-conversion per dep change.
-  // Lazy-inits from the CURRENT render's data (not empty) -- avoids a
-  // stale-length window on mount/range-switch. CP-14918.
+  // Worklets read a flattened `Float32Array` so a data change doesn't
+  // re-convert an array of objects to a shareable. Lazy-init reads the current
+  // render's data, so mount/range-switch never sees a zero-length window.
   const lineYsSV = useSharedValue<Float32Array>(() => computeLineYs(linePoints))
   useEffect(() => {
     lineYsSV.value = computeLineYs(linePoints)
@@ -425,10 +422,6 @@ export const PriceChart: FC<Props> = ({
   //     touch. Once LongPress has already activated, Pan accepts any
   //     direction so the user can drag the crosshair vertically without
   //     losing it.
-  //
-  // Gesture memo still bails from React Compiler -- a `SharedValue`-in-deps
-  // pattern shared by 3 effects in this file, not just here. Known, accepted
-  // limitation; out of scope for this pass. CP-14918 item 5.
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const gesture = useMemo(() => {
     const clampX = (x: number): number => {

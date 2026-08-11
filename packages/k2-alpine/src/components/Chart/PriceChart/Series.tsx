@@ -72,7 +72,7 @@ type CandlesProps = {
 /**
  * `Candles`: 4 `SkPath`s (up/down body, up/down wick) instead of 2N
  * `<Line>`+`<RoundedRect>` elements. Wicks draw before bodies so paint order
- * matches the original per-candle behavior. CP-14918 item 1.
+ * matches the original per-candle behavior. CP-14918.
  */
 export const Candles: FC<CandlesProps> = memo(
   ({
@@ -91,8 +91,8 @@ export const Candles: FC<CandlesProps> = memo(
       useMemo(() => {
         const bodies = { up: Skia.Path.Make(), down: Skia.Path.Make() }
         const wicks = { up: Skia.Path.Make(), down: Skia.Path.Make() }
-        // Constant across all candles (depends only on the shared `bodyWidth`
-        // prop) — matches the per-iteration computation it replaces exactly.
+        // Loop-invariant (depends only on bodyWidth) — same value the
+        // per-candle version computed each iteration.
         const stroke = Math.max(1, bodyWidth / 4)
 
         candles.forEach((c, i) => {

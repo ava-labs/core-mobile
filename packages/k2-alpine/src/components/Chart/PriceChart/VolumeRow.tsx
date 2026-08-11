@@ -35,16 +35,10 @@ const BAR_WIDTH_RATIO = 0.6
 type BarGeom = { x: number; barHeight: number; radius: number }
 
 /**
- * Bar highlight: one static `SkPath` for idle bars + two dynamic
- * `RoundedRect`s for the two nearest bars, driven by a single `SharedValue`
- * holding both indices and their crossfade weights (was: one `makeMutable`
- * per candle). Crossfades between the two nearest candles exactly like
- * main's original per-candle implementation — see `volumeCrosshairWeights`
- * in `helpers.ts` for the interpolation this restores. Because the
- * highlight rects paint on top of the idle `Path` (which already painted
- * those same bars), their opacity is compositing-compensated via
- * `crossfadeRectOpacity` so `idlePath + rect` composes to main's per-bar
- * target opacity exactly, not a double-counted overshoot. CP-14918 item 2.
+ * One static Path for all idle bars + two RoundedRects for the bars
+ * bracketing the crosshair, replacing one makeMutable and one rect per
+ * candle. Rect opacity is compositing-compensated (`crossfadeRectOpacity`)
+ * because it paints over bars the idle Path already drew. CP-14918.
  */
 export const VolumeRow: FC<Props> = ({
   candles,
@@ -95,8 +89,10 @@ export const VolumeRow: FC<Props> = ({
     return { barGeom: geom, idlePath: path }
   }, [candles, innerWidth, height, barWidth, maxVolume])
 
-  // Mirrored into a SharedValue via an effect rather than closed over
-  // directly inside the worklets below.
+  // Worklets capture by value: closing over `barGeom` would copy all N geoms
+  // into the UI runtime once per derived value, per render. One SharedValue
+  // copies once per geometry change — written in an effect, not during
+  // render, because Reanimated doesn't support SharedValue writes mid-render.
   const barGeomSV = useSharedValue<BarGeom[]>(barGeom)
   useEffect(() => {
     barGeomSV.value = barGeom
@@ -117,9 +113,8 @@ export const VolumeRow: FC<Props> = ({
     [candles.length, innerWidth]
   )
 
-  // Low bar — the candle at or just below the crosshair. Opacity is
-  // compositing-compensated (see `crossfadeRectOpacity`) since this rect
-  // paints on top of `idlePath`, which already painted the same bar.
+  // Low/high bar = the two candles bracketing the crosshair. Opacity goes
+  // through `crossfadeRectOpacity` because these paint over `idlePath`.
   const lowOpacity = useDerivedValue(() => {
     const c = crossfadeSV.value
     return c.lowIndex === NO_HIGHLIGHT_INDEX
@@ -151,8 +146,6 @@ export const VolumeRow: FC<Props> = ({
     return g ? g.radius : 0
   })
 
-  // High bar — the candle at or just above the crosshair. Same compositing
-  // compensation as `lowOpacity` above.
   const highOpacity = useDerivedValue(() => {
     const c = crossfadeSV.value
     return c.highIndex === NO_HIGHLIGHT_INDEX

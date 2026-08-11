@@ -45,10 +45,8 @@ export const ChartFooter: FC<Props> = ({
 }) => {
   const idx = useActiveIndex(activeIndex)
 
-  // `needsFull` also gates on `showVolume` -- in line mode (default) this
-  // text is permanently invisible; without the gate, a crosshair drag still
-  // pays the full O(candles) format cost for nothing visible. CP-14918
-  // (closes I3, §15.1).
+  // Also gated on `showVolume`: in line mode this text is never visible, so a
+  // crosshair drag shouldn't pay the O(candles) format at all. CP-14918.
   const needsFull = useIsFullFormatNeeded(showVolume ? idx : null) && showVolume
   const formattedVolumes = useMemo(() => {
     if (!needsFull) return undefined

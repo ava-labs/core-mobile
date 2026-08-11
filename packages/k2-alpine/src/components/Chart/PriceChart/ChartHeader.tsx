@@ -217,12 +217,9 @@ export const ChartHeader: FC<Props> = memo(
       isActive
     )
 
-    // Crosshair-inactive state only ever reads the LAST candle (see `active`
-    // below), so the mount-time eager cost is a single O(1) format instead
-    // of formatting all ~48 candles. The full array (needed for crosshair
-    // drag lookups) is computed lazily by `fullFormatted` below.
+    // Inactive state only renders the last candle, so format just that one at
+    // mount; the full array (crosshair lookups) is deferred below.
     const lastFormatted = useMemo(
-      // CP-14918: eager mount-time cost — now O(1), one candle.
       () =>
         formatCandleDisplayStringAt(candles, candles.length - 1, formatPrice),
       [candles, formatPrice]
@@ -231,9 +228,8 @@ export const ChartHeader: FC<Props> = memo(
     const needsFull = useIsFullFormatNeeded(idx)
     const fullFormatted = useMemo(() => {
       if (!needsFull) return undefined
-      // CP-14918: the ~96-call Intl formatting cost, deferred off
-      // the mount path to an idle tick or the first crosshair activation
-      // (whichever comes first) — see `useIsFullFormatNeeded`.
+      // Full-array Intl cost (see `MONTH_ABBR` in helpers) kept off the mount
+      // path — see `useIsFullFormatNeeded`.
       return formatCandleDisplayStrings(candles, formatPrice)
     }, [candles, formatPrice, needsFull])
 

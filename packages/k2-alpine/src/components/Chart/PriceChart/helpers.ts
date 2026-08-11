@@ -55,16 +55,12 @@ export const NO_HIGHLIGHT_INDEX = -1
 export type VolumeCrossfade = {
   lowIndex: number
   highIndex: number
-  /** 1 when the crosshair sits exactly on `lowIndex`, 0 when it has drifted
-   * all the way to `highIndex`. */
+  /** Weight 1 = crosshair exactly on that index, 0 = fully drifted to the
+   * other. Sum is 1 whenever a highlight is active. */
   lowWeight: number
-  /** 1 when the crosshair sits exactly on `highIndex`, 0 when it has
-   * drifted all the way to `lowIndex`. `lowWeight + highWeight === 1`
-   * whenever a highlight is active. */
   highWeight: number
 }
 
-/** Nothing highlighted — both indices are the sentinel, both weights 0. */
 export const IDLE_VOLUME_CROSSFADE: VolumeCrossfade = {
   lowIndex: NO_HIGHLIGHT_INDEX,
   highIndex: NO_HIGHLIGHT_INDEX,
@@ -73,26 +69,11 @@ export const IDLE_VOLUME_CROSSFADE: VolumeCrossfade = {
 }
 
 /**
- * Two-bar crossfade weights for `VolumeRow`'s crosshair highlight —
- * restores main's original per-candle interpolation (each candle's opacity
- * was `ACTIVE - (ACTIVE - IDLE) * distance` for `distance = |fracIndex -
- * i| < 1`, `IDLE` otherwise, where `fracIndex` is the crosshair's position
- * in candle-index units) without reintroducing one `SharedValue` per
- * candle: at most two candles — `floor(fracIndex)` and `ceil(fracIndex)` —
- * can ever be within one candle-width of the crosshair, so this returns
- * just those two plus a 0-1 weight each. `IDLE + (ACTIVE - IDLE) * weight`
- * per side is main's target *composite* opacity for that candle (weight is
- * `1 - distance` for that side) — see `crossfadeRectOpacity` for how
- * `VolumeRow` actually paints a rect to land on that target once its
- * static idle `Path` (drawn underneath, at `VOLUME_IDLE_OPACITY`) is
- * composited in too.
- *
- * Purely geometric — callers gate on crosshair-active state themselves
- * (see `VolumeRow`'s `useAnimatedReaction`) and fall back to
- * `IDLE_VOLUME_CROSSFADE` when inactive, so this only needs to guard
- * against a degenerate track.
- *
- * Worklet — called from a `useAnimatedReaction` on the UI thread.
+ * Two-bar crossfade weights for VolumeRow's crosshair highlight. Only the
+ * two candles bracketing the crosshair can be within one candle-width of
+ * it, so returning just those two reproduces the per-candle opacity ramp
+ * without one SharedValue per candle. Purely geometric — callers gate on
+ * active state and substitute IDLE_VOLUME_CROSSFADE. Worklet.
  */
 export const volumeCrosshairWeights = (
   x: number,
@@ -118,38 +99,16 @@ export const volumeCrosshairWeights = (
 /** Idle opacity of every bar in `VolumeRow`'s static `Path` — including
  * the two candles a highlight rect may be drawn on top of. */
 export const VOLUME_IDLE_OPACITY = 0.1
-/** Fully-highlighted opacity a candle reaches when the crosshair sits
- * exactly on it. */
+/** Composite target opacity when the crosshair sits exactly on a candle. */
 export const VOLUME_ACTIVE_OPACITY = 1
 
 /**
- * `VolumeRow` paints a highlight rect ON TOP OF its static idle `Path`,
- * which already painted that same bar at `VOLUME_IDLE_OPACITY` — the two
- * source-over layers are the same color, so they don't blend hues, but
- * their alphas still combine as `1 - (1 - VOLUME_IDLE_OPACITY) * (1 -
- * rectOpacity)`. Painting the rect at the raw target opacity (`IDLE +
- * (ACTIVE - IDLE) * weight`, see `volumeCrosshairWeights`) would double-count
- * the idle layer's contribution and overshoot the target everywhere except
- * `weight` 0 and 1. Solving `1 - (1 - IDLE) * (1 - rectOpacity) = IDLE +
- * (ACTIVE - IDLE) * weight` for `rectOpacity` gives:
- *
- *   rectOpacity = (ACTIVE - IDLE) * weight / (1 - IDLE)
- *
- * With the current constants (`ACTIVE = 1`, `IDLE = 0.1`) the `(1 - IDLE)`
- * factors cancel and this simplifies to exactly `weight` — kept as the
- * general formula (rather than hardcoding that simplification) so the
- * compositing invariant survives either constant changing.
- *
- * `weight = 0` maps to `rectOpacity = 0` — a fully transparent rect is a
- * true no-op, so the bar is left showing exactly the idle `Path`'s
- * `VOLUME_IDLE_OPACITY`, not something inflated by a stray draw.
- * `weight = 1` maps to `rectOpacity = 1`, matching `VOLUME_ACTIVE_OPACITY`
- * (an opaque top layer fully occludes the idle layer beneath it, so
- * stacking order/count beyond that doesn't matter — this is also why the
- * last-candle edge case, where `lowIndex === highIndex` and both rects
- * draw at the same spot, still lands exactly on `VOLUME_ACTIVE_OPACITY`).
- *
- * Worklet — called from `useDerivedValue` callbacks on the UI thread.
+ * The highlight rect paints over the idle Path, so their alphas compose as
+ * 1 - (1 - IDLE) * (1 - rect). Solving that for the target
+ * IDLE + (ACTIVE - IDLE) * weight gives the expression below; painting the
+ * raw target instead double-counts the idle layer and overshoots.
+ * With today's constants it reduces to weight — left general so the
+ * invariant survives a constant change. Worklet.
  */
 export const crossfadeRectOpacity = (weight: number): number => {
   'worklet'
@@ -174,9 +133,10 @@ export const rangeBounds = (
   return { minPrice, maxPrice }
 }
 
-// Hand-rolled to avoid ~4ms/call Intl JSI crossings (~96 calls/mount).
-// Hardcodes en-US regardless of device locale -- Open decision #2 (doc
-// §15.7), not yet resolved. CP-14918.
+// Hand-rolled instead of Intl/toLocale*: each .format() call crosses
+// Hermes -> JSI -> native ICU (multiple ms per call on-device), and a
+// chart mount made ~96 of them. Trade-off: output is en-US regardless of
+// device locale. CP-14918.
 const MONTH_ABBR = [
   'Jan',
   'Feb',
@@ -211,30 +171,23 @@ const formatMonthDay = (d: Date): string => {
   return `${MONTH_ABBR[d.getMonth()]} ${d.getDate()}`
 }
 
-/**
- * `{ hour: 'numeric', minute: '2-digit', hour12: false }`-equivalent,
- * zero-padded to 2 digits, hours 0-23 (h23), e.g. midnight -> "00:00".
- *
- * Emits `00:00` for midnight, not Node ICU's `24:00` -- matches
- * Hermes/Android ICU (h23). Do not revert; `helpers.test.ts` pins this.
- * CP-14918.
- */
+/** en-US `{ hour: 'numeric', minute: '2-digit', hour12: false }`,
+ * zero-padded. Midnight is "00:00" (h23, matching Hermes/Android ICU), not
+ * Node ICU's "24:00" — `helpers.test.ts` pins this. */
 const formatHour24Minute = (d: Date): string => {
   assertValidDate(d)
   const hour = d.getHours()
   return `${pad2(hour)}:${pad2(d.getMinutes())}`
 }
 
+/** Must stay U+202F (narrow no-break space), not ASCII space — matches
+ * Hermes/Android ICU 72+. Byte-pinned by `helpers.test.ts`; do not "clean
+ * up" back to a plain space. CP-14918. */
+const AM_PM_SEPARATOR = '\u202f' // NARROW NO-BREAK SPACE
+
 /** en-US `{ hour: 'numeric', minute: '2-digit' }` (hour12 defaults to true
  * for en-US) — e.g. "9:41\u202fAM", "12:00\u202fPM". Hour is NOT
- * zero-padded; minute is.
- *
- * `AM_PM_SEPARATOR` must stay U+202F (narrow no-break space), not ASCII
- * space -- matches Hermes/Android ICU 72+. Byte-pinned by
- * `helpers.test.ts`; do not "clean up" back to a plain space. CP-14918.
- */
-const AM_PM_SEPARATOR = '\u202f' // NARROW NO-BREAK SPACE — see doc comment above.
-
+ * zero-padded; minute is. */
 const formatHour12Minute = (d: Date): string => {
   assertValidDate(d)
   const hour = d.getHours()
@@ -252,9 +205,9 @@ const formatWeekdayMonthDayYear = (d: Date): string => {
   } ${d.getDate()}, ${d.getFullYear()}`
 }
 
-/** e.g. "Last update: Wed, Apr 29, 2026 at 9:41\u202fAM" — the AM/PM
- * separator is U+202F (narrow no-break space), not an ASCII space; see
- * `AM_PM_SEPARATOR`. */
+/** e.g. "Last update: Wed, Apr 29, 2026 at 9:41\u202fAM" (U+202F before
+ * AM/PM, see `AM_PM_SEPARATOR`). Hand-rolled rather than Intl — see
+ * `MONTH_ABBR`. */
 export const formatLastUpdate = (ts: number): string => {
   const d = new Date(ts)
   const datePart = formatWeekdayMonthDayYear(d)
@@ -308,10 +261,8 @@ export const priceChangeStatusFromDelta = (
   return PriceChangeStatus.Neutral
 }
 
-/** Single-candle body shared by `formatCandleDisplayStrings` (all candles)
- * and `formatCandleDisplayStringAt` (one candle) so the two paths are
- * byte-for-byte identical — the deferred full-array computation must never
- * disagree with the eager single-candle one it stands in for at mount. */
+/** Shared by the O(n) and O(1) formatters so the deferred full array can
+ * never disagree with the single entry rendered eagerly at mount. */
 const formatCandleEntry = (
   candle: OhlcCandle,
   firstOpen: number,
@@ -344,12 +295,10 @@ export const formatCandleDisplayStrings = (
 }
 
 /**
- * O(1) variant of `formatCandleDisplayStrings` for a single candle index —
- * lets a mount-time render compute only the one entry it actually displays
- * (the crosshair-inactive state only ever reads the last candle) instead of
- * paying the ~96 `Intl.format()` calls for all candles up front. The full
- * array is computed lazily elsewhere (see `useIsFullFormatNeeded` in
- * `hooks.ts`) for crosshair-drag lookups.
+ * O(1) counterpart to `formatCandleDisplayStrings`. Mount only ever displays
+ * the last candle, so formatting all of them up front paid the full Intl
+ * cost (see `MONTH_ABBR`) for one visible row; the full array is deferred
+ * via `useIsFullFormatNeeded`.
  */
 export const formatCandleDisplayStringAt = (
   candles: OhlcCandle[],
@@ -375,10 +324,8 @@ export const crosshairInnerAnchorTarget = (
   return 0
 }
 
-/** e.g. "Today, 07:25" or "Apr 29, 07:25" — 24-hour (h23, midnight = "00"),
- * no AM/PM. See the CP-14918 comment above `MONTH_ABBR` for why this is
- * hand-rolled instead of an `Intl.DateTimeFormat`, and the comment above
- * `formatHour24Minute` for the h23-vs-h24 midnight correction. */
+/** e.g. "Today, 07:25" or "Apr 29, 07:25" — 24-hour, no AM/PM.
+ * Hand-rolled, not Intl; see `MONTH_ABBR` and `formatHour24Minute`. */
 export const formatActiveTime = (ts: number, nowMs?: number): string => {
   const d = new Date(ts)
   const now = nowMs !== undefined ? new Date(nowMs) : new Date()
@@ -391,14 +338,8 @@ export const formatActiveTime = (ts: number, nowMs?: number): string => {
   return `${datePart}, ${timePart}`
 }
 
-/**
- * Pure gating decision behind `useIsFullFormatNeeded` (hooks.ts), pulled out
- * here (no reanimated dependency) so it's unit-testable without mounting a
- * component — this package has no component-render test harness. The full
- * "format every candle" array is needed once EITHER the post-mount idle
- * tick has fired OR the crosshair has been activated at least once (`idx`
- * non-null) — whichever happens first.
- */
+/** Extracted from `useIsFullFormatNeeded` (hooks.ts) only so the gate is
+ * unit-testable — this package has no component-render harness. */
 export const isFullFormatNeeded = (
   idleReady: boolean,
   idx: number | null

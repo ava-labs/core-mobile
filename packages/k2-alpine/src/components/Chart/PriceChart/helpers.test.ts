@@ -107,11 +107,8 @@ describe('touchXToIndex', () => {
   })
 })
 
-// CP-14918: restores VolumeRow's original two-bar crosshair crossfade
-// (main), which the perf restructure had collapsed to a single-bar snap.
-// `volumeCrosshairWeights` is the pure interpolation this is built on —
-// exactly the two candles nearest the crosshair (`lowIndex`/`highIndex`)
-// ever get a non-zero weight; everything else is implicitly idle.
+// Only the two candles bracketing the crosshair get a non-zero weight;
+// everything else stays idle.
 describe('volumeCrosshairWeights', () => {
   // 4 candles, last index 3, innerWidth 300 -> candle centers land at
   // x = CHART_INSET + i * 100 for i in [0, 3].
@@ -196,13 +193,8 @@ describe('volumeCrosshairWeights', () => {
   })
 })
 
-// CP-14918: `VolumeRow` paints a highlight rect on top of its static idle
-// `Path`, which already painted that same bar at `VOLUME_IDLE_OPACITY`.
-// `crossfadeRectOpacity` compensates for that source-over stacking so the
-// two layers still composite to `volumeCrosshairWeights`'s target opacity
-// (`IDLE + (ACTIVE - IDLE) * weight`) exactly, rather than overshooting it.
-// This pins the compositing formula itself:
-// `1 - (1 - IDLE) * (1 - crossfadeRectOpacity(w)) === IDLE + (ACTIVE - IDLE) * w`.
+// Pins the compositing invariant `crossfadeRectOpacity` exists to satisfy:
+// `1 - (1 - IDLE) * (1 - rect(w)) === IDLE + (ACTIVE - IDLE) * w`.
 describe('crossfadeRectOpacity', () => {
   const composite = (rectOpacity: number): number =>
     1 - (1 - VOLUME_IDLE_OPACITY) * (1 - rectOpacity)
@@ -333,14 +325,8 @@ describe('formatVolume', () => {
   })
 })
 
-// CP-14918: ChartHeader/ChartFooter used to eagerly format ALL candles at
-// mount (for crosshair drag lookups) even though the crosshair-inactive
-// state only ever reads the LAST candle. `formatCandleDisplayStringAt` is
-// the O(1) mount-time replacement; it must never disagree with the
-// corresponding entry of the O(n) `formatCandleDisplayStrings` array that
-// the deferred/crosshair-active path uses, for every index the crosshair
-// can land on — a `formatPrice` sensitive to more than the raw close would
-// expose a regression here.
+// The O(1) mount-time formatter must agree with the O(n) array at every
+// index, or a crosshair drag would show different text than mount rendered.
 describe('formatCandleDisplayStringAt — parity with formatCandleDisplayStrings', () => {
   const formatPrice = (n: number): string => `$${n.toFixed(2)}`
 
@@ -376,14 +362,8 @@ describe('formatCandleDisplayStringAt — parity with formatCandleDisplayStrings
   })
 })
 
-// CP-14918: `isFullFormatNeeded` is the pure gate behind `useIsFullFormatNeeded`
-// (hooks.ts), which decides when ChartHeader/ChartFooter compute the full
-// per-candle array instead of just the eagerly-formatted last candle. The
-// contract that matters most: the instant the crosshair activates (`idx`
-// goes non-null), the gate must flip to `true` regardless of whether the
-// post-mount idle tick has fired yet — so the consuming `useMemo` recomputes
-// SYNCHRONOUSLY in that same render and a drag can never read a `undefined`
-// entry for any in-range index.
+// Contract: activation must flip the gate within the same render, so the
+// gated `useMemo` can never hand a drag a missing entry.
 describe('isFullFormatNeeded', () => {
   it('is false at mount before the idle tick fires and before any drag', () => {
     expect(isFullFormatNeeded(false, null)).toBe(false)
@@ -416,15 +396,9 @@ describe('isFullFormatNeeded', () => {
   })
 })
 
-// CP-14918: formatActiveTime/formatLastUpdate were changed from
-// `Intl.DateTimeFormat`-based formatting (first a fresh instance per call,
-// later a module-hoisted instance) to hand-rolled string formatting — the
-// `.format()` CALL itself, not the constructor, is what costs ~4ms on-device
-// (Hermes -> JSI -> Android ICU). `toLocaleDateString`/`toLocaleTimeString`
-// are specified (ECMA-402) to build an `Intl.DateTimeFormat(locale,
-// options)` internally and format with it, so these remain a live,
-// jest-cheap ground truth the hand-rolled implementation must match
-// byte-for-byte, run on Node's ICU (en-US) rather than device ICU.
+// `toLocale*` is spec'd (ECMA-402) to build an `Intl.DateTimeFormat`
+// internally, so it's a live oracle for the hand-rolled formatters — cheap on
+// Node's ICU, expensive on the device path this replaced.
 const intlFormatActiveTime = (ts: number, nowMs?: number): string => {
   const d = new Date(ts)
   const now = nowMs !== undefined ? new Date(nowMs) : new Date()
@@ -461,8 +435,7 @@ const intlFormatLastUpdate = (ts: number): string => {
 // Node ICU renders midnight as "24:00" (h24); Hermes/Android ICU renders
 // "00:00" (h23), which is what `formatHour24Minute` (helpers.ts) emits. This
 // wrapper patches that one known divergence onto the Node-ICU reference
-// before comparing, so parity tests keep asserting real equivalence
-// everywhere else. CP-14918.
+// before comparing.
 const expectedActiveTime = (ts: number, nowMs?: number): string => {
   const reference = intlFormatActiveTime(ts, nowMs)
   const isMidnightHour = new Date(ts).getHours() === 0
@@ -470,10 +443,8 @@ const expectedActiveTime = (ts: number, nowMs?: number): string => {
 }
 
 // Hermes/Android ICU 72+ emits U+202F (narrow no-break space) between minutes
-// and AM/PM; Node's bundled ICU in this Jest environment emits ASCII 0x20. The
-// device behavior is the correct reference, so `formatHour12Minute` (helpers.ts)
-// emits U+202F. Same treatment as `expectedActiveTime` above: patch this one
-// known divergence onto the Node-ICU reference before comparing. CP-14918.
+// and AM/PM; Node's bundled ICU here emits ASCII 0x20. Device behavior is the
+// reference, so patch this divergence onto it as above.
 const expectedLastUpdate = (ts: number): string =>
   intlFormatLastUpdate(ts).replace(/ (AM|PM)$/, '\u202f$1')
 
@@ -512,12 +483,7 @@ describe('formatActiveTime / formatLastUpdate — hand-rolled vs Intl parity', (
   )
 })
 
-// CP-14918: broad sweep of the hand-rolled formatters against live
-// `Intl`/`toLocale*` output (cheap here — Jest runs on Node, not the
-// Hermes->JSI->Android-ICU path this task removed from the hot path).
-// Covers year boundaries, leap-day, midnight/noon, single- vs double-digit
-// day/hour, the 1970 epoch, an invalid (NaN) timestamp, and — in a nested
-// describe that pins `process.env.TZ` — DST spring-forward/fall-back edges.
+// Parity sweep against live Intl output.
 describe('formatActiveTime / formatLastUpdate — Intl parity sweep', () => {
   const originalTz = process.env.TZ
 
@@ -571,14 +537,9 @@ describe('formatActiveTime / formatLastUpdate — Intl parity sweep', () => {
   })
 
   it('pins the AM/PM separator to U+202F (NNBSP), not an ASCII space — device-confirmed divergence from Node ICU', () => {
-    // This asserts the exact byte directly, NOT via `expectedLastUpdate`'s
-    // Node-ICU reference (which would just prove the normalization regex
-    // works, not that the hand-rolled formatter emits the right codepoint).
-    // Hermes/Android ICU emits U+202F between the minutes and AM/PM;
-    // Node's bundled ICU here still emits a plain ASCII space (0x20) for
-    // the same option bag — that's the whole reason this needed pinning
-    // rather than relying on Node-Intl parity. If a future change reverts
-    // `formatHour12Minute` to an ASCII space, this must fail loudly.
+    // Asserts the exact codepoint directly, not via the Node-ICU reference —
+    // that would only prove the normalization regex works. Hermes emits U+202F
+    // here; Node emits ASCII 0x20, which is why this needs pinning.
     const nineOhFiveAm = new Date(2026, 3, 29, 9, 5, 0).getTime()
     const noonNoon = new Date(2026, 3, 29, 12, 0, 0).getTime()
 
@@ -589,14 +550,10 @@ describe('formatActiveTime / formatLastUpdate — Intl parity sweep', () => {
   })
 
   it('throws the same RangeError as raw Intl.DateTimeFormat#format for an invalid (NaN) timestamp', () => {
-    // NOTE: `Date.prototype.toLocaleDateString`/`toLocaleTimeString` special-case
-    // an invalid time value and return the string "Invalid Date" instead of
-    // throwing (ECMA-402 has an explicit NaN short-circuit before delegating
-    // to the internal formatter) — so `intlFormatActiveTime`/`intlFormatLastUpdate`
-    // above are NOT the right reference here. The actual pre-CP-14918
-    // production code called `Intl.DateTimeFormat(...).format(d)` directly
-    // (no such short-circuit), which DOES throw — that's the real contract
-    // the hand-rolled formatters must preserve.
+    // `toLocale*` short-circuits NaN to the string "Invalid Date" (ECMA-402)
+    // instead of throwing, so the wrappers above are the wrong oracle here.
+    // `Intl.DateTimeFormat#format` has no such short-circuit and throws —
+    // that's the contract the hand-rolled formatters preserve.
     const rawFormatter = new Intl.DateTimeFormat(undefined, {
       month: 'short',
       day: 'numeric'

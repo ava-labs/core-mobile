@@ -25,24 +25,16 @@ export const useActiveIndex = (
 }
 
 /**
- * Gates an expensive "format every candle" computation (e.g.
- * `formatCandleDisplayStrings`, per-candle volume strings) so it never
- * blocks the initial synchronous chart mount. Resolves `true` once either a
- * post-mount macrotask tick has elapsed or the crosshair activates (`idx`
- * becomes non-null) — whichever comes first.
+ * Defers an O(candles) format off the synchronous mount path until either a
+ * post-mount macrotask or the first crosshair activation.
  *
- * If activation races the idle tick, `idx` flips to non-null in the same
- * render pass that reads this hook's return value, so a `useMemo` gated on
- * it recomputes SYNCHRONOUSLY in that same render — never a stale or
- * missing lookup on the frame the user first drags the crosshair. The
- * worst case is that render doing the full O(candles) format work inline
- * (see ChartHeader/ChartFooter for the measured cost).
+ * Gating on `idx` matters: activation flips this within the same render
+ * pass, so a `useMemo` behind it recomputes synchronously and a drag can
+ * never read a missing entry — at the cost of that one render doing the
+ * work inline.
  *
- * Uses a bare `setTimeout(0)` rather than
- * `InteractionManager.runAfterInteractions`: on the New Architecture the
- * latter is a deprecated stub with plain `setImmediate` semantics (see the
- * note in `StakingRewardChart`), so it buys nothing over a macrotask defer
- * while adding an import.
+ * `setTimeout(0)`, not `InteractionManager.runAfterInteractions`: on the New
+ * Architecture the latter is a deprecated `setImmediate` stub.
  */
 export const useIsFullFormatNeeded = (idx: number | null): boolean => {
   const [idleReady, setIdleReady] = useState(false)
