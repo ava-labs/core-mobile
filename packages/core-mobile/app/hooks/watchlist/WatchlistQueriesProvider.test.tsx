@@ -10,26 +10,6 @@ import {
   useGetTrendingTokens
 } from './useGetTrendingTokens'
 
-// CP-14918: regression coverage for the observer-fan-out fix, plus its
-// fix-round-1 correction. Before this change, every `useTopTokens()` /
-// `useGetTrendingTokens()` call minted its own `QueryObserver` for the same
-// query key -- react-query dedupes the underlying fetch, but not the
-// Observer, so N call sites meant N redundant 'observerResultsUpdated'
-// notifications per real state change. Round 1 of the fix reintroduced a
-// *different* fan-out by passing the raw `useQuery()` result through
-// Context with `notifyOnChangeProps: 'all'` -- which disables tracked-props
-// gating outright, so an isStale-only transition (staleTime elapsing, no
-// data change) re-rendered every consumer. These tests pin all of:
-//   1. exactly one `QueryObserver` exists for the key no matter how many
-//      components read it (not just "one fetch" -- fetch-dedup alone
-//      wouldn't have caught either bug);
-//   2. every reader gets the identical result reference, not just equal
-//      data;
-//   3. an isStale-only transition changes NEITHER the context value
-//      identity NOR triggers a re-render (round-1's actual bug);
-//   4. reading outside the provider throws instead of silently mounting a
-//      second observer.
-
 const mockGetTopTokens = jest.fn()
 const mockGetTrendingTokens = jest.fn()
 const mockGetExchangeRates = jest.fn()
@@ -107,7 +87,6 @@ describe('WatchlistQueriesProvider (CP-14918 observer fan-out fix)', () => {
       .find({ queryKey: [ReactQueryKeys.WATCHLIST_TOP_TOKENS, 'USD'] })
     expect(query?.observers.length).toBe(1)
 
-    // Both reads come from the same shared context value.
     expect(result.current.a).toBe(result.current.b)
     expect(result.current.a.data?.tokens.avax?.id).toBe('avax')
   })
@@ -128,15 +107,9 @@ describe('WatchlistQueriesProvider (CP-14918 observer fan-out fix)', () => {
 
     await waitFor(() => expect(result.current.all.data).toBeDefined())
 
-    // The query key includes the resolved exchange rate, which starts
-    // `undefined` (useExchangeRates() hasn't resolved yet) and becomes `1`
-    // once it does -- two distinct keys, so two fetches. Critically, this
-    // does NOT scale with the number of readers: 3 callers above still only
-    // produce these same 2 fetches, because they all resolve through the
-    // ONE observer <WatchlistQueriesProvider> mounted. This assertion alone
-    // would also have passed on pre-fix code (fetch-dedup was never the
-    // bug) -- the discriminating checks are the observer count and
-    // `refetch` reference-identity assertions below.
+    // Two fetches, not one: the query key embeds the exchange rate, which
+    // resolves undefined -> 1, so two distinct keys. The count stays 2
+    // regardless of reader count -- all 3 callers share one observer.
     expect(mockGetTrendingTokens).toHaveBeenCalledTimes(2)
     expect(result.current.all.data).toHaveLength(2)
     expect(result.current.avax.data?.symbol).toBe('AVAX')
@@ -156,15 +129,9 @@ describe('WatchlistQueriesProvider (CP-14918 observer fan-out fix)', () => {
   })
 
   it('does not change context value identity or re-render when only isStale flips (staleTime elapsing, zero data change)', async () => {
-    // Short REAL staleTime so the observer's internal `#updateStaleTimeout`
-    // (queryObserver.ts:359-380) fires quickly -- this calls a bare
-    // `updateResult()` with no fetch and no data change, just `isStale`
-    // flipping true. Production uses the global `staleTime: 10000`
-    // (ReactQueryProvider.tsx:27); this test uses 5ms to keep it fast. Real
-    // (not fake) timers: `#updateStaleTimeout` schedules its `setTimeout`
-    // synchronously while resolving the initial fetch, so switching to fake
-    // timers afterwards wouldn't intercept that already-scheduled real
-    // timer anyway -- and 5ms is fast enough to just really wait it out.
+    // 5ms REAL staleTime: the observer schedules its stale timeout with a
+    // real setTimeout while the initial fetch resolves, so fake timers
+    // installed afterwards can't intercept it -- waiting it out is simpler.
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false, staleTime: 5 } }
     })
@@ -178,10 +145,9 @@ describe('WatchlistQueriesProvider (CP-14918 observer fan-out fix)', () => {
     const rendersAfterMount = result.all.length
     const resultAfterMount = result.current
 
-    // Let the real staleTimeout elapse. If `notifyOnChangeProps: 'all'`
-    // (round-1's bug) were still set, or if the provider read/exposed
-    // `isStale`, this would produce a new context value and re-render
-    // every consumer despite zero data/isLoading/isRefetching change.
+    // If `notifyOnChangeProps: 'all'` were set, or the provider exposed
+    // `isStale`, this flip would re-render every consumer despite zero
+    // data/isLoading/isRefetching change.
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 50))
     })

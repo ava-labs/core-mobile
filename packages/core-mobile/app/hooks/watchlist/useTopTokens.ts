@@ -22,11 +22,9 @@ export const useTopTokensQuery = (): UseQueryResult<TopTokensData, Error> => {
       })
     },
     refetchInterval: 120000 // 2 minutes
-    // Deliberately NOT `notifyOnChangeProps: 'all'` -- that would make any
-    // tracked-irrelevant field flip (e.g. `isStale` on `staleTime` elapsing)
-    // re-render every consumer of the shared observer. Left at the v5
-    // default; context value below stays narrowed to
-    // `{data, isLoading, isRefetching, refetch}` to match. CP-14918.
+    // Deliberately NOT `notifyOnChangeProps: 'all'` -- that would re-render
+    // every consumer of the shared observer on any tracked-irrelevant field
+    // flip (e.g. `isStale` when `staleTime` elapses).
   })
 }
 
@@ -34,7 +32,7 @@ export const useTopTokens = (): WatchlistQueryValue<TopTokensData> => {
   const query = useContext(TopTokensQueryContext)
   if (!query) {
     throw new Error(
-      'useTopTokens() must be used within a <WatchlistQueriesProvider> (CP-14918: shared observer fix)'
+      'useTopTokens() must be used within a <WatchlistQueriesProvider>'
     )
   }
   return query

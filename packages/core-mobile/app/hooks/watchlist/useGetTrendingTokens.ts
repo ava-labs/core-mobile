@@ -30,7 +30,7 @@ export const useTrendingTokensQuery = (): UseQueryResult<
       return tokens ?? []
     },
     refetchInterval: 120000 // 2 mins
-    // Deliberately NOT `notifyOnChangeProps: 'all'` -- see useTopTokens.ts. CP-14918.
+    // Deliberately NOT `notifyOnChangeProps: 'all'` -- see useTopTokens.ts.
   })
 }
 
@@ -46,7 +46,7 @@ export const useGetTrendingTokens = <TData = TrendingToken[]>(
   const query = useContext(TrendingTokensQueryContext)
   if (!query) {
     throw new Error(
-      'useGetTrendingTokens() must be used within a <WatchlistQueriesProvider> (CP-14918: shared observer fix)'
+      'useGetTrendingTokens() must be used within a <WatchlistQueriesProvider>'
     )
   }
 

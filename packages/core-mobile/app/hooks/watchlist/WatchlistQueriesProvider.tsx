@@ -7,11 +7,10 @@ import {
 } from './watchlistQueriesContext'
 
 /**
- * Hoists `useTopTokensQuery`/`useTrendingTokensQuery` to one shared observer
- * per key (was: one per `useWatchlist()` caller, 20+ call sites). Context
- * value must stay narrow + tracked-props default (not `'all'`) -- see
- * `useTopTokens.ts`; reintroducing either re-opens the fan-out. Dropped, not
- * restored: the old per-call-site `useIsFocused()` pause gate -- tracked as
+ * Context values must stay narrow and on tracked-props defaults (not
+ * `notifyOnChangeProps: 'all'`) -- widening either re-opens the per-consumer
+ * re-render fan-out this provider exists to close. The old per-call-site
+ * `useIsFocused()` pause gate is deliberately not restored -- tracked as
  * CP-14922.
  */
 export const WatchlistQueriesProvider: FC<PropsWithChildren> = ({
