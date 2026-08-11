@@ -18,7 +18,7 @@ import { CryptoCurrency } from '../types'
 import { useMeldToken } from '../store'
 import { isTokenTradable } from '../utils'
 
-const asZeroBalanceToken = (
+export const asZeroBalanceToken = (
   token: NetworkContractToken
 ): LocalTokenWithBalance =>
   ({
@@ -78,9 +78,8 @@ export const useMeldTokenWithBalance = ({
 
     if (!includeZeroBalance) return undefined
 
-    // Solana stubs stay restricted to USDC_SOLANA, mirroring
-    // useSearchableERC20AndSolanaTokenList ("only interested in USDC_SOLANA
-    // for now") — widening SPL support is a product decision, not a perf fix.
+    // Solana stubs are deliberately restricted to USDC_SOLANA — widening SPL
+    // support is a product decision, not a perf fix.
     const usdcSolanaTokens = isSolanaSupportBlocked
       ? []
       : solanaTokens.filter(

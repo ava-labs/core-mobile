@@ -18,7 +18,6 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 import { useBuy } from '../hooks/useBuy'
 import { useWithdraw } from '../hooks/useWithdraw'
 
@@ -51,8 +50,6 @@ export const SelectToken = ({
   })
   const { isAvaxCBuyable, isUsdcBuyable } = useBuy()
   const { isAvaxCWithdrawable, isUsdcWithdrawable } = useWithdraw()
-
-  useResetMeldTokenList()
 
   // internalId only exists on balance-data tokens, so searching
   // tokensWithBalance is sufficient here; deliberately avoids
