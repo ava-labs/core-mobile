@@ -95,7 +95,8 @@ export const useMeldTokenWithBalance = ({
     const meldAddress = meldToken.contractAddress?.toLowerCase()
     const candidates = [...erc20ContractTokens, ...usdcSolanaTokens].filter(
       tk =>
-        tk.address?.toLowerCase() === meldAddress ||
+        (meldAddress !== undefined &&
+          tk.address.toLowerCase() === meldAddress) ||
         tk.symbol === 'BTC' ||
         tk.symbol === 'SOL'
     )
