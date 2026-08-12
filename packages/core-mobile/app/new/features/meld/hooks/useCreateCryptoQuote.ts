@@ -64,49 +64,23 @@ export const useCreateCryptoQuote = ({
       hasValidSourceAmount,
       paymentMethodType
     ],
-    queryFn: async () => {
-      const baseBody = {
+    // Don't fan this out into one request per provider. Meld does not
+    // fail-fast the batch when a single provider rejects: retested 11 Aug 2026
+    // across 12 countries, the batch returns the union of whatever providers
+    // could quote even when another hard-rejects with INCOMPATIBLE_REQUEST. The
+    // whole-request 400 only happens when no provider can quote. Fanning out
+    // instead loses quotes, because a provider rate-limited with a 429 gets
+    // dropped where the batch would have returned it.
+    queryFn: () => {
+      return MeldService.createCryptoQuote({
+        serviceProviders,
         walletAddress,
         sourceAmount,
         countryCode,
         destinationCurrencyCode,
         sourceCurrencyCode,
         paymentMethodType
-      }
-
-      // Batching quotes fine, but Meld reports one provider's error as the
-      // error for the whole batch, so failures become unattributable.
-      const providers =
-        serviceProviders && serviceProviders.length > 0
-          ? serviceProviders
-          : [undefined]
-
-      const settled = await Promise.allSettled(
-        providers.map(sp =>
-          MeldService.createCryptoQuote({
-            ...baseBody,
-            serviceProviders: sp ? [sp] : undefined
-          })
-        )
-      )
-
-      const quotes = settled.flatMap(result =>
-        result.status === 'fulfilled' ? result.value?.quotes ?? [] : []
-      )
-
-      if (quotes.length > 0) {
-        return { quotes }
-      }
-
-      // No provider returned a quote. Re-throw the first rejection so the query
-      // resolves to an error rather than an empty-but-successful result.
-      const firstRejection = settled.find(
-        (r): r is PromiseRejectedResult => r.status === 'rejected'
-      )
-      if (firstRejection) {
-        throw firstRejection.reason
-      }
-      return { quotes: [] }
+      })
     },
     staleTime: 1000 * 60 * 1 // 1 minute
   })
