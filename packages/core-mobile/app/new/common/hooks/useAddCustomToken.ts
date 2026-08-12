@@ -1,6 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { isAddress } from 'ethers'
-import { addCustomToken as addCustomTokenAction } from 'store/customToken'
+import {
+  addCustomToken as addCustomTokenAction,
+  selectAllCustomTokens
+} from 'store/customToken'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
@@ -11,13 +14,15 @@ import {
   TokenType,
   TokenWithBalanceERC20
 } from '@avalabs/vm-module-types'
-import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import {
   useSelectedNetwork,
   useTokenAddress
 } from 'features/tokenManagement/store'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { tokenLookupKey, useTokenLookup } from 'common/hooks/useTokenLookup'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 enum AddressValidationStatus {
   Valid,
@@ -28,7 +33,8 @@ enum AddressValidationStatus {
 
 const validateAddress = (
   tokenAddress: string,
-  tokens: string[]
+  tokens: string[],
+  existsInNetworkCatalog: boolean
 ): AddressValidationStatus => {
   if (tokenAddress.length <= 10) {
     return AddressValidationStatus.TooShort
@@ -38,7 +44,7 @@ const validateAddress = (
     return AddressValidationStatus.Invalid
   }
 
-  if (tokens.some(token => token === tokenAddress)) {
+  if (tokens.some(token => token === tokenAddress) || existsInNetworkCatalog) {
     return AddressValidationStatus.AlreadyExists
   }
 
@@ -79,17 +85,29 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const [selectedNetwork] = useSelectedNetwork()
   const chainId = selectedNetwork?.chainId
 
-  const tokens = useNetworkContractTokens(selectedNetwork)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const allCustomTokens = useSelector(selectAllCustomTokens)
   const activeAccount = useSelector(selectActiveAccount)
   const { tokens: tokensWithBalance } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
     chainId
   )
 
+  // A token the user already added or already holds counts as "already in
+  // the wallet" -- no need to pull the network's full contract-token catalog
+  // just to build this membership set.
+  const customTokensForChain = useMemo(
+    () =>
+      chainId !== undefined && selectedNetwork?.isTestnet === isDeveloperMode
+        ? allCustomTokens[chainId] ?? []
+        : [],
+    [allCustomTokens, chainId, isDeveloperMode, selectedNetwork?.isTestnet]
+  )
+
   const tokenAddresses = useMemo(
     () => [
       ...new Set([
-        ...tokens.map(t => t.address),
+        ...customTokensForChain.map(t => t.address),
         ...tokensWithBalance
           .map(t => {
             if (t.type === TokenType.ERC20) {
@@ -99,7 +117,36 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
           .filter(item => item !== undefined)
       ])
     ],
-    [tokens, tokensWithBalance]
+    [customTokensForChain, tokensWithBalance]
+  )
+
+  const selectedCaip2Id = useMemo(
+    () => (chainId !== undefined ? getCaip2ChainId(chainId) : undefined),
+    [chainId]
+  )
+
+  // Restores the old useNetworkContractTokens "already exists" check without
+  // pulling the network's whole curated token list: look up just the single
+  // address the user typed against the token aggregator.
+  const networkCatalogLookupIds = useMemo(
+    () =>
+      selectedCaip2Id && isAddress(tokenAddress)
+        ? [{ caip2Id: selectedCaip2Id, address: tokenAddress }]
+        : [],
+    [selectedCaip2Id, tokenAddress]
+  )
+
+  const { data: networkCatalogLookup, isLoading: isNetworkCatalogLoading } =
+    useTokenLookup(networkCatalogLookupIds)
+
+  const existsInNetworkCatalog = useMemo(
+    () =>
+      selectedCaip2Id !== undefined &&
+      isAddress(tokenAddress) &&
+      Boolean(
+        networkCatalogLookup[tokenLookupKey(selectedCaip2Id, tokenAddress)]
+      ),
+    [networkCatalogLookup, selectedCaip2Id, tokenAddress]
   )
 
   const existingToken = useMemo(
@@ -132,7 +179,26 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
       return
     }
 
-    const validationStatus = validateAddress(tokenAddress, tokenAddresses)
+    // Hold off on validating while the network-catalog lookup for this exact
+    // address is still in flight -- otherwise a token that turns out to
+    // already be in the network's catalog could flash a "valid" verdict (and
+    // kick off fetchTokenData) before the lookup resolves.
+    if (isAddress(tokenAddress) && isNetworkCatalogLoading) {
+      setIsLoading(true)
+      return
+    }
+
+    const validationStatus = validateAddress(
+      tokenAddress,
+      tokenAddresses,
+      existsInNetworkCatalog
+    )
+
+    // Unconditional: only the Valid branch below re-arms this via its own
+    // fetchTokenData().finally() -- every other branch has no async work,
+    // so without this reset the gate above would leave it stuck on.
+    setIsLoading(false)
+
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
         setToken(undefined)
@@ -164,7 +230,13 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [selectedNetwork, tokenAddress, tokenAddresses])
+  }, [
+    selectedNetwork,
+    tokenAddress,
+    tokenAddresses,
+    isNetworkCatalogLoading,
+    existsInNetworkCatalog
+  ])
 
   const addCustomToken = useCallback((): void => {
     if (token && chainId) {

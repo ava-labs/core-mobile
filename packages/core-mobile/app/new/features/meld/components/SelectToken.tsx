@@ -1,13 +1,14 @@
 import { GroupList, GroupListItem, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { Space } from 'common/components/Space'
 import { TokenSymbol } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 import { LoadingState } from 'common/components/LoadingState'
-import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { useTokenLookup } from 'common/hooks/useTokenLookup'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
@@ -38,29 +39,73 @@ export const SelectToken = ({
     theme: { colors }
   } = useTheme()
   const cChainNetwork = useCChainNetwork()
-  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens,
-    hideZeroBalance: category === ServiceProviderCategories.CRYPTO_OFFRAMP
+  const activeAccount = useSelector(selectActiveAccount)
+  const cChainTokensWithBalance = useTokensWithBalanceForAccount({
+    account: activeAccount,
+    chainId: cChainNetwork?.chainId
   })
   const { isAvaxCBuyable, isUsdcBuyable } = useBuy()
   const { isAvaxCWithdrawable, isUsdcWithdrawable } = useWithdraw()
 
   useResetMeldTokenList()
 
-  const usdcAvalancheToken = filteredTokenList.find(token => {
-    return (
-      'chainId' in token &&
-      token.chainId &&
-      isAvalancheChainId(token.chainId) &&
-      token.internalId === tokenIds.USDC
-    )
-  })
-
-  const avaxAvalancheToken = filteredTokenList.find(
-    token =>
-      token.type === TokenType.NATIVE && token.symbol === TokenSymbol.AVAX
+  // tokenIds.USDC is a cross-chain internalId (same id for USDC on every
+  // chain), and the balance hook silently falls back to ALL networks when
+  // cChainNetwork is transiently undefined -- guard on chain explicitly so
+  // that can't match a token from another chain.
+  const heldUsdcAvalancheToken = useMemo(
+    () =>
+      cChainTokensWithBalance.find(
+        token =>
+          token.internalId === tokenIds.USDC &&
+          token.networkChainId === cChainNetwork?.chainId
+      ),
+    [cChainTokensWithBalance, cChainNetwork]
   )
+
+  // Native AVAX metadata isn't rendered (icon below is static), so only its
+  // balance matters -- no aggregator lookup needed when it's unheld.
+  const avaxAvalancheToken = useMemo(
+    () =>
+      cChainTokensWithBalance.find(
+        token =>
+          token.type === TokenType.NATIVE &&
+          token.symbol === TokenSymbol.AVAX &&
+          token.networkChainId === cChainNetwork?.chainId
+      ),
+    [cChainTokensWithBalance, cChainNetwork]
+  )
+
+  // Unlike AVAX, USDC-C's icon is rendered, so an unheld account still needs
+  // its symbol/logo -- fetch only this one token, not the full contract list.
+  const usdcLookupIds = useMemo(
+    () => (heldUsdcAvalancheToken ? [] : [{ internalId: tokenIds.USDC }]),
+    [heldUsdcAvalancheToken]
+  )
+  const { data: usdcLookupTokens } = useTokenLookup(usdcLookupIds)
+
+  const usdcAvalancheToken = useMemo(():
+    | { symbol: string; logoUri?: string; chainId?: number; balance: bigint }
+    | undefined => {
+    if (heldUsdcAvalancheToken) {
+      return {
+        symbol: heldUsdcAvalancheToken.symbol,
+        logoUri: heldUsdcAvalancheToken.logoUri,
+        chainId: heldUsdcAvalancheToken.networkChainId,
+        balance: heldUsdcAvalancheToken.balance
+      }
+    }
+    const info = usdcLookupTokens[tokenIds.USDC.toLowerCase()]
+    if (!info || !cChainNetwork) {
+      return undefined
+    }
+    return {
+      symbol: info.symbol,
+      logoUri: info.meta?.logoUri ?? undefined,
+      chainId: cChainNetwork.chainId,
+      balance: 0n
+    }
+  }, [heldUsdcAvalancheToken, usdcLookupTokens, cChainNetwork])
 
   const data = useMemo(() => {
     const _data: GroupListItem[] = []

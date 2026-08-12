@@ -9,7 +9,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { useContacts } from 'common/hooks/useContacts'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import { sortTokensWithPrimaryFirst } from 'common/utils/sortTokensWithPrimaryFirst'
@@ -38,10 +37,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState<string>('')
   const { contacts, accounts } = useContacts()
   const [selectedToken, setSelectedToken] = useSendSelectedToken()
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
+  const { filteredTokenList } = useSearchableTokenList({})
   const handleSelectToken = (token: LocalTokenWithBalance): void => {
     setSelectedToken(token)
     canGoBack() && back()
