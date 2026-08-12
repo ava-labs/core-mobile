@@ -31,6 +31,71 @@ const staleTime = 20_000
  */
 const refetchInterval = __DEV__ ? 30_000 : 5_000
 
+/**
+ * Flush window for progressive first-load balance updates. Chains that
+ * resolve within the same window land in ONE cache write instead of one
+ * write (and one re-render of every balance subscriber) per chain.
+ */
+const PROGRESSIVE_FLUSH_MS = 150
+
+type BalanceBatcher = {
+  add: (balance: AdjustedNormalizedBalancesForAccount) => void
+  flushPending: () => void
+  dispose: () => void
+}
+
+/**
+ * Leading + trailing throttle: the first balance flushes immediately so the
+ * cold-load UI paints as soon as any chain resolves; balances arriving within
+ * the window after that are merged into a single trailing flush.
+ */
+export const createBalanceBatcher = (
+  flush: (balances: AdjustedNormalizedBalancesForAccount[]) => void
+): BalanceBatcher => {
+  let buffer: AdjustedNormalizedBalancesForAccount[] = []
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let disposed = false
+
+  const flushBuffer = (): void => {
+    if (buffer.length === 0) return
+    const batch = buffer
+    buffer = []
+    flush(batch)
+  }
+
+  const onWindowEnd = (): void => {
+    timer = null
+    if (disposed) return
+    if (buffer.length > 0) {
+      flushBuffer()
+      timer = setTimeout(onWindowEnd, PROGRESSIVE_FLUSH_MS)
+    }
+  }
+
+  return {
+    add: balance => {
+      if (disposed) return
+      buffer.push(balance)
+      if (timer === null) {
+        flushBuffer()
+        timer = setTimeout(onWindowEnd, PROGRESSIVE_FLUSH_MS)
+      }
+    },
+    flushPending: () => {
+      if (disposed) return
+      flushBuffer()
+    },
+    dispose: () => {
+      disposed = true
+      if (timer !== null) {
+        clearTimeout(timer)
+        timer = null
+      }
+      buffer = []
+    }
+  }
+}
+
 export const balanceKey = (
   account: Account | undefined,
   network: Network[] | undefined,
@@ -141,30 +206,62 @@ export function useAccountBalances(
     queryFn: async () => {
       if (isNotReady) return []
 
+      const queryKey = balanceKey(account, enabledNetworks, filterOutDustUtxos)
+
+      // Progressive per-chain cache writes only matter on a cold load, where
+      // the user is staring at an empty screen. On a background refetch the
+      // cache already has data, so intermediate writes would just re-render
+      // every balance subscriber once per chain (up to N times per poll) —
+      // skip them and let the returned result apply one atomic update.
+      const isColdLoad = queryClient.getQueryData(queryKey) === undefined
+      const batcher = isColdLoad
+        ? createBalanceBatcher(balances => {
+            // Dedupe within the batch too (last write wins): the service can
+            // report the same chain twice in one fetch (stream success, then
+            // a vm-module retry sweep when another batch threw), and a
+            // duplicate entry would briefly push data.length past
+            // enabledNetworks.length and mis-settle the isLoading gate.
+            const byChainId = new Map(balances.map(b => [b.chainId, b]))
+            queryClient.setQueryData(
+              queryKey,
+              (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
+                const remaining =
+                  prev?.filter(p => !byChainId.has(p.chainId)) ?? []
+                return [...remaining, ...byChainId.values()]
+              }
+            )
+          })
+        : undefined
+
       const xpub = await getXpubXPIfAvailable({
         walletId: wallet.id,
         walletType: wallet.type,
         accountIndex: account.index
       })
 
-      return await BalanceService.getBalancesForAccount({
-        networks: enabledNetworks,
-        account,
-        currency: currency.toLowerCase(),
-        xpAddresses,
-        xpub,
-        filterOutDustUtxos,
-        onBalanceLoaded: balance => {
-          queryClient.setQueryData(
-            balanceKey(account, enabledNetworks, filterOutDustUtxos),
-            (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
-              if (!prev) return [balance]
-              const filtered = prev.filter(p => p.chainId !== balance.chainId)
-              return [...filtered, balance]
-            }
-          )
-        }
-      })
+      try {
+        return await BalanceService.getBalancesForAccount({
+          networks: enabledNetworks,
+          account,
+          currency: currency.toLowerCase(),
+          xpAddresses,
+          xpub,
+          filterOutDustUtxos,
+          onBalanceLoaded: batcher && (balance => batcher.add(balance))
+        })
+      } catch (error) {
+        // On rejection there is no complete result coming — write whatever
+        // streamed in so partial progress isn't lost (matches the old
+        // per-chain-write behavior on the error path).
+        batcher?.flushPending()
+        throw error
+      } finally {
+        // On success the returned result IS the complete set (including
+        // vm-module retries), so a pending trailing flush is redundant — and
+        // letting it fire after the query settles would race react-query's
+        // own write.
+        batcher?.dispose()
+      }
     }
   })
 
