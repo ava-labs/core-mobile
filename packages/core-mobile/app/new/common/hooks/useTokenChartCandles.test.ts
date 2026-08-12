@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react-hooks'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import type { ChartRange } from '@avalabs/k2-alpine'
+import TokenService from 'services/token/TokenService'
 import { useTokenChartCandles } from './useTokenChartCandles'
 
 jest.mock('@tanstack/react-query', () => ({
@@ -128,9 +130,11 @@ describe('useTokenChartCandles', () => {
       ])
     })
 
-    it('produces 48 candles from 48 sub-points for the 1D range', () => {
+    // Halves the candle count rather than emitting one candle per source
+    // point, since a one-point bucket can only ever be flat.
+    it('buckets coarse data into fewer multi-point candles instead of one-point candles', () => {
       const points = Array.from({ length: 48 }, (_, i) =>
-        makePoint(i * 60_000, 100 + i)
+        makePoint(i * 60_000, 100 + (i % 2 === 0 ? i : -i))
       )
       setQueryResult({ data: { dataPoints: points, ranges: {} } })
 
@@ -142,16 +146,62 @@ describe('useTokenChartCandles', () => {
         })
       )
 
-      expect(result.current.candles.length).toBe(48)
-      const first = result.current.candles[0]
-      expect(first).toEqual(
-        expect.objectContaining({
-          open: 100,
-          close: 100,
-          high: 100,
-          low: 100,
-          volume: null
+      // 48 source points, bucket count 48 -> 24 buckets of 2 points each,
+      // so each candle opens on every other source point.
+      const { candles } = result.current
+      expect(candles.length).toBe(24)
+      expect(candles.map(c => c.ts)).toEqual(
+        Array.from({ length: 24 }, (_, i) => i * 2 * 60_000)
+      )
+      expect(candles[0]).toEqual(
+        expect.objectContaining({ open: 100, close: 99, high: 100, low: 99 })
+      )
+    })
+
+    // ~25 hourly points is what `days=1` degrades to if CoinGecko ever
+    // returns hourly instead of 5-minutely granularity.
+    it('produces real candles from a coarse hourly 1D response', () => {
+      const points = Array.from({ length: 25 }, (_, i) =>
+        makePoint(i * 3_600_000, i % 2 === 0 ? 100 + i : 100 - i)
+      )
+      setQueryResult({ data: { dataPoints: points, ranges: {} } })
+
+      const { result } = renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range: '1D',
+          currency: VsCurrencyType.USD
         })
+      )
+
+      const { candles } = result.current
+      expect(candles.length).toBeGreaterThan(1)
+      expect(candles.every(c => c.high >= c.low)).toBe(true)
+      expect(candles.some(c => c.high > c.low)).toBe(true)
+      expect(candles.some(c => c.close < c.open)).toBe(true)
+    })
+
+    it('merges a short trailing slice so the last candle is not flat', () => {
+      // 25 points into 12 affordable buckets = 3 per bucket, leaving a
+      // 1-point tail that has to be folded into the previous candle.
+      const points = Array.from({ length: 25 }, (_, i) =>
+        makePoint(i * 1000, i)
+      )
+      setQueryResult({ data: { dataPoints: points, ranges: {} } })
+
+      const { result } = renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range: '1D',
+          currency: VsCurrencyType.USD
+        })
+      )
+
+      const { candles } = result.current
+      const last = candles[candles.length - 1]
+      expect(candles.length).toBe(8)
+      expect(last).toEqual(
+        expect.objectContaining({ open: 21, close: 24, high: 24, low: 21 })
       )
     })
 
@@ -238,7 +288,41 @@ describe('useTokenChartCandles', () => {
         })
       )
 
-      expect(result.current.candles.map(c => c.close)).toEqual([0, 0])
+      expect(result.current.candles.map(c => c.close)).toEqual([0])
+    })
+  })
+
+  describe('endpoint selection', () => {
+    const runQueryFn = (range: ChartRange): void => {
+      renderHook(() =>
+        useTokenChartCandles({
+          coingeckoId: 'bitcoin',
+          range,
+          currency: VsCurrencyType.USD
+        })
+      )
+      const { queryFn } = mockUseQuery.mock.calls[0]?.[0] as unknown as {
+        queryFn: () => unknown
+      }
+      queryFn()
+    }
+
+    // The range endpoint only returns hourly granularity on our plan, which
+    // is too coarse to bucket a day into candles.
+    it('fetches 1D via days=1 rather than the range endpoint', () => {
+      runQueryFn('1D')
+      expect(TokenService.getChartDataForCoinId).toHaveBeenCalledWith(
+        expect.objectContaining({ days: 1 })
+      )
+      expect(TokenService.getChartDataForCoinRange).not.toHaveBeenCalled()
+    })
+
+    it('fetches 1H via the range endpoint over a 2h window', () => {
+      runQueryFn('1H')
+      expect(TokenService.getChartDataForCoinId).not.toHaveBeenCalled()
+      const arg = (TokenService.getChartDataForCoinRange as jest.Mock).mock
+        .calls[0]?.[0] as { from: number; to: number }
+      expect(arg.to - arg.from).toBe(2 * 60 * 60)
     })
   })
 

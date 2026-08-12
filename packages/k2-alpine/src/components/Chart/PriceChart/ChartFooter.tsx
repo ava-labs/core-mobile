@@ -13,7 +13,7 @@ import {
   formatLastUpdate,
   formatVolume as defaultFormatVolume
 } from './helpers'
-import { useActiveIndex } from './hooks'
+import { useActiveIndex, useIsFullFormatNeeded } from './hooks'
 import { OhlcCandle } from './types'
 
 type Props = {
@@ -45,10 +45,13 @@ export const ChartFooter: FC<Props> = ({
 }) => {
   const idx = useActiveIndex(activeIndex)
 
-  const formattedVolumes = useMemo(
-    () => candles.map(c => (c.volume != null ? formatVolume(c.volume) : '')),
-    [candles, formatVolume]
-  )
+  // Also gated on `showVolume`: in line mode this text is never visible, so a
+  // crosshair drag shouldn't pay the O(candles) format at all. CP-14918.
+  const needsFull = useIsFullFormatNeeded(showVolume ? idx : null) && showVolume
+  const formattedVolumes = useMemo(() => {
+    if (!needsFull) return undefined
+    return candles.map(c => (c.volume != null ? formatVolume(c.volume) : ''))
+  }, [candles, formatVolume, needsFull])
   const idleText = useMemo(() => {
     const latest = candles[candles.length - 1]
     return latest ? formatLastUpdate(latest.ts) : ''
@@ -95,7 +98,7 @@ export const ChartFooter: FC<Props> = ({
     }
   })
 
-  const activeText = idx !== null ? formattedVolumes[idx] ?? '' : ''
+  const activeText = idx !== null ? formattedVolumes?.[idx] ?? '' : ''
 
   return (
     <View
