@@ -2,9 +2,10 @@ import React from 'react'
 import renderer, { act } from 'react-test-renderer'
 import { usePerpsAvailability } from '../hooks/usePerpsAvailability'
 
+const mockPush = jest.fn()
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ coin: 'BTC' }),
-  useRouter: () => ({ push: jest.fn() })
+  useRouter: () => ({ push: mockPush })
 }))
 
 jest.mock('react-native-reanimated', () => ({
@@ -36,6 +37,20 @@ jest.mock('../hooks/usePerpsClearinghouse', () => ({
     accountValueUsd: mockClearinghouse.accountValueUsd,
     isError: mockClearinghouse.isError,
     refetch: mockRefetch
+  })
+}))
+
+// Mock the enable-trading gate: it otherwise pulls in PerpsProvider and the
+// setup queries. It drives the footer's "Slide to enable trading" state.
+const mockTradingGate = {
+  isTradingEnabled: true,
+  isTradingStatusLoading: false
+}
+jest.mock('../hooks/usePerpsEnableTradingGate', () => ({
+  usePerpsEnableTradingGate: () => ({
+    isTradingEnabled: mockTradingGate.isTradingEnabled,
+    isTradingStatusLoading: mockTradingGate.isTradingStatusLoading,
+    requireTradingEnabled: () => mockTradingGate.isTradingEnabled
   })
 }))
 
@@ -85,9 +100,10 @@ jest.mock('@avalabs/k2-alpine', () => {
     Button: ({ children, ...rest }: any) =>
       r.createElement(rn.View, rest, children),
     SegmentedControl: () => null,
+    // Pass props through so tests can invoke the slide handlers.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SlidingButton: (_props: any) =>
-      r.createElement(rn.View, { testID: 'sliding-button' }),
+    SlidingButton: (props: any) =>
+      r.createElement(rn.View, { ...props, testID: 'sliding-button' }),
     Icons: {
       Custom: { TrendingArrowDown: () => null, TrendingArrowUp: () => null }
     },
@@ -109,7 +125,10 @@ describe('PerpetualsDetailsScreen footer', () => {
   beforeEach(() => {
     mockClearinghouse.accountValueUsd = 100
     mockClearinghouse.isError = false
+    mockTradingGate.isTradingEnabled = true
+    mockTradingGate.isTradingStatusLoading = false
     mockRefetch.mockClear()
+    mockPush.mockClear()
   })
 
   it('shows the geo-restriction warning instead of the trade button when geo-blocked', async () => {
@@ -138,6 +157,55 @@ describe('PerpetualsDetailsScreen footer', () => {
     expect(
       instance.root.findAllByProps({ testID: 'geo-warning' })
     ).toHaveLength(0)
+  })
+
+  const slideLong = (instance: renderer.ReactTestRenderer): void => {
+    const [slider] = instance.root.findAllByProps({
+      testID: 'sliding-button'
+    })
+    slider?.props.onConfirmRight()
+  }
+
+  it('routes a Short / Long slide to the enable-trading sheet when setup is incomplete', async () => {
+    mockUsePerpsAvailability.mockReturnValue({
+      isGeoBlocked: false,
+      isLoading: false
+    })
+    mockTradingGate.isTradingEnabled = false
+    const instance = await render()
+    slideLong(instance)
+    expect(mockPush).toHaveBeenCalledWith(
+      '/perpetualsEnableTrading?coin=BTC&side=long'
+    )
+  })
+
+  it('routes a Short / Long slide to place-order when setup is complete', async () => {
+    mockUsePerpsAvailability.mockReturnValue({
+      isGeoBlocked: false,
+      isLoading: false
+    })
+    const instance = await render()
+    slideLong(instance)
+    expect(mockPush).toHaveBeenCalledWith(
+      '/perpetualsPlaceOrder?coin=BTC&side=long'
+    )
+  })
+
+  it('routes to place-order (not enable-trading) while setup status is still loading', async () => {
+    mockUsePerpsAvailability.mockReturnValue({
+      isGeoBlocked: false,
+      isLoading: false
+    })
+    // Cold load: `isTradingEnabled` is false only because the queries haven't
+    // resolved — must not detour a set-up user; place-order's submit gate is
+    // the backstop.
+    mockTradingGate.isTradingEnabled = false
+    mockTradingGate.isTradingStatusLoading = true
+    const instance = await render()
+    slideLong(instance)
+    expect(mockPush).toHaveBeenCalledWith(
+      '/perpetualsPlaceOrder?coin=BTC&side=long'
+    )
   })
 
   it('shows a retry (not "Slide to deposit") when the balance can not be loaded', async () => {

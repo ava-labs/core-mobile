@@ -33,6 +33,8 @@ export type PerpsContextValue = {
   readonly userAddress: Address | undefined
   /** True when a background-trading agent key exists for the active account. */
   readonly hasAgent: boolean
+  /** True while the stored agent key is being loaded — `hasAgent` is not yet meaningful. */
+  readonly isLoadingAgent: boolean
   readonly isAgentApprovalSubmitting: boolean
   /** Prompt the master wallet once to approve a background-trading agent. */
   readonly approveBackgroundTrading: () => Promise<void>
@@ -221,6 +223,7 @@ export function PerpsProvider({
       retryInit,
       userAddress,
       hasAgent,
+      isLoadingAgent,
       isAgentApprovalSubmitting: isApproving,
       approveBackgroundTrading: approve,
       invalidateSessionAgent: invalidateAndReprompt,
@@ -239,6 +242,7 @@ export function PerpsProvider({
       retryInit,
       userAddress,
       hasAgent,
+      isLoadingAgent,
       isApproving,
       approve,
       invalidateAndReprompt,

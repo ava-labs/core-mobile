@@ -112,8 +112,7 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
 
   const { isGeoBlocked, recheckGeoBlock } = usePerpsAvailability()
   const { submitOrder } = usePerpsOrderSubmit()
-  const { requireTradingEnabled, enableTradingModal } =
-    usePerpsEnableTradingGate()
+  const { requireTradingEnabled } = usePerpsEnableTradingGate()
   const markPrice = toNumber(assetCtx?.markPx)
   // Also require leverage (> 0), which is seeded from HL rather than a local
   // default, before allowing a submit or sizing the order.
@@ -265,119 +264,116 @@ export const PerpetualsPlaceOrderScreen = (): JSX.Element => {
   )
 
   return (
-    <>
-      <ScrollScreen
-        isModal
-        title="Place your bet"
-        subtitle={subtitle}
-        navigationTitle="Place your bet"
-        renderFooter={renderFooter}
-        contentContainerStyle={{ padding: 16 }}>
-        <View sx={{ paddingTop: 8, gap: 20 }}>
-          <View sx={{ gap: 8 }}>
-            <PositionPill coin={coin} price={entryPrice} side={side} />
+    <ScrollScreen
+      isModal
+      title="Place your bet"
+      subtitle={subtitle}
+      navigationTitle="Place your bet"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ paddingTop: 8, gap: 20 }}>
+        <View sx={{ gap: 8 }}>
+          <PositionPill coin={coin} price={entryPrice} side={side} />
 
-            <View sx={{ gap: 4 }}>
-              <View
-                sx={{
-                  backgroundColor: '$surfaceSecondary',
-                  borderRadius: 12,
-                  paddingVertical: 16
-                }}>
-                {orderCapacityReady ? (
-                  <CircularDial
-                    value={amount}
-                    onChange={setAmount}
-                    max={maxPositionNotionalUsd}
-                    label="USD"
-                    enableManualInput
-                    testID="perpetuals_place_order_amount"
-                    step={dialStep}
-                  />
-                ) : (
-                  <View
-                    testID="perpetuals_place_order_capacity_unavailable"
-                    sx={{
-                      minHeight: 48,
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                    <Text variant="body2" sx={{ color: '$textSecondary' }}>
-                      {capacityMessage}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <Text
-                variant="caption"
-                sx={{ color: '$textSecondary', textAlign: 'center' }}>
-                {maxPositionNotionalUsd === undefined
-                  ? 'Maximum position: —'
-                  : `Maximum position: ${formatCurrency({
-                      amount: maxPositionNotionalUsd
-                    })}`}
-              </Text>
+          <View sx={{ gap: 4 }}>
+            <View
+              sx={{
+                backgroundColor: '$surfaceSecondary',
+                borderRadius: 12,
+                paddingVertical: 16
+              }}>
+              {orderCapacityReady ? (
+                <CircularDial
+                  value={amount}
+                  onChange={setAmount}
+                  max={maxPositionNotionalUsd}
+                  label="USD"
+                  enableManualInput
+                  testID="perpetuals_place_order_amount"
+                  step={dialStep}
+                />
+              ) : (
+                <View
+                  testID="perpetuals_place_order_capacity_unavailable"
+                  sx={{
+                    minHeight: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                  <Text variant="body2" sx={{ color: '$textSecondary' }}>
+                    {capacityMessage}
+                  </Text>
+                </View>
+              )}
             </View>
+            <Text
+              variant="caption"
+              sx={{ color: '$textSecondary', textAlign: 'center' }}>
+              {maxPositionNotionalUsd === undefined
+                ? 'Maximum position: —'
+                : `Maximum position: ${formatCurrency({
+                    amount: maxPositionNotionalUsd
+                  })}`}
+            </Text>
           </View>
-
-          <View sx={{ gap: 20 }}>
-            <GroupList
-              titleSx={{ fontFamily: 'Inter-Regular' }}
-              data={[
-                {
-                  title: 'Margin mode',
-                  onPress: handleMarginMode,
-                  value: (
-                    <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                      {marginMode === 'cross' ? 'Cross' : 'Isolated'}
-                    </Text>
-                  )
-                }
-              ]}
-            />
-
-            <GroupList
-              titleSx={{ fontFamily: 'Inter-Regular' }}
-              subtitleVariant="caption"
-              data={[
-                {
-                  title: 'Add leverage',
-                  subtitle: `Est. liquidation at ${formatCurrency({
-                    amount: liquidationPrice
-                  })}`,
-                  onPress: handleAddLeverage,
-                  value: leverageBadge
-                }
-              ]}
-            />
-
-            <TriggerToggleCard
-              title="Add take profit"
-              subtitle="Price target at which your position will automatically close and lock in your gains"
-              enabled={takeProfit.enabled}
-              onToggle={takeProfit.onToggle}
-              drillLabel="Price target"
-              drillValue={takeProfit.drillValue}
-              onPressDrill={handleOpenTakeProfit}
-              testID="perpetuals_place_order_take_profit"
-            />
-
-            <TriggerToggleCard
-              title="Add stop loss"
-              subtitle="Price level at which your position automatically closes to cap your losses"
-              enabled={stopLoss.enabled}
-              onToggle={stopLoss.onToggle}
-              drillLabel="Stop price"
-              drillValue={stopLoss.drillValue}
-              onPressDrill={handleOpenStopLoss}
-              testID="perpetuals_place_order_stop_loss"
-            />
-          </View>
-          <TermsOfUseText />
         </View>
-      </ScrollScreen>
-      {enableTradingModal}
-    </>
+
+        <View sx={{ gap: 20 }}>
+          <GroupList
+            titleSx={{ fontFamily: 'Inter-Regular' }}
+            data={[
+              {
+                title: 'Margin mode',
+                onPress: handleMarginMode,
+                value: (
+                  <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                    {marginMode === 'cross' ? 'Cross' : 'Isolated'}
+                  </Text>
+                )
+              }
+            ]}
+          />
+
+          <GroupList
+            titleSx={{ fontFamily: 'Inter-Regular' }}
+            subtitleVariant="caption"
+            data={[
+              {
+                title: 'Add leverage',
+                subtitle: `Est. liquidation at ${formatCurrency({
+                  amount: liquidationPrice
+                })}`,
+                onPress: handleAddLeverage,
+                value: leverageBadge
+              }
+            ]}
+          />
+
+          <TriggerToggleCard
+            title="Add take profit"
+            subtitle="Price target at which your position will automatically close and lock in your gains"
+            enabled={takeProfit.enabled}
+            onToggle={takeProfit.onToggle}
+            drillLabel="Price target"
+            drillValue={takeProfit.drillValue}
+            onPressDrill={handleOpenTakeProfit}
+            testID="perpetuals_place_order_take_profit"
+          />
+
+          <TriggerToggleCard
+            title="Add stop loss"
+            subtitle="Price level at which your position automatically closes to cap your losses"
+            enabled={stopLoss.enabled}
+            onToggle={stopLoss.onToggle}
+            drillLabel="Stop price"
+            drillValue={stopLoss.drillValue}
+            onPressDrill={handleOpenStopLoss}
+            testID="perpetuals_place_order_stop_loss"
+          />
+        </View>
+        <TermsOfUseText />
+      </View>
+    </ScrollScreen>
   )
 }
 
