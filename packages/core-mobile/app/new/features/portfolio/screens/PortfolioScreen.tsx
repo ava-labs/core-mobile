@@ -15,7 +15,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -128,10 +127,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
+  const { filteredTokenList } = useSearchableTokenList({})
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)

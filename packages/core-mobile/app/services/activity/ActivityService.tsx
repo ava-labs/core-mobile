@@ -4,7 +4,6 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  Module,
   Transaction as InternalTransaction,
   TxToken
 } from '@avalabs/vm-module-types'
@@ -16,6 +15,13 @@ import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import GlacierService from 'services/glacier/GlacierService'
 import type { Transaction } from 'store/transaction/types'
+import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
+import {
+  postV1TokenLookup,
+  type Caip2IdAddressPair
+} from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
+import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { tokenLookupKey } from 'common/hooks/useTokenLookup'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 import { convertCChainAtomicTransaction } from './utils/convertCChainAtomicTransaction'
@@ -64,8 +70,7 @@ export class ActivityService {
     // Resolve any tokens that the SVM module couldn't match (symbol === "Unknown")
     const enrichedTxs = await this.resolveUnknownTokenSymbols(
       rawTxHistory.transactions,
-      networkWithTokens,
-      module
+      networkWithTokens
     )
 
     const transactions = enrichedTxs.map(tx =>
@@ -191,7 +196,7 @@ export class ActivityService {
 
   /**
    * Resolves "Unknown" token symbols in transactions using multiple data sources:
-   * 1. Module's token registry (/solana-tokens endpoint)
+   * 1. Token-aggregator lookup, scoped to just the unresolved addresses
    * 2. User's cached balance data (React Query cache)
    *
    * The SVM module falls back to symbol: "Unknown" when a token's mint address
@@ -199,8 +204,7 @@ export class ActivityService {
    */
   private async resolveUnknownTokenSymbols(
     transactions: InternalTransaction[],
-    network: Network,
-    module: Module
+    network: Network
   ): Promise<InternalTransaction[]> {
     if (network.vmName !== NetworkVMType.SVM) {
       return transactions
@@ -215,8 +219,7 @@ export class ActivityService {
     // Build a combined token metadata map from multiple sources
     const tokenMap = new Map<string, { symbol: string; name: string }>()
 
-    // Source 1: Module's token registry
-    await this.populateFromModuleTokens(tokenMap, network, module)
+    await this.populateFromTokenLookup(tokenMap, network, unknownAddresses)
 
     // Source 2: User's cached balance data
     this.populateFromBalanceCache(tokenMap, network.chainId)
@@ -224,24 +227,37 @@ export class ActivityService {
     return this.applyTokenMetadata(transactions, tokenMap)
   }
 
-  private async populateFromModuleTokens(
+  private async populateFromTokenLookup(
     tokenMap: Map<string, { symbol: string; name: string }>,
     network: Network,
-    module: Module
+    addresses: Set<string>
   ): Promise<void> {
     try {
-      const moduleTokens = await module.getTokens(mapToVmNetwork(network))
+      const caip2Id = getSolanaCaip2ChainId(network.chainId)
+      // Addresses are sent in their original case -- Solana mint addresses
+      // are base58 and case-sensitive, unlike the EVM hex addresses the
+      // lookup endpoint otherwise deals with.
+      const tokens: Caip2IdAddressPair[] = Array.from(addresses, address => ({
+        caip2Id,
+        address
+      }))
+      const response = await postV1TokenLookup({
+        client: tokenAggregatorApi,
+        body: { tokens }
+      })
+      const data = response.data?.data ?? {}
 
-      for (const token of moduleTokens) {
-        if ('address' in token && 'symbol' in token && token.symbol) {
-          tokenMap.set(token.address, {
-            symbol: token.symbol,
-            name: 'name' in token && token.name ? token.name : token.symbol
+      for (const address of addresses) {
+        const info = data[tokenLookupKey(caip2Id, address)]
+        if (info?.symbol) {
+          tokenMap.set(address, {
+            symbol: info.symbol,
+            name: info.name || info.symbol
           })
         }
       }
     } catch (error) {
-      Logger.warn('Failed to fetch module tokens for resolution', error)
+      Logger.warn('Failed to fetch token lookup for resolution', error)
     }
   }
 

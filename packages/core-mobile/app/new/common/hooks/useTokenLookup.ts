@@ -14,6 +14,17 @@ export type { TokenInfo }
 
 const STALE_TIME = 60 * 1000 // 60 seconds
 
+// Builds the token-aggregator's `/v1/token/lookup` response-map key
+// (`data.data` is keyed as `{caip2Id}-{address}`). Confirmed against the
+// live endpoint: the server only lowercases EVM (`eip155:`) addresses --
+// Solana addresses are case-sensitive base58, so lowercasing them there
+// means the key never matches what the server returns.
+export function tokenLookupKey(caip2Id: string, address: string): string {
+  return caip2Id.toLowerCase().startsWith('eip155:')
+    ? `${caip2Id.toLowerCase()}-${address.toLowerCase()}`
+    : `${caip2Id}-${address}`
+}
+
 export function useTokenLookup(
   tokens: Array<Caip2IdAddressPair | InternalId>
 ): { data: { [key: string]: TokenInfo }; isLoading: boolean } {
