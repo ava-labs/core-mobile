@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { tokenIds } from 'consts/tokenIds'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import {
+  normalizeLookupAddress,
   tokenLookupKey,
   useTokenLookup,
   type TokenInfo
@@ -39,7 +40,7 @@ const toLookupEntry = (
   caip2Id?: string
 ): Caip2IdAddressPair | InternalId =>
   isRawAddress(id) && caip2Id
-    ? { caip2Id, address: id.toLowerCase() }
+    ? { caip2Id, address: normalizeLookupAddress(caip2Id, id) }
     : { internalId: normalizeId(id) }
 
 const toTokensKey = (id: string, caip2Id?: string): string => {

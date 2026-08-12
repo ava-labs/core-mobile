@@ -44,7 +44,12 @@ const validateAddress = (
     return AddressValidationStatus.Invalid
   }
 
-  if (tokens.some(token => token === tokenAddress) || existsInNetworkCatalog) {
+  if (
+    // Custom tokens are stored lowercased (store/customToken slice), while
+    // user input may be checksummed -- compare case-insensitively.
+    tokens.some(token => token.toLowerCase() === tokenAddress.toLowerCase()) ||
+    existsInNetworkCatalog
+  ) {
     return AddressValidationStatus.AlreadyExists
   }
 
