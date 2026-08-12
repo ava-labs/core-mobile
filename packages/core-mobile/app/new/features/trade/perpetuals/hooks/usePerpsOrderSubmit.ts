@@ -37,12 +37,18 @@ export const usePerpsOrderSubmit = (): {
   submitting: boolean
   submitOrder: (params: SubmitOrderParams) => Promise<boolean>
 } => {
-  const { manager, ready, refreshAfterTrade } = usePerps()
+  const { manager, ready, refreshAfterTrade, invalidateSessionAgent } =
+    usePerps()
   // Only attach a builder code once the master has approved that fee on HL.
   // Attaching an unapproved fee makes HL reject the order.
   const { builderInfo, isApproved: isBuilderFeeApproved } = usePerpsBuilderFee()
   const [submitting, setSubmitting] = useState(false)
   const errCtx = useMemo(() => orderErrorContext(manager), [manager])
+  // A dead agent key (pruned by HL) is cleared so the manager falls back to
+  // master-wallet signing and the next enable-trading gate re-prompts.
+  const onAgentInvalidated = useCallback(() => {
+    void invalidateSessionAgent()
+  }, [invalidateSessionAgent])
   // Drop the in-flight guard if the socket drops mid-submit so the button
   // recovers instead of staying stuck in its loading state.
   useClearLoadingOnPerpsReconnect(useCallback(() => setSubmitting(false), []))
@@ -91,11 +97,12 @@ export const usePerpsOrderSubmit = (): {
           res,
           errCtx,
           'Order submitted',
-          refreshAfterTrade
+          refreshAfterTrade,
+          onAgentInvalidated
         )
       } catch (e) {
         logHyperliquidError('[perps] submitOrder threw', e)
-        reportOrderError(e, 'Order failed')
+        reportOrderError(e, 'Order failed', onAgentInvalidated)
         return false
       } finally {
         setSubmitting(false)
@@ -106,6 +113,7 @@ export const usePerpsOrderSubmit = (): {
       ready,
       errCtx,
       refreshAfterTrade,
+      onAgentInvalidated,
       builderInfo,
       isBuilderFeeApproved
     ]

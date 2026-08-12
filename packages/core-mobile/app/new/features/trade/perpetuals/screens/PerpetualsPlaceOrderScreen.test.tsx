@@ -23,17 +23,27 @@ jest.mock('common/utils/toast', () => ({
   showSnackbar: (...args: any[]) => mockShowSnackbar(...args)
 }))
 
+const mockPlaceOrder = {
+  coin: 'BTC',
+  side: 'long' as const,
+  entryPrice: 1,
+  amount: 10,
+  setAmount: jest.fn(),
+  leverage: 2,
+  setLeverage: jest.fn(),
+  liquidationPrice: 1,
+  takeProfitEnabled: false,
+  takeProfitPrice: undefined,
+  stopLossEnabled: false,
+  stopLossPrice: undefined,
+  limitPriceEnabled: false,
+  limitPrice: undefined as number | undefined,
+  setLimitPriceEnabled: jest.fn(),
+  setLimitPrice: jest.fn(),
+  marginMode: 'cross' as 'cross' | 'isolated'
+}
 jest.mock('../contexts/PlaceOrderContext', () => ({
-  usePlaceOrder: () => ({
-    coin: 'BTC',
-    side: 'long',
-    entryPrice: 1,
-    amount: 10,
-    setAmount: jest.fn(),
-    leverage: 2,
-    liquidationPrice: 1,
-    marginMode: 'cross'
-  })
+  usePlaceOrder: () => mockPlaceOrder
 }))
 
 jest.mock('common/hooks/useFormatCurrency', () => ({
@@ -147,6 +157,11 @@ jest.mock('@avalabs/k2-alpine', () => {
     CircularDial: (props: any) => r.createElement(rn.View, props),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     SlidingButton: (props: any) => r.createElement(rn.View, props),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Toggle: (props: any) => r.createElement(rn.Switch, props),
+    Separator: () => null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TouchableOpacity: pass(rn.TouchableOpacity),
     useTheme: () => ({ theme: { colors: { $textPrimary: '#fff' } } })
   }
 })
@@ -180,6 +195,8 @@ describe('PerpetualsPlaceOrderScreen geo-restriction', () => {
     mockActiveAsset.maxBuySizeCoin = 1.5
     mockActiveAsset.maxSellSizeCoin = 1
     mockActiveAsset.isLoading = false
+    mockPlaceOrder.limitPriceEnabled = false
+    mockPlaceOrder.limitPrice = undefined
   })
 
   it('disables the confirm button when geo-blocked', async () => {
@@ -324,6 +341,96 @@ describe('PerpetualsPlaceOrderScreen terms of use', () => {
       link.props.onPress()
     })
     expect(mockOpenUrl).toHaveBeenCalledWith(TERMS_OF_USE_URL)
+  })
+})
+
+describe('PerpetualsPlaceOrderScreen limit price', () => {
+  beforeEach(() => {
+    mockNavigate.mockReset()
+    mockSubmitOrder.mockReset()
+    mockRecheck.mockReset()
+    mockPlaceOrder.limitPriceEnabled = false
+    mockPlaceOrder.limitPrice = undefined
+    // The prior describe block's last test flips this to false without a
+    // subsequent reset — restore it so these tests reach submitOrder.
+    mockTrading.isTradingEnabled = true
+  })
+
+  it('opens the limit price editor when toggled on with no price set', async () => {
+    const instance = await render()
+    const toggle = instance.root.findByProps({
+      testID: 'perpetuals_place_order_limit_toggle'
+    })
+    await act(async () => {
+      toggle.props.onValueChange(true)
+    })
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/perpetualsPlaceOrder/limitPrice'
+    )
+    expect(mockPlaceOrder.setLimitPriceEnabled).not.toHaveBeenCalled()
+  })
+
+  it('re-enables without navigating when a price already exists', async () => {
+    mockPlaceOrder.limitPrice = 104
+    const instance = await render()
+    const toggle = instance.root.findByProps({
+      testID: 'perpetuals_place_order_limit_toggle'
+    })
+    await act(async () => {
+      toggle.props.onValueChange(true)
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+    expect(mockPlaceOrder.setLimitPriceEnabled).toHaveBeenCalledWith(true)
+  })
+
+  it('submits a limit order sized from the limit price when enabled', async () => {
+    mockPlaceOrder.limitPriceEnabled = true
+    mockPlaceOrder.limitPrice = 200
+    mockRecheck.mockResolvedValueOnce(false)
+    mockSubmitOrder.mockResolvedValueOnce(true)
+    const instance = await render()
+    await act(async () => {
+      await confirmButton(instance).props.onConfirm()
+    })
+    expect(mockSubmitOrder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderKind: 'limit',
+        limitPx: 200,
+        // $10 notional at the $200 limit (not the $100 mark) = 0.05 BTC.
+        sizeContracts: 0.05
+      })
+    )
+  })
+
+  it('caps the dial at the limit price, not the mark, when a limit is set', async () => {
+    mockPlaceOrder.limitPriceEnabled = true
+    mockPlaceOrder.limitPrice = 50
+    const instance = await render()
+    const dial = instance.root.findByProps({
+      testID: 'perpetuals_place_order_amount'
+    })
+
+    // HL max buy size 1.5 BTC × $50 limit = $75 position notional — sizing at
+    // the mark ($100) instead would let a full dial exceed maxOpenSizeCoin.
+    expect(dial.props.max).toBe(75)
+    expect(dial.props.max / dial.props.step).toBeCloseTo(1000)
+  })
+
+  it('submits a market order without limitPx when the toggle is off', async () => {
+    mockRecheck.mockResolvedValueOnce(false)
+    mockSubmitOrder.mockResolvedValueOnce(true)
+    const instance = await render()
+    await act(async () => {
+      await confirmButton(instance).props.onConfirm()
+    })
+    expect(mockSubmitOrder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderKind: 'market',
+        limitPx: undefined,
+        // $10 notional at the $100 mark = 0.1 BTC.
+        sizeContracts: 0.1
+      })
+    )
   })
 })
 

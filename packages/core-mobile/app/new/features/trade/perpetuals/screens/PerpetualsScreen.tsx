@@ -186,7 +186,10 @@ export const PerpetualsScreen = ({
           </View>
         )}
 
-        <Positions scrollOffsetRef={positionsScrollOffsetRef} />
+        <View sx={{ paddingTop: 8 }}>
+          <Positions scrollOffsetRef={positionsScrollOffsetRef} />
+        </View>
+
         <View sx={{ gap: 4 }}>
           <TradeFilters
             chips={PERPETUAL_FILTERS}

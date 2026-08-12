@@ -19,6 +19,7 @@ import {
   formatSigned,
   isTriggerValid,
   pctFromEntry,
+  pctParts,
   pnlColor,
   positionSizeTokens,
   projectedPnl,
@@ -26,20 +27,6 @@ import {
   type TriggerKind
 } from '../utils/economics'
 import { toNumber } from '../utils/format'
-
-// The percentage is colored by sign; the " above/below current price" suffix
-// stays in the secondary text color (per design).
-const pctParts = (
-  pct: number | undefined
-): { percent: string; suffix: string } => {
-  if (pct === undefined) return { percent: '', suffix: 'Set a price target' }
-  const sign = pct >= 0 ? '+' : ''
-  const direction = pct >= 0 ? 'above' : 'below'
-  return {
-    percent: `${sign}${pct.toFixed(2)}%`,
-    suffix: ` ${direction} current price`
-  }
-}
 
 const COPY: Record<
   TriggerKind,
@@ -87,7 +74,9 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     setTakeProfitEnabled,
     stopLossPrice,
     setStopLossPrice,
-    setStopLossEnabled
+    setStopLossEnabled,
+    limitPriceEnabled,
+    limitPrice
   } = usePlaceOrder()
   const isLong = side === 'long'
 
@@ -106,24 +95,37 @@ export const PerpetualsTriggerScreen = (): JSX.Element => {
     return Number.isFinite(parsed) ? parsed : undefined
   }, [priceText])
 
-  // Validate the trigger and show its % against the *live* mark price, not the
-  // position's entry. In the manage flow `entryPrice` is the historical fill, so
-  // a TP/SL already on the wrong side of the current price would fire (or be
-  // rejected) the instant the user submits. The open flow seeds `entryPrice`
-  // from live mark, so the fallback keeps it correct there (and until mark loads).
+  // Validate the trigger and show its % against the intended ENTRY price: the
+  // limit price when a limit entry is set (a TP between limit and mark is valid
+  // on HL), otherwise the live mark (see comment below), falling back to the
+  // seeded entry until mark loads.
   const { assetCtx } = useHyperliquidMarketContext(coin)
   const liveMarkPrice = toNumber(assetCtx?.markPx)
-  const currentPrice = liveMarkPrice > 0 ? liveMarkPrice : entryPrice
+  const currentPrice =
+    limitPriceEnabled && limitPrice !== undefined
+      ? limitPrice
+      : liveMarkPrice > 0
+      ? liveMarkPrice
+      : entryPrice
 
   const pct =
     price !== undefined ? pctFromEntry(price, currentPrice) : undefined
 
-  // P&L is always measured from the real entry price, not the current mark.
-  const sizeTokens = positionSizeTokens(amount, entryPrice)
+  // The position will actually be entered at the limit price when one is set,
+  // so both sizing and projected P&L are measured from it; otherwise from the
+  // seeded entry (the manage flow's historical fill / open flow's mark).
+  const effectiveEntryPrice =
+    limitPriceEnabled && limitPrice !== undefined ? limitPrice : entryPrice
+  const sizeTokens = positionSizeTokens(amount, effectiveEntryPrice)
   // Needs both a trigger price and a sized position to mean anything.
   const projected =
     price !== undefined && sizeTokens > 0
-      ? projectedPnl({ exitPrice: price, entryPrice, sizeTokens, isLong })
+      ? projectedPnl({
+          exitPrice: price,
+          entryPrice: effectiveEntryPrice,
+          sizeTokens,
+          isLong
+        })
       : undefined
 
   const pctColor = pnlColor(pct, theme.colors, theme.colors.$textSecondary)

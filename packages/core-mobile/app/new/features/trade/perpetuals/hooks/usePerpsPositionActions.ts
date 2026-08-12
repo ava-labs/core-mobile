@@ -9,7 +9,8 @@ import {
   isManagerTradable,
   logHyperliquidReject,
   orderErrorContext,
-  reportOrderError
+  reportOrderError,
+  toastPerpsExchangeError
 } from '../utils/orderExecution'
 import { useClearLoadingOnPerpsReconnect } from './useClearLoadingOnPerpsReconnect'
 import { usePerpsBuilderFee } from './usePerpsBuilderFee'
@@ -62,12 +63,17 @@ export const usePerpsPositionActions = (): {
   updateIsolatedMargin: (coin: string, usd: number) => Promise<boolean>
   updatePositionTpSl: (params: UpdatePositionTpSlParams) => Promise<boolean>
 } => {
-  const { manager, refreshAfterTrade } = usePerps()
+  const { manager, refreshAfterTrade, invalidateSessionAgent } = usePerps()
   // Core's revenue on each fill. Attached to reduce-only closes just like
   // opening orders; `undefined` while Markr info loads (never blocks a close).
   const { builderInfo } = usePerpsBuilderFee()
   const [busy, setBusy] = useState(false)
   const errCtx = useMemo(() => orderErrorContext(manager), [manager])
+  // A dead agent key (pruned by HL) is cleared so the manager falls back to
+  // master-wallet signing and the next enable-trading gate re-prompts.
+  const onAgentInvalidated = useCallback(() => {
+    void invalidateSessionAgent()
+  }, [invalidateSessionAgent])
   useClearLoadingOnPerpsReconnect(useCallback(() => setBusy(false), []))
 
   const closePosition = useCallback(
@@ -99,16 +105,17 @@ export const usePerpsPositionActions = (): {
           res,
           errCtx,
           'Position closed',
-          refreshAfterTrade
+          refreshAfterTrade,
+          onAgentInvalidated
         )
       } catch (e) {
-        reportOrderError(e, 'Failed to close position')
+        reportOrderError(e, 'Failed to close position', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, errCtx, refreshAfterTrade, builderInfo]
+    [manager, errCtx, refreshAfterTrade, onAgentInvalidated, builderInfo]
   )
 
   const limitClose = useCallback(
@@ -142,16 +149,17 @@ export const usePerpsPositionActions = (): {
           res,
           errCtx,
           'Limit close placed',
-          refreshAfterTrade
+          refreshAfterTrade,
+          onAgentInvalidated
         )
       } catch (e) {
-        reportOrderError(e, 'Failed to place limit close')
+        reportOrderError(e, 'Failed to place limit close', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, errCtx, refreshAfterTrade, builderInfo]
+    [manager, errCtx, refreshAfterTrade, onAgentInvalidated, builderInfo]
   )
 
   const cancelOrder = useCallback(
@@ -167,16 +175,17 @@ export const usePerpsPositionActions = (): {
           res,
           errCtx,
           'Order cancelled',
-          refreshAfterTrade
+          refreshAfterTrade,
+          onAgentInvalidated
         )
       } catch (e) {
-        reportOrderError(e, 'Failed to cancel order')
+        reportOrderError(e, 'Failed to cancel order', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, errCtx, refreshAfterTrade]
+    [manager, errCtx, refreshAfterTrade, onAgentInvalidated]
   )
 
   const updateLeverage = useCallback(
@@ -197,13 +206,13 @@ export const usePerpsPositionActions = (): {
         refreshAfterTrade()
         return true
       } catch (e) {
-        reportOrderError(e, 'Failed to update leverage')
+        reportOrderError(e, 'Failed to update leverage', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, refreshAfterTrade]
+    [manager, refreshAfterTrade, onAgentInvalidated]
   )
 
   const updateIsolatedMargin = useCallback(
@@ -219,13 +228,13 @@ export const usePerpsPositionActions = (): {
         refreshAfterTrade()
         return true
       } catch (e) {
-        reportOrderError(e, 'Failed to update margin')
+        reportOrderError(e, 'Failed to update margin', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, refreshAfterTrade]
+    [manager, refreshAfterTrade, onAgentInvalidated]
   )
 
   const updatePositionTpSl = useCallback(
@@ -257,7 +266,7 @@ export const usePerpsPositionActions = (): {
               coin: params.coin,
               oid
             })
-            showSnackbar(cancelErr)
+            toastPerpsExchangeError(cancelErr, onAgentInvalidated)
             return false
           }
         }
@@ -275,7 +284,7 @@ export const usePerpsPositionActions = (): {
               orderErr,
               coin: params.coin
             })
-            showSnackbar(orderErr)
+            toastPerpsExchangeError(orderErr, onAgentInvalidated)
             return false
           }
         }
@@ -284,13 +293,13 @@ export const usePerpsPositionActions = (): {
         refreshAfterTrade()
         return true
       } catch (e) {
-        reportOrderError(e, 'Failed to update TP/SL')
+        reportOrderError(e, 'Failed to update TP/SL', onAgentInvalidated)
         return false
       } finally {
         setBusy(false)
       }
     },
-    [manager, errCtx, refreshAfterTrade]
+    [manager, errCtx, refreshAfterTrade, onAgentInvalidated]
   )
 
   return {
