@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { Button, SearchBar, View } from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
@@ -17,7 +17,9 @@ export const SelectTokenScreen = <T extends object>({
   keyExtractor,
   renderEmpty,
   networks = [],
-  networkChainId
+  networkChainId,
+  onEndReached,
+  isFetchingNextPage = false
 }: {
   tokens: T[]
   searchText: string
@@ -27,6 +29,11 @@ export const SelectTokenScreen = <T extends object>({
   renderEmpty?: () => React.ReactNode
   networks?: Network[]
   networkChainId?: number
+  /** Called when the list scrolls near the end -- wire to `fetchNextPage` for
+   * a paginated token source. Omit for a fully-loaded (non-paginated) list. */
+  onEndReached?: () => void
+  /** Shows a footer spinner while a next page is being fetched. */
+  isFetchingNextPage?: boolean
 }): JSX.Element => {
   const account = useSelector(selectActiveAccount)
   const [selectedNetworkFilter, setSelectedNetworkFilter] =
@@ -118,6 +125,15 @@ export const SelectTokenScreen = <T extends object>({
     }, 0)
   }, [])
 
+  const renderListFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null
+    return (
+      <View sx={{ paddingVertical: 16, alignItems: 'center' }}>
+        <ActivityIndicator size="small" />
+      </View>
+    )
+  }, [isFetchingNextPage])
+
   return (
     <ListScreen
       title="Select a token"
@@ -128,6 +144,9 @@ export const SelectTokenScreen = <T extends object>({
       keyExtractor={keyExtractor}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
+      renderListFooter={onEndReached ? renderListFooter : undefined}
     />
   )
 }

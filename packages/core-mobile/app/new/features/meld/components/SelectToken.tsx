@@ -14,7 +14,6 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { ServiceProviderCategories } from 'features/meld/consts'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 import { useBuy } from '../hooks/useBuy'
 import { useWithdraw } from '../hooks/useWithdraw'
 
@@ -46,8 +45,6 @@ export const SelectToken = ({
   })
   const { isAvaxCBuyable, isUsdcBuyable } = useBuy()
   const { isAvaxCWithdrawable, isUsdcWithdrawable } = useWithdraw()
-
-  useResetMeldTokenList()
 
   // tokenIds.USDC is a cross-chain internalId (same id for USDC on every
   // chain), and the balance hook silently falls back to ALL networks when

@@ -19,7 +19,6 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
@@ -45,8 +44,6 @@ export const SelectAmount = ({
   const { theme: inversedTheme } = useInversedTheme({ isDark })
   const { animating } = useOfframpActivityIndicator()
 
-  useResetMeldTokenList()
-
   const {
     formatInSubTextNumber,
     sourceAmount,
@@ -55,6 +52,7 @@ export const SelectAmount = ({
     serviceProviderToDisplay,
     isEnabled,
     token,
+    isLoadingToken,
     tokenBalance,
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
@@ -212,19 +210,27 @@ export const SelectAmount = ({
           flexDirection: 'row',
           justifyContent: 'center'
         }}>
-        <Text
-          variant="caption"
-          sx={{
-            fontFamily: 'Inter-Medium',
-            color: colors.$textPrimary
-          }}>
-          Balance:{' '}
-          {formatCurrency({
-            amount:
-              Number(token?.tokenWithBalance.balanceCurrencyDisplayValue) ?? 0
-          })}{' '}
-          {selectedCurrency}
-        </Text>
+        {isLoadingToken ? (
+          // The token round-trip (held-token match, or a v1 lookup for an
+          // unheld one) is still in flight -- show a spinner instead of a
+          // "Balance: $0.00" that would otherwise flash and then jump to the
+          // real balance once it resolves.
+          <ActivityIndicator size="small" color={colors.$textPrimary} />
+        ) : (
+          <Text
+            variant="caption"
+            sx={{
+              fontFamily: 'Inter-Medium',
+              color: colors.$textPrimary
+            }}>
+            Balance:{' '}
+            {formatCurrency({
+              amount:
+                Number(token?.tokenWithBalance.balanceCurrencyDisplayValue) ?? 0
+            })}{' '}
+            {selectedCurrency}
+          </Text>
+        )}
       </View>
     )
   }, [
@@ -232,6 +238,7 @@ export const SelectAmount = ({
     colors.$textPrimary,
     errorMessage,
     createSessionWidgetErrorMessage,
+    isLoadingToken,
     token?.tokenWithBalance.balanceCurrencyDisplayValue,
     selectedCurrency,
     formatCurrency

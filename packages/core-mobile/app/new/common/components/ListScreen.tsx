@@ -86,6 +86,10 @@ export interface ListScreenProps<T>
   renderEmpty?: () => React.ReactNode
   /** Optional function to render a fixed footer at the bottom of the screen */
   renderFooter?: () => React.ReactNode
+  /** Optional function to render a footer that scrolls with the list content
+   * (e.g. a "loading more" spinner while paginating). Distinct from
+   * `renderFooter`, which is pinned outside the scrollable area. */
+  renderListFooter?: () => React.ReactNode
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
   /** Optional ref to the flat list */
@@ -111,6 +115,7 @@ export const ListScreen = <T,>({
   renderHeader,
   renderHeaderRight,
   renderFooter,
+  renderListFooter,
   shouldShowStickyHeader = true,
   flatListRef,
   ...props
@@ -452,6 +457,11 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const ListFooterComponent = useMemo(() => {
+    if (!renderListFooter) return undefined
+    return <View>{renderListFooter()}</View>
+  }, [renderListFooter])
+
   const renderGrabber = useCallback(() => {
     if (isModal)
       return (
@@ -526,6 +536,7 @@ export const ListScreen = <T,>({
         ]}
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
+        ListFooterComponent={ListFooterComponent}
       />
       {renderGrabber()}
       {renderFooterContent()}

@@ -58,7 +58,11 @@ export const SelectServiceProvider = ({
     return crytoQuotes && crytoQuotes?.length > 0
   }, [crytoQuotes])
 
-  const token = useMeldTokenWithBalance({ category })
+  // TODO(CP-14936 follow-up): this screen is only reachable after SelectAmount,
+  // which already renders the resolved token, so the lookup is normally
+  // cache-warm here -- but isLoading isn't wired up, so a cold/expired cache
+  // would still show the same undefined-token flash SelectAmount had.
+  const { token } = useMeldTokenWithBalance({ category })
 
   const network = useMemo(() => {
     return token?.networkChainId

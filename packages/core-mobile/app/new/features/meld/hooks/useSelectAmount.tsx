@@ -50,6 +50,7 @@ export const useSelectAmount = ({
   paymentMethodToDisplay: string | undefined
   serviceProviderToDisplay: string | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
+  isLoadingToken: boolean
   tokenBalance: TokenUnit | undefined
   hasValidSourceAmount: boolean
   isEnabled: boolean
@@ -94,7 +95,9 @@ export const useSelectAmount = ({
       categories: [category]
     })
 
-  const token = useMeldTokenWithBalance({ category })
+  const { token, isLoading: isLoadingToken } = useMeldTokenWithBalance({
+    category
+  })
 
   const network = useMemo(
     () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
@@ -406,6 +409,7 @@ export const useSelectAmount = ({
     serviceProviderToDisplay,
     isEnabled,
     token,
+    isLoadingToken,
     tokenBalance,
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,

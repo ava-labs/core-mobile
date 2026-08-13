@@ -28,7 +28,7 @@ export const useFiatSourceAmount = ({
     useWithdrawAmountLimit()
   const [sourceAmount, setSourceAmount] = useMeldFiatAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const token = useMeldTokenWithBalance({ category })
+  const { token } = useMeldTokenWithBalance({ category })
   const { data: tradeLimits, isLoading: isLoadingTradeLimits } =
     useGetTradeLimits({
       category,

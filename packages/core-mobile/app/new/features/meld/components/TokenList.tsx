@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import {
   Icons,
@@ -14,10 +14,12 @@ import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSym
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { SubTextNumber } from 'common/components/SubTextNumber'
-import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchableERC20AndSolanaTokenList'
-import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { LocalTokenWithBalance } from 'store/balance'
+import { useMeldOnrampTokenPool } from '../hooks/useMeldOnrampTokenPool'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { isTokenTradable } from '../utils'
 
 export const TokenList = ({
   category,
@@ -36,54 +38,38 @@ export const TokenList = ({
     theme: { colors }
   } = useTheme()
   const [searchText, setSearchText] = useState<string>('')
-  const { tokenIndex, splTokenIndex, setTokenIndex, setSplTokenIndex } =
-    useTokenIndex()
+  const isOnramp = category === ServiceProviderCategories.CRYPTO_ONRAMP
+
+  // Onramp ("Select other token"): paginated + keyword-searched v2 catalog
+  // (scoped to C-Chain/Ethereum) unioned with every held token, see
+  // useMeldOnrampTokenPool. Offramp/other: balance-only, held tokens only.
   const {
-    supportedErc20AndNativeCryptoCurrencies,
-    supportedSplCryptoCurrencies,
-    setSupportedCryptoCurrencies,
-    setSupportedSplCryptoCurrencies
-  } = useSupportedCryptoCurrencies()
-  const { filteredErc20TokenList, filteredSolanaTokenList } =
-    useSearchableERC20AndSolanaTokenList(
-      category !== ServiceProviderCategories.CRYPTO_ONRAMP
-    )
+    tokens: onrampPool,
+    isLoading: isLoadingOnrampPool,
+    isFetchingNextPage: isFetchingNextOnrampPage,
+    hasNextPage: hasNextOnrampPage,
+    fetchNextPage: fetchNextOnrampPage
+  } = useMeldOnrampTokenPool({ searchText, enabled: isOnramp })
+  const { filteredTokenList: heldTokenList } = useSearchableTokenList({
+    hideZeroBalance: true
+  })
 
-  useEffect(() => {
-    if (filteredErc20TokenList.length > 0) {
-      setTokenIndex(filteredErc20TokenList)
-    }
-    if (filteredSolanaTokenList.length > 0) {
-      setSplTokenIndex(filteredSolanaTokenList)
-    }
-  }, [
-    filteredErc20TokenList,
-    setTokenIndex,
-    setSplTokenIndex,
-    filteredSolanaTokenList
-  ])
+  const tokenPool: LocalTokenWithBalance[] = isOnramp
+    ? onrampPool
+    : heldTokenList
 
-  useEffect(() => {
-    if (cryptoCurrencies && tokenIndex) {
-      setSupportedCryptoCurrencies(cryptoCurrencies, tokenIndex)
-    }
-    if (cryptoCurrencies && splTokenIndex) {
-      setSupportedSplCryptoCurrencies(cryptoCurrencies, splTokenIndex)
-    }
-  }, [
-    cryptoCurrencies,
-    tokenIndex,
-    splTokenIndex,
-    setSupportedCryptoCurrencies,
-    setSupportedSplCryptoCurrencies
-  ])
+  const supportedCryptoCurrencies = useMemo((): CryptoCurrencyWithBalance[] => {
+    if (!cryptoCurrencies) return []
 
-  const supportedCryptoCurrencies = useMemo(() => {
-    return [
-      ...supportedErc20AndNativeCryptoCurrencies,
-      ...supportedSplCryptoCurrencies
-    ]
-  }, [supportedErc20AndNativeCryptoCurrencies, supportedSplCryptoCurrencies])
+    const result: CryptoCurrencyWithBalance[] = []
+    for (const crypto of cryptoCurrencies) {
+      const match = tokenPool.find(token => isTokenTradable(crypto, token))
+      if (match) {
+        result.push({ ...crypto, tokenWithBalance: match })
+      }
+    }
+    return result
+  }, [cryptoCurrencies, tokenPool])
 
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {
@@ -129,6 +115,12 @@ export const TokenList = ({
     })
     return [...(avaxC ? [avaxC] : []), ...(usdc ? [usdc] : []), ...sortedOthers]
   }, [searchResults])
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextOnrampPage && !isFetchingNextOnrampPage) {
+      fetchNextOnrampPage()
+    }
+  }, [hasNextOnrampPage, isFetchingNextOnrampPage, fetchNextOnrampPage])
 
   const renderItem: ListRenderItem<CryptoCurrencyWithBalance> = ({
     item,
@@ -203,7 +195,7 @@ export const TokenList = ({
     )
   }
 
-  if (isLoadingCryptoCurrencies) {
+  if (isLoadingCryptoCurrencies || (isOnramp && isLoadingOnrampPool)) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
@@ -214,6 +206,8 @@ export const TokenList = ({
       tokens={sortedResults}
       renderListItem={renderItem}
       keyExtractor={item => `${item.currencyCode}`}
+      onEndReached={isOnramp ? handleEndReached : undefined}
+      isFetchingNextPage={isOnramp && isFetchingNextOnrampPage}
     />
   )
 }

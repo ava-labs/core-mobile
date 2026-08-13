@@ -16,7 +16,6 @@ export enum ReactQueryKeys {
   NFTS = 'nfts',
 
   NETWORKS = 'networks',
-  NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
   WATCHLIST_TOP_TOKENS = 'watchlistTopTokens',
   WATCHLIST_TRENDING_TOKENS = 'watchlistTrendingTokens',
   WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch',
@@ -42,6 +41,7 @@ export enum ReactQueryKeys {
   MELD_SEARCH_DEFAULTS_BY_COUNTRY = 'meldSearchDefaultsByCountry',
   MELD_SEARCH_PAYMENT_METHODS = 'meldSearchPaymentMethods',
   MELD_CREATE_CRYPTO_QUOTE = 'meldCreateCryptoQuote',
+  MELD_ONRAMP_TOKENS_V2 = 'meldOnrampTokensV2',
 
   TERMS_OF_USE = 'termsOfUse',
 
