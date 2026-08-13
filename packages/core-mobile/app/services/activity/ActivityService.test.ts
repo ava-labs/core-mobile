@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {
-  NetworkVMType,
-  Network,
-  NetworkContractToken,
-  ChainId
-} from '@avalabs/core-chains-sdk'
+import { NetworkVMType, Network, ChainId } from '@avalabs/core-chains-sdk'
 import {
   TokenType,
   Transaction as InternalTransaction,
@@ -38,11 +33,6 @@ jest.mock('vmModule/ModuleManager', () => ({
 
 jest.mock('vmModule/utils/mapToVmNetwork', () => ({
   mapToVmNetwork: (network: any) => network
-}))
-
-const mockGetCachedTokenList = jest.fn()
-jest.mock('hooks/networks/useTokenList', () => ({
-  getCachedTokenList: () => mockGetCachedTokenList()
 }))
 
 const mockGetQueriesData = jest.fn()
@@ -116,20 +106,6 @@ function makeEvmNetwork(): Network {
       decimals: 18
     }
   } as Network
-}
-
-function makeSplToken(
-  address: string,
-  symbol: string,
-  name: string
-): NetworkContractToken {
-  return {
-    address,
-    symbol,
-    name,
-    decimals: 6,
-    contractType: 'SPL'
-  } as NetworkContractToken
 }
 
 function makeUnknownTxToken(
@@ -231,94 +207,8 @@ describe('ActivityService', () => {
     jest.clearAllMocks()
     service = new ActivityService()
     mockGetAddressByNetwork.mockReturnValue('userSolanaAddress')
-    mockGetCachedTokenList.mockResolvedValue({})
     mockGetQueriesData.mockReturnValue([])
     mockPostV1TokenLookup.mockResolvedValue({ data: { data: {} } })
-  })
-
-  describe('enrichNetworkWithTokens', () => {
-    it('should skip enrichment for non-SVM networks', async () => {
-      const evmNetwork = makeEvmNetwork()
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network: evmNetwork,
-        account: {} as any
-      })
-
-      expect(mockGetCachedTokenList).not.toHaveBeenCalled()
-    })
-
-    it('should merge token list tokens with existing network tokens', async () => {
-      const existingToken = makeSplToken(USDC_MINT, 'USDC', 'USD Coin')
-      const newToken = makeSplToken(PUMP_MINT, 'PUMP', 'Pump Token')
-
-      const network = makeSvmNetwork({ tokens: [existingToken] })
-
-      mockGetCachedTokenList.mockResolvedValue({
-        [SOLANA_CHAIN_ID]: {
-          tokens: [
-            makeSplToken(USDC_MINT, 'USDC-dup', 'USDC Duplicate'),
-            newToken
-          ]
-        }
-      })
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      // The network passed to getTransactionHistory should have merged tokens
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toHaveLength(2)
-      // Existing token preserved (not duplicated)
-      expect(passedNetwork.tokens[0].symbol).toBe('USDC')
-      // New token added
-      expect(passedNetwork.tokens[1].symbol).toBe('PUMP')
-    })
-
-    it('should return network unchanged when token list is empty', async () => {
-      const network = makeSvmNetwork()
-      mockGetCachedTokenList.mockResolvedValue({
-        [SOLANA_CHAIN_ID]: { tokens: [] }
-      })
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toEqual([])
-    })
-
-    it('should handle getCachedTokenList failure gracefully', async () => {
-      const network = makeSvmNetwork()
-      mockGetCachedTokenList.mockRejectedValue(new Error('Network error'))
-
-      const module = makeModule()
-      mockLoadModuleByNetwork.mockResolvedValue(module)
-
-      await service.getActivities({
-        network,
-        account: {} as any
-      })
-
-      // Should still proceed with the original network
-      const passedNetwork =
-        module.getTransactionHistory.mock.calls[0]![0].network
-      expect(passedNetwork.tokens).toEqual([])
-    })
   })
 
   describe('resolveUnknownTokenSymbols', () => {

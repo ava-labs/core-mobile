@@ -8,7 +8,6 @@ import {
   TxToken
 } from '@avalabs/vm-module-types'
 import Logger from 'utils/Logger'
-import { getCachedTokenList } from 'hooks/networks/useTokenList'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -44,24 +43,21 @@ export class ActivityService {
       )
     }
 
-    // Populate network with tokens for SVM networks if needed
-    const networkWithTokens = await this.enrichNetworkWithTokens(network)
-
     // Kick off the C-Chain atomic fetch concurrently with the EVM history
     // fetch below — it doesn't depend on the EVM result, and both are
     // separate Glacier round-trips, so starting them in parallel avoids
     // serializing the C-Chain activity critical path.
     const atomicPromise = this.fetchCChainAtomicTransactions({
-      network: networkWithTokens,
+      network,
       address,
       nextPageToken,
       pageSize
     })
 
-    const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
+    const module = await ModuleManager.loadModuleByNetwork(network)
 
     const rawTxHistory = await module.getTransactionHistory({
-      network: mapToVmNetwork(networkWithTokens),
+      network: mapToVmNetwork(network),
       address,
       nextPageToken,
       offset: pageSize
@@ -70,7 +66,7 @@ export class ActivityService {
     // Resolve any tokens that the SVM module couldn't match (symbol === "Unknown")
     const enrichedTxs = await this.resolveUnknownTokenSymbols(
       rawTxHistory.transactions,
-      networkWithTokens
+      network
     )
 
     const transactions = enrichedTxs.map(tx =>
@@ -144,54 +140,6 @@ export class ActivityService {
     ]
     merged.sort((a, b) => b.timestamp - a.timestamp)
     return merged
-  }
-
-  /**
-   * Enriches SVM networks with SPL token metadata for proper transaction history display.
-   *
-   * Unlike EVM networks which include token metadata in the main /networks endpoint,
-   * Solana networks return empty tokens arrays and require fetching from /tokenlist?includeSolana.
-   * This ensures SPL tokens show proper symbols (e.g., "ORCA") instead of "Unknown" in activity.
-   *
-   * TODO: when integrating with networks api v2, recheck this to see if it is still needed
-   */
-  private async enrichNetworkWithTokens(network: Network): Promise<Network> {
-    if (network.vmName !== NetworkVMType.SVM) {
-      return network
-    }
-
-    try {
-      const tokens = await getCachedTokenList()
-      const tokenListTokens = tokens[network.chainId]?.tokens ?? []
-
-      if (tokenListTokens.length === 0) {
-        return network
-      }
-
-      // Always merge token list tokens with any existing tokens on the network,
-      // rather than skipping when network.tokens is non-empty.
-      // The /networks endpoint may return a partial list, so we need to
-      // supplement it with tokens from /tokenlist.
-      const existingTokens = network.tokens ?? []
-      const existingAddresses = new Set(
-        existingTokens.map(t => t.address.toLowerCase())
-      )
-
-      const mergedTokens = [
-        ...existingTokens,
-        ...tokenListTokens.filter(
-          t => !existingAddresses.has(t.address.toLowerCase())
-        )
-      ]
-
-      return {
-        ...network,
-        tokens: mergedTokens
-      }
-    } catch (error) {
-      Logger.error('Failed to fetch SPL token metadata', error)
-      return network
-    }
   }
 
   /**

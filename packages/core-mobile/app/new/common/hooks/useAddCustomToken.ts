@@ -130,9 +130,9 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     [chainId]
   )
 
-  // Restores the old useNetworkContractTokens "already exists" check without
-  // pulling the network's whole curated token list: look up just the single
-  // address the user typed against the token aggregator.
+  // "Already exists" check without pulling the network's whole curated
+  // token list: look up just the single address the user typed against the
+  // token aggregator.
   const networkCatalogLookupIds = useMemo(
     () =>
       selectedCaip2Id && isAddress(tokenAddress)
