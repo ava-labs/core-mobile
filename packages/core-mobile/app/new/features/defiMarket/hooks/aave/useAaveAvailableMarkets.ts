@@ -26,7 +26,7 @@ import {
   parseAaveApyHistory
 } from '../../utils/fetchAaveApyHistory'
 import { getMeritAprBonus } from '../../utils/getMeritAprBonus'
-import { useGetCChainToken } from '../useGetCChainToken'
+import { useResolvedDefiMarkets } from '../useResolvedDefiMarkets'
 import { useMeritAprs } from './useMeritAprs'
 
 type UserReserveCollateralMap = Map<string, boolean>
@@ -48,7 +48,6 @@ export const useAaveAvailableMarkets = ({
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
   const { data: meritAprs, isPending: isPendingMeritAprs } = useMeritAprs()
-  const getCChainToken = useGetCChainToken()
 
   const { data, isLoading, isPending, isFetching, refetch, error } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -130,10 +129,6 @@ export const useAaveAvailableMarkets = ({
                   parseAaveApyHistory(apyHistory.supply, apyHistory.borrow)
 
                 const meritAprBonus = getMeritAprBonus(market.symbol, meritAprs)
-                const token = getCChainToken(
-                  market.symbol,
-                  market.underlyingAsset
-                )
 
                 const depositedBalance = await getAaveDepositedBalance({
                   cChainClient: networkClient,
@@ -160,7 +155,7 @@ export const useAaveAvailableMarkets = ({
                     mintTokenAddress: market.mintTokenAddress,
                     assetName: market.name,
                     decimals,
-                    iconUrl: token?.logoUri,
+                    iconUrl: undefined,
                     symbol: market.symbol,
                     contractAddress: market.underlyingAsset,
                     mintTokenBalance: depositedBalance
@@ -187,8 +182,13 @@ export const useAaveAvailableMarkets = ({
         : skipToken
   })
 
+  const { data: resolvedData } = useResolvedDefiMarkets({
+    network,
+    markets: data
+  })
+
   return {
-    data,
+    data: resolvedData,
     error,
     isLoading,
     isPending,
