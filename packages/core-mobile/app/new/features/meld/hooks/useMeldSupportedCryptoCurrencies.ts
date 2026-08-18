@@ -3,14 +3,9 @@ import { useSelector } from 'react-redux'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
-import { isTokenVisible } from 'store/balance/utils'
 import { selectActiveAccount } from 'store/account'
 import { selectEnabledChainIds } from 'store/network'
-import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
-import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
-import { tokenAddresses } from 'consts/tokenIds'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSolanaTokens } from 'common/hooks/useSolanaTokens'
+import { selectTokenVisibility } from 'store/portfolio'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
@@ -18,43 +13,37 @@ import {
   ServiceProviderCategories
 } from '../consts'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
-import { asZeroBalanceToken } from './useMeldTokenWithBalance'
-
-type ListFilterOptions = {
-  includeZeroBalance: boolean
-  tokenVisibility: TokenVisibility
-  enabledChainIds: number[]
-}
+import {
+  asZeroBalanceToken,
+  meldContractTokenKey,
+  meldCurrencyTokenKey,
+  MeldListFilterOptions,
+  passesMeldListFilters
+} from '../utils'
+import { useMeldContractTokenMap } from './useMeldContractTokenMap'
 
 type HeldTokenMaps = {
   heldNativeMap: Map<string, LocalTokenWithBalance>
   heldTokenMap: Map<string, LocalTokenWithBalance>
 }
 
-const passesListFilters = (
-  token: LocalTokenWithBalance,
-  { includeZeroBalance, tokenVisibility, enabledChainIds }: ListFilterOptions
-): boolean =>
-  (includeZeroBalance || token.balance > 0n) &&
-  isTokenVisible(tokenVisibility, token) &&
-  token.type !== TokenType.ERC1155 &&
-  token.type !== TokenType.ERC721 &&
-  enabledChainIds.includes(token.networkChainId)
-
 const buildHeldTokenMaps = (
   tokensWithBalance: LocalTokenWithBalance[],
-  filterOptions: ListFilterOptions
+  filterOptions: MeldListFilterOptions
 ): HeldTokenMaps => {
   const heldNativeMap = new Map<string, LocalTokenWithBalance>()
   const heldTokenMap = new Map<string, LocalTokenWithBalance>()
 
   for (const token of tokensWithBalance) {
-    if (!passesListFilters(token, filterOptions)) continue
+    if (!passesMeldListFilters(token, filterOptions)) continue
     if (token.type === TokenType.NATIVE) {
       heldNativeMap.set(token.networkChainId.toString(), token)
     }
-    if ('chainId' in token && token.address) {
-      heldTokenMap.set(`${token.chainId}-${token.address.toLowerCase()}`, token)
+    if ('chainId' in token && token.chainId && token.address) {
+      heldTokenMap.set(
+        meldContractTokenKey(token.chainId, token.address),
+        token
+      )
     }
     // Held SPL tokens carry only networkChainId — the balance mapper omits
     // chainId for the spl branch — so they need their own keying to be
@@ -65,22 +54,13 @@ const buildHeldTokenMaps = (
       token.address
     ) {
       heldTokenMap.set(
-        `${ChainId.SOLANA_MAINNET_ID}-${token.address.toLowerCase()}`,
+        meldContractTokenKey(ChainId.SOLANA_MAINNET_ID, token.address),
         token
       )
     }
   }
 
   return { heldNativeMap, heldTokenMap }
-}
-
-const contractTokenKey = (crypto: CryptoCurrency): string | undefined => {
-  if (!crypto.contractAddress || !crypto.chainId) return undefined
-  const chainId =
-    crypto.chainId === SOLANA_MELD_CHAIN_ID.toString()
-      ? ChainId.SOLANA_MAINNET_ID
-      : crypto.chainId
-  return `${chainId}-${crypto.contractAddress.toLowerCase()}`
 }
 
 const resolveTokenWithBalance = ({
@@ -92,7 +72,7 @@ const resolveTokenWithBalance = ({
 }: HeldTokenMaps & {
   crypto: CryptoCurrency
   contractTokenMap: Map<string, NetworkContractToken>
-  filterOptions: ListFilterOptions
+  filterOptions: MeldListFilterOptions
 }): LocalTokenWithBalance | undefined => {
   if (crypto.currencyCode === 'BTC') {
     return heldNativeMap.get(ChainId.BITCOIN.toString())
@@ -107,7 +87,7 @@ const resolveTokenWithBalance = ({
     return heldNativeMap.get(crypto.chainId.toString())
   }
 
-  const key = contractTokenKey(crypto)
+  const key = meldCurrencyTokenKey(crypto)
   if (key === undefined) return undefined
 
   const held = heldTokenMap.get(key)
@@ -118,7 +98,7 @@ const resolveTokenWithBalance = ({
   const contractToken = contractTokenMap.get(key)
   if (contractToken) {
     const stub = asZeroBalanceToken(contractToken)
-    return passesListFilters(stub, filterOptions) ? stub : undefined
+    return passesMeldListFilters(stub, filterOptions) ? stub : undefined
   }
   return undefined
 }
@@ -141,43 +121,15 @@ export const useMeldSupportedCryptoCurrencies = ({
   const account = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   const tokensWithBalance = useTokensWithBalanceForAccount({ account })
-  const erc20ContractTokens = useErc20ContractTokens()
-  const solanaTokens = useSolanaTokens()
+  const contractTokenMap = useMeldContractTokenMap()
   const includeZeroBalance =
     category === ServiceProviderCategories.CRYPTO_ONRAMP
-
-  const contractTokenMap = useMemo(() => {
-    const map = new Map<string, NetworkContractToken>()
-    for (const token of erc20ContractTokens) {
-      if ('chainId' in token && token.address) {
-        map.set(`${token.chainId}-${token.address.toLowerCase()}`, token)
-      }
-    }
-    // Solana stubs are deliberately restricted to USDC_SOLANA — widening SPL
-    // support is a product decision, not a perf fix.
-    if (!isSolanaSupportBlocked) {
-      for (const token of solanaTokens) {
-        if (
-          'chainId' in token &&
-          token.chainId === ChainId.SOLANA_MAINNET_ID &&
-          token.address === tokenAddresses.USDC_SOLANA
-        ) {
-          map.set(
-            `${ChainId.SOLANA_MAINNET_ID}-${token.address.toLowerCase()}`,
-            token
-          )
-        }
-      }
-    }
-    return map
-  }, [erc20ContractTokens, solanaTokens, isSolanaSupportBlocked])
 
   return useMemo(() => {
     if (cryptoCurrencies === undefined) return []
 
-    const filterOptions: ListFilterOptions = {
+    const filterOptions: MeldListFilterOptions = {
       includeZeroBalance,
       tokenVisibility,
       enabledChainIds

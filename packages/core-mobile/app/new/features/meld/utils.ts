@@ -1,9 +1,15 @@
 import { LocalTokenWithBalance } from 'store/balance'
-import { TokenType } from '@avalabs/vm-module-types'
+import { isTokenVisible } from 'store/balance/utils'
+import { TokenVisibility } from 'store/portfolio'
+import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { router } from 'expo-router'
+import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
-import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
+import {
+  NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
+  SOLANA_MELD_CHAIN_ID
+} from './consts'
 import {
   CreateCryptoQuoteNotFoundError,
   CreateCryptoQuoteError,
@@ -11,6 +17,73 @@ import {
   CryptoQuotesError,
   CreateCryptoQuoteErrorCode
 } from './types'
+
+export const asZeroBalanceToken = (
+  token: NetworkContractToken
+): LocalTokenWithBalance =>
+  ({
+    ...token,
+    ...('chainId' in token && { networkChainId: token.chainId }),
+    localId: getLocalTokenId(token),
+    balance: 0n,
+    balanceInCurrency: 0,
+    balanceDisplayValue: '0',
+    balanceCurrencyDisplayValue: '0',
+    priceInCurrency: 0,
+    marketCap: 0,
+    change24: 0,
+    vol24: 0
+  } as LocalTokenWithBalance)
+
+/**
+ * Meld only ever trades native, ERC-20 and SPL tokens. This is an allowlist
+ * rather than an ERC-721/ERC-1155 denylist so newly added token types (e.g.
+ * `HYPERCORE_SPOT`) can't silently leak into the buy/withdraw lists.
+ */
+const MELD_LISTABLE_TOKEN_TYPES: TokenType[] = [
+  TokenType.NATIVE,
+  TokenType.ERC20,
+  TokenType.SPL
+]
+
+export type MeldListFilterOptions = {
+  includeZeroBalance: boolean
+  tokenVisibility: TokenVisibility
+  enabledChainIds: number[]
+}
+
+export const passesMeldListFilters = (
+  token: LocalTokenWithBalance,
+  {
+    includeZeroBalance,
+    tokenVisibility,
+    enabledChainIds
+  }: MeldListFilterOptions
+): boolean =>
+  (includeZeroBalance || token.balance > 0n) &&
+  isTokenVisible(tokenVisibility, token) &&
+  MELD_LISTABLE_TOKEN_TYPES.includes(token.type) &&
+  enabledChainIds.includes(token.networkChainId)
+
+export const meldContractTokenKey = (
+  chainId: number | string,
+  address: string
+): string => `${chainId}-${address.toLowerCase()}`
+
+/**
+ * Meld reports Solana under its own `SOLANA_MELD_CHAIN_ID`, so it has to be
+ * translated to the numeric chain id the contract-token catalog is keyed by.
+ */
+export const meldCurrencyTokenKey = (
+  crypto: CryptoCurrency
+): string | undefined => {
+  if (!crypto.contractAddress || !crypto.chainId) return undefined
+  const chainId =
+    crypto.chainId === SOLANA_MELD_CHAIN_ID.toString()
+      ? ChainId.SOLANA_MAINNET_ID
+      : crypto.chainId
+  return meldContractTokenKey(chainId, crypto.contractAddress)
+}
 
 export const isSupportedNativeErc20Token = (
   crypto: CryptoCurrency,
