@@ -29,11 +29,8 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import {
-  tokenLookupKey,
-  useTokenLookup,
-  type TokenInfo
-} from 'common/hooks/useTokenLookup'
+import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
+import { tokenLookupKey } from 'common/utils/tokenLookup'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network/slice'
@@ -642,7 +639,10 @@ export function RecurringSchedulesScreen({
   // pulling the active network's whole contract-token catalog.
   const tokenLookupIds = useMemo(() => {
     if (!activeNetwork) return []
-    const caip2Id = getCaip2ChainId(activeNetwork.chainId)
+    // `caip2Id` is optional on Network -- the hardcoded consts set it, but
+    // proxy- and DeBank-sourced networks may not, so derive it as a fallback.
+    const caip2Id =
+      activeNetwork.caip2Id ?? getCaip2ChainId(activeNetwork.chainId)
     const addresses = new Set<string>()
     for (const s of manageableSchedules) {
       if (s.tokenIn.toLowerCase() !== ERC_ZERO_ADDRESS.toLowerCase()) {

@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useQueries } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { tokenLookupKey, useTokenLookup } from './useTokenLookup'
+import { useTokenLookup } from './useTokenLookup'
 
 jest.mock('@tanstack/react-query', () => ({
   useQueries: jest.fn()
@@ -16,21 +16,6 @@ jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
 }))
 
 const mockUseQueries = useQueries as jest.MockedFunction<typeof useQueries>
-
-describe('tokenLookupKey', () => {
-  it('lowercases both the caip2Id and address for an eip155 pair', () => {
-    expect(tokenLookupKey('EIP155:43114', '0xAbCdEF1234')).toBe(
-      'eip155:43114-0xabcdef1234'
-    )
-  })
-
-  it('keeps a solana caip2Id and base58 address verbatim', () => {
-    const caip2Id = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-    const address = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-
-    expect(tokenLookupKey(caip2Id, address)).toBe(`${caip2Id}-${address}`)
-  })
-})
 
 describe('useTokenLookup', () => {
   beforeEach(() => {

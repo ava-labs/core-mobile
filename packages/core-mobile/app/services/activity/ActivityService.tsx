@@ -21,7 +21,7 @@ import {
   type Caip2IdAddressPair
 } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
-import { tokenLookupKey } from 'common/hooks/useTokenLookup'
+import { tokenLookupKey } from 'common/utils/tokenLookup'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 import { convertCChainAtomicTransaction } from './utils/convertCChainAtomicTransaction'
@@ -233,7 +233,9 @@ export class ActivityService {
     addresses: Set<string>
   ): Promise<void> {
     try {
-      const caip2Id = getSolanaCaip2ChainId(network.chainId)
+      // `caip2Id` is optional on Network -- the hardcoded consts set it, but
+      // proxy- and DeBank-sourced networks may not, so derive it as a fallback.
+      const caip2Id = network.caip2Id ?? getSolanaCaip2ChainId(network.chainId)
       // Addresses are sent in their original case -- Solana mint addresses
       // are base58 and case-sensitive, unlike the EVM hex addresses the
       // lookup endpoint otherwise deals with.

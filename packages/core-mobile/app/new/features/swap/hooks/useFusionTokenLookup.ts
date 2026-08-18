@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { tokenIds } from 'consts/tokenIds'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
 import {
   normalizeLookupAddress,
-  tokenLookupKey,
-  useTokenLookup,
-  type TokenInfo
-} from 'common/hooks/useTokenLookup'
+  tokenLookupKey
+} from 'common/utils/tokenLookup'
 import type {
   Caip2IdAddressPair,
   InternalId

@@ -21,7 +21,8 @@ import {
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { tokenLookupKey, useTokenLookup } from 'common/hooks/useTokenLookup'
+import { useTokenLookup } from 'common/hooks/useTokenLookup'
+import { tokenLookupKey } from 'common/utils/tokenLookup'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 enum AddressValidationStatus {
