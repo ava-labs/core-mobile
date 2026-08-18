@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="pg_Legend_and_Parties" name="Legend &amp; Parties">
-        <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1453" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -52,7 +52,7 @@
                 <mxCell id="LegendParties_c_16" value="Where private-key material lives and where signing happens: on device for recovery-phrase&lt;br&gt;wallets, on the device itself for Ledger and Keystone, remotely in CubeSigner&#39;s HSM for&lt;br&gt;seedless wallets. Steps prefixed (k) touch key material." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="58" y="612" width="790" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_17" value="  (f) Core-owned fee escrow" style="rounded=1;html=1;fillColor=none;strokeColor=#FBBF24;dashed=1;strokeWidth=2;verticalAlign=top;align=left;fontColor=#FDE68A;fontFamily=Verdana;fontSize=11;spacingLeft=8;spacingTop=2;dashPattern=8 8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_17" value="  (f) Core-owned fee escrow" style="rounded=1;html=1;fillColor=none;strokeColor=#FBBF24;dashed=1;strokeWidth=2;verticalAlign=top;align=left;fontColor=#FDE68A;fontFamily=Verdana;fontSize=11;spacingLeft=8;spacingTop=2;dashPattern=8 8;" parent="1" vertex="1">
                     <mxGeometry x="40" y="704" width="820" height="104" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_18" value="A fee is paid to an address Ava Labs owns. Appears on ONE page only — Stake / Earn (page 6) —&lt;br&gt;and there only on the FAST STAKE path; the advanced delegate path charges no Core fee.&lt;br&gt;Everywhere else, fees go to networks, validators, or third-party providers." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
@@ -67,13 +67,13 @@
                 <mxCell id="LegendParties_c_21" value="(ii)  WHAT MOVES  —  edge colour" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="900" y="150" width="640" height="24" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_22" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_22" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="194" width="10" height="10" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_23" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="194" width="10" height="10" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_e_24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#22C55E;strokeWidth=3;dashed=1;fontColor=#4ADE80;" edge="1" parent="1" source="LegendParties_c_22" target="LegendParties_c_23">
+                <mxCell id="LegendParties_e_24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#22C55E;strokeWidth=3;dashed=1;fontColor=#4ADE80;" parent="1" source="LegendParties_c_22" target="LegendParties_c_23" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_25" value="Fiat currency" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
@@ -82,13 +82,13 @@
                 <mxCell id="LegendParties_c_26" value="Government-issued money over card networks or bank rails.&lt;br&gt;Never passes through an Ava Labs or Core-controlled account." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1032" y="202" width="520" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_27" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_27" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="268" width="10" height="10" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_28" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="268" width="10" height="10" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_e_29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" edge="1" parent="1" source="LegendParties_c_27" target="LegendParties_c_28">
+                <mxCell id="LegendParties_e_29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" parent="1" source="LegendParties_c_27" target="LegendParties_c_28" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_30" value="Crypto asset" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
@@ -97,13 +97,13 @@
                 <mxCell id="LegendParties_c_31" value="On-chain value: native coins, stablecoins, ERC-20s, NFTs." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1032" y="276" width="520" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_32" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_32" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="342" width="10" height="10" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_33" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="342" width="10" height="10" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_e_34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="LegendParties_c_32" target="LegendParties_c_33">
+                <mxCell id="LegendParties_e_34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="LegendParties_c_32" target="LegendParties_c_33" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_35" value="Data / control" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
@@ -118,7 +118,7 @@
                 <mxCell id="LegendParties_c_38" value="" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="416" width="10" height="10" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_e_39" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#F87171;strokeWidth=2;dashed=1;fontColor=#FCA5A5;" edge="1" parent="1" source="LegendParties_c_37" target="LegendParties_c_38">
+                <mxCell id="LegendParties_e_39" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#F87171;strokeWidth=2;dashed=1;fontColor=#FCA5A5;" parent="1" source="LegendParties_c_37" target="LegendParties_c_38" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="LegendParties_c_40" value="Key or signature" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
@@ -130,25 +130,25 @@
                 <mxCell id="LegendParties_c_42" value="(iii)  CUSTODY &amp; KEY CONTROL" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="900" y="496" width="640" height="24" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_43" value="Core takes custody of no customer asset and holds no customer fiat. Signing always happens&lt;br&gt;inside the red key control boundary, and assets settle to addresses the customer controls.&lt;br&gt;Continuous control carries FOUR qualifications — the three yellow bands above, plus the&lt;br&gt;staking lock-up. Seedless wallets are the one case where key material itself sits with a&lt;br&gt;third party (CubeSigner). See page 1 for the four custody models." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_43" value="Core takes custody of no customer asset and holds no customer fiat. Signing always happens&lt;br&gt;inside the red key control boundary, and assets settle to addresses the customer controls.&lt;br&gt;Continuous control carries FOUR qualifications — the three yellow bands above, plus the&lt;br&gt;staking lock-up. Seedless wallets are the one case where key material itself sits with a&lt;br&gt;third party (CubeSigner). See page 1 for the four custody models." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="526" width="650" height="88" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_44" value="(iv)  THIRD-PARTY PROVIDERS" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_44" value="(iv)  THIRD-PARTY PROVIDERS" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="900" y="626" width="640" height="24" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_45" value="Every orange node names the provider and, where relevant, the customer data it receives&lt;br&gt;(wallet address, amount, KYC identity, bank details). Providers reached through the Core&lt;br&gt;proxy are drawn behind an Ava Labs infra node to show the app does not call them directly.&lt;br&gt;KYC is always performed by the provider, never by Core." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_45" value="Every orange node names the provider and, where relevant, the customer data it receives&lt;br&gt;(wallet address, amount, KYC identity, bank details). Providers reached through the Core&lt;br&gt;proxy are drawn behind an Ava Labs infra node to show the app does not call them directly.&lt;br&gt;KYC is always performed by the provider, never by Core." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="656" width="650" height="74" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_46" value="(v)  FEES" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_46" value="(v)  FEES" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=14;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
                     <mxGeometry x="900" y="742" width="640" height="24" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_47" value="Steps prefixed (f) mark where a fee or spread is taken; each page lists every component and&lt;br&gt;who receives it. Core charges an explicit fee in ONE place only — the FAST STAKE convenience&lt;br&gt;fee (page 6), paid to a Core-owned P-Chain escrow at a rate supplied as a PostHog variant.&lt;br&gt;Elsewhere the mandatory cost is the network fee, paid to validators or miners. Where a&lt;br&gt;commercial arrangement is not observable in client code, the page says so rather than guess." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_47" value="Steps prefixed (f) mark where a fee or spread is taken; each page lists every component and&lt;br&gt;who receives it. Core charges an explicit fee in ONE place only — the FAST STAKE convenience&lt;br&gt;fee (page 6), paid to a Core-owned P-Chain escrow at a rate supplied as a PostHog variant.&lt;br&gt;Elsewhere the mandatory cost is the network fee, paid to validators or miners. Where a&lt;br&gt;commercial arrangement is not observable in client code, the page says so rather than guess." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontFamily=Verdana;fontSize=11;fontColor=#94A3B8;" parent="1" vertex="1">
                     <mxGeometry x="900" y="772" width="650" height="88" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_48" value="PAGE INDEX&lt;br&gt;&lt;br&gt;0   Legend &amp; Parties — this page&lt;br&gt;1   Onboarding — establishing custody (no assets move)&lt;br&gt;2   Receive — inbound crypto and stablecoins&lt;br&gt;3   Send — outbound transfer of crypto and stablecoins&lt;br&gt;4   Buy — fiat currency to crypto (on-ramp)&lt;br&gt;5   Swap — crypto to crypto, same-chain and cross-chain&lt;br&gt;6   Stake / Earn — P-Chain delegation&lt;br&gt;7   Recurring swap — scheduled / DCA orders&lt;br&gt;8   Offramp — crypto to fiat currency (sell / withdraw)&lt;br&gt;9   dApp signing — in-app browser and WalletConnect" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_48" value="PAGE INDEX&lt;br&gt;&lt;br&gt;0   Legend &amp; Parties — this page&lt;br&gt;1   Onboarding — establishing custody (no assets move)&lt;br&gt;2   Receive — inbound crypto and stablecoins&lt;br&gt;3   Send — outbound transfer of crypto and stablecoins&lt;br&gt;4   Buy — fiat currency to crypto (on-ramp)&lt;br&gt;5   Swap — crypto to crypto, same-chain and cross-chain&lt;br&gt;6   Stake / Earn — P-Chain delegation&lt;br&gt;7   Recurring swap — scheduled / DCA orders&lt;br&gt;8   Offramp — crypto to fiat currency (sell / withdraw)&lt;br&gt;9   dApp signing — in-app browser and WalletConnect" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" parent="1" vertex="1">
                     <mxGeometry x="40" y="964" width="700" height="250" as="geometry"/>
                 </mxCell>
-                <mxCell id="LegendParties_c_50" value="WHAT HOLDS ACROSS THE WHOLE WALLET  —  read this before the individual pages&lt;br&gt;&lt;br&gt;1.  Core never holds customer fiat. On both the on-ramp and the off-ramp, fiat stays inside the licensed provider&#39;s environment.&lt;br&gt;2.  Core never takes custody of customer crypto, and cannot sign on a customer&#39;s behalf — except that for SEEDLESS wallets the key&lt;br&gt;     material sits in CubeSigner&#39;s HSM rather than on the handset, so signing there is remote and MFA-gated.&lt;br&gt;3.  Continuous user control has four qualifications: a bridge holds the asset mid cross-chain swap (5); the offramp provider holds it&lt;br&gt;     before paying out (8); a standing allowance lets Markr execute recurring orders unsigned (7); a stake is locked for its full term (6).&lt;br&gt;4.  Core charges an explicit fee in one place only — the FAST STAKE path of Stake / Earn (6), paid to a Core-owned P-Chain escrow&lt;br&gt;     address. The advanced delegate path charges none. Send, Receive, Buy, Offramp, Swap and dApp signing apply no Core service&lt;br&gt;     fee in the client code, though Buy, Offramp and Swap each involve third-party partner-fee mechanisms whose commercial&lt;br&gt;     terms are not visible in the client.&lt;br&gt;5.  Every dApp transaction requires explicit approval: the Quick Swaps auto-approve bypass is gated on an in-app request and a&lt;br&gt;     software wallet type, so it is structurally unreachable from a dApp or WalletConnect request." style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" vertex="1" parent="1">
+                <mxCell id="LegendParties_c_50" value="WHAT HOLDS ACROSS THE WHOLE WALLET  —  read this before the individual pages&lt;br&gt;&lt;br&gt;1.  Core never holds customer fiat. On both the on-ramp and the off-ramp, fiat stays inside the licensed provider&#39;s environment.&lt;br&gt;2.  Core never takes custody of customer crypto, and cannot sign on a customer&#39;s behalf — except that for SEEDLESS wallets the key&lt;br&gt;     material sits in CubeSigner&#39;s HSM rather than on the handset, so signing there is remote and MFA-gated.&lt;br&gt;3.  Continuous user control has four qualifications: a bridge holds the asset mid cross-chain swap (5); the offramp provider holds it&lt;br&gt;     before paying out (8); a standing allowance lets Markr execute recurring orders unsigned (7); a stake is locked for its full term (6).&lt;br&gt;4.  Core charges an explicit fee in one place only — the FAST STAKE path of Stake / Earn (6), paid to a Core-owned P-Chain escrow&lt;br&gt;     address. The advanced delegate path charges none. Send, Receive, Buy, Offramp, Swap and dApp signing apply no Core service&lt;br&gt;     fee in the client code, though Buy, Offramp and Swap each involve third-party partner-fee mechanisms whose commercial&lt;br&gt;     terms are not visible in the client.&lt;br&gt;5.  Every dApp transaction requires explicit approval: the Quick Swaps auto-approve bypass is gated on an in-app request and a&lt;br&gt;     software wallet type, so it is structurally unreachable from a dApp or WalletConnect request." style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" parent="1" vertex="1">
                     <mxGeometry x="781" y="964" width="700" height="250" as="geometry"/>
                 </mxCell>
             </root>
@@ -506,7 +506,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="pg_3._Send" name="3. Send">
-        <mxGraphModel dx="2179" dy="931" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1688" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -570,7 +570,7 @@
                 <mxCell id="3Send_c_10" value="In-app RPC request -&gt;&lt;br&gt;ApprovalController" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#14532D;strokeColor=#4ADE80;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="367" y="690" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="3Send_c_11" value="Blockaid risk screening&lt;br&gt;(via the Core proxy)" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
+                <mxCell id="3Send_c_11" value="Blockaid risk screening for EVM &amp;amp; Solana&lt;br&gt;(via the Core proxy)" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="987" y="606" width="262" height="64" as="geometry"/>
                 </mxCell>
                 <mxCell id="3Send_c_12" value="Review recipient, amount and fee,&lt;br&gt;then approve with PIN or biometrics" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#2D5FA8;strokeColor=#8AB4F8;fontColor=#FFFFFF;" parent="1" vertex="1">
@@ -891,7 +891,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="pg_5._Swap" name="5. Swap">
-        <mxGraphModel dx="2179" dy="931" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1688" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -949,7 +949,7 @@
                 <mxCell id="5Swap_c_8" value="(f) Markr — DEX aggregation, EVM and&lt;br&gt;Solana (Core partner ID attached)" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="987" y="530" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="5Swap_c_9" value="(f) deBridge — cross-chain routing" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
+                <mxCell id="5Swap_c_9" value="(f) Avalanche EVM bridge" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="987" y="600" width="262" height="54" as="geometry"/>
                 </mxCell>
                 <mxCell id="5Swap_c_10" value="(f) Avalanche CCT / CCIP — cross-chain&lt;br&gt;transfer of supported tokens" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7C2D12;strokeColor=#FB923C;fontColor=#FFFFFF;" parent="1" vertex="1">
@@ -1125,38 +1125,38 @@
         </mxGraphModel>
     </diagram>
     <diagram id="pg_6._Stake_/_Earn" name="6. Stake / Earn">
-        <mxGraphModel dx="2179" dy="931" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1688" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="6StakeEarn_c_58" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" parent="1" vertex="1">
                     <mxGeometry x="40" y="144" width="296" height="2036" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_59" value="User / Device" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_59" value="User / Device" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="40" y="144" width="296" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_60" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_60" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" parent="1" vertex="1">
                     <mxGeometry x="350" y="144" width="296" height="2036" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_61" value="Core Mobile app" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_61" value="Core Mobile app" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="350" y="144" width="296" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_62" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_62" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" parent="1" vertex="1">
                     <mxGeometry x="660" y="144" width="296" height="2036" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_63" value="Ava Labs backend" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_63" value="Ava Labs backend" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="660" y="144" width="296" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_64" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_64" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" parent="1" vertex="1">
                     <mxGeometry x="970" y="144" width="296" height="2036" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_65" value="Validator &amp; Core fee escrow" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_65" value="Validator &amp; Core fee escrow" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="970" y="144" width="296" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_66" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_66" value="" style="rounded=0;html=1;fillColor=#071E4A;strokeColor=#1E3A6B;opacity=60;" parent="1" vertex="1">
                     <mxGeometry x="1280" y="144" width="296" height="2036" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_67" value="Avalanche C-Chain / P-Chain" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_67" value="Avalanche C-Chain / P-Chain" style="rounded=0;html=1;fillColor=#0B2A5B;strokeColor=#1E3A6B;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=12;fontStyle=1;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="1280" y="144" width="296" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="6StakeEarn_c_1" value="6. Stake / Earn — P-Chain delegation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Verdana;fontSize=17;fontColor=#FFFFFF;fontStyle=1;" parent="1" vertex="1">
@@ -1228,16 +1228,16 @@
                 <mxCell id="6StakeEarn_c_23" value="(k) WalletService signs exportP,&lt;br&gt;then signs importC" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#7F1D1D;strokeColor=#F87171;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="367" y="1730" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_24" value="(f) exportP: atomic transaction moves the&lt;br&gt;stake and rewards off the P-Chain" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#4C1D6B;strokeColor=#C084FC;fontColor=#FFFFFF;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_24" value="(f) exportP: atomic transaction moves the&lt;br&gt;stake and rewards off the P-Chain" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#4C1D6B;strokeColor=#C084FC;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="1297" y="1820" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_25" value="(f) importC: atomic transaction credits&lt;br&gt;the C-Chain" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#4C1D6B;strokeColor=#C084FC;fontColor=#FFFFFF;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_25" value="(f) importC: atomic transaction credits&lt;br&gt;the C-Chain" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#4C1D6B;strokeColor=#C084FC;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="1297" y="1910" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_26" value="importAnyStuckFunds offers recovery if&lt;br&gt;an atomic step was interrupted" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#14532D;strokeColor=#4ADE80;fontColor=#FFFFFF;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_26" value="importAnyStuckFunds offers recovery if&lt;br&gt;an atomic step was interrupted" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Verdana;fontSize=11;verticalAlign=middle;fillColor=#14532D;strokeColor=#4ADE80;fontColor=#FFFFFF;" parent="1" vertex="1">
                     <mxGeometry x="367" y="2000" width="262" height="64" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_27" value="Stake + rewards&lt;br&gt;back on C-Chain" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#E2E8F0;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=11;strokeWidth=3;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_27" value="Stake + rewards&lt;br&gt;back on C-Chain" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1E293B;strokeColor=#E2E8F0;fontColor=#FFFFFF;fontFamily=Verdana;fontSize=11;strokeWidth=3;" parent="1" vertex="1">
                     <mxGeometry x="78" y="2090" width="220" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="6StakeEarn_e_28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_3" target="6StakeEarn_c_4" edge="1">
@@ -1314,31 +1314,31 @@
                 <mxCell id="6StakeEarn_e_45" value="stake locked" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" parent="1" source="6StakeEarn_c_16" target="6StakeEarn_c_19" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_46" value="reduces&lt;br&gt;net reward" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_18" target="6StakeEarn_c_20">
+                <mxCell id="6StakeEarn_e_46" value="reduces&lt;br&gt;net reward" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_18" target="6StakeEarn_c_20" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_47" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_19" target="6StakeEarn_c_20">
+                <mxCell id="6StakeEarn_e_47" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_19" target="6StakeEarn_c_20" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_48" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_20" target="6StakeEarn_c_21">
+                <mxCell id="6StakeEarn_e_48" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_20" target="6StakeEarn_c_21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_49" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_21" target="6StakeEarn_c_22">
+                <mxCell id="6StakeEarn_e_49" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_21" target="6StakeEarn_c_22" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_50" value="approved" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_22" target="6StakeEarn_c_23">
+                <mxCell id="6StakeEarn_e_50" value="approved" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_22" target="6StakeEarn_c_23" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_51" value="signature 1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" edge="1" parent="1" source="6StakeEarn_c_23" target="6StakeEarn_c_24">
+                <mxCell id="6StakeEarn_e_51" value="signature 1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" parent="1" source="6StakeEarn_c_23" target="6StakeEarn_c_24" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_52" value="signature 2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" edge="1" parent="1" source="6StakeEarn_c_24" target="6StakeEarn_c_25">
+                <mxCell id="6StakeEarn_e_52" value="signature 2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#FB923C;strokeWidth=3;fontColor=#FDBA74;" parent="1" source="6StakeEarn_c_24" target="6StakeEarn_c_25" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_53" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_25" target="6StakeEarn_c_26">
+                <mxCell id="6StakeEarn_e_53" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_25" target="6StakeEarn_c_26" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_e_54" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" edge="1" parent="1" source="6StakeEarn_c_26" target="6StakeEarn_c_27">
+                <mxCell id="6StakeEarn_e_54" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jettySize=auto;orthogonalLoop=1;fontFamily=Verdana;fontSize=10;labelBackgroundColor=#021640;strokeColor=#94A3B8;strokeWidth=1;fontColor=#CBD5E1;" parent="1" source="6StakeEarn_c_26" target="6StakeEarn_c_27" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="6StakeEarn_c_55" value="  (k) Key control boundary — funding" style="rounded=1;html=1;fillColor=none;strokeColor=#F87171;dashed=1;strokeWidth=2;verticalAlign=top;align=left;fontColor=#FCA5A5;fontFamily=Verdana;fontSize=11;spacingLeft=8;spacingTop=2;dashPattern=8 8;" parent="1" vertex="1">
@@ -1350,14 +1350,14 @@
                 <mxCell id="6StakeEarn_c_57" value="  (f) Core-owned fee escrow — Fast Stake only" style="rounded=1;html=1;fillColor=none;strokeColor=#FBBF24;dashed=1;strokeWidth=2;verticalAlign=top;align=left;fontColor=#FDE68A;fontFamily=Verdana;fontSize=11;spacingLeft=8;spacingTop=2;dashPattern=8 8;" parent="1" vertex="1">
                     <mxGeometry x="960" y="1139" width="296" height="128" as="geometry"/>
                 </mxCell>
-                <mxCell id="6StakeEarn_c_68" value="(i) PARTIES: user; Core Mobile app; Ava Labs backend (Glacier validator data, PostHog fee-rate flag); the chosen validator node operator; a Core-owned P-Chain escrow address (Fast Stake only); the Avalanche C-Chain and P-Chain.&lt;br&gt;(ii) FLOW OF FUNDS: AVAX only, no fiat. Funding from the C-Chain requires two atomic cross-chain transactions (exportC then importP) before the delegation transaction itself. The stake is then locked for the chosen duration. Claiming reverses the direction with two further atomic transactions (exportP then importC). Every leg stays between addresses the user controls, except the Fast Stake convenience-fee output.&lt;br&gt;(iii) CUSTODY: non-custodial, with two points worth stating. First, the staked AVAX is locked by the Avalanche protocol itself — neither Core nor the validator can spend, seize, or redirect it, the validator never takes possession, but the funds are ILLIQUID for the full term and cannot be withdrawn early. Second, EVERY transaction in this flow is separately signed by the user: up to three signatures to fund and delegate, and TWO MORE to claim (exportP and importC are signed independently). Hardware wallets require a physical confirmation for each one. Because the flow spans several transactions, an interrupted run can leave AVAX in an atomic-transfer state; importAnyStuckFunds exists to recover it.&lt;br&gt;(iv) THIRD PARTIES: the validator node operator (earns and shares rewards, takes its own commission); Glacier supplies the validator metrics used for Fast Stake auto-selection. No customer identity data is shared with either.&lt;br&gt;(v) FEES: (1) C-Chain atomic transaction fee on exportC; (2) P-Chain fee on importP; (3) P-Chain delegation transaction fee; (4) the VALIDATOR&#39;s delegation fee (commission), deducted from rewards earned; (5) two further network fees when claiming (exportP and importC); and (6) on the FAST STAKE PATH ONLY, a CORE CONVENIENCE FEE paid to a Core-owned P-Chain escrow address as a UTXO output bundled with the delegation transaction. The rate is delivered as a PostHog multivariate flag variant in basis points and applied to the NET estimated reward after the validator&#39;s own fee; no variant configured means no fee. The reward shown to the user is net of this fee before they commit. THE ADVANCED DELEGATE PATH CHARGES NO CORE FEE — the client contains a separate, currently unenabled delegate-fee flag and escrow address, so the capability exists in code but is dormant; confirm its status before relying on this." style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" vertex="1" parent="1">
+                <mxCell id="6StakeEarn_c_68" value="(i) PARTIES: user; Core Mobile app; Ava Labs backend (Glacier validator data, PostHog fee-rate flag); the chosen validator node operator; a Core-owned P-Chain escrow address (Fast Stake only); the Avalanche C-Chain and P-Chain.&lt;br&gt;(ii) FLOW OF FUNDS: AVAX only, no fiat. Funding from the C-Chain requires two atomic cross-chain transactions (exportC then importP) before the delegation transaction itself. The stake is then locked for the chosen duration. Claiming reverses the direction with two further atomic transactions (exportP then importC). Every leg stays between addresses the user controls, except the Fast Stake convenience-fee output.&lt;br&gt;(iii) CUSTODY: non-custodial, with two points worth stating. First, the staked AVAX is locked by the Avalanche protocol itself — neither Core nor the validator can spend, seize, or redirect it, the validator never takes possession, but the funds are ILLIQUID for the full term and cannot be withdrawn early. Second, EVERY transaction in this flow is separately signed by the user: up to three signatures to fund and delegate, and TWO MORE to claim (exportP and importC are signed independently). Hardware wallets require a physical confirmation for each one. Because the flow spans several transactions, an interrupted run can leave AVAX in an atomic-transfer state; importAnyStuckFunds exists to recover it.&lt;br&gt;(iv) THIRD PARTIES: the validator node operator (earns and shares rewards, takes its own commission); Glacier supplies the validator metrics used for Fast Stake auto-selection. No customer identity data is shared with either.&lt;br&gt;(v) FEES: (1) C-Chain atomic transaction fee on exportC; (2) P-Chain fee on importP; (3) P-Chain delegation transaction fee; (4) the VALIDATOR&#39;s delegation fee (commission), deducted from rewards earned; (5) two further network fees when claiming (exportP and importC); and (6) on the FAST STAKE PATH ONLY, a CORE CONVENIENCE FEE paid to a Core-owned P-Chain escrow address as a UTXO output bundled with the delegation transaction. The rate is delivered as a PostHog multivariate flag variant in basis points and applied to the NET estimated reward after the validator&#39;s own fee; no variant configured means no fee. The reward shown to the user is net of this fee before they commit. THE ADVANCED DELEGATE PATH CHARGES NO CORE FEE — the client contains a separate, currently unenabled delegate-fee flag and escrow address, so the capability exists in code but is dormant; confirm its status before relying on this." style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#0B2545;strokeColor=#64748B;fontColor=#E2E8F0;fontFamily=Verdana;fontSize=10;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;" parent="1" vertex="1">
                     <mxGeometry x="40" y="2210" width="1500" height="330" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
     </diagram>
     <diagram id="pg_7._Recurring_swap" name="7. Recurring swap">
-        <mxGraphModel dx="2179" dy="931" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1688" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -1666,7 +1666,7 @@
         </mxGraphModel>
     </diagram>
     <diagram id="pg_9._dApp_transaction_signing" name="9. dApp transaction signing">
-        <mxGraphModel dx="2179" dy="931" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
+        <mxGraphModel dx="1688" dy="932" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" background="#021640" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
