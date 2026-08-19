@@ -76,9 +76,6 @@ jest.mock('common/utils/dismissKeyboardIfNeeded', () => ({
 jest.mock('features/portfolio/assets/components/LogoWithNetwork', () => ({
   LogoWithNetwork: () => null
 }))
-jest.mock('../hooks/useResetMeldTokenList', () => ({
-  useResetMeldTokenList: jest.fn()
-}))
 jest.mock('../store', () => ({
   useOfframpActivityIndicator: () => ({ animating: false }),
   useOfframpSessionId: () => ({ setSessionId: jest.fn() })
