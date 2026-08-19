@@ -87,7 +87,12 @@ export const getErrorMessage = (
 ): CryptoQuotesError | undefined => {
   if (error && 'response' in error) {
     const response = error.response as {
-      data?: CreateCryptoQuoteError | CreateCryptoQuoteNotFoundError
+      status?: number
+      statusText?: string
+      data?:
+        | CreateCryptoQuoteError
+        | CreateCryptoQuoteNotFoundError
+        | { message: string }
     }
     if (response.data && 'status' in response.data) {
       return {
@@ -101,11 +106,21 @@ export const getErrorMessage = (
         message: response.data.message
       }
     }
-    if ('status' in response) {
+    // Some errors (e.g. NO_VALID_QUOTES) carry only a `message` with no
+    // `status`/`code` field — surface that message rather than the bare
+    // HTTP status line.
+    if (response.data && 'message' in response.data && response.data.message) {
+      return {
+        statusCode:
+          (response.status as CreateCryptoQuoteErrorCode) ??
+          CreateCryptoQuoteErrorCode.BAD_REQUEST,
+        message: response.data.message
+      }
+    }
+    if (response.status !== undefined) {
       return {
         statusCode: response.status as CreateCryptoQuoteErrorCode,
-        message:
-          'statusText' in response ? (response.statusText as string) : undefined
+        message: response.statusText
       }
     }
   }

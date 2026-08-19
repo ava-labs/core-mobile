@@ -47,12 +47,14 @@ export const useCreateCryptoQuote = ({
     isSourceAmountValid &&
     hasDestinationCurrencyCode &&
     hasSourceCurrencyCode &&
+    Boolean(serviceProviders?.length) &&
     enabledCreateCryptoQuote
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,
     queryKey: [
       ReactQueryKeys.MELD_CREATE_CRYPTO_QUOTE,
+      category,
       serviceProviders,
       countryCode,
       walletAddress,
@@ -62,6 +64,13 @@ export const useCreateCryptoQuote = ({
       hasValidSourceAmount,
       paymentMethodType
     ],
+    // Don't fan this out into one request per provider. Meld does not
+    // fail-fast the batch when a single provider rejects: retested 11 Aug 2026
+    // across 12 countries, the batch returns the union of whatever providers
+    // could quote even when another hard-rejects with INCOMPATIBLE_REQUEST. The
+    // whole-request 400 only happens when no provider can quote. Fanning out
+    // instead loses quotes, because a provider rate-limited with a 429 gets
+    // dropped where the batch would have returned it.
     queryFn: () => {
       return MeldService.createCryptoQuote({
         serviceProviders,

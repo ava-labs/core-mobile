@@ -3,6 +3,37 @@ import { fetch as expoFetch } from 'expo/fetch'
 import { z } from 'zod'
 
 /**
+ * Error thrown on a non-2xx response. Carries the parsed response body under
+ * `response.data` so callers (e.g. Meld's `getErrorMessage`) can read the
+ * server's error code/message instead of only the HTTP status line.
+ */
+export type HttpError = Error & {
+  response?: { status: number; statusText?: string; data?: unknown }
+}
+
+const buildHttpError = async (response: {
+  status: number
+  statusText: string
+  json: () => Promise<unknown>
+}): Promise<HttpError> => {
+  let data: unknown
+  try {
+    data = await response.json()
+  } catch {
+    // body was empty or not JSON — fall back to the status line only
+  }
+  const error: HttpError = new Error(
+    `HTTP ${response.status}: ${response.statusText}`
+  )
+  error.response = {
+    status: response.status,
+    statusText: response.statusText,
+    data
+  }
+  return error
+}
+
+/**
  * Fetch helper with optional dev-only Zod validation.
  * Uses nitroFetch by default for better performance.
  */
@@ -17,7 +48,7 @@ export const fetchJson = async <T>(
   )
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    throw await buildHttpError(response)
   }
 
   const data = await response.json()
@@ -45,7 +76,7 @@ export const fetchJsonWithExpo = async <T>(
   )
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    throw await buildHttpError(response)
   }
 
   const data = await response.json()
