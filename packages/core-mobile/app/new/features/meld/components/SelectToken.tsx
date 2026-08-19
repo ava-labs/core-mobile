@@ -1,19 +1,23 @@
 import { GroupList, GroupListItem, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { Space } from 'common/components/Space'
 import { TokenSymbol } from 'store/network'
 import { LoadingState } from 'common/components/LoadingState'
-import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { ServiceProviderCategories } from 'features/meld/consts'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
+import { selectActiveAccount } from 'store/account'
+import { selectEnabledChainIds } from 'store/network'
+import { selectTokenVisibility } from 'store/portfolio'
+import { isTokenVisible } from 'store/balance/utils'
+import { LocalTokenWithBalance } from 'store/balance/types'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useBuy } from '../hooks/useBuy'
 import { useWithdraw } from '../hooks/useWithdraw'
 
@@ -38,17 +42,33 @@ export const SelectToken = ({
     theme: { colors }
   } = useTheme()
   const cChainNetwork = useCChainNetwork()
-  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens,
-    hideZeroBalance: category === ServiceProviderCategories.CRYPTO_OFFRAMP
+  const activeAccount = useSelector(selectActiveAccount)
+  const tokenVisibility = useSelector(selectTokenVisibility)
+  const enabledChainIds = useSelector(selectEnabledChainIds)
+  const tokensWithBalance = useTokensWithBalanceForAccount({
+    account: activeAccount
   })
   const { isAvaxCBuyable, isUsdcBuyable } = useBuy()
   const { isAvaxCWithdrawable, isUsdcWithdrawable } = useWithdraw()
 
-  useResetMeldTokenList()
+  // internalId only exists on balance-data tokens, so searching
+  // tokensWithBalance is sufficient here; deliberately avoids
+  // useSearchableTokenList, whose ~57k-token pipeline is what made this
+  // screen stall on every entry and balance tick.
+  const visibleTokens = useMemo(() => {
+    const hideZeroBalance =
+      category === ServiceProviderCategories.CRYPTO_OFFRAMP
+    return tokensWithBalance.filter(
+      (token: LocalTokenWithBalance) =>
+        (!hideZeroBalance || token.balance > 0n) &&
+        isTokenVisible(tokenVisibility, token) &&
+        token.type !== TokenType.ERC1155 &&
+        token.type !== TokenType.ERC721 &&
+        enabledChainIds.includes(token.networkChainId)
+    )
+  }, [tokensWithBalance, tokenVisibility, enabledChainIds, category])
 
-  const usdcAvalancheToken = filteredTokenList.find(token => {
+  const usdcAvalancheToken = visibleTokens.find(token => {
     return (
       'chainId' in token &&
       token.chainId &&
@@ -57,7 +77,7 @@ export const SelectToken = ({
     )
   })
 
-  const avaxAvalancheToken = filteredTokenList.find(
+  const avaxAvalancheToken = visibleTokens.find(
     token =>
       token.type === TokenType.NATIVE && token.symbol === TokenSymbol.AVAX
   )
