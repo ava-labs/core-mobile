@@ -6,7 +6,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { Space } from 'common/components/Space'
 import { TokenSymbol } from 'store/network'
 import { LoadingState } from 'common/components/LoadingState'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { useTokenLookup } from 'common/hooks/useTokenLookup'
 import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
@@ -68,19 +68,62 @@ export const SelectToken = ({
     )
   }, [tokensWithBalance, tokenVisibility, enabledChainIds, category])
 
-  const usdcAvalancheToken = visibleTokens.find(token => {
-    return (
-      'chainId' in token &&
-      token.chainId &&
-      isAvalancheChainId(token.chainId) &&
-      token.internalId === tokenIds.USDC
-    )
-  })
-
-  const avaxAvalancheToken = visibleTokens.find(
-    token =>
-      token.type === TokenType.NATIVE && token.symbol === TokenSymbol.AVAX
+  // tokenIds.USDC is a cross-chain internalId (the same id for USDC on every
+  // chain), so match on the active C-Chain explicitly or a USDC balance from
+  // another chain can satisfy this find.
+  const heldUsdcAvalancheToken = useMemo(
+    () =>
+      visibleTokens.find(
+        token =>
+          token.internalId === tokenIds.USDC &&
+          token.networkChainId === cChainNetwork?.chainId
+      ),
+    [visibleTokens, cChainNetwork]
   )
+
+  // AVAX is the native token of X- and P-Chain as well, so this is pinned to
+  // the active C-Chain rather than matching on symbol alone.
+  const avaxAvalancheToken = useMemo(
+    () =>
+      visibleTokens.find(
+        token =>
+          token.type === TokenType.NATIVE &&
+          token.symbol === TokenSymbol.AVAX &&
+          token.networkChainId === cChainNetwork?.chainId
+      ),
+    [visibleTokens, cChainNetwork]
+  )
+
+  // Unlike AVAX, USDC-C's icon is rendered, so an unheld account still needs
+  // its symbol/logo -- fetch only this one token, not the full contract list.
+  const usdcLookupIds = useMemo(
+    () => (heldUsdcAvalancheToken ? [] : [{ internalId: tokenIds.USDC }]),
+    [heldUsdcAvalancheToken]
+  )
+  const { data: usdcLookupTokens } = useTokenLookup(usdcLookupIds)
+
+  const usdcAvalancheToken = useMemo(():
+    | { symbol: string; logoUri?: string; chainId?: number; balance: bigint }
+    | undefined => {
+    if (heldUsdcAvalancheToken) {
+      return {
+        symbol: heldUsdcAvalancheToken.symbol,
+        logoUri: heldUsdcAvalancheToken.logoUri,
+        chainId: heldUsdcAvalancheToken.networkChainId,
+        balance: heldUsdcAvalancheToken.balance
+      }
+    }
+    const info = usdcLookupTokens[tokenIds.USDC.toLowerCase()]
+    if (!info || !cChainNetwork) {
+      return undefined
+    }
+    return {
+      symbol: info.symbol,
+      logoUri: info.meta?.logoUri ?? undefined,
+      chainId: cChainNetwork.chainId,
+      balance: 0n
+    }
+  }, [heldUsdcAvalancheToken, usdcLookupTokens, cChainNetwork])
 
   const data = useMemo(() => {
     const _data: GroupListItem[] = []

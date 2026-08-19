@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   NetworkVMType,
   Network,
@@ -10,9 +11,11 @@ import {
   Transaction as InternalTransaction,
   TransactionType
 } from '@avalabs/vm-module-types'
+import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
 import { ActivityService } from './ActivityService'
 
 const SOLANA_CHAIN_ID = ChainId.SOLANA_MAINNET_ID
+const SOLANA_CAIP2_ID = getSolanaCaip2ChainId(SOLANA_CHAIN_ID)
 
 const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 const PUMP_MINT = 'PUMPkefFSVR5uvSKAhGsLGpeDE9w3RGGDbsGPsZrWJo'
@@ -66,6 +69,15 @@ jest.mock('utils/Logger', () => ({
     warn: jest.fn(),
     error: jest.fn()
   }
+}))
+
+const mockPostV1TokenLookup = jest.fn()
+jest.mock('utils/api/generated/tokenAggregator/aggregatorApi.client', () => ({
+  postV1TokenLookup: (...args: unknown[]) => mockPostV1TokenLookup(...args)
+}))
+
+jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
+  tokenAggregatorApi: {}
 }))
 
 // --- Helpers ---
@@ -175,12 +187,11 @@ function makeTx(
   }
 }
 
-function makeModule(
-  getTokensResult: any[] = [],
-  getTransactionHistoryResult?: { transactions: any[]; nextPageToken?: string }
-) {
+function makeModule(getTransactionHistoryResult?: {
+  transactions: any[]
+  nextPageToken?: string
+}) {
   return {
-    getTokens: jest.fn().mockResolvedValue(getTokensResult),
     getTransactionHistory: jest.fn().mockResolvedValue(
       getTransactionHistoryResult ?? {
         transactions: [],
@@ -188,6 +199,27 @@ function makeModule(
       }
     )
   }
+}
+
+// Builds a `/v1/token/lookup` response, keyed the way the real API keys its
+// `data.data` map: `{caip2Id}-{address}`. Confirmed against the live
+// endpoint: Solana caip2Ids and base58 addresses come back case-preserved
+// (unlike EVM addresses, which the server lowercases).
+function lookupKey(address: string): string {
+  return `${SOLANA_CAIP2_ID}-${address}`
+}
+
+function makeLookupResponse(
+  entries: Array<{ address: string; symbol: string; name: string }>
+): { data: { data: Record<string, { symbol: string; name: string }> } } {
+  const data: Record<string, { symbol: string; name: string }> = {}
+  for (const entry of entries) {
+    data[lookupKey(entry.address)] = {
+      symbol: entry.symbol,
+      name: entry.name
+    }
+  }
+  return { data: { data } }
 }
 
 // --- Tests ---
@@ -201,6 +233,7 @@ describe('ActivityService', () => {
     mockGetAddressByNetwork.mockReturnValue('userSolanaAddress')
     mockGetCachedTokenList.mockResolvedValue({})
     mockGetQueriesData.mockReturnValue([])
+    mockPostV1TokenLookup.mockResolvedValue({ data: { data: {} } })
   })
 
   describe('enrichNetworkWithTokens', () => {
@@ -293,7 +326,7 @@ describe('ActivityService', () => {
       const evmNetwork = makeEvmNetwork()
       const unknownToken = makeUnknownTxToken(USDC_MINT, '10')
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -306,14 +339,14 @@ describe('ActivityService', () => {
 
       // Token should remain Unknown since resolution is skipped for EVM
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
-      expect(module.getTokens).not.toHaveBeenCalled()
+      expect(mockPostV1TokenLookup).not.toHaveBeenCalled()
     })
 
     it('should skip resolution when no unknown tokens exist', async () => {
       const network = makeSvmNetwork()
       const knownToken = makeKnownTxToken(USDC_MINT, 'USDC', '10')
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([knownToken])],
         nextPageToken: undefined
       })
@@ -324,34 +357,22 @@ describe('ActivityService', () => {
         account: {} as any
       })
 
-      expect(module.getTokens).not.toHaveBeenCalled()
+      expect(mockPostV1TokenLookup).not.toHaveBeenCalled()
     })
 
-    it('should resolve unknown tokens from module token registry', async () => {
+    it('should resolve unknown tokens from the token-aggregator lookup', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
       const unknownPump = makeUnknownTxToken(PUMP_MINT, '44.473')
 
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        },
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin' },
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc, unknownPump])],
         nextPageToken: undefined
       })
@@ -368,22 +389,16 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[1]!.name).toBe('Pump Token')
     })
 
-    it('should resolve unknown tokens from balance cache when module registry misses them', async () => {
+    it('should resolve unknown tokens from balance cache when the token lookup misses them', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
       const unknownPump = makeUnknownTxToken(PUMP_MINT, '44.473')
 
-      // Module only has PUMP, not USDC
-      const moduleTokens = [
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
       // Balance cache has USDC from user's portfolio
       mockGetQueriesData.mockReturnValue([
@@ -411,7 +426,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc, unknownPump])],
         nextPageToken: undefined
       })
@@ -428,21 +443,15 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[1]!.name).toBe('Pump Token')
     })
 
-    it('should prioritize module tokens over balance cache', async () => {
+    it('should prioritize token-lookup results over balance cache', async () => {
       const network = makeSvmNetwork()
       const unknownToken = makeUnknownTxToken(USDC_MINT, '10')
 
-      // Module returns one name
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin (Official)',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin (Official)' }
+        ])
+      )
 
       // Balance cache has a different name
       mockGetQueriesData.mockReturnValue([
@@ -470,7 +479,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -481,7 +490,6 @@ describe('ActivityService', () => {
         account: {} as any
       })
 
-      // Module source should win
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('USDC')
       expect(result.transactions[0]!.tokens[0]!.name).toBe(
         'USD Coin (Official)'
@@ -495,7 +503,7 @@ describe('ActivityService', () => {
         '999'
       )
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -509,9 +517,43 @@ describe('ActivityService', () => {
       expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
     })
 
-    it('should handle module.getTokens failure gracefully and still try balance cache', async () => {
+    it('does not resolve tokens when the response map is keyed with a lowercased address (regression guard: Solana addresses are case-sensitive)', async () => {
+      const network = makeSvmNetwork()
+      const unknownToken = makeUnknownTxToken(USDC_MINT, '0.1')
+
+      // A lowercased key is what the old (buggy) key-building logic produced
+      // and what the real server never returns for Solana -- this must NOT
+      // match.
+      mockPostV1TokenLookup.mockResolvedValueOnce({
+        data: {
+          data: {
+            [`${SOLANA_CAIP2_ID}-${USDC_MINT.toLowerCase()}`]: {
+              symbol: 'USDC',
+              name: 'USD Coin'
+            }
+          }
+        }
+      })
+
+      const module = makeModule({
+        transactions: [makeTx([unknownToken])],
+        nextPageToken: undefined
+      })
+      mockLoadModuleByNetwork.mockResolvedValue(module)
+
+      const result = await service.getActivities({
+        network,
+        account: {} as any
+      })
+
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe('Unknown')
+    })
+
+    it('should handle token-lookup failure gracefully and still try balance cache', async () => {
       const network = makeSvmNetwork()
       const unknownUsdc = makeUnknownTxToken(USDC_MINT, '0.1')
+
+      mockPostV1TokenLookup.mockRejectedValueOnce(new Error('API error'))
 
       // Balance cache has USDC
       mockGetQueriesData.mockReturnValue([
@@ -539,12 +581,10 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownUsdc])],
         nextPageToken: undefined
       })
-      // Simulate getTokens failure
-      module.getTokens.mockRejectedValue(new Error('API error'))
       mockLoadModuleByNetwork.mockResolvedValue(module)
 
       const result = await service.getActivities({
@@ -562,18 +602,13 @@ describe('ActivityService', () => {
       const knownToken = makeKnownTxToken(USDC_MINT, 'USDC', '10')
       const unknownToken = makeUnknownTxToken(PUMP_MINT, '44')
 
-      const moduleTokens = [
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [makeTx([knownToken, unknownToken])],
         nextPageToken: undefined
       })
@@ -618,7 +653,7 @@ describe('ActivityService', () => {
         ]
       ])
 
-      const module = makeModule([], {
+      const module = makeModule({
         transactions: [makeTx([unknownToken])],
         nextPageToken: undefined
       })
@@ -639,26 +674,14 @@ describe('ActivityService', () => {
       const tx1 = makeTx([makeUnknownTxToken(USDC_MINT, '5')])
       const tx2 = makeTx([makeUnknownTxToken(PUMP_MINT, '100')])
 
-      const moduleTokens = [
-        {
-          address: USDC_MINT,
-          symbol: 'USDC',
-          name: 'USD Coin',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        },
-        {
-          address: PUMP_MINT,
-          symbol: 'PUMP',
-          name: 'Pump Token',
-          type: TokenType.SPL,
-          contractType: TokenType.SPL,
-          decimals: 6
-        }
-      ]
+      mockPostV1TokenLookup.mockResolvedValueOnce(
+        makeLookupResponse([
+          { address: USDC_MINT, symbol: 'USDC', name: 'USD Coin' },
+          { address: PUMP_MINT, symbol: 'PUMP', name: 'Pump Token' }
+        ])
+      )
 
-      const module = makeModule(moduleTokens, {
+      const module = makeModule({
         transactions: [tx1, tx2],
         nextPageToken: 'page2'
       })

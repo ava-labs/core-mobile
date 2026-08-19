@@ -26,15 +26,16 @@ import {
   RECURRING_UNLIMITED_ORDERS_SENTINEL
 } from '@avalabs/fusion-sdk'
 import type { Network } from '@avalabs/core-chains-sdk'
-import type { NetworkContractToken } from '@avalabs/vm-module-types'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
-import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
+import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
+import { tokenLookupKey } from 'common/utils/tokenLookup'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network/slice'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { formatTokenAmount } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'common/utils/toast'
@@ -95,7 +96,7 @@ type ResolvedToken = {
 function resolveTokenInfo(
   address: string,
   network: Network | undefined,
-  contractTokens: readonly NetworkContractToken[]
+  tokens: { [key: string]: TokenInfo }
 ): ResolvedToken {
   const isNative = address.toLowerCase() === ERC_ZERO_ADDRESS.toLowerCase()
   if (isNative && network) {
@@ -105,17 +106,17 @@ function resolveTokenInfo(
       logoUri: network.networkToken.logoUri
     }
   }
-  const lower = address.toLowerCase()
-  const match = contractTokens.find(t => t.address.toLowerCase() === lower)
+  if (!network) {
+    return { symbol: shortenAddress(address), decimals: null }
+  }
+  const caip2Id = getCaip2ChainId(network.chainId)
+  const match = tokens[tokenLookupKey(caip2Id, address)]
   if (match) {
-    const decimals =
-      'decimals' in match && typeof match.decimals === 'number'
-        ? match.decimals
-        : null
+    const decimals = match.meta?.decimals?.[caip2Id]
     return {
       symbol: match.symbol ?? shortenAddress(address),
-      decimals,
-      logoUri: match.logoUri
+      decimals: typeof decimals === 'number' ? decimals : null,
+      logoUri: match.meta?.logoUri ?? undefined
     }
   }
   return { symbol: shortenAddress(address), decimals: null }
@@ -175,7 +176,7 @@ type ScheduleAction = (
 type ScheduleCardProps = {
   schedule: RecurringOrder
   network: Network | undefined
-  contractTokens: readonly NetworkContractToken[]
+  tokens: { [key: string]: TokenInfo }
   onRemove: ScheduleAction
   onPause: ScheduleAction
   onResume: ScheduleAction
@@ -202,7 +203,7 @@ type ScheduleCardProps = {
 function ScheduleCard({
   schedule: s,
   network,
-  contractTokens,
+  tokens,
   onRemove,
   onPause,
   onResume,
@@ -270,12 +271,12 @@ function ScheduleCard({
   }))
 
   const fromToken = useMemo(
-    () => resolveTokenInfo(s.tokenIn, network, contractTokens),
-    [s.tokenIn, network, contractTokens]
+    () => resolveTokenInfo(s.tokenIn, network, tokens),
+    [s.tokenIn, network, tokens]
   )
   const toToken = useMemo(
-    () => resolveTokenInfo(s.tokenOut, network, contractTokens),
-    [s.tokenOut, network, contractTokens]
+    () => resolveTokenInfo(s.tokenOut, network, tokens),
+    [s.tokenOut, network, tokens]
   )
 
   // A `nextExecutionAt` in the past means the order was just resumed (or the
@@ -598,8 +599,6 @@ export function RecurringSchedulesScreen({
     staleTime: 0
   })
 
-  const contractTokens = useNetworkContractTokens(activeNetwork)
-
   const cancel = useCancelRecurringSchedule()
   const pause = usePauseRecurringSchedule()
   const resume = useResumeRecurringSchedule()
@@ -634,6 +633,29 @@ export function RecurringSchedulesScreen({
   // placeholder. In that case let the scroll content grow to fill the modal so
   // the placeholder can be vertically centered instead of pinned near the top.
   const isEmpty = manageableCount === 0
+
+  // Resolve every visible row's tokenIn/tokenOut via the token-aggregator
+  // lookup (one request per unique token, via useQueries) instead of
+  // pulling the active network's whole contract-token catalog.
+  const tokenLookupIds = useMemo(() => {
+    if (!activeNetwork) return []
+    // `caip2Id` is optional on Network -- the hardcoded consts set it, but
+    // proxy- and DeBank-sourced networks may not, so derive it as a fallback.
+    const caip2Id =
+      activeNetwork.caip2Id ?? getCaip2ChainId(activeNetwork.chainId)
+    const addresses = new Set<string>()
+    for (const s of manageableSchedules) {
+      if (s.tokenIn.toLowerCase() !== ERC_ZERO_ADDRESS.toLowerCase()) {
+        addresses.add(s.tokenIn)
+      }
+      if (s.tokenOut.toLowerCase() !== ERC_ZERO_ADDRESS.toLowerCase()) {
+        addresses.add(s.tokenOut)
+      }
+    }
+    return Array.from(addresses, address => ({ caip2Id, address }))
+  }, [activeNetwork, manageableSchedules])
+
+  const { data: tokenLookupData } = useTokenLookup(tokenLookupIds)
 
   // Scroll the deep-linked card into view. Triggered by the card's own
   // `onLayout` so we don't fire before the card has been measured (which
@@ -898,7 +920,7 @@ export function RecurringSchedulesScreen({
           key={s.orderId}
           schedule={s}
           network={activeNetwork}
-          contractTokens={contractTokens}
+          tokens={tokenLookupData}
           onRemove={handleRemove}
           onPause={handlePause}
           onResume={handleResume}
