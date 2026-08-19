@@ -13,7 +13,6 @@ import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
@@ -48,10 +47,7 @@ export const useActivityFilterAndSearch = ({
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
 
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
+  const { filteredTokenList } = useSearchableTokenList({})
 
   const networkFilters: ActivityNetworkFilter[] = useMemo(() => {
     return enabledNetworks.map(network => ({

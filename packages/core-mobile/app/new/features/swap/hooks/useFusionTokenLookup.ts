@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { tokenIds } from 'consts/tokenIds'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
+import {
+  normalizeLookupAddress,
+  tokenLookupKey
+} from 'common/utils/tokenLookup'
 import type {
   Caip2IdAddressPair,
   InternalId
@@ -35,13 +39,11 @@ const toLookupEntry = (
   caip2Id?: string
 ): Caip2IdAddressPair | InternalId =>
   isRawAddress(id) && caip2Id
-    ? { caip2Id, address: id.toLowerCase() }
+    ? { caip2Id, address: normalizeLookupAddress(caip2Id, id) }
     : { internalId: normalizeId(id) }
 
-// Build the map key matching tokenToKey in useTokensWithPrice
 const toTokensKey = (id: string, caip2Id?: string): string => {
-  if (isRawAddress(id) && caip2Id)
-    return `${caip2Id.toLowerCase()}-${id.toLowerCase()}`
+  if (isRawAddress(id) && caip2Id) return tokenLookupKey(caip2Id, id)
   return normalizeId(id)
 }
 
