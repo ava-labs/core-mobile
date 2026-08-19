@@ -203,6 +203,10 @@ export const SelectAmount = ({
       )
     }
 
+    const balanceInCurrency = Number(
+      token?.tokenWithBalance.balanceCurrencyDisplayValue
+    )
+
     return (
       <View
         sx={{
@@ -220,8 +224,7 @@ export const SelectAmount = ({
           }}>
           Balance:{' '}
           {formatCurrency({
-            amount:
-              Number(token?.tokenWithBalance.balanceCurrencyDisplayValue) ?? 0
+            amount: Number.isFinite(balanceInCurrency) ? balanceInCurrency : 0
           })}{' '}
           {selectedCurrency}
         </Text>

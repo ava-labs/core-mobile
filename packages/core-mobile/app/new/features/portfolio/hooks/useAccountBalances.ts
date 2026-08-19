@@ -96,19 +96,26 @@ export const createBalanceBatcher = (
   }
 }
 
-export const balanceKey = (
-  account: Account | undefined,
-  network: Network[] | undefined,
+export const balanceKey = ({
+  account,
+  networks,
+  filterOutDustUtxos,
+  currency
+}: {
+  account: Account | undefined
+  networks: Network[] | undefined
   filterOutDustUtxos: boolean
-) =>
+  currency: string
+}) =>
   [
     ReactQueryKeys.ACCOUNT_BALANCE,
     account?.id,
-    network
+    networks
       ?.map(n => n.chainId)
       .sort()
       .join(','),
-    filterOutDustUtxos
+    filterOutDustUtxos,
+    currency.toLowerCase()
   ] as const
 
 /**
@@ -125,20 +132,27 @@ export const getCachedBalancesWithFlagFallback = ({
   client,
   account,
   networks,
-  filterOutDustUtxos
+  filterOutDustUtxos,
+  currency
 }: {
   client: QueryClient
   account: Account | undefined
   networks: Network[] | undefined
   filterOutDustUtxos: boolean
+  currency: string
 }): AdjustedNormalizedBalancesForAccount[] | undefined => {
   const exact = client.getQueryData(
-    balanceKey(account, networks, filterOutDustUtxos)
+    balanceKey({ account, networks, filterOutDustUtxos, currency })
   ) as AdjustedNormalizedBalancesForAccount[] | undefined
   if (exact !== undefined) return exact
 
   return client.getQueryData(
-    balanceKey(account, networks, !filterOutDustUtxos)
+    balanceKey({
+      account,
+      networks,
+      filterOutDustUtxos: !filterOutDustUtxos,
+      currency
+    })
   ) as AdjustedNormalizedBalancesForAccount[] | undefined
 }
 
@@ -177,11 +191,12 @@ export function useAccountBalances(
   const enabled = !isNotReady
 
   // Identifies the exact set of networks this account is currently fetching
-  // balances for. Mirrors the inputs of `balanceKey` (minus `filterOutDustUtxos`,
-  // tracked separately below) so the "has this fetch attempt settled" latch
-  // below resets whenever react-query would hand us a genuinely different
-  // query (new account, or the enabled-network set changed) rather than a
-  // routine background refetch of the same query.
+  // balances for. Mirrors the inputs of `balanceKey` (minus `filterOutDustUtxos`
+  // and `currency`, tracked separately below) so the "has this fetch attempt
+  // settled" latch below resets whenever react-query would hand us a genuinely
+  // different query (new account, the enabled-network set changed, or the
+  // selected currency changed) rather than a routine background refetch of the
+  // same query.
   const networksKey = useMemo(
     () =>
       enabledNetworks
@@ -199,14 +214,24 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account, enabledNetworks, filterOutDustUtxos),
+    queryKey: balanceKey({
+      account,
+      networks: enabledNetworks,
+      filterOutDustUtxos,
+      currency
+    }),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
     queryFn: async () => {
       if (isNotReady) return []
 
-      const queryKey = balanceKey(account, enabledNetworks, filterOutDustUtxos)
+      const queryKey = balanceKey({
+        account,
+        networks: enabledNetworks,
+        filterOutDustUtxos,
+        currency
+      })
 
       // Progressive per-chain cache writes only matter on a cold load, where
       // the user is staring at an empty screen. On a background refetch the
@@ -293,11 +318,13 @@ export function useAccountBalances(
   // dep key actually changed, not on every thaw. CP-14918.
   const lastResetKeyRef = useRef<string | null>(null)
   useEffect(() => {
-    const resetKey = `${account?.id ?? ''}|${networksKey}|${filterOutDustUtxos}`
+    const resetKey = `${
+      account?.id ?? ''
+    }|${networksKey}|${filterOutDustUtxos}|${currency}`
     if (lastResetKeyRef.current === resetKey) return
     lastResetKeyRef.current = resetKey
     setHasSettledFetch(false)
-  }, [account?.id, networksKey, filterOutDustUtxos])
+  }, [account?.id, networksKey, filterOutDustUtxos, currency])
 
   useEffect(() => {
     if (!isFetching && data !== undefined) {

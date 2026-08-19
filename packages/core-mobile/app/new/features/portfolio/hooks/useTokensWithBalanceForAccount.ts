@@ -83,12 +83,14 @@ export function getTokensWithBalanceForAccountFromCache({
   account,
   networks,
   isDeveloperMode,
-  filterOutDustUtxos
+  filterOutDustUtxos,
+  currency
 }: {
   account?: Account
   networks: Networks
   isDeveloperMode: boolean
   filterOutDustUtxos: boolean
+  currency: string
 }): AdjustedLocalTokenWithBalance[] {
   if (!account) return []
 
@@ -96,7 +98,8 @@ export function getTokensWithBalanceForAccountFromCache({
     client: queryClient,
     account,
     networks: Object.values(networks),
-    filterOutDustUtxos
+    filterOutDustUtxos,
+    currency
   })?.filter(balance => balance.accountId === account.id)
 
   if (!results) return []

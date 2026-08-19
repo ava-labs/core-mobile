@@ -10,6 +10,7 @@ import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { getCachedBalancesWithFlagFallback } from 'features/portfolio/hooks/useAccountBalances'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import { getTokensByNetworkFromCache } from './getTokensByNetworkFromCache'
@@ -82,12 +83,14 @@ class WalletGetNetworkStateHandler
     const activeAccount = selectActiveAccount(state)
 
     const filterOutDustUtxos = selectIsFilterSmallUtxosActive(state)
+    const currency = selectSelectedCurrency(state)
 
     const cachedBalancesForAccount = getCachedBalancesWithFlagFallback({
       client: queryClient,
       account: activeAccount,
       networks: enabledNetworks,
-      filterOutDustUtxos
+      filterOutDustUtxos,
+      currency
     })
 
     const networks = enabledNetworks.map(network => {
