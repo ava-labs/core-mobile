@@ -1,4 +1,4 @@
-import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
+import { TokenType } from '@avalabs/vm-module-types'
 import { useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -6,7 +6,6 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import { isTokenVisible } from 'store/balance/utils'
 import { selectEnabledChainIds } from 'store/network'
 import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
-import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useAccountBalances } from '../../features/portfolio/hooks/useAccountBalances'
@@ -35,14 +34,12 @@ const isNotDisabled =
     enabledChainIds.includes(token.networkChainId)
 
 export function useSearchableTokenList({
-  tokens,
   hideZeroBalance = true,
   hideBlacklist = true,
   hideDisabled = true,
   hideNft = true,
   chainId
 }: {
-  tokens?: NetworkContractToken[]
   hideZeroBalance?: boolean
   hideBlacklist?: boolean
   hideDisabled?: boolean
@@ -56,33 +53,6 @@ export function useSearchableTokenList({
   refetch: () => void
   isRefetching: boolean
 } {
-  const allNetworkTokens = useMemo(() => {
-    if (tokens === undefined) return []
-
-    // Zero-balance contract tokens get thrown away by `isGreaterThanZero`
-    // anyway when `hideZeroBalance` is set -- skipping the merge/filter/sort
-    // here is output-identical and removes a ~56k-token map. CP-14918.
-    if (hideZeroBalance) return []
-
-    return (
-      tokens.map(token => {
-        return {
-          ...token,
-          ...('chainId' in token && { networkChainId: token.chainId }),
-          localId: getLocalTokenId(token),
-          balance: 0n,
-          balanceInCurrency: 0,
-          balanceDisplayValue: '0',
-          balanceCurrencyDisplayValue: '0',
-          priceInCurrency: 0,
-          marketCap: 0,
-          change24: 0,
-          vol24: 0
-        } as LocalTokenWithBalance
-      }) ?? []
-    )
-  }, [tokens, hideZeroBalance])
-
   const [searchText, setSearchText] = useState('')
   const tokenVisibility = useSelector(selectTokenVisibility)
   const activeAccount = useSelector(selectActiveAccount)
@@ -94,20 +64,7 @@ export function useSearchableTokenList({
   })
   const { refetch, isRefetching } = useAccountBalances(activeAccount)
 
-  // 1. merge tokens with balance with the remaining
-  // zero balance tokens from avalanche and ethereum networks
-  const mergedTokens = useMemo(() => {
-    const tokensWithBalanceIDs: Record<string, boolean> = {}
-
-    tokensWithBalance.forEach(token => {
-      tokensWithBalanceIDs[token.localId.toLowerCase()] = true
-    })
-
-    const remainingNetworkTokens = allNetworkTokens.filter(
-      token => !tokensWithBalanceIDs[token.localId.toLowerCase()]
-    )
-    return [...tokensWithBalance, ...remainingNetworkTokens]
-  }, [allNetworkTokens, tokensWithBalance])
+  const mergedTokens = tokensWithBalance
 
   // 2. filter tokens by balance, blacklist and search text
   const tokensFiltered = useMemo(() => {
