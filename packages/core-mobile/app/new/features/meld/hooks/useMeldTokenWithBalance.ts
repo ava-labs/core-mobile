@@ -35,7 +35,11 @@ export const useMeldTokenWithBalance = ({
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const tokensWithBalance = useTokensWithBalanceForAccount({ account })
-  const contractTokenMap = useMeldContractTokenMap()
+  const selectedCurrencies = useMemo(
+    () => (meldToken ? [meldToken] : []),
+    [meldToken]
+  )
+  const contractTokenMap = useMeldContractTokenMap(selectedCurrencies)
   const includeZeroBalance =
     category === ServiceProviderCategories.CRYPTO_ONRAMP
 
