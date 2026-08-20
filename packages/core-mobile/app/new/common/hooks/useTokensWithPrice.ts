@@ -8,18 +8,12 @@ import {
   type TokenLookupWithPriceInfoResponse
 } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { tokenToKey } from 'common/utils/tokenLookup'
 
 export type TokenWithPriceData =
   TokenLookupWithPriceInfoResponse['data'][string]
 
 const STALE_TIME = 30 * 1000 // 30 seconds
-
-export const tokenToKey = (token: Caip2IdAddressPair | InternalId): string => {
-  if ('internalId' in token) {
-    return token.internalId.toLowerCase()
-  }
-  return `${token.caip2Id.toLowerCase()}:${token.address.toLowerCase()}`
-}
 
 /**
  * Fetches price and metadata for a list of tokens from the token aggregator.

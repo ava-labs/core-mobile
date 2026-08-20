@@ -15,12 +15,9 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import GlacierService from 'services/glacier/GlacierService'
 import type { Transaction } from 'store/transaction/types'
 import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
-import {
-  postV1TokenLookup,
-  type Caip2IdAddressPair
-} from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
-import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { type Caip2IdAddressPair } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenLookupKey } from 'common/utils/tokenLookup'
+import { lookupTokens } from 'common/utils/tokenLookupRequest'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 import { convertCChainAtomicTransaction } from './utils/convertCChainAtomicTransaction'
@@ -191,11 +188,8 @@ export class ActivityService {
         caip2Id,
         address
       }))
-      const response = await postV1TokenLookup({
-        client: tokenAggregatorApi,
-        body: { tokens }
-      })
-      const data = response.data?.data ?? {}
+
+      const { data } = await lookupTokens(tokens)
 
       for (const address of addresses) {
         const info = data[tokenLookupKey(caip2Id, address)]
