@@ -126,11 +126,13 @@ export const useMeldSupportedCryptoCurrencies = ({
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const tokensWithBalance = useTokensWithBalanceForAccount({ account })
-  const contractTokenMap = useMeldContractTokenMap(
-    cryptoCurrencies ?? NO_CURRENCIES
-  )
   const includeZeroBalance =
     category === ServiceProviderCategories.CRYPTO_ONRAMP
+  // Only the zero-balance path reads this map, so off-ramp asks for nothing and
+  // skips the lookup request entirely.
+  const contractTokenMap = useMeldContractTokenMap(
+    includeZeroBalance ? cryptoCurrencies ?? NO_CURRENCIES : NO_CURRENCIES
+  )
 
   return useMemo(() => {
     if (cryptoCurrencies === undefined) return []

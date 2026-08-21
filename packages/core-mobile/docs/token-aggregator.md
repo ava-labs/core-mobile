@@ -10,7 +10,7 @@ and why the app is not (yet) 100% on the v2 API. Written during CP-14936
 (`/v1/tokens` via the proxy's `/tokens?evmChainId=` and `/solana-tokens`, and
 the proxy `/tokenlist` route) return ~57k rows for C-Chain and were the root
 cause of repeated memory/render regressions (CP-14934, CP-14918, CP-14936).
-`Module.getTokens()` from the vm-modules wraps exactly those routes — do not
+`module.getTokens()` from the vm-modules wraps exactly those routes — do not
 add new callers. Resolve tokens with the targeted endpoints below instead.
 
 ## What mobile uses, and where
@@ -36,11 +36,10 @@ equivalent:
 1. **No batch lookup on v2.** `/v2/tokens`'s `address` filter takes one
    address per request; `/v1/token/lookup` accepts N tokens in one POST.
    `ActivityService` uses that batching today (one POST for a transaction
-   batch's unknown mints). The `useTokenLookup` hook currently issues one
-   request per unique token (per-token React Query caching), so for those
-   consumers v2 would be parity on request count — but moving them would
-   foreclose ever batching them, and the hook can adopt batching without an
-   API change.
+   batch's unknown mints), and `useTokenLookup` coalesces its per-token React
+   Query entries into one batched POST per tick
+   (`common/utils/tokenLookupQueue.ts`, CP-14963; chunked above 500 tokens).
+   Moving those consumers to v2 would turn one request into N.
 2. **No `internalId` resolution on v2.** Cross-chain canonical tokens (e.g.
    USDC, BTC.b) are addressed by `internalId`; only the lookup endpoint
    accepts those. v2 filters are address/symbol/name only.
@@ -56,7 +55,7 @@ batch-lookup with internalId support, v2 price/markets), not app work.
   server lowercases EVM (`eip155:`) addresses but **preserves case for Solana**
   caip2Ids and base58 addresses. A lowercased Solana address returns no result
   at all. `normalizeLookupAddress` / `tokenLookupKey` in
-  `app/new/common/hooks/useTokenLookup.ts` are the single source of truth for
+  `app/new/common/utils/tokenLookup.ts` are the single source of truth for
   this — never hand-build these keys.
 - **Lookup entries** carry decimals under `meta.decimals[caip2Id]` and logo
   under `meta.logoUri`; there is no `contractType`.
