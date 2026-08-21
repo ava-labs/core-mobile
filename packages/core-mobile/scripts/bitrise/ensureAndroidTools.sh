@@ -26,11 +26,19 @@ else
 fi
 echo "Using sdkmanager: $SDKMANAGER"
 
+# Accept licenses BEFORE any install so installs never prompt. Installs below
+# run with stdin closed (< /dev/null) instead of `yes |`: under pipefail, `yes`
+# dies with SIGPIPE (exit 141) when sdkmanager exits first, failing the build
+# even when the install succeeded. With licenses pre-accepted, a prompt should
+# never appear; if one ever does, the install fails fast instead of hanging.
+echo "Accepting Android SDK licenses..."
+yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+
 if [ -d "$SDK_ROOT/ndk/$NDK_VERSION" ]; then
     echo "NDK $NDK_VERSION already installed at $SDK_ROOT/ndk/$NDK_VERSION, skipping install."
 else
     echo "NDK $NDK_VERSION not found, installing..."
-    yes | "$SDKMANAGER" "ndk;$NDK_VERSION"
+    "$SDKMANAGER" "ndk;$NDK_VERSION" < /dev/null
     echo "NDK $NDK_VERSION installed."
 fi
 
@@ -52,7 +60,7 @@ if [ -d "$SDK_ROOT/platforms/android-$COMPILE_SDK_VERSION" ]; then
     echo "SDK platform android-$COMPILE_SDK_VERSION already installed, skipping install."
 else
     echo "SDK platform android-$COMPILE_SDK_VERSION not found, installing..."
-    yes | "$SDKMANAGER" "platforms;android-$COMPILE_SDK_VERSION"
+    "$SDKMANAGER" "platforms;android-$COMPILE_SDK_VERSION" < /dev/null
     echo "SDK platform android-$COMPILE_SDK_VERSION installed."
 fi
 
@@ -60,10 +68,8 @@ if [ -d "$SDK_ROOT/build-tools/$BUILD_TOOLS_VERSION" ]; then
     echo "Build-tools $BUILD_TOOLS_VERSION already installed, skipping install."
 else
     echo "Build-tools $BUILD_TOOLS_VERSION not found, installing..."
-    yes | "$SDKMANAGER" "build-tools;$BUILD_TOOLS_VERSION"
+    "$SDKMANAGER" "build-tools;$BUILD_TOOLS_VERSION" < /dev/null
     echo "Build-tools $BUILD_TOOLS_VERSION installed."
 fi
 
-echo "Accepting Android SDK licenses..."
-yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
 echo "Done ensuring Android SDK components."
