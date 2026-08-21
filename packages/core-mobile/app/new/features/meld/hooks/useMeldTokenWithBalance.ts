@@ -17,6 +17,9 @@ import {
 } from '../utils'
 import { useMeldContractTokenMap } from './useMeldContractTokenMap'
 
+// Stable identity so an absent selection doesn't churn the lookup memos.
+const NO_CURRENCIES: CryptoCurrency[] = []
+
 /**
  * Resolves the selected meld token to a token with balance. Deliberately does
  * NOT use useSearchableTokenList: that pipeline rebuilds/filters/sorts the
@@ -35,9 +38,15 @@ export const useMeldTokenWithBalance = ({
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const tokensWithBalance = useTokensWithBalanceForAccount({ account })
-  const contractTokenMap = useMeldContractTokenMap()
   const includeZeroBalance =
     category === ServiceProviderCategories.CRYPTO_ONRAMP
+  // Only the zero-balance path reads this map, so off-ramp asks for nothing and
+  // skips the lookup request entirely.
+  const selectedCurrencies = useMemo(
+    () => (meldToken && includeZeroBalance ? [meldToken] : NO_CURRENCIES),
+    [meldToken, includeZeroBalance]
+  )
+  const contractTokenMap = useMeldContractTokenMap(selectedCurrencies)
 
   return useMemo(() => {
     if (meldToken === undefined) return undefined

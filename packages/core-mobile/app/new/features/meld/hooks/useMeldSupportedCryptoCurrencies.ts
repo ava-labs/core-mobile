@@ -22,6 +22,10 @@ import {
 } from '../utils'
 import { useMeldContractTokenMap } from './useMeldContractTokenMap'
 
+// Stable identity so an absent currency list doesn't churn the lookup memos
+// downstream on every render.
+const NO_CURRENCIES: CryptoCurrency[] = []
+
 type HeldTokenMaps = {
   heldNativeMap: Map<string, LocalTokenWithBalance>
   heldTokenMap: Map<string, LocalTokenWithBalance>
@@ -122,9 +126,13 @@ export const useMeldSupportedCryptoCurrencies = ({
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const tokensWithBalance = useTokensWithBalanceForAccount({ account })
-  const contractTokenMap = useMeldContractTokenMap()
   const includeZeroBalance =
     category === ServiceProviderCategories.CRYPTO_ONRAMP
+  // Only the zero-balance path reads this map, so off-ramp asks for nothing and
+  // skips the lookup request entirely.
+  const contractTokenMap = useMeldContractTokenMap(
+    includeZeroBalance ? cryptoCurrencies ?? NO_CURRENCIES : NO_CURRENCIES
+  )
 
   return useMemo(() => {
     if (cryptoCurrencies === undefined) return []
