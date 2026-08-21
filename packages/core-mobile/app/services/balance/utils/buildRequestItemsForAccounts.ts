@@ -15,6 +15,7 @@ import {
   GetBalancesRequestBody,
   SvmGetBalancesRequestItem
 } from 'utils/api/generated/balanceApi.client'
+import { chunkArray } from 'common/utils/chunkArray'
 
 /**
  * Maximum number of EVM references allowed per request item
@@ -300,26 +301,5 @@ export const buildRequestItemsForAccounts = ({
     ...evmItems
   ]
 
-  // Pack items into batches of max 5
-  const finalBatches: GetBalancesRequestBody['data'][] = []
-  for (let i = 0; i < allItems.length; i += MAX_NAMESPACES_PER_BATCH) {
-    const chunk = allItems.slice(i, i + MAX_NAMESPACES_PER_BATCH)
-    if (chunk.length > 0) {
-      finalBatches.push(chunk)
-    }
-  }
-
-  return finalBatches
-}
-
-const chunkArray = <T>(arr: T[], size: number): T[][] => {
-  if (size <= 0) return []
-  const chunks: T[][] = []
-  for (let i = 0; i < arr.length; i += size) {
-    const chunk = arr.slice(i, i + size)
-    if (chunk.length > 0) {
-      chunks.push(chunk)
-    }
-  }
-  return chunks
+  return chunkArray(allItems, MAX_NAMESPACES_PER_BATCH)
 }
