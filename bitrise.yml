@@ -31,11 +31,18 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        # restore/save-gradle-cache only persist dependencies, never task outputs
+        # (build-cache-1 is excluded in the step source), so org.gradle.caching
+        # needs this separate pair. Content-addressed cache -> rolling prefix key.
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -45,6 +52,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: $ANDROID_GRADLE_ARGS
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -85,11 +98,15 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -99,6 +116,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -142,11 +165,15 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -156,6 +183,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -324,7 +357,9 @@ workflows:
     - restore-cache@1:
         title: Restore NPM Cache
         inputs:
-        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
+        - key: |-
+            {{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}
+            {{ .OS }}-{{ .Arch }}-npm-cache-
     - script-runner@0:
         title: Yarn Setup
         inputs:
