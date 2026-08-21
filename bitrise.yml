@@ -36,6 +36,13 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        # restore/save-gradle-cache only persist dependencies, never task outputs
+        # (build-cache-1 is excluded in the step source), so org.gradle.caching
+        # needs this separate pair. Content-addressed cache -> rolling prefix key.
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -45,6 +52,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: $ANDROID_GRADLE_ARGS
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -90,6 +103,10 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -99,6 +116,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -147,6 +170,10 @@ workflows:
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
+    - restore-cache@1:
+        title: Restore Gradle Build Cache
+        inputs:
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -156,6 +183,12 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - save-gradle-cache@1: {}
+    - save-cache@1:
+        title: Save Gradle Build Cache
+        inputs:
+        - is_key_unique: "true"
+        - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
+        - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
