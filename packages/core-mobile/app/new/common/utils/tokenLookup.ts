@@ -1,7 +1,7 @@
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import {
-  Caip2IdAddressPair,
-  InternalId
+  type Caip2IdAddressPair,
+  type InternalId
 } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 
 const EVM_NAMESPACE_PREFIX = `${BlockchainNamespace.EIP155}:`

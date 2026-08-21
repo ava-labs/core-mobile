@@ -703,6 +703,22 @@ describe('ActivityService', () => {
       expect(result.transactions[CHUNK_SIZE]!.tokens[0]!.symbol).toBe('Unknown')
     })
 
+    it('warns when a chunk fails, since lookupTokens resolves rather than throwing', async () => {
+      const { default: Logger } = jest.requireMock('utils/Logger') as {
+        default: { warn: jest.Mock }
+      }
+      const addresses = mints(CHUNK_SIZE + 1)
+      mockPostV1TokenLookup
+        .mockResolvedValueOnce(makeLookupResponse([]))
+        .mockRejectedValueOnce(new Error('INVALID_PAYLOAD'))
+
+      await activityFor(addresses)
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Token lookup failed for 1 of 501 tokens')
+      )
+    })
+
     it('chunks unique mints rather than transactions', async () => {
       echoEveryRequestedToken()
       const repeated = Array.from({ length: 600 }, (_, index) =>

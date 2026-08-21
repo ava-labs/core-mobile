@@ -192,5 +192,28 @@ describe('lookupTokens', () => {
         failedTokens: [pair(1)]
       })
     })
+
+    it('treats a resolved response carrying an error as failed, not absent', async () => {
+      postV1TokenLookup.mockResolvedValue({
+        error: { message: 'Internal Server Error' }
+      })
+
+      const { data, failedTokens } = await lookupTokens([pair(1)])
+
+      expect(data).toEqual({})
+      expect(failedTokens).toEqual([pair(1)])
+    })
+
+    it('keeps a fulfilled chunk when another chunk resolves with an error', async () => {
+      const tokens = pairs(TOKEN_LOOKUP_CHUNK_SIZE + 1)
+      postV1TokenLookup
+        .mockResolvedValueOnce(resolved({ 'key-a': { symbol: 'AAA' } }))
+        .mockResolvedValueOnce({ error: 'boom' })
+
+      const { data, failedTokens } = await lookupTokens(tokens)
+
+      expect(data).toEqual({ 'key-a': { symbol: 'AAA' } })
+      expect(failedTokens).toEqual(tokens.slice(TOKEN_LOOKUP_CHUNK_SIZE))
+    })
   })
 })

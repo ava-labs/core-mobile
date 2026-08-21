@@ -189,7 +189,16 @@ export class ActivityService {
         address
       }))
 
-      const { data } = await lookupTokens(tokens)
+      const { data, failedTokens } = await lookupTokens(tokens)
+
+      if (failedTokens.length > 0) {
+        // `lookupTokens` resolves on a chunk failure instead of throwing, so a
+        // partial outage never reaches the catch below. Left unlogged, those
+        // mints would just render as "Unknown" with nothing in telemetry.
+        Logger.warn(
+          `Token lookup failed for ${failedTokens.length} of ${tokens.length} tokens; their symbols stay unresolved`
+        )
+      }
 
       for (const address of addresses) {
         const info = data[tokenLookupKey(caip2Id, address)]
