@@ -587,4 +587,148 @@ describe('ActivityService', () => {
       expect(result.nextPageToken).toBe('page2')
     })
   })
+
+  describe('chunking the token lookup', () => {
+    // The endpoint rejects bodies over 500 tokens with INVALID_PAYLOAD. Before
+    // chunking, one oversized batch failed wholesale and left EVERY symbol in
+    // it as "Unknown", not just the ones past the limit.
+    const CHUNK_SIZE = 500
+
+    const mintAt = (index: number): string =>
+      `Mint${index}AaBbCcDdEeFfGgHhJjKkLmNnPpQqRrSs`
+
+    const mints = (count: number): string[] =>
+      Array.from({ length: count }, (_, index) => mintAt(index))
+
+    const symbolFor = (address: string): string => `SYM-${address}`
+
+    const echoEveryRequestedToken = (): void => {
+      mockPostV1TokenLookup.mockImplementation(
+        (options: { body: { tokens: Array<{ address: string }> } }) =>
+          Promise.resolve(
+            makeLookupResponse(
+              options.body.tokens.map(({ address }) => ({
+                address,
+                symbol: symbolFor(address),
+                name: symbolFor(address)
+              }))
+            )
+          )
+      )
+    }
+
+    const activityFor = async (
+      addresses: string[]
+    ): Promise<Awaited<ReturnType<ActivityService['getActivities']>>> => {
+      const module = makeModule({
+        transactions: addresses.map(address =>
+          makeTx([makeUnknownTxToken(address, '1')])
+        ),
+        nextPageToken: undefined
+      })
+      mockLoadModuleByNetwork.mockResolvedValue(module)
+
+      return service.getActivities({
+        network: makeSvmNetwork(),
+        account: {} as any
+      })
+    }
+
+    const requestedTokenCounts = (): number[] =>
+      mockPostV1TokenLookup.mock.calls.map(
+        ([options]) => options.body.tokens.length
+      )
+
+    it.each([
+      [1, 1],
+      [CHUNK_SIZE - 1, 1],
+      [CHUNK_SIZE, 1],
+      [CHUNK_SIZE + 1, 2],
+      [CHUNK_SIZE * 2, 2],
+      [CHUNK_SIZE * 2 + 1, 3]
+    ])(
+      'splits %i unknown mints into %i request(s)',
+      async (mintCount, expectedRequests) => {
+        echoEveryRequestedToken()
+
+        await activityFor(mints(mintCount))
+
+        expect(mockPostV1TokenLookup).toHaveBeenCalledTimes(expectedRequests)
+        expect(requestedTokenCounts().every(count => count <= CHUNK_SIZE)).toBe(
+          true
+        )
+        expect(
+          requestedTokenCounts().reduce((sum, count) => sum + count, 0)
+        ).toBe(mintCount)
+      }
+    )
+
+    it('resolves symbols from every chunk, not just the first', async () => {
+      echoEveryRequestedToken()
+      const addresses = mints(CHUNK_SIZE + 10)
+
+      const result = await activityFor(addresses)
+
+      // First, last, and the one straddling the chunk boundary.
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[0]!)
+      )
+      expect(result.transactions[CHUNK_SIZE]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[CHUNK_SIZE]!)
+      )
+      expect(result.transactions[CHUNK_SIZE + 9]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[CHUNK_SIZE + 9]!)
+      )
+    })
+
+    it('keeps the surviving chunk when another chunk fails', async () => {
+      const addresses = mints(CHUNK_SIZE + 1)
+      mockPostV1TokenLookup
+        .mockResolvedValueOnce(
+          makeLookupResponse(
+            addresses.slice(0, CHUNK_SIZE).map(address => ({
+              address,
+              symbol: symbolFor(address),
+              name: symbolFor(address)
+            }))
+          )
+        )
+        .mockRejectedValueOnce(new Error('INVALID_PAYLOAD'))
+
+      const result = await activityFor(addresses)
+
+      expect(result.transactions[0]!.tokens[0]!.symbol).toBe(
+        symbolFor(addresses[0]!)
+      )
+      expect(result.transactions[CHUNK_SIZE]!.tokens[0]!.symbol).toBe('Unknown')
+    })
+
+    it('warns when a chunk fails, since lookupTokens resolves rather than throwing', async () => {
+      const { default: Logger } = jest.requireMock('utils/Logger') as {
+        default: { warn: jest.Mock }
+      }
+      const addresses = mints(CHUNK_SIZE + 1)
+      mockPostV1TokenLookup
+        .mockResolvedValueOnce(makeLookupResponse([]))
+        .mockRejectedValueOnce(new Error('INVALID_PAYLOAD'))
+
+      await activityFor(addresses)
+
+      expect(Logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Token lookup failed for 1 of 501 tokens')
+      )
+    })
+
+    it('chunks unique mints rather than transactions', async () => {
+      echoEveryRequestedToken()
+      const repeated = Array.from({ length: 600 }, (_, index) =>
+        index % 2 === 0 ? USDC_MINT : PUMP_MINT
+      )
+
+      await activityFor(repeated)
+
+      expect(mockPostV1TokenLookup).toHaveBeenCalledTimes(1)
+      expect(requestedTokenCounts()).toEqual([2])
+    })
+  })
 })

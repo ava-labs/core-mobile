@@ -1,4 +1,8 @@
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
+import {
+  type Caip2IdAddressPair,
+  type InternalId
+} from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 
 const EVM_NAMESPACE_PREFIX = `${BlockchainNamespace.EIP155}:`
 
@@ -27,3 +31,17 @@ export const tokenLookupKey = (caip2Id: string, address: string): string => {
   const key = `${caip2Id}-${address}`
   return isEvmCaip2Id(caip2Id) ? key.toLowerCase() : key
 }
+
+export const tokenToKey = (token: Caip2IdAddressPair | InternalId): string => {
+  if ('internalId' in token) {
+    return token.internalId.toLowerCase()
+  }
+  return `${token.caip2Id.toLowerCase()}:${token.address.toLowerCase()}`
+}
+
+export const tokenLookupResponseKey = (
+  token: Caip2IdAddressPair | InternalId
+): string =>
+  'internalId' in token
+    ? token.internalId.toLowerCase()
+    : tokenLookupKey(token.caip2Id, token.address)
