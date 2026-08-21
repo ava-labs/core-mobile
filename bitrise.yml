@@ -31,10 +31,10 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
     - android-build@1:
         inputs:
@@ -85,10 +85,10 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
     - android-build@1:
         inputs:
@@ -142,10 +142,10 @@ workflows:
               #!/usr/bin/env bash
               set -ex
               sudo apt-get install -y build-essential autoconf automake libtool tar
-    - install-missing-android-tools@3:
+    - script-runner@0:
+        title: Ensure Android SDK components
         inputs:
-        - ndk_version: 27.1.12297006
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - file_path: scripts/bitrise/ensureAndroidTools.sh
     - restore-gradle-cache@1: {}
     - android-build@1:
         inputs:
@@ -324,7 +324,9 @@ workflows:
     - restore-cache@1:
         title: Restore NPM Cache
         inputs:
-        - key: '{{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}'
+        - key: |-
+            {{ .OS }}-{{ .Arch }}-npm-cache-{{ checksum "yarn.lock" }}
+            {{ .OS }}-{{ .Arch }}-npm-cache-
     - script-runner@0:
         title: Yarn Setup
         inputs:
