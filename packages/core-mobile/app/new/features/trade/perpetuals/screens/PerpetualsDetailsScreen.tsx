@@ -14,6 +14,7 @@ import React, { useCallback, useState } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
 import { MarketChart } from '../components/MarketChart'
 import { MarketDetailsHeader } from '../components/MarketDetailsHeader'
+import { MarketHistory } from '../components/MarketHistory'
 import { MarketStatistics } from '../components/MarketStatistics'
 import { PerpsGeoRestrictionWarning } from '../components/PerpsGeoRestrictionWarning'
 import { useHyperliquidMarketContext } from '../hooks/useHyperliquidMarketContext'
@@ -208,6 +209,8 @@ export const PerpetualsDetailsScreen = (): JSX.Element => {
       <View sx={{ marginTop: 16, marginHorizontal: 16 }}>
         <MarketStatistics assetCtx={assetCtx} />
       </View>
+
+      <MarketHistory coin={coin} />
     </ScrollScreen>
   )
 }
