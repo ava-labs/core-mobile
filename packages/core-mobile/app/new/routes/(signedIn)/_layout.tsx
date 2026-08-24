@@ -117,6 +117,10 @@ export default function WalletLayout(): JSX.Element {
                 options={secondaryModalScreensOptions}
               />
               <Stack.Screen
+                name="(modals)/keystoneDeprecation"
+                options={secondaryModalScreensOptions}
+              />
+              <Stack.Screen
                 name="(modals)/receive"
                 options={modalScreensOptions}
               />

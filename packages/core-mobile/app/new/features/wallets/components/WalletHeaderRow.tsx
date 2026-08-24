@@ -7,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
+import { useKeystoneDeprecation } from 'features/keystone/hooks/useKeystoneDeprecation'
 import { WalletDisplayData } from 'common/types'
 import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
@@ -58,6 +59,12 @@ const WalletHeaderRow = ({
   )
   const { data: walletBalancesData, isError: isBalancesError } =
     useWalletBalances(accountIds)
+
+  // Read inside the row rather than taking it as a prop: `arePropsEqual` below
+  // does a field-level compare and would swallow a prop-borne flag change.
+  const { shouldWarnForWalletType, openDeprecationInfo } =
+    useKeystoneDeprecation()
+  const isDeprecated = shouldWarnForWalletType(wallet.type)
 
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const enabledNetworksMap = useSelector(selectEnabledNetworksMap)
@@ -141,6 +148,20 @@ const WalletHeaderRow = ({
                       borderRadius: 100
                     }}
                   />
+                )}
+                {isDeprecated && (
+                  <TouchableOpacity
+                    testID={`keystone_deprecated_badge__${wallet.name}`}
+                    accessibilityRole="button"
+                    accessibilityLabel="Keystone support has ended"
+                    hitSlop={10}
+                    onPress={openDeprecationInfo}>
+                    <Icons.Alert.Error
+                      color={colors.$textDanger}
+                      width={16}
+                      height={16}
+                    />
+                  </TouchableOpacity>
                 )}
               </View>
               <Text
