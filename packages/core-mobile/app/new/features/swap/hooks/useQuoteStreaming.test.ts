@@ -129,32 +129,38 @@ describe('useQuoteStreaming', () => {
   // A bare chain-alias address (e.g. from an unvalidated Ledger reply, see
   // CP-14964) is truthy, so only the isBareChainPrefix check stops it here.
   it('does not create a quoter when toAddress is a bare chain prefix', () => {
+    const onNoQuotesError = jest.fn()
+
     const { result } = renderHook(() =>
       useQuoteStreaming({
         ...baseParams,
         toAddress: 'P-',
-        fromAmount: 100n
+        fromAmount: 100n,
+        onNoQuotesError
       })
     )
 
     // A corrupted address must surface as a real error, not fail silently —
-    // it gets the same alert + Sentry treatment as a stream-level no-quotes.
+    // it gets the same alert as a stream-level no-quotes result.
     expect(mockGetQuoter).not.toHaveBeenCalled()
     expect(result.current.error).not.toBeNull()
-    expect(mockCaptureMessage).toHaveBeenCalledTimes(1)
+    expect(onNoQuotesError).toHaveBeenCalledTimes(1)
   })
 
   it('does not create a quoter when fromAddress is a bare chain prefix', () => {
+    const onNoQuotesError = jest.fn()
+
     const { result } = renderHook(() =>
       useQuoteStreaming({
         ...baseParams,
         fromAddress: 'P-',
-        fromAmount: 100n
+        fromAmount: 100n,
+        onNoQuotesError
       })
     )
 
     expect(mockGetQuoter).not.toHaveBeenCalled()
     expect(result.current.error).not.toBeNull()
-    expect(mockCaptureMessage).toHaveBeenCalledTimes(1)
+    expect(onNoQuotesError).toHaveBeenCalledTimes(1)
   })
 })

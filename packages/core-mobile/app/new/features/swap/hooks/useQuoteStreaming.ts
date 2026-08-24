@@ -8,7 +8,7 @@ import { SentryTag } from 'services/sentry/types'
 import { isBareChainPrefix } from 'common/utils/stripAddressPrefix'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
-import { fusionErrors, FusionQuoteError } from '../utils/fusionErrors'
+import { fusionErrors, isNoQuotesError } from '../utils/fusionErrors'
 import { logSdkError } from '../utils/fusionLogger'
 import {
   useBestQuote,
@@ -36,44 +36,15 @@ interface UseQuoteStreamingResult {
   error: Error | null
 }
 
-/**
- * Handles a quoter-creation failure (side effect moved out of the useMemo).
- * The bare-prefix guard below reuses fusionErrors.noQuotes() so it gets the
- * same alert + Sentry treatment as a genuine stream-level no-quotes result,
- * rather than failing silently. Split out of the subscription effect to keep
- * that effect's cognitive complexity down.
- */
-function handleQuoterCreationError(params: {
-  error: Error
-  setError: (error: Error | null) => void
-  clearQuotes: () => void
-  onNoQuotesError?: (retry: () => void) => void
+// Wraps the predicate so the subscription effect stays under the
+// cognitive-complexity limit.
+function alertIfNoQuotes(
+  error: Error,
+  onNoQuotesError: UseQuoteStreamingParams['onNoQuotesError'],
   retry: () => void
-  fromAddress: string | undefined
-  toAddress: string | undefined
-}): void {
-  const {
-    error,
-    setError,
-    clearQuotes,
-    onNoQuotesError,
-    retry,
-    fromAddress,
-    toAddress
-  } = params
-  setError(error)
-  clearQuotes()
-
-  if (error instanceof FusionQuoteError && error.reason === 'no-quotes') {
+): void {
+  if (isNoQuotesError(error)) {
     onNoQuotesError?.(retry)
-    SentryService.captureMessage(
-      'Fusion quoter: bare chain-alias address (CP-14964)',
-      {
-        fromAddressIsBarePrefix: isBareChainPrefix(fromAddress),
-        toAddressIsBarePrefix: isBareChainPrefix(toAddress)
-      },
-      { source: SentryTag.FusionSdk }
-    )
   }
 }
 
@@ -193,19 +164,11 @@ export function useQuoteStreaming(
   useEffect(() => {
     // Handle error from quoter creation (side effect moved from useMemo)
     if (quoterResult.error) {
-      handleQuoterCreationError({
-        error: quoterResult.error,
-        setError,
-        clearQuotes: () => {
-          setBestQuote(null)
-          setAllQuotes([])
-          setIsLoading(false)
-        },
-        onNoQuotesError,
-        retry,
-        fromAddress,
-        toAddress
-      })
+      setError(quoterResult.error)
+      setBestQuote(null)
+      setAllQuotes([])
+      setIsLoading(false)
+      alertIfNoQuotes(quoterResult.error, onNoQuotesError, retry)
       return
     }
 
@@ -293,9 +256,7 @@ export function useQuoteStreaming(
     onNoQuotesError,
     retry,
     allowZeroAmount,
-    fromAmount,
-    fromAddress,
-    toAddress
+    fromAmount
   ])
 
   return {
