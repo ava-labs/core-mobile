@@ -19,10 +19,15 @@ import bs58 from 'bs58'
 import { DERIVATION_PATHS, LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { Curve } from 'utils/publicKeys'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { BluetoothState } from 'services/bluetooth/types'
 import BluetoothService from 'services/bluetooth/BluetoothService'
+import {
+  assertDeviceBech32Address,
+  assertDeviceEvmAddress,
+  assertDevicePublicKey,
+  assertDeviceSolanaAddress
+} from './validateDeviceAddress'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -811,6 +816,9 @@ class LedgerService {
   }
 
   // Get all addresses from Avalanche app (EVM, AVM, Bitcoin)
+  // Pre-existing 4-arg signature; disabled rather than reshaped here because
+  // changing it would touch every caller and is unrelated to CP-14964.
+  // eslint-disable-next-line max-params
   async getAllAddresses(
     startIndex: number,
     count: number,
@@ -834,7 +842,9 @@ class LedgerService {
         addresses.push({
           id: `${LedgerAddressType.EVM}-${i}`,
           type: LedgerAddressType.EVM,
-          address: getAddress(evmAddressResponse.address),
+          address: getAddress(
+            assertDeviceEvmAddress('getETHAddress', evmAddressResponse)
+          ),
           derivationPath: evmPath
         })
 
@@ -848,8 +858,10 @@ class LedgerService {
         // underlying curve.
         const evmAvalancheAddressResponse =
           await avalancheApp.getAddressAndPubKey(evmPath, false, networkHrp)
-        const coreEthAddress = `C-${stripAddressPrefix(
-          evmAvalancheAddressResponse.address
+        const coreEthAddress = `C-${assertDeviceBech32Address(
+          'getAddressAndPubKey(coreEth)',
+          evmAvalancheAddressResponse,
+          networkHrp
         )}`
         addresses.push({
           id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-${i}`,
@@ -874,8 +886,10 @@ class LedgerService {
             networkHrp
           )
 
-        const addressWithoutPrefix = stripAddressPrefix(
-          avalancheChainAddressResponse.address
+        const addressWithoutPrefix = assertDeviceBech32Address(
+          'getAddressAndPubKey(XP)',
+          avalancheChainAddressResponse,
+          networkHrp
         )
 
         addresses.push({
@@ -1042,9 +1056,10 @@ class LedgerService {
       // Remove 'm/' prefix if present (Ledger expects path without prefix)
       const ledgerDerivationPath = derivationPath.replace(/^m\//, '')
       const result = await solanaApp.getAddress(ledgerDerivationPath, false)
+      const address = assertDeviceSolanaAddress('getAddress(solana)', result)
 
       // Convert the Buffer to base58 format (Solana address format)
-      const solanaAddress = bs58.encode(new Uint8Array(result.address))
+      const solanaAddress = bs58.encode(new Uint8Array(address))
 
       Logger.info('Successfully got Solana address', solanaAddress)
 
@@ -1077,8 +1092,20 @@ class LedgerService {
       derivationPath
     )
 
-    const findAddress = (type: LedgerAddressType): string =>
-      addresses.find(addr => addr.type === type)?.address || ''
+    // Fails closed rather than defaulting to ''. An empty string here reads as
+    // a legitimately absent address downstream, which is how a corrupt XP
+    // address reached persistence unnoticed (CP-14964).
+    const findAddress = (type: LedgerAddressType): string => {
+      const address = addresses.find(addr => addr.type === type)?.address
+
+      if (!address) {
+        throw new Error(
+          `Ledger did not return a ${type} address for account ${accountIndex}`
+        )
+      }
+
+      return address
+    }
 
     const evmAddress = findAddress(LedgerAddressType.EVM)
     const coreEthAddress = findAddress(LedgerAddressType.AVALANCHE_CORE_ETH)
@@ -1163,6 +1190,14 @@ class LedgerService {
         false,
         'avax'
       )
+      const evmPublicKey = assertDevicePublicKey(
+        'getAddressAndPubKey(evm)',
+        evmKeyResponse
+      )
+      const avalanchePublicKey = assertDevicePublicKey(
+        'getAddressAndPubKey(avalanche)',
+        avalancheKeyResponse
+      )
 
       return {
         addresses: {
@@ -1178,12 +1213,12 @@ class LedgerService {
         },
         publicKeys: [
           {
-            key: evmKeyResponse.publicKey.toString('hex'),
+            key: evmPublicKey.toString('hex'),
             derivationPath: evmPath,
             curve: Curve.SECP256K1
           },
           {
-            key: avalancheKeyResponse.publicKey.toString('hex'),
+            key: avalanchePublicKey.toString('hex'),
             derivationPath: avalanchePath,
             curve: Curve.SECP256K1
           }
@@ -1365,10 +1400,18 @@ class LedgerService {
             false,
             'avax'
           )
+          const evmPublicKey = assertDevicePublicKey(
+            'getAddressAndPubKey(evm)',
+            evmResponse
+          )
+          const avalanchePublicKey = assertDevicePublicKey(
+            'getAddressAndPubKey(avalanche)',
+            avalancheResponse
+          )
 
           results.push({
-            evmPubKey: evmResponse.publicKey.toString('hex'),
-            avalanchePubKey: avalancheResponse.publicKey.toString('hex'),
+            evmPubKey: evmPublicKey.toString('hex'),
+            avalanchePubKey: avalanchePublicKey.toString('hex'),
             evmPath,
             avalanchePath
           })

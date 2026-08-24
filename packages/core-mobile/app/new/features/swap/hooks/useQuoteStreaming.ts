@@ -5,9 +5,10 @@ import { NetworkWithCaip2ChainId } from 'store/network'
 import { isSdkError } from '@avalabs/fusion-sdk'
 import SentryService from 'services/sentry/SentryService'
 import { SentryTag } from 'services/sentry/types'
+import { isBareChainPrefix } from 'common/utils/stripAddressPrefix'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
-import { fusionErrors } from '../utils/fusionErrors'
+import { fusionErrors, FusionQuoteError } from '../utils/fusionErrors'
 import { logSdkError } from '../utils/fusionLogger'
 import {
   useBestQuote,
@@ -33,6 +34,47 @@ interface UseQuoteStreamingParams {
 interface UseQuoteStreamingResult {
   isLoading: boolean
   error: Error | null
+}
+
+/**
+ * Handles a quoter-creation failure (side effect moved out of the useMemo).
+ * The bare-prefix guard below reuses fusionErrors.noQuotes() so it gets the
+ * same alert + Sentry treatment as a genuine stream-level no-quotes result,
+ * rather than failing silently. Split out of the subscription effect to keep
+ * that effect's cognitive complexity down.
+ */
+function handleQuoterCreationError(params: {
+  error: Error
+  setError: (error: Error | null) => void
+  clearQuotes: () => void
+  onNoQuotesError?: (retry: () => void) => void
+  retry: () => void
+  fromAddress: string | undefined
+  toAddress: string | undefined
+}): void {
+  const {
+    error,
+    setError,
+    clearQuotes,
+    onNoQuotesError,
+    retry,
+    fromAddress,
+    toAddress
+  } = params
+  setError(error)
+  clearQuotes()
+
+  if (error instanceof FusionQuoteError && error.reason === 'no-quotes') {
+    onNoQuotesError?.(retry)
+    SentryService.captureMessage(
+      'Fusion quoter: bare chain-alias address (CP-14964)',
+      {
+        fromAddressIsBarePrefix: isBareChainPrefix(fromAddress),
+        toAddressIsBarePrefix: isBareChainPrefix(toAddress)
+      },
+      { source: SentryTag.FusionSdk }
+    )
+  }
 }
 
 /**
@@ -91,6 +133,14 @@ export function useQuoteStreaming(
       return { quoter: null, error: null }
     }
 
+    // Unlike the empty-input case above, a bare chain-alias address (e.g.
+    // 'P-') is a corrupted Ledger reply, not the user still typing (CP-14964).
+    // A null error here would be indistinguishable from that in-progress-input
+    // case and drop the quotes-unavailable alert + Sentry capture below.
+    if (isBareChainPrefix(fromAddress) || isBareChainPrefix(toAddress)) {
+      return { quoter: null, error: fusionErrors.noQuotes() }
+    }
+
     try {
       Logger.info('Creating Quoter instance', { attempt: retryCount + 1 })
 
@@ -143,10 +193,19 @@ export function useQuoteStreaming(
   useEffect(() => {
     // Handle error from quoter creation (side effect moved from useMemo)
     if (quoterResult.error) {
-      setError(quoterResult.error)
-      setBestQuote(null)
-      setAllQuotes([])
-      setIsLoading(false)
+      handleQuoterCreationError({
+        error: quoterResult.error,
+        setError,
+        clearQuotes: () => {
+          setBestQuote(null)
+          setAllQuotes([])
+          setIsLoading(false)
+        },
+        onNoQuotesError,
+        retry,
+        fromAddress,
+        toAddress
+      })
       return
     }
 
@@ -234,7 +293,9 @@ export function useQuoteStreaming(
     onNoQuotesError,
     retry,
     allowZeroAmount,
-    fromAmount
+    fromAmount,
+    fromAddress,
+    toAddress
   ])
 
   return {
