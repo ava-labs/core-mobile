@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
-  selectIsKeystoneBlocked,
+  selectIsKeystoneOnboardingBlocked,
   selectIsLedgerSupportBlocked
 } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -14,7 +14,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate } = useRouter()
-  const isKeystoneBlocked = useSelector(selectIsKeystoneBlocked)
+  const isKeystoneBlocked = useSelector(selectIsKeystoneOnboardingBlocked)
   const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
 
   const handleEnterRecoveryPhrase = useCallback((): void => {
