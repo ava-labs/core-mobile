@@ -1,7 +1,7 @@
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import { KeystoneSignerParams } from 'features/keystone/services/keystoneParamsCache'
-import { useNavigation } from 'expo-router'
+import { useNavigation, useRouter } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { UREncoder } from '@ngraveio/bc-ur'
 import { Space } from 'common/components/Space'
@@ -25,6 +25,7 @@ const KeystoneSignerScreen = ({
   params: KeystoneSignerParams
 }): JSX.Element => {
   const navigation = useNavigation()
+  const { replace } = useRouter()
   const { request, responseURTypes, onApprove, onReject } = params
   const [currentStep, setCurrentStep] = useState(KeystoneSignerStep.QR)
   const [signningUr, setSigningUr] = useState<string>('(null)')
@@ -50,9 +51,15 @@ const KeystoneSignerScreen = ({
 
   useEffect(() => {
     if (isKeystoneBlocked) {
-      rejectAndClose()
+      // Reject, then REPLACE this modal with the deprecation explainer rather
+      // than going back: a bare reject surfaces only the generic signing
+      // failure, which reads as a bug instead of an intentional sunset.
+      // `replace` also keeps the `beforeRemove` POP listener above from firing
+      // a second onReject.
+      onReject()
+      replace('/keystoneDeprecation')
     }
-  }, [isKeystoneBlocked, rejectAndClose])
+  }, [isKeystoneBlocked, onReject, replace])
 
   useEffect(() => {
     const onBackPress = (): boolean => {

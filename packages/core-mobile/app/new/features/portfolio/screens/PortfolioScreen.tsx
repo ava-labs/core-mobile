@@ -30,6 +30,7 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
+import { KeystoneDeprecationBanner } from 'features/portfolio/components/KeystoneDeprecationBanner'
 import { StuckFundsBanner } from 'features/swap/components/StuckFundsBanner'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
@@ -357,6 +358,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
           isDeveloperMode={isDeveloperMode}
           renderMaskView={renderMaskView}
           backgroundColor={theme.colors.$surfacePrimary}
+        />
+
+        {/* Self-hides unless the active wallet is Keystone and the master
+            `keystone` flag is off. */}
+        <KeystoneDeprecationBanner
+          sx={{ marginHorizontal: 16, marginTop: 12 }}
         />
 
         {/* Stuck-funds banner — stranded cross-chain AVAX. Self-hides (and
