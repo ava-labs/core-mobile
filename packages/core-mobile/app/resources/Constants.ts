@@ -17,6 +17,12 @@ export const DOCS_BRIDGE_FAQS_URL =
 export const DOCS_KEYSTONE_SIGNING_ERROR_URL =
   'https://support.core.app/en/articles/13251923-keystone-why-can-t-i-send-avax-on-the-x-or-p-chain'
 
+export const DOCS_KEYSTONE_DEPRECATION_URL =
+  'https://support.core.app/en/articles/16559552-does-core-support-keystone-wallets'
+
+// TODO: confirm the final sunset date with product before this ships.
+export const KEYSTONE_DEPRECATION_DATE = 'September 1st'
+
 export const BUNDLE_ID_IOS = 'org.avalabs.corewallet'
 export const BUNDLE_ID_ANDROID = 'com.avaxwallet'
 export const BUNDLE_ID = Platform.select({
