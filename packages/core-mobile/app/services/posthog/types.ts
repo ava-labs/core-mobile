@@ -23,6 +23,10 @@ export enum FeatureGates {
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
   KEYSTONE = 'keystone',
+  // Keystone sunset phase 1: gates only NEW Keystone wallet imports during
+  // onboarding. The `keystone` gate above remains the master kill-switch —
+  // turning IT off also auto-rejects signing for existing Keystone wallets.
+  KEYSTONE_ONBOARDING = 'keystone-onboarding',
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',

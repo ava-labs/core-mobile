@@ -4,16 +4,26 @@ import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import {
   NativeStackNavigationOptions,
+  Redirect,
   useNavigation,
   useRootNavigationState
 } from 'expo-router'
 import { NavigationState } from 'expo-router/react-navigation'
 import { Platform } from 'react-native'
+import { useStore } from 'react-redux'
+import { RootState } from 'store/types'
+import { selectIsKeystoneOnboardingBlocked } from 'store/posthog'
 
 export default function KeystoneOnboardingLayout(): JSX.Element {
   const navigation = useNavigation()
   const [currentPage, setCurrentPage] = useState(0)
   const rootState: NavigationState = useRootNavigationState()
+  const store = useStore<RootState>()
+  // Latched at mount: a mid-flow flag flip must not eject a user who has
+  // already persisted a wallet secret (createPin stores it before login)
+  const [isKeystoneOnboardingBlocked] = useState(() =>
+    selectIsKeystoneOnboardingBlocked(store.getState())
+  )
 
   const screens = useMemo(() => KEYSTONE_ONBOARDING_SCREENS, [])
 
@@ -44,6 +54,11 @@ export default function KeystoneOnboardingLayout(): JSX.Element {
       navigation.getParent()?.setOptions(navigationOptions)
     }
   }, [navigation, renderPageControl])
+
+  // accessWallet only hides the entry button; this also covers deep links
+  if (isKeystoneOnboardingBlocked) {
+    return <Redirect href="/accessWallet" />
+  }
 
   return (
     <Stack
