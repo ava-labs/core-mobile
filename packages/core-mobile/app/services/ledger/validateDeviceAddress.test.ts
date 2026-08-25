@@ -168,6 +168,22 @@ describe('assertDeviceEvmAddress', () => {
       assertDeviceEvmAddress('getETHAddress', { address: `P-${VALID_BODY}` })
     ).toThrow(/getETHAddress/)
   })
+
+  it('accepts an all-lowercase address', () => {
+    const lowercased = VALID_EVM.toLowerCase()
+    expect(
+      assertDeviceEvmAddress('getETHAddress', { address: lowercased })
+    ).toBe(lowercased)
+  })
+
+  // viem's isAddress defaults to strict:true, which enforces EIP-55 on
+  // mixed-case input -- stricter than the old hex-shape-only regex.
+  it('throws on a mixed-case address with a bad EIP-55 checksum', () => {
+    const badChecksum = `0x449b3ffFE66378227DbBd05539B6542E5cA75A28`
+    expect(() =>
+      assertDeviceEvmAddress('getETHAddress', { address: badChecksum })
+    ).toThrow(/getETHAddress/)
+  })
 })
 
 describe('assertDevicePublicKey', () => {
@@ -196,6 +212,15 @@ describe('assertDevicePublicKey', () => {
         returnCode: LedgerReturnCode.SUCCESS
       })
     ).toThrow(/16 bytes/)
+  })
+
+  it('reports a truncated public key as an invalid public key, not an address', () => {
+    expect(() =>
+      assertDevicePublicKey('getAddressAndPubKey(evm)', {
+        publicKey: Buffer.alloc(16).fill(2),
+        returnCode: LedgerReturnCode.SUCCESS
+      })
+    ).toThrow(/invalid public key/)
   })
 
   it('throws on an uncompressed (65-byte) public key', () => {

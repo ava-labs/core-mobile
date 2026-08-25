@@ -1,14 +1,6 @@
-/**
- * Validation for address replies from the Avalanche Ledger app.
- *
- * `getAllAddresses` used to trust these replies unconditionally, so a reply
- * carrying an empty address string was persisted as a bare chain alias
- * (`P-${''}` === `'P-'`). That is truthy, so it survived every downstream
- * emptiness guard and only surfaced much later as an unexplained "No routes"
- * on a C->P transfer. See CP-14964.
- */
 import { utils } from '@avalabs/avalanchejs'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { isAddress } from 'viem'
 import { LedgerReturnCode } from './types'
 
 /**
@@ -22,10 +14,10 @@ export interface LedgerAddressReply {
   errorMessage?: string
 }
 
-const EVM_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/
+type ReplySubject = 'address' | 'public key'
 
-const fail = (call: string, reason: string): never => {
-  throw new Error(`Ledger ${call} returned an invalid address: ${reason}`)
+const fail = (call: string, subject: ReplySubject, reason: string): never => {
+  throw new Error(`Ledger ${call} returned an invalid ${subject}: ${reason}`)
 }
 
 const assertReturnCode = (call: string, reply?: LedgerAddressReply): void => {
@@ -56,13 +48,17 @@ export const assertDeviceBech32Address = (
   const address = reply?.address
 
   if (typeof address !== 'string') {
-    return fail(call, `expected a string, got ${typeof address}`)
+    return fail(call, 'address', `expected a string, got ${typeof address}`)
   }
 
   const body = stripAddressPrefix(address)
 
   if (body.length === 0) {
-    return fail(call, `empty address body (raw: ${JSON.stringify(address)})`)
+    return fail(
+      call,
+      'address',
+      `empty address body (raw: ${JSON.stringify(address)})`
+    )
   }
 
   let hrp: string
@@ -71,6 +67,7 @@ export const assertDeviceBech32Address = (
   } catch {
     return fail(
       call,
+      'address',
       `not a valid bech32 address (raw: ${JSON.stringify(address)})`
     )
   }
@@ -78,6 +75,7 @@ export const assertDeviceBech32Address = (
   if (expectedHrp !== undefined && hrp !== expectedHrp) {
     return fail(
       call,
+      'address',
       `expected hrp "${expectedHrp}", got "${hrp}" (raw: ${JSON.stringify(
         address
       )})`
@@ -100,13 +98,14 @@ export const assertDeviceEvmAddress = (
   const address = reply?.address
 
   if (typeof address !== 'string') {
-    return fail(call, `expected a string, got ${typeof address}`)
+    return fail(call, 'address', `expected a string, got ${typeof address}`)
   }
 
-  if (!EVM_ADDRESS_REGEX.test(address)) {
+  if (!isAddress(address)) {
     return fail(
       call,
-      `not a 20-byte hex address (raw: ${JSON.stringify(address)})`
+      'address',
+      `not a valid EVM address (raw: ${JSON.stringify(address)})`
     )
   }
 
@@ -137,12 +136,17 @@ export const assertDevicePublicKey = (
   const publicKey = reply?.publicKey
 
   if (!Buffer.isBuffer(publicKey)) {
-    return fail(call, `expected a Buffer, got ${typeof publicKey}`)
+    return fail(
+      call,
+      'public key',
+      `expected a Buffer, got ${typeof publicKey}`
+    )
   }
 
   if (publicKey.length !== COMPRESSED_SECP256K1_PUBLIC_KEY_LENGTH) {
     return fail(
       call,
+      'public key',
       `expected a ${COMPRESSED_SECP256K1_PUBLIC_KEY_LENGTH}-byte compressed public key, got ${publicKey.length} bytes`
     )
   }
@@ -171,12 +175,13 @@ export const assertDeviceSolanaAddress = (
   const address = reply?.address
 
   if (!Buffer.isBuffer(address)) {
-    return fail(call, `expected a Buffer, got ${typeof address}`)
+    return fail(call, 'address', `expected a Buffer, got ${typeof address}`)
   }
 
   if (address.length !== SOLANA_ADDRESS_LENGTH) {
     return fail(
       call,
+      'address',
       `expected a ${SOLANA_ADDRESS_LENGTH}-byte address, got ${address.length} bytes`
     )
   }

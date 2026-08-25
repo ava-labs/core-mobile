@@ -654,8 +654,6 @@ class AvalancheWalletService {
     isTestnet: boolean
     xpAddresses: string[]
   }): Promise<Avalanche.AddressWallet> {
-    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-
     if (!account.addressPVM || isBareChainPrefix(account.addressPVM)) {
       throw new Error('P-Chain address not available for account')
     }
@@ -663,6 +661,8 @@ class AvalancheWalletService {
     if (!account.addressCoreEth || isBareChainPrefix(account.addressCoreEth)) {
       throw new Error('CoreEth address not available for account')
     }
+
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
     return new Avalanche.AddressWallet(
       account.addressC,
