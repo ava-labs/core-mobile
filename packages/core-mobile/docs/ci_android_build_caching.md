@@ -6,24 +6,30 @@ Context for the caching setup introduced in CP-14966 (PR #4041), which cut `andr
 
 | Piece | Where | What it does |
 | --- | --- | --- |
-| `org.gradle.caching=true` | `android/gradle.properties` | Enables Gradle task-output caching (Kotlin/Java compile, resource processing) |
-| `Restore/Save Gradle Build Cache` steps | `bitrise.yml` (all 3 Android build workflows) | Persist `~/.gradle/caches/build-cache-1` between CI builds on a rolling prefix key |
+| `org.gradle.caching=true` | `android/gradle.properties` | Enables Gradle task-output caching — benefits local dev builds and same-build dedupe in CI (cross-build persistence deferred to CP-14974, see below) |
 | `Restore/Save Gradle Cache` steps (pre-existing) | `bitrise.yml` | Persist dependencies only (jars, modules, wrapper, JDKs) |
 | NPM cache fallback key | `bitrise.yml` `_install-and-set-env` | A `yarn.lock` change restores the previous cache and downloads only the delta |
 | `ensureAndroidTools.sh` | `scripts/bitrise/` | Replaces the `install-missing-android-tools` step (3.5 min Gradle pass → ~4 s); self-heals NDK, SDK platform, and build-tools from the versions pinned in `android/build.gradle` |
 
-Two non-obvious facts that shaped this design:
+## Cross-build task-output persistence: deferred to CP-14974
 
-- **Bitrise's `restore/save-gradle-cache` steps exclude `build-cache-1` by design** (verified in the step source — they persist dependencies only; task outputs are what the paid Bitrise Build Cache add-on covers). `org.gradle.caching=true` does nothing across CI builds without the separate save/restore pair.
-- **The Gradle build cache is content-addressed**, so the build-cache pair uses a rolling prefix key (`gradle-build-cache-`) with no checksum. This also sidesteps the fact that version-code stamping rewrites `app/build.gradle` every build, which makes any checksum-of-gradle-files key unmatchable.
+A `restore-cache`/`save-cache` pair persisting `~/.gradle/caches/build-cache-1` was built and measured on this branch, then **removed before merge**: warm builds reused 1,149 of 2,903 tasks yet moved wall-clock by ~0 min, because the critical path is the CMake/NDK C++ compile (skia, reanimated, quick-crypto, nitro modules), which Gradle's build cache cannot cache. The cached Kotlin/Java tasks were filling other cores in parallel, not the bottleneck. The pair only pays off once ccache shortens the C++ chain, so both ship together under **CP-14974**.
+
+Hard-won facts recorded for that re-add:
+
+- **Bitrise's `restore/save-gradle-cache` steps exclude `build-cache-1` by design** (verified in the step source — they persist dependencies only; task outputs are what the paid Bitrise Build Cache add-on covers). `org.gradle.caching=true` does nothing across CI builds without a separate save/restore-cache pair.
+- **Use a static rolling prefix key** (`{{ .OS }}-{{ .Arch }}-gradle-build-cache-`), no checksum: the Gradle build cache is content-addressed, and version-code stamping rewrites `app/build.gradle` every build, which makes any checksum-of-gradle-files key unmatchable.
+- **Never set `is_key_unique: true` on that save step.** It means "skip saving when this workflow restored the same key" — correct only for checksum-unique keys. With the static key it froze the archive at its first-ever save (proven on builds #9480/#9481: the warm build's save skipped in 1.37s and its new outputs were never persisted).
+- **Concurrency is safe**: archives are immutable blobs and the key is a pointer; parallel builds restore whatever was latest, last writer wins the pointer, and a "losing" build's entries are regenerated and saved next round. Sharing one key across branches is deliberate — content addressing makes a PR branch safely reuse main's outputs.
+- **Growth is self-limiting**: Gradle prunes `build-cache-1` entries unused for 7 days (gc timestamps live inside the cached dir, so cleanup carries across CI builds), and Bitrise expires unused archives.
 
 ## Trade-offs & what to do if something breaks
 
-### Gradle build cache
+### Gradle build cache (`org.gradle.caching=true`)
 
-- Pro: warm builds reuse ~1,100 of ~2,900 task outputs; also speeds up local dev builds.
+- Pro: speeds up local dev builds and deduplicates identical tasks within a CI build. No cross-build persistence in CI until CP-14974.
 - Risk: a task with misdeclared inputs (usually a third-party Gradle plugin) can serve a stale output — the symptom is a *weird build artifact*, not an error, which makes it easy to blame the wrong thing.
-- If it goes wrong: delete the `gradle-build-cache-*` entries in Bitrise → Workflow Editor → Caches and rebuild. Locally, build once with `--no-build-cache` to confirm the cache is the culprit before digging elsewhere.
+- If it goes wrong: locally, build once with `--no-build-cache` to confirm the cache is the culprit before digging elsewhere. In CI each build starts with an empty `build-cache-1`, so stale-output bugs cannot cross builds.
 
 ### NPM cache fallback key
 
@@ -45,4 +51,4 @@ Two non-obvious facts that shaped this design:
 
 ## Known limits / next levers
 
-Warm-cache measurements showed the remaining ~16 min Gradle step is bounded by the CMake/NDK C++ compile (skia, reanimated, quick-crypto, nitro modules), which Gradle's build cache **cannot** cache — 1,149 cached tasks moved wall-clock by roughly nothing. Identified next levers, in order: ccache for the C++ compile, per-destination ABI trimming on E2E workflows (armeabi-v7a is dead weight there), machine-size bump. See CP-14966 comments for the measured data.
+The remaining ~16 min Gradle step is bounded by the CMake/NDK C++ compile. Next levers, in order: **CP-14974** (ccache for the C++ compile + re-adding the build-cache persistence pair per the notes above — they only pay off together), per-destination ABI trimming on E2E workflows (armeabi-v7a is dead weight there), machine-size bump. See CP-14966 comments for the measured data.
