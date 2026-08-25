@@ -402,4 +402,47 @@ describe('WalletService', () => {
       expect(getAtomicUTXOsMock).toHaveBeenCalledTimes(6)
     })
   })
+
+  describe('getReadOnlySigner', () => {
+    // Exercises the real method (unlike the specs above, which spy it away)
+    // so the addressPVM/addressCoreEth guards actually run. Only the network
+    // provider lookup is stubbed; it's an unrelated RPC dependency the guards
+    // don't need.
+    beforeEach(() => {
+      jest
+        .spyOn(NetworkService, 'getAvalancheProviderXP')
+        // @ts-ignore
+        .mockResolvedValue({})
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('throws when addressPVM is a bare chain prefix', async () => {
+      await expect(
+        AvalancheWalletService.getReadOnlySigner({
+          account: {
+            addressPVM: 'P-',
+            addressCoreEth: 'C-avaxvalidbodyaddress'
+          } as Account,
+          isTestnet: true,
+          xpAddresses: []
+        })
+      ).rejects.toThrow('P-Chain address not available for account')
+    })
+
+    it('throws when addressCoreEth is a bare chain prefix', async () => {
+      await expect(
+        AvalancheWalletService.getReadOnlySigner({
+          account: {
+            addressPVM: 'P-avaxvalidbodyaddress',
+            addressCoreEth: 'C-'
+          } as Account,
+          isTestnet: true,
+          xpAddresses: []
+        })
+      ).rejects.toThrow('CoreEth address not available for account')
+    })
+  })
 })

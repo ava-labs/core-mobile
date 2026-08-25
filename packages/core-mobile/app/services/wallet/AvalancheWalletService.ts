@@ -1,5 +1,8 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import {
+  isBareChainPrefix,
+  stripAddressPrefix
+} from 'common/utils/stripAddressPrefix'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
@@ -651,11 +654,15 @@ class AvalancheWalletService {
     isTestnet: boolean
     xpAddresses: string[]
   }): Promise<Avalanche.AddressWallet> {
-    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-
-    if (!account.addressPVM) {
+    if (!account.addressPVM || isBareChainPrefix(account.addressPVM)) {
       throw new Error('P-Chain address not available for account')
     }
+
+    if (!account.addressCoreEth || isBareChainPrefix(account.addressCoreEth)) {
+      throw new Error('CoreEth address not available for account')
+    }
+
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
     return new Avalanche.AddressWallet(
       account.addressC,

@@ -5,9 +5,10 @@ import { NetworkWithCaip2ChainId } from 'store/network'
 import { isSdkError } from '@avalabs/fusion-sdk'
 import SentryService from 'services/sentry/SentryService'
 import { SentryTag } from 'services/sentry/types'
+import { isBareChainPrefix } from 'common/utils/stripAddressPrefix'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
-import { fusionErrors } from '../utils/fusionErrors'
+import { fusionErrors, isNoQuotesError } from '../utils/fusionErrors'
 import { logSdkError } from '../utils/fusionLogger'
 import {
   useBestQuote,
@@ -33,6 +34,18 @@ interface UseQuoteStreamingParams {
 interface UseQuoteStreamingResult {
   isLoading: boolean
   error: Error | null
+}
+
+// Wraps the predicate so the subscription effect stays under the
+// cognitive-complexity limit.
+function alertIfNoQuotes(
+  error: Error,
+  onNoQuotesError: UseQuoteStreamingParams['onNoQuotesError'],
+  retry: () => void
+): void {
+  if (isNoQuotesError(error)) {
+    onNoQuotesError?.(retry)
+  }
 }
 
 /**
@@ -91,6 +104,14 @@ export function useQuoteStreaming(
       return { quoter: null, error: null }
     }
 
+    // Unlike the empty-input case above, a bare chain-alias address (e.g.
+    // 'P-') is a corrupted Ledger reply, not the user still typing (CP-14964).
+    // A null error here would be indistinguishable from that in-progress-input
+    // case and drop the quotes-unavailable alert + Sentry capture below.
+    if (isBareChainPrefix(fromAddress) || isBareChainPrefix(toAddress)) {
+      return { quoter: null, error: fusionErrors.noQuotes() }
+    }
+
     try {
       Logger.info('Creating Quoter instance', { attempt: retryCount + 1 })
 
@@ -147,6 +168,7 @@ export function useQuoteStreaming(
       setBestQuote(null)
       setAllQuotes([])
       setIsLoading(false)
+      alertIfNoQuotes(quoterResult.error, onNoQuotesError, retry)
       return
     }
 
