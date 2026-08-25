@@ -2,6 +2,7 @@ import { utils } from '@avalabs/avalanchejs'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import type Transport from '@ledgerhq/hw-transport'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { SentryTag } from 'services/sentry/types'
 import { LedgerReturnCode } from './types'
 import {
   assertDeviceBech32Address,
@@ -9,6 +10,18 @@ import {
   assertDevicePublicKey,
   assertDeviceSolanaAddress
 } from './validateDeviceAddress'
+
+const mockCaptureMessage = jest.fn()
+jest.mock('services/sentry/SentryService', () => ({
+  __esModule: true,
+  default: {
+    captureMessage: (...args: unknown[]) => mockCaptureMessage(...args)
+  }
+}))
+
+beforeEach(() => {
+  mockCaptureMessage.mockClear()
+})
 
 const VALID_BODY = utils.formatBech32('avax', new Uint8Array(20).fill(7))
 const VALID_EVM = '0x449b3fFFE66378227DbBd05539B6542E5cA75A28'
@@ -42,6 +55,16 @@ describe('assertDeviceBech32Address', () => {
     expect(() =>
       assertDeviceBech32Address('XP', { ...okBech32, address: '' })
     ).toThrow(/XP/)
+  })
+
+  // The address preview must not alter this documented text: previewing an
+  // empty string has to be a no-op or `(raw: "")` would change shape.
+  it('keeps the exact documented text for an empty address', () => {
+    expect(() =>
+      assertDeviceBech32Address('XP', { ...okBech32, address: '' })
+    ).toThrow(
+      'Ledger XP returned an invalid address: empty address body (raw: "")'
+    )
   })
 
   it('throws when the address is only a chain-alias prefix', () => {
@@ -223,6 +246,22 @@ describe('assertDevicePublicKey', () => {
     ).toThrow(/invalid public key/)
   })
 
+  it('reports subject "public key" to Sentry on a truncated key', () => {
+    expect(() =>
+      assertDevicePublicKey('getAddressAndPubKey(evm)', {
+        publicKey: Buffer.alloc(16).fill(2),
+        returnCode: LedgerReturnCode.SUCCESS
+      })
+    ).toThrow()
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      'Ledger device reply failed validation',
+      expect.objectContaining({ subject: 'public key' }),
+      { source: SentryTag.Ledger },
+      ['ledger-reply-validation', 'getAddressAndPubKey(evm)', 'public key']
+    )
+  })
+
   it('throws on an uncompressed (65-byte) public key', () => {
     expect(() =>
       assertDevicePublicKey('getAddressAndPubKey(evm)', {
@@ -248,6 +287,20 @@ describe('assertDevicePublicKey', () => {
         errorMessage: 'Instruction not supported'
       })
     ).toThrow(/6a80/)
+  })
+
+  // getAllAddresses reuses the coreEth getAddressAndPubKey reply's publicKey
+  // to derive the persisted BTC address (CP-14964); the call label here must
+  // match the one LedgerService passes so a truncated/empty key on that reply
+  // fails closed with a message identifying the coreEth call, not the bech32
+  // address check that already runs on the same reply.
+  it('throws on a truncated coreEth public key, identifying the coreEth call', () => {
+    expect(() =>
+      assertDevicePublicKey('getAddressAndPubKey(coreEth)', {
+        publicKey: Buffer.alloc(0),
+        returnCode: LedgerReturnCode.SUCCESS
+      })
+    ).toThrow(/getAddressAndPubKey\(coreEth\)/)
   })
 })
 
@@ -343,5 +396,71 @@ describe('truncated BLE frame', () => {
     expect(() =>
       assertDeviceBech32Address('getAddressAndPubKey(XP)', reply)
     ).toThrow(/empty address body/)
+  })
+
+  // This is the CP-14964 discriminator: publicKey (33B) + hash (20B) present
+  // alongside an empty address means the frame was cut exactly at the address
+  // boundary, distinguishing it from a device/app that legitimately returned
+  // empty — a distinction we previously had zero telemetry to make.
+  it('reports publicKeyLength and hashLength to Sentry', async () => {
+    const reply = await appFor(truncatedFrame).getAddressAndPubKey(
+      "m/44'/9000'/0'/0/0",
+      false,
+      'avax'
+    )
+
+    expect(() =>
+      assertDeviceBech32Address('getAddressAndPubKey(XP)', reply)
+    ).toThrow()
+
+    expect(mockCaptureMessage).toHaveBeenCalledTimes(1)
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      'Ledger device reply failed validation',
+      expect.objectContaining({
+        call: 'getAddressAndPubKey(XP)',
+        subject: 'address',
+        publicKeyLength: PUBLIC_KEY_LENGTH,
+        hashLength: HASH_LENGTH
+      }),
+      { source: SentryTag.Ledger },
+      ['ledger-reply-validation', 'getAddressAndPubKey(XP)', 'address']
+    )
+  })
+})
+
+describe('Sentry telemetry on validation failure', () => {
+  it('reports the stable message and fingerprint for a bech32 failure', () => {
+    expect(() =>
+      assertDeviceBech32Address('XP', { ...okBech32, address: '' })
+    ).toThrow()
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      'Ledger device reply failed validation',
+      expect.objectContaining({ call: 'XP', subject: 'address' }),
+      { source: SentryTag.Ledger },
+      ['ledger-reply-validation', 'XP', 'address']
+    )
+  })
+
+  // A genuine bech32 address can reach this failure branch (e.g. wrong hrp),
+  // and Sentry's scrubber does not redact addresses, so the preview -- not
+  // the full value -- must be what leaves the process.
+  it('truncates a long address in telemetry and in the thrown message', () => {
+    const longAddress = `P-${'a'.repeat(50)}`
+    let thrown: Error | undefined
+
+    try {
+      assertDeviceBech32Address('XP', { ...okBech32, address: longAddress })
+    } catch (error) {
+      thrown = error as Error
+    }
+
+    expect(thrown?.message).toContain('…')
+    expect(thrown?.message).not.toContain(longAddress)
+
+    const lastCall = mockCaptureMessage.mock.calls.at(-1)
+    const context = lastCall?.[1] as { addressPreview?: string }
+    expect(context.addressPreview).not.toBe(longAddress)
+    expect(context.addressPreview?.length).toBeLessThanOrEqual(13)
   })
 })

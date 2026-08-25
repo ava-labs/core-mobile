@@ -44,7 +44,8 @@ export const SentryTag = {
   ProfileApi: 'profile-api',
   GasStation: 'gas-station',
   Proxy: 'proxy',
-  SchemaMigration: 'schemaMigration'
+  SchemaMigration: 'schemaMigration',
+  Ledger: 'ledger'
 } as const
 
 /**
@@ -56,7 +57,8 @@ export const SentryTag = {
 export const AllowedSentryBreadcrumbCategory = {
   ListenerMigration: 'listenerMigration',
   ListenerReconciler: 'listenerReconciler',
-  FeeEstimationUserState: 'feeEstimationUserState'
+  FeeEstimationUserState: 'feeEstimationUserState',
+  LedgerApdu: 'ledgerApdu'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =

@@ -3,6 +3,8 @@ import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import * as Sentry from '@sentry/react-native'
+import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
 import {
   getAddressDerivationPath,
   handleLedgerError
@@ -102,7 +104,9 @@ class LedgerService {
         await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
       }
       try {
-        return await originalExchange(apdu)
+        const reply = await originalExchange(apdu)
+        this.recordApduBreadcrumb(apdu, reply)
+        return reply
       } catch (error) {
         // If error is still due to busy transport, reconnect
         if (
@@ -118,11 +122,52 @@ class LedgerService {
           await new Promise(res =>
             setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
           )
-          return await originalExchange(apdu)
+          const reply = await originalExchange(apdu)
+          this.recordApduBreadcrumb(apdu, reply)
+          return reply
         }
         // Other errors should be thrown immediately
         throw error
       }
+    }
+  }
+
+  // Frame-metadata-only breadcrumb (never payload bytes) for every APDU
+  // exchange. Sentry attaches recent breadcrumbs to any error captured
+  // afterwards, so a later validateDeviceAddress capture carries the reply
+  // length and status word — the signal that distinguishes a truncated
+  // transport frame from a device/app that legitimately returned empty (CP-14964).
+  private recordApduBreadcrumb(apdu: Buffer, reply: Buffer): void {
+    try {
+      Sentry.addBreadcrumb({
+        category: AllowedSentryBreadcrumbCategory.LedgerApdu,
+        level: 'info',
+        data: {
+          cla: (apdu[0] ?? 0).toString(16).padStart(2, '0'),
+          ins: (apdu[1] ?? 0).toString(16).padStart(2, '0'),
+          replyLength: reply.length,
+          statusWord: reply.subarray(-2).toString('hex')
+        }
+      })
+    } catch {
+      // Breadcrumb capture must never break a real APDU exchange.
+    }
+  }
+
+  // Session-global Sentry tags so any later Ledger error (e.g. a
+  // validateDeviceAddress capture) carries the app that produced it —
+  // distinguishes "this Avalanche app version returns empty addresses" from
+  // transport-layer frame corruption (CP-14964).
+  private recordLedgerAppSentryTags(
+    appType: LedgerAppType,
+    version: string
+  ): void {
+    try {
+      const scope = Sentry.getGlobalScope()
+      scope.setTag('ledgerAppType', appType)
+      scope.setTag('ledgerAppVersion', version)
+    } catch {
+      // Tagging must never break the connect/poll flow.
     }
   }
 
@@ -235,6 +280,7 @@ class LedgerService {
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
         this.currentAppVersion = testAppInfo.version
+        this.recordLedgerAppSentryTags(detectedAppType, testAppInfo.version)
       } catch (error) {
         Logger.info(
           'Immediate get current app info failed, will rely on polling'
@@ -406,6 +452,7 @@ class LedgerService {
           this.currentAppType = newAppType
         }
         this.currentAppVersion = appInfo.version
+        this.recordLedgerAppSentryTags(newAppType, appInfo.version)
       } catch (error) {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
@@ -623,6 +670,7 @@ class LedgerService {
         this.currentAppType = detectedAppType
       }
       this.currentAppVersion = appInfo.version
+      this.recordLedgerAppSentryTags(detectedAppType, appInfo.version)
 
       if (this.isAppCompatible(this.currentAppType, appType)) {
         Logger.info(
@@ -863,6 +911,10 @@ class LedgerService {
           evmAvalancheAddressResponse,
           networkHrp
         )}`
+        const coreEthPublicKey = assertDevicePublicKey(
+          'getAddressAndPubKey(coreEth)',
+          evmAvalancheAddressResponse
+        )
         addresses.push({
           id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-${i}`,
           type: LedgerAddressType.AVALANCHE_CORE_ETH,
@@ -909,10 +961,7 @@ class LedgerService {
         // Bitcoin addresses - derive from the Avalanche app public key at the
         // EVM derivation path (matching the browser extension behavior).
         const btcAddress = getBtcAddressFromPubKey(
-          Buffer.from(
-            evmAvalancheAddressResponse.publicKey.toString('hex'),
-            'hex'
-          ),
+          coreEthPublicKey,
           isTestnet ? networks.testnet : networks.bitcoin
         )
 
