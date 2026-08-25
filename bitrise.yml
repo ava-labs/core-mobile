@@ -39,7 +39,11 @@ workflows:
     - restore-cache@1:
         # restore/save-gradle-cache only persist dependencies, never task outputs
         # (build-cache-1 is excluded in the step source), so org.gradle.caching
-        # needs this separate pair. Content-addressed cache -> rolling prefix key.
+        # needs this separate pair. Static key, shared across branches: Gradle's
+        # cache is content-addressed, and the save step updates the key's content
+        # only when the archive checksum changes. Do NOT add is_key_unique here:
+        # with a non-checksum key it makes every post-restore save skip, freezing
+        # the cache at its first-ever contents.
         title: Restore Gradle Build Cache
         inputs:
         - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
@@ -55,7 +59,6 @@ workflows:
     - save-cache@1:
         title: Save Gradle Build Cache
         inputs:
-        - is_key_unique: "true"
         - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
         - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
@@ -119,7 +122,6 @@ workflows:
     - save-cache@1:
         title: Save Gradle Build Cache
         inputs:
-        - is_key_unique: "true"
         - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
         - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
@@ -186,7 +188,6 @@ workflows:
     - save-cache@1:
         title: Save Gradle Build Cache
         inputs:
-        - is_key_unique: "true"
         - key: '{{ .OS }}-{{ .Arch }}-gradle-build-cache-'
         - paths: ~/.gradle/caches/build-cache-1
     - sign-apk@1:
