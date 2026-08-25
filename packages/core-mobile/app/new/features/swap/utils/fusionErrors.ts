@@ -228,6 +228,16 @@ export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
   return error.kind === 'network-fee-only'
 }
 
+/**
+ * Matches more than a genuine empty quote set: the bare chain-alias address
+ * guard in useQuoteStreaming deliberately reuses `fusionErrors.noQuotes()` so
+ * a corrupted stored address inherits the same "Quotes unavailable" alert
+ * instead of failing silently.
+ */
+export function isNoQuotesError(error: unknown): boolean {
+  return error instanceof FusionQuoteError && error.reason === 'no-quotes'
+}
+
 // EIP-1193 standard code for a user-rejected request. The rejection can reach
 // us either as an Error instance OR as a plain JSON-RPC error object — e.g.
 // `providerErrors.userRejectedRequest()` serialized to `{ code, message }`

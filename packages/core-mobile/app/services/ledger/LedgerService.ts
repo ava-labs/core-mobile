@@ -3,6 +3,8 @@ import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import * as Sentry from '@sentry/react-native'
+import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
 import {
   getAddressDerivationPath,
   handleLedgerError
@@ -19,10 +21,15 @@ import bs58 from 'bs58'
 import { DERIVATION_PATHS, LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { Curve } from 'utils/publicKeys'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { BluetoothState } from 'services/bluetooth/types'
 import BluetoothService from 'services/bluetooth/BluetoothService'
+import {
+  assertDeviceBech32Address,
+  assertDeviceEvmAddress,
+  assertDevicePublicKey,
+  assertDeviceSolanaAddress
+} from './validateDeviceAddress'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -97,7 +104,9 @@ class LedgerService {
         await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
       }
       try {
-        return await originalExchange(apdu)
+        const reply = await originalExchange(apdu)
+        this.recordApduBreadcrumb(apdu, reply)
+        return reply
       } catch (error) {
         // If error is still due to busy transport, reconnect
         if (
@@ -113,11 +122,52 @@ class LedgerService {
           await new Promise(res =>
             setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
           )
-          return await originalExchange(apdu)
+          const reply = await originalExchange(apdu)
+          this.recordApduBreadcrumb(apdu, reply)
+          return reply
         }
         // Other errors should be thrown immediately
         throw error
       }
+    }
+  }
+
+  // Frame-metadata-only breadcrumb (never payload bytes) for every APDU
+  // exchange. Sentry attaches recent breadcrumbs to any error captured
+  // afterwards, so a later validateDeviceAddress capture carries the reply
+  // length and status word — the signal that distinguishes a truncated
+  // transport frame from a device/app that legitimately returned empty (CP-14964).
+  private recordApduBreadcrumb(apdu: Buffer, reply: Buffer): void {
+    try {
+      Sentry.addBreadcrumb({
+        category: AllowedSentryBreadcrumbCategory.LedgerApdu,
+        level: 'info',
+        data: {
+          cla: (apdu[0] ?? 0).toString(16).padStart(2, '0'),
+          ins: (apdu[1] ?? 0).toString(16).padStart(2, '0'),
+          replyLength: reply.length,
+          statusWord: reply.subarray(-2).toString('hex')
+        }
+      })
+    } catch {
+      // Breadcrumb capture must never break a real APDU exchange.
+    }
+  }
+
+  // Session-global Sentry tags so any later Ledger error (e.g. a
+  // validateDeviceAddress capture) carries the app that produced it —
+  // distinguishes "this Avalanche app version returns empty addresses" from
+  // transport-layer frame corruption (CP-14964).
+  private recordLedgerAppSentryTags(
+    appType: LedgerAppType,
+    version: string
+  ): void {
+    try {
+      const scope = Sentry.getGlobalScope()
+      scope.setTag('ledgerAppType', appType)
+      scope.setTag('ledgerAppVersion', version)
+    } catch {
+      // Tagging must never break the connect/poll flow.
     }
   }
 
@@ -230,6 +280,7 @@ class LedgerService {
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
         this.currentAppVersion = testAppInfo.version
+        this.recordLedgerAppSentryTags(detectedAppType, testAppInfo.version)
       } catch (error) {
         Logger.info(
           'Immediate get current app info failed, will rely on polling'
@@ -401,6 +452,7 @@ class LedgerService {
           this.currentAppType = newAppType
         }
         this.currentAppVersion = appInfo.version
+        this.recordLedgerAppSentryTags(newAppType, appInfo.version)
       } catch (error) {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
@@ -618,6 +670,7 @@ class LedgerService {
         this.currentAppType = detectedAppType
       }
       this.currentAppVersion = appInfo.version
+      this.recordLedgerAppSentryTags(detectedAppType, appInfo.version)
 
       if (this.isAppCompatible(this.currentAppType, appType)) {
         Logger.info(
@@ -811,6 +864,9 @@ class LedgerService {
   }
 
   // Get all addresses from Avalanche app (EVM, AVM, Bitcoin)
+  // Pre-existing 4-arg signature; disabled rather than reshaped here because
+  // changing it would touch every caller and is unrelated to CP-14964.
+  // eslint-disable-next-line max-params
   async getAllAddresses(
     startIndex: number,
     count: number,
@@ -834,7 +890,9 @@ class LedgerService {
         addresses.push({
           id: `${LedgerAddressType.EVM}-${i}`,
           type: LedgerAddressType.EVM,
-          address: getAddress(evmAddressResponse.address),
+          address: getAddress(
+            assertDeviceEvmAddress('getETHAddress', evmAddressResponse)
+          ),
           derivationPath: evmPath
         })
 
@@ -848,9 +906,15 @@ class LedgerService {
         // underlying curve.
         const evmAvalancheAddressResponse =
           await avalancheApp.getAddressAndPubKey(evmPath, false, networkHrp)
-        const coreEthAddress = `C-${stripAddressPrefix(
-          evmAvalancheAddressResponse.address
+        const coreEthAddress = `C-${assertDeviceBech32Address(
+          'getAddressAndPubKey(coreEth)',
+          evmAvalancheAddressResponse,
+          networkHrp
         )}`
+        const coreEthPublicKey = assertDevicePublicKey(
+          'getAddressAndPubKey(coreEth)',
+          evmAvalancheAddressResponse
+        )
         addresses.push({
           id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-${i}`,
           type: LedgerAddressType.AVALANCHE_CORE_ETH,
@@ -874,8 +938,10 @@ class LedgerService {
             networkHrp
           )
 
-        const addressWithoutPrefix = stripAddressPrefix(
-          avalancheChainAddressResponse.address
+        const addressWithoutPrefix = assertDeviceBech32Address(
+          'getAddressAndPubKey(XP)',
+          avalancheChainAddressResponse,
+          networkHrp
         )
 
         addresses.push({
@@ -895,10 +961,7 @@ class LedgerService {
         // Bitcoin addresses - derive from the Avalanche app public key at the
         // EVM derivation path (matching the browser extension behavior).
         const btcAddress = getBtcAddressFromPubKey(
-          Buffer.from(
-            evmAvalancheAddressResponse.publicKey.toString('hex'),
-            'hex'
-          ),
+          coreEthPublicKey,
           isTestnet ? networks.testnet : networks.bitcoin
         )
 
@@ -1042,9 +1105,10 @@ class LedgerService {
       // Remove 'm/' prefix if present (Ledger expects path without prefix)
       const ledgerDerivationPath = derivationPath.replace(/^m\//, '')
       const result = await solanaApp.getAddress(ledgerDerivationPath, false)
+      const address = assertDeviceSolanaAddress('getAddress(solana)', result)
 
       // Convert the Buffer to base58 format (Solana address format)
-      const solanaAddress = bs58.encode(new Uint8Array(result.address))
+      const solanaAddress = bs58.encode(new Uint8Array(address))
 
       Logger.info('Successfully got Solana address', solanaAddress)
 
@@ -1077,8 +1141,20 @@ class LedgerService {
       derivationPath
     )
 
-    const findAddress = (type: LedgerAddressType): string =>
-      addresses.find(addr => addr.type === type)?.address || ''
+    // Fails closed rather than defaulting to ''. An empty string here reads as
+    // a legitimately absent address downstream, which is how a corrupt XP
+    // address reached persistence unnoticed (CP-14964).
+    const findAddress = (type: LedgerAddressType): string => {
+      const address = addresses.find(addr => addr.type === type)?.address
+
+      if (!address) {
+        throw new Error(
+          `Ledger did not return a ${type} address for account ${accountIndex}`
+        )
+      }
+
+      return address
+    }
 
     const evmAddress = findAddress(LedgerAddressType.EVM)
     const coreEthAddress = findAddress(LedgerAddressType.AVALANCHE_CORE_ETH)
@@ -1163,6 +1239,14 @@ class LedgerService {
         false,
         'avax'
       )
+      const evmPublicKey = assertDevicePublicKey(
+        'getAddressAndPubKey(evm)',
+        evmKeyResponse
+      )
+      const avalanchePublicKey = assertDevicePublicKey(
+        'getAddressAndPubKey(avalanche)',
+        avalancheKeyResponse
+      )
 
       return {
         addresses: {
@@ -1178,12 +1262,12 @@ class LedgerService {
         },
         publicKeys: [
           {
-            key: evmKeyResponse.publicKey.toString('hex'),
+            key: evmPublicKey.toString('hex'),
             derivationPath: evmPath,
             curve: Curve.SECP256K1
           },
           {
-            key: avalancheKeyResponse.publicKey.toString('hex'),
+            key: avalanchePublicKey.toString('hex'),
             derivationPath: avalanchePath,
             curve: Curve.SECP256K1
           }
@@ -1365,10 +1449,18 @@ class LedgerService {
             false,
             'avax'
           )
+          const evmPublicKey = assertDevicePublicKey(
+            'getAddressAndPubKey(evm)',
+            evmResponse
+          )
+          const avalanchePublicKey = assertDevicePublicKey(
+            'getAddressAndPubKey(avalanche)',
+            avalancheResponse
+          )
 
           results.push({
-            evmPubKey: evmResponse.publicKey.toString('hex'),
-            avalanchePubKey: avalancheResponse.publicKey.toString('hex'),
+            evmPubKey: evmPublicKey.toString('hex'),
+            avalanchePubKey: avalanchePublicKey.toString('hex'),
             evmPath,
             avalanchePath
           })
