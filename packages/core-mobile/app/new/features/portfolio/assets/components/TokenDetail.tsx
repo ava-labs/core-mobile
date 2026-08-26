@@ -3,7 +3,10 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
+import {
+  TokenWithBalanceAVM,
+  TokenWithBalancePVM
+} from '@avalabs/vm-module-types'
 import { Text, View } from '@avalabs/k2-alpine'
 import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
@@ -20,8 +23,8 @@ import {
 } from 'store/balance'
 import { xpChainToken } from 'utils/units/knownTokens'
 
-type PChainBalanceType = keyof PChainBalance
-type XChainBalanceType = keyof XChainBalances
+type PChainBalanceType = keyof TokenWithBalancePVM['balancePerType']
+type XChainBalanceType = keyof TokenWithBalanceAVM['balancePerType']
 
 interface Props {
   token?: LocalTokenWithBalance
