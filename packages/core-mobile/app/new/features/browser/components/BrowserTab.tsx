@@ -15,6 +15,7 @@ import {
   useInjectedJavascript
 } from 'hooks/browser/useInjectedJavascript'
 import { useEvmInjectedProvider } from 'hooks/browser/useEvmInjectedProvider'
+import { getMessageFrameInfo } from 'hooks/browser/messageFrameInfo'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import React, {
   forwardRef,
@@ -32,7 +33,8 @@ import RNWebView, {
 } from 'react-native-webview'
 import {
   FileDownloadEvent,
-  WebViewErrorEvent
+  WebViewErrorEvent,
+  WebViewOpenWindowEvent
 } from 'react-native-webview/lib/WebViewTypes'
 import { openInSystemBrowser } from 'utils/openInSystemBrowser'
 import { useDispatch, useSelector } from 'react-redux'
@@ -52,7 +54,11 @@ import { selectIsInjectedProviderBlocked } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
-import { isSameOriginSpaNavigation, isValidHttpUrl } from '../utils'
+import {
+  classifyLoadUrl,
+  isSameOriginSpaNavigation,
+  isValidHttpUrl
+} from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -71,6 +77,12 @@ export interface BrowserTabRef {
 // Module-scoped for a stable reference so the WebView's memoized handlers don't
 // churn each render.
 const WC_BROWSER_ORIGIN_WHITELIST = ['http://*', 'https://*', 'wc:*']
+
+// Timeout for a provisional cross-origin navigation to commit. If the new page
+// never renders, the overlay is cleared so the user can still interact with the
+// old page. The timeout is long enough to allow a slow network to load a real
+// page, but short enough to avoid a malicious page that never renders and wedges the tab.
+const PROVISIONAL_NAVIGATION_TIMEOUT_MS = 10_000
 
 export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -144,6 +156,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       canGoForward: false
     })
     const lastSyncedUrlRef = useRef<string>('')
+    // Title last written to history for `lastSyncedUrlRef`, so the post-commit
+    // onLoad can upgrade a commit's empty/stale title exactly once.
+    const lastSyncedTitleRef = useRef<string | undefined>(undefined)
     // Ref mirror of isProvisionalNavigation state — read synchronously in native
     // callbacks (onLoad) where the React state update from onNavigationStateChange
     // may not have committed yet.
@@ -156,6 +171,42 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null
     )
+    const provisionalTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    )
+
+    const clearProvisionalNavigation = useCallback((): void => {
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current)
+        provisionalTimerRef.current = null
+      }
+      isProvisionalNavigationRef.current = false
+      setIsProvisionalNavigation(false)
+    }, [])
+
+    // Arm the overlay for a cross-origin navigation, with a deadline so a
+    // navigation that never commits cannot wedge the tab.
+    const beginProvisionalNavigation = useCallback((): void => {
+      isProvisionalNavigationRef.current = true
+      setIsProvisionalNavigation(true)
+      if (provisionalTimerRef.current) {
+        clearTimeout(provisionalTimerRef.current)
+      }
+      provisionalTimerRef.current = setTimeout(() => {
+        provisionalTimerRef.current = null
+        isProvisionalNavigationRef.current = false
+        setIsProvisionalNavigation(false)
+      }, PROVISIONAL_NAVIGATION_TIMEOUT_MS)
+    }, [])
+
+    useEffect(() => {
+      return () => {
+        if (provisionalTimerRef.current) {
+          clearTimeout(provisionalTimerRef.current)
+          provisionalTimerRef.current = null
+        }
+      }
+    }, [])
 
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
@@ -187,7 +238,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       if (isWebViewDrivenNavigation) {
         return
       }
-
       if (next !== urlToLoad) {
         setUrlToLoad(next)
       }
@@ -366,11 +416,19 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       (url: string, title?: string): void => {
         if (!url || url.startsWith('about:')) return
 
-        Logger.warn(`[ProviderSecurity] syncCommittedUrl: url=${url}`)
         handleCommittedUrl(url)
 
         if (lastSyncedUrlRef.current === url) return
         lastSyncedUrlRef.current = url
+        lastSyncedTitleRef.current = title
+
+        // History and the URL bar belong to whichever tab is active: the
+        // reducer writes to `activeTabId` and the URL entry is shared browser
+        // chrome. Background tabs keep a live WebView and can still commit
+        // (redirect, meta refresh, timer), so writing from one would surface a
+        // URL whose page isn't the one on screen. The provider origin above is
+        // per-tab and must keep tracking either way.
+        if (disabled) return
 
         dispatch(
           addHistoryForActiveTab({
@@ -383,11 +441,47 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           setUrlEntry(url)
         }
       },
-      [handleCommittedUrl, dispatch, inputRef, setUrlEntry]
+      [handleCommittedUrl, dispatch, inputRef, setUrlEntry, disabled]
+    )
+
+    // A commit fires before the new document's <title> is parsed, so the title
+    // it carries is empty or still the previous page's. The real one arrives
+    // with the load that follows, for a URL that is already committed — write
+    // just that through, which the reducer applies to the current history entry
+    // in place (same URL => no new entry).
+    const refreshCommittedTitle = useCallback(
+      (title?: string): void => {
+        const url = lastSyncedUrlRef.current
+        if (disabled || !url || !title) return
+        if (title === lastSyncedTitleRef.current) return
+        lastSyncedTitleRef.current = title
+        // Carry the metadata the injected script may already have reported for
+        // this document: the reducer replaces the tab's active history entry
+        // wholesale, so omitting them here would drop the favicon/description.
+        const { favicon: currentFavicon, description: currentDescription } =
+          tab?.activeHistory ?? {}
+        dispatch(
+          addHistoryForActiveTab({
+            title,
+            url,
+            ...(currentFavicon !== undefined && { favicon: currentFavicon }),
+            ...(currentDescription !== undefined && {
+              description: currentDescription
+            })
+          })
+        )
+      },
+      [dispatch, disabled, tab?.activeHistory]
     )
 
     const onMessageHandler = useCallback(
       (event: WebViewMessageEvent) => {
+        const frame = getMessageFrameInfo(event.nativeEvent)
+        if (frame.isMainFrame === false) {
+          Logger.warn('[Browser] Ignored WebView message from a subframe')
+          return
+        }
+
         try {
           const wrapper = JSON.parse(
             event.nativeEvent.data
@@ -472,8 +566,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
                 // Malformed payload — treat conservatively (accept navigation).
               }
 
-              isProvisionalNavigationRef.current = false
-              setIsProvisionalNavigation(false)
+              clearProvisionalNavigation()
 
               // 204/205 means no content was loaded (confirmed via responseStatus API,
               // Chrome 102+). originMismatch is the fallback for older Chrome: if the
@@ -518,9 +611,20 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         handleDomainMetadata,
         urlToLoad,
         goToDiscover,
-        syncCommittedUrl
+        syncCommittedUrl,
+        clearProvisionalNavigation
       ]
     )
+
+    // The only entry point that advances the address bar across origins.
+    // Backed by WKNavigationDelegate's didCommitNavigation (iOS) /
+    // WebViewClient.onPageCommitVisible (Android)
+    const handleCommit = (event: WebViewNavigationEvent): void => {
+      const url = event.nativeEvent.url
+      if (!url || url.startsWith('about:')) return
+      clearProvisionalNavigation()
+      syncCommittedUrl(url, event.nativeEvent.title)
+    }
 
     const onLoad = (event: WebViewNavigationEvent): void => {
       if (
@@ -529,63 +633,28 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       )
         return
 
-      Logger.warn(`[ProviderSecurity] onLoad: url=${event.nativeEvent.url}`)
-
       if (error) {
         setError(undefined)
       }
 
-      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android).
-      // Both fire after the navigation completes — but crucially they also fire
-      // for HTTP 204 No Content responses, where the browser commits the URL
-      // change yet keeps the OLD document rendered. An attacker page can exploit
-      // this to spoof the address bar (navigate to a trusted URL that returns
-      // 204; URL bar updates but the attacker's DOM remains).
-      //
-      // When this load completed a provisional cross-origin navigation, keep the
-      // overlay up and inject JavaScript to verify that the server actually
-      // delivered a new document (responseStatus 200, not 204).  The result
-      // arrives via the 'nav_response_verified' message handler below.
-      if (isProvisionalNavigationRef.current) {
-        pendingVerificationUrlRef.current = event.nativeEvent.url
-        pendingVerificationTitleRef.current = event.nativeEvent.title
-        webViewRef.current?.injectJavaScript(`
-          (function() {
-            try {
-              var e = performance.getEntriesByType('navigation');
-              var nav = e.length ? e[e.length - 1] : null;
-              // responseStatus is Chrome 102+ — 0 means unavailable on older builds.
-              var status = nav && nav.responseStatus !== undefined ? nav.responseStatus : 0;
-              // Cross-check: if no new document was created (204), the navigation
-              // timing entry still refers to the old page's URL, while
-              // window.location has already advanced to the spoofed URL.
-              var entryUrl = nav ? nav.name : '';
-              var currentHref = window.location.href;
-              var entryOrigin = '';
-              var currentOrigin = '';
-              try { entryOrigin = new URL(entryUrl).origin; } catch(_e) {}
-              try { currentOrigin = new URL(currentHref).origin; } catch(_e) {}
-              var originMismatch = entryOrigin.length > 0 && currentOrigin.length > 0 && entryOrigin !== currentOrigin;
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                method: 'nav_response_verified',
-                payload: JSON.stringify({ status: status, originMismatch: originMismatch })
-              }));
-            } catch (err) {
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                method: 'nav_response_verified',
-                payload: JSON.stringify({ status: -1, originMismatch: false })
-              }));
-            }
-          })();
-          true;
-        `)
-        return
+      // onLoad maps to didFinishNavigation (iOS) / onPageFinished (Android)
+      clearProvisionalNavigation()
+
+      const url = event.nativeEvent.url
+      const title = event.nativeEvent.title
+
+      switch (
+        classifyLoadUrl({ url, lastSyncedUrl: lastSyncedUrlRef.current })
+      ) {
+        case 'refresh-title':
+          refreshCommittedTitle(title)
+          break
+        case 'sync':
+          syncCommittedUrl(url, title)
+          break
+        case 'ignore':
+          break
       }
-
-      setIsProvisionalNavigation(false)
-
-      // SPA URL changes on iOS land here too (routed through the HistoryShim).
-      syncCommittedUrl(event.nativeEvent.url, event.nativeEvent.title)
     }
 
     const onNavigationStateChange = (navState: WebViewNavigation): void => {
@@ -632,12 +701,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             lastOrigin !== 'null' &&
             nextOrigin !== lastOrigin
           ) {
-            Logger.warn(
-              `[ProviderSecurity] onNavigationStateChange: provisional cross-origin ${lastOrigin} -> ${nextOrigin}`
-            )
             handleProvisionalCrossOriginNavigation(nextUrl)
-            isProvisionalNavigationRef.current = true
-            setIsProvisionalNavigation(true)
+            beginProvisionalNavigation()
           }
         } catch {
           // Malformed URL — ignore
@@ -673,13 +738,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     const onError = (event: WebViewErrorEvent): void => {
-      Logger.warn(
-        `[ProviderSecurity] onError: navigation failed url=${event.nativeEvent.url} desc=${event.nativeEvent.description}`
-      )
       // Clear any in-flight 204-verification so the overlay doesn't get stuck.
       pendingVerificationUrlRef.current = null
       pendingVerificationTitleRef.current = undefined
-      isProvisionalNavigationRef.current = false
+      clearProvisionalNavigation()
 
       // Fallback: unknown schemes can sometimes reach `onError` without triggering
       // `onShouldStartLoadWithRequest` (depending on redirect/navigation type).
@@ -717,7 +779,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         return
       }
 
-      setIsProvisionalNavigation(false)
+      clearProvisionalNavigation()
       progress.value = 0
       setError(event.nativeEvent)
     }
@@ -764,7 +826,9 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         Logger.warn(
           `[ProviderSecurity] Blocked in-webview render of downloadable response: ${downloadUrl}`
         )
-        if (!isValidHttpUrl(downloadUrl)) return
+        if (!isValidHttpUrl(downloadUrl)) {
+          return
+        }
         showAlert({
           title: 'Download detected',
           description:
@@ -780,7 +844,20 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           ]
         })
       },
-      []
+      [disabled]
+    )
+
+    // Native backstop for window.open (react-native-webview `onOpenWindow`,
+    const handleOpenWindow = useCallback(
+      (event: WebViewOpenWindowEvent): void => {
+        const targetUrl = event.nativeEvent.targetUrl
+        if (typeof targetUrl !== 'string' || !isValidHttpUrl(targetUrl)) {
+          return
+        }
+        dispatch(addTab())
+        dispatch(addHistoryForActiveTab({ title: targetUrl, url: targetUrl }))
+      },
+      [dispatch]
     )
 
     const renderLoading = (): JSX.Element => {
@@ -854,6 +931,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             injectedJavaScript={injectedJavascript}
             url={urlToLoad}
             onLoad={onLoad}
+            onCommit={handleCommit}
             onNavigationStateChange={onNavigationStateChange}
             onMessage={onMessageHandler}
             // Whitelist `wc:` (only) alongside http/https so WalletConnect
@@ -879,6 +957,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onLoadProgress={onProgress}
             onError={onError}
             onFileDownload={onFileDownload}
+            onOpenWindow={handleOpenWindow}
           />
         )}
       </View>

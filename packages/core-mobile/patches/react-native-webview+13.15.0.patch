@@ -1,0 +1,380 @@
+diff --git a/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+index 5932fc1..f53749f 100644
+--- a/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
++++ b/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+@@ -257,7 +257,11 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+             this.bridgeListener = new WebViewCompat.WebMessageListener() {
+               @Override
+               public void onPostMessage(@NonNull WebView view, @NonNull WebMessageCompat message, @NonNull Uri sourceOrigin, boolean isMainFrame, @NonNull JavaScriptReplyProxy replyProxy) {
+-                RNCWebView.this.onMessage(message.getData(), sourceOrigin.toString());
++                // The listener is registered for all origins ("*"), so ANY frame
++                // — including a cross-origin iframe — can post here. Forward the
++                // frame provenance the platform gives us so JS can authenticate
++                // the sender instead of guessing.
++                RNCWebView.this.onMessage(message.getData(), sourceOrigin.toString(), isMainFrame, sourceOrigin.toString());
+               }
+             };
+             WebViewCompat.addWebMessageListener(
+@@ -329,6 +333,13 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+     }
+ 
+     public void onMessage(String message, String sourceUrl) {
++        // Legacy addJavascriptInterface bridge: Android exposes a @JavascriptInterface
++        // object to every frame and gives no way to tell them apart, so frame
++        // provenance is genuinely unknown here (null, not false).
++        onMessage(message, sourceUrl, null, null);
++    }
++
++    public void onMessage(String message, String sourceUrl, @Nullable Boolean isMainFrame, @Nullable String frameOrigin) {
+         ThemedReactContext reactContext = getThemedReactContext();
+         RNCWebView mWebView = this;
+ 
+@@ -342,6 +353,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+                     }
+                     WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, sourceUrl);
+                     data.putString("data", message);
++                    putFrameProvenance(data, isMainFrame, frameOrigin);
+ 
+                     if (mMessagingJSModule != null) {
+                         dispatchDirectMessage(data);
+@@ -353,6 +365,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         } else {
+             WritableMap eventData = Arguments.createMap();
+             eventData.putString("data", message);
++            putFrameProvenance(eventData, isMainFrame, frameOrigin);
+ 
+             if (mMessagingJSModule != null) {
+                 dispatchDirectMessage(eventData);
+@@ -362,6 +375,20 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         }
+     }
+ 
++    /**
++     * Adds the posting frame's provenance to a message event. Keys are omitted
++     * entirely when unknown so JS sees `undefined` and can fail closed, rather
++     * than a `false`/`""` that would read as a real answer.
++     */
++    private static void putFrameProvenance(WritableMap data, @Nullable Boolean isMainFrame, @Nullable String frameOrigin) {
++        if (isMainFrame != null) {
++            data.putBoolean("isMainFrame", isMainFrame);
++        }
++        if (frameOrigin != null) {
++            data.putString("frameOrigin", frameOrigin);
++        }
++    }
++
+     protected void dispatchDirectMessage(WritableMap data) {
+         WritableNativeMap event = new WritableNativeMap();
+         event.putMap("nativeEvent", data);
+diff --git a/apple/RNCWebView.mm b/apple/RNCWebView.mm
+index 95c0fcc..8a121e9 100644
+--- a/apple/RNCWebView.mm
++++ b/apple/RNCWebView.mm
+@@ -39,6 +39,15 @@ auto stringToOnLoadingFinishNavigationTypeEnum(std::string value) {
+     return RNCWebViewEventEmitter::OnLoadingFinishNavigationType::Other;
+ }
+ 
++auto stringToOnCommitNavigationTypeEnum(std::string value) {
++    if (value == "click") return RNCWebViewEventEmitter::OnCommitNavigationType::Click;
++    if (value == "formsubmit") return RNCWebViewEventEmitter::OnCommitNavigationType::Formsubmit;
++    if (value == "backforward") return RNCWebViewEventEmitter::OnCommitNavigationType::Backforward;
++    if (value == "reload") return RNCWebViewEventEmitter::OnCommitNavigationType::Reload;
++    if (value == "formresubmit") return RNCWebViewEventEmitter::OnCommitNavigationType::Formresubmit;
++    return RNCWebViewEventEmitter::OnCommitNavigationType::Other;
++}
++
+ @interface RNCWebView () <RCTRNCWebViewViewProtocol>
+ 
+ @end
+@@ -134,7 +143,12 @@ auto stringToOnLoadingFinishNavigationTypeEnum(std::string value) {
+                     .canGoBack = static_cast<bool>([[dictionary valueForKey:@"canGoBack"] boolValue]),
+                     .canGoForward = static_cast<bool>([[dictionary valueForKey:@"canGoForward"] boolValue]),
+                     .loading = static_cast<bool>([[dictionary valueForKey:@"loading"] boolValue]),
+-                    .data = std::string([[dictionary valueForKey:@"data"] UTF8String])
++                    .data = std::string([[dictionary valueForKey:@"data"] UTF8String]),
++                    // Unforgeable frame provenance (see RNCFrameSecurityOrigin in
++                    // RNCWebViewImpl.m). It has to be carried through the codegen
++                    // struct or JS never sees it on the new architecture.
++                    .isMainFrame = static_cast<bool>([[dictionary valueForKey:@"isMainFrame"] boolValue]),
++                    .frameOrigin = std::string([[dictionary valueForKey:@"frameOrigin"] UTF8String] ?: "")
+                 };
+                 webViewEventEmitter->onMessage(data);
+             }
+@@ -155,6 +169,29 @@ auto stringToOnLoadingFinishNavigationTypeEnum(std::string value) {
+                 webViewEventEmitter->onLoadingFinish(data);
+             }
+         };
++        // didCommitNavigation. `baseEvent` carries no navigationType /
++        // mainDocumentURL (WebKit does not report either at commit time), so
++        // read them defensively — a nil NSString would otherwise be handed to
++        // std::string.
++        _view.onCommit = [self](NSDictionary* dictionary) {
++            if (_eventEmitter) {
++                auto webViewEventEmitter = std::static_pointer_cast<RNCWebViewEventEmitter const>(_eventEmitter);
++                NSString *navigationType = [dictionary valueForKey:@"navigationType"] ?: @"";
++                NSString *mainDocumentURL = [dictionary valueForKey:@"mainDocumentURL"] ?: @"";
++                // Field order follows the generated OnCommit struct.
++                facebook::react::RNCWebViewEventEmitter::OnCommit data = {
++                    .url = std::string([[dictionary valueForKey:@"url"] UTF8String] ?: ""),
++                    .loading = static_cast<bool>([[dictionary valueForKey:@"loading"] boolValue]),
++                    .title = std::string([[dictionary valueForKey:@"title"] UTF8String] ?: ""),
++                    .canGoBack = static_cast<bool>([[dictionary valueForKey:@"canGoBack"] boolValue]),
++                    .canGoForward = static_cast<bool>([[dictionary valueForKey:@"canGoForward"] boolValue]),
++                    .lockIdentifier = [[dictionary valueForKey:@"lockIdentifier"] doubleValue],
++                    .navigationType = stringToOnCommitNavigationTypeEnum(std::string(navigationType.UTF8String)),
++                    .mainDocumentURL = std::string(mainDocumentURL.UTF8String)
++                };
++                webViewEventEmitter->onCommit(data);
++            }
++        };
+         _view.onLoadingProgress = [self](NSDictionary* dictionary) {
+             if (_eventEmitter) {
+                 auto webViewEventEmitter = std::static_pointer_cast<RNCWebViewEventEmitter const>(_eventEmitter);
+diff --git a/apple/RNCWebViewImpl.h b/apple/RNCWebViewImpl.h
+index 1f6bbfd..0405a9e 100644
+--- a/apple/RNCWebViewImpl.h
++++ b/apple/RNCWebViewImpl.h
+@@ -56,6 +56,10 @@ shouldStartLoadForRequest:(NSMutableDictionary<NSString *, id> *)request
+ @property (nonatomic, copy) RCTDirectEventBlock onFileDownload;
+ @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
+ @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
++// didCommitNavigation — the navigation actually committed a document and is
++// about to render. Counterpart of Android's onPageCommitVisible; unlike
++// onLoadingFinish it never fires for a navigation that rendered nothing.
++@property (nonatomic, copy) RCTDirectEventBlock onCommit;
+ @property (nonatomic, copy) RCTDirectEventBlock onLoadingError;
+ @property (nonatomic, copy) RCTDirectEventBlock onLoadingProgress;
+ @property (nonatomic, copy) RCTDirectEventBlock onShouldStartLoadWithRequest;
+diff --git a/apple/RNCWebViewImpl.m b/apple/RNCWebViewImpl.m
+index 7f5c24d..df120c5 100644
+--- a/apple/RNCWebViewImpl.m
++++ b/apple/RNCWebViewImpl.m
+@@ -768,6 +768,29 @@ RCTAutoInsetsProtocol>
+ }
+ #endif
+ 
++/**
++ * Serializes a frame's true security origin — as reported by WebKit, not as
++ * claimed by page JS — into the same "scheme://host[:port]" shape as JS's
++ * `new URL(url).origin`, so the two can be compared directly.
++ *
++ * Returns @"" for opaque origins (about:blank, data:, srcdoc, sandboxed
++ * frames), which callers must treat as "origin unknown" rather than as a
++ * match against anything.
++ */
++static NSString *RNCFrameSecurityOrigin(WKSecurityOrigin *origin)
++{
++  if (origin.protocol.length == 0 || origin.host.length == 0) {
++    return @"";
++  }
++  BOOL isDefaultPort = origin.port == 0 ||
++    ([origin.protocol isEqualToString:@"https"] && origin.port == 443) ||
++    ([origin.protocol isEqualToString:@"http"] && origin.port == 80);
++  if (isDefaultPort) {
++    return [NSString stringWithFormat:@"%@://%@", origin.protocol, origin.host];
++  }
++  return [NSString stringWithFormat:@"%@://%@:%ld", origin.protocol, origin.host, (long)origin.port];
++}
++
+ /**
+  * This method is called whenever JavaScript running within the web view calls:
+  *   - window.webkit.messageHandlers[MessageHandlerName].postMessage
+@@ -786,6 +809,14 @@ RCTAutoInsetsProtocol>
+       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+       [event addEntriesFromDictionary: @{@"data": message.body}];
+       [event addEntriesFromDictionary: @{@"url": message.frameInfo.request.URL.absoluteString}];
++      // Frame provenance straight from WebKit. `window.webkit.messageHandlers`
++      // is reachable from EVERY frame (the handler is registered on the
++      // userContentController, not per-frame), so a cross-origin iframe can
++      // post messages that JS alone cannot distinguish from the main frame's.
++      // WKFrameInfo is filled in by WebKit and cannot be forged by page JS, so
++      // these two fields let JS authenticate the sender.
++      [event addEntriesFromDictionary: @{@"isMainFrame": @(message.frameInfo.isMainFrame)}];
++      [event addEntriesFromDictionary: @{@"frameOrigin": RNCFrameSecurityOrigin(message.frameInfo.securityOrigin)}];
+       _onMessage(event);
+     }
+   }
+@@ -1561,6 +1592,28 @@ RCTAutoInsetsProtocol>
+   }
+ }
+ 
++/**
++ * Called when the web view begins to receive content for the main frame, i.e.
++ * the navigation has COMMITTED and a new document is about to be rendered.
++ *
++ * This is the iOS counterpart of Android's `onPageCommitVisible`. It is a
++ * strictly stronger signal than `didFinishNavigation` for anything that must
++ * reflect the document actually on screen — most importantly the address bar:
++ * `didFinishNavigation` also fires for navigations that produced no document
++ * (HTTP 204/205 No Content, a `window.stop()` before the response is
++ * committed), where WebKit advances the URL while keeping the previous
++ * document rendered. Those never reach this callback, so a consumer that
++ * commits the URL here cannot be made to display a URL whose page never
++ * rendered (address-bar spoofing).
++ */
++- (void)webView:(WKWebView *)webView
++didCommitNavigation:(WKNavigation *)navigation
++{
++  if (_onCommit) {
++    _onCommit([self baseEvent]);
++  }
++}
++
+ /**
+  * Called when the navigation is complete.
+  * @see https://fburl.com/rtys6jlb
+diff --git a/apple/RNCWebViewManager.mm b/apple/RNCWebViewManager.mm
+index f8f375f..e057324 100644
+--- a/apple/RNCWebViewManager.mm
++++ b/apple/RNCWebViewManager.mm
+@@ -46,6 +46,7 @@ RCT_CUSTOM_VIEW_PROPERTY(newSource, NSDictionary, RNCWebViewImpl) {}
+ RCT_EXPORT_VIEW_PROPERTY(onFileDownload, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onLoadingStart, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onLoadingFinish, RCTDirectEventBlock)
++RCT_EXPORT_VIEW_PROPERTY(onCommit, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onLoadingError, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onLoadingProgress, RCTDirectEventBlock)
+ RCT_EXPORT_VIEW_PROPERTY(onHttpError, RCTDirectEventBlock)
+diff --git a/lib/RNCWebViewNativeComponent.d.ts b/lib/RNCWebViewNativeComponent.d.ts
+index d0de585..e4b5ec8 100644
+--- a/lib/RNCWebViewNativeComponent.d.ts
++++ b/lib/RNCWebViewNativeComponent.d.ts
+@@ -21,6 +21,8 @@ export type WebViewMessageEvent = Readonly<{
+     canGoForward: boolean;
+     lockIdentifier: Double;
+     data: string;
++    isMainFrame: boolean;
++    frameOrigin: string;
+ }>;
+ export type WebViewOpenWindowEvent = Readonly<{
+     targetUrl: string;
+diff --git a/lib/WebViewTypes.d.ts b/lib/WebViewTypes.d.ts
+index 8cbc89f..4843b30 100644
+--- a/lib/WebViewTypes.d.ts
++++ b/lib/WebViewTypes.d.ts
+@@ -68,6 +68,20 @@ export interface FileDownload {
+ export type DecelerationRateConstant = 'normal' | 'fast';
+ export interface WebViewMessage extends WebViewNativeEvent {
+     data: string;
++    /**
++     * Whether the frame that posted this message is the main frame, as reported
++     * by the platform (WKFrameInfo on iOS, WebMessageListener on Android) and
++     * therefore not forgeable by page JS. `undefined` where the platform cannot
++     * report it (Android's legacy addJavascriptInterface bridge) — treat that as
++     * "unknown", never as "main frame".
++     */
++    isMainFrame?: boolean;
++    /**
++     * The posting frame's true security origin as "scheme://host[:port]" (same
++     * shape as `new URL(url).origin`), '' for opaque origins, `undefined` where
++     * unavailable. Comes from the platform, not from the page.
++     */
++    frameOrigin?: string;
+ }
+ export interface WebViewError extends WebViewNativeEvent {
+     /**
+@@ -990,6 +1004,13 @@ export interface WebViewSharedProps extends ViewProps {
+      * Function that is invoked when the `WebView` has finished loading.
+      */
+     onLoad?: (event: WebViewNavigationEvent) => void;
++    /**
++     * Function invoked when a navigation VISUALLY COMMITS a real document
++     * (Android onPageCommitVisible / iOS didCommitNavigation). Unlike onLoad,
++     * this never fires for a window.stop()/204 navigation that renders nothing,
++     * so it is the trustworthy signal for driving the address bar.
++     */
++    onCommit?: (event: WebViewNavigationEvent) => void;
+     /**
+      * Function that is invoked when the `WebView` load succeeds or fails.
+      */
+diff --git a/src/RNCWebViewNativeComponent.ts b/src/RNCWebViewNativeComponent.ts
+index 65be805..d9df348 100644
+--- a/src/RNCWebViewNativeComponent.ts
++++ b/src/RNCWebViewNativeComponent.ts
+@@ -29,6 +29,19 @@ export type WebViewMessageEvent = Readonly<{
+   canGoForward: boolean;
+   lockIdentifier: Double;
+   data: string;
++  /**
++   * Whether the frame that posted this message is the main frame, as reported
++   * by the platform (WKFrameInfo on iOS, WebMessageListener on Android). Page
++   * JS cannot forge it. Android's legacy addJavascriptInterface bridge cannot
++   * report it, so a missing value means "unknown", not "main frame".
++   */
++  isMainFrame: boolean;
++  /**
++   * The posting frame's true security origin as "scheme://host[:port]", or ''
++   * for opaque origins (about:blank, data:, srcdoc, sandboxed). Independent of
++   * any origin the page claims inside the message body.
++   */
++  frameOrigin: string;
+ }>;
+ export type WebViewOpenWindowEvent = Readonly<{
+   targetUrl: string;
+diff --git a/src/WebView.ios.tsx b/src/WebView.ios.tsx
+index deb179b..4020b0a 100644
+--- a/src/WebView.ios.tsx
++++ b/src/WebView.ios.tsx
+@@ -66,6 +66,7 @@ const WebViewComponent = forwardRef<{}, IOSWebViewProps>(
+       onLoadStart,
+       onError,
+       onLoad,
++      onCommit: onCommitProp,
+       onLoadEnd,
+       onLoadProgress,
+       onContentProcessDidTerminate: onContentProcessDidTerminateProp,
+@@ -115,12 +116,14 @@ const WebViewComponent = forwardRef<{}, IOSWebViewProps>(
+       onHttpError,
+       onLoadingError,
+       onLoadingFinish,
++      onCommit,
+       onLoadingProgress,
+       onOpenWindow,
+       onContentProcessDidTerminate,
+     } = useWebViewLogic({
+       onNavigationStateChange,
+       onLoad,
++      onCommitProp,
+       onError,
+       onHttpErrorProp,
+       onLoadEnd,
+@@ -242,6 +245,7 @@ const WebViewComponent = forwardRef<{}, IOSWebViewProps>(
+         messagingModuleName="" // android ONLY
+         onLoadingError={onLoadingError}
+         onLoadingFinish={onLoadingFinish}
++        onCommit={onCommitProp && onCommit}
+         onLoadingProgress={onLoadingProgress}
+         onFileDownload={onFileDownload}
+         onLoadingStart={onLoadingStart}
+diff --git a/src/WebViewTypes.ts b/src/WebViewTypes.ts
+index 126167a..44b0370 100644
+--- a/src/WebViewTypes.ts
++++ b/src/WebViewTypes.ts
+@@ -110,6 +110,27 @@ export type DecelerationRateConstant = 'normal' | 'fast';
+ 
+ export interface WebViewMessage extends WebViewNativeEvent {
+   data: string;
++  /**
++   * Whether the frame that posted this message is the main frame, as reported
++   * by the platform — WKFrameInfo.isMainFrame on iOS, WebMessageListener's
++   * isMainFrame on Android — and therefore not forgeable by page JS.
++   *
++   * `undefined` means the platform could not report it (Android devices whose
++   * System WebView predates WEB_MESSAGE_LISTENER and fall back to the legacy
++   * addJavascriptInterface bridge). Treat `undefined` as "unknown", never as
++   * "main frame": any frame can reach the messaging bridge, so security
++   * decisions must fail closed when provenance is unavailable.
++   */
++  isMainFrame?: boolean;
++  /**
++   * The posting frame's true security origin as "scheme://host[:port]" — the
++   * same shape as JS's `new URL(url).origin`, so the two compare directly.
++   * Empty string for opaque origins (about:blank, data:, srcdoc, sandboxed
++   * frames); `undefined` where the platform cannot report it (see
++   * `isMainFrame`). Unlike any origin the page puts in the message body, this
++   * comes from the platform and cannot be spoofed by the page.
++   */
++  frameOrigin?: string;
+ }
+ 
+ export interface WebViewError extends WebViewNativeEvent {

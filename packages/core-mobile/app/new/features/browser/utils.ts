@@ -153,8 +153,8 @@ export const prepareFaviconToLoad = (
 ): string | undefined => {
   try {
     const activeHistoryUrl = new URL(url)
-    const activeHistoryDomain =
-      activeHistoryUrl.protocol + '//' + activeHistoryUrl.hostname
+
+    const activeHistoryDomain = activeHistoryUrl.origin
 
     if (favicon) {
       if (isValidUrl(favicon) || isBase64Png(favicon)) {
@@ -168,5 +168,32 @@ export const prepareFaviconToLoad = (
     }
   } catch {
     return ''
+  }
+}
+
+/**
+ * What a WebView load event (`onLoad`: didFinishNavigation on iOS /
+ * onPageFinished on Android) may do to the user-facing URL.
+ */
+export type LoadUrlAction = 'ignore' | 'refresh-title' | 'sync'
+
+export function classifyLoadUrl({
+  url,
+  lastSyncedUrl
+}: {
+  url: string
+  lastSyncedUrl: string
+}): LoadUrlAction {
+  if (!url || url.startsWith('about:')) return 'ignore'
+  // Nothing has committed yet, so there is no trusted origin to compare
+  // against — and onLoad must never be what first puts a URL on screen.
+  if (!lastSyncedUrl) return 'ignore'
+  if (url === lastSyncedUrl) return 'refresh-title'
+  try {
+    return new URL(url).origin === new URL(lastSyncedUrl).origin
+      ? 'sync'
+      : 'ignore'
+  } catch {
+    return 'ignore'
   }
 }

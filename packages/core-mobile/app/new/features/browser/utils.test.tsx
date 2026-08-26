@@ -13,7 +13,8 @@ import {
   isValidUrlWithProtocols,
   isValidHttpUrlRegexp,
   isValidHttpsUrl,
-  isSameOriginSpaNavigation
+  isSameOriginSpaNavigation,
+  classifyLoadUrl
 } from './utils'
 
 describe('sortDeFiProtocolInformationListByTvl', () => {
@@ -310,5 +311,71 @@ describe('prepareFaviconToLoad', () => {
     const favicon = '/favicon.ico'
     const result = prepareFaviconToLoad(url, favicon)
     expect(result).toStrictEqual('https://core.app/favicon.ico')
+  })
+
+  it('keeps a non-default port when resolving a root-relative favicon', () => {
+    const result = prepareFaviconToLoad(
+      'https://core.app:8899/page',
+      '/favicon.ico'
+    )
+    expect(result).toStrictEqual('https://core.app:8899/favicon.ico')
+  })
+
+  it('keeps a non-default port when resolving a bare relative favicon', () => {
+    const result = prepareFaviconToLoad(
+      'https://core.app:8899/page',
+      'favicon.ico'
+    )
+    expect(result).toStrictEqual('https://core.app:8899/favicon.ico')
+  })
+})
+
+describe('classifyLoadUrl', () => {
+  it('refreshes only the title for the URL that just committed', () => {
+    // onCommit fires before the document's <title> is parsed, so the title
+    // arrives with the load that follows the commit.
+    expect(
+      classifyLoadUrl({
+        url: 'https://app.example.com/verify',
+        lastSyncedUrl: 'https://app.example.com/verify'
+      })
+    ).toBe('refresh-title')
+  })
+
+  it('syncs a same-origin in-page URL change (SPA pushState)', () => {
+    expect(
+      classifyLoadUrl({
+        url: 'https://app.example.com/verify',
+        lastSyncedUrl: 'https://app.example.com/'
+      })
+    ).toBe('sync')
+  })
+
+  it('ignores a cross-origin change — those must come from onCommit', () => {
+    // onLoad also fires for a 204/window.stop() navigation that advanced the
+    // URL without replacing the document, so it can never be trusted to move
+    // the address bar to another origin.
+    expect(
+      classifyLoadUrl({
+        url: 'https://apple.com/',
+        lastSyncedUrl: 'https://attacker.example/'
+      })
+    ).toBe('ignore')
+  })
+
+  it('ignores everything until something has committed', () => {
+    // The first URL on screen has to come from a commit, never from onLoad.
+    expect(
+      classifyLoadUrl({ url: 'https://example.com/', lastSyncedUrl: '' })
+    ).toBe('ignore')
+  })
+
+  it.each([
+    ['about:blank', 'https://example.com/'],
+    ['', 'https://example.com/'],
+    ['not a url', 'https://example.com/'],
+    ['https://example.com/', 'not a url']
+  ])('ignores unusable input (%s / %s)', (url, lastSyncedUrl) => {
+    expect(classifyLoadUrl({ url, lastSyncedUrl })).toBe('ignore')
   })
 })
