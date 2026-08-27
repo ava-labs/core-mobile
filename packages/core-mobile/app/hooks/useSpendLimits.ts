@@ -64,21 +64,25 @@ const applyCustomSpendToDisplay = (
   if (amount === undefined) return defaults
 
   const token = base.tokenApproval.token
+
+  // Make sure that the updated SpendLimit is in the same order as the defaults, so that the
+  // UI doesn't jump around when the user edits the amount.
+  const reseed = (updated: SpendLimit): SpendLimit[] =>
+    defaults.map(limit => (limit === base ? updated : limit))
+
   if (amount >= BigInt(MaxUint256.toString())) {
-    return [{ ...base, limitType: Limit.UNLIMITED, value: undefined }]
+    return reseed({ ...base, limitType: Limit.UNLIMITED, value: undefined })
   }
   const originalBn = isHex(base.tokenApproval.value)
     ? hexToBigInt(base.tokenApproval.value)
     : safeBigInt(base.tokenApproval.value, 0n)
-  return [
-    {
-      ...base,
-      // An override equal to the original is a DEFAULT selection; anything else
-      // is a user-entered CUSTOM amount.
-      limitType: amount === originalBn ? Limit.DEFAULT : Limit.CUSTOM,
-      value: { bn: amount, amount: bigIntToString(amount, token.decimals) }
-    }
-  ]
+  return reseed({
+    ...base,
+    // An override equal to the original is a DEFAULT selection; anything else
+    // is a user-entered CUSTOM amount.
+    limitType: amount === originalBn ? Limit.DEFAULT : Limit.CUSTOM,
+    value: { bn: amount, amount: bigIntToString(amount, token.decimals) }
+  })
 }
 
 export const useSpendLimits = (
@@ -118,7 +122,12 @@ export const useSpendLimits = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenApprovals])
 
-  const canEdit = tokenApprovals !== undefined && tokenApprovals.isEditable
+  // Ensure that the user can only edit the approval if there is exactly one approval and it is editable. 
+  // This prevents confusion when multiple approvals are present.
+  const canEdit =
+    tokenApprovals !== undefined &&
+    tokenApprovals.isEditable &&
+    tokenApprovals.approvals.length === 1
 
   const updateSpendLimit = useCallback(
     (newSpendData: SpendLimit) => {
@@ -132,38 +141,38 @@ export const useSpendLimits = (
         return
       }
       let limitAmount: string | undefined
+      let updated: SpendLimit
+
       if (newSpendData.limitType === Limit.UNLIMITED) {
-        setSpendLimits([
-          {
-            ...spendLimit,
-            limitType: Limit.UNLIMITED,
-            value: undefined
-          }
-        ])
+        updated = {
+          ...spendLimit,
+          limitType: Limit.UNLIMITED,
+          value: undefined
+        }
         limitAmount = `0x${MaxUint256.toString(16)}`
       } else if (newSpendData.limitType === Limit.DEFAULT) {
         const bn = isHex(spendLimit.tokenApproval.value)
           ? hexToBigInt(spendLimit.tokenApproval.value)
           : safeBigInt(spendLimit.tokenApproval.value, 0n)
-        setSpendLimits([
-          {
-            ...spendLimit,
-            limitType: Limit.DEFAULT,
-            value: {
-              bn,
-              amount: bigIntToString(
-                bn,
-                spendLimit.tokenApproval.token.decimals
-              )
-            }
+        updated = {
+          ...spendLimit,
+          limitType: Limit.DEFAULT,
+          value: {
+            bn,
+            amount: bigIntToString(bn, spendLimit.tokenApproval.token.decimals)
           }
-        ])
+        }
         limitAmount = bn.toString()
       } else {
-        setSpendLimits([newSpendData])
-
+        updated = newSpendData
         limitAmount = newSpendData?.value?.bn.toString()
       }
+
+      // Make sure that the updated SpendLimit is in the same order as the defaults, so that the
+      // UI doesn't jump around when the user edits the amount.
+      setSpendLimits(current =>
+        current.map(limit => (limit === spendLimit ? updated : limit))
+      )
 
       const web3 = new Web3()
 

@@ -20,6 +20,7 @@ import { SpendLimitOptions } from './SpendLimitOptions'
 import { MenuId } from './types'
 import { getDefaultSpendLimitValue } from './utils'
 
+// Render all of the spend limits in order, with the first one optionally showing the amount card. 
 export const SpendLimits = ({
   spendLimits,
   onSelect,
@@ -29,11 +30,39 @@ export const SpendLimits = ({
   hasBalanceChange?: boolean
   onSelect?: (spendLimit: SpendLimit) => void
 }): JSX.Element | null => {
+  if (spendLimits.length === 0) return null
+
+  const showAmountCard = !hasBalanceChange && spendLimits.length === 1
+
+  return (
+    <View style={{ gap: 12 }}>
+      {spendLimits.map((spendLimit, index) => (
+        <SpendLimitItem
+          key={`${spendLimit.tokenApproval.token.symbol}-${
+            spendLimit.tokenApproval.spenderAddress ?? 'no-spender'
+          }-${index}`}
+          spendLimit={spendLimit}
+          showAmountCard={showAmountCard}
+          onSelect={onSelect}
+        />
+      ))}
+    </View>
+  )
+}
+
+const SpendLimitItem = ({
+  spendLimit,
+  showAmountCard,
+  onSelect
+}: {
+  spendLimit: SpendLimit
+  showAmountCard: boolean
+  onSelect?: (spendLimit: SpendLimit) => void
+}): JSX.Element => {
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const spendLimit = spendLimits[0]
-  const spenderAddress = spendLimit?.tokenApproval.spenderAddress
+  const spenderAddress = spendLimit.tokenApproval.spenderAddress
 
   const handleCopySpenderAddress = useCallback(() => {
     if (spenderAddress) {
@@ -42,8 +71,6 @@ export const SpendLimits = ({
   }, [spenderAddress])
 
   const data = useMemo(() => {
-    if (!spendLimit) return []
-
     const defaultSpendLimitValue = getDefaultSpendLimitValue(spendLimit)
     const token = spendLimit.tokenApproval.token
 
@@ -111,15 +138,11 @@ export const SpendLimits = ({
     return items
   }, [spendLimit, onSelect, spenderAddress, handleCopySpenderAddress])
 
-  const tokenValue = spendLimit?.value?.bn
-  const tokenDecimals =
-    spendLimit &&
-    spendLimit.tokenApproval.token &&
-    'decimals' in spendLimit.tokenApproval.token
-      ? spendLimit.tokenApproval.token.decimals
-      : 0
-  const tokenSymbol = spendLimit?.tokenApproval.token.symbol
-  const limitType = spendLimit?.limitType
+  const token = spendLimit.tokenApproval.token
+  const tokenValue = spendLimit.value?.bn
+  const tokenDecimals = token && 'decimals' in token ? token.decimals : 0
+  const tokenSymbol = token.symbol
+  const limitType = spendLimit.limitType
   const marketToken = useMarketTokenBySymbol({ symbol: tokenSymbol })
 
   const [amount, amountInCurrency] = useMemo(() => {
@@ -159,7 +182,7 @@ export const SpendLimits = ({
   ])
 
   const renderSpendLimit = (): JSX.Element | null => {
-    if (hasBalanceChange) return null
+    if (!showAmountCard) return null
 
     return (
       <View
