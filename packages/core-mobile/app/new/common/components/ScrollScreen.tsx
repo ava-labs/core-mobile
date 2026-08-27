@@ -215,9 +215,13 @@ export const ScrollScreen = forwardRef<ScrollView, ScrollScreenProps>(
     // Static-`true` from mount is the only way to guarantee the flag is set
     // before that resolution runs — the same pattern `ListScreenV2` already
     // uses unconditionally for its Android nested scroll (CP-14376). From
-    // there, Android's own `onNestedPreScroll` (only consumes a downward
-    // drag when the child reports `canScrollVertically(-1) === false`)
-    // handles the scroll-vs-dismiss split (CP-14679, CP-14765, CP-14976).
+    // there the scroll-vs-dismiss split is arbitrated natively in two layers
+    // (CP-14679, CP-14765, CP-14976): our react-native-screens patch
+    // (`GestureAwareBottomSheetBehavior`, see patches/) first declines the
+    // whole gesture for the sheet when it starts with the content scrolled,
+    // and for gestures that do start at the top, Android's own
+    // `onNestedPreScroll` only hands the sheet a downward drag while the
+    // child reports `canScrollVertically(-1) === false`.
 
     const checkScrolledToEnd = useCallback(
       (contentOffsetY: number) => {

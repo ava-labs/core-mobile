@@ -413,6 +413,20 @@ describe('ScrollScreen Android form-sheet swipe-to-dismiss (non-keyboard branch)
       ).toBe(true)
     })
 
+    // The keyboard-aware branch renders a different scroll component but must
+    // carry the identical static flag — the two branches gained it at
+    // different times before (CP-14679 vs CP-14765) and drifted.
+    it('enables nested scrolling statically on the keyboard-aware branch too', async () => {
+      const instance = await render({
+        isModal: true,
+        shouldAvoidKeyboard: true
+      })
+
+      expect(
+        instance.root.findByType(ScrollView).props.nestedScrollEnabled
+      ).toBe(true)
+    })
+
     it('leaves non-modal screens under the transparent header', async () => {
       const instance = await render({ isModal: false })
 
