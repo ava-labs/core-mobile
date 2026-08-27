@@ -70,7 +70,11 @@ import {
   SolanaTransactionRequest,
   SignatureRSV
 } from './types'
-import { getAddressDerivationPath, handleLedgerError } from './utils'
+import {
+  assertSvmTransactionSigner,
+  getAddressDerivationPath,
+  handleLedgerError
+} from './utils'
 
 export class LedgerWallet implements Wallet {
   private derivationPathSpec: LedgerDerivationPathType
@@ -790,11 +794,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Got address from Ledger:', userAddress)
 
       // Verify this is the correct account
-      if (transaction.account !== userAddress) {
-        throw new Error(
-          `Account mismatch: transaction account ${transaction.account} does not match Ledger account ${userAddress}`
-        )
-      }
+      assertSvmTransactionSigner({
+        derivedAddress: userAddress,
+        expectedAddress: transaction.account
+      })
 
       // Deserialize and compile the transaction
       Logger.info('Deserializing transaction message')

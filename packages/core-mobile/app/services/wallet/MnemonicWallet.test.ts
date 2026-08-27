@@ -9,7 +9,11 @@ import { RpcMethod } from 'store/rpc/types'
 import * as ethSignUtil from '@metamask/eth-sig-util'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { deriveAddressesForSvm } from '@avalabs/crypto-sdk'
 import { MnemonicWallet } from './MnemonicWallet'
+
+const MOCK_SVM_ADDRESS = 'HAgk14JCTHbF7CnKMz1PBpJqPuUfmYSDsgLQXzHcxLDT'
+const OTHER_SVM_ADDRESS = 'oeYf6KAJkVELrMEHzFmyRVrTvJgnZzXrLzPTaKp3Vzp'
 
 const TYPED_DATA = {
   types: {
@@ -243,13 +247,48 @@ describe('MnemonicWallet', () => {
     })
 
     it('should sign Solana transaction', async () => {
+      deriveAddressesForSvm.mockResolvedValue([MOCK_SVM_ADDRESS])
+
       const result = await mnemonicWallet.signSvmTransaction({
         accountIndex: 0,
-        transaction: { serializedTx: 'anyTransaction' }, // The actual value doesn't matter now
+        transaction: {
+          account: MOCK_SVM_ADDRESS,
+          serializedTx: 'anyTransaction'
+        },
         network: { vmName: 'SVM' },
         provider: mockSolanaProvider
       })
       expect(result).toBe('mockedSignedTx')
+    })
+
+    // An imported private key backs exactly one Solana address, so the signer must refuse a request naming any other account.
+    it('should refuse to sign a Solana transaction for a different account', async () => {
+      deriveAddressesForSvm.mockResolvedValue([MOCK_SVM_ADDRESS])
+
+      await expect(
+        mnemonicWallet.signSvmTransaction({
+          accountIndex: 0,
+          transaction: {
+            account: OTHER_SVM_ADDRESS,
+            serializedTx: 'anyTransaction'
+          },
+          network: { vmName: 'SVM' },
+          provider: mockSolanaProvider
+        })
+      ).rejects.toThrow('Solana transaction signer mismatch')
+    })
+
+    it('should refuse to sign a Solana transaction with no account address', async () => {
+      deriveAddressesForSvm.mockResolvedValue([MOCK_SVM_ADDRESS])
+
+      await expect(
+        mnemonicWallet.signSvmTransaction({
+          accountIndex: 0,
+          transaction: { serializedTx: 'anyTransaction' },
+          network: { vmName: 'SVM' },
+          provider: mockSolanaProvider
+        })
+      ).rejects.toThrow('Solana transaction signer verification failed')
     })
 
     it('should handle invalid Solana message format', async () => {

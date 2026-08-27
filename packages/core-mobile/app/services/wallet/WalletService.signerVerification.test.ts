@@ -218,7 +218,8 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
       ).rejects.toThrow('EVM transaction signer mismatch')
     })
 
-    it('does not verify when fromAddress is not provided', async () => {
+    // Check that the fail-closed behavior is enforced even when the wallet implementation
+    it('refuses to sign an EVM transaction with no address to verify against', async () => {
       const signedTx = await buildSignedTx()
       signEvmTransactionMock.mockResolvedValue(signedTx)
       mockWalletWith({ signEvmTransaction: signEvmTransactionMock })
@@ -231,7 +232,64 @@ describe('WalletService EVM signer-recovery verification (real crypto)', () => {
           accountIndex: 0,
           network
         })
-      ).resolves.toBe(signedTx)
+      ).rejects.toThrow(
+        'EVM signing requires the approved signer address for verification'
+      )
+    })
+
+    it('does not sign at all when the address is missing', async () => {
+      signEvmTransactionMock.mockResolvedValue(await buildSignedTx())
+      mockWalletWith({ signEvmTransaction: signEvmTransactionMock })
+
+      await expect(
+        WalletService.sign({
+          walletId: 'w1',
+          walletType: 'MNEMONIC' as never,
+          transaction: { to: OTHER_ADDRESS, value: 0n } as never,
+          accountIndex: 0,
+          network
+        })
+      ).rejects.toThrow()
+
+      expect(signEvmTransactionMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('fail-closed for EVM message signing', () => {
+    it('refuses personal_sign with no address to verify against', async () => {
+      const evmSignMock = jest.fn()
+      mockWalletWith({ signMessage: evmSignMock })
+
+      await expect(
+        WalletService.signMessage({
+          walletId: 'w1',
+          walletType: 'MNEMONIC' as never,
+          rpcMethod: RpcMethod.PERSONAL_SIGN,
+          data: '0xdeadbeef',
+          accountIndex: 0,
+          network
+        })
+      ).rejects.toThrow(
+        'EVM message signing requires the approved signer address for verification'
+      )
+
+      expect(evmSignMock).not.toHaveBeenCalled()
+    })
+
+    it('still allows a non-EVM message method with no address', async () => {
+      const svmSignMock = jest.fn().mockResolvedValue('sig')
+      mockWalletWith({ signMessage: svmSignMock })
+
+      await expect(
+        WalletService.signMessage({
+          walletId: 'w1',
+          walletType: 'MNEMONIC' as never,
+          rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
+          data: 'hello',
+          accountIndex: 0,
+          network
+        })
+      ).resolves.toBe('sig')
     })
   })
 })

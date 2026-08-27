@@ -1,5 +1,10 @@
 // @ts-nocheck
-import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  JsonRpcBatchInternal,
+  SolanaSigner
+} from '@avalabs/core-wallets-sdk'
+import { deriveAddressesForSvm } from '@avalabs/crypto-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { PrivateKeyWallet } from './PrivateKeyWallet'
@@ -83,6 +88,60 @@ describe('PrivateKeyWallet', () => {
       expect(typeof result).toBe('string')
       expect(result.length).toBeGreaterThan(0)
       expect(NetworkService.getAvalancheProviderXP).toHaveBeenCalledWith(false)
+    })
+  })
+
+  // An imported private key backs exactly one Solana address, so the signer must refuse a request naming any other account.
+  describe('signSvmTransaction', () => {
+    const DERIVED_SVM_ADDRESS = 'HAgk14JCTHbF7CnKMz1PBpJqPuUfmYSDsgLQXzHcxLDT'
+    const OTHER_SVM_ADDRESS = 'oeYf6KAJkVELrMEHzFmyRVrTvJgnZzXrLzPTaKp3Vzp'
+
+    beforeEach(() => {
+      deriveAddressesForSvm.mockResolvedValue([DERIVED_SVM_ADDRESS])
+      jest
+        .spyOn(SolanaSigner.prototype, 'signTx')
+        .mockResolvedValue('mockedSignedTx')
+    })
+
+    it('signs when the request names the wallet own Solana address', async () => {
+      const result = await wallet.signSvmTransaction({
+        accountIndex: 0,
+        transaction: {
+          account: DERIVED_SVM_ADDRESS,
+          serializedTx: 'anyTransaction'
+        },
+        network: { vmName: 'SVM' },
+        provider: {}
+      })
+
+      expect(result).toBe('mockedSignedTx')
+    })
+
+    it('refuses to sign for a different account', async () => {
+      await expect(
+        wallet.signSvmTransaction({
+          accountIndex: 0,
+          transaction: {
+            account: OTHER_SVM_ADDRESS,
+            serializedTx: 'anyTransaction'
+          },
+          network: { vmName: 'SVM' },
+          provider: {}
+        })
+      ).rejects.toThrow('Solana transaction signer mismatch')
+      expect(SolanaSigner.prototype.signTx).not.toHaveBeenCalled()
+    })
+
+    it('refuses to sign when the request carries no account address', async () => {
+      await expect(
+        wallet.signSvmTransaction({
+          accountIndex: 0,
+          transaction: { serializedTx: 'anyTransaction' },
+          network: { vmName: 'SVM' },
+          provider: {}
+        })
+      ).rejects.toThrow('Solana transaction signer verification failed')
+      expect(SolanaSigner.prototype.signTx).not.toHaveBeenCalled()
     })
   })
 })

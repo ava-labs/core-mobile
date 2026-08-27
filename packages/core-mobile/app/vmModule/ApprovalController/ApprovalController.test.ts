@@ -1214,7 +1214,7 @@ describe('ApprovalController', () => {
       expect(alert?.type).toBe('Warning')
       expect(alert?.details).toEqual({
         title: 'Manual approval required',
-        description: 'Manual approval required\nSlippage tolerance exceeded'
+        description: 'Slippage tolerance exceeded'
       })
     })
 
@@ -1291,7 +1291,7 @@ describe('ApprovalController', () => {
         expect(alert?.type).toBe('Warning')
         expect(alert?.details).toEqual({
           title: 'Manual approval required',
-          description: 'Manual approval required\nSlippage tolerance exceeded'
+          description: 'Slippage tolerance exceeded'
         })
         expect(mockSign).not.toHaveBeenCalled()
       } finally {
@@ -1336,6 +1336,7 @@ describe('ApprovalController', () => {
           walletId: 'wallet-1',
           walletType: 'mnemonic',
           accountIndex: 0,
+          fromAddress: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
           network: { chainId: 43114, vmName: 'EVM' }
         }
       } as RpcRequest)
@@ -1415,6 +1416,7 @@ describe('ApprovalController', () => {
             walletId: 'w1',
             walletType: 'MNEMONIC',
             accountIndex: 0,
+            fromAddress: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             network: {}
           }
         },
@@ -1463,6 +1465,7 @@ describe('ApprovalController', () => {
             walletId: 'w1',
             walletType: 'MNEMONIC',
             accountIndex: 0,
+            fromAddress: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             network: {}
           }
         },
@@ -1542,6 +1545,7 @@ describe('ApprovalController', () => {
             walletId: 'w1',
             walletType: 'MNEMONIC',
             accountIndex: 0,
+            fromAddress: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
             network: {}
           }
         },
@@ -1591,7 +1595,8 @@ describe('ApprovalController', () => {
       expect(firstCallArgs).toMatchObject({
         walletId: 'wallet-1',
         walletType: 'mnemonic',
-        accountIndex: 0
+        accountIndex: 0,
+        fromAddress: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
       })
     })
 
@@ -1667,7 +1672,7 @@ describe('ApprovalController', () => {
       expect(alert?.type).toBe('Warning')
       expect(alert?.details).toEqual({
         title: 'Manual approval required',
-        description: 'Manual approval required\nSlippage tolerance exceeded'
+        description: 'Slippage tolerance exceeded'
       })
     })
 

@@ -1,5 +1,7 @@
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { deriveAddressesForSvm } from '@avalabs/crypto-sdk'
+import Logger from 'utils/Logger'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import {
@@ -243,5 +245,43 @@ export const handleLedgerError = ({
     throw new Error(
       `This transaction cannot be clear-signed. Please enable blind signing in the Ledger ${ledgerAppName} app settings and try again.`
     )
+  }
+}
+
+// Check that the Solana transaction signer derives to the same address the approval prompt displayed.
+export const deriveSvmAddress = async (
+  publicKey: Uint8Array
+): Promise<string> => {
+  const [address] = await deriveAddressesForSvm([publicKey])
+
+  if (!address) {
+    throw new Error('Failed to derive Solana address for signer verification')
+  }
+
+  return address
+}
+
+// Check that the Solana transaction signer derives to the same address the approval prompt displayed.
+export const assertSvmTransactionSigner = ({
+  derivedAddress,
+  expectedAddress
+}: {
+  derivedAddress: string
+  expectedAddress: string | undefined
+}): void => {
+  if (!expectedAddress) {
+    Logger.error(
+      'Solana transaction signer verification: request carries no account address'
+    )
+    throw new Error('Solana transaction signer verification failed')
+  }
+
+  if (derivedAddress !== expectedAddress) {
+    // Log the addresses internally only — the thrown error is wrapped into an
+    // RPC error returned to the dApp, so it must not embed account addresses.
+    Logger.error(
+      `Solana transaction signer mismatch: derived=${derivedAddress}, expected=${expectedAddress}`
+    )
+    throw new Error('Solana transaction signer mismatch')
   }
 }

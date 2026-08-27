@@ -30,7 +30,11 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import { getEvmTypedDataVersion } from 'services/wallet/utils'
+import {
+  assertSvmTransactionSigner,
+  deriveSvmAddress,
+  getEvmTypedDataVersion
+} from 'services/wallet/utils'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { Curve } from 'utils/publicKeys'
 import { ed25519 } from '@noble/curves/ed25519'
@@ -310,6 +314,14 @@ export class PrivateKeyWallet implements Wallet {
     network: Network
     provider: SolanaProvider
   }): Promise<string> {
+    // Verify that the derived address from the private key matches the account address in the transaction
+    assertSvmTransactionSigner({
+      derivedAddress: await deriveSvmAddress(
+        hex.decode(await this.getPublicKeyFor({ curve: Curve.ED25519 }))
+      ),
+      expectedAddress: transaction.account
+    })
+
     const signer = await this.getSvmSigner()
     return signer.signTx(transaction.serializedTx, provider)
   }

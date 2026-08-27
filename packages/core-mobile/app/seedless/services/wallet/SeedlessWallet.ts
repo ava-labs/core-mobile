@@ -43,7 +43,10 @@ import { Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
-import { getAddressDerivationPath } from 'services/wallet/utils'
+import {
+  assertSvmTransactionSigner,
+  getAddressDerivationPath
+} from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
@@ -460,6 +463,11 @@ export default class SeedlessWallet implements Wallet {
         cs.Ed25519.Solana,
         solanaPublicKey
       )
+
+      assertSvmTransactionSigner({
+        derivedAddress: solanaKey.material_id,
+        expectedAddress: transaction.account
+      })
 
       // Copy the exact extension implementation
       const txMessage = await deserializeTransactionMessage(

@@ -285,6 +285,12 @@ class WalletService {
             'Unable to sign evm transaction: wrong provider obtained'
           )
 
+        if (!fromAddress) {
+          throw new Error(
+            'EVM signing requires the approved signer address for verification'
+          )
+        }
+
         const signedEvmTx = await wallet.signEvmTransaction({
           accountIndex,
           transaction,
@@ -292,9 +298,7 @@ class WalletService {
           provider
         })
 
-        if (fromAddress) {
-          assertEvmTransactionSigner(signedEvmTx, fromAddress)
-        }
+        assertEvmTransactionSigner(signedEvmTx, fromAddress)
 
         return signedEvmTx
       }
@@ -331,6 +335,12 @@ class WalletService {
       walletId,
       walletType
     })
+
+    if (!fromAddress && isEvmSignMethod(rpcMethod)) {
+      throw new Error(
+        'EVM message signing requires the approved signer address for verification'
+      )
+    }
 
     const signature = await wallet.signMessage({
       rpcMethod,

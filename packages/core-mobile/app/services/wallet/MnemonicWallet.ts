@@ -31,7 +31,12 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { Curve } from 'utils/publicKeys'
-import { getEvmTypedDataVersion } from 'services/wallet/utils'
+import {
+  assertSvmTransactionSigner,
+  deriveSvmAddress,
+  getAddressDerivationPath,
+  getEvmTypedDataVersion
+} from 'services/wallet/utils'
 import slip10 from 'micro-key-producer/slip10.js'
 import type HDKey from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed } from 'bip39'
@@ -401,12 +406,30 @@ export class MnemonicWallet implements Wallet {
     provider: SolanaProvider
   }): Promise<string> {
     try {
+      // Verify that the derived address from the private key matches the account address in the transaction
+      assertSvmTransactionSigner({
+        derivedAddress: await this.getSvmAddress(accountIndex),
+        expectedAddress: transaction.account
+      })
+
       const signer = await this.getSvmSigner(accountIndex)
       return await signer.signTx(transaction.serializedTx, provider)
     } catch (error) {
       Logger.error('🔍 Error in signSolanaTransaction:', error)
       throw error
     }
+  }
+
+  private async getSvmAddress(accountIndex: number): Promise<string> {
+    const publicKey = await this.getPublicKeyFor({
+      derivationPath: getAddressDerivationPath({
+        accountIndex,
+        vmType: NetworkVMType.SVM
+      }),
+      curve: Curve.ED25519
+    })
+
+    return deriveSvmAddress(hex.decode(publicKey))
   }
 
   private async signSolanaMessage(
