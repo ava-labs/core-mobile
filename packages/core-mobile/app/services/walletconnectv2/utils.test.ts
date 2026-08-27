@@ -6,7 +6,12 @@ import {
 } from '@avalabs/core-chains-sdk'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { Account } from 'store/account'
-import { getAddressWithCaip2ChainId } from './utils'
+import {
+  getAddressWithCaip2ChainId,
+  isAddressApprovedInNamespace,
+  isChainDeclaredInSession,
+  updateAccountListInNamespace
+} from './utils'
 
 // Mock data
 const mockAccount: Account = {
@@ -132,5 +137,162 @@ describe('getAddressWithCaip2ChainId', () => {
       caip2ChainId: AvalancheCaip2ChainId.P
     })
     expect(result).toBeUndefined()
+  })
+})
+
+// Check that the session's approved account set is not widened by a network switch or active-account change 
+describe('isAddressApprovedInNamespace', () => {
+  const approved = [
+    'eip155:1:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b',
+    'eip155:43114:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b'
+  ]
+
+  it('accepts the same address on a chain the session has not seen yet', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'eip155:137:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b',
+        accounts: approved
+      })
+    ).toBe(true)
+  })
+
+  it('accepts an EVM address that differs only by checksum casing', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'eip155:1:0x241b0073b66bfc19fcb54308861f604f5eb8f51b',
+        accounts: approved
+      })
+    ).toBe(true)
+  })
+
+  it('rejects an address the session was never approved for', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'eip155:1:0x000000000000000000000000000000000000dEaD',
+        accounts: approved
+      })
+    ).toBe(false)
+  })
+
+  it('does not lowercase non-EVM addresses', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'solana:mainnet:SoLaNaAddress',
+        accounts: ['solana:mainnet:solanaaddress']
+      })
+    ).toBe(false)
+  })
+
+  it('rejects a malformed account string', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'eip155:1:',
+        accounts: approved
+      })
+    ).toBe(false)
+  })
+
+  it('rejects against an empty approved list', () => {
+    expect(
+      isAddressApprovedInNamespace({
+        caip10Account: 'eip155:1:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b',
+        accounts: []
+      })
+    ).toBe(false)
+  })
+})
+
+describe('updateAccountListInNamespace', () => {
+  it('adds the CAIP-10 entry for an already approved address', () => {
+    const accounts = ['eip155:1:0xAbC']
+
+    expect(
+      updateAccountListInNamespace({ account: 'eip155:137:0xAbC', accounts })
+    ).toBe(true)
+    expect(accounts).toEqual(['eip155:1:0xAbC', 'eip155:137:0xAbC'])
+  })
+
+  it('is a no-op when the entry is already present', () => {
+    const accounts = ['eip155:1:0xAbC']
+
+    expect(
+      updateAccountListInNamespace({ account: 'eip155:1:0xAbC', accounts })
+    ).toBe(true)
+    expect(accounts).toEqual(['eip155:1:0xAbC'])
+  })
+
+  it('refuses to add an unapproved account and leaves the list untouched', () => {
+    const accounts = ['eip155:1:0xAbC']
+
+    expect(
+      updateAccountListInNamespace({
+        account: 'eip155:1:0x000000000000000000000000000000000000dEaD',
+        accounts
+      })
+    ).toBe(false)
+    expect(accounts).toEqual(['eip155:1:0xAbC'])
+  })
+})
+
+// Check that the session's declared chain set is not widened by a network switch
+describe('isChainDeclaredInSession', () => {
+  const session = {
+    namespaces: { eip155: { chains: ['eip155:1'] } },
+    requiredNamespaces: { eip155: { chains: ['eip155:43114'] } },
+    optionalNamespaces: { eip155: { chains: ['eip155:137'] } }
+  }
+
+  const check = (caip2ChainId: string): boolean =>
+    isChainDeclaredInSession({
+      session,
+      blockchainNamespace: 'eip155',
+      caip2ChainId
+    })
+
+  it('accepts a chain already approved on the session', () => {
+    expect(check('eip155:1')).toBe(true)
+  })
+
+  it('accepts a chain the dApp required but was not approved for', () => {
+    expect(check('eip155:43114')).toBe(true)
+  })
+
+  it('accepts a chain the dApp listed as optional', () => {
+    expect(check('eip155:137')).toBe(true)
+  })
+
+  it('rejects a chain nobody ever proposed', () => {
+    expect(check('eip155:56')).toBe(false)
+  })
+
+  it('rejects a chain from another namespace', () => {
+    expect(
+      isChainDeclaredInSession({
+        session,
+        blockchainNamespace: 'solana',
+        caip2ChainId: 'eip155:1'
+      })
+    ).toBe(false)
+  })
+
+  it('handles chain-scoped namespace keys that carry no chains array', () => {
+    expect(
+      isChainDeclaredInSession({
+        // CAIP-25 also allows `'eip155:1': {...}` with no `chains`.
+        session: { namespaces: { 'eip155:1': {} } },
+        blockchainNamespace: 'eip155',
+        caip2ChainId: 'eip155:1'
+      })
+    ).toBe(true)
+  })
+
+  it('tolerates a session with no required/optional namespaces', () => {
+    expect(
+      isChainDeclaredInSession({
+        session: { namespaces: { eip155: { chains: ['eip155:1'] } } },
+        blockchainNamespace: 'eip155',
+        caip2ChainId: 'eip155:999'
+      })
+    ).toBe(false)
   })
 })

@@ -23,6 +23,7 @@ import {
 } from './types'
 import {
   getAddressWithCaip2ChainId,
+  isChainDeclaredInSession,
   updateAccountListInNamespace,
   updateChainListInNamespace
 } from './utils'
@@ -236,6 +237,9 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     const namespaces: SessionTypes.Namespaces = {}
 
+    // Tracks whether the active account is one the session was approved for.
+    let isActiveAccountApproved = false
+
     for (const key of Object.keys(session.namespaces)) {
       const namespace = session.namespaces[key]
 
@@ -244,12 +248,21 @@ class WalletConnectService implements WalletConnectServiceInterface {
       // for the matching namespace, we need to update both chain and account lists
       // for the rest, we just leave as is
       if (key === blockchainNamespace) {
-        updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
-
-        updateAccountListInNamespace({
+        isActiveAccountApproved = updateAccountListInNamespace({
           account: addressWithCaip2ChainId,
           accounts: namespace.accounts
         })
+
+        if (
+          isActiveAccountApproved &&
+          isChainDeclaredInSession({
+            session,
+            blockchainNamespace,
+            caip2ChainId
+          })
+        ) {
+          updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
+        }
       }
 
       namespaces[key] = { ...namespace }
@@ -262,6 +275,13 @@ class WalletConnectService implements WalletConnectServiceInterface {
       topic,
       namespaces
     })
+
+    if (!isActiveAccountApproved) {
+      Logger.info(
+        `skipping wallet connect account/chain events for session '${session.peer.metadata.name}': the active account is not in the session's approved account set`
+      )
+      return
+    }
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
@@ -374,6 +394,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
             ]
 
         this.updateNamespaceForNonEvmCaip2ChainId({
+          session,
           account,
           namespace,
           caip2ChainIds,
@@ -387,6 +408,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
           : [BitcoinCaip2ChainId.MAINNET]
 
         this.updateNamespaceForNonEvmCaip2ChainId({
+          session,
           account,
           namespace,
           caip2ChainIds,
@@ -406,28 +428,42 @@ class WalletConnectService implements WalletConnectServiceInterface {
   }
 
   private updateNamespaceForNonEvmCaip2ChainId = ({
+    session,
     account,
     namespace,
     caip2ChainIds,
     blockchainNamespace
   }: {
+    session: SessionTypes.Struct
     account: Account
     namespace: SessionTypes.Namespace
     caip2ChainIds: string[]
     blockchainNamespace: BlockchainNamespace
   }): void => {
     caip2ChainIds.forEach(caip2ChainId => {
-      updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
       const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
         account,
         blockchainNamespace,
         caip2ChainId
       })
-      addressWithCaip2ChainId &&
-        updateAccountListInNamespace({
+
+      // check if the active account is one the session was approved for.
+      if (
+        !addressWithCaip2ChainId ||
+        !updateAccountListInNamespace({
           account: addressWithCaip2ChainId,
           accounts: namespace.accounts
+        }) ||
+        !isChainDeclaredInSession({
+          session,
+          blockchainNamespace,
+          caip2ChainId
         })
+      ) {
+        return
+      }
+
+      updateChainListInNamespace({ chains: namespace.chains, caip2ChainId })
     })
   }
 
