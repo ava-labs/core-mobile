@@ -258,7 +258,7 @@ const populateSigningAddressCache = async (
   const { onApprove: capturedOnApprove } =
     mockWalletConnectCacheSet.mock.calls[
       mockWalletConnectCacheSet.mock.calls.length - 1
-    ][0]
+    ][1]
   await capturedOnApprove({
     walletType: WalletType.MNEMONIC,
     walletId: 'w1',
@@ -766,7 +766,7 @@ describe('ApprovalController', () => {
         const { onApprove: capturedOnApprove } =
           mockWalletConnectCacheSet.mock.calls[
             mockWalletConnectCacheSet.mock.calls.length - 1
-          ][0]
+          ][1]
         await capturedOnApprove({
           walletType: WalletType.MNEMONIC,
           walletId: 'w1',
@@ -791,7 +791,7 @@ describe('ApprovalController', () => {
         const { onApprove: capturedOnApprove } =
           mockWalletConnectCacheSet.mock.calls[
             mockWalletConnectCacheSet.mock.calls.length - 1
-          ][0]
+          ][1]
         await capturedOnApprove({
           walletType: WalletType.MNEMONIC,
           walletId: 'w1',
@@ -818,7 +818,7 @@ describe('ApprovalController', () => {
         const { onApprove: capturedOnApprove } =
           mockWalletConnectCacheSet.mock.calls[
             mockWalletConnectCacheSet.mock.calls.length - 1
-          ][0]
+          ][1]
         await capturedOnApprove({
           walletType: WalletType.MNEMONIC,
           walletId: 'w1',
@@ -1360,7 +1360,7 @@ describe('ApprovalController', () => {
       const captureOnApprove = (): ((params: unknown) => Promise<void>) =>
         mockWalletConnectCacheSet.mock.calls[
           mockWalletConnectCacheSet.mock.calls.length - 1
-        ][0].onApprove
+        ][1].onApprove
 
       it('rejects at approval time when the live signer is not granted', async () => {
         mockGetSession.mockReturnValue(avaxSessionGranting(GRANTED_AVM))
@@ -1456,7 +1456,10 @@ describe('ApprovalController', () => {
 
       expect(mockRouter.navigate).toHaveBeenCalledWith({
         pathname: '/approval',
-        params: { presentationMode: NavigationPresentationMode.FORM_SHEET }
+        params: {
+          requestId: request.requestId,
+          presentationMode: NavigationPresentationMode.FORM_SHEET
+        }
       })
     })
 
@@ -1468,7 +1471,7 @@ describe('ApprovalController', () => {
 
       expect(mockRouter.navigate).toHaveBeenCalledWith({
         pathname: '/approval',
-        params: { presentationMode: undefined }
+        params: { requestId: request.requestId, presentationMode: undefined }
       })
     })
 
@@ -1477,7 +1480,7 @@ describe('ApprovalController', () => {
       approvalController.requestApproval({ request, displayData, signingData })
 
       const { onApprove: capturedOnApprove } =
-        mockWalletConnectCacheSet.mock.calls[0][0]
+        mockWalletConnectCacheSet.mock.calls[0][1]
 
       const params = {
         walletType: WalletType.MNEMONIC,
@@ -1498,7 +1501,7 @@ describe('ApprovalController', () => {
       approvalController.requestApproval({ request, displayData, signingData })
 
       const { onApprove: capturedOnApprove } =
-        mockWalletConnectCacheSet.mock.calls[0][0]
+        mockWalletConnectCacheSet.mock.calls[0][1]
       const params = { walletType: WalletType.LEDGER } as never
       await capturedOnApprove(params)
 
@@ -1517,7 +1520,7 @@ describe('ApprovalController', () => {
       approvalController.requestApproval({ request, displayData, signingData })
 
       const { onApprove: capturedOnApprove } =
-        mockWalletConnectCacheSet.mock.calls[0][0]
+        mockWalletConnectCacheSet.mock.calls[0][1]
       const params = { walletType: WalletType.LEDGER_LIVE } as never
       await capturedOnApprove(params)
 
@@ -1536,7 +1539,7 @@ describe('ApprovalController', () => {
       approvalController.requestApproval({ request, displayData, signingData })
 
       const { onReject: capturedOnReject } =
-        mockWalletConnectCacheSet.mock.calls[0][0]
+        mockWalletConnectCacheSet.mock.calls[0][1]
       capturedOnReject('User denied')
 
       expect(mockOnReject).toHaveBeenCalledWith(
@@ -2098,7 +2101,7 @@ describe('ApprovalController', () => {
       })
       return mockWalletConnectCacheSet.mock.calls[
         mockWalletConnectCacheSet.mock.calls.length - 1
-      ][0]
+      ][1]
     }
 
     const flushMicrotasks = (): Promise<void> =>
@@ -2228,7 +2231,7 @@ describe('ApprovalController', () => {
       const cached =
         mockWalletConnectCacheSet.mock.calls[
           mockWalletConnectCacheSet.mock.calls.length - 1
-        ][0]
+        ][1]
       expect(cached.signal).toBe(controller.signal)
 
       controller.abort() // settle so nothing lingers
@@ -2423,7 +2426,7 @@ describe('ApprovalController', () => {
       }
 
       // Drive the OLDEST (sign-0) into on-device signing → uncancellable.
-      await mockWalletConnectCacheSet.mock.calls[base][0].onApprove({
+      await mockWalletConnectCacheSet.mock.calls[base][1].onApprove({
         walletType: WalletType.LEDGER
       })
       mockSetReviewTransactionParams.mock.calls[

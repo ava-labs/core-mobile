@@ -13,14 +13,11 @@ const chainInfoSchema = z.object({
       decimals: z.number()
     })
     .optional(),
-  rpcUrls: z
-    .array(
-      z
-        .string()
-        .url()
-        .refine(u => u.startsWith('https://'), { message: 'RPC URL must use HTTPS' })
-    )
-    .optional(),
+  // Shape only. URL policy (valid URL, HTTPS, no localhost/private hosts) is
+  // enforced by validateCustomRpcUrl in the handler, which runs only for chains
+  // being ADDED — an already-known chainId keeps its trusted config and must not
+  // be rejected over the URL the dApp happened to send.
+  rpcUrls: z.array(z.string()).optional(),
   isTestnet: z.boolean().optional()
 })
 

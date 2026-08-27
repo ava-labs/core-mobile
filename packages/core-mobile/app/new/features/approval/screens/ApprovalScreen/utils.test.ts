@@ -557,7 +557,7 @@ describe('withNativeAmountItem', () => {
   })
 })
 
-// Check that the native amount is only shown when the value is actually being signed, 
+// Check that the native amount is only shown when the value is actually being signed,
 // so it doesn't depend on a Blockaid simulation being available.
 describe('getPeerTrustWarning', () => {
   const withContext = (context: Record<string, unknown> | undefined) =>

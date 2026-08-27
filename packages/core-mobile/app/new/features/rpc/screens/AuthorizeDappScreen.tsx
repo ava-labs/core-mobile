@@ -77,23 +77,29 @@ const AuthorizeDappScreen = ({
   // a Core domain — never off the spoofable peerMeta.name.
   const isVerifiedCore = isVerifiedCoreDomain(request.data.verifyContext)
 
-  const alert =
-    trust.level === DappTrustLevel.MALICIOUS
-      ? {
-          type: AlertType.DANGER,
-          message: `${trust.reasons[0]} I understand the risk.`
-        }
-      : trust.level === DappTrustLevel.SUSPICIOUS
-      ? {
-          type: AlertType.DANGER,
-          message: `${trust.reasons[0]} Connect only if you trust it.`
-        }
-      : trust.level === DappTrustLevel.UNVERIFIED
-      ? {
-          type: AlertType.WARNING,
-          message: trust.reasons[0]
-        }
-      : undefined
+  // Every non-TRUSTED verdict carries at least one reason — assessDappTrust
+  // returns an empty list only for TRUSTED — so narrowing on the first reason
+  // never suppresses an alert that would otherwise be shown.
+  const primaryReason = trust.reasons[0]
+
+  const alert = !primaryReason
+    ? undefined
+    : trust.level === DappTrustLevel.MALICIOUS
+    ? {
+        type: AlertType.DANGER,
+        message: `${primaryReason} I understand the risk.`
+      }
+    : trust.level === DappTrustLevel.SUSPICIOUS
+    ? {
+        type: AlertType.DANGER,
+        message: `${primaryReason} Connect only if you trust it.`
+      }
+    : trust.level === DappTrustLevel.UNVERIFIED
+    ? {
+        type: AlertType.WARNING,
+        message: primaryReason
+      }
+    : undefined
 
   return (
     <ActionSheet

@@ -60,28 +60,34 @@ import {
 // pre-existing limit — the `if (isMalformed) return null` is a security
 // invariant (must short-circuit before Approve is reachable), not a render
 // branch we want inlined into the main component's JSX.
-const ApprovalScreen = (props: {
+const ApprovalScreen = ({
+  params
+}: {
   params: ApprovalParams
 }): JSX.Element | null => {
+  // Destructured so the callback depends on the handler itself rather than the
+  // whole params object: calling `params.onReject(...)` as a method makes the
+  // receiver a dependency too (exhaustive-deps asks for `params`), and re-running
+  // this callback on any unrelated params change would hand a stale reject to
+  // useRecurringApprovalContext. onReject is a plain closure, so detaching it
+  // from params is safe.
+  const { onReject } = params
   const rejectAndClose = useCallback(
     (message?: string) => {
-      props.params.onReject(message)
+      onReject(message)
       if (router.canGoBack()) {
         router.back()
       } else if (router.canDismiss()) {
         router.dismissAll()
       }
     },
-    [props.params.onReject]
+    [onReject]
   )
   const { recurringContext, isRecurringContextMalformed } =
-    useRecurringApprovalContext(props.params.request, rejectAndClose)
+    useRecurringApprovalContext(params.request, rejectAndClose)
   if (isRecurringContextMalformed) return null
   return (
-    <ApprovalScreenInner
-      params={props.params}
-      recurringContext={recurringContext}
-    />
+    <ApprovalScreenInner params={params} recurringContext={recurringContext} />
   )
 }
 
