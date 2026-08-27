@@ -1,6 +1,9 @@
 import {
   RpcRequest,
+  Alert,
+  CurrencyItem,
   DetailItem,
+  DetailSection,
   RpcMethod,
   DetailItemType,
   SigningData,
@@ -61,6 +64,43 @@ export const overrideContractItem = (
   return item
 }
 
+export const getPeerTrustWarning = (
+  request: RpcRequest
+): string | undefined => {
+  const warning = request.context?.[RequestContext.PEER_TRUST_WARNING]
+  return typeof warning === 'string' && warning.length > 0 ? warning : undefined
+}
+
+/**
+ * The alert message to display, composed from BOTH parts the module supplies.
+ */
+export const getAlertMessage = (
+  alert: Alert | undefined
+): string | undefined => {
+  if (!alert) return undefined
+
+  const { title, description } = alert.details
+  const trimmedTitle = title?.trim()
+
+  if (!trimmedTitle || description.trimStart().startsWith(trimmedTitle)) {
+    return description
+  }
+
+  return `${trimmedTitle}\n${description}`
+}
+
+/**
+ * Every reason line the module attached to an alert.
+ */
+export const getAlertReasons = (alert: Alert | undefined): string[] => {
+  if (!alert) return []
+
+  const { body, detailedDescription } = alert.details
+  const detail = detailedDescription?.trim()
+
+  return [...(body ?? []), ...(detail ? [detail] : [])]
+}
+
 export const getAccountSelector = (
   signingData: SigningData,
   walletId: string
@@ -110,6 +150,72 @@ export const getInitialGasLimit = (data: SigningData): number | undefined => {
     return Number(data.data.gasLimit || 0)
   }
   return undefined
+}
+
+/**
+ * Warning shown when the module reports that it could not simulate the
+ * transaction
+ */
+export const SIMULATION_UNAVAILABLE_MESSAGE =
+  "This transaction couldn't be simulated, so its effects on your balances aren't shown. Review the details below carefully before approving."
+
+/**
+ * A static "Amount" row derived from the native value actually being signed.
+ */
+export const getNativeAmountItem = ({
+  signingData,
+  symbol,
+  maxDecimals
+}: {
+  signingData: SigningData
+  symbol: string
+  maxDecimals: number
+}): CurrencyItem | undefined => {
+  if (signingData.type !== RpcMethod.ETH_SEND_TRANSACTION) return undefined
+
+  let value: bigint
+
+  try {
+    value = BigInt(signingData.data.value ?? 0)
+  } catch {
+    // A value we can't parse can't be rendered honestly — leave the row out
+    // rather than showing a placeholder. Fee validation surfaces the problem.
+    return undefined
+  }
+
+  if (value <= 0n) return undefined
+
+  return {
+    type: DetailItemType.CURRENCY,
+    label: 'Amount',
+    value,
+    maxDecimals,
+    symbol
+  }
+}
+
+/**
+ * Put the locally derived native-amount row at the top of the transaction
+ * details, unless the module already itemised an amount in the same token (so a
+ * module-side fix can land without producing a duplicate row).
+ */
+export const withNativeAmountItem = (
+  section: DetailSection,
+  amountItem: CurrencyItem | undefined
+): DetailSection => {
+  if (!amountItem) return section
+
+  const alreadyItemised = section.items.some(
+    item =>
+      typeof item !== 'string' &&
+      (item.type === DetailItemType.CURRENCY ||
+        item.type === DetailItemType.FUNDS_RECIPIENT) &&
+      item.symbol === amountItem.symbol
+  )
+
+  if (alreadyItemised) return section
+
+  return { ...section, items: [amountItem, ...section.items] }
 }
 
 export const getHasBalanceChange = (

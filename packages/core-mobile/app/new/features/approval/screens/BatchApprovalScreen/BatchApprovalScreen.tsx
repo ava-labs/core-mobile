@@ -13,9 +13,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Platform } from 'react-native'
 import { BatchApprovalScreenParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { AlertBody } from 'new/features/approval/components/AlertBody'
 import { AccountNetworkCard } from '../../components/AccountNetworkCard'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
-import { getHasBalanceChange } from '../ApprovalScreen/utils'
+import {
+  getAlertMessage,
+  getAlertReasons,
+  getHasBalanceChange
+} from '../ApprovalScreen/utils'
 import { BatchTxStep } from './BatchTxStep'
 import { useSpendLimitOverrides } from './useSpendLimitOverrides'
 
@@ -196,12 +201,21 @@ const BatchApprovalScreenInner = ({
     }
   }, [submitting, onApprove, overrides])
 
-  const alert = displayData.alert
-    ? {
-        type: displayData.alert.type,
-        message: displayData.alert.details.description
-      }
-    : undefined
+  const alertMessage = getAlertMessage(displayData.alert)
+  const alert =
+    displayData.alert && alertMessage
+      ? { type: displayData.alert.type, message: alertMessage }
+      : undefined
+
+  // The single-tx sheet renders the alert's reason lines; this screen dropped
+  // them, so a DANGER verdict's `body` (e.g. "This transaction is malicious")
+  // never reached the batch overview.
+  const renderAlertBody = (): JSX.Element | null => {
+    const reasons = getAlertReasons(displayData.alert)
+    if (reasons.length === 0) return null
+
+    return <AlertBody reasons={reasons} />
+  }
 
   const handleSeeDetails = useCallback(() => setPage(1), [])
   const handleNext = useCallback(() => setPage(p => p + 1), [])
@@ -262,6 +276,7 @@ const BatchApprovalScreenInner = ({
           onPress: rejectAndClose,
           disabled: submitting
         }}>
+        {renderAlertBody()}
         {getHasBalanceChange(overviewBalanceChange) &&
           overviewBalanceChange && (
             <BalanceChange balanceChange={overviewBalanceChange} />
