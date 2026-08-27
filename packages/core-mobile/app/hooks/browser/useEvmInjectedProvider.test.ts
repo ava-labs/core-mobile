@@ -16,6 +16,7 @@ import {
   JSON_RPC_INTERNAL_ERROR_CODE,
   USER_REJECTED_REQUEST_MESSAGE
 } from './injectedProvider/errors'
+import type { MessageFrameInfo } from './messageFrameInfo'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
 // Read-only RPC now routes through the VM module (CP-14384). Mock the module
@@ -181,6 +182,8 @@ function setupMocks(
   )
 }
 
+const MAIN_FRAME: MessageFrameInfo = { isMainFrame: true }
+
 // Wraps renderHook and seeds a native origin by default. Tests that explicitly
 // want the no-origin path pass an empty string: `renderProvider('')`.
 function renderProvider(url = 'https://example.com') {
@@ -304,7 +307,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
-        'window.__coreProviderEmit(\'chainChanged\', "0x1"); true;'
+        'window.__coreProviderEmit("chainChanged", "0x1"); true;'
       )
     })
 
@@ -316,7 +319,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
-        'window.__coreProviderEmit(\'accountsChanged\', ["0xNewAddr"]); true;'
+        'window.__coreProviderEmit("accountsChanged", ["0xNewAddr"]); true;'
       )
     })
   })
@@ -328,7 +331,7 @@ describe('useEvmInjectedProvider', () => {
       mockInjectJavaScript.mockClear()
 
       act(() => {
-        result.current.handleProviderMessage('not-json')
+        result.current.handleProviderMessage('not-json', MAIN_FRAME)
       })
 
       expect(mockInjectJavaScript).not.toHaveBeenCalled()
@@ -350,7 +353,8 @@ describe('useEvmInjectedProvider', () => {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: '0x1' }]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -387,7 +391,8 @@ describe('useEvmInjectedProvider', () => {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: '0x1' }]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -397,8 +402,12 @@ describe('useEvmInjectedProvider', () => {
             JSON.stringify({
               id: 2,
               origin: 'https://example.com',
-              request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
-            })
+              request: {
+                method: 'personal_sign',
+                params: ['0xMsg', mockActiveAccount.addressC]
+              }
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -432,7 +441,8 @@ describe('useEvmInjectedProvider', () => {
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: '0x1' }]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -443,7 +453,8 @@ describe('useEvmInjectedProvider', () => {
             JSON.stringify({
               id: 2,
               request: { method: 'eth_blockNumber', params: [] }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -470,7 +481,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockDispatch).not.toHaveBeenCalledWith(
@@ -493,7 +504,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockDispatch).not.toHaveBeenCalledWith(
@@ -516,7 +527,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -545,7 +556,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockCreateInAppRequest).toHaveBeenCalledWith(
@@ -562,7 +573,7 @@ describe('useEvmInjectedProvider', () => {
         expect(setActive).not.toHaveBeenCalled()
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining(
-            '__coreProviderEmit(\'chainChanged\', "0xaa36a7")'
+            '__coreProviderEmit("chainChanged", "0xaa36a7")'
           )
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -597,7 +608,8 @@ describe('useEvmInjectedProvider', () => {
                   { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
                 ]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -623,7 +635,8 @@ describe('useEvmInjectedProvider', () => {
                   { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
                 ]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -655,7 +668,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -677,7 +690,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -719,7 +732,8 @@ describe('useEvmInjectedProvider', () => {
                 type: 'ERC20',
                 options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
               }
-            ])
+            ]),
+            MAIN_FRAME
           )
         })
 
@@ -753,7 +767,8 @@ describe('useEvmInjectedProvider', () => {
             makeWatchAssetPayload(2, {
               type: 'ERC20',
               options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -781,7 +796,8 @@ describe('useEvmInjectedProvider', () => {
                 type: 'ERC20',
                 options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
               }
-            ])
+            ]),
+            MAIN_FRAME
           )
         })
 
@@ -844,12 +860,14 @@ describe('useEvmInjectedProvider', () => {
             origin: 'https://example.com',
             request: {
               method: dappMethod,
-              params: ['param1', 'param2']
+              // Granted address in both positions: the signer arg is
+              // params[1] for personal_sign, params[0] for the rest.
+              params: [mockActiveAccount.addressC, mockActiveAccount.addressC]
             }
           })
 
           await act(async () => {
-            result.current.handleProviderMessage(payload)
+            result.current.handleProviderMessage(payload, MAIN_FRAME)
           })
 
           expect(mockCreateInAppRequest).toHaveBeenCalledWith(
@@ -859,7 +877,7 @@ describe('useEvmInjectedProvider', () => {
           expect(mockRequest).toHaveBeenCalledWith(
             expect.objectContaining({
               method: rpcMethod,
-              params: ['param1', 'param2'],
+              params: [mockActiveAccount.addressC, mockActiveAccount.addressC],
               chainId: 'eip155:43114',
               peerMeta: expect.objectContaining({
                 url: 'https://example.com'
@@ -906,9 +924,10 @@ describe('useEvmInjectedProvider', () => {
               origin: 'https://malicious.example',
               request: {
                 method: 'personal_sign',
-                params: ['0xMessage', '0xAddress']
+                params: ['0xMessage', mockActiveAccount.addressC]
               }
-            })
+            }),
+            MAIN_FRAME
           )
         })
 
@@ -938,12 +957,12 @@ describe('useEvmInjectedProvider', () => {
           origin: 'https://example.com',
           request: {
             method: 'personal_sign',
-            params: ['0xMessage', '0xAddress']
+            params: ['0xMessage', mockActiveAccount.addressC]
           }
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -969,12 +988,12 @@ describe('useEvmInjectedProvider', () => {
           origin: 'https://example.com',
           request: {
             method: 'personal_sign',
-            params: ['0xMessage', '0xAddress']
+            params: ['0xMessage', mockActiveAccount.addressC]
           }
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -994,7 +1013,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1022,7 +1041,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         // Must NOT reach the approval pipeline (would otherwise be attributed
@@ -1050,7 +1069,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockRequest).not.toHaveBeenCalled()
@@ -1078,7 +1097,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1108,7 +1127,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1156,7 +1175,7 @@ describe('useEvmInjectedProvider', () => {
           })
 
           await act(async () => {
-            result.current.handleProviderMessage(payload)
+            result.current.handleProviderMessage(payload, MAIN_FRAME)
           })
 
           // Loaded by the active chain's caip2 id, validated against the manifest.
@@ -1186,7 +1205,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1208,7 +1227,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1227,7 +1246,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1249,7 +1268,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockLoadModule).not.toHaveBeenCalled()
@@ -1281,7 +1300,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1310,7 +1329,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1342,7 +1361,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockRequest).toHaveBeenCalledWith(
@@ -1361,7 +1380,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         act(() => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1387,7 +1406,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         await act(async () => {
-          result.current.handleProviderMessage(payload)
+          result.current.handleProviderMessage(payload, MAIN_FRAME)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
@@ -1420,7 +1439,7 @@ describe('useEvmInjectedProvider', () => {
         call[0].includes("__coreProviderEmit('chainChanged'")
       )
       expect(chainChangedCalls).toHaveLength(1)
-      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
+      expect(chainChangedCalls[0][0]).toContain(`'chainChanged', "0x1"`)
     })
 
     it('does not emit chainChanged when the global network changes but the tab has a persisted chainId', () => {
@@ -1602,7 +1621,7 @@ describe('useEvmInjectedProvider', () => {
         call[0].includes("__coreProviderEmit('chainChanged'")
       )
       expect(chainChangedCalls).toHaveLength(1)
-      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
+      expect(chainChangedCalls[0][0]).toContain(`'chainChanged', "0x1"`)
     })
 
     it('clears the per-tab chain pin when developer mode flips (CP-13775)', () => {
@@ -1662,8 +1681,12 @@ describe('useEvmInjectedProvider', () => {
           JSON.stringify({
             id: 99,
             origin: 'https://uniswap.org',
-            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
-          })
+            request: {
+              method: 'personal_sign',
+              params: ['0xMsg', mockActiveAccount.addressC]
+            }
+          }),
+          MAIN_FRAME
         )
       })
 
@@ -1702,8 +1725,12 @@ describe('useEvmInjectedProvider', () => {
           JSON.stringify({
             id: 99,
             origin: 'https://uniswap.org',
-            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
-          })
+            request: {
+              method: 'personal_sign',
+              params: ['0xMsg', mockActiveAccount.addressC]
+            }
+          }),
+          MAIN_FRAME
         )
       })
 
@@ -1735,8 +1762,12 @@ describe('useEvmInjectedProvider', () => {
           JSON.stringify({
             id: 99,
             origin: 'https://uniswap.org',
-            request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
-          })
+            request: {
+              method: 'personal_sign',
+              params: ['0xMsg', mockActiveAccount.addressC]
+            }
+          }),
+          MAIN_FRAME
         )
       })
 

@@ -2,6 +2,7 @@ import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { setTabChainId } from 'store/browser/slices/tabs'
 import type { Networks } from 'store/network/types'
 import type { Account } from 'store/account'
+import type { MessageFrameInfo } from '../messageFrameInfo'
 import {
   EIP1193_USER_REJECTED_CODE,
   JSON_RPC_INTERNAL_ERROR_CODE,
@@ -39,6 +40,8 @@ type MockDeps = {
   deps: RouterDeps
   sendResponse: jest.Mock
   emitEvent: jest.Mock
+  emitAccountsChangedForOrigin: jest.Mock
+  emitEventForOrigin: jest.Mock
   requestSigning: jest.Mock
   requestReadOnly: jest.Mock
   dispatch: jest.Mock
@@ -90,6 +93,8 @@ function makeDeps(overrides?: {
 
   const sendResponse = jest.fn()
   const emitEvent = jest.fn()
+  const emitAccountsChangedForOrigin = jest.fn()
+  const emitEventForOrigin = jest.fn()
   const requestSigning = jest.fn()
   const requestReadOnly = jest.fn().mockResolvedValue('0xreadonly')
   const dispatch = jest.fn()
@@ -125,6 +130,8 @@ function makeDeps(overrides?: {
     requestReadOnly,
     sendResponse,
     emitEvent,
+    emitAccountsChangedForOrigin,
+    emitEventForOrigin,
     getNativeOrigin: () =>
       overrides && 'nativeOrigin' in overrides
         ? overrides.nativeOrigin
@@ -149,6 +156,8 @@ function makeDeps(overrides?: {
     deps,
     sendResponse,
     emitEvent,
+    emitAccountsChangedForOrigin,
+    emitEventForOrigin,
     requestSigning,
     requestReadOnly,
     dispatch,
@@ -163,6 +172,7 @@ function makeDeps(overrides?: {
     currentNetwork
   }
 }
+const MAIN_FRAME: MessageFrameInfo = { isMainFrame: true }
 
 function send(
   router: ReturnType<typeof createInjectedProviderRouter>,
@@ -172,7 +182,8 @@ function send(
   params: unknown = []
 ): void {
   router.handleProviderMessage(
-    JSON.stringify({ id: 1, request: { method, params } })
+    JSON.stringify({ id: 1, request: { method, params } }),
+    MAIN_FRAME
   )
 }
 
@@ -187,7 +198,8 @@ function sendWithId(
     JSON.stringify({
       id,
       request: { method: request.method, params: request.params ?? [] }
-    })
+    }),
+    MAIN_FRAME
   )
 }
 
@@ -632,7 +644,7 @@ describe('createInjectedProviderRouter', () => {
       const { deps, sendResponse } = makeDeps({ nativeOrigin: undefined })
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      send(router, 'personal_sign', ['0xMsg', MOCK_ADDR])
 
       expect(sendResponse).toHaveBeenCalledWith(
         1,
@@ -666,7 +678,8 @@ describe('createInjectedProviderRouter', () => {
           id: 1,
           origin: 'https://evil.example',
           request: { method: 'eth_blockNumber', params: [] }
-        })
+        }),
+        MAIN_FRAME
       )
 
       expect(sendResponse).toHaveBeenCalledWith(
@@ -677,6 +690,183 @@ describe('createInjectedProviderRouter', () => {
         }),
         undefined
       )
+    })
+
+    it('rejects a provider_request the platform reports as coming from a subframe', () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://example.com', // forged to match nativeOrigin
+          request: { method: 'eth_blockNumber', params: [] }
+        }),
+        { isMainFrame: false, frameOrigin: 'https://ad.evil.example' }
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+      expect(requestReadOnly).not.toHaveBeenCalled()
+    })
+
+    it('rejects when the platform-reported frame origin disagrees with the native origin', () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://example.com', // matches nativeOrigin — shim bypassed
+          request: { method: 'eth_blockNumber', params: [] }
+        }),
+        { isMainFrame: true, frameOrigin: 'https://evil.example' }
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          code: -32600,
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+      expect(requestReadOnly).not.toHaveBeenCalled()
+    })
+
+    it('rejects a request fired from a page that navigated the WebView away', () => {
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        // The WebView has already committed the victim site.
+        nativeOrigin: 'https://app.uniswap.org'
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://attacker.example',
+          request: {
+            method: 'personal_sign',
+            params: ['0xdeadbeef', MOCK_ACCOUNT.addressC]
+          }
+        }),
+        { isMainFrame: true, frameOrigin: 'https://attacker.example' }
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+      expect(requestSigning).not.toHaveBeenCalled()
+    })
+
+    it('aborts an in-flight request once the WebView commits a different origin', async () => {
+      const { deps, requestSigning } = makeDeps({
+        nativeOrigin: 'https://attacker.example',
+        grantedAddresses: [MOCK_ACCOUNT.addressC]
+      })
+
+      let observedSignal: AbortSignal | undefined
+      requestSigning.mockImplementation(
+        ({ signal }: { signal?: AbortSignal }) => {
+          observedSignal = signal
+          return new Promise(() => undefined)
+        }
+      )
+
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://attacker.example',
+          request: {
+            method: 'personal_sign',
+            params: ['0xdeadbeef', MOCK_ACCOUNT.addressC]
+          }
+        }),
+        { isMainFrame: true, frameOrigin: 'https://attacker.example' }
+      )
+
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(observedSignal?.aborted).toBe(false)
+
+      // The page navigates the WebView to a site it does not control.
+      router.cancelByOrigin('https://app.uniswap.org')
+
+      expect(observedSignal?.aborted).toBe(true)
+    })
+
+    it('dispatches a main-frame request whose platform-reported origin matches', () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://example.com',
+          request: { method: 'eth_blockNumber', params: [] }
+        }),
+        { isMainFrame: true, frameOrigin: 'https://example.com' }
+      )
+
+      expect(requestReadOnly).toHaveBeenCalled()
+      expect(sendResponse).not.toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('does not treat an opaque/unavailable frame origin as a mismatch', () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          request: { method: 'eth_blockNumber', params: [] }
+        }),
+        { isMainFrame: true, frameOrigin: undefined }
+      )
+
+      expect(requestReadOnly).toHaveBeenCalled()
+      expect(sendResponse).not.toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          message: expect.stringContaining('Origin mismatch')
+        }),
+        undefined
+      )
+    })
+
+    it('fails closed when the platform reports no frame provenance at all', () => {
+      const { deps, sendResponse, requestReadOnly } = makeDeps()
+      const router = createInjectedProviderRouter(deps)
+
+      router.handleProviderMessage(
+        JSON.stringify({
+          id: 1,
+          origin: 'https://example.com',
+          request: { method: 'eth_blockNumber', params: [] }
+        }),
+        { isMainFrame: undefined, frameOrigin: undefined }
+      )
+
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+      expect(requestReadOnly).not.toHaveBeenCalled()
     })
 
     it('does not treat a non-string origin as a mismatch', () => {
@@ -691,7 +881,8 @@ describe('createInjectedProviderRouter', () => {
           id: 1,
           origin: { not: 'a string' },
           request: { method: 'eth_blockNumber', params: [] }
-        })
+        }),
+        MAIN_FRAME
       )
 
       expect(sendResponse).not.toHaveBeenCalledWith(
@@ -710,7 +901,7 @@ describe('createInjectedProviderRouter', () => {
       const { deps, sendResponse } = makeDeps()
       const router = createInjectedProviderRouter(deps)
 
-      router.handleProviderMessage('not-json')
+      router.handleProviderMessage('not-json', MAIN_FRAME)
 
       expect(sendResponse).not.toHaveBeenCalled()
     })
@@ -719,7 +910,10 @@ describe('createInjectedProviderRouter', () => {
       const { deps, sendResponse } = makeDeps()
       const router = createInjectedProviderRouter(deps)
 
-      router.handleProviderMessage(JSON.stringify({ id: 7, request: null }))
+      router.handleProviderMessage(
+        JSON.stringify({ id: 7, request: null }),
+        MAIN_FRAME
+      )
 
       expect(sendResponse).toHaveBeenCalledWith(
         7,
@@ -734,7 +928,8 @@ describe('createInjectedProviderRouter', () => {
 
       const big = 'x'.repeat(2_000_000)
       router.handleProviderMessage(
-        JSON.stringify({ id: 9, request: { method: 'eth_call' }, big })
+        JSON.stringify({ id: 9, request: { method: 'eth_call' }, big }),
+        MAIN_FRAME
       )
 
       expect(sendResponse).toHaveBeenCalledWith(
@@ -807,7 +1002,7 @@ describe('createInjectedProviderRouter', () => {
         sendResponse,
         dispatch,
         setBrowserNetworkSpy,
-        emitEvent,
+        emitEventForOrigin,
         requestSigning
       } = makeDeps()
       requestSigning.mockResolvedValueOnce('')
@@ -820,7 +1015,8 @@ describe('createInjectedProviderRouter', () => {
             method: 'wallet_addEthereumChain',
             params: [{ chainId: '0x1', rpcUrls: ['https://eth.llamarpc.com'] }]
           }
-        })
+        }),
+        MAIN_FRAME
       )
       await new Promise(r => setImmediate(r))
 
@@ -831,7 +1027,11 @@ describe('createInjectedProviderRouter', () => {
       expect(dispatch).toHaveBeenCalledWith(
         setTabChainId({ tabId: 'tab-1', chainId: 1 })
       )
-      expect(emitEvent).toHaveBeenCalledWith('chainChanged', '0x1')
+      expect(emitEventForOrigin).toHaveBeenCalledWith(
+        'chainChanged',
+        '0x1',
+        'https://example.com'
+      )
       expect(sendResponse).toHaveBeenCalledWith(1, null, null)
     })
 
@@ -851,7 +1051,8 @@ describe('createInjectedProviderRouter', () => {
             method: 'wallet_addEthereumChain',
             params: [{ chainId: '0x1', rpcUrls: ['https://eth.llamarpc.com'] }]
           }
-        })
+        }),
+        MAIN_FRAME
       )
       await new Promise(r => setImmediate(r))
 
@@ -971,7 +1172,7 @@ describe('createInjectedProviderRouter', () => {
         grantPermission,
         setActiveAccount,
         activeAccount,
-        emitEvent
+        emitAccountsChangedForOrigin
       } = makeDeps()
       // active = MOCK_ACCOUNT (MOCK_ADDR); user picks a different account.
       const SELECTED = { id: 'acc-2', addressC: OTHER_GRANTED_ADDR } as Account
@@ -993,9 +1194,10 @@ describe('createInjectedProviderRouter', () => {
       expect(setActiveAccount).toHaveBeenCalledWith('acc-2')
       // Reconciles to the now-active, granted account — no 4100, no loop.
       expect(sendResponse).toHaveBeenCalledWith(1, null, [OTHER_GRANTED_ADDR])
-      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [
-        OTHER_GRANTED_ADDR
-      ])
+      expect(emitAccountsChangedForOrigin).toHaveBeenCalledWith(
+        [OTHER_GRANTED_ADDR],
+        'https://example.com'
+      )
     })
 
     it('does NOT switch the active account when it is already among the selection', async () => {
@@ -1027,7 +1229,7 @@ describe('createInjectedProviderRouter', () => {
         sendResponse,
         requestConnectApproval,
         grantPermission,
-        emitEvent
+        emitAccountsChangedForOrigin
       } = makeDeps()
       requestConnectApproval.mockResolvedValueOnce([MOCK_ACCOUNT])
       const router = createInjectedProviderRouter(deps)
@@ -1045,7 +1247,10 @@ describe('createInjectedProviderRouter', () => {
         vmType: NetworkVMType.EVM
       })
       expect(sendResponse).toHaveBeenCalledWith(1, null, [MOCK_ADDR])
-      expect(emitEvent).toHaveBeenCalledWith('accountsChanged', [MOCK_ADDR])
+      expect(emitAccountsChangedForOrigin).toHaveBeenCalledWith(
+        [MOCK_ADDR],
+        'https://example.com'
+      )
     })
 
     it('propagates user rejection from the approval', async () => {
@@ -1293,7 +1498,8 @@ describe('createInjectedProviderRouter', () => {
             method: 'wallet_watchAsset',
             params: { type: 'ERC20', options: { address: '0xAA' } }
           }
-        })
+        }),
+        MAIN_FRAME
       )
       await new Promise(r => setImmediate(r))
 
@@ -1313,13 +1519,13 @@ describe('createInjectedProviderRouter', () => {
       requestSigning.mockResolvedValueOnce('0xSig')
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      send(router, 'personal_sign', ['0xMsg', MOCK_ADDR])
       await new Promise(r => setImmediate(r))
 
       expect(requestSigning).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'personal_sign',
-          params: ['0xMsg', '0xAddr'],
+          params: ['0xMsg', MOCK_ADDR],
           chainId: 'eip155:43114',
           peerMeta: expect.objectContaining({ name: 'example' }),
           signal: expect.any(AbortSignal)
@@ -1337,7 +1543,8 @@ describe('createInjectedProviderRouter', () => {
       })
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      // No signer arg — the request falls back to the active account's grant.
+      send(router, 'personal_sign', ['0xMsg'])
       await new Promise(r => setImmediate(r))
 
       expect(requestSigning).not.toHaveBeenCalled()
@@ -1495,6 +1702,96 @@ describe('createInjectedProviderRouter', () => {
       )
     })
 
+    // The legacy typed-data pair is address-first in the schemas the VM module
+    // parses (`evm-module` parse-request-params: address = params[0]), even
+    // though the MetaMask docs describe it as (typedData, address). Gating on
+    // params[1] found no signer, fell back to the granted active account and
+    // forwarded — and the module then signed with params[0], so a dApp granted
+    // only the active account could harvest a Permit from any sibling account.
+    it.each(['eth_signTypedData', 'eth_signTypedData_v1'])(
+      'rejects %s (4100) when the signer address arg (params[0]) is not granted',
+      async method => {
+        const { deps, sendResponse, requestSigning } = makeDeps({
+          grantedAddresses: [MOCK_ADDR] // active + only granted account
+        })
+        const router = createInjectedProviderRouter(deps)
+
+        send(router, method, [
+          UNGRANTED_ADDR,
+          { types: {}, primaryType: 'Permit', domain: {}, message: {} }
+        ])
+        await new Promise(r => setImmediate(r))
+
+        expect(requestSigning).not.toHaveBeenCalled()
+        expect(sendResponse).toHaveBeenCalledWith(
+          1,
+          expect.objectContaining({ code: 4100 }),
+          undefined
+        )
+      }
+    )
+
+    it.each(['eth_signTypedData', 'eth_signTypedData_v1'])(
+      'allows %s when the signer address arg (params[0]) is granted',
+      async method => {
+        const { deps, requestSigning } = makeDeps({
+          grantedAddresses: [MOCK_ADDR, OTHER_GRANTED_ADDR]
+        })
+        requestSigning.mockResolvedValueOnce('0xSig')
+        const router = createInjectedProviderRouter(deps)
+
+        // A granted account that isn't the active one, checksum-cased.
+        send(router, method, [
+          '0x' + OTHER_GRANTED_ADDR.slice(2).toUpperCase(),
+          { types: {}, primaryType: 'Permit', domain: {}, message: {} }
+        ])
+        await new Promise(r => setImmediate(r))
+
+        expect(requestSigning).toHaveBeenCalled()
+      }
+    )
+
+    it('rejects (4100) when the signer arg is a sibling account address the grant set cannot express', async () => {
+      // The approval screen resolves the signer with
+      // selectAccountByAddressAndWalletId, which matches an account's BTC / X-P
+      // / Solana address too — so the gate must not shape-filter to EVM
+      // addresses. A non-EVM address is never in the EVM grant set, so naming
+      // one has to fail closed rather than fall back to the active account.
+      const { deps, sendResponse, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR]
+      })
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'eth_signTypedData_v4', [
+        'bc1qsiblingaccountbtcaddress0000000000000000',
+        '{"types":{}}'
+      ])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).not.toHaveBeenCalled()
+      expect(sendResponse).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ code: 4100 }),
+        undefined
+      )
+    })
+
+    it('still gates on the active account when no signer arg is given', async () => {
+      // personal_sign without the address arg (and eth_sendTransaction without
+      // `from`) must keep falling back to the active account's grant, not
+      // reject: [] from requestedSignerAddresses means "not named".
+      const { deps, requestSigning } = makeDeps({
+        grantedAddresses: [MOCK_ADDR] // active is granted
+      })
+      requestSigning.mockResolvedValueOnce('0xSig')
+      const router = createInjectedProviderRouter(deps)
+
+      send(router, 'personal_sign', ['0xdeadbeef'])
+      await new Promise(r => setImmediate(r))
+
+      expect(requestSigning).toHaveBeenCalled()
+    })
+
     it('propagates rejection from requestSigning', async () => {
       const { deps, sendResponse, requestSigning } = makeDeps({
         grantedAddresses: [MOCK_ADDR]
@@ -1506,7 +1803,7 @@ describe('createInjectedProviderRouter', () => {
       requestSigning.mockRejectedValueOnce(err)
       const router = createInjectedProviderRouter(deps)
 
-      send(router, 'personal_sign', ['0xMsg', '0xAddr'])
+      send(router, 'personal_sign', ['0xMsg', MOCK_ADDR])
       await new Promise(r => setImmediate(r))
 
       expect(sendResponse).toHaveBeenCalledWith(1, err, undefined)
@@ -1578,7 +1875,7 @@ describe('createInjectedProviderRouter', () => {
 
       sendWithId(router, 42, {
         method: 'personal_sign',
-        params: ['0xMsg', '0xAddr']
+        params: ['0xMsg', MOCK_ADDR]
       })
       await new Promise(r => setImmediate(r))
 
@@ -1602,7 +1899,7 @@ describe('createInjectedProviderRouter', () => {
 
       sendWithId(router, 42, {
         method: 'personal_sign',
-        params: ['0xMsg', '0xAddr']
+        params: ['0xMsg', MOCK_ADDR]
       })
       await new Promise(r => setImmediate(r))
 
@@ -1643,7 +1940,7 @@ describe('createInjectedProviderRouter', () => {
       // Then the signing request for the now-stale origin registers.
       sendWithId(router, 42, {
         method: 'personal_sign',
-        params: ['0xMsg', '0xAddr']
+        params: ['0xMsg', MOCK_ADDR]
       })
       await new Promise(r => setImmediate(r))
 
@@ -1670,7 +1967,7 @@ describe('createInjectedProviderRouter', () => {
 
       sendWithId(router, 42, {
         method: 'personal_sign',
-        params: ['0xMsg', '0xAddr']
+        params: ['0xMsg', MOCK_ADDR]
       })
       await new Promise(r => setImmediate(r))
 
@@ -1688,7 +1985,10 @@ describe('createInjectedProviderRouter', () => {
       })
       const router = createInjectedProviderRouter(deps)
 
-      sendWithId(router, 1, { method: 'personal_sign', params: ['a', 'b'] })
+      sendWithId(router, 1, {
+        method: 'personal_sign',
+        params: ['0xMsg', MOCK_ADDR]
+      })
       await new Promise(r => setImmediate(r))
 
       router.cancelByOrigin('https://other.example')
@@ -1699,7 +1999,10 @@ describe('createInjectedProviderRouter', () => {
       // from that origin gets its own independent, non-aborted signal — the
       // live-origin guard only aborts requests whose origin is now stale.
       router.cancelByOrigin('https://example.com')
-      sendWithId(router, 2, { method: 'personal_sign', params: ['c', 'd'] })
+      sendWithId(router, 2, {
+        method: 'personal_sign',
+        params: ['0xMsg2', MOCK_ADDR]
+      })
       await new Promise(r => setImmediate(r))
       expect(signals[1]).toBeDefined()
       expect(signals[1]?.aborted).toBe(false)

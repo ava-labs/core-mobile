@@ -45,6 +45,7 @@ import {
   DomainMetadata,
   RouterDeps
 } from './injectedProvider/types'
+import type { MessageFrameInfo } from './messageFrameInfo'
 
 // If the connect-approval screen never mounts or never resolves (e.g. Metro
 // hot-reloaded the cache, the page crashed mid-navigation, etc.), reject the
@@ -64,7 +65,7 @@ function getOriginFromUrl(url: string): string | undefined {
 
 type UseEvmInjectedProviderResult = {
   providerShimJs: string
-  handleProviderMessage: (payload: string) => void
+  handleProviderMessage: (payload: string, frame: MessageFrameInfo) => void
   handleDomainMetadata: (payload: string) => void
   emitEvent: (eventName: string, data: unknown) => void
   dappMetadata: React.RefObject<DomainMetadata | null>
@@ -176,11 +177,6 @@ export function useEvmInjectedProvider(
     (url: string) => {
       const prevUrl = currentUrlRef.current
       const prevOrigin = getOriginFromUrl(prevUrl)
-      Logger.warn(
-        `[ProviderSecurity] handleCommittedUrl: ${prevOrigin ?? 'none'} -> ${
-          getOriginFromUrl(url) ?? 'none'
-        } url=${url}`
-      )
       currentUrlRef.current = url
       const newOrigin = getOriginFromUrl(url)
 
@@ -423,6 +419,32 @@ export function useEvmInjectedProvider(
     [webViewRef]
   )
 
+  // Origin-gated accountsChanged for the router's connect/permission/revoke handlers.
+  const emitAccountsChangedForOrigin = useCallback(
+    (accounts: unknown, origin: string): void => {
+      const serialized = JSON.stringify(accounts)
+      lastEmittedAccountsRef.current = serialized
+      injectAccountsChanged(origin, serialized)
+    },
+    [injectAccountsChanged]
+  )
+
+  // Origin-gated emit for non-address provider events (chainChanged). Mirrors
+  // injectAccountsChanged's guard so an event racing a cross-origin navigation
+  // can't land in the next origin's page. No dedupe (unlike accountsChanged).
+  const emitEventForOrigin = useCallback(
+    (eventName: string, data: unknown, origin: string): void => {
+      webViewRef.current?.injectJavaScript(
+        `if(window.location.origin===${JSON.stringify(
+          origin
+        )}){window.__coreProviderEmit && window.__coreProviderEmit(${JSON.stringify(
+          eventName
+        )}, ${JSON.stringify(data)})};true;`
+      )
+    },
+    [webViewRef]
+  )
+
   // Propagate wallet active-account switches to the dApp. MetaMask users
   // expect the wallet's account selector to drive the dApp's connected
   // account — dApps in the in-app browser have no account picker of their own.
@@ -637,6 +659,8 @@ export function useEvmInjectedProvider(
       requestReadOnly,
       sendResponse,
       emitEvent,
+      emitAccountsChangedForOrigin,
+      emitEventForOrigin,
       getNativeOrigin: () => getOriginFromUrl(currentUrlRef.current),
       trackPendingOrigin: (id, origin) => {
         pendingOrigins.current.set(id, origin)
@@ -682,7 +706,8 @@ export function useEvmInjectedProvider(
   }, [router])
 
   const handleProviderMessage = useCallback(
-    (payload: string) => router.handleProviderMessage(payload),
+    (payload: string, frame: MessageFrameInfo) =>
+      router.handleProviderMessage(payload, frame),
     [router]
   )
 
@@ -748,9 +773,6 @@ export function useEvmInjectedProvider(
         provisionalOrigin === currentOrigin
       )
         return
-      Logger.warn(
-        `[ProviderSecurity] provisional cross-origin nav: ${currentOrigin} -> ${provisionalOrigin}`
-      )
       routerRef.current?.cancelByOrigin(provisionalOrigin)
       applyConnectNavEffect(
         connectApprovalRegistry.rejectByTab(tabId, {

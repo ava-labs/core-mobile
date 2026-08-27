@@ -494,7 +494,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               parseDescriptionAndFavicon(wrapper, event)
               break
             case 'provider_request': {
-              handleProviderMessage(wrapper.payload)
+              handleProviderMessage(wrapper.payload, frame)
               break
             }
             case 'domain_metadata': {
