@@ -53,15 +53,17 @@ export const processRequest = async (
   } catch (error) {
     Logger.error('rpc request is invalid', error)
 
-    if (error instanceof JsonRpcError) {
-      rpcProvider.onError({
-        request,
-        error,
-        listenerApi
-      })
+    // A failed validation must ALWAYS stop the request. 
+    rpcProvider.onError({
+      request,
+      error:
+        error instanceof JsonRpcError
+          ? error
+          : rpcErrors.invalidRequest('Request validation failed'),
+      listenerApi
+    })
 
-      return
-    }
+    return
   }
 
   if ('handle' in handlerOrModule) {

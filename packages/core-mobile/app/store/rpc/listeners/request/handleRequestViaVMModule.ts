@@ -8,7 +8,10 @@ import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import {
+  getAvalancheChainAliasCaip2,
+  getChainIdFromCaip2
+} from 'utils/caip2ChainIds'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import { Account, selectActiveAccount } from 'store/account'
@@ -22,6 +25,11 @@ import {
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
+import {
+  assessDappTrust,
+  DappTrustLevel,
+  type DappTrustAssessment
+} from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   AgnosticRpcProvider,
   CORE_MOBILE_TOPIC,
@@ -100,6 +108,25 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
+  //Check that the request is for Avalanche and that the chainAlias matches the chainId
+  const chainAliasError = getAvalancheChainAliasError({
+    method,
+    params,
+    caip2ChainId,
+    isTestnet: Boolean(network.isTestnet)
+  })
+
+  if (chainAliasError) {
+    Logger.error(`Avalanche chainAlias/chainId mismatch: ${chainAliasError}`)
+    rpcProvider.onError({
+      request,
+      error: rpcErrors.invalidParams(chainAliasError),
+      listenerApi
+    })
+
+    return
+  }
+
   // Merge, don't fallback: a non-empty `request.context` from the caller must
   // not suppress the per-method auto-injected context (e.g. Avalanche `account`
   // for AVALANCHE_SEND/SIGN_TRANSACTION). Caller wins on key conflicts.
@@ -132,8 +159,26 @@ export const handleRequestViaVMModule = async ({
       walletId: activeWallet.id,
       walletType: activeWallet.type,
       accountIndex: activeAccount.index,
+      fromAddress: activeAccount.addressC,
       network,
       [RequestContext.QUICK_SWAPS_AVAILABLE]: selectIsQuickSwapsAvailable(state)
+    }
+  }
+
+  const peerTrust =
+    request.data.topic === CORE_MOBILE_TOPIC
+      ? undefined
+      : assessDappTrust({
+          verifyContext: request.data.verifyContext,
+          metadataUrl: request.peerMeta.url
+        })
+
+  const peerTrustWarning = getPeerTrustWarning(peerTrust)
+
+  if (peerTrustWarning) {
+    context = {
+      ...context,
+      [RequestContext.PEER_TRUST_WARNING]: peerTrustWarning
     }
   }
 
@@ -145,7 +190,9 @@ export const handleRequestViaVMModule = async ({
       dappInfo: {
         name: request.peerMeta.name,
         icon: request.peerMeta.icons[0] ?? '',
-        url: request.peerMeta.url
+        url: peerTrust?.originAttested
+          ? peerTrust.displayUrl
+          : request.peerMeta.url
       },
       method,
       params,
@@ -167,6 +214,74 @@ export const handleRequestViaVMModule = async ({
       listenerApi
     })
   }
+}
+
+/**
+ * Warning text for a per-request sheet whose peer identity is actively
+ * suspicious, or undefined when there is nothing to say.
+ */
+const getPeerTrustWarning = (
+  trust: DappTrustAssessment | undefined
+): string | undefined => {
+  const reason = trust?.reasons[0]
+
+  if (!reason) return undefined
+
+  if (trust?.level === DappTrustLevel.MALICIOUS) {
+    return `${reason} Do not approve unless you are certain.`
+  }
+
+  if (trust?.level === DappTrustLevel.SUSPICIOUS) {
+    return `${reason} Approve only if you trust it.`
+  }
+
+  return undefined
+}
+
+// The Avalanche Primary Network chain aliases a signing request may target.
+const isAvalancheChainAlias = (
+  value: unknown
+): value is Avalanche.ChainIDAlias =>
+  value === 'X' || value === 'P' || value === 'C'
+
+const isAvalancheSigningMethod = (method: VmModuleRpcMethod): boolean =>
+  method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
+  method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
+
+const getAvalancheChainAliasError = ({
+  method,
+  params,
+  caip2ChainId,
+  isTestnet
+}: {
+  method: VmModuleRpcMethod
+  params: unknown
+  caip2ChainId: string
+  isTestnet: boolean
+}): string | undefined => {
+  if (!isAvalancheSigningMethod(method)) return undefined
+
+  const chainAlias =
+    params && typeof params === 'object' && 'chainAlias' in params
+      ? (params as { chainAlias: unknown }).chainAlias
+      : undefined
+
+  if (!isAvalancheChainAlias(chainAlias)) {
+    return 'avalanche_sendTransaction / avalanche_signTransaction require a chainAlias of X, P, or C'
+  }
+
+  const expectedCaip2ChainId = getAvalancheChainAliasCaip2(
+    chainAlias,
+    isTestnet
+  )
+
+  if (caip2ChainId !== expectedCaip2ChainId) {
+    // Naming the chains is safe (they're both in the request) and makes the
+    // rejection actionable for a legitimate dApp that built the request wrong.
+    return `chainAlias '${chainAlias}' does not match the requested chain '${caip2ChainId}'`
+  }
+
+  return undefined
 }
 
 const getContext = async ({

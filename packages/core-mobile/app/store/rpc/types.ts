@@ -3,6 +3,7 @@ import { AppListenerEffectAPI } from 'store/types'
 import { RpcError } from '@avalabs/vm-module-types'
 import { uuid } from 'utils/uuid'
 import type { QuickSwapMaxBuy } from 'store/settings/advanced/types'
+import type { VerifyContext } from 'store/rpc/handlers/wc_sessionRequest/utils'
 
 export interface PeerMeta {
   name: string
@@ -22,6 +23,7 @@ export type RpcRequest<Method extends RpcMethod> = {
       }
       chainId: string
     }
+    verifyContext?: VerifyContext
   }
   method: Method
   peerMeta: PeerMeta
@@ -179,6 +181,10 @@ export enum RequestContext {
   // used to determine if the recipient/to address is a contract
   // If we set an address for this key, the approval screen will show “To” instead of “Contract” along with the address.
   NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient',
+
+  // used to show a warning on the per-request approval sheet when the peer's attested identity is actively suspicious, 
+  // or when the peer's attested origin contradicts its self-declared metadata.url. See getPeerTrustWarning.
+  PEER_TRUST_WARNING = 'peerTrustWarning',
 
   // used to signal VM-module retry for gasless C-chain sends
   SHOULD_RETRY = 'shouldRetry',

@@ -1,6 +1,7 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { Module } from '@avalabs/vm-module-types'
-import { Network } from '@avalabs/core-chains-sdk'
+import { AvalancheCaip2ChainId, Network } from '@avalabs/core-chains-sdk'
+import type { VerifyContext } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/types'
@@ -202,7 +203,12 @@ describe('rpc - listeners', () => {
 
   describe('on onRequest', () => {
     describe('for non session proposal requests', () => {
-      const createRequest = (testMethod: RpcMethod, params: unknown) => {
+      const createRequest = (
+        testMethod: RpcMethod,
+        params: unknown,
+        options?: { chainId?: string; verifyContext?: VerifyContext }
+      ) => {
+        const { chainId = 'eip155:43114', verifyContext } = options ?? {}
         return {
           provider: RpcProvider.WALLET_CONNECT,
           peerMeta: {
@@ -221,8 +227,9 @@ describe('rpc - listeners', () => {
                 method: testMethod,
                 params
               },
-              chainId: 'eip155:43114'
-            }
+              chainId
+            },
+            verifyContext
           },
           session: mockSession
         }
@@ -683,7 +690,9 @@ describe('rpc - listeners', () => {
                 transactionHex: '0xdeadbeef',
                 externalIndices: [],
                 internalIndices: []
-              }
+              },
+              // chainAlias and chainId must name the same chain.
+              { chainId: AvalancheCaip2ChainId.P }
             ),
             context: { [RequestContext.SAE_OVERRIDE]: 'auto' }
           }
@@ -704,6 +713,140 @@ describe('rpc - listeners', () => {
             }),
             expect.anything()
           )
+        })
+
+        // Check that the request is rejected when the chainAlias and chainId do not match for Avalanche requests.
+        it('should reject an Avalanche request whose chainAlias contradicts its chainId', async () => {
+          store.dispatch(
+            onRequest(
+              createRequest(
+                'avalanche_sendTransaction' as RpcMethod.AVALANCHE_SEND_TRANSACTION,
+                {
+                  chainAlias: 'P',
+                  transactionHex: '0xdeadbeef',
+                  externalIndices: [],
+                  internalIndices: []
+                },
+                // C-Chain on the sheet, P-Chain in the signed/broadcast payload.
+                { chainId: AvalancheCaip2ChainId.C }
+              )
+            )
+          )
+
+          await jest.runOnlyPendingTimersAsync()
+
+          expect(mockOnRpcRequest).not.toHaveBeenCalled()
+          expect(mockWCRejectRequest).toHaveBeenCalledWith(
+            '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
+            1677366383831712,
+            expect.objectContaining({ code: -32602 })
+          )
+        })
+
+        
+        describe('peer identity reconciliation', () => {
+          const verified = (
+            origin: string,
+            validation: string
+          ): VerifyContext =>
+            ({
+              verified: { origin, validation, isScam: false, verifyUrl: '' }
+            } as VerifyContext)
+
+          beforeEach(() => {
+            mockOnRpcRequest.mockImplementation(async () => ({
+              result: 'tx-hash'
+            }))
+          })
+
+          it('shows the attested origin instead of the peer self-declared url', async () => {
+            store.dispatch(
+              onRequest(
+                createRequest(
+                  'personal_sign' as RpcMethod.PERSONAL_SIGN,
+                  ['0xdeadbeef', '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'],
+                  { verifyContext: verified('http://127.0.0.1:5173', 'VALID') }
+                )
+              )
+            )
+
+            await jest.runOnlyPendingTimersAsync()
+
+            expect(mockOnRpcRequest).toHaveBeenCalledWith(
+              expect.objectContaining({
+                dappInfo: expect.objectContaining({
+                  url: 'http://127.0.0.1:5173'
+                })
+              }),
+              expect.anything()
+            )
+          })
+
+          it('warns when the attested origin contradicts the claimed domain', async () => {
+            store.dispatch(
+              onRequest(
+                createRequest(
+                  'personal_sign' as RpcMethod.PERSONAL_SIGN,
+                  ['0xdeadbeef', '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'],
+                  {
+                    verifyContext: verified('https://attacker.example', 'VALID')
+                  }
+                )
+              )
+            )
+
+            await jest.runOnlyPendingTimersAsync()
+
+            expect(mockOnRpcRequest).toHaveBeenCalledWith(
+              expect.objectContaining({
+                context: expect.objectContaining({
+                  [RequestContext.PEER_TRUST_WARNING]:
+                    expect.stringContaining('attacker.example')
+                })
+              }),
+              expect.anything()
+            )
+          })
+
+          it('does not re-warn on every request for a merely unverified peer', async () => {
+            store.dispatch(
+              onRequest(
+                createRequest(
+                  'personal_sign' as RpcMethod.PERSONAL_SIGN,
+                  ['0xdeadbeef', '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'],
+                  {
+                    verifyContext: verified('http://127.0.0.1:5173', 'UNKNOWN')
+                  }
+                )
+              )
+            )
+
+            await jest.runOnlyPendingTimersAsync()
+
+            const [[moduleRequest]] = mockOnRpcRequest.mock.calls
+            expect(
+              moduleRequest.context?.[RequestContext.PEER_TRUST_WARNING]
+            ).toBeUndefined()
+            // An unattested origin never replaces the self-declared url.
+            expect(moduleRequest.dappInfo.url).toBe('http://127.0.0.1:5173')
+          })
+        })
+
+        it('should reject an Avalanche request with no chainAlias at all', async () => {
+          store.dispatch(
+            onRequest(
+              createRequest(
+                'avalanche_signTransaction' as RpcMethod.AVALANCHE_SIGN_TRANSACTION,
+                { transactionHex: '0xdeadbeef' },
+                { chainId: AvalancheCaip2ChainId.P }
+              )
+            )
+          )
+
+          await jest.runOnlyPendingTimersAsync()
+
+          expect(mockOnRpcRequest).not.toHaveBeenCalled()
+          expect(mockWCRejectRequest).toHaveBeenCalled()
         })
       })
     })
