@@ -1,7 +1,8 @@
 import {
   ActiveValidatorDetails,
   Network,
-  SortByOption
+  SortByOption,
+  StakingType
 } from '@avalabs/glacier-sdk'
 import GlacierService from 'services/glacier/GlacierService'
 import {
@@ -88,7 +89,8 @@ describe('toFastStakeValidator', () => {
       potentialRewards: {} as ActiveValidatorDetails['potentialRewards'],
       validationStatus: ActiveValidatorDetails.validationStatus.ACTIVE,
       validatorHealth: {} as ActiveValidatorDetails['validatorHealth'],
-      geolocation: null
+      geolocation: null,
+      stakingType: StakingType.FIXED
     }
 
     // `nodeID`, `endTime` and `delegationFee` are surfaced (the fee feeds
