@@ -309,28 +309,6 @@ export const selectIsMeldOfframpBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsKeystoneBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.KEYSTONE] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-// Gates NEW Keystone imports only — deliberately includes the master
-// `keystone` gate so flipping that one still kills onboarding too, while
-// signing for existing wallets stays governed solely by selectIsKeystoneBlocked.
-export const selectIsKeystoneOnboardingBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.KEYSTONE_ONBOARDING] ||
-    !featureFlags[FeatureGates.KEYSTONE] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectFusionFeeUnitsMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseIntFlag(

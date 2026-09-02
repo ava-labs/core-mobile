@@ -60,8 +60,6 @@ const WalletHeaderRow = ({
   const { data: walletBalancesData, isError: isBalancesError } =
     useWalletBalances(accountIds)
 
-  // Read inside the row rather than taking it as a prop: `arePropsEqual` below
-  // does a field-level compare and would swallow a prop-borne flag change.
   const { shouldWarnForWalletType, openDeprecationInfo } =
     useKeystoneDeprecation()
   const isDeprecated = shouldWarnForWalletType(wallet.type)
