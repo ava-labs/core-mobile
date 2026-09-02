@@ -190,7 +190,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
         isModal
         title="How much do you want to withdraw?"
         navigationTitle="Enter withdraw amount"
-        contentContainerStyle={{ flexGrow: 1 }}>
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
         <View
           testID="perps-withdrawable-loading"
           sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -206,7 +206,7 @@ export const PerpetualsWithdrawScreen = (): JSX.Element => {
         isModal
         title="How much do you want to withdraw?"
         navigationTitle="Enter withdraw amount"
-        contentContainerStyle={{ flexGrow: 1 }}>
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
         <PerpsApiDownState onRetry={refetchWithdrawable} />
       </ScrollScreen>
     )

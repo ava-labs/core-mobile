@@ -43,6 +43,115 @@ export const estimateLiquidationPrice = (
   return (entryPrice * (1 - side / leverage)) / denominator
 }
 
+/**
+ * Isolated-margin liquidation estimate from the margin backing the position,
+ * for flows that change the collateral rather than the leverage (adjust
+ * margin). Mirrors Hyperliquid's formula
+ *   liq = entry − side · marginAvailable / size / (1 − mmf · side)
+ * with `mmf = 1 / (2 · maxLeverage)`; written per-unit-of-notional it reduces
+ * to the closed forms below. Returns `NaN` for invalid inputs or when a long
+ * is collateralized enough that its liquidation would fall at/below 0
+ * (callers should then omit the estimate).
+ */
+export const estimateLiquidationPriceFromMargin = ({
+  entryPrice,
+  isLong,
+  maxLeverage,
+  notionalUsd,
+  marginUsd
+}: {
+  entryPrice: number
+  isLong: boolean
+  maxLeverage: number
+  /** Position notional in USD (size × entry). */
+  notionalUsd: number
+  /** Margin (equity) backing the position after the adjustment. */
+  marginUsd: number
+}): number => {
+  if (
+    !Number.isFinite(entryPrice) ||
+    entryPrice <= 0 ||
+    !Number.isFinite(maxLeverage) ||
+    maxLeverage <= 0 ||
+    !Number.isFinite(notionalUsd) ||
+    notionalUsd <= 0 ||
+    !Number.isFinite(marginUsd) ||
+    marginUsd <= 0
+  ) {
+    return Number.NaN
+  }
+  const maintenanceMarginFraction = 1 / (2 * maxLeverage)
+  // Per-notional buffer: equity backing the position, less the maintenance it
+  // must keep.
+  const buffer = marginUsd / notionalUsd - maintenanceMarginFraction
+  if (isLong) {
+    const liq = entryPrice * (1 - buffer / (1 - maintenanceMarginFraction))
+    return liq > 0 ? liq : Number.NaN
+  }
+  return entryPrice * (1 + buffer / (1 + maintenanceMarginFraction))
+}
+
+/**
+ * Max isolated margin the user can withdraw without Hyperliquid rejecting the
+ * reduction ("position does not have sufficient margin for reduction").
+ *
+ * Per HL's margining rules, after any margin removal the remaining position
+ * equity must satisfy
+ *   transfer_margin_required = max(initial_margin_required, 0.1 · notional)
+ * where `initial_margin_required = notional / leverage` (the position's own
+ * set leverage, NOT the market max). Unrealized PnL counts toward the
+ * remaining equity, so
+ *   removable = (marginUsed + unrealizedPnl) − max(notional/leverage, 0.1·notional)
+ * A roughly flat position at its set leverage therefore has ~0 removable
+ * (matches HL). Capped at the deposited margin and to `0` when leverage /
+ * notional are unknown, with a 2% cushion for price drift before submit.
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/trading/margining
+ */
+export const maxRemovableMarginUsd = ({
+  marginUsed,
+  unrealizedPnl,
+  notionalUsd,
+  leverage
+}: {
+  marginUsed: number
+  unrealizedPnl: number
+  /** Position notional in USD (size × entry). */
+  notionalUsd: number
+  /** The position's set leverage. */
+  leverage: number
+}): number => {
+  if (
+    !Number.isFinite(leverage) ||
+    leverage <= 0 ||
+    !Number.isFinite(notionalUsd) ||
+    notionalUsd <= 0 ||
+    !Number.isFinite(marginUsed)
+  ) {
+    return 0
+  }
+  const equity =
+    marginUsed + (Number.isFinite(unrealizedPnl) ? unrealizedPnl : 0)
+  const transferFloor = Math.max(notionalUsd / leverage, 0.1 * notionalUsd)
+  const removable = (equity - transferFloor) * 0.98
+  return Math.max(0, Math.min(marginUsed, removable))
+}
+
+/**
+ * Floor to `decimals` places so a quick-amount preset can't round *up* past
+ * the true cap and trip validation / HL's margin-reduction check.
+ */
+export const floorToDecimals = (value: number, decimals: number): number => {
+  if (!Number.isFinite(value)) return 0
+  // Clamp to a safe non-negative integer so a bad `decimals` can't produce a
+  // NaN/zero factor and leak NaN to callers.
+  const safeDecimals = Number.isFinite(decimals)
+    ? Math.max(0, Math.trunc(decimals))
+    : 0
+  const factor = 10 ** safeDecimals
+  return Math.max(0, Math.floor(value * factor) / factor)
+}
+
 /** Position size in tokens implied by USD position notional at entry. */
 export const positionSizeTokens = (
   positionNotionalUsd: number,
