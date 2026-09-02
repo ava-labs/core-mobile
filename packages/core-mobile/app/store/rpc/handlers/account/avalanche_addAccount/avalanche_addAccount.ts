@@ -60,7 +60,18 @@ class AvalancheAddAccountHandler
       walletId
     ).length
 
-    await dispatch(addAccount(walletId)).unwrap()
+    try {
+      await dispatch(addAccount(walletId)).unwrap()
+    } catch (error) {
+      Logger.error('avalanche_addAccount: failed to add account', error)
+      return {
+        success: false,
+        error: rpcErrors.internal(
+          error instanceof Error ? error.message : 'Failed to add account'
+        )
+      }
+    }
+
     AnalyticsService.capture('CreatedANewAccountSuccessfully', {
       walletType: selectedWallet.type
     })
