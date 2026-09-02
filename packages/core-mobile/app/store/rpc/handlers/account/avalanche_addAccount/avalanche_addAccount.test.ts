@@ -89,7 +89,15 @@ describe('avalanche_addAccount handler', () => {
       buildState({ walletType: WalletType.KEYSTONE })
     )
     mockDispatch.mockReturnValue({
-      unwrap: () => Promise.reject(new Error(UNSUPPORTED_WALLET_TYPE_ERROR))
+      // Matches RTK's `miniSerializeError` output — what unwrap() actually
+      // throws for a thunk that rejects via a plain `throw new Error(...)`
+      // (no rejectWithValue): a plain object, not an Error instance.
+      unwrap: () =>
+        Promise.reject({
+          name: 'Error',
+          message: UNSUPPORTED_WALLET_TYPE_ERROR,
+          stack: 'Error: ' + UNSUPPORTED_WALLET_TYPE_ERROR
+        })
     })
 
     const result = await handler.handle(

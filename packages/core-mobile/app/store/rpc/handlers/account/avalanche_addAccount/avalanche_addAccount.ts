@@ -14,6 +14,20 @@ import { Account, PrimaryAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { parseRequestParams } from './util'
 
+const FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE = 'Failed to add account'
+
+// createAsyncThunk's unwrap() throws RTK's miniSerializeError output (a
+// plain { name?, message?, stack?, code? } object) rather than a real Error
+// instance, since `addAccount` doesn't use rejectWithValue — so this can't
+// check `error instanceof Error` to recover the dapp-facing message.
+const extractAddAccountErrorMessage = (error: unknown): string =>
+  typeof error === 'object' &&
+  error !== null &&
+  'message' in error &&
+  typeof (error as { message?: unknown }).message === 'string'
+    ? (error as { message: string }).message
+    : FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE
+
 export type AvalancheAddAccountRpcRequest =
   RpcRequest<RpcMethod.AVALANCHE_ADD_ACCOUNT>
 
@@ -66,9 +80,7 @@ class AvalancheAddAccountHandler
       Logger.error('avalanche_addAccount: failed to add account', error)
       return {
         success: false,
-        error: rpcErrors.internal(
-          error instanceof Error ? error.message : 'Failed to add account'
-        )
+        error: rpcErrors.internal(extractAddAccountErrorMessage(error))
       }
     }
 
