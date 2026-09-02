@@ -319,8 +319,7 @@ export const selectIsKeystoneBlocked = (state: RootState): boolean => {
 
 // Gates NEW Keystone imports only — deliberately includes the master
 // `keystone` gate so flipping that one still kills onboarding too, while
-// signing for existing wallets stays governed solely by selectIsKeystoneBlocked
-// (KeystoneSignerScreen auto-rejects when it flips).
+// signing for existing wallets stays governed solely by selectIsKeystoneBlocked.
 export const selectIsKeystoneOnboardingBlocked = (
   state: RootState
 ): boolean => {

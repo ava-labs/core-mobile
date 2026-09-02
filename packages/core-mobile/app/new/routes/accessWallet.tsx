@@ -1,20 +1,15 @@
 import { GroupList, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
-import Keystone from 'assets/icons/keystone.svg'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import {
-  selectIsKeystoneOnboardingBlocked,
-  selectIsLedgerSupportBlocked
-} from 'store/posthog'
+import { selectIsLedgerSupportBlocked } from 'store/posthog'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate } = useRouter()
-  const isKeystoneBlocked = useSelector(selectIsKeystoneOnboardingBlocked)
   const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
 
   const handleEnterRecoveryPhrase = useCallback((): void => {
@@ -22,10 +17,6 @@ const AccessWalletScreen = (): JSX.Element => {
       pathname: '/onboarding/mnemonic/termsAndConditions',
       params: { recovering: 'true' }
     })
-  }, [navigate])
-
-  const handleEnterKeystone = useCallback((): void => {
-    navigate('/onboarding/keystone/termsAndConditions')
   }, [navigate])
 
   const handleEnterLedger = useCallback((): void => {
@@ -44,13 +35,6 @@ const AccessWalletScreen = (): JSX.Element => {
       leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
       onPress: handleEnterRecoveryPhrase
     })
-    if (!isKeystoneBlocked) {
-      res.push({
-        title: 'Add using Keystone',
-        leftIcon: <Keystone color={theme.colors.$textPrimary} />,
-        onPress: handleEnterKeystone
-      })
-    }
     if (!isLedgerBlocked) {
       res.push({
         title: 'Add using Ledger',
@@ -72,10 +56,8 @@ const AccessWalletScreen = (): JSX.Element => {
     return res
   }, [
     handleCreateMnemonicWallet,
-    handleEnterKeystone,
     handleEnterLedger,
     handleEnterRecoveryPhrase,
-    isKeystoneBlocked,
     isLedgerBlocked,
     theme.colors
   ])
