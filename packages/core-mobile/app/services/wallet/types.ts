@@ -160,6 +160,9 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
  */
 export type CreateSendXTxParams = Omit<CreateSendPTxParams, 'feeState'>
 
+export const UNSUPPORTED_WALLET_TYPE_ERROR =
+  'This wallet type is no longer supported'
+
 //TODO: delete this enum
 export enum WalletType {
   UNSET = 'UNSET',

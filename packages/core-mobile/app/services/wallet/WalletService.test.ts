@@ -46,6 +46,10 @@ jest.mock('utils/Logger', () => ({
   }
 }))
 
+jest.mock('features/keystone/storage/KeystoneDataStorage', () => ({
+  KeystoneDataStorage: { retrieve: jest.fn() }
+}))
+
 // `getAddressesForExtendedPublicKey` is a private method, but TS `private`
 // is compile-time only — Jest can spy on it at runtime. We strip the
 // original (private-bearing) type via `unknown as` so the public-shape
@@ -504,5 +508,57 @@ describe('WalletService.getAddresses cache behavior', () => {
 
     await WalletService.getAddressesFromXpubXP(args)
     expect(secondCallFired).toBe(true)
+  })
+})
+
+describe('WalletService.getRawXpubXP (Keystone read path)', () => {
+  beforeEach(() => {
+    WalletFactory.cache.clearWallet('keystone-wallet-1')
+    WalletFactory.cache.clearWallet('keystone-wallet-2')
+    jest.clearAllMocks()
+  })
+
+  // CP-14995 blocks WalletFactory from ever constructing a KeystoneWallet
+  // (all Keystone signing is unsupported now), so this read path must reach
+  // the stored xpub directly from KeystoneDataStorage rather than going
+  // through WalletFactory — that's what keeps existing Keystone wallets'
+  // X/P addresses/balances readable.
+  it('reads the stored xpub directly from KeystoneDataStorage without constructing a Wallet', async () => {
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue({
+      evm: 'xpub-evm',
+      xp: 'xpub-xp-value',
+      mfp: 'deadbeef'
+    })
+    const getOrCreateSpy = jest.spyOn(WalletFactory, 'getOrCreateWallet')
+
+    const xpub = await WalletService.getRawXpubXP({
+      walletId: 'keystone-wallet-1',
+      walletType: WalletType.KEYSTONE,
+      accountIndex: 0
+    })
+
+    expect(xpub).toBe('xpub-xp-value')
+    expect(getOrCreateSpy).not.toHaveBeenCalled()
+  })
+
+  it('throws when the stored Keystone data has no X/P xpub', async () => {
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue({
+      evm: 'xpub-evm',
+      mfp: 'deadbeef'
+    })
+
+    await expect(
+      WalletService.getRawXpubXP({
+        walletId: 'keystone-wallet-2',
+        walletType: WalletType.KEYSTONE,
+        accountIndex: 0
+      })
+    ).rejects.toThrow('no public key (xpubXP) available')
   })
 })

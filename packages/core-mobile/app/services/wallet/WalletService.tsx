@@ -31,6 +31,7 @@ import { Curve } from 'utils/publicKeys'
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
+import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
 import {
   getAddressDerivationPath,
   getEvmTypedDataVersion,
@@ -41,7 +42,6 @@ import {
 } from './utils'
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
-import KeystoneWallet from './KeystoneWallet'
 import { LedgerWallet } from './LedgerWallet'
 import {
   getAddressesCache,
@@ -506,6 +506,21 @@ class WalletService {
       return cached
     }
 
+    // WalletFactory always throws for WalletType.KEYSTONE (CP-14995 blocks
+    // Keystone signing at that choke point), but existing Keystone wallets
+    // still need their stored X/P xpub for read-only address/balance lookups.
+    // Read it directly from storage instead of constructing a Wallet.
+    if (walletType === WalletType.KEYSTONE) {
+      const keystoneData = await KeystoneDataStorage.retrieve()
+      if (!keystoneData.xp) {
+        throw new Error(
+          'Unable to get raw xpub XP: no public key (xpubXP) available'
+        )
+      }
+      WalletFactory.cache.setXpub(walletId, accountIndex, keystoneData.xp)
+      return keystoneData.xp
+    }
+
     const wallet = await WalletFactory.getOrCreateWallet({
       walletId,
       walletType
@@ -513,11 +528,10 @@ class WalletService {
 
     if (
       !(wallet instanceof MnemonicWallet) &&
-      !(wallet instanceof KeystoneWallet) &&
       !(wallet instanceof LedgerWallet)
     ) {
       throw new Error(
-        'Unable to get raw xpub XP: Expected MnemonicWallet, KeystoneWallet or LedgerWallet instance'
+        'Unable to get raw xpub XP: Expected MnemonicWallet or LedgerWallet instance'
       )
     }
 
