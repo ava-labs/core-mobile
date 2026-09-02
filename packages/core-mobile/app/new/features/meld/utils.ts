@@ -5,9 +5,11 @@ import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { router } from 'expo-router'
 import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
+import { humanize } from 'utils/string/humanize'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
+  PaymentMethodNames,
   SOLANA_MELD_CHAIN_ID
 } from './consts'
 import {
@@ -15,7 +17,8 @@ import {
   CreateCryptoQuoteError,
   CryptoCurrency,
   CryptoQuotesError,
-  CreateCryptoQuoteErrorCode
+  CreateCryptoQuoteErrorCode,
+  Quote
 } from './types'
 
 export const asZeroBalanceToken = (
@@ -198,4 +201,122 @@ export const getErrorMessage = (
     }
   }
   return undefined
+}
+
+/**
+ * Only 5xx (Meld/upstream outage) is worth react-query's default retry
+ * behavior. 4xx errors like NO_VALID_QUOTES are deterministic for the given
+ * request params and won't succeed by retrying unchanged. A network failure
+ * (offline, timeout) throws without a `response`, so getErrorMessage can't
+ * resolve a statusCode at all — treat that as retryable too, since it's the
+ * class of error most likely to be transient and previously got react-query's
+ * default retries.
+ */
+export const shouldRetryCryptoQuote = (
+  failureCount: number,
+  error: Error
+): boolean => {
+  const statusCode = getErrorMessage(error)?.statusCode
+  return (
+    (typeof statusCode !== 'number' || statusCode >= 500) && failureCount < 3
+  )
+}
+
+/**
+ * NO_VALID_QUOTES has no dedicated status/code field — Meld returns it as a
+ * plain 400 with only a `message`, which lands in getErrorMessage's
+ * message-only branch above. Detection is by message content.
+ */
+export const isNoValidQuotesError = (error?: CryptoQuotesError): boolean =>
+  error?.statusCode === CreateCryptoQuoteErrorCode.BAD_REQUEST &&
+  (error.message?.toLowerCase().includes('no valid quote') ?? false)
+
+export const humanizePaymentMethodName = (
+  paymentMethodType?: string | null
+): string | undefined => {
+  if (!paymentMethodType) return undefined
+  return PaymentMethodNames[paymentMethodType] ?? humanize(paymentMethodType)
+}
+
+export type NoValidQuotesFallbackResult =
+  | { action: 'none' }
+  | { action: 'adopt'; paymentMethodType: string; serviceProvider?: string }
+  | { action: 'error'; message: string }
+
+/**
+ * Decides what to do once the onramp quote request 400s with NO_VALID_QUOTES
+ * for the currently selected payment method. Meld's crypto-quote endpoint
+ * over-rejects specific paymentMethodType filters that the same request with
+ * paymentMethodType omitted can still quote (verified against the live API).
+ * Callers fire that unfiltered fallback request and pass its result here.
+ */
+export const resolveNoValidQuotesFallback = ({
+  isNoValidQuotesError: hasNoValidQuotesError,
+  paymentMethod,
+  paymentMethodIsManual,
+  isLoadingFallbackQuotes,
+  fallbackQuotes,
+  selectedCurrency
+}: {
+  isNoValidQuotesError: boolean
+  paymentMethod: string | undefined
+  paymentMethodIsManual: boolean
+  isLoadingFallbackQuotes: boolean
+  fallbackQuotes: Quote[]
+  selectedCurrency: string
+}): NoValidQuotesFallbackResult => {
+  if (!hasNoValidQuotesError || paymentMethod === undefined) {
+    return { action: 'none' }
+  }
+
+  // still resolving — avoid flashing an error while the fallback is in flight
+  if (isLoadingFallbackQuotes) {
+    return { action: 'none' }
+  }
+
+  const bestFallback = fallbackQuotes[0]
+
+  if (!bestFallback?.paymentMethodType) {
+    return {
+      action: 'error',
+      message: `No payment methods currently support ${selectedCurrency} purchases in your region. Try changing your currency in settings.`
+    }
+  }
+
+  if (!paymentMethodIsManual) {
+    // The failing paymentMethod can still show up in the unfiltered fallback
+    // results (a different, working provider offering the same method type).
+    // Re-adopting that same value is a zustand no-op — the primary query key
+    // never changes, so it would stall on the errored quote with no error
+    // message. Skip ahead to the first quote that's actually different.
+    const adoptable = fallbackQuotes.find(
+      quote =>
+        quote.paymentMethodType && quote.paymentMethodType !== paymentMethod
+    )
+
+    if (!adoptable?.paymentMethodType) {
+      return {
+        action: 'error',
+        message: `No payment methods currently support ${selectedCurrency} purchases in your region. Try changing your currency in settings.`
+      }
+    }
+
+    return {
+      action: 'adopt',
+      paymentMethodType: adoptable.paymentMethodType,
+      serviceProvider: adoptable.serviceProvider ?? undefined
+    }
+  }
+
+  const currentName = humanizePaymentMethodName(paymentMethod)
+  const fallbackName = humanizePaymentMethodName(bestFallback.paymentMethodType)
+
+  return {
+    action: 'error',
+    message: `${
+      currentName ?? 'This payment method'
+    } isn't available for this purchase. Try ${
+      fallbackName ?? 'a different payment method'
+    }.`
+  }
 }

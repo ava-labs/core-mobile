@@ -23,6 +23,7 @@ import {
 import {
   useMeldCountryCode,
   useMeldPaymentMethod,
+  useMeldPaymentMethodIsManual,
   useMeldServiceProvider
 } from '../store'
 import {
@@ -31,6 +32,7 @@ import {
   CryptoCurrency,
   SessionTypes
 } from '../types'
+import { isNoValidQuotesError, resolveNoValidQuotesFallback } from '../utils'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
@@ -69,6 +71,8 @@ export const useSelectAmount = ({
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [serviceProvider, setServiceProvider] = useMeldServiceProvider()
   const [paymentMethod, setPaymentMethod] = useMeldPaymentMethod()
+  const [paymentMethodIsManual, setPaymentMethodIsManual] =
+    useMeldPaymentMethodIsManual()
   const {
     sourceAmount,
     setSourceAmount,
@@ -162,10 +166,70 @@ export const useSelectAmount = ({
       enabled
     })
 
+  const hasNoValidQuotesError = useMemo(
+    () => isNoValidQuotesError(cryptoQuotesError),
+    [cryptoQuotesError]
+  )
+
+  // Meld rejects some explicit paymentMethodType filters that the same
+  // request with paymentMethodType omitted can still quote. Fire that
+  // unfiltered request only while we're actually stuck, to recover instead
+  // of dead-ending the onramp flow. Offramp is unaffected.
+  const isFallbackQuotesEnabled =
+    category === ServiceProviderCategories.CRYPTO_ONRAMP &&
+    hasNoValidQuotesError &&
+    paymentMethod !== undefined &&
+    enabled
+
+  const {
+    crytoQuotes: fallbackQuotes,
+    isLoadingCryptoQuotes: isLoadingFallbackQuotes
+  } = useServiceProviders({
+    category,
+    enabled: isFallbackQuotesEnabled
+  })
+
+  const noValidQuotesFallback = useMemo(
+    () =>
+      category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? resolveNoValidQuotesFallback({
+            isNoValidQuotesError: hasNoValidQuotesError,
+            paymentMethod,
+            paymentMethodIsManual,
+            isLoadingFallbackQuotes,
+            fallbackQuotes,
+            selectedCurrency
+          })
+        : { action: 'none' as const },
+    [
+      category,
+      hasNoValidQuotesError,
+      paymentMethod,
+      paymentMethodIsManual,
+      isLoadingFallbackQuotes,
+      fallbackQuotes,
+      selectedCurrency
+    ]
+  )
+
+  useEffect(() => {
+    if (noValidQuotesFallback.action !== 'adopt') return
+    setPaymentMethod(noValidQuotesFallback.paymentMethodType)
+    if (noValidQuotesFallback.serviceProvider) {
+      setServiceProvider(noValidQuotesFallback.serviceProvider)
+    }
+  }, [noValidQuotesFallback, setPaymentMethod, setServiceProvider])
+
   useEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
-  }, [setPaymentMethod, setServiceProvider, token?.currencyCode])
+    setPaymentMethodIsManual(false)
+  }, [
+    setPaymentMethod,
+    setServiceProvider,
+    setPaymentMethodIsManual,
+    token?.currencyCode
+  ])
 
   const walletAddress = useMemo(() => {
     return account && network && getAddressByNetwork(account, network)
@@ -258,8 +322,14 @@ export const useSelectAmount = ({
   useLayoutEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
+    setPaymentMethodIsManual(false)
     setSourceAmount(0)
-  }, [setPaymentMethod, setServiceProvider, setSourceAmount])
+  }, [
+    setPaymentMethod,
+    setServiceProvider,
+    setPaymentMethodIsManual,
+    setSourceAmount
+  ])
 
   useEffect(() => {
     if (paymentMethod === undefined && defaultPaymentMethod) {
@@ -339,6 +409,15 @@ export const useSelectAmount = ({
       return 'Transaction amount is invalid: it must be between the minimum and maximum allowed.'
     }
 
+    // While resolving NO_VALID_QUOTES, only the fallback-derived message
+    // (if any) should show — not the generic message below, which would
+    // otherwise flash while the fallback request is still in flight.
+    if (isFallbackQuotesEnabled) {
+      return noValidQuotesFallback.action === 'error'
+        ? noValidQuotesFallback.message
+        : undefined
+    }
+
     if (cryptoQuotesError?.statusCode) {
       return 'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
     }
@@ -353,6 +432,8 @@ export const useSelectAmount = ({
     isBelowMaximumLimit,
     maximumLimit,
     minMaxErrorMessage,
+    isFallbackQuotesEnabled,
+    noValidQuotesFallback,
     cryptoQuotesError,
     token?.tokenWithBalance.symbol,
     formatCurrency,
