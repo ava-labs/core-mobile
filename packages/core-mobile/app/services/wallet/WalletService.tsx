@@ -418,22 +418,36 @@ class WalletService {
       }
     }
 
-    // Otherwise, create wallet and derive missing keys
-    const wallet = await WalletFactory.getOrCreateWallet({
-      walletId,
-      walletType
-    })
+    // WalletFactory always throws for WalletType.KEYSTONE (CP-14995 blocks
+    // Keystone signing at that choke point), but this method backs the
+    // avalanche_getAccountPubKey RPC handler — a pure read a dapp connected to
+    // an existing Keystone account can still call. Reuse the same read-path
+    // helper getPublicKeyFor uses below instead of constructing a Wallet.
+    const derivePublicKey =
+      walletType === WalletType.KEYSTONE
+        ? (params: { derivationPath: string; curve: Curve }): Promise<string> =>
+            this.getKeystonePublicKeyFor(params)
+        : async (params: {
+            derivationPath: string
+            curve: Curve
+          }): Promise<string> => {
+            const wallet = await WalletFactory.getOrCreateWallet({
+              walletId,
+              walletType
+            })
+            return wallet.getPublicKeyFor(params)
+          }
 
     const evmPublicKey =
       cachedEvmKey ||
-      (await wallet.getPublicKeyFor({
+      (await derivePublicKey({
         derivationPath: derivationPathEVM,
         curve: Curve.SECP256K1
       }))
 
     const xpPublicKey =
       cachedXpKey ||
-      (await wallet.getPublicKeyFor({
+      (await derivePublicKey({
         derivationPath: derivationPathAVM,
         curve: Curve.SECP256K1
       }))
