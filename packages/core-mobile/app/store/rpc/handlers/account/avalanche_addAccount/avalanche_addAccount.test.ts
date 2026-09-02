@@ -112,6 +112,25 @@ describe('avalanche_addAccount handler', () => {
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
   })
 
+  it('falls back to the generic message when the serialized error message is empty', async () => {
+    mockGetState.mockReturnValue(buildState())
+    mockDispatch.mockReturnValue({
+      // Same miniSerializeError shape as above, but with a blank message —
+      // must not surface an empty string to the dapp.
+      unwrap: () => Promise.reject({ name: 'Error', message: '', stack: '' })
+    })
+
+    const result = await handler.handle(
+      createRequest([walletId]),
+      mockListenerApi
+    )
+
+    expect(result).toEqual({
+      success: false,
+      error: rpcErrors.internal('Failed to add account')
+    })
+  })
+
   it('still adds an account and returns the new active account id on the happy path', async () => {
     const updatedAccounts = {
       'account-0': {

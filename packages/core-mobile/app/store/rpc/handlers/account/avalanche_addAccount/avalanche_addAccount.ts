@@ -20,13 +20,21 @@ const FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE = 'Failed to add account'
 // plain { name?, message?, stack?, code? } object) rather than a real Error
 // instance, since `addAccount` doesn't use rejectWithValue — so this can't
 // check `error instanceof Error` to recover the dapp-facing message.
-const extractAddAccountErrorMessage = (error: unknown): string =>
-  typeof error === 'object' &&
-  error !== null &&
-  'message' in error &&
-  typeof (error as { message?: unknown }).message === 'string'
-    ? (error as { message: string }).message
+const extractAddAccountErrorMessage = (error: unknown): string => {
+  const message =
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+      ? (error as { message: string }).message
+      : ''
+
+  // An empty/whitespace-only message is as useless to the dapp as a missing
+  // one — fall back to the generic string rather than surfacing blank text.
+  return message.trim().length > 0
+    ? message
     : FALLBACK_ADD_ACCOUNT_ERROR_MESSAGE
+}
 
 export type AvalancheAddAccountRpcRequest =
   RpcRequest<RpcMethod.AVALANCHE_ADD_ACCOUNT>
