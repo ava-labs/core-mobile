@@ -264,7 +264,6 @@ export const toPositionEntry = (fill: UserFill): PositionEntry => {
   const sz = toNumber(fill.sz)
   const closedPnl = toNumber(fill.closedPnl)
   const hasPnl = closedPnl !== 0
-  const date = new Date(fill.time)
 
   return {
     id: `${fill.hash}-${fill.tid ?? fill.oid}`,
@@ -276,15 +275,7 @@ export const toPositionEntry = (fill: UserFill): PositionEntry => {
     avgPrice: px,
     pnl: hasPnl ? closedPnl : undefined,
     pnlStatus: hasPnl ? statusOfSigned(closedPnl) : undefined,
-    dateLabel: date.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: '2-digit'
-    }),
-    timeLabel: date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit'
-    })
+    timestamp: fill.time
   }
 }
 
@@ -292,3 +283,19 @@ export const toPositionEntry = (fill: UserFill): PositionEntry => {
 export const toPositionEntries = (
   fills: readonly UserFill[]
 ): PositionEntry[] => fills.map(toPositionEntry)
+
+/**
+ * The `limit` most-recent history rows for a single market. `fills` must
+ * already be sorted newest-first (`usePerpsUserFills` pre-sorts). Matches the
+ * full coin key, so HIP-3 markets ("dex:TICKER") never collide with native
+ * tickers.
+ */
+export const toRecentCoinEntries = (
+  fills: readonly UserFill[],
+  coin: string,
+  limit: number
+): PositionEntry[] =>
+  fills
+    .filter(fillItem => fillItem.coin === coin)
+    .slice(0, limit)
+    .map(toPositionEntry)
