@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+/* eslint-disable no-console, max-params */
 /**
  * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e-appium` specs
  * with top-level folders under `packages/core-mobile/app/new/features/` only
@@ -176,7 +176,6 @@ const FEATURE_SIGNALS = {
     pathSubstrings: ['borrow', 'deposit', 'repay', 'earn/']
   },
   editContact: { pathSubstrings: ['contact', 'addressbook'] },
-  keystone: { pathSubstrings: ['keystone'] },
   ledger: { pathSubstrings: ['ledger'] },
   // Same Appium specs as `buy` (onramp); implementation lives here — count both O when buy flow is tested
   meld: { pathSubstrings: ['meld', 'buy', 'onramp'] },
@@ -290,8 +289,6 @@ const MODAL_FEATURE_LINK = {
   depositDetail: 'defiMarket',
   discoverCollectibles: 'collectibleSend',
   editContact: 'editContact',
-  keystoneSigner: 'keystone',
-  keystoneTroubleshooting: 'keystone',
   meld: 'meld',
   meldOfframpCountry: 'meld',
   meldOfframpCurrency: 'meld',
@@ -337,7 +334,6 @@ const MODAL_FEATURE_LINK = {
 const E2E_COVERAGE_EXCLUDED_FEATURES = new Set([
   'appReview',
   'bridge',
-  'keystone',
   'ledger',
   'nestEgg',
   'rpc'
