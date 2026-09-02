@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  getAddressPublicKeyFromXPub,
   isSolanaProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
@@ -27,11 +28,15 @@ import {
   recoverTypedSignature
 } from '@metamask/eth-sig-util'
 import { SentryTag, SpanName } from 'services/sentry/types'
-import { Curve } from 'utils/publicKeys'
+import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
+import {
+  KeystoneErrors,
+  KeystoneWalletError
+} from 'services/wallet/KeystoneWallet/errors'
 import {
   getAddressDerivationPath,
   getEvmTypedDataVersion,
@@ -51,6 +56,13 @@ import {
   clearInFlightAddressesFetch,
   getAddressesCacheEpoch
 } from './getAddressesCache'
+
+// Mirrors the deleted KeystoneWallet's EVM/AVAX derivation-path prefixes
+// (CP-14995 removed the class, but getPublicKeyFor's read-side path still
+// needs to recognize them to derive a public key straight from the stored
+// xpubs — see getKeystonePublicKeyFor below).
+const KEYSTONE_EVM_DERIVATION_PATH = `m/44'/60'/0'`
+const KEYSTONE_AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
 
 // Retry helper. Local to WalletService — promote to utils/ only if a second
 // caller appears. Backoff: 250 / 500 / 1000 ms (3 retries, 4 total attempts).
@@ -471,6 +483,21 @@ class WalletService {
       return cached
     }
 
+    // WalletFactory always throws for WalletType.KEYSTONE (CP-14995 blocks
+    // Keystone signing at that choke point), but ModuleManager's read-side
+    // address derivation (deriveKeystoneAddresses) still calls this — via
+    // ApprovalController.requestPublicKey — for every account index on every
+    // dev-mode toggle / account reload. Derive the public key directly from
+    // the stored xpubs instead of constructing a Wallet.
+    if (walletType === WalletType.KEYSTONE) {
+      const publicKey = await this.getKeystonePublicKeyFor({
+        derivationPath,
+        curve
+      })
+      WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)
+      return publicKey
+    }
+
     const wallet = await WalletFactory.getOrCreateWallet({
       walletId,
       walletType
@@ -485,6 +512,70 @@ class WalletService {
     WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)
 
     return publicKey
+  }
+
+  /**
+   * Replicates the deleted KeystoneWallet.getPublicKeyFor/getPublicKey exactly
+   * (CP-14995): EVM public keys come from the stored `evm` xpub, X/P from the
+   * stored `xp` xpub (primary account only). Non-primary X/P paths throw the
+   * same typed KeystoneWalletError so ModuleManager.deriveKeystoneAddresses'
+   * isUnsupportedXpDerivationError tolerance keeps working.
+   */
+  private async getKeystonePublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
+    curve: Curve
+  }): Promise<string> {
+    if (curve === Curve.ED25519) {
+      throw new Error(`ED25519 not supported for path: ${derivationPath}`)
+    }
+    if (!derivationPath) {
+      throw new Error(`Path is required for curve: ${curve}`)
+    }
+
+    const accountIndexSegment = derivationPath.split('/').pop()
+    if (!accountIndexSegment) {
+      throw new Error(`Invalid path: ${derivationPath}`)
+    }
+    const accountIndex = Number(accountIndexSegment)
+
+    const keystoneData = await KeystoneDataStorage.retrieve()
+
+    let publicKey: Buffer
+    if (derivationPath.startsWith(KEYSTONE_EVM_DERIVATION_PATH)) {
+      publicKey = getAddressPublicKeyFromXPub(keystoneData.evm, accountIndex)
+    } else if (derivationPath.startsWith(KEYSTONE_AVAX_DERIVATION_PATH)) {
+      if (!keystoneData.xp) {
+        throw new Error('no public key (xpubXP) available')
+      }
+      publicKey = Avalanche.getAddressPublicKeyFromXpub(
+        keystoneData.xp,
+        accountIndex
+      )
+    } else if (derivationPath.startsWith(AVALANCHE_DERIVATION_PATH_PREFIX)) {
+      // A Keystone QR wallet only carries the primary account's X/P xpub
+      // (KEYSTONE_AVAX_DERIVATION_PATH); per-account X/P paths
+      // (m/44'/9000'/N'/0/0, N > 0) are not derivable. Surface this as a
+      // distinguishable error so address derivation can omit X/P for the
+      // non-primary account rather than failing closed (CP-14606).
+      throw new KeystoneWalletError({
+        name: KeystoneErrors.UNSUPPORTED_XP_DERIVATION,
+        message: `Keystone cannot derive X/P for non-primary account path: ${derivationPath}`
+      })
+    } else {
+      throw new Error(`Unknown path: ${derivationPath}`)
+    }
+
+    const publicKeyHex = publicKey.toString('hex')
+    if (!publicKeyHex) {
+      throw new Error(
+        `Public key not found for path: ${derivationPath} and curve: ${curve}`
+      )
+    }
+
+    return publicKeyHex
   }
 
   public async getRawXpubXP({

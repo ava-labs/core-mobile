@@ -14,9 +14,6 @@ export const DOCS_STAKING_URL =
 export const DOCS_BRIDGE_FAQS_URL =
   'https://support.avax.network/en/articles/6092559-avalanche-bridge-faq'
 
-export const DOCS_KEYSTONE_SIGNING_ERROR_URL =
-  'https://support.core.app/en/articles/13251923-keystone-why-can-t-i-send-avax-on-the-x-or-p-chain'
-
 export const DOCS_KEYSTONE_DEPRECATION_URL =
   'https://support.core.app/en/articles/16559552-does-core-support-keystone-wallets'
 
