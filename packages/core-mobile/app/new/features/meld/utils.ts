@@ -337,8 +337,9 @@ export const resolveNoValidQuotesFallback = ({
  * Meld returns a batch of quotes across every quotable service provider, not
  * just the one currently selected. Prefer the quote for the selected
  * provider so the fee shown matches what checkout will actually charge;
- * fall back to the best (lowest-fee) quote — crytoQuotes[0], per
- * useServiceProviders' sort — when the selected provider didn't quote.
+ * fall back to the best (lowest-fee) quote — quotes[0], which the caller
+ * passes already sorted ascending by fee — when the selected provider
+ * didn't quote.
  */
 export const selectQuoteForDisplay = (
   quotes: Quote[],

@@ -553,4 +553,20 @@ describe('buildDisplayTokenUnit', () => {
     const tokenUnit = buildDisplayTokenUnit(17.02, 18, 'WETH')
     expect(tokenUnit.toDisplay({ asNumber: true })).toBe(17.02)
   })
+
+  // For an 18-decimal token the base-unit value (displayAmount * 1e18) exceeds
+  // Number.MAX_SAFE_INTEGER, so the integer isn't exact. TokenUnit.toDisplay
+  // rounds by magnitude (4dp here) well above that float error, and the input
+  // destinationAmount is itself already a float64 from the API — so there's no
+  // higher-precision source a BigInt scale could preserve. These pin that the
+  // displayed value stays correct across more significant digits and magnitudes.
+  it('displays extra significant digits correctly on an 18-decimal token', () => {
+    const tokenUnit = buildDisplayTokenUnit(47.058089, 18, 'WETH')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(47.0581)
+  })
+
+  it('displays a large amount correctly on an 18-decimal token', () => {
+    const tokenUnit = buildDisplayTokenUnit(1234.56, 18, 'WETH')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(1234.56)
+  })
 })
