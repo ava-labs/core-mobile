@@ -106,6 +106,18 @@ describe('shouldRetryCryptoQuote', () => {
     expect(shouldRetryCryptoQuote(0, errorWithStatus(400))).toBe(false)
   })
 
+  it('never retries a Meld string error code (deterministic, not a network error)', () => {
+    const errorWithCode = Object.assign(new Error('Request failed'), {
+      response: {
+        data: {
+          code: CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST,
+          message: 'Incompatible request'
+        }
+      }
+    })
+    expect(shouldRetryCryptoQuote(0, errorWithCode)).toBe(false)
+  })
+
   it('retries a network error (no response, no resolvable status code) while under the cap', () => {
     expect(shouldRetryCryptoQuote(0, new Error('network down'))).toBe(true)
     expect(shouldRetryCryptoQuote(2, new Error('network down'))).toBe(true)

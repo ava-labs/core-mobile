@@ -204,22 +204,24 @@ export const getErrorMessage = (
 }
 
 /**
- * Only 5xx (Meld/upstream outage) is worth react-query's default retry
- * behavior. 4xx errors like NO_VALID_QUOTES are deterministic for the given
- * request params and won't succeed by retrying unchanged. A network failure
- * (offline, timeout) throws without a `response`, so getErrorMessage can't
- * resolve a statusCode at all — treat that as retryable too, since it's the
- * class of error most likely to be transient and previously got react-query's
- * default retries.
+ * Only transient failures are worth react-query's retry behavior. A network
+ * failure (offline, timeout) throws without a `response`, so getErrorMessage
+ * resolves no statusCode at all — that's the class most likely to be transient
+ * and previously got react-query's default retries. A numeric 5xx is an
+ * upstream outage. Everything else is deterministic for the given request
+ * params and won't succeed by retrying unchanged: a numeric 4xx, and Meld's
+ * string error codes (e.g. INCOMPATIBLE_REQUEST, which getErrorMessage surfaces
+ * via `response.data.code`) — so a non-numeric statusCode is NOT retryable.
  */
 export const shouldRetryCryptoQuote = (
   failureCount: number,
   error: Error
 ): boolean => {
   const statusCode = getErrorMessage(error)?.statusCode
-  return (
-    (typeof statusCode !== 'number' || statusCode >= 500) && failureCount < 3
-  )
+  const isTransient =
+    statusCode === undefined ||
+    (typeof statusCode === 'number' && statusCode >= 500)
+  return isTransient && failureCount < 3
 }
 
 /**
