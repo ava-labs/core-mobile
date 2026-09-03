@@ -7,6 +7,7 @@ import {
   WalletType
 } from 'services/wallet/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { addAccount } from 'store/account/thunks'
 import { avalancheAddAccountHandler as handler } from './avalanche_addAccount'
@@ -18,6 +19,11 @@ jest.mock('store/account/thunks', () => ({
 jest.mock('services/analytics/AnalyticsService', () => ({
   __esModule: true,
   default: { capture: jest.fn() }
+}))
+
+jest.mock('utils/Logger', () => ({
+  __esModule: true,
+  default: { error: jest.fn(), warn: jest.fn(), info: jest.fn() }
 }))
 
 const mockAddAccount = addAccount as jest.MockedFunction<typeof addAccount>
@@ -110,6 +116,33 @@ describe('avalanche_addAccount handler', () => {
       error: rpcErrors.internal(UNSUPPORTED_WALLET_TYPE_ERROR)
     })
     expect(AnalyticsService.capture).not.toHaveBeenCalled()
+    // Logger.error is Sentry-bound; a deliberately blocked wallet is not a bug.
+    expect(Logger.warn).toHaveBeenCalled()
+    expect(Logger.error).not.toHaveBeenCalled()
+  })
+
+  it('still logs genuine add-account failures at error level', async () => {
+    mockGetState.mockReturnValue(buildState())
+    mockDispatch.mockReturnValue({
+      unwrap: () =>
+        Promise.reject({
+          name: 'Error',
+          message: 'derivation blew up',
+          stack: 'Error: derivation blew up'
+        })
+    })
+
+    const result = await handler.handle(
+      createRequest([walletId]),
+      mockListenerApi
+    )
+
+    expect(result).toEqual({
+      success: false,
+      error: rpcErrors.internal('derivation blew up')
+    })
+    expect(Logger.error).toHaveBeenCalled()
+    expect(Logger.warn).not.toHaveBeenCalled()
   })
 
   it('falls back to the generic message when the serialized error message is empty', async () => {

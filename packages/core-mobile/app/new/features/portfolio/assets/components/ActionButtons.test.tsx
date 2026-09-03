@@ -6,10 +6,11 @@ const mockOpenDeprecationInfo = jest.fn()
 const mockRenderedButtons: Record<string, unknown>[] = []
 let mockIsKeystoneDeprecated = false
 
+// Mirrors the real hook's return shape exactly — a mock with extra fields keeps
+// passing after the real contract drops them.
 jest.mock('features/keystone/hooks/useKeystoneDeprecation', () => ({
   useIsActiveWalletKeystoneDeprecated: () => mockIsKeystoneDeprecated,
   useKeystoneDeprecation: () => ({
-    isKeystoneDeprecated: mockIsKeystoneDeprecated,
     shouldWarnForWalletType: () => mockIsKeystoneDeprecated,
     openDeprecationInfo: mockOpenDeprecationInfo
   })

@@ -423,20 +423,26 @@ class WalletService {
     // avalanche_getAccountPubKey RPC handler — a pure read a dapp connected to
     // an existing Keystone account can still call. Reuse the same read-path
     // helper getPublicKeyFor uses below instead of constructing a Wallet.
+    type DerivePublicKeyParams = { derivationPath: string; curve: Curve }
+
+    const deriveFromStoredKeystoneXpub = (
+      params: DerivePublicKeyParams
+    ): Promise<string> => this.getKeystonePublicKeyFor(params)
+
+    const deriveFromWallet = async (
+      params: DerivePublicKeyParams
+    ): Promise<string> => {
+      const wallet = await WalletFactory.getOrCreateWallet({
+        walletId,
+        walletType
+      })
+      return wallet.getPublicKeyFor(params)
+    }
+
     const derivePublicKey =
       walletType === WalletType.KEYSTONE
-        ? (params: { derivationPath: string; curve: Curve }): Promise<string> =>
-            this.getKeystonePublicKeyFor(params)
-        : async (params: {
-            derivationPath: string
-            curve: Curve
-          }): Promise<string> => {
-            const wallet = await WalletFactory.getOrCreateWallet({
-              walletId,
-              walletType
-            })
-            return wallet.getPublicKeyFor(params)
-          }
+        ? deriveFromStoredKeystoneXpub
+        : deriveFromWallet
 
     const evmPublicKey =
       cachedEvmKey ||

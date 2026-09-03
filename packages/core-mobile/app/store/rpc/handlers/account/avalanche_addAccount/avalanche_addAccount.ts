@@ -10,6 +10,7 @@ import {
   selectActiveAccount
 } from 'store/account/slice'
 import { CoreAccountType } from '@avalabs/types'
+import { UNSUPPORTED_WALLET_TYPE_ERROR } from 'services/wallet/types'
 import { Account, PrimaryAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { parseRequestParams } from './util'
@@ -85,10 +86,23 @@ class AvalancheAddAccountHandler
     try {
       await dispatch(addAccount(walletId)).unwrap()
     } catch (error) {
-      Logger.error('avalanche_addAccount: failed to add account', error)
+      const message = extractAddAccountErrorMessage(error)
+
+      // A blocked Keystone wallet is expected user behavior, not an app
+      // failure, so it must not reach Sentry via Logger.error. Matched on the
+      // message rather than `isUnsupportedWalletTypeError` because `unwrap()`
+      // rethrows RTK's serialized plain object, which is never an `Error`.
+      if (message === UNSUPPORTED_WALLET_TYPE_ERROR) {
+        Logger.warn(
+          'avalanche_addAccount: blocked, wallet type is no longer supported'
+        )
+      } else {
+        Logger.error('avalanche_addAccount: failed to add account', error)
+      }
+
       return {
         success: false,
-        error: rpcErrors.internal(extractAddAccountErrorMessage(error))
+        error: rpcErrors.internal(message)
       }
     }
 
