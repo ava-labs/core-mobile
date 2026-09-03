@@ -142,6 +142,7 @@ describe('resolveNoValidQuotesFallback', () => {
     paymentMethodIsManual: false,
     isLoadingFallbackQuotes: false,
     fallbackQuotes: [] as Quote[],
+    attemptedPaymentMethods: [] as string[],
     selectedCurrency: 'USD'
   }
 
@@ -264,6 +265,107 @@ describe('resolveNoValidQuotesFallback', () => {
       action: 'error',
       message:
         "Local Manual Bank Transfer isn't available for this purchase. Try Apple Pay."
+    })
+  })
+
+  it('suggests a different method, not the failing one, for a manual choice', () => {
+    expect(
+      resolveNoValidQuotesFallback({
+        ...baseArgs,
+        paymentMethod: PaymentMethods.BR_BANK_TRANSFER,
+        paymentMethodIsManual: true,
+        // the unfiltered batch lists the user's own failing method first
+        fallbackQuotes: [
+          quote({ paymentMethodType: PaymentMethods.BR_BANK_TRANSFER }),
+          quote({ paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD })
+        ]
+      })
+    ).toEqual({
+      action: 'error',
+      message:
+        "Local Manual Bank Transfer isn't available for this purchase. Try Debit/credit card."
+    })
+  })
+
+  it('falls back to a generic manual message when no different method exists', () => {
+    expect(
+      resolveNoValidQuotesFallback({
+        ...baseArgs,
+        paymentMethod: PaymentMethods.BR_BANK_TRANSFER,
+        paymentMethodIsManual: true,
+        fallbackQuotes: [
+          quote({ paymentMethodType: PaymentMethods.BR_BANK_TRANSFER })
+        ]
+      })
+    ).toEqual({
+      action: 'error',
+      message:
+        "Local Manual Bank Transfer isn't available for this purchase. Try a different payment method."
+    })
+  })
+
+  it('stops adopting once every quotable method has already been attempted (no infinite loop)', () => {
+    expect(
+      resolveNoValidQuotesFallback({
+        ...baseArgs,
+        paymentMethod: PaymentMethods.APPLE_PAY,
+        paymentMethodIsManual: false,
+        attemptedPaymentMethods: [
+          PaymentMethods.APPLE_PAY,
+          PaymentMethods.CREDIT_DEBIT_CARD
+        ],
+        fallbackQuotes: [
+          quote({ paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD }),
+          quote({ paymentMethodType: PaymentMethods.APPLE_PAY })
+        ]
+      })
+    ).toEqual({
+      action: 'error',
+      message:
+        'No payment methods currently support USD purchases in your region. Try changing your currency in settings.'
+    })
+  })
+
+  it('adopts the first not-yet-attempted method', () => {
+    expect(
+      resolveNoValidQuotesFallback({
+        ...baseArgs,
+        paymentMethod: PaymentMethods.APPLE_PAY,
+        paymentMethodIsManual: false,
+        attemptedPaymentMethods: [PaymentMethods.APPLE_PAY],
+        fallbackQuotes: [
+          quote({ paymentMethodType: PaymentMethods.APPLE_PAY }),
+          quote({
+            paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD,
+            serviceProvider: 'MERCURYO'
+          })
+        ]
+      })
+    ).toEqual({
+      action: 'adopt',
+      paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD,
+      serviceProvider: 'MERCURYO'
+    })
+  })
+
+  it('adopts a later quotable method when the first quote has no paymentMethodType', () => {
+    expect(
+      resolveNoValidQuotesFallback({
+        ...baseArgs,
+        paymentMethod: PaymentMethods.BR_BANK_TRANSFER,
+        paymentMethodIsManual: false,
+        fallbackQuotes: [
+          quote({ paymentMethodType: undefined }),
+          quote({
+            paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD,
+            serviceProvider: 'MERCURYO'
+          })
+        ]
+      })
+    ).toEqual({
+      action: 'adopt',
+      paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD,
+      serviceProvider: 'MERCURYO'
     })
   })
 })

@@ -258,6 +258,7 @@ export const resolveNoValidQuotesFallback = ({
   paymentMethodIsManual,
   isLoadingFallbackQuotes,
   fallbackQuotes,
+  attemptedPaymentMethods,
   selectedCurrency
 }: {
   isNoValidQuotesError: boolean
@@ -265,6 +266,7 @@ export const resolveNoValidQuotesFallback = ({
   paymentMethodIsManual: boolean
   isLoadingFallbackQuotes: boolean
   fallbackQuotes: Quote[]
+  attemptedPaymentMethods: string[]
   selectedCurrency: string
 }): NoValidQuotesFallbackResult => {
   if (!hasNoValidQuotesError || paymentMethod === undefined) {
@@ -276,31 +278,35 @@ export const resolveNoValidQuotesFallback = ({
     return { action: 'none' }
   }
 
-  const bestFallback = fallbackQuotes[0]
-
-  if (!bestFallback?.paymentMethodType) {
-    return {
-      action: 'error',
-      message: `No payment methods currently support ${selectedCurrency} purchases in your region. Try changing your currency in settings.`
-    }
+  const noRegionalSupport: NoValidQuotesFallbackResult = {
+    action: 'error',
+    message: `No payment methods currently support ${selectedCurrency} purchases in your region. Try changing your currency in settings.`
   }
 
-  if (!paymentMethodIsManual) {
-    // The failing paymentMethod can still show up in the unfiltered fallback
-    // results (a different, working provider offering the same method type).
-    // Re-adopting that same value is a zustand no-op — the primary query key
-    // never changes, so it would stall on the errored quote with no error
-    // message. Skip ahead to the first quote that's actually different.
-    const adoptable = fallbackQuotes.find(
-      quote =>
-        quote.paymentMethodType && quote.paymentMethodType !== paymentMethod
-    )
+  // paymentMethodType is nullable per the schema, so a leading quote can lack
+  // one while a later quote is still quotable — check the whole batch, not
+  // just the first, before declaring no regional support.
+  if (!fallbackQuotes.some(quote => quote.paymentMethodType)) {
+    return noRegionalSupport
+  }
 
+  // A method Meld returns in the unfiltered fallback batch can itself 400 once
+  // we re-quote with it as an explicit filter (the same over-rejection quirk).
+  // Adopting reactively off the fallback result would then re-adopt another
+  // method, which can fail too and ping-pong back — an infinite render loop.
+  // Only consider methods we haven't already tried this round, so adoption
+  // strictly makes progress and terminates in the error branch once every
+  // quotable method has been exhausted.
+  const adoptable = fallbackQuotes.find(
+    quote =>
+      quote.paymentMethodType &&
+      quote.paymentMethodType !== paymentMethod &&
+      !attemptedPaymentMethods.includes(quote.paymentMethodType)
+  )
+
+  if (!paymentMethodIsManual) {
     if (!adoptable?.paymentMethodType) {
-      return {
-        action: 'error',
-        message: `No payment methods currently support ${selectedCurrency} purchases in your region. Try changing your currency in settings.`
-      }
+      return noRegionalSupport
     }
 
     return {
@@ -311,14 +317,16 @@ export const resolveNoValidQuotesFallback = ({
   }
 
   const currentName = humanizePaymentMethodName(paymentMethod)
-  const fallbackName = humanizePaymentMethodName(bestFallback.paymentMethodType)
+  // Suggest a genuinely different method, not the one the user already picked
+  // (the unfiltered batch can list the failing method first).
+  const suggestionName = humanizePaymentMethodName(adoptable?.paymentMethodType)
 
   return {
     action: 'error',
     message: `${
       currentName ?? 'This payment method'
     } isn't available for this purchase. Try ${
-      fallbackName ?? 'a different payment method'
+      suggestionName ?? 'a different payment method'
     }.`
   }
 }

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react'
 import { View, Text, useTheme, alpha } from '@avalabs/k2-alpine'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -84,6 +90,13 @@ export const useSelectAmount = ({
     isLoadingTradeLimits
   } = useFiatSourceAmount({ category })
   const [countryCode] = useMeldCountryCode()
+
+  // Payment methods already tried via the NO_VALID_QUOTES auto-adopt path this
+  // round. Keeps adoption from ping-ponging between methods that each fail as
+  // an explicit filter — see resolveNoValidQuotesFallback.
+  const [attemptedFallbackMethods, setAttemptedFallbackMethods] = useState<
+    string[]
+  >([])
 
   const { getFromPopulatedNetwork } = useNetworks()
 
@@ -174,7 +187,9 @@ export const useSelectAmount = ({
   // Meld rejects some explicit paymentMethodType filters that the same
   // request with paymentMethodType omitted can still quote. Fire that
   // unfiltered request only while we're actually stuck, to recover instead
-  // of dead-ending the onramp flow. Offramp is unaffected.
+  // of dead-ending the onramp flow. This fallback re-query is onramp-only —
+  // the shouldRetryCryptoQuote retry policy in useCreateCryptoQuote is
+  // separate and applies to both onramp and offramp quotes.
   const isFallbackQuotesEnabled =
     category === ServiceProviderCategories.CRYPTO_ONRAMP &&
     hasNoValidQuotesError &&
@@ -198,6 +213,7 @@ export const useSelectAmount = ({
             paymentMethodIsManual,
             isLoadingFallbackQuotes,
             fallbackQuotes,
+            attemptedPaymentMethods: attemptedFallbackMethods,
             selectedCurrency
           })
         : { action: 'none' as const },
@@ -208,28 +224,47 @@ export const useSelectAmount = ({
       paymentMethodIsManual,
       isLoadingFallbackQuotes,
       fallbackQuotes,
+      attemptedFallbackMethods,
       selectedCurrency
     ]
   )
 
   useEffect(() => {
     if (noValidQuotesFallback.action !== 'adopt') return
-    setPaymentMethod(noValidQuotesFallback.paymentMethodType)
-    if (noValidQuotesFallback.serviceProvider) {
-      setServiceProvider(noValidQuotesFallback.serviceProvider)
-    }
-  }, [noValidQuotesFallback, setPaymentMethod, setServiceProvider])
+    const adopted = noValidQuotesFallback.paymentMethodType
+    // Record both the adopted method and the one that just failed, so neither
+    // is re-adopted if the adopted method also 400s as a filter. serviceProvider
+    // is intentionally left to the default-selection effect, which sets it from
+    // the refreshed (adopted-method) batch — the quote list is empty here in the
+    // errored state, so setting it now would just be overwritten.
+    setAttemptedFallbackMethods(prev => {
+      const withAdopted = prev.includes(adopted) ? prev : [...prev, adopted]
+      return paymentMethod && !withAdopted.includes(paymentMethod)
+        ? [...withAdopted, paymentMethod]
+        : withAdopted
+    })
+    setPaymentMethod(adopted)
+  }, [noValidQuotesFallback, paymentMethod, setPaymentMethod])
 
   useEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
     setPaymentMethodIsManual(false)
+    setAttemptedFallbackMethods([])
   }, [
     setPaymentMethod,
     setServiceProvider,
     setPaymentMethodIsManual,
     token?.currencyCode
   ])
+
+  // Changing currency or country changes which methods Meld can quote, so a
+  // method blacklisted for the old context must be reconsidered — otherwise
+  // the "try changing your currency" recovery can still dead-end on a method
+  // that would now quote fine.
+  useEffect(() => {
+    setAttemptedFallbackMethods([])
+  }, [selectedCurrency, countryCode])
 
   const walletAddress = useMemo(() => {
     return account && network && getAddressByNetwork(account, network)
@@ -323,6 +358,7 @@ export const useSelectAmount = ({
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
     setPaymentMethodIsManual(false)
+    setAttemptedFallbackMethods([])
     setSourceAmount(0)
   }, [
     setPaymentMethod,
