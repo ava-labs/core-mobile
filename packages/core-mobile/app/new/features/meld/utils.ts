@@ -370,14 +370,14 @@ export const resolveQuoteDestinationAmount = ({
   displayedAmount,
   sourceAmount,
   isLoadingCryptoQuotes,
-  crytoQuotes,
+  cryptoQuotes,
   serviceProvider
 }: {
   category: ServiceProviderCategories
   displayedAmount: number | undefined | null
   sourceAmount: number | undefined
   isLoadingCryptoQuotes: boolean
-  crytoQuotes: Quote[]
+  cryptoQuotes: Quote[]
   serviceProvider: string | undefined
 }): number | undefined => {
   if (category !== ServiceProviderCategories.CRYPTO_ONRAMP) return undefined
@@ -391,7 +391,7 @@ export const resolveQuoteDestinationAmount = ({
     return undefined
   }
 
-  const quote = selectQuoteForDisplay(crytoQuotes, serviceProvider)
+  const quote = selectQuoteForDisplay(cryptoQuotes, serviceProvider)
   return quote?.destinationAmount ?? undefined
 }
 

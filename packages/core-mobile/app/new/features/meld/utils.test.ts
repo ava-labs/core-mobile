@@ -417,7 +417,7 @@ describe('resolveQuoteDestinationAmount', () => {
     displayedAmount: 100,
     sourceAmount: 100,
     isLoadingCryptoQuotes: false,
-    crytoQuotes: [quote()] as Quote[],
+    cryptoQuotes: [quote()] as Quote[],
     serviceProvider: 'MERCURYO' as string | undefined
   }
 
@@ -445,7 +445,7 @@ describe('resolveQuoteDestinationAmount', () => {
 
   it('falls back to spot (undefined) when there are no quotes', () => {
     expect(
-      resolveQuoteDestinationAmount({ ...baseArgs, crytoQuotes: [] })
+      resolveQuoteDestinationAmount({ ...baseArgs, cryptoQuotes: [] })
     ).toBeUndefined()
   })
 
@@ -475,7 +475,7 @@ describe('resolveQuoteDestinationAmount', () => {
       resolveQuoteDestinationAmount({
         ...baseArgs,
         serviceProvider: 'TRANSAK',
-        crytoQuotes: [
+        cryptoQuotes: [
           quote({ serviceProvider: 'MERCURYO', destinationAmount: 17.02 })
         ]
       })
@@ -487,7 +487,7 @@ describe('resolveQuoteDestinationAmount', () => {
       resolveQuoteDestinationAmount({
         ...baseArgs,
         serviceProvider: 'TRANSAK',
-        crytoQuotes: [
+        cryptoQuotes: [
           quote({ serviceProvider: 'MERCURYO', destinationAmount: 17.02 }),
           quote({ serviceProvider: 'TRANSAK', destinationAmount: 16.5 })
         ]
