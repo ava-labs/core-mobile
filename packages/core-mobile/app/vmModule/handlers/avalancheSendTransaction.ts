@@ -5,7 +5,11 @@ import networkService from 'services/network/NetworkService'
 import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import Logger from 'utils/Logger'
 
 export const avalancheSendTransaction = async ({
@@ -82,6 +86,21 @@ export const avalancheSendTransaction = async ({
       signedData: signedTransactionHex as Hex
     })
   } catch (error) {
+    if (isUnsupportedWalletTypeError(error)) {
+      Logger.warn('[avalancheSendTransaction] sign rejected', {
+        vm,
+        walletType,
+        message: UNSUPPORTED_WALLET_TYPE_ERROR
+      })
+      resolve({
+        error: rpcErrors.internal({
+          message: UNSUPPORTED_WALLET_TYPE_ERROR,
+          data: { cause: error }
+        })
+      })
+      return
+    }
+
     // Keep only the error message off-device: the raw error/stack can carry the
     // unsigned tx payload to Sentry, so we deliberately don't forward them.
     Logger.error('[avalancheSendTransaction] sign failed', {

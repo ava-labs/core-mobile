@@ -163,6 +163,12 @@ export type CreateSendXTxParams = Omit<CreateSendPTxParams, 'feeState'>
 export const UNSUPPORTED_WALLET_TYPE_ERROR =
   'This wallet type is no longer supported'
 
+// Deprecated-wallet signing is expected user behavior, not an app failure:
+// signing catch sites use this to swap in the canonical message (skipping
+// the generic wrapper) and to keep it out of Sentry-bound error logging.
+export const isUnsupportedWalletTypeError = (error: unknown): boolean =>
+  error instanceof Error && error.message === UNSUPPORTED_WALLET_TYPE_ERROR
+
 //TODO: delete this enum
 export enum WalletType {
   UNSET = 'UNSET',

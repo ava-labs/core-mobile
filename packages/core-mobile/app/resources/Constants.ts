@@ -17,8 +17,7 @@ export const DOCS_BRIDGE_FAQS_URL =
 export const DOCS_KEYSTONE_DEPRECATION_URL =
   'https://support.core.app/en/articles/16559552-does-core-support-keystone-wallets'
 
-// TODO: confirm the final sunset date with product before this ships.
-export const KEYSTONE_DEPRECATION_DATE = 'September 1st'
+export const KEYSTONE_DEPRECATION_DATE = 'September 1st, 2026'
 
 export const BUNDLE_ID_IOS = 'org.avalabs.corewallet'
 export const BUNDLE_ID_ANDROID = 'com.avaxwallet'
