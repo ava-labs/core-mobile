@@ -3,7 +3,11 @@ import { ApprovalResponse } from '@avalabs/vm-module-types'
 import { Account } from 'store/account/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import walletService from 'services/wallet/WalletService'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 
 // Payload accepted from ApprovalController
 type SolanaTransactionPayload = {
@@ -49,7 +53,9 @@ export const solanaSignTransaction = async ({
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign Solana transaction',
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : 'Failed to sign Solana transaction',
         data: { cause: error }
       })
     })

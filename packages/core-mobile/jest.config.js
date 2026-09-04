@@ -77,8 +77,7 @@ module.exports = {
         'react-redux',
         'uuid',
         '@ledgerhq',
-        '@avalabs/hw-app-avalanche',
-        '@keystonehq'
+        '@avalabs/hw-app-avalanche'
       ].join('|') +
       ')'
   ]

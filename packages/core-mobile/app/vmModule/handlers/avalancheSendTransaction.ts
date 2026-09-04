@@ -5,14 +5,12 @@ import networkService from 'services/network/NetworkService'
 import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { WalletType } from 'services/wallet/types'
-import { Linking } from 'react-native'
-import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
-import { showAlert } from '@avalabs/k2-alpine'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import Logger from 'utils/Logger'
-
-export const KEYSTONE_SIGNING_ERROR_MESSAGE =
-  'Failed to sign Avalanche transaction'
 
 export const avalancheSendTransaction = async ({
   walletId,
@@ -77,37 +75,6 @@ export const avalancheSendTransaction = async ({
         : UnsignedTx.fromJSON(signedTransactionJson)
 
     if (!signedTransaction.hasAllSignatures()) {
-      if (walletType === WalletType.KEYSTONE) {
-        showAlert({
-          title: 'Having trouble signing with Keystone?',
-          description:
-            'It looks like this transaction cannot be signed in the app. To complete it, please visit core.app and send the funds directly from your Keystone wallet. You can use the article below to learn how to send from Avalanche P‑Chain or X‑Chain by manually selecting UTXOs.',
-          buttons: [
-            {
-              text: 'View article',
-              onPress: async () => {
-                await Linking.openURL(DOCS_KEYSTONE_SIGNING_ERROR_URL)
-                resolve({
-                  error: rpcErrors.internal({
-                    message: KEYSTONE_SIGNING_ERROR_MESSAGE
-                  })
-                })
-              }
-            },
-            {
-              text: 'Dismiss',
-              onPress: () => {
-                resolve({
-                  error: rpcErrors.internal({
-                    message: KEYSTONE_SIGNING_ERROR_MESSAGE
-                  })
-                })
-              }
-            }
-          ]
-        })
-        return
-      }
       throw new Error('Signing error, missing signatures.')
     }
 
@@ -119,6 +86,21 @@ export const avalancheSendTransaction = async ({
       signedData: signedTransactionHex as Hex
     })
   } catch (error) {
+    if (isUnsupportedWalletTypeError(error)) {
+      Logger.warn('[avalancheSendTransaction] sign rejected', {
+        vm,
+        walletType,
+        message: UNSUPPORTED_WALLET_TYPE_ERROR
+      })
+      resolve({
+        error: rpcErrors.internal({
+          message: UNSUPPORTED_WALLET_TYPE_ERROR,
+          data: { cause: error }
+        })
+      })
+      return
+    }
+
     // Keep only the error message off-device: the raw error/stack can carry the
     // unsigned tx payload to Sentry, so we deliberately don't forward them.
     Logger.error('[avalancheSendTransaction] sign failed', {

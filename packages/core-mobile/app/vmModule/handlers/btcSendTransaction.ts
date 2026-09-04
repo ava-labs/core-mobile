@@ -6,7 +6,12 @@ import {
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { BtcTransactionRequest, WalletType } from 'services/wallet/types'
+import {
+  BtcTransactionRequest,
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -69,7 +74,9 @@ export const btcSendTransaction = async ({
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign btc transaction',
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : 'Failed to sign btc transaction',
         data: { cause: error }
       })
     })
