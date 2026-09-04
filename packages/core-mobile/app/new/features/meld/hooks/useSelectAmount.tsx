@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react'
 import { View, Text, useTheme, alpha } from '@avalabs/k2-alpine'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -23,6 +29,7 @@ import {
 import {
   useMeldCountryCode,
   useMeldPaymentMethod,
+  useMeldPaymentMethodIsManual,
   useMeldServiceProvider
 } from '../store'
 import {
@@ -31,6 +38,7 @@ import {
   CryptoCurrency,
   SessionTypes
 } from '../types'
+import { isNoValidQuotesError, resolveNoValidQuotesFallback } from '../utils'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
@@ -69,6 +77,8 @@ export const useSelectAmount = ({
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [serviceProvider, setServiceProvider] = useMeldServiceProvider()
   const [paymentMethod, setPaymentMethod] = useMeldPaymentMethod()
+  const [paymentMethodIsManual, setPaymentMethodIsManual] =
+    useMeldPaymentMethodIsManual()
   const {
     sourceAmount,
     setSourceAmount,
@@ -80,6 +90,13 @@ export const useSelectAmount = ({
     isLoadingTradeLimits
   } = useFiatSourceAmount({ category })
   const [countryCode] = useMeldCountryCode()
+
+  // Payment methods already tried via the NO_VALID_QUOTES auto-adopt path this
+  // round. Keeps adoption from ping-ponging between methods that each fail as
+  // an explicit filter — see resolveNoValidQuotesFallback.
+  const [attemptedFallbackMethods, setAttemptedFallbackMethods] = useState<
+    string[]
+  >([])
 
   const { getFromPopulatedNetwork } = useNetworks()
 
@@ -162,10 +179,92 @@ export const useSelectAmount = ({
       enabled
     })
 
+  const hasNoValidQuotesError = useMemo(
+    () => isNoValidQuotesError(cryptoQuotesError),
+    [cryptoQuotesError]
+  )
+
+  // Meld rejects some explicit paymentMethodType filters that the same
+  // request with paymentMethodType omitted can still quote. Fire that
+  // unfiltered request only while we're actually stuck, to recover instead
+  // of dead-ending the onramp flow. This fallback re-query is onramp-only —
+  // the shouldRetryCryptoQuote retry policy in useCreateCryptoQuote is
+  // separate and applies to both onramp and offramp quotes.
+  const isFallbackQuotesEnabled =
+    category === ServiceProviderCategories.CRYPTO_ONRAMP &&
+    hasNoValidQuotesError &&
+    paymentMethod !== undefined &&
+    enabled
+
+  const {
+    crytoQuotes: fallbackQuotes,
+    isLoadingCryptoQuotes: isLoadingFallbackQuotes
+  } = useServiceProviders({
+    category,
+    enabled: isFallbackQuotesEnabled
+  })
+
+  const noValidQuotesFallback = useMemo(
+    () =>
+      category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? resolveNoValidQuotesFallback({
+            isNoValidQuotesError: hasNoValidQuotesError,
+            paymentMethod,
+            paymentMethodIsManual,
+            isLoadingFallbackQuotes,
+            fallbackQuotes,
+            attemptedPaymentMethods: attemptedFallbackMethods,
+            selectedCurrency
+          })
+        : { action: 'none' as const },
+    [
+      category,
+      hasNoValidQuotesError,
+      paymentMethod,
+      paymentMethodIsManual,
+      isLoadingFallbackQuotes,
+      fallbackQuotes,
+      attemptedFallbackMethods,
+      selectedCurrency
+    ]
+  )
+
+  useEffect(() => {
+    if (noValidQuotesFallback.action !== 'adopt') return
+    const adopted = noValidQuotesFallback.paymentMethodType
+    // Record both the adopted method and the one that just failed, so neither
+    // is re-adopted if the adopted method also 400s as a filter. serviceProvider
+    // is intentionally left to the default-selection effect, which sets it from
+    // the refreshed (adopted-method) batch — the quote list is empty here in the
+    // errored state, so setting it now would just be overwritten.
+    setAttemptedFallbackMethods(prev => {
+      const withAdopted = prev.includes(adopted) ? prev : [...prev, adopted]
+      return paymentMethod && !withAdopted.includes(paymentMethod)
+        ? [...withAdopted, paymentMethod]
+        : withAdopted
+    })
+    setPaymentMethod(adopted)
+  }, [noValidQuotesFallback, paymentMethod, setPaymentMethod])
+
   useEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
-  }, [setPaymentMethod, setServiceProvider, token?.currencyCode])
+    setPaymentMethodIsManual(false)
+    setAttemptedFallbackMethods([])
+  }, [
+    setPaymentMethod,
+    setServiceProvider,
+    setPaymentMethodIsManual,
+    token?.currencyCode
+  ])
+
+  // Changing currency or country changes which methods Meld can quote, so a
+  // method blacklisted for the old context must be reconsidered — otherwise
+  // the "try changing your currency" recovery can still dead-end on a method
+  // that would now quote fine.
+  useEffect(() => {
+    setAttemptedFallbackMethods([])
+  }, [selectedCurrency, countryCode])
 
   const walletAddress = useMemo(() => {
     return account && network && getAddressByNetwork(account, network)
@@ -258,8 +357,15 @@ export const useSelectAmount = ({
   useLayoutEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
+    setPaymentMethodIsManual(false)
+    setAttemptedFallbackMethods([])
     setSourceAmount(0)
-  }, [setPaymentMethod, setServiceProvider, setSourceAmount])
+  }, [
+    setPaymentMethod,
+    setServiceProvider,
+    setPaymentMethodIsManual,
+    setSourceAmount
+  ])
 
   useEffect(() => {
     if (paymentMethod === undefined && defaultPaymentMethod) {
@@ -339,6 +445,15 @@ export const useSelectAmount = ({
       return 'Transaction amount is invalid: it must be between the minimum and maximum allowed.'
     }
 
+    // While resolving NO_VALID_QUOTES, only the fallback-derived message
+    // (if any) should show — not the generic message below, which would
+    // otherwise flash while the fallback request is still in flight.
+    if (isFallbackQuotesEnabled) {
+      return noValidQuotesFallback.action === 'error'
+        ? noValidQuotesFallback.message
+        : undefined
+    }
+
     if (cryptoQuotesError?.statusCode) {
       return 'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
     }
@@ -353,6 +468,8 @@ export const useSelectAmount = ({
     isBelowMaximumLimit,
     maximumLimit,
     minMaxErrorMessage,
+    isFallbackQuotesEnabled,
+    noValidQuotesFallback,
     cryptoQuotesError,
     token?.tokenWithBalance.symbol,
     formatCurrency,

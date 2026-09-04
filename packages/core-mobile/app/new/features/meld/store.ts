@@ -19,6 +19,11 @@ export const useMeldPaymentMethod = createZustandStore<string | undefined>(
   undefined
 )
 
+// Distinguishes a user's explicit picker tap (SelectPaymentMethod.tsx) from
+// an auto-defaulted payment method, so the NO_VALID_QUOTES fallback knows
+// whether it's safe to silently switch methods or must ask the user first.
+export const useMeldPaymentMethodIsManual = createZustandStore<boolean>(false)
+
 export const useMeldFiatAmount = createZustandStore<number | undefined>(
   undefined
 )
