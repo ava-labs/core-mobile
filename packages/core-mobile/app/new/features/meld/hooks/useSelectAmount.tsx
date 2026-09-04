@@ -38,7 +38,12 @@ import {
   CryptoCurrency,
   SessionTypes
 } from '../types'
-import { isNoValidQuotesError, resolveNoValidQuotesFallback } from '../utils'
+import {
+  buildDisplayTokenUnit,
+  isNoValidQuotesError,
+  resolveNoValidQuotesFallback,
+  resolveQuoteDestinationAmount
+} from '../utils'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
@@ -136,25 +141,28 @@ export const useSelectAmount = ({
       symbol: token?.tokenWithBalance.symbol
     })?.currentPrice ?? 0
 
+  const maxDecimals = useMemo(
+    () =>
+      token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
+        ? token.tokenWithBalance.decimals
+        : network?.networkToken.decimals ?? 0,
+    [network?.networkToken.decimals, token?.tokenWithBalance]
+  )
+
   const getSourceAmountInTokenUnit = useCallback(
     (amt: number | undefined | null): TokenUnit => {
-      const maxDecimals =
-        token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
-          ? token.tokenWithBalance.decimals
-          : 0
-
       const tokenAmount =
         amt !== null && amt !== undefined && currentPrice !== 0
-          ? (amt / currentPrice) * 10 ** maxDecimals
+          ? amt / currentPrice
           : 0
 
-      return new TokenUnit(
+      return buildDisplayTokenUnit(
         tokenAmount,
         maxDecimals,
         token?.tokenWithBalance.symbol ?? ''
       )
     },
-    [token?.tokenWithBalance, currentPrice]
+    [token?.tokenWithBalance, currentPrice, maxDecimals]
   )
 
   const hasEnoughBalance = useMemo(() => {
@@ -371,12 +379,18 @@ export const useSelectAmount = ({
     if (paymentMethod === undefined && defaultPaymentMethod) {
       setPaymentMethod(defaultPaymentMethod)
     }
-    if (serviceProvider === undefined && crytoQuotes[0]?.serviceProvider) {
-      setServiceProvider(crytoQuotes[0].serviceProvider)
-    }
 
     if (crytoQuotes.length === 0) {
       setServiceProvider(undefined)
+    } else if (
+      // Resync when the selected provider drops out of a refreshed batch.
+      // selectQuoteForDisplay then falls back to crytoQuotes[0], so leaving a
+      // now-absent provider selected would show its name while the displayed
+      // amount comes from a different provider's quote.
+      serviceProvider === undefined ||
+      !crytoQuotes.some(quote => quote.serviceProvider === serviceProvider)
+    ) {
+      setServiceProvider(crytoQuotes[0]?.serviceProvider ?? undefined)
     }
   }, [
     crytoQuotes,
@@ -478,7 +492,23 @@ export const useSelectAmount = ({
 
   const formatInSubTextNumber = useCallback(
     (amt: number | undefined | null): JSX.Element => {
-      const sourceAmountInTokenUnit = getSourceAmountInTokenUnit(amt)
+      const quoteDestinationAmount = resolveQuoteDestinationAmount({
+        category,
+        displayedAmount: amt,
+        sourceAmount,
+        isLoadingCryptoQuotes,
+        cryptoQuotes: crytoQuotes,
+        serviceProvider
+      })
+
+      const sourceAmountInTokenUnit =
+        quoteDestinationAmount !== undefined
+          ? buildDisplayTokenUnit(
+              quoteDestinationAmount,
+              maxDecimals,
+              token?.tokenWithBalance.symbol ?? ''
+            )
+          : getSourceAmountInTokenUnit(amt)
       return (
         <View
           sx={{
@@ -507,6 +537,12 @@ export const useSelectAmount = ({
       )
     },
     [
+      category,
+      sourceAmount,
+      isLoadingCryptoQuotes,
+      crytoQuotes,
+      serviceProvider,
+      maxDecimals,
       getSourceAmountInTokenUnit,
       errorMessage,
       colors.$textPrimary,

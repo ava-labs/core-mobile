@@ -1,10 +1,14 @@
-import { PaymentMethods } from './consts'
+import { PaymentMethods, ServiceProviderCategories } from './consts'
 import { CreateCryptoQuoteErrorCode, Quote } from './types'
 import {
+  buildDisplayTokenUnit,
   getErrorMessage,
   humanizePaymentMethodName,
   isNoValidQuotesError,
   resolveNoValidQuotesFallback,
+  resolveQuoteDestinationAmount,
+  resolveQuoteTokenAmount,
+  selectQuoteForDisplay,
   shouldRetryCryptoQuote
 } from './utils'
 
@@ -367,5 +371,202 @@ describe('resolveNoValidQuotesFallback', () => {
       paymentMethodType: PaymentMethods.CREDIT_DEBIT_CARD,
       serviceProvider: 'MERCURYO'
     })
+  })
+})
+
+const quoteWithDestinationAmount = (overrides: Partial<Quote> = {}): Quote =>
+  ({
+    serviceProvider: 'MERCURYO',
+    destinationAmount: 17.02,
+    ...overrides
+  } as Quote)
+
+describe('selectQuoteForDisplay', () => {
+  const quote = quoteWithDestinationAmount
+
+  it('returns undefined when there are no quotes', () => {
+    expect(selectQuoteForDisplay([], 'MERCURYO')).toBeUndefined()
+  })
+
+  it('returns the quote matching the selected service provider', () => {
+    const wanted = quote({ serviceProvider: 'TRANSAK', destinationAmount: 18 })
+    expect(selectQuoteForDisplay([quote(), wanted], 'TRANSAK')).toEqual(wanted)
+  })
+
+  it('falls back to the first (best) quote when no service provider is selected', () => {
+    const best = quote({ serviceProvider: 'MERCURYO' })
+    expect(
+      selectQuoteForDisplay(
+        [best, quote({ serviceProvider: 'TRANSAK' })],
+        undefined
+      )
+    ).toEqual(best)
+  })
+
+  it('falls back to the first (best) quote when the selected provider did not quote', () => {
+    const best = quote({ serviceProvider: 'MERCURYO' })
+    expect(selectQuoteForDisplay([best], 'TRANSAK')).toEqual(best)
+  })
+})
+
+describe('resolveQuoteDestinationAmount', () => {
+  const quote = quoteWithDestinationAmount
+
+  const baseArgs = {
+    category: ServiceProviderCategories.CRYPTO_ONRAMP,
+    displayedAmount: 100,
+    sourceAmount: 100,
+    isLoadingCryptoQuotes: false,
+    cryptoQuotes: [quote()] as Quote[],
+    serviceProvider: 'MERCURYO' as string | undefined
+  }
+
+  it('returns the matching quote destination amount once quotes settle for the displayed amount', () => {
+    expect(resolveQuoteDestinationAmount(baseArgs)).toBe(17.02)
+  })
+
+  it('is offramp-inert: only applies to CRYPTO_ONRAMP', () => {
+    expect(
+      resolveQuoteDestinationAmount({
+        ...baseArgs,
+        category: ServiceProviderCategories.CRYPTO_OFFRAMP
+      })
+    ).toBeUndefined()
+  })
+
+  it('falls back to spot (undefined) while quotes are loading', () => {
+    expect(
+      resolveQuoteDestinationAmount({
+        ...baseArgs,
+        isLoadingCryptoQuotes: true
+      })
+    ).toBeUndefined()
+  })
+
+  it('falls back to spot (undefined) when there are no quotes', () => {
+    expect(
+      resolveQuoteDestinationAmount({ ...baseArgs, cryptoQuotes: [] })
+    ).toBeUndefined()
+  })
+
+  it('falls back to spot (undefined) while the displayed amount has not caught up to the debounced source amount', () => {
+    expect(
+      resolveQuoteDestinationAmount({ ...baseArgs, displayedAmount: 150 })
+    ).toBeUndefined()
+  })
+
+  it('falls back to spot (undefined) when sourceAmount is not yet resolved', () => {
+    expect(
+      resolveQuoteDestinationAmount({ ...baseArgs, sourceAmount: undefined })
+    ).toBeUndefined()
+  })
+
+  it('falls back to spot (undefined) when the displayed amount is null or undefined', () => {
+    expect(
+      resolveQuoteDestinationAmount({ ...baseArgs, displayedAmount: null })
+    ).toBeUndefined()
+    expect(
+      resolveQuoteDestinationAmount({ ...baseArgs, displayedAmount: undefined })
+    ).toBeUndefined()
+  })
+
+  it('uses the best-fee quote when the selected provider has not quoted yet', () => {
+    expect(
+      resolveQuoteDestinationAmount({
+        ...baseArgs,
+        serviceProvider: 'TRANSAK',
+        cryptoQuotes: [
+          quote({ serviceProvider: 'MERCURYO', destinationAmount: 17.02 })
+        ]
+      })
+    ).toBe(17.02)
+  })
+
+  it('updates to the newly selected provider quote when the batch already contains it', () => {
+    expect(
+      resolveQuoteDestinationAmount({
+        ...baseArgs,
+        serviceProvider: 'TRANSAK',
+        cryptoQuotes: [
+          quote({ serviceProvider: 'MERCURYO', destinationAmount: 17.02 }),
+          quote({ serviceProvider: 'TRANSAK', destinationAmount: 16.5 })
+        ]
+      })
+    ).toBe(16.5)
+  })
+})
+
+describe('resolveQuoteTokenAmount', () => {
+  const quote = (overrides: Partial<Quote> = {}): Quote =>
+    ({
+      destinationAmount: 17.02,
+      sourceAmount: 100,
+      ...overrides
+    } as Quote)
+
+  it('uses destinationAmount (net crypto received) for onramp', () => {
+    expect(
+      resolveQuoteTokenAmount(quote(), ServiceProviderCategories.CRYPTO_ONRAMP)
+    ).toBe(17.02)
+  })
+
+  it('uses sourceAmount (crypto sold) for offramp', () => {
+    expect(
+      resolveQuoteTokenAmount(quote(), ServiceProviderCategories.CRYPTO_OFFRAMP)
+    ).toBe(100)
+  })
+
+  it('does not subtract totalFee/exchangeRate on top of the already fee-inclusive amount', () => {
+    // Regression guard: totalFee is a source-currency disclosure of the
+    // spread already priced into exchangeRate, not a separate deduction.
+    expect(
+      resolveQuoteTokenAmount(
+        quote({ totalFee: 5, exchangeRate: 2 }),
+        ServiceProviderCategories.CRYPTO_ONRAMP
+      )
+    ).toBe(17.02)
+  })
+
+  it('defaults to 0 when the relevant amount is missing', () => {
+    expect(
+      resolveQuoteTokenAmount(
+        quote({ destinationAmount: null, sourceAmount: null }),
+        ServiceProviderCategories.CRYPTO_ONRAMP
+      )
+    ).toBe(0)
+    expect(
+      resolveQuoteTokenAmount(
+        quote({ destinationAmount: null, sourceAmount: null }),
+        ServiceProviderCategories.CRYPTO_OFFRAMP
+      )
+    ).toBe(0)
+  })
+})
+
+describe('buildDisplayTokenUnit', () => {
+  it('displays a quote destinationAmount unchanged through a 6-decimal token (e.g. USDT)', () => {
+    const tokenUnit = buildDisplayTokenUnit(17.02, 6, 'USDT')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(17.02)
+  })
+
+  it('displays a quote destinationAmount unchanged through an 18-decimal token (e.g. WETH)', () => {
+    const tokenUnit = buildDisplayTokenUnit(17.02, 18, 'WETH')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(17.02)
+  })
+
+  // For an 18-decimal token the base-unit value (displayAmount * 1e18) exceeds
+  // Number.MAX_SAFE_INTEGER, so the integer isn't exact. TokenUnit.toDisplay
+  // rounds by magnitude (4dp here) well above that float error, and the input
+  // destinationAmount is itself already a float64 from the API — so there's no
+  // higher-precision source a BigInt scale could preserve. These pin that the
+  // displayed value stays correct across more significant digits and magnitudes.
+  it('displays extra significant digits correctly on an 18-decimal token', () => {
+    const tokenUnit = buildDisplayTokenUnit(47.058089, 18, 'WETH')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(47.0581)
+  })
+
+  it('displays a large amount correctly on an 18-decimal token', () => {
+    const tokenUnit = buildDisplayTokenUnit(1234.56, 18, 'WETH')
+    expect(tokenUnit.toDisplay({ asNumber: true })).toBe(1234.56)
   })
 })

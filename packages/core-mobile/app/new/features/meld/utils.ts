@@ -3,6 +3,7 @@ import { isTokenVisible } from 'store/balance/utils'
 import { TokenVisibility } from 'store/portfolio'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { router } from 'expo-router'
 import { getLocalTokenId } from 'services/balance/utils/getLocalTokenId'
 import { humanize } from 'utils/string/humanize'
@@ -10,6 +11,7 @@ import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethodNames,
+  ServiceProviderCategories,
   SOLANA_MELD_CHAIN_ID
 } from './consts'
 import {
@@ -330,3 +332,97 @@ export const resolveNoValidQuotesFallback = ({
     }.`
   }
 }
+
+/**
+ * Meld returns a batch of quotes across every quotable service provider, not
+ * just the one currently selected. Prefer the quote for the selected
+ * provider so the fee shown matches what checkout will actually charge;
+ * fall back to the best (lowest-fee) quote — quotes[0], which the caller
+ * passes already sorted ascending by fee — when the selected provider
+ * didn't quote.
+ */
+export const selectQuoteForDisplay = (
+  quotes: Quote[],
+  serviceProvider: string | undefined
+): Quote | undefined => {
+  if (quotes.length === 0) return undefined
+  const matching =
+    serviceProvider &&
+    quotes.find(quote => quote.serviceProvider === serviceProvider)
+  return matching || quotes[0]
+}
+
+/**
+ * Onramp only: resolves the post-fee token amount Meld's quote actually
+ * pays out, so the amount line above the fiat input can show a real
+ * (fee-inclusive) estimate instead of a feeless spot-price conversion.
+ *
+ * Returns `undefined` whenever the caller should keep showing the
+ * spot-price estimate instead — quotes are loading/absent/errored, or the
+ * last-fetched quote batch is for a different amount than what's currently
+ * displayed. That mismatch happens while the user is still typing: the
+ * subtext renders the raw, un-debounced input on every keystroke, but
+ * `sourceAmount` (and the quotes fetched for it) only catches up after the
+ * debounce settles.
+ */
+export const resolveQuoteDestinationAmount = ({
+  category,
+  displayedAmount,
+  sourceAmount,
+  isLoadingCryptoQuotes,
+  cryptoQuotes,
+  serviceProvider
+}: {
+  category: ServiceProviderCategories
+  displayedAmount: number | undefined | null
+  sourceAmount: number | undefined
+  isLoadingCryptoQuotes: boolean
+  cryptoQuotes: Quote[]
+  serviceProvider: string | undefined
+}): number | undefined => {
+  if (category !== ServiceProviderCategories.CRYPTO_ONRAMP) return undefined
+  if (isLoadingCryptoQuotes) return undefined
+  if (
+    displayedAmount === undefined ||
+    displayedAmount === null ||
+    sourceAmount === undefined ||
+    displayedAmount !== sourceAmount
+  ) {
+    return undefined
+  }
+
+  const quote = selectQuoteForDisplay(cryptoQuotes, serviceProvider)
+  return quote?.destinationAmount ?? undefined
+}
+
+/**
+ * Token amount to show for a quote line item in the provider-picker list.
+ * destinationAmount (onramp: crypto received) / sourceAmount (offramp:
+ * crypto sold) is already Meld's fee-inclusive figure — totalFee is a
+ * source-currency disclosure of the spread already priced into
+ * exchangeRate, not a separate deduction on top of it. Subtracting
+ * totalFee/exchangeRate here would double-count the fee and understate the
+ * amount.
+ */
+export const resolveQuoteTokenAmount = (
+  quote: Quote,
+  category: ServiceProviderCategories
+): number =>
+  category === ServiceProviderCategories.CRYPTO_ONRAMP
+    ? quote.destinationAmount ?? 0
+    : quote.sourceAmount ?? 0
+
+/**
+ * Builds a TokenUnit from an amount already expressed in display units
+ * (e.g. Meld's quote destinationAmount, or a spot-price conversion), scaled
+ * up to the base units TokenUnit's constructor expects. Shared by the spot
+ * and quote-based amount paths in useSelectAmount so both round-trip
+ * through the exact same base-unit conversion and pick up TokenUnit's
+ * magnitude-based rounding identically when rendered via `toDisplay`.
+ */
+export const buildDisplayTokenUnit = (
+  displayAmount: number,
+  maxDecimals: number,
+  symbol: string
+): TokenUnit =>
+  new TokenUnit(displayAmount * 10 ** maxDecimals, maxDecimals, symbol)
