@@ -152,7 +152,7 @@ See `docs/features.md` for feature-specific env requirements.
 - Smoke tests tagged with `[smoke]` or `[Smoke]`
 - Platform-specific runs: `yarn appium:android` / `yarn appium:ios` (set `APP_PATH` to your build)
 - Local device capabilities are resolved in `e2e-appium/helpers/resolve-local-device.ts` (`adb` / `simctl`; optional `ANDROID_SERIAL`, `IOS_UDID`, etc.)
-- AWS Device Farm packaging and env vars: `scripts/devicefarm/README.md`
+- E2E env vars, wallet funding, and AWS Device Farm: `e2e-appium/README.md` (packaging scripts in `scripts/devicefarm/`)
 
 ### Multi-Chain Support
 
