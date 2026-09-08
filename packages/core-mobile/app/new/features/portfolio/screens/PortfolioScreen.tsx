@@ -360,8 +360,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor={theme.colors.$surfacePrimary}
         />
 
-        {/* Self-hides unless the active wallet is Keystone and the master
-            `keystone` flag is off. */}
+        {/* Self-hides unless the active wallet is a (deprecated) Keystone
+            wallet. */}
         <KeystoneDeprecationBanner
           sx={{ marginHorizontal: 16, marginTop: 12 }}
         />

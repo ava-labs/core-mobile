@@ -54,4 +54,18 @@ describe('KeystoneDataStorage.retrieve', () => {
 
     await expect(KeystoneDataStorage.retrieve()).rejects.toThrow('no mfp found')
   })
+
+  it('warms the cache so a second retrieve() does not hit storage again', async () => {
+    mockedLoad.mockResolvedValueOnce({
+      mfp: 'fp',
+      xp: 'xpubXP',
+      evm: 'xpubEvm'
+    })
+
+    const first = await KeystoneDataStorage.retrieve()
+    const second = await KeystoneDataStorage.retrieve()
+
+    expect(mockedLoad).toHaveBeenCalledTimes(1)
+    expect(second).toEqual(first)
+  })
 })

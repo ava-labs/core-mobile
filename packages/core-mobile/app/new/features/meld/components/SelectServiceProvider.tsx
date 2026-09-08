@@ -19,6 +19,7 @@ import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
 import { Quote } from '../types'
+import { resolveQuoteTokenAmount } from '../utils'
 import { useServiceProviders } from '../hooks/useServiceProviders'
 import { useMeldTokenWithBalance } from '../hooks/useMeldTokenWithBalance'
 import { ServiceProviderIcon } from './ServiceProviderIcon'
@@ -125,13 +126,8 @@ export const SelectServiceProvider = ({
       const serviceProvider = serviceProviders?.find(
         sp => sp.serviceProvider === item.serviceProvider
       )
-      const amount =
-        category === ServiceProviderCategories.CRYPTO_ONRAMP
-          ? item.destinationAmount ?? 0
-          : item.sourceAmount ?? 0
-      const tokenAmount =
-        amount - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
-      const tokenAmountFixed = Math.trunc(tokenAmount * 1_000_000) / 1_000_000 // truncate to 6 decimal places
+      const amount = resolveQuoteTokenAmount(item, category)
+      const tokenAmountFixed = Math.trunc(amount * 1_000_000) / 1_000_000 // truncate to 6 decimal places
 
       const tokenUnitToDisplay =
         network?.networkToken.decimals !== undefined &&

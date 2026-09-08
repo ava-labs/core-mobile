@@ -14,7 +14,6 @@ export default {
     "Add a display avatar for your wallet. You can change it at any time in the app's settings",
   selectedAvatar: 'selected_avatar',
   chooseWalletTitle: 'How would you like to access your existing wallet?',
-  addWalletUsingKeystone: 'Add using Keystone',
   typeRecoverPhase: 'Type in a recovery phrase',
   createNewWalletBtn: 'Create a new wallet',
   noThanksBtn: 'No thanks',

@@ -9,7 +9,11 @@ import {
 import WalletService, { isEvmSignMethod } from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 
 export const signMessage = async ({
   walletId,
@@ -45,7 +49,9 @@ export const signMessage = async ({
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: `Failed to sign ${network.vmName} message`,
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : `Failed to sign ${network.vmName} message`,
         data: { cause: error }
       })
     })

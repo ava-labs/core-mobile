@@ -6,7 +6,11 @@ import { avaxSerial, Credential, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
@@ -114,6 +118,20 @@ export const avalancheSignTransaction = async ({
       })
     })
   } catch (error) {
+    if (isUnsupportedWalletTypeError(error)) {
+      Logger.warn(
+        '[avalancheSignTransaction] sign rejected',
+        UNSUPPORTED_WALLET_TYPE_ERROR
+      )
+      resolve({
+        error: rpcErrors.internal({
+          message: UNSUPPORTED_WALLET_TYPE_ERROR,
+          data: { cause: error }
+        })
+      })
+      return
+    }
+
     Logger.error('Failed to sign avalanche transaction', JSON.stringify(error))
     resolve({
       error: rpcErrors.internal({

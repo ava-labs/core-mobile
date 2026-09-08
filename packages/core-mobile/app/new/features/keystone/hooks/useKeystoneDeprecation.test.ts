@@ -10,19 +10,14 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ navigate: mockNavigate })
 }))
 
-let mockIsKeystoneBlocked = false
 let mockActiveWallet: { type: WalletType } | undefined
-
-jest.mock('store/posthog', () => ({
-  selectIsKeystoneBlocked: () => mockIsKeystoneBlocked
-}))
 
 jest.mock('store/wallet/slice', () => ({
   selectActiveWallet: () => mockActiveWallet
 }))
 
-// The selectors above are already stubbed to ignore state, so useSelector just
-// needs to invoke them; a real store would add nothing to these assertions.
+// The selector above is already stubbed to ignore state, so useSelector just
+// needs to invoke it; a real store would add nothing to these assertions.
 jest.mock('react-redux', () => ({
   useSelector: (selector: (state: unknown) => unknown) => selector({})
 }))
@@ -30,24 +25,10 @@ jest.mock('react-redux', () => ({
 describe('useKeystoneDeprecation', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockIsKeystoneBlocked = false
     mockActiveWallet = undefined
   })
 
-  it('does not warn for a Keystone wallet while the gate is on', () => {
-    mockIsKeystoneBlocked = false
-
-    const { result } = renderHook(() => useKeystoneDeprecation())
-
-    expect(result.current.isKeystoneDeprecated).toBe(false)
-    expect(result.current.shouldWarnForWalletType(WalletType.KEYSTONE)).toBe(
-      false
-    )
-  })
-
-  it('warns only for Keystone wallets once the gate is off', () => {
-    mockIsKeystoneBlocked = true
-
+  it('warns only for Keystone wallets', () => {
     const { result } = renderHook(() => useKeystoneDeprecation())
 
     expect(result.current.shouldWarnForWalletType(WalletType.KEYSTONE)).toBe(
@@ -74,12 +55,10 @@ describe('useKeystoneDeprecation', () => {
 
 describe('useIsActiveWalletKeystoneDeprecated', () => {
   beforeEach(() => {
-    mockIsKeystoneBlocked = false
     mockActiveWallet = undefined
   })
 
-  it('is true only when the gate is off AND the active wallet is Keystone', () => {
-    mockIsKeystoneBlocked = true
+  it('is true when the active wallet is Keystone', () => {
     mockActiveWallet = { type: WalletType.KEYSTONE }
 
     expect(
@@ -87,8 +66,7 @@ describe('useIsActiveWalletKeystoneDeprecated', () => {
     ).toBe(true)
   })
 
-  it('is false when a non-Keystone wallet is active, even with the gate off', () => {
-    mockIsKeystoneBlocked = true
+  it('is false when a non-Keystone wallet is active', () => {
     mockActiveWallet = { type: WalletType.MNEMONIC }
 
     expect(
@@ -96,17 +74,7 @@ describe('useIsActiveWalletKeystoneDeprecated', () => {
     ).toBe(false)
   })
 
-  it('is false while the gate is on, even with a Keystone wallet active', () => {
-    mockIsKeystoneBlocked = false
-    mockActiveWallet = { type: WalletType.KEYSTONE }
-
-    expect(
-      renderHook(() => useIsActiveWalletKeystoneDeprecated()).result.current
-    ).toBe(false)
-  })
-
   it('is false when there is no active wallet', () => {
-    mockIsKeystoneBlocked = true
     mockActiveWallet = undefined
 
     expect(

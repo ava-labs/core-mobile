@@ -52,6 +52,7 @@ const allCaps = [
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
     'appium:automationName': 'UiAutomator2',
+    'appium:appActivity': 'com.avaxwallet.MainActivityDefault',
     'appium:app': appPath,
     ...(androidResolved.deviceUdid
       ? { 'appium:udid': androidResolved.deviceUdid }

@@ -3,16 +3,17 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
-import KeystoneWallet from 'services/wallet/KeystoneWallet'
 import type { Wallet } from './types'
-import { WalletType } from './types'
+import { WalletType, UNSUPPORTED_WALLET_TYPE_ERROR } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 import { LedgerWallet } from './LedgerWallet'
-import { walletDerivedDataCache } from './WalletDerivedDataCache'
+import {
+  walletDerivedDataCache,
+  WalletDerivedDataCache
+} from './WalletDerivedDataCache'
 
 class WalletFactory {
-  get cache() {
+  get cache(): WalletDerivedDataCache {
     return walletDerivedDataCache
   }
 
@@ -57,7 +58,6 @@ class WalletFactory {
     return promise
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   async createWallet({
     walletId,
     walletType
@@ -99,15 +99,9 @@ class WalletFactory {
         }
         return new MnemonicWallet(walletSecret.value)
       }
-      case WalletType.KEYSTONE: {
-        const keystoneData = await KeystoneDataStorage.retrieve()
-
-        if (!keystoneData) {
-          throw new Error('Keystone data not available')
-        }
-
-        return new KeystoneWallet(keystoneData)
-      }
+      case WalletType.KEYSTONE:
+        // Keystone support removed (CP-14995). Existing wallets stay read-only.
+        throw new Error(UNSUPPORTED_WALLET_TYPE_ERROR)
       case WalletType.PRIVATE_KEY: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
         if (!walletSecret.success) {

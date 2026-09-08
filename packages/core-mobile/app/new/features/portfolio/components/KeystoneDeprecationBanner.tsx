@@ -9,9 +9,8 @@ import { KEYSTONE_DEPRECATION_DATE } from 'resources/Constants'
 
 /**
  * Portfolio notice that Keystone signing has been retired. Renders only when the
- * active wallet is Keystone and the master `keystone` gate is off, and reserves
- * no space otherwise, so callers should pass margins via `sx` rather than
- * wrapping it in a spacing container.
+ * active wallet is Keystone, and reserves no space otherwise, so callers should
+ * pass margins via `sx` rather than wrapping it in a spacing container.
  */
 export const KeystoneDeprecationBanner = ({
   sx

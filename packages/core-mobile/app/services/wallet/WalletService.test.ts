@@ -1,6 +1,8 @@
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
 import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
+import { Curve } from 'utils/publicKeys'
+import { isUnsupportedXpDerivationError } from 'services/wallet/KeystoneWallet/errors'
 import WalletFactory from './WalletFactory'
 import WalletService from './WalletService'
 import { clearAddressesCache } from './getAddressesCache'
@@ -44,6 +46,10 @@ jest.mock('utils/Logger', () => ({
     warn: jest.fn(),
     error: jest.fn()
   }
+}))
+
+jest.mock('features/keystone/storage/KeystoneDataStorage', () => ({
+  KeystoneDataStorage: { retrieve: jest.fn() }
 }))
 
 // `getAddressesForExtendedPublicKey` is a private method, but TS `private`
@@ -504,5 +510,195 @@ describe('WalletService.getAddresses cache behavior', () => {
 
     await WalletService.getAddressesFromXpubXP(args)
     expect(secondCallFired).toBe(true)
+  })
+})
+
+describe('WalletService.getRawXpubXP (Keystone read path)', () => {
+  beforeEach(() => {
+    WalletFactory.cache.clearWallet('keystone-wallet-1')
+    WalletFactory.cache.clearWallet('keystone-wallet-2')
+    jest.clearAllMocks()
+  })
+
+  // CP-14995 blocks WalletFactory from ever constructing a KeystoneWallet
+  // (all Keystone signing is unsupported now), so this read path must reach
+  // the stored xpub directly from KeystoneDataStorage rather than going
+  // through WalletFactory — that's what keeps existing Keystone wallets'
+  // X/P addresses/balances readable.
+  it('reads the stored xpub directly from KeystoneDataStorage without constructing a Wallet', async () => {
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue({
+      evm: 'xpub-evm',
+      xp: 'xpub-xp-value',
+      mfp: 'deadbeef'
+    })
+    const getOrCreateSpy = jest.spyOn(WalletFactory, 'getOrCreateWallet')
+
+    const xpub = await WalletService.getRawXpubXP({
+      walletId: 'keystone-wallet-1',
+      walletType: WalletType.KEYSTONE,
+      accountIndex: 0
+    })
+
+    expect(xpub).toBe('xpub-xp-value')
+    expect(getOrCreateSpy).not.toHaveBeenCalled()
+  })
+
+  it('throws when the stored Keystone data has no X/P xpub', async () => {
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue({
+      evm: 'xpub-evm',
+      mfp: 'deadbeef'
+    })
+
+    await expect(
+      WalletService.getRawXpubXP({
+        walletId: 'keystone-wallet-2',
+        walletType: WalletType.KEYSTONE,
+        accountIndex: 0
+      })
+    ).rejects.toThrow('no public key (xpubXP) available')
+  })
+})
+
+describe('WalletService.getPublicKeyFor (Keystone read path)', () => {
+  // Same fixture + expected pubkeys as the deleted KeystoneWallet.test.ts
+  // (verified there against the real getAddressPublicKeyFromXPub /
+  // Avalanche.getAddressPublicKeyFromXpub implementations, which this read
+  // path calls directly — see CP-14995 fix-report for the reachable chain
+  // this guards: dev-mode toggle -> ModuleManager.deriveKeystoneAddresses ->
+  // ApprovalController.requestPublicKey -> WalletService.getPublicKeyFor).
+  const MockedKeystoneData = {
+    evm: 'xpub661MyMwAqRbcGSmFWVZk2h773zMrcPFqDUWi7cFRpgPhfn7y9HEPzPsBDEXYxAWfAoGo7E7ijjYfB3xAY86MYzfvGLDHmcy2epZKNeDd4uQ',
+    xp: 'xpub661MyMwAqRbcFFDMuFiGQmA1EqWxxgDLdtNvxxiucf9qkfoVrvwgnYyshxWoewWtkZ1aLhKoVDrpeDvn1YRqxX2szhGKi3UiSEv1hYRMF8q',
+    mfp: '1250b6bc'
+  }
+
+  beforeEach(() => {
+    WalletFactory.cache.clearWallet('keystone-wallet-pubkey')
+    jest.clearAllMocks()
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue(MockedKeystoneData)
+  })
+
+  it('derives the EVM public key from the stored evm xpub without constructing a Wallet', async () => {
+    const getOrCreateSpy = jest.spyOn(WalletFactory, 'getOrCreateWallet')
+
+    const publicKey = await WalletService.getPublicKeyFor({
+      walletId: 'keystone-wallet-pubkey',
+      walletType: WalletType.KEYSTONE,
+      derivationPath: `m/44'/60'/0'/0/1`,
+      curve: Curve.SECP256K1
+    })
+
+    expect(publicKey).toBe(
+      '0341f20093c553b2aa95dd57449532b85480de93a9aaa225a391dcfe8679e33f50'
+    )
+    expect(getOrCreateSpy).not.toHaveBeenCalled()
+  })
+
+  it('derives the primary-account X/P public key from the stored xp xpub', async () => {
+    const publicKey = await WalletService.getPublicKeyFor({
+      walletId: 'keystone-wallet-pubkey',
+      walletType: WalletType.KEYSTONE,
+      derivationPath: `m/44'/9000'/0'/0/1`,
+      curve: Curve.SECP256K1
+    })
+
+    expect(publicKey).toBe(
+      '034814b89f62338b37881a71ffe40cdd29752241560b861a7086ac711fa7a8fe79'
+    )
+  })
+
+  it('throws an error matching isUnsupportedXpDerivationError for a non-primary X/P path', async () => {
+    expect.assertions(1)
+    try {
+      await WalletService.getPublicKeyFor({
+        walletId: 'keystone-wallet-pubkey',
+        walletType: WalletType.KEYSTONE,
+        derivationPath: `m/44'/9000'/1'/0/0`,
+        curve: Curve.SECP256K1
+      })
+    } catch (error) {
+      expect(isUnsupportedXpDerivationError(error)).toBe(true)
+    }
+  })
+})
+
+describe('WalletService.getPublicKey (Keystone read path)', () => {
+  // Same fixture as the getPublicKeyFor Keystone tests above. Unlike those
+  // (which pass an already-built derivationPath), getPublicKey builds the
+  // path itself via getAddressDerivationPath — for account index 0 that's
+  // `m/44'/60'/0'/0/0` (EVM) and `m/44'/9000'/0'/0/0` (primary X/P); for
+  // account index 1, `m/44'/9000'/1'/0/0` (X/P's account-level path changes
+  // per account, unlike EVM's address-index-only path — confirmed via a
+  // throwaway diagnostic run against the real getAddressDerivationPath before
+  // writing these fixtures), which Keystone's depth-3 xpub cannot derive.
+  const MockedKeystoneData = {
+    evm: 'xpub661MyMwAqRbcGSmFWVZk2h773zMrcPFqDUWi7cFRpgPhfn7y9HEPzPsBDEXYxAWfAoGo7E7ijjYfB3xAY86MYzfvGLDHmcy2epZKNeDd4uQ',
+    xp: 'xpub661MyMwAqRbcFFDMuFiGQmA1EqWxxgDLdtNvxxiucf9qkfoVrvwgnYyshxWoewWtkZ1aLhKoVDrpeDvn1YRqxX2szhGKi3UiSEv1hYRMF8q',
+    mfp: '1250b6bc'
+  }
+
+  beforeEach(() => {
+    WalletFactory.cache.clearWallet('keystone-wallet-getpubkey-0')
+    WalletFactory.cache.clearWallet('keystone-wallet-getpubkey-1')
+    jest.clearAllMocks()
+    const { KeystoneDataStorage } = jest.requireMock(
+      'features/keystone/storage/KeystoneDataStorage'
+    )
+    KeystoneDataStorage.retrieve.mockResolvedValue(MockedKeystoneData)
+  })
+
+  it('derives EVM + primary X/P public keys from stored xpubs without constructing a Wallet (account index 0)', async () => {
+    const getOrCreateSpy = jest.spyOn(WalletFactory, 'getOrCreateWallet')
+
+    // Ground truth computed with the same real SDK calls the implementation
+    // uses, applied to the account-0 paths confirmed above — proves
+    // WalletService.getPublicKey wires KEYSTONE through the same derivation
+    // as a direct call, not that the values are independently fabricated.
+    const { getAddressPublicKeyFromXPub, Avalanche } = jest.requireActual(
+      '@avalabs/core-wallets-sdk'
+    )
+    const expectedEvm = getAddressPublicKeyFromXPub(
+      MockedKeystoneData.evm,
+      0
+    ).toString('hex')
+    const expectedXp = Avalanche.getAddressPublicKeyFromXpub(
+      MockedKeystoneData.xp,
+      0
+    ).toString('hex')
+
+    const result = await WalletService.getPublicKey(
+      'keystone-wallet-getpubkey-0',
+      WalletType.KEYSTONE,
+      0
+    )
+
+    expect(result).toEqual({ evm: expectedEvm, xp: expectedXp })
+    expect(getOrCreateSpy).not.toHaveBeenCalled()
+  })
+
+  it('rejects with an error matching isUnsupportedXpDerivationError for a non-primary account, without constructing a Wallet', async () => {
+    const getOrCreateSpy = jest.spyOn(WalletFactory, 'getOrCreateWallet')
+    expect.assertions(2)
+
+    try {
+      await WalletService.getPublicKey(
+        'keystone-wallet-getpubkey-1',
+        WalletType.KEYSTONE,
+        1
+      )
+    } catch (error) {
+      expect(isUnsupportedXpDerivationError(error)).toBe(true)
+    }
+
+    expect(getOrCreateSpy).not.toHaveBeenCalled()
   })
 })

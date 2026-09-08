@@ -4,7 +4,11 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import { buildEvmTransaction } from 'vmModule/utils/buildEvmTransaction'
 
@@ -92,6 +96,19 @@ export const ethSendTransaction = async ({
       signedData: signedTx
     })
   } catch (error) {
+    if (isUnsupportedWalletTypeError(error)) {
+      Logger.warn(
+        `[ethSendTransaction] signing rejected - walletType: ${walletType}, error: ${UNSUPPORTED_WALLET_TYPE_ERROR}`
+      )
+      resolve({
+        error: rpcErrors.internal({
+          message: UNSUPPORTED_WALLET_TYPE_ERROR,
+          data: { cause: error }
+        })
+      })
+      return
+    }
+
     Logger.error(
       `[ethSendTransaction] signing FAILED - walletType: ${walletType}, error: ${
         error instanceof Error ? error.message : String(error)

@@ -970,6 +970,33 @@ describe('ApprovalController', () => {
       })
       expect(result).toBe('0xpubkey')
     })
+
+    // CP-14995: WalletFactory now throws for WalletType.KEYSTONE, but
+    // ApprovalController must still route Keystone requests through the same
+    // WalletService.getPublicKeyFor call as any other wallet type — no
+    // special-casing at this layer — since that method is where the read-side
+    // Keystone fallback lives (see WalletService.test.ts).
+    it('parses secretId for a Keystone wallet and delegates to WalletService', async () => {
+      const secretId = JSON.stringify({
+        walletId: 'keystone-1',
+        walletType: WalletType.KEYSTONE
+      })
+      mockGetPublicKeyFor.mockResolvedValue('0xkeystonepubkey')
+
+      const result = await approvalController.requestPublicKey({
+        secretId,
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: 'secp256k1'
+      })
+
+      expect(mockGetPublicKeyFor).toHaveBeenCalledWith({
+        walletId: 'keystone-1',
+        walletType: WalletType.KEYSTONE,
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: 'secp256k1'
+      })
+      expect(result).toBe('0xkeystonepubkey')
+    })
   })
 
   // ── handleLedgerOnReject ──────────────────────────────────────────────────

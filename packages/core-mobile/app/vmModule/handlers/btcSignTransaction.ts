@@ -3,7 +3,12 @@ import { ApprovalResponse, BitcoingSignTxData } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { BtcTransactionRequest, WalletType } from 'services/wallet/types'
+import {
+  BtcTransactionRequest,
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType,
+  isUnsupportedWalletTypeError
+} from 'services/wallet/types'
 
 export const btcSignTransaction = async ({
   walletId,
@@ -40,7 +45,9 @@ export const btcSignTransaction = async ({
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign btc transaction',
+        message: isUnsupportedWalletTypeError(error)
+          ? UNSUPPORTED_WALLET_TYPE_ERROR
+          : 'Failed to sign btc transaction',
         data: { cause: error }
       })
     })

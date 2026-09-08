@@ -269,5 +269,14 @@ describe('WalletFactory', () => {
       expect(BiometricsSDK.loadWalletSecret).toHaveBeenCalledTimes(2)
       expect(first).not.toBe(second)
     })
+
+    it('throws for deprecated Keystone wallets', async () => {
+      await expect(
+        WalletFactory.createWallet({
+          walletId: 'wallet-1',
+          walletType: WalletType.KEYSTONE
+        })
+      ).rejects.toThrow('This wallet type is no longer supported')
+    })
   })
 })

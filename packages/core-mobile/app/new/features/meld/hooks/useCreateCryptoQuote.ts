@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
+import { shouldRetryCryptoQuote } from '../utils'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 
@@ -52,6 +53,7 @@ export const useCreateCryptoQuote = ({
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,
+    retry: shouldRetryCryptoQuote,
     queryKey: [
       ReactQueryKeys.MELD_CREATE_CRYPTO_QUOTE,
       category,

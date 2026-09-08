@@ -3,11 +3,11 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import {
-  TokenWithBalanceAVM,
-  TokenWithBalancePVM
-} from '@avalabs/vm-module-types'
 import { Text, View } from '@avalabs/k2-alpine'
+import {
+  TokenWithBalancePVM,
+  TokenWithBalanceAVM
+} from '@avalabs/vm-module-types'
 import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'

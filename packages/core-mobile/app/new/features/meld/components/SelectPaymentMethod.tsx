@@ -21,7 +21,7 @@ import {
   ServiceProviderCategories,
   PaymentMethodTimeLimits
 } from '../consts'
-import { useMeldPaymentMethod } from '../store'
+import { useMeldPaymentMethod, useMeldPaymentMethodIsManual } from '../store'
 import { useServiceProviders } from '../hooks/useServiceProviders'
 import { PaymentMethodIcon } from './PaymentMethodIcon'
 
@@ -39,6 +39,7 @@ export const SelectPaymentMethod = ({
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
+  const [, setPaymentMethodIsManual] = useMeldPaymentMethodIsManual()
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     string | undefined
   >(meldPaymentMethod)
@@ -156,6 +157,7 @@ export const SelectPaymentMethod = ({
           if (paymentMethod.paymentMethod) {
             setSelectedPaymentMethod(paymentMethod.paymentMethod)
             setMeldPaymentMethod(paymentMethod.paymentMethod)
+            setPaymentMethodIsManual(true)
           }
         },
         accessory:
@@ -171,7 +173,8 @@ export const SelectPaymentMethod = ({
     supportedPaymentMethods,
     selectedPaymentMethod,
     colors.$textPrimary,
-    setMeldPaymentMethod
+    setMeldPaymentMethod,
+    setPaymentMethodIsManual
   ])
 
   const renderContent = useCallback(() => {

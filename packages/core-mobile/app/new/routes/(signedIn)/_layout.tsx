@@ -109,14 +109,6 @@ export default function WalletLayout(): JSX.Element {
                 }}
               />
               <Stack.Screen
-                name="(modals)/keystoneSigner"
-                options={secondaryModalScreensOptions}
-              />
-              <Stack.Screen
-                name="(modals)/keystoneTroubleshooting"
-                options={secondaryModalScreensOptions}
-              />
-              <Stack.Screen
                 name="(modals)/keystoneDeprecation"
                 options={secondaryModalScreensOptions}
               />

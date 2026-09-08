@@ -200,8 +200,12 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           style={[StyleSheet.absoluteFill, { opacity: 0 }]}
           value={value}
           onChangeText={handleInputChange}
-          keyboardType={Platform.OS === 'ios' ? 'number-pad' : undefined}
-          inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
+          keyboardType="number-pad"
+          // RN 0.85 Android merges the default autoCapitalize='sentences' into
+          // the numeric inputType (fixed upstream in 0.86 by react-native#55786);
+          // explicit 'none' keeps it purely numeric so Samsung Keyboard shows
+          // the number pad.
+          autoCapitalize="none"
           autoFocus={autoFocus}
           maxLength={length}
           allowFontScaling={false}

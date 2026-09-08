@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Core Mobile is a React Native cryptocurrency wallet application built with Expo Router. It supports multiple blockchain networks including Avalanche (AVM/PVM/C-Chain), Bitcoin, Ethereum/EVM chains, and Solana. The app integrates hardware wallets (Ledger, Keystone), seedless authentication, WalletConnect, and various DeFi features.
+Core Mobile is a React Native cryptocurrency wallet application built with Expo Router. It supports multiple blockchain networks including Avalanche (AVM/PVM/C-Chain), Bitcoin, Ethereum/EVM chains, and Solana. The app integrates hardware wallets (Ledger; Keystone is deprecated — existing imported Keystone wallets are read-only: balances, receive, rename, and remove only), seedless authentication, WalletConnect, and various DeFi features.
 
 ## Common Development Commands
 
@@ -173,7 +173,7 @@ Each module implements:
 Key slices and their responsibilities:
 - `app` - App state, wallet state, rehydration
 - `account` - User accounts across chains
-- `wallet` - Wallet management (mnemonic, Ledger, Keystone, seedless)
+- `wallet` - Wallet management (mnemonic, Ledger, seedless; deprecated read-only Keystone)
 - `network` - Active/custom networks
 - `bridge` - Bridge transaction state
 - `security` - Security settings, biometrics

@@ -47,7 +47,9 @@ export function buildWalletListRows({
       continue
     }
 
-    const hasAddAccount = wallet.type !== WalletType.PRIVATE_KEY
+    const hasAddAccount =
+      wallet.type !== WalletType.PRIVATE_KEY &&
+      wallet.type !== WalletType.KEYSTONE
     const hasFollowingRows = wallet.accounts.length > 0 || hasAddAccount
 
     rows.push({
@@ -56,11 +58,12 @@ export function buildWalletListRows({
       isActive: isActiveWalletId(wallet.id),
       isExpanded: true,
       // When nothing follows the header (an expanded wallet with no accounts
-      // and no Add-account row — only reachable for a PRIVATE_KEY wallet with
-      // zero accounts), the header IS the whole card and must close it, so use
-      // 'single' instead of 'top'. Otherwise 'top' leaves a square, unclosed
-      // card with the seam-overlap margin. (WalletsScreen filters out
-      // zero-account wallets upstream, but the builder stays correct on its own.)
+      // and no Add-account row — only reachable for a PRIVATE_KEY or KEYSTONE
+      // wallet with zero accounts), the header IS the whole card and must
+      // close it, so use 'single' instead of 'top'. Otherwise 'top' leaves a
+      // square, unclosed card with the seam-overlap margin. (WalletsScreen
+      // filters out zero-account wallets upstream, but the builder stays
+      // correct on its own.)
       cardPos: hasFollowingRows ? 'top' : 'single'
     })
 

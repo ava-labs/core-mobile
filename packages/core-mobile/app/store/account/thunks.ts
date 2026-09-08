@@ -10,7 +10,10 @@ import {
   setActiveWallet
 } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
-import { WalletType } from 'services/wallet/types'
+import {
+  UNSUPPORTED_WALLET_TYPE_ERROR,
+  WalletType
+} from 'services/wallet/types'
 import { removeWallet } from 'store/wallet/thunks'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
@@ -37,6 +40,12 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     const wallet = selectWalletById(walletId)(state)
     if (!wallet) {
       throw new Error('Wallet not found')
+    }
+
+    // fail safe, UI should prevent this from happening (reachable via the
+    // avalanche_addAccount RPC handler regardless of wallet type)
+    if (wallet.type === WalletType.KEYSTONE) {
+      throw new Error(UNSUPPORTED_WALLET_TYPE_ERROR)
     }
 
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)

@@ -23,7 +23,6 @@ import { transactionSnackbar } from 'common/utils/toast'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
-import KeystoneService from 'features/keystone/services/KeystoneService'
 import { discoverLedgerAccountsFromXpubs } from 'new/features/ledger/utils/discoverLedgerAccountsFromXpubs'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import {
@@ -85,14 +84,6 @@ const initAccounts = async (
         'Failed to fetch and save public keys for Seedless wallet',
         error
       )
-    }
-  }
-
-  if (activeWallet.type === WalletType.KEYSTONE) {
-    try {
-      await KeystoneService.save()
-    } catch (error) {
-      Logger.error('Failed to save public keys for Keystone wallet', error)
     }
   }
 
