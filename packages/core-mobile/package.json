@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "yarn allow-scripts",
     "envs": "./scripts/getEnvs.sh && ./scripts/getGoogleServices.sh",
-    "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug --appIdSuffix internal",
+    "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug --appIdSuffix internal --main-activity MainActivityDefault",
     "podInstall": "bundle install && cd ios && bundle exec pod install",
     "ios": "ENVFILE=.env.development react-native run-ios --scheme AvaxWalletInternal",
     "start": "expo start --dev-client",
