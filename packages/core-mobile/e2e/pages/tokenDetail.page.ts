@@ -6,7 +6,6 @@ import delay from '../helpers/waits'
 import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
 import swapTabPage from './swapTab.page'
-import bridgeTabPage from './bridge.page'
 
 class TokenDetailsPage {
   get totalSupply() {
@@ -165,21 +164,6 @@ class TokenDetailsPage {
     await this.tapReceiveBtn()
     // await receivePage.verifyReceiveAddressPage()
     await commonElsPage.goBack()
-  }
-
-  async verifyNavigateToBridge(toShow: boolean) {
-    if (toShow) {
-      await this.tapBridgeBtn()
-      await bridgeTabPage.verifyBridgeScreen()
-      await commonElsPage.goBack()
-    } else {
-      try {
-        await this.tapBridgeBtn()
-        throw new Error('Bridge should not be shown')
-      } catch (e) {
-        console.log('Bridge button not visible as expected')
-      }
-    }
   }
 
   async verifyNavigateToSwap(toShow: boolean) {
