@@ -1,6 +1,7 @@
 import type { PerpUniverseEntry } from '@avalabs/perps-sdk'
 import React, {
   createContext,
+  useCallback,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -18,6 +19,12 @@ export type { MarginMode }
 interface PlaceOrderState {
   coin: string
   side: OrderSide
+  /**
+   * Flip the order direction in place (open flow only). Clears TP/SL prices
+   * and toggles because trigger prices are direction-specific — a long's TP
+   * sits on the wrong side of the price for a short. No-op if unchanged.
+   */
+  switchSide: (side: OrderSide) => void
   entryPrice: number
   maxLeverage: number
 
@@ -70,7 +77,12 @@ const PlaceOrderContext = createContext<PlaceOrderState | undefined>(undefined)
 
 export interface PlaceOrderProviderProps {
   coin: string
-  side: OrderSide
+  /**
+   * Seed only — sets the initial `PlaceOrderState.side` via `useState`. The
+   * place-order screen flips the live side afterwards via `switchSide`, so
+   * this prop is not kept in sync with it.
+   */
+  initialSide: OrderSide
   entryPrice: number
   maxLeverage: number
   /**
@@ -97,7 +109,7 @@ export interface PlaceOrderProviderProps {
 
 export const PlaceOrderProvider = ({
   coin,
-  side,
+  initialSide,
   entryPrice,
   maxLeverage,
   initialAmount = 0,
@@ -108,6 +120,7 @@ export const PlaceOrderProvider = ({
   initialStopLossPrice,
   children
 }: PlaceOrderProviderProps): JSX.Element => {
+  const [side, setSide] = useState(initialSide)
   const [amount, setAmount] = useState(initialAmount)
   // Seed leverage directly from the always-present `initialLeverage`.
   // `maxLeverage` is sourced from live market data and can lag a beat, so the
@@ -146,10 +159,25 @@ export const PlaceOrderProvider = ({
     initialStopLossPrice
   )
 
+  const switchSide = useCallback(
+    (newSide: OrderSide) => {
+      if (newSide === side) {
+        return
+      }
+      setSide(newSide)
+      setTakeProfitEnabled(false)
+      setTakeProfitPrice(undefined)
+      setStopLossEnabled(false)
+      setStopLossPrice(undefined)
+    },
+    [side]
+  )
+
   const value = useMemo<PlaceOrderState>(
     () => ({
       coin,
       side,
+      switchSide,
       entryPrice,
       maxLeverage,
       amount,
@@ -180,6 +208,7 @@ export const PlaceOrderProvider = ({
     [
       coin,
       side,
+      switchSide,
       entryPrice,
       maxLeverage,
       amount,
