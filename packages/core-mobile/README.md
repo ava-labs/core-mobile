@@ -79,6 +79,8 @@ For a general reference, see the [React Native environment setup](https://reactn
 
 Check if your `.xcode.env.local` file points to a valid node binary. `yarn podInstall` may generate an invalid path, see https://github.com/facebook/react-native/issues/43285
 
+If the failing phase is `[CP] Check Pods Manifest.lock`, your `ios/Pods/` was installed against a different `Podfile.lock` — run `yarn podInstall` to re-sync.
+
 ## Common commands
 
 ```zsh
