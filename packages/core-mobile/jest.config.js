@@ -30,7 +30,7 @@ module.exports = {
       '<rootDir>/node_modules/react-native-permissions/mock.js'
   },
   testPathIgnorePatterns: [
-    '<rootDir>/e2e/tests/playwright/',
+    '<rootDir>/e2e/',
     '<rootDir>/e2e-appium/',
     '<rootDir>/scripts/'
   ],

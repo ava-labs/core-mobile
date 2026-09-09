@@ -20,21 +20,10 @@ module.exports = {
     'android/app/build/**',
     'expo-env.d.ts',
     'ios/DerivedData',
-    'app/utils/api/generated/**'
+    'app/utils/api/generated/**',
+    'e2e/**'
   ],
   overrides: [
-    {
-      files: ['e2e/**/*'],
-      parserOptions: {
-        project: './e2e/tsconfig.json',
-        tsconfigRootDir: __dirname
-      },
-      rules: {
-        'no-console': 0,
-        '@typescript-eslint/explicit-function-return-type': 0,
-        'no-param-reassign': 0
-      }
-    },
     {
       files: ['e2e-appium/**/*.ts', 'e2e-appium/scripts/**/*.js'],
       parserOptions: {
