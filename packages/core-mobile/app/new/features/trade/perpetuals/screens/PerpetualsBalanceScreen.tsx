@@ -198,7 +198,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         isModal
         title="Available balance"
         navigationTitle="Available balance"
-        contentContainerStyle={{ flexGrow: 1 }}>
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
         <View
           testID="perps-balance-loading"
           sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -214,7 +214,7 @@ export const PerpetualsBalanceScreen = (): JSX.Element => {
         isModal
         title="Available balance"
         navigationTitle="Available balance"
-        contentContainerStyle={{ flexGrow: 1 }}>
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
         <PerpsApiDownState onRetry={refetchBalance} />
       </ScrollScreen>
     )
