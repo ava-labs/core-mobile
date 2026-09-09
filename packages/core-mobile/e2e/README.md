@@ -36,6 +36,24 @@ The app path is resolved in this order (`wdio.conf.ts`):
    - iOS: `./ios/build/Debug-iphonesimulator/AvaxWalletInternal.app`
    - Android: `./android/app/build/outputs/apk/internal/debug/app-internal-debug.apk`
 
+### Building the app for the default paths
+
+Produce the debug bundles at exactly the default locations above:
+
+```bash
+yarn appium:build:ios      # xcodebuild → ios/build/Debug-iphonesimulator/AvaxWalletInternal.app
+yarn appium:build:android  # gradle → android/app/build/outputs/apk/internal/debug/app-internal-debug.apk
+```
+
+(`yarn ios` builds into Xcode's DerivedData instead, so its output is NOT picked
+up by the default path — use `APP_PATH` if you want to reuse that build.
+Don't delete `ios/build/` wholesale: RN codegen writes generated sources to
+`ios/build/generated/`; if you did, re-run `yarn podInstall` to regenerate.)
+
+These are Debug dev-client builds: **Metro must be running** (`yarn start`)
+while the tests execute. To run against a standalone release build instead,
+download an e2e binary from Bitrise and set `E2E_LOCAL_PATH` to it.
+
 ## Environment variables
 
 ### Test wallet (required)
