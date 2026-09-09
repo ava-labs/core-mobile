@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable no-console, max-params */
 /**
- * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e-appium` specs
+ * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e` specs
  * with top-level folders under `packages/core-mobile/app/new/features/` only
  * (not legacy `app/`, not other packages). Modal routes are separate.
  * This is not line coverage.
@@ -28,7 +28,7 @@
  * API key belongs to a different account. It loads the latest **iOS** and **Android**
  * runs whose names match
  * `[REGRESSION] iOS Test Run: YYYY-MM-DD` and `[REGRESSION] Android Test Run: YYYY-MM-DD`
- * (same naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`).
+ * (same naming as `e2e/wdio.conf.ts` + `testrail/testrail.service.ts`).
  * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
  * (Mocha `describe` / `it`). **Regression-adjusted coverage %** is computed
  * separately per platform: in-scope mapped features that are checklist-O *and*
@@ -62,11 +62,11 @@
  * before TestRail runs (existing env vars are not overwritten). Handy for
  * `TESTRAIL_API_KEY` / `TESTRAIL_USERNAME` without exporting in the shell.
  *
- * **Codebase composite (core-web–style):** `e2e-appium/coverage-model.config.json`
+ * **Codebase composite (core-web–style):** `e2e/coverage-model.config.json`
  * defines a weighted headline `codebaseCompositeCoverage.percent` from (1) breadth
  * — share of in-scope `app/new/features/*` folders “claimed” by any Appium spec via
  * file stem, outer `describe` title, and long tokens from `it`/`describe` strings;
- * (2) `e2e-appium/required-scenarios.config.json` — flow × wallet cells (**Ledger**
+ * (2) `e2e/required-scenarios.config.json` — flow × wallet cells (**Ledger**
  * never counted; **seedless** is opt-in via `walletModes` when that E2E exists);
  * (3) a **folder × N wallet-slot** assumption where **N = `walletModes.length`**
  * in that config (default mnemonic only). TestRail stays
@@ -356,7 +356,7 @@ function parseEnvInt(raw, defaultVal, bounds = {}) {
   return n
 }
 
-/** Mirrors `e2e-appium/testrail/testrail.config.ts` (API user is not secret). */
+/** Mirrors `e2e/testrail/testrail.config.ts` (API user is not secret). */
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
@@ -364,7 +364,7 @@ const TESTRAIL_USERNAME =
 const TESTRAIL_PROJECT_ID = parseEnvInt(process.env.TESTRAIL_PROJECT_ID, 3, {
   min: 1
 })
-/** Default matches `e2e-appium/testrail/testrail.config.ts` `suiteId` (filters `get_runs`). */
+/** Default matches `e2e/testrail/testrail.config.ts` `suiteId` (filters `get_runs`). */
 const TESTRAIL_SUITE_ID_FOR_RUN_LIST = parseEnvInt(
   process.env.E2E_COVERAGE_TESTRAIL_SUITE_ID,
   3,
@@ -391,7 +391,7 @@ const TESTRAIL_STATUS_FAILED = 5
 
 /**
  * Specs that use dynamic `it(\`...\${...}\`)` titles; keys are paths relative to
- * `e2e-appium/` (same as `loadAppiumSpecFiles` `rel`).
+ * `e2e/` (same as `loadAppiumSpecFiles` `rel`).
  */
 const DYNAMIC_SUITE_CASES_BY_SPEC_REL = {
   'specs/transactions/receive.spec.ts': {
@@ -535,7 +535,7 @@ function featureCoverageMark(f, stats) {
   return spec || tid ? 'O' : 'X'
 }
 
-const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
+const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e')
 
 /** `required-scenarios.config.json` walletMode values with detection logic in this script. */
 const SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES = new Set([
@@ -1700,7 +1700,7 @@ function isTestIdReferencedInSpecSources(id, literals, corpus, literalList) {
 /**
  * Adds to `failed` any mapped in-scope features touched by one failed spec
  * (path heuristic or feature testIDs referenced in that spec’s source).
- * @param {string} rel Path relative to `e2e-appium/` (e.g. `specs/foo.spec.ts`)
+ * @param {string} rel Path relative to `e2e/` (e.g. `specs/foo.spec.ts`)
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
  * @param {Set<string>} failed
@@ -2230,7 +2230,7 @@ function printJsonReport(ctx) {
     JSON.stringify(
       {
         summary: {
-          e2eSource: 'e2e-appium',
+          e2eSource: 'e2e',
           appiumSpecFiles: testFiles.length,
           appiumSpecFilesLoadedForMetrics: appiumSpecsReadable,
           testIdsDeclaredTotal: totalDeclaredTestIds,
@@ -2372,7 +2372,7 @@ function printTextReportHeader(ctx) {
   console.log('Appium e2e ↔ feature coverage (heuristic, not line coverage)')
   console.log('Package:', pkgRoot)
   console.log(`Features: app/new/features/<folder> → ${featuresDir}`)
-  console.log('Specs:   e2e-appium/')
+  console.log('Specs:   e2e/')
   console.log(
     'testIDs: all feature .tsx (excl. *.test.tsx); matched in *.spec.ts only (not pages/locators)'
   )
@@ -2431,7 +2431,7 @@ function printTextReportHeader(ctx) {
       const skipped = testFiles.length - appiumSpecsReadable
       const base = `Appium: ${appiumSpecsReadable} spec file(s) read for paths + testID text`
       return skipped > 0
-        ? `${base} (${skipped} path(s) under e2e-appium unreadable — skipped from content metrics; see warning above)`
+        ? `${base} (${skipped} path(s) under e2e unreadable — skipped from content metrics; see warning above)`
         : base
     })()
   )

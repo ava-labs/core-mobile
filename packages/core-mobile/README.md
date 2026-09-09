@@ -101,7 +101,7 @@ yarn start
 
 ## E2E tests (Appium / WebDriverIO)
 
-UI tests live in [`e2e-appium/`](./e2e-appium/) — see [`e2e-appium/README.md`](./e2e-appium/README.md) for how to run them, every environment variable, and the wallet funding requirements. AWS Device Farm packaging scripts live in [`scripts/devicefarm/`](./scripts/devicefarm/).
+UI tests live in [`e2e/`](./e2e/) — see [`e2e/README.md`](./e2e/README.md) for how to run them, every environment variable, and the wallet funding requirements. AWS Device Farm packaging scripts live in [`scripts/devicefarm/`](./scripts/devicefarm/).
 
 ## Custom fonts
 
