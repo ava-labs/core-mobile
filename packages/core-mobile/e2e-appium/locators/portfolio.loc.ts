@@ -5,7 +5,6 @@ export default {
   sendButton: 'action_button__Send',
   swapButton: 'action_button__Swap',
   buyButton: 'action_button__Buy',
-  bridgeButton: 'action_button__Bridge',
   receiveButton: 'action_button__Receive',
   sort: 'sort_dropdown_btn',
   view: 'view_dropdown_btn',

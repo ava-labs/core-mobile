@@ -154,10 +154,6 @@ class PortfolioPage {
     return selectors.getById(portfolio.buyButton)
   }
 
-  get bridgeButton() {
-    return selectors.getById(portfolio.bridgeButton)
-  }
-
   get sort() {
     return selectors.getById(portfolio.sort)
   }
@@ -532,10 +528,6 @@ class PortfolioPage {
 
   async tapBuy() {
     await actions.tap(this.buyButton)
-  }
-
-  async tapBridge() {
-    await actions.tap(this.bridgeButton)
   }
 
   async verifySendOnTokenDetail(
