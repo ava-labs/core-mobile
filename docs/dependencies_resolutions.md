@@ -26,7 +26,7 @@ to keep certain eslint plugins/configs from conflicting with each other
 
 ### "jest": "29.7.0"
 
-to prevent error when running detox due to different versions of jest conflicting
+to prevent errors from different versions of jest conflicting across tooling
 
 ### "bip174": "2.1.0",
 
