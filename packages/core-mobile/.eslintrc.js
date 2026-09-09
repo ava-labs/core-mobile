@@ -24,9 +24,9 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['e2e-appium/**/*.ts', 'e2e-appium/scripts/**/*.js'],
+      files: ['e2e/**/*.ts', 'e2e/scripts/**/*.js'],
       parserOptions: {
-        project: './e2e-appium/tsconfig.json',
+        project: './e2e/tsconfig.json',
         tsconfigRootDir: __dirname
       },
       rules: {

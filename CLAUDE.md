@@ -142,7 +142,7 @@ The monorepo uses Lavamoat's `allowScripts` to control which packages can execut
 The monorepo uses Bitrise for CI/CD (see `bitrise.yml`):
 - Android builds with Java 17 and NDK 27.1.12297006
 - iOS builds with Xcode
-- Appium / WebDriverIO tests in `packages/core-mobile/e2e-appium/` (see `packages/core-mobile/e2e-appium/README.md` for env vars and AWS Device Farm)
+- Appium / WebDriverIO tests in `packages/core-mobile/e2e/` (see `packages/core-mobile/e2e/README.md` for env vars and AWS Device Farm)
 - TestRail integration for test reporting
 
 ## Git Workflow
