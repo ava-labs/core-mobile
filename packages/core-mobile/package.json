@@ -19,6 +19,8 @@
     "storybook-watch": "sb-rn-watcher",
     "appium:ios": "PLATFORM=ios wdio run ./e2e/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e/wdio.conf.ts",
+    "appium:build:ios": "ENVFILE=.env.development xcodebuild -workspace ios/AvaxWallet.xcworkspace -scheme AvaxWalletInternal -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ONLY_ACTIVE_ARCH=YES SYMROOT=\"$PWD/ios/build\" build",
+    "appium:build:android": "cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug",
     "appium": "wdio run ./e2e/wdio.conf.ts",
     "devicefarm:package": "./scripts/devicefarm/package-tests.sh",
     "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh",
