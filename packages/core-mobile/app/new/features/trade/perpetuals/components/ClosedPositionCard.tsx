@@ -7,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { formatRelativeDateTime } from 'common/utils/formatRelativeDateTime'
 import React from 'react'
 import { PositionEntry } from '../types'
 import { dexOfCoin, tickerOfCoin } from '../utils/coinDex'
@@ -121,7 +122,7 @@ export const ClosedPositionCard = ({
           Closed
         </Text>
         <Text variant="caption" sx={{ fontFamily: 'Inter-Medium' }}>
-          {`${entry.dateLabel} · ${entry.timeLabel}`}
+          {formatRelativeDateTime(entry.timestamp, ' · ')}
         </Text>
       </View>
     </View>
