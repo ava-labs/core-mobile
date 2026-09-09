@@ -35,12 +35,14 @@ if (!rawAppPath && isDeviceFarm) {
   )
 }
 
-const iosLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
-const androidLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/app-external-e2e-bitrise-signed.apk'
-  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+// E2E_LOCAL_PATH points at a downloaded e2e build (.app/.apk); page objects also
+// treat its presence as "release build" and skip the Metro dev-menu dismissal
+const localBuildPath = process.env.E2E_LOCAL_PATH || ''
+const iosLocalPath =
+  localBuildPath || './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
+const androidLocalPath =
+  localBuildPath ||
+  './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
 
 const iosAppPath = rawAppPath || path.resolve(iosLocalPath)
 const androidAppPath = rawAppPath || path.resolve(androidLocalPath)
