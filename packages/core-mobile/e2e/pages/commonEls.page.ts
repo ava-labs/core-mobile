@@ -1,436 +1,513 @@
 import assert from 'assert'
+import { actions } from '../helpers/actions'
+import { selectors } from '../helpers/selectors'
 import commonEls from '../locators/commonEls.loc'
-import Actions from '../helpers/actions'
-import loginRecoverWallet from '../helpers/loginRecoverWallet'
-import delay from '../helpers/waits'
-import commonElsLoc from '../locators/commonEls.loc'
-import advancedPage from './burgerMenu/advanced.page'
-import burgerMenuPage from './burgerMenu/burgerMenu.page'
-import accountManagePage from './accountManage.page'
+import portfolioPage from './portfolio.page'
+import settingsPage from './settings.page'
 
 class CommonElsPage {
   get retryBtn() {
-    return by.text(commonEls.retryBtn)
+    return selectors.getByText(commonEls.retryBtn)
   }
 
   get backButton() {
-    return by.id(commonEls.backButton)
+    return selectors.getById(commonEls.backButton)
   }
 
   get getStartedButton() {
-    return by.text(commonEls.getStartedBtn)
+    return selectors.getByText(commonEls.getStartedBtn)
   }
 
   get inputTextField() {
-    return by.id(commonEls.inputTextField)
+    return selectors.getById(commonEls.inputTextField)
   }
 
   get simpleToastMsg() {
-    return by.id(commonEls.simpleToastMsg)
+    return selectors.getById(commonEls.simpleToastMsg)
   }
 
   get jailbrokenWarning() {
-    return by.id(commonEls.jailbrokenWarning)
+    return selectors.getById(commonEls.jailbrokenWarning)
   }
 
   get testnetBanner() {
-    return by.id(commonEls.testnetBanner)
+    return selectors.getById(commonEls.testnetBanner)
   }
 
   get notNow() {
-    return by.text(commonEls.notNow)
+    return selectors.getByText(commonEls.notNow)
   }
 
   get turnOnNotifications() {
-    return by.text(commonEls.turnOnNotifications)
+    return selectors.getByText(commonEls.turnOnNotifications)
   }
 
   get searchBar() {
-    return by.id(commonEls.searchBar)
+    return selectors.getById(commonEls.searchBar)
   }
 
   get bitcoinSVG() {
-    return by.id(commonEls.bitcoinSVG)
+    return selectors.getById(commonEls.bitcoinSVG)
   }
 
   get avaSVG() {
-    return by.id(commonEls.avaSVG)
+    return selectors.getById(commonEls.avaSVG)
   }
 
   get reloadSVG() {
-    return by.id(commonEls.reloadSVG)
+    return selectors.getById(commonEls.reloadSVG)
   }
 
   get carrotSVG() {
-    return by.id(commonEls.carrotSVG)
+    return selectors.getById(commonEls.carrotSVG)
   }
 
   get calendarSVG() {
-    return by.id(commonEls.calendarSVG)
+    return selectors.getById(commonEls.calendarSVG)
   }
 
   get updateAppModalTitle() {
-    return by.id(commonEls.updateAppModalTitle)
+    return selectors.getById(commonEls.updateAppModalTitle)
   }
 
   get datePicker() {
-    return by.id(commonEls.datePicker)
+    return selectors.getById(commonEls.datePicker)
   }
 
   get okBtn() {
-    return by.text(commonEls.okBtn)
+    return selectors.getByText(commonEls.okBtn)
   }
 
   get next() {
-    return by.text(commonElsLoc.next)
+    return selectors.getByText(commonEls.next)
   }
 
   get dismiss() {
-    return by.text(commonElsLoc.dismiss)
+    return selectors.getByText(commonEls.dismiss)
   }
 
-  get grabber() {
-    return by.id(commonElsLoc.grabber)
+  get dismissAndroid() {
+    return selectors.getBySmartText(commonEls.dismissAndroid)
   }
 
   get cChain() {
-    return by.text(commonElsLoc.cChain)
+    return selectors.getByText(commonEls.cChain)
   }
 
   get pChain() {
-    return by.text(commonElsLoc.pChain)
+    return selectors.getByText(commonEls.pChain)
   }
 
   get xChain() {
-    return by.text(commonElsLoc.xChain)
+    return selectors.getByText(commonEls.xChain)
   }
 
   get xpChain() {
-    return by.text(commonElsLoc.xpChain)
+    return selectors.getByText(commonEls.xpChain)
   }
 
   get ethereum() {
-    return by.text(commonElsLoc.ethereum)
+    return selectors.getByText(commonEls.ethereum)
   }
 
   get evm() {
-    return by.text(commonElsLoc.evm)
+    return selectors.getByText(commonEls.evm)
   }
 
   get bitcoin() {
-    return by.text(commonElsLoc.bitcoin)
+    return selectors.getByText(commonEls.bitcoin)
   }
 
   get solana() {
-    return by.text(commonElsLoc.solana)
+    return selectors.getByText(commonEls.solana)
   }
 
   get bitcoinNetwork() {
-    return by.text(commonElsLoc.bitcoinNetwork)
+    return selectors.getByText(commonEls.bitcoinNetwork)
   }
 
   get balanceHeaderAccountName() {
-    return by.id(commonElsLoc.balanceHeaderAccountName)
+    return selectors.getById(commonEls.balanceHeaderAccountName)
   }
 
   get pinInputField() {
-    return by.id(commonElsLoc.pinInputField)
+    return selectors.getById(commonEls.pinInputField)
   }
 
   get copied() {
-    return by.text(commonElsLoc.copied)
+    return selectors.getByText(commonEls.copied)
   }
 
   get copyPhrase() {
-    return by.text(commonElsLoc.copyPhrase)
+    return selectors.getByText(commonEls.copyPhrase)
   }
 
   get save() {
-    return by.text(commonEls.save)
+    return selectors.getByText(commonEls.save)
+  }
+
+  get saveId() {
+    return selectors.getById(commonEls.saveId)
+  }
+
+  get cancelId() {
+    return selectors.getById(commonEls.cancelId)
+  }
+
+  get saveUpperCase() {
+    return selectors.getByText(commonEls.save.toUpperCase())
   }
 
   get dialogInput() {
-    return by.id(commonEls.dialogInput)
+    return selectors.getById(commonEls.dialogInput)
   }
 
   get copy() {
-    return by.text(commonEls.copy)
+    return selectors.getBySomeText(commonEls.copy)
   }
 
-  get nextButton() {
-    return by.id(commonEls.nextBtn)
+  get nextBtnById() {
+    return selectors.getById(commonEls.nextBtnById)
   }
 
   get approveButton() {
-    return by.id(commonEls.approveBtn)
+    return selectors.getById(commonEls.approveBtn)
   }
 
   get rejectButton() {
-    return by.id(commonEls.rejectBtn)
+    return selectors.getById(commonEls.rejectBtn)
   }
 
   get insufficientBalance() {
-    return by.text(commonElsLoc.insufficientBalance)
+    return selectors.getByText(commonEls.insufficientBalance)
   }
 
   get selectNetworkBitcoin() {
-    return by.id(commonElsLoc.selectNetworkBitcoin)
+    return selectors.getById(commonEls.selectNetworkBitcoin)
   }
 
   get selectNetworkCChainEVM() {
-    return by.id(commonElsLoc.selectNetworkCChainEVM)
+    return selectors.getById(commonEls.selectNetworkCChainEVM)
   }
 
   get selectNetworkXPChain() {
-    return by.id(commonElsLoc.selectNetworkXPChain)
+    return selectors.getById(commonEls.selectNetworkXPChain)
   }
 
   get evmNetwork() {
-    return by.text(commonElsLoc.evmNetwork)
+    return selectors.getByText(commonEls.evmNetwork)
   }
 
   get XPNetwork() {
-    return by.text(commonElsLoc.XPNetwork)
+    return selectors.getByText(commonEls.XPNetwork)
   }
 
   get transactionOnboardingNext() {
-    return by.id(commonElsLoc.transactionOnboardingNext)
+    return selectors.getById(commonEls.transactionOnboardingNext)
   }
 
   get tokenAmountInputField() {
-    return by.id(commonElsLoc.tokenAmountInputField)
+    return selectors.getById(commonEls.tokenAmountInputField)
   }
 
-  get transactionSuccess() {
-    return by.text(commonElsLoc.transactionSuccess)
+  get transactionsuccess() {
+    return selectors.getByText(commonEls.transactionSuccess)
   }
 
   get transactionFail() {
-    return by.text(commonElsLoc.transactionFail)
+    return selectors.getByText(commonEls.transactionFail)
   }
 
   get dropdownScrollView() {
-    return by.id(commonElsLoc.dropdownScrollView)
+    return selectors.getById(commonEls.dropdownScrollView)
   }
 
   get settingsBtn() {
-    return by.id(commonElsLoc.settingsBtn)
+    return selectors.getById(commonEls.settingsBtn)
   }
 
   get delete() {
-    return by.text(commonElsLoc.delete)
+    return selectors.getByText(commonEls.delete)
+  }
+
+  get deleteUpperCase() {
+    return selectors.getByText(commonEls.delete.toUpperCase())
   }
 
   get cancel() {
-    return by.text(commonElsLoc.cancel)
+    return selectors.getByText(commonEls.cancel)
   }
 
   get approvePopupTitle() {
-    return by.text(commonElsLoc.approvePopupTitle)
+    return selectors.getByText(commonEls.approvePopupTitle)
   }
 
   get approvePopupSpendTitle() {
-    return by.text(commonElsLoc.approvePopupSpendTitle)
+    return selectors.getByText(commonEls.approvePopupSpendTitle)
   }
 
   get filterDropdown() {
-    return by.id(commonElsLoc.filterDropdown)
+    return selectors.getById(commonEls.filterDropdown)
   }
 
   get networkFilterDropdown() {
-    return by.id(commonElsLoc.networkFilterDropdown)
+    return selectors.getById(commonEls.networkFilterDropdown)
   }
 
   get gotIt() {
-    return by.text(commonElsLoc.gotIt)
+    return selectors.getByText(commonEls.gotIt)
   }
 
   get solanaLaunchTitle() {
-    return by.id(commonElsLoc.solanaLaunchTitle)
+    return selectors.getById(commonEls.solanaLaunchTitle)
+  }
+
+  get accountOne() {
+    return selectors.getByText(commonEls.accountOne)
+  }
+
+  get successfullyAdded() {
+    return selectors.getBySomeText(commonEls.successfullyAdded)
+  }
+
+  get inProgress() {
+    return selectors.getByText(commonEls.inProgress)
+  }
+
+  get keypadUpButton() {
+    return selectors.getById(commonEls.keypadUpButton)
+  }
+
+  get bottomSheet() {
+    return selectors.getById(commonEls.bottomSheet)
+  }
+
+  get privacyScreen() {
+    return selectors.getById(commonEls.privacyScreen)
+  }
+
+  listItem(name: string) {
+    return selectors.getById(`list_item__${name}`)
+  }
+
+  listItemRightValue(name: string) {
+    return selectors.getById(`right_value__${name}`)
   }
 
   async filter(
-    item = commonElsLoc.cChain_2,
+    item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
   ) {
-    await Actions.tap(filterDropdown)
+    await actions.delay(2000)
+    await actions.click(filterDropdown)
+    await actions.delay(2000)
     await this.selectDropdownItem(item)
   }
 
-  async dismissTransactionOnboarding() {
-    try {
-      await Actions.waitForElement(this.transactionOnboardingNext)
-      await Actions.longPress(this.transactionOnboardingNext)
-    } catch (e) {
-      console.log('Transaction onboarding not found')
-    }
-  }
-
-  async enterPin(pin = '000000') {
-    await Actions.waitForElement(this.pinInputField)
-    await Actions.setInputText(this.pinInputField, pin)
+  async selectDropdown(name: string, dropdownItem: string) {
+    await actions.click(selectors.getById(`${name}_dropdown_btn`))
+    await this.selectDropdownItem(dropdownItem)
   }
 
   async getBalanceHeaderAccountName(whichScreen: string) {
-    return await Actions.getElementText(
-      by.id(`${whichScreen}__${commonEls.balanceHeaderAccountName}`),
-      10000
+    return await actions.getText(
+      selectors.getById(`${whichScreen}__${commonEls.balanceHeaderAccountName}`)
     )
   }
 
-  async tapCarrotSVG(index = 0) {
-    await Actions.tapElementAtIndex(this.carrotSVG, index)
+  async tapCarrotSVG() {
+    await actions.tap(this.carrotSVG)
   }
 
-  async typeSearchBar(
-    text: string,
-    searchBar: Detox.NativeMatcher = this.searchBar
-  ) {
-    await Actions.setInputText(searchBar, text)
+  async typeSearchBar(text: string, searchBar = this.searchBar) {
+    await actions.type(searchBar, text)
+    await actions.tapEnterOnKeyboard()
   }
 
-  async tapBackButton(index = 0) {
-    await Actions.tapElementAtIndex(this.backButton, index)
+  async tapBackButton() {
+    await actions.tap(this.backButton)
   }
 
   async tapGetStartedButton() {
-    await Actions.tap(this.getStartedButton)
+    await actions.tap(this.getStartedButton)
   }
 
-  async enterTextInput(inputText: string, index = 0) {
-    await Actions.setInputText(this.inputTextField, inputText, index)
+  async enterTextInput(inputText: string) {
+    await actions.type(this.inputTextField, inputText)
   }
 
   async clearSearchBar() {
-    await Actions.clearTextInput(this.searchBar)
-    await Actions.tap(this.cancel)
-  }
-
-  async waitForToastMsgGone(index?: number) {
-    try {
-      await Actions.waitForElementNotVisible(this.simpleToastMsg, index)
-    } catch (error) {
-      console.log('Toast message not found')
-    }
+    await actions.clearText(this.searchBar)
+    await actions.tap(this.cancel)
   }
 
   async waitForJailbrokenWarning() {
-    await Actions.waitForElement(this.jailbrokenWarning)
+    await actions.waitFor(this.jailbrokenWarning)
   }
 
   async tapRetryBtn() {
-    await Actions.waitForElement(this.retryBtn)
+    await actions.waitFor(this.retryBtn)
     try {
-      await Actions.tap(this.retryBtn)
+      await actions.tap(this.retryBtn)
     } catch (error) {
       /* empty */
     }
   }
 
-  async tapDeviceBackButton() {
-    await device.pressBack()
+  async goAndroidBack() {
+    await driver.back()
   }
 
-  async checkIfMainnet() {
-    if (process.env.SEEDLESS_TEST === 'true') {
-      try {
-        await Actions.waitForElement(this.testnetBanner)
-        await advancedPage.switchToMainnet()
-        await this.tapBackButton()
-        await burgerMenuPage.swipeLeft()
-        await Actions.swipeLeft(burgerMenuPage.addressBook, 'slow', 1000, 0)
-      } catch (error) {
-        return
+  async goBack(nxtEle: ChainablePromiseElement | undefined = undefined) {
+    await actions.delay(1000)
+    try {
+      await actions.click(this.backButton)
+    } catch (e) {
+      if (nxtEle) {
+        await actions.tap(this.backButton, nxtEle)
+      } else {
+        await actions.tap(this.backButton)
       }
     }
+    await actions.delay(1500)
   }
 
-  async refreshApp() {
-    if (Actions.platform() === 'ios') {
-      await device.reloadReactNative()
-    } else {
-      await device.launchApp({ newInstance: true })
-    }
-    loginRecoverWallet.enterPin()
-  }
-
-  async goBack() {
-    await delay(1000)
-    try {
-      await Actions.tapElementAtIndex(this.backButton, 1, 3000)
-    } catch (e) {
-      await Actions.tapElementAtIndex(this.backButton, 0, 3000)
-    }
-    await delay(1500)
-  }
-
-  async tapDropdownItem(item: string, index = 0) {
-    await Actions.waitForElement(by.id(`dropdown_item__${item}`))
-    await Actions.tapElementAtIndex(by.id(`dropdown_item__${item}`), index)
+  async tapDropdownItem(item: string) {
+    await actions.waitFor(selectors.getById(`dropdown_item__${item}`))
+    await actions.tap(selectors.getById(`dropdown_item__${item}`))
   }
 
   async tapNotNow() {
     try {
-      await Actions.tapElementAtIndex(this.notNow, 0)
+      await actions.tap(this.notNow)
     } catch (e) {
       console.log('Not now button not found')
     }
   }
 
   async tapTurnOnNotifications() {
-    await Actions.tapElementAtIndex(this.turnOnNotifications, 0)
+    await actions.tap(this.turnOnNotifications)
   }
 
-  async tapAvaSVG(index = 0) {
-    await Actions.tapElementAtIndex(this.avaSVG, index)
+  async tapAvaSVG() {
+    await actions.tap(this.avaSVG)
   }
 
-  async tapBitcoinSVG(index = 0) {
-    await Actions.tapElementAtIndex(this.bitcoinSVG, index)
+  async tapBitcoinSVG() {
+    await actions.tap(this.bitcoinSVG)
   }
 
-  async tapReloadSVG(index = 0) {
-    await Actions.tapElementAtIndex(this.reloadSVG, index)
+  async tapReloadSVG() {
+    await actions.tap(this.reloadSVG)
   }
 
-  async tapNext(isEnableSync = false) {
-    await Actions.waitAndTap(this.next, 1000, isEnableSync)
+  async tapNext() {
+    try {
+      await actions.tap(this.next)
+    } catch (e) {
+      await actions.tap(this.nextBtnById)
+    }
   }
 
-  async dismissUpdateAppModal() {
-    await Actions.waitForElement(this.updateAppModalTitle, 20000)
-    await Actions.drag(this.grabber, 'down', 0.5, 0)
+  async tapNextBtnById() {
+    await actions.tap(this.nextBtnById)
   }
 
-  async dismissBottomSheet(element: Detox.NativeMatcher = this.grabber) {
-    await Actions.waitForElement(element, 20000)
-    await Actions.drag(this.grabber, 'down', 0.5, 0)
+  async dismissBottomSheet(element = this.bottomSheet) {
+    await actions.delay(1000)
+    let backBtn =
+      (await actions.getVisible(element)) &&
+      (await actions.getVisible(this.backButton))
+
+    while (backBtn) {
+      await actions.tap(this.backButton)
+      await actions.delay(500)
+      backBtn =
+        (await actions.getVisible(element)) &&
+        (await actions.getVisible(this.backButton))
+      console.log(`backBtn is visible on the bottom sheet? - ${backBtn}`)
+    }
+
+    await actions.waitFor(element, 30000)
+    if (driver.isAndroid) {
+      await driver.back()
+    } else {
+      await actions.dragAndDrop(element, [0, 1500])
+    }
+    await actions.delay(1000)
+    console.log('Dismissed bottom sheet')
   }
 
-  async selectDropdown(name: string, dropdownItem: string) {
-    await Actions.tap(by.id(`${name}_dropdown_btn`))
-    // await Actions.waitForElement(by.id(`dropdown_item__${dropdownItem}`))
-    await Actions.tap(by.id(`dropdown_item__${dropdownItem}`))
+  async pullToRefresh(ele = this.filterDropdown) {
+    await actions.dragAndDrop(ele, [0, 1000])
   }
 
   async visibleDropdown(name: string, isVisible = true) {
     if (isVisible) {
-      await Actions.waitForElement(by.id(`${name}_dropdown_btn`))
+      await actions.waitFor(selectors.getById(`${name}_dropdown_btn`))
     } else {
-      await Actions.waitForElementNotVisible(by.id(`${name}_dropdown_btn`))
+      await actions.isNotVisible(selectors.getById(`${name}_dropdown_btn`))
     }
   }
 
   async tapCopyPhrase() {
-    await Actions.tap(this.copyPhrase)
+    await actions.tap(this.copyPhrase)
   }
 
-  async tapSave(index = 0) {
-    await Actions.waitForElement(this.save)
-    await Actions.tapElementAtIndex(this.save, index)
+  async tapSave() {
+    await actions.tap(this.saveId)
+  }
+
+  async tapYesAlert() {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getBySmartText('YES'))
+    }
+  }
+
+  async tapSaveAlert() {
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.save))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.save))
+    }
+  }
+
+  async tapDeleteAlert() {
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.delete))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.delete))
+    }
+  }
+
+  async tapAndroidDeleteAlert() {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getBySmartText(commonEls.delete))
+    }
+  }
+
+  async tapRemoveAlert() {
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.remove))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.remove))
+    }
   }
 
   async verifyAccountName(expectedName: string, whichScreen = 'settings') {
+    await actions.waitFor(selectors.getByText(expectedName), 30000)
     const UIaccountName = await this.getBalanceHeaderAccountName(whichScreen)
     assert(
       expectedName === UIaccountName,
@@ -438,82 +515,64 @@ class CommonElsPage {
     )
   }
 
-  async exitMetro() {
-    if (process.env.E2E !== 'true') {
-      console.log('you are using a dev build, skipping metro dev menu')
-      try {
-        if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
-          await Actions.tap(by.text(/.*8081.*/i))
-        }
-        const xBtn = by.text(/.*developer menu.*/i)
-        await Actions.waitForElement(xBtn, 20000)
-        await Actions.drag(xBtn, 'down', 0.5)
-      } catch (e) {
-        console.log('Metro dev menu is not found...')
-      }
-    }
-  }
-
-  async verifySuccessToast(timeout = 40000) {
-    await Actions.waitForElement(this.transactionSuccess, timeout)
-    await Actions.failIfElementAppearsWithin(this.transactionFail)
-  }
-
-  async enterAmount(amount: string, index = 0) {
-    await delay(1000)
-    await Actions.setInputText(this.tokenAmountInputField, amount, index)
-  }
-
-  async tapNextButton() {
-    await Actions.waitForElement(this.nextButton)
-    await Actions.tapElementAtIndex(this.nextButton, 0)
-  }
-
   async tapApproveButton() {
-    await Actions.waitForElement(this.approveButton, 20000)
-    await Actions.tapElementAtIndex(this.approveButton, 0)
+    await actions.waitFor(this.approveButton, 20000)
+    await actions.tap(this.approveButton)
   }
 
   async selectDropdownItem(item: string) {
-    await Actions.scrollListUntil(
-      by.id(`${commonElsLoc.dropdownItem}${item}`),
-      this.dropdownScrollView,
-      100
-    )
-    await Actions.tap(by.id(`${commonElsLoc.dropdownItem}${item}`))
+    const ele = selectors.getBySomeText(item)
+    await actions.click(ele)
   }
 
-  async goSettings() {
-    await Actions.tap(this.settingsBtn)
-  }
-
-  async tapDelete(index = 0) {
-    await Actions.waitForElement(this.delete, 10000, index)
-    await Actions.tapElementAtIndex(this.delete, index)
+  async tapDelete() {
+    await actions.waitFor(this.delete, 10000)
+    await actions.tap(this.delete)
   }
 
   async tapCancel() {
-    await Actions.tap(this.cancel)
+    await actions.tap(this.cancel)
   }
 
   async tapRejectButton() {
-    await Actions.tap(this.rejectButton)
+    await actions.tap(this.rejectButton)
   }
 
   async tapGotIt(gotItIsVisible = true) {
     if (gotItIsVisible) {
-      await delay(2000)
+      await actions.delay(2000)
       await this.dismissBottomSheet()
     }
   }
 
-  async verifyLoggedIn(bottomSheetIsVisible = true) {
-    if (bottomSheetIsVisible) {
-      await this.dismissUpdateAppModal()
-      await this.dismissBottomSheet(this.solanaLaunchTitle)
-    }
+  async tapCopy() {
+    await actions.tap(this.copy)
+    await actions.waitForDisplayed(this.copied)
+  }
 
-    await Actions.waitForElement(accountManagePage.accountOne, 20000)
+  async switchAccount(
+    account = commonEls.secondAccount,
+    walletName = 'Wallet 1'
+  ) {
+    await this.goMyWallets()
+    await settingsPage.tapAccount(account, walletName)
+  }
+
+  async goMyWallets() {
+    await actions.tap(portfolioPage.portfolioAccountName)
+  }
+
+  async verifyPrivacyScreen() {
+    try {
+      await actions.waitFor(this.privacyScreen, 2000)
+      console.log('privacy screen appeared')
+    } catch {
+      console.log('privacy screen is gone')
+    }
+  }
+
+  async appGoToBackground(seconds: number) {
+    await driver.execute('mobile: backgroundApp', { seconds })
   }
 }
 

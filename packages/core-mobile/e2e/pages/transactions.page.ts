@@ -19,10 +19,6 @@ class TransactionsPage {
     return selectors.getById(txLoc.buyButton)
   }
 
-  get bridgeButton() {
-    return selectors.getById(txLoc.bridgeButton)
-  }
-
   get withdrawButton() {
     return selectors.getById(txLoc.withdrawButton)
   }
