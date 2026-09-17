@@ -1,7 +1,3 @@
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import Transport from '@ledgerhq/hw-transport'
-import AppAvalanche from '@avalabs/hw-app-avalanche'
-import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import * as Sentry from '@sentry/react-native'
 import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
@@ -24,6 +20,7 @@ import { Curve } from 'utils/publicKeys'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { BluetoothState } from 'services/bluetooth/types'
 import BluetoothService from 'services/bluetooth/BluetoothService'
+import { DeviceManagementKit } from '@ledgerhq/device-management-kit'
 import {
   assertDeviceBech32Address,
   assertDeviceEvmAddress,
@@ -53,7 +50,7 @@ import {
 } from './LedgerBluetoothError'
 
 class LedgerService {
-  #transport: TransportBLE | null = null
+  #dmk: DeviceManagementKit | null = null
   private _currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private currentAppVersion = ''
 

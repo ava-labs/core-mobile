@@ -8,12 +8,7 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
-import {
-  MessageTypes,
-  RpcMethod,
-  TypedData,
-  TypedDataV1
-} from '@avalabs/vm-module-types'
+import { RpcMethod, SigningData } from '@avalabs/vm-module-types'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { Curve } from 'utils/publicKeys'
 import { Account } from 'store/account'
@@ -39,6 +34,21 @@ export interface SolanaTransactionRequest {
   account: string
   serializedTx: string
 }
+
+export type MessageSigningRequest = Extract<
+  SigningData,
+  {
+    type:
+      | RpcMethod.SOLANA_SIGN_MESSAGE
+      | RpcMethod.AVALANCHE_SIGN_MESSAGE
+      | RpcMethod.SIGN_TYPED_DATA_V3
+      | RpcMethod.SIGN_TYPED_DATA_V4
+      | RpcMethod.SIGN_TYPED_DATA_V1
+      | RpcMethod.SIGN_TYPED_DATA
+      | RpcMethod.PERSONAL_SIGN
+      | RpcMethod.ETH_SIGN
+  }
+>
 
 /**
  * Used for X and P chain transactions
@@ -187,21 +197,18 @@ export enum WalletType {
 export interface Wallet {
   /**
    * Signs a message using the specified account, network, and provider.
-   * @param rpcMethod - The RPC method for the message.
-   * @param data - The data to be signed.
+   * @param sigingData - The RPC method and data to be signed.
    * @param accountIndex - The index of the account.
    * @param network - The network type.
    * @param provider - The JSON RPC provider
    */
   signMessage({
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
     network,
     provider
   }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider

@@ -2,36 +2,25 @@ import {
   Avalanche,
   BitcoinLedgerWallet,
   BitcoinProvider,
-  deserializeTransactionMessage,
-  compileSolanaTx,
-  serializeSolanaTx,
   getEvmAddressFromPubKey,
   getBtcAddressFromPubKey,
-  BitcoinProviderAbstract
+  BitcoinProviderAbstract,
+  LedgerSigner,
+  DerivationPath,
+  createWalletPolicy,
+  SolanaLedgerSigner
 } from '@avalabs/core-wallets-sdk'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal, SolanaProvider } from '@avalabs/core-wallets-sdk'
 import {
   RpcMethod,
-  TypedDataV1,
   TypedData,
-  MessageTypes
+  MessageTypes,
+  BtcWalletPolicyDetails
 } from '@avalabs/vm-module-types'
-import AppAvax from '@avalabs/hw-app-avalanche'
-import AppSolana from '@ledgerhq/hw-app-solana'
-import Eth from '@ledgerhq/hw-app-eth'
-import ledgerService from '@ledgerhq/hw-app-eth/lib/services/ledger'
-import {
-  AppClient as BtcClient,
-  DefaultWalletPolicy,
-  WalletPolicy
-} from 'ledger-bitcoin'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
-import bs58 from 'bs58'
-import { Transaction, TransactionRequest, TypedDataEncoder } from 'ethers'
+import { Transaction, TransactionRequest } from 'ethers'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -43,12 +32,7 @@ import {
   PerAccountExtendedPublicKeys,
   PerAccountPublicKeys
 } from 'services/ledger/types'
-import {
-  DERIVATION_PATHS,
-  DerivationPathKey,
-  LEDGER_TIMEOUTS,
-  getSolanaDerivationPath
-} from 'new/features/ledger/consts'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { bip32, extendedPublicKeyToXpub } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import {
@@ -59,16 +43,22 @@ import {
 import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
-import { getLedgerAppName } from 'features/ledger/utils'
-import LedgerTrustedNameService from 'services/ledger/LedgerTrustedNameService'
 import { toSegments } from 'utils/toSegments'
+import {
+  DeviceActionStatus,
+  type DeviceManagementKit,
+  type DeviceSessionId
+} from '@ledgerhq/device-management-kit'
+import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin'
+import { firstValueFrom } from 'rxjs'
+import { toUtf8 } from 'ethereumjs-util'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
   AvalancheTransactionRequest,
   BtcTransactionRequest,
   SolanaTransactionRequest,
-  SignatureRSV
+  MessageSigningRequest
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
 
@@ -76,7 +66,6 @@ export class LedgerWallet implements Wallet {
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PerAccountPublicKeys
-  private bitcoinWallet?: BitcoinLedgerWallet
   private walletId: string
 
   constructor(ledgerData: LedgerWalletData & { walletId: string }) {
@@ -91,7 +80,10 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  private async getTransport(): Promise<TransportBLE> {
+  private async getTransport(): Promise<{
+    dmk: DeviceManagementKit
+    sessionId: DeviceSessionId
+  }> {
     Logger.info('getTransport called - using LedgerService.ensureConnection')
     return LedgerService.ensureConnection()
   }
@@ -159,15 +151,17 @@ export class LedgerWallet implements Wallet {
 
       const transport = await this.getTransport()
 
-      this.bitcoinWallet = new BitcoinLedgerWallet(
+      const wallet = new BitcoinLedgerWallet(
         addressNode.publicKey,
         evmPubKey.derivationPath,
         bitcoinProvider,
-        transport as Transport,
+        transport.dmk,
+        transport.sessionId,
         walletPolicyDetails
       )
+
       Logger.info('BitcoinLedgerWallet created successfully')
-      return this.bitcoinWallet
+      return wallet
     } catch (error) {
       Logger.error('Failed to create BitcoinLedgerWallet:', error)
       const errorMessage =
@@ -327,30 +321,32 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  /**
-   * Check if new account creation requires device connection
-   */
-  public requiresDeviceForNewAccounts(): boolean {
-    return this.isLedgerLive()
-  }
-
   public async signMessage({
-    rpcMethod,
-    data,
+    signingData,
     accountIndex,
-    network
+    network,
+    provider
   }: {
-    rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
-    switch (rpcMethod) {
+    switch (signingData.type) {
       case RpcMethod.SOLANA_SIGN_MESSAGE:
         return this.signSolanaMessage()
 
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-        return this.signAvalancheMessage(accountIndex, data)
+        if (!(provider instanceof Avalanche.JsonRpcProvider)) {
+          throw new Error(
+            'Avalanche provider is required for Avalanche message signing'
+          )
+        }
+        return this.signAvalancheMessage(
+          accountIndex,
+          signingData.data,
+          provider
+        )
       }
 
       case RpcMethod.ETH_SIGN:
@@ -359,7 +355,17 @@ export class LedgerWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V1:
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
-        return this.signEvmMessage({ data, accountIndex, network, rpcMethod })
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error(
+            'Ethereum provider is required for Ethereum message signing'
+          )
+        }
+        return this.signEvmMessage({
+          signingData,
+          accountIndex,
+          network,
+          provider
+        })
 
       default:
         throw new Error('unknown method')
@@ -383,7 +389,7 @@ export class LedgerWallet implements Wallet {
 
     try {
       // Ensure device is connected
-      const transport = await this.getTransport()
+      const { dmk, sessionId } = await this.getTransport()
 
       // Ensure Bitcoin app is ready
       Logger.info('Ensuring Bitcoin app is ready...')
@@ -392,10 +398,15 @@ export class LedgerWallet implements Wallet {
         LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
       )
 
-      const btcApp = new BtcClient(transport as Transport)
+      const btcApp = new SignerBtcBuilder({ dmk, sessionId }).build()
 
       // Get master fingerprint from device
-      const masterFpr = await btcApp.getMasterFingerprint()
+      const masterFprRequest = await btcApp.getMasterFingerprint()
+      const masterFpr = await firstValueFrom(masterFprRequest.observable)
+
+      if (masterFpr.status !== DeviceActionStatus.Completed) {
+        throw new Error('Failed to get master fingerprint')
+      }
 
       // Get EVM derivation path for this account
       const derivationPath = `44'/60'/${accountIndex}'`
@@ -406,40 +417,53 @@ export class LedgerWallet implements Wallet {
       )
 
       // Get extended public key from device
-      const xpub = await btcApp.getExtendedPubkey(derivationPath, true)
+      const xpubRequest = await btcApp.getExtendedPublicKey(derivationPath, {
+        returnChainCode: true
+      })
+      const xpub = await firstValueFrom(xpubRequest.observable)
+
+      if (xpub.status !== DeviceActionStatus.Completed) {
+        throw new Error('Failed to get master fingerprint')
+      }
 
       Logger.info('Extended public key retrieved')
 
-      const keyInfo = `[${masterFpr}/${derivationPath}]${xpub}`
-
-      // Create wallet policy for native SegWit (P2WPKH)
-      // Format: [masterFpr/derivationPath]xpub
-      const template = new DefaultWalletPolicy(`wpkh(@0/**)`, keyInfo)
-
       // Note: We use WalletPolicy (not DefaultWalletPolicy) because we need a named policy for registration
       const policyName = `Core - ${accountName}`
-      const walletPolicy = new WalletPolicy(
-        policyName,
-        'wpkh(@0/**)', // Native SegWit descriptor template
-        template.keys // keys array
+      const walletPolicy = createWalletPolicy(
+        Buffer.from(masterFpr.output.masterFingerprint).toString('hex'),
+        accountIndex,
+        xpub.output.extendedPublicKey,
+        policyName
       )
 
       Logger.info('Created wallet policy for registration')
 
       // Register the policy with the device
       Logger.info('Registering policy with Ledger device...')
-      const [policyId, policyHmac] = await btcApp.registerWallet(walletPolicy)
+      const walletRegistrationRequest = await btcApp.registerWallet(
+        walletPolicy
+      )
+      const walletRegistration = await firstValueFrom(
+        walletRegistrationRequest.observable
+      )
+
+      if (walletRegistration.status !== DeviceActionStatus.Completed) {
+        throw new Error('Failed to register wallet')
+      }
 
       Logger.info('Wallet policy registered successfully:', {
-        policyId: policyId.toString('hex'),
-        policyHmacLength: policyHmac.length
+        policyName: walletRegistration.output.name,
+        policyHmacLength: walletRegistration.output.hmac.length
       })
 
       // Store the policy details in wallet data
-      const policyDetails = {
-        hmacHex: policyHmac.toString('hex'),
-        masterFingerprint: masterFpr,
-        xpub,
+      const policyDetails: BtcWalletPolicyDetails = {
+        hmacHex: Buffer.from(walletRegistration.output.hmac).toString('hex'),
+        masterFingerprint: Buffer.from(
+          masterFpr.output.masterFingerprint
+        ).toString('hex'),
+        xpub: xpub.output.extendedPublicKey,
         name: policyName
       }
 
@@ -568,12 +592,11 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signAvalancheTransaction({
     accountIndex,
     transaction,
     network: _network,
-    provider: _provider
+    provider: provider
   }: {
     accountIndex: number
     transaction: AvalancheTransactionRequest
@@ -582,76 +605,25 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signAvalancheTransaction called')
     const appType = LedgerAppType.AVALANCHE
-    // Get transport and create Avalanche app instance directly
-    // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
-    const transport = await this.handleAppConnection(appType)
+    const { dmk, sessionId } = await this.handleAppConnection(appType)
 
-    const avaxApp = new AppAvax(transport as Transport)
-
-    // Get chain alias from transaction VM
-    const vmName = transaction.tx.getVM()
-    let chainAlias: 'X' | 'P' | 'C'
-    switch (vmName) {
-      case 'AVM':
-        chainAlias = 'X'
-        break
-      case 'PVM':
-        chainAlias = 'P'
-        break
-      case 'EVM':
-        chainAlias = 'C'
-        break
-      default:
-        throw new Error(`Unsupported VM type: ${vmName}`)
-    }
-
-    // Build the account path based on chain
-    // For X/P chain: m/44'/9000'/{accountIndex}'
-    // For C chain (EVM): bip44 uses m/44'/60'/{accountIndex}' or Ledger Live (m/44'/60'/0') depending on wallet type
-    const accountPath =
-      chainAlias === 'C'
-        ? this.isBIP44()
-          ? `m/44'/60'/0'`
-          : `m/44'/60'/${accountIndex}'`
-        : `m/44'/9000'/${accountIndex}'`
-
-    // Build signing paths from external indices
-    // For C-chain: bip44 uses 0/<accountIndex> or Ledger Live always use 0/0 (first external address)
-    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
-    const externalIndices = transaction.externalIndices ?? []
-    const hasIndices = externalIndices.length > 0
-    const signingPaths =
-      chainAlias === 'C'
-        ? this.isBIP44()
-          ? [`0/${accountIndex}`]
-          : ['0/0']
-        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
-
-    // Build change paths from internal indices
-    const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
-
-    // Serialize the transaction
-    const txBuffer = Buffer.from(transaction.tx.toBytes())
+    const signer = new Avalanche.SimpleLedgerSigner(
+      accountIndex,
+      provider,
+      this.getExtendedPublicKeyFor(NetworkVMType.PVM, accountIndex)?.key,
+      this.isBIP44() ? DerivationPath.BIP44 : DerivationPath.LedgerLive
+    )
 
     Logger.info('Calling avaxApp.sign...')
     try {
-      // Sign directly with the Ledger device
-      const signResult = await avaxApp.sign(
-        accountPath,
-        signingPaths,
-        txBuffer,
-        changePaths.length > 0 ? changePaths : undefined
-      )
-      Logger.info('avaxApp.sign completed')
-
-      // Add signatures to the transaction
-      const signatures = signResult.signatures || new Map()
-      signatures.forEach(signature => {
-        transaction.tx.addSignature(signature)
+      const signedTx = await signer.signTx({
+        ...transaction,
+        dmk,
+        sessionId
       })
 
       Logger.info('signAvalancheTransaction completed successfully')
-      return JSON.stringify(transaction.tx.toJSON())
+      return JSON.stringify(signedTx.toJSON())
     } catch (signError) {
       Logger.error('avaxApp.sign failed with error:', signError)
       if (signError instanceof Error) {
@@ -661,22 +633,11 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  /**
-   * For the EVM signing flows, whether to use the Ledger Avalanche app rather
-   * than the Ethereum app. Mirrors the approval UI by delegating to
-   * getLedgerAppName(network) — which for EVM networks resolves to the Avalanche
-   * app on C-Chain and Avalanche L1s — so the app we prompt for and the app we
-   * sign with can never disagree.
-   */
-  private usesAvalancheApp(network?: Network): boolean {
-    return getLedgerAppName(network) === LedgerAppType.AVALANCHE
-  }
-
   public async signEvmTransaction({
     accountIndex,
     transaction,
     network,
-    provider: _provider
+    provider: provider
   }: {
     accountIndex: number
     transaction: TransactionRequest
@@ -685,20 +646,13 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signEvmTransaction called')
 
-    // Determine chain type and required app.
-    // Route C-Chain and Avalanche L1s (EVM chains with a subnetId) to the
-    // Avalanche app; all other EVM chains use the Ethereum app. getLedgerAppName
-    // is the single source of truth shared with the approval UI.
     const chainId = transaction.chainId
       ? Number(transaction.chainId)
       : network.chainId
-    const isAvalanche = this.usesAvalancheApp(network)
-    const appType = isAvalanche
-      ? LedgerAppType.AVALANCHE
-      : LedgerAppType.ETHEREUM
 
-    // Get transport
-    const transport = await this.handleAppConnection(appType)
+    const { dmk, sessionId } = await this.handleAppConnection(
+      LedgerAppType.AVALANCHE
+    )
 
     try {
       // Get the derivation path for this account
@@ -707,6 +661,14 @@ export class LedgerWallet implements Wallet {
         NetworkVMType.EVM
       )
       Logger.info('Using derivation path:', derivationPath)
+
+      const signer = new LedgerSigner(
+        accountIndex,
+        dmk,
+        sessionId,
+        this.isBIP44() ? DerivationPath.BIP44 : DerivationPath.LedgerLive,
+        provider
+      )
 
       const tx = {
         type: 2,
@@ -731,24 +693,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Full serialized transaction:', serializedTx)
       Logger.info('Unsigned transaction hex:', unsignedTx)
 
-      const signature: SignatureRSV = await (isAvalanche
-        ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
-        : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
-
-      // Create the signed EIP-1559 transaction
-      const signedTx = Transaction.from({
-        ...tx,
-        signature: {
-          r: `0x${signature.r}`,
-          s: `0x${signature.s}`,
-          v: BigInt(
-            typeof signature.v === 'string' ? '0x' + signature.v : signature.v
-          )
-        }
-      })
+      const signedTx = await signer.signTransaction(tx)
 
       Logger.info('Successfully signed transaction')
-      return signedTx.serialized
+      return signedTx
     } catch (error) {
       Logger.error('Failed to sign transaction:', error)
 
@@ -764,87 +712,29 @@ export class LedgerWallet implements Wallet {
   public async signSvmTransaction({
     accountIndex,
     transaction,
-    network,
-    provider
+    network
   }: {
     accountIndex: number
     transaction: SolanaTransactionRequest
     network: Network
     provider: SolanaProvider
   }): Promise<string> {
-    const transport = await this.handleAppConnection(LedgerAppType.SOLANA)
+    const { dmk, sessionId } = await this.handleAppConnection(
+      LedgerAppType.SOLANA
+    )
 
-    // Create AppSolana instance
-    const solanaApp = new AppSolana(transport as Transport)
-    Logger.info('Created AppSolana instance')
+    const signer = new SolanaLedgerSigner(accountIndex, dmk, sessionId)
+    Logger.info('Created Solana signer')
 
     try {
-      // Get the derivation path for this account
-      const derivationPath = getSolanaDerivationPath(accountIndex)
-      Logger.info('Using derivation path:', derivationPath)
-
-      // First verify we can get the correct address
-      const addressResult = await solanaApp.getAddress(derivationPath, false)
-      // Convert the Buffer to base58
-      const userAddress = bs58.encode(new Uint8Array(addressResult.address))
-      Logger.info('Got address from Ledger:', userAddress)
-
-      // Verify this is the correct account
-      if (transaction.account !== userAddress) {
-        throw new Error(
-          `Account mismatch: transaction account ${transaction.account} does not match Ledger account ${userAddress}`
-        )
-      }
-
-      // Deserialize and compile the transaction
-      Logger.info('Deserializing transaction message')
-      const txMessage = await deserializeTransactionMessage(
-        transaction.serializedTx,
-        provider
-      )
-
-      Logger.info('Compiling Solana transaction')
-      const { messageBytes } = compileSolanaTx(txMessage)
-      Logger.info('Message bytes length:', messageBytes.length)
-
-      let userInputType: 'ata' | undefined
-      const splInfo = LedgerTrustedNameService.extractSplTransferInfo(txMessage)
-      if (splInfo) {
-        userInputType = 'ata'
-        try {
-          await LedgerTrustedNameService.enrollTrustedName(
-            transport as Transport,
-            solanaApp,
-            splInfo
-          )
-        } catch (e) {
-          Logger.warn(
-            'Failed to enroll trusted name, falling back to blind signing',
-            e
-          )
-        }
-      }
-
       Logger.info('Signing transaction with Ledger')
-      const signResult = await solanaApp.signTransaction(
-        derivationPath,
-        Buffer.from(messageBytes),
-        userInputType
+      const signResult = signer.signTx(
+        transaction.serializedTx,
+        network.rpcUrl,
+        !!network.isTestnet
       )
-      Logger.info('Got signature from Ledger')
-
-      // Get the original signatures map to maintain correct types
-      const { signatures } = compileSolanaTx(txMessage)
-      const signedTransaction = serializeSolanaTx({
-        messageBytes,
-        signatures: {
-          ...signatures,
-          [userAddress]: Uint8Array.from(signResult.signature)
-        }
-      })
-
       Logger.info('Successfully signed transaction')
-      return signedTransaction
+      return signResult
     } catch (error) {
       Logger.error('Failed to sign transaction:', error)
 
@@ -1002,55 +892,37 @@ export class LedgerWallet implements Wallet {
 
   private async signAvalancheMessage(
     accountIndex: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any
+    data: unknown,
+    provider: Avalanche.JsonRpcProvider
   ): Promise<string> {
     Logger.info('signAvalancheMessage called')
-    const appType = LedgerAppType.AVALANCHE
-    // Get transport and create Avalanche app instance directly
-    const transport = await this.handleAppConnection(appType)
+    const { dmk, sessionId } = await this.handleAppConnection(
+      LedgerAppType.AVALANCHE
+    )
 
     try {
-      const avaxApp = new AppAvax(transport as Transport)
-      Logger.info('Created AppAvax instance')
-
-      // Get the account path for Avalanche (X-Chain/P-Chain use 9000')
-      const accountPath =
-        DERIVATION_PATHS.EXTENDED[DerivationPathKey.AVALANCHE](accountIndex)
-      Logger.info('Using account path:', accountPath)
-
-      // Signing paths for the first address (0/0)
-      // For message signing, we typically only sign with the primary address (0/0),
-      // which is the expected behavior.
-      const signingPaths = ['0/0']
-
-      // Convert message to string if needed
-      const messageString =
-        typeof data === 'string' ? data : JSON.stringify(data)
+      const signer = new Avalanche.SimpleLedgerSigner(
+        accountIndex,
+        provider,
+        this.getExtendedPublicKeyFor(NetworkVMType.PVM, accountIndex)?.key,
+        this.isBIP44() ? DerivationPath.BIP44 : DerivationPath.LedgerLive
+      )
 
       Logger.info('Signing message with AppAvax.signMsg')
       // Sign the message using the Avalanche app
-      const signResult = await avaxApp.signMsg(
-        accountPath,
-        signingPaths,
-        messageString
-      )
+      const signResult = await signer.signMessage({
+        message: toUtf8(typeof data === 'string' ? data : JSON.stringify(data)),
+        chain: 'X',
+        dmk,
+        sessionId
+      })
 
-      // Extract the signature from the result
-      const signatures = signResult.signatures || new Map()
-      if (signatures.size === 0) {
-        throw new Error('No signatures returned from device')
-      }
-
-      // Get the first signature and convert to hex
-      const signatureBuffer = Array.from(signatures.values())[0]
-      const hexSignature = signatureBuffer.toString('hex')
       Logger.info('Successfully signed Avalanche message')
-      return hexSignature
+      return signResult.toString('hex')
     } catch (error) {
       Logger.error('Failed to sign Avalanche message:', error)
       if (error instanceof Error) {
-        handleLedgerError({ error, appType })
+        handleLedgerError({ error, appType: LedgerAppType.AVALANCHE })
       }
       throw error
     }
@@ -1128,91 +1000,6 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  /**
-   * Consolidated method to sign EIP-712 messages with fallback for Nano S devices
-   */
-  /**
-   * Returns true only for errors that indicate the device firmware lacks the
-   * capability to execute signEIP712Message (e.g. Nano S). User-rejection and
-   * other definitive failures must NOT trigger a silent retry.
-   *
-   * Known capability error status codes:
-   *   0x6d00 – INS_NOT_SUPPORTED
-   *   0x6e00 – CLA_NOT_SUPPORTED
-   */
-  private isDeviceCapabilityError(error: unknown): boolean {
-    if (!(error instanceof Error)) return false
-    const msg = error.message.toLowerCase()
-    return (
-      msg.includes('0x6d00') ||
-      msg.includes('0x6e00') ||
-      msg.includes('ins_not_supported') ||
-      msg.includes('cla_not_supported')
-    )
-  }
-
-  private async signEIP712WithFallback(
-    app: Eth | AppAvax,
-    derivationPath: string,
-    eip712Message: {
-      domain: Record<string, unknown>
-      types: Record<string, Array<{ name: string; type: string }>> & {
-        EIP712Domain: Array<{ name: string; type: string }>
-      }
-      primaryType: string
-      message: Record<string, unknown>
-    }
-  ): Promise<string> {
-    let signature
-    try {
-      signature = await app.signEIP712Message(derivationPath, eip712Message)
-    } catch (error) {
-      // Only fall back to hash mode for Nano S (firmware lacks clear-signing
-      // support). Rethrow user rejections and all other definitive failures so
-      // they surface to the caller without a second signing prompt.
-      if (!this.isDeviceCapabilityError(error)) {
-        throw error
-      }
-
-      Logger.warn(
-        'signEIP712Message not supported on this device, falling back to signEIP712HashedMessage',
-        error
-      )
-
-      // Compute domain separator and message hash
-      const domainSeparatorHash = TypedDataEncoder.hashDomain(
-        eip712Message.domain
-      )
-
-      // For message hash: exclude EIP712Domain from types.
-      // Use TypedDataEncoder.hashStruct with an explicit primary type so the
-      // hash does not depend on object key insertion order.
-      const typesWithoutDomain = Object.keys(eip712Message.types)
-        .filter(key => key !== 'EIP712Domain')
-        .reduce((acc, key) => {
-          const typeValue = eip712Message.types[key]
-          if (typeValue) {
-            acc[key] = typeValue
-          }
-          return acc
-        }, {} as Record<string, Array<{ name: string; type: string }>>)
-
-      const messageHash = TypedDataEncoder.hashStruct(
-        eip712Message.primaryType,
-        typesWithoutDomain,
-        eip712Message.message
-      )
-
-      signature = await app.signEIP712HashedMessage(
-        derivationPath,
-        domainSeparatorHash,
-        messageHash
-      )
-    }
-
-    return this.getHexSignature(signature)
-  }
-
   private validateTypedData(typedData: TypedData<MessageTypes>): void {
     if (!typedData.domain) {
       throw new Error('TypedData missing required field: domain')
@@ -1228,33 +1015,16 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  private async handleSignedTypedData({
-    data,
-    rpcMethod,
-    derivationPath,
-    network
-  }: {
-    data: string | TypedDataV1 | TypedData<MessageTypes>
-    rpcMethod: RpcMethod
-    derivationPath: string
-    network: Network
-  }): Promise<string> {
-    const isAvalanche = this.usesAvalancheApp(network)
-    const appType = isAvalanche
-      ? LedgerAppType.AVALANCHE
-      : LedgerAppType.ETHEREUM
-    // Get transport and create Ethereum app instance
-    const transport = await this.handleAppConnection(appType)
-    const app = isAvalanche
-      ? new AppAvax(transport as Transport)
-      : new Eth(transport as Transport)
-
+  private async parseTypedDataRequest(
+    signingData: MessageSigningRequest
+  ): Promise<TypedData<MessageTypes>> {
     // Check if this is EIP-712 v1 format (array of {name, type, value})
     const isV1Format =
-      Array.isArray(data) ||
-      (typeof data === 'string' && data.trim().startsWith('['))
+      Array.isArray(signingData.data) ||
+      (typeof signingData.data === 'string' &&
+        signingData.data.trim().startsWith('['))
 
-    if (isV1Format || rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1) {
+    if (isV1Format || signingData.type === RpcMethod.SIGN_TYPED_DATA_V1) {
       Logger.error(
         'eth_signTypedData v1 format is not supported on Ledger devices'
       )
@@ -1268,9 +1038,9 @@ export class LedgerWallet implements Wallet {
 
     // Parse data if it's a string
     let typedData: TypedData<MessageTypes>
-    if (typeof data === 'string') {
+    if (typeof signingData.data === 'string') {
       try {
-        typedData = JSON.parse(data) as TypedData<MessageTypes>
+        typedData = JSON.parse(signingData.data) as TypedData<MessageTypes>
         Logger.info('Parsed typed data from string')
       } catch (parseError) {
         Logger.error('Failed to parse typed data string:', parseError)
@@ -1279,7 +1049,7 @@ export class LedgerWallet implements Wallet {
         )
       }
     } else {
-      typedData = data as TypedData<MessageTypes>
+      typedData = signingData.data as TypedData<MessageTypes>
     }
 
     // Validate required fields
@@ -1309,89 +1079,51 @@ export class LedgerWallet implements Wallet {
       filteredTypes: Object.keys(filteredTypes)
     })
 
-    const hexSignature = await this.signEIP712WithFallback(
-      app,
-      derivationPath,
-      eip712Message
-    )
-    Logger.info('Successfully signed typed data')
-    return hexSignature
-  }
-
-  private async handleEthAndPersonalSign({
-    data,
-    derivationPath,
-    network
-  }: {
-    data: string | TypedDataV1 | TypedData<MessageTypes>
-    derivationPath: string
-    network: Network
-  }): Promise<string> {
-    // Use the Avalanche app when on an Avalanche chain (C-Chain or an L1) — the
-    // Avalanche Ledger app exposes EVM signing through the same transport, so we
-    // can create an Eth instance without switching apps (matches
-    // core-web/extension behavior).
-    const appType = this.usesAvalancheApp(network)
-      ? LedgerAppType.AVALANCHE
-      : LedgerAppType.ETHEREUM
-    const transport = await this.handleAppConnection(appType)
-    const app = new Eth(transport as Transport)
-
-    // Handle personal sign and eth_sign
-    Logger.info('Signing personal message')
-    const messageToSign = typeof data === 'string' ? data : JSON.stringify(data)
-
-    // Remove 0x prefix if present
-    const messageHex = messageToSign.startsWith('0x')
-      ? messageToSign.slice(2)
-      : Buffer.from(messageToSign, 'utf8').toString('hex')
-
-    const signature = await app.signPersonalMessage(derivationPath, messageHex)
-
-    // Convert signature to hex format (0x-prefixed)
-    const hexSignature = this.getHexSignature(signature)
-    Logger.info('Successfully signed personal message')
-    return hexSignature
+    return eip712Message
   }
 
   private async signEvmMessage({
-    data,
+    signingData,
     accountIndex,
     network,
-    rpcMethod
+    provider
   }: {
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    signingData: MessageSigningRequest
     accountIndex: number
     network: Network
-    rpcMethod: RpcMethod
+    provider: JsonRpcBatchInternal
   }): Promise<string> {
-    // Get the derivation path for this account
-    const derivationPath = this.getDerivationPath(
+    const { dmk, sessionId } = await this.getTransport()
+
+    const ledgerSigner = new LedgerSigner(
       accountIndex,
-      NetworkVMType.EVM
+      dmk,
+      sessionId,
+      this.derivationPathSpec === LedgerDerivationPathType.BIP44
+        ? DerivationPath.BIP44
+        : DerivationPath.LedgerLive,
+      provider
     )
     try {
       if (
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1 ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3 ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V4
+        [
+          RpcMethod.SIGN_TYPED_DATA,
+          RpcMethod.SIGN_TYPED_DATA_V1,
+          RpcMethod.SIGN_TYPED_DATA_V3,
+          RpcMethod.SIGN_TYPED_DATA_V4
+        ].includes(signingData.type)
       ) {
-        return this.handleSignedTypedData({
-          data,
-          rpcMethod,
-          derivationPath,
-          network
-        })
+        const parsedTypedData = await this.parseTypedDataRequest(signingData)
+        return ledgerSigner.signTypedData(
+          parsedTypedData.domain,
+          parsedTypedData.types,
+          parsedTypedData.message
+        )
       } else if (
-        rpcMethod === RpcMethod.ETH_SIGN ||
-        rpcMethod === RpcMethod.PERSONAL_SIGN
+        signingData.type === RpcMethod.ETH_SIGN ||
+        signingData.type === RpcMethod.PERSONAL_SIGN
       ) {
-        return this.handleEthAndPersonalSign({
-          data,
-          derivationPath,
-          network
-        })
+        return ledgerSigner.signMessage(signingData.data)
       } else {
         throw new Error('This function is not supported on your wallet')
       }
@@ -1483,120 +1215,6 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  private getCChainSignature = async ({
-    transport,
-    derivationPath,
-    unsignedTx
-  }: {
-    transport: TransportBLE
-    derivationPath: string
-    unsignedTx: string
-  }): Promise<SignatureRSV> => {
-    // Use Avalanche app for Avalanche C-Chain
-    const avaxApp = new AppAvax(transport as Transport)
-    Logger.info('Created Avalanche app instance')
-
-    // Verify we can get the correct address
-    Logger.info('Getting address from Ledger')
-    const addressResult = await avaxApp.getETHAddress(derivationPath)
-    Logger.info('Got address from Ledger:', addressResult.address)
-
-    // Resolve transaction metadata for clear signing (NFTs, ERC-20s, plugins).
-    // Without this, the Ledger device falls back to blind signing.
-    let resolution
-    try {
-      resolution = await ledgerService.resolveTransaction(
-        unsignedTx,
-        {},
-        { nft: true, erc20: true, externalPlugins: true }
-      )
-      Logger.info('Resolved C-Chain transaction for clear signing:', resolution)
-    } catch (error) {
-      Logger.warn(
-        'Failed to resolve C-Chain transaction, using empty resolution',
-        error
-      )
-      resolution = {
-        externalPlugin: [],
-        erc20Tokens: [],
-        nfts: [],
-        plugin: [],
-        domains: []
-      }
-    }
-
-    // Sign with Avalanche app
-    Logger.info('Signing transaction with Avalanche app')
-    const signature = await avaxApp.signEVMTransaction(
-      derivationPath,
-      unsignedTx,
-      resolution
-    )
-
-    if (!signature) {
-      throw new Error('signEVMTransaction returned undefined')
-    }
-
-    Logger.info('Got signature from Avalanche app:', signature)
-    return signature
-  }
-
-  private getEvmSignature = async ({
-    transport,
-    derivationPath,
-    unsignedTx
-  }: {
-    transport: TransportBLE
-    derivationPath: string
-    unsignedTx: string
-  }): Promise<SignatureRSV> => {
-    // Use Ethereum app for other EVM chains
-    const ethApp = new Eth(transport as Transport)
-    Logger.info('Created Ethereum app instance')
-
-    // Verify we can get the correct address
-    Logger.info('Getting address from Ledger')
-    const addressResult = await ethApp.getAddress(derivationPath)
-    Logger.info('Got address from Ledger:', addressResult.address)
-
-    // Resolve transaction metadata for clear signing (NFTs, ERC-20s, plugins).
-    // Without this, the Ledger device falls back to blind signing.
-    let resolution
-    try {
-      resolution = await ledgerService.resolveTransaction(
-        unsignedTx,
-        {},
-        { nft: true, erc20: true, externalPlugins: true }
-      )
-      Logger.info('Resolved transaction for clear signing:', resolution)
-    } catch (error) {
-      Logger.warn(
-        'Failed to resolve transaction for clear signing, falling back to blind signing',
-        error
-      )
-    }
-
-    // Sign with Ethereum app
-    Logger.info('Signing transaction with Ethereum app')
-    const result = await ethApp.signTransaction(
-      derivationPath,
-      unsignedTx,
-      resolution ?? null
-    )
-
-    if (!result) {
-      throw new Error('signTransaction returned undefined')
-    }
-
-    const signature = {
-      r: result.r,
-      s: result.s,
-      v: result.v
-    }
-    Logger.info('Got signature from Ethereum app:', signature)
-    return signature
-  }
-
   private handleAppConnection = async (
     appType: LedgerAppType
   ): Promise<TransportBLE> => {
@@ -1630,13 +1248,5 @@ export class LedgerWallet implements Wallet {
       }
       throw error
     }
-  }
-
-  // Convert signature to hex format (0x-prefixed)
-  private getHexSignature = (signature: SignatureRSV): string => {
-    const r = signature.r.padStart(64, '0')
-    const s = signature.s.padStart(64, '0')
-    const v = signature.v.toString(16).padStart(2, '0')
-    return `0x${r}${s}${v}`
   }
 }
