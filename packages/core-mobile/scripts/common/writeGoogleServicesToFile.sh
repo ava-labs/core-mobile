@@ -33,5 +33,11 @@ data=$1
 output_file=$2
 format=$3
 
+# Check if the secret value is empty
+if [ -z "$data" ]; then
+    echo "Error: Failed to retrieve secret value"
+    exit 1
+fi
+
 # Call the write_to_file function
 write_to_file "$data" "$output_file" "$format"
