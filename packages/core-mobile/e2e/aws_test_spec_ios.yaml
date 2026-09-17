@@ -74,9 +74,9 @@ phases:
       - echo "--- Test package contents ---"
       - ls -la $DEVICEFARM_TEST_PACKAGE_PATH
       - |
-        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
-          echo "Found nested e2e-appium dir, entering it"
-          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" ]; then
+          echo "Found nested e2e dir, entering it"
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e"
         else
           cd "$DEVICEFARM_TEST_PACKAGE_PATH"
         fi
@@ -136,7 +136,7 @@ phases:
         TEAM_ID=$(security find-identity -v -p codesigning 2>/dev/null | grep -Eo '\([A-Z0-9]{10}\)' | tr -d '()' | head -1)
         echo "WDA signing team ID: ${TEAM_ID:-not found}"
         if [ -n "$TEAM_ID" ]; then
-          DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+          DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
           printf '\nexport XCODE_ORG_ID="%s"\n' "${TEAM_ID}" >> "${DF_ENV_DIR}/.df_env"
           XCCONFIG_FILE="/tmp/wda-signing.xcconfig"
           printf 'DEVELOPMENT_TEAM = %s\nCODE_SIGN_IDENTITY = iPhone Developer\nCODE_SIGN_STYLE = Automatic\nIPHONEOS_DEPLOYMENT_TARGET = 16.0\n' "${TEAM_ID}" > "$XCCONFIG_FILE"
@@ -150,7 +150,7 @@ phases:
       - |-
         echo "--- Setting up Device Farm pre-signed WDA ---"
         env | grep -i 'DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH' 2>/dev/null || echo "No pre-signed WDA env vars found"
-        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
         APPIUM_DRIVER_VERSION=$(appium driver list --installed --json 2>/dev/null | jq -r ".xcuitest.version" 2>/dev/null | cut -d "." -f 1 || echo "")
         CORRESPONDING_WDA=$(env | grep "DEVICEFARM_APPIUM_WDA_DERIVED_DATA_PATH_V${APPIUM_DRIVER_VERSION}" 2>/dev/null | head -1 || true)
         if [[ -n "$APPIUM_DRIVER_VERSION" ]] && [[ -n "$CORRESPONDING_WDA" ]]; then
@@ -168,7 +168,7 @@ phases:
           echo "WARNING: No Device Farm pre-signed WDA available"
         fi
       - |-
-        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
+        DF_ENV_DIR=$([ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" ] && echo "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" || echo "$DEVICEFARM_TEST_PACKAGE_PATH")
         printf '\nexport E2E="true"\n' >> "${DF_ENV_DIR}/.df_env"
         echo "Exported E2E=true to .df_env"
       - echo "=== PRE_TEST PHASE DONE ==="
@@ -182,8 +182,8 @@ phases:
         NODE_DIR="/tmp/node-v22.15.0-${NODE_ARCH}"
         [ -d "$NODE_DIR" ] && export PATH="${NODE_DIR}/bin:$PATH" && echo "Node 20 PATH restored: $(node --version)" || true
       - |
-        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium" ]; then
-          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e-appium"
+        if [ -d "$DEVICEFARM_TEST_PACKAGE_PATH/e2e" ]; then
+          cd "$DEVICEFARM_TEST_PACKAGE_PATH/e2e"
         else
           cd "$DEVICEFARM_TEST_PACKAGE_PATH"
         fi

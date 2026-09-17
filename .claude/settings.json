@@ -11,8 +11,8 @@
       "Bash(find:*)",
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(npx tsc:*)",
-      "Bash(node_modules/.bin/tsc --noEmit --project e2e-appium/tsconfig.json)",
-      "Bash(node packages/core-mobile/node_modules/.bin/tsc --noEmit --project packages/core-mobile/e2e-appium/tsconfig.json)",
+      "Bash(node_modules/.bin/tsc --noEmit --project e2e/tsconfig.json)",
+      "Bash(node packages/core-mobile/node_modules/.bin/tsc --noEmit --project packages/core-mobile/e2e/tsconfig.json)",
       "Bash(echo \"EXIT: $?\")",
       "mcp__ide__getDiagnostics"
     ]

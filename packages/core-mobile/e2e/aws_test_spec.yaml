@@ -38,10 +38,10 @@ phases:
       # Install the NodeJS dependencies from the extracted test package.
       # The test package is a zip file that gets extracted to $DEVICEFARM_TEST_PACKAGE_PATH
       - cd $DEVICEFARM_TEST_PACKAGE_PATH
-      # If the zip contains an e2e-appium folder, navigate into it
+      # If the zip contains an e2e folder, navigate into it
       - |
-        if [ -d "e2e-appium" ]; then
-          cd e2e-appium
+        if [ -d "e2e" ]; then
+          cd e2e
         fi
       # Deterministic install: package-lock.json is bundled with the test zip (commit it when deps change).
       - npm ci --omit=dev
@@ -104,10 +104,10 @@ phases:
       # Your test package is downloaded and unpackaged into the $DEVICEFARM_TEST_PACKAGE_PATH directory.
       # Dependencies were installed in install phase (npm ci). Run tests from the extracted package.
       - cd $DEVICEFARM_TEST_PACKAGE_PATH
-      # If the zip contains an e2e-appium folder, navigate into it
+      # If the zip contains an e2e folder, navigate into it
       - |
-        if [ -d "e2e-appium" ]; then
-          cd e2e-appium
+        if [ -d "e2e" ]; then
+          cd e2e
         fi
       - echo "Starting the Appium NodeJS test"
       - node --version

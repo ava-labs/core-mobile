@@ -1,397 +1,346 @@
-/* eslint-disable max-params */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/*eslint max-params: ["error", 4]*/
-
 import assert from 'assert'
-import { element, waitFor } from 'detox'
-import { Platform } from './constants'
-import Constants from './constants'
-import delay from './waits'
-const fs = require('fs')
+import { ChainablePromiseElement } from 'webdriverio'
+import { selectors } from './selectors'
 
-const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
-  //currently works only with android
-  const availableBalance: any = await getAttributes(balance, index)
-  return parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
-}
+/**
+ * First fulfillment wins; rejects only if both reject (Promise.any semantics for two promises).
+ * Avoids Promise.race + side .catch: the loser can still reject later and confuse loggers.
+ */
+function firstFulfillment<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let done = false
+    let rejectCount = 0
+    let firstError: unknown
 
-const tap = async (item: Detox.NativeMatcher, enableSync = false) => {
-  await waitForElement(item)
-  if (enableSync) {
-    // some tests are not working with the desync mode, so we need to enable it
-    await device.enableSynchronization()
-  }
-  await element(item).tap()
-}
-
-const waitAndTap = async (
-  item: Detox.NativeMatcher,
-  timeout = 1000,
-  enableSync = false
-) => {
-  await delay(timeout)
-  await tap(item, enableSync)
-}
-
-const tapAtXAndY = async (
-  item: Detox.NativeMatcher,
-  xOffset = 0,
-  yOffset = 0
-) => {
-  await waitForElement(item)
-  await element(item).tap({ x: xOffset, y: yOffset })
-}
-
-const multiTap = async (
-  item: Detox.NativeMatcher,
-  count: number,
-  index: number
-) => {
-  await waitForElement(item, 10000, index)
-  await element(item).atIndex(index).multiTap(count)
-}
-
-const tapElementAtIndex = async (
-  item: Detox.NativeMatcher,
-  num: number,
-  timeout = 10000
-) => {
-  await waitForElement(item, timeout, num)
-  await element(item).atIndex(num).tap()
-}
-
-const longPress = async (item: Detox.NativeMatcher, duration = 100) => {
-  await waitForElement(item)
-  await element(item).longPress(duration)
-  await delay(1000)
-}
-
-const setColumnToValue = async (
-  item: Detox.NativeMatcher,
-  index: number,
-  value: string
-) => {
-  await element(item).setColumnToValue(index, value)
-}
-
-const setInputText = async (
-  item: Detox.NativeMatcher,
-  value: string,
-  index?: number
-) => {
-  if (index === undefined) {
-    await waitForElement(item)
-    await element(item).replaceText(value)
-  } else {
-    await waitForElement(item, 10000, index)
-    await element(item).atIndex(index).replaceText(value)
-  }
-}
-
-const dismissKeyboard = async (searchBarId = 'search_bar') => {
-  if (platform() === Platform.iOS) {
-    try {
-      await element(by.id(searchBarId)).tapReturnKey()
-    } catch (e) {
-      await element(by.label('done')).atIndex(0).tap()
+    const onFulfill = (v: T) => {
+      if (done) return
+      done = true
+      resolve(v)
     }
-  } else {
-    await device.pressBack()
-  }
-}
-
-// sunsetting this method because it's not working for the reuse state
-// const waitForElement = async (
-//   item: Detox.NativeMatcher,
-//   timeout = 5000,
-//   index = 0
-// ) => {
-//   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
-// }
-
-const waitForElement = async (
-  item: Detox.NativeMatcher,
-  timeout = 10000,
-  index = 0
-) => {
-  const startTime = Date.now()
-  await device.disableSynchronization()
-  while (Date.now() - startTime < timeout) {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
-      return
-    } catch (error: any) {
-      await new Promise(resolve => setTimeout(resolve, 500))
+    const onReject = (err: unknown) => {
+      if (done) return
+      if (rejectCount === 0) {
+        firstError = err
+      }
+      rejectCount += 1
+      if (rejectCount === 2) {
+        done = true
+        reject(firstError)
+      }
     }
+
+    a.then(onFulfill).catch(onReject)
+    b.then(onFulfill).catch(onReject)
+  })
+}
+
+async function type(element: ChainablePromiseElement, text: string | number) {
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(`Cannot type undefined or null value. Received: ${text}`)
   }
-  console.error(
-    `Element not visible within timeout: matcher=${JSON.stringify(
-      item
-    )} index=${index}`
-  )
-  throw new Error(
-    `Element not visible within timeout: matcher=${JSON.stringify(
-      item
-    )} index=${index}`
-  )
-}
 
-const failIfElementAppearsWithin = async (
-  item: Detox.NativeMatcher,
-  timeout = 5000,
-  index = 0
-): Promise<void> => {
-  const startTime = Date.now()
-
-  while (Date.now() - startTime < timeout) {
-    try {
-      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
-      // if the element is visible, throw an error
-      throw new Error('Element became visible before timeout')
-    } catch (e: any) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-    }
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to type empty string')
   }
-}
 
-const waitForElementNotVisible = async (
-  item: Detox.NativeMatcher,
-  timeout = 5000,
-  index = 0
-) => {
-  const startTime = Date.now()
+  await waitFor(element)
 
-  while (Date.now() - startTime < timeout) {
-    try {
-      await waitFor(element(item).atIndex(index))
-        .not.toBeVisible()
-        .withTimeout(500)
-      return
-    } catch (error: any) {
-      await new Promise(resolve => setTimeout(resolve, 200))
-    }
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch {
+    console.log(
+      'Warning: Could not click element before typing, continuing anyway'
+    )
   }
-  console.error('Error: Element visible within timeout')
-  throw new Error('Element visible within timeout')
-}
 
-const getRandomEle = (items: any[]): any => {
-  return items[Math.floor(Math.random() * items.length)]
-}
-
-const getRandomIndex = (itemsLength: number): number => {
-  return Math.floor(Math.random() * itemsLength)
-}
-
-const getAttributes = async (item: any, index = 0) => {
-  return await element(item).atIndex(index).getAttributes()
-}
-
-const getElementsTextByTestId = async (testID: string): Promise<string[]> => {
-  const output: string[] = []
-  const elements = await getElementsByTestId(testID)
-  for (const ele of elements) {
-    const curr = await ele.getAttributes()
-    if (!('elements' in curr) && curr.text) output.push(curr.text)
-  }
-  console.log(output)
-  return output
-}
-
-const getElementText = async (
-  item: Detox.NativeMatcher,
-  timeout = 2000,
-  index = 0
-) => {
-  await waitForElement(item, timeout, index)
-  const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    try {
-      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
-      const eleAttr = await element(item).getAttributes()
-      console.log('elements attributes: ', eleAttr)
-      if (!('elements' in eleAttr)) {
-        return eleAttr.text
-      } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
-    } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch {
+    // If clearValue fails, try selecting all and deleting
+    if (driver.isAndroid) {
+      try {
+        // 29 = KEYCODE_A, 4096 = META_CTRL_ON (Ctrl+A = select all)
+        await driver.pressKeyCode(29, 4096)
+        await driver.pause(100)
+        await driver.pressKeyCode(67) // Delete
+        await driver.pause(200)
+      } catch {
+        // Continue anyway
       }
     }
   }
-  return ''
+
+  // Use setValue for both platforms since we've already cleared the value
+  // setValue is more reliable for TextInputs with children components
+  await element.setValue(textToType)
+
+  // Small pause to ensure text is processed
+  await driver.pause(300)
 }
 
-const getElementsByTestId = async (testID: string) => {
-  // Query for the first element with the given testID
-  const elements: Detox.NativeElement[] = []
-  let elementFound = await isVisible(by.id(testID), 0)
-  // Continue looping until no more elements are found
-  while (elementFound) {
-    // Add the found element to the array
-    elements.push(element(by.id(testID)).atIndex(elements.length))
-    // Try to find the next element with the same testID
-    elementFound = await isVisible(by.id(testID), elements.length)
-    // await element(by.id(testID)).atIndex(elements.length).scrollTo('top')
+async function tapNumberPad(keyCode: string) {
+  for (const char of keyCode.split('')) {
+    if (driver.isIOS) {
+      const iosPath = `-ios predicate string:label == "${char}" AND type == "XCUIElementTypeKey"`
+      await selectors.getByXpath(iosPath).click()
+    } else {
+      await driver.execute('mobile: type', { text: char })
+    }
   }
-  return elements
 }
 
-const isVisible = async (
-  item: Detox.NativeMatcher,
-  index = 0,
-  timeout = 10000
-) => {
+// getText == targetText
+async function verifyElementText(
+  ele: ChainablePromiseElement,
+  targetText: string
+) {
+  const eleText = await ele.getText()
+  const eleSelector = await ele.selector
+  assert.equal(
+    eleText,
+    targetText,
+    `${eleSelector} text is "${eleText}" !== "${targetText}"`
+  )
+}
+
+async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
   try {
-    await waitForElement(item, timeout, index)
-    return true
-  } catch (e) {
-    console.log('Element is not visible ' + e)
+    await firstFulfillment(
+      ele.waitForExist({ timeout }),
+      ele.waitForDisplayed({ timeout })
+    )
+  } catch {
+    await ele.waitForDisplayed({ timeout })
+    return
+  }
+}
+
+async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
+  await ele.waitForDisplayed({ timeout })
+}
+
+async function isVisible(ele: ChainablePromiseElement) {
+  const visible = await ele.isDisplayed()
+  const eleSelector = await ele.selector
+  console.log(`[${eleSelector}] visible? TRUE ===`, visible)
+  assert.equal(visible, true, `${eleSelector} is not visible`)
+  return visible
+}
+
+async function isNotVisible(ele: ChainablePromiseElement) {
+  const visible = await ele.isDisplayed()
+  const eleSelector = await ele.selector
+  console.log(`[${eleSelector}] NOT visible? FALSE ===`, visible)
+  assert.equal(visible, false, `${eleSelector} is still visible`)
+  return visible
+}
+
+async function waitForNotVisible(
+  ele: ChainablePromiseElement,
+  timeout = 20000
+) {
+  await firstFulfillment(
+    ele.waitForDisplayed({ timeout, reverse: true }),
+    ele.waitForExist({ timeout, reverse: true })
+  )
+  const eleSelector = await ele.selector
+  console.log(`[${eleSelector}] is not visible as expected`)
+}
+
+async function getVisible(ele: ChainablePromiseElement) {
+  return (await ele.isDisplayed()) || (await ele.isExisting())
+}
+
+/**
+ * Check if element is visible within timeout.
+ * Waits up to `timeout` ms using WebdriverIO's display polling; returns false on timeout or error.
+ */
+async function isElementVisible(
+  element: ChainablePromiseElement,
+  timeout = 2000
+): Promise<boolean> {
+  try {
+    await element.waitForDisplayed({ timeout })
+    return await element.isDisplayed()
+  } catch {
     return false
   }
 }
 
-const swipeUp = async (
-  item: Detox.NativeMatcher,
-  speed: Detox.Speed,
-  normalizedOffset: number,
-  index: number
-) => {
-  return await element(item).atIndex(index).swipe('up', speed, normalizedOffset)
+/**
+ * Check if biometric toggle is ON (visible “on” testID within timeout).
+ */
+async function isBiometricToggleOn(timeout = 1500): Promise<boolean> {
+  const toggleOn = selectors.getById('toggle_biometrics_on')
+  return isElementVisible(toggleOn, timeout)
 }
 
-const swipeDown = async (
-  item: Detox.NativeMatcher,
-  speed: Detox.Speed,
-  normalizedOffset: number,
-  index: 0
-) => {
-  return await element(item)
-    .atIndex(index)
-    .swipe('down', speed, normalizedOffset)
-}
-
-const swipe = async (
-  item: Detox.NativeMatcher,
-  direction: Detox.Direction,
-  speed: Detox.Speed = 'slow',
-  offset = 0.25,
-  index = 0
-) => {
-  await element(item).atIndex(index).swipe(direction, speed, offset)
-}
-
-const swipeLeft = async (
-  item: Detox.NativeMatcher,
-  speed: Detox.Speed,
-  normalizedOffset: number,
-  index: number
-) => {
-  return await element(item)
-    .atIndex(index)
-    .swipe('left', speed, normalizedOffset)
-}
-
-const platform = () => {
-  return device.getPlatform()
-}
-
-const getCurrentDateTime = () => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-
-  return `${year}-${month}-${day}  ${hours}:${minutes}:${seconds}`
-}
-
-const scrollToBottom = async (scrollView: Detox.NativeMatcher) => {
-  await waitForElement(scrollView)
-  await detox.element(scrollView).scrollTo('bottom')
-}
-
-const scrollToTop = async (scrollView: Detox.NativeMatcher) => {
-  await waitForElement(scrollView)
-  await detox.element(scrollView).scrollTo('top')
-}
-
-const scrollListUntil = async (
-  scrollToItem: Detox.NativeMatcher,
-  scrollList: Detox.NativeMatcher,
-  scrollPixel: number,
-  direction: Detox.Direction = 'down'
-) => {
-  await waitForElement(scrollList)
-  await waitFor(element(scrollToItem))
-    .toBeVisible()
-    .whileElement(scrollList)
-    .scroll(scrollPixel, direction)
-}
-
-async function writeQrCodeToFile(clipboardValue: string) {
-  fs.writeFile(
-    './e2e/tests/dapps/playwright/qr_codes.txt',
-    clipboardValue,
-    (err: any) => {
-      if (err) throw err
-    }
+async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
+  const selected = await ele.isSelected()
+  const eleSelector = await ele.selector
+  assert.equal(
+    selected,
+    targetBool,
+    `${eleSelector} is ${targetBool ? 'selected' : 'not selected'}`
   )
+  return selected
 }
 
-const clearTextInput = async (item: Detox.NativeMatcher, index = 0) => {
-  await element(item).atIndex(index).clearText()
+async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
+  const enabled = await ele.isEnabled()
+  const eleSelector = await ele.selector
+  assert.equal(
+    enabled,
+    targetBool,
+    `${eleSelector} is ${targetBool ? 'enabled' : 'disabled'}`
+  )
+  return enabled
 }
 
-async function waitForCondition(func: any, condition: any, timeout = 5000) {
-  let isFulfilled = false
-
-  const start = Date.now()
-  while (Date.now() - start < timeout) {
-    try {
-      if (condition(await func())) {
-        isFulfilled = true
-        break
+async function tap(
+  ele: ChainablePromiseElement | undefined,
+  expectedEle?: ChainablePromiseElement
+) {
+  if (ele) {
+    await waitFor(ele)
+    await ele.waitForEnabled()
+    await delay(1000)
+    await ele.click()
+    const selector = await ele.selector
+    console.log(`Tapped "${selector}"`)
+    if (expectedEle) {
+      try {
+        await waitFor(expectedEle)
+      } catch {
+        if (await getVisible(ele)) {
+          await ele.click()
+          console.log(`Tapped again "${selector}"`)
+        } else {
+          console.log(`Skipping tap on "${selector}" because it is not visible`)
+        }
       }
-    } catch (error) {
-      console.error(`Error in waitForCondition: ${error}`)
     }
-    await new Promise(resolve => setTimeout(resolve, 100))
   }
-  assert(isFulfilled)
 }
 
-const drag = async (
-  item: Detox.NativeMatcher,
-  direction: Detox.Direction = 'down',
-  percentage = 0.2,
-  index = 0
-) => {
-  await delay(1000)
-  await waitForElement(item, 10000, index)
-  await element(item).atIndex(index).longPress()
-  await element(item).atIndex(index).swipe(direction, 'fast', percentage)
+async function longPress(
+  ele: ChainablePromiseElement | undefined,
+  expectedEle?: ChainablePromiseElement
+) {
+  if (ele) {
+    await waitFor(ele)
+    await ele.waitForEnabled()
+    await delay(1000)
+    await ele.longPress()
+    const selector = await ele.selector
+    console.log(`longPress "${selector}"`)
+    if (expectedEle) {
+      try {
+        await waitFor(expectedEle)
+      } catch {
+        await ele.longPress()
+        console.log(`longPress again "${selector}"`)
+      }
+    }
+  }
+}
+
+async function click(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  await ele.waitForEnabled()
+  await ele.click()
+  const selector = await ele.selector
+  console.log(`Clicked ${selector}`)
+}
+
+async function dismissKeyboard(id = 'Return') {
+  if (driver.isIOS) {
+    try {
+      await click(selectors.getById(id))
+    } catch {
+      await click(selectors.getById('Done'))
+    }
+  } else {
+    await driver.hideKeyboard()
+  }
   await delay(1000)
 }
 
-const dragTo = async (
-  fromEle: Detox.NativeMatcher,
-  targetEle: Detox.NativeMatcher,
-  targetOffset: [number, number] // [targetOffsetX, targetOffsetY]
-) => {
-  await element(fromEle).longPressAndDrag(
-    500,
-    NaN,
-    NaN,
-    element(targetEle),
-    targetOffset[0],
-    targetOffset[1],
-    'fast',
-    0
+async function tapEnterOnKeyboard(id = 'Return') {
+  if (driver.isIOS) {
+    try {
+      await click(selectors.getById(id))
+    } catch {
+      await click(selectors.getById('Done'))
+    }
+  } else {
+    await driver.pressKeyCode(66)
+  }
+}
+
+async function getText(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  return await ele.getText()
+}
+
+async function swipe(
+  direction: string,
+  percent: number,
+  ele: ChainablePromiseElement
+) {
+  await waitFor(ele)
+  if (driver.isIOS) {
+    await driver.execute('mobile: swipe', {
+      direction: direction,
+      percent: percent
+    })
+  } else {
+    const { width, height } = await driver.getWindowSize()
+    await driver.execute('mobile: swipeGesture', {
+      left: 0,
+      top: Math.floor(height * 0.2),
+      width,
+      height: Math.floor(height * 0.6),
+      direction: direction,
+      percent: percent
+    })
+  }
+}
+
+async function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Drags an element by the specified offset.
+ *
+ * Scroll direction guide (based on finger gesture):
+ * - Negative y offset [0, -200]: Drag UP → Scroll DOWN (reveals content below)
+ * - Positive y offset [0, 200]: Drag DOWN → Scroll UP (reveals content above)
+ *
+ * @param ele - The element to drag
+ * @param targetOffset - [x, y] offset from current position
+ * @param duration - Duration of the drag gesture in ms (default: 500)
+ */
+async function dragAndDrop(
+  ele: ChainablePromiseElement,
+  targetOffset: [number, number],
+  duration = 500
+) {
+  await ele.dragAndDrop(
+    {
+      x: targetOffset[0],
+      y: targetOffset[1]
+    },
+    { duration }
   )
 }
 
@@ -401,58 +350,194 @@ const getAmount = (amount: string | undefined): number => {
   } else return 0
 }
 
-const isWithinTolerance = (
-  baseValue: number,
-  targetValue: number,
-  tolerance: number
-) => {
-  const result =
-    Math.abs(baseValue - Math.abs(targetValue)) <= baseValue * (tolerance / 100)
-  console.log(
-    `baseValue: ${baseValue}, targetValue: ${targetValue}, result: ${result}`
-  )
-  return result
+async function clearText(ele: ChainablePromiseElement) {
+  await ele.clearValue()
 }
 
-const shuffleArray = <T>(array: T[]): T[] =>
-  array.sort(() => Math.random() - 0.5)
+async function scrollTo(
+  ele: ChainablePromiseElement,
+  direction = 'down',
+  amount = 0.1
+) {
+  const { width, height } = await driver.getWindowSize()
+  for (let i = 0; i < 10; i++) {
+    if (await ele.isDisplayed().catch(() => false)) return
+    if (driver.isIOS) {
+      // iOS `mobile: swipe` direction = finger direction (opposite of scroll direction)
+      // 'down' scroll intent → finger moves 'up', and vice versa
+      const iosDirection = direction === 'down' ? 'up' : 'down'
+      await driver.execute('mobile: swipe', {
+        direction: iosDirection,
+        percent: amount
+      })
+    } else {
+      await driver.execute('mobile: scrollGesture', {
+        left: 0,
+        top: Math.floor(height * 0.2),
+        width,
+        height: Math.floor(height * 0.4),
+        direction,
+        percent: 0.3
+      })
+    }
+  }
+  await waitFor(ele)
+}
 
-export default {
-  balanceToNumber,
-  tap,
-  tapAtXAndY,
-  multiTap,
-  longPress,
-  waitForElement,
-  waitForElementNotVisible,
-  failIfElementAppearsWithin,
-  waitForCondition,
-  tapElementAtIndex,
-  getAttributes,
-  swipeUp,
-  swipeDown,
-  swipeLeft,
-  swipe,
-  setColumnToValue,
-  setInputText,
-  platform,
+async function log() {
+  const src = await driver.getPageSource()
+  console.log('Printing page source...')
+  console.log(src)
+  console.log('...done')
+}
+
+async function verifyText(text: string, ele: ChainablePromiseElement) {
+  const eleText = await ele.getText()
+  const eleSelector = await ele.selector
+  assert.equal(
+    eleText,
+    text,
+    `${eleSelector} text is "${eleText}" !== "${text}"`
+  )
+}
+
+async function pasteText(
+  inputElement: ChainablePromiseElement,
+  text: string,
+  keyboardId = 'Return'
+) {
+  await waitFor(inputElement)
+
+  if (driver.isIOS) {
+    const encodedText = Buffer.from(text, 'utf-8').toString('base64')
+    await driver.setClipboard(encodedText)
+    await inputElement.longPress({ x: 0, y: 0, duration: 600 })
+    await click(selectors.getByText('Paste'))
+  } else {
+    await type(inputElement, text)
+  }
+  try {
+    await tapEnterOnKeyboard(keyboardId)
+  } catch {
+    console.log('Warning: Could not tap Enter on keyboard, continuing anyway')
+  }
+}
+
+async function tapXY(x: number, y: number) {
+  await driver.performActions([
+    {
+      type: 'pointer',
+      id: 'finger1',
+      parameters: { pointerType: 'touch' },
+      actions: [
+        { type: 'pointerMove', duration: 0, x, y },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pause', duration: 100 },
+        { type: 'pointerUp', button: 0 }
+      ]
+    }
+  ])
+}
+
+async function typeSlowly(
+  element: ChainablePromiseElement,
+  text: string | number
+) {
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(
+      `Cannot typeSlowly undefined or null value. Received: ${text}`
+    )
+  }
+
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to typeSlowly empty string')
+  }
+
+  await waitFor(element)
+
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch {
+    console.log(
+      'Warning: Could not click element before typeSlowly, continuing anyway'
+    )
+  }
+
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch {
+    // Continue anyway
+  }
+
+  if (driver.isAndroid) {
+    await driver.execute('mobile: type', { text: textToType })
+    await driver.pause(200)
+    return
+  }
+
+  // Character-by-character input so PIN fields / masked inputs get per-keystroke events (setValue alone can skip that).
+  const perCharMs = 55
+  for (const char of textToType) {
+    await element.addValue(char)
+    await driver.pause(perCharMs)
+  }
+  await driver.pause(200)
+}
+
+async function assertPerformance(start: number, expectedTime = 20000) {
+  const end = performance.now()
+  const totalTime = end - start
+  const passed = totalTime <= expectedTime
+  console.log(
+    `${passed ? 'PASSED' : 'FAILED'} | ${totalTime.toFixed(
+      0
+    )}ms (limit: ${expectedTime}ms)`
+  )
+  assert.equal(
+    passed,
+    true,
+    `Performed within ${expectedTime}ms: ${totalTime.toFixed(0)}ms`
+  )
+}
+
+export const actions = {
+  type,
+  typeSlowly,
+  pasteText,
+  tapNumberPad,
+  verifyElementText,
+  waitFor,
+  waitForDisplayed,
   isVisible,
-  getCurrentDateTime,
-  writeQrCodeToFile,
-  scrollListUntil,
-  getElementsByTestId,
-  getElementsTextByTestId,
+  isNotVisible,
+  isSelected,
+  isEnabled,
+  tap,
+  longPress,
+  click,
   dismissKeyboard,
-  getElementText,
-  clearTextInput,
-  drag,
-  dragTo,
-  shuffleArray,
-  scrollToBottom,
-  scrollToTop,
+  tapEnterOnKeyboard,
+  getText,
+  swipe,
+  dragAndDrop,
+  delay,
+  getVisible,
+  clearText,
+  scrollTo,
+  log,
   getAmount,
-  getRandomEle,
-  getRandomIndex,
-  isWithinTolerance,
-  waitAndTap
+  verifyText,
+  tapXY,
+  waitForNotVisible,
+  assertPerformance,
+  isElementVisible,
+  isBiometricToggleOn
 }

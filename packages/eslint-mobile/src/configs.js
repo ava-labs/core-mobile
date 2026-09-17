@@ -19,7 +19,6 @@ const recommended = {
     'eslint-comments',
     '@typescript-eslint',
     'import',
-    'detox',
     'promise',
     'sonarjs'
   ],
@@ -68,7 +67,6 @@ const recommended = {
     {
       files: ['*.ts', '*.js'],
       env: {
-        'detox/detox': true,
         jest: true,
         'jest/globals': true
       }

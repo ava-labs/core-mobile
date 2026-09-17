@@ -9,13 +9,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Script is in packages/core-mobile/scripts/devicefarm/
 # So we need to go up 2 levels to get to packages/core-mobile
 CORE_MOBILE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-E2E_DIR="$CORE_MOBILE_DIR/e2e-appium"
+E2E_DIR="$CORE_MOBILE_DIR/e2e"
 OUTPUT_DIR="$E2E_DIR"
 ZIP_NAME="appium-tests-devicefarm.zip"
 
 echo "📦 Packaging Appium tests for AWS Device Farm..."
 
-# Change to e2e-appium directory
+# Change to e2e directory
 cd "$E2E_DIR"
 
 # Clean previous builds
@@ -48,8 +48,8 @@ cp wdio.devicefarm.conf.ts wdio.conf.ts
 # Create zip file directly with all test files
 echo "🗜️  Creating zip file for AWS Device Farm..."
 if [[ ! -f package-lock.json ]]; then
-  echo "❌ e2e-appium/package-lock.json is missing (required for deterministic npm ci on Device Farm)." >&2
-  echo "   From e2e-appium: npm install" >&2
+  echo "❌ e2e/package-lock.json is missing (required for deterministic npm ci on Device Farm)." >&2
+  echo "   From e2e: npm install" >&2
   exit 1
 fi
 
