@@ -30,6 +30,7 @@ export const SegmentedControl = ({
   dynamicItemWidth,
   style,
   type = 'default',
+  height,
   backgroundColor
 }: {
   items: { title: string; badge?: JSX.Element }[]
@@ -38,6 +39,7 @@ export const SegmentedControl = ({
   dynamicItemWidth: boolean
   style?: ViewStyle
   type?: 'default' | 'thin'
+  height?: number
   backgroundColor?: string
 }): JSX.Element | null => {
   const { theme } = useTheme()
@@ -170,7 +172,7 @@ export const SegmentedControl = ({
           {items.map((item, index) => {
             return (
               <Segment
-                sx={{ height: type === 'thin' ? 36 : 42 }}
+                sx={{ height: height ?? (type === 'thin' ? 36 : 42) }}
                 key={index}
                 ratio={dynamicItemWidth ? textRatios : 1 / itemsCount}
                 text={item.title}
