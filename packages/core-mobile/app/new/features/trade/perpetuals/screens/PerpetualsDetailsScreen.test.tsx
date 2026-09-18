@@ -47,6 +47,18 @@ jest.mock('../components/MarketStatistics', () => ({
   MarketStatistics: () => null
 }))
 
+jest.mock('../components/MarketHistory', () => {
+  const rn = require('react-native') as typeof import('react-native')
+  const r = require('react') as typeof import('react')
+  return {
+    MarketHistory: ({ coin }: { coin: string }) =>
+      r.createElement(rn.View, {
+        testID: 'market-history',
+        accessibilityLabel: coin
+      })
+  }
+})
+
 jest.mock('../components/PerpsGeoRestrictionWarning', () => {
   const rn = require('react-native') as typeof import('react-native')
   const r = require('react') as typeof import('react')
@@ -158,5 +170,16 @@ describe('PerpetualsDetailsScreen footer', () => {
     expect(
       instance.root.findAllByProps({ testID: 'sliding-button' })
     ).toHaveLength(0)
+  })
+
+  it('renders the market history section for the current coin', async () => {
+    mockUsePerpsAvailability.mockReturnValue({
+      isGeoBlocked: false,
+      isLoading: false
+    })
+    const instance = await render()
+    const history = instance.root.findAllByProps({ testID: 'market-history' })
+    expect(history.length).toBeGreaterThan(0)
+    expect(history[0]?.props.accessibilityLabel).toBe('BTC')
   })
 })

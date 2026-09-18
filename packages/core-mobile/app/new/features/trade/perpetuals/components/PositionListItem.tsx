@@ -7,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { formatRelativeDateTime } from 'common/utils/formatRelativeDateTime'
 import React from 'react'
 import { PositionEntry } from '../types'
 import { PerpsCoinLogo } from './PerpsCoinLogo'
@@ -113,9 +114,7 @@ export const PositionListItem = ({
               color: alpha(theme.colors.$textPrimary, 0.6),
               textAlign: 'right'
             }}>
-            {entry.dateLabel}
-            {'\n'}
-            {entry.timeLabel}
+            {formatRelativeDateTime(entry.timestamp)}
           </Text>
         </View>
       </View>

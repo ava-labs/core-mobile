@@ -203,17 +203,19 @@ const PlainComponent = ({
 export const StatusArrow = ({
   sx,
   status,
-  size
+  size,
+  color
 }: {
   sx?: SxProp
   status: PriceChangeStatus
   size: number
+  color?: string
 }): JSX.Element => {
   return (
     <View sx={sx}>
       {status === PriceChangeStatus.Down ? (
         <Icons.Custom.TrendingArrowDown
-          color={colors.$accentDanger}
+          color={color ?? colors.$accentDanger}
           width={size}
           height={size}
         />
@@ -221,7 +223,7 @@ export const StatusArrow = ({
         <Icons.Custom.TrendingArrowUp
           width={size}
           height={size}
-          color={colors.$accentTeal}
+          color={color ?? colors.$accentTeal}
         />
       ) : null}
     </View>
