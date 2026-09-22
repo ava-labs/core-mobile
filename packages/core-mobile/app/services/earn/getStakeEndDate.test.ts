@@ -66,6 +66,15 @@ describe('getStakeEndDate', () => {
       })
   })
 
+  it('leads the mainnet presets with the ACP-273 2-day minimum', () => {
+    expect(DURATION_OPTIONS_WITH_DAYS_MAINNET[0]).toEqual({
+      title: StakeDurationTitle.TWO_DAYS,
+      numberOfDays: 2,
+      stakeDurationFormat: StakeDurationFormat.Day,
+      stakeDurationValue: 2
+    })
+  })
+
   it('calculates end date in weeks', () => {
     const result = getStakeEndDate({
       startDateUnix,

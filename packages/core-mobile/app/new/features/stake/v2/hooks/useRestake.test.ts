@@ -58,7 +58,7 @@ jest.mock('services/analytics/AnalyticsService', () => ({
 jest.mock('services/earn/utils', () => ({
   getStakingConfig: () => ({
     MinDelegationFee: 20000n, // permillion → 2%
-    MinStakeDuration: 14 * 24 * 60 * 60 // seconds → 14 days
+    MinStakeDuration: 2 * 24 * 60 * 60 // seconds → 2 days (ACP-273)
   })
 }))
 
@@ -165,7 +165,7 @@ describe('useRestake', () => {
     // toggle off (the baseline filters underneath; the sheet shows none on).
     const seeded = createDefaultDelegateFilters({
       minFeePercent: 2,
-      minStakeDays: 14
+      minStakeDays: 2
     })
     expect(useDelegateFilters.getState().defaults).toEqual(seeded)
     expect(useDelegateFilters.getState().filters).toEqual(

@@ -94,7 +94,7 @@ export enum StakeDurationFormat {
 
 export enum StakeDurationTitle {
   ONE_DAY = '1 Day',
-  TWO_WEEKS = '2 Weeks',
+  TWO_DAYS = '2 Days',
   ONE_MONTH = '1 Month',
   THREE_MONTHS = '3 Months',
   SIX_MONTHS = '6 Months',
@@ -128,11 +128,11 @@ export const ONE_DAY = {
 // are labels only, and `stakeDurationValue` must equal `numberOfDays`.
 // They used to be calendar-based (`addMonths(6)` etc.), which made a
 // "6 Months / 180 days" selection produce a 181-184 day stake (CP-14723).
-export const TWO_WEEKS = {
-  title: StakeDurationTitle.TWO_WEEKS,
-  numberOfDays: 14,
+export const TWO_DAYS = {
+  title: StakeDurationTitle.TWO_DAYS,
+  numberOfDays: 2,
   stakeDurationFormat: StakeDurationFormat.Day,
-  stakeDurationValue: 14
+  stakeDurationValue: 2
 } as const
 
 export const ONE_MONTH = {
@@ -166,11 +166,11 @@ export const ONE_YEAR = {
 export const CUSTOM = {
   title: StakeDurationTitle.CUSTOM,
   stakeDurationFormat: StakeDurationFormat.Custom,
-  stakeDurationValue: 14
+  stakeDurationValue: 2
 } as const
 
 export const DURATION_OPTIONS_WITH_DAYS_MAINNET: DurationOptionWithDays[] = [
-  TWO_WEEKS,
+  TWO_DAYS,
   ONE_MONTH,
   THREE_MONTHS,
   SIX_MONTHS,

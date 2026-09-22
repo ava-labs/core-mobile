@@ -83,7 +83,7 @@ export const MainnetParams = {
     MaxValidatorStake: MegaAvax * 3n,
     MinDelegatorStake: Avax * 25n,
     MinDelegationFee: 20000n, // 2%
-    MinStakeDuration: 2 * 7 * 24 * Hour,
+    MinStakeDuration: 2 * 24 * Hour, // 48 hours (ACP-273)
     MaxStakeDuration: 31536000n,
     RewardConfig: {
       MaxConsumptionRate: 0.12,

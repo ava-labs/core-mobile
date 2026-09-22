@@ -30,8 +30,8 @@ export const getStakingConfig = (isDeveloperMode: boolean): StakingConfig => {
 
 export const getMinimumStakeDurationMs = (isDeveloperMode: boolean): number => {
   const oneDay = 24 * 60 * 60 * 1000
-  const twoWeeks = 14 * 24 * 60 * 60 * 1000
-  return isDeveloperMode ? oneDay : twoWeeks
+  const twoDays = 2 * 24 * 60 * 60 * 1000 // mainnet minimum (ACP-273)
+  return isDeveloperMode ? oneDay : twoDays
 }
 
 export const getMinimumStakeEndTime = (
@@ -40,7 +40,7 @@ export const getMinimumStakeEndTime = (
 ): UTCDate => {
   return isDeveloperMode
     ? add(stakeStartTime, { hours: 24 })
-    : add(stakeStartTime, { weeks: 2 })
+    : add(stakeStartTime, { days: 2 })
 }
 
 export const getMaximumStakeEndDate = (): UTCDate => {

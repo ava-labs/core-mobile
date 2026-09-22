@@ -118,14 +118,14 @@ describe('WalletService', () => {
         await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Start date must be in future: ')
     })
-    it('should throw if staking duration is less than 2 weeks for Mainnet', async () => {
-      const twoWeeks = 14 * 24 * 60 * 60
+    it('should throw if staking duration is less than 2 days for Mainnet', async () => {
+      const twoDays = 2 * 24 * 60 * 60
       const twoSeconds = 2
       const params = {
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(25e9),
         startDate: validStartDate,
-        endDate: validStartDate + twoWeeks - twoSeconds,
+        endDate: validStartDate + twoDays - twoSeconds,
         isTestnet: false
       } as AddDelegatorProps
       await expect(async () => {
