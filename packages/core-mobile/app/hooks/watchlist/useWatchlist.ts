@@ -137,6 +137,10 @@ export const useWatchlist = (): UseWatchListReturnType => {
 
   const getMarketTokenBySymbol = useCallback(
     (symbol: string): MarketToken | undefined => {
+      // Typed as `string`, but balance tokens on unsupported chains can have
+      // a null symbol at runtime (CP-15075).
+      if (!symbol) return undefined
+
       const targetSymbol = symbol.toLowerCase().trim()
 
       return allTokens.find(
@@ -161,7 +165,12 @@ export const useWatchlist = (): UseWatchListReturnType => {
       const contractTokenAddress = isNetworkContractToken(token)
         ? token.address.toLowerCase()
         : undefined
-      const targetSymbol = token.symbol.toLowerCase().trim()
+      // Same null-symbol runtime shape as getMarketTokenBySymbol (CP-15075);
+      // leave targetSymbol undefined so id/contract-address matching above
+      // still runs, only the symbol fallback below is skipped.
+      const targetSymbol = token.symbol
+        ? token.symbol.toLowerCase().trim()
+        : undefined
 
       return allTokens.find(marketToken => {
         // First try to match by internal id
@@ -179,7 +188,10 @@ export const useWatchlist = (): UseWatchListReturnType => {
         }
 
         // Finally, fallback to matching by symbol (not ideal, but better than nothing)
-        return marketToken.symbol.toLowerCase().trim() === targetSymbol
+        return (
+          targetSymbol !== undefined &&
+          marketToken.symbol.toLowerCase().trim() === targetSymbol
+        )
       })
     },
     [allTokens]
