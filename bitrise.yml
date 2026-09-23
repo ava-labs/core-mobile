@@ -113,6 +113,17 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_APK_PATH=$BITRISE_APK_PATH
@@ -170,6 +181,17 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_APK_PATH=$BITRISE_APK_PATH
@@ -277,6 +299,17 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_IPA_PATH:BITRISE_IPA_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_IPA_PATH=$BITRISE_IPA_PATH
