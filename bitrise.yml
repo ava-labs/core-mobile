@@ -211,7 +211,9 @@ workflows:
     steps:
     - activate-build-cache-for-react-native@1:
         inputs:
-        - gradle_cache_enabled: "false"
+        # "gradle" toggle also gates ccache, which is what caches the
+        # C++ native modules (Nitro, Hermes, RN codegen) on iOS too.
+        - gradle_cache_enabled: "true"
         - no_swift_cache: "true"
     - brew-install@1:
         inputs:
@@ -283,7 +285,9 @@ workflows:
     steps:
     - activate-build-cache-for-react-native@1:
         inputs:
-        - gradle_cache_enabled: "false"
+        # "gradle" toggle also gates ccache, which is what caches the
+        # C++ native modules (Nitro, Hermes, RN codegen) on iOS too.
+        - gradle_cache_enabled: "true"
         - no_swift_cache: "true"
     - brew-install@1:
         inputs:
