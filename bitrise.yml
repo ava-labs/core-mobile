@@ -35,16 +35,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: aab
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: $ANDROID_GRADLE_ARGS
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -89,16 +89,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: apk
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -146,16 +146,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: apk
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -209,6 +209,10 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - gradle_cache_enabled: "false"
+        - no_swift_cache: "true"
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
@@ -231,7 +235,7 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-archive@6.0.1:
+    - xcode-archive@6.1.2:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
@@ -277,6 +281,10 @@ workflows:
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
   _build-ios-simulator:
     steps:
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - gradle_cache_enabled: "false"
+        - no_swift_cache: "true"
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
@@ -301,7 +309,7 @@ workflows:
             #!/usr/bin/env bash
             set -euo pipefail
 
-            xcodebuild \
+            bitrise-build-cache react-native run xcodebuild \
               -workspace $IOS_PROJECT_PATH \
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
