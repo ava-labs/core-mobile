@@ -12,7 +12,7 @@ import {
 } from './slice'
 import { Appearance, ColorSchemeName } from './types'
 
-const handleAppearanceChange = (
+export const handleAppearanceChange = (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): void => {
@@ -29,16 +29,25 @@ const handleAppearanceChange = (
       ? 'light'
       : (RnAppearance.getColorScheme() as ColorSchemeName)
 
-  switch (appearance) {
-    case Appearance.System:
-      setThemePreference('system')
-      break
-    case Appearance.Dark:
-      setThemePreference('dark')
-      break
-    case Appearance.Light:
-      setThemePreference('light')
-      break
+  // Developer (testnet) mode forces the JS color scheme to dark above, so the
+  // native night mode has to be forced with it. Leaving it on the user's
+  // appearance makes Android draw native surfaces light while React draws dark
+  // - most visibly the formSheet modals, whose sheet background is native
+  // chrome we can't paint from JS, so it showed through as a white header.
+  if (isDeveloperMode) {
+    setThemePreference('dark')
+  } else {
+    switch (appearance) {
+      case Appearance.System:
+        setThemePreference('system')
+        break
+      case Appearance.Dark:
+        setThemePreference('dark')
+        break
+      case Appearance.Light:
+        setThemePreference('light')
+        break
+    }
   }
 
   if (currentColorScheme !== colorScheme) {
