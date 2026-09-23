@@ -9,6 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
@@ -154,7 +155,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
                     {truncateAddress(item.address, 16)}
                   </Text>
                 ),
-                leftIcon: <TokenLogo symbol={item.symbol} size={24} />
+                leftIcon: <TokenLogo symbol={item.symbol} size={24} />,
+                onPress: () => copyToClipboard(item.address, 'Address copied')
               }))}
             />
 

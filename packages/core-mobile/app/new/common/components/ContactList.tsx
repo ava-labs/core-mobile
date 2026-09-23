@@ -1,6 +1,7 @@
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { SearchBar, View } from '@avalabs/k2-alpine'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -63,6 +64,9 @@ export const ContactList = ({
           }}
           isLast={isLastItem}
           onPress={() => onPress(item)}
+          onLongPress={() =>
+            address && copyToClipboard(address, 'Address copied')
+          }
           showArrow
         />
       )

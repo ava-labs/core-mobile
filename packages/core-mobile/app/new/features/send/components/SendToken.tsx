@@ -2,7 +2,7 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { TokenUnit, truncateAddress } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Avatar,
@@ -18,7 +18,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { CopyableAddress } from 'common/components/CopyableAddress'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { Platform } from 'react-native'
@@ -279,18 +279,13 @@ export const SendToken = ({
               </Text>
             )}
             {addressToSendWithoutPrefix && (
-              <Text
-                variant="mono"
-                numberOfLines={1}
+              <CopyableAddress
+                address={addressToSendWithoutPrefix}
                 sx={{
                   fontSize: 13,
                   color: colors.$textSecondary
-                }}>
-                {truncateAddress(
-                  addressToSendWithoutPrefix,
-                  TRUNCATE_ADDRESS_LENGTH
-                )}
-              </Text>
+                }}
+              />
             )}
           </View>
           {recipientAvatar?.source !== undefined && (

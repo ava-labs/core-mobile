@@ -16,6 +16,7 @@ import { ListScreen } from 'common/components/ListScreen'
 import { ListViewItem } from 'common/components/ListViewItem'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
@@ -262,6 +263,7 @@ const ContactListItem = ({
       }}
       isLast={isLast}
       onPress={() => onSelectContact(item)}
+      onLongPress={() => address && copyToClipboard(address, 'Address copied')}
       showArrow
     />
   )

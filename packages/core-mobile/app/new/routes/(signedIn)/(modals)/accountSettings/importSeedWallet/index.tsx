@@ -1,10 +1,10 @@
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   DerivationPath,
   getWalletFromMnemonic
 } from '@avalabs/core-wallets-sdk'
 import { Button, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
+import { CopyableAddress } from 'common/components/CopyableAddress'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import {
@@ -175,12 +175,10 @@ const ImportSeedWallet = (): React.JSX.Element => {
                     alignItems: 'center',
                     gap: 8
                   }}>
-                  <Text
+                  <CopyableAddress
+                    address={item.address}
                     sx={{ color: colors.$textPrimary, fontSize: 16 }}
-                    variant="mono"
-                    selectable>
-                    {truncateAddress(item.address, 10)}
-                  </Text>
+                  />
                 </View>
                 {index < derivedAddresses.length - 1 && (
                   <View

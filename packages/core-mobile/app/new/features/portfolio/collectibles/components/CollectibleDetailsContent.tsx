@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useAvatar } from 'common/hooks/useAvatar'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
@@ -62,6 +63,15 @@ export const CollectibleDetailsContent = forwardRef<
         ? truncateAddress(collectible?.address, TRUNCATE_ADDRESS_LENGTH)
         : collectible?.address
       : 'Unknown'
+  }, [collectible?.address])
+
+  // `createdBy` is a truncated contract address, and truncation drops the
+  // characters from the view entirely — a tap has to give them back.
+  const handleCopyCreatedBy = useCallback((): void => {
+    const address = collectible?.address
+    if (address) {
+      copyToClipboard(address, 'Address copied')
+    }
   }, [collectible?.address])
 
   const canRefreshMetadata = useMemo(() => {
@@ -160,7 +170,8 @@ export const CollectibleDetailsContent = forwardRef<
             data={[
               {
                 title: `Created by`,
-                value: createdBy
+                value: createdBy,
+                onPress: handleCopyCreatedBy
               }
             ]}
             valueSx={{

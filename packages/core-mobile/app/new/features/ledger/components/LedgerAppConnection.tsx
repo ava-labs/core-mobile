@@ -4,6 +4,7 @@ import { Text, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { copyToClipboard } from 'common/utils/clipboard'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import {
@@ -93,12 +94,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // C-Chain/EVM address (derived from avalanche keys)
     if (keysByNetwork?.avalancheKeys?.addresses.evm) {
+      const evmAddress = keysByNetwork.avalancheKeys.addresses.evm
       addresses.push({
         title: AVALANCHE_MAINNET_NETWORK.chainName,
-        subtitle: truncateAddress(
-          keysByNetwork.avalancheKeys.addresses.evm,
-          TRUNCATE_ADDRESS_LENGTH
-        ),
+        subtitle: truncateAddress(evmAddress, TRUNCATE_ADDRESS_LENGTH),
+        onPress: () => copyToClipboard(evmAddress, 'Address copied'),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}
@@ -119,16 +119,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // X/P Chain address
     if (keysByNetwork?.avalancheKeys?.addresses.pvm) {
+      const xpAddress = stripAddressPrefix(
+        keysByNetwork.avalancheKeys.addresses.pvm
+      )
       const xpNetwork = {
         ...AVALANCHE_XP_NETWORK,
         chainName: ChainName.AVALANCHE_XP
       }
       addresses.push({
         title: xpNetwork.chainName,
-        subtitle: truncateAddress(
-          stripAddressPrefix(keysByNetwork.avalancheKeys.addresses.pvm),
-          TRUNCATE_ADDRESS_LENGTH
-        ),
+        subtitle: truncateAddress(xpAddress, TRUNCATE_ADDRESS_LENGTH),
+        onPress: () => copyToClipboard(xpAddress, 'Address copied'),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}
@@ -149,16 +150,15 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // Bitcoin address
     if (keysByNetwork?.avalancheKeys?.addresses.btc) {
+      const btcAddress = keysByNetwork.avalancheKeys.addresses.btc
       const bitcoinNetwork = {
         ...BITCOIN_NETWORK,
         chainName: ChainName.BITCOIN
       }
       addresses.push({
         title: bitcoinNetwork.chainName,
-        subtitle: truncateAddress(
-          keysByNetwork.avalancheKeys.addresses.btc,
-          TRUNCATE_ADDRESS_LENGTH
-        ),
+        subtitle: truncateAddress(btcAddress, TRUNCATE_ADDRESS_LENGTH),
+        onPress: () => copyToClipboard(btcAddress, 'Address copied'),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}
@@ -189,6 +189,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       addresses.push({
         title: NETWORK_SOLANA.chainName,
         subtitle: truncateAddress(solanaAddress, TRUNCATE_ADDRESS_LENGTH),
+        onPress: () => copyToClipboard(solanaAddress, 'Address copied'),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}

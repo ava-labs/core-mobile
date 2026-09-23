@@ -22,6 +22,7 @@ export const ListViewItem = ({
   titleProps,
   subtitleProps,
   onPress,
+  onLongPress,
   renderLeft,
   renderTop,
   renderTitle,
@@ -37,6 +38,8 @@ export const ListViewItem = ({
   titleProps?: TextProps & { variant?: TextVariant }
   subtitleProps?: TextProps & { variant?: TextVariant }
   onPress: () => void
+  /** Rows that show a truncated address use this to copy the full value. */
+  onLongPress?: () => void
   renderLeft?: () => React.ReactNode
   renderTop?: () => React.ReactNode
   renderTitle?: () => React.ReactNode
@@ -120,7 +123,8 @@ export const ListViewItem = ({
         paddingLeft: 16,
         minHeight: 60
       }}
-      onPress={onPress}>
+      onPress={onPress}
+      onLongPress={onLongPress}>
       {renderLeftComponent()}
 
       <View

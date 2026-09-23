@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   alpha,
@@ -20,7 +19,7 @@ import {
 import { getEnabledNetworksForAccount } from 'features/portfolio/utils/getEnabledNetworksForAccount'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { CopyableAddress } from 'common/components/CopyableAddress'
 import { useSelector } from 'react-redux'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { selectAccountById } from 'store/account'
@@ -281,14 +280,13 @@ const AccountItem = ({
             }}>
             {account.name}
           </Text>
-          <Text
-            variant="mono"
+          <CopyableAddress
+            address={account.addressC}
             sx={{
               fontSize: 12,
               color: alpha(colors.$textPrimary, 0.6)
-            }}>
-            {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-          </Text>
+            }}
+          />
         </View>
         <View
           style={{
