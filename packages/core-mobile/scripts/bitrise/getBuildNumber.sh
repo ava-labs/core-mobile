@@ -6,9 +6,8 @@ set -o pipefail
 
 # when a pipeline starts, it triggers both iOS and Android workflows
 # in order for iOS and Android to have different build numbers, we increment build number by 1 for Android
-#
 if [ "$PLATFORM" = "iOS" ]; then
-  buildNumber=$BITRISE_BUILD_NUMBER
+  buildNumber=$BITRISE_BUILD_NUMBER       
 else
   buildNumber=$((BITRISE_BUILD_NUMBER+1))
 fi
