@@ -35,16 +35,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: aab
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: $ANDROID_GRADLE_ARGS
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -89,16 +89,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: apk
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -113,6 +113,17 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_APK_PATH=$BITRISE_APK_PATH
@@ -146,16 +157,16 @@ workflows:
         title: Ensure Android SDK components
         inputs:
         - file_path: scripts/bitrise/ensureAndroidTools.sh
-    - restore-gradle-cache@1: {}
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        - xcode_cache_enabled: "false"
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: apk
-        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
         - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
-    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -170,6 +181,17 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_APK_PATH=$BITRISE_APK_PATH
@@ -209,6 +231,12 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        # "gradle" toggle also gates ccache, which is what caches the
+        # C++ native modules (Nitro, Hermes, RN codegen) on iOS too.
+        - gradle_cache_enabled: "true"
+        - no_swift_cache: "true"
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
@@ -231,7 +259,7 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-archive@6.0.1:
+    - xcode-archive@6.1.2:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
@@ -271,12 +299,29 @@ workflows:
         - pipeline_intermediate_files: |-
             $BITRISE_IPA_PATH:BITRISE_IPA_PATH
     - share-pipeline-variable@1:
+        # BITRISEIO_PIPELINE_ID is only set in pipeline builds. Without this
+        # guard a STANDALONE run of this workflow hard-fails here (HTTP 400 —
+        # there is no pipeline to share into) even though the build, sign and
+        # deploy steps all succeeded. Mirrors the guard already on _set-version.
+        #
+        # RISK: this turns a loud failure into a silent skip. If a genuine
+        # PIPELINE build ever loses BITRISEIO_PIPELINE_ID, the downstream
+        # workflow receives no variables and fails later with a confusing
+        # missing-artifact error rather than failing here. If a pipeline
+        # breaks that way, check this guard first.
+        run_if: '{{getenv "BITRISEIO_PIPELINE_ID" | ne ""}}'
         inputs:
         - variables: |-
             BITRISE_IPA_PATH=$BITRISE_IPA_PATH
             IS_EXTERNAL_BUILD=$IS_EXTERNAL_BUILD
   _build-ios-simulator:
     steps:
+    - activate-build-cache-for-react-native@1:
+        inputs:
+        # "gradle" toggle also gates ccache, which is what caches the
+        # C++ native modules (Nitro, Hermes, RN codegen) on iOS too.
+        - gradle_cache_enabled: "true"
+        - no_swift_cache: "true"
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
@@ -301,7 +346,7 @@ workflows:
             #!/usr/bin/env bash
             set -euo pipefail
 
-            xcodebuild \
+            bitrise-build-cache react-native run xcodebuild \
               -workspace $IOS_PROJECT_PATH \
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
