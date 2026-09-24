@@ -44,7 +44,7 @@ workflows:
         - module: $ANDROID_MODULE
         - build_type: aab
         - variant: $ANDROID_BUILD_VARIANT
-        - arguments: $ANDROID_GRADLE_ARGS -PappBuildNumber=$BUILD_NUMBER -PappVersionName=$APP_VERSION
+        - arguments: $ANDROID_GRADLE_ARGS
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -98,7 +98,7 @@ workflows:
         - module: $ANDROID_MODULE
         - build_type: apk
         - variant: $ANDROID_BUILD_VARIANT
-        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64 -PappBuildNumber=$BUILD_NUMBER -PappVersionName=$APP_VERSION
+        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -166,7 +166,7 @@ workflows:
         - module: $ANDROID_MODULE
         - build_type: apk
         - variant: $ANDROID_BUILD_VARIANT
-        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64 -PappBuildNumber=$BUILD_NUMBER -PappVersionName=$APP_VERSION
+        - arguments: -PreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86_64
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -486,6 +486,14 @@ workflows:
         run_if: '{{enveq "PLATFORM" "iOS"}}'      
         inputs:
         - file_path: scripts/bitrise/setiOSVersion.sh
+    - change-android-versioncode-and-versionname@1:
+        title: Set Android Version
+        run_if: '{{enveq "PLATFORM" "Android"}}'
+        inputs:
+        - new_version_name: $APP_VERSION
+        - version_code_offset: ""
+        - new_version_code: $BUILD_NUMBER
+        - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
     - share-pipeline-variable@1:
         # BITRISEIO_PIPELINE_ID is only set in pipeline builds; standalone builds skip this
         # (sharing has no target and hard-fails), while pipeline failures still fail the build.
