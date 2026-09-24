@@ -7,8 +7,33 @@ buildscript {
             minor: 0,
             patch: 0
         ]
-        appBuildNumber = 1
-        appVersionName = "${appVersion.major}.${appVersion.minor}.${appVersion.patch}"
+        // CP-15085: version identity arrives as Gradle PROPERTIES, not by rewriting
+        // this file. CI previously ran `change-android-versioncode-and-versionname`,
+        // which edited app/build.gradle in place every build. That changed the bytes
+        // of a Gradle BUILD SCRIPT on every run, invalidating everything downstream
+        // and capping the remote build-cache hit rate. As properties, a changed
+        // version only invalidates the tasks that actually consume it (manifest
+        // merge, BuildConfig) instead of the whole graph.
+        //
+        // RISKS:
+        //   1. THE FALLBACKS ARE DEV-ONLY. A CI build that fails to pass
+        //      -PappBuildNumber silently gets versionCode 1. Google Play rejects a
+        //      non-increasing version code, so a release would fail loudly at upload
+        //      rather than ship wrong — but an INTERNAL/test build would not fail,
+        //      it would just be mislabelled. If a build reports version 1 anywhere
+        //      it should not, a missing -P argument is the first thing to check.
+        //   2. BUILD NUMBERS ARE STILL UNIQUE PER BUILD. Anything keyed on version
+        //      (Datadog RUM dashboards in scripts/datadog/, crash grouping, TestRail)
+        //      keeps working exactly as before. Do not "simplify" this to a constant
+        //      to raise the cache hit rate — that silently corrupts those consumers.
+        //   3. Both properties are strings on the command line; appBuildNumber is
+        //      coerced to Integer here because versionCode must be numeric.
+        appBuildNumber = (project.hasProperty('appBuildNumber')
+            ? project.property('appBuildNumber').toString().toInteger()
+            : 1)
+        appVersionName = (project.hasProperty('appVersionName')
+            ? project.property('appVersionName').toString()
+            : "${appVersion.major}.${appVersion.minor}.${appVersion.patch}")
         buildToolsVersion = "36.0.0"
         minSdkVersion = 28
         compileSdkVersion = 36
