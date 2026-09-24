@@ -23,14 +23,18 @@ Read this before changing cache steps in `bitrise.yml`, `android/gradle.properti
 
 Measured on `android-internal-e2e` / `ios-internal-e2e`, medians of prior green builds as the baseline:
 
-| | Baseline | Warm |
-| --- | --- | --- |
-| `android-internal-e2e` total | 29.6 min | **12.6 min** |
-| → Android Build step | 23.8 min | **9.3 min** |
-| `ios-internal-e2e` total | 22.3 min | **13.5 min** |
-| → iOS Simulator build step | 14.7 min | **6.7 min** |
+| Workflow | Baseline | Warm | Warm-run evidence |
+| --- | --- | --- | --- |
+| `android-internal-e2e` | 29.6 min | **12.6 min** | ccache 1359/1359 (100%), Gradle 1147/3163 (36.5%) |
+| → Android Build step | 23.8 min | **9.3 min** | |
+| `ios-internal-e2e` | 22.3 min | **13.5 min** | Xcode 4595/4597 (100%) |
+| → iOS Simulator build step | 14.7 min | **6.7 min** | |
+| `android-internal` (aab, release) | 20.7 min | **16.1 min** | ccache 925/925 (100%) |
+| → Android Build step | 17.1 min | **11.5 min** | |
+| `ios-internal` (archive, release) | 16.1 min | **12.9 min** | 0 cache misses |
+| → Xcode Archive step | 10.7 min | **6.9 min** | |
 
-Warm-run cache counters: **ccache 1359/1359 (100%)**, Gradle 1147/3163 tasks (36.5%), Xcode 4595/4597 (100%).
+The release paths hit a smaller ccache set (925 vs 1359) because they build 2 ABIs where E2E builds 3 — a subset, so E2E runs pre-warm them.
 
 This confirms the CP-14966 diagnosis. Warm Gradle caching alone had reused ~1,149 tasks and moved wall-clock ~0 min because the critical path was the CMake/NDK C++ compile. The warm runs here reuse essentially the **same** 1,147 Gradle tasks, but paired with 100% ccache the clock collapses. **The C++ layer was the whole story.**
 
@@ -38,7 +42,8 @@ This confirms the CP-14966 diagnosis. Warm Gradle caching alone had reused ~1,14
 
 - **Build Cache runs a one-off benchmark phase per build tool.** The progression is `baseline` (cache deliberately disabled, analytics only) → `warmup` (cache on, populating) → warm. The first build after adoption is *supposed* to show zero cache activity. Judge from the third run, never the first.
 - **Each build tool tracks its phase separately.** Flipping `gradle_cache_enabled` on iOS restarted that tool's baseline while Xcode was already warm.
-- **The cache does not appear to span regions.** Bitrise schedules builds across EU and US non-deterministically (AMS1 / IAD1 / ORD1). A build landing in a region that has not populated the cache sees 0% hits and re-uploads everything. Each region warms independently — one cold build each, then it hits. If a build is inexplicably slow, check `BITRISE_DEN_VM_DATACENTER` before assuming a regression.
+- **The cache is keyed by region x workflow namespace, and does not span regions.** Bitrise runs three datacenters — AMS1 (EU), IAD1 and ORD1 (US) — and this workspace uses the **Global** distribution mode, so builds land wherever there is capacity. A build landing in a region that has not run *that workflow* before sees ~0% and re-uploads everything. With 3 datacenters x 4 workflow variants that is up to **12 combinations**, each needing one cold build. **The cost is one-time per combination, not recurring** — proven: IAD1 was cold on its first `android-internal-e2e` build (#9517, ccache 3.5%) and hit 100% on its second (#9521). If a build is inexplicably slow, check `BITRISE_DEN_VM_DATACENTER` before assuming a regression.
+- **Region can be pinned, and probably should be.** Bitrise offers EU-only / US-only / Global modes. **EU-only** would cut those 12 combinations to 4 and put every build on the fastest hardware (AMS1 runs Zen5 and M4/M4 Pro; ORD1 runs Zen4 and M2 Pro). US-only helps far less — the US is two datacenters. The setting is **not** exposed in the Bitrise v0.1 API (app, organization, settings and machine-types endpoints have no region field) and appears to be UI or support provisioned. Unknown, and worth confirming with Bitrise: whether cache entries have a TTL, since a rarely-used combination aging out would turn the one-time cost into a recurring one.
 - **Machine class varies with region too** (zen5 vs zen4, M4 vs M2 Pro), so wall-clock comparisons across regions are confounded. Compare the cache hit counters, which are not.
 - **Every workflow variant is its own cache namespace.** `_build-android` (aab, 2 ABIs) and `_build-android-internal-for-testing` (apk, 3 ABIs) do not share ccache entries. Each needs its own warm-up.
 - **`gradle_cache_enabled` also gates ccache**, including on iOS where there is no Gradle. Setting it `false` on the iOS workflows silently disabled C++ caching — the symptom was `Failed to create storage helper for ccache stats collection`.
