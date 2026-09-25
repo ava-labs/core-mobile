@@ -40,7 +40,7 @@ import {
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import { Curve } from 'utils/publicKeys'
-import { findPublicKey } from 'utils/publicKeys'
+import { findPublicKey, getEvmAccountIndices } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
 import { getAddressDerivationPath } from 'services/wallet/utils'
@@ -366,8 +366,10 @@ export default class SeedlessWallet implements Wallet {
     const publicKey = pubKeys.find(findPublicKey(derivationPath, curve))
 
     if (!publicKey) {
+      // Indices only, never key material: this message reaches Sentry.
+      const evmIndices = getEvmAccountIndices(pubKeys).join(', ')
       throw new Error(
-        `Public key not found for path: ${derivationPath} and curve: ${curve}`
+        `Public key not found for path: ${derivationPath} and curve: ${curve}. Stored EVM indices: [${evmIndices}]`
       )
     }
 

@@ -58,7 +58,8 @@ export const AllowedSentryBreadcrumbCategory = {
   ListenerMigration: 'listenerMigration',
   ListenerReconciler: 'listenerReconciler',
   FeeEstimationUserState: 'feeEstimationUserState',
-  LedgerApdu: 'ledgerApdu'
+  LedgerApdu: 'ledgerApdu',
+  SeedlessAddAccount: 'seedlessAddAccount'
 } as const
 
 export type AllowedSentryBreadcrumbCategory =
