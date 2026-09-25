@@ -5,7 +5,7 @@ import {
 } from '@avalabs/core-utils-sdk'
 import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import { useTestnetAwareMarketTokenBySymbol } from 'common/hooks/useTestnetAwareMarketToken'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { MaxUint256 } from 'ethers'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
@@ -120,7 +120,9 @@ export const SpendLimits = ({
       : 0
   const tokenSymbol = spendLimit?.tokenApproval.token.symbol
   const limitType = spendLimit?.limitType
-  const marketToken = useMarketTokenBySymbol({ symbol: tokenSymbol })
+  const marketToken = useTestnetAwareMarketTokenBySymbol({
+    symbol: tokenSymbol
+  })
 
   const [amount, amountInCurrency] = useMemo(() => {
     if (

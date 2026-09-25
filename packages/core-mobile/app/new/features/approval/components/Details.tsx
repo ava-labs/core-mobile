@@ -33,7 +33,7 @@ import {
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useTestnetAwareGetMarketTokenBySymbol } from 'common/hooks/useTestnetAwareMarketToken'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { copyToClipboard } from 'new/common/utils/clipboard'
 import { truncateNodeId } from 'utils/Utils'
@@ -52,7 +52,7 @@ export const Details = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { getMarketTokenBySymbol } = useWatchlist()
+  const getMarketTokenBySymbol = useTestnetAwareGetMarketTokenBySymbol()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatTokenInCurrency } = useFormatCurrency()
 

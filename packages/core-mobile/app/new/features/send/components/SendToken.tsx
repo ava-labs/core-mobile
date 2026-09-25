@@ -30,6 +30,7 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
@@ -63,6 +64,7 @@ export const SendToken = ({
   const [selectedToken] = useSendSelectedToken()
   const prevSelectedToken = usePrevious(selectedToken)
   const { getMarketTokenBySymbol } = useWatchlist()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors }
   } = useTheme()
@@ -359,8 +361,14 @@ export const SendToken = ({
             symbol: selectedToken?.symbol ?? ''
           }}
           balance={tokenBalance}
-          formatInCurrency={amt =>
-            formatInCurrency(amt, selectedToken?.symbol ?? '')
+          // Testnet funds have no market value, and the price lookup is by
+          // symbol, so Fuji AVAX would price at the mainnet rate (CP-15076).
+          // Omitting the prop drops the fiat line instead of leaving a blank
+          // row. Unlisted mainnet tokens keep their existing "0.00".
+          formatInCurrency={
+            isDeveloperMode
+              ? undefined
+              : amt => formatInCurrency(amt, selectedToken?.symbol ?? '')
           }
           onChange={setAmount}
           validateAmount={validateSendAmount}
