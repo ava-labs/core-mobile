@@ -13,7 +13,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType, Transaction } from 'store/transaction'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import { useTestnetAwareMarketTokenBySymbol } from 'common/hooks/useTestnetAwareMarketToken'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
@@ -32,7 +32,7 @@ export const TokenActivityListItem: FC<Props> = ({
   const { formatTokenInCurrency } = useFormatCurrency()
   const account = useSelector(selectActiveAccount)
   const { getNetwork } = useNetworks()
-  const currentPrice = useMarketTokenBySymbol({
+  const currentPrice = useTestnetAwareMarketTokenBySymbol({
     symbol: tx.tokens[0]?.symbol
   })?.currentPrice
 

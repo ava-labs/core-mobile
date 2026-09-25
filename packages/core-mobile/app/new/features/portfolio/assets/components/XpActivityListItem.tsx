@@ -4,7 +4,7 @@ import {
   TransactionType
 } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import { useTestnetAwareMarketTokenBySymbol } from 'common/hooks/useTestnetAwareMarketToken'
 import React, { FC, useMemo } from 'react'
 import { Transaction } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
@@ -31,7 +31,7 @@ export const XpActivityListItem: FC<Props> = ({
   const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
   const backgroundColor = colors.$borderPrimary
   const { formatTokenInCurrency } = useFormatCurrency()
-  const currentPrice = useMarketTokenBySymbol({
+  const currentPrice = useTestnetAwareMarketTokenBySymbol({
     symbol: tx.tokens[0]?.symbol
   })?.currentPrice
 
