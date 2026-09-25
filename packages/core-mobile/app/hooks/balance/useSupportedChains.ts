@@ -1,4 +1,3 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { getV1BalanceGetSupportedChains } from 'utils/api/generated/balanceApi.client'
@@ -26,18 +25,6 @@ export const fetchSupportedChains = async (): Promise<string[]> => {
   }
 
   return result.data.caip2Ids
-}
-
-/**
- * React Query hook for fetching supported chains.
- * Use this in React components.
- */
-export const useSupportedChains = (): UseQueryResult<string[], Error> => {
-  return useQuery({
-    queryKey: [ReactQueryKeys.BALANCE_SUPPORTED_CHAINS],
-    queryFn: fetchSupportedChains,
-    staleTime: STALE_TIME
-  })
 }
 
 /**
