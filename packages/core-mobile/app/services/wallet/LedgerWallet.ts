@@ -568,6 +568,7 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signAvalancheTransaction({
     accountIndex,
     transaction,
@@ -616,18 +617,15 @@ export class LedgerWallet implements Wallet {
 
     // Build signing paths from external indices
     // For C-chain: bip44 uses 0/<accountIndex> or Ledger Live always use 0/0 (first external address)
-    // For X/P-chain: 0/0 (the account's primary address) plus the external
-    // indices from UTXO analysis. 0/0 is always included, matching
-    // Avalanche.SimpleSigner: the indices come from the profile-service
-    // dictionary, which omits a primary address with no prior activity, so a
-    // UTXO it owns (e.g. a CCT import) would otherwise go unsigned (CP-15095).
+    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
     const externalIndices = transaction.externalIndices ?? []
+    const hasIndices = externalIndices.length > 0
     const signingPaths =
       chainAlias === 'C'
         ? this.isBIP44()
           ? [`0/${accountIndex}`]
           : ['0/0']
-        : [...new Set([0, ...externalIndices])].map(i => `0/${i}`)
+        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
 
     // Build change paths from internal indices
     const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
