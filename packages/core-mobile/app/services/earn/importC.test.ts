@@ -7,6 +7,8 @@ import { importC } from 'services/earn/importC'
 import { WalletType } from 'services/wallet/types'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { maxTransactionStatusCheckRetries } from 'services/earn/utils'
+import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 
 const testCBaseFeeMultiplier = 1
 
@@ -173,6 +175,34 @@ describe('earn/importC', () => {
         expect(getAtomicTxMockFn).toHaveBeenCalledTimes(
           maxTransactionStatusCheckRetries
         )
+      })
+
+      // Sentry groups by the inner error when one is passed, so 'importC
+      // failed' lands in an extra and every earn confirmation failure collapses
+      // into an indistinguishable "Max retry exceeded" bucket. Tags survive
+      // grouping, so they are what makes the leg identifiable.
+      it('should tag the confirmation failure so it is identifiable in Sentry', async () => {
+        jest.useFakeTimers()
+        const loggerSpy = jest
+          .spyOn(Logger, 'error')
+          .mockImplementation(() => undefined)
+        getAtomicTxMockFn.mockResolvedValue({ blockHeight: undefined })
+
+        const promise = importC(importCArgs)
+        promise.catch(() => undefined)
+
+        for (let retry = 0; retry < maxTransactionStatusCheckRetries; retry++) {
+          await jest.advanceTimersByTimeAsync(2 ** retry * 1000)
+        }
+        await expect(promise).rejects.toThrow('Import did not finish')
+
+        expect(loggerSpy).toHaveBeenCalledWith(
+          'importC failed',
+          expect.anything(),
+          { source: SentryTag.Earn, operation: 'importC' }
+        )
+
+        loggerSpy.mockRestore()
       })
     })
   })

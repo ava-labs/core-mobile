@@ -8,6 +8,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
@@ -98,7 +99,14 @@ export async function importC({
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
-    Logger.error('importC failed', e)
+    // Sentry groups by the passed error, which demotes this message to an
+    // extra and collapses every earn confirmation failure into one
+    // "Max retry exceeded" bucket. Tags survive grouping, so they are what
+    // makes this leg findable.
+    Logger.error('importC failed', e, {
+      source: SentryTag.Earn,
+      operation: 'importC'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',
       message: 'Import did not finish',

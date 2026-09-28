@@ -8,6 +8,7 @@ import { Account } from 'store/account/types'
 import { AvaxC } from 'types/AvaxC'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { weiToNano } from 'utils/units/converter'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
@@ -98,7 +99,14 @@ export async function exportC({
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
-    Logger.error('exportC failed', e)
+    // Sentry groups by the passed error, which demotes this message to an
+    // extra and collapses every earn confirmation failure into one
+    // "Max retry exceeded" bucket. Tags survive grouping, so they are what
+    // makes this leg findable.
+    Logger.error('exportC failed', e, {
+      source: SentryTag.Earn,
+      operation: 'exportC'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_EXPORT_FAIL',
       message: 'Export did not finish',
