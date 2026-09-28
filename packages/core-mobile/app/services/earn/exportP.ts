@@ -1,5 +1,6 @@
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import WalletService from 'services/wallet/WalletService'
 import { Account, XPAddressDictionary } from 'store/account'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -82,7 +83,10 @@ export async function exportP({
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
-    Logger.error('exportP failed', e)
+    Logger.error('exportP failed', e, {
+      source: SentryTag.Earn,
+      operation: 'exportP'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_EXPORT_FAIL',
       message: 'Export did not finish',

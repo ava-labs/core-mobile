@@ -79,7 +79,10 @@ export async function importC({
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
+    Logger.error('ISSUE_IMPORT_FAIL', e, {
+      source: SentryTag.Earn,
+      operation: 'importC'
+    })
     throw new FundsStuckError({
       name: 'ISSUE_IMPORT_FAIL',
       message: 'Sending import transaction failed ',
