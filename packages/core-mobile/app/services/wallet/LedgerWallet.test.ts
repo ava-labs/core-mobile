@@ -543,7 +543,7 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/9000'/0'",
-          ['0/3', '0/5', '0/7'], // Multiple UTXO signing paths
+          ['0/0', '0/3', '0/5', '0/7'], // 0/0 always included, plus UTXO signing paths
           expect.any(Buffer),
           undefined
         )
@@ -606,7 +606,28 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/9000'/0'",
-          ['0/2'],
+          ['0/0', '0/2'],
+          expect.any(Buffer),
+          undefined
+        )
+      })
+
+      it('should not duplicate 0/0 when externalIndices already contains 0 (CP-15095)', async () => {
+        const transaction: AvalancheTransactionRequest = {
+          tx: createPChainTx() as unknown as AvalancheTransactionRequest['tx'],
+          externalIndices: [3, 0]
+        }
+
+        await ledgerWallet.signAvalancheTransaction({
+          accountIndex: 2,
+          transaction,
+          network: mockNetwork,
+          provider: mockProvider
+        })
+
+        expect(mockSign).toHaveBeenCalledWith(
+          "m/44'/9000'/2'",
+          ['0/0', '0/3'],
           expect.any(Buffer),
           undefined
         )
