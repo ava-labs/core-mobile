@@ -1,7 +1,7 @@
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useTestnetAwareMarketTokenBySymbol } from 'common/hooks/useTestnetAwareMarketToken'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
@@ -116,7 +116,7 @@ export const SpendLimits = ({
       : 0
   const tokenSymbol = spendLimit?.tokenApproval.token.symbol
   const limitType = spendLimit?.limitType
-  const marketToken = useTestnetAwareMarketTokenBySymbol({
+  const marketToken = useMarketTokenBySymbol({
     symbol: tokenSymbol
   })
 

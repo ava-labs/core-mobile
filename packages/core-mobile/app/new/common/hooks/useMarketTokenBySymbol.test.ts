@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { MarketToken } from 'store/watchlist'
 import {
-  useTestnetAwareGetMarketTokenBySymbol,
-  useTestnetAwareMarketTokenBySymbol
-} from './useTestnetAwareMarketToken'
+  useGetMarketTokenBySymbol,
+  useMarketTokenBySymbol
+} from './useMarketTokenBySymbol'
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -37,16 +37,16 @@ jest.mock('hooks/watchlist/useWatchlist', () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('useTestnetAwareMarketToken', () => {
+describe('useMarketTokenBySymbol', () => {
   beforeEach(() => {
     mockState.isDeveloperMode = false
     jest.clearAllMocks()
   })
 
-  describe('useTestnetAwareMarketTokenBySymbol', () => {
+  describe('useMarketTokenBySymbol', () => {
     it('returns the market token on mainnet', () => {
       const { result } = renderHook(() =>
-        useTestnetAwareMarketTokenBySymbol({ symbol: 'AVAX' })
+        useMarketTokenBySymbol({ symbol: 'AVAX' })
       )
 
       expect(result.current).toBe(AVAX)
@@ -56,7 +56,7 @@ describe('useTestnetAwareMarketToken', () => {
       mockState.isDeveloperMode = true
 
       const { result } = renderHook(() =>
-        useTestnetAwareMarketTokenBySymbol({ symbol: 'AVAX' })
+        useMarketTokenBySymbol({ symbol: 'AVAX' })
       )
 
       expect(result.current).toBeUndefined()
@@ -64,7 +64,7 @@ describe('useTestnetAwareMarketToken', () => {
 
     it('returns undefined for an unknown symbol on mainnet', () => {
       const { result } = renderHook(() =>
-        useTestnetAwareMarketTokenBySymbol({ symbol: 'NOPE' })
+        useMarketTokenBySymbol({ symbol: 'NOPE' })
       )
 
       expect(result.current).toBeUndefined()
@@ -72,18 +72,16 @@ describe('useTestnetAwareMarketToken', () => {
 
     it('returns undefined when no symbol is given', () => {
       const { result } = renderHook(() =>
-        useTestnetAwareMarketTokenBySymbol({ symbol: undefined })
+        useMarketTokenBySymbol({ symbol: undefined })
       )
 
       expect(result.current).toBeUndefined()
     })
   })
 
-  describe('useTestnetAwareGetMarketTokenBySymbol', () => {
+  describe('useGetMarketTokenBySymbol', () => {
     it('resolves the market token on mainnet', () => {
-      const { result } = renderHook(() =>
-        useTestnetAwareGetMarketTokenBySymbol()
-      )
+      const { result } = renderHook(() => useGetMarketTokenBySymbol())
 
       expect(result.current('AVAX')).toBe(AVAX)
     })
@@ -91,9 +89,7 @@ describe('useTestnetAwareMarketToken', () => {
     it('resolves undefined in developer mode', () => {
       mockState.isDeveloperMode = true
 
-      const { result } = renderHook(() =>
-        useTestnetAwareGetMarketTokenBySymbol()
-      )
+      const { result } = renderHook(() => useGetMarketTokenBySymbol())
 
       expect(result.current('AVAX')).toBeUndefined()
     })
@@ -101,18 +97,14 @@ describe('useTestnetAwareMarketToken', () => {
     it('does not consult the watchlist at all in developer mode', () => {
       mockState.isDeveloperMode = true
 
-      const { result } = renderHook(() =>
-        useTestnetAwareGetMarketTokenBySymbol()
-      )
+      const { result } = renderHook(() => useGetMarketTokenBySymbol())
       result.current('AVAX')
 
       expect(mockGetMarketTokenBySymbol).not.toHaveBeenCalled()
     })
 
     it('returns a new getter when developer mode is toggled', () => {
-      const { result, rerender } = renderHook(() =>
-        useTestnetAwareGetMarketTokenBySymbol()
-      )
+      const { result, rerender } = renderHook(() => useGetMarketTokenBySymbol())
       const mainnetGetter = result.current
 
       mockState.isDeveloperMode = true
