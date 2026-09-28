@@ -664,11 +664,21 @@ class AvalancheWalletService {
 
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
+    // CP-15095: the profile service only returns addresses with X/P activity,
+    // so a never-used primary address is absent. getAddresses() feeds
+    // getAtomicUTXOs and the Fusion SDK's required-address check, so without
+    // it a C->P CCT exports to addressPVM and the import can't find the UTXO.
+    // Appended, not prepended, so xpAddresses[0] (getCurrentAddress) is stable.
+    const primaryXpAddress = stripAddressPrefix(account.addressPVM)
+    const allXpAddresses = xpAddresses.includes(primaryXpAddress)
+      ? xpAddresses
+      : [...xpAddresses, primaryXpAddress]
+
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      xpAddresses,
-      stripAddressPrefix(account.addressPVM),
+      allXpAddresses,
+      primaryXpAddress,
       provXP
     )
   }

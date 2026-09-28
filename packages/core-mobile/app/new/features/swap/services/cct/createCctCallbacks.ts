@@ -211,20 +211,7 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   const getWalletAddressesForChainAlias: CctCallbacks['getWalletAddressesForChainAlias'] =
     async chainAlias => {
       const signer = await getReadOnlySigner()
-      const addresses = signer.getAddresses(chainAlias)
-      // CP-15095: the SDK asserts the account's primary address (index-0,
-      // e.g. addressPVM) is present in this list, but xpAddresses only
-      // carries addresses with prior X/P activity, so a never-used primary
-      // address can be missing. "Change address" on Avalanche.AddressWallet is
-      // not a BIP44 internal-chain (.../1/N) address: the wallet holds no keys
-      // and getReadOnlySigner sets xpChangeAddress = account.addressPVM, so
-      // getChangeAddress() is that primary address run through the same
-      // provider.formatAddress as getAddresses(), which keeps the string
-      // comparison below exact. Append it when absent.
-      const primaryAddress = signer.getChangeAddress(chainAlias)
-      return addresses.includes(primaryAddress)
-        ? addresses
-        : [...addresses, primaryAddress]
+      return signer.getAddresses(chainAlias)
     }
 
   const getWalletChangeAddressForChainAlias: CctCallbacks['getWalletChangeAddressForChainAlias'] =
