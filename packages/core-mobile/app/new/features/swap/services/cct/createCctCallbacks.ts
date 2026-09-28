@@ -211,7 +211,16 @@ export const createCctCallbacks = (deps: CctCallbackDeps): CctCallbacks => {
   const getWalletAddressesForChainAlias: CctCallbacks['getWalletAddressesForChainAlias'] =
     async chainAlias => {
       const signer = await getReadOnlySigner()
-      return signer.getAddresses(chainAlias)
+      const addresses = signer.getAddresses(chainAlias)
+      // CP-15095: the SDK asserts the account's primary address (index-0,
+      // e.g. addressPVM) is present in this list, but xpAddresses only
+      // carries addresses with prior X/P activity, so a never-used primary
+      // address can be missing. That primary address is exposed here as the
+      // AddressWallet's change address, so append it when absent.
+      const changeAddress = signer.getChangeAddress(chainAlias)
+      return addresses.includes(changeAddress)
+        ? addresses
+        : [...addresses, changeAddress]
     }
 
   const getWalletChangeAddressForChainAlias: CctCallbacks['getWalletChangeAddressForChainAlias'] =

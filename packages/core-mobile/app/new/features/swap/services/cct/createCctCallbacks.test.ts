@@ -140,11 +140,13 @@ describe('createCctCallbacks', () => {
       expect(result).toBe('utxos')
     })
 
-    it('getWalletAddressesForChainAlias delegates to signer.getAddresses', async () => {
+    it('getWalletAddressesForChainAlias delegates to signer.getAddresses, appending the change address', async () => {
       const { getWalletAddressesForChainAlias } = createCctCallbacks(makeDeps())
       const result = await getWalletAddressesForChainAlias('P')
       expect(signer.getAddresses).toHaveBeenCalledWith('P')
-      expect(result).toEqual(['P-fuji1xxx', 'P-fuji1yyy'])
+      // CP-15095: getChangeAddress mocked above returns 'P-fuji1change',
+      // which isn't in getAddresses' list, so it gets appended.
+      expect(result).toEqual(['P-fuji1xxx', 'P-fuji1yyy', 'P-fuji1change'])
     })
 
     it('getWalletChangeAddressForChainAlias delegates to signer.getChangeAddress', async () => {
@@ -197,6 +199,59 @@ describe('createCctCallbacks', () => {
       await expect(getAtomicUtxos('P', 'C')).rejects.toThrow(
         /xpAddresses empty/
       )
+    })
+  })
+
+  describe('getWalletAddressesForChainAlias — CP-15095 required address', () => {
+    const signer = {
+      getAtomicUTXOs: jest.fn(),
+      getUTXOs: jest.fn(),
+      getAddresses: jest.fn(),
+      getChangeAddress: jest.fn()
+    }
+
+    beforeEach(() => {
+      mockedGetReadOnlySigner.mockResolvedValue(signer)
+    })
+
+    it('P: appends the change address when getAddresses lacks it', async () => {
+      signer.getAddresses.mockReturnValue(['P-fuji1aaa', 'P-fuji1bbb'])
+      signer.getChangeAddress.mockReturnValue('P-fuji1change')
+      const { getWalletAddressesForChainAlias } = createCctCallbacks(makeDeps())
+
+      const result = await getWalletAddressesForChainAlias('P')
+
+      expect(result).toEqual(['P-fuji1aaa', 'P-fuji1bbb', 'P-fuji1change'])
+    })
+
+    it('P: does not duplicate the change address when already present', async () => {
+      signer.getAddresses.mockReturnValue(['P-fuji1aaa', 'P-fuji1change'])
+      signer.getChangeAddress.mockReturnValue('P-fuji1change')
+      const { getWalletAddressesForChainAlias } = createCctCallbacks(makeDeps())
+
+      const result = await getWalletAddressesForChainAlias('P')
+
+      expect(result).toEqual(['P-fuji1aaa', 'P-fuji1change'])
+    })
+
+    it('X: appends the change address when getAddresses lacks it', async () => {
+      signer.getAddresses.mockReturnValue(['X-fuji1aaa', 'X-fuji1bbb'])
+      signer.getChangeAddress.mockReturnValue('X-fuji1change')
+      const { getWalletAddressesForChainAlias } = createCctCallbacks(makeDeps())
+
+      const result = await getWalletAddressesForChainAlias('X')
+
+      expect(result).toEqual(['X-fuji1aaa', 'X-fuji1bbb', 'X-fuji1change'])
+    })
+
+    it('C: returns exactly one address, no duplicate, when the change address equals getAddresses[0]', async () => {
+      signer.getAddresses.mockReturnValue(['C-coreEthAddress'])
+      signer.getChangeAddress.mockReturnValue('C-coreEthAddress')
+      const { getWalletAddressesForChainAlias } = createCctCallbacks(makeDeps())
+
+      const result = await getWalletAddressesForChainAlias('C')
+
+      expect(result).toEqual(['C-coreEthAddress'])
     })
   })
 
