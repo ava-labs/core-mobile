@@ -1,6 +1,5 @@
 import { evm, UnsignedTx } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -89,19 +88,15 @@ export async function importC({
   Logger.trace('txID', txID)
 
   try {
-    const { status } = await retry<evm.GetAtomicTxStatusResponse>({
-      operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      shouldStop: result =>
-        result.status === 'Accepted' || result.status === 'Dropped',
+    // The node sets blockHeight only once the atomic tx is accepted, and it
+    // serves Processing and Dropped txs without one, so its presence is the
+    // only acceptance signal available here. A tx the node has not indexed yet
+    // rejects outright, which retry() treats as another attempt.
+    await retry<evm.GetAtomicTxResponse>({
+      operation: () => avaxProvider.getApiC().getAtomicTx({ txID }),
+      shouldStop: result => result.blockHeight !== undefined,
       maxRetries: maxTransactionStatusCheckRetries
     })
-    if (status === 'Dropped') {
-      throw new ErrorBase({
-        name: 'IMPORT_DROPPED',
-        message: 'Import was dropped',
-        cause: new Error('Import was dropped')
-      })
-    }
   } catch (e) {
     Logger.error('importC failed', e)
     throw new FundsStuckError({

@@ -6,6 +6,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
 import { WalletType } from 'services/wallet/types'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { maxTransactionStatusCheckRetries } from 'services/earn/utils'
 
 const testCBaseFeeMultiplier = 1
 
@@ -14,8 +15,11 @@ describe('earn/importC', () => {
     const testXpAddresses = ['avax123', 'avax456']
 
     const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(250000e9))
-    const getAtomicTxStatusMockFn = jest.fn().mockReturnValue({
-      status: 'Accepted'
+    // The node only sets blockHeight once the atomic tx is accepted, so its
+    // presence is what confirms the import (avax.getAtomicTxStatus was removed
+    // from the node in avalanchego v1.15.0).
+    const getAtomicTxMockFn = jest.fn().mockResolvedValue({
+      blockHeight: 58717503n
     })
     jest.mock('services/network/NetworkService')
     jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue(
@@ -23,7 +27,7 @@ describe('earn/importC', () => {
         getApiC: () => {
           return {
             getBaseFee: baseFeeMockFn,
-            getAtomicTxStatus: getAtomicTxStatusMockFn
+            getAtomicTx: getAtomicTxMockFn
           }
         }
       }) as unknown as Avalanche.JsonRpcProvider
@@ -105,6 +109,71 @@ describe('earn/importC', () => {
         xpAddresses: testXpAddresses
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
+    })
+
+    describe('confirming the import', () => {
+      const importCArgs = {
+        walletId: 'wallet-1',
+        walletType: WalletType.MNEMONIC,
+        account: {} as Account,
+        isTestnet: false,
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        xpAddresses: testXpAddresses
+      }
+
+      beforeEach(() => {
+        getAtomicTxMockFn.mockClear()
+      })
+
+      afterEach(() => {
+        jest.useRealTimers()
+      })
+
+      it('should resolve once getAtomicTx reports a block height', async () => {
+        getAtomicTxMockFn.mockResolvedValue({ blockHeight: 58717503n })
+
+        await expect(importC(importCArgs)).resolves.toBeUndefined()
+
+        expect(getAtomicTxMockFn).toHaveBeenCalledWith({ txID: 'mockTxHash' })
+        expect(getAtomicTxMockFn).toHaveBeenCalledTimes(1)
+      })
+
+      it('should keep polling while the tx has no block height yet', async () => {
+        jest.useFakeTimers()
+        getAtomicTxMockFn
+          .mockRejectedValueOnce(
+            new Error('fetching tx: reading tx: not found')
+          )
+          .mockResolvedValueOnce({ blockHeight: undefined })
+          .mockResolvedValueOnce({ blockHeight: 58717503n })
+
+        const promise = importC(importCArgs)
+
+        await jest.advanceTimersByTimeAsync(1000)
+        await jest.advanceTimersByTimeAsync(2000)
+        await expect(promise).resolves.toBeUndefined()
+
+        expect(getAtomicTxMockFn).toHaveBeenCalledTimes(3)
+      })
+
+      it('should throw FundsStuckError when the tx never gets a block height', async () => {
+        jest.useFakeTimers()
+        getAtomicTxMockFn.mockResolvedValue({ blockHeight: undefined })
+
+        const promise = importC(importCArgs)
+        // Settled only after the timers below run, so swallow the rejection
+        // here to keep it from surfacing as an unhandled one meanwhile.
+        promise.catch(() => undefined)
+
+        for (let retry = 0; retry < maxTransactionStatusCheckRetries; retry++) {
+          await jest.advanceTimersByTimeAsync(2 ** retry * 1000)
+        }
+        await expect(promise).rejects.toThrow('Import did not finish')
+
+        expect(getAtomicTxMockFn).toHaveBeenCalledTimes(
+          maxTransactionStatusCheckRetries
+        )
+      })
     })
   })
 })
