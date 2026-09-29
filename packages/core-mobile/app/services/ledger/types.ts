@@ -1,5 +1,8 @@
 import { Curve } from 'utils/publicKeys'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import type {
+  DeviceManagementKit,
+  DeviceSessionId
+} from '@ledgerhq/device-management-kit'
 import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 import { PrimaryAccount } from 'store/account'
 import { WalletType } from 'services/wallet/types'
@@ -77,10 +80,13 @@ export interface LedgerDevice {
   rssi?: number
 }
 
-export interface LedgerTransportState {
-  available: boolean
-  powered: boolean
-  device?: LedgerDevice
+/**
+ * A live Device Management Kit session. Every device operation needs both
+ * halves: the kit routes the traffic, the session id names the device.
+ */
+export interface LedgerSession {
+  dmk: DeviceManagementKit
+  sessionId: DeviceSessionId
 }
 
 // ============================================================================
@@ -161,13 +167,6 @@ export type LedgerKeysByNetwork = {
 // WALLET SETUP AND CREATION TYPES
 // ============================================================================
 
-export interface SetupProgress {
-  currentStep: string
-  progress: number
-  totalSteps: number
-  estimatedTimeRemaining?: number
-}
-
 export interface WalletCreationOptions {
   deviceId: string
   deviceName?: string
@@ -242,7 +241,6 @@ export type WalletSecretParams =
 // Base interface for common wallet data
 interface BaseLedgerWalletData {
   deviceId: string
-  transport?: TransportBLE // Optional for backward compatibility
   publicKeys: PerAccountPublicKeys
 }
 

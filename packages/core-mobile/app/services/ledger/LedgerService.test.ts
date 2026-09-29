@@ -1,6 +1,12 @@
 import { jest } from '@jest/globals'
 import { Alert, PermissionsAndroid, Platform } from 'react-native'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { Observable, Subject, of } from 'rxjs'
+import {
+  DeviceSessionStateType,
+  DeviceStatus,
+  type DeviceSessionState,
+  type DiscoveredDevice
+} from '@ledgerhq/device-management-kit'
 import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
@@ -12,441 +18,582 @@ import {
 } from './LedgerBluetoothError'
 import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 
-jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
+// ---------------------------------------------------------------------------
+// Module mocks
+// ---------------------------------------------------------------------------
+
+// BluetoothService reads the radio through ble-plx; report it powered on so
+// assertBluetoothAvailable gates on the permission mocks alone.
+jest.mock('react-native-ble-plx', () => ({
   __esModule: true,
-  default: {
-    open: jest.fn(),
-    listen: jest.fn(),
-    disconnectDevice: jest.fn(),
-    observeState: jest.fn(
-      ({ next }: { next: (e: { type: string }) => void }) => {
-        next({ type: 'PoweredOn' })
-        return { unsubscribe: jest.fn() }
-      }
-    )
-  }
+  BleManager: jest.fn(() => ({
+    state: jest.fn().mockResolvedValue('PoweredOn' as never),
+    onStateChange: jest.fn(() => ({ remove: jest.fn() }))
+  })),
+  State: {
+    PoweredOn: 'PoweredOn',
+    PoweredOff: 'PoweredOff',
+    Unauthorized: 'Unauthorized',
+    Resetting: 'Resetting',
+    Unsupported: 'Unsupported',
+    Unknown: 'Unknown'
+  },
+  BleErrorCode: { DeviceConnectionFailed: 300, OperationTimedOut: 303 },
+  BleIOSErrorCode: { ConnectionTimeout: 10 }
 }))
 
+jest.mock('@ledgerhq/device-transport-kit-react-native-ble', () => ({
+  __esModule: true,
+  RNBleTransportFactory: jest.fn(),
+  rnBleTransportIdentifier: 'RN_BLE'
+}))
+
+jest.mock('@ledgerhq/device-management-kit', () => {
+  const actual = jest.requireActual(
+    '@ledgerhq/device-management-kit'
+  ) as Record<string, unknown>
+
+  const dmk = {
+    listenToAvailableDevices: jest.fn(),
+    stopDiscovering: jest.fn(),
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    getDeviceSessionState: jest.fn(),
+    sendApdu: jest.fn(),
+    sendCommand: jest.fn()
+  }
+
+  return {
+    ...actual,
+    DeviceManagementKitBuilder: jest.fn(() => ({
+      addTransport: jest.fn().mockReturnThis(),
+      build: jest.fn(() => dmk)
+    })),
+    // Handle for the tests; the factory closes over one instance so the
+    // service's lazily-built kit is this object.
+    __dmk: dmk
+  }
+})
+
+// ---------------------------------------------------------------------------
+// Typed references to mocks
+// ---------------------------------------------------------------------------
+
+const { __dmk: mockDmk } = jest.requireMock(
+  '@ledgerhq/device-management-kit'
+) as {
+  __dmk: {
+    listenToAvailableDevices: jest.Mock
+    stopDiscovering: jest.Mock
+    connect: jest.Mock
+    disconnect: jest.Mock
+    getDeviceSessionState: jest.Mock
+    sendApdu: jest.Mock
+    sendCommand: jest.Mock
+  }
+}
+
+/**
+ * The service sends OpenAppCommand / CloseAppCommand / GetAppAndVersionCommand
+ * through dmk.sendCommand. Route by command name so tests can drive each.
+ */
+const commandHandlers: Record<string, () => unknown> = {}
+
+const setAppInfo = (name: string, version: string): void => {
+  commandHandlers.getAppAndVersion = () => ({
+    status: 'SUCCESS',
+    data: { name, version }
+  })
+}
+
+const failAppInfo = (): void => {
+  commandHandlers.getAppAndVersion = () => {
+    throw new Error('No app info')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared fixtures & helpers
+// ---------------------------------------------------------------------------
+
+const DEVICE_ID = 'test-device-id'
+const SESSION_ID = 'test-session-id'
+
+const bluetoothPermissions = [
+  PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+  PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+  PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+].filter(
+  (
+    p
+  ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+    Boolean(p)
+)
+
+const makePermissionResult = (
+  status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+): Record<string, string> =>
+  Object.fromEntries(bluetoothPermissions.map(p => [p, status]))
+
+const grantedPermissions = makePermissionResult(
+  PermissionsAndroid.RESULTS.GRANTED
+)
+const deniedPermissions = makePermissionResult(
+  PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+)
+
+const discoveredDevice = (id = DEVICE_ID): DiscoveredDevice =>
+  ({
+    id,
+    name: 'Ledger Nano X',
+    deviceModel: { id: 'nanoX', model: 'nanoX' },
+    transport: 'RN_BLE',
+    rssi: -50
+  } as unknown as DiscoveredDevice)
+
+const readyState = (
+  appName: string,
+  version: string,
+  deviceStatus: DeviceStatus = DeviceStatus.CONNECTED
+): DeviceSessionState =>
+  ({
+    sessionStateType: DeviceSessionStateType.ReadyWithoutSecureChannel,
+    deviceStatus,
+    deviceModelId: 'nanoX',
+    currentApp: { name: appName, version },
+    installedApps: [],
+    isSecureConnectionAllowed: false
+  } as unknown as DeviceSessionState)
+
+const originalPlatformOS = Platform.OS
+
+/**
+ * A promise the test controls. An inert handler is attached up front so
+ * settling it before the service awaits it is not reported as unhandled.
+ */
+function deferred<T>(): {
+  promise: Promise<T>
+  resolve: (value: T) => void
+  reject: (error: Error) => void
+} {
+  let resolve!: (value: T) => void
+  let reject!: (error: Error) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  promise.catch(() => undefined)
+  return { promise, resolve, reject }
+}
+
+/** Advances past one app-detection poll tick. */
+const pollOnce = async (): Promise<void> => {
+  await jest.advanceTimersByTimeAsync(
+    LEDGER_TIMEOUTS.APP_POLLING_INTERVAL + 100
+  )
+}
+
+/** Lets every pending promise chain settle. */
+const flushMicrotasks = (): Promise<void> =>
+  new Promise(resolve => setImmediate(resolve))
+
+/** Session-state feed for the test currently running. */
+let sessionState: Subject<DeviceSessionState>
+
+function installDefaultMocks(): void {
+  sessionState = new Subject<DeviceSessionState>()
+
+  mockDmk.listenToAvailableDevices.mockReturnValue(of([discoveredDevice()]))
+  mockDmk.stopDiscovering.mockResolvedValue(undefined as never)
+  mockDmk.connect.mockResolvedValue(SESSION_ID as never)
+  mockDmk.disconnect.mockResolvedValue(undefined as never)
+  mockDmk.getDeviceSessionState.mockReturnValue(sessionState.asObservable())
+  mockDmk.sendApdu.mockResolvedValue({
+    statusCode: new Uint8Array([0x90, 0x00]),
+    data: new Uint8Array([])
+  } as never)
+
+  for (const key of Object.keys(commandHandlers)) delete commandHandlers[key]
+  commandHandlers.openApp = () => ({ status: 'SUCCESS', data: undefined })
+  commandHandlers.closeApp = () => ({ status: 'SUCCESS', data: undefined })
+  // Default: app info fails, so connect() caches no app type — the same
+  // starting point every test that cares about app state sets up explicitly.
+  failAppInfo()
+
+  mockDmk.sendCommand.mockImplementation((args: unknown) => {
+    const { command } = args as { command: { name: string } }
+    const handler = commandHandlers[command.name]
+    if (!handler) throw new Error(`unstubbed command: ${command.name}`)
+    return Promise.resolve(handler())
+  })
+}
+
+function grantAndroidPermissions(): void {
+  jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+  jest
+    .spyOn(PermissionsAndroid, 'requestMultiple')
+    .mockResolvedValue(grantedPermissions as never)
+  Object.defineProperty(Platform, 'OS', {
+    configurable: true,
+    value: 'android'
+  })
+}
+
+async function resetService(): Promise<void> {
+  LedgerService.stopDeviceScanning()
+  LedgerService.stopAppPolling()
+  await LedgerService.disconnect().catch(() => undefined)
+  LedgerService.forgetDevice()
+  // LedgerService is a singleton, so its discovered-device cache would
+  // otherwise let the next test skip the discovery path.
+  ;['a', 'b', 'a-different-device', DEVICE_ID].forEach(id =>
+    LedgerService.removeDevice(id)
+  )
+}
+
 describe('LedgerService', () => {
+  beforeEach(() => {
+    jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+    jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+    jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
+    installDefaultMocks()
+    grantAndroidPermissions()
+  })
+
+  afterEach(async () => {
+    await resetService()
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: originalPlatformOS
+    })
+    jest.restoreAllMocks()
+    jest.clearAllMocks()
+  })
+
+  // -------------------------------------------------------------------------
   describe('openApp', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(p)
-    )
-
-    const grantedPermissions = Object.fromEntries(
-      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-    )
-
-    const DEVICE_ID = 'test-device-id'
-    const originalPlatformOS = Platform.OS
-
-    let mockTransport: {
-      id: string
-      exchange: jest.Mock
-      isConnected: boolean
-      close: jest.Mock
-      on: jest.Mock
-      off: jest.Mock
-      exchangeBusyPromise: null
-    }
-
     beforeEach(async () => {
       jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-
-      mockTransport = {
-        id: DEVICE_ID,
-        exchange: jest.fn(),
-        isConnected: true,
-        close: jest.fn().mockResolvedValue(undefined as never),
-        on: jest.fn(),
-        off: jest.fn(),
-        exchangeBusyPromise: null
-      }
-
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
-      // Default: exchange rejects so getCurrentAppInfo (called during
-      // connect) doesn't set a cached app type.
-      mockTransport.exchange.mockRejectedValue(
-        new Error('No app info') as never
-      )
-      transportBLEMock.open.mockResolvedValue(mockTransport as never)
-
-      // Establish a real connection so withTransport works.
-      // connect() calls wrapTransportExchange which replaces the exchange
-      // method, so we restore a fresh mock afterwards for test assertions.
       await LedgerService.connect(DEVICE_ID)
-      LedgerService.stopAppPolling()
-      mockTransport.exchange = jest.fn()
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.forgetDevice()
-      LedgerService.stopAppPolling()
+    afterEach(() => {
       jest.runOnlyPendingTimers()
       jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
     })
 
-    // openApp now calls quitLedgerApp() + REQUEST_DELAY before sending
-    // the open APDU. Under fake timers the delay never fires, so we
-    // start the call, advance timers past the delay, then await.
+    // openApp quits the current app and waits REQUEST_DELAY before opening the
+    // next one. Under fake timers that delay never fires on its own, so start
+    // the call, advance past the delay, then await.
     async function openAppWithTimers(appType: LedgerAppType): Promise<void> {
       const promise = LedgerService.openApp(appType)
       await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
       return promise
     }
 
-    it('should successfully open the app when device returns success status code', async () => {
-      const appType = LedgerAppType.AVALANCHE
+    it('asks the device to open the requested app', async () => {
+      await openAppWithTimers(LedgerAppType.AVALANCHE)
 
-      // Mock successful response: data + status word (0x9000)
-      const successResponse = Buffer.from([0x90, 0x00])
-      mockTransport.exchange.mockResolvedValue(successResponse as never)
-
-      await openAppWithTimers(appType)
-
-      // Verify APDU was sent (quit + open = 2 exchange calls)
-      // The last call is the open-app APDU
-      const openCall =
-        mockTransport.exchange.mock.calls[
-          mockTransport.exchange.mock.calls.length - 1
-        ]
-      // @ts-ignore
-      const apdu = openCall[0] as Buffer
-      expect(apdu[0]).toBe(0xe0) // CLA
-      expect(apdu[1]).toBe(0xd8) // INS
-      expect(apdu[2]).toBe(0x00) // P1
-      expect(apdu[3]).toBe(0x00) // P2
-      expect(apdu[4]).toBe(appType.length) // Lc (length)
-
-      // Verify app name in APDU
-      const appNameBytes = apdu.slice(5)
-      expect(appNameBytes.toString('ascii')).toBe(appType)
-
-      // Verify success was logged
-      expect(Logger.info).toHaveBeenCalledWith(
-        `Successfully opened ${appType} app on Ledger device using APDU`
+      expect(mockDmk.sendCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: SESSION_ID,
+          command: expect.objectContaining({
+            name: 'openApp',
+            args: { appName: LedgerAppType.AVALANCHE }
+          })
+        })
       )
     })
 
-    it('should log info when device returns non-success status code', async () => {
-      const appType = LedgerAppType.SOLANA
+    it('quits the running app before opening the next one', async () => {
+      await openAppWithTimers(LedgerAppType.SOLANA)
 
-      // Mock response with error status code (0x6985 = USER_REJECTED)
-      const errorResponse = Buffer.from([0x69, 0x85])
-      mockTransport.exchange.mockResolvedValue(errorResponse as never)
-
-      await openAppWithTimers(appType)
-
-      // Verify non-success status was logged
-      expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6985')
-    })
-
-    it('should handle APP_NOT_OPEN error code gracefully', async () => {
-      const appType = LedgerAppType.ETHEREUM
-
-      // Mock response with APP_NOT_OPEN status code (0x6a80)
-      const errorResponse = Buffer.from([0x6a, 0x80]) as never
-      mockTransport.exchange.mockResolvedValue(errorResponse)
-
-      await openAppWithTimers(appType)
-
-      expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6a80')
-    })
-
-    it('should handle DEVICE_LOCKED error code gracefully', async () => {
-      const appType = LedgerAppType.BITCOIN
-
-      // Mock response with DEVICE_LOCKED status code (0x5515)
-      const errorResponse = Buffer.from([0x55, 0x15]) as never
-      mockTransport.exchange.mockResolvedValue(errorResponse)
-
-      await openAppWithTimers(appType)
-
-      expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x5515')
-    })
-
-    it('should not throw error when exchange fails', async () => {
-      const appType = LedgerAppType.AVALANCHE
-      const exchangeError = new Error('Transport exchange failed')
-
-      mockTransport.exchange.mockRejectedValue(exchangeError as never)
-
-      // Should not throw
-      await openAppWithTimers(appType)
-
-      // Verify error was logged as info (best-effort)
-      expect(Logger.info).toHaveBeenCalledWith(
-        `Failed to open ${appType} app:`,
-        exchangeError
+      const names = mockDmk.sendCommand.mock.calls.map(
+        c => (c[0] as { command: { name: string } }).command.name
       )
+      expect(names.indexOf('closeApp')).toBeGreaterThanOrEqual(0)
+      expect(names.indexOf('closeApp')).toBeLessThan(names.indexOf('openApp'))
     })
 
-    it('should handle transport disconnection error gracefully', async () => {
-      const appType = LedgerAppType.SOLANA
-      const disconnectError = new Error('Transport not connected') as never
-
-      mockTransport.exchange.mockRejectedValue(disconnectError)
-
-      await openAppWithTimers(appType)
-
-      expect(Logger.info).toHaveBeenCalledWith(
-        `Failed to open ${appType} app:`,
-        disconnectError
+    it('does not send an open request when the app is already open', async () => {
+      setAppInfo('Avalanche', '0.8.3')
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.APP_POLLING_INTERVAL + 100
       )
+      mockDmk.sendCommand.mockClear()
+
+      await openAppWithTimers(LedgerAppType.AVALANCHE)
+
+      const names = mockDmk.sendCommand.mock.calls.map(
+        c => (c[0] as { command: { name: string } }).command.name
+      )
+      expect(names).not.toContain('openApp')
+      expect(names).not.toContain('closeApp')
     })
 
-    it('should build correct APDU for different app types', async () => {
-      const testCases = [
+    it('does not throw when the device refuses to open the app', async () => {
+      commandHandlers.openApp = () => ({
+        status: 'ERROR',
+        error: new Error('refused')
+      })
+
+      await expect(
+        openAppWithTimers(LedgerAppType.BITCOIN)
+      ).resolves.toBeUndefined()
+    })
+
+    it('does not throw when the open request fails', async () => {
+      commandHandlers.openApp = () => {
+        throw new Error('Device disconnected')
+      }
+
+      await expect(
+        openAppWithTimers(LedgerAppType.ETHEREUM)
+      ).resolves.toBeUndefined()
+    })
+
+    it('passes the app name the device expects for each app type', async () => {
+      for (const appType of [
         LedgerAppType.AVALANCHE,
         LedgerAppType.SOLANA,
-        LedgerAppType.ETHEREUM,
-        LedgerAppType.BITCOIN
-      ]
-
-      for (const appType of testCases) {
-        const successResponse = Buffer.from([0x90, 0x00])
-        mockTransport.exchange.mockResolvedValue(successResponse as never)
-
+        LedgerAppType.BITCOIN,
+        LedgerAppType.ETHEREUM
+      ]) {
+        mockDmk.sendCommand.mockClear()
         await openAppWithTimers(appType)
+        const names = mockDmk.sendCommand.mock.calls.map(
+          c =>
+            (c[0] as { command: { name: string; args?: { appName?: string } } })
+              .command
+        )
+        expect(names).toContainEqual(
+          expect.objectContaining({
+            name: 'openApp',
+            args: { appName: appType }
+          })
+        )
+      }
+    })
+  })
 
-        // @ts-ignore
-        const apdu = mockTransport.exchange.mock.calls[
-          mockTransport.exchange.mock.calls.length - 1
-        ][0] as Buffer
+  // -------------------------------------------------------------------------
+  // Opening or closing an app makes the device drop BLE while it reboots. The
+  // kit serializes commands per session, so a command that never settles
+  // wedges every later one — this is what hung onboarding at "open the
+  // Avalanche app".
+  describe('app switching across the BLE drop', () => {
+    beforeEach(async () => {
+      jest.useFakeTimers()
+      await LedgerService.connect(DEVICE_ID)
+    })
 
-        // Verify APDU structure
-        expect(apdu[0]).toBe(0xe0)
-        expect(apdu[1]).toBe(0xd8)
-        expect(apdu[2]).toBe(0x00)
-        expect(apdu[3]).toBe(0x00)
-        expect(apdu[4]).toBe(appType.length)
+    afterEach(() => {
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+    })
 
-        // Verify app name
-        const appNameBytes = apdu.slice(5)
-        expect(appNameBytes.toString('ascii')).toBe(appType)
+    const commandsSent = (): Array<{
+      name: string
+      triggersDisconnection?: boolean
+    }> =>
+      mockDmk.sendCommand.mock.calls.map(
+        c =>
+          (
+            c[0] as {
+              command: { name: string; triggersDisconnection?: boolean }
+            }
+          ).command
+      )
+
+    it('opens and closes with commands that declare triggersDisconnection', async () => {
+      const promise = LedgerService.openApp(LedgerAppType.AVALANCHE)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
+      await promise
+
+      const open = commandsSent().find(c => c.name === 'openApp')
+      const close = commandsSent().find(c => c.name === 'closeApp')
+
+      // Without this flag the kit waits for a reply the device never sends.
+      expect(open?.triggersDisconnection).toBe(true)
+      expect(close?.triggersDisconnection).toBe(true)
+    })
+
+    it('shares one attempt when openApp is driven twice at once', async () => {
+      const both = Promise.all([
+        LedgerService.openApp(LedgerAppType.AVALANCHE),
+        LedgerService.openApp(LedgerAppType.AVALANCHE)
+      ])
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
+      await both
+
+      // One quit -> open sequence, not two racing ones.
+      const names = commandsSent().map(c => c.name)
+      expect(names.filter(n => n === 'openApp')).toHaveLength(1)
+      expect(names.filter(n => n === 'closeApp')).toHaveLength(1)
+    })
+
+    it('bounds every device command with an abort timeout', async () => {
+      const promise = LedgerService.openApp(LedgerAppType.AVALANCHE)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
+      await promise
+
+      for (const call of mockDmk.sendCommand.mock.calls) {
+        expect((call[0] as { abortTimeout?: number }).abortTimeout).toBe(
+          LEDGER_TIMEOUTS.APDU_TIMEOUT
+        )
       }
     })
 
-    it('should handle response with data before status word', async () => {
-      const appType = LedgerAppType.AVALANCHE
-
-      // Mock response with some data followed by success status word
-      const responseWithData = Buffer.from([0x01, 0x02, 0x03, 0x90, 0x00])
-      mockTransport.exchange.mockResolvedValue(responseWithData as never)
-
-      await openAppWithTimers(appType)
-
-      // Should extract status word correctly from the last 2 bytes
-      expect(Logger.info).toHaveBeenCalledWith(
-        `Successfully opened ${appType} app on Ledger device using APDU`
+    it('keeps waiting while the device is unreachable mid-switch', async () => {
+      // Device vanishes as it reboots into the new app.
+      sessionState.next(
+        readyState('BOLOS', '1.0.0', DeviceStatus.NOT_CONNECTED)
       )
+      expect(LedgerService.isConnected()).toBe(false)
+
+      const settled = jest.fn()
+      const wait = LedgerService.waitForApp(LedgerAppType.AVALANCHE, 30000)
+      wait.then(() => settled('resolved')).catch(() => settled('rejected'))
+
+      // Must not give up just because the link is momentarily gone.
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY * 3)
+      expect(settled).not.toHaveBeenCalled()
+
+      // Link returns with the Avalanche app open.
+      setAppInfo('Avalanche', '0.8.3')
+      sessionState.next(readyState('Avalanche', '0.8.3'))
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY * 2)
+
+      await expect(wait).resolves.toBeUndefined()
     })
 
-    it('should format status codes with proper padding', async () => {
-      const appType = LedgerAppType.AVALANCHE
+    it('waits for the link to return before sending open-app after a quit', async () => {
+      sessionState.next(readyState('Solana', '1.4.1'))
 
-      // Mock response with low byte values that need padding (0x0001)
-      const lowByteResponse = Buffer.from([0x00, 0x01])
-      mockTransport.exchange.mockResolvedValue(lowByteResponse as never)
+      // Quitting knocks the device offline; it comes back a moment later.
+      commandHandlers.closeApp = () => {
+        sessionState.next(
+          readyState('Solana', '1.4.1', DeviceStatus.NOT_CONNECTED)
+        )
+        return { status: 'SUCCESS', data: undefined }
+      }
 
-      await openAppWithTimers(appType)
+      const promise = LedgerService.openApp(LedgerAppType.AVALANCHE)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
 
-      // Verify padding is applied correctly
-      expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x0001')
-    })
+      // Still offline — open-app must not have been attempted yet.
+      expect(commandsSent().some(c => c.name === 'openApp')).toBe(false)
 
-    it('should handle COMMAND_NOT_ALLOWED status code', async () => {
-      const appType = LedgerAppType.ETHEREUM
+      sessionState.next(readyState('BOLOS', '1.0.0'))
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY * 2)
+      await promise
 
-      // Mock response with COMMAND_NOT_ALLOWED (0x6986)
-      const errorResponse = Buffer.from([0x69, 0x86]) as never
-      mockTransport.exchange.mockResolvedValue(errorResponse)
-
-      await openAppWithTimers(appType)
-
-      expect(Logger.info).toHaveBeenCalledWith('Unexpected status word: 0x6986')
-    })
-
-    it('should handle minimum valid response (2 bytes)', async () => {
-      const appType = LedgerAppType.SOLANA
-
-      // Minimum valid response is 2 bytes (SW1, SW2)
-      const minResponse = Buffer.from([0x90, 0x00]) as never
-      mockTransport.exchange.mockResolvedValue(minResponse)
-
-      await openAppWithTimers(appType)
-
-      expect(Logger.info).toHaveBeenCalledWith(
-        `Successfully opened ${appType} app on Ledger device using APDU`
-      )
+      expect(commandsSent().some(c => c.name === 'openApp')).toBe(true)
     })
   })
 
-  describe('buildOpenAppApdu', () => {
-    it('should build correct APDU structure', () => {
-      const appName = 'TestApp'
-
-      // @ts-ignore - testing private method
-      const apdu = LedgerService.buildOpenAppApdu(appName) as Buffer
-
-      // Verify header
-      expect(apdu[0]).toBe(0xe0) // CLA
-      expect(apdu[1]).toBe(0xd8) // INS
-      expect(apdu[2]).toBe(0x00) // P1
-      expect(apdu[3]).toBe(0x00) // P2
-      expect(apdu[4]).toBe(appName.length) // Lc
-
-      // Verify data (app name)
-      const dataBytes = apdu.slice(5)
-      expect(dataBytes.toString('ascii')).toBe(appName)
-
-      // Verify total length
-      expect(apdu.length).toBe(5 + appName.length)
-    })
-
-    it('should handle empty app name', () => {
-      const appName = ''
-
-      // @ts-ignore - testing private method
-      const apdu = LedgerService.buildOpenAppApdu(appName) as Buffer
-
-      expect(apdu[4]).toBe(0) // Lc = 0
-      expect(apdu.length).toBe(5) // Header only
-    })
-
-    it('should handle long app name', () => {
-      const appName = 'VeryLongApplicationName'
-
-      // @ts-ignore - testing private method
-      const apdu = LedgerService.buildOpenAppApdu(appName) as Buffer
-
-      expect(apdu[4]).toBe(appName.length)
-      expect(apdu.slice(5).toString('ascii')).toBe(appName)
-      expect(apdu.length).toBe(5 + appName.length)
-    })
-
-    it('should encode app name as ASCII bytes', () => {
-      const appName = 'Avalanche'
-
-      // @ts-ignore - testing private method
-      const apdu = LedgerService.buildOpenAppApdu(appName) as Buffer
-
-      const expectedBytes = Buffer.from(appName, 'ascii')
-      const actualBytes = apdu.slice(5)
-
-      expect(actualBytes).toEqual(expectedBytes)
-    })
-  })
-
-  describe('bluetooth permissions', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      listen: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        permission
-      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(permission)
-    )
-
-    const makePermissionResult = (
-      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
-    ): Record<string, string> => {
-      return Object.fromEntries(
-        bluetoothPermissions.map(permission => [permission, status])
-      )
-    }
-
-    const grantedPermissions = makePermissionResult(
-      PermissionsAndroid.RESULTS.GRANTED
-    )
-
-    const deniedPermissions = makePermissionResult(
-      PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
-    )
-
-    const mockTransport = {
-      id: 'test-device-id',
-      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
-      isConnected: true,
-      close: jest.fn(),
-      on: jest.fn(),
-      off: jest.fn(),
-      exchangeBusyPromise: null
-    }
-
-    const originalPlatformOS = Platform.OS
-
-    beforeEach(() => {
+  // -------------------------------------------------------------------------
+  // Observed on-device: the user was told the Bitcoin app (>2.4.3) was
+  // unsupported and opened Bitcoin Recovery, then signing called
+  // openApp(BITCOIN) — which quit Recovery and reopened the very app the user
+  // had just been told not to use, failing the transaction. Recovery
+  // satisfies a BITCOIN request, so openApp must leave it alone.
+  describe('openApp respects app compatibility', () => {
+    beforeEach(async () => {
       jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-
-      transportBLEMock.listen.mockReturnValue({
-        unsubscribe: jest.fn()
-      })
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
-      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+      await LedgerService.connect(DEVICE_ID)
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.stopDeviceScanning()
-      LedgerService.stopAppPolling()
+    afterEach(() => {
       jest.runOnlyPendingTimers()
       jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
     })
 
+    const openWithTimers = async (app: LedgerAppType): Promise<void> => {
+      const promise = LedgerService.openApp(app)
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.REQUEST_DELAY)
+      await promise
+    }
+
+    const commandNames = (): string[] =>
+      mockDmk.sendCommand.mock.calls.map(
+        c => (c[0] as { command: { name: string } }).command.name
+      )
+
+    it('leaves Bitcoin Recovery running when the Bitcoin app is requested', async () => {
+      setAppInfo('Bitcoin Recovery', '2.4.5')
+      await pollOnce()
+      expect(LedgerService.getCurrentAppType()).toBe(
+        LedgerAppType.BITCOIN_RECOVERY
+      )
+      mockDmk.sendCommand.mockClear()
+
+      await openWithTimers(LedgerAppType.BITCOIN)
+
+      expect(commandNames()).not.toContain('closeApp')
+      expect(commandNames()).not.toContain('openApp')
+    })
+
+    it('still switches away from an unrelated app', async () => {
+      setAppInfo('Solana', '1.4.1')
+      await pollOnce()
+      mockDmk.sendCommand.mockClear()
+
+      await openWithTimers(LedgerAppType.BITCOIN)
+
+      expect(commandNames()).toContain('closeApp')
+      expect(commandNames()).toContain('openApp')
+    })
+
+    it('does not reopen a supported Bitcoin app that is already running', async () => {
+      setAppInfo('Bitcoin', '2.4.2') // at MAX_BITCOIN_APP_VERSION
+      await pollOnce()
+      mockDmk.sendCommand.mockClear()
+
+      await openWithTimers(LedgerAppType.BITCOIN)
+
+      expect(commandNames()).not.toContain('openApp')
+    })
+
+    it('switches away from an unsupported Bitcoin app', async () => {
+      setAppInfo('Bitcoin', '2.5.0') // beyond MAX_BITCOIN_APP_VERSION
+      await pollOnce()
+      mockDmk.sendCommand.mockClear()
+
+      await openWithTimers(LedgerAppType.BITCOIN)
+
+      expect(commandNames()).toContain('openApp')
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('quitLedgerApp', () => {
+    beforeEach(async () => {
+      // connect()'s immediate probe seeds the app type, so no polling needed.
+      setAppInfo('Avalanche', '0.8.3')
+      await LedgerService.connect(DEVICE_ID)
+    })
+
+    it('clears the cached app type on success', async () => {
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+
+      await LedgerService.quitLedgerApp()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
+      expect(LedgerService.getCurrentAppVersion()).toBe('')
+    })
+
+    it('does not throw when the quit request fails', async () => {
+      commandHandlers.closeApp = () => {
+        throw new Error('No session')
+      }
+
+      await expect(LedgerService.quitLedgerApp()).resolves.toBeUndefined()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('bluetooth permissions', () => {
     it('requests permissions when scanning for devices', async () => {
       await LedgerService.startDeviceScanning(jest.fn())
 
@@ -456,7 +603,7 @@ describe('LedgerService', () => {
       expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
         bluetoothPermissions
       )
-      expect(transportBLEMock.listen).toHaveBeenCalledTimes(1)
+      expect(mockDmk.listenToAvailableDevices).toHaveBeenCalledTimes(1)
     })
 
     it('does not start scanning when permissions are denied', async () => {
@@ -474,12 +621,12 @@ describe('LedgerService', () => {
         ).toBe(true)
       }
 
-      expect(transportBLEMock.listen).not.toHaveBeenCalled()
+      expect(mockDmk.listenToAvailableDevices).not.toHaveBeenCalled()
       expect(Alert.alert).not.toHaveBeenCalled()
     })
 
     it('requests permissions when establishing a connection', async () => {
-      await LedgerService.connect('device-id')
+      await LedgerService.connect(DEVICE_ID)
 
       expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
         bluetoothPermissions.length
@@ -487,34 +634,29 @@ describe('LedgerService', () => {
       expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
         bluetoothPermissions
       )
-      expect(transportBLEMock.open).toHaveBeenCalledWith(
-        'device-id',
-        expect.any(Number)
-      )
+      expect(mockDmk.connect).toHaveBeenCalledWith({
+        device: discoveredDevice()
+      })
     })
 
     it('does not reopen permission prompts when permissions are already granted', async () => {
       ;(PermissionsAndroid.check as jest.Mock).mockResolvedValue(true as never)
 
-      await LedgerService.connect('device-id')
+      await LedgerService.connect(DEVICE_ID)
 
       expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
-      expect(transportBLEMock.open).toHaveBeenCalledWith(
-        'device-id',
-        expect.any(Number)
-      )
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
     })
 
-    it('fails connection before opening transport when permissions are denied', async () => {
+    it('fails connection before opening a session when permissions are denied', async () => {
       ;(PermissionsAndroid.requestMultiple as jest.Mock).mockResolvedValue(
         deniedPermissions as never
       )
 
       try {
-        await LedgerService.connect('device-id')
+        await LedgerService.connect(DEVICE_ID)
         throw new Error('Expected connect to fail')
       } catch (error) {
-        expect(error).toBeInstanceOf(Error)
         expect((error as Error).message).toBe(
           'Bluetooth permissions are required to connect to Ledger devices.'
         )
@@ -524,272 +666,473 @@ describe('LedgerService', () => {
         ).toBe(true)
       }
 
-      expect(transportBLEMock.open).not.toHaveBeenCalled()
+      expect(mockDmk.connect).not.toHaveBeenCalled()
       expect(Alert.alert).not.toHaveBeenCalled()
     })
   })
 
-  describe('connect retry behavior', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      disconnectDevice: jest.Mock
-    }
+  // -------------------------------------------------------------------------
+  describe('connect', () => {
+    it('resolves the device id against discovery before connecting', async () => {
+      await LedgerService.connect(DEVICE_ID)
 
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(p)
-    )
-
-    const grantedPermissions = Object.fromEntries(
-      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-    )
-
-    const mockTransport = {
-      id: 'test-device-id',
-      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
-      isConnected: true,
-      close: jest.fn(),
-      on: jest.fn(),
-      off: jest.fn(),
-      exchangeBusyPromise: null
-    }
-
-    const DEVICE_ID = 'test-device-id'
-    const originalPlatformOS = Platform.OS
-
-    beforeEach(() => {
-      jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
+      expect(mockDmk.listenToAvailableDevices).toHaveBeenCalledWith({
+        transport: 'RN_BLE'
       })
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
-      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+      expect(mockDmk.connect).toHaveBeenCalledWith({
+        device: discoveredDevice()
+      })
+      expect(LedgerService.isConnected()).toBe(true)
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.stopAppPolling()
-      jest.runOnlyPendingTimers()
-      jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
+    it('reuses a device already seen during a user-initiated scan', async () => {
+      await LedgerService.startDeviceScanning(jest.fn())
+      mockDmk.listenToAvailableDevices.mockClear()
+
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(mockDmk.listenToAvailableDevices).not.toHaveBeenCalled()
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('stops the discovery it started once the device is resolved', async () => {
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(mockDmk.stopDiscovering).toHaveBeenCalledTimes(1)
+    })
+
+    it('leaves a user-initiated scan running', async () => {
+      await LedgerService.startDeviceScanning(jest.fn())
+      // Force the discovery path even though a scan is active.
+      LedgerService.removeDevice(DEVICE_ID)
+      mockDmk.stopDiscovering.mockClear()
+
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(mockDmk.stopDiscovering).not.toHaveBeenCalled()
     })
 
     it('does not retry on a generic non-retryable error', async () => {
-      transportBLEMock.open.mockRejectedValueOnce(
+      mockDmk.connect.mockRejectedValueOnce(
         new Error('Unexpected transport error') as never
       )
 
       await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow(
         'Failed to connect to Ledger: Unexpected transport error'
       )
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('connectInFlight', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(p)
-    )
-
-    const grantedPermissions = Object.fromEntries(
-      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-    )
-
-    const DEVICE_ID = 'test-device-id'
-    const originalPlatformOS = Platform.OS
-
-    let mockTransport: {
-      id: string
-      exchange: jest.Mock
-      isConnected: boolean
-      close: jest.Mock
-      on: jest.Mock
-      off: jest.Mock
-      exchangeBusyPromise: null
-    }
-
-    beforeEach(() => {
-      jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-
-      mockTransport = {
-        id: DEVICE_ID,
-        exchange: jest
-          .fn()
-          .mockRejectedValue(new Error('No app info') as never),
-        isConnected: true,
-        close: jest.fn().mockResolvedValue(undefined as never),
-        on: jest.fn(),
-        off: jest.fn(),
-        exchangeBusyPromise: null
-      }
-
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.stopAppPolling()
-      jest.runOnlyPendingTimers()
-      jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
-    })
-
-    it('concurrent connect() calls share the same in-flight promise', async () => {
-      // Make open() slow so the second call arrives while the first is pending
-      transportBLEMock.open.mockImplementation(
-        () =>
-          new Promise(resolve => setTimeout(() => resolve(mockTransport), 100))
-      )
-
-      const promise1 = LedgerService.connect(DEVICE_ID)
-      const promise2 = LedgerService.connect(DEVICE_ID)
-
-      // Advance past the open() delay
-      await jest.advanceTimersByTimeAsync(200)
-
-      await Promise.all([promise1, promise2])
-
-      // TransportBLE.open should only have been called once
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-      expect(Logger.info).toHaveBeenCalledWith(
-        'connect() already in flight — joining existing attempt'
-      )
-    })
-
-    it('concurrent callers all reject when the in-flight connect fails', async () => {
-      transportBLEMock.open.mockImplementation(
-        () =>
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('BLE open failed')), 100)
-          )
-      )
-
-      const promise1 = LedgerService.connect(DEVICE_ID)
-      const promise2 = LedgerService.connect(DEVICE_ID)
-
-      // Attach rejection handlers BEFORE advancing timers to avoid
-      // unhandled-rejection noise from Jest.
-      const assertion1 = expect(promise1).rejects.toThrow(
-        'Failed to connect to Ledger'
-      )
-      const assertion2 = expect(promise2).rejects.toThrow(
-        'Failed to connect to Ledger'
-      )
-
-      await jest.advanceTimersByTimeAsync(200)
-
-      await assertion1
-      await assertion2
-
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-    })
-
-    it('allows a fresh connect() after a failed in-flight attempt resolves', async () => {
-      // First call fails
-      transportBLEMock.open.mockRejectedValueOnce(
-        new Error('BLE open failed') as never
-      )
-
-      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow()
-
-      // connectInFlight should be cleared — a new connect() should start fresh
-      transportBLEMock.open.mockResolvedValueOnce(mockTransport as never)
+    it('caches the app type from the immediate app-info probe', async () => {
+      setAppInfo('Avalanche', '0.8.3')
 
       await LedgerService.connect(DEVICE_ID)
 
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
-    })
-
-    it('rejects when a different device tries to connect while one is in-flight', async () => {
-      // Make open() slow so device-A is still in-flight
-      transportBLEMock.open.mockImplementation(
-        () =>
-          new Promise(resolve => setTimeout(() => resolve(mockTransport), 100))
-      )
-
-      const deviceAPromise = LedgerService.connect(DEVICE_ID)
-
-      // Device B arrives while device A is in-flight — should reject
-      // immediately since the throw happens before any await.
-      const deviceBResult = await LedgerService.connect('other-device').then(
-        () => 'resolved',
-        (error: Error) => error.message
-      )
-
-      expect(deviceBResult).toEqual(
-        `Connection to ${DEVICE_ID} already in progress`
-      )
-
-      // Device A should still complete normally
-      await jest.advanceTimersByTimeAsync(200)
-      await deviceAPromise
-
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+      expect(LedgerService.getCurrentAppVersion()).toBe('0.8.3')
     })
   })
 
-  describe('waitForApp', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
+  // -------------------------------------------------------------------------
+  // Observed on-device: the app-info probe issued right after connect never
+  // settled (the kit's own abortTimeout did not fire), so connect() hung and
+  // every retry joined the stuck promise — "connect() already in flight".
+  describe('a command that never settles', () => {
     beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'info').mockImplementation(() => {})
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+      jest.useFakeTimers()
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      jest.clearAllMocks()
+    afterEach(() => {
+      jest.runOnlyPendingTimers()
       jest.useRealTimers()
     })
 
+    it('does not let a hung app-info probe hang connect()', async () => {
+      commandHandlers.getAppAndVersion = () => new Promise(() => undefined)
+
+      const connected = jest.fn()
+      const promise = LedgerService.connect(DEVICE_ID).then(connected)
+
+      await jest.advanceTimersByTimeAsync(1000)
+      expect(connected).not.toHaveBeenCalled()
+
+      // The probe is best-effort, so connect completes once it gives up.
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APDU_TIMEOUT + 100)
+      await promise
+
+      expect(connected).toHaveBeenCalled()
+      expect(LedgerService.isConnected()).toBe(true)
+    })
+
+    it('clears the in-flight mutex so a later connect is not trapped', async () => {
+      // A connect that never finishes at all.
+      mockDmk.connect.mockReturnValue(new Promise(() => undefined) as never)
+
+      const first = LedgerService.connect(DEVICE_ID)
+      const firstRejects = expect(first).rejects.toThrow(/timed out/)
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.CONNECTION_TIMEOUT + 100
+      )
+      await firstRejects
+
+      // The mutex must be free again rather than handing back the dead promise.
+      mockDmk.connect.mockResolvedValue(SESSION_ID as never)
+      await expect(LedgerService.connect(DEVICE_ID)).resolves.toBeUndefined()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Observed on-device: the session never advanced past "Connected", so it
+  // never reported currentApp. App detection has to work anyway.
+  describe('app detection without a Ready session', () => {
+    it('reads the running app by polling the device directly', async () => {
+      jest.useFakeTimers()
+      await LedgerService.connect(DEVICE_ID)
+
+      // Session stays Connected — no currentApp ever arrives.
+      sessionState.next({
+        sessionStateType: DeviceSessionStateType.Connected,
+        deviceStatus: DeviceStatus.CONNECTED,
+        deviceModelId: 'nanoX'
+      } as never)
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
+
+      setAppInfo('Avalanche', '0.8.3')
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_TIMEOUTS.APP_POLLING_INTERVAL + 100
+      )
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+      expect(LedgerService.getCurrentAppVersion()).toBe('0.8.3')
+      jest.useRealTimers()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Observed on-device: the first connect succeeded and the session reached
+  // Ready with the Avalanche app, then a second connect() for the same device
+  // arrived ~0.5s later, tore the working session down, and the device dropped
+  // for good.
+  describe('a repeat connect for the device already attached', () => {
+    it('is a no-op rather than tearing down the live session', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      expect(LedgerService.isConnected()).toBe(true)
+
+      mockDmk.connect.mockClear()
+      mockDmk.disconnect.mockClear()
+
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(mockDmk.disconnect).not.toHaveBeenCalled()
+      expect(mockDmk.connect).not.toHaveBeenCalled()
+      expect(LedgerService.isConnected()).toBe(true)
+    })
+
+    it('still reconnects once the device has actually dropped', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      sessionState.next(
+        readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+      )
+      expect(LedgerService.isConnected()).toBe(false)
+
+      mockDmk.connect.mockClear()
+      await LedgerService.connect(DEVICE_ID)
+
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('still switches when a different device is requested', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      mockDmk.connect.mockClear()
+
+      mockDmk.listenToAvailableDevices.mockReturnValue(
+        of([discoveredDevice('other-device')])
+      )
+      await LedgerService.connect('other-device')
+
+      expect(mockDmk.disconnect).toHaveBeenCalled()
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('connectInFlight', () => {
+    it('concurrent connect() calls share the same in-flight promise', async () => {
+      const gate = deferred<string>()
+      mockDmk.connect.mockReturnValue(gate.promise as never)
+
+      const first = LedgerService.connect(DEVICE_ID)
+      const second = LedgerService.connect(DEVICE_ID)
+
+      gate.resolve(SESSION_ID)
+      await Promise.all([first, second])
+
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('concurrent callers all reject when the in-flight connect fails', async () => {
+      mockDmk.connect.mockRejectedValue(new Error('boom') as never)
+
+      const first = LedgerService.connect(DEVICE_ID)
+      const second = LedgerService.connect(DEVICE_ID)
+
+      await Promise.all([
+        expect(first).rejects.toThrow(/Failed to connect to Ledger/),
+        expect(second).rejects.toThrow(/Failed to connect to Ledger/)
+      ])
+
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('allows a fresh connect() after a failed in-flight attempt resolves', async () => {
+      mockDmk.connect.mockRejectedValueOnce(new Error('boom') as never)
+
+      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow()
+      await expect(LedgerService.connect(DEVICE_ID)).resolves.toBeUndefined()
+
+      expect(mockDmk.connect).toHaveBeenCalledTimes(2)
+    })
+
+    it('rejects when a different device tries to connect while one is in-flight', async () => {
+      const gate = deferred<string>()
+      mockDmk.connect.mockReturnValue(gate.promise as never)
+
+      const first = LedgerService.connect(DEVICE_ID)
+      const second = LedgerService.connect('a-different-device')
+
+      await expect(second).rejects.toThrow(
+        `Connection to ${DEVICE_ID} already in progress`
+      )
+
+      gate.resolve(SESSION_ID)
+      await first
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Observed on-device: the kit's session refresher reported currentApp
+  // "BOLOS" while the Avalanche app was open, and a direct GetAppAndVersion
+  // reported "Avalanche". With both writing currentAppType, the refresher
+  // (~1s) and the poll (2s) overwrote each other and the app type flapped
+  // Unknown <-> Avalanche, logging on every tick. The poll is the only writer.
+  describe('app detection has a single source', () => {
+    beforeEach(async () => {
+      jest.useFakeTimers()
+      await LedgerService.connect(DEVICE_ID)
+    })
+
+    afterEach(() => {
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+    })
+
+    it('takes the running app from the poll', async () => {
+      setAppInfo('Avalanche', '0.8.3')
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+      expect(LedgerService.getCurrentAppVersion()).toBe('0.8.3')
+
+      setAppInfo('Solana', '1.4.1')
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.SOLANA)
+      expect(LedgerService.getCurrentAppVersion()).toBe('1.4.1')
+    })
+
+    it('ignores the app the session refresher reports', async () => {
+      setAppInfo('Avalanche', '0.8.3')
+      await pollOnce()
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+
+      // The refresher insists the device is on the dashboard. It must not
+      // overwrite what the poll established.
+      sessionState.next(readyState('BOLOS', '1.0.0'))
+      sessionState.next(readyState('BOLOS', '1.0.0', DeviceStatus.BUSY))
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
+      expect(LedgerService.getCurrentAppVersion()).toBe('0.8.3')
+    })
+
+    it('maps BOLOS to UNKNOWN without logging it as unrecognised', async () => {
+      const info = jest.spyOn(Logger, 'info')
+      setAppInfo('BOLOS', '1.0.0')
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
+      expect(info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Unknown app name detected')
+      )
+    })
+
+    it('still logs a genuinely unrecognised app name', async () => {
+      const info = jest.spyOn(Logger, 'info')
+      setAppInfo('Dogecoin', '1.0.0')
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown app name detected')
+      )
+    })
+
+    it('stops polling once stopAppPolling is called', async () => {
+      LedgerService.stopAppPolling()
+
+      setAppInfo('Avalanche', '0.8.3')
+      await pollOnce()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('connection state', () => {
+    it('reports unreachable when the device status drops, keeping the session', async () => {
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      await LedgerService.connect(DEVICE_ID)
+      expect(listener).toHaveBeenCalledWith(true)
+      listener.mockClear()
+
+      sessionState.next(
+        readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+      )
+
+      expect(listener).toHaveBeenCalledWith(false)
+      expect(LedgerService.isConnected()).toBe(false)
+      // The BLE transport retries the link itself, so the session is kept.
+      expect(mockDmk.disconnect).not.toHaveBeenCalled()
+
+      unsubscribe()
+    })
+
+    it('reports reachable again when the transport restores the link', async () => {
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      await LedgerService.connect(DEVICE_ID)
+      sessionState.next(
+        readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+      )
+      listener.mockClear()
+
+      sessionState.next(readyState('Avalanche', '0.8.3'))
+
+      expect(listener).toHaveBeenCalledWith(true)
+      expect(LedgerService.isConnected()).toBe(true)
+
+      unsubscribe()
+    })
+
+    it('does not re-notify when the status changes without changing reachability', async () => {
+      await LedgerService.connect(DEVICE_ID)
+
+      const listener = jest.fn()
+      const unsubscribe = LedgerService.addConnectionStateListener(listener)
+
+      sessionState.next(readyState('Avalanche', '0.8.3', DeviceStatus.BUSY))
+      sessionState.next(readyState('Avalanche', '0.8.3', DeviceStatus.LOCKED))
+
+      expect(listener).not.toHaveBeenCalled()
+
+      unsubscribe()
+    })
+
+    it('tears the session down on an explicit disconnect', async () => {
+      await LedgerService.connect(DEVICE_ID)
+
+      await LedgerService.disconnect()
+
+      expect(mockDmk.disconnect).toHaveBeenCalledWith({
+        sessionId: SESSION_ID
+      })
+      expect(LedgerService.isConnected()).toBe(false)
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('scheduleReconnect', () => {
+    it('reconnects to the remembered device after a lifecycle disconnect', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      await LedgerService.disconnect({ manual: false })
+      mockDmk.connect.mockClear()
+
+      LedgerService.scheduleReconnect('app-foreground')
+      await flushMicrotasks()
+
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not reconnect after a manual disconnect', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      await LedgerService.disconnect({ manual: true })
+      mockDmk.connect.mockClear()
+
+      LedgerService.scheduleReconnect('app-foreground')
+      await flushMicrotasks()
+
+      expect(mockDmk.connect).not.toHaveBeenCalled()
+    })
+
+    it('does not reconnect once the device has been forgotten', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      await LedgerService.disconnect({ manual: false })
+      LedgerService.forgetDevice()
+      mockDmk.connect.mockClear()
+
+      LedgerService.scheduleReconnect('app-foreground')
+      await flushMicrotasks()
+
+      expect(mockDmk.connect).not.toHaveBeenCalled()
+    })
+
+    it('does nothing while the device is still reachable', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      mockDmk.connect.mockClear()
+
+      LedgerService.scheduleReconnect('app-foreground')
+      await flushMicrotasks()
+
+      expect(mockDmk.connect).not.toHaveBeenCalled()
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('ensureConnection', () => {
+    it('returns the live session without reconnecting', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      mockDmk.connect.mockClear()
+
+      await expect(LedgerService.ensureConnection()).resolves.toEqual({
+        dmk: mockDmk,
+        sessionId: SESSION_ID
+      })
+      expect(mockDmk.connect).not.toHaveBeenCalled()
+    })
+
+    it('reconnects when the session went away between signing steps', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      await LedgerService.disconnect({ manual: false })
+      mockDmk.connect.mockClear()
+
+      await expect(LedgerService.ensureConnection()).resolves.toEqual({
+        dmk: mockDmk,
+        sessionId: SESSION_ID
+      })
+      expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('throws when no device is remembered', async () => {
+      await expect(LedgerService.ensureConnection()).rejects.toThrow(
+        LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE
+      )
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  describe('waitForApp', () => {
     it('should reject immediately when signal is already aborted', async () => {
       const controller = new AbortController()
       controller.abort()
@@ -801,45 +1144,13 @@ describe('LedgerService', () => {
 
     it('should reject when signal is aborted during polling', async () => {
       jest.useFakeTimers()
-
-      // Establish a connected transport so pollForApp doesn't bail early
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(
-          Object.fromEntries(
-            [
-              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-            ]
-              .filter(Boolean)
-              .map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-          ) as never
-        )
-      const mockTransport = {
-        id: 'test-device',
-        exchange: jest
-          .fn()
-          .mockRejectedValue(new Error('No app info') as never),
-        isConnected: true,
-        close: jest.fn().mockResolvedValue(undefined as never),
-        on: jest.fn(),
-        off: jest.fn(),
-        exchangeBusyPromise: null
-      }
-      transportBLEMock.open.mockResolvedValue(mockTransport as never)
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-      await LedgerService.connect('test-device')
+      await LedgerService.connect(DEVICE_ID)
 
       // Make checkApp always return false (app never opens)
       const checkAppSpy = jest
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(LedgerService as any, 'checkApp')
-        .mockResolvedValue(false)
+        .mockResolvedValue(false as never)
 
       const controller = new AbortController()
 
@@ -855,6 +1166,7 @@ describe('LedgerService', () => {
       // Abort after polling has started, then immediately attach the
       // rejection handler so Jest doesn't see an unhandled rejection.
       controller.abort()
+      // eslint-disable-next-line jest/valid-expect
       const rejectPromise = expect(waitPromise).rejects.toThrow(
         LEDGER_ERROR_CODES.USER_CANCELLED
       )
@@ -865,71 +1177,86 @@ describe('LedgerService', () => {
       await rejectPromise
 
       checkAppSpy.mockRestore()
+      jest.useRealTimers()
+    })
+
+    it('returns as soon as the requested app is detected', async () => {
+      setAppInfo('Solana', '1.4.1')
+      await LedgerService.connect(DEVICE_ID)
+
+      await expect(
+        LedgerService.waitForApp(LedgerAppType.SOLANA, 5000)
+      ).resolves.toBeUndefined()
     })
   })
 
+  // -------------------------------------------------------------------------
+  describe('device scanning', () => {
+    it('publishes the device list the kit reports', async () => {
+      const deviceListener = jest.fn()
+      LedgerService.addDeviceListener(deviceListener)
+      deviceListener.mockClear()
+
+      await LedgerService.startDeviceScanning(jest.fn())
+
+      expect(deviceListener).toHaveBeenCalledWith([
+        { id: DEVICE_ID, name: 'Ledger Nano X', rssi: -50 }
+      ])
+      expect(LedgerService.getIsScanning()).toBe(true)
+
+      LedgerService.removeDeviceListener(deviceListener)
+    })
+
+    it('replaces the list on each emission rather than accumulating', async () => {
+      const feed = new Subject<DiscoveredDevice[]>()
+      mockDmk.listenToAvailableDevices.mockReturnValue(feed.asObservable())
+
+      await LedgerService.startDeviceScanning(jest.fn())
+
+      feed.next([discoveredDevice('a'), discoveredDevice('b')])
+      expect(LedgerService.getCurrentDevices()).toHaveLength(2)
+
+      feed.next([discoveredDevice('a')])
+      expect(LedgerService.getCurrentDevices()).toEqual([
+        { id: 'a', name: 'Ledger Nano X', rssi: -50 }
+      ])
+    })
+
+    it('does not start a second scan while one is in progress', async () => {
+      await LedgerService.startDeviceScanning(jest.fn())
+      await LedgerService.startDeviceScanning(jest.fn())
+
+      expect(mockDmk.listenToAvailableDevices).toHaveBeenCalledTimes(1)
+    })
+
+    it('stops kit discovery when scanning stops', async () => {
+      await LedgerService.startDeviceScanning(jest.fn())
+      mockDmk.stopDiscovering.mockClear()
+
+      LedgerService.stopDeviceScanning()
+
+      expect(LedgerService.getIsScanning()).toBe(false)
+      expect(mockDmk.stopDiscovering).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  // -------------------------------------------------------------------------
   describe('scan errors', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      listen: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(p)
-    )
-
-    const grantedPermissions = Object.fromEntries(
-      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-    )
-
-    const originalPlatformOS = Platform.OS
-
     beforeEach(() => {
       jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-      transportBLEMock.listen.mockReturnValue({ unsubscribe: jest.fn() })
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
     })
 
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.stopDeviceScanning()
-      LedgerService.stopAppPolling()
+    afterEach(() => {
       jest.runOnlyPendingTimers()
       jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
     })
 
-    it('calls onScanError (not Alert.alert) when TransportBLE.listen fires a non-BLE error', async () => {
+    it('calls onScanError (not Alert.alert) when discovery fires a non-BLE error', async () => {
       const onScanError = jest.fn()
-
       const scanError = new Error('Hardware failure')
-      transportBLEMock.listen.mockImplementation(observer => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(observer as any).error(scanError)
-        return { unsubscribe: jest.fn() }
-      })
+      mockDmk.listenToAvailableDevices.mockReturnValue(
+        new Observable(subscriber => subscriber.error(scanError))
+      )
 
       await LedgerService.startDeviceScanning(onScanError)
 
@@ -941,15 +1268,12 @@ describe('LedgerService', () => {
       expect(Alert.alert).not.toHaveBeenCalled()
     })
 
-    it('calls showBluetoothErrorAlert (not onScanError) when TransportBLE.listen fires a BLE error', async () => {
+    it('calls showBluetoothErrorAlert (not onScanError) when discovery fires a BLE error', async () => {
       const onScanError = jest.fn()
-
       const bleError = ledgerBluetoothErrors.radioOff()
-      transportBLEMock.listen.mockImplementation(observer => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(observer as any).error(bleError)
-        return { unsubscribe: jest.fn() }
-      })
+      mockDmk.listenToAvailableDevices.mockReturnValue(
+        new Observable(subscriber => subscriber.error(bleError))
+      )
 
       await LedgerService.startDeviceScanning(onScanError)
 
@@ -959,6 +1283,9 @@ describe('LedgerService', () => {
 
     it('calls onScanError with LEDGER_SCAN_FAILED title when scan times out with no devices', async () => {
       const onScanError = jest.fn()
+      mockDmk.listenToAvailableDevices.mockReturnValue(
+        new Subject<DiscoveredDevice[]>().asObservable()
+      )
 
       await LedgerService.startDeviceScanning(onScanError)
 
@@ -974,15 +1301,6 @@ describe('LedgerService', () => {
     it('does not call onScanError when scan times out after devices were found', async () => {
       const onScanError = jest.fn()
 
-      transportBLEMock.listen.mockImplementation(observer => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(observer as any).next({
-          type: 'add',
-          descriptor: { id: 'device-1', name: 'Ledger Nano X' }
-        })
-        return { unsubscribe: jest.fn() }
-      })
-
       await LedgerService.startDeviceScanning(onScanError)
 
       jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
@@ -990,11 +1308,10 @@ describe('LedgerService', () => {
       expect(onScanError).not.toHaveBeenCalled()
     })
 
-    it('calls onScanError when TransportBLE.listen throws synchronously', async () => {
+    it('calls onScanError when discovery throws synchronously', async () => {
       const onScanError = jest.fn()
-
-      const syncError = new Error('Listen threw synchronously')
-      transportBLEMock.listen.mockImplementation(() => {
+      const syncError = new Error('Discovery threw synchronously')
+      mockDmk.listenToAvailableDevices.mockImplementation(() => {
         throw syncError
       })
 
@@ -1008,18 +1325,8 @@ describe('LedgerService', () => {
     })
   })
 
+  // -------------------------------------------------------------------------
   describe('getSolanaKeysForRange', () => {
-    beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'info').mockImplementation(() => {})
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      jest.spyOn(Logger, 'error').mockImplementation(() => {})
-    })
-
-    afterEach(() => {
-      jest.clearAllMocks()
-    })
-
     it('should stop iterating when signal is aborted', async () => {
       const controller = new AbortController()
 
@@ -1039,6 +1346,7 @@ describe('LedgerService', () => {
             {
               key: `solana-key-${index}`,
               derivationPath: `m/44'/501'/${index}'/0'`,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               curve: 'ed25519' as any
             }
           ]
@@ -1059,312 +1367,6 @@ describe('LedgerService', () => {
       expect(getSolanaKeysSpy).toHaveBeenCalledTimes(2)
 
       getSolanaKeysSpy.mockRestore()
-    })
-  })
-
-  describe('auto-reconnect', () => {
-    const transportBLEMock = TransportBLE as unknown as {
-      open: jest.Mock
-      disconnectDevice: jest.Mock
-    }
-
-    const bluetoothPermissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(
-      (
-        p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
-        Boolean(p)
-    )
-
-    const grantedPermissions = Object.fromEntries(
-      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-    )
-
-    const DEVICE_ID = 'test-device-id'
-    const originalPlatformOS = Platform.OS
-
-    let disconnectHandler: (() => void) | null = null
-    let mockTransport: {
-      id: string
-      exchange: jest.Mock
-      isConnected: boolean
-      close: jest.Mock
-      on: jest.Mock
-      off: jest.Mock
-      exchangeBusyPromise: null
-    }
-
-    beforeEach(() => {
-      jest.useFakeTimers()
-      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
-      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
-      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest
-        .spyOn(PermissionsAndroid, 'requestMultiple')
-        .mockResolvedValue(grantedPermissions as never)
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: 'android'
-      })
-
-      disconnectHandler = null
-      mockTransport = {
-        id: DEVICE_ID,
-        exchange: jest
-          .fn()
-          .mockRejectedValue(new Error('No app info') as never),
-        isConnected: true,
-        close: jest.fn().mockResolvedValue(undefined as never),
-        on: jest.fn((_event, callback) => {
-          disconnectHandler = callback as () => void
-        }),
-        off: jest.fn(),
-        exchangeBusyPromise: null
-      }
-
-      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
-      transportBLEMock.open.mockResolvedValue(mockTransport as never)
-    })
-
-    afterEach(async () => {
-      await LedgerService.disconnect().catch(() => undefined)
-      LedgerService.forgetDevice()
-      LedgerService.stopAppPolling()
-      jest.runOnlyPendingTimers()
-      jest.useRealTimers()
-      Object.defineProperty(Platform, 'OS', {
-        configurable: true,
-        value: originalPlatformOS
-      })
-      jest.restoreAllMocks()
-    })
-
-    /** Connect the device then clear mocks so assertions only cover
-     *  reconnect-related calls. Stops polling to avoid timer interference. */
-    async function connectAndReset(): Promise<void> {
-      await LedgerService.connect(DEVICE_ID)
-      LedgerService.stopAppPolling()
-      transportBLEMock.open.mockClear()
-      transportBLEMock.disconnectDevice.mockClear()
-    }
-
-    it('notifies listeners and triggers reconnect on unexpected BLE disconnect', async () => {
-      await connectAndReset()
-
-      const listener = jest.fn()
-      const unsubscribe = LedgerService.addConnectionStateListener(listener)
-
-      // Simulate the BLE transport firing a disconnect event
-      expect(disconnectHandler).not.toBeNull()
-      disconnectHandler!()
-
-      // Listener should be notified of disconnection immediately
-      expect(listener).toHaveBeenCalledWith(false)
-
-      // Flush microtasks so the async reconnect attempt starts
-      await jest.advanceTimersByTimeAsync(0)
-
-      // connect() should have been called for the first reconnect attempt
-      expect(transportBLEMock.open).toHaveBeenCalledWith(
-        DEVICE_ID,
-        expect.any(Number)
-      )
-
-      unsubscribe()
-    })
-
-    it('ignores late-firing disconnect event when transport is already null', async () => {
-      await connectAndReset()
-      const savedHandler = disconnectHandler
-
-      const listener = jest.fn()
-      const unsubscribe = LedgerService.addConnectionStateListener(listener)
-
-      // Programmatic disconnect clears #transport before the event fires
-      await LedgerService.disconnect({ manual: false })
-      listener.mockClear()
-      transportBLEMock.open.mockClear()
-
-      // Late-firing event from old transport object — should be a no-op
-      savedHandler?.()
-      await jest.advanceTimersByTimeAsync(0)
-
-      // Listener should NOT be notified again
-      expect(listener).not.toHaveBeenCalled()
-
-      unsubscribe()
-    })
-
-    it('does not auto-reconnect after manual disconnect', async () => {
-      await connectAndReset()
-
-      // manual = true sets autoReconnectDisabled
-      await LedgerService.disconnect({ manual: true })
-      transportBLEMock.open.mockClear()
-
-      LedgerService.scheduleReconnect('test-trigger')
-      await jest.advanceTimersByTimeAsync(0)
-
-      expect(transportBLEMock.open).not.toHaveBeenCalled()
-    })
-
-    it('does not auto-reconnect when connectedDeviceId has been cleared', async () => {
-      await connectAndReset()
-
-      // Simulates wallet switch clearing the device reference
-      LedgerService.forgetDevice()
-
-      LedgerService.scheduleReconnect('test-trigger')
-      await jest.advanceTimersByTimeAsync(0)
-
-      expect(transportBLEMock.open).not.toHaveBeenCalled()
-    })
-
-    it('does not start a second reconnect loop while one is in progress', async () => {
-      await connectAndReset()
-
-      // All reconnect attempts fail so the loop stays busy
-      transportBLEMock.open.mockRejectedValue(
-        new Error('Connection failed') as never
-      )
-
-      LedgerService.scheduleReconnect('first-trigger')
-      // First attempt fires and fails
-      await jest.advanceTimersByTimeAsync(0)
-      const callsAfterFirst = transportBLEMock.open.mock.calls.length
-
-      // Second trigger while the first loop is still running
-      LedgerService.scheduleReconnect('second-trigger')
-      await jest.advanceTimersByTimeAsync(0)
-
-      // No additional connect calls from the second trigger
-      expect(transportBLEMock.open.mock.calls.length).toBe(callsAfterFirst)
-    })
-
-    it('succeeds on a later retry attempt and stops retrying', async () => {
-      await connectAndReset()
-
-      // First reconnect attempt fails, second succeeds
-      transportBLEMock.open
-        .mockRejectedValueOnce(new Error('Connection failed') as never)
-        .mockResolvedValueOnce(mockTransport as never)
-
-      const listener = jest.fn()
-      const unsubscribe = LedgerService.addConnectionStateListener(listener)
-
-      LedgerService.scheduleReconnect('test-trigger')
-
-      // Attempt 1 fires and fails
-      await jest.advanceTimersByTimeAsync(0)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-
-      // Wait for backoff: 1000 * 2^0 = 1000ms
-      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
-
-      // Attempt 2 succeeds
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
-      expect(listener).toHaveBeenCalledWith(true)
-
-      unsubscribe()
-    })
-
-    it('notifies listeners of failure after all retries are exhausted', async () => {
-      await connectAndReset()
-
-      transportBLEMock.open.mockRejectedValue(
-        new Error('Connection failed') as never
-      )
-
-      const listener = jest.fn()
-      const unsubscribe = LedgerService.addConnectionStateListener(listener)
-
-      LedgerService.scheduleReconnect('test-trigger')
-
-      // Attempt 1 → fails → 1000ms delay
-      await jest.advanceTimersByTimeAsync(0)
-      // Attempt 2 → fails → 2000ms delay
-      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
-      // Attempt 3 → fails → no delay (last attempt)
-      await jest.advanceTimersByTimeAsync(
-        LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2
-      )
-      // Let the final promise chain settle
-      await jest.advanceTimersByTimeAsync(0)
-
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(
-        LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES
-      )
-      // Final notification indicates failure
-      expect(listener).toHaveBeenLastCalledWith(false)
-
-      unsubscribe()
-    })
-
-    it('applies exponential backoff between retry attempts', async () => {
-      await connectAndReset()
-
-      transportBLEMock.open.mockRejectedValue(
-        new Error('Connection failed') as never
-      )
-
-      LedgerService.scheduleReconnect('test-trigger')
-
-      // Attempt 1 fires immediately
-      await jest.advanceTimersByTimeAsync(0)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-
-      // Backoff after attempt 1: 1000 * 2^0 = 1000ms
-      // 999ms is not enough
-      await jest.advanceTimersByTimeAsync(999)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
-
-      // At exactly 1000ms: attempt 2 fires
-      await jest.advanceTimersByTimeAsync(1)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
-
-      // Backoff after attempt 2: 1000 * 2^1 = 2000ms
-      // 1999ms is not enough
-      await jest.advanceTimersByTimeAsync(1999)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
-
-      // At exactly 2000ms: attempt 3 fires
-      await jest.advanceTimersByTimeAsync(1)
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(3)
-    })
-
-    it('allows a new reconnect loop after the previous one finishes', async () => {
-      await connectAndReset()
-
-      // First loop: all attempts fail
-      transportBLEMock.open.mockRejectedValue(
-        new Error('Connection failed') as never
-      )
-
-      LedgerService.scheduleReconnect('first-loop')
-
-      // Exhaust all retries
-      await jest.advanceTimersByTimeAsync(0)
-      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY)
-      await jest.advanceTimersByTimeAsync(
-        LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2
-      )
-      await jest.advanceTimersByTimeAsync(0)
-
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(
-        LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES
-      )
-
-      // isAttemptingReconnect should be reset — a fresh loop can start
-      transportBLEMock.open.mockReset()
-      transportBLEMock.open.mockResolvedValueOnce(mockTransport as never)
-
-      LedgerService.scheduleReconnect('second-loop')
-      await jest.advanceTimersByTimeAsync(0)
-
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
     })
   })
 })

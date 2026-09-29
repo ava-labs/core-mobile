@@ -73,8 +73,10 @@ describe('PrivateKeyWallet', () => {
   describe('signAvalancheMessage', () => {
     it('signs a P-chain message with an imported private key', async () => {
       const result = await wallet.signMessage({
-        rpcMethod: RpcMethod.AVALANCHE_SIGN_MESSAGE,
-        data: '0x68656c6c6f',
+        signingData: {
+          type: RpcMethod.AVALANCHE_SIGN_MESSAGE,
+          data: '0x68656c6c6f'
+        },
         accountIndex: 0,
         network: { vmName: 'PVM', isTestnet: false, chainId: 1 },
         provider: {} as JsonRpcBatchInternal

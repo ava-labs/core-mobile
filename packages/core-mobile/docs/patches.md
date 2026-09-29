@@ -7,6 +7,11 @@
 
 ## Current patches
 
+> Note: patches applied through **yarn's `patch:` protocol** live in
+> `.yarn/patches/` and are wired up via `resolutions` in the root
+> `package.json`, not via patch-package. They are listed at the end of this
+> file.
+
 ### react-native-graph+1.1.0.patch
 
 1/ AnimatedLineGraph.js
@@ -155,12 +160,38 @@ Re-check on any `@shopify/flash-list` version bump (edits target `dist/`, since 
 
 Fixes Android leaving multiple launcher icons after switching the app icon more than once (CP-14555). This works together with the manifest change that makes `.MainActivity` a launcher-less, always-enabled target and routes the default icon through a dedicated `.MainActivityDefault` alias.
 
-The library's Android `setAlternateAppIcon` only ever disabled `currentActivity.componentName` — the component the activity was *launched* with. That value is fixed for the life of the activity, so switching icons again in the same session (without relaunching) enabled the new alias but never disabled the previously-enabled one, and launcher aliases accumulated → multiple home-screen icons.
+The library's Android `setAlternateAppIcon` only ever disabled `currentActivity.componentName` — the component the activity was _launched_ with. That value is fixed for the life of the activity, so switching icons again in the same session (without relaunching) enabled the new alias but never disabled the previously-enabled one, and launcher aliases accumulated → multiple home-screen icons.
 
 `android/src/main/java/expo/modules/alternateappicons/ExpoAlternateAppIconsModule.kt`:
 
 1. Enable the target `.MainActivity<Suffix>` alias first (for the default icon the suffix is `Default`, so a null icon maps to `.MainActivityDefault`), so the launcher always has a valid entry.
 
-2. Enumerate the package's activities (`GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS`) and disable every *other* `.MainActivity*` alias — never `.MainActivity` itself, which is the shared `targetActivity` of every alias (a disabled target makes all aliases un-launchable and bricks the app on the splash screen). This guarantees exactly one enabled launcher regardless of how many times the icon is switched, and self-heals dirty state.
+2. Enumerate the package's activities (`GET_ACTIVITIES | MATCH_DISABLED_COMPONENTS`) and disable every _other_ `.MainActivity*` alias — never `.MainActivity` itself, which is the shared `targetActivity` of every alias (a disabled target makes all aliases un-launchable and bricks the app on the splash screen). This guarantees exactly one enabled launcher regardless of how many times the icon is switched, and self-heals dirty state.
 
 iOS is unaffected (the iOS native module is separate; JS only sends the `Default` suffix on Android).
+
+## Yarn `patch:` protocol patches (.yarn/patches)
+
+These are applied through `resolutions` in the root `package.json` rather than
+patch-package. Create them with `yarn patch <pkg>` / `yarn patch-commit -s <dir>`.
+
+### @ledgerhq/device-signer-kit-ethereum
+
+Hermes' compiler segfaults in IRGen on `this` referenced inside a constructor's
+default-parameter initializer, which `ProvideEIP712ContextTask` uses. A device
+or Release build died with `Segmentation fault: 11` while compiling the bundle
+to bytecode. The patch moves the default into the constructor body.
+
+### @noble/curves, @bitcoinerlab/secp256k1
+
+Pre-existing; see the `resolutions` entries in the root `package.json`.
+
+## Not a patch, but related: the @avalabs/core-wallets-sdk version pin
+
+The root `package.json` pins `@avalabs/core-wallets-sdk` in `resolutions`. That
+is a **deduplication** pin, not a patch, and it must stay. Without it yarn
+installs several copies (core-mobile on its canary, the vm-modules on whatever
+they depend on), and provider objects then fail the `instanceof
+JsonRpcBatchInternal` / `BitcoinProvider` guards in `WalletService` — signing
+dies with "wrong provider obtained". `metro.config.js` disables package exports
+for the same reason.

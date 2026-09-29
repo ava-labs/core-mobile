@@ -28,6 +28,7 @@ import {
   LedgerAddressType,
   LedgerAppType,
   LedgerDerivationPathType,
+  LedgerSession,
   LedgerWalletData,
   PerAccountExtendedPublicKeys,
   PerAccountPublicKeys
@@ -45,13 +46,12 @@ import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import { toSegments } from 'utils/toSegments'
 import {
-  DeviceActionStatus,
   type DeviceManagementKit,
   type DeviceSessionId
 } from '@ledgerhq/device-management-kit'
 import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin'
-import { firstValueFrom } from 'rxjs'
 import { toUtf8 } from 'ethereumjs-util'
+import { runDeviceAction } from 'services/ledger/runDeviceAction'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -61,6 +61,14 @@ import {
   MessageSigningRequest
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
+
+// The Bitcoin signer kit wraps every call in OpenAppDeviceAction({ appName:
+// 'Bitcoin' }) and matches the running app by exact name, so it closes the
+// Bitcoin Recovery app and opens the plain Bitcoin one — the app the user was
+// just told to avoid, since Core does not support Bitcoin past
+// MAX_BITCOIN_APP_VERSION. LedgerService.waitForApp already gates readiness
+// with the Recovery app accepted as a substitute, so the kit must not switch.
+const SKIP_OPEN_APP = { skipOpenApp: true }
 
 export class LedgerWallet implements Wallet {
   private derivationPathSpec: LedgerDerivationPathType
@@ -401,12 +409,10 @@ export class LedgerWallet implements Wallet {
       const btcApp = new SignerBtcBuilder({ dmk, sessionId }).build()
 
       // Get master fingerprint from device
-      const masterFprRequest = await btcApp.getMasterFingerprint()
-      const masterFpr = await firstValueFrom(masterFprRequest.observable)
-
-      if (masterFpr.status !== DeviceActionStatus.Completed) {
-        throw new Error('Failed to get master fingerprint')
-      }
+      const masterFpr = await runDeviceAction(
+        btcApp.getMasterFingerprint(SKIP_OPEN_APP),
+        'getMasterFingerprint'
+      )
 
       // Get EVM derivation path for this account
       const derivationPath = `44'/60'/${accountIndex}'`
@@ -416,24 +422,29 @@ export class LedgerWallet implements Wallet {
         derivationPath
       )
 
-      // Get extended public key from device
-      const xpubRequest = await btcApp.getExtendedPublicKey(derivationPath, {
-        returnChainCode: true
-      })
-      const xpub = await firstValueFrom(xpubRequest.observable)
-
-      if (xpub.status !== DeviceActionStatus.Completed) {
-        throw new Error('Failed to get master fingerprint')
-      }
+      // checkOnDevice is the APDU's `display` flag, and it is load-bearing, not
+      // a UX choice: get_extended_pubkey rejects any non-standard BIP32 path
+      // with 0x6a82 unless the key is shown for confirmation
+      // (`if (!is_safe && !display) SEND_SW(SW_NOT_SUPPORTED)`). "Standard"
+      // requires coin type 0'/1', and Core derives its Bitcoin key from the EVM
+      // path 44'/60'/x', so the unconfirmed form is never accepted — by the
+      // Bitcoin app or the Recovery app.
+      const xpub = await runDeviceAction(
+        btcApp.getExtendedPublicKey(derivationPath, {
+          checkOnDevice: true,
+          ...SKIP_OPEN_APP
+        }),
+        'getExtendedPublicKey'
+      )
 
       Logger.info('Extended public key retrieved')
 
       // Note: We use WalletPolicy (not DefaultWalletPolicy) because we need a named policy for registration
       const policyName = `Core - ${accountName}`
       const walletPolicy = createWalletPolicy(
-        Buffer.from(masterFpr.output.masterFingerprint).toString('hex'),
+        Buffer.from(masterFpr.masterFingerprint).toString('hex'),
         accountIndex,
-        xpub.output.extendedPublicKey,
+        xpub.extendedPublicKey,
         policyName
       )
 
@@ -441,29 +452,23 @@ export class LedgerWallet implements Wallet {
 
       // Register the policy with the device
       Logger.info('Registering policy with Ledger device...')
-      const walletRegistrationRequest = await btcApp.registerWallet(
-        walletPolicy
+      const walletRegistration = await runDeviceAction(
+        btcApp.registerWallet(walletPolicy, SKIP_OPEN_APP),
+        'registerWallet'
       )
-      const walletRegistration = await firstValueFrom(
-        walletRegistrationRequest.observable
-      )
-
-      if (walletRegistration.status !== DeviceActionStatus.Completed) {
-        throw new Error('Failed to register wallet')
-      }
 
       Logger.info('Wallet policy registered successfully:', {
-        policyName: walletRegistration.output.name,
-        policyHmacLength: walletRegistration.output.hmac.length
+        policyName: walletRegistration.name,
+        policyHmacLength: walletRegistration.hmac.length
       })
 
       // Store the policy details in wallet data
       const policyDetails: BtcWalletPolicyDetails = {
-        hmacHex: Buffer.from(walletRegistration.output.hmac).toString('hex'),
-        masterFingerprint: Buffer.from(
-          masterFpr.output.masterFingerprint
-        ).toString('hex'),
-        xpub: xpub.output.extendedPublicKey,
+        hmacHex: Buffer.from(walletRegistration.hmac).toString('hex'),
+        masterFingerprint: Buffer.from(masterFpr.masterFingerprint).toString(
+          'hex'
+        ),
+        xpub: xpub.extendedPublicKey,
         name: policyName
       }
 
@@ -515,6 +520,11 @@ export class LedgerWallet implements Wallet {
     if (!publicKeys) {
       throw new Error(`Public keys not found for account index ${accountIndex}`)
     }
+
+    // SKIP_OPEN_APP leaves app readiness to the caller, so establish it here —
+    // through the path that accepts the Bitcoin Recovery app.
+    await this.handleAppConnection(LedgerAppType.BITCOIN)
+
     // Check if wallet policy is registered for this specific account
     const needsRegistration =
       BitcoinWalletPolicyService.needsBtcWalletPolicyRegistration(
@@ -1217,14 +1227,14 @@ export class LedgerWallet implements Wallet {
 
   private handleAppConnection = async (
     appType: LedgerAppType
-  ): Promise<TransportBLE> => {
+  ): Promise<LedgerSession> => {
     // First ensure we're connected to the device. ensureConnection
     // reconnects the BLE transport if it went idle between signings —
     // this is the safety net multi-step signing flows rely on.
     Logger.info('Ensuring connection to Ledger device...')
-    let transport: TransportBLE
+    let session: LedgerSession
     try {
-      transport = await LedgerService.ensureConnection()
+      session = await LedgerService.ensureConnection()
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
@@ -1240,7 +1250,7 @@ export class LedgerWallet implements Wallet {
       await LedgerService.openApp(appType)
       await LedgerService.waitForApp(appType, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
       Logger.info(`${appType} app is ready`)
-      return transport
+      return session
     } catch (error) {
       Logger.error(`Failed to detect ${appType} app:`, error)
       if (error instanceof Error) {

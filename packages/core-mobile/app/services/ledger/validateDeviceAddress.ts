@@ -1,4 +1,5 @@
 import { utils } from '@avalabs/avalanchejs'
+import bs58 from 'bs58'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { isAddress } from 'viem'
 import SentryService from 'services/sentry/SentryService'
@@ -244,41 +245,44 @@ export const assertDevicePublicKey = (
   return publicKey
 }
 
-export interface LedgerSolanaAddressReply {
-  address?: Buffer
-  returnCode?: number
-  errorMessage?: string
-}
-
 /**
- * Validates a Solana address reply. Unlike the Avalanche bech32/EVM calls,
- * `getAddress` returns the raw 32-byte ed25519 public key as a Buffer rather
- * than an encoded string, so it needs its own length check ahead of the
- * base58 encode.
+ * Validates the Solana address returned by `@ledgerhq/device-signer-kit-solana`.
+ * That signer hands back the base58-encoded ed25519 public key rather than the
+ * raw bytes the Avalanche app's calls return, so the length check runs on the
+ * decode rather than on the reply — an empty or truncated frame decodes to the
+ * wrong byte count and fails closed here (CP-14964).
  */
-export const assertDeviceSolanaAddress = (
+export const assertDeviceSolanaBase58Address = (
   call: string,
-  reply?: LedgerSolanaAddressReply
-): Buffer => {
-  assertReturnCode(call, reply as LedgerAddressReply | undefined)
-
-  const address = reply?.address
+  address?: string
+): string => {
   const diagnostics: FailDiagnostics = {
-    returnCode: reply?.returnCode,
     addressType: typeof address,
-    addressLength: Buffer.isBuffer(address) ? address.length : undefined
+    addressLength: typeof address === 'string' ? address.length : undefined,
+    addressPreview:
+      typeof address === 'string' ? previewString(address) : undefined
   }
 
-  if (!Buffer.isBuffer(address)) {
+  if (typeof address !== 'string' || address.length === 0) {
     return fail(call, 'address', {
-      reason: `expected a Buffer, got ${typeof address}`,
+      reason: `expected a non-empty string, got ${typeof address}`,
       ...diagnostics
     })
   }
 
-  if (address.length !== SOLANA_ADDRESS_LENGTH) {
+  let decodedLength: number
+  try {
+    decodedLength = bs58.decode(address).length
+  } catch {
     return fail(call, 'address', {
-      reason: `expected a ${SOLANA_ADDRESS_LENGTH}-byte address, got ${address.length} bytes`,
+      reason: 'not valid base58',
+      ...diagnostics
+    })
+  }
+
+  if (decodedLength !== SOLANA_ADDRESS_LENGTH) {
+    return fail(call, 'address', {
+      reason: `expected a ${SOLANA_ADDRESS_LENGTH}-byte address, got ${decodedLength} bytes`,
       ...diagnostics
     })
   }

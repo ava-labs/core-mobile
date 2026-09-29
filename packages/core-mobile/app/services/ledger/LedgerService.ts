@@ -1,31 +1,44 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import * as Sentry from '@sentry/react-native'
-import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
 import {
   getAddressDerivationPath,
   handleLedgerError
 } from 'services/wallet/utils'
-import {
-  getBtcAddressFromPubKey,
-  getLedgerAppInfo
-} from '@avalabs/core-wallets-sdk'
+import { getBtcAddressFromPubKey } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
 import { getAddress } from 'ethers'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
-import bs58 from 'bs58'
 import { DERIVATION_PATHS, LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { Curve } from 'utils/publicKeys'
 import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { BluetoothState } from 'services/bluetooth/types'
 import BluetoothService from 'services/bluetooth/BluetoothService'
-import { DeviceManagementKit } from '@ledgerhq/device-management-kit'
+import {
+  CloseAppCommand,
+  DeviceManagementKit,
+  DeviceManagementKitBuilder,
+  DeviceStatus,
+  GetAppAndVersionCommand,
+  isSuccessCommandResult,
+  OpenAppCommand,
+  type DeviceSessionId,
+  type DeviceSessionState,
+  type DiscoveredDevice
+} from '@ledgerhq/device-management-kit'
+import {
+  RNBleTransportFactory,
+  rnBleTransportIdentifier
+} from '@ledgerhq/device-transport-kit-react-native-ble'
+import AvalancheApp from '@avalabs/hw-app-avalanche'
+import { SignerSolanaBuilder } from '@ledgerhq/device-signer-kit-solana'
+import { filter, firstValueFrom, map, timeout, type Subscription } from 'rxjs'
 import {
   assertDeviceBech32Address,
   assertDeviceEvmAddress,
   assertDevicePublicKey,
-  assertDeviceSolanaAddress
+  assertDeviceSolanaBase58Address
 } from './validateDeviceAddress'
 import {
   AddressInfo,
@@ -36,6 +49,7 @@ import {
   LedgerReturnCode,
   AppInfo,
   LedgerDevice,
+  LedgerSession,
   AvalancheKey,
   LEDGER_ERROR_CODES,
   LedgerDerivationPathType
@@ -48,9 +62,12 @@ import {
   ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
+import { DmkApduTransport } from './DmkApduTransport'
+import { runDeviceAction } from './runDeviceAction'
 
 class LedgerService {
   #dmk: DeviceManagementKit | null = null
+  #sessionId: DeviceSessionId | null = null
   private _currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private currentAppVersion = ''
 
@@ -68,87 +85,41 @@ class LedgerService {
     }
   }
 
-  private appPollingInterval: number | null = null
-  private disconnectHandler: (() => void) | null = null
+  private sessionStateSubscription: Subscription | null = null
+  private appPollingInterval: ReturnType<typeof setInterval> | null = null
+  private appPollInFlight = false
+  private openAppInFlight: Map<LedgerAppType, Promise<void>> = new Map()
+  // Mirrors the last deviceStatus we told listeners about, so a session-state
+  // emission that doesn't change connectedness doesn't re-notify.
+  private isDeviceReachable = false
 
   // Reconnection state & policy
   private connectedDeviceId: string | null = null
-  private isAttemptingReconnect = false
   private autoReconnectDisabled = false
   // Mutex: serializes all connect() calls so concurrent callers
   // (manual reconnect, auto-reconnect, onboarding) don't race on
-  // TransportBLE.open().
+  // dmk.connect().
   private connectInFlight: Promise<void> | null = null
   private connectInFlightDeviceId: string | null = null
   private connectionStateListeners: Set<(connected: boolean) => void> =
     new Set()
 
   // Device scanning state
-  private scanSubscription: { unsubscribe: () => void } | null = null
+  private scanSubscription: Subscription | null = null
   private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
   private currentDevices: LedgerDevice[] = []
   private isScanning = false
+  // dmk.connect() needs the DiscoveredDevice object, not just its id, so every
+  // device we see during discovery is kept here for connect() to look up.
+  private discoveredDevices: Map<string, DiscoveredDevice> = new Map()
 
-  // Wrap transport's exchange method to automatically handle busy state
-  private wrapTransportExchange(): void {
-    if (!this.#transport) return
-    const originalExchange = this.#transport.exchange.bind(this.#transport)
-
-    // Replace exchange method with wrapped version
-    this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
-      // If transport is busy, wait before sending next command
-      if (this.#transport?.exchangeBusyPromise) {
-        await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
-      }
-      try {
-        const reply = await originalExchange(apdu)
-        this.recordApduBreadcrumb(apdu, reply)
-        return reply
-      } catch (error) {
-        // If error is still due to busy transport, reconnect
-        if (
-          error instanceof Error &&
-          (error.message
-            .toLowerCase()
-            .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT) ||
-            error.message
-              .toLowerCase()
-              .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
-        ) {
-          // wait for the transport and retry
-          await new Promise(res =>
-            setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
-          )
-          const reply = await originalExchange(apdu)
-          this.recordApduBreadcrumb(apdu, reply)
-          return reply
-        }
-        // Other errors should be thrown immediately
-        throw error
-      }
+  private get dmk(): DeviceManagementKit {
+    if (!this.#dmk) {
+      this.#dmk = new DeviceManagementKitBuilder()
+        .addTransport(RNBleTransportFactory)
+        .build()
     }
-  }
-
-  // Frame-metadata-only breadcrumb (never payload bytes) for every APDU
-  // exchange. Sentry attaches recent breadcrumbs to any error captured
-  // afterwards, so a later validateDeviceAddress capture carries the reply
-  // length and status word — the signal that distinguishes a truncated
-  // transport frame from a device/app that legitimately returned empty (CP-14964).
-  private recordApduBreadcrumb(apdu: Buffer, reply: Buffer): void {
-    try {
-      Sentry.addBreadcrumb({
-        category: AllowedSentryBreadcrumbCategory.LedgerApdu,
-        level: 'info',
-        data: {
-          cla: (apdu[0] ?? 0).toString(16).padStart(2, '0'),
-          ins: (apdu[1] ?? 0).toString(16).padStart(2, '0'),
-          replyLength: reply.length,
-          statusWord: reply.subarray(-2).toString('hex')
-        }
-      })
-    } catch {
-      // Breadcrumb capture must never break a real APDU exchange.
-    }
+    return this.#dmk
   }
 
   // Session-global Sentry tags so any later Ledger error (e.g. a
@@ -189,11 +160,20 @@ class LedgerService {
     }
   }
 
-  // Serializing wrapper: ensures only one TransportBLE.open() is in
-  // flight at a time. Same-device callers share the in-flight promise;
-  // different-device callers are rejected so they don't silently get
-  // connected to the wrong device.
+  // Same-device callers share the in-flight promise; different-device callers
+  // are rejected so they don't silently get connected to the wrong device.
   async connect(deviceId: string): Promise<void> {
+    // Already live on this device — do nothing. Several callers drive connect
+    // (the setup context, useLedgerBLEConnection's reconnect effect), and a
+    // second call lands after the first has resolved, so the in-flight mutex
+    // below does not catch it. Reconnecting would tear down a working session,
+    // and the teardown races the new connect: the device drops and the fresh
+    // session is born dead.
+    if (this.connectedDeviceId === deviceId && this.isConnected()) {
+      Logger.info('connect() ignored — already connected to this device')
+      return
+    }
+
     if (this.connectInFlight) {
       if (this.connectInFlightDeviceId === deviceId) {
         Logger.info('connect() already in flight — joining existing attempt')
@@ -205,7 +185,13 @@ class LedgerService {
     }
 
     this.connectInFlightDeviceId = deviceId
-    this.connectInFlight = this.connectInternal(deviceId).finally(() => {
+    // Bounded so the mutex always clears: an unbounded connectInternal would
+    // make every later caller join a promise that never settles.
+    this.connectInFlight = this.withTimeout(
+      this.connectInternal(deviceId),
+      LEDGER_TIMEOUTS.CONNECTION_TIMEOUT,
+      'connect'
+    ).finally(() => {
       this.connectInFlight = null
       this.connectInFlightDeviceId = null
     })
@@ -216,51 +202,21 @@ class LedgerService {
   // Connect to Ledger device (transport only, no apps)
   private async connectInternal(deviceId: string): Promise<void> {
     try {
-      Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       await this.assertBluetoothAvailable()
-      // Only reset auto-reconnect policy on user-initiated connects,
-      // not when called from the auto-reconnect loop — otherwise an
-      // in-flight reconnect can undo a forgetDevice() call.
-      if (!this.isAttemptingReconnect) {
-        this.autoReconnectDisabled = false
-      }
+      this.autoReconnectDisabled = false
       this.connectedDeviceId = deviceId // Store for auto-reconnect
 
-      // Clean up any previous transport's disconnect listener before
-      // opening a new one — otherwise a late-firing event from the old
-      // transport can null out the new #transport.
-      if (this.#transport && this.disconnectHandler) {
-        this.#transport.off('disconnect', this.disconnectHandler)
-        this.disconnectHandler = null
-      }
+      // Tear down any previous session before opening a new one, so a
+      // late-firing state emission from the old session can't clobber the
+      // new one's app/connection state.
+      await this.teardownSession()
 
-      await TransportBLE.disconnectDevice(deviceId).catch(Logger.error)
+      const device = await this.resolveDiscoveredDevice(deviceId)
 
-      this.#transport = await TransportBLE.open(
-        deviceId,
-        LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
-      )
-      Logger.info('BLE transport connected successfully')
-
-      // Listen for unexpected BLE disconnects (e.g. Ledger auto-sleep)
-      // so we can attempt auto-reconnect instead of silently going stale.
-      // Capture the transport instance so stale events from a previous
-      // transport are ignored even if #transport has been replaced.
-      const currentTransport = this.#transport
-      this.disconnectHandler = (): void => {
-        if (this.#transport !== currentTransport) {
-          Logger.info('Ignoring disconnect from stale transport')
-          return
-        }
-        Logger.info('Transport disconnect event received')
-        this.handleTransportDisconnect()
-      }
-      this.#transport.on('disconnect', this.disconnectHandler)
-
-      // Wrap the transport's exchange method to automatically handle busy state
-      this.wrapTransportExchange()
+      this.#sessionId = await this.dmk.connect({ device })
 
       this.currentAppType = LedgerAppType.UNKNOWN
+      this.isDeviceReachable = true
 
       // Notify listeners that the connection is up
       this.notifyConnectionStateListeners(true)
@@ -278,10 +234,9 @@ class LedgerService {
         this.currentAppType = detectedAppType
         this.currentAppVersion = testAppInfo.version
         this.recordLedgerAppSentryTags(detectedAppType, testAppInfo.version)
-      } catch (error) {
-        Logger.info(
-          'Immediate get current app info failed, will rely on polling'
-        )
+      } catch {
+        // Best-effort: refreshAppInfo's poll picks the app type up shortly.
+        Logger.info('Immediate app-info probe failed, relying on polling')
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
@@ -296,111 +251,89 @@ class LedgerService {
     }
   }
 
-  // Handle an unexpected BLE transport disconnect (e.g. Ledger auto-sleep).
-  // Cleans up stale state and funnels reconnection through scheduleReconnect.
-  private handleTransportDisconnect(): void {
-    // If #transport is already null, disconnect() already ran and cleaned
-    // up — this is a late-firing event on the old transport object.
-    // Skip entirely to avoid spurious reconnects.
-    if (!this.#transport) return
+  /**
+   * dmk.connect() takes a DiscoveredDevice, but our callers (and the persisted
+   * wallet) only hold a device id. Devices seen during a user-initiated scan are
+   * already cached; otherwise — reconnecting after a restart or a
+   * background/foreground cycle, where no scan preceded — run a bounded
+   * discovery to find this one.
+   */
+  private async resolveDiscoveredDevice(
+    deviceId: string
+  ): Promise<DiscoveredDevice> {
+    const cached = this.discoveredDevices.get(deviceId)
+    if (cached) return cached
 
-    // Detach the listener before nulling so the transport object doesn't
-    // hold a reference to a stale handler.
-    if (this.disconnectHandler) {
-      this.#transport.off('disconnect', this.disconnectHandler)
-      this.disconnectHandler = null
+    Logger.info(`Device ${deviceId} not in scan cache — discovering`)
+
+    try {
+      return await firstValueFrom(
+        this.dmk
+          .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
+          .pipe(
+            map(devices => {
+              devices.forEach(d => this.discoveredDevices.set(d.id, d))
+              return devices.find(d => d.id === deviceId)
+            }),
+            filter((found): found is DiscoveredDevice => found !== undefined),
+            timeout(LEDGER_TIMEOUTS.CONNECTION_TIMEOUT)
+          )
+      )
+    } finally {
+      // Only stop the scan we started here; a user-initiated scan owns its own
+      // lifecycle and must keep running.
+      if (!this.isScanning) {
+        await this.dmk.stopDiscovering().catch(Logger.error)
+      }
     }
-    this.#transport = null
-    this.currentAppType = LedgerAppType.UNKNOWN
-    this.stopAppPolling()
-    this.notifyConnectionStateListeners(false)
-    this.scheduleReconnect('transport-disconnect')
   }
 
-  // Centralized reconnect entry — all reconnection triggers funnel here
-  // to prevent race conditions and redundant loops.
+  /**
+   * The session is deliberately kept across a NOT_CONNECTED emission: the BLE
+   * transport retries the link itself, and a successful retry brings this same
+   * session back to CONNECTED. Only an explicit disconnect() tears it down.
+   */
+  private handleSessionState(state: DeviceSessionState): void {
+    const reachable = state.deviceStatus !== DeviceStatus.NOT_CONNECTED
+
+    if (reachable !== this.isDeviceReachable) {
+      this.isDeviceReachable = reachable
+      Logger.info(
+        `Ledger device ${reachable ? 'reachable' : 'unreachable'} (${
+          state.deviceStatus
+        })`
+      )
+      this.notifyConnectionStateListeners(reachable)
+    }
+
+    if (!reachable) {
+      this.currentAppType = LedgerAppType.UNKNOWN
+    }
+  }
+
+  /*
+   * The kit's session state deliberately does NOT feed currentAppType. Its
+   * `currentApp` reports BOLOS (the dashboard) on this transport even while an
+   * app is open, and a direct GetAppAndVersion disagrees. With both writing,
+   * the refresher (~1s) and refreshAppInfo (2s) overwrote each other and the
+   * app type flapped Unknown <-> Avalanche. refreshAppInfo is the single
+   * source; this only tracks reachability.
+   */
+
+  // Centralized reconnect entry. The BLE transport retries unexpected drops on
+  // its own, so this only covers sessions we closed deliberately — most of all
+  // the background→foreground cycle, where disconnect({ manual: false })
+  // released the link and nothing else will bring it back.
   scheduleReconnect(reason: string): void {
     if (
       this.autoReconnectDisabled ||
-      this.isAttemptingReconnect ||
-      !this.connectedDeviceId
+      !this.connectedDeviceId ||
+      this.isConnected()
     ) {
       return
     }
     Logger.info(`Scheduling Ledger reconnect: ${reason}`)
-    this.attemptReconnect().catch(Logger.error)
-  }
-
-  // Returns true when the reconnect loop should bail out — either because
-  // auto-reconnect was disabled (e.g. forgetDevice during wallet
-  // switch) or because a different device connected in the meantime.
-  private shouldCancelReconnect(originalDeviceId: string): boolean {
-    if (this.autoReconnectDisabled) {
-      Logger.info('Reconnect cancelled: auto-reconnect disabled')
-      return true
-    }
-    if (this.connectedDeviceId !== originalDeviceId) {
-      Logger.info(
-        'Reconnect cancelled: connectedDeviceId changed ' +
-          `(was ${originalDeviceId}, now ${this.connectedDeviceId})`
-      )
-      return true
-    }
-    return false
-  }
-
-  // Auto-reconnect with exponential backoff. Gives the Ledger device
-  // time to finish waking from sleep before each retry.
-  private async attemptReconnect(): Promise<void> {
-    if (this.isAttemptingReconnect || !this.connectedDeviceId) return
-
-    this.isAttemptingReconnect = true
-    const deviceId = this.connectedDeviceId
-
-    try {
-      for (
-        let attempt = 1;
-        attempt <= LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES;
-        attempt++
-      ) {
-        if (this.shouldCancelReconnect(deviceId)) return
-
-        try {
-          Logger.info(
-            `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} for device ${deviceId}`
-          )
-          await this.connect(deviceId)
-
-          // If forgetDevice() was called while connect() was
-          // in flight, tear down the connection we just established.
-          if (this.shouldCancelReconnect(deviceId)) {
-            await this.disconnect({ manual: true })
-            return
-          }
-
-          Logger.info(`Reconnection succeeded on attempt ${attempt}`)
-          return
-        } catch (error) {
-          Logger.error(
-            `Reconnection attempt ${attempt}/${LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES} failed:`,
-            error
-          )
-          if (attempt >= LEDGER_TIMEOUTS.RECONNECT_MAX_RETRIES) continue
-
-          const delay =
-            LEDGER_TIMEOUTS.RECONNECT_BASE_DELAY * 2 ** (attempt - 1)
-          await new Promise(res => setTimeout(res, delay))
-
-          // Re-check after the delay — forgetDevice() may have
-          // been called while we were sleeping.
-          if (this.shouldCancelReconnect(deviceId)) return
-        }
-      }
-      Logger.error('All reconnection attempts failed')
-      this.notifyConnectionStateListeners(false)
-    } finally {
-      this.isAttemptingReconnect = false
-    }
+    this.connect(this.connectedDeviceId).catch(Logger.error)
   }
 
   // Allow UI components to subscribe to connection state changes so
@@ -422,44 +355,56 @@ class LedgerService {
     })
   }
 
-  // Start passive app detection polling
+  // Two independent feeds: the session subscription for reachability, and an
+  // interval for the app type. The interval is not redundant — the kit's own
+  // refresher reports the running app only once the session reaches a Ready
+  // state, which does not happen reliably over this transport.
   private startAppPolling(): void {
-    if (this.appPollingInterval !== null) {
-      return
+    if (!this.#sessionId) return
+
+    if (!this.sessionStateSubscription) {
+      this.sessionStateSubscription = this.dmk
+        .getDeviceSessionState({ sessionId: this.#sessionId })
+        .subscribe({
+          next: state => this.handleSessionState(state),
+          error: error => Logger.error('Ledger session state error', error)
+        })
     }
 
-    this.appPollingInterval = setInterval(async () => {
-      try {
-        if (!this.#transport || !this.#transport.isConnected) {
-          this.stopAppPolling()
-
-          // Safety net: if the transport disconnect event did not fire,
-          // funnel through the central reconnect gateway.
-          this.scheduleReconnect('polling-detected-disconnect')
-          return
-        }
-
-        const appInfo = await this.getCurrentAppInfo()
-        const newAppType = this.mapAppNameToType(appInfo.applicationName)
-
-        if (newAppType !== this.currentAppType) {
-          Logger.info(
-            `App changed from ${this.currentAppType} to ${newAppType}`
-          )
-          this.currentAppType = newAppType
-        }
-        this.currentAppVersion = appInfo.version
-        this.recordLedgerAppSentryTags(newAppType, appInfo.version)
-      } catch (error) {
-        Logger.error('Error polling app info', error)
-        // Don't stop polling on error, just log it
-      }
-    }, LEDGER_TIMEOUTS.APP_POLLING_INTERVAL)
+    if (this.appPollingInterval === null) {
+      this.appPollingInterval = setInterval(() => {
+        void this.refreshAppInfo()
+      }, LEDGER_TIMEOUTS.APP_POLLING_INTERVAL)
+    }
   }
 
-  // Stop passive app detection polling
+  /** Reads the running app straight from the device. */
+  private async refreshAppInfo(): Promise<void> {
+    if (this.appPollInFlight || !this.isConnected()) return
+    this.appPollInFlight = true
+
+    try {
+      const { applicationName, version } = await this.getCurrentAppInfo()
+      const newAppType = this.mapAppNameToType(applicationName)
+
+      if (newAppType !== this.currentAppType) {
+        Logger.info(`App changed from ${this.currentAppType} to ${newAppType}`)
+        this.currentAppType = newAppType
+      }
+      this.currentAppVersion = version
+      this.recordLedgerAppSentryTags(newAppType, version)
+    } catch {
+      // Expected while the device is switching apps; keep polling.
+    } finally {
+      this.appPollInFlight = false
+    }
+  }
+
   stopAppPolling(): void {
-    if (this.appPollingInterval) {
+    this.sessionStateSubscription?.unsubscribe()
+    this.sessionStateSubscription = null
+
+    if (this.appPollingInterval !== null) {
       clearInterval(this.appPollingInterval)
       this.appPollingInterval = null
     }
@@ -483,7 +428,6 @@ class LedgerService {
     })
   }
 
-  // Device scanning methods (matching original implementation)
   async startDeviceScanning(
     onScanError: (error: { title: string; message: string }) => void
   ): Promise<void> {
@@ -498,45 +442,38 @@ class LedgerService {
     Logger.info('Starting device scanning...')
     this.isScanning = true
     this.currentDevices = []
+    // Drop devices from a previous scan: their DiscoveredDevice handles may no
+    // longer be connectable, and connect() would prefer them over a fresh one.
+    this.discoveredDevices.clear()
 
     try {
-      this.scanSubscription = TransportBLE.listen({
-        next: (event: {
-          type: string
-          descriptor: { id: string; name?: string; rssi?: number }
-        }) => {
-          if (event.type === 'add') {
-            const device: LedgerDevice = {
-              id: event.descriptor.id,
-              name: event.descriptor.name || 'Unknown Device',
-              rssi: event.descriptor.rssi
-            }
+      // listenToAvailableDevices emits the whole known-device list on every
+      // change, so each emission replaces currentDevices outright rather than
+      // accumulating 'add' events.
+      this.scanSubscription = this.dmk
+        .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
+        .subscribe({
+          next: (devices: DiscoveredDevice[]) => {
+            devices.forEach(device =>
+              this.discoveredDevices.set(device.id, device)
+            )
 
-            Logger.info('Found Ledger device:', {
+            this.currentDevices = devices.map(device => ({
               id: device.id,
-              name: device.name
-            })
+              name: device.name || 'Unknown Device',
+              rssi: device.rssi ?? undefined
+            }))
 
-            // Update device list (matching original logic)
-            const exists = this.currentDevices.find(d => d.id === device.id)
-            if (!exists) {
-              this.currentDevices = [...this.currentDevices, device]
-            }
-
-            // Notify all listeners
             this.notifyDeviceListeners()
+          },
+          error: (error: Error) => {
+            this.handleScanError(error, onScanError)
+          },
+          complete: () => {
+            Logger.info('Device scanning completed')
           }
-        },
-        error: (error: Error) => {
-          this.handleScanError(error, onScanError)
-        },
+        })
 
-        complete: () => {
-          Logger.info('Device scanning completed')
-        }
-      })
-
-      // Auto-stop scanning after timeout (matching original)
       setTimeout(() => {
         Logger.info('Scan timeout reached, stopping...')
         this.stopDeviceScanning()
@@ -566,6 +503,7 @@ class LedgerService {
     }
 
     this.isScanning = false
+    this.dmk.stopDiscovering().catch(Logger.error)
   }
 
   addDeviceListener(callback: (devices: LedgerDevice[]) => void): void {
@@ -600,11 +538,31 @@ class LedgerService {
     this.currentDevices = this.currentDevices.filter(
       device => device.id !== deviceId
     )
+    this.discoveredDevices.delete(deviceId)
     this.notifyDeviceListeners()
   }
 
   private async getCurrentAppInfo(): Promise<AppInfo> {
-    return this.withTransport(transport => getLedgerAppInfo(transport))
+    return this.withSession(async ({ dmk, sessionId }) => {
+      const result = await this.withTimeout(
+        dmk.sendCommand({
+          sessionId,
+          command: new GetAppAndVersionCommand(),
+          abortTimeout: LEDGER_TIMEOUTS.APDU_TIMEOUT
+        }),
+        LEDGER_TIMEOUTS.APDU_TIMEOUT,
+        'getAppAndVersion'
+      )
+
+      if (!isSuccessCommandResult(result)) {
+        throw new Error(`Ledger getAppAndVersion failed: ${result.error}`)
+      }
+
+      return {
+        applicationName: result.data.name,
+        version: result.data.version
+      }
+    })
   }
 
   // Map app name to our enum
@@ -626,6 +584,10 @@ class LedgerService {
         return LedgerAppType.BITCOIN
       case 'bitcoin recovery':
         return LedgerAppType.BITCOIN_RECOVERY
+      // The dashboard/OS. A normal state, not an unrecognised app, so it is
+      // mapped quietly rather than logged on every poll.
+      case 'bolos':
+        return LedgerAppType.UNKNOWN
       default:
         Logger.info(`Unknown app name detected: "${appName}"`)
         return LedgerAppType.UNKNOWN
@@ -713,7 +675,6 @@ class LedgerService {
     signal?: AbortSignal
   ): Promise<void> {
     const startTime = Date.now()
-    Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
     // Abort-aware delay: resolves after APP_CHECK_DELAY or rejects
     // immediately when the signal fires — so cancellation doesn't have
@@ -736,11 +697,10 @@ class LedgerService {
         throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
       }
 
-      if (!this.#transport?.isConnected) {
-        throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
-      }
-
-      if (await this.checkApp(appType)) {
+      // The device drops BLE while it switches apps and the transport brings
+      // the same session back, so an unreachable device here means "not ready
+      // yet", not "gone". Only the deadline below ends the wait.
+      if (this.isConnected() && (await this.checkApp(appType))) {
         return
       }
 
@@ -760,16 +720,54 @@ class LedgerService {
     )
   }
 
-  // Gatekeeper — wraps all SDK calls with a fast-fail transport check.
-  // If the transport is gone, the caller finds out immediately instead
+  // Gatekeeper — wraps all SDK calls with a fast-fail session check.
+  // If the session is gone, the caller finds out immediately instead
   // of hanging on a background retry.
-  private async withTransport<T>(
-    operation: (t: Transport) => Promise<T>
+  /**
+   * Hard ceiling on anything the kit returns. A command issued while the
+   * device is dropping BLE can leave a promise that never settles — the kit's
+   * own abortTimeout did not fire in that case — and one of those wedges
+   * connect(), which the in-flight mutex then turns into a permanent stall for
+   * every later attempt.
+   */
+  private async withTimeout<T>(
+    work: Promise<T>,
+    ms: number,
+    what: string
   ): Promise<T> {
-    if (!this.#transport?.isConnected) {
-      throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    try {
+      return await Promise.race([
+        work,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`Ledger ${what} timed out after ${ms}ms`)),
+            ms
+          )
+        })
+      ])
+    } finally {
+      if (timer) clearTimeout(timer)
     }
-    return operation(this.#transport as unknown as Transport)
+  }
+
+  private async withSession<T>(
+    operation: (session: LedgerSession) => Promise<T>
+  ): Promise<T> {
+    return operation(this.getSession())
+  }
+
+  /**
+   * The Avalanche app SDK talks over a plain APDU `send`, but its C-chain
+   * methods are driven by the kit's Ethereum signer, so it needs the session
+   * itself alongside the transport wrapping it.
+   */
+  private avalancheApp({ dmk, sessionId }: LedgerSession): AvalancheApp {
+    return new AvalancheApp(new DmkApduTransport(dmk, sessionId), {
+      dmk,
+      sessionId
+    })
   }
 
   /**
@@ -803,8 +801,8 @@ class LedgerService {
   }> {
     await this.ensureAppReady(LedgerAppType.AVALANCHE)
 
-    return this.withTransport(async transport => {
-      const avalancheApp = new AppAvalanche(transport)
+    return this.withSession(async session => {
+      const avalancheApp = this.avalancheApp(session)
 
       const evmPath =
         derivationPathType === LedgerDerivationPathType.BIP44
@@ -872,8 +870,8 @@ class LedgerService {
   ): Promise<AddressInfo[]> {
     await this.ensureAppReady(LedgerAppType.AVALANCHE)
 
-    return this.withTransport(async transport => {
-      const avalancheApp = new AppAvalanche(transport)
+    return this.withSession(async session => {
+      const avalancheApp = this.avalancheApp(session)
       const addresses: AddressInfo[] = []
       const networkHrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
 
@@ -983,33 +981,24 @@ class LedgerService {
   // manual = false → lifecycle sleep (backgrounding) → allow auto-reconnect
   async disconnect({ manual = true } = {}): Promise<void> {
     this.autoReconnectDisabled = manual
+    await this.teardownSession()
+  }
+
+  private async teardownSession(): Promise<void> {
     this.stopAppPolling()
 
-    if (this.#transport) {
-      // Capture transport before nulling so we can still call close() below.
-      const transport = this.#transport
-      const deviceId = transport.id
-      // Remove disconnect listener before nulling transport so the
-      // handler doesn't fire during teardown and trigger a spurious
-      // reconnect attempt.
-      if (this.disconnectHandler) {
-        transport.off('disconnect', this.disconnectHandler)
-        this.disconnectHandler = null
-      }
-      this.#transport = null
-      this.currentAppType = LedgerAppType.UNKNOWN
-      this.notifyConnectionStateListeners(false)
-      // disconnectDevice() immediately drops the physical BLE link so other
-      // devices can connect without the ~5 s delay that transport.close() imposes.
-      try {
-        await TransportBLE.disconnectDevice(deviceId)
-      } catch (error) {
-        Logger.error('Failed to disconnect Ledger BLE device', error)
-      }
-      // Fire-and-forget close() for SDK-side cleanup (cancels pending exchanges,
-      // removes internal BLE listeners, resets transport state). The BLE link is
-      // already down at this point so the delay inside close() has no effect.
-      transport.close().catch(Logger.error)
+    const sessionId = this.#sessionId
+    if (!sessionId) return
+
+    this.#sessionId = null
+    this.isDeviceReachable = false
+    this.currentAppType = LedgerAppType.UNKNOWN
+    this.notifyConnectionStateListeners(false)
+
+    try {
+      await this.dmk.disconnect({ sessionId })
+    } catch (error) {
+      Logger.error('Failed to disconnect Ledger session', error)
     }
   }
 
@@ -1020,37 +1009,51 @@ class LedgerService {
     this.autoReconnectDisabled = true
   }
 
-  // Check if transport is available and connected
   isConnected(): boolean {
-    return this.#transport !== null && this.#transport.isConnected
+    return this.#sessionId !== null && this.isDeviceReachable
   }
 
-  // Get the current transport with fast-fail.
-  // Throws immediately if the transport is not available — callers should
-  // show a reconnect prompt rather than silently retrying.
-  getTransport(): TransportBLE {
-    if (!this.#transport?.isConnected) {
+  // Throws rather than retrying: callers should surface a reconnect prompt
+  // instead of silently hanging on a dead session.
+  getSession(): LedgerSession {
+    if (!this.#dmk || !this.#sessionId || !this.isDeviceReachable) {
       throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
     }
-    return this.#transport
+    return { dmk: this.#dmk, sessionId: this.#sessionId }
   }
 
-  // Ensure a live BLE transport before returning it. Multi-step signing
+  // Ensure a live device session before returning it. Multi-step signing
   // flows (e.g. delegation, claim P→C) leave the link idle between steps;
-  // a silent BLE drop or device sleep can leave #transport stale by the
+  // a silent BLE drop or device sleep can leave the session unreachable by the
   // time the next step calls into the signer. ensureConnection reconnects
   // to the remembered deviceId in that case so the second prompt actually
   // reaches the device. connect() is mutex-guarded, so joining an
   // in-flight auto-reconnect is safe.
-  async ensureConnection(): Promise<TransportBLE> {
+  async ensureConnection(): Promise<LedgerSession> {
     if (!this.connectedDeviceId) {
       throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
     }
-    if (!this.#transport || !this.#transport.isConnected) {
-      Logger.info('[ensureConnection] transport unavailable — reconnecting')
+    if (!this.isConnected()) {
+      Logger.info('[ensureConnection] session unavailable — reconnecting')
       await this.connect(this.connectedDeviceId)
     }
-    return this.getTransport()
+    return this.getSession()
+  }
+
+  /**
+   * Waits for the kit to report the device reachable again. Opening or closing
+   * an app makes the device drop BLE; the transport reconnects the same
+   * session, so the only correct response is to wait.
+   */
+  private async waitUntilReachable(timeoutMs: number): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs
+
+    while (Date.now() < deadline) {
+      if (this.isConnected()) return true
+      await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.APP_CHECK_DELAY))
+    }
+
+    return this.isConnected()
   }
 
   // Always-verify app readiness: skip the openApp APDU if the cached state
@@ -1091,8 +1094,8 @@ class LedgerService {
       throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
     }
 
-    return this.withTransport(async transport => {
-      const solanaApp = new AppSolana(transport)
+    return this.withSession(async ({ dmk, sessionId }) => {
+      const solanaSigner = new SignerSolanaBuilder({ dmk, sessionId }).build()
 
       // Use the SDK's derivation path function (same as other chains)
       const derivationPath = getAddressDerivationPath({
@@ -1101,11 +1104,20 @@ class LedgerService {
       })
       // Remove 'm/' prefix if present (Ledger expects path without prefix)
       const ledgerDerivationPath = derivationPath.replace(/^m\//, '')
-      const result = await solanaApp.getAddress(ledgerDerivationPath, false)
-      const address = assertDeviceSolanaAddress('getAddress(solana)', result)
+      // ensureAppReady already put the Solana app in front, so the signer's own
+      // open-app step would only cost another round trip.
+      const result = await runDeviceAction(
+        solanaSigner.getAddress(ledgerDerivationPath, {
+          checkOnDevice: false,
+          skipOpenApp: true
+        }),
+        'getAddress(solana)'
+      )
 
-      // Convert the Buffer to base58 format (Solana address format)
-      const solanaAddress = bs58.encode(new Uint8Array(address))
+      const solanaAddress = assertDeviceSolanaBase58Address(
+        'getAddress(solana)',
+        result
+      )
 
       Logger.info('Successfully got Solana address', solanaAddress)
 
@@ -1224,8 +1236,8 @@ class LedgerService {
 
     // Ledger Live: get public keys directly from the device at the account path.
     // The Avalanche app is already open from the getAllAddresses call above.
-    return this.withTransport(async transport => {
-      const avalancheApp = new AppAvalanche(transport)
+    return this.withSession(async session => {
+      const avalancheApp = this.avalancheApp(session)
       const evmKeyResponse = await avalancheApp.getAddressAndPubKey(
         evmPath,
         false,
@@ -1413,8 +1425,8 @@ class LedgerService {
   > {
     await this.ensureAppReady(LedgerAppType.AVALANCHE)
 
-    return this.withTransport(async transport => {
-      const avalancheApp = new AppAvalanche(transport)
+    return this.withSession(async session => {
+      const avalancheApp = this.avalancheApp(session)
 
       const results: Array<{
         evmPubKey: string
@@ -1474,35 +1486,38 @@ class LedgerService {
     })
   }
 
-  // Helper to build the “open app” APDU for a given app name
-  buildOpenAppApdu(appName: string): Buffer {
-    const cla = 0xe0
-    const ins = 0xd8
-    const p1 = 0x00
-    const p2 = 0x00
-
-    const nameBytes = Buffer.from(appName, 'ascii')
-    const lc = nameBytes.length // Lc = length of data
-
-    const apdu = Buffer.alloc(5 + lc)
-    apdu[0] = cla
-    apdu[1] = ins
-    apdu[2] = p1
-    apdu[3] = p2
-    apdu[4] = lc
-
-    nameBytes.copy(apdu as unknown as Uint8Array, 5)
-    return apdu
-  }
-
   // Attempt to open a specific app on the Ledger device
   // Best-effort, does not guarantee success
   async openApp(app: LedgerAppType): Promise<void> {
-    // Skip if the app is already open — sending the open-app APDU while inside
-    // a running app forces the device to exit and restart into the new app,
-    // causing a BLE disconnect that Android does not reliably recover from.
-    if (this.currentAppType === app) {
-      Logger.info(`${app} app is already open, skipping open request`)
+    // The same double-driving that produced two connect() calls also produces
+    // two overlapping openApp() calls, and two racing quit -> open sequences
+    // leave the device in an unpredictable app. Share one attempt instead.
+    const existing = this.openAppInFlight.get(app)
+    if (existing) {
+      Logger.info(`openApp(${app}) already in flight — joining`)
+      return existing
+    }
+
+    const attempt = this.openAppInternal(app).finally(() => {
+      this.openAppInFlight.delete(app)
+    })
+    this.openAppInFlight.set(app, attempt)
+    return attempt
+  }
+
+  private async openAppInternal(app: LedgerAppType): Promise<void> {
+    // Skip if an app that already satisfies the request is open. Sending the
+    // open-app APDU from inside a running app makes the device exit and
+    // restart into the new one, causing a BLE disconnect Android does not
+    // reliably recover from — and for Bitcoin it is worse than that: the
+    // Bitcoin Recovery app satisfies a BITCOIN request (isBitcoinCompatibleApp),
+    // so an equality check here quit Recovery and opened the plain Bitcoin
+    // app, which is the unsupported one the user was just told to avoid.
+    // isAppCompatible is the same rule checkApp and ensureAppReady use.
+    if (this.isAppCompatible(this.currentAppType, app)) {
+      Logger.info(
+        `${this.currentAppType} app already satisfies ${app}, skipping open request`
+      )
       return
     }
 
@@ -1516,32 +1531,34 @@ class LedgerService {
       await this.quitLedgerApp()
       // Brief delay to let the device settle on the dashboard
       await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+      // Quitting drops the BLE link; the open-app command below needs the
+      // session reachable again or it would fail the fast-fail check.
+      await this.waitUntilReachable(LEDGER_TIMEOUTS.RECONNECT_WAIT)
     }
 
     try {
-      const apdu = this.buildOpenAppApdu(app)
-      const response = await this.withTransport(transport =>
-        transport.exchange(apdu)
+      // OpenAppCommand (unlike the SDK's raw-APDU openLedgerApp) declares
+      // triggersDisconnection, which the kit needs: the device drops BLE as it
+      // switches apps, and without that flag the send never settles and blocks
+      // the session's intent queue for every later command.
+      // LedgerAppType's values are the ASCII app names the device expects.
+      const result = await this.withSession(({ dmk, sessionId }) =>
+        this.withTimeout(
+          dmk.sendCommand({
+            sessionId,
+            command: new OpenAppCommand({ appName: app }),
+            abortTimeout: LEDGER_TIMEOUTS.APDU_TIMEOUT
+          }),
+          LEDGER_TIMEOUTS.APDU_TIMEOUT,
+          'openApp'
+        )
       )
 
-      // Last 2 bytes are the status word (SW1, SW2), the rest is data.
-      const sw1 = response[response.length - 2]
-      const sw2 = response[response.length - 1]
-
-      // @ts-ignore
-      // eslint-disable-next-line no-bitwise
-      const statusCode = (sw1 << 8) | sw2
-
-      if (statusCode === LedgerReturnCode.SUCCESS) {
-        Logger.info(
-          `Successfully opened ${app} app on Ledger device using APDU`
-        )
+      if (isSuccessCommandResult(result)) {
+        Logger.info(`Successfully opened ${app} app on Ledger device`)
       } else {
-        const swHex = statusCode.toString(16).padStart(4, '0')
-        Logger.info(`Unexpected status word: 0x${swHex}`)
+        Logger.info(`Device refused to open the ${app} app:`, result.error)
       }
-
-      // Optional: use response.slice(0, -2) to read any data part.
     } catch (error) {
       // Do not throw error, just log it, we can't reliably force-switch apps on a Ledger
       // from one third‑party app to another, so this is just a best-effort attempt.
@@ -1555,8 +1572,17 @@ class LedgerService {
    */
   async quitLedgerApp(): Promise<void> {
     try {
-      await this.withTransport(transport =>
-        transport.send(0xb0, 0xa7, 0x00, 0x00)
+      // CloseAppCommand declares triggersDisconnection — see openApp.
+      await this.withSession(({ dmk, sessionId }) =>
+        this.withTimeout(
+          dmk.sendCommand({
+            sessionId,
+            command: new CloseAppCommand(),
+            abortTimeout: LEDGER_TIMEOUTS.APDU_TIMEOUT
+          }),
+          LEDGER_TIMEOUTS.APDU_TIMEOUT,
+          'closeApp'
+        )
       )
       this.currentAppType = LedgerAppType.UNKNOWN
       Logger.info('Successfully quit current Ledger app')
