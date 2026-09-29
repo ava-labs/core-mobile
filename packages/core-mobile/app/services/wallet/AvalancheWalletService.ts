@@ -12,7 +12,6 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
-import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -634,7 +633,9 @@ class AvalancheWalletService {
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: getPvmAddresses(xpAddresses),
+      // No fromAddresses override: the SDK defaults to getAddresses('P'), the
+      // same set the real createAddDelegatorTx spends from, so the simulated
+      // fee is not computed on a narrower input set than the real tx.
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
@@ -664,11 +665,21 @@ class AvalancheWalletService {
 
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
+    // CP-15095: the profile service only returns addresses with X/P activity,
+    // so a never-used primary address is absent. getAddresses() feeds
+    // getAtomicUTXOs and the Fusion SDK's required-address check, so without
+    // it a C->P CCT exports to addressPVM and the import can't find the UTXO.
+    // Appended, not prepended, so xpAddresses[0] (getCurrentAddress) is stable.
+    const primaryXpAddress = stripAddressPrefix(account.addressPVM)
+    const allXpAddresses = xpAddresses.includes(primaryXpAddress)
+      ? xpAddresses
+      : [...xpAddresses, primaryXpAddress]
+
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      xpAddresses,
-      stripAddressPrefix(account.addressPVM),
+      allXpAddresses,
+      primaryXpAddress,
       provXP
     )
   }
