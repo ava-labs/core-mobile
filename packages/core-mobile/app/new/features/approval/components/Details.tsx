@@ -469,6 +469,12 @@ export const Details = ({
         content = renderFundReceipientItem(item, index)
       } else if (item.type === DetailItemType.ADDRESS_LIST) {
         content = renderAddressListItem(item, index)
+      } else if (
+        item.type === DetailItemType.TRANSFER_LIST ||
+        item.type === DetailItemType.COLLAPSIBLE_GROUP
+      ) {
+        // TODO: render in plan steps 4-5
+        return null
       } else {
         content = (
           <View
