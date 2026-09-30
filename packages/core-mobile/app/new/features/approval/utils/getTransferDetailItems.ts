@@ -148,7 +148,10 @@ export const getTransferDetailItems = (
           {
             type: DetailItemType.TEXT,
             label: 'Signatures required',
-            value: `${threshold}/${addresses.length}`,
+            value:
+              addresses.length > 0
+                ? `${threshold}/${addresses.length}`
+                : String(threshold),
             alignment: 'horizontal'
           } as const
         ]
