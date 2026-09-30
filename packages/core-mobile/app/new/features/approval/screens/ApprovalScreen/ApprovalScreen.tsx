@@ -46,7 +46,8 @@ import {
   getInitialGasLimit,
   isRequestedAccountUnavailable,
   overrideContractItem,
-  removeWebsiteItemIfNecessary
+  removeWebsiteItemIfNecessary,
+  shouldShowSectionTitles
 } from './utils'
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
@@ -185,6 +186,7 @@ const ApprovalScreenInner = ({
     })
   }, [displayData.details, request])
 
+  const showSectionTitles = shouldShowSectionTitles(signingData)
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)
 
@@ -464,12 +466,16 @@ const ApprovalScreenInner = ({
       <View>
         {filteredSections.map((detailSection, index) => (
           <View key={index} sx={{ marginTop: 12 }}>
-            <Details detailSection={detailSection} symbol={symbol} />
+            <Details
+              detailSection={detailSection}
+              symbol={symbol}
+              title={showSectionTitles ? detailSection.title : undefined}
+            />
           </View>
         ))}
       </View>
     )
-  }, [filteredSections, symbol])
+  }, [filteredSections, symbol, showSectionTitles])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange || !balanceChange) return null
