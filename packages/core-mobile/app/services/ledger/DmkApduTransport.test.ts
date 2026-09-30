@@ -100,9 +100,14 @@ describe('DmkApduTransport', () => {
     it('accepts a non-success status word the caller allowed', async () => {
       sendApdu.mockResolvedValue(reply([0x42], [0x6a, 0x80]))
 
-      const response = await transport.send(0x80, 0x02, 0, 0, undefined, [
-        0x9000, 0x6a80
-      ])
+      const response = await transport.send(
+        0x80,
+        0x02,
+        0,
+        0,
+        undefined,
+        [0x9000, 0x6a80]
+      )
 
       expect(Array.from(response)).toEqual([0x42, 0x6a, 0x80])
     })
@@ -111,6 +116,29 @@ describe('DmkApduTransport', () => {
       await expect(
         transport.send(0x80, 0x02, 0, 0, undefined, [0x6a80])
       ).rejects.toMatchObject({ statusCode: 0x9000 })
+    })
+
+    it('rejects a reply with a one-byte status word instead of treating it as success', async () => {
+      sendApdu.mockResolvedValue({
+        data: new Uint8Array([0x01]),
+        statusCode: new Uint8Array([0x90])
+      })
+
+      await expect(transport.send(0x80, 0x02, 0, 0)).rejects.toThrow(
+        '1-byte status word; expected 2'
+      )
+      expect(Sentry.addBreadcrumb).toHaveBeenCalled()
+    })
+
+    it('rejects a reply with no status word', async () => {
+      sendApdu.mockResolvedValue({
+        data: new Uint8Array([]),
+        statusCode: new Uint8Array([])
+      })
+
+      await expect(transport.send(0x80, 0x02, 0, 0)).rejects.toThrow(
+        '0-byte status word; expected 2'
+      )
     })
 
     it('propagates errors thrown by the kit', async () => {

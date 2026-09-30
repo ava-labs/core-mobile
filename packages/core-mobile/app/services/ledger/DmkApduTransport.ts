@@ -82,6 +82,14 @@ export class DmkApduTransport {
       statusCode
     })
 
+    // A truncated BLE frame can leave fewer than two status bytes; padding the
+    // missing byte with zero would turn [0x90] into a false 0x9000 success.
+    if (response.statusCode.length !== 2) {
+      throw new Error(
+        `Ledger reply has a ${response.statusCode.length}-byte status word; expected 2`
+      )
+    }
+
     if (!statusList.includes(statusCode)) {
       throw new LedgerApduStatusError(statusCode)
     }
