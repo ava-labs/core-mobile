@@ -47,7 +47,7 @@ import {
   isRequestedAccountUnavailable,
   overrideContractItem,
   removeWebsiteItemIfNecessary,
-  shouldShowSectionTitles
+  isAvalancheTransaction
 } from './utils'
 
 // Tiny outer gate that hosts the malformed-RECURRING_SWAP short-circuit.
@@ -186,7 +186,7 @@ const ApprovalScreenInner = ({
     })
   }, [displayData.details, request])
 
-  const showSectionTitles = shouldShowSectionTitles(signingData)
+  const isAvalancheTx = isAvalancheTransaction(signingData)
   const balanceChange = displayData.balanceChange
   const hasBalanceChange = getHasBalanceChange(balanceChange)
 
@@ -469,13 +469,13 @@ const ApprovalScreenInner = ({
             <Details
               detailSection={detailSection}
               symbol={symbol}
-              title={showSectionTitles ? detailSection.title : undefined}
+              title={isAvalancheTx ? detailSection.title : undefined}
             />
           </View>
         ))}
       </View>
     )
-  }, [filteredSections, symbol, showSectionTitles])
+  }, [filteredSections, symbol, isAvalancheTx])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange || !balanceChange) return null
@@ -538,10 +538,10 @@ const ApprovalScreenInner = ({
 
   const renderAlertBody = useCallback((): JSX.Element | null => {
     const body = displayData.alert?.details.body
-    if (!body || body.length === 0) return null
+    if (isAvalancheTx || !body || body.length === 0) return null
 
     return <AlertBody reasons={body} />
-  }, [displayData.alert?.details.body])
+  }, [displayData.alert?.details.body, isAvalancheTx])
 
   return (
     <ActionSheet
