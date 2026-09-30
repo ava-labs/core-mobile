@@ -651,9 +651,9 @@ export const Details = ({
         return (
           <CollapsibleDetailGroup
             label={item.label}
-            verticalPadding={VERTICAL_PADDING}>
-            {item.value.map(renderNestedSection)}
-          </CollapsibleDetailGroup>
+            verticalPadding={VERTICAL_PADDING}
+            renderContent={() => item.value.map(renderNestedSection)}
+          />
         )
       }
 
