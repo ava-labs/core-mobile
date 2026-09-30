@@ -44,6 +44,7 @@ import { toSentenceCase } from 'common/utils/toSentenceCase'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { FlatList } from 'react-native'
 import { getTransferDetailItems } from '../utils/getTransferDetailItems'
+import { CollapsibleDetailGroup } from './CollapsibleDetailGroup'
 
 export const Details = ({
   detailSection,
@@ -581,22 +582,18 @@ export const Details = ({
     [renderItemContent, renderSeparator]
   )
 
-  const renderItem = useCallback(
-    (item: DetailItem, index: number): JSX.Element | null => {
-      if (typeof item !== 'string') {
-        if (item.type === DetailItemType.TRANSFER_LIST) {
-          return (
-            <View
-              sx={{ paddingVertical: VERTICAL_PADDING - TRANSFER_ROW_PADDING }}>
-              {renderTransferList(item)}
-            </View>
-          )
-        }
-
-        if (item.type === DetailItemType.COLLAPSIBLE_GROUP) {
-          // TODO: render in plan step 5
-          return null
-        }
+  const renderLeafItem = useCallback(
+    (item: LeafItem, index: number): JSX.Element => {
+      if (
+        typeof item !== 'string' &&
+        item.type === DetailItemType.TRANSFER_LIST
+      ) {
+        return (
+          <View
+            sx={{ paddingVertical: VERTICAL_PADDING - TRANSFER_ROW_PADDING }}>
+            {renderTransferList(item)}
+          </View>
+        )
       }
 
       return (
@@ -606,6 +603,63 @@ export const Details = ({
       )
     },
     [renderItemContent, renderTransferList]
+  )
+
+  const renderNestedSection = useCallback(
+    (section: DetailSection, sectionIndex: number): JSX.Element => (
+      <View key={sectionIndex}>
+        {renderSeparator()}
+        {section.title?.trim() ? (
+          <Text
+            variant="buttonMedium"
+            sx={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '$textSecondary',
+              paddingTop: VERTICAL_PADDING
+            }}>
+            {section.title}
+          </Text>
+        ) : null}
+        {section.items.map((item, index) => {
+          // never nest groups
+          if (
+            typeof item !== 'string' &&
+            item.type === DetailItemType.COLLAPSIBLE_GROUP
+          ) {
+            return null
+          }
+
+          return (
+            <View key={index}>
+              {index > 0 && renderSeparator()}
+              {renderLeafItem(item, index)}
+            </View>
+          )
+        })}
+      </View>
+    ),
+    [renderSeparator, renderLeafItem]
+  )
+
+  const renderItem = useCallback(
+    (item: DetailItem, index: number): JSX.Element => {
+      if (
+        typeof item !== 'string' &&
+        item.type === DetailItemType.COLLAPSIBLE_GROUP
+      ) {
+        return (
+          <CollapsibleDetailGroup
+            label={item.label}
+            verticalPadding={VERTICAL_PADDING}>
+            {item.value.map(renderNestedSection)}
+          </CollapsibleDetailGroup>
+        )
+      }
+
+      return renderLeafItem(item, index)
+    },
+    [renderLeafItem, renderNestedSection]
   )
 
   const renderTitle = useCallback(
@@ -644,7 +698,8 @@ export const Details = ({
   )
 }
 
-type RowItem = Exclude<DetailItem, TransferListItem | CollapsibleGroupItem>
+type LeafItem = Exclude<DetailItem, CollapsibleGroupItem>
+type RowItem = Exclude<LeafItem, TransferListItem>
 
 const VERTICAL_PADDING = 13
 const TRANSFER_ROW_PADDING = 5
