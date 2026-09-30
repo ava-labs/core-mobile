@@ -13,6 +13,7 @@ import {
 import {
   AddressItem,
   AddressListItem,
+  CollapsibleGroupItem,
   CurrencyItem,
   DataItem,
   DateItem,
@@ -23,7 +24,8 @@ import {
   LinkItem,
   NetworkItem,
   NodeIDItem,
-  TextItem
+  TextItem,
+  TransferListItem
 } from '@avalabs/vm-module-types'
 import {
   bigIntToString,
@@ -41,6 +43,7 @@ import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { toSentenceCase } from 'common/utils/toSentenceCase'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { FlatList } from 'react-native'
+import { getTransferDetailItems } from '../utils/getTransferDetailItems'
 
 export const Details = ({
   detailSection,
@@ -484,8 +487,8 @@ export const Details = ({
     [renderSeparator, renderCurrencyValue, renderAddress]
   )
 
-  const renderItem = useCallback(
-    (item: DetailItem, index: number) => {
+  const renderItemContent = useCallback(
+    (item: RowItem, index: number): JSX.Element => {
       let content
 
       if (typeof item === 'string') {
@@ -498,12 +501,6 @@ export const Details = ({
         content = renderFundReceipientItem(item, index)
       } else if (item.type === DetailItemType.ADDRESS_LIST) {
         content = renderAddressListItem(item, index)
-      } else if (
-        item.type === DetailItemType.TRANSFER_LIST ||
-        item.type === DetailItemType.COLLAPSIBLE_GROUP
-      ) {
-        // TODO: render in plan steps 4-5
-        return null
       } else {
         content = (
           <View
@@ -542,11 +539,7 @@ export const Details = ({
         )
       }
 
-      return (
-        <View>
-          <View sx={{ paddingVertical: VERTICAL_PADDING }}>{content}</View>
-        </View>
-      )
+      return content
     },
     [
       renderPlainText,
@@ -556,6 +549,63 @@ export const Details = ({
       renderFundReceipientItem,
       renderAddressListItem
     ]
+  )
+
+  const renderTransferList = useCallback(
+    (item: TransferListItem): JSX.Element => {
+      const nowInSeconds = Date.now() / 1000
+
+      return (
+        <View>
+          {item.value.map((transfer, transferIndex) => (
+            <View key={transferIndex}>
+              {transferIndex > 0 && (
+                <View sx={{ paddingVertical: TRANSFER_ROW_PADDING }}>
+                  {renderSeparator()}
+                </View>
+              )}
+              {getTransferDetailItems(transfer, nowInSeconds).map(
+                (transferItem, index) => (
+                  <View
+                    key={index}
+                    sx={{ paddingVertical: TRANSFER_ROW_PADDING }}>
+                    {renderItemContent(transferItem, index)}
+                  </View>
+                )
+              )}
+            </View>
+          ))}
+        </View>
+      )
+    },
+    [renderItemContent, renderSeparator]
+  )
+
+  const renderItem = useCallback(
+    (item: DetailItem, index: number): JSX.Element | null => {
+      if (typeof item !== 'string') {
+        if (item.type === DetailItemType.TRANSFER_LIST) {
+          return (
+            <View
+              sx={{ paddingVertical: VERTICAL_PADDING - TRANSFER_ROW_PADDING }}>
+              {renderTransferList(item)}
+            </View>
+          )
+        }
+
+        if (item.type === DetailItemType.COLLAPSIBLE_GROUP) {
+          // TODO: render in plan step 5
+          return null
+        }
+      }
+
+      return (
+        <View sx={{ paddingVertical: VERTICAL_PADDING }}>
+          {renderItemContent(item, index)}
+        </View>
+      )
+    },
+    [renderItemContent, renderTransferList]
   )
 
   const renderTitle = useCallback(
@@ -594,4 +644,7 @@ export const Details = ({
   )
 }
 
+type RowItem = Exclude<DetailItem, TransferListItem | CollapsibleGroupItem>
+
 const VERTICAL_PADDING = 13
+const TRANSFER_ROW_PADDING = 5
