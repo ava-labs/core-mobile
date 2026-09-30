@@ -44,10 +44,12 @@ import { FlatList } from 'react-native'
 
 export const Details = ({
   detailSection,
-  symbol
+  symbol,
+  title
 }: {
   detailSection: DetailSection
   symbol?: string
+  title?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -529,6 +531,23 @@ export const Details = ({
     ]
   )
 
+  const renderTitle = useCallback(
+    (): JSX.Element | null =>
+      title?.trim() ? (
+        <Text
+          variant="buttonMedium"
+          sx={{
+            fontSize: 16,
+            lineHeight: 22,
+            color: '$textPrimary',
+            paddingTop: VERTICAL_PADDING
+          }}>
+          {title}
+        </Text>
+      ) : null,
+    [title]
+  )
+
   return (
     <View
       sx={{
@@ -542,6 +561,7 @@ export const Details = ({
         renderItem={({ item, index }) => renderItem(item, index)}
         keyExtractor={(_item, index) => index.toString()}
         ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={renderTitle}
       />
     </View>
   )
