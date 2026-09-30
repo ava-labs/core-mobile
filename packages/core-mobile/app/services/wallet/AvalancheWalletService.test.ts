@@ -444,5 +444,67 @@ describe('WalletService', () => {
         })
       ).rejects.toThrow('CoreEth address not available for account')
     })
+
+    // CP-15095: synthetic bech32 addresses (formatBech32 over fixed byte
+    // fills), not real chain data.
+    describe('primary X/P address in the wallet address list', () => {
+      const primary = 'fuji1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3cd758d'
+      const legacyA = 'fuji1yg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zhsmj06'
+      const legacyB = 'fuji1xvenxvenxvenxvenxvenxvenxvenxven9wv06g'
+      const account = {
+        addressC: '0x0000000000000000000000000000000000000001',
+        addressPVM: `P-${primary}`,
+        addressCoreEth: `C-${primary}`
+      } as Account
+
+      beforeEach(() => {
+        jest
+          .spyOn(NetworkService, 'getAvalancheProviderXP')
+          // @ts-ignore
+          .mockResolvedValue({
+            formatAddress: (addr: string, chain: string) => `${chain}-${addr}`
+          })
+      })
+
+      it('appends addressPVM when the profile list lacks it (P and X)', async () => {
+        const signer = await AvalancheWalletService.getReadOnlySigner({
+          account,
+          isTestnet: true,
+          xpAddresses: [legacyA, legacyB]
+        })
+        expect(signer.getAddresses('P')).toEqual([
+          `P-${legacyA}`,
+          `P-${legacyB}`,
+          `P-${primary}`
+        ])
+        expect(signer.getAddresses('X')).toEqual([
+          `X-${legacyA}`,
+          `X-${legacyB}`,
+          `X-${primary}`
+        ])
+        expect(signer.getChangeAddress('P')).toBe(`P-${primary}`)
+      })
+
+      it('does not duplicate addressPVM when already present', async () => {
+        const signer = await AvalancheWalletService.getReadOnlySigner({
+          account,
+          isTestnet: true,
+          xpAddresses: [primary, legacyA]
+        })
+        expect(signer.getAddresses('P')).toEqual([
+          `P-${primary}`,
+          `P-${legacyA}`
+        ])
+      })
+
+      it('leaves the C-chain list as the single CoreEth address', async () => {
+        const signer = await AvalancheWalletService.getReadOnlySigner({
+          account,
+          isTestnet: true,
+          xpAddresses: [legacyA]
+        })
+        expect(signer.getAddresses('C')).toEqual([`C-${primary}`])
+      })
+    })
   })
 })

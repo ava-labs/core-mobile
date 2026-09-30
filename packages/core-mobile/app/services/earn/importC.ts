@@ -1,6 +1,5 @@
 import { evm, UnsignedTx } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -9,6 +8,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
@@ -79,7 +79,10 @@ export async function importC({
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
+    Logger.error('ISSUE_IMPORT_FAIL', e, {
+      source: SentryTag.Earn,
+      operation: 'importC'
+    })
     throw new FundsStuckError({
       name: 'ISSUE_IMPORT_FAIL',
       message: 'Sending import transaction failed ',
@@ -89,21 +92,24 @@ export async function importC({
   Logger.trace('txID', txID)
 
   try {
-    const { status } = await retry<evm.GetAtomicTxStatusResponse>({
-      operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      shouldStop: result =>
-        result.status === 'Accepted' || result.status === 'Dropped',
+    // The node sets blockHeight only once the atomic tx is accepted, and it
+    // serves Processing and Dropped txs without one, so its presence is the
+    // only acceptance signal available here. A tx the node has not indexed yet
+    // rejects outright, which retry() treats as another attempt.
+    await retry<evm.GetAtomicTxResponse>({
+      operation: () => avaxProvider.getApiC().getAtomicTx({ txID }),
+      shouldStop: result => result.blockHeight !== undefined,
       maxRetries: maxTransactionStatusCheckRetries
     })
-    if (status === 'Dropped') {
-      throw new ErrorBase({
-        name: 'IMPORT_DROPPED',
-        message: 'Import was dropped',
-        cause: new Error('Import was dropped')
-      })
-    }
   } catch (e) {
-    Logger.error('importC failed', e)
+    // Sentry groups by the passed error, which demotes this message to an
+    // extra and collapses every earn confirmation failure into one
+    // "Max retry exceeded" bucket. Tags survive grouping, so they are what
+    // makes this leg findable.
+    Logger.error('importC failed', e, {
+      source: SentryTag.Earn,
+      operation: 'importC'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',
       message: 'Import did not finish',

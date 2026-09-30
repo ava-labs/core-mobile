@@ -32,7 +32,7 @@ describe('transformXPAddresses', () => {
           avax1ccc: { space: 'i' as const, index: 0, hasActivity: false }
         }
       }
-      const account = createMockAccount()
+      const account = createMockAccount({ addressPVM: 'P-avax1aaa' })
 
       const result = transformXPAddresses(queryData, account)
 
@@ -75,7 +75,10 @@ describe('transformXPAddresses', () => {
       const result = transformXPAddresses(queryData, account)
 
       expect(result.xpAddresses).toEqual(['avax1fallback'])
-      expect(result.xpAddressDictionary).toEqual(queryData.xpAddressDictionary)
+      expect(result.xpAddressDictionary).toEqual({
+        ...queryData.xpAddressDictionary,
+        avax1fallback: { space: 'e', index: 0, hasActivity: false }
+      })
     })
   })
 
@@ -142,6 +145,73 @@ describe('transformXPAddresses', () => {
       const result = transformXPAddresses(queryData, account)
 
       expect(result.xpAddresses).toEqual(['avax1fallback'])
+      expect(result.xpAddressDictionary).toEqual({
+        ...queryData.xpAddressDictionary,
+        avax1fallback: { space: 'e', index: 0, hasActivity: false }
+      })
+    })
+  })
+
+  // CP-15095: the profile service omits a primary address that has never had
+  // X/P activity, even when other addresses under the same xpub have. Every
+  // signer uses external index 0 for addressPVM, so it must always be present.
+  describe('when the dictionary lacks account.addressPVM', () => {
+    it('adds addressPVM at external index 0 alongside the discovered addresses', () => {
+      const queryData = {
+        xpAddresses: [{ address: 'avax1legacy3' }, { address: 'avax1legacy9' }],
+        xpAddressDictionary: {
+          avax1legacy3: { space: 'e' as const, index: 3, hasActivity: true },
+          avax1legacy9: { space: 'e' as const, index: 9, hasActivity: true }
+        }
+      }
+      const account = createMockAccount({ addressPVM: 'P-avax1primary' })
+
+      const result = transformXPAddresses(queryData, account)
+
+      expect(result.xpAddresses).toEqual(['avax1legacy3', 'avax1legacy9'])
+      expect(result.xpAddressDictionary).toEqual({
+        avax1legacy3: { space: 'e', index: 3, hasActivity: true },
+        avax1legacy9: { space: 'e', index: 9, hasActivity: true },
+        avax1primary: { space: 'e', index: 0, hasActivity: false }
+      })
+    })
+
+    it('does not overwrite an existing entry for addressPVM', () => {
+      const queryData = {
+        xpAddresses: [{ address: 'avax1primary' }],
+        xpAddressDictionary: {
+          avax1primary: { space: 'e' as const, index: 0, hasActivity: true }
+        }
+      }
+      const account = createMockAccount({ addressPVM: 'P-avax1primary' })
+
+      const result = transformXPAddresses(queryData, account)
+
+      expect(result.xpAddressDictionary).toEqual(queryData.xpAddressDictionary)
+    })
+  })
+
+  describe('when account.addressPVM is a bare chain prefix (CP-14964 Ledger state)', () => {
+    it('adds nothing, so the empty-dictionary guards downstream still fire', () => {
+      const account = createMockAccount({ addressPVM: 'P-' })
+
+      const result = transformXPAddresses(undefined, account)
+
+      expect(result.xpAddresses).toEqual([])
+      expect(result.xpAddressDictionary).toEqual({})
+    })
+
+    it('leaves a discovered dictionary untouched', () => {
+      const queryData = {
+        xpAddresses: [{ address: 'avax1legacy3' }],
+        xpAddressDictionary: {
+          avax1legacy3: { space: 'e' as const, index: 3, hasActivity: true }
+        }
+      }
+      const account = createMockAccount({ addressPVM: 'P-' })
+
+      const result = transformXPAddresses(queryData, account)
+
       expect(result.xpAddressDictionary).toEqual(queryData.xpAddressDictionary)
     })
   })

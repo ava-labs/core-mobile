@@ -1,5 +1,6 @@
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
+import { SentryTag } from 'services/sentry/types'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account, XPAddressDictionary } from 'store/account'
@@ -75,7 +76,10 @@ export async function importP({
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
+    Logger.error('ISSUE_IMPORT_FAIL', e, {
+      source: SentryTag.Earn,
+      operation: 'importP'
+    })
     throw new FundsStuckError({
       name: 'ISSUE_IMPORT_FAIL',
       message: 'Sending import transaction failed ',
@@ -94,7 +98,10 @@ export async function importP({
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
-    Logger.error('importP failed', e)
+    Logger.error('importP failed', e, {
+      source: SentryTag.Earn,
+      operation: 'importP'
+    })
     throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',
       message: 'Import did not finish',

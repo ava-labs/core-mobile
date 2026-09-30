@@ -1,13 +1,7 @@
-import {
-  bigIntToString,
-  TokenUnit,
-  truncateAddress
-} from '@avalabs/core-utils-sdk'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { MaxUint256 } from 'ethers'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
@@ -15,10 +9,11 @@ import { copyToClipboard } from 'new/common/utils/clipboard'
 import React, { useCallback, useMemo } from 'react'
 import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { SpendLimitOptions } from './SpendLimitOptions'
 import { MenuId } from './types'
-import { getDefaultSpendLimitValue } from './utils'
+import { getDefaultSpendLimitValue, getSpendLimitAmounts } from './utils'
 
 export const SpendLimits = ({
   spendLimits,
@@ -31,6 +26,7 @@ export const SpendLimits = ({
 }): JSX.Element | null => {
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const spendLimit = spendLimits[0]
   const spenderAddress = spendLimit?.tokenApproval.spenderAddress
@@ -120,43 +116,33 @@ export const SpendLimits = ({
       : 0
   const tokenSymbol = spendLimit?.tokenApproval.token.symbol
   const limitType = spendLimit?.limitType
-  const marketToken = useMarketTokenBySymbol({ symbol: tokenSymbol })
+  const marketToken = useMarketTokenBySymbol({
+    symbol: tokenSymbol
+  })
 
-  const [amount, amountInCurrency] = useMemo(() => {
-    if (
-      limitType === Limit.UNLIMITED ||
-      (tokenValue !== undefined && tokenValue >= BigInt(MaxUint256.toString()))
-    )
-      return ['∞', `Unlimited ${selectedCurrency}`]
-
-    if (!tokenValue || !tokenDecimals || !tokenSymbol)
-      return [UNKNOWN_AMOUNT, undefined]
-
-    const amountToDisplay = new TokenUnit(
+  const [amount, amountInCurrency] = useMemo(
+    () =>
+      getSpendLimitAmounts({
+        limitType,
+        tokenValue,
+        tokenDecimals,
+        tokenSymbol,
+        marketToken,
+        isDeveloperMode,
+        selectedCurrency,
+        formatTokenInCurrency
+      }),
+    [
+      limitType,
       tokenValue,
       tokenDecimals,
-      tokenSymbol
-    ).toDisplay()
-
-    if (!marketToken || !marketToken.currentPrice)
-      return [amountToDisplay, undefined]
-
-    const amountInCurrencyToDisplay = `${formatTokenInCurrency({
-      amount:
-        Number(bigIntToString(tokenValue, tokenDecimals)) *
-        marketToken.currentPrice
-    })} ${selectedCurrency}`
-
-    return [amountToDisplay, amountInCurrencyToDisplay]
-  }, [
-    limitType,
-    tokenValue,
-    tokenDecimals,
-    tokenSymbol,
-    marketToken,
-    formatTokenInCurrency,
-    selectedCurrency
-  ])
+      tokenSymbol,
+      marketToken,
+      isDeveloperMode,
+      selectedCurrency,
+      formatTokenInCurrency
+    ]
+  )
 
   const renderSpendLimit = (): JSX.Element | null => {
     if (hasBalanceChange) return null
