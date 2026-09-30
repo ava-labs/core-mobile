@@ -11,11 +11,11 @@ import Animated, {
 export const CollapsibleDetailGroup = ({
   label,
   verticalPadding,
-  children
+  renderContent
 }: {
   label: string
   verticalPadding: number
-  children: React.ReactNode
+  renderContent: () => React.ReactNode
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -41,7 +41,7 @@ export const CollapsibleDetailGroup = ({
       </Pressable>
       {isOpen && (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
-          {children}
+          {renderContent()}
         </Animated.View>
       )}
     </View>
