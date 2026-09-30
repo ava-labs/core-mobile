@@ -750,6 +750,13 @@ export class LedgerWallet implements Wallet {
     Logger.info('Created Solana signer')
 
     try {
+      const [deviceKey] = await LedgerService.getSolanaKeys(accountIndex)
+      if (transaction.account !== deviceKey?.key) {
+        throw new Error(
+          `Account mismatch: transaction account ${transaction.account} does not match Ledger account ${deviceKey?.key}`
+        )
+      }
+
       Logger.info('Signing transaction with Ledger')
       const signResult = await signer.signTx(
         transaction.serializedTx,

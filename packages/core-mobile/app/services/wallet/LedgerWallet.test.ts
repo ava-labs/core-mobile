@@ -54,7 +54,8 @@ jest.mock('services/ledger/LedgerService', () => {
       isConnected: jest.fn().mockReturnValue(true),
       getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
       getAllAddresses: jest.fn(),
-      getExtendedPublicKeys: jest.fn()
+      getExtendedPublicKeys: jest.fn(),
+      getSolanaKeys: jest.fn()
     }
   }
 })
@@ -178,6 +179,7 @@ jest.mock('@avalabs/core-wallets-sdk', () => {
   const evmSignTransaction = jest.fn()
   const evmSignMessage = jest.fn()
   const evmSignTypedData = jest.fn()
+  const solSignTx = jest.fn()
 
   return {
     ...actual,
@@ -188,6 +190,9 @@ jest.mock('@avalabs/core-wallets-sdk', () => {
       signTransaction: evmSignTransaction,
       signMessage: evmSignMessage,
       signTypedData: evmSignTypedData
+    })),
+    SolanaLedgerSigner: jest.fn(() => ({
+      signTx: solSignTx
     })),
     Avalanche: {
       ...actual.Avalanche,
@@ -201,7 +206,8 @@ jest.mock('@avalabs/core-wallets-sdk', () => {
       avaSignMessage,
       evmSignTransaction,
       evmSignMessage,
-      evmSignTypedData
+      evmSignTypedData,
+      solSignTx
     }
   }
 })
@@ -226,6 +232,7 @@ const sdkMock = jest.requireMock('@avalabs/core-wallets-sdk') as {
     evmSignTransaction: jest.Mock
     evmSignMessage: jest.Mock
     evmSignTypedData: jest.Mock
+    solSignTx: jest.Mock
   }
 }
 const mockSimpleLedgerSigner = sdkMock.Avalanche.SimpleLedgerSigner
@@ -235,7 +242,8 @@ const {
   avaSignMessage: mockAvaSignMessage,
   evmSignTransaction: mockEvmSignTransaction,
   evmSignMessage: mockEvmSignMessage,
-  evmSignTypedData: mockEvmSignTypedData
+  evmSignTypedData: mockEvmSignTypedData,
+  solSignTx: mockSolSignTx
 } = sdkMock.__mocks
 
 const btcKitMock = jest.requireMock('@ledgerhq/device-signer-kit-bitcoin') as {
@@ -597,6 +605,48 @@ describe('LedgerWallet', () => {
       await expect(
         sign({ type: RpcMethod.SOLANA_SIGN_MESSAGE, account: 'a', data: 'b' })
       ).rejects.toThrow()
+    })
+  })
+
+  describe('signSvmTransaction', () => {
+    const DEVICE_ACCOUNT = 'DeviceSolanaAccount1111111111111111111111111'
+    const mockNetwork = {
+      rpcUrl: 'https://solana.rpc',
+      isTestnet: false
+    } as Network
+
+    const signSvm = (account: string): Promise<string> =>
+      ledgerWallet.signSvmTransaction({
+        accountIndex: 0,
+        transaction: { account, serializedTx: 'serialized-tx' },
+        network: mockNetwork,
+        provider: {} as never
+      })
+
+    beforeEach(() => {
+      ;(LedgerService.getSolanaKeys as jest.Mock).mockResolvedValue([
+        { key: DEVICE_ACCOUNT }
+      ])
+      mockSolSignTx.mockResolvedValue('signed-tx')
+    })
+
+    it('signs when the transaction account matches the device account', async () => {
+      await expect(signSvm(DEVICE_ACCOUNT)).resolves.toBe('signed-tx')
+
+      expect(LedgerService.getSolanaKeys).toHaveBeenCalledWith(0)
+      expect(mockSolSignTx).toHaveBeenCalledWith(
+        'serialized-tx',
+        'https://solana.rpc',
+        false
+      )
+    })
+
+    it('rejects without signing when the accounts differ', async () => {
+      await expect(signSvm('SomeOtherAccount')).rejects.toThrow(
+        'Account mismatch'
+      )
+
+      expect(mockSolSignTx).not.toHaveBeenCalled()
     })
   })
 
