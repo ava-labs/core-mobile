@@ -52,6 +52,7 @@ import {
 import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin'
 import { toUtf8 } from 'ethereumjs-util'
 import { runDeviceAction } from 'services/ledger/runDeviceAction'
+import { getLedgerAppName } from 'features/ledger/utils'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -643,6 +644,12 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  private evmAppFor(network: Network): LedgerAppType {
+    return getLedgerAppName(network) === LedgerAppType.AVALANCHE
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
+  }
+
   public async signEvmTransaction({
     accountIndex,
     transaction,
@@ -661,7 +668,7 @@ export class LedgerWallet implements Wallet {
       : network.chainId
 
     const { dmk, sessionId } = await this.handleAppConnection(
-      LedgerAppType.AVALANCHE
+      this.evmAppFor(network)
     )
 
     try {
@@ -1103,7 +1110,9 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string> {
-    const { dmk, sessionId } = await this.getTransport()
+    const { dmk, sessionId } = await this.handleAppConnection(
+      this.evmAppFor(network)
+    )
 
     const ledgerSigner = new LedgerSigner(
       accountIndex,

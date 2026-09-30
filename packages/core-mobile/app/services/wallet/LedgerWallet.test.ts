@@ -637,16 +637,44 @@ describe('LedgerWallet', () => {
       expect(tx.maxPriorityFeePerGas).not.toBe(baseTransaction.maxFeePerGas)
     })
 
-    // Routing to the Ethereum app is gone: the Avalanche app now handles EVM
-    // signing for every chain (CP-13954 / the CP-14259 revert).
-    it('always signs through the Avalanche app', async () => {
+    it('signs non-Avalanche EVM chains through the Ethereum app', async () => {
       await signEvm()
+
+      expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.ETHEREUM)
+      expect(mockWaitForApp).toHaveBeenCalledWith(
+        LedgerAppType.ETHEREUM,
+        expect.any(Number)
+      )
+    })
+
+    it('signs C-Chain through the Avalanche app', async () => {
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: { ...baseTransaction, chainId: 43114 } as never,
+        network: { chainId: 43114, vmName: NetworkVMType.EVM } as Network,
+        provider: mockProvider
+      })
 
       expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
       expect(mockWaitForApp).toHaveBeenCalledWith(
         LedgerAppType.AVALANCHE,
         expect.any(Number)
       )
+    })
+
+    it('signs Avalanche L1s through the Avalanche app', async () => {
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: baseTransaction as never,
+        network: {
+          chainId: 1,
+          vmName: NetworkVMType.EVM,
+          subnetId: 'subnet'
+        } as Network,
+        provider: mockProvider
+      })
+
+      expect(mockOpenApp).toHaveBeenCalledWith(LedgerAppType.AVALANCHE)
     })
 
     it('builds the signer with the account index, session and derivation spec', async () => {
