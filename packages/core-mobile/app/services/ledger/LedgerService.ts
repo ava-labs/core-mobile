@@ -400,10 +400,9 @@ class LedgerService {
     }
   }
 
+  // Screens call this on unmount while the session lives on, so it must not
+  // drop the reachability subscription — that belongs to teardownSession.
   stopAppPolling(): void {
-    this.sessionStateSubscription?.unsubscribe()
-    this.sessionStateSubscription = null
-
     if (this.appPollingInterval !== null) {
       clearInterval(this.appPollingInterval)
       this.appPollingInterval = null
@@ -986,6 +985,8 @@ class LedgerService {
 
   private async teardownSession(): Promise<void> {
     this.stopAppPolling()
+    this.sessionStateSubscription?.unsubscribe()
+    this.sessionStateSubscription = null
 
     const sessionId = this.#sessionId
     if (!sessionId) return
@@ -1032,6 +1033,15 @@ class LedgerService {
   async ensureConnection(): Promise<LedgerSession> {
     if (!this.connectedDeviceId) {
       throw new Error(LEDGER_ERROR_CODES.TRANSPORT_INTERFACE_NOT_AVAILABLE)
+    }
+    // A NOT_CONNECTED session is usually the transport retrying the link after
+    // an app switch; reconnecting would tear down the session mid-recovery.
+    if (
+      this.#sessionId !== null &&
+      !this.isConnected() &&
+      (await this.waitUntilReachable(LEDGER_TIMEOUTS.RECONNECT_WAIT))
+    ) {
+      return this.getSession()
     }
     if (!this.isConnected()) {
       Logger.info('[ensureConnection] session unavailable — reconnecting')
@@ -1521,6 +1531,17 @@ class LedgerService {
       return
     }
 
+    // An out-of-range Bitcoin app is open: reopening it would land on the same
+    // unsupported version, so leave it for waitForApp to report that Bitcoin
+    // Recovery is needed.
+    if (
+      app === LedgerAppType.BITCOIN &&
+      this.currentAppType === LedgerAppType.BITCOIN
+    ) {
+      Logger.info('Unsupported Bitcoin app version open, skipping open request')
+      return
+    }
+
     // Always quit the current app before opening a new one. Opening an app
     // while another third-party app is running triggers a BLE disconnect on
     // some devices; quitting first avoids this. We quit unconditionally
@@ -1573,7 +1594,7 @@ class LedgerService {
   async quitLedgerApp(): Promise<void> {
     try {
       // CloseAppCommand declares triggersDisconnection — see openApp.
-      await this.withSession(({ dmk, sessionId }) =>
+      const result = await this.withSession(({ dmk, sessionId }) =>
         this.withTimeout(
           dmk.sendCommand({
             sessionId,
@@ -1584,6 +1605,10 @@ class LedgerService {
           'closeApp'
         )
       )
+      if (!isSuccessCommandResult(result)) {
+        Logger.info('Device refused to quit the current app:', result.error)
+        return
+      }
       this.currentAppType = LedgerAppType.UNKNOWN
       Logger.info('Successfully quit current Ledger app')
     } catch (error) {

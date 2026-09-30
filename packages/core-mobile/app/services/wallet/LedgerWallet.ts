@@ -243,6 +243,12 @@ export class LedgerWallet implements Wallet {
     return this.getKeyForVmType(keys, vmType)
   }
 
+  // Ledger Live wallets have no stored xpub; the signer then signs for 0/0 only.
+  private avalancheXpubFor(accountIndex: number): string | undefined {
+    if (!this.isBIP44()) return undefined
+    return this.getExtendedPublicKeyFor(NetworkVMType.AVM, accountIndex)?.key
+  }
+
   private getKeyForVmType(
     keys: { evm: string; avalanche: string },
     vmType: NetworkVMType
@@ -621,7 +627,7 @@ export class LedgerWallet implements Wallet {
     const signer = new Avalanche.SimpleLedgerSigner(
       accountIndex,
       provider,
-      this.getExtendedPublicKeyFor(NetworkVMType.PVM, accountIndex)?.key,
+      this.avalancheXpubFor(accountIndex),
       this.isBIP44() ? DerivationPath.BIP44 : DerivationPath.LedgerLive
     )
 
@@ -745,7 +751,7 @@ export class LedgerWallet implements Wallet {
 
     try {
       Logger.info('Signing transaction with Ledger')
-      const signResult = signer.signTx(
+      const signResult = await signer.signTx(
         transaction.serializedTx,
         network.rpcUrl,
         !!network.isTestnet
@@ -921,7 +927,7 @@ export class LedgerWallet implements Wallet {
       const signer = new Avalanche.SimpleLedgerSigner(
         accountIndex,
         provider,
-        this.getExtendedPublicKeyFor(NetworkVMType.PVM, accountIndex)?.key,
+        this.avalancheXpubFor(accountIndex),
         this.isBIP44() ? DerivationPath.BIP44 : DerivationPath.LedgerLive
       )
 
@@ -1133,7 +1139,7 @@ export class LedgerWallet implements Wallet {
         ].includes(signingData.type)
       ) {
         const parsedTypedData = await this.parseTypedDataRequest(signingData)
-        return ledgerSigner.signTypedData(
+        return await ledgerSigner.signTypedData(
           parsedTypedData.domain,
           parsedTypedData.types,
           parsedTypedData.message
@@ -1142,7 +1148,7 @@ export class LedgerWallet implements Wallet {
         signingData.type === RpcMethod.ETH_SIGN ||
         signingData.type === RpcMethod.PERSONAL_SIGN
       ) {
-        return ledgerSigner.signMessage(signingData.data)
+        return await ledgerSigner.signMessage(signingData.data)
       } else {
         throw new Error('This function is not supported on your wallet')
       }

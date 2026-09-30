@@ -555,14 +555,15 @@ describe('LedgerService', () => {
       expect(commandNames()).not.toContain('openApp')
     })
 
-    it('switches away from an unsupported Bitcoin app', async () => {
+    it('does not reopen an unsupported Bitcoin app that is already running', async () => {
       setAppInfo('Bitcoin', '2.5.0') // beyond MAX_BITCOIN_APP_VERSION
       await pollOnce()
       mockDmk.sendCommand.mockClear()
 
       await openWithTimers(LedgerAppType.BITCOIN)
 
-      expect(commandNames()).toContain('openApp')
+      expect(commandNames()).not.toContain('closeApp')
+      expect(commandNames()).not.toContain('openApp')
     })
   })
 
@@ -581,6 +582,17 @@ describe('LedgerService', () => {
 
       expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.UNKNOWN)
       expect(LedgerService.getCurrentAppVersion()).toBe('')
+    })
+
+    it('keeps the cached app type when the device refuses to quit', async () => {
+      commandHandlers.closeApp = () => ({
+        status: 'ERROR',
+        error: new Error('refused')
+      })
+
+      await LedgerService.quitLedgerApp()
+
+      expect(LedgerService.getCurrentAppType()).toBe(LedgerAppType.AVALANCHE)
     })
 
     it('does not throw when the quit request fails', async () => {
@@ -1008,6 +1020,17 @@ describe('LedgerService', () => {
       unsubscribe()
     })
 
+    it('keeps tracking reachability after stopAppPolling', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      LedgerService.stopAppPolling()
+
+      sessionState.next(
+        readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+      )
+
+      expect(LedgerService.isConnected()).toBe(false)
+    })
+
     it('reports reachable again when the transport restores the link', async () => {
       const listener = jest.fn()
       const unsubscribe = LedgerService.addConnectionStateListener(listener)
@@ -1122,6 +1145,55 @@ describe('LedgerService', () => {
         sessionId: SESSION_ID
       })
       expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+    })
+
+    it('waits for a recovering session instead of replacing it', async () => {
+      jest.useFakeTimers()
+      try {
+        await LedgerService.connect(DEVICE_ID)
+        sessionState.next(
+          readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+        )
+        mockDmk.connect.mockClear()
+
+        const pending = LedgerService.ensureConnection()
+        await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+        sessionState.next(readyState('Avalanche', '0.8.3'))
+        await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+
+        await expect(pending).resolves.toEqual({
+          dmk: mockDmk,
+          sessionId: SESSION_ID
+        })
+        expect(mockDmk.connect).not.toHaveBeenCalled()
+        expect(mockDmk.disconnect).not.toHaveBeenCalled()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    it('reconnects when a dropped session never recovers', async () => {
+      jest.useFakeTimers()
+      try {
+        await LedgerService.connect(DEVICE_ID)
+        sessionState.next(
+          readyState('Avalanche', '0.8.3', DeviceStatus.NOT_CONNECTED)
+        )
+        mockDmk.connect.mockClear()
+
+        const pending = LedgerService.ensureConnection()
+        await jest.advanceTimersByTimeAsync(
+          LEDGER_TIMEOUTS.RECONNECT_WAIT + LEDGER_TIMEOUTS.APP_CHECK_DELAY
+        )
+
+        await expect(pending).resolves.toEqual({
+          dmk: mockDmk,
+          sessionId: SESSION_ID
+        })
+        expect(mockDmk.connect).toHaveBeenCalledTimes(1)
+      } finally {
+        jest.useRealTimers()
+      }
     })
 
     it('throws when no device is remembered', async () => {

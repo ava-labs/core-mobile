@@ -370,13 +370,31 @@ describe('LedgerWallet', () => {
         expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
           0,
           mockProvider,
-          // The xpub argument is undefined: signAvalancheTransaction asks
-          // getExtendedPublicKeyFor for NetworkVMType.PVM, and getKeyForVmType
-          // only maps EVM and AVM, so PVM falls through to null. Pre-existing
-          // (unchanged since before the DMK migration) — asserted here so the
-          // gap is visible rather than silently encoded as `expect.anything()`.
-          undefined,
+          'mock-avax-xpub',
           DerivationPath.BIP44
+        )
+      })
+
+      it('builds the signer without an xpub for Ledger Live wallets', async () => {
+        const ledgerLiveWallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.LedgerLive,
+          publicKeys: mockPublicKeys,
+          walletId: mockWalletId
+        } as any)
+
+        await ledgerLiveWallet.signAvalancheTransaction({
+          accountIndex: 0,
+          transaction: request(),
+          network: mockNetwork,
+          provider: mockProvider
+        })
+
+        expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
+          0,
+          mockProvider,
+          undefined,
+          DerivationPath.LedgerLive
         )
       })
 
@@ -1030,7 +1048,7 @@ describe('LedgerWallet', () => {
         expect(mockSimpleLedgerSigner).toHaveBeenCalledWith(
           0,
           expect.anything(),
-          undefined,
+          'mock-avax-xpub',
           DerivationPath.BIP44
         )
       })
