@@ -123,6 +123,27 @@ const getLockItems = (
     : [])
 ]
 
+const getThresholdItems = (
+  addresses: string[],
+  threshold: number | undefined
+): TransferDetailItem[] => {
+  if (threshold === undefined || (threshold <= 1 && addresses.length <= 1)) {
+    return []
+  }
+
+  return [
+    {
+      type: DetailItemType.TEXT,
+      label: 'Signatures required',
+      value:
+        addresses.length > 0
+          ? `${threshold}/${addresses.length}`
+          : String(threshold),
+      alignment: 'horizontal'
+    }
+  ]
+}
+
 export const getTransferDetailItems = (
   transfer: Transfer,
   nowInSeconds: number
@@ -143,19 +164,7 @@ export const getTransferDetailItems = (
         ]
       : []),
     ...getStakeItems(transfer),
-    ...(threshold !== undefined && threshold > 1
-      ? [
-          {
-            type: DetailItemType.TEXT,
-            label: 'Signatures required',
-            value:
-              addresses.length > 0
-                ? `${threshold}/${addresses.length}`
-                : String(threshold),
-            alignment: 'horizontal'
-          } as const
-        ]
-      : []),
+    ...getThresholdItems(addresses, threshold),
     ...getLockItems(transfer, nowInSeconds)
   ]
 }

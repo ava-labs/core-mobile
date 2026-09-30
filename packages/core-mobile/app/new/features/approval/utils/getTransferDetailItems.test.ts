@@ -159,6 +159,20 @@ describe('getTransferDetailItems', () => {
     })
   })
 
+  it('returns the signature threshold even if it is 1 for multi-owner outputs', () => {
+    expect(
+      getTransferDetailItems(
+        { ...avaxTransfer, addresses: ['P-avax1a', 'P-avax1b'], threshold: 1 },
+        NOW
+      )
+    ).toContainEqual({
+      type: DetailItemType.TEXT,
+      label: 'Signatures required',
+      value: '1/2',
+      alignment: 'horizontal'
+    })
+  })
+
   it('returns the signature threshold without a total when owners are unknown', () => {
     expect(
       getTransferDetailItems(
