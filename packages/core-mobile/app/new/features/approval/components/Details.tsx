@@ -229,8 +229,21 @@ export const Details = ({
   )
 
   const renderCurrencyValue = useCallback(
-    (value: bigint, decimals: number, s: string): JSX.Element => {
-      const marketToken = getMarketTokenBySymbol(s)
+    ({
+      value,
+      decimals,
+      symbol: s,
+      showCurrencyValue = true
+    }: {
+      value: bigint
+      decimals: number
+      symbol: string
+      showCurrencyValue?: boolean
+    }): JSX.Element => {
+      const marketToken = showCurrencyValue
+        ? getMarketTokenBySymbol(s)
+        : undefined
+
       return (
         <View sx={{ alignItems: 'flex-end' }}>
           <Text
@@ -256,7 +269,8 @@ export const Details = ({
               {`${formatTokenInCurrency({
                 amount:
                   Number(bigIntToString(value, decimals)) *
-                  marketToken.currentPrice
+                  marketToken.currentPrice,
+                withoutCurrencySuffix: true
               })} ${selectedCurrency}`}
             </Text>
           )}
@@ -408,9 +422,18 @@ export const Details = ({
           {getDateInMmmDdYyyyHhMmA(parseInt(item.value))}
         </Text>
       ) : item.type === DetailItemType.CURRENCY ? (
-        renderCurrencyValue(item.value, item.maxDecimals, item.symbol)
+        renderCurrencyValue({
+          value: item.value,
+          decimals: item.maxDecimals,
+          symbol: item.symbol,
+          showCurrencyValue: item.isNativeToken !== false
+        })
       ) : item.type === DetailItemType.FUNDS_RECIPIENT ? (
-        renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)
+        renderCurrencyValue({
+          value: item.amount,
+          decimals: item.maxDecimals,
+          symbol: item.symbol
+        })
       ) : item.type === DetailItemType.NETWORK ? (
         renderNetworkValue(item)
       ) : null
@@ -450,7 +473,11 @@ export const Details = ({
         </View>
         {renderSeparator()}
         <View sx={{ paddingTop: VERTICAL_PADDING }}>
-          {renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)}
+          {renderCurrencyValue({
+            value: item.amount,
+            decimals: item.maxDecimals,
+            symbol: item.symbol
+          })}
         </View>
       </View>
     ),
