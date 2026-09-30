@@ -329,15 +329,13 @@ export const SwapContextProvider = ({
         'address' in toTokenData ? toTokenData.address : undefined
       audioFeedback(Audios.Send)
       AnalyticsService.capture('SwapConfirmed', {
-        encrypted: {
-          sourceAddress: address,
-          targetAddress,
-          sourceChainId: quote.sourceChain.chainId,
-          targetChainId: quote.targetChain.chainId,
-          sourceTxHash: transfer.source?.txHash,
-          quoteSelectionMode,
-          autoRetryAttempt
-        },
+        sourceAddress: address,
+        targetAddress,
+        sourceChainId: quote.sourceChain.chainId,
+        targetChainId: quote.targetChain.chainId,
+        sourceTxHash: transfer.source?.txHash,
+        quoteSelectionMode,
+        autoRetryAttempt,
         serviceType: quote.serviceType,
         caip2SourceChainId: quote.sourceChain.chainId,
         caip2TargetChainId: quote.targetChain.chainId,

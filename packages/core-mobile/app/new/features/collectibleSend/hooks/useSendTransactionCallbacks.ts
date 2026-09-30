@@ -29,10 +29,8 @@ export const useSendTransactionCallbacks = (): {
     }): void => {
       selectedToken &&
         AnalyticsService.capture('SendTransactionSucceeded', {
-          encrypted: {
-            chainId: selectedToken.networkChainId,
-            txHash
-          },
+          chainId: selectedToken.networkChainId,
+          txHash,
           caip2ChainId: getCaip2ChainId(selectedToken.networkChainId)
         })
       audioFeedback(Audios.Send)

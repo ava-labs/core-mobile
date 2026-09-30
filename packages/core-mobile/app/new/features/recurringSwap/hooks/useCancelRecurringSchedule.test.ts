@@ -171,9 +171,7 @@ describe('useCancelRecurringSchedule', () => {
     // separate Redux listener watching the broadcast action).
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapCancelledByUser', {
       chainId: CANCEL_ARGS.chainId,
-      encrypted: {
-        orderId: CANCEL_ARGS.orderId
-      }
+      orderId: CANCEL_ARGS.orderId
     })
   })
 

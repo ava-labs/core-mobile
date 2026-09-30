@@ -16,34 +16,15 @@ type DappTxEventPayload = {
 }
 
 /**
- * Transport the dApp request came through. Sent as a top-level (plaintext)
- * property — NOT inside `encrypted` — so MTU / usage dashboards can segment
- * injected-browser vs WalletConnect traffic. CP-13825.
+ * Transport the dApp request came through, so MTU / usage dashboards can
+ * segment injected-browser vs WalletConnect traffic. CP-13825.
  */
 export type DappTxProvider = 'injected' | 'walletConnect'
 
-/**
- * Wrapper for every dApp-transaction lifecycle event: a queryable `provider`
- * discriminator plus the encrypted per-tx payload.
- */
-type DappTxEvent = {
+type DappTxEvent = DappTxEventPayload & {
   provider: DappTxProvider
-  encrypted: DappTxEventPayload
 }
 
-/**
- * All analytics event payloads.
- *
- * Events with an `encrypted` field are automatically encrypted by
- * `AnalyticsService.capture` at transport time — the `encrypted` object is
- * JSON-stringified and encrypted via HPKE before being sent to PostHog.
- * Any sibling fields at the same level are forwarded as plaintext properties
- * (e.g. CAIP-2 chain IDs used for PostHog dashboard filtering).
- *
- * Rule for encrypted events: put sensitive data (addresses, tx hashes, chain
- * IDs) inside `encrypted`. Only add plaintext siblings when the field is
- * explicitly intended to be readable on the dashboard.
- */
 export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   ExplorerLinkClicked: undefined
@@ -60,12 +41,10 @@ export type AnalyticsEvents = {
     targetChainId: number
   }
   BridgeTransactionStarted: {
-    encrypted: {
-      sourceTxHash: string
-      chainId: number
-      fromAddress?: string
-      toAddress?: string
-    }
+    sourceTxHash: string
+    chainId: number
+    fromAddress?: string
+    toAddress?: string
   }
 
   HallidayBuyClicked: undefined
@@ -106,7 +85,8 @@ export type AnalyticsEvents = {
   RecoveryPhraseClicked: undefined
   SendTransactionFailed: { errorMessage: string; chainId: number }
   SendTransactionSucceeded: {
-    encrypted: { txHash: string; chainId: number }
+    txHash: string
+    chainId: number
     caip2ChainId: string
   }
   SeedlessAddMfa: { type: string }
@@ -212,7 +192,8 @@ export type AnalyticsEvents = {
    */
   StakeSearchQueryEntered: undefined
   StakeTransactionStarted: {
-    encrypted: { txHash: string; chainId: number }
+    txHash: string
+    chainId: number
   }
   SwapReviewOrder: {
     provider: string
@@ -222,15 +203,13 @@ export type AnalyticsEvents = {
     caip2TargetChainId: string
   }
   SwapConfirmed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      quoteSelectionMode: 'manual' | 'auto'
-      autoRetryAttempt?: number
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    quoteSelectionMode: 'manual' | 'auto'
+    autoRetryAttempt?: number
     serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
@@ -239,51 +218,45 @@ export type AnalyticsEvents = {
     quickSwapsMaxBuy?: 'unlimited' | '1000' | '5000' | '10000' | '50000'
   }
   SwapSuccessful: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash: string
+    targetTxHash?: string
     serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
   }
   SwapFailed: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash?: string
-      targetTxHash?: string
-      errorCode?: string
-      errorReason?: string
-      userClickedMax?: boolean
-      sourceTokenAddress?: string
-      sourceTokenSymbol?: string
-      sourceAmount?: string
-      destinationTokenAddress?: string
-      destinationTokenSymbol?: string
-      quoteAggregator?: string
-      quoteAggregatorId?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    targetTxHash?: string
+    errorCode?: string
+    errorReason?: string
+    userClickedMax?: boolean
+    sourceTokenAddress?: string
+    sourceTokenSymbol?: string
+    sourceAmount?: string
+    destinationTokenAddress?: string
+    destinationTokenSymbol?: string
+    quoteAggregator?: string
+    quoteAggregatorId?: string
     serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
   }
   SwapRefunded: {
-    encrypted: {
-      sourceAddress: string
-      targetAddress: string
-      sourceChainId: string
-      targetChainId: string
-      sourceTxHash: string
-      targetTxHash?: string
-      refundTxHash?: string
-    }
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash: string
+    targetTxHash?: string
+    refundTxHash?: string
     serviceType: string
     caip2SourceChainId: string
     caip2TargetChainId: string
@@ -542,16 +515,14 @@ export type AnalyticsEvents = {
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
-    encrypted: {
-      addresses: {
-        address: string
-        addressBtc: string
-        addressAVM: string
-        addressPVM: string
-        addressCoreEth: string
-        addressSVM: string
-      }[]
-    }
+    addresses: {
+      address: string
+      addressBtc: string
+      addressAVM: string
+      addressPVM: string
+      addressCoreEth: string
+      addressSVM: string
+    }[]
   }
 
   // dApp transaction lifecycle
@@ -567,57 +538,45 @@ export type AnalyticsEvents = {
   avalanche_sendTransaction_failed: DappTxEvent
   bitcoin_sendTransaction_failed: DappTxEvent
   solana_signAndSendTransaction_failed: DappTxEvent
-  solana_signTransaction_approved: {
-    encrypted: Omit<DappTxEventPayload, 'txHash'>
-  }
+  solana_signTransaction_approved: Omit<DappTxEventPayload, 'txHash'>
 
   // RECURRING SWAPS (DCA)
   RecurringSwapScheduled: {
     chainId: number
-    encrypted: {
-      scheduleUuid: string
-      fromTokenSymbol: string
-      toTokenSymbol: string
-      amountPerOrder: string
-      // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
-      // (`-1`) for Unlimited schedules, else a finite count.
-      // Dashboards filter on `numberOfOrders === -1` for the unlimited
-      // cohort — no separate `isUnlimited` boolean is emitted.
-      numberOfOrders: number
-      intervalSeconds: number
-    }
+    scheduleUuid: string
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    amountPerOrder: string
+    // Wire value Markr signs: `RECURRING_UNLIMITED_ORDERS_SENTINEL`
+    // (`-1`) for Unlimited schedules, else a finite count.
+    // Dashboards filter on `numberOfOrders === -1` for the unlimited
+    // cohort — no separate `isUnlimited` boolean is emitted.
+    numberOfOrders: number
+    intervalSeconds: number
   }
   RecurringSwapCancelledByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
   RecurringSwapPausedByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
   RecurringSwapResumedByUser: {
     chainId: number
-    encrypted: {
-      orderId: string
-    }
+    orderId: string
   }
 
   // NEST EGG CAMPAIGN
-  NestEggCampaignModalViewed: { encrypted: { addressC: string } }
-  NestEggSuccessModalViewed: { encrypted: { addressC: string } }
+  NestEggCampaignModalViewed: { addressC: string }
+  NestEggSuccessModalViewed: { addressC: string }
   NestEggQualified: {
-    encrypted: {
-      addressC: string
-      txHash: string
-      chainId: number
-      fromTokenSymbol: string
-      toTokenSymbol: string
-      fromAmountUsd: number
-      timestamp: number
-    }
+    addressC: string
+    txHash: string
+    chainId: number
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    fromAmountUsd: number
+    timestamp: number
   }
 }

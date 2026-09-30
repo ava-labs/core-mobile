@@ -74,13 +74,11 @@ describe('coreMobileProvider', () => {
         'eth_sendTransaction_success',
         {
           provider: 'injected',
-          encrypted: {
-            dAppUrl: 'https://test.dapp.com',
-            // EVM address is lowercased to a canonical form (CP-13825)
-            address: mockActiveAccount.addressC.toLowerCase(),
-            chainId: 'eip155:1',
-            txHash: '0xdeadbeef'
-          }
+          dAppUrl: 'https://test.dapp.com',
+          // EVM address is lowercased to a canonical form (CP-13825)
+          address: mockActiveAccount.addressC.toLowerCase(),
+          chainId: 'eip155:1',
+          txHash: '0xdeadbeef'
         }
       )
     })
@@ -105,9 +103,7 @@ describe('coreMobileProvider', () => {
         'eth_sendTransaction_success',
         {
           provider: 'injected',
-          encrypted: expect.objectContaining({
-            address: NON_ACTIVE_FROM.toLowerCase()
-          })
+          address: NON_ACTIVE_FROM.toLowerCase()
         }
       )
     })
@@ -129,9 +125,7 @@ describe('coreMobileProvider', () => {
         'eth_sendTransaction_success',
         {
           provider: 'injected',
-          encrypted: expect.objectContaining({
-            address: mockActiveAccount.addressC.toLowerCase()
-          })
+          address: mockActiveAccount.addressC.toLowerCase()
         }
       )
     })
@@ -149,9 +143,7 @@ describe('coreMobileProvider', () => {
         'avalanche_sendTransaction_success',
         {
           provider: 'injected',
-          encrypted: expect.objectContaining({
-            address: mockActiveAccount.addressPVM
-          })
+          address: mockActiveAccount.addressPVM
         }
       )
 
@@ -167,9 +159,7 @@ describe('coreMobileProvider', () => {
         'bitcoin_sendTransaction_success',
         {
           provider: 'injected',
-          encrypted: expect.objectContaining({
-            address: mockActiveAccount.addressBTC
-          })
+          address: mockActiveAccount.addressBTC
         }
       )
     })

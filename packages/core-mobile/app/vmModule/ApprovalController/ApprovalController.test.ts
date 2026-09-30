@@ -412,7 +412,7 @@ describe('ApprovalController', () => {
         'eth_sendTransaction_confirmed',
         {
           provider: 'walletConnect',
-          encrypted: expect.objectContaining({ txHash: TX_HASH })
+          txHash: TX_HASH
         }
       )
     })
@@ -554,13 +554,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -582,7 +580,7 @@ describe('ApprovalController', () => {
           'avalanche_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ txHash: TX_HASH })
+            txHash: TX_HASH
           }
         )
       })
@@ -604,10 +602,8 @@ describe('ApprovalController', () => {
           'avalanche_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              chainId: AvalancheCaip2ChainId.C,
-              txHash: TX_HASH
-            })
+            chainId: AvalancheCaip2ChainId.C,
+            txHash: TX_HASH
           }
         )
       })
@@ -638,13 +634,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'injected',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -666,9 +660,7 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'injected',
-            encrypted: expect.objectContaining({
-              address: NON_ACTIVE_SIGNER.toLowerCase()
-            })
+            address: NON_ACTIVE_SIGNER.toLowerCase()
           }
         )
       })
@@ -694,7 +686,7 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '0xbbbb' })
+            address: '0xbbbb'
           }
         )
       })
@@ -710,7 +702,7 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '' })
+            address: ''
           }
         )
       })
@@ -730,9 +722,7 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: EVM_ADDRESS.toLowerCase()
-            })
+            address: EVM_ADDRESS.toLowerCase()
           }
         )
 
@@ -748,7 +738,7 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({ address: '' })
+            address: ''
           }
         )
       })
@@ -859,13 +849,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_failed',
           {
             provider: 'walletConnect',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -887,10 +875,8 @@ describe('ApprovalController', () => {
           'bitcoin_sendTransaction_failed',
           {
             provider: 'walletConnect',
-            encrypted: expect.objectContaining({
-              address: btcAddress,
-              txHash: 'btctxhash'
-            })
+            address: btcAddress,
+            txHash: 'btctxhash'
           }
         )
       })
@@ -917,13 +903,11 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_failed',
           {
             provider: 'injected',
-            encrypted: {
-              dAppUrl: DAPP_URL,
-              // EVM address is lowercased to a canonical form (CP-13825)
-              address: EVM_ADDRESS.toLowerCase(),
-              chainId: 'eip155:1',
-              txHash: TX_HASH
-            }
+            dAppUrl: DAPP_URL,
+            // EVM address is lowercased to a canonical form (CP-13825)
+            address: EVM_ADDRESS.toLowerCase(),
+            chainId: 'eip155:1',
+            txHash: TX_HASH
           }
         )
       })
@@ -941,7 +925,7 @@ describe('ApprovalController', () => {
         })
 
         const call = (AnalyticsService.capture as jest.Mock).mock.calls[0]
-        expect(call[1]).toHaveProperty('encrypted.txHash', '0xrevertedtx')
+        expect(call[1]).toHaveProperty('txHash', '0xrevertedtx')
       })
     })
   })
