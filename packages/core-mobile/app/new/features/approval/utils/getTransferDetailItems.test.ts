@@ -159,6 +159,20 @@ describe('getTransferDetailItems', () => {
     })
   })
 
+  it('returns the signature threshold without a total when owners are unknown', () => {
+    expect(
+      getTransferDetailItems(
+        { ...avaxTransfer, addresses: [], threshold: 2 },
+        NOW
+      )
+    ).toContainEqual({
+      type: DetailItemType.TEXT,
+      label: 'Signatures required',
+      value: '2',
+      alignment: 'horizontal'
+    })
+  })
+
   it('returns the dates for locks that have not expired yet', () => {
     const items = getTransferDetailItems(
       {
