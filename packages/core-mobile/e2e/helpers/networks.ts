@@ -30,7 +30,7 @@ export const networks: Network[] = [
     haveToggle: false,
     data: {
       rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
-      explorerUrl: 'https://subnets.avax.network/c-chain',
+      explorerUrl: 'https://build.avax.network/explorer/mainnet/c-chain',
       chainId: '43114',
       tokenSymbol: 'AVAX',
       tokenName: 'Avalanche'
@@ -41,7 +41,7 @@ export const networks: Network[] = [
     haveToggle: false,
     data: {
       rpcUrl: 'https://api.avax.network',
-      explorerUrl: 'https://subnets.avax.network/p-chain',
+      explorerUrl: 'https://build.avax.network/explorer/mainnet/p-chain',
       chainId: '4503599627370471',
       tokenSymbol: 'AVAX',
       tokenName: 'Avalanche'
@@ -52,7 +52,7 @@ export const networks: Network[] = [
     haveToggle: true,
     data: {
       rpcUrl: 'https://api.avax.network',
-      explorerUrl: 'https://subnets.avax.network/x-chain',
+      explorerUrl: 'https://build.avax.network/explorer/mainnet/x-chain',
       chainId: '4503599627370469',
       tokenSymbol: 'AVAX',
       tokenName: 'Avalanche'
