@@ -95,8 +95,12 @@ export const convertCChainAtomicTransaction = (
     tokens: [token],
     gasUsed: '0',
     chainId: String(network.chainId),
+    // Atomic (import/export) txs live under their own `/atomic-tx/` path on the
+    // explorer; `/tx/` is the EVM-tx path and only resolves via a temporary
+    // redirect DevRel put in place, which they intend to remove once atomic txs
+    // are folded into the main tx page. Link to the real path directly.
     explorerLink: network.explorerUrl
-      ? `${network.explorerUrl}/tx/${tx.txHash}`
+      ? `${network.explorerUrl}/atomic-tx/${tx.txHash}`
       : '',
     txType: exported
       ? PChainTransactionType.EXPORT_TX
