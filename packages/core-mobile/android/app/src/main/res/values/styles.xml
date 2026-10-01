@@ -35,6 +35,22 @@
         <item name="colorSurfaceContainer">@color/appSurfaceSecondary</item>
         <item name="colorSurfaceContainerHigh">@color/appSurfaceSecondary</item>
         <item name="colorSurfaceContainerHighest">@color/appSurfaceSecondary</item>
+        <item name="appBarLayoutStyle">@style/AppBarLayoutNoLift</item>
+    </style>
+
+    <!-- react-native-screens wraps every native-stack header in a Material3
+         AppBarLayout and sets it transparent so our JS header shows through.
+         M3's default style enables liftOnScroll, which fills the bar with
+         colorSurfaceContainer once the content beneath it finishes a nested
+         scroll away from the top. The card screens pushed inside our Android
+         form sheets (ScrollScreen isModal) forward nested scrolls, so their
+         headers lift. That fill color is resolved once, when the bar is
+         constructed, so a header created in light mode paints #F8F8FB over a
+         dark testnet sheet (and vice versa) until the sheet is reopened.
+         We never want the native bar to draw anything, so disable the lift. -->
+    <style name="AppBarLayoutNoLift" parent="Widget.Material3.AppBarLayout">
+        <item name="liftOnScroll">false</item>
+        <item name="liftOnScrollColor">@android:color/transparent</item>
     </style>
 
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
