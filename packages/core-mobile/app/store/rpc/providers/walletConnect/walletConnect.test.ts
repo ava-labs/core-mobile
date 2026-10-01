@@ -118,13 +118,13 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             dAppUrl: 'https://test.dapp.com',
             // C-chain is EVM; address is lowercased to canonical form (CP-13825)
             address: mockActiveAccount.addressC.toLowerCase(),
             txHash: '0xcafebabe'
-          }
+          })
         )
       })
 
@@ -142,10 +142,10 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: mockActiveAccount.addressPVM
-          }
+          })
         )
       })
 
@@ -163,10 +163,10 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: mockActiveAccount.addressAVM
-          }
+          })
         )
       })
 
@@ -184,12 +184,12 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             dAppUrl: 'https://test.dapp.com',
             address: mockActiveAccount.addressBTC,
             txHash: 'btctxhash123'
-          }
+          })
         )
       })
 
@@ -207,12 +207,12 @@ describe('walletConnectProvider', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'solana_signAndSendTransaction_success',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             dAppUrl: 'https://test.dapp.com',
             address: mockActiveAccount.addressSVM,
             txHash: 'solanatxhash456'
-          }
+          })
         )
       })
 

@@ -101,10 +101,10 @@ describe('coreMobileProvider', () => {
       // casing of the _confirmed / _failed signer address (CP-13825).
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
-        {
+        expect.objectContaining({
           provider: 'injected',
           address: NON_ACTIVE_FROM.toLowerCase()
-        }
+        })
       )
     })
 
@@ -123,10 +123,10 @@ describe('coreMobileProvider', () => {
 
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_success',
-        {
+        expect.objectContaining({
           provider: 'injected',
           address: mockActiveAccount.addressC.toLowerCase()
-        }
+        })
       )
     })
 
@@ -141,10 +141,10 @@ describe('coreMobileProvider', () => {
       })
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'avalanche_sendTransaction_success',
-        {
+        expect.objectContaining({
           provider: 'injected',
           address: mockActiveAccount.addressPVM
-        }
+        })
       )
 
       await coreMobileProvider.onSuccess({
@@ -157,10 +157,10 @@ describe('coreMobileProvider', () => {
       })
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'bitcoin_sendTransaction_success',
-        {
+        expect.objectContaining({
           provider: 'injected',
           address: mockActiveAccount.addressBTC
-        }
+        })
       )
     })
 

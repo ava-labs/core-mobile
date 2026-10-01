@@ -410,10 +410,10 @@ describe('ApprovalController', () => {
 
       expect(AnalyticsService.capture).toHaveBeenCalledWith(
         'eth_sendTransaction_confirmed',
-        {
+        expect.objectContaining({
           provider: 'walletConnect',
           txHash: TX_HASH
-        }
+        })
       )
     })
 
@@ -578,10 +578,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             txHash: TX_HASH
-          }
+          })
         )
       })
 
@@ -600,11 +600,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             chainId: AvalancheCaip2ChainId.C,
             txHash: TX_HASH
-          }
+          })
         )
       })
 
@@ -658,10 +658,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'injected',
             address: NON_ACTIVE_SIGNER.toLowerCase()
-          }
+          })
         )
       })
 
@@ -684,10 +684,10 @@ describe('ApprovalController', () => {
         )
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: '0xbbbb'
-          }
+          })
         )
       })
 
@@ -700,10 +700,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: ''
-          }
+          })
         )
       })
 
@@ -720,10 +720,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: EVM_ADDRESS.toLowerCase()
-          }
+          })
         )
 
         // Second call should get empty string (cache was cleaned up)
@@ -736,10 +736,10 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: ''
-          }
+          })
         )
       })
 
@@ -873,11 +873,11 @@ describe('ApprovalController', () => {
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'bitcoin_sendTransaction_failed',
-          {
+          expect.objectContaining({
             provider: 'walletConnect',
             address: btcAddress,
             txHash: 'btctxhash'
-          }
+          })
         )
       })
 

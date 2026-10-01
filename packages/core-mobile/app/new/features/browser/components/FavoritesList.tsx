@@ -43,7 +43,7 @@ export const FavoritesList = (
 
   const onPress = (item: FavoriteOrSuggested): void => {
     if (item.isSuggested) {
-      AnalyticsService.capture('BrowserSuggestedTapped')
+      AnalyticsService.capture('BrowserSuggestedTapped', { url: item.url })
     } else {
       AnalyticsService.capture('BrowserFavoritesTapped')
     }
