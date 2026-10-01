@@ -8,7 +8,7 @@ import { convertCChainAtomicTransaction } from './convertCChainAtomicTransaction
 
 const USER = '0xUser'
 const C_CHAIN_ID = 43114
-const EXPLORER = 'https://subnets.avax.network/c-chain'
+const EXPLORER = 'https://build.avax.network/explorer/mainnet/c-chain'
 
 const AVAX_ASSET = {
   assetId: 'avax',
@@ -57,7 +57,7 @@ describe('convertCChainAtomicTransaction', () => {
     expect(tx?.isIncoming).toBe(false)
     expect(tx?.isContractCall).toBe(false)
     expect(tx?.from).toBe(USER)
-    expect(tx?.explorerLink).toBe(`${EXPLORER}/tx/0xexport`)
+    expect(tx?.explorerLink).toBe(`${EXPLORER}/atomic-tx/0xexport`)
     expect(tx?.tokens).toHaveLength(1)
     expect(tx?.tokens[0]).toMatchObject({
       type: TokenType.NATIVE,
@@ -79,6 +79,7 @@ describe('convertCChainAtomicTransaction', () => {
     expect(tx?.isOutgoing).toBe(false)
     expect(tx?.isIncoming).toBe(true)
     expect(tx?.to).toBe(USER)
+    expect(tx?.explorerLink).toBe(`${EXPLORER}/atomic-tx/0ximport`)
     expect(tx?.tokens[0]).toMatchObject({
       type: TokenType.NATIVE,
       symbol: 'AVAX',
@@ -165,5 +166,24 @@ describe('convertCChainAtomicTransaction', () => {
 
     expect(convert).not.toThrow()
     expect(convert()?.tokens[0]?.amount).toBe('0')
+  })
+
+  it('links to the Fuji atomic-tx path for the testnet explorer', () => {
+    const tx = convertCChainAtomicTransaction(exportTx, {
+      chainId: 43113,
+      explorerUrl: 'https://build.avax.network/explorer/fuji/c-chain'
+    })
+
+    expect(tx?.explorerLink).toBe(
+      'https://build.avax.network/explorer/fuji/c-chain/atomic-tx/0xexport'
+    )
+  })
+
+  it('emits an empty explorer link when the network has no explorer url', () => {
+    const tx = convertCChainAtomicTransaction(exportTx, {
+      chainId: C_CHAIN_ID
+    })
+
+    expect(tx?.explorerLink).toBe('')
   })
 })
