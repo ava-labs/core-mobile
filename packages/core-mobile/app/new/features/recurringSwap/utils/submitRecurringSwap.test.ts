@@ -215,14 +215,12 @@ describe('submitRecurringSwap', () => {
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapScheduled', {
       chainId: QUOTE.chainId,
-      encrypted: {
-        scheduleUuid: QUOTE.uuid,
-        fromTokenSymbol: 'USDC',
-        toTokenSymbol: 'AVAX',
-        amountPerOrder: '1000000',
-        numberOfOrders: QUOTE.numberOfOrders,
-        intervalSeconds: 604_800
-      }
+      scheduleUuid: QUOTE.uuid,
+      fromTokenSymbol: 'USDC',
+      toTokenSymbol: 'AVAX',
+      amountPerOrder: '1000000',
+      numberOfOrders: QUOTE.numberOfOrders,
+      intervalSeconds: 604_800
     })
     expect(mockSnackbar).toHaveBeenCalledWith('Recurring swap scheduled')
     // Immediate cache invalidation at broadcast — staggered follow-ups
@@ -253,14 +251,12 @@ describe('submitRecurringSwap', () => {
 
     expect(mockCapture).toHaveBeenCalledWith('RecurringSwapScheduled', {
       chainId: UNLIMITED_QUOTE.chainId,
-      encrypted: {
-        scheduleUuid: UNLIMITED_QUOTE.uuid,
-        fromTokenSymbol: 'USDC',
-        toTokenSymbol: 'AVAX',
-        amountPerOrder: '1000000',
-        numberOfOrders: -1,
-        intervalSeconds: 604_800
-      }
+      scheduleUuid: UNLIMITED_QUOTE.uuid,
+      fromTokenSymbol: 'USDC',
+      toTokenSymbol: 'AVAX',
+      amountPerOrder: '1000000',
+      numberOfOrders: -1,
+      intervalSeconds: 604_800
     })
     expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -290,9 +286,7 @@ describe('submitRecurringSwap', () => {
     expect(mockCapture).toHaveBeenCalledWith(
       'RecurringSwapScheduled',
       expect.objectContaining({
-        encrypted: expect.objectContaining({
-          numberOfOrders: QUOTE.numberOfOrders
-        })
+        numberOfOrders: QUOTE.numberOfOrders
       })
     )
     expect(mockMarkrRecurring.executeFirstFill).toHaveBeenCalledWith(

@@ -161,12 +161,10 @@ class ApprovalController implements VmModuleApprovalController {
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.capture(eventName, {
         provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
-        encrypted: {
-          dAppUrl: request.dappInfo.url,
-          address,
-          chainId: request.chainId,
-          txHash
-        }
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
       })
     }
 
@@ -222,12 +220,10 @@ class ApprovalController implements VmModuleApprovalController {
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.capture(eventName, {
         provider: isInjectedDappRequest(request) ? 'injected' : 'walletConnect',
-        encrypted: {
-          dAppUrl: request.dappInfo.url,
-          address,
-          chainId: request.chainId,
-          txHash
-        }
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
       })
     }
   }

@@ -296,9 +296,7 @@ export function makeOrderActionHook(
 
         AnalyticsService.capture(config.analyticsEvent, {
           chainId: args.chainId,
-          encrypted: {
-            orderId: args.orderId
-          }
+          orderId: args.orderId
         })
 
         // Skip an immediate invalidate: it would race the indexer and

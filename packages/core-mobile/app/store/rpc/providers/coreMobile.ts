@@ -72,12 +72,10 @@ class CoreMobileProvider implements AgnosticRpcProvider {
       )
       AnalyticsService.capture(`${request.method}_success`, {
         provider: 'injected',
-        encrypted: {
-          dAppUrl: request.peerMeta.url,
-          address,
-          chainId,
-          txHash: result
-        }
+        dAppUrl: request.peerMeta.url,
+        address,
+        chainId,
+        txHash: result
       })
     }
   }

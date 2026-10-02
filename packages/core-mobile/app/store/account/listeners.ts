@@ -183,16 +183,14 @@ const initAccounts = async (
 
   if (isDeveloperMode === false) {
     AnalyticsService.capture('AccountAddressesUpdated', {
-      encrypted: {
-        addresses: accountValues.map(account => ({
-          address: account.addressC,
-          addressBtc: account.addressBTC,
-          addressAVM: account.addressAVM ?? '',
-          addressPVM: account.addressPVM ?? '',
-          addressCoreEth: account.addressCoreEth ?? '',
-          addressSVM: account.addressSVM ?? ''
-        }))
-      }
+      addresses: accountValues.map(account => ({
+        address: account.addressC,
+        addressBtc: account.addressBTC,
+        addressAVM: account.addressAVM ?? '',
+        addressPVM: account.addressPVM ?? '',
+        addressCoreEth: account.addressCoreEth ?? '',
+        addressSVM: account.addressSVM ?? ''
+      }))
     })
   }
 
