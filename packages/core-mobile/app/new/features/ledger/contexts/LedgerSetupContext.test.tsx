@@ -1,16 +1,16 @@
 import React, { PropsWithChildren } from 'react'
 import { renderHook } from '@testing-library/react-hooks'
 import { PermissionsAndroid } from 'react-native'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import BluetoothService from 'services/bluetooth/BluetoothService'
 import {
   LedgerSetupProvider,
   useLedgerSetupContext
 } from './LedgerSetupContext'
 
-jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
+jest.mock('services/bluetooth/BluetoothService', () => ({
   __esModule: true,
   default: {
-    observeState: jest.fn()
+    observeBluetoothState: jest.fn()
   }
 }))
 
@@ -40,7 +40,7 @@ describe('LedgerSetupProvider', () => {
     const { result } = renderHook(() => useLedgerSetupContext(), { wrapper })
 
     expect(result.current.isConnecting).toBe(false)
-    expect(TransportBLE.observeState).not.toHaveBeenCalled()
+    expect(BluetoothService.observeBluetoothState).not.toHaveBeenCalled()
     expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
   })
 })

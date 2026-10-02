@@ -34,13 +34,21 @@ export const handleLedgerErrorAndShowAlert = ({
   const version = LedgerService.getCurrentAppVersion()
   const detectedAppType = LedgerService.getCurrentAppType()
   const ledgerAppName = getLedgerAppName(network)
-  const compatible = isBitcoinCompatibleApp(detectedAppType, version)
-  const unsupported =
-    ledgerAppName === LedgerAppType.BITCOIN &&
-    detectedAppType === LedgerAppType.BITCOIN &&
-    !compatible
+  const resolveAppName = (): LedgerAppType => {
+    if (ledgerAppName !== LedgerAppType.BITCOIN) return ledgerAppName
+    // A Bitcoin request is also satisfied by the Bitcoin Recovery app, so
+    // naming "Bitcoin" while Recovery is open would point the user at the app
+    // Core cannot use past MAX_BITCOIN_APP_VERSION.
+    if (isBitcoinCompatibleApp(detectedAppType, version)) return detectedAppType
+    // Out-of-range Bitcoin app open: Recovery is the one that works. From the
+    // dashboard or another app we cannot know the installed version, so keep
+    // pointing at Bitcoin.
+    return detectedAppType === LedgerAppType.BITCOIN
+      ? LedgerAppType.BITCOIN_RECOVERY
+      : ledgerAppName
+  }
 
-  const appName = unsupported ? LedgerAppType.BITCOIN_RECOVERY : ledgerAppName
+  const appName = resolveAppName()
 
   let title = 'Transaction failed'
   let description = 'An error occurred while signing the transaction.'
