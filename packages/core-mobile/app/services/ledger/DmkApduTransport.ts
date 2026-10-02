@@ -5,6 +5,7 @@ import {
 import * as Sentry from '@sentry/react-native'
 import { AllowedSentryBreadcrumbCategory } from 'services/sentry/types'
 import { LedgerReturnCode } from './types'
+import { describeDmkError } from './describeDmkError'
 
 // Lc is a single byte, so one APDU carries at most 255 bytes of payload.
 const MAX_APDU_PAYLOAD = 255
@@ -65,11 +66,24 @@ export class DmkApduTransport {
     apdu[4] = data.length
     apdu.set(data, 5)
 
-    const response = await this.dmk.sendApdu({
-      sessionId: this.sessionId,
-      apdu,
-      abortTimeout: options?.abortTimeoutMs
-    })
+    let response: Awaited<ReturnType<DeviceManagementKit['sendApdu']>>
+    try {
+      response = await this.dmk.sendApdu({
+        sessionId: this.sessionId,
+        apdu,
+        abortTimeout: options?.abortTimeoutMs
+      })
+    } catch (error) {
+      recordApduBreadcrumb({ cla, ins, failure: errorTag(error) })
+      // Without a real Error, hw-app-avalanche's processErrorResponse reports
+      // the DMK rejection as "0xffff: [object Object]", dropping its _tag.
+      throw new Error(
+        `Ledger APDU exchange failed: ${describeDmkError(error)}`,
+        {
+          cause: error
+        }
+      )
+    }
 
     // SW1/SW2 as one 16-bit word, e.g. 0x90 0x00 -> 0x9000
     const statusCode =
@@ -106,29 +120,36 @@ export class DmkApduTransport {
 // afterwards, so a later validateDeviceAddress capture carries the reply
 // length and status word — the signal that distinguishes a truncated
 // transport frame from a device/app that legitimately returned empty (CP-14964).
-const recordApduBreadcrumb = ({
-  cla,
-  ins,
-  replyLength,
-  statusCode
-}: {
-  cla: number
-  ins: number
-  replyLength: number
-  statusCode: number
-}): void => {
+const recordApduBreadcrumb = (
+  frame: { cla: number; ins: number } & (
+    | { replyLength: number; statusCode: number }
+    | { failure: string }
+  )
+): void => {
   try {
     Sentry.addBreadcrumb({
       category: AllowedSentryBreadcrumbCategory.LedgerApdu,
-      level: 'info',
+      level: 'failure' in frame ? 'warning' : 'info',
       data: {
-        cla: cla.toString(16).padStart(2, '0'),
-        ins: ins.toString(16).padStart(2, '0'),
-        replyLength,
-        statusWord: statusCode.toString(16).padStart(4, '0')
+        cla: frame.cla.toString(16).padStart(2, '0'),
+        ins: frame.ins.toString(16).padStart(2, '0'),
+        ...('failure' in frame
+          ? { failure: frame.failure }
+          : {
+              replyLength: frame.replyLength,
+              statusWord: frame.statusCode.toString(16).padStart(4, '0')
+            })
       }
     })
   } catch {
     // Breadcrumb capture must never break a real APDU exchange.
   }
+}
+
+// Only the tag/name goes into the breadcrumb: the full error text can echo
+// arbitrary device output, and breadcrumbs stay frame-metadata only.
+const errorTag = (error: unknown): string => {
+  if (error instanceof Error) return error.name
+  const tag = (error as { _tag?: unknown } | null)?._tag
+  return typeof tag === 'string' ? tag : 'unknown'
 }

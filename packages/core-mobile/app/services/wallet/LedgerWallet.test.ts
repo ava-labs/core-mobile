@@ -268,6 +268,11 @@ const mockGetAllAddresses = LedgerService.getAllAddresses as jest.Mock
 const mockGetExtendedPublicKeys =
   LedgerService.getExtendedPublicKeys as jest.Mock
 
+// handleLedgerError ignores messages it does not recognise, so rejecting with a
+// real status word is what proves the signer call is awaited inside the catch.
+const deviceRejection = (): Error => new Error('Ledger device: status 0x6985')
+const REJECTED_ON_DEVICE = 'Transaction rejected by user on Ledger device.'
+
 // Mock DMK session — what LedgerService.ensureConnection() now hands back
 class MockSession {
   dmk = {
@@ -463,10 +468,10 @@ describe('LedgerWallet', () => {
         expect(mockAvaSignTx).not.toHaveBeenCalled()
       })
 
-      it('throws when signing fails', async () => {
-        mockAvaSignTx.mockRejectedValue(new Error('Signing failed'))
+      it('maps a device rejection to the user-rejected message', async () => {
+        mockAvaSignTx.mockRejectedValue(deviceRejection())
 
-        await expect(sign()).rejects.toThrow()
+        await expect(sign()).rejects.toThrow(REJECTED_ON_DEVICE)
       })
     })
   })
@@ -540,22 +545,52 @@ describe('LedgerWallet', () => {
         provider: evmProvider
       })
 
-    it('routes personal_sign to the signer as a plain message', async () => {
+    it('routes hex personal_sign to the signer as raw bytes', async () => {
       mockEvmSignMessage.mockResolvedValue('0xsig')
 
       await expect(
         sign({ type: RpcMethod.PERSONAL_SIGN, account: '0xa', data: '0xdead' })
       ).resolves.toBe('0xsig')
-      expect(mockEvmSignMessage).toHaveBeenCalledWith('0xdead')
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0xde, 0xad])
+      )
       expect(mockEvmSignTypedData).not.toHaveBeenCalled()
     })
 
-    it('routes eth_sign to the signer as a plain message', async () => {
+    it('left-pads odd-length hex the way eth-sig-util recovers it', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await sign({
+        type: RpcMethod.PERSONAL_SIGN,
+        account: '0xa',
+        data: '0xabc'
+      })
+
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0x0a, 0xbc])
+      )
+    })
+
+    it('passes plain-text personal_sign through as a string', async () => {
+      mockEvmSignMessage.mockResolvedValue('0xsig')
+
+      await sign({
+        type: RpcMethod.PERSONAL_SIGN,
+        account: '0xa',
+        data: 'Hello'
+      })
+
+      expect(mockEvmSignMessage).toHaveBeenCalledWith('Hello')
+    })
+
+    it('routes eth_sign to the signer as raw bytes', async () => {
       mockEvmSignMessage.mockResolvedValue('0xsig')
 
       await sign({ type: RpcMethod.ETH_SIGN, account: '0xa', data: '0xdead' })
 
-      expect(mockEvmSignMessage).toHaveBeenCalledWith('0xdead')
+      expect(mockEvmSignMessage).toHaveBeenCalledWith(
+        new Uint8Array([0xde, 0xad])
+      )
     })
 
     it('routes typed data v4 to signTypedData with domain, types and message', async () => {
@@ -601,6 +636,26 @@ describe('LedgerWallet', () => {
       ).rejects.toThrow()
     })
 
+    it('maps a personal_sign device rejection to the user-rejected message', async () => {
+      mockEvmSignMessage.mockRejectedValue(deviceRejection())
+
+      await expect(
+        sign({ type: RpcMethod.PERSONAL_SIGN, account: '0xa', data: 'Hello' })
+      ).rejects.toThrow(REJECTED_ON_DEVICE)
+    })
+
+    it('maps a typed data device rejection to the user-rejected message', async () => {
+      mockEvmSignTypedData.mockRejectedValue(deviceRejection())
+
+      await expect(
+        sign({
+          type: RpcMethod.SIGN_TYPED_DATA_V4,
+          account: '0xa',
+          data: typedData
+        })
+      ).rejects.toThrow(REJECTED_ON_DEVICE)
+    })
+
     it('reports Solana message signing as unsupported', async () => {
       await expect(
         sign({ type: RpcMethod.SOLANA_SIGN_MESSAGE, account: 'a', data: 'b' })
@@ -639,6 +694,12 @@ describe('LedgerWallet', () => {
         'https://solana.rpc',
         false
       )
+    })
+
+    it('maps a device rejection to the user-rejected message', async () => {
+      mockSolSignTx.mockRejectedValue(deviceRejection())
+
+      await expect(signSvm(DEVICE_ACCOUNT)).rejects.toThrow(REJECTED_ON_DEVICE)
     })
 
     it('rejects without signing when the accounts differ', async () => {
@@ -777,10 +838,10 @@ describe('LedgerWallet', () => {
       expect(signedPayload()).toMatchObject({ nonce: 0, data: '0x' })
     })
 
-    it('propagates signing failures', async () => {
-      mockEvmSignTransaction.mockRejectedValue(new Error('Signing failed'))
+    it('maps a device rejection to the user-rejected message', async () => {
+      mockEvmSignTransaction.mockRejectedValue(deviceRejection())
 
-      await expect(signEvm()).rejects.toThrow()
+      await expect(signEvm()).rejects.toThrow(REJECTED_ON_DEVICE)
     })
   })
 
@@ -1111,10 +1172,10 @@ describe('LedgerWallet', () => {
         await expect(signMsg()).rejects.toThrow('Connection failed')
       })
 
-      it('propagates signing errors', async () => {
-        mockAvaSignMessage.mockRejectedValue(new Error('Signing failed'))
+      it('maps a device rejection to the user-rejected message', async () => {
+        mockAvaSignMessage.mockRejectedValue(deviceRejection())
 
-        await expect(signMsg()).rejects.toThrow()
+        await expect(signMsg()).rejects.toThrow(REJECTED_ON_DEVICE)
       })
     })
 

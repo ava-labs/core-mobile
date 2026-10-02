@@ -64,6 +64,7 @@ import {
 } from './LedgerBluetoothError'
 import { DmkApduTransport } from './DmkApduTransport'
 import { runDeviceAction } from './runDeviceAction'
+import { describeDmkError } from './describeDmkError'
 
 class LedgerService {
   #dmk: DeviceManagementKit | null = null
@@ -554,7 +555,10 @@ class LedgerService {
       )
 
       if (!isSuccessCommandResult(result)) {
-        throw new Error(`Ledger getAppAndVersion failed: ${result.error}`)
+        throw new Error(
+          `Ledger getAppAndVersion failed: ${describeDmkError(result.error)}`,
+          { cause: result.error }
+        )
       }
 
       return {

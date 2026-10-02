@@ -63,7 +63,7 @@ describe('runDeviceAction', () => {
     await expect(
       runDeviceAction(action(observable) as never, 'getExtendedPublicKey')
     ).rejects.toThrow(
-      'Ledger getExtendedPublicKey failed: {"_tag":"BtcAppCommandError","errorCode":"6a80"}'
+      'Ledger getExtendedPublicKey failed: BtcAppCommandError: 6a80'
     )
   })
 

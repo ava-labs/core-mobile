@@ -1205,6 +1205,22 @@ describe('LedgerService', () => {
 
   // -------------------------------------------------------------------------
   describe('waitForApp', () => {
+    it('reports a locked device straight away instead of polling to the timeout', async () => {
+      await LedgerService.connect(DEVICE_ID)
+      commandHandlers.getAppAndVersion = () => ({
+        status: 'ERROR',
+        error: {
+          _tag: 'GlobalCommandError',
+          errorCode: '5515',
+          message: 'Device is locked.'
+        }
+      })
+
+      await expect(
+        LedgerService.waitForApp(LedgerAppType.AVALANCHE, 5000)
+      ).rejects.toThrow('Your Ledger device is locked')
+    })
+
     it('should reject immediately when signal is already aborted', async () => {
       const controller = new AbortController()
       controller.abort()

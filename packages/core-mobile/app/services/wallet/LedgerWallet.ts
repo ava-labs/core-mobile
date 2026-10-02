@@ -20,7 +20,7 @@ import {
   BtcWalletPolicyDetails
 } from '@avalabs/vm-module-types'
 import { networks } from 'bitcoinjs-lib'
-import { Transaction, TransactionRequest } from 'ethers'
+import { getBytes, Transaction, TransactionRequest } from 'ethers'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -1155,7 +1155,9 @@ export class LedgerWallet implements Wallet {
         signingData.type === RpcMethod.ETH_SIGN ||
         signingData.type === RpcMethod.PERSONAL_SIGN
       ) {
-        return await ledgerSigner.signMessage(signingData.data)
+        return await ledgerSigner.signMessage(
+          toPersonalSignMessage(signingData.data)
+        )
       } else {
         throw new Error('This function is not supported on your wallet')
       }
@@ -1281,4 +1283,12 @@ export class LedgerWallet implements Wallet {
       throw error
     }
   }
+}
+
+// The SDK signer UTF-8 encodes any string, but assertEvmMessageSigner recovers
+// with eth-sig-util, which reads 0x-prefixed hex as raw bytes (left-padding odd
+// lengths). Hand the signer those same bytes so the recovered address matches.
+const toPersonalSignMessage = (data: string): string | Uint8Array => {
+  if (!/^0x[0-9a-f]*$/i.test(data)) return data
+  return getBytes(data.length % 2 === 0 ? data : `0x0${data.slice(2)}`)
 }

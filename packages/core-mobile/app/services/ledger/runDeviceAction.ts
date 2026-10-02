@@ -3,23 +3,7 @@ import {
   type DeviceActionState
 } from '@ledgerhq/device-management-kit'
 import { filter, firstValueFrom, type Observable } from 'rxjs'
-
-// Kit errors are plain objects (`{ _tag, errorCode }`, `{ _tag, originalError }`)
-// with no message, so Error.cause alone reaches the log as "did not complete:
-// error" with nothing to act on. Flatten them into the message instead.
-const describeError = (error: unknown): string => {
-  if (error instanceof Error) return error.message
-  if (error === null || typeof error !== 'object') return String(error)
-  try {
-    return JSON.stringify(error, (_key, value) =>
-      value instanceof Error
-        ? { name: value.name, message: value.message }
-        : value
-    )
-  } catch {
-    return String(error)
-  }
-}
+import { describeDmkError } from './describeDmkError'
 
 /**
  * Runs a Device Management Kit device action to completion.
@@ -55,9 +39,12 @@ export const runDeviceAction = async <Output>(
   }
 
   if (result.status === DeviceActionStatus.Error) {
-    throw new Error(`Ledger ${call} failed: ${describeError(result.error)}`, {
-      cause: result.error
-    })
+    throw new Error(
+      `Ledger ${call} failed: ${describeDmkError(result.error)}`,
+      {
+        cause: result.error
+      }
+    )
   }
 
   throw new Error(`Ledger ${call} did not complete: ${result.status}`)

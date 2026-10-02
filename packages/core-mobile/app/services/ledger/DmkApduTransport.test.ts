@@ -148,6 +148,24 @@ describe('DmkApduTransport', () => {
         'Device disconnected'
       )
     })
+
+    it('wraps a plain-object kit rejection in an Error that keeps its _tag', async () => {
+      const kitError = {
+        _tag: 'DeviceDisconnectedWhileSendingError',
+        originalError: new Error('BLE link lost')
+      }
+      sendApdu.mockRejectedValue(kitError)
+
+      const error = await transport
+        .send(0x80, 0x02, 0, 0)
+        .catch((e: unknown) => e)
+
+      expect(error).toBeInstanceOf(Error)
+      expect((error as Error).message).toBe(
+        'Ledger APDU exchange failed: DeviceDisconnectedWhileSendingError: BLE link lost'
+      )
+      expect((error as Error).cause).toBe(kitError)
+    })
   })
 
   describe('breadcrumbs', () => {
@@ -166,6 +184,19 @@ describe('DmkApduTransport', () => {
             replyLength: 2,
             statusWord: '6985'
           }
+        })
+      )
+    })
+
+    it('records the kit error tag when the exchange itself fails', async () => {
+      sendApdu.mockRejectedValue({ _tag: 'SendApduTimeoutError' })
+
+      await transport.send(0x80, 0x02, 0, 0).catch(() => undefined)
+
+      expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: 'warning',
+          data: { cla: '80', ins: '02', failure: 'SendApduTimeoutError' }
         })
       )
     })

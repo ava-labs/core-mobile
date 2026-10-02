@@ -38,16 +38,21 @@ export const LedgerReturnCode = {
   COMMAND_NOT_ALLOWED: 0x6986
 } as const
 
+// Status words are bare hex so they match every spelling that reaches us:
+// "0x6985" from the APDU transports and "EthAppCommandError: 6985" from the
+// kit signers.
 export enum LEDGER_ERROR_CODES {
-  WRONG_APP = '0x6a80',
-  COMMUNICATION_ERROR = '0x6511',
-  REJECTED = '0x6985',
-  REJECTED_ALT = '0x6986',
-  NOT_READY = '0x6a86',
-  DEVICE_LOCKED = '0x5515',
-  UPDATE_REQUIRED = '0x6e00',
+  WRONG_APP = '6a80',
+  COMMUNICATION_ERROR = '6511',
+  REJECTED = '6985',
+  REJECTED_ALT = '6986',
+  NOT_READY = '6a86',
+  DEVICE_LOCKED = '5515',
+  UPDATE_REQUIRED = '6e00',
   USER_CANCELLED = 'user_cancelled',
   DISCONNECTED_DEVICE = 'disconnecteddevice',
+  // DMK tags: DeviceDisconnectedWhileSendingError, DeviceDisconnectedBeforeSendingApdu
+  DISCONNECTED_DEVICE_DMK = 'devicedisconnected',
   TRANSPORT_RACE_CONDITION = 'transportracecondition',
   TRANSPORT_RACE_CONDITION_ALT = 'an action was already pending on the ledger device',
   BLIND_SIGNATURE = 'blind',
@@ -59,7 +64,7 @@ export enum LEDGER_ERROR_CODES {
   // Avalanche app returns a bare 0x6984 (no review screen) when it cannot
   // clear-sign a foreign-EVM/L1 tx and blind signing is not enabled.
   // Unmapped by hw-app-avalanche and @ledgerhq → surfaces as UNKNOWN_ERROR.
-  BLIND_SIGN_REQUIRED = '0x6984'
+  BLIND_SIGN_REQUIRED = '6984'
 }
 
 // Shown when an Avalanche-app transaction is rejected with a bare 0x6984
