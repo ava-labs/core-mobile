@@ -18,7 +18,14 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { isEvmPublicKey } from 'utils/publicKeys'
+import {
+  AddressPublicKey,
+  Curve,
+  findPublicKey,
+  getEvmAccountIndices
+} from 'utils/publicKeys'
+import * as Sentry from '@sentry/react-native'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -34,7 +41,10 @@ import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
-import { SentryTag } from 'services/sentry/types'
+import {
+  AllowedSentryBreadcrumbCategory,
+  SentryTag
+} from 'services/sentry/types'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import WalletService from 'services/wallet/WalletService'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
@@ -354,18 +364,42 @@ class AccountsService {
 
     if (walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      const pubKeys = storedPubKeys.filter(isEvmPublicKey)
 
       const wallet = await WalletFactory.createWallet({
         walletId,
         walletType
       })
 
-      // create next account only if it doesn't exist yet
-      if (!pubKeys[index]) {
+      // Check every key this index needs, not just EVM: an account can hold
+      // its EVM key while the Avalanche X/P key is missing, and derivation
+      // later fails closed on that gap (CP-15068). addAccount is idempotent,
+      // and rejects index 0 since it needs an existing key to find the seed.
+      const missing = this.getMissingSeedlessKeyTypes(index, storedPubKeys)
+      const shouldInvokeAddAccount = index >= 1 && missing.length > 0
+      const evmIndices = getEvmAccountIndices(storedPubKeys)
+
+      Sentry.addBreadcrumb({
+        category: AllowedSentryBreadcrumbCategory.SeedlessAddAccount,
+        level: 'info',
+        data: {
+          step: 'createNextAccount-guard',
+          index,
+          invoked: shouldInvokeAddAccount,
+          missing,
+          evmIndices
+        }
+      })
+
+      if (shouldInvokeAddAccount) {
         if (!(wallet instanceof SeedlessWallet)) {
           throw new Error('Expected SeedlessWallet instance')
         }
+
+        Logger.info(
+          `createNextAccount: deriving index ${index}, missing ${missing.join(
+            ', '
+          )}, stored EVM indices [${evmIndices.join(', ')}]`
+        )
 
         // prompt Core Seedless API to derive new keys. This refreshes
         // SeedlessPubKeysStorage; getPublicKeyFor reads from that storage on
@@ -542,7 +576,62 @@ class AccountsService {
 
   async getSeedlessActiveAccountCount(): Promise<number> {
     const pubKeys = await SeedlessPubKeysStorage.retrieve()
-    return pubKeys.filter(isEvmPublicKey).length
+    // Highest index + 1, not key count: callers loop over 0..count-1, so a
+    // gapped set {0, 2} must report 3 for createNextAccount to derive index 1
+    // and pick up index 2 in the same pass.
+    const indices = getEvmAccountIndices(pubKeys)
+    return indices.length === 0 ? 0 : Math.max(...indices) + 1
+  }
+
+  /**
+   * The chains whose public key for `accountIndex` is absent from seedless
+   * storage, using the same BIP44 paths the vm-modules request when deriving
+   * addresses. Bitcoin and CoreEth reuse the EVM key, so three checks cover
+   * every module.
+   */
+  private getMissingSeedlessKeyTypes(
+    accountIndex: number,
+    storedPubKeys: AddressPublicKey[]
+  ): NetworkVMType[] {
+    // A module that builds no path for a chain never requests that key, so an
+    // undefined path is "not required" rather than "missing".
+    const expected: {
+      vmType: NetworkVMType
+      path: string | undefined
+      curve: Curve
+    }[] = [
+      {
+        vmType: NetworkVMType.EVM,
+        path: ModuleManager.evmModule.buildDerivationPath({
+          accountIndex,
+          derivationPathType: DerivationPath.BIP44
+        })[NetworkVMType.EVM],
+        curve: Curve.SECP256K1
+      },
+      {
+        vmType: NetworkVMType.AVM,
+        path: ModuleManager.avalancheModule.buildDerivationPath({
+          accountIndex,
+          derivationPathType: DerivationPath.BIP44
+        })[NetworkVMType.AVM],
+        curve: Curve.SECP256K1
+      },
+      {
+        vmType: NetworkVMType.SVM,
+        path: ModuleManager.solanaModule.buildDerivationPath({
+          accountIndex,
+          derivationPathType: DerivationPath.BIP44
+        })[NetworkVMType.SVM],
+        curve: Curve.ED25519
+      }
+    ]
+
+    return expected
+      .filter(
+        ({ path, curve }) =>
+          path !== undefined && !storedPubKeys.some(findPublicKey(path, curve))
+      )
+      .map(({ vmType }) => vmType)
   }
 
   /**
